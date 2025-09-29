@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VideoHub
 
-## Getting Started
+Cinematic video pipeline orchestrator built with Next.js 15, Tailwind, Drizzle ORM, and a Postgres backend.
 
-First, run the development server:
+## Prerequisites
+- Node.js 18+
+- Docker (for the local Postgres service)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Setup
+1. Install dependencies
+   ```bash
+   npm install
+   ```
+2. Copy environment variables and adjust as needed
+   ```bash
+   cp env.example .env.local
+   ```
+3. Start Postgres locally
+   ```bash
+   npm run db:up
+   ```
+4. Apply the database schema and seed demo data
+   ```bash
+   DATABASE_URL=postgres://videohub:videohub@localhost:5432/videohub npm run db:push
+   npm run db:seed
+   ```
+5. Launch the app
+   ```bash
+   npm run dev
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The marketing site is available at `http://localhost:3000/`, and the dashboard routes live under `/dashboard`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Database Tooling
+The project uses [Drizzle ORM](https://orm.drizzle.team/) with `drizzle-kit` for migrations. Helpful commands:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run db:generate` – generate a SQL migration from the TypeScript schema (`src/db/tables.ts`).
+- `npm run db:push` – apply pending migrations to the target database.
+- `npm run db:migrate` – run existing migrations (useful in CI).
+- `npm run db:seed` – populate demo users, presets, jobs, and usage metrics.
+- `npm run db:studio` – launch the Drizzle Studio UI.
+- `npm run db:down` – stop the local Postgres container.
 
-## Learn More
+## Model Presets & Capabilities
+- Generation now routes through FAL.ai adapters (Veo 3 Quality/Fast, Kling, Pika, Nano Banana).
+- Each preset references a capability registry (`src/data/models.ts`) so the form surfaces the right controls (image init, masks, reference video, audio, FPS, CFG scale, etc.).
+- Advanced options and source assets are serialised into job metadata so the downstream provider adapter can submit the correct payload to FAL.
 
-To learn more about Next.js, take a look at the following resources:
+## Asset Uploads
+- The generate form lets producers attach init images, masks, reference frames, or ref videos via `/api/uploads`.
+- `/api/uploads` now returns an S3/R2 presigned POST (see `src/lib/storage/presign.ts`). Configure `S3_*` variables in `.env.local` to enable the flow.
+- The client uploads directly to your bucket and receives the public file URL, which is forwarded to the render adapter in job metadata.
+- Set `FAL_API_KEY` (and optionally `FAL_API_BASE` / `FAL_TIMEOUT_MS`) so the backend can launch and poll renders through FAL.
+- Si ton bucket S3 est en mode "Object Ownership: Bucket owner enforced", ajoute une bucket policy `s3:GetObject` publique (ou passe par CloudFront) pour rendre les fichiers lisibles après upload.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure Highlights
+- `src/app/(marketing)` – public marketing pages.
+- `src/app/(dashboard)` – authenticated product surface (generate, jobs, billing, settings).
+- `src/db/tables.ts` – Drizzle schema definition.
+- `src/db/client.ts` – Postgres connection helper shared across API routes and scripts.
+- `scripts/seed-db.ts` – demo data loader used for local development.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Next Steps
+- Instrument the FAL adapter with retries, long-polling, or webhooks for better progress accuracy.
+- Persist job events/output assets from provider callbacks.
+- Introduce real auth and billing once the persistence layer is stable.

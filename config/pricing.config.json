@@ -1,0 +1,16 @@
+{
+  "veo": {
+    "quality": { "audio": 0.6, "mute": 0.5 },
+    "fast": { "audio": 0.25, "mute": 0.2 }
+  },
+  "fal": {
+    "veo3": { "per_second": 0.6 },
+    "veo3-fast": { "per_second": 0.35 },
+    "kling-pro": { "per_second": 0.28 },
+    "pika-v2-2": { "per_second": 0.18 },
+    "luma-dream": { "per_second": 0.22 },
+    "pixverse-v4-5": { "per_second": 0.24 },
+    "cogvideox-5b": { "per_second": 0.32 }
+  },
+  "fees": { "egress_per_gb": 0.08 }
+}

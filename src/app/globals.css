@@ -1,26 +1,94 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: 210 40% 98%;
+  --foreground: 222 47% 14%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 14%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 14%;
+  --primary: 266 80% 55%;
+  --primary-foreground: 220 26% 96%;
+  --secondary: 215 33% 95%;
+  --secondary-foreground: 222 47% 26%;
+  --muted: 215 25% 92%;
+  --muted-foreground: 222 18% 38%;
+  --accent: 198 78% 54%;
+  --accent-foreground: 210 40% 96%;
+  --destructive: 2 84% 60%;
+  --destructive-foreground: 210 40% 96%;
+  --border: 216 28% 85%;
+  --input: 216 28% 85%;
+  --ring: 266 80% 55%;
+  --chart-1: 266 75% 58%;
+  --chart-2: 200 72% 52%;
+  --chart-3: 40 90% 60%;
+  --chart-4: 155 58% 48%;
+  --chart-5: 12 88% 56%;
+  --radius: 0.6rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  --background: 228 39% 4%;
+  --foreground: 213 70% 95%;
+  --card: 230 35% 6%;
+  --card-foreground: 213 70% 95%;
+  --popover: 230 35% 6%;
+  --popover-foreground: 213 70% 95%;
+  --primary: 268 83% 68%;
+  --primary-foreground: 228 40% 12%;
+  --secondary: 223 36% 16%;
+  --secondary-foreground: 213 70% 90%;
+  --muted: 225 24% 14%;
+  --muted-foreground: 218 14% 68%;
+  --accent: 200 80% 52%;
+  --accent-foreground: 210 40% 96%;
+  --destructive: 0 78% 42%;
+  --destructive-foreground: 210 40% 96%;
+  --border: 224 25% 18%;
+  --input: 224 25% 18%;
+  --ring: 268 83% 68%;
+  --chart-1: 266 80% 65%;
+  --chart-2: 200 82% 55%;
+  --chart-3: 46 91% 62%;
+  --chart-4: 160 63% 45%;
+  --chart-5: 12 86% 64%;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    background-image: radial-gradient(circle at 12% 6%, rgba(147, 197, 253, 0.35), transparent 50%),
+      radial-gradient(circle at 82% 8%, rgba(196, 181, 253, 0.25), transparent 52%),
+      linear-gradient(180deg, rgba(250, 250, 255, 1), rgba(236, 240, 255, 1));
+    background-attachment: fixed;
+  }
+  .dark body {
+    background-image: radial-gradient(circle at 20% 20%, rgba(110, 80, 255, 0.18), transparent 55%),
+      radial-gradient(circle at 80% 0%, rgba(20, 160, 220, 0.22), transparent 50%),
+      linear-gradient(180deg, rgba(10, 12, 26, 0.95), rgba(5, 7, 15, 0.98));
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Tech grid utility for hero (light/dark aware via overlay opacities) */
+@layer utilities {
+  .bg-tech-grid {
+    background-image: linear-gradient(to right, rgba(120, 120, 140, 0.22) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(120, 120, 140, 0.22) 1px, transparent 1px);
+    background-size: 24px 24px;
+    animation: grid-pan 40s linear infinite;
+  }
+  @keyframes grid-pan {
+    from {
+      background-position: 0 0, 0 0;
+    }
+    to {
+      background-position: 240px 120px, 240px 120px;
+    }
+  }
 }
