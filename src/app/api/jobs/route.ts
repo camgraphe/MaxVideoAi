@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { jobParamsSchema } from "@/db/schema";
 import {
+  getModelSpecByEngine,
+  FAL_INIT_IMAGE_REQUIRED_ENGINES,
+  FAL_REF_VIDEO_REQUIRED_ENGINES,
+} from "@/data/models";
+import {
   createJobRecord,
   getJobById,
   listJobs,
@@ -11,6 +16,34 @@ import { simulateJobLifecycle } from "@/lib/jobs/job-runner";
 import { getProviderAdapter } from "@/providers";
 import { estimateCost } from "@/lib/pricing";
 import { appConfig } from "@/lib/config";
+import { normalizeDurationSeconds, normalizeNumber, isValidUrl } from "@/lib/models/normalization";
+import { getFalWebhookUrl } from "@/lib/env";
+
+const FLOAT_TOLERANCE = 1e-6;
+
+function invalidParamsResponse(
+  message: string,
+  hints: string[],
+  suggestion?: { field: string; value: unknown },
+) {
+  return NextResponse.json(
+    {
+      code: "INVALID_PARAMS",
+      message,
+      hints,
+      ...(suggestion ? { suggestion } : {}),
+    },
+    { status: 400 },
+  );
+}
+
+function readUrl(candidate: unknown): string | undefined {
+  if (typeof candidate !== "string") {
+    return undefined;
+  }
+  const trimmed = candidate.trim();
+  return isValidUrl(trimmed) ? trimmed : undefined;
+}
 
 export async function POST(request: Request) {
   try {
@@ -22,11 +55,133 @@ export async function POST(request: Request) {
         ? body.budgetCents
         : appConfig.defaultBudgetCents;
 
+    const metadataRecord = { ...(payload.metadata ?? {}) } as Record<string, unknown>;
+    if (payload.modelId) {
+      metadataRecord.modelId = payload.modelId;
+    }
+    if (payload.negativePrompt) {
+      metadataRecord.negativePrompt = payload.negativePrompt;
+    }
+
+    let durationSeconds = payload.durationSeconds;
+
+    if (payload.provider === "fal") {
+      const spec = getModelSpecByEngine("fal", payload.engine);
+      if (!spec) {
+        return invalidParamsResponse(
+          `Unknown FAL engine ${payload.engine}.`,
+          ["Select a supported engine from the catalog."],
+        );
+      }
+
+      if (!spec.constraints.ratios.includes(payload.ratio)) {
+        return invalidParamsResponse(
+          `Aspect ratio ${payload.ratio} is not supported by ${spec.label}.`,
+          [`Choose one of: ${spec.constraints.ratios.join(", ")}.`],
+          { field: "ratio", value: spec.constraints.ratios[0] },
+        );
+      }
+
+      const normalizedDuration = normalizeDurationSeconds(payload.durationSeconds, spec);
+      if (Math.abs(normalizedDuration - payload.durationSeconds) > FLOAT_TOLERANCE) {
+        const durationConstraints = spec.constraints.durationSeconds;
+        const hint = durationConstraints
+          ? `Supported durations: ${durationConstraints.min}-${durationConstraints.max}s (step ${durationConstraints.step ?? 1}).`
+          : "Check duration limits for this model.";
+        return invalidParamsResponse(
+          `Duration ${payload.durationSeconds}s is not supported by ${spec.label}.`,
+          [hint],
+          { field: "durationSeconds", value: normalizedDuration },
+        );
+      }
+      durationSeconds = normalizedDuration;
+
+      const cfgScaleValue = metadataRecord.cfgScale;
+      if (typeof cfgScaleValue === "number") {
+        const normalizedCfg = normalizeNumber(cfgScaleValue, spec.constraints.cfgScale, spec.defaults.cfgScale);
+        if (normalizedCfg !== undefined) {
+          metadataRecord.cfgScale = normalizedCfg;
+        } else {
+          delete metadataRecord.cfgScale;
+        }
+      } else if (cfgScaleValue !== undefined) {
+        delete metadataRecord.cfgScale;
+      }
+
+      const fpsValue = metadataRecord.fps;
+      if (typeof fpsValue === "number") {
+        const normalizedFps = normalizeNumber(fpsValue, spec.constraints.fps, spec.defaults.fps);
+        if (normalizedFps !== undefined) {
+          metadataRecord.fps = normalizedFps;
+        } else {
+          delete metadataRecord.fps;
+        }
+      } else if (fpsValue !== undefined) {
+        delete metadataRecord.fps;
+      }
+
+      const stepsValue = metadataRecord.steps;
+      if (typeof stepsValue === "number") {
+        const normalizedSteps = normalizeNumber(stepsValue, spec.constraints.steps, spec.defaults.steps);
+        if (normalizedSteps !== undefined) {
+          metadataRecord.steps = normalizedSteps;
+        } else {
+          delete metadataRecord.steps;
+        }
+      } else if (stepsValue !== undefined) {
+        delete metadataRecord.steps;
+      }
+
+      const requiresInitImage = FAL_INIT_IMAGE_REQUIRED_ENGINES.has(spec.id);
+      const initImageUrl = readUrl(metadataRecord.inputImageUrl);
+      if (requiresInitImage) {
+        if (!initImageUrl) {
+          return invalidParamsResponse(
+            `${spec.label} requires an init image.`,
+            ["Upload an init image before generating."],
+          );
+        }
+        metadataRecord.inputImageUrl = initImageUrl;
+      } else if (initImageUrl) {
+        metadataRecord.inputImageUrl = initImageUrl;
+      } else if (metadataRecord.inputImageUrl !== undefined) {
+        delete metadataRecord.inputImageUrl;
+      }
+
+      const referenceVideoUrl = readUrl(metadataRecord.referenceVideoUrl);
+      const requiresRefVideo = FAL_REF_VIDEO_REQUIRED_ENGINES.has(spec.id);
+      if (requiresRefVideo && !referenceVideoUrl) {
+        return invalidParamsResponse(
+          `${spec.label} requires a reference video.`,
+          ["Attach a reference video before launching the job."],
+        );
+      }
+      if (referenceVideoUrl) {
+        metadataRecord.referenceVideoUrl = referenceVideoUrl;
+      } else if (metadataRecord.referenceVideoUrl !== undefined) {
+        delete metadataRecord.referenceVideoUrl;
+      }
+
+      const maskUrl = readUrl(metadataRecord.maskUrl);
+      if (maskUrl) {
+        metadataRecord.maskUrl = maskUrl;
+      } else if (metadataRecord.maskUrl !== undefined) {
+        delete metadataRecord.maskUrl;
+      }
+
+      const referenceImageUrl = readUrl(metadataRecord.referenceImageUrl);
+      if (referenceImageUrl) {
+        metadataRecord.referenceImageUrl = referenceImageUrl;
+      } else if (metadataRecord.referenceImageUrl !== undefined) {
+        delete metadataRecord.referenceImageUrl;
+      }
+    }
+
     // Server-side price verification
     const serverEstimate = estimateCost({
       provider: payload.provider,
       engine: payload.engine,
-      durationSeconds: payload.durationSeconds,
+      durationSeconds,
       withAudio: payload.withAudio,
       quantity: payload.quantity,
     });
@@ -38,7 +193,7 @@ export async function POST(request: Request) {
         const alt = estimateCost({
           provider: payload.provider,
           engine: "veo3-fast",
-          durationSeconds: payload.durationSeconds,
+          durationSeconds,
           withAudio: payload.withAudio,
           quantity: payload.quantity,
         });
@@ -57,20 +212,12 @@ export async function POST(request: Request) {
       );
     }
 
-    const metadataRecord = { ...(payload.metadata ?? {}) } as Record<string, unknown>;
-    if (payload.modelId) {
-      metadataRecord.modelId = payload.modelId;
-    }
-    if (payload.negativePrompt) {
-      metadataRecord.negativePrompt = payload.negativePrompt;
-    }
-
     const job = await createJobRecord({
       provider: payload.provider,
       engine: payload.engine,
       prompt: payload.prompt,
       ratio: payload.ratio,
-      durationSeconds: payload.durationSeconds,
+      durationSeconds,
       withAudio: payload.withAudio,
       quantity: payload.quantity,
       seed: payload.seed,
@@ -104,6 +251,8 @@ export async function POST(request: Request) {
         typeof job.metadata.upscaling === "boolean" ? job.metadata.upscaling : undefined,
     };
 
+    const webhookUrl = job.provider === "fal" ? getFalWebhookUrl() : undefined;
+
     const providerJob = await adapter.startJob({
       prompt: job.prompt,
       durationSeconds: job.durationSeconds,
@@ -118,6 +267,7 @@ export async function POST(request: Request) {
       inputAssets,
       advanced: advancedOptions,
       metadata: job.metadata,
+      webhookUrl,
     });
 
     await updateJobRecord(job.id, {
@@ -130,6 +280,7 @@ export async function POST(request: Request) {
       jobId: job.id,
       providerJobId: providerJob.jobId,
       adapter,
+      engine: job.engine,
     });
 
     const freshJob = await getJobById(job.id);

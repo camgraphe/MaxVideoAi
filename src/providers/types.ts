@@ -27,6 +27,7 @@ export interface StartJobInput {
     upscaling?: boolean;
   };
   metadata?: Record<string, string | number | boolean | null>;
+  webhookUrl?: string;
 }
 
 export interface StartJobResult {
@@ -47,9 +48,21 @@ export interface PollJobResult {
   error?: string;
   costActualCents?: number;
   durationSeconds?: number;
+  logs?: Array<{ message: string; timestamp?: string }>;
+  asset?: {
+    url: string;
+    thumbnail?: string;
+    durationSeconds?: number;
+    contentType?: string;
+    fileName?: string;
+    fileSizeBytes?: number;
+  };
 }
 
 export interface ProviderAdapter {
   startJob(input: StartJobInput): Promise<StartJobResult>;
-  pollJob(providerJobId: string): Promise<PollJobResult>;
+  pollJob(
+    providerJobId: string,
+    options?: { withLogs?: boolean; engine?: string },
+  ): Promise<PollJobResult>;
 }

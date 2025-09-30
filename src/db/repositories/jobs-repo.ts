@@ -33,6 +33,7 @@ export interface JobModel {
   externalJobId: string | null;
   outputUrl: string | null;
   thumbnailUrl: string | null;
+  archiveUrl: string | null;
   error: string | null;
   metadata: Record<string, unknown>;
   createdAt: Date;
@@ -70,6 +71,7 @@ export interface UpdateJobInput {
   externalJobId?: string | null;
   outputUrl?: string | null;
   thumbnailUrl?: string | null;
+  archiveUrl?: string | null;
   error?: string | null;
   metadata?: Record<string, unknown>;
 }
@@ -96,6 +98,7 @@ export function mapRowToModel(row: JobRow): JobModel {
     externalJobId: row.externalJobId ?? null,
     outputUrl: row.outputUrl ?? null,
     thumbnailUrl: row.thumbnailUrl ?? null,
+    archiveUrl: row.archiveUrl ?? null,
     error: row.error ?? null,
     metadata: (row.metadata as Record<string, unknown>) ?? {},
     createdAt: row.createdAt,
@@ -120,6 +123,7 @@ export function serializeJob(job: JobModel) {
     ...job,
     createdAt: job.createdAt.toISOString(),
     updatedAt: job.updatedAt.toISOString(),
+    archiveUrl: job.archiveUrl,
   };
 }
 
@@ -167,6 +171,7 @@ export async function createJobRecord(input: CreateJobInput): Promise<JobModel> 
       progress: 0,
       costEstimateCents: costEstimate.subtotalCents,
       metadata,
+      archiveUrl: null,
       createdAt: now,
       updatedAt: now,
     })
@@ -202,6 +207,9 @@ export async function updateJobRecord(id: string, updates: UpdateJobInput): Prom
   if (typeof updates.thumbnailUrl !== "undefined") {
     updatePayload.thumbnailUrl = updates.thumbnailUrl;
   }
+  if (typeof updates.archiveUrl !== "undefined") {
+    updatePayload.archiveUrl = updates.archiveUrl;
+  }
   if (typeof updates.error !== "undefined") {
     updatePayload.error = updates.error;
   }
@@ -223,6 +231,14 @@ export async function getJobById(id: string): Promise<JobModel | null> {
   const db = getDb();
   const row = await db.query.jobs.findFirst({
     where: eq(jobs.id, id),
+  });
+  return row ? mapRowToModel(row) : null;
+}
+
+export async function getJobByExternalJobId(externalJobId: string): Promise<JobModel | null> {
+  const db = getDb();
+  const row = await db.query.jobs.findFirst({
+    where: eq(jobs.externalJobId, externalJobId),
   });
   return row ? mapRowToModel(row) : null;
 }

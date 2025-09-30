@@ -1,10 +1,10 @@
 import "dotenv/config";
 
-const apiKey = process.env.FAL_API_KEY;
+const apiKey = process.env.FAL_KEY ?? process.env.FAL_API_KEY;
 const apiBase = process.env.FAL_API_BASE ?? "https://fal.run";
 
 if (!apiKey) {
-  console.error("Missing FAL_API_KEY");
+  console.error("Missing Fal credentials. Set FAL_KEY or FAL_API_KEY.");
   process.exit(1);
 }
 

@@ -20,7 +20,11 @@ export const veoProvider: ProviderAdapter = {
       externalId: randomUUID(),
     };
   },
-  async pollJob(_providerJobId: string): Promise<PollJobResult> {
+  async pollJob(
+    _providerJobId: string,
+    _options?: { withLogs?: boolean; engine?: string },
+  ): Promise<PollJobResult> {
+    void _options;
     await wait(MOCK_LATENCY_MS);
     return {
       jobId: _providerJobId,

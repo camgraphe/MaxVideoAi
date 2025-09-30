@@ -18,7 +18,18 @@ export function JobsGallery({ jobs }: JobsGalleryProps) {
           className="group relative block overflow-hidden rounded-xl border border-black/10 bg-white/80 shadow-sm transition hover:shadow-md dark:border-white/10 dark:bg-black/30"
         >
           <div className="aspect-video w-full overflow-hidden bg-muted">
-            {job.thumbnailUrl ? (
+            {job.outputUrl ? (
+              <video
+                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                src={job.outputUrl}
+                poster={job.thumbnailUrl ?? undefined}
+                muted
+                autoPlay
+                loop
+                playsInline
+                preload="metadata"
+              />
+            ) : job.thumbnailUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={job.thumbnailUrl}
@@ -44,4 +55,3 @@ export function JobsGallery({ jobs }: JobsGalleryProps) {
     </div>
   );
 }
-

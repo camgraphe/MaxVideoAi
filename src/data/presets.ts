@@ -119,7 +119,7 @@ export const generationPresets: GenerationPreset[] = [
     styleTags: ["loop", "illustration"],
     advancedDefaults: {
       fps: 24,
-      cfgScale: 6,
+      cfgScale: 0.6,
       resolution: "720p",
     },
   },

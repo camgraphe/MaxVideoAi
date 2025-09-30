@@ -22,6 +22,7 @@ export interface ModelSpec {
   description: string;
   provider: "fal";
   falSlug: string;
+  falQueueRoot?: string;
   contentType: ContentType;
   supports: {
     imageInit: boolean;
@@ -61,6 +62,7 @@ export const models: Record<ModelId, ModelSpec> = {
     description: "Pipeline Veo 3 orchestré via FAL pour des rendus cinématiques.",
     provider: "fal",
     falSlug: "fal-ai/veo3",
+    falQueueRoot: "fal-ai/veo3",
     contentType: "video",
     supports: {
       imageInit: false,
@@ -96,6 +98,7 @@ export const models: Record<ModelId, ModelSpec> = {
     description: "Version rapide de Veo 3 pour animer des images sources.",
     provider: "fal",
     falSlug: "fal-ai/veo3/fast/image-to-video",
+    falQueueRoot: "fal-ai/veo3",
     contentType: "video",
     supports: {
       imageInit: true,
@@ -131,6 +134,7 @@ export const models: Record<ModelId, ModelSpec> = {
     description: "Modèle Tencent Kling v2.5 Turbo Pro via FAL.",
     provider: "fal",
     falSlug: "fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
+    falQueueRoot: "fal-ai/kling-video",
     contentType: "video",
     supports: {
       imageInit: false,
@@ -166,13 +170,14 @@ export const models: Record<ModelId, ModelSpec> = {
     description: "Pika 2.2 text-to-video pour rendus sociaux.",
     provider: "fal",
     falSlug: "fal-ai/pika/v2.2/text-to-video",
+    falQueueRoot: "fal-ai/pika",
     contentType: "video",
     supports: {
       imageInit: true,
       imageReference: true,
       mask: false,
       refVideo: false,
-      audio: false,
+      audio: true,
       seed: true,
       negativePrompt: true,
       multiPrompt: false,
@@ -185,13 +190,13 @@ export const models: Record<ModelId, ModelSpec> = {
       durationSeconds: { min: 3, max: 8, step: 1, default: 5 },
       fps: { min: 24, max: 30, default: 24 },
       resolution: "720p ou 1080p",
-      cfgScale: { min: 1, max: 12, step: 0.5, default: 6 },
+      cfgScale: { min: 0, max: 1, step: 0.05, default: 0.6 },
     },
     defaults: {
       durationSeconds: 5,
       fps: 24,
-      cfgScale: 6,
-      withAudio: false,
+      cfgScale: 0.6,
+      withAudio: true,
       resolution: "720p",
     },
   },
@@ -201,6 +206,7 @@ export const models: Record<ModelId, ModelSpec> = {
     description: "Dream Machine via FAL pour scènes oniriques.",
     provider: "fal",
     falSlug: "fal-ai/luma-dream-machine",
+    falQueueRoot: "fal-ai/luma-dream-machine",
     contentType: "video",
     supports: {
       imageInit: false,
@@ -236,6 +242,7 @@ export const models: Record<ModelId, ModelSpec> = {
     description: "Pixverse v4.5 text-to-video multi-styles.",
     provider: "fal",
     falSlug: "fal-ai/pixverse/v4.5/text-to-video",
+    falQueueRoot: "fal-ai/pixverse",
     contentType: "video",
     supports: {
       imageInit: true,
@@ -271,6 +278,7 @@ export const models: Record<ModelId, ModelSpec> = {
     description: "CogVideoX 5B image-to-video via FAL.",
     provider: "fal",
     falSlug: "fal-ai/cogvideox-5b/image-to-video",
+    falQueueRoot: "fal-ai/cogvideox-5b",
     contentType: "video",
     supports: {
       imageInit: true,
@@ -351,3 +359,10 @@ export const ENGINE_LABELS: Record<string, string> = {
   "pixverse-v4-5": "Pixverse v4.5",
   "cogvideox-5b": "CogVideoX 5B",
 };
+
+export const FAL_INIT_IMAGE_REQUIRED_ENGINES: ReadonlySet<ModelId> = new Set([
+  "fal:veo3-fast",
+  "fal:cogvideox-5b",
+]);
+
+export const FAL_REF_VIDEO_REQUIRED_ENGINES: ReadonlySet<ModelId> = new Set();

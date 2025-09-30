@@ -11,9 +11,17 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   VEO_API_KEY: z.string().optional(),
   FAL_API_KEY: z.string().optional(),
+  FAL_KEY: z.string().optional(),
+  FAL_QUEUE_LOGS_DEFAULT: z.enum(["0", "1"]).optional(),
+  APP_URL: z.string().url().optional(),
+  FAL_WEBHOOK_PATH: z.string().optional(),
   S3_BUCKET: z.string().optional(),
   S3_ACCESS_KEY_ID: z.string().optional(),
   S3_SECRET_ACCESS_KEY: z.string().optional(),
+  S3_ENDPOINT: z.string().optional(),
+  S3_REGION: z.string().optional(),
+  S3_PUBLIC_BASE_URL: z.string().optional(),
+  S3_FORCE_PATH_STYLE: z.string().optional(),
 });
 
 export const env = envSchema.parse({
@@ -27,7 +35,38 @@ export const env = envSchema.parse({
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
   VEO_API_KEY: process.env.VEO_API_KEY,
   FAL_API_KEY: process.env.FAL_API_KEY,
+  FAL_KEY: process.env.FAL_KEY,
+  FAL_QUEUE_LOGS_DEFAULT: process.env.FAL_QUEUE_LOGS_DEFAULT,
+  APP_URL: process.env.APP_URL,
+  FAL_WEBHOOK_PATH: process.env.FAL_WEBHOOK_PATH,
   S3_BUCKET: process.env.S3_BUCKET,
   S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID,
   S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY,
+  S3_ENDPOINT: process.env.S3_ENDPOINT,
+  S3_REGION: process.env.S3_REGION,
+  S3_PUBLIC_BASE_URL: process.env.S3_PUBLIC_BASE_URL,
+  S3_FORCE_PATH_STYLE: process.env.S3_FORCE_PATH_STYLE,
 });
+
+export function getFalCredentials(): string {
+  const key = process.env.FAL_KEY ?? process.env.FAL_API_KEY;
+  if (!key) {
+    throw new Error("Missing Fal credentials. Set FAL_KEY or FAL_API_KEY on the server.");
+  }
+  return key;
+}
+
+export function getFalWebhookUrl(): string | undefined {
+  const baseUrl = process.env.APP_URL ?? process.env.NEXT_PUBLIC_APP_URL;
+  if (!baseUrl) {
+    return undefined;
+  }
+  const path = process.env.FAL_WEBHOOK_PATH ?? "/api/fal/webhook";
+  const normalizedBase = baseUrl.replace(/\/$/, "");
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${normalizedBase}${normalizedPath}`;
+}
+
+export function shouldRequestFalLogs(): boolean {
+  return process.env.FAL_QUEUE_LOGS_DEFAULT === "1";
+}

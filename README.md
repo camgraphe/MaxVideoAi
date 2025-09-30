@@ -50,7 +50,8 @@ The project uses [Drizzle ORM](https://orm.drizzle.team/) with `drizzle-kit` for
 - The generate form lets producers attach init images, masks, reference frames, or ref videos via `/api/uploads`.
 - `/api/uploads` now returns an S3/R2 presigned POST (see `src/lib/storage/presign.ts`). Configure `S3_*` variables in `.env.local` to enable the flow.
 - The client uploads directly to your bucket and receives the public file URL, which is forwarded to the render adapter in job metadata.
-- Set `FAL_API_KEY` (and optionally `FAL_API_BASE` / `FAL_TIMEOUT_MS`) so the backend can launch and poll renders through FAL.
+- Set `FAL_KEY` (or the legacy `FAL_API_KEY`) and optionally `FAL_API_BASE` / `FAL_TIMEOUT_MS` so the backend can launch and manage renders through FAL.
+- When using FAL webhooks, expose `APP_URL` (public base URL) and optionally tweak `FAL_WEBHOOK_PATH`; enable queue logs globally with `FAL_QUEUE_LOGS_DEFAULT=1` if you want verbose polling traces by default.
 - Si ton bucket S3 est en mode "Object Ownership: Bucket owner enforced", ajoute une bucket policy `s3:GetObject` publique (ou passe par CloudFront) pour rendre les fichiers lisibles après upload.
 
 ## Project Structure Highlights
@@ -61,6 +62,6 @@ The project uses [Drizzle ORM](https://orm.drizzle.team/) with `drizzle-kit` for
 - `scripts/seed-db.ts` – demo data loader used for local development.
 
 ## Next Steps
-- Instrument the FAL adapter with retries, long-polling, or webhooks for better progress accuracy.
+- Monitor the FAL webhook feed and add additional observability (metrics, retries) as needed.
 - Persist job events/output assets from provider callbacks.
 - Introduce real auth and billing once the persistence layer is stable.

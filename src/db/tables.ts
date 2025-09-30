@@ -92,6 +92,7 @@ export const jobs = pgTable(
     externalJobId: text("external_job_id"),
     outputUrl: text("output_url"),
     thumbnailUrl: text("thumbnail_url"),
+    archiveUrl: text("archive_url"),
     error: text("error"),
     startedAt: timestamp("started_at", { withTimezone: true }),
     completedAt: timestamp("completed_at", { withTimezone: true }),
