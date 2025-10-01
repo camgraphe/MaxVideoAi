@@ -8,6 +8,9 @@ export const metadata = {
   title: "Login • MaxVideoAI",
 };
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export default async function LoginPage() {
   const supabase = getSupabaseServerClient();
   const {
