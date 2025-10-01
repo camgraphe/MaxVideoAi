@@ -146,7 +146,7 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
     engine: string;
     modelId?: string;
     prompt: string;
-    ratio: "9:16" | "16:9";
+    ratio: (typeof ratioOptions)[number];
     durationSeconds: number;
     withAudio: boolean;
     seed?: number;
