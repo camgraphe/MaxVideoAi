@@ -24,7 +24,7 @@ export function HeroParticleBanner({ className }: { className?: string }) {
 
     function resize() {
       if (!wrapper) return;
-      if (!canvas) return;
+      if (!canvas || !ctx) return;
       const rect = wrapper.getBoundingClientRect();
       w = rect.width;
       h = rect.height;
