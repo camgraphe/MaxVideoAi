@@ -311,6 +311,15 @@ export async function POST(request: Request) {
 
     const webhookUrl = job.provider === "fal" ? getFalWebhookUrl() : undefined;
 
+    const metadataSafe: Record<string, string | number | boolean | null> = {};
+    for (const [key, value] of Object.entries(job.metadata ?? {})) {
+      if (value === null) {
+        metadataSafe[key] = null;
+      } else if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+        metadataSafe[key] = value;
+      }
+    }
+
     const providerJob = await adapter.startJob({
       prompt: job.prompt,
       durationSeconds: job.durationSeconds,
@@ -324,7 +333,7 @@ export async function POST(request: Request) {
         typeof job.metadata.negativePrompt === "string" ? job.metadata.negativePrompt : undefined,
       inputAssets,
       advanced: advancedOptions,
-      metadata: job.metadata,
+      metadata: metadataSafe,
       webhookUrl,
     });
 
