@@ -1,16 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { env } from "@/lib/env";
 
 interface SupabaseClientOptions {
   allowCookieWrites: boolean;
 }
-
-type CookieSetterInput = Array<{
-  name: string;
-  value: string;
-  options?: Record<string, unknown>;
-}>;
 
 function assertSupabaseEnvironment() {
   if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) {
@@ -18,45 +12,39 @@ function assertSupabaseEnvironment() {
   }
 }
 
-async function getAllCookies() {
-  const store = await cookies();
-  return store.getAll();
-}
-
-async function setCookies(cookiesToSet: CookieSetterInput, allowCookieWrites: boolean) {
-  if (!allowCookieWrites) {
-    return;
-  }
-
-  const store = await cookies();
-  for (const { name, value, options } of cookiesToSet) {
-    try {
-      store.set(name, value, options);
-    } catch (error) {
-      if (!(error instanceof Error) || !error.message.includes("Cookies can only be modified")) {
-        throw error;
-      }
-    }
-  }
-}
-
-async function getHeaderValue(key: string) {
-  const headerList = await headers();
-  return headerList.get(key) ?? undefined;
-}
-
 function createSupabaseClient({ allowCookieWrites }: SupabaseClientOptions) {
   assertSupabaseEnvironment();
 
   return createServerClient(env.SUPABASE_URL as string, env.SUPABASE_ANON_KEY as string, {
     cookies: {
-      getAll: getAllCookies,
-      setAll(cookiesToSet) {
-        return setCookies(cookiesToSet, allowCookieWrites);
+      async get(name: string) {
+        const store = await cookies();
+        return store.get(name)?.value;
       },
-    },
-    headers: {
-      get: getHeaderValue,
+      async set(name: string, value: string, options?: Record<string, unknown>) {
+        if (!allowCookieWrites) return;
+        const store = await cookies();
+        try {
+          // @ts-ignore
+          store.set(name, value, options);
+        } catch (error) {
+          if (!(error instanceof Error) || !error.message.includes("Cookies can only be modified")) {
+            throw error;
+          }
+        }
+      },
+      async remove(name: string, options?: Record<string, unknown>) {
+        if (!allowCookieWrites) return;
+        const store = await cookies();
+        try {
+          // @ts-ignore
+          store.set(name, "", { ...options, maxAge: 0 });
+        } catch (error) {
+          if (!(error instanceof Error) || !error.message.includes("Cookies can only be modified")) {
+            throw error;
+          }
+        }
+      },
     },
   });
 }
