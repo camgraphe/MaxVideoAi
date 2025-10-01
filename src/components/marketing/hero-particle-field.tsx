@@ -31,7 +31,7 @@ export function HeroParticleField({ className = "" }: { className?: string }) {
     const BASE_PARTICLE_COUNT = 60;
 
     function resize() {
-      if (!container || !ctx) return;
+      if (!container || !canvas || !ctx) return;
       const rect = container.getBoundingClientRect();
       width = rect.width;
       height = rect.height;
