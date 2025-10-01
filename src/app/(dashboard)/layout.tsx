@@ -1,6 +1,8 @@
 import { DashboardNav } from "@/components/layout/dashboard-nav";
 import { requireCurrentSession } from "@/lib/auth/current-user";
 import type { ReactNode } from "react";
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const session = await requireCurrentSession();
