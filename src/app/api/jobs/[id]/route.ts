@@ -40,7 +40,8 @@ export async function GET(
   if (needsRefetch) {
     try {
       const adapter = getProviderAdapter(job.provider);
-      const result = await adapter.pollJob(job.externalJobId, { engine: job.engine });
+      const externalId = job.externalJobId!;
+      const result = await adapter.pollJob(externalId, { engine: job.engine });
 
       await updateJobRecord(job.id, {
         status: result.status,
