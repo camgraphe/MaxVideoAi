@@ -9,9 +9,7 @@ export function getStripeClient(): Stripe {
   }
 
   if (!stripe) {
-    stripe = new Stripe(env.STRIPE_SECRET_KEY, {
-      apiVersion: "2024-06-20",
-    });
+    stripe = new Stripe(env.STRIPE_SECRET_KEY);
   }
 
   return stripe;
