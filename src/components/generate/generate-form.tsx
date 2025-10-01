@@ -1463,32 +1463,7 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
                       )}
                     />
                   ) : null}
-                  {motionRange ? (
-                    <FormField
-                      control={form.control}
-                      name="motionStrength"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Motion strength</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              min={motionRange.min}
-                              max={motionRange.max}
-                              step={motionRange.step ?? 0.05}
-                              className="border-black/10 bg-white text-sm text-foreground dark:border-white/10 dark:bg-[#162130] dark:text-slate-100"
-                              value={field.value ?? ""}
-                              onChange={(event) => field.onChange(parseFloat(event.target.value))}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            {motionRange.min.toFixed(2)}-{motionRange.max.toFixed(2)}
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  ) : null}
+                  {/* motionStrength input temporarily removed: no range in model constraints */}
                   {cfgRange ? (
                     <FormField
                       control={form.control}
