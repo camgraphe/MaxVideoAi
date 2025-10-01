@@ -48,7 +48,7 @@ async function getHeaderValue(key: string) {
 function createSupabaseClient({ allowCookieWrites }: SupabaseClientOptions) {
   assertSupabaseEnvironment();
 
-  return createServerClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
+  return createServerClient(env.SUPABASE_URL as string, env.SUPABASE_ANON_KEY as string, {
     cookies: {
       getAll: getAllCookies,
       setAll(cookiesToSet) {
