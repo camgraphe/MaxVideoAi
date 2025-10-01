@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# Simple safety hook to prevent committing env files or private keys.
+files=$(git diff --cached --name-only)
+blocked=$(echo "$files" | rg -n "^(\.env|\.env\..*|.*\.pem)$" || true)
+if [ -n "$blocked" ]; then
+  echo "[pre-commit] Blocked committing sensitive files:" >&2
+  echo "$blocked" >&2
+  exit 1
+fi
+
+exit 0
+

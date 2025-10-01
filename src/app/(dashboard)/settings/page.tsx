@@ -41,7 +41,7 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle>API keys (coming soon)</CardTitle>
             <CardDescription>
-              Bring your own keys if you want VideoHub to orchestrate your provider accounts.
+              Bring your own keys if you want MaxVideoAI to orchestrate your provider accounts.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">

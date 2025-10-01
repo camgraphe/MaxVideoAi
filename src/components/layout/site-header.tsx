@@ -26,7 +26,7 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-4 sm:gap-6">
           <Link href="/" className="font-semibold tracking-tight">
-            VideoHub
+            MaxVideoAI
           </Link>
           <nav className="hidden items-center gap-4 text-sm md:flex">
             {navItems.map((item) => (

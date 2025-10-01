@@ -41,7 +41,7 @@ export function DashboardNav({ userName, userEmail, organizationName }: Dashboar
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const stored = window.localStorage.getItem("videohub.dashboard.collapsed");
+    const stored = window.localStorage.getItem("maxvideoai.dashboard.collapsed");
     if (stored) {
       setCollapsed(stored === "1");
     }
@@ -49,7 +49,7 @@ export function DashboardNav({ userName, userEmail, organizationName }: Dashboar
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    window.localStorage.setItem("videohub.dashboard.collapsed", collapsed ? "1" : "0");
+    window.localStorage.setItem("maxvideoai.dashboard.collapsed", collapsed ? "1" : "0");
   }, [collapsed]);
 
   async function handleSignOut() {
@@ -80,15 +80,15 @@ export function DashboardNav({ userName, userEmail, organizationName }: Dashboar
             "font-semibold tracking-tight text-foreground",
             collapsed ? "md:flex md:h-10 md:w-10 md:items-center md:justify-center md:rounded-full md:bg-primary/10 md:text-sm" : "",
           )}
-          aria-label="VideoHub dashboard"
+          aria-label="MaxVideoAI dashboard"
         >
           {collapsed ? (
             <>
               <span className="hidden md:inline">VH</span>
-              <span className="md:hidden">VideoHub</span>
+              <span className="md:hidden">MaxVideoAI</span>
             </>
           ) : (
-            "VideoHub"
+            "MaxVideoAI"
           )}
         </Link>
         <div className="flex items-center gap-1">

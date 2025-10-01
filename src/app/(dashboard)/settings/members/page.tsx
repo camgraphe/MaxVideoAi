@@ -13,7 +13,7 @@ import { cancelInviteAction, removeMemberAction } from "./actions";
 import { formatDistanceToNow } from "date-fns";
 
 export const metadata: Metadata = {
-  title: "Team members • VideoHub",
+  title: "Team members • MaxVideoAI",
 };
 
 const roleLabels: Record<string, string> = {

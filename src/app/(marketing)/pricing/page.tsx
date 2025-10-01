@@ -17,7 +17,7 @@ const plans = [
     name: "Pro",
     price: "$159 / month",
     badge: "Studios",
-    highlights: ["Priority renders", "VideoHub watermark toggle", "Dual export 9:16 + 16:9"],
+    highlights: ["Priority renders", "MaxVideoAI watermark toggle", "Dual export 9:16 + 16:9"],
     tone: "from-accent/40",
     featured: true,
   },

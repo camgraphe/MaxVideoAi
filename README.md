@@ -1,4 +1,4 @@
-# VideoHub
+# MaxVideoAI
 
 Cinematic video pipeline orchestrator built with Next.js 15, Tailwind, Drizzle ORM, and a Postgres backend.
 
@@ -21,7 +21,7 @@ Cinematic video pipeline orchestrator built with Next.js 15, Tailwind, Drizzle O
    ```
 4. Apply the database schema and seed demo data
    ```bash
-   DATABASE_URL=postgres://videohub:videohub@localhost:5432/videohub npm run db:push
+   DATABASE_URL=postgres://maxvideoai:maxvideoai@localhost:5432/maxvideoai npm run db:push
    npm run db:seed
    ```
 5. Launch the app

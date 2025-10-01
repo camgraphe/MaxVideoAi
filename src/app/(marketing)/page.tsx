@@ -107,7 +107,7 @@ export default function HomePage() {
 
       <section className="bg-transparent py-16 sm:py-20 dark:bg-[#090f1f]">
         <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 text-center sm:px-6">
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">From draft to delivery without leaving VideoHub</h2>
+          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">From draft to delivery without leaving MaxVideoAI</h2>
           <p className="text-sm text-muted-foreground sm:text-base">
             Generate vertical hooks, horizontal product films, and stylised loops with presets tailored to social teams, agencies, and indie creators.
           </p>

@@ -43,7 +43,7 @@ async function main() {
       .insert(dbSchema.users)
       .values({
         id: DEMO_USER_ID,
-        email: "producer@videohub.dev",
+        email: "producer@maxvideoai.com",
         name: "Demo Producer",
       })
       .onConflictDoUpdate({
@@ -55,11 +55,11 @@ async function main() {
       .insert(dbSchema.organizations)
       .values({
         id: DEMO_ORG_ID,
-        name: "VideoHub Studio",
-        slug: "videohub-studio",
+        name: "MaxVideoAI Studio",
+        slug: "maxvideoai-studio",
         plan: "pro",
         subscriptionStatus: "active",
-        billingEmail: "producer@videohub.dev",
+        billingEmail: "producer@maxvideoai.com",
         credits: 120,
         seatsLimit: 5,
       })

@@ -5,7 +5,7 @@ import { LoginForm } from "@/components/auth/login-form";
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
-  title: "Login • VideoHub",
+  title: "Login • MaxVideoAI",
 };
 
 export default async function LoginPage() {
@@ -24,7 +24,7 @@ export default async function LoginPage() {
         <div className="space-y-2 text-center">
           <h1 className="text-2xl font-semibold tracking-tight">Login</h1>
           <p className="text-sm text-muted-foreground">
-            Connect to your VideoHub studio with your email and password or request a magic link.
+            Connect to your MaxVideoAI studio with your email and password or request a magic link.
           </p>
         </div>
         <LoginForm />
