@@ -113,14 +113,12 @@ function PlanCard({
       </CardContent>
       <CardFooter className="relative">
         <Button
-          className="w-full"
+          className={cn(
+            "w-full",
+            plan.featured ? "shadow-[0_24px_48px_-20px_rgba(134,91,255,0.8)]" : undefined,
+          )}
           variant={plan.featured ? "default" : "outline"}
           size="lg"
-          {...(plan.featured
-            ? {
-                className: "w-full shadow-[0_24px_48px_-20px_rgba(134,91,255,0.8)]",
-              }
-            : {})}
         >
           {plan.name === "Agency" ? "Talk to us" : "Choose this plan"}
         </Button>
