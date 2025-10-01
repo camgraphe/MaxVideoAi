@@ -13,7 +13,7 @@ interface Particle {
 export function HeroParticleField({ className = "" }: { className?: string }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const rafRef = useRef<number>();
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -31,6 +31,7 @@ export function HeroParticleField({ className = "" }: { className?: string }) {
     const BASE_PARTICLE_COUNT = 60;
 
     function resize() {
+      if (!container || !ctx) return;
       const rect = container.getBoundingClientRect();
       width = rect.width;
       height = rect.height;
@@ -58,6 +59,7 @@ export function HeroParticleField({ className = "" }: { className?: string }) {
     }
 
     function drawTrail() {
+      if (!ctx) return;
       const gradient = ctx.createRadialGradient(
         pointer.x,
         pointer.y,
@@ -74,6 +76,7 @@ export function HeroParticleField({ className = "" }: { className?: string }) {
     }
 
     function drawParticles() {
+      if (!ctx) return;
       ctx.save();
       for (const particle of particles) {
         particle.x += particle.vx;
@@ -106,6 +109,7 @@ export function HeroParticleField({ className = "" }: { className?: string }) {
     }
 
     function loop() {
+      if (!ctx) return;
       ctx.clearRect(0, 0, width, height);
 
       // soft base gradient
