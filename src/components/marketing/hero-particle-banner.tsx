@@ -52,6 +52,7 @@ export function HeroParticleBanner({ className }: { className?: string }) {
     }
 
     function loop() {
+      if (!ctx) return;
       ctx.clearRect(0, 0, w, h);
 
       // Base gradient backdrop within the banner
