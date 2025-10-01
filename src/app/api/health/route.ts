@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { env } from "@/lib/env";
 import { getDb } from "@/db/client";
+import { Client } from "pg";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -24,12 +25,24 @@ export async function GET() {
   try {
     const db = getDb();
     await db.execute("select 1");
-    checks.database = "ok";
+    checks.database = "ok (drizzle)";
   } catch (e) {
-    errors.push(`db: ${e instanceof Error ? e.message : String(e)}`);
+    const msg = e instanceof Error ? e.message : String(e);
+    errors.push(`db(drizzle): ${msg}`);
+  }
+
+  try {
+    const url = process.env.DATABASE_URL;
+    const client = new Client({ connectionString: url, ssl: { rejectUnauthorized: false } });
+    await client.connect();
+    const res = await client.query("select 1 as one");
+    await client.end();
+    checks.databaseRaw = res.rows?.[0]?.one === 1 ? "ok (pg)" : res.rows?.[0];
+  } catch (e) {
+    const msg = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
+    errors.push(`db(pg): ${msg}`);
   }
 
   const ok = errors.length === 0;
   return NextResponse.json({ ok, checks, errors }, { status: ok ? 200 : 500 });
 }
-
