@@ -55,7 +55,7 @@ export default async function MembersSettingsPage() {
                         <p className="text-xs text-muted-foreground/80">{roleLabels[member.role] ?? member.role}</p>
                       </div>
                       {session.membership.role === "owner" && member.userId !== session.user.id ? (
-                        <form action={removeMemberAction}>
+                        <form action={async (formData) => { await removeMemberAction(formData); }}>
                           <input type="hidden" name="memberId" value={member.userId} />
                           <Button variant="ghost" size="sm" className="text-destructive">
                             Remove
@@ -103,7 +103,7 @@ export default async function MembersSettingsPage() {
                       {roleLabels[invite.role] ?? invite.role} • expires {formatDistanceToNow(invite.expiresAt, { addSuffix: true })}
                     </p>
                   </div>
-                  <form action={cancelInviteAction} className="flex items-center gap-2">
+                  <form action={async (formData) => { await cancelInviteAction(formData); }} className="flex items-center gap-2">
                     <input type="hidden" name="inviteId" value={invite.id} />
                     <Button variant="ghost" size="sm" className="text-destructive">
                       Cancel invitation
