@@ -45,7 +45,20 @@ export async function GET() {
     if (process.env.PGPORT) checks.PGPORT = process.env.PGPORT;
     if (process.env.PGDATABASE) checks.PGDATABASE = process.env.PGDATABASE;
     if (process.env.PGUSER) checks.PGUSER = process.env.PGUSER ? "<set>" : undefined;
-    const client = new Client({ connectionString: url, ssl: { rejectUnauthorized: false } });
+    let client: Client;
+    if (url) {
+      const u = new URL(url);
+      client = new Client({
+        host: u.hostname,
+        port: Number(u.port || 5432),
+        database: u.pathname.replace(/^\//, ""),
+        user: decodeURIComponent(u.username),
+        password: decodeURIComponent(u.password),
+        ssl: { rejectUnauthorized: false },
+      });
+    } else {
+      client = new Client();
+    }
     await client.connect();
     const res = await client.query("select 1 as one");
     await client.end();
