@@ -18,7 +18,7 @@ const envSchema = z.object({
   VEO_API_KEY: z.string().optional(),
   FAL_API_KEY: z.string().optional(),
   FAL_KEY: z.string().optional(),
-  FAL_QUEUE_LOGS_DEFAULT: z.enum(["0", "1"]).optional(),
+  FAL_QUEUE_LOGS_DEFAULT: z.string().optional(),
   APP_URL: z.string().url().optional(),
   FAL_WEBHOOK_PATH: z.string().optional(),
   S3_BUCKET: z.string().optional(),
