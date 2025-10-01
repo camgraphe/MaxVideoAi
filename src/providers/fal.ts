@@ -566,6 +566,7 @@ function resolveQueueRoot(spec?: ModelSpec): string | undefined {
   if (spec.falQueueRoot) {
     return spec.falQueueRoot;
   }
+  if (!spec.falSlug) return undefined;
   const segments = spec.falSlug.split("/").filter(Boolean);
   if (segments.length >= 2) {
     return `${segments[0]}/${segments[1]}`;
