@@ -14,7 +14,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-export const providerEnum = pgEnum("provider", ["veo", "fal"]);
+export const providerEnum = pgEnum("provider", ["veo", "fal", "kiwi"]);
 export const jobStatusEnum = pgEnum("job_status", ["pending", "running", "completed", "failed"]);
 export const orgRoleEnum = pgEnum("org_role", ["owner", "admin", "member"]);
 export const jobAssetKindEnum = pgEnum("job_asset_kind", ["video", "thumbnail", "render_log"]);
@@ -41,6 +41,16 @@ export const organizations = pgTable(
     id: uuid("id").notNull().primaryKey(),
     name: text("name").notNull(),
     slug: text("slug").notNull(),
+    plan: text("plan"),
+    subscriptionStatus: text("subscription_status"),
+    stripeCustomerId: text("stripe_customer_id"),
+    stripeSubscriptionId: text("stripe_subscription_id"),
+    billingEmail: text("billing_email"),
+    credits: integer("credits").notNull().default(0),
+    autoTopUpEnabled: boolean("auto_top_up_enabled").notNull().default(false),
+    autoTopUpThreshold: integer("auto_top_up_threshold").notNull().default(15),
+    autoTopUpPackageId: text("auto_top_up_package_id").default("starter"),
+    seatsLimit: integer("seats_limit").notNull().default(1),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -65,6 +75,29 @@ export const organizationMembers = pgTable(
   },
   (table) => ({
     uniqueMember: uniqueIndex("organization_members_user_org_idx").on(table.organizationId, table.userId),
+  }),
+);
+
+export const organizationInvites = pgTable(
+  "organization_invites",
+  {
+    id: uuid("id").notNull().primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    role: orgRoleEnum("role").notNull().default("member"),
+    token: text("token").notNull(),
+    invitedBy: uuid("invited_by").references(() => users.id, { onDelete: "set null" }),
+    acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  },
+  (table) => ({
+    orgEmailIdx: uniqueIndex("organization_invites_org_email_idx").on(
+      table.organizationId,
+      table.email,
+    ),
   }),
 );
 
@@ -102,6 +135,28 @@ export const jobs = pgTable(
   },
   (table) => ({
     orgStatusIdx: index("jobs_org_status_idx").on(table.organizationId, table.status, table.createdAt),
+  }),
+);
+
+export const organizationCreditLedger = pgTable(
+  "organization_credit_ledger",
+  {
+    id: uuid("id").notNull().primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    delta: integer("delta").notNull(),
+    reason: text("reason").notNull(),
+    performedBy: uuid("performed_by").references(() => users.id, { onDelete: "set null" }),
+    jobId: uuid("job_id").references(() => jobs.id, { onDelete: "set null" }),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default(sql`'{}'::jsonb`),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    orgCreatedIdx: index("organization_credit_ledger_org_created_idx").on(
+      table.organizationId,
+      table.createdAt,
+    ),
   }),
 );
 
@@ -190,6 +245,17 @@ export const organizationMembersRelations = relations(organizationMembers, ({ on
   }),
   user: one(users, {
     fields: [organizationMembers.userId],
+    references: [users.id],
+  }),
+}));
+
+export const organizationInvitesRelations = relations(organizationInvites, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [organizationInvites.organizationId],
+    references: [organizations.id],
+  }),
+  invitedByUser: one(users, {
+    fields: [organizationInvites.invitedBy],
     references: [users.id],
   }),
 }));

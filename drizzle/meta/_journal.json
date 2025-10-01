@@ -15,6 +15,41 @@
       "when": 1759222089728,
       "tag": "0001_flat_bucky",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1759266630568,
+      "tag": "0002_mean_thor_girl",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1759270990288,
+      "tag": "0003_open_human_torch",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1759271216494,
+      "tag": "0004_lucky_stepford_cuckoos",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1759272593419,
+      "tag": "0005_thankful_spiral",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1759275373504,
+      "tag": "0006_closed_vampiro",
+      "breakpoints": true
     }
   ]
 }

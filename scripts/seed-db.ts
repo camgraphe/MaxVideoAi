@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 
 import { getDb, closeDb, dbSchema } from "../src/db/client";
 import { generationPresets } from "../src/data/presets";
-import { formatModelSummary, getModelSpecByEngine } from "../src/data/models";
+import { formatModelSummary, getModelSpec } from "../src/data/models";
 
 const DEMO_USER_ID = "00000000-0000-0000-0000-000000000001";
 const DEMO_ORG_ID = "00000000-0000-0000-0000-000000000002";
@@ -57,8 +57,21 @@ async function main() {
         id: DEMO_ORG_ID,
         name: "VideoHub Studio",
         slug: "videohub-studio",
+        plan: "pro",
+        subscriptionStatus: "active",
+        billingEmail: "producer@videohub.dev",
+        credits: 120,
+        seatsLimit: 5,
       })
       .onConflictDoNothing();
+
+    await tx.insert(dbSchema.organizationCreditLedger).values({
+      id: randomUUID(),
+      organizationId: DEMO_ORG_ID,
+      delta: 120,
+      reason: "initial_seed",
+      metadata: {},
+    });
 
     await tx
       .insert(dbSchema.organizationMembers)
@@ -87,9 +100,9 @@ async function main() {
       )
       .onConflictDoNothing();
 
-    const veoSpec = getModelSpecByEngine("fal", "veo3");
-    const pikaSpec = getModelSpecByEngine("fal", "pika-v2-2");
-    const cogSpec = getModelSpecByEngine("fal", "cogvideox-5b");
+    const veoSpec = getModelSpec("fal", "veo3");
+    const pikaSpec = getModelSpec("fal", "pika-v2-2");
+    const cogSpec = getModelSpec("fal", "cogvideox-5b");
 
     await tx.insert(dbSchema.jobs).values([
       {

@@ -18,7 +18,7 @@ export interface PricingConfig {
 }
 
 export interface EstimateCostInput {
-  provider: "veo" | "fal";
+  provider: "veo" | "fal" | "kiwi";
   engine: string;
   durationSeconds: number;
   quantity?: number;

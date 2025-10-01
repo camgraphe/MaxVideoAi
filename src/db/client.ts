@@ -1,21 +1,52 @@
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
+import { Pool, type PoolConfig, types as pgTypes } from "pg";
+import { env } from "@/lib/env";
 import * as schema from "./tables";
 
 declare global {
   var __dbPool: Pool | undefined;
+  var __dbPoolKey: string | undefined;
   var __db: NodePgDatabase<typeof schema> | undefined;
 }
 
 export type Database = NodePgDatabase<typeof schema>;
 
+let numericParsersConfigured = false;
+
+function configureNumericParsers() {
+  if (numericParsersConfigured) {
+    return;
+  }
+  numericParsersConfigured = true;
+  pgTypes.setTypeParser(pgTypes.builtins.NUMERIC, (value) => (value === null ? null : Number(value)));
+  pgTypes.setTypeParser(pgTypes.builtins.BIGINT, (value) => (value === null ? null : Number(value)));
+}
+
 export function getDb(): Database {
-  if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL is not defined");
+  const connectionString = env.DATABASE_URL;
+  const connectionUrl = new URL(connectionString);
+  const isLocalHost = ["localhost", "127.0.0.1", "::1"].includes(connectionUrl.hostname);
+
+  const desiredSslConfig = isLocalHost
+    ? undefined
+    : {
+        rejectUnauthorized: false,
+      } satisfies PoolConfig["ssl"];
+
+  const poolKey = JSON.stringify({ connectionString, ssl: desiredSslConfig ?? null });
+
+  if (global.__dbPool && global.__dbPoolKey !== poolKey) {
+    void global.__dbPool.end();
+    global.__dbPool = undefined;
+    global.__dbPoolKey = undefined;
+    global.__db = undefined;
   }
 
   if (!global.__dbPool) {
-    global.__dbPool = new Pool({ connectionString: process.env.DATABASE_URL });
+    configureNumericParsers();
+    global.__dbPool = new Pool({ connectionString, ssl: desiredSslConfig });
+    global.__dbPoolKey = poolKey;
+    global.__db = undefined;
   }
 
   if (!global.__db) {

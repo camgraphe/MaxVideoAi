@@ -46,7 +46,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-2 sm:gap-3">
           <ThemeToggle />
           <Button asChild size="sm" variant="outline" className="hidden sm:inline-flex">
-            <Link href="/login">Sign in</Link>
+            <Link href="/login">Login</Link>
           </Button>
           <Button asChild size="sm" className="hidden md:inline-flex">
             <Link href="/generate">New clip</Link>
@@ -65,7 +65,7 @@ export function SiteHeader() {
                   </Link>
                 ))}
                 <Link href="/login" className="text-foreground">
-                  Sign in
+                  Login
                 </Link>
               </div>
             </SheetContent>

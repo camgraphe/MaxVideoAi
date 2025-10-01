@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
 import { jobParamsSchema } from "@/db/schema";
-import {
-  getModelSpecByEngine,
-  FAL_INIT_IMAGE_REQUIRED_ENGINES,
-  FAL_REF_VIDEO_REQUIRED_ENGINES,
-} from "@/data/models";
+import { getModelSpec, FAL_INIT_IMAGE_REQUIRED_ENGINES, FAL_REF_VIDEO_REQUIRED_ENGINES } from "@/data/models";
 import {
   createJobRecord,
   getJobById,
-  listJobs,
+  listJobsByOrganization,
   serializeJob,
   updateJobRecord,
 } from "@/db/repositories/jobs-repo";
@@ -18,6 +14,11 @@ import { estimateCost } from "@/lib/pricing";
 import { appConfig } from "@/lib/config";
 import { normalizeDurationSeconds, normalizeNumber, isValidUrl } from "@/lib/models/normalization";
 import { getFalWebhookUrl } from "@/lib/env";
+import { requireCurrentSession } from "@/lib/auth/current-user";
+import {
+  InsufficientCreditsError,
+  spendOrganizationCredits,
+} from "@/db/repositories/credits-repo";
 
 const FLOAT_TOLERANCE = 1e-6;
 
@@ -47,6 +48,8 @@ function readUrl(candidate: unknown): string | undefined {
 
 export async function POST(request: Request) {
   try {
+    const session = await requireCurrentSession();
+
     const body = await request.json();
     const payload = jobParamsSchema.parse(body);
     const confirm: boolean = Boolean(body?.confirm);
@@ -66,7 +69,7 @@ export async function POST(request: Request) {
     let durationSeconds = payload.durationSeconds;
 
     if (payload.provider === "fal") {
-      const spec = getModelSpecByEngine("fal", payload.engine);
+      const spec = getModelSpec("fal", payload.engine);
       if (!spec) {
         return invalidParamsResponse(
           `Unknown FAL engine ${payload.engine}.`,
@@ -177,6 +180,8 @@ export async function POST(request: Request) {
       }
     }
 
+    const falRates = await getFalRates();
+
     // Server-side price verification
     const serverEstimate = estimateCost({
       provider: payload.provider,
@@ -184,7 +189,7 @@ export async function POST(request: Request) {
       durationSeconds,
       withAudio: payload.withAudio,
       quantity: payload.quantity,
-    });
+    }, { falRates });
 
     if (!confirm && serverEstimate.subtotalCents > budgetCents) {
       // Suggest a cheaper alternative for Veo 3 → Veo 3 Fast
@@ -196,7 +201,7 @@ export async function POST(request: Request) {
           durationSeconds,
           withAudio: payload.withAudio,
           quantity: payload.quantity,
-        });
+        }, { falRates });
         suggestion = { engine: "veo3-fast", estimatedCents: alt.subtotalCents };
       }
 
@@ -212,7 +217,58 @@ export async function POST(request: Request) {
       );
     }
 
+    let creditsRequired = Math.ceil(serverEstimate.subtotalCents / 100);
+    if (payload.provider !== "kiwi") {
+      creditsRequired = Math.max(1, creditsRequired);
+    }
+
+    if (creditsRequired > 0 && session.organization.credits < creditsRequired) {
+      return NextResponse.json(
+        {
+          code: "INSUFFICIENT_CREDITS",
+          message: "Your workspace does not have enough credits to launch this job.",
+          creditsRequired,
+          creditsAvailable: session.organization.credits,
+        },
+        { status: 402 },
+      );
+    }
+
+    let creditsRemaining = session.organization.credits;
+    if (creditsRequired > 0) {
+      try {
+        creditsRemaining = await spendOrganizationCredits({
+          organizationId: session.organization.id,
+          amount: creditsRequired,
+          performedBy: session.user.id,
+          reason: "job",
+          metadata: {
+            provider: payload.provider,
+            engine: payload.engine,
+            durationSeconds,
+            quantity: payload.quantity,
+            subtotalCents: serverEstimate.subtotalCents,
+          },
+        });
+      } catch (error) {
+        if (error instanceof InsufficientCreditsError) {
+          return NextResponse.json(
+            {
+              code: "INSUFFICIENT_CREDITS",
+              message: "Your workspace does not have enough credits to launch this job.",
+              creditsRequired,
+              creditsAvailable: session.organization.credits,
+            },
+            { status: 402 },
+          );
+        }
+        throw error;
+      }
+    }
+
     const job = await createJobRecord({
+      organizationId: session.organization.id,
+      createdBy: session.user.id,
       provider: payload.provider,
       engine: payload.engine,
       prompt: payload.prompt,
@@ -222,6 +278,7 @@ export async function POST(request: Request) {
       quantity: payload.quantity,
       seed: payload.seed,
       presetId: payload.presetId,
+      costEstimateCents: serverEstimate.subtotalCents,
       metadata: metadataRecord,
     });
 
@@ -286,7 +343,14 @@ export async function POST(request: Request) {
     const freshJob = await getJobById(job.id);
 
     return NextResponse.json(
-      { job: freshJob ? serializeJob(freshJob) : null, serverCostCents: serverEstimate.subtotalCents },
+      {
+        job: freshJob ? serializeJob(freshJob) : null,
+        serverCostCents: serverEstimate.subtotalCents,
+        credits: {
+          spent: creditsRequired,
+          remaining: creditsRemaining,
+        },
+      },
       { status: 201 },
     );
   } catch (error) {
@@ -301,6 +365,7 @@ export async function POST(request: Request) {
 }
 
 export async function GET() {
-  const allJobs = await listJobs();
-  return NextResponse.json({ jobs: allJobs.map(serializeJob) });
+  const session = await requireCurrentSession();
+  const orgJobs = await listJobsByOrganization(session.organization.id);
+  return NextResponse.json({ jobs: orgJobs.map(serializeJob) });
 }

@@ -6,6 +6,7 @@ import {
   updateJobRecord,
 } from "@/db/repositories/jobs-repo";
 import { getProviderAdapter } from "@/providers";
+import { requireCurrentSession } from "@/lib/auth/current-user";
 
 export async function GET(
   request: Request,
@@ -20,6 +21,11 @@ export async function GET(
       { error: `Job ${resolved.id} not found` },
       { status: 404 },
     );
+  }
+
+  const session = await requireCurrentSession();
+  if (job.organizationId !== session.organization.id) {
+    return NextResponse.json({ error: "Job not found" }, { status: 404 });
   }
 
   const url = new URL(request.url);

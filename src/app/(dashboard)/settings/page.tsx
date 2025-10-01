@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function SettingsPage() {
   return (
@@ -55,6 +56,21 @@ export default function SettingsPage() {
             <p className="text-xs text-muted-foreground">
               These fields unlock with Pack 2 when the “Bring Your Own Key” mode rolls out.
             </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/60">
+          <CardHeader>
+            <CardTitle>Team members</CardTitle>
+            <CardDescription>Invite teammates and manage their roles.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <p className="text-muted-foreground">
+              Manage who can access your workspace across departments, clients, or agencies. Admins can launch renders and manage billing, members can collaborate on prompts.
+            </p>
+            <Button asChild>
+              <Link href="/settings/members">Manage members</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>

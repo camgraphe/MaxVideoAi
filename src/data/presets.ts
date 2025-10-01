@@ -1,4 +1,5 @@
 import type { ModelId } from "./models";
+import type { ProviderId } from "@/providers/types";
 
 export type AspectRatio = "9:16" | "16:9" | "1:1" | "21:9";
 
@@ -17,7 +18,7 @@ export interface GenerationPreset {
   name: string;
   description: string;
   modelId: ModelId;
-  provider: "fal";
+  provider: Exclude<ProviderId, "veo">;
   engine: string;
   ratio: AspectRatio;
   durationSeconds: number;
@@ -177,6 +178,24 @@ export const generationPresets: GenerationPreset[] = [
       fps: 24,
       cfgScale: 6,
       steps: 30,
+      resolution: "720p",
+    },
+  },
+  {
+    id: "kiwi-sandbox",
+    name: "Kiwi Sandbox",
+    description: "Mode test interne (0 crédit) pour démos et intégrations.",
+    modelId: "kiwi:sandbox",
+    provider: "kiwi",
+    engine: "kiwi-sandbox",
+    ratio: "16:9",
+    durationSeconds: 6,
+    withAudio: true,
+    seed: 2024,
+    styleTags: ["sandbox", "demo"],
+    advancedDefaults: {
+      fps: 24,
+      cfgScale: 5,
       resolution: "720p",
     },
   },

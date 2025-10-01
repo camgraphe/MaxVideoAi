@@ -36,7 +36,7 @@ import {
   FAL_INIT_IMAGE_REQUIRED_ENGINES,
   FAL_REF_VIDEO_REQUIRED_ENGINES,
   formatModelSummary,
-  getModelSpecByEngine,
+  getModelSpec,
 } from "@/data/models";
 import { useToast } from "@/hooks/use-toast";
 import { estimateCost } from "@/lib/pricing";
@@ -75,13 +75,14 @@ const optionalTextField = z
 const formSchema = z.object({
   presetId: z.string(),
   prompt: z.string().min(10, "Describe your scene in a few sentences."),
-  provider: z.literal("fal").default("fal"),
+  provider: z.enum(["fal", "kiwi"]).default("fal"),
   engine: z.string(),
   ratio: z.enum(ratioOptions),
   durationSeconds: z.coerce.number().min(4).max(16),
   withAudio: z.boolean().default(true),
   quantity: z.coerce.number().min(1).max(4).default(1),
   seed: z.coerce.number().optional(),
+  resolution: z.string().optional(),
   inputImageUrl: urlField,
   maskUrl: urlField,
   referenceImageUrl: urlField,
@@ -102,17 +103,18 @@ function clampNumber(value: number, min: number, max: number) {
 }
 
 function buildDefaultValuesFromPreset(preset: (typeof generationPresets)[number]): GenerateFormValues {
-  const model = getModelSpecByEngine(preset.provider, preset.engine);
+  const model = getModelSpec(preset.provider, preset.engine);
   return {
     presetId: preset.id,
     prompt: "",
-    provider: "fal",
+    provider: preset.provider,
     engine: preset.engine,
     ratio: preset.ratio,
     durationSeconds: preset.durationSeconds,
     withAudio: preset.withAudio,
     quantity: 1,
     seed: preset.seed,
+    resolution: preset.advancedDefaults?.resolution ?? model?.defaults.resolution ?? model?.resolutions?.[0],
     inputImageUrl: undefined,
     maskUrl: undefined,
     referenceImageUrl: undefined,
@@ -128,11 +130,17 @@ function buildDefaultValuesFromPreset(preset: (typeof generationPresets)[number]
   } satisfies GenerateFormValues;
 }
 
-export function GenerateForm() {
+interface GenerateFormProps {
+  creditsRemaining: number;
+}
+
+export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cost, setCost] = useState<EstimateCostOutput | undefined>();
+  const [falRates, setFalRates] = useState<Record<string, number>>();
+  const [availableCredits, setAvailableCredits] = useState(creditsRemaining);
   type LaunchJobPayload = {
     provider: string;
     engine: string;
@@ -168,7 +176,7 @@ export function GenerateForm() {
     defaultValues,
   });
 
-  const provider = "fal" as const;
+  const provider = form.watch("provider") ?? "fal";
   const engine = form.watch("engine");
   const durationSeconds = form.watch("durationSeconds");
   const withAudio = form.watch("withAudio");
@@ -185,7 +193,7 @@ export function GenerateForm() {
   const referenceVideoUrl = form.watch("referenceVideoUrl");
   const modelSpec = React.useMemo(() => {
     if (provider !== "fal") return undefined;
-    return getModelSpecByEngine("fal", engine);
+    return getModelSpec(provider, engine);
   }, [provider, engine]);
 
   const initImageRequired = React.useMemo(
@@ -393,6 +401,16 @@ export function GenerateForm() {
     } else if (modelSpec.supports.upscaling && typeof upscaling === "undefined") {
       form.setValue("upscaling", false);
     }
+
+    if (modelSpec.resolutions?.length) {
+      const currentResolution = form.getValues("resolution");
+      const fallback = modelSpec.defaults.resolution ?? modelSpec.resolutions[0];
+      if (!currentResolution || !modelSpec.resolutions.includes(currentResolution)) {
+        form.setValue("resolution", fallback);
+      }
+    } else if (form.getValues("resolution")) {
+      form.setValue("resolution", undefined);
+    }
   }, [
     modelSpec,
     ratio,
@@ -408,6 +426,27 @@ export function GenerateForm() {
   ]);
 
   React.useEffect(() => {
+    let cancelled = false;
+    const loadRates = async () => {
+      try {
+        const response = await fetch("/api/pricing/fal", { cache: "no-store" });
+        const payload = (await response.json()) as { rates?: Record<string, number> };
+        if (!cancelled && payload.rates) {
+          setFalRates(payload.rates);
+        }
+      } catch (error) {
+        console.warn("Failed to load dynamic FAL pricing", error);
+      }
+    };
+    void loadRates();
+    const id = window.setInterval(loadRates, 5 * 60 * 1000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, []);
+
+  React.useEffect(() => {
     try {
       const nextCost = estimateCost({
         provider,
@@ -415,13 +454,13 @@ export function GenerateForm() {
         durationSeconds: Number(durationSeconds) || 0,
         withAudio,
         quantity: Number(quantity) || 1,
-      });
+      }, { falRates });
       setCost(nextCost);
     } catch (error) {
       console.error(error);
       setCost(undefined);
     }
-  }, [provider, engine, durationSeconds, withAudio, quantity]);
+  }, [provider, engine, durationSeconds, withAudio, quantity, falRates]);
 
   React.useEffect(() => {
     if (!activeJob) return;
@@ -541,14 +580,27 @@ export function GenerateForm() {
     );
   };
 
-  const engineOptions = React.useMemo(
-    () =>
-      Object.entries(ENGINE_LABELS).map(([value, label]) => ({
-        value,
-        label,
-      })),
-    [],
-  );
+  const engineOptions = React.useMemo(() => {
+    const options = generationPresets
+      .filter((preset) => preset.provider === provider)
+      .map((preset) => ({
+        value: preset.engine,
+        label: ENGINE_LABELS[preset.engine] ?? preset.engine,
+      }));
+
+    const seen = new Set<string>();
+    const deduped = options.filter((option) => {
+      if (seen.has(option.value)) return false;
+      seen.add(option.value);
+      return true;
+    });
+
+    if (deduped.length > 0) {
+      return deduped;
+    }
+
+    return Object.entries(ENGINE_LABELS).map(([value, label]) => ({ value, label }));
+  }, [provider]);
 
   const onSubmit = async (values: GenerateFormValues) => {
     if (!isConfigValid) {
@@ -563,8 +615,7 @@ export function GenerateForm() {
     setActiveJob(null);
     refreshedJobIdRef.current = null;
     try {
-      const specForSubmission =
-        values.provider === "fal" ? getModelSpecByEngine("fal", values.engine) : undefined;
+      const specForSubmission = getModelSpec(values.provider, values.engine);
       const metadata: Record<string, unknown> = {};
 
       if (values.inputImageUrl) metadata.inputImageUrl = values.inputImageUrl;
@@ -578,6 +629,7 @@ export function GenerateForm() {
       if (typeof values.steps !== "undefined") metadata.steps = values.steps;
       if (typeof values.watermark !== "undefined") metadata.watermark = values.watermark;
       if (typeof values.upscaling !== "undefined") metadata.upscaling = values.upscaling;
+      if (values.resolution) metadata.resolution = values.resolution;
       if (specForSubmission?.id) {
         metadata.modelId = specForSubmission.id;
       }
@@ -625,12 +677,26 @@ export function GenerateForm() {
         return;
       }
 
+      if (response.status === 402 && payload?.code === "INSUFFICIENT_CREDITS") {
+        setAvailableCredits(payload.creditsAvailable ?? availableCredits);
+        toast({
+          title: "Add credits",
+          description: "This render requires more credits than you currently have.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       if (!response.ok) {
         throw new Error(payload.error ?? "Unable to create the job");
       }
 
       if (payload?.job) {
         setActiveJob(payload.job as SerializedJob);
+      }
+
+      if (payload?.credits?.remaining !== undefined) {
+        setAvailableCredits(payload.credits.remaining);
       }
 
       toast({
@@ -660,12 +726,19 @@ export function GenerateForm() {
         body: JSON.stringify({ ...confirmData.payload, confirm: true }),
       });
       const payload = await response.json();
+      if (response.status === 402 && payload?.code === "INSUFFICIENT_CREDITS") {
+        setAvailableCredits(payload.creditsAvailable ?? availableCredits);
+        throw new Error("Not enough credits to confirm this render.");
+      }
       if (!response.ok) {
         throw new Error(payload.error ?? "Unable to create the job");
       }
       setConfirmData(undefined);
       if (payload?.job) {
         setActiveJob(payload.job as SerializedJob);
+      }
+      if (payload?.credits?.remaining !== undefined) {
+        setAvailableCredits(payload.credits.remaining);
       }
       toast({
         title: "Job launched",
@@ -683,18 +756,31 @@ export function GenerateForm() {
     }
   };
 
+  const creditsRequired =
+    cost === undefined
+      ? undefined
+      : provider === "kiwi"
+        ? 0
+        : Math.max(1, Math.ceil(cost.subtotalCents / 100));
+  const hasEnoughCredits = creditsRequired === undefined || availableCredits >= creditsRequired;
+
   return (
     <Card className="w-full border border-black/10 bg-zinc-50 backdrop-blur dark:border-white/10 dark:bg-[#080d16]">
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <PriceBadge cost={cost} disabled={isSubmitting} />
+              <PriceBadge
+                cost={cost}
+                disabled={isSubmitting}
+                creditsRequired={creditsRequired}
+                creditsAvailable={availableCredits}
+              />
               <Button
                 type="submit"
                 size="lg"
                 className="gap-2 self-start sm:self-auto"
-                disabled={isSubmitting || !isConfigValid}
+                disabled={isSubmitting || !isConfigValid || !hasEnoughCredits}
               >
                 {isSubmitting ? (
                   <>
@@ -708,6 +794,11 @@ export function GenerateForm() {
                   </>
                 )}
               </Button>
+              {!hasEnoughCredits ? (
+                <p className="max-w-xs text-xs font-medium text-amber-600">
+                  Not enough credits for this configuration. Purchase more in billing or adjust the render setup.
+                </p>
+              ) : null}
               {!isConfigValid ? (
                 <p className="text-xs font-medium text-rose-500">
                   {configIssues[0] ? `${configIssues[0]}.` : "Fill the required inputs to continue."}
@@ -790,9 +881,9 @@ export function GenerateForm() {
                       )}
                     />
                     <div className="grid gap-3 md:grid-cols-2">
-                      <FormField
-                        control={form.control}
-                        name="durationSeconds"
+                    <FormField
+                      control={form.control}
+                      name="durationSeconds"
                         render={({ field }) => (
                           <FormItem className="space-y-2">
                             <FormLabel className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
@@ -816,9 +907,9 @@ export function GenerateForm() {
                           </FormItem>
                         )}
                       />
-                      <FormField
-                        control={form.control}
-                        name="quantity"
+                    <FormField
+                      control={form.control}
+                      name="quantity"
                         render={({ field }) => (
                           <FormItem className="space-y-2">
                             <FormLabel className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
@@ -842,29 +933,59 @@ export function GenerateForm() {
                         )}
                       />
                     </div>
-                    <FormField
-                      control={form.control}
-                      name="withAudio"
-                      render={({ field }) => (
-                        <FormItem className="flex items-center justify-between rounded-2xl border border-black/10 bg-white/85 px-4 py-3 dark:border-white/10 dark:bg-white/[0.05]">
-                          <div className="space-y-1">
+                    {modelSpec?.resolutions?.length ? (
+                      <FormField
+                        control={form.control}
+                        name="resolution"
+                        render={({ field }) => (
+                          <FormItem className="space-y-2">
                             <FormLabel className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
-                              Audio bed
+                              Resolution
                             </FormLabel>
+                            <Select value={field.value} onValueChange={field.onChange}>
+                              <FormControl>
+                                <SelectTrigger className="w-full rounded-2xl border border-black/10 bg-white/85 px-3 py-2 text-left text-sm font-medium text-foreground shadow-sm focus-visible:border-primary focus-visible:ring-primary/30 dark:border-white/10 dark:bg-white/[0.05] dark:text-slate-100">
+                                  <SelectValue placeholder="Select resolution" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="bg-white dark:bg-[#0b1321]">
+                                {modelSpec.resolutions.map((value) => (
+                                  <SelectItem key={value} value={value}>
+                                    {value}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                             <FormDescription className="text-[11px] text-muted-foreground/70">
-                              {modelSpec?.supports.audio ? "Generate soundtrack" : "Unavailable"}
+                              Available output definitions.
                             </FormDescription>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={modelSpec?.supports.audio ? field.value : false}
-                              onCheckedChange={field.onChange}
-                              disabled={!modelSpec?.supports.audio}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    ) : null}
+
+                    {modelSpec?.supports.audio ? (
+                      <FormField
+                        control={form.control}
+                        name="withAudio"
+                        render={({ field }) => (
+                          <FormItem className="flex items-center justify-between rounded-2xl border border-black/10 bg-white/85 px-4 py-3 dark:border-white/10 dark:bg-white/[0.05]">
+                            <div className="space-y-1">
+                              <FormLabel className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+                                Audio bed
+                              </FormLabel>
+                              <FormDescription className="text-[11px] text-muted-foreground/70">
+                                Generate soundtrack
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch checked={field.value} onCheckedChange={field.onChange} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    ) : null}
                   </div>
                 </div>
               </aside>
@@ -909,7 +1030,7 @@ export function GenerateForm() {
                   <ScrollArea className="w-full overflow-hidden">
                     <div className="flex gap-3 pb-3 pr-3 snap-x snap-mandatory">
                       {generationPresets.map((preset) => {
-                        const presetSpec = getModelSpecByEngine(preset.provider, preset.engine);
+                        const presetSpec = getModelSpec(preset.provider, preset.engine);
                         const isActive = selectedPresetId === preset.id;
                         return (
                           <button

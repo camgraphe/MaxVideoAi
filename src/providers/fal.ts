@@ -7,7 +7,7 @@ import type {
   StartJobInput,
   StartJobResult,
 } from "@/providers/types";
-import { getModelSpecByEngine } from "@/data/models";
+import { getModelSpec } from "@/data/models";
 import type { ModelSpec } from "@/data/models";
 import { normalizeDurationSeconds, normalizeNumber } from "@/lib/models/normalization";
 import { getFalCredentials, shouldRequestFalLogs } from "@/lib/env";
@@ -661,7 +661,7 @@ export async function verifyFalWebhook(
 
 export const falProvider: ProviderAdapter = {
   async startJob(input: StartJobInput): Promise<StartJobResult> {
-    const spec = getModelSpecByEngine("fal", input.engine);
+    const spec = getModelSpec("fal", input.engine);
     if (!spec) {
       throw new Error(`Unknown FAL engine ${input.engine}`);
     }
@@ -697,7 +697,7 @@ export const falProvider: ProviderAdapter = {
   ): Promise<PollJobResult> {
     const includeLogs = options?.withLogs ?? shouldRequestFalLogs();
     const searchParams = includeLogs ? { logs: "1" } : undefined;
-    const spec = options?.engine ? getModelSpecByEngine("fal", options.engine) : undefined;
+    const spec = options?.engine ? getModelSpec("fal", options.engine) : undefined;
     const queueRoot = resolveQueueRoot(spec);
 
     type EndpointCandidate = {
@@ -732,13 +732,43 @@ export const falProvider: ProviderAdapter = {
     }
 
     const baseFallbacks = [FAL_API_BASE, "https://fal.run"];
+    const fallbackPathBase = (() => {
+      if (spec?.falSlug) {
+        return `/${spec.falSlug}/requests/${providerJobId}`;
+      }
+      if (queueRoot) {
+        return `/${queueRoot}/requests/${providerJobId}`;
+      }
+      return `/requests/${providerJobId}`;
+    })();
+
+    const fallbackStatusPath = (() => {
+      if (!includeLogs) return undefined;
+      if (spec?.falSlug) {
+        return `/${spec.falSlug}/requests/${providerJobId}/status`;
+      }
+      if (queueRoot) {
+        return `/${queueRoot}/requests/${providerJobId}/status`;
+      }
+      return `/requests/${providerJobId}/status`;
+    })();
+
     for (const base of baseFallbacks) {
       addCandidate({
         base,
-        path: `/requests/${providerJobId}`,
+        path: fallbackPathBase,
         searchParams,
         description: `base ${base}`,
       });
+
+      if (fallbackStatusPath) {
+        addCandidate({
+          base,
+          path: fallbackStatusPath,
+          searchParams: { logs: "1" },
+          description: `base ${base} status`,
+        });
+      }
     }
 
     let lastError: unknown;
@@ -771,6 +801,15 @@ export const falProvider: ProviderAdapter = {
           (error && typeof error === "object" && "code" in error && typeof (error as { code?: unknown }).code === "string"
             ? (error as { code: string }).code
             : undefined);
+
+        if (/still in progress/i.test(message)) {
+          return {
+            jobId: providerJobId,
+            provider: "fal",
+            status: "running",
+            progress: 20,
+          };
+        }
 
         const isDnsError = causeCode === "ENOTFOUND" || /ENOTFOUND/.test(message);
         const isMethodNotAllowed = /405|Method\s*Not\s*Allowed/i.test(message);

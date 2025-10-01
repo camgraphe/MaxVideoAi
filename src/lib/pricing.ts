@@ -9,7 +9,11 @@ import type {
 
 const CENTS_IN_EURO = 100;
 
-export function estimateCost(input: EstimateCostInput): EstimateCostOutput {
+export interface EstimateCostOptions {
+  falRates?: Record<string, number>;
+}
+
+export function estimateCost(input: EstimateCostInput, options: EstimateCostOptions = {}): EstimateCostOutput {
   const quantity = input.quantity ?? 1;
   const breakdown: EstimateCostOutput["breakdown"] = [];
   let subtotal = 0;
@@ -30,14 +34,22 @@ export function estimateCost(input: EstimateCostInput): EstimateCostOutput {
   } else if (input.provider === "fal") {
     const falEngine = input.engine as FalEngine;
 
-    if (falEngine === "veo3" || falEngine === "veo3-fast") {
+    const overrideRate = options.falRates?.[falEngine];
+    const seconds = Math.max(0, input.durationSeconds);
+
+    if (overrideRate !== undefined) {
+      const falCost = seconds * overrideRate * quantity;
+      breakdown.push({
+        label: `FAL ${capitalize(falEngine)}`,
+        amountCents: eurosToCents(falCost),
+      });
+    } else if (falEngine === "veo3" || falEngine === "veo3-fast") {
       const tier: VeoPricingTier = falEngine === "veo3" ? "quality" : "fast";
       const audioMode: VeoAudioMode = input.withAudio ? "audio" : "mute";
       const rate = pricingConfig.veo[tier]?.[audioMode];
       if (!rate) {
         throw new Error(`Missing Veo pricing for ${falEngine}/${audioMode}`);
       }
-      const seconds = Math.max(0, input.durationSeconds);
       const veoCost = seconds * rate * quantity;
       breakdown.push({
         label: `Veo ${capitalize(tier)} via FAL ${audioMode === "audio" ? "+ audio" : "mute"}`,
@@ -48,13 +60,14 @@ export function estimateCost(input: EstimateCostInput): EstimateCostOutput {
       if (!enginePricing) {
         throw new Error(`Missing FAL pricing for ${falEngine}`);
       }
-      const seconds = Math.max(0, input.durationSeconds);
       const falCost = seconds * enginePricing.per_second * quantity;
       breakdown.push({
         label: `FAL ${capitalize(falEngine)}`,
         amountCents: eurosToCents(falCost),
       });
     }
+  } else if (input.provider === "kiwi") {
+    breakdown.push({ label: "Kiwi sandbox", amountCents: 0 });
   } else {
     throw new Error(`Unknown provider ${input.provider}`);
   }

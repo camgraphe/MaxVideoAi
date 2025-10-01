@@ -5,7 +5,8 @@ export type ModelId =
   | "fal:pika-v2-2"
   | "fal:luma-dream"
   | "fal:pixverse-v4-5"
-  | "fal:cogvideox-5b";
+  | "fal:cogvideox-5b"
+  | "kiwi:sandbox";
 
 export type ContentType = "video" | "image";
 
@@ -20,8 +21,8 @@ export interface ModelSpec {
   id: ModelId;
   label: string;
   description: string;
-  provider: "fal";
-  falSlug: string;
+  provider: "fal" | "kiwi";
+  falSlug?: string;
   falQueueRoot?: string;
   contentType: ContentType;
   supports: {
@@ -53,6 +54,7 @@ export interface ModelSpec {
     withAudio?: boolean;
     resolution?: string;
   };
+  resolutions?: string[];
 }
 
 export const models: Record<ModelId, ModelSpec> = {
@@ -91,6 +93,7 @@ export const models: Record<ModelId, ModelSpec> = {
       withAudio: true,
       resolution: "720p",
     },
+    resolutions: ["720p", "1080p"],
   },
   "fal:veo3-fast": {
     id: "fal:veo3-fast",
@@ -127,6 +130,7 @@ export const models: Record<ModelId, ModelSpec> = {
       withAudio: true,
       resolution: "720p",
     },
+    resolutions: ["720p"],
   },
   "fal:kling-pro": {
     id: "fal:kling-pro",
@@ -163,6 +167,7 @@ export const models: Record<ModelId, ModelSpec> = {
       withAudio: false,
       resolution: "720p",
     },
+    resolutions: ["720p", "1080p"],
   },
   "fal:pika-v2-2": {
     id: "fal:pika-v2-2",
@@ -199,6 +204,7 @@ export const models: Record<ModelId, ModelSpec> = {
       withAudio: true,
       resolution: "720p",
     },
+    resolutions: ["720p", "1080p"],
   },
   "fal:luma-dream": {
     id: "fal:luma-dream",
@@ -235,6 +241,7 @@ export const models: Record<ModelId, ModelSpec> = {
       withAudio: false,
       resolution: "720p",
     },
+    resolutions: ["720p"],
   },
   "fal:pixverse-v4-5": {
     id: "fal:pixverse-v4-5",
@@ -271,6 +278,7 @@ export const models: Record<ModelId, ModelSpec> = {
       withAudio: false,
       resolution: "720p",
     },
+    resolutions: ["360p", "720p", "1080p"],
   },
   "fal:cogvideox-5b": {
     id: "fal:cogvideox-5b",
@@ -309,28 +317,77 @@ export const models: Record<ModelId, ModelSpec> = {
       withAudio: false,
       resolution: "720p",
     },
+    resolutions: ["480p", "720p"],
+  },
+  "kiwi:sandbox": {
+    id: "kiwi:sandbox",
+    label: "Kiwi Sandbox",
+    description: "Modeleur interne pour tests rapides sans appel provider externe.",
+    provider: "kiwi",
+    contentType: "video",
+    supports: {
+      imageInit: false,
+      imageReference: false,
+      mask: false,
+      refVideo: false,
+      audio: true,
+      seed: true,
+      negativePrompt: true,
+      multiPrompt: false,
+      frameInterpolation: false,
+      upscaling: false,
+      watermarkToggle: false,
+    },
+    constraints: {
+      ratios: ["16:9", "9:16", "1:1"],
+      durationSeconds: { min: 3, max: 12, step: 1, default: 6 },
+      fps: { min: 24, max: 30, default: 24 },
+      resolution: "Mock 720p",
+      cfgScale: { min: 0, max: 10, step: 1, default: 5 },
+    },
+    defaults: {
+      durationSeconds: 6,
+      fps: 24,
+      cfgScale: 5,
+      withAudio: true,
+      resolution: "720p",
+    },
+    resolutions: ["720p"],
   },
 };
 
-export function getModelSpecByEngine(provider: "fal", engine: string): ModelSpec | undefined {
-  switch (engine) {
-    case "veo3":
-      return models["fal:veo3"];
-    case "veo3-fast":
-      return models["fal:veo3-fast"];
-    case "kling-pro":
-      return models["fal:kling-pro"];
-    case "pika-v2-2":
-      return models["fal:pika-v2-2"];
-    case "luma-dream":
-      return models["fal:luma-dream"];
-    case "pixverse-v4-5":
-      return models["fal:pixverse-v4-5"];
-    case "cogvideox-5b":
-      return models["fal:cogvideox-5b"];
-    default:
-      return undefined;
+export function getModelSpec(provider: "fal" | "kiwi", engine: string): ModelSpec | undefined {
+  if (provider === "fal") {
+    switch (engine) {
+      case "veo3":
+        return models["fal:veo3"];
+      case "veo3-fast":
+        return models["fal:veo3-fast"];
+      case "kling-pro":
+        return models["fal:kling-pro"];
+      case "pika-v2-2":
+        return models["fal:pika-v2-2"];
+      case "luma-dream":
+        return models["fal:luma-dream"];
+      case "pixverse-v4-5":
+        return models["fal:pixverse-v4-5"];
+      case "cogvideox-5b":
+        return models["fal:cogvideox-5b"];
+      default:
+        return undefined;
+    }
   }
+
+  if (provider === "kiwi") {
+    switch (engine) {
+      case "kiwi-sandbox":
+        return models["kiwi:sandbox"];
+      default:
+        return undefined;
+    }
+  }
+
+  return undefined;
 }
 
 export function formatModelSummary(spec: ModelSpec): string {
@@ -358,6 +415,7 @@ export const ENGINE_LABELS: Record<string, string> = {
   "luma-dream": "Luma Dream Machine",
   "pixverse-v4-5": "Pixverse v4.5",
   "cogvideox-5b": "CogVideoX 5B",
+  "kiwi-sandbox": "Kiwi Sandbox",
 };
 
 export const FAL_INIT_IMAGE_REQUIRED_ENGINES: ReadonlySet<ModelId> = new Set([

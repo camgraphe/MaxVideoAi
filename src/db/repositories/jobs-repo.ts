@@ -6,9 +6,6 @@ import type { ProviderId } from "@/providers/types";
 
 const { jobs, jobEvents } = dbSchema;
 
-const DEMO_USER_ID = "00000000-0000-0000-0000-000000000001";
-const DEMO_ORG_ID = "00000000-0000-0000-0000-000000000002";
-
 export type JobRow = typeof jobs.$inferSelect;
 export type JobEventRow = typeof jobEvents.$inferSelect;
 
@@ -51,6 +48,8 @@ export interface JobEventModel {
 }
 
 export interface CreateJobInput {
+  organizationId: string;
+  createdBy: string;
   provider: ProviderId;
   engine: string;
   prompt: string;
@@ -60,6 +59,7 @@ export interface CreateJobInput {
   quantity: number;
   seed?: number;
   presetId?: string;
+  costEstimateCents?: number;
   metadata?: Record<string, unknown>;
 }
 
@@ -144,20 +144,22 @@ export async function createJobRecord(input: CreateJobInput): Promise<JobModel> 
   const metadata = input.metadata ?? {};
   const id = randomUUID();
 
-  const costEstimate = estimateCost({
-    provider: input.provider,
-    engine: input.engine,
-    durationSeconds: input.durationSeconds,
-    withAudio: input.withAudio,
-    quantity: input.quantity,
-  });
+  const costEstimate =
+    input.costEstimateCents ??
+    estimateCost({
+      provider: input.provider,
+      engine: input.engine,
+      durationSeconds: input.durationSeconds,
+      withAudio: input.withAudio,
+      quantity: input.quantity,
+    }).subtotalCents;
 
   const [row] = await db
     .insert(jobs)
     .values({
       id,
-      organizationId: DEMO_ORG_ID,
-      createdBy: DEMO_USER_ID,
+      organizationId: input.organizationId,
+      createdBy: input.createdBy,
       provider: input.provider,
       engine: input.engine,
       prompt: input.prompt,
@@ -169,7 +171,7 @@ export async function createJobRecord(input: CreateJobInput): Promise<JobModel> 
       seed: input.seed ?? null,
       status: "pending",
       progress: 0,
-      costEstimateCents: costEstimate.subtotalCents,
+      costEstimateCents: costEstimate,
       metadata,
       archiveUrl: null,
       createdAt: now,
@@ -224,6 +226,16 @@ export async function updateJobRecord(id: string, updates: UpdateJobInput): Prom
 export async function listJobs(): Promise<JobModel[]> {
   const db = getDb();
   const rows = await db.select().from(jobs).orderBy(desc(jobs.createdAt));
+  return rows.map(mapRowToModel);
+}
+
+export async function listJobsByOrganization(organizationId: string): Promise<JobModel[]> {
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(jobs)
+    .where(eq(jobs.organizationId, organizationId))
+    .orderBy(desc(jobs.createdAt));
   return rows.map(mapRowToModel);
 }
 

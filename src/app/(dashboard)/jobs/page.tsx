@@ -1,9 +1,11 @@
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { JobsGallery } from "@/components/jobs/jobs-gallery";
-import { listJobs, serializeJob } from "@/db/repositories/jobs-repo";
+import { listJobsByOrganization, serializeJob } from "@/db/repositories/jobs-repo";
+import { requireCurrentSession } from "@/lib/auth/current-user";
 
 export default async function JobsPage() {
-  const jobs = await listJobs();
+  const session = await requireCurrentSession();
+  const jobs = await listJobsByOrganization(session.organization.id);
 
   return (
     <DashboardShell

@@ -11,9 +11,11 @@ import { formatCurrency } from "@/lib/format";
 interface PriceBadgeProps {
   cost?: EstimateCostOutput;
   disabled?: boolean;
+  creditsRequired?: number;
+  creditsAvailable?: number;
 }
 
-export function PriceBadge({ cost, disabled }: PriceBadgeProps) {
+export function PriceBadge({ cost, disabled, creditsRequired, creditsAvailable }: PriceBadgeProps) {
   const [open, setOpen] = React.useState(false);
 
   if (!cost) {
@@ -24,6 +26,9 @@ export function PriceBadge({ cost, disabled }: PriceBadgeProps) {
       </Badge>
     );
   }
+
+  const hasEnoughCredits =
+    creditsRequired === undefined || creditsAvailable === undefined || creditsAvailable >= creditsRequired;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -58,6 +63,19 @@ export function PriceBadge({ cost, disabled }: PriceBadgeProps) {
             {formatCurrency(cost.subtotalCents)}
           </span>
         </div>
+        {creditsRequired !== undefined ? (
+          <div className="rounded-lg border border-border/60 bg-muted/20 p-3 text-xs">
+            <div className="flex items-center justify-between font-medium text-foreground">
+              <span>Credits needed</span>
+              <span className={!hasEnoughCredits ? "text-destructive" : ""}>{creditsRequired}</span>
+            </div>
+            {creditsAvailable !== undefined ? (
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Balance: <span className={!hasEnoughCredits ? "text-destructive" : "text-foreground"}>{creditsAvailable}</span>
+              </p>
+            ) : null}
+          </div>
+        ) : null}
         <p className="text-[11px] text-muted-foreground">
           Calculated before launch. Server verification runs again right before `startJob()`.
         </p>
