@@ -234,7 +234,6 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
 
   const durationRange = modelSpec?.constraints.durationSeconds;
   const fpsRange = modelSpec?.constraints.fps;
-  const motionRange = modelSpec?.constraints.motionStrength;
   const cfgRange = modelSpec?.constraints.cfgScale;
   const stepsRange = modelSpec?.constraints.steps;
 
