@@ -16,7 +16,8 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body);
 
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.errors[0]?.message ?? "Invalid payload" }, { status: 400 });
+    const firstIssue = (parsed.error as z.ZodError).issues?.[0]?.message;
+    return NextResponse.json({ error: firstIssue ?? parsed.error.message ?? "Invalid payload" }, { status: 400 });
   }
 
   const { enabled, threshold, packageId } = parsed.data;
