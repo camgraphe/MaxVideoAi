@@ -33,6 +33,13 @@ export async function GET() {
 
   try {
     const url = process.env.DATABASE_URL;
+    try {
+      if (url) {
+        const parsed = new URL(url);
+        checks.dbHost = parsed.hostname;
+        checks.dbPort = parsed.port;
+      }
+    } catch {}
     const client = new Client({ connectionString: url, ssl: { rejectUnauthorized: false } });
     await client.connect();
     const res = await client.query("select 1 as one");
