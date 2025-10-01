@@ -943,7 +943,7 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent className="bg-white dark:bg-[#0b1321]">
-                                {modelSpec.resolutions.map((value) => (
+                                {(modelSpec?.resolutions ?? []).map((value) => (
                                   <SelectItem key={value} value={value}>
                                     {value}
                                   </SelectItem>
