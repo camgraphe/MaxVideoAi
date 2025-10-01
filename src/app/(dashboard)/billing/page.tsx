@@ -9,6 +9,8 @@ import { getStripeClient } from "@/lib/stripe";
 import { env } from "@/lib/env";
 import { requireCurrentSession } from "@/lib/auth/current-user";
 import { listCreditLedger } from "@/db/repositories/credits-repo";
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 async function resolvePackageViews(): Promise<CreditPackageView[]> {
   if (creditPackages.length === 0) {
