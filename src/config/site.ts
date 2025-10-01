@@ -6,7 +6,7 @@ export const siteConfig = {
   ogImage: "https://maxvideoai.com/og.jpg",
   links: {
     twitter: "https://x.com/maxvideoai",
-    github: "https://github.com/adrienmillot/MaxVideoAI",
+    github: "https://github.com/camgraphe/MaxVideoAi",
   },
 };
 

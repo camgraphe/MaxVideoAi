@@ -29,7 +29,8 @@ async function backfillFalJobs() {
     console.log(`   engine: ${job.engine}`);
 
     try {
-      const result = await adapter.pollJob(job.externalJobId, {
+      const externalId = job.externalJobId!;
+      const result = await adapter.pollJob(externalId, {
         withLogs: true,
         engine: job.engine,
       });
