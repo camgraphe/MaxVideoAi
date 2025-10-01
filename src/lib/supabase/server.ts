@@ -25,7 +25,7 @@ function createSupabaseClient({ allowCookieWrites }: SupabaseClientOptions) {
         if (!allowCookieWrites) return;
         const store = await cookies();
         try {
-          // @ts-ignore
+          // @ts-expect-error: Next.js cookies typings differ from Supabase SSR signature
           store.set(name, value, options);
         } catch (error) {
           if (!(error instanceof Error) || !error.message.includes("Cookies can only be modified")) {
@@ -37,7 +37,7 @@ function createSupabaseClient({ allowCookieWrites }: SupabaseClientOptions) {
         if (!allowCookieWrites) return;
         const store = await cookies();
         try {
-          // @ts-ignore
+          // @ts-expect-error: Next.js cookies typings differ from Supabase SSR signature
           store.set(name, "", { ...options, maxAge: 0 });
         } catch (error) {
           if (!(error instanceof Error) || !error.message.includes("Cookies can only be modified")) {
