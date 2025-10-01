@@ -121,7 +121,7 @@ function buildDefaultValuesFromPreset(preset: (typeof generationPresets)[number]
     referenceVideoUrl: undefined,
     negativePrompt: preset.negativePrompt,
     fps: preset.advancedDefaults?.fps ?? model?.defaults.fps,
-    motionStrength: preset.advancedDefaults?.motionStrength ?? model?.defaults.motionStrength,
+    motionStrength: preset.advancedDefaults?.motionStrength,
     cfgScale: preset.advancedDefaults?.cfgScale ?? model?.defaults.cfgScale,
     steps: preset.advancedDefaults?.steps ?? model?.defaults.steps,
     watermark:
