@@ -357,14 +357,8 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
       form.setValue("fps", undefined);
     }
 
-    const motionRange = modelSpec.constraints.motionStrength;
-    if (motionRange) {
-      const fallback = motionRange.default ?? motionRange.min;
-      const safeMotion = clampNumber(motionStrength ?? fallback, motionRange.min, motionRange.max);
-      if (safeMotion !== motionStrength) {
-        form.setValue("motionStrength", safeMotion);
-      }
-    } else if (typeof motionStrength !== "undefined") {
+    // No motionStrength range in current model constraints; clear if present
+    if (typeof motionStrength !== "undefined") {
       form.setValue("motionStrength", undefined);
     }
 
