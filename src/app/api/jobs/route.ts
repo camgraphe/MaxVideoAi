@@ -11,6 +11,7 @@ import {
 import { simulateJobLifecycle } from "@/lib/jobs/job-runner";
 import { getProviderAdapter } from "@/providers";
 import { estimateCost } from "@/lib/pricing";
+import { getFalRates } from "@/lib/pricing/dynamic-fal";
 import { appConfig } from "@/lib/config";
 import { normalizeDurationSeconds, normalizeNumber, isValidUrl } from "@/lib/models/normalization";
 import { getFalWebhookUrl } from "@/lib/env";
