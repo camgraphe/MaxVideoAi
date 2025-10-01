@@ -25,7 +25,7 @@ function createSupabaseClient({ allowCookieWrites }: SupabaseClientOptions) {
         if (!allowCookieWrites) return;
         const store = await cookies();
         try {
-          store.set(name, value, options as any);
+          store.set(name, value, options as Record<string, unknown>);
         } catch (error) {
           if (!(error instanceof Error) || !error.message.includes("Cookies can only be modified")) {
             throw error;
@@ -36,7 +36,7 @@ function createSupabaseClient({ allowCookieWrites }: SupabaseClientOptions) {
         if (!allowCookieWrites) return;
         const store = await cookies();
         try {
-          store.set(name, "", { ...(options as any), maxAge: 0 });
+          store.set(name, "", { ...(options as Record<string, unknown>), maxAge: 0 });
         } catch (error) {
           if (!(error instanceof Error) || !error.message.includes("Cookies can only be modified")) {
             throw error;
