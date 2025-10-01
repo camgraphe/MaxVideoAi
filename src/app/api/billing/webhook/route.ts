@@ -93,7 +93,8 @@ async function handleInvoicePayment(invoice: Stripe.Invoice) {
     return;
   }
 
-  await processLineItems(invoice.lines.data, organizationId, invoice.id);
+  const reference = (invoice.id ?? String(Date.now()));
+  await processLineItems(invoice.lines.data, organizationId, reference);
 }
 
 async function processLineItems(
