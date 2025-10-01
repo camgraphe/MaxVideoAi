@@ -40,6 +40,11 @@ export async function GET() {
         checks.dbPort = parsed.port;
       }
     } catch {}
+    // Surface PG* env that could override connectionString unexpectedly
+    if (process.env.PGHOST) checks.PGHOST = process.env.PGHOST;
+    if (process.env.PGPORT) checks.PGPORT = process.env.PGPORT;
+    if (process.env.PGDATABASE) checks.PGDATABASE = process.env.PGDATABASE;
+    if (process.env.PGUSER) checks.PGUSER = process.env.PGUSER ? "<set>" : undefined;
     const client = new Client({ connectionString: url, ssl: { rejectUnauthorized: false } });
     await client.connect();
     const res = await client.query("select 1 as one");
