@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Download, Loader2, Share2, Sparkles, Trash2, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -173,7 +173,7 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
 
   const form = useForm<GenerateFormValues>({
     // Type helper: zodResolver schema matches GenerateFormValues at runtime; cast to align RHF generics
-    resolver: zodResolver(formSchema) as any,
+    resolver: zodResolver(formSchema) as unknown as Resolver<GenerateFormValues>,
     defaultValues,
   });
 
