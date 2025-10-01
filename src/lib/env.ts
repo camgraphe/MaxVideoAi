@@ -2,7 +2,9 @@ import { z } from "zod";
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  DATABASE_URL: z.string().url(),
+  // DATABASE_URL is a postgres connection string (postgres:// or postgresql://),
+  // not an HTTP URL — validate as non-empty string.
+  DATABASE_URL: z.string().min(1),
   NEXT_PUBLIC_APP_URL: z.string().url().optional(),
   STRIPE_SECRET_KEY: z.string().min(1).optional(),
   STRIPE_WEBHOOK_SECRET: z.string().min(1).optional(),
