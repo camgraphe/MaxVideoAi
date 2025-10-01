@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 export function HeroParticleBanner({ className }: { className?: string }) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const rafRef = useRef<number>();
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
@@ -133,4 +133,3 @@ export function HeroParticleBanner({ className }: { className?: string }) {
     </div>
   );
 }
-
