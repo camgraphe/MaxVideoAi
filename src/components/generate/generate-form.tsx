@@ -463,7 +463,7 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
     }
 
     let cancelled = false;
-    let intervalId: ReturnType<typeof window.setInterval> | null = null;
+    let intervalId: number | null = null;
 
     const fetchLatest = async () => {
       try {
