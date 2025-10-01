@@ -144,7 +144,7 @@ async function main() {
         provider: "fal",
         engine: "pika-v2-2",
         prompt: "Budget-friendly loop for DOOH screens with animated typography",
-        ratio: "1:1",
+        ratio: "16:9",
         durationSeconds: 5,
         withAudio: false,
         quantity: 1,
