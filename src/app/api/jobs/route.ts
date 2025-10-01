@@ -273,7 +273,7 @@ export async function POST(request: Request) {
       provider: payload.provider,
       engine: payload.engine,
       prompt: payload.prompt,
-      ratio: payload.ratio,
+      ratio: (payload.ratio === "1:1" || payload.ratio === "21:9") ? "16:9" : (payload.ratio as "16:9" | "9:16"),
       durationSeconds,
       withAudio: payload.withAudio,
       quantity: payload.quantity,
