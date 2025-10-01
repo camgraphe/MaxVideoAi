@@ -105,7 +105,9 @@ async function processLineItems(
   let credited = false;
 
   for (const item of items) {
-    const priceId = item.price?.id;
+    // Stripe types differ between LineItem and InvoiceLineItem; access defensively
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const priceId = (item as any)?.price?.id as string | undefined;
     if (!priceId) {
       continue;
     }
