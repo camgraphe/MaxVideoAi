@@ -19,7 +19,11 @@ function configureNumericParsers() {
   }
   numericParsersConfigured = true;
   pgTypes.setTypeParser(pgTypes.builtins.NUMERIC, (value) => (value === null ? null : Number(value)));
-  pgTypes.setTypeParser(pgTypes.builtins.BIGINT, (value) => (value === null ? null : Number(value)));
+  // INT8 corresponds to BIGINT OID in pg types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  pgTypes.setTypeParser((pgTypes.builtins as any).INT8 ?? pgTypes.builtins.NUMERIC, (value) =>
+    (value === null ? null : Number(value)),
+  );
 }
 
 export function getDb(): Database {
