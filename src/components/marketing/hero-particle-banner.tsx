@@ -23,6 +23,7 @@ export function HeroParticleBanner({ className }: { className?: string }) {
     const particles: { x: number; y: number; vx: number; vy: number; r: number }[] = [];
 
     function resize() {
+      if (!wrapper) return;
       const rect = wrapper.getBoundingClientRect();
       w = rect.width;
       h = rect.height;
