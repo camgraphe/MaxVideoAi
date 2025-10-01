@@ -172,7 +172,8 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
   const defaultValues = React.useMemo(() => buildDefaultValuesFromPreset(defaultPreset), [defaultPreset]);
 
   const form = useForm<GenerateFormValues>({
-    resolver: zodResolver(formSchema),
+    // Type helper: zodResolver schema matches GenerateFormValues at runtime; cast to align RHF generics
+    resolver: zodResolver(formSchema) as any,
     defaultValues,
   });
 
