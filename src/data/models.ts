@@ -413,6 +413,7 @@ export const models: Record<ModelId, ModelSpec> = {
       watermarkToggle: false,
       promptEnhancement: false,
       autoFix: false,
+      audioTrack: false,
     },
     constraints: {
       ratios: ["16:9", "9:16", "1:1"],
