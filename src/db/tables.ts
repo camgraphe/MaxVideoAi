@@ -112,7 +112,6 @@ export const jobs = pgTable(
     createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
     provider: providerEnum("provider").notNull(),
     engine: text("engine").notNull(),
-    version: text("version"),
     prompt: text("prompt").notNull(),
     ratio: ratioEnum("ratio").notNull(),
     durationSeconds: smallint("duration_seconds").notNull(),

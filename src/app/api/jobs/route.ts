@@ -282,7 +282,6 @@ export async function POST(request: Request) {
       createdBy: session.user.id,
       provider: payload.provider,
       engine: payload.engine,
-      version: typeof payload.modelId === "string" ? payload.modelId : payload.engine,
       prompt: payload.prompt,
       ratio: mapRatioForStorage(payload.ratio),
       durationSeconds,

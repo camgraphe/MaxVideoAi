@@ -1,7 +1,6 @@
 import "dotenv/config";
 
 import { listJobs, updateJobRecord } from "@/db/repositories/jobs-repo";
-import { getModelSpec } from "@/data/models";
 
 async function backfillJobMetadata() {
   const jobs = await listJobs();
@@ -12,11 +11,6 @@ async function backfillJobMetadata() {
 
     const updates: Record<string, unknown> = {};
     const metadata = { ...(job.metadata ?? {}) } as Record<string, unknown>;
-
-    if (!job.version) {
-      const spec = getModelSpec("fal", job.engine);
-      updates.version = spec?.id ?? job.engine;
-    }
 
     if (metadata.usageRecorded === undefined) {
       metadata.usageRecorded = Boolean(job.costActualCents);

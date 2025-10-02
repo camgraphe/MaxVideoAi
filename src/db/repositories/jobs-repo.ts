@@ -15,7 +15,6 @@ export interface JobModel {
   createdBy: string | null;
   provider: ProviderId;
   engine: string;
-  version: string | null;
   prompt: string;
   ratio: "9:16" | "16:9";
   durationSeconds: number;
@@ -53,7 +52,6 @@ export interface CreateJobInput {
   createdBy: string;
   provider: ProviderId;
   engine: string;
-  version?: string;
   prompt: string;
   ratio: "9:16" | "16:9";
   durationSeconds: number;
@@ -85,7 +83,6 @@ export function mapRowToModel(row: JobRow): JobModel {
     createdBy: row.createdBy ?? null,
     provider: row.provider,
     engine: row.engine,
-    version: row.version ?? null,
     prompt: row.prompt,
     ratio: row.ratio,
     durationSeconds: row.durationSeconds,
@@ -184,7 +181,6 @@ export async function createJobRecord(input: CreateJobInput): Promise<JobModel> 
       progress: 0,
       costEstimateCents: costEstimate,
       metadata,
-      version: input.version ?? input.engine,
       archiveUrl: null,
       createdAt: now,
       updatedAt: now,
