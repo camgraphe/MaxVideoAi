@@ -224,7 +224,7 @@ const collectEngineMetadata = () => {
 
       const aliasFromSlug = findAliasForSlug(version.falSlug);
       const fallbackAlias = VERSION_ID_FALLBACK_ALIAS[version.id];
-      const publicId = aliasFromSlug ?? fallbackAlias ?? version.id ?? slug;
+      const publicId = fallbackAlias ?? aliasFromSlug ?? version.id ?? slug;
       const meta: EngineVersionMeta = { engine, version, slug, publicId };
       ENGINE_META_BY_SLUG.set(slug, meta);
       registerLookup(slug, slug);
