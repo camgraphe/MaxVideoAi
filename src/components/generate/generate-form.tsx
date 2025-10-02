@@ -55,7 +55,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import type { SerializedJob } from "@/db/repositories/jobs-repo";
 import { normalizeDurationSeconds } from "@/lib/models/normalization";
 
-const ratioOptions = ["9:16", "16:9", "1:1", "21:9"] as const;
+const ratioOptions = ["9:16", "16:9", "1:1", "21:9", "4:5", "5:4", "3:2", "2:3"] as const;
 const FLOAT_TOLERANCE = 1e-6;
 
 const urlField = z
@@ -87,6 +87,7 @@ const formSchema = z.object({
   maskUrl: urlField,
   referenceImageUrl: urlField,
   referenceVideoUrl: urlField,
+  audioUrl: urlField,
   negativePrompt: optionalTextField,
   fps: z.coerce.number().min(1).max(60).optional(),
   motionStrength: z.coerce.number().min(0).max(1).optional(),
@@ -94,6 +95,8 @@ const formSchema = z.object({
   steps: z.coerce.number().min(1).max(120).optional(),
   watermark: z.boolean().optional(),
   upscaling: z.boolean().optional(),
+  enhancePrompt: z.boolean().optional(),
+  autoFix: z.boolean().optional(),
 });
 
 export type GenerateFormValues = z.infer<typeof formSchema>;
@@ -119,6 +122,7 @@ function buildDefaultValuesFromPreset(preset: (typeof generationPresets)[number]
     maskUrl: undefined,
     referenceImageUrl: undefined,
     referenceVideoUrl: undefined,
+    audioUrl: undefined,
     negativePrompt: preset.negativePrompt,
     fps: preset.advancedDefaults?.fps ?? model?.defaults.fps,
     motionStrength: preset.advancedDefaults?.motionStrength,
@@ -127,6 +131,14 @@ function buildDefaultValuesFromPreset(preset: (typeof generationPresets)[number]
     watermark:
       preset.advancedDefaults?.watermark ?? (model?.supports.watermarkToggle ? true : undefined),
     upscaling: preset.advancedDefaults?.upscaling ?? (model?.supports.upscaling ? false : undefined),
+    enhancePrompt:
+      preset.advancedDefaults?.enhancePrompt ??
+      model?.defaults.enhancePrompt ??
+      (model?.supports.promptEnhancement ? true : undefined),
+    autoFix:
+      preset.advancedDefaults?.autoFix ??
+      model?.defaults.autoFix ??
+      (model?.supports.autoFix ? true : undefined),
   } satisfies GenerateFormValues;
 }
 
@@ -190,8 +202,11 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
   const steps = form.watch("steps");
   const watermark = form.watch("watermark");
   const upscaling = form.watch("upscaling");
+  const enhancePrompt = form.watch("enhancePrompt");
+  const autoFix = form.watch("autoFix");
   const inputImageUrl = form.watch("inputImageUrl");
-  const referenceVideoUrl = form.watch("referenceVideoUrl");
+ const referenceVideoUrl = form.watch("referenceVideoUrl");
+  const audioUrl = form.watch("audioUrl");
   const modelSpec = React.useMemo(() => {
     if (provider !== "fal") return undefined;
     return getModelSpec(provider, engine);
@@ -396,6 +411,22 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
       form.setValue("upscaling", false);
     }
 
+    if (!modelSpec.supports.promptEnhancement && typeof enhancePrompt !== "undefined") {
+      form.setValue("enhancePrompt", undefined);
+    } else if (modelSpec.supports.promptEnhancement && typeof enhancePrompt === "undefined") {
+      form.setValue("enhancePrompt", modelSpec.defaults.enhancePrompt ?? true);
+    }
+
+    if (!modelSpec.supports.autoFix && typeof autoFix !== "undefined") {
+      form.setValue("autoFix", undefined);
+    } else if (modelSpec.supports.autoFix && typeof autoFix === "undefined") {
+      form.setValue("autoFix", modelSpec.defaults.autoFix ?? true);
+    }
+
+    if (!modelSpec.supports.audioTrack && typeof audioUrl !== "undefined") {
+      form.setValue("audioUrl", undefined);
+    }
+
     if (modelSpec.resolutions?.length) {
       const currentResolution = form.getValues("resolution");
       const fallback = modelSpec.defaults.resolution ?? modelSpec.resolutions[0];
@@ -416,6 +447,9 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
     steps,
     watermark,
     upscaling,
+    audioUrl,
+    enhancePrompt,
+    autoFix,
     form,
   ]);
 
@@ -623,6 +657,9 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
       if (typeof values.steps !== "undefined") metadata.steps = values.steps;
       if (typeof values.watermark !== "undefined") metadata.watermark = values.watermark;
       if (typeof values.upscaling !== "undefined") metadata.upscaling = values.upscaling;
+      if (typeof values.enhancePrompt !== "undefined") metadata.enhancePrompt = values.enhancePrompt;
+      if (typeof values.autoFix !== "undefined") metadata.autoFix = values.autoFix;
+      if (typeof values.audioUrl === "string") metadata.audioUrl = values.audioUrl;
       if (values.resolution) metadata.resolution = values.resolution;
       if (specForSubmission?.id) {
         metadata.modelId = specForSubmission.id;
@@ -1463,6 +1500,28 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
                       )}
                     />
                   ) : null}
+                  {modelSpec?.supports.audioTrack ? (
+                    <FormField
+                      control={form.control}
+                      name="audioUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Audio track URL</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="url"
+                              placeholder="https://..."
+                              className="border-black/10 bg-white text-sm text-foreground dark:border-white/10 dark:bg-[#162130] dark:text-slate-100"
+                              value={field.value ?? ""}
+                              onChange={(event) => field.onChange(event.target.value || undefined)}
+                            />
+                          </FormControl>
+                          <FormDescription>Optional MP3/WAV for background audio (public URL).</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  ) : null}
                   {/* motionStrength input temporarily removed: no range in model constraints */}
                   {cfgRange ? (
                     <FormField
@@ -1538,6 +1597,46 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
                   />
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
+                  {modelSpec?.supports.promptEnhancement ? (
+                    <FormField
+                      control={form.control}
+                      name="enhancePrompt"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-xl border border-black/10 bg-white p-3 dark:border-white/10 dark:bg-[#162130]">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-sm">Prompt enhancement</FormLabel>
+                            <FormDescription>Let FAL refine your prompt wording.</FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value ?? modelSpec.defaults.enhancePrompt ?? true}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  ) : null}
+                  {modelSpec?.supports.autoFix ? (
+                    <FormField
+                      control={form.control}
+                      name="autoFix"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-xl border border-black/10 bg-white p-3 dark:border-white/10 dark:bg-[#162130]">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-sm">Auto content fix</FormLabel>
+                            <FormDescription>Let FAL rewrite prompts that hit policy filters.</FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value ?? modelSpec.defaults.autoFix ?? true}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  ) : null}
                   {modelSpec?.supports.watermarkToggle ? (
                     <FormField
                       control={form.control}

@@ -1,7 +1,7 @@
 import type { ModelId } from "./models";
 import type { ProviderId } from "@/providers/types";
 
-export type AspectRatio = "9:16" | "16:9" | "1:1" | "21:9";
+export type AspectRatio = "9:16" | "16:9" | "1:1" | "21:9" | "4:5" | "5:4" | "3:2" | "2:3";
 
 export interface PresetAdvancedDefaults {
   fps?: number;
@@ -11,6 +11,8 @@ export interface PresetAdvancedDefaults {
   watermark?: boolean;
   upscaling?: boolean;
   resolution?: string;
+  enhancePrompt?: boolean;
+  autoFix?: boolean;
 }
 
 export interface GenerationPreset {
@@ -47,6 +49,8 @@ export const generationPresets: GenerationPreset[] = [
       fps: 24,
       cfgScale: 9,
       resolution: "1080p",
+      enhancePrompt: true,
+      autoFix: true,
     },
   },
   {
@@ -66,6 +70,8 @@ export const generationPresets: GenerationPreset[] = [
       fps: 24,
       cfgScale: 8.5,
       resolution: "720p",
+      enhancePrompt: true,
+      autoFix: true,
     },
   },
   {
@@ -84,6 +90,8 @@ export const generationPresets: GenerationPreset[] = [
       fps: 24,
       cfgScale: 8,
       resolution: "720p",
+      enhancePrompt: true,
+      autoFix: true,
     },
   },
   {
@@ -101,7 +109,7 @@ export const generationPresets: GenerationPreset[] = [
     styleTags: ["trailer", "high-energy"],
     advancedDefaults: {
       fps: 24,
-      cfgScale: 7,
+      cfgScale: 0.5,
       resolution: "720p",
     },
   },
@@ -179,6 +187,24 @@ export const generationPresets: GenerationPreset[] = [
       cfgScale: 6,
       steps: 30,
       resolution: "720p",
+    },
+  },
+  {
+    id: "wan25-image-to-video",
+    name: "Wan 2.5 Motion",
+    description: "Image → vidéo 5 s, prompt expansion activée.",
+    modelId: "fal:wan-25-preview",
+    provider: "fal",
+    engine: "wan-25-preview",
+    ratio: "16:9",
+    durationSeconds: 5,
+    withAudio: false,
+    negativePrompt: "low quality",
+    styleTags: ["image-to-video", "wan"],
+    advancedDefaults: {
+      cfgScale: 5,
+      resolution: "1080p",
+      enhancePrompt: true,
     },
   },
   {

@@ -13,6 +13,7 @@ export async function GET() {
   try {
     checks.APP_URL = env.APP_URL ?? null;
     checks.DATABASE_URL = Boolean(process.env.DATABASE_URL);
+    checks.SUPABASE_DB_URL = Boolean(process.env.SUPABASE_DB_URL);
     checks.SUPABASE_URL = env.SUPABASE_URL ?? null;
     checks.SUPABASE_ANON_KEY = Boolean(env.SUPABASE_ANON_KEY);
     checks.NEXT_PUBLIC_SUPABASE_URL = env.NEXT_PUBLIC_SUPABASE_URL ?? null;
@@ -32,7 +33,7 @@ export async function GET() {
   }
 
   try {
-    const url = process.env.DATABASE_URL;
+    const url = process.env.SUPABASE_DB_URL ?? process.env.DATABASE_URL;
     try {
       if (url) {
         const parsed = new URL(url);

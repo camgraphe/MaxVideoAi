@@ -5,7 +5,7 @@ export type JobStatus = "pending" | "running" | "completed" | "failed";
 export interface StartJobInput {
   prompt: string;
   durationSeconds: number;
-  ratio: "9:16" | "16:9";
+  ratio: "9:16" | "16:9" | "1:1" | "21:9" | "4:5" | "5:4" | "3:2" | "2:3";
   engine: string;
   withAudio: boolean;
   seed?: number;
@@ -17,6 +17,7 @@ export interface StartJobInput {
     maskUrl?: string;
     referenceImageUrl?: string;
     referenceVideoUrl?: string;
+    audioUrl?: string;
   };
   advanced?: {
     fps?: number;
@@ -25,6 +26,8 @@ export interface StartJobInput {
     steps?: number;
     watermark?: boolean;
     upscaling?: boolean;
+    enhancePrompt?: boolean;
+    autoFix?: boolean;
   };
   metadata?: Record<string, string | number | boolean | null>;
   webhookUrl?: string;

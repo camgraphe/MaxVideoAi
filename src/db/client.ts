@@ -27,7 +27,7 @@ function configureNumericParsers() {
 }
 
 export function getDb(): Database {
-  const connectionString = env.DATABASE_URL;
+  const connectionString = env.SUPABASE_DB_URL ?? env.DATABASE_URL;
   const connectionUrl = new URL(connectionString);
   const isLocalHost = ["localhost", "127.0.0.1", "::1"].includes(connectionUrl.hostname);
 

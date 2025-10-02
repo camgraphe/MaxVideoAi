@@ -1,8 +1,6 @@
 import { pricingConfig } from "@/config/pricing";
 import { getModelSpec } from "@/data/models";
-import { getFalCredentials } from "@/lib/env";
-
-const DEFAULT_BASE = "https://fal.run";
+import { getFalApiBase, getFalCredentials } from "@/lib/env";
 const MARKUP = Number(process.env.FAL_PRICE_MARKUP ?? 1.3);
 const CACHE_TTL = Number(process.env.FAL_PRICE_CACHE_TTL_MS ?? 5 * 60 * 1000);
 
@@ -12,19 +10,7 @@ interface CachedRate {
 }
 
 const cache = new Map<string, CachedRate>();
-
-function resolveFalBase(): string {
-  const raw = process.env.FAL_API_BASE;
-  if (!raw) return DEFAULT_BASE;
-  try {
-    const url = new URL(raw);
-    return url.origin;
-  } catch {
-    return DEFAULT_BASE;
-  }
-}
-
-const FAL_BASE = resolveFalBase();
+const FAL_BASE = getFalApiBase();
 
 async function fetchFalPipelinePricing(falSlug: string): Promise<number | null> {
   const key = getFalCredentials();

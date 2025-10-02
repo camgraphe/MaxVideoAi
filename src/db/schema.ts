@@ -11,7 +11,7 @@ export const jobParamsSchema = z.object({
   provider: z.enum(["veo", "fal", "kiwi"]),
   engine: z.string(),
   prompt: z.string().min(4),
-  ratio: z.enum(["9:16", "16:9", "1:1", "21:9"]),
+  ratio: z.enum(["9:16", "16:9", "1:1", "21:9", "4:5", "5:4", "3:2", "2:3"]),
   durationSeconds: z.number().min(1).max(32),
   withAudio: z.boolean(),
   quantity: z.number().int().min(1).max(4).default(1),

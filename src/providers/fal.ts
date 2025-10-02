@@ -10,28 +10,9 @@ import type {
 import { getModelSpec } from "@/data/models";
 import type { ModelSpec } from "@/data/models";
 import { normalizeDurationSeconds, normalizeNumber } from "@/lib/models/normalization";
-import { getFalCredentials, shouldRequestFalLogs } from "@/lib/env";
-
-function resolveFalBase(): string {
-  const DEFAULT = "https://fal.run";
-  const allowedOrigins = new Set(["https://fal.run", "https://api.fal.ai", "https://queue.fal.run"]);
-  const raw = process.env.FAL_API_BASE;
-  if (!raw) return DEFAULT;
-  try {
-    const url = new URL(raw);
-    const origin = url.origin; // strip any path to avoid "https://fal.ai/models/..."
-    if (allowedOrigins.has(origin)) {
-      return origin;
-    }
-    console.warn(`[fal] Ignoring invalid FAL_API_BASE '${raw}'. Using default ${DEFAULT}.`);
-    return DEFAULT;
-  } catch {
-    console.warn(`[fal] Invalid FAL_API_BASE '${raw}'. Using default ${DEFAULT}.`);
-    return DEFAULT;
-  }
-}
-
-const FAL_API_BASE = resolveFalBase();
+import { getFalApiBase, getFalCredentials, getFalQueueBase, shouldRequestFalLogs } from "@/lib/env";
+const FAL_API_BASE = getFalApiBase();
+const FAL_QUEUE_BASE = getFalQueueBase();
 const FAL_TIMEOUT_MS = Number(process.env.FAL_TIMEOUT_MS ?? 300000);
 const FAL_JWKS_URL =
   process.env.FAL_JWKS_URL ?? "https://rest.alpha.fal.ai/.well-known/jwks.json";
@@ -53,6 +34,8 @@ export interface FalPollResponse {
   outputs?: unknown;
   thumbnails?: string[];
   duration?: number;
+  duration_seconds?: number;
+  video_url?: string;
   response?: {
     output?: unknown;
     outputs?: unknown;
@@ -97,6 +80,9 @@ async function falFetch<T>(path: string, init: FalFetchOptions = {}): Promise<T>
     const finalHeaders = new Headers(init.headers as HeadersInit);
     if (!finalHeaders.has("Content-Type")) {
       finalHeaders.set("Content-Type", "application/json");
+    }
+    if (!finalHeaders.has("Accept")) {
+      finalHeaders.set("Accept", "application/json");
     }
     finalHeaders.set("Authorization", `Key ${requireFalKey()}`);
 
@@ -163,8 +149,22 @@ function coerceFalVideoResource(
   const urlCandidate = (() => {
     if (typeof record.url === "string") return record.url;
     if (typeof record.video_url === "string") return record.video_url;
+    if (typeof record.signed_url === "string") return record.signed_url;
+    if (typeof record.download_url === "string") return record.download_url;
+    if (typeof record.file_url === "string") return record.file_url;
+    if (typeof record.direct_url === "string") return record.direct_url;
+    if (typeof record.asset_url === "string") return record.asset_url;
     if (typeof record.file === "object" && record.file && typeof (record.file as Record<string, unknown>).url === "string") {
       return (record.file as Record<string, unknown>).url as string;
+    }
+    if (typeof record.file === "object" && record.file) {
+      const fileRecord = record.file as Record<string, unknown>;
+      if (typeof fileRecord.signed_url === "string") {
+        return fileRecord.signed_url;
+      }
+      if (typeof fileRecord.download_url === "string") {
+        return fileRecord.download_url;
+      }
     }
     return undefined;
   })();
@@ -178,6 +178,10 @@ function coerceFalVideoResource(
       ? record.thumbnail
       : typeof record.thumbnail_url === "string"
         ? record.thumbnail_url
+        : typeof record.preview_url === "string"
+          ? record.preview_url
+          : typeof record.signed_thumbnail_url === "string"
+            ? record.signed_thumbnail_url
         : fallbacks.thumbnail;
 
   const duration =
@@ -185,6 +189,10 @@ function coerceFalVideoResource(
       ? record.duration
       : typeof record.seconds === "number"
         ? record.seconds
+        : typeof record.duration_seconds === "number"
+          ? record.duration_seconds
+          : typeof record.time_seconds === "number"
+            ? record.time_seconds
         : fallbacks.durationSeconds;
 
   return {
@@ -196,6 +204,10 @@ function coerceFalVideoResource(
         ? record.content_type
         : typeof record.mime_type === "string"
           ? record.mime_type
+          : typeof record.contentType === "string"
+            ? record.contentType
+            : typeof record.mime === "string"
+              ? record.mime
           : undefined,
     fileName:
       typeof record.file_name === "string"
@@ -203,7 +215,14 @@ function coerceFalVideoResource(
         : typeof record.filename === "string"
           ? record.filename
           : undefined,
-    fileSizeBytes: typeof record.file_size === "number" ? record.file_size : undefined,
+    fileSizeBytes:
+      typeof record.file_size === "number"
+        ? record.file_size
+        : typeof record.size === "number"
+          ? record.size
+          : typeof record.bytes === "number"
+            ? record.bytes
+            : undefined,
   };
 }
 
@@ -341,6 +360,19 @@ export function extractFalVideoResourceFromPayload(
     }
   }
 
+  if (typeof payload.video_url === "string") {
+    return {
+      url: payload.video_url,
+      thumbnail: payload.thumbnails?.[0],
+      durationSeconds:
+        typeof payload.duration === "number"
+          ? payload.duration
+          : typeof payload.duration_seconds === "number"
+            ? payload.duration_seconds
+            : undefined,
+    };
+  }
+
   if (payload.outputs) {
     if (Array.isArray(payload.outputs) && payload.outputs.length > 0) {
       for (const candidate of payload.outputs) {
@@ -428,6 +460,14 @@ const payloadBuilders: Record<string, PayloadBuilder> = {
     const durationSeconds = normalizeDurationSeconds(input.durationSeconds, spec);
     const duration = secondsToDurationString(durationSeconds);
     const cfgScale = normalizeNumber(input.advanced?.cfgScale, spec.constraints.cfgScale, spec.defaults.cfgScale);
+    const enhancePrompt =
+      typeof input.advanced?.enhancePrompt === "boolean"
+        ? input.advanced.enhancePrompt
+        : spec.defaults.enhancePrompt ?? true;
+    const autoFix =
+      typeof input.advanced?.autoFix === "boolean"
+        ? input.advanced.autoFix
+        : spec.defaults.autoFix ?? true;
     return {
       prompt: input.prompt,
       aspect_ratio: input.ratio,
@@ -437,6 +477,8 @@ const payloadBuilders: Record<string, PayloadBuilder> = {
       negative_prompt: input.negativePrompt,
       seed: input.seed,
       cfg_scale: cfgScale,
+      enhance_prompt: enhancePrompt,
+      auto_fix: autoFix,
     };
   },
   "fal:veo3-fast": ({ input, spec }) => {
@@ -448,6 +490,14 @@ const payloadBuilders: Record<string, PayloadBuilder> = {
     const durationSeconds = normalizeDurationSeconds(input.durationSeconds, spec);
     const duration = secondsToDurationString(durationSeconds);
     const cfgScale = normalizeNumber(input.advanced?.cfgScale, spec.constraints.cfgScale, spec.defaults.cfgScale);
+    const enhancePrompt =
+      typeof input.advanced?.enhancePrompt === "boolean"
+        ? input.advanced.enhancePrompt
+        : spec.defaults.enhancePrompt ?? true;
+    const autoFix =
+      typeof input.advanced?.autoFix === "boolean"
+        ? input.advanced.autoFix
+        : spec.defaults.autoFix ?? true;
     return {
       prompt: input.prompt,
       image_url: imageUrl,
@@ -458,15 +508,22 @@ const payloadBuilders: Record<string, PayloadBuilder> = {
       negative_prompt: input.negativePrompt,
       seed: input.seed,
       cfg_scale: cfgScale,
+      enhance_prompt: enhancePrompt,
+      auto_fix: autoFix,
     };
   },
   "fal:kling-pro": ({ input, spec }) => {
+    const imageUrl = input.inputAssets?.initImageUrl;
+    if (!imageUrl) {
+      throw new Error("Kling 2.5 Turbo Pro requires an init image. Upload one before launching the job.");
+    }
     const durationSeconds = normalizeDurationSeconds(input.durationSeconds, spec);
+    const duration = durationSeconds <= 5 ? "5" : "10";
     const cfgScale = normalizeNumber(input.advanced?.cfgScale, spec.constraints.cfgScale, spec.defaults.cfgScale);
     return {
       prompt: input.prompt,
-      duration: Math.max(1, Math.round(durationSeconds)).toString(),
-      aspect_ratio: input.ratio,
+      image_url: imageUrl,
+      duration,
       negative_prompt: input.negativePrompt,
       cfg_scale: cfgScale,
       seed: input.seed,
@@ -540,6 +597,30 @@ const payloadBuilders: Record<string, PayloadBuilder> = {
       export_fps: exportFps,
       negative_prompt: input.negativePrompt,
       seed: input.seed,
+    };
+  },
+  "fal:wan-25-preview": ({ input, spec }) => {
+    const imageUrl = input.inputAssets?.initImageUrl;
+    if (!imageUrl) {
+      throw new Error("Wan 2.5 Image to Video requires an init image. Upload one before launching the job.");
+    }
+    const durationSeconds = normalizeDurationSeconds(input.durationSeconds, spec);
+    const rounded = durationSeconds <= 5 ? 5 : 10;
+    const audioUrl = typeof input.inputAssets?.audioUrl === "string" ? input.inputAssets.audioUrl : undefined;
+    const resolution = resolveResolution(input, spec);
+    const enablePromptExpansion =
+      typeof input.advanced?.enhancePrompt === "boolean"
+        ? input.advanced.enhancePrompt
+        : spec.defaults.enhancePrompt ?? true;
+    return {
+      prompt: input.prompt,
+      image_url: imageUrl,
+      duration: String(rounded),
+      resolution,
+      negative_prompt: input.negativePrompt,
+      enable_prompt_expansion: enablePromptExpansion,
+      seed: input.seed,
+      audio_url: audioUrl,
     };
   },
 };
@@ -677,7 +758,7 @@ export const falProvider: ProviderAdapter = {
     const response = await falFetch<FalStartResponse>(`/${spec.falSlug}`, {
       method: "POST",
       body: JSON.stringify(requestPayload),
-      baseUrl: "https://queue.fal.run",
+      baseUrl: FAL_QUEUE_BASE,
     });
 
     const requestId = response.request_id;
@@ -719,20 +800,28 @@ export const falProvider: ProviderAdapter = {
     if (queueRoot) {
       if (includeLogs) {
         addCandidate({
-          base: "https://queue.fal.run",
+          base: FAL_QUEUE_BASE,
           path: `/${queueRoot}/requests/${providerJobId}/status`,
           searchParams: { logs: "1" },
           description: "queue status",
         });
       }
       addCandidate({
-        base: "https://queue.fal.run",
+        base: FAL_QUEUE_BASE,
         path: `/${queueRoot}/requests/${providerJobId}`,
         description: "queue result",
       });
     }
 
-    const baseFallbacks = [FAL_API_BASE, "https://fal.run"];
+    const baseFallbacks = Array.from(
+      new Set([
+        FAL_API_BASE,
+        FAL_QUEUE_BASE,
+        "https://fal.run",
+        "https://api.fal.ai",
+        "https://rest.alpha.fal.ai",
+      ]),
+    );
     const fallbackPathBase = (() => {
       if (spec?.falSlug) {
         return `/${spec.falSlug}/requests/${providerJobId}`;

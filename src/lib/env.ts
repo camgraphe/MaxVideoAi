@@ -5,6 +5,7 @@ const envSchema = z.object({
   // DATABASE_URL is a postgres connection string (postgres:// or postgresql://),
   // not an HTTP URL — validate as non-empty string.
   DATABASE_URL: z.string().min(1),
+  SUPABASE_DB_URL: z.string().min(1).optional(),
   NEXT_PUBLIC_APP_URL: z.string().url().optional(),
   STRIPE_SECRET_KEY: z.string().min(1).optional(),
   STRIPE_WEBHOOK_SECRET: z.string().min(1).optional(),
@@ -21,6 +22,7 @@ const envSchema = z.object({
   FAL_API_KEY: z.string().optional(),
   FAL_KEY: z.string().optional(),
   FAL_QUEUE_LOGS_DEFAULT: z.string().optional(),
+  FAL_QUEUE_BASE: z.string().optional(),
   APP_URL: z.string().url().optional(),
   FAL_WEBHOOK_PATH: z.string().optional(),
   S3_BUCKET: z.string().optional(),
@@ -37,6 +39,7 @@ const envSchema = z.object({
 export const env = envSchema.parse({
   NODE_ENV: process.env.NODE_ENV,
   DATABASE_URL: process.env.DATABASE_URL,
+  SUPABASE_DB_URL: process.env.SUPABASE_DB_URL,
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
   STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
@@ -54,6 +57,7 @@ export const env = envSchema.parse({
   FAL_API_KEY: process.env.FAL_API_KEY,
   FAL_KEY: process.env.FAL_KEY,
   FAL_QUEUE_LOGS_DEFAULT: process.env.FAL_QUEUE_LOGS_DEFAULT,
+  FAL_QUEUE_BASE: process.env.FAL_QUEUE_BASE,
   APP_URL: process.env.APP_URL,
   FAL_WEBHOOK_PATH: process.env.FAL_WEBHOOK_PATH,
   S3_BUCKET: process.env.S3_BUCKET,
@@ -88,4 +92,43 @@ export function getFalWebhookUrl(): string | undefined {
 
 export function shouldRequestFalLogs(): boolean {
   return process.env.FAL_QUEUE_LOGS_DEFAULT === "1";
+}
+
+const ALLOWED_FAL_HOST_SUFFIXES = ["fal.ai", "fal.run"];
+const LOCAL_FAL_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
+
+function normalizeFalBase(raw: string | undefined, fallback: string): string {
+  if (!raw) return fallback;
+  try {
+    const url = new URL(raw);
+    const hostname = url.hostname.toLowerCase();
+    const protocol = url.protocol.toLowerCase();
+    const isLocal = LOCAL_FAL_HOSTS.has(hostname);
+    const isAllowedHost = ALLOWED_FAL_HOST_SUFFIXES.some((suffix) =>
+      hostname === suffix || hostname.endsWith(`.${suffix}`),
+    );
+
+    if (!isLocal && !isAllowedHost) {
+      console.warn(`[fal] Ignoring base '${raw}' – host must end with .fal.ai or .fal.run.`);
+      return fallback;
+    }
+
+    if (!isLocal && protocol !== "https:") {
+      console.warn(`[fal] Ignoring base '${raw}' – HTTPS required.`);
+      return fallback;
+    }
+
+    return url.origin;
+  } catch {
+    console.warn(`[fal] Invalid base '${raw}'. Using default ${fallback}.`);
+    return fallback;
+  }
+}
+
+export function getFalApiBase(): string {
+  return normalizeFalBase(process.env.FAL_API_BASE, "https://fal.run");
+}
+
+export function getFalQueueBase(): string {
+  return normalizeFalBase(process.env.FAL_QUEUE_BASE, "https://queue.fal.run");
 }

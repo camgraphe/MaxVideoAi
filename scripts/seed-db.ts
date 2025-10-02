@@ -91,7 +91,14 @@ async function main() {
           provider: preset.provider,
           engine: preset.engine,
           // DB only accepts "16:9" | "9:16"; coerce any other ratios to a safe default
-          ratio: (preset.ratio === "1:1" || preset.ratio === "21:9") ? "16:9" : (preset.ratio as "16:9" | "9:16"),
+          ratio:
+            preset.ratio === "9:16"
+              ? "9:16"
+              : preset.ratio === "16:9"
+                ? "16:9"
+                : preset.ratio === "4:5" || preset.ratio === "2:3"
+                  ? "9:16"
+                  : "16:9",
           durationSeconds: preset.durationSeconds,
           withAudio: preset.withAudio,
           seed: preset.seed,

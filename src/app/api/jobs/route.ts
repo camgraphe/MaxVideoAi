@@ -60,6 +60,7 @@ export async function POST(request: Request) {
         : appConfig.defaultBudgetCents;
 
     const metadataRecord = { ...(payload.metadata ?? {}) } as Record<string, unknown>;
+    metadataRecord.originalRatio = payload.ratio;
     if (payload.modelId) {
       metadataRecord.modelId = payload.modelId;
     }
@@ -273,7 +274,7 @@ export async function POST(request: Request) {
       provider: payload.provider,
       engine: payload.engine,
       prompt: payload.prompt,
-      ratio: (payload.ratio === "1:1" || payload.ratio === "21:9") ? "16:9" : (payload.ratio as "16:9" | "9:16"),
+      ratio: mapRatioForStorage(payload.ratio),
       durationSeconds,
       withAudio: payload.withAudio,
       quantity: payload.quantity,
@@ -296,6 +297,8 @@ export async function POST(request: Request) {
         typeof job.metadata.referenceVideoUrl === "string"
           ? job.metadata.referenceVideoUrl
           : undefined,
+      audioUrl:
+        typeof job.metadata.audioUrl === "string" ? job.metadata.audioUrl : undefined,
     };
     const advancedOptions = {
       fps: typeof job.metadata.fps === "number" ? job.metadata.fps : undefined,
@@ -307,6 +310,10 @@ export async function POST(request: Request) {
         typeof job.metadata.watermark === "boolean" ? job.metadata.watermark : undefined,
       upscaling:
         typeof job.metadata.upscaling === "boolean" ? job.metadata.upscaling : undefined,
+      enhancePrompt:
+        typeof job.metadata.enhancePrompt === "boolean" ? job.metadata.enhancePrompt : undefined,
+      autoFix:
+        typeof job.metadata.autoFix === "boolean" ? job.metadata.autoFix : undefined,
     };
 
     const webhookUrl = job.provider === "fal" ? getFalWebhookUrl() : undefined;
@@ -320,10 +327,13 @@ export async function POST(request: Request) {
       }
     }
 
+    const providerRatio =
+      typeof job.metadata.originalRatio === "string" ? job.metadata.originalRatio : job.ratio;
+
     const providerJob = await adapter.startJob({
       prompt: job.prompt,
       durationSeconds: job.durationSeconds,
-      ratio: job.ratio,
+      ratio: providerRatio,
       engine: job.engine,
       withAudio: job.withAudio,
       seed: job.seed ?? undefined,
@@ -378,4 +388,12 @@ export async function GET() {
   const session = await requireCurrentSession();
   const orgJobs = await listJobsByOrganization(session.organization.id);
   return NextResponse.json({ jobs: orgJobs.map(serializeJob) });
+}
+function mapRatioForStorage(ratio: string): "9:16" | "16:9" {
+  if (ratio === "9:16") return "9:16";
+  if (ratio === "16:9") return "16:9";
+  if (ratio === "1:1") return "16:9";
+  if (ratio === "4:5" || ratio === "2:3") return "9:16";
+  if (ratio === "5:4" || ratio === "3:2" || ratio === "21:9") return "16:9";
+  return "16:9";
 }

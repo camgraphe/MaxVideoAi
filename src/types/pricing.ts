@@ -7,7 +7,8 @@ export type FalEngine =
   | "pika-v2-2"
   | "luma-dream"
   | "pixverse-v4-5"
-  | "cogvideox-5b";
+  | "cogvideox-5b"
+  | "wan-25-preview";
 
 export interface PricingConfig {
   veo: Record<VeoPricingTier, Record<VeoAudioMode, number>>;

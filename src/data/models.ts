@@ -6,6 +6,7 @@ export type ModelId =
   | "fal:luma-dream"
   | "fal:pixverse-v4-5"
   | "fal:cogvideox-5b"
+  | "fal:wan-25-preview"
   | "kiwi:sandbox";
 
 export type ContentType = "video" | "image";
@@ -16,6 +17,8 @@ export interface RangeOption {
   step?: number;
   default?: number;
 }
+
+type AspectRatio = "9:16" | "16:9" | "1:1" | "21:9" | "4:5" | "5:4" | "3:2" | "2:3";
 
 export interface ModelSpec {
   id: ModelId;
@@ -37,9 +40,12 @@ export interface ModelSpec {
     frameInterpolation: boolean;
     upscaling: boolean;
     watermarkToggle: boolean;
+    promptEnhancement: boolean;
+    autoFix: boolean;
+    audioTrack: boolean;
   };
   constraints: {
-    ratios: Array<"9:16" | "16:9" | "1:1" | "21:9">;
+    ratios: Array<AspectRatio>;
     durationSeconds?: RangeOption;
     fps?: RangeOption;
     resolution: string;
@@ -53,6 +59,8 @@ export interface ModelSpec {
     steps?: number;
     withAudio?: boolean;
     resolution?: string;
+    enhancePrompt?: boolean;
+    autoFix?: boolean;
   };
   resolutions?: string[];
 }
@@ -78,6 +86,9 @@ export const models: Record<ModelId, ModelSpec> = {
       frameInterpolation: false,
       upscaling: true,
       watermarkToggle: false,
+      promptEnhancement: true,
+      autoFix: true,
+      audioTrack: false,
     },
     constraints: {
       ratios: ["16:9", "9:16", "1:1"],
@@ -92,6 +103,8 @@ export const models: Record<ModelId, ModelSpec> = {
       cfgScale: 9,
       withAudio: true,
       resolution: "720p",
+      enhancePrompt: true,
+      autoFix: true,
     },
     resolutions: ["720p", "1080p"],
   },
@@ -115,12 +128,15 @@ export const models: Record<ModelId, ModelSpec> = {
       frameInterpolation: false,
       upscaling: false,
       watermarkToggle: false,
+      promptEnhancement: true,
+      autoFix: true,
+      audioTrack: false,
     },
     constraints: {
       ratios: ["16:9", "9:16", "1:1"],
       durationSeconds: { min: 4, max: 8, step: 2, default: 6 },
       fps: { min: 24, max: 30, default: 24 },
-      resolution: "Jusqu'à 720p",
+      resolution: "720p ou 1080p",
       cfgScale: { min: 1, max: 12, step: 0.5, default: 8 },
     },
     defaults: {
@@ -129,19 +145,21 @@ export const models: Record<ModelId, ModelSpec> = {
       cfgScale: 8,
       withAudio: true,
       resolution: "720p",
+      enhancePrompt: true,
+      autoFix: true,
     },
-    resolutions: ["720p"],
+    resolutions: ["720p", "1080p"],
   },
   "fal:kling-pro": {
     id: "fal:kling-pro",
     label: "Kling 2.5 Turbo Pro",
-    description: "Modèle Tencent Kling v2.5 Turbo Pro via FAL.",
+    description: "Image-to-video Kling 2.5 Turbo Pro via FAL.",
     provider: "fal",
-    falSlug: "fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
+    falSlug: "fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
     falQueueRoot: "fal-ai/kling-video",
     contentType: "video",
     supports: {
-      imageInit: false,
+      imageInit: true,
       imageReference: true,
       mask: false,
       refVideo: false,
@@ -152,22 +170,25 @@ export const models: Record<ModelId, ModelSpec> = {
       frameInterpolation: false,
       upscaling: true,
       watermarkToggle: false,
+      promptEnhancement: false,
+      autoFix: false,
+      audioTrack: false,
     },
     constraints: {
-      ratios: ["16:9", "9:16", "1:1"],
+      ratios: ["16:9"],
       durationSeconds: { min: 5, max: 10, step: 5, default: 5 },
       fps: { min: 24, max: 24, default: 24 },
-      resolution: "720p ou 1080p",
-      cfgScale: { min: 1, max: 14, step: 0.5, default: 7 },
+      resolution: "480p, 720p ou 1080p",
+      cfgScale: { min: 0, max: 1, step: 0.05, default: 0.5 },
     },
     defaults: {
       durationSeconds: 5,
       fps: 24,
-      cfgScale: 7,
+      cfgScale: 0.5,
       withAudio: false,
-      resolution: "720p",
+      resolution: "1080p",
     },
-    resolutions: ["720p", "1080p"],
+    resolutions: ["480p", "720p", "1080p"],
   },
   "fal:pika-v2-2": {
     id: "fal:pika-v2-2",
@@ -189,9 +210,12 @@ export const models: Record<ModelId, ModelSpec> = {
       frameInterpolation: false,
       upscaling: false,
       watermarkToggle: false,
+      promptEnhancement: false,
+      autoFix: false,
+      audioTrack: false,
     },
     constraints: {
-      ratios: ["16:9", "9:16", "1:1"],
+      ratios: ["16:9", "9:16", "1:1", "4:5", "5:4", "3:2", "2:3"],
       durationSeconds: { min: 3, max: 8, step: 1, default: 5 },
       fps: { min: 24, max: 30, default: 24 },
       resolution: "720p ou 1080p",
@@ -226,6 +250,9 @@ export const models: Record<ModelId, ModelSpec> = {
       frameInterpolation: false,
       upscaling: true,
       watermarkToggle: false,
+      promptEnhancement: false,
+      autoFix: false,
+      audioTrack: false,
     },
     constraints: {
       ratios: ["21:9", "16:9", "9:16"],
@@ -263,6 +290,9 @@ export const models: Record<ModelId, ModelSpec> = {
       frameInterpolation: false,
       upscaling: true,
       watermarkToggle: false,
+      promptEnhancement: false,
+      autoFix: false,
+      audioTrack: false,
     },
     constraints: {
       ratios: ["16:9", "9:16", "1:1"],
@@ -300,7 +330,51 @@ export const models: Record<ModelId, ModelSpec> = {
       frameInterpolation: false,
       upscaling: true,
       watermarkToggle: false,
+      promptEnhancement: false,
+      autoFix: false,
+      audioTrack: false,
+  },
+  "fal:wan-25-preview": {
+    id: "fal:wan-25-preview",
+    label: "Wan 2.5 Image to Video",
+    description: "Wan 2.5 image-to-video model.",
+    provider: "fal",
+    falSlug: "fal-ai/wan-25-preview/image-to-video",
+    falQueueRoot: "fal-ai/wan-25-preview",
+    contentType: "video",
+    supports: {
+      imageInit: true,
+      imageReference: false,
+      mask: false,
+      refVideo: false,
+      audio: false,
+      seed: true,
+      negativePrompt: true,
+      multiPrompt: false,
+      frameInterpolation: false,
+      upscaling: true,
+      watermarkToggle: false,
+      promptEnhancement: true,
+      autoFix: false,
+      audioTrack: true,
     },
+    constraints: {
+      ratios: ["16:9"],
+      durationSeconds: { min: 5, max: 10, step: 5, default: 5 },
+      fps: { min: 24, max: 24, default: 24 },
+      resolution: "480p, 720p ou 1080p",
+      cfgScale: { min: 1, max: 10, step: 1, default: 5 },
+    },
+    defaults: {
+      durationSeconds: 5,
+      fps: 24,
+      cfgScale: 5,
+      withAudio: false,
+      resolution: "1080p",
+      enhancePrompt: true,
+    },
+    resolutions: ["480p", "720p", "1080p"],
+  },
     constraints: {
       ratios: ["16:9", "9:16"],
       durationSeconds: { min: 4, max: 12, step: 2, default: 6 },
@@ -337,6 +411,8 @@ export const models: Record<ModelId, ModelSpec> = {
       frameInterpolation: false,
       upscaling: false,
       watermarkToggle: false,
+      promptEnhancement: false,
+      autoFix: false,
     },
     constraints: {
       ratios: ["16:9", "9:16", "1:1"],
@@ -373,6 +449,8 @@ export function getModelSpec(provider: "fal" | "kiwi", engine: string): ModelSpe
         return models["fal:pixverse-v4-5"];
       case "cogvideox-5b":
         return models["fal:cogvideox-5b"];
+      case "wan-25-preview":
+        return models["fal:wan-25-preview"];
       default:
         return undefined;
     }
@@ -415,12 +493,15 @@ export const ENGINE_LABELS: Record<string, string> = {
   "luma-dream": "Luma Dream Machine",
   "pixverse-v4-5": "Pixverse v4.5",
   "cogvideox-5b": "CogVideoX 5B",
+  "wan-25-preview": "Wan 2.5 Image to Video",
   "kiwi-sandbox": "Kiwi Sandbox",
 };
 
 export const FAL_INIT_IMAGE_REQUIRED_ENGINES: ReadonlySet<ModelId> = new Set([
   "fal:veo3-fast",
+  "fal:kling-pro",
   "fal:cogvideox-5b",
+  "fal:wan-25-preview",
 ]);
 
 export const FAL_REF_VIDEO_REQUIRED_ENGINES: ReadonlySet<ModelId> = new Set();
