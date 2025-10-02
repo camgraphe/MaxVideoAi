@@ -235,6 +235,9 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
  const referenceVideoUrl = form.watch("referenceVideoUrl");
   const audioUrl = form.watch("audioUrl");
   const falEngineFamilies = React.useMemo(() => listEngines("fal"), []);
+  const [engineFamilyId, setEngineFamilyId] = React.useState<string>(() =>
+    falEngineFamilies[0]?.id ?? ""
+  );
 
   const modelSpec = React.useMemo(() => {
     if (provider !== "fal") return undefined;
@@ -261,6 +264,18 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
       }
     }
   }, [provider, engine, falEngineFamilies, form]);
+
+  React.useEffect(() => {
+    if (provider !== "fal") {
+      return;
+    }
+    const families = falEngineFamilies;
+    if (!families.length) return;
+    const matchedFamily = families.find((family) =>
+      family.versions.some((version) => version.id === engine),
+    );
+    setEngineFamilyId(matchedFamily?.id ?? families[0]?.id ?? "");
+  }, [provider, engine, falEngineFamilies]);
 
   const resolvedResolution = React.useMemo(() => {
     if (typeof resolution === "string" && resolution.length > 0) {
@@ -1287,6 +1302,7 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
                           if (!nextFamily) return;
                           const nextVersion = nextFamily.versions[0];
                           if (nextVersion) {
+                            setEngineFamilyId(familyId);
                             field.onChange(nextVersion.id);
                             form.setValue("engine", nextVersion.id, {
                               shouldDirty: true,
@@ -1303,10 +1319,7 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
                               Engine & version
                             </FormLabel>
                             <div className="grid gap-3 sm:grid-cols-2">
-                              <Select
-                                value={currentFamily?.id ?? ""}
-                                onValueChange={handleFamilyChange}
-                              >
+                              <Select value={engineFamilyId} onValueChange={handleFamilyChange}>
                                 <FormControl>
                                   <SelectTrigger className="w-full rounded-2xl border border-black/10 bg-white/90 px-3 py-2 text-left text-sm font-medium text-foreground shadow-sm focus-visible:border-primary focus-visible:ring-primary/30 dark:border-white/10 dark:bg-[#162130] dark:text-slate-100">
                                     <SelectValue placeholder="Engine" />
