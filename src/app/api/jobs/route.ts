@@ -327,8 +327,11 @@ export async function POST(request: Request) {
       }
     }
 
-    const providerRatio =
-      typeof job.metadata.originalRatio === "string" ? job.metadata.originalRatio : job.ratio;
+    const providerRatio = (
+      typeof job.metadata.originalRatio === "string"
+        ? job.metadata.originalRatio
+        : job.ratio
+    ) as "9:16" | "16:9" | "1:1" | "21:9" | "4:5" | "5:4" | "3:2" | "2:3";
 
     const providerJob = await adapter.startJob({
       prompt: job.prompt,
