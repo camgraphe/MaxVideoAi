@@ -12,13 +12,13 @@ export function SupabaseSessionListener() {
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event: string, session: Session | null) => {
+    } = supabase.auth.onAuthStateChange(async (authEvent: string, session: Session | null) => {
       try {
         await fetch("/auth/set", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "same-origin",
-          body: JSON.stringify({ event, session }),
+          body: JSON.stringify({ event: authEvent, session }),
         });
       } catch (error) {
         console.error("Failed to sync Supabase session", error);
