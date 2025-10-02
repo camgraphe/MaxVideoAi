@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { formatCurrency, formatDuration } from "@/lib/format";
+import { ratioToCssAspectRatio } from "@/lib/aspect";
 import { cn } from "@/lib/utils";
 import { getJobById, updateJobRecord } from "@/db/repositories/jobs-repo";
 import type { JobModel, UpdateJobInput } from "@/db/repositories/jobs-repo";
@@ -242,7 +243,10 @@ export default async function JobDetailPage({
             <CardDescription>Latest video received from the provider.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="aspect-video w-full overflow-hidden rounded-xl border border-border/60 bg-muted/30">
+            <div
+              className="w-full overflow-hidden rounded-xl border border-border/60 bg-muted/30"
+              style={{ aspectRatio: ratioToCssAspectRatio(job.ratio) }}
+            >
               {videoSrc ? (
                 <video
                   className="h-full w-full object-cover"

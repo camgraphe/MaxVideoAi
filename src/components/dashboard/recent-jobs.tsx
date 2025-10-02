@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ENGINE_LABELS } from "@/data/models";
 import type { SerializedJob } from "@/db/repositories/jobs-repo";
+import { ratioToCssAspectRatio } from "@/lib/aspect";
 import { formatCurrency, formatDuration } from "@/lib/format";
 
 interface RecentJobsProps {
@@ -38,13 +39,19 @@ export function RecentJobs({ jobs }: RecentJobsProps) {
           <ul className="space-y-4">
             {jobs.slice(0, 4).map((job) => {
               const status = statusMap[job.status];
+              const aspectRatio = ratioToCssAspectRatio(job.ratio);
+
               return (
                 <li
                   key={job.id}
                   className="flex flex-col gap-3 rounded-xl border border-black/10 bg-white/90 p-3 transition hover:border-primary/40 dark:border-white/10 dark:bg-black/40 md:flex-row md:items-center md:justify-between"
                 >
                   <div className="flex w-full items-start gap-3 md:items-center">
-                    <Link href={`/jobs/${job.id}`} className="block h-16 w-28 shrink-0 overflow-hidden rounded-md border border-black/10 bg-muted dark:border-white/10">
+                    <Link
+                      href={`/jobs/${job.id}`}
+                      className="block w-28 shrink-0 overflow-hidden rounded-md border border-black/10 bg-muted dark:border-white/10"
+                      style={{ aspectRatio }}
+                    >
                       {job.outputUrl ? (
                         <video
                           className="h-full w-full object-cover"

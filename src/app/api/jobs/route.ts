@@ -10,8 +10,7 @@ import {
 } from "@/db/repositories/jobs-repo";
 import { simulateJobLifecycle } from "@/lib/jobs/job-runner";
 import { getProviderAdapter } from "@/providers";
-import { estimateCost } from "@/lib/pricing";
-import { getFalRates } from "@/lib/pricing/dynamic-fal";
+import { estimateCost, estimateToCents } from "@/lib/pricing";
 import { appConfig } from "@/lib/config";
 import { normalizeDurationSeconds, normalizeNumber, isValidUrl } from "@/lib/models/normalization";
 import { getFalWebhookUrl } from "@/lib/env";
@@ -69,6 +68,7 @@ export async function POST(request: Request) {
     }
 
     let durationSeconds = payload.durationSeconds;
+    let resolvedResolution: string | undefined;
 
     if (payload.provider === "fal") {
       const spec = getModelSpec("fal", payload.engine);
@@ -180,38 +180,47 @@ export async function POST(request: Request) {
       } else if (metadataRecord.referenceImageUrl !== undefined) {
         delete metadataRecord.referenceImageUrl;
       }
+
+      resolvedResolution =
+        typeof metadataRecord.resolution === "string" && metadataRecord.resolution.length > 0
+          ? (metadataRecord.resolution as string)
+          : spec.defaults.resolution ?? "720p";
     }
 
-    const falRates = await getFalRates();
-
     // Server-side price verification
-    const serverEstimate = estimateCost({
-      provider: payload.provider,
-      engine: payload.engine,
-      durationSeconds,
-      withAudio: payload.withAudio,
-      quantity: payload.quantity,
-    }, { falRates });
+    const serverEstimate =
+      payload.provider === "fal"
+        ? estimateCost({
+            engine: payload.engine,
+            durationSec: durationSeconds,
+            resolution: resolvedResolution ?? "720p",
+            aspectRatio: payload.ratio,
+            audioEnabled: payload.withAudio,
+            quantity: payload.quantity,
+          })
+        : null;
+    const serverCostCents = estimateToCents(serverEstimate);
 
-    if (!confirm && serverEstimate.subtotalCents > budgetCents) {
+    if (!confirm && serverCostCents !== null && serverCostCents > budgetCents) {
       // Suggest a cheaper alternative for Veo 3 → Veo 3 Fast
       let suggestion: { engine?: string; estimatedCents?: number } | undefined;
       if (payload.engine === "veo3") {
         const alt = estimateCost({
-          provider: payload.provider,
           engine: "veo3-fast",
-          durationSeconds,
-          withAudio: payload.withAudio,
+          durationSec: durationSeconds,
+          resolution: resolvedResolution ?? "720p",
+          aspectRatio: payload.ratio,
+          audioEnabled: payload.withAudio,
           quantity: payload.quantity,
-        }, { falRates });
-        suggestion = { engine: "veo3-fast", estimatedCents: alt.subtotalCents };
+        });
+        suggestion = { engine: "veo3-fast", estimatedCents: estimateToCents(alt) ?? undefined };
       }
 
       return NextResponse.json(
         {
           code: "BUDGET_EXCEEDED",
           message: "Server-side estimate exceeds budget. Confirm to proceed.",
-          serverCostCents: serverEstimate.subtotalCents,
+          serverCostCents,
           budgetCents,
           suggestion,
         },
@@ -219,7 +228,7 @@ export async function POST(request: Request) {
       );
     }
 
-    let creditsRequired = Math.ceil(serverEstimate.subtotalCents / 100);
+    let creditsRequired = serverCostCents !== null ? Math.ceil(serverCostCents / 100) : 0;
     if (payload.provider !== "kiwi") {
       creditsRequired = Math.max(1, creditsRequired);
     }
@@ -249,7 +258,7 @@ export async function POST(request: Request) {
             engine: payload.engine,
             durationSeconds,
             quantity: payload.quantity,
-            subtotalCents: serverEstimate.subtotalCents,
+            subtotalCents: serverCostCents ?? 0,
           },
         });
       } catch (error) {
@@ -273,6 +282,7 @@ export async function POST(request: Request) {
       createdBy: session.user.id,
       provider: payload.provider,
       engine: payload.engine,
+      version: typeof payload.modelId === "string" ? payload.modelId : payload.engine,
       prompt: payload.prompt,
       ratio: mapRatioForStorage(payload.ratio),
       durationSeconds,
@@ -280,7 +290,7 @@ export async function POST(request: Request) {
       quantity: payload.quantity,
       seed: payload.seed,
       presetId: payload.presetId,
-      costEstimateCents: serverEstimate.subtotalCents,
+      costEstimateCents: serverCostCents ?? 0,
       metadata: metadataRecord,
     });
 
@@ -361,6 +371,7 @@ export async function POST(request: Request) {
       providerJobId: providerJob.jobId,
       adapter,
       engine: job.engine,
+      costEstimateCents: job.costEstimateCents ?? null,
     });
 
     const freshJob = await getJobById(job.id);
@@ -368,7 +379,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         job: freshJob ? serializeJob(freshJob) : null,
-        serverCostCents: serverEstimate.subtotalCents,
+        serverCostCents,
         credits: {
           spent: creditsRequired,
           remaining: creditsRemaining,

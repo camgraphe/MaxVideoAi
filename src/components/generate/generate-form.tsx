@@ -8,7 +8,7 @@ import { useRef, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PriceBadge } from "@/components/generate/price-badge";
+import { CostPin } from "@/components/pricing/cost-pin";
 import { Progress } from "@/components/ui/progress";
 import { generationPresets } from "@/data/presets";
 import {
@@ -39,10 +40,16 @@ import {
   getModelSpec,
 } from "@/data/models";
 import { useToast } from "@/hooks/use-toast";
-import { estimateCost } from "@/lib/pricing";
-import type { EstimateCostOutput } from "@/types/pricing";
+import {
+  estimateCost,
+  listEngines,
+  type EstimateInput,
+  type Estimate,
+} from "@/lib/pricing";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
+import { ratioToCssAspectRatio } from "@/lib/aspect";
+import { formatCurrency, formatDuration } from "@/lib/format";
 import {
   Dialog,
   DialogContent,
@@ -55,7 +62,19 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import type { SerializedJob } from "@/db/repositories/jobs-repo";
 import { normalizeDurationSeconds } from "@/lib/models/normalization";
 
-const ratioOptions = ["9:16", "16:9", "1:1", "21:9", "4:5", "5:4", "3:2", "2:3"] as const;
+const ratioOptions = [
+  "9:16",
+  "16:9",
+  "1:1",
+  "21:9",
+  "9:21",
+  "4:5",
+  "5:4",
+  "3:2",
+  "2:3",
+  "4:3",
+  "3:4",
+] as const;
 const FLOAT_TOLERANCE = 1e-6;
 
 const urlField = z
@@ -71,6 +90,8 @@ const optionalTextField = z
   .optional()
   .or(z.literal(""))
   .transform((value) => (value ? value : undefined));
+
+const DRAFT_ENGINES = ["kling-pro", "pika-v2-2", "wan-2-1-t2v"] as const;
 
 const formSchema = z.object({
   presetId: z.string(),
@@ -150,8 +171,11 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [cost, setCost] = useState<EstimateCostOutput | undefined>();
-  const [falRates, setFalRates] = useState<Record<string, number>>();
+  const [cost, setCost] = useState<Estimate | undefined>();
+  const [draftJobs, setDraftJobs] = useState<SerializedJob[]>([]);
+  const draftJobsRef = useRef<SerializedJob[]>([]);
+  const [isRunningDraftSet, setIsRunningDraftSet] = useState(false);
+  const [promotingJobId, setPromotingJobId] = useState<string | null>(null);
   const [availableCredits, setAvailableCredits] = useState(creditsRemaining);
   type LaunchJobPayload = {
     provider: string;
@@ -162,7 +186,7 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
     durationSeconds: number;
     withAudio: boolean;
     seed?: number;
-    presetId: string;
+    presetId?: string;
     negativePrompt?: string;
     quantity: number;
     metadata: Record<string, unknown>;
@@ -173,6 +197,8 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
     budgetCents: number;
     suggestion?: { engine?: string; estimatedCents?: number };
     payload: LaunchJobPayload;
+    remainingDraftEngines?: string[];
+    draftValues?: GenerateFormValues;
   } | undefined;
 
   const [confirmData, setConfirmData] = useState<ConfirmState>(undefined);
@@ -196,6 +222,7 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
   const quantity = form.watch("quantity");
   const selectedPresetId = form.watch("presetId");
   const ratio = form.watch("ratio");
+  const resolution = form.watch("resolution");
   const fps = form.watch("fps");
   const motionStrength = form.watch("motionStrength");
   const cfgScale = form.watch("cfgScale");
@@ -207,10 +234,46 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
   const inputImageUrl = form.watch("inputImageUrl");
  const referenceVideoUrl = form.watch("referenceVideoUrl");
   const audioUrl = form.watch("audioUrl");
+  const falEngineFamilies = React.useMemo(() => listEngines("fal"), []);
+
   const modelSpec = React.useMemo(() => {
     if (provider !== "fal") return undefined;
     return getModelSpec(provider, engine);
   }, [provider, engine]);
+
+  React.useEffect(() => {
+    draftJobsRef.current = draftJobs;
+  }, [draftJobs]);
+
+  React.useEffect(() => {
+    if (provider !== "fal") {
+      return;
+    }
+    const families = falEngineFamilies;
+    if (!families.length) return;
+    const hasMatch = families.some((family) =>
+      family.versions.some((version) => version.id === engine),
+    );
+    if (!hasMatch) {
+      const defaultVersion = families[0]?.versions[0];
+      if (defaultVersion) {
+        form.setValue("engine", defaultVersion.id, { shouldDirty: false, shouldTouch: false });
+      }
+    }
+  }, [provider, engine, falEngineFamilies, form]);
+
+  const resolvedResolution = React.useMemo(() => {
+    if (typeof resolution === "string" && resolution.length > 0) {
+      return resolution;
+    }
+    if (modelSpec?.defaults.resolution) {
+      return modelSpec.defaults.resolution;
+    }
+    if (modelSpec?.resolutions?.length) {
+      return modelSpec.resolutions[0];
+    }
+    return "720p";
+  }, [resolution, modelSpec]);
 
   const initImageRequired = React.useMemo(
     () => (modelSpec ? FAL_INIT_IMAGE_REQUIRED_ENGINES.has(modelSpec.id) : false),
@@ -454,41 +517,39 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
   ]);
 
   React.useEffect(() => {
-    let cancelled = false;
-    const loadRates = async () => {
-      try {
-        const response = await fetch("/api/pricing/fal", { cache: "no-store" });
-        const payload = (await response.json()) as { rates?: Record<string, number> };
-        if (!cancelled && payload.rates) {
-          setFalRates(payload.rates);
-        }
-      } catch (error) {
-        console.warn("Failed to load dynamic FAL pricing", error);
-      }
-    };
-    void loadRates();
-    const id = window.setInterval(loadRates, 5 * 60 * 1000);
-    return () => {
-      cancelled = true;
-      window.clearInterval(id);
-    };
-  }, []);
-
-  React.useEffect(() => {
     try {
+      if (provider !== "fal") {
+        setCost(undefined);
+        return;
+      }
+
       const nextCost = estimateCost({
-        provider,
         engine,
-        durationSeconds: Number(durationSeconds) || 0,
-        withAudio,
+        durationSec: Number(durationSeconds) || 0,
+        resolution: resolvedResolution,
+        aspectRatio: ratio,
+        audioEnabled: withAudio,
         quantity: Number(quantity) || 1,
-      }, { falRates });
+      });
+
       setCost(nextCost);
     } catch (error) {
       console.error(error);
       setCost(undefined);
     }
-  }, [provider, engine, durationSeconds, withAudio, quantity, falRates]);
+  }, [provider, engine, durationSeconds, resolvedResolution, ratio, withAudio, quantity]);
+
+  const costPinInput = React.useMemo(() => {
+    if (provider !== "fal") return null;
+    return {
+      engine,
+      durationSec: Number(durationSeconds) || 0,
+      resolution: resolvedResolution,
+      aspectRatio: ratio,
+      audioEnabled: withAudio,
+      quantity: Number(quantity) || 1,
+    } satisfies EstimateInput;
+  }, [provider, engine, durationSeconds, resolvedResolution, ratio, withAudio, quantity]);
 
   React.useEffect(() => {
     if (!activeJob) return;
@@ -608,42 +669,10 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
     );
   };
 
-  const engineOptions = React.useMemo(() => {
-    const options = generationPresets
-      .filter((preset) => preset.provider === provider)
-      .map((preset) => ({
-        value: preset.engine,
-        label: ENGINE_LABELS[preset.engine] ?? preset.engine,
-      }));
-
-    const seen = new Set<string>();
-    const deduped = options.filter((option) => {
-      if (seen.has(option.value)) return false;
-      seen.add(option.value);
-      return true;
-    });
-
-    if (deduped.length > 0) {
-      return deduped;
-    }
-
-    return Object.entries(ENGINE_LABELS).map(([value, label]) => ({ value, label }));
-  }, [provider]);
-
-  const onSubmit = async (values: GenerateFormValues) => {
-    if (!isConfigValid) {
-      toast({
-        title: "Configuration incomplete",
-        description: configIssues.join(" · ") || "Fill the required inputs to continue.",
-        variant: "destructive",
-      });
-      return;
-    }
-    setIsSubmitting(true);
-    setActiveJob(null);
-    refreshedJobIdRef.current = null;
-    try {
-      const specForSubmission = getModelSpec(values.provider, values.engine);
+  const buildLaunchPayload = React.useCallback(
+    (values: GenerateFormValues, overrideEngine?: string) => {
+      const targetEngine = overrideEngine ?? values.engine;
+      const spec = getModelSpec(values.provider, targetEngine);
       const metadata: Record<string, unknown> = {};
 
       if (values.inputImageUrl) metadata.inputImageUrl = values.inputImageUrl;
@@ -661,13 +690,14 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
       if (typeof values.autoFix !== "undefined") metadata.autoFix = values.autoFix;
       if (typeof values.audioUrl === "string") metadata.audioUrl = values.audioUrl;
       if (values.resolution) metadata.resolution = values.resolution;
-      if (specForSubmission?.id) {
-        metadata.modelId = specForSubmission.id;
+
+      if (spec?.id) {
+        metadata.modelId = spec.id;
       }
-      if (specForSubmission) {
-        metadata.modelSummary = formatModelSummary(specForSubmission);
-        if (specForSubmission.defaults.resolution && metadata.resolution === undefined) {
-          metadata.resolution = specForSubmission.defaults.resolution;
+      if (spec) {
+        metadata.modelSummary = formatModelSummary(spec);
+        if (spec.defaults.resolution && metadata.resolution === undefined) {
+          metadata.resolution = spec.defaults.resolution;
         }
       }
 
@@ -676,14 +706,16 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
         metadata.resolution = preset.advancedDefaults.resolution;
       }
 
-      const body: LaunchJobPayload = {
+      const withAudioFlag = spec ? (spec.supports.audio ? values.withAudio : false) : values.withAudio;
+
+      const payload: LaunchJobPayload = {
         provider: values.provider,
-        engine: values.engine,
-        modelId: specForSubmission?.id,
+        engine: targetEngine,
+        modelId: spec?.id,
         prompt: values.prompt,
         ratio: values.ratio,
         durationSeconds: values.durationSeconds,
-        withAudio: specForSubmission?.supports.audio ? values.withAudio : false,
+        withAudio: withAudioFlag ?? false,
         seed: values.seed,
         presetId: values.presetId,
         negativePrompt: values.negativePrompt,
@@ -691,25 +723,144 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
         metadata,
       };
 
+      return { payload, spec };
+    },
+    [],
+  );
+
+  type DraftRunResult = {
+    halted: boolean;
+    launched: number;
+    reason?: "confirm" | "credits" | "error";
+  };
+
+  const runDraftEngines = React.useCallback(
+    async (values: GenerateFormValues, engines: readonly string[]): Promise<DraftRunResult> => {
+      let launchedCount = 0;
+
+      for (let index = 0; index < engines.length; index += 1) {
+        const draftEngine = engines[index];
+        const { payload } = buildLaunchPayload(values, draftEngine);
+        payload.metadata = {
+          ...payload.metadata,
+          draftSet: true,
+          draftEngines: DRAFT_ENGINES,
+        };
+
+        try {
+          const response = await fetch("/api/jobs", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          const body = await response.json();
+
+          if (response.status === 409 && body?.code === "BUDGET_EXCEEDED") {
+            const remaining = engines.slice(index + 1);
+            const valuesSnapshot = JSON.parse(JSON.stringify(values)) as GenerateFormValues;
+            setConfirmData({
+              serverCostCents: body.serverCostCents,
+              budgetCents: body.budgetCents,
+              suggestion: body.suggestion,
+              payload,
+              remainingDraftEngines: remaining,
+              draftValues: valuesSnapshot,
+            });
+            toast({
+              title: "Budget exceeded",
+              description: "Confirm this draft or adjust your configuration to continue the set.",
+              variant: "destructive",
+            });
+            return { halted: true, launched: launchedCount, reason: "confirm" };
+          }
+
+          if (response.status === 402 && body?.code === "INSUFFICIENT_CREDITS") {
+            setAvailableCredits((prev) => body.creditsAvailable ?? prev);
+            toast({
+              title: "Add credits",
+              description: "Draft set requires more credits than you currently have.",
+              variant: "destructive",
+            });
+            return { halted: true, launched: launchedCount, reason: "credits" };
+          }
+
+          if (!response.ok) {
+            const message = body?.message ?? body?.error ?? "Unable to launch draft";
+            toast({ title: "Draft failed", description: message, variant: "destructive" });
+            return { halted: true, launched: launchedCount, reason: "error" };
+          }
+
+          if (body?.job) {
+            const draftJob = body.job as SerializedJob;
+            launchedCount += 1;
+            setDraftJobs((prev) =>
+              prev.some((existing) => existing.id === draftJob.id)
+                ? prev
+                : [...prev, draftJob],
+            );
+          }
+
+          if (body?.credits?.remaining !== undefined) {
+            setAvailableCredits(body.credits.remaining);
+          }
+        } catch (error) {
+          toast({
+            title: "Draft failed",
+            description: error instanceof Error ? error.message : "Unexpected error while running drafts.",
+            variant: "destructive",
+          });
+          return { halted: true, launched: launchedCount, reason: "error" };
+        }
+      }
+
+      if (launchedCount > 0) {
+        toast({
+          title: "Drafts launched",
+          description: "We sent Kling, Pika, and WAN renders. Thumbnails will update here.",
+        });
+      }
+
+      return { halted: false, launched: launchedCount };
+    },
+    [buildLaunchPayload, toast],
+  );
+
+  const onSubmit = async (values: GenerateFormValues) => {
+    if (!isConfigValid) {
+      toast({
+        title: "Configuration incomplete",
+        description: configIssues.join(" · ") || "Fill the required inputs to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsSubmitting(true);
+    setActiveJob(null);
+    setDraftJobs([]);
+    refreshedJobIdRef.current = null;
+    try {
+      const { payload: requestPayload } = buildLaunchPayload(values);
+
       const response = await fetch("/api/jobs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify(requestPayload),
       });
 
-      const payload = await response.json();
-      if (response.status === 409 && payload?.code === "BUDGET_EXCEEDED") {
+      const responseBody = await response.json();
+      if (response.status === 409 && responseBody?.code === "BUDGET_EXCEEDED") {
         setConfirmData({
-          serverCostCents: payload.serverCostCents,
-          budgetCents: payload.budgetCents,
-          suggestion: payload.suggestion,
-          payload: body,
+          serverCostCents: responseBody.serverCostCents,
+          budgetCents: responseBody.budgetCents,
+          suggestion: responseBody.suggestion,
+          payload: requestPayload,
         });
         return;
       }
 
-      if (response.status === 402 && payload?.code === "INSUFFICIENT_CREDITS") {
-        setAvailableCredits(payload.creditsAvailable ?? availableCredits);
+      if (response.status === 402 && responseBody?.code === "INSUFFICIENT_CREDITS") {
+        setAvailableCredits(responseBody.creditsAvailable ?? availableCredits);
         toast({
           title: "Add credits",
           description: "This render requires more credits than you currently have.",
@@ -719,15 +870,15 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
       }
 
       if (!response.ok) {
-        throw new Error(payload.error ?? "Unable to create the job");
+        throw new Error(responseBody.error ?? "Unable to create the job");
       }
 
-      if (payload?.job) {
-        setActiveJob(payload.job as SerializedJob);
+      if (responseBody?.job) {
+        setActiveJob(responseBody.job as SerializedJob);
       }
 
-      if (payload?.credits?.remaining !== undefined) {
-        setAvailableCredits(payload.credits.remaining);
+      if (responseBody?.credits?.remaining !== undefined) {
+        setAvailableCredits(responseBody.credits.remaining);
       }
 
       toast({
@@ -750,11 +901,13 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
     setIsSubmitting(true);
     setActiveJob(null);
     refreshedJobIdRef.current = null;
+    let shouldClearConfirm = true;
     try {
+      const currentConfirm = confirmData;
       const response = await fetch("/api/jobs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...confirmData.payload, confirm: true }),
+        body: JSON.stringify({ ...currentConfirm.payload, confirm: true }),
       });
       const payload = await response.json();
       if (response.status === 402 && payload?.code === "INSUFFICIENT_CREDITS") {
@@ -764,9 +917,14 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
       if (!response.ok) {
         throw new Error(payload.error ?? "Unable to create the job");
       }
-      setConfirmData(undefined);
       if (payload?.job) {
-        setActiveJob(payload.job as SerializedJob);
+        const job = payload.job as SerializedJob;
+        setActiveJob(job);
+        if (currentConfirm.remainingDraftEngines?.length) {
+          setDraftJobs((prev) =>
+            prev.some((existing) => existing.id === job.id) ? prev : [...prev, job],
+          );
+        }
       }
       if (payload?.credits?.remaining !== undefined) {
         setAvailableCredits(payload.credits.remaining);
@@ -775,7 +933,22 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
         title: "Job launched",
         description: "Rendering has started. The preview will update automatically.",
       });
+      if (currentConfirm.remainingDraftEngines?.length && currentConfirm.draftValues) {
+        setIsRunningDraftSet(true);
+        try {
+          const result = await runDraftEngines(
+            currentConfirm.draftValues,
+            currentConfirm.remainingDraftEngines,
+          );
+          if (result.reason === "confirm") {
+            shouldClearConfirm = false;
+          }
+        } finally {
+          setIsRunningDraftSet(false);
+        }
+      }
     } catch (error) {
+      shouldClearConfirm = false;
       setConfirmData(undefined);
       toast({
         title: "Something went wrong",
@@ -783,16 +956,207 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
         variant: "destructive",
       });
     } finally {
+      if (shouldClearConfirm) {
+        setConfirmData(undefined);
+      }
       setIsSubmitting(false);
     }
   };
+
+  const handleRunDraftSet = React.useCallback(async () => {
+    if (provider !== "fal") {
+      toast({
+        title: "Drafts unavailable",
+        description: "Run Draft ×3 is only available for fal.ai engines.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const isValid = await form.trigger();
+    if (!isValid) {
+      toast({
+        title: "Check configuration",
+        description: "Fix the highlighted fields before running drafts.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const values = form.getValues();
+    setIsRunningDraftSet(true);
+    setActiveJob(null);
+    refreshedJobIdRef.current = null;
+    setConfirmData(undefined);
+    setDraftJobs([]);
+
+    try {
+      await runDraftEngines(values, DRAFT_ENGINES);
+    } catch (error) {
+      toast({
+        title: "Draft failed",
+        description: error instanceof Error ? error.message : "Unexpected error while running drafts.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRunningDraftSet(false);
+    }
+  }, [provider, form, runDraftEngines, toast]);
+
+  const handlePromoteDraft = React.useCallback(
+    async (job: SerializedJob, targetEngine: "veo3" | "veo3-fast") => {
+      setPromotingJobId(job.id);
+      setActiveJob(null);
+      setConfirmData(undefined);
+
+      try {
+        const metadata = { ...(job.metadata ?? {}) } as Record<string, unknown>;
+        metadata.promotedFromJobId = job.id;
+        metadata.sourceEngine = job.engine;
+        const targetSpec = getModelSpec("fal", targetEngine);
+        if (targetSpec) {
+          metadata.modelId = targetSpec.id;
+          metadata.modelSummary = formatModelSummary(targetSpec);
+          if (targetSpec.defaults.resolution && typeof metadata.resolution !== "string") {
+            metadata.resolution = targetSpec.defaults.resolution;
+          }
+        }
+
+        const payload: LaunchJobPayload = {
+          provider: "fal",
+          engine: targetEngine,
+          modelId: targetSpec?.id ?? (targetEngine === "veo3-fast" ? "fal:veo3-fast" : "fal:veo3"),
+          prompt: job.prompt,
+          ratio: job.ratio as (typeof ratioOptions)[number],
+          durationSeconds: job.durationSeconds,
+          withAudio: job.withAudio,
+          seed: job.seed ?? undefined,
+          presetId: job.presetId ?? undefined,
+          negativePrompt: typeof job.metadata?.negativePrompt === "string" ? job.metadata.negativePrompt : undefined,
+          quantity: job.quantity,
+          metadata,
+        };
+
+        if (!metadata.resolution && typeof job.metadata?.resolution === "string") {
+          metadata.resolution = job.metadata.resolution;
+        }
+
+        const response = await fetch("/api/jobs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const responseBody = await response.json();
+        if (response.status === 409 && responseBody?.code === "BUDGET_EXCEEDED") {
+          setConfirmData({
+            serverCostCents: responseBody.serverCostCents,
+            budgetCents: responseBody.budgetCents,
+            suggestion: responseBody.suggestion,
+            payload,
+          });
+          return;
+        }
+
+        if (response.status === 402 && responseBody?.code === "INSUFFICIENT_CREDITS") {
+          setAvailableCredits(responseBody.creditsAvailable ?? availableCredits);
+          toast({
+            title: "Add credits",
+            description: "Promotion requires more credits than you currently have.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error(responseBody?.error ?? "Unable to promote the job");
+        }
+
+        if (responseBody?.job) {
+          setActiveJob(responseBody.job as SerializedJob);
+        }
+
+        if (responseBody?.credits?.remaining !== undefined) {
+          setAvailableCredits(responseBody.credits.remaining);
+        }
+
+        toast({
+          title: "Promotion launched",
+          description: `Sent to ${targetEngine === "veo3" ? "Veo 3" : "Veo 3 Fast"}.`,
+        });
+      } catch (error) {
+        toast({
+          title: "Promotion failed",
+          description: error instanceof Error ? error.message : "Unexpected error while promoting the job.",
+          variant: "destructive",
+        });
+      } finally {
+        setPromotingJobId(null);
+      }
+    },
+    [availableCredits, toast],
+  );
+
+  const hasActiveDrafts = React.useMemo(
+    () => draftJobs.some((job) => job.status === "pending" || job.status === "running"),
+    [draftJobs],
+  );
+
+  React.useEffect(() => {
+    if (!hasActiveDrafts) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const poll = async () => {
+      if (cancelled) return;
+      const current = draftJobsRef.current;
+      const active = current.filter((job) => job.status === "pending" || job.status === "running");
+      if (!active.length) return;
+
+      const updates = await Promise.all(
+        active.map(async (job) => {
+          try {
+            const response = await fetch(`/api/jobs/${job.id}`, { cache: "no-store" });
+            if (!response.ok) return null;
+            const data = (await response.json()) as { job?: SerializedJob };
+            return data.job ?? null;
+          } catch {
+            return null;
+          }
+        }),
+      );
+
+      const map = new Map<string, SerializedJob>();
+      updates.forEach((job) => {
+        if (job) map.set(job.id, job);
+      });
+
+      if (map.size === 0) return;
+      setDraftJobs((prev) => prev.map((job) => map.get(job.id) ?? job));
+    };
+
+    const interval = window.setInterval(() => {
+      void poll();
+    }, 4000);
+
+    void poll();
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [hasActiveDrafts]);
 
   const creditsRequired =
     cost === undefined
       ? undefined
       : provider === "kiwi"
         ? 0
-        : Math.max(1, Math.ceil(cost.subtotalCents / 100));
+        : cost.costUsd == null
+          ? undefined
+          : Math.max(1, Math.ceil(cost.costUsd));
   const hasEnoughCredits = creditsRequired === undefined || availableCredits >= creditsRequired;
 
   return (
@@ -807,24 +1171,43 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
                 creditsRequired={creditsRequired}
                 creditsAvailable={availableCredits}
               />
-              <Button
-                type="submit"
-                size="lg"
-                className="gap-2 self-start sm:self-auto"
-                disabled={isSubmitting || !isConfigValid || !hasEnoughCredits}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Sending to render farm
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-4 w-4" />
-                    Generate clip
-                  </>
-                )}
-              </Button>
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="gap-2 self-start sm:self-auto"
+                  disabled={isSubmitting || !isConfigValid || !hasEnoughCredits}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Sending to render farm
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      Generate clip
+                    </>
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  size="lg"
+                  variant="outline"
+                  className="gap-2 self-start sm:self-auto"
+                  disabled={isSubmitting || isRunningDraftSet || provider !== "fal"}
+                  onClick={handleRunDraftSet}
+                >
+                  {isRunningDraftSet ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Running drafts…
+                    </>
+                  ) : (
+                    <>Run Draft ×3</>
+                  )}
+                </Button>
+              </div>
               {!hasEnoughCredits ? (
                 <p className="max-w-xs text-xs font-medium text-amber-600">
                   Not enough credits for this configuration. Purchase more in billing or adjust the render setup.
@@ -854,29 +1237,119 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
                     <FormField
                       control={form.control}
                       name="engine"
-                      render={({ field }) => (
-                        <FormItem className="space-y-3">
-                          <FormLabel className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
-                            Engine
-                          </FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="w-full rounded-2xl border border-black/10 bg-white/90 px-3 py-2 text-left text-sm font-medium text-foreground shadow-sm focus-visible:border-primary focus-visible:ring-primary/30 dark:border-white/10 dark:bg-[#162130] dark:text-slate-100">
-                                <SelectValue placeholder="Select an engine" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="max-h-72 bg-white dark:bg-[#0b1321]">
-                              {engineOptions.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                      render={({ field }) => {
+                        if (provider !== "fal") {
+                          const fallbackOptions = generationPresets
+                            .filter((preset) => preset.provider === provider)
+                            .map((preset) => ({
+                              value: preset.engine,
+                              label: ENGINE_LABELS[preset.engine] ?? preset.engine,
+                            }));
+
+                          const uniqueFallback = fallbackOptions.length
+                            ? Array.from(
+                                new Map(fallbackOptions.map((option) => [option.value, option])).values(),
+                              )
+                            : Object.entries(ENGINE_LABELS).map(([value, label]) => ({ value, label }));
+
+                          return (
+                            <FormItem className="space-y-3">
+                              <FormLabel className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+                                Engine
+                              </FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="w-full rounded-2xl border border-black/10 bg-white/90 px-3 py-2 text-left text-sm font-medium text-foreground shadow-sm focus-visible:border-primary focus-visible:ring-primary/30 dark:border-white/10 dark:bg-[#162130] dark:text-slate-100">
+                                    <SelectValue placeholder="Select an engine" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="max-h-72 bg-white dark:bg-[#0b1321]">
+                                  {uniqueFallback.map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                      {option.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          );
+                        }
+
+                        const families = falEngineFamilies;
+                        const currentFamily =
+                          families.find((family) =>
+                            family.versions.some((version) => version.id === field.value),
+                          ) ?? families[0];
+
+                        const handleFamilyChange = (familyId: string) => {
+                          const nextFamily = families.find((family) => family.id === familyId);
+                          if (!nextFamily) return;
+                          const nextVersion = nextFamily.versions[0];
+                          if (nextVersion) {
+                            form.setValue("engine", nextVersion.id, {
+                              shouldDirty: true,
+                              shouldTouch: true,
+                            });
+                          }
+                        };
+
+                        const versionOptions = currentFamily?.versions ?? [];
+
+                        return (
+                          <FormItem className="space-y-3">
+                            <FormLabel className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+                              Engine & version
+                            </FormLabel>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              <Select
+                                value={currentFamily?.id ?? ""}
+                                onValueChange={handleFamilyChange}
+                              >
+                                <FormControl>
+                                  <SelectTrigger className="w-full rounded-2xl border border-black/10 bg-white/90 px-3 py-2 text-left text-sm font-medium text-foreground shadow-sm focus-visible:border-primary focus-visible:ring-primary/30 dark:border-white/10 dark:bg-[#162130] dark:text-slate-100">
+                                    <SelectValue placeholder="Engine" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="max-h-72 bg-white dark:bg-[#0b1321]">
+                                  {families.map((family) => (
+                                    <SelectItem key={family.id} value={family.id}>
+                                      {family.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="w-full rounded-2xl border border-black/10 bg-white/90 px-3 py-2 text-left text-sm font-medium text-foreground shadow-sm focus-visible:border-primary focus-visible:ring-primary/30 dark:border-white/10 dark:bg-[#162130] dark:text-slate-100">
+                                    <SelectValue placeholder="Version" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="max-h-72 bg-white dark:bg-[#0b1321]">
+                                  {versionOptions.map((version) => (
+                                    <SelectItem key={version.id} value={version.id}>
+                                      {version.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <FormDescription className="text-[11px] text-muted-foreground/70">
+                              Switch engines and their versions without losing your prompt or seed.
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
                     />
+                    {costPinInput ? (
+                      <CostPin
+                        input={costPinInput}
+                        className="border border-black/10 bg-white/90 text-foreground dark:border-white/10 dark:bg-[#162130] dark:text-slate-100"
+                        title="Cost estimate"
+                        subtitle="Updates before launch"
+                      />
+                    ) : null}
                     <FormField
                       control={form.control}
                       name="ratio"
@@ -1048,6 +1521,15 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
                   </div>
                   <VideoPreviewPanel job={activeJob} isSubmitting={isSubmitting} onShare={handleShare} />
                 </div>
+                {draftJobs.length > 0 ? (
+                  <DraftRunsPanel
+                    jobs={draftJobs}
+                    onShare={handleShare}
+                    onPromote={handlePromoteDraft}
+                    promotingJobId={promotingJobId}
+                    className="border border-black/10 bg-white/90 shadow-[0_30px_90px_-70px_rgba(17,24,39,0.25)] backdrop-blur dark:border-white/10 dark:bg-[#101827]"
+                  />
+                ) : null}
 
                 <section className="relative overflow-hidden rounded-[24px] border border-black/10 bg-white/90 p-4 shadow-[0_30px_90px_-70px_rgba(79,70,229,0.4)] backdrop-blur dark:border-white/10 dark:bg-[#101827]">
                   <div className="mb-4 space-y-2">
@@ -1735,6 +2217,7 @@ function VideoPreviewPanel({ job, isSubmitting, onShare, className }: VideoPrevi
   const showLoader = !hasVideo && (isSubmitting || isProcessing);
   const statusLabel = job ? JOB_STATUS_LABELS[job.status] ?? job.status : undefined;
   const progressValue = job?.progress ?? 0;
+  const aspectRatio = ratioToCssAspectRatio(job?.ratio);
 
   return (
     <div
@@ -1751,7 +2234,10 @@ function VideoPreviewPanel({ job, isSubmitting, onShare, className }: VideoPrevi
           </Badge>
         ) : null}
       </div>
-      <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-black/10 bg-slate-900/15 dark:border-white/10 dark:bg-slate-900/50">
+      <div
+        className="relative w-full overflow-hidden rounded-2xl border border-black/10 bg-slate-900/15 dark:border-white/10 dark:bg-slate-900/50"
+        style={{ aspectRatio }}
+      >
         {hasVideo && job ? (
           <>
             <video
@@ -1829,6 +2315,132 @@ function VideoPreviewPanel({ job, isSubmitting, onShare, className }: VideoPrevi
         </p>
       )}
     </div>
+  );
+}
+
+interface DraftRunsPanelProps {
+  jobs: SerializedJob[];
+  onShare: (job: SerializedJob) => void;
+  onPromote: (job: SerializedJob, targetEngine: "veo3" | "veo3-fast") => void;
+  promotingJobId: string | null;
+  className?: string;
+}
+
+function DraftRunsPanel({ jobs, onShare, onPromote, promotingJobId, className }: DraftRunsPanelProps) {
+  if (jobs.length === 0) return null;
+
+  return (
+    <Card className={cn("border border-border/60", className)}>
+      <CardHeader>
+        <CardTitle>Draft set (×3)</CardTitle>
+        <CardDescription>
+          Same prompt launched on Kling, Pika, and WAN. Actual costs appear as soon as renders finish.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {jobs.map((job) => {
+            const statusLabel = JOB_STATUS_LABELS[job.status] ?? job.status;
+            const costCents = job.costActualCents ?? job.costEstimateCents;
+            const costLabel = costCents ? formatCurrency(costCents) : "--";
+            const durationLabel = job.durationActualSeconds
+              ? formatDuration(job.durationActualSeconds)
+              : `${job.durationSeconds}s`;
+            const canPromote = job.engine !== "veo3" && job.engine !== "veo3-fast";
+            const hasInitImage = Boolean(
+              job.metadata && typeof (job.metadata as Record<string, unknown>).inputImageUrl === "string",
+            );
+
+            return (
+              <div
+                key={job.id}
+                className="flex flex-col gap-2 rounded-2xl border border-border/60 bg-muted/20 p-3"
+              >
+                <div className="aspect-video w-full overflow-hidden rounded-xl border border-border/60 bg-muted/40">
+                  {job.outputUrl ? (
+                    <video
+                      className="h-full w-full object-cover"
+                      src={job.outputUrl}
+                      poster={job.thumbnailUrl ?? undefined}
+                      controls
+                    />
+                  ) : job.thumbnailUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={job.thumbnailUrl} alt="Draft preview" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-[11px] text-muted-foreground">
+                      Preview pending
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{ENGINE_LABELS[job.engine] ?? job.engine}</span>
+                  <Badge variant="outline" className="border-primary/20 text-primary">
+                    {statusLabel}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between text-sm font-medium text-foreground">
+                  <span>{costLabel}</span>
+                  <span>{durationLabel}</span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  {job.outputUrl ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      className="w-full"
+                      onClick={() => onShare(job)}
+                    >
+                      Share draft
+                    </Button>
+                  ) : null}
+                  {canPromote ? (
+                    <>
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => onPromote(job, "veo3")}
+                        disabled={promotingJobId === job.id}
+                      >
+                        {promotingJobId === job.id ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Promoting…
+                          </>
+                        ) : (
+                          <>Promote to Veo 3</>
+                        )}
+                      </Button>
+                      {hasInitImage ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => onPromote(job, "veo3-fast")}
+                          disabled={promotingJobId === job.id}
+                        >
+                          {promotingJobId === job.id ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Promoting…
+                            </>
+                          ) : (
+                            <>Promote to Veo 3 Fast</>
+                          )}
+                        </Button>
+                      ) : null}
+                    </>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 

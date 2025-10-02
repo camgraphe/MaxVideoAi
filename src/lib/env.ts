@@ -34,6 +34,9 @@ const envSchema = z.object({
   S3_FORCE_PATH_STYLE: z.string().optional(),
   FAL_PRICE_MARKUP: z.coerce.number().optional(),
   FAL_PRICE_CACHE_TTL_MS: z.coerce.number().optional(),
+  PRICING_OVERRIDES: z.string().optional(),
+  STRIPE_USAGE_ITEM_SECONDS: z.string().optional(),
+  STRIPE_USAGE_ITEM_CLIPS: z.string().optional(),
 });
 
 export const env = envSchema.parse({
@@ -69,10 +72,14 @@ export const env = envSchema.parse({
   S3_FORCE_PATH_STYLE: process.env.S3_FORCE_PATH_STYLE,
   FAL_PRICE_MARKUP: process.env.FAL_PRICE_MARKUP,
   FAL_PRICE_CACHE_TTL_MS: process.env.FAL_PRICE_CACHE_TTL_MS,
+  PRICING_OVERRIDES: process.env.PRICING_OVERRIDES,
+  STRIPE_USAGE_ITEM_SECONDS: process.env.STRIPE_USAGE_ITEM_SECONDS,
+  STRIPE_USAGE_ITEM_CLIPS: process.env.STRIPE_USAGE_ITEM_CLIPS,
 });
 
 export function getFalCredentials(): string {
-  const key = process.env.FAL_KEY ?? process.env.FAL_API_KEY;
+  const key =
+    process.env.MAXpink_FAL_KEY ?? process.env.FAL_KEY ?? process.env.FAL_API_KEY;
   if (!key) {
     throw new Error("Missing Fal credentials. Set FAL_KEY or FAL_API_KEY on the server.");
   }

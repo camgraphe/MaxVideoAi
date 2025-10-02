@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
-import { getFalRates, getCachedFalRates } from "@/lib/pricing/dynamic-fal";
+import { getBaseRateForEngine, listEngines } from "@/lib/pricing";
 
 export async function GET() {
-  try {
-    const rates = await getFalRates();
-    return NextResponse.json({ rates });
-  } catch (error) {
-    console.error("Failed to load dynamic FAL pricing", error);
-    const fallback = getCachedFalRates();
-    return NextResponse.json({ rates: fallback }, { status: 200 });
-  }
+  const families = listEngines("fal");
+  const rates = Object.fromEntries(
+    families.map((family) => {
+      const firstVersion = family.versions[0];
+      const baseRate = firstVersion ? getBaseRateForEngine(firstVersion.id) : null;
+      return [family.id, baseRate];
+    }),
+  );
+
+  return NextResponse.json({ rates });
 }

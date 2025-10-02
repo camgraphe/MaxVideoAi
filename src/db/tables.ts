@@ -4,6 +4,7 @@ import {
   boolean,
   integer,
   jsonb,
+  numeric,
   pgEnum,
   pgTable,
   smallint,
@@ -111,6 +112,7 @@ export const jobs = pgTable(
     createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
     provider: providerEnum("provider").notNull(),
     engine: text("engine").notNull(),
+    version: text("version"),
     prompt: text("prompt").notNull(),
     ratio: ratioEnum("ratio").notNull(),
     durationSeconds: smallint("duration_seconds").notNull(),
@@ -236,6 +238,7 @@ export const organizationsRelations = relations(organizations, ({ many }) => ({
   members: many(organizationMembers),
   jobs: many(jobs),
   usageSnapshots: many(usageSnapshots),
+  usageEvents: many(usageEvents),
 }));
 
 export const organizationMembersRelations = relations(organizationMembers, ({ one }) => ({
@@ -248,6 +251,26 @@ export const organizationMembersRelations = relations(organizationMembers, ({ on
     references: [users.id],
   }),
 }));
+
+export const usageEvents = pgTable(
+  "usage_events",
+  {
+    id: uuid("id").notNull().primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    jobId: uuid("job_id").references(() => jobs.id, { onDelete: "cascade" }),
+    meter: text("meter").notNull(),
+    quantity: numeric("quantity").notNull(),
+    engine: text("engine").notNull(),
+    provider: providerEnum("provider").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    meterIdx: index("usage_events_meter_created_idx").on(table.meter, table.createdAt.desc()),
+    orgIdx: index("usage_events_org_created_idx").on(table.organizationId, table.createdAt.desc()),
+  }),
+);
 
 export const organizationInvitesRelations = relations(organizationInvites, ({ one }) => ({
   organization: one(organizations, {
@@ -271,6 +294,7 @@ export const jobsRelations = relations(jobs, ({ one, many }) => ({
   }),
   events: many(jobEvents),
   assets: many(jobAssets),
+  usageEvents: many(usageEvents),
 }));
 
 export const jobEventsRelations = relations(jobEvents, ({ one }) => ({
@@ -287,6 +311,24 @@ export const jobAssetsRelations = relations(jobAssets, ({ one }) => ({
   }),
 }));
 
+export const usageSnapshotsRelations = relations(usageSnapshots, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [usageSnapshots.organizationId],
+    references: [organizations.id],
+  }),
+}));
+
+export const usageEventsRelations = relations(usageEvents, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [usageEvents.organizationId],
+    references: [organizations.id],
+  }),
+  job: one(jobs, {
+    fields: [usageEvents.jobId],
+    references: [jobs.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type Organization = typeof organizations.$inferSelect;
 export type OrganizationMember = typeof organizationMembers.$inferSelect;
@@ -294,4 +336,5 @@ export type Job = typeof jobs.$inferSelect;
 export type JobEvent = typeof jobEvents.$inferSelect;
 export type JobAsset = typeof jobAssets.$inferSelect;
 export type UsageSnapshot = typeof usageSnapshots.$inferSelect;
+export type UsageEvent = typeof usageEvents.$inferSelect;
 export type Preset = typeof presets.$inferSelect;

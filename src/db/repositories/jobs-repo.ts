@@ -1,7 +1,7 @@
 import { desc, eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { dbSchema, getDb } from "@/db/client";
-import { estimateCost } from "@/lib/pricing";
+import { estimateCost, estimateToCents } from "@/lib/pricing";
 import type { ProviderId } from "@/providers/types";
 
 const { jobs, jobEvents } = dbSchema;
@@ -15,6 +15,7 @@ export interface JobModel {
   createdBy: string | null;
   provider: ProviderId;
   engine: string;
+  version: string | null;
   prompt: string;
   ratio: "9:16" | "16:9";
   durationSeconds: number;
@@ -52,6 +53,7 @@ export interface CreateJobInput {
   createdBy: string;
   provider: ProviderId;
   engine: string;
+  version?: string;
   prompt: string;
   ratio: "9:16" | "16:9";
   durationSeconds: number;
@@ -83,6 +85,7 @@ export function mapRowToModel(row: JobRow): JobModel {
     createdBy: row.createdBy ?? null,
     provider: row.provider,
     engine: row.engine,
+    version: row.version ?? null,
     prompt: row.prompt,
     ratio: row.ratio,
     durationSeconds: row.durationSeconds,
@@ -144,15 +147,24 @@ export async function createJobRecord(input: CreateJobInput): Promise<JobModel> 
   const metadata = input.metadata ?? {};
   const id = randomUUID();
 
-  const costEstimate =
-    input.costEstimateCents ??
-    estimateCost({
-      provider: input.provider,
-      engine: input.engine,
-      durationSeconds: input.durationSeconds,
-      withAudio: input.withAudio,
-      quantity: input.quantity,
-    }).subtotalCents;
+  const resolutionFromMetadata =
+    typeof metadata.resolution === "string" && metadata.resolution.length > 0
+      ? (metadata.resolution as string)
+      : undefined;
+
+  const estimate =
+    input.provider === "fal"
+      ? estimateCost({
+          engine: input.engine,
+          durationSec: input.durationSeconds,
+          resolution: resolutionFromMetadata ?? "720p",
+          aspectRatio: input.ratio,
+          audioEnabled: input.withAudio,
+          quantity: input.quantity,
+        })
+      : null;
+
+  const costEstimate = input.costEstimateCents ?? estimateToCents(estimate) ?? 0;
 
   const [row] = await db
     .insert(jobs)
@@ -172,6 +184,7 @@ export async function createJobRecord(input: CreateJobInput): Promise<JobModel> 
       progress: 0,
       costEstimateCents: costEstimate,
       metadata,
+      version: input.version ?? input.engine,
       archiveUrl: null,
       createdAt: now,
       updatedAt: now,

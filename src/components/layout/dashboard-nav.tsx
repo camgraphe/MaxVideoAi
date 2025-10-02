@@ -13,6 +13,7 @@ import {
   Settings,
   SquarePen,
   Table,
+  Activity,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ const items = [
   { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
   { href: "/generate", label: "Generate", icon: SquarePen },
   { href: "/jobs", label: "Jobs", icon: Table },
+  { href: "/usage", label: "Usage", icon: Activity },
   { href: "/billing", label: "Billing", icon: CreditCard },
   { href: "/settings", label: "Settings", icon: Settings },
 ];

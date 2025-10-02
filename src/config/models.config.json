@@ -1,0 +1,180 @@
+{
+  "formats": [
+    { "id": "quick-draft", "label": "Quick Draft", "durationSec": 5, "resolution": "720p", "aspectRatio": "16:9_or_9:16" },
+    { "id": "social-vertical", "label": "Social Vertical", "durationSec": 6, "resolution": "720p", "aspectRatio": "9:16" },
+    { "id": "standard", "label": "Standard", "durationSec": 8, "resolution": "720p", "aspectRatio": "16:9" },
+    { "id": "hero", "label": "Hero", "durationSec": 8, "resolution": "1080p", "aspectRatio": "16:9" }
+  ],
+  "engines": [
+    {
+      "id": "veo",
+      "label": "Veo",
+      "versions": [
+        {
+          "id": "veo3_t2v",
+          "label": "Veo 3 (Text to Video)",
+          "falSlug": "fal-ai/veo3",
+          "tasks": ["t2v"],
+          "inputs": {
+            "durationSec": [4, 6, 8],
+            "resolution": ["720p", "1080p"],
+            "aspectRatio": ["16:9", "9:16", "1:1"],
+            "audioEnabled": [true, false]
+          }
+        },
+        {
+          "id": "veo3_fast_t2v",
+          "label": "Veo 3 Fast (Text to Video)",
+          "falSlug": "fal-ai/veo3/fast",
+          "tasks": ["t2v"],
+          "inputs": {
+            "durationSec": [4, 6, 8],
+            "resolution": ["720p", "1080p"],
+            "aspectRatio": ["16:9", "9:16", "1:1"],
+            "audioEnabled": [true, false]
+          }
+        }
+      ]
+    },
+    {
+      "id": "kling",
+      "label": "Kling",
+      "versions": [
+        {
+          "id": "kling_25_pro_t2v",
+          "label": "Kling 2.5 Turbo Pro (Text to Video)",
+          "falSlug": "fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
+          "tasks": ["t2v"],
+          "inputs": { "durationSec": [5, 6, 7, 8, 9, 10], "resolution": ["720p"], "aspectRatio": ["16:9", "9:16"] }
+        },
+        {
+          "id": "kling_25_pro_i2v",
+          "label": "Kling 2.5 Turbo Pro (Image to Video)",
+          "falSlug": "fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
+          "tasks": ["i2v"],
+          "inputs": { "durationSec": [5, 6, 7, 8, 9, 10], "resolution": ["720p"], "aspectRatio": ["16:9", "9:16"] }
+        }
+      ]
+    },
+    {
+      "id": "pika",
+      "label": "Pika",
+      "versions": [
+        {
+          "id": "pika_22_t2v",
+          "label": "Pika 2.2 (Text to Video)",
+          "falSlug": "fal-ai/pika/v2.2/text-to-video",
+          "tasks": ["t2v"],
+          "inputs": { "durationSec": [3, 4, 5, 6, 7, 8, 9, 10], "resolution": ["720p", "1080p"], "aspectRatio": ["16:9", "9:16", "1:1", "4:5", "5:4", "3:2", "2:3"] }
+        },
+        {
+          "id": "pika_22_i2v",
+          "label": "Pika 2.2 (Image to Video)",
+          "falSlug": "fal-ai/pika/v2.2/image-to-video",
+          "tasks": ["i2v"],
+          "inputs": { "durationSec": [3, 4, 5, 6, 7, 8, 9, 10], "resolution": ["720p", "1080p"], "aspectRatio": ["16:9", "9:16", "1:1", "4:5", "5:4", "3:2", "2:3"] }
+        }
+      ]
+    },
+    {
+      "id": "luma",
+      "label": "Luma",
+      "versions": [
+        {
+          "id": "luma_dm_t2v",
+          "label": "Dream Machine v1.5 (Text to Video)",
+          "falSlug": "fal-ai/luma-dream-machine",
+          "tasks": ["t2v"],
+          "inputs": { "duration": ["5s", "9s"], "resolution": ["540p", "720p", "1080p"], "aspectRatio": ["16:9", "9:16", "4:3", "3:4", "21:9", "9:21"], "loop": [true, false] }
+        },
+        {
+          "id": "ray2_reframe_v2v",
+          "label": "Ray-2 Reframe (Video to Video)",
+          "falSlug": "fal-ai/luma-dream-machine/ray-2/reframe",
+          "tasks": ["v2v"],
+          "inputs": { "aspectRatio": ["1:1", "16:9", "9:16", "4:3", "3:4", "21:9", "9:21"] }
+        }
+      ]
+    },
+    {
+      "id": "wan",
+      "label": "WAN",
+      "versions": [
+        {
+          "id": "wan_21_t2v",
+          "label": "WAN 2.1 (Text to Video)",
+          "falSlug": "fal-ai/wan-t2v",
+          "tasks": ["t2v"],
+          "inputs": { "frames": [81, 90, 100], "fps": [12, 16, 24], "resolution": ["480p", "580p", "720p"], "aspectRatio": ["16:9", "9:16"] }
+        },
+        {
+          "id": "wan_22_a14b_v2v",
+          "label": "WAN 2.2 A14B (Video to Video)",
+          "falSlug": "fal-ai/wan/v2.2-a14b/video-to-video",
+          "tasks": ["v2v"],
+          "inputs": { "frames": [96, 128, 160], "fps": [12, 16, 24], "resolution": ["480p", "580p", "720p"], "aspectRatio": ["16:9", "9:16"] }
+        },
+        {
+          "id": "wan_22_a14b_i2v_turbo",
+          "label": "WAN 2.2 A14B Turbo (Image to Video)",
+          "falSlug": "fal-ai/wan/v2.2-a14b/image-to-video/turbo",
+          "tasks": ["i2v"],
+          "inputs": { "frames": [96, 128, 160], "fps": [12, 16, 24], "resolution": ["480p", "580p", "720p"], "aspectRatio": ["16:9", "9:16"] }
+        }
+      ]
+    },
+    {
+      "id": "hunyuan",
+      "label": "Hunyuan",
+      "versions": [
+        {
+          "id": "hunyuan_t2v",
+          "label": "Hunyuan Video (Text to Video)",
+          "falSlug": "fal-ai/hunyuan-video",
+          "tasks": ["t2v"],
+          "inputs": { "numFrames": [85, 129], "resolution": ["480p", "580p", "720p"], "aspectRatio": ["16:9", "9:16"] }
+        }
+      ]
+    },
+    {
+      "id": "minimax",
+      "label": "MiniMax",
+      "versions": [
+        {
+          "id": "hailuo_02_std_i2v",
+          "label": "Hailuo-02 Standard (Image to Video)",
+          "falSlug": "fal-ai/minimax/hailuo-02/standard/image-to-video",
+          "tasks": ["i2v"],
+          "inputs": { "durationSec": [4, 5, 6], "resolution": ["512p", "768p"], "aspectRatio": ["16:9", "9:16"] }
+        },
+        {
+          "id": "hailuo_02_pro_i2v",
+          "label": "Hailuo-02 Pro (Image to Video)",
+          "falSlug": "fal-ai/minimax/hailuo-02/pro/image-to-video",
+          "tasks": ["i2v"],
+          "inputs": { "durationSec": [4, 5, 6], "resolution": ["720p"], "aspectRatio": ["16:9", "9:16"] }
+        }
+      ]
+    },
+    {
+      "id": "utilities",
+      "label": "Utilities",
+      "versions": [
+        {
+          "id": "seedvr2_upscale",
+          "label": "SeedVR2 Upscale (Video to Video)",
+          "falSlug": "fal-ai/seedvr/upscale/video",
+          "tasks": ["v2v"],
+          "inputs": {}
+        },
+        {
+          "id": "topaz_upscale",
+          "label": "Topaz Video Upscale (Video to Video)",
+          "falSlug": "fal-ai/topaz/upscale/video",
+          "tasks": ["v2v"],
+          "inputs": {}
+        }
+      ]
+    }
+  ]
+}
