@@ -235,6 +235,7 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
  const referenceVideoUrl = form.watch("referenceVideoUrl");
   const audioUrl = form.watch("audioUrl");
   const falEngineFamilies = React.useMemo(() => listEngines("fal"), []);
+  const [engineFamilyId, setEngineFamilyId] = React.useState<string>("");
 
   const modelSpec = React.useMemo(() => {
     if (provider !== "fal") return undefined;
@@ -261,6 +262,20 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
       }
     }
   }, [provider, engine, falEngineFamilies, form]);
+
+  React.useEffect(() => {
+    if (provider !== "fal") {
+      return;
+    }
+    const families = falEngineFamilies;
+    if (!families.length) return;
+    const matchedFamily = families.find((family) =>
+      family.versions.some((version) => version.id === engine),
+    );
+    const fallbackId = families[0]?.id ?? "";
+    const nextId = matchedFamily?.id ?? fallbackId;
+    setEngineFamilyId((prev) => (prev === nextId ? prev : nextId));
+  }, [provider, engine, falEngineFamilies]);
 
   const resolvedResolution = React.useMemo(() => {
     if (typeof resolution === "string" && resolution.length > 0) {
@@ -1287,6 +1302,7 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
                           if (!nextFamily) return;
                           const nextVersion = nextFamily.versions[0];
                           if (nextVersion) {
+                            setEngineFamilyId(familyId);
                             field.onChange(nextVersion.id);
                             form.setValue("engine", nextVersion.id, {
                               shouldDirty: true,
@@ -1304,7 +1320,7 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
                             </FormLabel>
                             <div className="grid gap-3 sm:grid-cols-2">
                               <Select
-                                value={currentFamily?.id ?? families[0]?.id ?? ""}
+                                value={engineFamilyId || currentFamily?.id || families[0]?.id || ""}
                                 onValueChange={handleFamilyChange}
                               >
                                 <FormControl>
