@@ -218,9 +218,6 @@ const collectEngineMetadata = () => {
   for (const engine of modelsConfig.engines) {
     for (const version of engine.versions) {
       const slug = version.falSlug as EngineId;
-      if (!Object.prototype.hasOwnProperty.call(RATES, slug)) {
-        continue;
-      }
 
       const aliasFromSlug = findAliasForSlug(version.falSlug);
       const fallbackAlias = VERSION_ID_FALLBACK_ALIAS[version.id];
