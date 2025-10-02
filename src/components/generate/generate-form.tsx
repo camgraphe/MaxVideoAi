@@ -38,14 +38,11 @@ import {
   FAL_REF_VIDEO_REQUIRED_ENGINES,
   formatModelSummary,
   getModelSpec,
+  models,
 } from "@/data/models";
 import { useToast } from "@/hooks/use-toast";
-import {
-  estimateCost,
-  listEngines,
-  type EstimateInput,
-  type Estimate,
-} from "@/lib/pricing";
+import { estimateCost, type EstimateInput, type Estimate } from "@/lib/pricing";
+import modelsConfig from "@/config/models.config.json";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
 import { ratioToCssAspectRatio } from "@/lib/aspect";
@@ -234,7 +231,39 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
   const inputImageUrl = form.watch("inputImageUrl");
  const referenceVideoUrl = form.watch("referenceVideoUrl");
   const audioUrl = form.watch("audioUrl");
-  const falEngineFamilies = React.useMemo(() => listEngines("fal"), []);
+  const specBySlug = React.useMemo(() => {
+    const map = new Map<string, (typeof models)[keyof typeof models]>();
+    for (const spec of Object.values(models)) {
+      if (spec.provider === "fal" && spec.falSlug) {
+        map.set(spec.falSlug, spec);
+      }
+    }
+    return map;
+  }, []);
+
+  const falEngineFamilies = React.useMemo(() => {
+    return modelsConfig.engines
+      .map((engine) => {
+        const versions = engine.versions
+          .map((version) => {
+            const spec = specBySlug.get(version.falSlug);
+            const mappedId = spec?.id?.split(":")[1] ?? version.id.replace(/_/g, "-");
+
+            return {
+              id: mappedId,
+              label: version.label,
+            };
+          })
+          .filter((entry) => entry.id);
+
+        return {
+          id: engine.id,
+          label: engine.label,
+          versions,
+        };
+      })
+      .filter((family) => family.versions.length > 0);
+  }, [specBySlug]);
   const [engineFamilyId, setEngineFamilyId] = React.useState<string>("");
 
   const modelSpec = React.useMemo(() => {
