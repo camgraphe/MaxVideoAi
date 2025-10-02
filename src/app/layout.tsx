@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { SupabaseSessionListener } from "@/components/supabase-session-listener";
 import "./globals.css";
 
 const inter = Inter({
@@ -47,6 +48,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${jetBrains.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          <SupabaseSessionListener />
           <SiteHeader />
           <main>{children}</main>
           <SiteFooter />

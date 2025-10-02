@@ -34,10 +34,18 @@ export function LoginForm({ className }: LoginFormProps) {
     clearAlerts();
     startTransition(async () => {
       try {
-        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) {
           setError(signInError.message);
           return;
+        }
+        if (data.session) {
+          await fetch("/auth/set", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "same-origin",
+            body: JSON.stringify({ event: "SIGNED_IN", session: data.session }),
+          });
         }
         const redirectUrl = searchParams.get("redirect") ?? "/dashboard";
         window.location.href = redirectUrl;

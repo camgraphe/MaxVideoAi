@@ -59,6 +59,12 @@ export function DashboardNav({ userName, userEmail, organizationName }: Dashboar
     try {
       const supabase = getSupabaseBrowserClient();
       await supabase.auth.signOut();
+      await fetch("/auth/set", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ event: "SIGNED_OUT", session: null }),
+      });
       router.push("/login");
       router.refresh();
     } finally {
