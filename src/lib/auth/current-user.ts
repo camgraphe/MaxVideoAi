@@ -26,6 +26,11 @@ export async function requireCurrentSession(): Promise<CurrentSessionContext> {
   } = await supabase.auth.getUser();
 
   if (error || !user) {
+    if (error) {
+      console.error("[auth] supabase.getUser error", error);
+    } else {
+      console.warn("[auth] supabase.getUser returned no user");
+    }
     redirect("/login");
   }
 
@@ -64,6 +69,9 @@ export async function requireCurrentSession(): Promise<CurrentSessionContext> {
       plan: "free",
       subscriptionStatus: "active",
       seatsLimit: 3,
+    }).catch((error) => {
+      console.error("[auth] createOrganizationWithOwner failed", error);
+      throw error;
     });
     memberships = await listMembershipsByUserId(dbUser.id);
   }
