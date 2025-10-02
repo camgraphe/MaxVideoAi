@@ -1287,6 +1287,7 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
                           if (!nextFamily) return;
                           const nextVersion = nextFamily.versions[0];
                           if (nextVersion) {
+                            field.onChange(nextVersion.id);
                             form.setValue("engine", nextVersion.id, {
                               shouldDirty: true,
                               shouldTouch: true,
