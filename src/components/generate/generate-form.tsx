@@ -38,7 +38,6 @@ import {
   FAL_REF_VIDEO_REQUIRED_ENGINES,
   formatModelSummary,
   getModelSpec,
-  models,
 } from "@/data/models";
 import { useToast } from "@/hooks/use-toast";
 import { estimateCost, type EstimateInput, type Estimate } from "@/lib/pricing";
@@ -231,26 +230,36 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
   const inputImageUrl = form.watch("inputImageUrl");
  const referenceVideoUrl = form.watch("referenceVideoUrl");
   const audioUrl = form.watch("audioUrl");
-  const specBySlug = React.useMemo(() => {
-    const map = new Map<string, (typeof models)[keyof typeof models]>();
-    for (const spec of Object.values(models)) {
-      if (spec.provider === "fal" && spec.falSlug) {
-        map.set(spec.falSlug, spec);
-      }
-    }
-    return map;
-  }, []);
+  const VERSION_ALIAS: Record<string, string> = React.useMemo(
+    () => ({
+      veo3_t2v: "veo3",
+      veo3_fast_t2v: "veo3-fast",
+      kling_25_pro_t2v: "kling-pro-t2v",
+      kling_25_pro_i2v: "kling-pro",
+      pika_22_t2v: "pika-v2-2",
+      pika_22_i2v: "pika-v2-2-i2v",
+      luma_dm_t2v: "luma-dream",
+      ray2_reframe_v2v: "luma-ray2-reframe",
+      wan_21_t2v: "wan-2-1-t2v",
+      wan_22_a14b_v2v: "wan-2-2-v2v",
+      wan_22_a14b_i2v_turbo: "wan-2-2-i2v-turbo",
+      hunyuan_t2v: "hunyuan-video",
+      hailuo_02_std_i2v: "hailuo-02-standard",
+      hailuo_02_pro_i2v: "hailuo-02-pro",
+      seedvr2_upscale: "seedvr2-upscale",
+      topaz_upscale: "topaz-upscale",
+    }),
+    [],
+  );
 
   const falEngineFamilies = React.useMemo(() => {
     return modelsConfig.engines
       .map((engine) => {
         const versions = engine.versions
           .map((version) => {
-            const spec = specBySlug.get(version.falSlug);
-            const mappedId = spec?.id?.split(":")[1] ?? version.id.replace(/_/g, "-");
-
+            const normalizedId = VERSION_ALIAS[version.id] ?? version.id.replace(/_/g, "-");
             return {
-              id: mappedId,
+              id: normalizedId,
               label: version.label,
             };
           })
@@ -263,7 +272,7 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
         };
       })
       .filter((family) => family.versions.length > 0);
-  }, [specBySlug]);
+  }, [VERSION_ALIAS]);
   const [engineFamilyId, setEngineFamilyId] = React.useState<string>("");
 
   const modelSpec = React.useMemo(() => {
