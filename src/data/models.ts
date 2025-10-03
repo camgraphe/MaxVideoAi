@@ -17,8 +17,7 @@ export type ModelId =
   | "fal:hailuo-02-standard"
   | "fal:hailuo-02-pro"
   | "fal:seedvr2-upscale"
-  | "fal:topaz-upscale"
-  | "kiwi:sandbox";
+  | "fal:topaz-upscale";
 
 export type ContentType = "video" | "image";
 
@@ -46,7 +45,7 @@ export interface ModelSpec {
   id: ModelId;
   label: string;
   description: string;
-  provider: "fal" | "kiwi";
+  provider: "fal";
   falSlug?: string;
   falQueueRoot?: string;
   contentType: ContentType;
@@ -837,102 +836,51 @@ export const models: Record<ModelId, ModelSpec> = {
       resolution: "source",
     },
   },
-  "kiwi:sandbox": {
-    id: "kiwi:sandbox",
-    label: "Kiwi Sandbox",
-    description: "Modeleur interne pour tests rapides sans appel provider externe.",
-    provider: "kiwi",
-    contentType: "video",
-    supports: {
-      imageInit: false,
-      imageReference: false,
-      mask: false,
-      refVideo: false,
-      audio: true,
-      seed: true,
-      negativePrompt: true,
-      multiPrompt: false,
-      frameInterpolation: false,
-      upscaling: false,
-      watermarkToggle: false,
-      promptEnhancement: false,
-      autoFix: false,
-      audioTrack: false,
-    },
-    constraints: {
-      ratios: ["16:9", "9:16", "1:1"],
-      durationSeconds: { min: 3, max: 12, step: 1, default: 6 },
-      fps: { min: 24, max: 30, default: 24 },
-      resolution: "Mock 720p",
-      cfgScale: { min: 0, max: 10, step: 1, default: 5 },
-    },
-    defaults: {
-      durationSeconds: 6,
-      fps: 24,
-      cfgScale: 5,
-      withAudio: true,
-      resolution: "720p",
-    },
-    resolutions: ["720p"],
-  },
 };
 
-export function getModelSpec(provider: "fal" | "kiwi", engine: string): ModelSpec | undefined {
-  if (provider === "fal") {
-    switch (engine) {
-      case "veo3":
-        return models["fal:veo3"];
-      case "veo3-fast":
-        return models["fal:veo3-fast"];
-      case "kling-pro":
-        return models["fal:kling-pro"];
-      case "kling-pro-t2v":
-        return models["fal:kling-pro-t2v"];
-      case "pika-v2-2":
-        return models["fal:pika-v2-2"];
-      case "pika-v2-2-i2v":
-        return models["fal:pika-v2-2-i2v"];
-      case "luma-dream":
-        return models["fal:luma-dream"];
-      case "luma-ray2-reframe":
-        return models["fal:luma-ray2-reframe"];
-      case "pixverse-v4-5":
-        return models["fal:pixverse-v4-5"];
-      case "cogvideox-5b":
-        return models["fal:cogvideox-5b"];
-      case "wan-25-preview":
-        return models["fal:wan-25-preview"];
-      case "wan-2-1-t2v":
-        return models["fal:wan-2-1-t2v"];
-      case "wan-2-2-v2v":
-        return models["fal:wan-2-2-v2v"];
-      case "wan-2-2-i2v-turbo":
-        return models["fal:wan-2-2-i2v-turbo"];
-      case "hunyuan-video":
-        return models["fal:hunyuan-video"];
-      case "hailuo-02-standard":
-        return models["fal:hailuo-02-standard"];
-      case "hailuo-02-pro":
-        return models["fal:hailuo-02-pro"];
-      case "seedvr2-upscale":
-        return models["fal:seedvr2-upscale"];
-      case "topaz-upscale":
-        return models["fal:topaz-upscale"];
-      default:
-        return undefined;
-    }
+export function getModelSpec(provider: "fal", engine: string): ModelSpec | undefined {
+  switch (engine) {
+    case "veo3":
+      return models["fal:veo3"];
+    case "veo3-fast":
+      return models["fal:veo3-fast"];
+    case "kling-pro":
+      return models["fal:kling-pro"];
+    case "kling-pro-t2v":
+      return models["fal:kling-pro-t2v"];
+    case "pika-v2-2":
+      return models["fal:pika-v2-2"];
+    case "pika-v2-2-i2v":
+      return models["fal:pika-v2-2-i2v"];
+    case "luma-dream":
+      return models["fal:luma-dream"];
+    case "luma-ray2-reframe":
+      return models["fal:luma-ray2-reframe"];
+    case "pixverse-v4-5":
+      return models["fal:pixverse-v4-5"];
+    case "cogvideox-5b":
+      return models["fal:cogvideox-5b"];
+    case "wan-25-preview":
+      return models["fal:wan-25-preview"];
+    case "wan-2-1-t2v":
+      return models["fal:wan-2-1-t2v"];
+    case "wan-2-2-v2v":
+      return models["fal:wan-2-2-v2v"];
+    case "wan-2-2-i2v-turbo":
+      return models["fal:wan-2-2-i2v-turbo"];
+    case "hunyuan-video":
+      return models["fal:hunyuan-video"];
+    case "hailuo-02-standard":
+      return models["fal:hailuo-02-standard"];
+    case "hailuo-02-pro":
+      return models["fal:hailuo-02-pro"];
+    case "seedvr2-upscale":
+      return models["fal:seedvr2-upscale"];
+    case "topaz-upscale":
+      return models["fal:topaz-upscale"];
+    default:
+      return undefined;
   }
-
-  if (provider === "kiwi") {
-    switch (engine) {
-      case "kiwi-sandbox":
-        return models["kiwi:sandbox"];
-      default:
-        return undefined;
-    }
-  }
-
-  return undefined;
 }
 
 export function formatModelSummary(spec: ModelSpec): string {
@@ -972,7 +920,6 @@ export const ENGINE_LABELS: Record<string, string> = {
   "hailuo-02-pro": "Hailuo-02 Pro",
   "seedvr2-upscale": "SeedVR2 Upscale",
   "topaz-upscale": "Topaz Video Upscale",
-  "kiwi-sandbox": "Kiwi Sandbox",
 };
 
 export const FAL_INIT_IMAGE_REQUIRED_ENGINES: ReadonlySet<ModelId> = new Set([

@@ -229,9 +229,7 @@ export async function POST(request: Request) {
     }
 
     let creditsRequired = serverCostCents !== null ? Math.ceil(serverCostCents / 100) : 0;
-    if (payload.provider !== "kiwi") {
-      creditsRequired = Math.max(1, creditsRequired);
-    }
+    creditsRequired = Math.max(1, creditsRequired);
 
     if (creditsRequired > 0 && session.organization.credits < creditsRequired) {
       return NextResponse.json(

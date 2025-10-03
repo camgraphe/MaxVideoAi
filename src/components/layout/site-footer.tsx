@@ -14,17 +14,29 @@ export function SiteFooter() {
             </p>
           </div>
           <nav className="grid grid-cols-2 gap-3 text-sm md:justify-self-center">
+            <Link className="text-muted-foreground transition hover:text-foreground" href="/">
+              Explore
+            </Link>
+            <Link className="text-muted-foreground transition hover:text-foreground" href="/collections">
+              Collections
+            </Link>
+            <Link className="text-muted-foreground transition hover:text-foreground" href="/chains">
+              Chains
+            </Link>
             <Link className="text-muted-foreground transition hover:text-foreground" href="/pricing">
               Pricing
             </Link>
+            <Link className="text-muted-foreground transition hover:text-foreground" href="/about">
+              About
+            </Link>
+            <Link className="text-muted-foreground transition hover:text-foreground" href="/legal">
+              Legal
+            </Link>
+            <Link className="text-muted-foreground transition hover:text-foreground" href="/submit">
+              Submit clip
+            </Link>
             <Link className="text-muted-foreground transition hover:text-foreground" href="/faq">
               FAQ
-            </Link>
-            <Link className="text-muted-foreground transition hover:text-foreground" href="/generate">
-              Generate
-            </Link>
-            <Link className="text-muted-foreground transition hover:text-foreground" href="/login">
-              Sign in
             </Link>
           </nav>
           <div className="flex items-start justify-start gap-3 md:justify-end">

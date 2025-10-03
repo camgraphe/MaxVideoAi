@@ -159,6 +159,46 @@ function buildDefaultValuesFromPreset(preset: (typeof generationPresets)[number]
   } satisfies GenerateFormValues;
 }
 
+function buildDefaultsFromSpec(
+  spec: ReturnType<typeof getModelSpec>,
+  engineId: string,
+  provider: GenerateFormValues["provider"],
+  previousPrompt: string,
+  previousQuantity: number,
+): GenerateFormValues {
+  const ratio = spec?.constraints.ratios?.[0] ?? ratioOptions[0];
+  const durationRange = spec?.constraints.durationSeconds;
+  const durationDefault = durationRange
+    ? clampNumber(durationRange.default ?? durationRange.min, durationRange.min, durationRange.max)
+    : 6;
+  return {
+    presetId: "manual",
+    prompt: previousPrompt,
+    provider,
+    engine: engineId,
+    ratio,
+    durationSeconds: durationDefault,
+    withAudio: spec?.supports.audio ? spec?.defaults.withAudio ?? true : false,
+    quantity: previousQuantity,
+    seed: undefined,
+    resolution: spec?.defaults.resolution ?? spec?.resolutions?.[0],
+    inputImageUrl: undefined,
+    maskUrl: undefined,
+    referenceImageUrl: undefined,
+    referenceVideoUrl: undefined,
+    audioUrl: undefined,
+    negativePrompt: undefined,
+    fps: spec?.defaults.fps,
+    motionStrength: undefined,
+    cfgScale: spec?.defaults.cfgScale,
+    steps: spec?.defaults.steps,
+    watermark: spec?.supports.watermarkToggle ? true : undefined,
+    upscaling: spec?.supports.upscaling ? false : undefined,
+    enhancePrompt: spec?.supports.promptEnhancement ? spec?.defaults.enhancePrompt ?? true : undefined,
+    autoFix: spec?.supports.autoFix ? spec?.defaults.autoFix ?? true : undefined,
+  } satisfies GenerateFormValues;
+}
+
 interface GenerateFormProps {
   creditsRemaining: number;
 }
@@ -201,7 +241,8 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
   const [activeJob, setActiveJob] = useState<SerializedJob | null>(null);
   const refreshedJobIdRef = React.useRef<string | null>(null);
 
-  const defaultPreset = generationPresets[0];
+  const defaultPreset =
+    generationPresets.find((item) => item.id === "kling-pro-trailer") ?? generationPresets[0];
 
   const defaultValues = React.useMemo(() => buildDefaultValuesFromPreset(defaultPreset), [defaultPreset]);
 
@@ -273,8 +314,6 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
       })
       .filter((family) => family.versions.length > 0);
   }, [VERSION_ALIAS]);
-  const [engineFamilyId, setEngineFamilyId] = React.useState<string>("");
-
   const modelSpec = React.useMemo(() => {
     if (provider !== "fal") return undefined;
     return getModelSpec(provider, engine);
@@ -283,37 +322,6 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
   React.useEffect(() => {
     draftJobsRef.current = draftJobs;
   }, [draftJobs]);
-
-  React.useEffect(() => {
-    if (provider !== "fal") {
-      return;
-    }
-    const families = falEngineFamilies;
-    if (!families.length) return;
-    const hasMatch = families.some((family) =>
-      family.versions.some((version) => version.id === engine),
-    );
-    if (!hasMatch) {
-      const defaultVersion = families[0]?.versions[0];
-      if (defaultVersion) {
-        form.setValue("engine", defaultVersion.id, { shouldDirty: false, shouldTouch: false });
-      }
-    }
-  }, [provider, engine, falEngineFamilies, form]);
-
-  React.useEffect(() => {
-    if (provider !== "fal") {
-      return;
-    }
-    const families = falEngineFamilies;
-    if (!families.length) return;
-    const matchedFamily = families.find((family) =>
-      family.versions.some((version) => version.id === engine),
-    );
-    const fallbackId = families[0]?.id ?? "";
-    const nextId = matchedFamily?.id ?? fallbackId;
-    setEngineFamilyId((prev) => (prev === nextId ? prev : nextId));
-  }, [provider, engine, falEngineFamilies]);
 
   const resolvedResolution = React.useMemo(() => {
     if (typeof resolution === "string" && resolution.length > 0) {
@@ -704,23 +712,170 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
     [toast],
   );
 
-  const handlePresetChange = (presetId: string) => {
-    const preset = generationPresets.find((item) => item.id === presetId);
-    if (!preset) return;
+  const handlePresetChange = React.useCallback(
+    (presetId: string) => {
+      const preset = generationPresets.find((item) => item.id === presetId);
+      if (!preset) return;
 
-    const previousPrompt = form.getValues("prompt");
-    const previousQuantity = form.getValues("quantity");
+      const previousPrompt = form.getValues("prompt");
+      const previousQuantity = form.getValues("quantity");
 
-    const defaults = buildDefaultValuesFromPreset(preset);
-    form.reset(
-      {
-        ...defaults,
-        prompt: previousPrompt,
-        quantity: previousQuantity,
-      },
-      { keepDefaultValues: false },
-    );
-  };
+      const defaults = buildDefaultValuesFromPreset(preset);
+      form.reset(
+        {
+          ...defaults,
+          prompt: previousPrompt,
+          quantity: previousQuantity,
+        },
+        { keepDefaultValues: false },
+      );
+    },
+    [form],
+  );
+
+  const applyEnginePreset = React.useCallback(
+    (engineId: string) => {
+      const previousPrompt = form.getValues("prompt");
+      const previousQuantity = form.getValues("quantity");
+      const matchingPreset = generationPresets.find(
+        (item) => item.engine === engineId && item.provider === provider,
+      );
+      if (matchingPreset) {
+        const defaults = buildDefaultValuesFromPreset(matchingPreset);
+        form.reset(
+          {
+            ...defaults,
+            prompt: previousPrompt,
+            quantity: previousQuantity,
+          },
+          { keepDefaultValues: false },
+        );
+        return true;
+      }
+
+      if (provider !== "fal") {
+        form.setValue("engine", engineId, { shouldDirty: true, shouldTouch: true });
+        form.setValue("presetId", "manual", { shouldDirty: true, shouldTouch: false });
+        return true;
+      }
+
+      const spec = getModelSpec("fal", engineId);
+      const manualDefaults = buildDefaultsFromSpec(spec, engineId, provider, previousPrompt, previousQuantity);
+      form.reset(manualDefaults, { keepDefaultValues: false });
+      return true;
+    },
+    [form, provider],
+  );
+
+  const EngineSelector = React.useMemo(() => {
+    if (provider !== "fal") {
+      return (
+        <FormField
+          control={form.control}
+          name="engine"
+          render={({ field }) => {
+            return (
+              <FormItem className="space-y-3">
+                <FormLabel className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+                  Engine
+                </FormLabel>
+                <Select
+                  onValueChange={(value) => {
+                    applyEnginePreset(value);
+                    field.onChange(value);
+                  }}
+                  value={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger className="w-full rounded-2xl border border-black/10 bg-white/90 px-3 py-2 text-left text-sm font-medium text-foreground shadow-sm focus-visible:border-primary focus-visible:ring-primary/30 dark:border-white/10 dark:bg-[#162130] dark:text-slate-100">
+                      <SelectValue placeholder="Select an engine" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="max-h-72 bg-white dark:bg-[#0b1321]">
+                    {generationPresets
+                      .filter((preset) => preset.provider === provider)
+                      .map((preset) => (
+                        <SelectItem key={preset.engine} value={preset.engine}>
+                          {ENGINE_LABELS[preset.engine] ?? preset.engine}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
+        />
+      );
+    }
+
+    const EngineSwitcher = () => {
+      const currentEngine = engine;
+      const families = falEngineFamilies;
+      const currentFamily =
+        families.find((family) => family.versions.some((version) => version.id === currentEngine)) ?? families[0];
+      const activeFamilyId = currentFamily?.id ?? families[0]?.id ?? "";
+
+      const handleSelectFamily = (targetId: string) => {
+        const family = families.find((entry) => entry.id === targetId);
+        if (!family) return;
+        const firstVersion = family.versions[0];
+        if (firstVersion) {
+          applyEnginePreset(firstVersion.id);
+        }
+      };
+
+      const handleSelectVersion = (engineId: string) => {
+        applyEnginePreset(engineId);
+      };
+
+      const versions = families.find((family) => family.id === activeFamilyId)?.versions ?? currentFamily?.versions ?? [];
+
+      return (
+        <div className="space-y-3">
+          <FormLabel className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+            Engine & version
+          </FormLabel>
+          <div className="flex gap-2 overflow-x-auto">
+            {families.map((family) => {
+              const active = family.id === activeFamilyId;
+              return (
+                <Button
+                  key={family.id}
+                  type="button"
+                  variant={active ? "default" : "outline"}
+                  size="sm"
+                  className="whitespace-nowrap rounded-full text-xs"
+                  onClick={() => handleSelectFamily(family.id)}
+                >
+                  {family.label}
+                </Button>
+              );
+            })}
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {versions.map((version) => {
+              const active = version.id === engine;
+              return (
+                <Button
+                  key={version.id}
+                  type="button"
+                  variant={active ? "secondary" : "ghost"}
+                  className="justify-start rounded-2xl border border-black/10 bg-white/90 px-3 py-2 text-sm font-medium text-foreground shadow-sm hover:border-primary/40 dark:border-white/10 dark:bg-[#162130] dark:text-slate-100"
+                  onClick={() => handleSelectVersion(version.id)}
+                >
+                  {version.label}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+      );
+    };
+
+    return <EngineSwitcher />;
+  }, [applyEnginePreset, engine, falEngineFamilies, form.control, provider]);
+
 
   const buildLaunchPayload = React.useCallback(
     (values: GenerateFormValues, overrideEngine?: string) => {
@@ -1287,116 +1442,7 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
                     Ajustez rapidement moteur, ratio, durée et audio. Toutes les options restent visibles, sans redimensionnement surprise.
                   </p>
                   <div className="flex flex-col gap-5 text-xs text-muted-foreground dark:text-slate-200">
-                    <FormField
-                      control={form.control}
-                      name="engine"
-                      render={({ field }) => {
-                        if (provider !== "fal") {
-                          const fallbackOptions = generationPresets
-                            .filter((preset) => preset.provider === provider)
-                            .map((preset) => ({
-                              value: preset.engine,
-                              label: ENGINE_LABELS[preset.engine] ?? preset.engine,
-                            }));
-
-                          const uniqueFallback = fallbackOptions.length
-                            ? Array.from(
-                                new Map(fallbackOptions.map((option) => [option.value, option])).values(),
-                              )
-                            : Object.entries(ENGINE_LABELS).map(([value, label]) => ({ value, label }));
-
-                          return (
-                            <FormItem className="space-y-3">
-                              <FormLabel className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
-                                Engine
-                              </FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="w-full rounded-2xl border border-black/10 bg-white/90 px-3 py-2 text-left text-sm font-medium text-foreground shadow-sm focus-visible:border-primary focus-visible:ring-primary/30 dark:border-white/10 dark:bg-[#162130] dark:text-slate-100">
-                                    <SelectValue placeholder="Select an engine" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent className="max-h-72 bg-white dark:bg-[#0b1321]">
-                                  {uniqueFallback.map((option) => (
-                                    <SelectItem key={option.value} value={option.value}>
-                                      {option.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          );
-                        }
-
-                        const families = falEngineFamilies;
-                        const currentFamily =
-                          families.find((family) =>
-                            family.versions.some((version) => version.id === field.value),
-                          ) ?? families[0];
-
-                        const handleFamilyChange = (familyId: string) => {
-                          const nextFamily = families.find((family) => family.id === familyId);
-                          if (!nextFamily) return;
-                          const nextVersion = nextFamily.versions[0];
-                          if (nextVersion) {
-                            setEngineFamilyId(familyId);
-                            field.onChange(nextVersion.id);
-                            form.setValue("engine", nextVersion.id, {
-                              shouldDirty: true,
-                              shouldTouch: true,
-                            });
-                          }
-                        };
-
-                        const versionOptions = currentFamily?.versions ?? [];
-
-                        return (
-                          <FormItem className="space-y-3">
-                            <FormLabel className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
-                              Engine & version
-                            </FormLabel>
-                            <div className="grid gap-3 sm:grid-cols-2">
-                              <Select
-                                value={engineFamilyId || currentFamily?.id || families[0]?.id || ""}
-                                onValueChange={handleFamilyChange}
-                              >
-                                <FormControl>
-                                  <SelectTrigger className="w-full rounded-2xl border border-black/10 bg-white/90 px-3 py-2 text-left text-sm font-medium text-foreground shadow-sm focus-visible:border-primary focus-visible:ring-primary/30 dark:border-white/10 dark:bg-[#162130] dark:text-slate-100">
-                                    <SelectValue placeholder="Engine" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent className="max-h-72 bg-white dark:bg-[#0b1321]">
-                                  {families.map((family) => (
-                                    <SelectItem key={family.id} value={family.id}>
-                                      {family.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="w-full rounded-2xl border border-black/10 bg-white/90 px-3 py-2 text-left text-sm font-medium text-foreground shadow-sm focus-visible:border-primary focus-visible:ring-primary/30 dark:border-white/10 dark:bg-[#162130] dark:text-slate-100">
-                                    <SelectValue placeholder="Version" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent className="max-h-72 bg-white dark:bg-[#0b1321]">
-                                  {versionOptions.map((version) => (
-                                    <SelectItem key={version.id} value={version.id}>
-                                      {version.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <FormDescription className="text-[11px] text-muted-foreground/70">
-                              Switch engines and their versions without losing your prompt or seed.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        );
-                      }}
-                    />
+                    {EngineSelector}
                     {costPinInput ? (
                       <CostPin
                         input={costPinInput}

@@ -15,7 +15,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-export const providerEnum = pgEnum("provider", ["veo", "fal", "kiwi"]);
+export const providerEnum = pgEnum("provider", ["veo", "fal"]);
 export const jobStatusEnum = pgEnum("job_status", ["pending", "running", "completed", "failed"]);
 export const orgRoleEnum = pgEnum("org_role", ["owner", "admin", "member"]);
 export const jobAssetKindEnum = pgEnum("job_asset_kind", ["video", "thumbnail", "render_log"]);

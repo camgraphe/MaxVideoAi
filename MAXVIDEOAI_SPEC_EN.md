@@ -31,7 +31,7 @@
 ## 2) Scope of this delivery
 
 1. **Homepage redesign** (copy + sections below).  
-2. **Dashboard changes:** Engine→Version selector, Model‑aware inputs, *Run Draft ×3*, *Promote to Quality*, *Budget Cap*, **Cost Pin** (live estimator).  
+2. **Dashboard changes:** Engine→Version selector, Model‑aware inputs, *Promote to Quality*, *Budget Cap*, **Cost Pin** (live estimator).  
 3. **Pricing page:** four **Formats**, engine examples, clear rules for multipliers (e.g., Luma), audio toggle (Veo).  
 4. **SEO:** titles/meta/FAQ JSON‑LD.  
 5. **Config & code:** a machine‑readable **models.config.json**, a reusable **lib/pricing.ts** cost engine, and a minimal **CostPin** React component.  
@@ -118,10 +118,6 @@ MaxVideoAI is the **engine‑agnostic AI video switchboard** for creators and te
 - **Aspect ratio** — constrained by engine (e.g., Pika supports more ratios).  
 - **Resolution** — constrained by engine.  
 - **Audio** — checkbox when the engine supports it (e.g., Veo). Tooltip: “Turn off audio to save credits.”
-
-**Panel 3 — Compare**  
-- Button **`Run Draft ×3`** → same prompt on *Kling*, *Pika*, and *WAN/Hunyuan*.  
-- Grid shows **thumbnail + exact cost** + `Promote to Quality` (Veo 3 / Veo 3 Fast).
 
 **Right rail — Cost Pin**  
 - Displays **engine · version · duration · res · audio** → **$ live**.  
@@ -657,7 +653,6 @@ create table if not exists model_prices_cache (
 
 - [ ] Homepage shows the new hero/sub/CTAs, “How it works”, curated model list, Formats, and Utilities.  
 - [ ] Dashboard renders Engine→Version from `config/models.config.json`; invalid inputs are blocked per model rules.  
-- [ ] `Run Draft ×3` dispatches three jobs, returns thumbnails and exact **actual** costs.  
 - [ ] Cost Pin updates price **before** render; totals match Stripe usage within expected rounding.  
 - [ ] Pricing page renders the four Formats and engine explainers; switching duration/res/audio changes the estimate.  
 - [ ] SEO meta + FAQ JSON‑LD are present on Home.  
@@ -671,7 +666,6 @@ create table if not exists model_prices_cache (
 - [ ] Add `config/models.config.json`.  
 - [ ] Add `lib/pricing.ts` and wire Cost Pin into Dashboard & Pricing page.  
 - [ ] Build Engine→Version selector; map inputs based on config.  
-- [ ] Implement Compare (`Run Draft ×3`) with a shared prompt payload.  
 - [ ] Implement Promote (carry seed/params into Veo 3 or Veo 3 Fast).  
 - [ ] Wire fal Queue/Webhooks; handle retries; store logs.  
 - [ ] Create Supabase tables; insert on job creation and completion.  

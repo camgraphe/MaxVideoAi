@@ -1,4 +1,4 @@
-export type ProviderId = "veo" | "fal" | "kiwi";
+export type ProviderId = "veo" | "fal";
 
 export type JobStatus = "pending" | "running" | "completed" | "failed";
 

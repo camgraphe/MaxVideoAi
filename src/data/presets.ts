@@ -207,22 +207,4 @@ export const generationPresets: GenerationPreset[] = [
       enhancePrompt: true,
     },
   },
-  {
-    id: "kiwi-sandbox",
-    name: "Kiwi Sandbox",
-    description: "Mode test interne (0 crédit) pour démos et intégrations.",
-    modelId: "kiwi:sandbox",
-    provider: "kiwi",
-    engine: "kiwi-sandbox",
-    ratio: "16:9",
-    durationSeconds: 6,
-    withAudio: true,
-    seed: 2024,
-    styleTags: ["sandbox", "demo"],
-    advancedDefaults: {
-      fps: 24,
-      cfgScale: 5,
-      resolution: "720p",
-    },
-  },
 ];

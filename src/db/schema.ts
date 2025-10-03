@@ -8,7 +8,7 @@ export const jobStatusSchema = z.enum([
 ]);
 
 export const jobParamsSchema = z.object({
-  provider: z.enum(["veo", "fal", "kiwi"]),
+  provider: z.enum(["veo", "fal"]),
   engine: z.string(),
   prompt: z.string().min(4),
   ratio: z.enum(["9:16", "16:9", "1:1", "21:9", "4:5", "5:4", "3:2", "2:3"]),
@@ -25,7 +25,7 @@ export const jobParamsSchema = z.object({
 export const jobRecordSchema = z.object({
   id: z.string().uuid(),
   userId: z.string().uuid(),
-  provider: z.enum(["veo", "fal", "kiwi"]),
+  provider: z.enum(["veo", "fal"]),
   engine: z.string(),
   prompt: z.string(),
   params: jobParamsSchema,

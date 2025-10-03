@@ -6,71 +6,107 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CostPin } from "@/components/pricing/cost-pin";
 import { siteConfig } from "@/config/site";
 
-const formats = [
+const tiers = [
   {
-    name: "Quick Draft",
-    spec: "5s • 720p • 16:9 / 9:16",
-    priceRange: "$0.45–$0.99",
-    description: "Budget-friendly passes to test tone, pacing, or hook variations before you promote the winner.",
+    name: "Premium",
+    price: "From $3.20 per clip",
+    anchor: "Veo 3 and Kling 2.5 Turbo with 4K Enhance included",
+    bullets: [
+      "Priority access to Veo 3 cinematic and image to video modes",
+      "Kling 2.5 Turbo with audio control and seed locking",
+      "4K upscale and dual export 16:9 + 9:16 included",
+      "Remove watermark on publish-ready clips",
+    ],
+    highlight: true,
   },
   {
-    name: "Social Vertical",
-    spec: "6s • 720p • 9:16",
-    priceRange: "$0.55–$1.10",
-    description: "Optimised for TikTok, Reels, and Shorts when you need vertical slots without guesswork.",
+    name: "Pro",
+    price: "$0.90 to $1.60 per clip",
+    anchor: "Pika 2.2, Luma Dream Machine, Ray-2 Reframe, SeedVR2",
+    bullets: [
+      "Pika 2.2 text to video and image to video",
+      "Luma Dream Machine stylised 6 second runs",
+      "Ray-2 subject aware reframe",
+      "SeedVR2 upscale up to 4K as an Enhance toggle",
+    ],
   },
   {
-    name: "Standard",
-    spec: "8s • 720p • 16:9",
-    priceRange: "$0.56–$2.32",
-    description: "The workhorse preset for product explainers and motion cutdowns that go wide.",
+    name: "Starter",
+    price: "$0.35 to $0.70 per clip",
+    anchor: "WAN 2.1 / 2.2, Hunyuan Video, Minimax",
+    bullets: [
+      "Budget engines for volume drafts and logo morphs",
+      "Watermark on by default with option to remove via Enhance",
+      "Perfect for validating hooks before promoting to Premium",
+      "Audio add-on available per clip",
+    ],
   },
   {
-    name: "Hero",
-    spec: "8s • 1080p • 16:9",
-    priceRange: "$0.70–$3.99",
-    description: "Flagship quality for ads and hero placements. 9:16 requests fall back to 720p when engines require it.",
+    name: "Pay as you go",
+    price: "Usage metered via Stripe",
+    anchor: "No minimums. Share credits across the workspace.",
+    bullets: [
+      "Budget caps per workspace with confirmation step",
+      "Auto top-up or manual checkout in a single click",
+      "Audit log of clips, enhance runs, and usage events",
+      "Export invoices with video and enhance line items",
+    ],
+  },
+];
+
+const bundles = [
+  {
+    title: "1080p + 4K Upscale",
+    description: "Ship broadcast-ready masters by pairing 1080p base renders with SeedVR2 upscale in one pipeline.",
+  },
+  {
+    title: "Dual export 16:9 + 9:16",
+    description: "Run Ray-2 reframe to deliver landscape and vertical outputs simultaneously for omnichannel launches.",
+  },
+  {
+    title: "Morph + Audio",
+    description: "Blend Hailuo morph passes with the Add Audio chain to deliver logo reveals that land with impact.",
   },
 ];
 
 const engineNotes = [
   {
-    engine: "Veo 3 / Veo 3 Fast",
-    note: "Per-second billing. Audio on/off changes the rate so you can trim cost when you only need visuals.",
+    engine: "Veo 3",
+    note: "Per second billing with audio toggle. 4 second minimum, 12 second maximum.",
   },
   {
     engine: "Kling 2.5 Turbo",
-    note: "$0.35 for the first 5 seconds, then $0.07 each additional second. Ideal for hook testing." ,
+    note: "$0.35 for the first 5 seconds, then $0.07 per additional second.",
   },
   {
     engine: "Pika 2.2",
-    note: "Linear per-second estimate derived from 5-second benchmarks—720p versus 1080p is priced separately.",
+    note: "Linear per second estimate derived from 5 second 720p benchmarks. 1080p applies x1.6 multiplier.",
   },
   {
     engine: "Luma Dream Machine",
-    note: "Multipliers apply: 720p ×2, 1080p ×4, and 9-second clips ×2 over the base rate.",
+    note: "Stylised renders with multipliers for 21:9 and 9 second runs.",
   },
   {
-    engine: "WAN 2.1 / 2.2",
-    note: "Per-clip billing at 480p/720p. Higher frame counts add a lightweight multiplier only when requested.",
+    engine: "WAN and Hunyuan",
+    note: "Per clip billing at 720p. Watermark removal requires Enhance toggle.",
   },
 ];
 
 const faqs = [
   {
-    question: "When do I get charged?",
+    question: "When do we bill the clip?",
     answer:
-      "Only after the render succeeds. We raise Stripe metered usage once fal.ai confirms completion so failed jobs never hit your invoice.",
+      "Only after fal.ai confirms success. Stripe usage is raised once per job so failed attempts never appear on your invoice.",
   },
   {
-    question: "How accurate is the Cost Pin?",
+    question: "How accurate is the Cost Pin estimate?",
     answer:
-      "It watches duration, resolution, ratio, and audio flags in real time. What you see before clicking Generate is what Stripe logs, within standard rounding.",
+      "It tracks engine, duration, ratio, audio, and resolution in real time. The value you see before Generate is what Stripe records.",
   },
   {
-    question: "Can I cap spend per project?",
+    question: "Can I cap spend per workspace?",
     answer:
-      "Yes. Set a workspace budget cap so producers must confirm if a render exceeds the allowance. Promote-to-quality respects the same guardrails.",
+      "Yes. Set a credit ceiling and require confirmation when a render would break the cap. Promote to quality respects the same rule.",
   },
 ];
 
@@ -93,7 +129,7 @@ const pricingFaqJsonLd = {
       name: "How is pricing calculated?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "MaxVideoAI calculates cost per engine, duration, resolution and audio toggle in real time. Per-second engines (Veo, Kling, Pika) bill by seconds, while WAN and utilities bill per clip.",
+        text: "MaxVideoAI calculates cost per engine, duration, resolution, and audio toggle in real time. Per second engines bill by seconds, while WAN and utilities bill per clip.",
       },
     },
     {
@@ -109,29 +145,29 @@ const pricingFaqJsonLd = {
       name: "Can I enforce a budget cap?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Yes. Workspace budget caps force a confirmation step whenever a render exceeds the allowance. Promote-to-quality honours the same guardrail.",
+        text: "Yes. Workspace budget caps force a confirmation step whenever a render exceeds the allowance. Promote to quality follows the same guardrail.",
       },
     },
   ],
 };
 
 export const metadata: Metadata = {
-  title: "Pricing that tracks your render, not your time.",
-  description: "Real-time cost by engine, duration, resolution, and audio. Pay only for renders that succeed.",
+  title: "Pricing that tracks your render, not your time",
+  description: "Premium, Pro, Starter, and Pay as you go tiers with live cost pin estimates. Pay only for successful renders.",
   alternates: {
     canonical: `${siteConfig.url}/pricing`,
   },
   openGraph: {
-    title: "Pricing that tracks your render, not your time.",
-    description: "Real-time cost by engine, duration, resolution, and audio. Pay only for renders that succeed.",
+    title: "Pricing that tracks your render, not your time",
+    description: "Premium, Pro, Starter, and Pay as you go tiers with live cost pin estimates. Pay only for successful renders.",
     url: `${siteConfig.url}/pricing`,
     siteName: siteConfig.name,
     images: [siteConfig.ogImage],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Pricing that tracks your render, not your time.",
-    description: "Real-time cost by engine, duration, resolution, and audio. Pay only for renders that succeed.",
+    title: "Pricing that tracks your render, not your time",
+    description: "Premium, Pro, Starter, and Pay as you go tiers with live cost pin estimates. Pay only for successful renders.",
     images: [siteConfig.ogImage],
   },
 };
@@ -154,9 +190,9 @@ export default function PricingPage() {
           <Badge variant="secondary" className="border-white/30 bg-white/10 text-xs uppercase tracking-[0.35em] text-white">
             Usage-based billing
           </Badge>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Pricing that tracks your render, not your time.</h1>
-          <p className="max-w-2xl text-sm text-white/80 sm:text-base">
-            Real-time cost by engine, duration, resolution, and audio. No minimums or hidden commitments—pay only for what you render.
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Pricing that tracks your render, not your time</h1>
+          <p className="max-w-3xl text-sm text-white/80 sm:text-base">
+            Start with Premium for Veo and Kling, or slide down to Pro and Starter when you need value drafts. Every tile shows cost before you click Remix, and Stripe only bills successful renders.
           </p>
           <div className="flex flex-wrap gap-3">
             <Button asChild size="lg">
@@ -170,22 +206,53 @@ export default function PricingPage() {
 
         <section className="space-y-8">
           <div className="flex flex-col gap-2">
-            <h2 className="text-2xl font-semibold sm:text-3xl">Four preset formats</h2>
+            <h2 className="text-2xl font-semibold sm:text-3xl">Tier lineup</h2>
             <p className="text-sm text-white/70 sm:text-base">
-              Choose a bundle that matches your deliverable. Each card displays the live cost range across supported engines.
+              Premium anchors perception. Pro and Starter deliver value. Pay as you go keeps procurement simple.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {formats.map((format) => (
-              <Card key={format.name} className="border-white/10 bg-white/5 backdrop-blur transition hover:border-primary/40">
-                <CardHeader>
-                  <CardTitle className="text-xl text-white">{format.name}</CardTitle>
-                  <CardDescription className="text-sm font-medium text-primary">{format.spec}</CardDescription>
+            {tiers.map((tier) => (
+              <Card
+                key={tier.name}
+                className={`flex h-full flex-col border-white/10 bg-white/5 backdrop-blur transition hover:border-primary/40 ${
+                  tier.highlight ? "ring-1 ring-primary/50" : ""
+                }`}
+              >
+                <CardHeader className="space-y-2">
+                  <Badge variant="outline" className="w-fit border-primary/30 text-primary">
+                    {tier.name}
+                  </Badge>
+                  <CardTitle className="text-xl text-white">{tier.price}</CardTitle>
+                  <CardDescription className="text-sm text-white/70">{tier.anchor}</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3 text-sm text-white/80">
-                  <div className="text-base font-semibold text-white">From {format.priceRange}</div>
-                  <p>{format.description}</p>
+                <CardContent className="flex flex-1 flex-col gap-3 text-sm text-white/80">
+                  <ul className="space-y-2">
+                    {tier.bullets.map((bullet) => (
+                      <li key={bullet} className="flex items-start gap-2">
+                        <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />
+                        <span>{bullet}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        <section className="space-y-6">
+          <div className="flex flex-col gap-2">
+            <h2 className="text-2xl font-semibold sm:text-3xl">Bundles and upsells</h2>
+            <p className="text-sm text-white/70 sm:text-base">
+              Package Enhance utilities to raise margin and keep delivery consistent.
+            </p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {bundles.map((bundle) => (
+              <Card key={bundle.title} className="border-white/10 bg-white/5 p-6 text-sm text-white/80 backdrop-blur">
+                <CardTitle className="text-lg text-white">{bundle.title}</CardTitle>
+                <p className="mt-2 leading-relaxed">{bundle.description}</p>
               </Card>
             ))}
           </div>
@@ -196,7 +263,7 @@ export default function PricingPage() {
             <CardHeader>
               <CardTitle className="text-xl text-white">Engine explainers</CardTitle>
               <CardDescription className="text-sm text-white/70">
-                Every engine has its own billing quirks. We surface them so you can price accurately before you hit Generate.
+                Billing quirks surface before you render. Producers adjust prompts with confidence.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 text-sm text-white/80">
@@ -214,9 +281,9 @@ export default function PricingPage() {
               <Badge variant="outline" className="border-primary/40 text-primary">
                 Live Cost Pin
               </Badge>
-              <h3 className="text-xl font-semibold text-white">Slider-based estimates</h3>
+              <h3 className="text-xl font-semibold text-white">Slider-based estimate</h3>
               <p>
-                Adjust engine, duration, ratio, resolution, and audio to preview the bill before launch. The estimator mirrors the values Supabase records and Stripe bills.
+                Adjust engine, duration, ratio, resolution, and audio to preview the bill. The estimator mirrors Supabase job logs and Stripe usage events.
               </p>
             </div>
             <CostPin
@@ -240,20 +307,20 @@ export default function PricingPage() {
             <CardHeader>
               <CardTitle className="text-xl text-white">Usage meters</CardTitle>
               <CardDescription className="text-sm text-white/70">
-                Two Stripe meters keep finance in sync with production.
+                Finance sees the same numbers as creative.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 text-sm text-white/80">
               <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                 <div className="text-base font-semibold text-white">video_seconds_rendered</div>
                 <p className="mt-1 leading-relaxed">
-                  Logged for per-second engines (Veo, Kling, Pika, WAN 2.2, Minimax). We push the exact seconds fal.ai reports once the job is complete.
+                  Logged for per second engines like Veo, Kling, Pika, and WAN 2.2. We push the exact seconds fal.ai reports.
                 </p>
               </div>
               <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                 <div className="text-base font-semibold text-white">video_clips_rendered</div>
                 <p className="mt-1 leading-relaxed">
-                  Logged for per-clip engines (WAN 2.1, Hunyuan, utilities). Each successful job adds 1 unit so invoices stay predictable.
+                  Logged for per clip engines (WAN 2.1, Hunyuan, utilities). Each successful job counts as one unit.
                 </p>
               </div>
             </CardContent>
@@ -263,15 +330,13 @@ export default function PricingPage() {
             <CardHeader>
               <CardTitle className="text-xl text-white">Frequently asked</CardTitle>
               <CardDescription className="text-sm text-white/70">
-                Answers producers, editors, and finance ask before going live.
+                Answers for producers, editors, and finance.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 text-sm text-white/80">
               {faqs.map((faq) => (
                 <details key={faq.question} className="rounded-xl border border-white/10 bg-white/5 p-4">
-                  <summary className="cursor-pointer text-base font-semibold text-white">
-                    {faq.question}
-                  </summary>
+                  <summary className="cursor-pointer text-base font-semibold text-white">{faq.question}</summary>
                   <p className="mt-2 leading-relaxed">{faq.answer}</p>
                 </details>
               ))}
