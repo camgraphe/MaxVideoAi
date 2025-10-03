@@ -180,7 +180,7 @@ export default function PricingPage() {
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,10,20,0.92)_0%,rgba(7,10,20,0.98)_60%,rgba(7,10,20,1)_100%)]" />
       </div>
 
-      <div className="mx-auto flex max-w-6xl flex-col gap-16 px-4 py-16 text-white sm:px-6 sm:py-20">
+      <div className="flex w-full flex-col gap-16 px-4 py-16 text-white sm:px-6 sm:py-20 lg:px-10 xl:px-16">
         <script
           type="application/ld+json"
           suppressHydrationWarning

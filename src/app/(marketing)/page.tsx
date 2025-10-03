@@ -68,7 +68,7 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(wallJsonLd) }}
       />
 
-      <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 pb-16 pt-10 sm:px-6 lg:px-8">
+      <div className="relative flex w-full flex-col gap-12 px-4 pb-16 pt-10 sm:px-6 lg:px-10 xl:px-14">
         <WallExperience clips={clipItems} />
 
         <section className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-[rgba(10,13,20,0.85)] p-8 text-sm text-muted-foreground shadow-[0_40px_80px_-40px_rgba(12,18,30,0.65)]">

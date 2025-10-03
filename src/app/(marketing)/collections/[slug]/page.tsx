@@ -44,7 +44,7 @@ export default function CollectionDetailPage({ params }: CollectionPageProps) {
   return (
     <div className="relative overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(80,115,255,0.12),_transparent_60%)] pb-16">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(9,12,22,0.92)_0%,rgba(7,11,20,0.94)_45%,rgba(6,9,18,0.96)_100%)]" />
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 pb-12 pt-10 sm:px-6 lg:px-8">
+      <div className="flex w-full flex-col gap-10 px-4 pb-12 pt-10 sm:px-6 lg:px-10 xl:px-14">
         <header className="flex flex-col gap-4">
           <Badge variant="outline" className="w-fit border-primary/40 text-primary">
             Collection

@@ -17,7 +17,7 @@ export function SiteHeader() {
         "sticky top-0 z-50 w-full border-b border-border/60 bg-[rgba(248,250,255,0.95)] shadow-[0_10px_30px_-20px_rgba(15,23,42,0.25)] backdrop-blur dark:bg-[rgba(7,9,16,0.92)]"
       )}
     >
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6">
+      <div className="flex h-16 w-full items-center justify-between px-4 sm:px-6 lg:px-10">
         <div className="flex items-center gap-4 sm:gap-6">
           <Link href="/" className="font-semibold tracking-tight">
             MaxVideoAI

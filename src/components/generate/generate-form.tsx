@@ -792,13 +792,11 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent className="max-h-72 bg-white dark:bg-[#0b1321]">
-                    {generationPresets
-                      .filter((preset) => preset.provider === provider)
-                      .map((preset) => (
-                        <SelectItem key={preset.engine} value={preset.engine}>
-                          {ENGINE_LABELS[preset.engine] ?? preset.engine}
-                        </SelectItem>
-                      ))}
+                    {generationPresets.map((preset) => (
+                      <SelectItem key={preset.engine} value={preset.engine}>
+                        {ENGINE_LABELS[preset.engine] ?? preset.engine}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -880,7 +878,7 @@ export function GenerateForm({ creditsRemaining }: GenerateFormProps) {
   const buildLaunchPayload = React.useCallback(
     (values: GenerateFormValues, overrideEngine?: string) => {
       const targetEngine = overrideEngine ?? values.engine;
-      const spec = getModelSpec(values.provider, targetEngine);
+      const spec = values.provider === "fal" ? getModelSpec("fal", targetEngine) : undefined;
       const metadata: Record<string, unknown> = {};
 
       if (values.inputImageUrl) metadata.inputImageUrl = values.inputImageUrl;

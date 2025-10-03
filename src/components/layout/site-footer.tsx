@@ -5,7 +5,7 @@ import { siteConfig } from "@/config/site";
 export function SiteFooter() {
   return (
     <footer className="border-t border-border/60 bg-[rgba(248,250,255,0.97)] text-foreground/70 backdrop-blur dark:bg-[rgba(7,9,16,0.92)] dark:text-muted-foreground">
-      <div className="mx-auto w-full max-w-6xl px-6 py-12">
+      <div className="w-full px-6 py-12 lg:px-10">
         <div className="grid gap-6 md:grid-cols-3">
           <div className="space-y-2">
             <div className="text-base font-semibold tracking-tight">{siteConfig.name}</div>
