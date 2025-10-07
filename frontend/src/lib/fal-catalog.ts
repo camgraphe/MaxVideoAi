@@ -165,13 +165,18 @@ function mapFalModel(model: FalModel): { engine: EngineCaps; pricing: EnginePric
       currency: pricingDetails.currency,
       addons: pricingDetails.addons
         ? Object.fromEntries(
-            Object.entries(pricingDetails.addons).map(([key, value]) => [
-              key,
-              {
-                perSecond: value.perSecondCents != null ? value.perSecondCents / 100 : undefined,
-                flat: value.flatCents != null ? value.flatCents / 100 : undefined,
-              },
-            ])
+            Object.entries(pricingDetails.addons)
+              .filter((entry): entry is [string, NonNullable<(typeof pricingDetails.addons)[string]>] => {
+                const [, value] = entry;
+                return value != null;
+              })
+              .map(([key, value]) => [
+                key,
+                {
+                  perSecond: value.perSecondCents != null ? value.perSecondCents / 100 : undefined,
+                  flat: value.flatCents != null ? value.flatCents / 100 : undefined,
+                },
+              ])
           )
         : undefined,
     },

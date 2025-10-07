@@ -30,7 +30,7 @@ interface Props {
 
 export function PreviewCard({ engine, price: _price, currency: _currency, preflight: _preflight, isPricing: _isPricing, onNavigateFactor: _onNavigateFactor, iterations = 1, renderPending, renderProgress = 0, renderMessage, renderVideoUrl, aspectRatio }: Props) {
   const [upscaleOpen, setUpscaleOpen] = useState(false);
-  const closeTimer = useRef<ReturnType<typeof setTimeout>>();
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isHoveringPreview, setIsHoveringPreview] = useState(false);
@@ -38,7 +38,7 @@ export function PreviewCard({ engine, price: _price, currency: _currency, prefli
 
   // Price breakdown overlay state
   const [priceOpen, setPriceOpen] = useState(false);
-  const priceCloseTimer = useRef<ReturnType<typeof setTimeout>>();
+  const priceCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const priceButtonRef = useRef<HTMLButtonElement>(null);
   const pricePopoverRef = useRef<HTMLDivElement>(null);
   const [priceAnchorRect, setPriceAnchorRect] = useState<DOMRect | null>(null);

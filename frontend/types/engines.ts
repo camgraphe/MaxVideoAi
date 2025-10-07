@@ -8,6 +8,7 @@ export interface EngineParam {
   min: number;
   max: number;
   default: number;
+  step?: number;
 }
 
 export interface EnginePricing {

@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { createPortal } from 'react-dom';
 import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { RefObject } from 'react';
+import type { Ref } from 'react';
 import type { EngineCaps, PricingSnapshot } from '@/types/engines';
 import type { Job } from '@/types/jobs';
 import { useEngines, useInfiniteJobs } from '@/lib/api';
@@ -83,6 +83,7 @@ export function GalleryRail({
 }: Props) {
   const { data, error, isLoading, isValidating, setSize, mutate } = useInfiniteJobs(24);
   const { data: enginesData } = useEngines();
+  const engineList = useMemo(() => enginesData?.engines ?? [], [enginesData?.engines]);
   const jobs = useMemo(() => data?.flatMap((page) => page.jobs) ?? [], [data]);
   const lastPage = data?.[data.length - 1];
   const hasMore = Boolean(lastPage?.nextCursor);
@@ -92,14 +93,12 @@ export function GalleryRail({
 
   const engineMap = useMemo(() => {
     const map = new Map<string, EngineCaps>();
-    if (enginesData?.engines) {
-      enginesData.engines.forEach((entry) => {
-        map.set(entry.id, entry);
-      });
-    }
+    engineList.forEach((entry) => {
+      map.set(entry.id, entry);
+    });
     map.set(engine.id, engine);
     return map;
-  }, [engine, enginesData?.engines]);
+  }, [engine, engineList]);
 
   const closeSnackbar = useCallback(() => setSnackbar(null), []);
 
@@ -559,7 +558,7 @@ function JobTile({
 interface UpscalePopoverProps {
   anchorRect: DOMRect;
   onClose: () => void;
-  popoverRef: RefObject<HTMLDivElement>;
+  popoverRef: Ref<HTMLDivElement>;
 }
 
 function UpscalePopover({ anchorRect, onClose, popoverRef }: UpscalePopoverProps) {

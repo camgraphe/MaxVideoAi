@@ -2,7 +2,8 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
-import { useEffect, useState, type RefObject } from 'react';
+import { useEffect, useState } from 'react';
+import type { Ref } from 'react';
 import type { EngineCaps, Mode } from '@/types/engines';
 import { Card } from '@/components/ui/Card';
 
@@ -24,9 +25,9 @@ interface Props {
   seedLocked?: boolean;
   onSeedLockedChange?: (value: boolean) => void;
   focusRefs?: {
-    duration?: RefObject<HTMLInputElement>;
-    resolution?: RefObject<HTMLDivElement>;
-    addons?: RefObject<HTMLDivElement>;
+    duration?: Ref<HTMLInputElement>;
+    resolution?: Ref<HTMLDivElement>;
+    addons?: Ref<HTMLDivElement>;
   };
 }
 
@@ -380,7 +381,7 @@ interface FieldGroupProps {
   options: (string | number)[];
   value: string;
   onChange: (value: string) => void;
-  focusRef?: RefObject<HTMLDivElement>;
+  focusRef?: Ref<HTMLDivElement>;
   labelFor?: (option: string | number) => string;
   iconFor?: (option: string | number) => string | undefined;
 }

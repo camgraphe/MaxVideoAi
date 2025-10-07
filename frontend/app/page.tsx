@@ -214,23 +214,30 @@ export default function Page() {
   const durationRef = useRef<HTMLInputElement>(null);
   const resolutionRef = useRef<HTMLDivElement>(null);
   const addonsRef = useRef<HTMLDivElement>(null);
-  const composerRef = useRef<HTMLTextAreaElement>(null);
+  const composerRef = useRef<HTMLTextAreaElement | null>(null);
   const noticeTimeoutRef = useRef<number | null>(null);
-  const [inputAssets, setInputAssets] = useState<Record<string, (ReferenceAsset | null)[]>>({});
+const [inputAssets, setInputAssets] = useState<Record<string, (ReferenceAsset | null)[]>>({});
 
-  const assetsRef = useRef<Record<string, (ReferenceAsset | null)[]>>({});
+const assetsRef = useRef<Record<string, (ReferenceAsset | null)[]>>({});
 
-  useEffect(() => {
-    assetsRef.current = inputAssets;
-  }, [inputAssets]);
+const revokeAssetPreview = (asset: ReferenceAsset | null | undefined) => {
+  if (!asset) return;
+  URL.revokeObjectURL(asset.previewUrl);
+};
 
-  useEffect(() => {
-    return () => {
-      Object.values(assetsRef.current).forEach((entries) => {
-        entries.forEach((asset) => URL.revokeObjectURL(asset.previewUrl));
+useEffect(() => {
+  assetsRef.current = inputAssets;
+}, [inputAssets]);
+
+useEffect(() => {
+  return () => {
+    Object.values(assetsRef.current).forEach((entries) => {
+      entries.forEach((asset) => {
+        revokeAssetPreview(asset);
       });
-    };
-  }, []);
+    });
+  };
+}, []);
 
   const focusElement = useCallback((element: HTMLElement | null) => {
     if (!element) return;
@@ -285,14 +292,14 @@ export default function Page() {
       }
       if (targetIndex < 0) {
         if (maxCount > 0 && current.length >= maxCount) {
-          URL.revokeObjectURL(newAsset.previewUrl);
+          revokeAssetPreview(newAsset);
           return previous;
         }
         current.push(newAsset);
       } else {
         const existing = current[targetIndex];
         if (existing) {
-          URL.revokeObjectURL(existing.previewUrl);
+          revokeAssetPreview(existing);
         }
         current[targetIndex] = newAsset;
       }
@@ -308,7 +315,7 @@ export default function Page() {
       const nextList = [...current];
       const toRelease = nextList[index];
       if (toRelease) {
-        URL.revokeObjectURL(toRelease.previewUrl);
+        revokeAssetPreview(toRelease);
       }
 
       const maxCount = field.maxCount ?? 0;
@@ -557,19 +564,19 @@ export default function Page() {
       if (!inputSchemaSummary.assetFields.length) {
         if (Object.keys(previous).length === 0) return previous;
         Object.values(previous).forEach((entries) => {
-          entries.forEach((asset) => URL.revokeObjectURL(asset.previewUrl));
+          entries.forEach((asset) => revokeAssetPreview(asset));
         });
         return {};
       }
       const allowed = new Set(inputSchemaSummary.assetFields.map((entry) => entry.field.id));
       let changed = false;
-      const next: Record<string, ReferenceAsset[]> = {};
+      const next: Record<string, (ReferenceAsset | null)[]> = {};
       Object.entries(previous).forEach(([fieldId, items]) => {
         if (allowed.has(fieldId)) {
           next[fieldId] = items;
         } else {
           changed = true;
-          items.forEach((asset) => URL.revokeObjectURL(asset.previewUrl));
+          items.forEach((asset) => revokeAssetPreview(asset));
         }
       });
       return changed ? next : previous;

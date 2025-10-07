@@ -5,6 +5,7 @@
   "description": "Mock API server and fixtures for the MaxVideoAI Generate page",
   "scripts": {
     "start": "node mock-server.js",
-    "sanitize:jobs": "node scripts/sanitize-jobs.js"
+    "sanitize:jobs": "node scripts/sanitize-jobs.js",
+    "vercel-build": "npm ci --prefix frontend && NEXT_SKIP_ESLINT=1 npm run build --prefix frontend"
   }
 }

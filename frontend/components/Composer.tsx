@@ -3,7 +3,7 @@
 
 import clsx from 'clsx';
 import { useMemo, useCallback, useRef } from 'react';
-import type { RefObject, ChangeEvent, DragEvent } from 'react';
+import type { Ref, ChangeEvent, DragEvent } from 'react';
 import type { EngineCaps, EngineInputField, PreflightResponse } from '@/types/engines';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
@@ -31,7 +31,7 @@ interface Props {
   isLoading: boolean;
   error?: string;
   messages?: string[];
-  textareaRef?: RefObject<HTMLTextAreaElement>;
+  textareaRef?: Ref<HTMLTextAreaElement>;
   onGenerate?: () => void;
   iterations?: number;
   preflight?: PreflightResponse | null;
