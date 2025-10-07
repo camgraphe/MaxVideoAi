@@ -1,0 +1,10 @@
+{
+  "name": "maxvideoai-mock-api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mock API server and fixtures for the MaxVideoAI Generate page",
+  "scripts": {
+    "start": "node mock-server.js",
+    "sanitize:jobs": "node scripts/sanitize-jobs.js"
+  }
+}

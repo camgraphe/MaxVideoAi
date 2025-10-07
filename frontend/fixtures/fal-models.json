@@ -1,0 +1,105 @@
+{
+  "models": [
+    {
+      "id": "fal-ai/video/pika-2-2",
+      "display_name": "Pika 2.2",
+      "provider": "Pika Labs",
+      "version": "2.2",
+      "status": "live",
+      "latency_tier": "standard",
+      "queue_depth": 8,
+      "capabilities": {
+        "max_duration_seconds": 12,
+        "resolutions": ["720p", "1080p"],
+        "aspect_ratios": ["16:9", "9:16", "1:1"],
+        "fps": [24, 30],
+        "audio": false,
+        "upscale_4k": true,
+        "extend": true,
+        "motion_controls": true,
+        "keyframes": true
+      },
+      "pricing": {
+        "currency": "USD",
+        "per_second": 0.07,
+        "resolutions": {
+          "720p": { "per_second": 0.04 },
+          "1080p": { "per_second": 0.07 }
+        },
+        "addons": {
+          "upscale4k": { "flat": 1.5 }
+        }
+      },
+      "updated_at": "2025-09-01T00:00:00Z",
+      "ttl_sec": 300
+    },
+    {
+      "id": "fal-ai/video/luma-dream-machine",
+      "display_name": "Luma Dream Machine",
+      "provider": "Luma AI",
+      "version": "1.1",
+      "status": "live",
+      "latency_tier": "fast",
+      "queue_depth": 2,
+      "capabilities": {
+        "max_duration_seconds": 8,
+        "resolutions": ["720p", "1080p"],
+        "aspect_ratios": ["16:9", "1:1"],
+        "fps": [24],
+        "audio": true,
+        "upscale_4k": false,
+        "extend": false,
+        "motion_controls": true,
+        "keyframes": false
+      },
+      "pricing": {
+        "currency": "USD",
+        "per_second": 0.09,
+        "resolutions": {
+          "720p": { "per_second": 0.05 },
+          "1080p": { "per_second": 0.09 }
+        },
+        "addons": {
+          "audio": { "per_second": 0.02 }
+        }
+      },
+      "updated_at": "2025-09-01T00:00:00Z",
+      "ttl_sec": 300
+    },
+    {
+      "id": "fal-ai/video/veo-3",
+      "display_name": "Veo 3",
+      "provider": "Google DeepMind",
+      "version": "3",
+      "status": "live",
+      "latency_tier": "fast",
+      "queue_depth": 1,
+      "capabilities": {
+        "max_duration_seconds": 16,
+        "resolutions": ["720p", "1080p", "4k"],
+        "aspect_ratios": ["16:9", "9:16", "1:1"],
+        "fps": [24],
+        "audio": true,
+        "upscale_4k": true,
+        "extend": true,
+        "motion_controls": true,
+        "keyframes": false
+      },
+      "pricing": {
+        "currency": "USD",
+        "per_second": 0.12,
+        "resolutions": {
+          "720p": { "per_second": 0.08 },
+          "1080p": { "per_second": 0.12 },
+          "4k": { "per_second": 0.2 }
+        },
+        "addons": {
+          "audio": { "per_second": 0.03 },
+          "upscale4k": { "flat": 2.5 }
+        }
+      },
+      "updated_at": "2025-09-01T00:00:00Z",
+      "ttl_sec": 300
+    }
+  ]
+}

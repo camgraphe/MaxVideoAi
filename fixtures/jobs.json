@@ -1,0 +1,210 @@
+{
+  "ok": true,
+  "jobs": [
+    {
+      "jobId": "job-001",
+      "engineId": "veo3",
+      "engineLabel": "Veo 3",
+      "durationSec": 8,
+      "prompt": "Beach flyover with morning haze",
+      "thumbUrl": "/assets/gallery/sample-01.svg",
+      "videoUrl": "/assets/gallery/adraga-beach.mp4",
+      "aspectRatio": "16:9",
+      "previewFrame": "/assets/frames/thumb-16x9.svg",
+      "createdAt": "2025-10-05T18:00:00Z"
+    },
+    {
+      "jobId": "job-002",
+      "engineId": "pika22",
+      "engineLabel": "Pika 2.2",
+      "durationSec": 10,
+      "prompt": "Drone sweep above snowy switchbacks",
+      "thumbUrl": "/assets/gallery/sample-02.svg",
+      "videoUrl": "/assets/gallery/drone-snow.mp4",
+      "aspectRatio": "16:9",
+      "previewFrame": "/assets/frames/thumb-16x9.svg",
+      "createdAt": "2025-10-05T17:57:00Z"
+    },
+    {
+      "jobId": "job-003",
+      "engineId": "lumaDM",
+      "engineLabel": "Luma Dream Machine",
+      "durationSec": 12,
+      "prompt": "Coffee shop slow pan with lens flare",
+      "thumbUrl": "/assets/gallery/sample-03.svg",
+      "aspectRatio": "16:9",
+      "previewFrame": "/assets/frames/thumb-16x9.svg",
+      "createdAt": "2025-10-05T17:54:00Z"
+    },
+    {
+      "jobId": "job-004",
+      "engineId": "sora2",
+      "engineLabel": "Sora 2",
+      "durationSec": 6,
+      "prompt": "Swimmer underwater tracking shot",
+      "thumbUrl": "/assets/gallery/sample-04.svg",
+      "videoUrl": "/assets/gallery/swimmer.mp4",
+      "aspectRatio": "16:9",
+      "previewFrame": "/assets/frames/thumb-16x9.svg",
+      "createdAt": "2025-10-05T17:51:00Z"
+    },
+    {
+      "jobId": "job-005",
+      "engineId": "veo3",
+      "engineLabel": "Veo 3",
+      "durationSec": 14,
+      "prompt": "Night drive through neon district",
+      "thumbUrl": "/assets/gallery/sample-05.svg",
+      "aspectRatio": "16:9",
+      "previewFrame": "/assets/frames/thumb-16x9.svg",
+      "createdAt": "2025-10-05T17:48:00Z"
+    },
+    {
+      "jobId": "job-006",
+      "engineId": "pika22",
+      "engineLabel": "Pika 2.2",
+      "durationSec": 7,
+      "prompt": "Particle tunnel, glitch accents",
+      "thumbUrl": "/assets/gallery/sample-06.svg",
+      "aspectRatio": "16:9",
+      "previewFrame": "/assets/frames/thumb-16x9.svg",
+      "createdAt": "2025-10-05T17:45:00Z"
+    },
+    {
+      "jobId": "job-007",
+      "engineId": "lumaDM",
+      "engineLabel": "Luma Dream Machine",
+      "durationSec": 9,
+      "prompt": "Vertical aerial of coastal road",
+      "thumbUrl": "/assets/gallery/sample-portrait-01.svg",
+      "videoUrl": "/assets/gallery/aerial-road.mp4",
+      "aspectRatio": "9:16",
+      "previewFrame": "/assets/frames/thumb-9x16.svg",
+      "createdAt": "2025-10-05T17:42:00Z"
+    },
+    {
+      "jobId": "job-008",
+      "engineId": "sora2",
+      "engineLabel": "Sora 2",
+      "durationSec": 11,
+      "prompt": "Portrait loop with neon reflections",
+      "thumbUrl": "/assets/gallery/sample-portrait-02.svg",
+      "videoUrl": "/assets/gallery/parking-portrait.mp4",
+      "aspectRatio": "9:16",
+      "previewFrame": "/assets/frames/thumb-9x16.svg",
+      "createdAt": "2025-10-05T17:39:00Z"
+    },
+    {
+      "jobId": "job-009",
+      "engineId": "veo3",
+      "engineLabel": "Veo 3",
+      "durationSec": 8,
+      "prompt": "Nightlife b-roll, crosswalk streaks",
+      "thumbUrl": "/assets/gallery/sample-portrait-01.svg",
+      "aspectRatio": "9:16",
+      "previewFrame": "/assets/frames/thumb-9x16.svg",
+      "createdAt": "2025-10-05T17:36:00Z"
+    },
+    {
+      "jobId": "job-010",
+      "engineId": "pika22",
+      "engineLabel": "Pika 2.2",
+      "durationSec": 6,
+      "prompt": "City skyline reflected in glass",
+      "thumbUrl": "/assets/gallery/sample-portrait-02.svg",
+      "aspectRatio": "9:16",
+      "previewFrame": "/assets/frames/thumb-9x16.svg",
+      "createdAt": "2025-10-05T17:33:00Z"
+    },
+    {
+      "jobId": "job-011",
+      "engineId": "lumaDM",
+      "engineLabel": "Luma Dream Machine",
+      "durationSec": 10,
+      "prompt": "Studio product loop with fog",
+      "thumbUrl": "/assets/gallery/sample-square-01.svg",
+      "videoUrl": "/assets/gallery/robot-eyes.mp4",
+      "aspectRatio": "1:1",
+      "previewFrame": "/assets/frames/thumb-1x1.svg",
+      "createdAt": "2025-10-05T17:30:00Z"
+    },
+    {
+      "jobId": "job-012",
+      "engineId": "sora2",
+      "engineLabel": "Sora 2",
+      "durationSec": 12,
+      "prompt": "Macro lens flare over circuitry",
+      "thumbUrl": "/assets/gallery/sample-square-02.svg",
+      "aspectRatio": "1:1",
+      "previewFrame": "/assets/frames/thumb-1x1.svg",
+      "createdAt": "2025-10-05T17:27:00Z"
+    },
+    {
+      "jobId": "job-013",
+      "engineId": "veo3",
+      "engineLabel": "Veo 3",
+      "durationSec": 9,
+      "prompt": "Top-down workspace timelapse",
+      "thumbUrl": "/assets/gallery/sample-square-01.svg",
+      "aspectRatio": "1:1",
+      "previewFrame": "/assets/frames/thumb-1x1.svg",
+      "createdAt": "2025-10-05T17:24:00Z"
+    },
+    {
+      "jobId": "job-014",
+      "engineId": "pika22",
+      "engineLabel": "Pika 2.2",
+      "durationSec": 8,
+      "prompt": "Colorful abstract gradient loop",
+      "thumbUrl": "/assets/gallery/sample-square-02.svg",
+      "aspectRatio": "1:1",
+      "previewFrame": "/assets/frames/thumb-1x1.svg",
+      "createdAt": "2025-10-05T17:21:00Z"
+    },
+    {
+      "jobId": "job-015",
+      "engineId": "lumaDM",
+      "engineLabel": "Luma Dream Machine",
+      "durationSec": 7,
+      "prompt": "Futuristic humanoid turning toward camera",
+      "thumbUrl": "/assets/gallery/sample-05.svg",
+      "videoUrl": "/assets/gallery/robot-look.mp4",
+      "aspectRatio": "16:9",
+      "previewFrame": "/assets/frames/thumb-16x9.svg",
+      "createdAt": "2025-10-05T17:18:00Z"
+    },
+    {
+      "jobId": "job-016",
+      "engineId": "sora2",
+      "engineLabel": "Sora 2",
+      "durationSec": 13,
+      "prompt": "Highway timelapse at golden hour",
+      "thumbUrl": "/assets/gallery/sample-02.svg",
+      "aspectRatio": "16:9",
+      "previewFrame": "/assets/frames/thumb-16x9.svg",
+      "createdAt": "2025-10-05T17:15:00Z"
+    },
+    {
+      "jobId": "job-017",
+      "engineId": "veo3",
+      "engineLabel": "Veo 3",
+      "durationSec": 11,
+      "prompt": "Snowboarder carving fresh powder",
+      "thumbUrl": "/assets/gallery/sample-04.svg",
+      "aspectRatio": "16:9",
+      "previewFrame": "/assets/frames/thumb-16x9.svg",
+      "createdAt": "2025-10-05T17:12:00Z"
+    },
+    {
+      "jobId": "job-018",
+      "engineId": "pika22",
+      "engineLabel": "Pika 2.2",
+      "durationSec": 9,
+      "prompt": "City tunnel light streak experiment",
+      "thumbUrl": "/assets/gallery/sample-06.svg",
+      "aspectRatio": "16:9",
+      "previewFrame": "/assets/frames/thumb-16x9.svg",
+      "createdAt": "2025-10-05T17:09:00Z"
+    }
+  ]
+}

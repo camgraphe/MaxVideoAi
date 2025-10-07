@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+  mock:
+    build: .
+    ports:
+      - "3333:3333"
+    environment:
+      - CORS_ORIGIN=*
+    restart: unless-stopped

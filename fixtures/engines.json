@@ -1,0 +1,1681 @@
+{
+  "engines": [
+    {
+      "id": "dev-sim",
+      "label": "Developer Simulator",
+      "provider": "local",
+      "version": "0.0",
+      "status": "live",
+      "latencyTier": "fast",
+      "queueDepth": 0,
+      "region": "local",
+      "modes": [
+        "t2v"
+      ],
+      "maxDurationSec": 10,
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": true,
+      "extend": false,
+      "motionControls": true,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 10,
+        "videoMaxMB": 0,
+        "videoMaxDurationSec": 0,
+        "videoCodecs": []
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the desired clip.",
+            "requiredInModes": [
+              "t2v"
+            ]
+          }
+        ],
+        "optional": [
+          {
+            "id": "reference_image",
+            "type": "image",
+            "label": "Reference Image",
+            "maxCount": 1,
+            "modes": [
+              "t2v",
+              "i2v"
+            ]
+          },
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 2,
+            "max": 10,
+            "step": 1
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p",
+              "1080p"
+            ]
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 10
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0,
+        "notes": "Local simulator for development"
+      },
+      "icon_url": null,
+      "fallback_icon": "/icons/engines/engine-dev-sim.svg",
+      "updatedAt": "2025-10-05T10:00:00Z",
+      "ttlSec": 600
+    },
+    {
+      "id": "minimax",
+      "label": "MiniMax Video",
+      "provider": "minimax",
+      "version": "video-01 / hailuo-02",
+      "status": "live",
+      "latencyTier": "fast",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 10,
+      "resolutions": [
+        "512P",
+        "768P",
+        "720p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1",
+        "source"
+      ],
+      "fps": [
+        25
+      ],
+      "audio": false,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {
+        "guidance": {
+          "min": 0,
+          "max": 1,
+          "default": 0.45,
+          "step": 0.05
+        },
+        "initInfluence": {
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "step": 0.05
+        }
+      },
+      "inputLimits": {
+        "imageMaxMB": 20,
+        "videoMaxMB": 0,
+        "videoMaxDurationSec": 10,
+        "videoCodecs": [
+          "jpg",
+          "png",
+          "webp",
+          "gif",
+          "avif"
+        ]
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the story or scene.",
+            "requiredInModes": [
+              "t2v"
+            ]
+          }
+        ],
+        "optional": [
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Reference Image",
+            "maxCount": 1,
+            "requiredInModes": [
+              "i2v"
+            ]
+          },
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 2,
+            "max": 10,
+            "step": 1
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p"
+            ]
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 20
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.05,
+        "notes": "$0.50/video indicative; Hailuo 6/10s, 512P/768P",
+        "currency": "USD"
+      },
+      "updatedAt": "2025-10-05T10:00:00Z",
+      "ttlSec": 600,
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "byResolution": {
+            "512P": 2,
+            "768P": 5,
+            "720p": 8
+          }
+        }
+      },
+      "icon_url": null,
+      "fallback_icon": "/icons/engines/engine-minimax.svg"
+    },
+    {
+      "id": "veo3",
+      "label": "Veo 3",
+      "provider": "google",
+      "version": "3.0",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 2,
+      "region": "us-central1",
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 8,
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": true,
+      "extend": false,
+      "motionControls": true,
+      "keyframes": false,
+      "params": {
+        "guidance": {
+          "min": 0,
+          "max": 1,
+          "default": 0.7,
+          "step": 0.05
+        },
+        "initInfluence": {
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "step": 0.05
+        }
+      },
+      "inputLimits": {
+        "imageMaxMB": 10,
+        "videoMaxMB": 0,
+        "videoMaxDurationSec": 0,
+        "videoCodecs": []
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.75,
+        "notes": "Public Gemini API pricing, subject to change",
+        "currency": "USD"
+      },
+      "updatedAt": "2025-10-05T10:00:00Z",
+      "ttlSec": 600,
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 20
+        },
+        "addons": {
+          "audio": {
+            "perSecondCents": 20
+          }
+        }
+      },
+      "icon_url": "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
+      "fallback_icon": "/icons/engines/engine-veo3.svg",
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the video content.",
+            "requiredInModes": [
+              "t2v"
+            ]
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Reference Image",
+            "description": "Provide an image when using image-to-video.",
+            "maxCount": 1,
+            "requiredInModes": [
+              "i2v"
+            ]
+          }
+        ],
+        "optional": [
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 2,
+            "max": 8,
+            "step": 1
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p",
+              "1080p"
+            ]
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 10
+        }
+      }
+    },
+    {
+      "id": "veo3fast",
+      "label": "Veo 3 Fast",
+      "provider": "google",
+      "version": "3.0",
+      "status": "live",
+      "latencyTier": "fast",
+      "queueDepth": 1,
+      "region": "us-central1",
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 8,
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": true,
+      "extend": false,
+      "motionControls": true,
+      "keyframes": false,
+      "params": {
+        "guidance": {
+          "min": 0,
+          "max": 1,
+          "default": 0.7,
+          "step": 0.05
+        },
+        "initInfluence": {
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "step": 0.05
+        }
+      },
+      "inputLimits": {
+        "imageMaxMB": 10,
+        "videoMaxMB": 0,
+        "videoMaxDurationSec": 0,
+        "videoCodecs": []
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.8,
+        "notes": "Faster latency tier",
+        "currency": "USD"
+      },
+      "updatedAt": "2025-10-05T10:00:00Z",
+      "ttlSec": 600,
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 10
+        },
+        "addons": {
+          "audio": {
+            "perSecondCents": 5
+          }
+        }
+      },
+      "icon_url": "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
+      "fallback_icon": "/icons/engines/engine-veo3fast.svg",
+      "inputSchema": {
+        "required": [
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Reference Image",
+            "description": "Upload or link the starting keyframe.",
+            "maxCount": 1,
+            "requiredInModes": [
+              "i2v"
+            ]
+          }
+        ],
+        "optional": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Add styling or motion notes."
+          },
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 2,
+            "max": 8,
+            "step": 1
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p",
+              "1080p"
+            ]
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 10
+        }
+      }
+    },
+    {
+      "id": "pika22",
+      "label": "Pika 2.2",
+      "provider": "fal",
+      "version": "2.2",
+      "status": "live",
+      "latencyTier": "fast",
+      "queueDepth": 1,
+      "region": "us-east-1",
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 10,
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1",
+        "4:5"
+      ],
+      "fps": [
+        24,
+        30
+      ],
+      "audio": false,
+      "upscale4k": true,
+      "extend": true,
+      "motionControls": true,
+      "keyframes": true,
+      "params": {
+        "promptStrength": {
+          "min": 0,
+          "max": 1,
+          "default": 0.6,
+          "step": 0.05
+        },
+        "guidance": {
+          "min": 0,
+          "max": 20,
+          "default": 7,
+          "step": 0.5
+        },
+        "initInfluence": {
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "step": 0.05
+        }
+      },
+      "inputLimits": {
+        "imageMaxMB": 20,
+        "videoMaxMB": 0,
+        "videoMaxDurationSec": 0,
+        "videoCodecs": []
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the scene or motion.",
+            "requiredInModes": [
+              "t2v"
+            ]
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Reference Image",
+            "description": "Upload the starting frame.",
+            "maxCount": 1,
+            "requiredInModes": [
+              "i2v"
+            ]
+          }
+        ],
+        "optional": [
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 2,
+            "max": 10,
+            "step": 1
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p",
+              "1080p"
+            ]
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 20
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "byResolution": {
+          "720p": 0.04,
+          "1080p": 0.09
+        },
+        "examples": {
+          "5s/720p": 0.2,
+          "5s/1080p": 0.45
+        },
+        "currency": "USD"
+      },
+      "updatedAt": "2025-10-05T10:00:00Z",
+      "ttlSec": 600,
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "byResolution": {
+            "720p": 4,
+            "1080p": 9
+          }
+        }
+      },
+      "icon_url": null,
+      "fallback_icon": "/icons/engines/engine-pika22.svg"
+    },
+    {
+      "id": "kling25",
+      "label": "Kling 2.5",
+      "provider": "kuaishou",
+      "version": "2.5",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 3,
+      "region": "ap-east-1",
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 10,
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24,
+        30,
+        60
+      ],
+      "audio": false,
+      "upscale4k": true,
+      "extend": true,
+      "motionControls": true,
+      "keyframes": false,
+      "params": {
+        "guidance": {
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "step": 0.05
+        },
+        "initInfluence": {
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "step": 0.05
+        }
+      },
+      "inputLimits": {
+        "imageMaxMB": 10,
+        "videoMaxMB": 0,
+        "videoMaxDurationSec": 0,
+        "videoCodecs": []
+      },
+      "updatedAt": "2025-10-05T10:00:00Z",
+      "ttlSec": 600,
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 7
+        },
+        "flatCents": {
+          "default": 35
+        }
+      },
+      "pricing": {
+        "unit": "sec",
+        "notes": "Fal pricing snapshot",
+        "currency": "USD"
+      },
+      "icon_url": null,
+      "fallback_icon": "/icons/engines/engine-kling25.svg",
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the video you want to create.",
+            "requiredInModes": [
+              "t2v"
+            ]
+          }
+        ],
+        "optional": [
+          {
+            "id": "reference_image",
+            "type": "image",
+            "label": "Reference Image",
+            "maxCount": 1,
+            "requiredInModes": [
+              "i2v"
+            ]
+          },
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 2,
+            "max": 10,
+            "step": 2
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p",
+              "1080p"
+            ]
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed"
+          }
+        ],
+        "constraints": {}
+      }
+    },
+    {
+      "id": "lumaDM",
+      "label": "Luma Dream Machine",
+      "provider": "luma",
+      "version": "1.0",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 6,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 20,
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24,
+        30
+      ],
+      "audio": false,
+      "upscale4k": true,
+      "extend": false,
+      "motionControls": true,
+      "keyframes": false,
+      "params": {
+        "initInfluence": {
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "step": 0.05
+        },
+        "guidance": {
+          "min": 0,
+          "max": 1,
+          "default": 0.4,
+          "step": 0.05
+        }
+      },
+      "inputLimits": {
+        "imageMaxMB": 15,
+        "videoMaxMB": 0,
+        "videoMaxDurationSec": 0,
+        "videoCodecs": []
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Main Prompt",
+            "description": "Describe the scene or action.",
+            "requiredInModes": [
+              "t2v"
+            ]
+          }
+        ],
+        "optional": [
+          {
+            "id": "reference_image",
+            "type": "image",
+            "label": "Reference Image",
+            "maxCount": 1,
+            "requiredInModes": [
+              "i2v"
+            ]
+          },
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 2,
+            "max": 20,
+            "step": 2
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p",
+              "1080p"
+            ]
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 15
+        }
+      },
+      "pricing": {
+        "unit": "credits",
+        "notes": "Depends on plan tier; see Luma pricing page",
+        "currency": "USD"
+      },
+      "updatedAt": "2025-10-05T10:00:00Z",
+      "ttlSec": 600,
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "byResolution": {
+            "720p": 6,
+            "1080p": 10
+          }
+        }
+      },
+      "icon_url": null,
+      "fallback_icon": "/icons/engines/engine-lumaDM.svg"
+    },
+    {
+      "id": "runwayg3",
+      "label": "Runway Gen-3",
+      "provider": "runway",
+      "version": "3",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 5,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 10,
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24,
+        30
+      ],
+      "audio": false,
+      "upscale4k": true,
+      "extend": false,
+      "motionControls": true,
+      "keyframes": false,
+      "params": {
+        "initInfluence": {
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "step": 0.05
+        },
+        "guidance": {
+          "min": 0,
+          "max": 1,
+          "default": 0.6,
+          "step": 0.05
+        }
+      },
+      "inputLimits": {
+        "imageMaxMB": 10,
+        "videoMaxMB": 0,
+        "videoMaxDurationSec": 0,
+        "videoCodecs": []
+      },
+      "updatedAt": "2025-10-05T10:00:00Z",
+      "ttlSec": 600,
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "byResolution": {
+            "720p": 9,
+            "1080p": 14
+          }
+        }
+      },
+      "pricing": {
+        "unit": "sec",
+        "notes": "Fal pricing snapshot",
+        "currency": "USD"
+      },
+      "icon_url": null,
+      "fallback_icon": "/icons/engines/engine-runwayg3.svg",
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the shot or action.",
+            "requiredInModes": [
+              "t2v"
+            ]
+          }
+        ],
+        "optional": [
+          {
+            "id": "reference_image",
+            "type": "image",
+            "label": "Reference Image",
+            "maxCount": 1,
+            "requiredInModes": [
+              "i2v"
+            ]
+          },
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 2,
+            "max": 10,
+            "step": 1
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p",
+              "1080p"
+            ]
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 10
+        }
+      }
+    },
+    {
+      "id": "svd_xt",
+      "label": "Stable Video Diffusion XT",
+      "provider": "stability",
+      "version": "XT",
+      "status": "live",
+      "latencyTier": "fast",
+      "queueDepth": 1,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 5,
+      "resolutions": [
+        "576p",
+        "720p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": false,
+      "upscale4k": true,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {
+        "guidance": {
+          "min": 0,
+          "max": 1,
+          "default": 0.6,
+          "step": 0.05
+        },
+        "initInfluence": {
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "step": 0.05
+        }
+      },
+      "inputLimits": {
+        "imageMaxMB": 10,
+        "videoMaxMB": 0,
+        "videoMaxDurationSec": 0,
+        "videoCodecs": []
+      },
+      "updatedAt": "2025-10-05T10:00:00Z",
+      "ttlSec": 600,
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "byResolution": {
+            "576p": 4,
+            "720p": 6
+          }
+        }
+      },
+      "pricing": {
+        "unit": "sec",
+        "notes": "Fal pricing snapshot",
+        "currency": "USD"
+      },
+      "icon_url": null,
+      "fallback_icon": "/icons/engines/engine-svd_xt.svg",
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the motion or subject."
+          }
+        ],
+        "optional": [
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 2,
+            "max": 5,
+            "step": 1
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "576p",
+              "720p"
+            ]
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed"
+          }
+        ],
+        "constraints": {}
+      }
+    },
+    {
+      "id": "pika22_keyframes",
+      "label": "Pika 2.2 \u2014 Keyframes",
+      "provider": "fal",
+      "version": "2.2",
+      "status": "live",
+      "latencyTier": "fast",
+      "isLab": true,
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 10,
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1",
+        "4:5"
+      ],
+      "fps": [
+        24,
+        30
+      ],
+      "audio": false,
+      "upscale4k": true,
+      "extend": true,
+      "motionControls": true,
+      "keyframes": true,
+      "params": {
+        "guidance": {
+          "min": 0,
+          "max": 20,
+          "default": 8,
+          "step": 0.5
+        },
+        "initInfluence": {
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "step": 0.05
+        }
+      },
+      "inputLimits": {
+        "imageMaxMB": 20,
+        "videoMaxMB": 0,
+        "videoMaxDurationSec": 0,
+        "videoCodecs": []
+      },
+      "updatedAt": "2025-10-05T10:00:00Z",
+      "ttlSec": 600,
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "byResolution": {
+            "720p": 5,
+            "1080p": 10
+          }
+        }
+      },
+      "pricing": {
+        "unit": "sec",
+        "notes": "Fal pricing snapshot",
+        "currency": "USD"
+      },
+      "icon_url": null,
+      "fallback_icon": "/icons/engines/engine-pika22_keyframes.svg",
+      "inputSchema": {
+        "required": [
+          {
+            "id": "keyframe_images",
+            "type": "image",
+            "label": "Keyframe Images",
+            "description": "Provide 2\u20134 keyframes to steer motion.",
+            "maxCount": 4,
+            "minCount": 2,
+            "requiredInModes": [
+              "t2v",
+              "i2v"
+            ]
+          }
+        ],
+        "optional": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Add narrative or stylistic notes."
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 20
+        }
+      }
+    },
+    {
+      "id": "kling25_turbo",
+      "label": "Kling 2.5 Turbo",
+      "provider": "kuaishou",
+      "version": "2.5",
+      "status": "live",
+      "latencyTier": "fast",
+      "isLab": true,
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 10,
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24,
+        30,
+        60
+      ],
+      "audio": false,
+      "upscale4k": true,
+      "extend": true,
+      "motionControls": true,
+      "keyframes": false,
+      "params": {
+        "guidance": {
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "step": 0.05
+        },
+        "initInfluence": {
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "step": 0.05
+        }
+      },
+      "inputLimits": {
+        "imageMaxMB": 10,
+        "videoMaxMB": 0,
+        "videoMaxDurationSec": 0,
+        "videoCodecs": []
+      },
+      "updatedAt": "2025-10-05T10:00:00Z",
+      "ttlSec": 600,
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 9
+        },
+        "flatCents": {
+          "default": 40
+        }
+      },
+      "pricing": {
+        "unit": "sec",
+        "notes": "Fal pricing snapshot",
+        "currency": "USD"
+      },
+      "icon_url": null,
+      "fallback_icon": "/icons/engines/engine-kling25_turbo.svg",
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the shot.",
+            "requiredInModes": [
+              "t2v"
+            ]
+          }
+        ],
+        "optional": [
+          {
+            "id": "reference_image",
+            "type": "image",
+            "label": "Reference Image (i2v)",
+            "maxCount": 1,
+            "requiredInModes": [
+              "i2v"
+            ]
+          },
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 2,
+            "max": 10,
+            "step": 2
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p",
+              "1080p"
+            ]
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed"
+          }
+        ],
+        "constraints": {}
+      }
+    },
+    {
+      "id": "lumaDM_fast",
+      "label": "Luma Dream Machine Fast",
+      "provider": "luma",
+      "version": "1.0",
+      "status": "live",
+      "latencyTier": "fast",
+      "isLab": true,
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 20,
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24,
+        30
+      ],
+      "audio": false,
+      "upscale4k": true,
+      "extend": false,
+      "motionControls": true,
+      "keyframes": false,
+      "params": {
+        "initInfluence": {
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "step": 0.05
+        },
+        "guidance": {
+          "min": 0,
+          "max": 1,
+          "default": 0.4,
+          "step": 0.05
+        }
+      },
+      "inputLimits": {
+        "imageMaxMB": 15,
+        "videoMaxMB": 0,
+        "videoMaxDurationSec": 0,
+        "videoCodecs": []
+      },
+      "updatedAt": "2025-10-05T10:00:00Z",
+      "ttlSec": 600,
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "byResolution": {
+            "720p": 8,
+            "1080p": 12
+          }
+        }
+      },
+      "pricing": {
+        "unit": "sec",
+        "notes": "Fal pricing snapshot",
+        "currency": "USD"
+      },
+      "icon_url": null,
+      "fallback_icon": "/icons/engines/engine-lumaDM_fast.svg",
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Main Prompt",
+            "description": "Describe the scene or action.",
+            "requiredInModes": [
+              "t2v"
+            ]
+          }
+        ],
+        "optional": [
+          {
+            "id": "reference_image",
+            "type": "image",
+            "label": "Reference Image",
+            "maxCount": 1,
+            "requiredInModes": [
+              "i2v"
+            ]
+          },
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 2,
+            "max": 20,
+            "step": 2
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p",
+              "1080p"
+            ]
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 15
+        }
+      }
+    },
+    {
+      "id": "haiper_video",
+      "label": "Haiper Video",
+      "provider": "haiper",
+      "version": "1",
+      "status": "live",
+      "latencyTier": "standard",
+      "isLab": true,
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 8,
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24,
+        30
+      ],
+      "audio": false,
+      "upscale4k": true,
+      "extend": false,
+      "motionControls": true,
+      "keyframes": false,
+      "params": {
+        "guidance": {
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "step": 0.05
+        },
+        "initInfluence": {
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "step": 0.05
+        }
+      },
+      "inputLimits": {
+        "imageMaxMB": 10,
+        "videoMaxMB": 0,
+        "videoMaxDurationSec": 0,
+        "videoCodecs": []
+      },
+      "updatedAt": "2025-10-05T10:00:00Z",
+      "ttlSec": 600,
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "byResolution": {
+            "720p": 7,
+            "1080p": 11
+          }
+        }
+      },
+      "pricing": {
+        "unit": "sec",
+        "notes": "Fal pricing snapshot",
+        "currency": "USD"
+      },
+      "icon_url": null,
+      "fallback_icon": "/icons/engines/engine-haiper_video.svg",
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the video idea.",
+            "requiredInModes": [
+              "t2v"
+            ]
+          }
+        ],
+        "optional": [
+          {
+            "id": "reference_image",
+            "type": "image",
+            "label": "Reference Image",
+            "maxCount": 1,
+            "requiredInModes": [
+              "i2v"
+            ]
+          },
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 2,
+            "max": 8,
+            "step": 1
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p",
+              "1080p"
+            ]
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 10
+        }
+      }
+    },
+    {
+      "id": "hunyuan_video",
+      "label": "Hunyuan Video",
+      "provider": "tencent",
+      "version": "1",
+      "status": "live",
+      "latencyTier": "standard",
+      "isLab": true,
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 10,
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24,
+        30
+      ],
+      "audio": false,
+      "upscale4k": true,
+      "extend": false,
+      "motionControls": true,
+      "keyframes": false,
+      "params": {
+        "guidance": {
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "step": 0.05
+        },
+        "initInfluence": {
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "step": 0.05
+        }
+      },
+      "inputLimits": {
+        "imageMaxMB": 10,
+        "videoMaxMB": 0,
+        "videoMaxDurationSec": 0,
+        "videoCodecs": []
+      },
+      "updatedAt": "2025-10-05T10:00:00Z",
+      "ttlSec": 600,
+      "pricingDetails": {
+        "currency": "USD",
+        "flatCents": {
+          "default": 40
+        }
+      },
+      "pricing": {
+        "unit": "sec",
+        "notes": "Fal pricing snapshot",
+        "currency": "USD"
+      },
+      "icon_url": null,
+      "fallback_icon": "/icons/engines/engine-hunyuan_video.svg",
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the desired clip.",
+            "requiredInModes": [
+              "t2v"
+            ]
+          }
+        ],
+        "optional": [
+          {
+            "id": "reference_image",
+            "type": "image",
+            "label": "Reference Image",
+            "maxCount": 1,
+            "requiredInModes": [
+              "i2v"
+            ]
+          },
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 2,
+            "max": 10,
+            "step": 1
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p",
+              "1080p"
+            ]
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "png",
+            "webp"
+          ],
+          "maxImageSizeMB": 10
+        }
+      }
+    }
+  ]
+}
