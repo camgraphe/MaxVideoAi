@@ -9,7 +9,7 @@ import { Chip } from '@/components/ui/Chip';
 
 export const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', badge: null, icon: 'dashboard', href: '/dashboard' },
-  { id: 'generate', label: 'Generate', badge: 'LIVE', icon: 'generate', href: '/' },
+  { id: 'generate', label: 'Generate', badge: 'LIVE', icon: 'generate', href: '/app' },
   { id: 'jobs', label: 'Jobs', badge: null, icon: 'jobs', href: '/jobs' },
   { id: 'billing', label: 'Billing', badge: null, icon: 'billing', href: '/billing' },
   { id: 'settings', label: 'Settings', badge: null, icon: 'settings', href: '/settings' }
@@ -93,8 +93,20 @@ export function AppSidebar() {
     });
   };
 
+  const handleMouseEnter = () => {
+    if (!pinned) {
+      setCollapsed(false);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (!pinned) {
+      setCollapsed(true);
+    }
+  };
+
 const renderNavItem = (item: NavItem, collapsed: boolean, tooltipBaseId: string) => {
-    const active = pathname === item.href || (item.id === 'generate' && pathname === '');
+    const active = pathname === item.href || (item.id === 'generate' && (pathname === '/' || pathname === ''));
     const tooltipId = `${tooltipBaseId}-${item.id}`;
 
     return (
@@ -162,6 +174,8 @@ const renderNavItem = (item: NavItem, collapsed: boolean, tooltipBaseId: string)
 
   return (
     <aside
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       className={clsx(
         'relative hidden h-[calc(100vh-var(--header-height))] lg:flex flex-col border-r border-hairline bg-white/70 backdrop-blur-md transition-[width] duration-300 ease-in-out',
         collapsed ? 'w-[78px]' : 'w-64'
@@ -204,23 +218,22 @@ const renderNavItem = (item: NavItem, collapsed: boolean, tooltipBaseId: string)
         </button>
       </div>
 
-  <nav
-    aria-label="App menu"
-    className={clsx(
-      'flex flex-1 items-start justify-start overflow-y-auto px-2 pb-6',
-      collapsed && 'pt-2'
-    )}
-  >
-    <ul
-      className={clsx(
-        'w-full',
-        collapsed ? 'flex flex-col items-center gap-1.5' : 'mt-4 flex flex-col gap-1.5'
-      )}
-    >
+      <nav
+        aria-label="App menu"
+        className={clsx(
+          'flex flex-1 items-start justify-start overflow-y-auto px-2 pb-6',
+          collapsed && 'pt-2'
+        )}
+      >
+        <ul
+          className={clsx(
+            'w-full',
+            collapsed ? 'flex flex-col items-center gap-1.5' : 'mt-4 flex flex-col gap-1.5'
+          )}
+        >
           {navigationItems.map((item) => renderNavItem(item, collapsed, tooltipBaseId))}
         </ul>
       </nav>
-
       <div className="px-4 pb-5">
         <Link
           href="/"

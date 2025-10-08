@@ -1,4 +1,7 @@
+"use client";
+
 import Link from 'next/link';
+import Image from 'next/image';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
@@ -10,7 +13,9 @@ export function MarketingFooter() {
     <footer className="border-t border-hairline bg-white">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-2 text-sm text-text-muted md:flex-row md:items-center md:justify-between">
-          <span className="font-semibold text-text-primary">{t('nav.brand', 'MaxVideo AI')}</span>
+          <span className="inline-flex items-center gap-2 font-semibold text-text-primary">
+            <Image src="/assets/branding/logo-wordmark.svg" alt={t('nav.brand', 'MaxVideo AI')} width={120} height={24} />
+          </span>
           <nav className="flex flex-wrap gap-4" aria-label="Footer">
             {links.map((item) => (
               <Link

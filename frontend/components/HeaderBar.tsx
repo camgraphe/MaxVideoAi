@@ -96,18 +96,23 @@ export function HeaderBar() {
         'border-b border-border bg-white/80 backdrop-blur-xl'
       )}
     >
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-8">
         <LogoMark />
-        <nav className="hidden md:flex items-center gap-5 text-sm text-text-muted">
+        <nav className="hidden items-center gap-5 text-sm font-medium text-text-muted md:flex">
           {[
-            ['Home', '#'],
-            ['Pricing', '#'],
-            ['Docs', '#'],
-            ['Jobs', '#']
-          ].map(([label, href]) => (
-            <a key={label} href={href} className="font-medium transition-colors hover:text-text-secondary">
-              {label}
-            </a>
+            { label: 'Models', href: '/models' },
+            { label: 'Examples', href: '/examples' },
+            { label: 'Pricing', href: '/pricing' },
+            { label: 'Workflows', href: '/workflows' },
+            { label: 'Docs', href: '/docs' },
+          ].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="transition-colors hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            >
+              {item.label}
+            </Link>
           ))}
         </nav>
       </div>
@@ -188,16 +193,9 @@ export function HeaderBar() {
 
 function LogoMark() {
   return (
-    <Link href="/" className="flex items-center" aria-label="Go to home">
-      <Image
-        src="/assets/branding/logo-dark.svg"
-        alt="MaxVideoAI logo"
-        width={256}
-        height={58}
-        className="h-14 w-auto"
-        priority
-      />
-      <span className="ml-2 text-lg font-semibold tracking-tight text-accent">MaxVideoAI</span>
+    <Link href="/app" className="flex items-center gap-2" aria-label="Go to workspace home">
+      <Image src="/assets/branding/logo-mark.svg" alt="MaxVideoAI" width={28} height={28} priority />
+      <span className="text-lg font-semibold tracking-tight text-text-primary">MaxVideo AI</span>
     </Link>
   );
 }
