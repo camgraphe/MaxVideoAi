@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import type { Locale } from '@/lib/i18n/dictionaries';
-import { LOCALE_COOKIE } from '@/lib/i18n/server';
+import { LOCALE_COOKIE } from '@/lib/i18n/constants';
 
 export function LanguageToggle() {
   const router = useRouter();

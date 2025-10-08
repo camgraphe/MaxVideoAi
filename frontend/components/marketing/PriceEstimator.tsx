@@ -269,11 +269,19 @@ export function PriceEstimator({ showWalletActions = true, variant = 'full' }: P
     return map;
   }, [dictionary.pricing.member.tiers]);
 
-  const walletBalanceLabel = dictionary.pricing.wallet.balanceLabel ?? t('pricing.wallet.balanceLabel', 'Wallet balance');
-  const walletHelper = dictionary.pricing.wallet.balanceHelper ?? t('pricing.wallet.balanceHelper', 'Starter Credits begin at $5. Shared wallets sync automatically.');
-  const walletAutoLabel = dictionary.pricing.wallet.autoTopUpLabel ?? t('pricing.wallet.autoTopUpLabel', 'Auto top-up when balance dips below $10');
-  const addLabelTemplate = dictionary.pricing.wallet.addLabel ?? t('pricing.wallet.addLabel', 'Add ${amount}');
-  const chargedNote = dictionary.pricing.estimator.chargedNote ?? t('pricing.estimator.chargedNote', 'Charged only if render succeeds.');
+  const walletBalanceLabel =
+    dictionary.pricing.wallet.balanceLabel ?? t('pricing.wallet.balanceLabel', 'Wallet balance') ?? 'Wallet balance';
+  const walletHelper =
+    dictionary.pricing.wallet.balanceHelper ?? t('pricing.wallet.balanceHelper', 'Starter Credits begin at $5. Shared wallets sync automatically.') ??
+    'Starter Credits begin at $5. Shared wallets sync automatically.';
+  const walletAutoLabel =
+    dictionary.pricing.wallet.autoTopUpLabel ?? t('pricing.wallet.autoTopUpLabel', 'Auto top-up when balance dips below $10') ??
+    'Auto top-up when balance dips below $10';
+  const addLabelTemplate =
+    dictionary.pricing.wallet.addLabel ?? t('pricing.wallet.addLabel', 'Add ${amount}') ?? 'Add ${amount}';
+  const chargedNote =
+    dictionary.pricing.estimator.chargedNote ?? t('pricing.estimator.chargedNote', 'Charged only if render succeeds.') ??
+    'Charged only if render succeeds.';
   const memberTooltipLabel = tooltip ?? 'Status updates daily on your last 30 days of spend.';
   const priceChipSuffix = t('pricing.priceChipSuffix', dictionary.pricing.priceChipSuffix);
 

@@ -3,7 +3,7 @@
 import { createContext, useContext, useMemo } from 'react';
 import type { Dictionary, Locale } from '@/lib/i18n/dictionaries';
 
-type TranslateFn = <T = unknown>(path: string, fallback?: T) => T;
+type TranslateFn = <T = unknown>(path: string, fallback?: T) => T | undefined;
 
 interface I18nContextValue {
   locale: Locale;

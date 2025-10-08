@@ -49,6 +49,7 @@ type Dictionary = {
       points: string[];
     };
     priceChipSuffix: string;
+    priceChipPrefix?: string;
   };
   pricing: {
     hero: {
@@ -74,6 +75,9 @@ type Dictionary = {
         memberChipPrefix: string;
       };
       descriptions: Record<string, string>;
+      engineRateLabel?: string;
+      durationLabel?: string;
+      resolutionLabel?: string;
     };
     wallet: {
       title: string;

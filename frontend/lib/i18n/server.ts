@@ -1,7 +1,6 @@
 import { cookies } from 'next/headers';
 import { getDictionary, type Dictionary, type Locale } from '@/lib/i18n/dictionaries';
-
-export const LOCALE_COOKIE = 'mvid_locale';
+import { LOCALE_COOKIE } from '@/lib/i18n/constants';
 
 export function resolveLocale(): Locale {
   const localeCookie = cookies().get(LOCALE_COOKIE)?.value;
