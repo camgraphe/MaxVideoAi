@@ -54,7 +54,6 @@ export function SettingsControls({
   const [seed, setSeed] = useState<string>('');
   const [jitter, setJitter] = useState<number>(0);
   const [guidance, setGuidance] = useState<number | null>(null);
-  const [negativePrompt, setNegativePrompt] = useState<string>('');
   const [initInfluence, setInitInfluence] = useState<number | null>(null);
   const [promptStrength, setPromptStrength] = useState<number | null>(null);
 
@@ -180,32 +179,17 @@ export function SettingsControls({
         />
       </div>
 
-      <div
-        className={clsx(
-          'space-y-3',
-          focusRefs?.addons && 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-        )}
-        ref={focusRefs?.addons}
-        tabIndex={focusRefs?.addons ? -1 : undefined}
-      >
-        <h3 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Add-ons</h3>
-        <div className="flex flex-wrap gap-2">
-          {engine.upscale4k && (
-            <TogglePill label="Upscale" active={addons.upscale4k} onClick={() => onAddonToggle('upscale4k', !addons.upscale4k)} />
-          )}
-          {engine.audio && (
-            <TogglePill
-              label="Generate audio"
-              disabled={mode !== 't2v'}
-              active={addons.audio && mode === 't2v'}
-              onClick={() => mode === 't2v' && onAddonToggle('audio', !addons.audio)}
-            />
-          )}
+      {engine.audio && (
+        <div className="flex items-center justify-between rounded-input border border-border bg-white p-3 text-sm text-text-secondary">
+          <span className="text-[12px] uppercase tracking-micro text-text-muted">Audio</span>
+          <TogglePill
+            label="Generate audio"
+            disabled={mode !== 't2v'}
+            active={addons.audio && mode === 't2v'}
+            onClick={() => mode === 't2v' && onAddonToggle('audio', !addons.audio)}
+          />
         </div>
-        {engine.audio && mode !== 't2v' && (
-          <p className="text-[12px] text-text-muted">Audio is only available in Text → Video mode.</p>
-        )}
-      </div>
+      )}
 
       <div className="space-y-3">
         <button
@@ -222,50 +206,60 @@ export function SettingsControls({
 
        {showAdvanced && (
           <div className="space-y-3 rounded-input border border-border bg-white p-3">
-            <div className="grid gap-3 md:grid-cols-2">
-              <label className="flex flex-col gap-2 text-sm text-text-secondary">
-                <span className="text-[12px] uppercase tracking-micro text-text-muted">Seed</span>
+            <label className="flex flex-col gap-2 text-sm text-text-secondary">
+              <span className="text-[12px] uppercase tracking-micro text-text-muted">Seed</span>
+              <input
+                type="number"
+                placeholder="Random"
+                value={seed}
+                onChange={(e) => setSeed(e.currentTarget.value)}
+                className="rounded-input border border-border bg-white px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+            </label>
+            <div className="flex items-center justify-between gap-3">
+              <label className="inline-flex items-center gap-2 text-[13px] text-text-secondary">
+                <input
+                  type="checkbox"
+                  checked={Boolean(seedLocked)}
+                  onChange={(e) => onSeedLockedChange?.(e.currentTarget.checked)}
+                />
+                <span>Lock seed</span>
+              </label>
+              <label className="flex items-center gap-2 text-[13px] text-text-secondary">
+                <span className="text-[12px] uppercase tracking-micro text-text-muted">Jitter</span>
                 <input
                   type="number"
-                  placeholder="Random"
-                  value={seed}
-                  onChange={(e) => setSeed(e.currentTarget.value)}
-                  className="rounded-input border border-border bg-white px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  min={0}
+                  max={100}
+                  value={jitter}
+                  onChange={(e) => setJitter(Number(e.currentTarget.value))}
+                  className="w-20 rounded-input border border-border bg-white px-2 py-1 text-right text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
+                <span className="text-[12px] text-text-muted">%</span>
               </label>
-              <div className="flex items-end justify-between gap-3">
-                <label className="inline-flex items-center gap-2 text-[13px] text-text-secondary">
-                  <input
-                    type="checkbox"
-                    checked={Boolean(seedLocked)}
-                    onChange={(e) => onSeedLockedChange?.(e.currentTarget.checked)}
-                  />
-                  <span>Lock seed</span>
-                </label>
-                <label className="flex items-center gap-2 text-[13px] text-text-secondary">
-                  <span className="text-[12px] uppercase tracking-micro text-text-muted">Jitter</span>
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={jitter}
-                    onChange={(e) => setJitter(Number(e.currentTarget.value))}
-                    className="w-20 rounded-input border border-border bg-white px-2 py-1 text-right text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  />
-                  <span className="text-[12px] text-text-muted">%</span>
-                </label>
-              </div>
             </div>
 
             {/* Iterations moved to Core next to Duration */}
 
-            <FieldGroup
-              label="FPS"
-              options={engine.fps.map(String)}
-              value={String(fps)}
-              onChange={(value) => onFpsChange(Number(value))}
-              labelFor={(opt) => `${opt} fps`}
-            />
+            {engine.fps.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {engine.fps.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => onFpsChange(option)}
+                    className={clsx(
+                      'rounded-input border px-3 py-1.5 text-[13px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      option === fps
+                        ? 'border-accent bg-accent text-white'
+                        : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
+                    )}
+                  >
+                    {option} fps
+                  </button>
+                ))}
+              </div>
+            )}
 
             {engine.params.promptStrength && (
               <div className="space-y-2">
@@ -293,18 +287,6 @@ export function SettingsControls({
               </div>
             )}
 
-            <div className="grid gap-3 md:grid-cols-2">
-              <label className="flex flex-col gap-2 text-sm text-text-secondary">
-                <span className="text-[12px] uppercase tracking-micro text-text-muted">Negative prompt</span>
-                <input
-                  type="text"
-                  value={negativePrompt}
-                  onChange={(e) => setNegativePrompt(e.currentTarget.value)}
-                  className="rounded-input border border-border bg-white px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                />
-              </label>
-            </div>
-
             {(mode === 'i2v' || mode === 'v2v') && engine.params.initInfluence && (
               <div className="space-y-2">
                 <h4 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Input influence</h4>
@@ -315,29 +297,6 @@ export function SettingsControls({
                   step={engine.params.initInfluence.step ?? 0.05}
                   onChange={(value) => setInitInfluence(value)}
                 />
-              </div>
-            )}
-
-            {engine.audio && (
-              <div className="space-y-2">
-                <h4 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Audio</h4>
-                <div className="flex flex-wrap gap-2 text-[13px]">
-                  {['Generate', 'Replace', 'Enhance'].map((label) => (
-                    <span key={label} className="rounded-input border border-hairline bg-white px-3 py-1.5 text-text-secondary">
-                      {label}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {engine.upscale4k && (
-              <div className="space-y-2">
-                <h4 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Upscale</h4>
-                <div className="flex flex-wrap items-center gap-3 text-[13px]">
-                  <span className="rounded-input border border-hairline bg-white px-3 py-1.5 text-text-secondary">Method: Neural 4x</span>
-                  <span className="rounded-input border border-hairline bg-white px-3 py-1.5 text-text-secondary">Intensity: Medium</span>
-                </div>
               </div>
             )}
 
@@ -352,23 +311,28 @@ export function SettingsControls({
               </div>
             )}
 
-            <div className="grid gap-3 md:grid-cols-2">
-              <label className="inline-flex items-center gap-2 text-[13px] text-text-secondary">
-                <input type="checkbox" />
-                <span>Feature this render</span>
-              </label>
-              <label className="inline-flex items-center gap-2 text-[13px] text-text-secondary">
-                <span className="text-[12px] uppercase tracking-micro text-text-muted">Safety</span>
-                <select className="rounded-input border border-border bg-white px-2 py-1 text-[13px] text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                  <option>Standard</option>
-                  <option>Strict</option>
-                </select>
-              </label>
-            </div>
+            {/* Removed non-functional Feature/Safety options */}
 
             {engine.keyframes && (
               <div className="text-[12px] text-text-muted">Keyframes supported (Pika 2.2)</div>
             )}
+
+            <div
+              className={clsx(
+                'space-y-3',
+                focusRefs?.addons && 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+              )}
+              ref={focusRefs?.addons}
+              tabIndex={focusRefs?.addons ? -1 : undefined}
+            >
+              <h3 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Add-ons</h3>
+              <div className="flex flex-wrap gap-2">
+                {engine.upscale4k && (
+                  <TogglePill label="Upscale" active={addons.upscale4k} onClick={() => onAddonToggle('upscale4k', !addons.upscale4k)} />
+                )}
+              </div>
+            </div>
+
           </div>
         )}
       </div>

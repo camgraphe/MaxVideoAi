@@ -3,6 +3,7 @@
 import clsx from 'clsx';
 import Image from 'next/image';
 import { Chip } from '@/components/ui/Chip';
+import { NAV_ITEMS } from '@/components/AppSidebar';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
@@ -140,6 +141,24 @@ export function HeaderBar() {
                   <p className="text-xs uppercase tracking-micro text-text-muted">Signed in</p>
                   <p className="mt-1 truncate text-sm font-medium text-text-primary">{email}</p>
                 </div>
+                <nav className="mb-2 flex flex-col gap-1" aria-label="Primary navigation">
+                  {NAV_ITEMS.map((item) => (
+                    <Link
+                      key={item.id}
+                      href={item.href}
+                      role="menuitem"
+                      className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      onClick={() => setAccountMenuOpen(false)}
+                    >
+                      <span>{item.label}</span>
+                      {item.badge ? (
+                        <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-accent">
+                          {item.badge}
+                        </span>
+                      ) : null}
+                    </Link>
+                  ))}
+                </nav>
                 <button
                   type="button"
                   className="flex w-full items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -169,15 +188,16 @@ export function HeaderBar() {
 
 function LogoMark() {
   return (
-    <div className="flex items-center">
+    <Link href="/" className="flex items-center" aria-label="Go to home">
       <Image
-        src="/assets/branding/Logos/SVG/logo-dark.svg"
+        src="/assets/branding/logo-dark.svg"
         alt="MaxVideoAI logo"
-        width={168}
-        height={40}
-        className="h-10 w-auto"
+        width={256}
+        height={58}
+        className="h-14 w-auto"
         priority
       />
-    </div>
+      <span className="ml-2 text-lg font-semibold tracking-tight text-accent">MaxVideoAI</span>
+    </Link>
   );
 }

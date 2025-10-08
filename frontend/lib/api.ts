@@ -54,6 +54,7 @@ export async function runGenerate(
   payload: {
     engineId: string;
     prompt: string;
+    negativePrompt?: string;
     durationSec: number;
     aspectRatio: string;
     resolution?: string;

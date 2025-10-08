@@ -79,6 +79,11 @@
           }
         ],
         "constraints": {
+          "maxDurationSec": 8,
+          "resolutions": [
+            "720p",
+            "1080p"
+          ],
           "supportedFormats": [
             "jpg",
             "png",
@@ -283,22 +288,26 @@
       },
       "pricing": {
         "unit": "USD/s",
-        "base": 0.75,
+        "base": 0.1,
+        "audio_surcharge_per_second": 0.05,
         "notes": "Public Gemini API pricing, subject to change",
         "currency": "USD"
       },
-      "updatedAt": "2025-10-05T10:00:00Z",
+      "updatedAt": "2025-10-09T12:00:00Z",
       "ttlSec": 600,
       "pricingDetails": {
         "currency": "USD",
         "perSecondCents": {
-          "default": 20
+          "default": 10
         },
         "addons": {
           "audio": {
-            "perSecondCents": 20
+            "perSecondCents": 5
           }
         }
+      },
+      "supports": {
+        "audio": true
       },
       "icon_url": "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
       "fallback_icon": "/icons/engines/engine-veo3.svg",
@@ -346,9 +355,27 @@
             "id": "seed",
             "type": "number",
             "label": "Seed"
+          },
+          {
+            "id": "audio",
+            "type": "boolean",
+            "label": "Audio",
+            "default": false
+          },
+          {
+            "id": "negative_prompt",
+            "type": "text",
+            "label": "Negative prompt",
+            "description": "Things to avoid (artifacts, distortions, extra limbs…).",
+            "maxLength": 800
           }
         ],
         "constraints": {
+          "maxDurationSec": 8,
+          "resolutions": [
+            "720p",
+            "1080p"
+          ],
           "supportedFormats": [
             "jpg",
             "png",
@@ -367,6 +394,7 @@
       "latencyTier": "fast",
       "queueDepth": 1,
       "region": "us-central1",
+      "isLab": true,
       "modes": [
         "t2v",
         "i2v"
@@ -411,11 +439,12 @@
       },
       "pricing": {
         "unit": "USD/s",
-        "base": 0.8,
+        "base": 0.1,
+        "audio_surcharge_per_second": 0.05,
         "notes": "Faster latency tier",
         "currency": "USD"
       },
-      "updatedAt": "2025-10-05T10:00:00Z",
+      "updatedAt": "2025-10-09T12:00:00Z",
       "ttlSec": 600,
       "pricingDetails": {
         "currency": "USD",
@@ -427,6 +456,9 @@
             "perSecondCents": 5
           }
         }
+      },
+      "supports": {
+        "audio": true
       },
       "icon_url": "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
       "fallback_icon": "/icons/engines/engine-veo3fast.svg",
@@ -471,9 +503,27 @@
             "id": "seed",
             "type": "number",
             "label": "Seed"
+          },
+          {
+            "id": "audio",
+            "type": "boolean",
+            "label": "Audio",
+            "default": false
+          },
+          {
+            "id": "negative_prompt",
+            "type": "text",
+            "label": "Negative prompt",
+            "description": "Things to avoid (artifacts, distortions, extra limbs…).",
+            "maxLength": 800
           }
         ],
         "constraints": {
+          "maxDurationSec": 8,
+          "resolutions": [
+            "720p",
+            "1080p"
+          ],
           "supportedFormats": [
             "jpg",
             "png",
@@ -583,6 +633,13 @@
             ]
           },
           {
+            "id": "negative_prompt",
+            "type": "text",
+            "label": "Negative prompt",
+            "description": "Things to avoid (artifacts, distortions, extra limbs…).",
+            "maxLength": 800
+          },
+          {
             "id": "seed",
             "type": "number",
             "label": "Seed"
@@ -609,7 +666,7 @@
         },
         "currency": "USD"
       },
-      "updatedAt": "2025-10-05T10:00:00Z",
+      "updatedAt": "2025-10-09T12:00:00Z",
       "ttlSec": 600,
       "pricingDetails": {
         "currency": "USD",
@@ -676,7 +733,7 @@
         "videoMaxDurationSec": 0,
         "videoCodecs": []
       },
-      "updatedAt": "2025-10-05T10:00:00Z",
+      "updatedAt": "2025-10-09T12:00:00Z",
       "ttlSec": 600,
       "pricingDetails": {
         "currency": "USD",
@@ -732,6 +789,13 @@
               "720p",
               "1080p"
             ]
+          },
+          {
+            "id": "negative_prompt",
+            "type": "text",
+            "label": "Negative prompt",
+            "description": "Things to avoid (artifacts, distortions, extra limbs…).",
+            "maxLength": 800
           },
           {
             "id": "seed",
@@ -853,7 +917,7 @@
         "notes": "Depends on plan tier; see Luma pricing page",
         "currency": "USD"
       },
-      "updatedAt": "2025-10-05T10:00:00Z",
+      "updatedAt": "2025-10-09T12:00:00Z",
       "ttlSec": 600,
       "pricingDetails": {
         "currency": "USD",
@@ -975,6 +1039,13 @@
               "720p",
               "1080p"
             ]
+          },
+          {
+            "id": "negative_prompt",
+            "type": "text",
+            "label": "Negative prompt",
+            "description": "Things to avoid (artifacts, distortions, extra limbs…).",
+            "maxLength": 800
           }
         ],
         "constraints": {
@@ -1063,6 +1134,16 @@
             "type": "text",
             "label": "Prompt",
             "description": "Describe the motion or subject."
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Reference Image",
+            "description": "Upload the starting frame when using image-to-video.",
+            "maxCount": 1,
+            "requiredInModes": [
+              "i2v"
+            ]
           }
         ],
         "optional": [

@@ -12,7 +12,7 @@ type AuthMode = 'magic' | 'password' | 'signup' | 'reset';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [nextPath, setNextPath] = useState<string>('/');
+  const [nextPath, setNextPath] = useState<string>('/app');
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')) as string;
   const [mode, setMode] = useState<AuthMode>('magic');
   const [email, setEmail] = useState('');

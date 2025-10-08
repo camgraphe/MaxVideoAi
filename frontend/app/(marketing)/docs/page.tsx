@@ -1,0 +1,102 @@
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { getContentEntries } from '@/lib/content/markdown';
+import { resolveDictionary } from '@/lib/i18n/server';
+
+export const metadata: Metadata = {
+  title: 'Docs — MaxVideo AI',
+  description: 'Onboarding, works-with notices, brand-safe filters, and refund policies for MaxVideo AI.',
+  keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
+  openGraph: {
+    title: 'Docs — MaxVideo AI',
+    description: 'Documentation for onboarding, routing, brand safety, and refunds.',
+    images: [
+      {
+        url: '/og/price-before.png',
+        width: 1200,
+        height: 630,
+        alt: 'Documentation overview.',
+      },
+    ],
+  },
+  alternates: {
+    canonical: 'https://www.maxvideo.ai/docs',
+    languages: {
+      en: 'https://www.maxvideo.ai/docs',
+      fr: 'https://www.maxvideo.ai/docs?lang=fr',
+    },
+  },
+};
+
+export default async function DocsIndexPage() {
+  const { dictionary } = resolveDictionary();
+  const content = dictionary.docs;
+  const sections = content.sections;
+  const docs = await getContentEntries('content/docs');
+
+  return (
+    <div className="mx-auto max-w-5xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
+      <header className="space-y-3">
+        <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
+        <p className="max-w-2xl text-base text-text-secondary">{content.hero.subtitle}</p>
+      </header>
+
+      <section className="mt-12 grid gap-6 lg:grid-cols-2">
+        {sections.map((section) => (
+          <article key={section.title} className="rounded-card border border-hairline bg-white p-6 shadow-card">
+            <h2 className="text-lg font-semibold text-text-primary">{section.title}</h2>
+            <ul className="mt-4 space-y-3 text-sm text-text-secondary">
+              {section.items.map((item, index) => {
+                if (typeof item === 'string') {
+                  return (
+                    <li key={index} className="flex items-start gap-2">
+                      <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-accent" />
+                      <span>{item}</span>
+                    </li>
+                  );
+                }
+                if (typeof item === 'object' && item?.type === 'link') {
+                  return (
+                    <li key={index} className="flex items-start gap-2">
+                      <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-accent" />
+                      <span>
+                        {item.before}
+                        <Link href="/terms" className="text-accent hover:text-accentSoft">
+                          {item.terms}
+                        </Link>
+                        {item.and}
+                        <Link href="/privacy" className="text-accent hover:text-accentSoft">
+                          {item.privacy}
+                        </Link>
+                        {item.after}
+                      </span>
+                    </li>
+                  );
+                }
+                return null;
+              })}
+            </ul>
+          </article>
+        ))}
+      </section>
+
+      <section className="mt-12">
+        <h2 className="text-xl font-semibold text-text-primary">{content.libraryHeading ?? 'Library'}</h2>
+        {docs.length === 0 ? (
+          <p className="mt-3 text-sm text-text-muted">{content.empty}</p>
+        ) : (
+          <ul className="mt-4 space-y-3 text-sm text-text-secondary">
+            {docs.map((doc) => (
+              <li key={doc.slug}>
+                <Link href={`/docs/${doc.slug}`} className="font-semibold text-accent hover:text-accentSoft">
+                  {doc.title}
+                </Link>
+                <p className="text-xs text-text-muted">{doc.description}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </div>
+  );
+}

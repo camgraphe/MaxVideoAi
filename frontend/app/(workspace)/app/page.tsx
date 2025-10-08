@@ -65,6 +65,7 @@ interface FormState {
 const DEFAULT_PROMPT = 'A quiet cinematic shot of neon-lit Tokyo streets in the rain';
 const STORAGE_KEYS = {
   prompt: 'maxvideoai.generate.prompt.v1',
+  negativePrompt: 'maxvideoai.generate.negativePrompt.v1',
   form: 'maxvideoai.generate.form.v1',
 } as const;
 
@@ -145,6 +146,11 @@ export default function Page() {
     const stored = window.localStorage.getItem(STORAGE_KEYS.prompt);
     return stored ?? DEFAULT_PROMPT;
   });
+  const [negativePrompt, setNegativePrompt] = useState<string>(() => {
+    if (typeof window === 'undefined') return '';
+    const stored = window.localStorage.getItem(STORAGE_KEYS.negativePrompt);
+    return stored ?? '';
+  });
   const [preflight, setPreflight] = useState<PreflightResponse | null>(null);
   const [preflightError, setPreflightError] = useState<string | undefined>();
   const [isPricing, setPricing] = useState(false);
@@ -210,6 +216,14 @@ export default function Page() {
       // noop
     }
   }, [prompt]);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(STORAGE_KEYS.negativePrompt, negativePrompt);
+    } catch {
+      // noop
+    }
+  }, [negativePrompt]);
 
   const durationRef = useRef<HTMLInputElement>(null);
   const resolutionRef = useRef<HTMLDivElement>(null);
@@ -519,6 +533,8 @@ useEffect(() => {
         assetFields: [] as AssetFieldConfig[],
         promptField: undefined as EngineInputField | undefined,
         promptRequired: true,
+        negativePromptField: undefined as EngineInputField | undefined,
+        negativePromptRequired: false,
       };
     }
 
@@ -533,14 +549,40 @@ useEffect(() => {
     const assetFields: AssetFieldConfig[] = [];
     let promptField: EngineInputField | undefined;
     let promptFieldOrigin: 'required' | 'optional' | undefined;
+    let negativePromptField: EngineInputField | undefined;
+    let negativePromptOrigin: 'required' | 'optional' | undefined;
 
     const ingest = (fields: EngineInputField[] | undefined, origin: 'required' | 'optional') => {
       if (!fields) return;
       fields.forEach((field) => {
         if (!appliesToMode(field)) return;
-        if (field.type === 'text' && (!promptField || field.id === 'prompt')) {
-          promptField = field;
-          promptFieldOrigin = origin;
+        if (field.type === 'text') {
+          const normalizedId = (field.id ?? '').toLowerCase();
+          const normalizedIdCompact = normalizedId.replace(/[^a-z0-9]/g, '');
+          const normalizedLabel = (field.label ?? '').toLowerCase();
+          const normalizedLabelCompact = normalizedLabel.replace(/\s+/g, '');
+          const hasNegativePromptCue = (value: string) =>
+            value.includes('negativeprompt') ||
+            (value.includes('negative') && value.includes('prompt')) ||
+            value.includes('negprompt');
+          const isNegative =
+            normalizedId === 'negative_prompt' ||
+            hasNegativePromptCue(normalizedIdCompact) ||
+            normalizedLabel.includes('negative prompt') ||
+            hasNegativePromptCue(normalizedLabelCompact);
+          if (isNegative) {
+            if (!negativePromptField) {
+              negativePromptField = field;
+              negativePromptOrigin = origin;
+            }
+            return;
+          }
+          const isPrompt = normalizedId === 'prompt';
+          if (!promptField || isPrompt) {
+            promptField = field;
+            promptFieldOrigin = origin;
+          }
+          return;
         }
         if (field.type === 'image' || field.type === 'video') {
           assetFields.push({ field, required: isRequired(field, origin) });
@@ -552,11 +594,16 @@ useEffect(() => {
     ingest(schema.optional, 'optional');
 
     const promptRequired = promptField ? isRequired(promptField, promptFieldOrigin ?? 'optional') : true;
+    const negativePromptRequired = negativePromptField
+      ? isRequired(negativePromptField, negativePromptOrigin ?? 'optional')
+      : false;
 
     return {
       assetFields,
       promptField,
       promptRequired,
+      negativePromptField,
+      negativePromptRequired,
     };
   }, [selectedEngine, activeMode]);
   useEffect(() => {
@@ -628,8 +675,22 @@ useEffect(() => {
       paymentStatus: 'pending_payment',
     };
 
-    if (inputSchemaSummary.promptRequired && !prompt.trim()) {
+    const trimmedPrompt = prompt.trim();
+    const trimmedNegativePrompt = negativePrompt.trim();
+    const supportsNegativePrompt = Boolean(inputSchemaSummary.negativePromptField);
+
+    if (inputSchemaSummary.promptRequired && !trimmedPrompt) {
       showNotice('A prompt is required for this engine and mode.');
+      return;
+    }
+
+    if (
+      supportsNegativePrompt &&
+      inputSchemaSummary.negativePromptRequired &&
+      !trimmedNegativePrompt
+    ) {
+      const label = inputSchemaSummary.negativePromptField?.label ?? 'Negative prompt';
+      showNotice(`${label} is required before generating.`);
       return;
     }
 
@@ -722,7 +783,7 @@ useEffect(() => {
       const res = await runGenerate(
         {
           engineId: selectedEngine.id,
-          prompt,
+          prompt: trimmedPrompt,
           durationSec: form.durationSec,
           aspectRatio: form.aspectRatio,
           resolution: form.resolution,
@@ -731,6 +792,7 @@ useEffect(() => {
           addons: form.addons,
           membershipTier: memberTier,
           payment: { mode: paymentMode },
+          ...(supportsNegativePrompt && trimmedNegativePrompt ? { negativePrompt: trimmedNegativePrompt } : {}),
           ...(inputsPayload ? { inputs: inputsPayload } : {}),
         },
         token ? { token } : undefined
@@ -865,7 +927,7 @@ useEffect(() => {
       });
     }, 400);
     window.setTimeout(() => window.clearInterval(interval), totalMs + 1000);
-  }, [form, prompt, selectedEngine, preflight, memberTier, showNotice, inputSchemaSummary, inputAssets]);
+  }, [form, prompt, negativePrompt, selectedEngine, preflight, memberTier, showNotice, inputSchemaSummary, inputAssets]);
 
   useEffect(() => {
     if (!selectedEngine) return;
@@ -987,30 +1049,83 @@ useEffect(() => {
               </div>
             )}
             <div className="grid gap-5 xl:grid-cols-[320px_auto]">
-              <div className="order-1 xl:order-none xl:col-start-1 xl:row-start-1 xl:self-start">
-                <div className="min-w-0">
-                  <EngineSelect
-                    engines={engines}
-                    engineId={form.engineId}
-                    onEngineChange={(engineId) =>
-                      setForm((current) => (current ? { ...current, engineId } : current))
-                    }
-                    mode={form.mode}
-                    onModeChange={(mode) =>
-                      setForm((current) =>
-                        current
-                          ? {
-                              ...current,
-                              mode,
-                              addons: {
-                                ...current.addons,
-                                audio: selectedEngine.audio && mode === 't2v'
+              <div className="contents xl:col-start-1 xl:row-start-1 xl:flex xl:min-w-0 xl:flex-col xl:gap-5 xl:self-start">
+                <div className="order-1 xl:order-none">
+                  <div className="min-w-0">
+                    <EngineSelect
+                      engines={engines}
+                      engineId={form.engineId}
+                      onEngineChange={(engineId) =>
+                        setForm((current) => (current ? { ...current, engineId } : current))
+                      }
+                      mode={form.mode}
+                      onModeChange={(mode) =>
+                        setForm((current) =>
+                          current
+                            ? {
+                                ...current,
+                                mode,
+                                addons: {
+                                  ...current.addons,
+                                  audio: selectedEngine.audio && mode === 't2v'
+                                }
                               }
-                            }
-                          : current
-                      )
-                    }
-                  />
+                            : current
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="order-3 xl:order-none">
+                  <div className="min-w-0">
+                    <SettingsControls
+                      engine={selectedEngine}
+                      duration={form.durationSec}
+                      onDurationChange={(durationSec) =>
+                        setForm((current) => (current ? { ...current, durationSec } : current))
+                      }
+                      resolution={form.resolution}
+                      onResolutionChange={(resolution) =>
+                        setForm((current) => (current ? { ...current, resolution } : current))
+                      }
+                      aspectRatio={form.aspectRatio}
+                      onAspectRatioChange={(aspectRatio) =>
+                        setForm((current) => (current ? { ...current, aspectRatio } : current))
+                      }
+                      fps={form.fps}
+                      onFpsChange={(fps) =>
+                        setForm((current) => (current ? { ...current, fps } : current))
+                      }
+                      addons={form.addons}
+                      onAddonToggle={(key, value) =>
+                        setForm((current) =>
+                          current
+                            ? {
+                                ...current,
+                                addons: {
+                                  ...current.addons,
+                                  [key]: value,
+                                },
+                              }
+                            : current
+                        )
+                      }
+                      mode={form.mode}
+                      iterations={form.iterations}
+                      onIterationsChange={(iterations) =>
+                        setForm((current) => (current ? { ...current, iterations } : current))
+                      }
+                      seedLocked={form.seedLocked}
+                      onSeedLockedChange={(seedLocked) =>
+                        setForm((current) => (current ? { ...current, seedLocked } : current))
+                      }
+                      focusRefs={{
+                        duration: durationRef,
+                        resolution: resolutionRef,
+                        addons: addonsRef,
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -1034,6 +1149,8 @@ useEffect(() => {
                     engine={selectedEngine}
                     prompt={prompt}
                     onPromptChange={setPrompt}
+                    negativePrompt={negativePrompt}
+                    onNegativePromptChange={setNegativePrompt}
                     price={price}
                     currency={currency}
                     isLoading={isPricing}
@@ -1045,63 +1162,13 @@ useEffect(() => {
                     preflight={preflight}
                     promptField={inputSchemaSummary.promptField}
                     promptRequired={inputSchemaSummary.promptRequired}
+                    negativePromptField={inputSchemaSummary.negativePromptField}
+                    negativePromptRequired={inputSchemaSummary.negativePromptRequired}
                     assetFields={inputSchemaSummary.assetFields}
                     assets={composerAssets}
                     onAssetAdd={handleAssetAdd}
                     onAssetRemove={handleAssetRemove}
                     onNotice={showNotice}
-                  />
-                </div>
-              </div>
-
-              <div className="order-3 xl:order-none xl:col-start-1 xl:row-start-2 xl:self-start">
-                <div className="min-w-0">
-                  <SettingsControls
-                    engine={selectedEngine}
-                    duration={form.durationSec}
-                    onDurationChange={(durationSec) =>
-                      setForm((current) => (current ? { ...current, durationSec } : current))
-                    }
-                    resolution={form.resolution}
-                    onResolutionChange={(resolution) =>
-                      setForm((current) => (current ? { ...current, resolution } : current))
-                    }
-                    aspectRatio={form.aspectRatio}
-                    onAspectRatioChange={(aspectRatio) =>
-                      setForm((current) => (current ? { ...current, aspectRatio } : current))
-                    }
-                    fps={form.fps}
-                    onFpsChange={(fps) =>
-                      setForm((current) => (current ? { ...current, fps } : current))
-                    }
-                    addons={form.addons}
-                    onAddonToggle={(key, value) =>
-                      setForm((current) =>
-                        current
-                          ? {
-                              ...current,
-                              addons: {
-                                ...current.addons,
-                                [key]: value,
-                              },
-                            }
-                          : current
-                      )
-                    }
-                    mode={form.mode}
-                    iterations={form.iterations}
-                    onIterationsChange={(iterations) =>
-                      setForm((current) => (current ? { ...current, iterations } : current))
-                    }
-                    seedLocked={form.seedLocked}
-                    onSeedLockedChange={(seedLocked) =>
-                      setForm((current) => (current ? { ...current, seedLocked } : current))
-                    }
-                    focusRefs={{
-                      duration: durationRef,
-                      resolution: resolutionRef,
-                      addons: addonsRef,
-                    }}
                   />
                 </div>
               </div>

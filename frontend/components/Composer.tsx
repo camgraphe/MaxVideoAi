@@ -26,6 +26,8 @@ interface Props {
   engine: EngineCaps;
   prompt: string;
   onPromptChange: (value: string) => void;
+  negativePrompt?: string;
+  onNegativePromptChange?: (value: string) => void;
   price: number | null;
   currency: string;
   isLoading: boolean;
@@ -37,6 +39,8 @@ interface Props {
   preflight?: PreflightResponse | null;
   promptField?: EngineInputField;
   promptRequired: boolean;
+  negativePromptField?: EngineInputField;
+  negativePromptRequired?: boolean;
   assetFields: AssetFieldConfig[];
   assets: Record<string, (ComposerAttachment | null)[]>;
   onAssetAdd?: (field: EngineInputField, file: File, slotIndex?: number) => void;
@@ -48,6 +52,8 @@ export function Composer({
   engine,
   prompt,
   onPromptChange,
+  negativePrompt,
+  onNegativePromptChange,
   price,
   currency,
   isLoading,
@@ -59,6 +65,8 @@ export function Composer({
   preflight,
   promptField,
   promptRequired,
+  negativePromptField,
+  negativePromptRequired = false,
   assetFields,
   assets,
   onAssetAdd,
@@ -77,7 +85,13 @@ export function Composer({
   const memberDiscount = preflight?.pricing?.discount;
   const promptLabel = promptField?.label ?? 'Prompt';
   const promptDescription = promptField?.description;
-  const disableGenerate = isLoading || (promptRequired && !prompt.trim());
+  const negativePromptLabel = negativePromptField?.label ?? 'Negative prompt';
+  const negativePromptDescription = negativePromptField?.description;
+  const negativePromptValue = (negativePrompt ?? '').trim();
+  const disableGenerate =
+    isLoading ||
+    (promptRequired && !prompt.trim()) ||
+    (negativePromptField && negativePromptRequired && !negativePromptValue);
 
   return (
     <Card className="space-y-5 p-5">
@@ -139,6 +153,27 @@ export function Composer({
             </button>
           </div>
         </div>
+
+        {negativePromptField && (
+          <div className="space-y-1">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[12px] uppercase tracking-micro text-text-muted">{negativePromptLabel}</span>
+              {negativePromptRequired && (
+                <span className="text-[11px] text-text-muted/80">Required</span>
+              )}
+            </div>
+            <input
+              type="text"
+              value={negativePrompt ?? ''}
+              onChange={(event) => onNegativePromptChange?.(event.currentTarget.value)}
+              placeholder="Elements to avoid…"
+              className="w-full rounded-input border border-border bg-white px-4 py-2 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            {negativePromptDescription && (
+              <p className="text-[12px] text-text-muted">{negativePromptDescription}</p>
+            )}
+          </div>
+        )}
 
         {assetFields.length > 0 && (
           <div className="flex flex-wrap gap-3 text-sm">

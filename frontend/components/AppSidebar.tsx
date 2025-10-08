@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState, useId } from 'react';
 import { Chip } from '@/components/ui/Chip';
 
-const NAV_ITEMS = [
+export const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', badge: null, icon: 'dashboard', href: '/dashboard' },
   { id: 'generate', label: 'Generate', badge: 'LIVE', icon: 'generate', href: '/' },
   { id: 'jobs', label: 'Jobs', badge: null, icon: 'jobs', href: '/jobs' },
@@ -222,19 +222,21 @@ const renderNavItem = (item: NavItem, collapsed: boolean, tooltipBaseId: string)
       </nav>
 
       <div className="px-4 pb-5">
-        <div
+        <Link
+          href="/"
+          aria-label="Go to home"
           className={clsx(
             'flex items-center justify-center rounded-card border border-hairline bg-white/80 shadow-card transition',
-            collapsed ? 'h-11 w-11 mx-auto' : 'h-12'
+            collapsed ? 'mx-auto h-11 w-11' : 'h-12'
           )}
         >
           <Image
-            src="/assets/branding/Logos/SVG/icon-dark.svg"
+            src="/assets/branding/logo-mark.svg"
             alt="MaxVideoAI logo mark"
             width={collapsed ? 22 : 26}
             height={collapsed ? 22 : 26}
           />
-        </div>
+        </Link>
       </div>
     </aside>
   );
