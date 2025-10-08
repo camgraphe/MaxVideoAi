@@ -188,6 +188,7 @@ function mapFalModel(model: FalModel): { engine: EngineCaps; pricing: EnginePric
       modelSlug: slug,
     },
     pricingDetails,
+    availability: 'available',
   };
 
   return { engine, pricing: pricingDetails, slug };

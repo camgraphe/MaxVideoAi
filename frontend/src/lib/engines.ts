@@ -1,6 +1,16 @@
 import fs from 'fs';
 import path from 'path';
-import type { EngineCaps, EnginePricingDetails, EnginesResponse, ItemizationLine, PreflightRequest, PreflightResponse } from '@/types/engines';
+import type {
+  BrandAssetPolicy,
+  EngineAvailability,
+  EngineCaps,
+  EnginePricingDetails,
+  EnginesResponse,
+  ItemizationLine,
+  PreflightRequest,
+  PreflightResponse,
+} from '@/types/engines';
+import { PARTNER_BRANDS, PARTNER_BRAND_MAP } from '@/lib/brand-partners';
 import { computePricingSnapshot } from '@/lib/pricing';
 import { ensureBillingSchema } from '@/lib/schema';
 import { getFalCatalog, getDefaultModelMap } from '@/lib/fal-catalog';
@@ -28,6 +38,61 @@ function toPricingDetailsFromPricing(pricing: EngineCaps['pricing'] | undefined)
   };
 }
 
+const AVAILABILITY_VALUES: EngineAvailability[] = ['available', 'limited', 'waitlist', 'paused'];
+
+const BRAND_METADATA: Record<string, { brandId: string; policy: BrandAssetPolicy; availability?: EngineAvailability }> = (() => {
+  const map: Record<string, { brandId: string; policy: BrandAssetPolicy; availability?: EngineAvailability }> = {};
+  for (const brand of PARTNER_BRANDS) {
+    for (const engineId of brand.engineIds) {
+      map[engineId.toLowerCase()] = {
+        brandId: brand.id,
+        policy: brand.policy,
+        availability: brand.defaultAvailability,
+      };
+    }
+  }
+  return map;
+})();
+
+function normaliseKey(value: string | undefined | null): string | null {
+  if (!value) return null;
+  return value.trim().toLowerCase();
+}
+
+function slugifyBrand(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'unknown';
+}
+
+function ensureAvailability(value: unknown): EngineAvailability | null {
+  if (typeof value !== 'string') return null;
+  const normalised = value.trim().toLowerCase();
+  return AVAILABILITY_VALUES.includes(normalised as EngineAvailability) ? (normalised as EngineAvailability) : null;
+}
+
+function applyBrandMetadata(engine: EngineCaps): EngineCaps {
+  const key = normaliseKey(engine.id);
+  const metadata = key ? BRAND_METADATA[key] : undefined;
+  if (!engine.brandId && metadata?.brandId) {
+    engine.brandId = metadata.brandId;
+  }
+  const brandFromId = engine.brandId ? PARTNER_BRAND_MAP.get(engine.brandId) : undefined;
+  if (!engine.availability) {
+    engine.availability = metadata?.availability ?? brandFromId?.defaultAvailability ?? 'available';
+  }
+  if (!engine.brandId) {
+    const source = metadata?.brandId ?? engine.provider ?? engine.label ?? engine.id;
+    engine.brandId = slugifyBrand(source);
+  }
+  if (!engine.brandAssetPolicy) {
+    engine.brandAssetPolicy = metadata?.policy ?? brandFromId?.policy ?? engine.brandAssetPolicy;
+  }
+  return engine;
+}
+
 function loadFixtureEngines(): EngineCaps[] | null {
   try {
     const file = path.join(process.cwd(), '..', 'fixtures', 'engines.json');
@@ -50,8 +115,14 @@ function loadFixtureEngines(): EngineCaps[] | null {
           engine.pricingDetails
             ? (engine.pricingDetails as EnginePricingDetails)
             : toPricingDetailsFromPricing(pricing);
+        const availability = ensureAvailability(engine.availability);
+        const brandId = typeof engine.brandId === 'string' && engine.brandId.trim().length ? slugifyBrand(engine.brandId) : undefined;
+        const brandAssetPolicy =
+          engine.brandAssetPolicy && typeof engine.brandAssetPolicy === 'object'
+            ? (engine.brandAssetPolicy as BrandAssetPolicy)
+            : undefined;
 
-        return {
+        return applyBrandMetadata({
           id: String(engine.id),
           label: String(engine.label ?? engine.id ?? 'unknown'),
           provider: String(engine.provider ?? 'unknown'),
@@ -89,7 +160,10 @@ function loadFixtureEngines(): EngineCaps[] | null {
           pricingDetails,
           iconUrl: typeof engine.icon_url === 'string' && engine.icon_url ? String(engine.icon_url) : undefined,
           fallbackIcon: typeof engine.fallback_icon === 'string' && engine.fallback_icon ? String(engine.fallback_icon) : undefined,
-        };
+          availability: availability ?? 'available',
+          brandId,
+          brandAssetPolicy,
+        });
       });
 
     return mapped.length ? mapped : null;
@@ -135,6 +209,9 @@ const INTERNAL_ENGINES: EngineCaps[] = [
     },
     iconUrl: undefined,
     fallbackIcon: '/icons/engines/pika-22.svg',
+    availability: PARTNER_BRAND_MAP.get('pika')?.defaultAvailability ?? 'available',
+    brandId: 'pika',
+    brandAssetPolicy: PARTNER_BRAND_MAP.get('pika')?.policy,
   },
   {
     id: 'luma-dm',
@@ -175,6 +252,9 @@ const INTERNAL_ENGINES: EngineCaps[] = [
     },
     iconUrl: undefined,
     fallbackIcon: '/icons/engines/luma-dm.svg',
+    availability: PARTNER_BRAND_MAP.get('luma')?.defaultAvailability ?? 'available',
+    brandId: 'luma',
+    brandAssetPolicy: PARTNER_BRAND_MAP.get('luma')?.policy,
   },
   {
     id: 'veo-3',
@@ -220,6 +300,9 @@ const INTERNAL_ENGINES: EngineCaps[] = [
     },
     iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg',
     fallbackIcon: '/icons/engines/veo-3.svg',
+    availability: PARTNER_BRAND_MAP.get('google-veo')?.defaultAvailability ?? 'waitlist',
+    brandId: 'google-veo',
+    brandAssetPolicy: PARTNER_BRAND_MAP.get('google-veo')?.policy,
   },
 ];
 
@@ -235,19 +318,19 @@ async function buildEngines(): Promise<EngineCaps[]> {
   const fixtures = loadFixtureEngines() ?? [];
   const enginesMap = new Map<string, EngineCaps>();
   for (const engine of fixtures) {
-    enginesMap.set(engine.id, engine);
+    enginesMap.set(engine.id, applyBrandMetadata(engine));
   }
 
   const catalog = await getFalCatalog();
   if (catalog?.engines?.length) {
     for (const engine of catalog.engines) {
-      enginesMap.set(engine.id, engine);
+      enginesMap.set(engine.id, applyBrandMetadata(engine));
     }
   }
 
   if (!enginesMap.size) {
     for (const engine of INTERNAL_ENGINES) {
-      enginesMap.set(engine.id, engine);
+      enginesMap.set(engine.id, applyBrandMetadata(engine));
     }
   }
 

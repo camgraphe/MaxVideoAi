@@ -3,9 +3,14 @@
 import { useEffect, useId, useMemo, useState } from 'react';
 import clsx from 'clsx';
 import { useEngines } from '@/lib/api';
-import type { EngineCaps, EngineInputField } from '@/types/engines';
+import type { EngineAvailability, EngineCaps, EngineInputField } from '@/types/engines';
+import type { MemberTier as PricingMemberTier } from '@maxvideoai/pricing';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { PriceChip } from '@/components/marketing/PriceChip';
+import { getPricingKernel } from '@/lib/pricing-kernel';
+import { AVAILABILITY_BADGE_CLASS } from '@/lib/availability';
+import { getModelByEngineId, listAvailableModels } from '@/lib/model-roster';
+import { getPartnerByEngineId } from '@/lib/brand-partners';
 
 type MemberTier = 'Member' | 'Plus' | 'Pro';
 
@@ -17,18 +22,14 @@ interface EngineOption {
   maxDuration: number;
   resolutions: Array<{ value: string; label: string; rate: number }>;
   currency: string;
+  availability?: EngineAvailability;
+  availabilityLink?: string | null;
 }
 
 interface PriceEstimatorProps {
   showWalletActions?: boolean;
   variant?: 'full' | 'lite';
 }
-
-const MEMBER_DISCOUNTS: Record<MemberTier, number> = {
-  Member: 0,
-  Plus: 0.05,
-  Pro: 0.1,
-};
 
 const MEMBER_ORDER: MemberTier[] = ['Member', 'Plus', 'Pro'];
 
@@ -42,39 +43,72 @@ function getDurationField(engine: EngineCaps): EngineInputField | undefined {
   return optional.find((field) => field.id === 'duration_seconds');
 }
 
-function buildEngineOptions(engines: EngineCaps[], descriptions: Record<string, string>): EngineOption[] {
+function buildEngineOptions(engines: EngineCaps[], descriptions: Record<string, string>) {
+  const kernel = getPricingKernel();
   return engines
     .map((engine) => {
+      const definition = kernel.getDefinition(engine.id);
+      const rosterEntry = getModelByEngineId(engine.id);
+      const brand = getPartnerByEngineId(engine.id);
+      if (!rosterEntry || rosterEntry.availability === 'paused') {
+        return null;
+      }
       const perSecond = engine.pricingDetails?.perSecondCents;
       const perSecondDefault = centsToDollars(perSecond?.default);
-      const resolutionRates = engine.resolutions?.length ? engine.resolutions : ['720p', '1080p'];
-      const rates = resolutionRates
+      const resolutionRates = engine.resolutions?.length
+        ? engine.resolutions
+        : definition
+            ? Object.keys(definition.resolutionMultipliers)
+            : ['720p', '1080p'];
+      let rates = resolutionRates
         .map((resolution) => {
+          if (definition) {
+            const multiplier =
+              definition.resolutionMultipliers[resolution] ?? definition.resolutionMultipliers.default ?? 1;
+            const rate = (definition.baseUnitPriceCents * multiplier) / 100;
+            if (!rate) return null;
+            return { value: resolution, label: resolution.toUpperCase(), rate };
+          }
           const cents = perSecond?.byResolution?.[resolution] ?? perSecond?.default;
           const rate = centsToDollars(cents) ?? perSecondDefault;
           if (!rate) return null;
-          const label = resolution.toUpperCase();
-          return { value: resolution, label, rate };
+          return { value: resolution, label: resolution.toUpperCase(), rate };
         })
         .filter((rate): rate is { value: string; label: string; rate: number } => Boolean(rate));
+
+      if (!rates.length && definition) {
+        const fallbackRate = definition.baseUnitPriceCents / 100;
+        rates = [
+          {
+            value: 'default',
+            label: 'DEFAULT',
+            rate: fallbackRate,
+          },
+        ];
+      }
 
       if (!rates.length) {
         return null;
       }
 
       const durationField = getDurationField(engine);
-      const minDuration = durationField?.min ?? 4;
-      const maxDuration = durationField?.max ?? engine.maxDurationSec ?? 30;
-      const description = descriptions[engine.id] ?? engine.label;
+      const minDuration = definition?.durationSteps?.min ?? durationField?.min ?? 4;
+      const maxDuration = definition?.durationSteps?.max ?? durationField?.max ?? engine.maxDurationSec ?? 30;
+      const description = descriptions[engine.id] ?? rosterEntry.marketingName;
 
       return {
         id: engine.id,
-        label: engine.label,
+        label: rosterEntry.marketingName,
         description,
         minDuration,
         maxDuration,
         resolutions: rates,
-        currency: engine.pricingDetails?.currency ?? 'USD',
+        currency: definition?.currency ?? engine.pricingDetails?.currency ?? 'USD',
+        availability: rosterEntry.availability,
+        availabilityLink:
+          rosterEntry.availability !== 'available'
+            ? brand?.availabilityLink ?? engine.apiAvailability ?? null
+            : null,
       } satisfies EngineOption;
     })
     .filter((option): option is EngineOption => Boolean(option));
@@ -94,6 +128,7 @@ export function PriceEstimator({ showWalletActions = true, variant = 'full' }: P
   const resolutionId = useId();
   const { t, dictionary } = useI18n();
   const { data } = useEngines();
+  const kernel = getPricingKernel();
 
   const fields = t('pricing.estimator.fields', {
     engine: 'Engine',
@@ -110,73 +145,46 @@ export function PriceEstimator({ showWalletActions = true, variant = 'full' }: P
   }) as Record<string, string>;
 
   const descriptions = dictionary.pricing.estimator.descriptions;
+  const availabilityLabels = dictionary.models.availabilityLabels;
 
   const fallbackEngines = useMemo<EngineOption[]>(() => {
-    const fallbackRates: EngineOption[] = [
-      {
-        id: 'veo3',
-        label: 'Veo · Cinematic',
-        description: descriptions.veo3 ?? 'Filmic control for narratives and longer edits.',
-        minDuration: 4,
-        maxDuration: 20,
-        currency: 'USD',
-        resolutions: [
-          { value: '720p', label: '720P', rate: 0.024 },
-          { value: '1080p', label: '1080P', rate: 0.028 },
-          { value: '4K', label: '4K', rate: 0.032 },
-        ],
-      },
-      {
-        id: 'lumaDM',
-        label: 'Luma · Product',
-        description: descriptions.lumaDM ?? 'Photoreal hero shots and turntables.',
-        minDuration: 4,
-        maxDuration: 20,
-        currency: 'USD',
-        resolutions: [
-          { value: '720p', label: '720P', rate: 0.021 },
-          { value: '1080p', label: '1080P', rate: 0.026 },
-        ],
-      },
-      {
-        id: 'pika22',
-        label: 'Pika · Social',
-        description: descriptions.pika22 ?? 'Fast loops with caption overlays.',
-        minDuration: 4,
-        maxDuration: 14,
-        currency: 'USD',
-        resolutions: [
-          { value: '720p', label: '720P', rate: 0.018 },
-          { value: '1080p', label: '1080P', rate: 0.022 },
-        ],
-      },
-      {
-        id: 'runwayg3',
-        label: 'Runway · Brand',
-        description: descriptions.runwayg3 ?? 'Brand explainers with voiceover sync.',
-        minDuration: 4,
-        maxDuration: 18,
-        currency: 'USD',
-        resolutions: [
-          { value: '720p', label: '720P', rate: 0.02 },
-          { value: '1080p', label: '1080P', rate: 0.025 },
-        ],
-      },
-      {
-        id: 'kling25',
-        label: 'Kling · Beta',
-        description: descriptions.kling25 ?? 'Beta animation previews.',
-        minDuration: 4,
-        maxDuration: 12,
-        currency: 'USD',
-        resolutions: [
-          { value: '720p', label: '720P', rate: 0.026 },
-          { value: '1080p', label: '1080P', rate: 0.03 },
-        ],
-      },
-    ];
-    return fallbackRates;
-  }, [descriptions.kling25, descriptions.lumaDM, descriptions.pika22, descriptions.runwayg3, descriptions.veo3]);
+    const kernel = getPricingKernel();
+    return listAvailableModels(true)
+      .map((entry) => {
+        const definition = kernel.getDefinition(entry.engineId);
+        if (!definition) return null;
+        const multiplierEntries = Object.entries(definition.resolutionMultipliers).filter(([key]) => key !== 'default');
+        const baseRate = definition.baseUnitPriceCents / 100;
+        const resolutions = multiplierEntries.length
+          ? multiplierEntries.map(([resolution, multiplier]) => ({
+              value: resolution,
+              label: resolution.toUpperCase(),
+              rate: (definition.baseUnitPriceCents * multiplier) / 100,
+            }))
+          : [
+              {
+                value: 'default',
+                label: 'DEFAULT',
+                rate: baseRate,
+              },
+            ];
+        const brand = getPartnerByEngineId(entry.engineId);
+        const minDuration = definition.durationSteps?.min ?? 4;
+        const maxDuration = definition.durationSteps?.max ?? 30;
+        return {
+          id: entry.engineId,
+          label: entry.marketingName,
+          description: descriptions[entry.engineId] ?? entry.marketingName,
+          minDuration,
+          maxDuration,
+          resolutions,
+          currency: definition.currency,
+          availability: entry.availability,
+          availabilityLink: entry.availability !== 'available' ? brand?.availabilityLink ?? null : null,
+        } satisfies EngineOption;
+      })
+      .filter((entry): entry is EngineOption => Boolean(entry));
+  }, [descriptions]);
 
   const engineOptions = useMemo(() => {
     const payload = data?.engines ?? [];
@@ -231,24 +239,46 @@ export function PriceEstimator({ showWalletActions = true, variant = 'full' }: P
   const activeResolution = selectedEngine?.resolutions.find((resolution) => resolution.value === selectedResolution) ?? selectedEngine?.resolutions[0];
   const rate = activeResolution?.rate ?? 0;
 
+  const pricingMemberTier = (memberTier.toLowerCase() as PricingMemberTier);
+
+  const pricingQuote = useMemo(() => {
+    if (!selectedEngine) return null;
+    try {
+      return kernel.quote({
+        engineId: selectedEngine.id,
+        durationSec: duration,
+        resolution: selectedResolution,
+        memberTier: pricingMemberTier,
+        addons: {},
+      });
+    } catch {
+      return null;
+    }
+  }, [kernel, selectedEngine, duration, selectedResolution, pricingMemberTier]);
+
+  const pricingSnapshot = pricingQuote?.snapshot ?? null;
+
   const pricing = useMemo(() => {
-    const base = rate * duration;
-    const discountRate = MEMBER_DISCOUNTS[memberTier];
-    const discountValue = base * discountRate;
-    const total = base - discountValue;
-    return {
-      base,
-      discountRate,
-      discountValue,
-      total,
-    };
-  }, [duration, memberTier, rate]);
+    if (!pricingSnapshot) {
+      return {
+        base: 0,
+        discountRate: 0,
+        discountValue: 0,
+        total: 0,
+      };
+    }
+    const base = pricingSnapshot.base.amountCents / 100;
+    const discountRate = pricingSnapshot.discount?.percentApplied ?? 0;
+    const discountValue = (pricingSnapshot.discount?.amountCents ?? 0) / 100;
+    const total = pricingSnapshot.totalCents / 100;
+    return { base, discountRate, discountValue, total };
+  }, [pricingSnapshot]);
 
   const handleTopUp = (amount: number) => {
     setWalletBalance((prev) => Math.round((prev + amount) * 100) / 100);
   };
 
-  const currency = selectedEngine?.currency ?? 'USD';
+  const currency = pricingSnapshot?.currency ?? selectedEngine?.currency ?? 'USD';
   const tiers = dictionary.pricing.member.tiers;
   const tooltip = dictionary.pricing.member.tooltip;
   const memberNames = useMemo(() => {
@@ -297,12 +327,45 @@ export function PriceEstimator({ showWalletActions = true, variant = 'full' }: P
             className="rounded-input border border-hairline bg-bg px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           >
             {engineOptions.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label}
+              <option key={option.id} value={option.id} disabled={option.availability === 'paused'}>
+                {option.availability ? `${option.label} — ${availabilityLabels[option.availability] ?? option.availability}` : option.label}
               </option>
             ))}
           </select>
           {selectedEngine?.description ? <span className="text-xs text-text-muted">{selectedEngine.description}</span> : null}
+          {selectedEngine && selectedEngine.availability !== 'available' && (
+            <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
+              <span
+                className={clsx(
+                  'inline-flex items-center rounded-pill border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro',
+                  AVAILABILITY_BADGE_CLASS[selectedEngine.availability]
+                )}
+              >
+                {availabilityLabels[selectedEngine.availability] ?? selectedEngine.availability}
+              </span>
+              {selectedEngine.availability === 'waitlist' && selectedEngine.availabilityLink && (
+                <a
+                  href={selectedEngine.availabilityLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[11px] font-medium text-text-muted underline underline-offset-4 transition hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                >
+                  Join waitlist
+                </a>
+              )}
+              {selectedEngine.availability === 'limited' && selectedEngine.availabilityLink && (
+                <a
+                  href={selectedEngine.availabilityLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[11px] font-medium text-text-muted underline underline-offset-4 transition hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                >
+                  Request access
+                </a>
+              )}
+              {selectedEngine.availability === 'paused' && <span>Temporarily unavailable.</span>}
+            </div>
+          )}
         </label>
 
         <label htmlFor={resolutionId} className="flex flex-col gap-2 text-sm font-medium text-text-secondary">
@@ -381,7 +444,15 @@ export function PriceEstimator({ showWalletActions = true, variant = 'full' }: P
       </div>
 
       <div className="space-y-3 rounded-card border border-hairline bg-white p-4 shadow-card">
-        <PriceChip amount={pricing.total} suffix={priceChipSuffix} />
+        {selectedEngine && pricingSnapshot && (
+          <PriceChip
+            engineId={selectedEngine.id}
+            durationSec={duration}
+            resolution={selectedResolution}
+            memberTier={pricingMemberTier}
+            suffix={priceChipSuffix}
+          />
+        )}
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1">
             <p className="text-sm font-semibold text-text-primary">{estimateLabels.heading}</p>

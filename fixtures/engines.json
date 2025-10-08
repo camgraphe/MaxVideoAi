@@ -241,6 +241,14 @@
       "provider": "google",
       "version": "3.0",
       "status": "live",
+      "availability": "waitlist",
+      "brandId": "google-veo",
+      "brandAssetPolicy": {
+        "logoAllowed": false,
+        "textOnly": true,
+        "linkToGuidelines": "https://about.google/brand-resource-center/",
+        "usageNotes": "Use the “Works with Google Veo” text treatment in Inter SemiBold (#202124)."
+      },
       "latencyTier": "standard",
       "queueDepth": 2,
       "region": "us-central1",
@@ -391,6 +399,14 @@
       "provider": "google",
       "version": "3.0",
       "status": "live",
+      "availability": "waitlist",
+      "brandId": "google-veo",
+      "brandAssetPolicy": {
+        "logoAllowed": false,
+        "textOnly": true,
+        "linkToGuidelines": "https://about.google/brand-resource-center/",
+        "usageNotes": "Use the “Works with Google Veo” text treatment in Inter SemiBold (#202124)."
+      },
       "latencyTier": "fast",
       "queueDepth": 1,
       "region": "us-central1",
@@ -539,6 +555,14 @@
       "provider": "fal",
       "version": "2.2",
       "status": "live",
+      "availability": "available",
+      "brandId": "pika",
+      "brandAssetPolicy": {
+        "logoAllowed": false,
+        "textOnly": true,
+        "linkToGuidelines": "https://pika.art",
+        "usageNotes": "Display “Pika Labs” text treatment until an official license is granted."
+      },
       "latencyTier": "fast",
       "queueDepth": 1,
       "region": "us-east-1",
@@ -686,6 +710,14 @@
       "provider": "kuaishou",
       "version": "2.5",
       "status": "live",
+      "availability": "limited",
+      "brandId": "kling",
+      "brandAssetPolicy": {
+        "logoAllowed": false,
+        "textOnly": true,
+        "linkToGuidelines": "https://www.kuaishou.com/en",
+        "usageNotes": "Default to “Kling by Kuaishou” text unless corporate approval authorises the logo."
+      },
       "latencyTier": "standard",
       "queueDepth": 3,
       "region": "ap-east-1",
@@ -812,6 +844,14 @@
       "provider": "luma",
       "version": "1.0",
       "status": "live",
+      "availability": "available",
+      "brandId": "luma",
+      "brandAssetPolicy": {
+        "logoAllowed": true,
+        "textOnly": false,
+        "linkToGuidelines": "https://lumalabs.ai/press",
+        "usageNotes": "Use on neutral backgrounds without distortion."
+      },
       "latencyTier": "standard",
       "queueDepth": 6,
       "region": "global",
@@ -937,6 +977,14 @@
       "provider": "runway",
       "version": "3",
       "status": "live",
+      "availability": "available",
+      "brandId": "runway",
+      "brandAssetPolicy": {
+        "logoAllowed": true,
+        "textOnly": false,
+        "linkToGuidelines": "https://runwayml.com/brand",
+        "usageNotes": "Maintain clear space and official colors."
+      },
       "latencyTier": "standard",
       "queueDepth": 5,
       "region": "global",
@@ -1179,6 +1227,14 @@
       "provider": "fal",
       "version": "2.2",
       "status": "live",
+      "availability": "limited",
+      "brandId": "pika",
+      "brandAssetPolicy": {
+        "logoAllowed": false,
+        "textOnly": true,
+        "linkToGuidelines": "https://pika.art",
+        "usageNotes": "Display “Pika Labs” text treatment until an official license is granted."
+      },
       "latencyTier": "fast",
       "isLab": true,
       "modes": [
@@ -1287,6 +1343,14 @@
       "provider": "kuaishou",
       "version": "2.5",
       "status": "live",
+      "availability": "limited",
+      "brandId": "kling",
+      "brandAssetPolicy": {
+        "logoAllowed": false,
+        "textOnly": true,
+        "linkToGuidelines": "https://www.kuaishou.com/en",
+        "usageNotes": "Default to “Kling by Kuaishou” text unless corporate approval authorises the logo."
+      },
       "latencyTier": "fast",
       "isLab": true,
       "modes": [
@@ -1405,6 +1469,14 @@
       "provider": "luma",
       "version": "1.0",
       "status": "live",
+      "availability": "limited",
+      "brandId": "luma",
+      "brandAssetPolicy": {
+        "logoAllowed": true,
+        "textOnly": false,
+        "linkToGuidelines": "https://lumalabs.ai/press",
+        "usageNotes": "Use on neutral backgrounds without distortion."
+      },
       "latencyTier": "fast",
       "isLab": true,
       "modes": [

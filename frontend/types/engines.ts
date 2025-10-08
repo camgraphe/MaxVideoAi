@@ -1,8 +1,18 @@
+import type { PricingSnapshot } from '@maxvideoai/pricing';
+
 export type EngineStatus = 'live' | 'busy' | 'degraded' | 'maintenance' | 'early_access';
 export type LatencyTier = 'fast' | 'standard';
 export type Mode = 't2v' | 'i2v' | 'v2v';
 export type Resolution = '720p' | '1080p' | '4k' | '512P' | '768P';
 export type AspectRatio = '16:9' | '9:16' | '1:1' | '4:5' | 'custom' | 'source';
+export type EngineAvailability = 'available' | 'limited' | 'waitlist' | 'paused';
+
+export interface BrandAssetPolicy {
+  logoAllowed: boolean;
+  textOnly: boolean;
+  linkToGuidelines?: string;
+  usageNotes?: string;
+}
 
 export interface EngineParam {
   min: number;
@@ -93,6 +103,9 @@ export interface EngineCaps {
   pricingDetails?: EnginePricingDetails;
   iconUrl?: string | null;
   fallbackIcon?: string | null;
+  availability: EngineAvailability;
+  brandId?: string;
+  brandAssetPolicy?: BrandAssetPolicy;
 }
 
 export interface EnginesResponse {
@@ -150,37 +163,7 @@ export interface PreflightResponse {
   };
 }
 
-export interface PricingSnapshot {
-  currency: string;
-  totalCents: number;
-  subtotalBeforeDiscountCents: number;
-  base: {
-    seconds: number;
-    rate: number;
-    unit?: string;
-    amountCents: number;
-  };
-  addons: Array<{
-    type: string;
-    amountCents: number;
-  }>;
-  margin: {
-    amountCents: number;
-    percentApplied?: number;
-    flatCents?: number;
-    ruleId?: string;
-  };
-  discount?: {
-    amountCents: number;
-    percentApplied?: number;
-    tier?: string;
-  };
-  membershipTier?: string;
-  vendorAccountId?: string;
-  platformFeeCents?: number;
-  vendorShareCents?: number;
-  meta?: Record<string, unknown>;
-}
+import type { PricingSnapshot } from '@maxvideoai/pricing';
 
 export interface EnginePricingDetails {
   currency: string;

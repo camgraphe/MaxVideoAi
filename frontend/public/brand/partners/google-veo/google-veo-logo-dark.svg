@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="64" viewBox="0 0 256 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="256" height="64" fill="#202124" rx="12"/>
+  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="'Inter', 'Roboto', 'Arial', sans-serif" font-size="32" font-weight="600" fill="#FFFFFF">
+    Google Veo
+  </text>
+</svg>

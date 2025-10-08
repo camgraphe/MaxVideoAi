@@ -1,0 +1,3 @@
+import { STANDARD_PAYMENT_MESSAGES } from '@maxvideoai/pricing';
+
+export const PAYMENT_STATUS_MESSAGES = STANDARD_PAYMENT_MESSAGES;

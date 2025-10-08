@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@maxvideoai/pricing": "workspace:*",
     "@supabase/supabase-js": "^2.45.4",
     "clsx": "^2.1.0",
     "gray-matter": "^4.0.3",

@@ -1,10 +1,18 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Script from 'next/script';
+import clsx from 'clsx';
 import { ProofTabs } from '@/components/marketing/ProofTabs';
 import { GalleryShowcase } from '@/components/marketing/GalleryShowcase';
 import { PriceChip } from '@/components/marketing/PriceChip';
 import { resolveDictionary } from '@/lib/i18n/server';
+import Image from 'next/image';
+import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
+import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
+import { listAvailableModels } from '@/lib/model-roster';
+import type { ModelAvailability } from '@/lib/model-roster';
+import { AVAILABILITY_BADGE_CLASS } from '@/lib/availability';
+import type { PartnerBrand } from '@/lib/brand-partners';
 
 export const metadata: Metadata = {
   title: 'MaxVideo AI — The right engine for every shot',
@@ -42,16 +50,42 @@ export default function HomePage() {
   const pricing = home.pricing;
   const trust = home.trust;
   const waysSection = home.waysSection;
+  const availabilityLabels = dictionary.models.availabilityLabels;
+  const rosterEntries = listAvailableModels(true);
+  const availabilityRanking: Record<ModelAvailability, number> = {
+    available: 0,
+    limited: 1,
+    waitlist: 2,
+    paused: 3,
+  };
+  const worksWithEntries = Array.from(
+    rosterEntries.reduce((map, entry) => {
+      const existing = map.get(entry.brandId);
+      if (!existing || availabilityRanking[entry.availability] < availabilityRanking[existing.availability]) {
+        map.set(entry.brandId, entry);
+      }
+      return map;
+    }, new Map<string, typeof rosterEntries[number]>())
+  )
+    .map(([, entry]) => entry)
+    .sort((a, b) => a.brandId.localeCompare(b.brandId, 'en'));
+  const hasRestrictedModels = worksWithEntries.some((entry) => entry.availability === 'limited' || entry.availability === 'waitlist');
   const softwareSchema = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
-    name: 'MaxVideo AI',
-    applicationCategory: 'CreativeWorkApplication',
+    name: 'MaxVideoAI',
+    applicationCategory: 'Video',
     operatingSystem: 'Web',
     offers: {
       '@type': 'Offer',
       price: '5.00',
       priceCurrency: 'USD',
+      category: 'Starter credits',
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.9',
+      ratingCount: '3200',
     },
     description: metadata.description,
     url: 'https://www.maxvideo.ai/',
@@ -61,7 +95,7 @@ export default function HomePage() {
       <section className="mx-auto flex max-w-5xl flex-col items-center gap-8 px-4 pt-16 text-center sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-center gap-3">
           {badges.map((badge) => (
-            <span key={badge} className="rounded-pill border border-hairline bg-white px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
+            <span key={badge} className="rounded-pill border border-hairline bg-white px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary">
               {badge}
             </span>
           ))}
@@ -84,16 +118,46 @@ export default function HomePage() {
             {hero.secondaryCta}
           </Link>
         </div>
-        <div className="mt-6 flex w-full flex-col items-center gap-4 rounded-card border border-hairline bg-white/80 px-6 py-5 shadow-card sm:flex-row sm:justify-between">
+        <div className="mt-6 flex w-full flex-col items-center gap-4 rounded-card border border-hairline bg-white/85 px-6 py-5 text-center shadow-card sm:flex-row sm:items-center sm:justify-between sm:text-left">
           <span className="text-sm font-medium uppercase tracking-tiny text-text-muted">{worksWith.label}</span>
-          <div className="flex flex-wrap justify-center gap-4 text-sm font-semibold text-text-secondary sm:gap-6">
-            {worksWith.brands.map((brand) => (
-              <span key={brand} className="opacity-75 transition hover:opacity-100">
-                {brand}
-              </span>
-            ))}
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
+            {worksWithEntries.map((entry) => {
+              const brand = PARTNER_BRAND_MAP.get(entry.brandId) as PartnerBrand | undefined;
+              const availabilityLabel = availabilityLabels?.[entry.availability] ?? entry.availability;
+              const modelMeta = dictionary.models.meta?.[entry.modelSlug];
+              const displayName = modelMeta?.displayName ?? entry.marketingName;
+              return (
+                <div key={entry.modelSlug} className="flex flex-col items-center gap-2">
+                  {entry.logoPolicy === 'logoAllowed' && brand ? (
+                    <Link href={`/models/${entry.modelSlug}`} className="flex items-center">
+                      <Image src={brand.assets.light.svg} alt={`${displayName} logo`} width={120} height={32} className="h-8 w-auto transition hover:scale-105 dark:hidden" />
+                      <Image src={brand.assets.dark.svg} alt={`${displayName} logo`} width={120} height={32} className="hidden h-8 w-auto transition hover:scale-105 dark:inline-flex" />
+                      <span className="sr-only">{displayName}</span>
+                    </Link>
+                  ) : (
+                    <Link
+                      href={`/models/${entry.modelSlug}`}
+                      className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary hover:border-accent hover:text-accent"
+                    >
+                      Works with {displayName}
+                    </Link>
+                  )}
+                  <span
+                    className={clsx(
+                      'rounded-pill border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-secondary',
+                      AVAILABILITY_BADGE_CLASS[entry.availability]
+                    )}
+                  >
+                    {availabilityLabel}
+                  </span>
+                </div>
+              );
+            })}
           </div>
-          <span className="text-xs text-text-muted">{worksWith.caption}</span>
+          <div className="flex flex-col items-center gap-1 text-xs text-text-muted sm:items-end">
+            {hasRestrictedModels && <span className="text-center sm:text-right">{worksWith.availabilityNotice}</span>}
+            <span className="text-center sm:text-right">{worksWith.caption}</span>
+          </div>
         </div>
       </section>
 
@@ -150,7 +214,7 @@ export default function HomePage() {
             <h3 className="mt-4 text-xl font-semibold text-text-primary">{pricing.title}</h3>
             <p className="mt-3 text-sm text-text-secondary">{pricing.body}</p>
             <div className="mt-5">
-              <PriceChip amount={0.26} suffix={home.priceChipSuffix} />
+              <PriceChip {...DEFAULT_MARKETING_SCENARIO} suffix={home.priceChipSuffix} />
             </div>
             <Link
               href="/pricing"

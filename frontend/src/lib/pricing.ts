@@ -1,6 +1,9 @@
 import { query } from '@/lib/db';
 import type { EngineCaps, EnginePricingDetails } from '@/types/engines';
-import type { PricingSnapshot } from '@/types/engines';
+import type { PricingSnapshot } from '@maxvideoai/pricing';
+import type { PricingEngineDefinition } from '@maxvideoai/pricing';
+import { computePricingSnapshot as computeKernelSnapshot } from '@maxvideoai/pricing';
+import { getPricingKernel } from '@/lib/pricing-kernel';
 import { getPricingDetails } from '@/lib/fal-catalog';
 
 type RawPricingRule = {
@@ -87,6 +90,95 @@ function selectRule(rules: PricingRule[], engineId: string, resolution: string):
   return candidate ?? DEFAULT_RULE;
 }
 
+function buildDefinitionFromEngine(engine: EngineCaps, pricingDetails?: EnginePricingDetails): PricingEngineDefinition {
+  const currency =
+    pricingDetails?.currency ??
+    engine.pricing?.currency ??
+    'USD';
+
+  const perSecondDefault = pricingDetails?.perSecondCents?.default ?? undefined;
+  const perSecondByResolution = pricingDetails?.perSecondCents?.byResolution ?? undefined;
+
+  let baseUnitPriceCents: number | undefined = typeof perSecondDefault === 'number' ? perSecondDefault : undefined;
+
+  if (baseUnitPriceCents == null && perSecondByResolution) {
+    const first = Object.values(perSecondByResolution)[0];
+    if (typeof first === 'number') {
+      baseUnitPriceCents = first;
+    }
+  }
+
+  if (baseUnitPriceCents == null) {
+    const fallbackBase = engine.pricing?.base;
+    if (typeof fallbackBase === 'number') {
+      baseUnitPriceCents = Math.round(fallbackBase * 100);
+    } else if (engine.pricing?.byResolution) {
+      const first = Object.values(engine.pricing.byResolution)[0];
+      if (typeof first === 'number') {
+        baseUnitPriceCents = Math.round(first * 100);
+      }
+    }
+  }
+
+  if (baseUnitPriceCents == null || baseUnitPriceCents <= 0) {
+    baseUnitPriceCents = 1;
+  }
+
+  const resolutionMultipliers: Record<string, number> = {};
+  if (perSecondByResolution) {
+    for (const [resolution, cents] of Object.entries(perSecondByResolution)) {
+      resolutionMultipliers[resolution] = baseUnitPriceCents > 0 ? cents / baseUnitPriceCents : 1;
+    }
+  } else if (engine.pricing?.byResolution) {
+    for (const [resolution, dollars] of Object.entries(engine.pricing.byResolution)) {
+      const cents = Math.round(dollars * 100);
+      resolutionMultipliers[resolution] = baseUnitPriceCents > 0 ? cents / baseUnitPriceCents : 1;
+    }
+  }
+
+  if (!Object.values(resolutionMultipliers).some((value) => Math.abs(value - 1) < 1e-6)) {
+    resolutionMultipliers.default = 1;
+  }
+
+  const durationField = engine.inputSchema?.optional?.find((field) => field.id === 'duration_seconds');
+  const minDuration = Math.max(1, Math.floor(durationField?.min ?? 1));
+  const maxDuration = Math.max(
+    minDuration,
+    Math.floor(durationField?.max ?? pricingDetails?.maxDurationSec ?? engine.maxDurationSec ?? 30)
+  );
+  const stepDuration = Math.max(1, Math.floor(durationField?.step ?? 1));
+
+  return {
+    engineId: engine.id,
+    label: engine.label,
+    version: engine.version,
+    currency,
+    baseUnitPriceCents,
+    durationSteps: {
+      min: minDuration,
+      max: maxDuration,
+      step: stepDuration,
+      default: durationField?.default,
+    },
+    resolutionMultipliers,
+    memberTierDiscounts: {
+      member: 0,
+      plus: 0.05,
+      pro: 0.1,
+    },
+    minChargeCents: 0,
+    rounding: { mode: 'nearest', incrementCents: 1 },
+    taxPolicyHint: 'standard',
+    addons: pricingDetails?.addons ?? undefined,
+    platformFeePct: 0.2,
+    platformFeeFlatCents: 0,
+    availability: engine.availability,
+    metadata: {
+      source: 'engine-caps',
+    },
+  };
+}
+
 export type PricingContext = {
   engine: EngineCaps;
   durationSec: number;
@@ -98,111 +190,81 @@ export type PricingContext = {
 
 export async function computePricingSnapshot(context: PricingContext): Promise<PricingSnapshot> {
   const { engine, durationSec, resolution } = context;
+  const kernel = getPricingKernel();
   const pricingDetails: EnginePricingDetails | undefined = engine.pricingDetails ?? (await getPricingDetails(engine.id));
-  const currency = context.currency ?? pricingDetails?.currency ?? 'USD';
   const rules = await loadRules();
   const rule = selectRule(rules, engine.id, resolution);
   const vendorAccountId = rule.vendorAccountId ?? engine.vendorAccountId;
 
-  const perSecondCentsFromFal = pricingDetails?.perSecondCents?.byResolution?.[resolution] ?? pricingDetails?.perSecondCents?.default;
-  const flatCentsFromFal =
-    pricingDetails?.flatCents?.byResolution?.[resolution] ??
-    pricingDetails?.flatCents?.default ??
-    0;
-
-  let baseAmount = 0;
-  let baseRate = 0;
-  if (perSecondCentsFromFal != null || flatCentsFromFal) {
-    const perSecondCents = perSecondCentsFromFal ?? 0;
-    baseAmount = perSecondCents * durationSec + (flatCentsFromFal ?? 0);
-    baseRate = perSecondCentsFromFal != null ? perSecondCentsFromFal / 100 : baseAmount / Math.max(1, durationSec) / 100;
-  } else {
-    const fallbackRate = engine.pricing?.byResolution?.[resolution] ?? engine.pricing?.base ?? 0;
-    baseRate = fallbackRate;
-    baseAmount = Math.max(0, Math.round(fallbackRate * durationSec * 100));
+  let definition = kernel.getDefinition(engine.id);
+  if (!definition) {
+    definition = buildDefinitionFromEngine(engine, pricingDetails);
   }
 
-  const addons: PricingSnapshot['addons'] = [];
-  if (context.addons?.audio && engine.audio) {
-    const audioPricing = pricingDetails?.addons?.audio;
-    if (audioPricing) {
-      const perSecond = audioPricing.perSecondCents ?? 0;
-      const flat = audioPricing.flatCents ?? 0;
-      const audioSubtotal = perSecond * durationSec + flat;
-      addons.push({ type: 'audio', amountCents: audioSubtotal });
-    } else {
-      const audioSubtotal = Math.round(baseAmount * rule.surchargeAudioPercent);
-      addons.push({ type: 'audio', amountCents: audioSubtotal });
-    }
-  }
-  if (context.addons?.upscale4k && engine.upscale4k) {
-    const upscalePricing = pricingDetails?.addons?.upscale4k;
-    if (upscalePricing) {
-      const perSecond = upscalePricing.perSecondCents ?? 0;
-      const flat = upscalePricing.flatCents ?? 0;
-      const upscaleSubtotal = perSecond * durationSec + flat;
-      addons.push({ type: 'upscale4k', amountCents: upscaleSubtotal });
-    } else {
-      const upscaleSubtotal = Math.round(baseAmount * rule.surchargeUpscalePercent);
-      addons.push({ type: 'upscale4k', amountCents: upscaleSubtotal });
+  if (!definition.resolutionMultipliers[resolution] && pricingDetails?.perSecondCents?.byResolution?.[resolution]) {
+    const perSecond = pricingDetails.perSecondCents.byResolution[resolution];
+    if (typeof perSecond === 'number' && definition.baseUnitPriceCents > 0) {
+      definition = {
+        ...definition,
+        resolutionMultipliers: {
+          ...definition.resolutionMultipliers,
+          [resolution]: perSecond / definition.baseUnitPriceCents,
+        },
+      };
     }
   }
 
-  const addonsTotal = addons.reduce((acc, line) => acc + line.amountCents, 0);
-  const subtotalBeforeMargin = baseAmount + addonsTotal;
-
-  const marginFromPercent = Math.round(subtotalBeforeMargin * rule.marginPercent);
-  const marginFromFlat = rule.marginFlatCents;
-  const marginTotal = Math.max(0, marginFromPercent + marginFromFlat);
-
-  const subtotalBeforeDiscount = subtotalBeforeMargin + marginTotal;
-
-  const membership = (context.membershipTier ?? 'Member').toLowerCase();
-  let discountPercent = 0;
-  if (membership === 'plus') discountPercent = 0.05;
-  if (membership === 'pro') discountPercent = 0.1;
-  const discountAmount = Math.round(subtotalBeforeDiscount * discountPercent);
-
-  const totalCents = Math.max(0, subtotalBeforeDiscount - discountAmount);
-  const discountAppliedToMargin = Math.min(marginTotal, discountAmount);
-  const platformFeeCents = Math.max(0, marginTotal - discountAppliedToMargin);
-  const vendorShareCents = Math.max(0, totalCents - platformFeeCents);
-
-  return {
-    currency,
-    totalCents,
-    subtotalBeforeDiscountCents: subtotalBeforeDiscount,
-    base: {
-      seconds: durationSec,
-      rate: baseRate,
-      unit: engine.pricing?.unit,
-      amountCents: baseAmount,
-    },
-    addons,
-    margin: {
-      amountCents: marginTotal,
-      percentApplied: rule.marginPercent,
-      flatCents: rule.marginFlatCents,
-      ruleId: rule.id,
-    },
-    discount: discountAmount
-      ? {
-          amountCents: discountAmount,
-          percentApplied: discountPercent,
-          tier: membership,
-        }
-      : undefined,
-    membershipTier: context.membershipTier ?? 'Member',
-    vendorAccountId,
-    platformFeeCents,
-    vendorShareCents,
-    meta: {
+  const augmentedDefinition: PricingEngineDefinition = {
+    ...definition,
+    currency: context.currency ?? definition.currency,
+    platformFeePct: rule.marginPercent,
+    platformFeeFlatCents: rule.marginFlatCents,
+    metadata: {
+      ...(definition.metadata ?? {}),
       ruleId: rule.id,
       vendorAccountId,
-      platformFeeCents,
-      vendorShareCents,
     },
   };
+
+  const addons = { ...(augmentedDefinition.addons ?? {}) };
+  if (context.addons?.audio && engine.audio && !addons.audio && rule.surchargeAudioPercent > 0) {
+    const perSecond = Math.round(augmentedDefinition.baseUnitPriceCents * rule.surchargeAudioPercent);
+    addons.audio = perSecond > 0 ? { perSecondCents: perSecond } : undefined;
+  }
+  if (context.addons?.upscale4k && engine.upscale4k && !addons.upscale4k && rule.surchargeUpscalePercent > 0) {
+    const perSecond = Math.round(augmentedDefinition.baseUnitPriceCents * rule.surchargeUpscalePercent);
+    addons.upscale4k = perSecond > 0 ? { perSecondCents: perSecond } : undefined;
+  }
+  augmentedDefinition.addons = addons;
+
+  const memberTier = (context.membershipTier ?? 'member').toLowerCase() as 'member' | 'plus' | 'pro';
+  const kernelInput = {
+    engineId: engine.id,
+    durationSec,
+    resolution,
+    memberTier,
+    addons: {
+      audio: Boolean(context.addons?.audio && engine.audio),
+      upscale4k: Boolean(context.addons?.upscale4k && engine.upscale4k),
+    },
+  } as const;
+
+  const { quote } = computeKernelSnapshot(augmentedDefinition, kernelInput);
+  const snapshot = quote.snapshot;
+  snapshot.margin = {
+    ...snapshot.margin,
+    ruleId: rule.id,
+  };
+  snapshot.membershipTier = memberTier;
+  snapshot.vendorAccountId = vendorAccountId;
+  snapshot.meta = {
+    ...(snapshot.meta ?? {}),
+    ruleId: rule.id,
+    engineLabel: engine.label,
+    engineVersion: engine.version,
+    ruleCurrency: rule.currency,
+  };
+  return snapshot;
 }
 
 export function getPlatformFeeCents(snapshot: PricingSnapshot): number {

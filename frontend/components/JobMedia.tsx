@@ -27,10 +27,32 @@ export function JobMedia({
       ? job.thumbUrl
       : placeholder.posterUrl;
   const [isHovered, setHovered] = useState(false);
+  const [allowMotion, setAllowMotion] = useState(true);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const updatePreference = () => setAllowMotion(!media.matches);
+    updatePreference();
+    media.addEventListener('change', updatePreference);
+    return () => {
+      media.removeEventListener('change', updatePreference);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!allowMotion) {
+      setHovered(false);
+    }
+  }, [allowMotion]);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !videoUrl) return undefined;
+    if (!allowMotion) {
+      video.pause();
+      return undefined;
+    }
 
     const handleLoaded = () => {
       try {
@@ -48,7 +70,7 @@ export function JobMedia({
       video.removeEventListener('loadedmetadata', handleLoaded);
       video.removeEventListener('loadeddata', handleLoaded);
     };
-  }, [videoUrl, job.jobId]);
+  }, [allowMotion, job.jobId, videoUrl]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -95,7 +117,7 @@ export function JobMedia({
       canceled = true;
       video.pause();
     };
-  }, [isHovered, videoUrl]);
+  }, [allowMotion, isHovered, videoUrl]);
 
   const effectiveAspect = job.aspectRatio ?? placeholder.aspectRatio;
 
@@ -126,9 +148,9 @@ export function JobMedia({
   return (
     <div
       className={clsx('absolute inset-0 bg-[#EFF3FA]', aspectClass, className)}
-      onMouseEnter={() => setHovered(true)}
+      onMouseEnter={() => allowMotion && setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onFocus={() => setHovered(true)}
+      onFocus={() => allowMotion && setHovered(true)}
       onBlur={() => setHovered(false)}
     >
       <video

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { createPortal } from 'react-dom';
 import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Ref } from 'react';
-import type { EngineCaps, PricingSnapshot } from '@/types/engines';
+import type { EngineAvailability, EngineCaps, PricingSnapshot } from '@/types/engines';
 import type { Job } from '@/types/jobs';
 import { useEngines, useInfiniteJobs } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
@@ -15,6 +15,8 @@ import { EngineIcon } from '@/components/ui/EngineIcon';
 import { JobMedia } from '@/components/JobMedia';
 import { getPlaceholderMedia } from '@/lib/placeholderMedia';
 import { CURRENCY_LOCALE } from '@/lib/intl';
+import { getModelByEngineId } from '@/lib/model-roster';
+import { AVAILABILITY_BADGE_CLASS, AVAILABILITY_LABELS } from '@/lib/availability';
 
 function ThumbImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
   const baseClass = clsx('object-cover', className);
@@ -671,10 +673,32 @@ function PopoverOption({ label, value }: { label: string; value: string }) {
 }
 
 function EngineBadge({ engine, label }: { engine?: EngineCaps | null; label: string }) {
+  const rosterEntry = engine ? getModelByEngineId(engine.id) : undefined;
+  const availability: EngineAvailability = rosterEntry?.availability ?? engine?.availability ?? 'available';
+  const showAvailability = availability !== 'available';
+  const availabilityLabel = AVAILABILITY_LABELS[availability];
+  const displayLabel = rosterEntry?.marketingName ?? label;
+  const version = rosterEntry?.versionLabel ?? engine?.version ?? null;
   return (
-    <span className="inline-flex max-w-[160px] items-center gap-1.5 rounded-input border border-border bg-white/90 px-2.5 py-1 text-[11px] font-medium text-text-secondary">
-      <EngineIcon engine={engine ?? undefined} label={label} size={20} rounded="full" className="shrink-0 border border-hairline bg-white" />
-      <span className="truncate">{label}</span>
+    <span className="inline-flex max-w-[200px] items-center gap-2 rounded-input border border-border bg-white/90 px-2.5 py-1 text-[11px] font-medium text-text-secondary">
+      <EngineIcon engine={engine ?? undefined} label={displayLabel} size={20} rounded="full" className="shrink-0 border border-hairline bg-white" />
+      <div className="flex min-w-0 flex-col">
+        <span className="truncate">{displayLabel}</span>
+        {version ? <span className="truncate text-[10px] uppercase tracking-micro text-text-muted">{version}</span> : null}
+        {showAvailability && (
+          <span
+            className={clsx(
+              'mt-0.5 inline-flex w-max items-center rounded-pill border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro',
+              AVAILABILITY_BADGE_CLASS[availability]
+            )}
+          >
+            {availabilityLabel}
+          </span>
+        )}
+        {availability === 'paused' && (
+          <span className="mt-0.5 text-[10px] font-medium text-slate-600">Temporarily unavailable.</span>
+        )}
+      </div>
     </span>
   );
 }

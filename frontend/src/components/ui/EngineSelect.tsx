@@ -12,12 +12,15 @@ import {
   useState,
   useId
 } from 'react';
-import type { EngineCaps, Mode, Resolution } from '@/types/engines';
+import type { EngineAvailability, EngineCaps, Mode, Resolution } from '@/types/engines';
 import { Card } from './Card';
 import { Chip } from './Chip';
 import { supabase } from '@/lib/supabaseClient';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { CURRENCY_LOCALE } from '@/lib/intl';
+import { getModelByEngineId } from '@/lib/model-roster';
+import { AVAILABILITY_BADGE_CLASS, AVAILABILITY_LABELS } from '@/lib/availability';
+import { getPartnerByEngineId } from '@/lib/brand-partners';
 
 const MODE_LABELS: Record<Mode, string> = {
   t2v: 'Text → Video',
@@ -131,12 +134,21 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
 
   const triggerId = useId();
 
-  const selectedEngine = useMemo(
-    () => engines.find((candidate) => candidate.id === engineId) ?? engines[0],
-    [engines, engineId]
-  );
+  const availableEngines = useMemo(() => {
+    return engines
+      .filter((entry) => !entry.isLab)
+      .filter((entry) => {
+        const rosterEntry = getModelByEngineId(entry.id);
+        return rosterEntry && rosterEntry.availability !== 'paused';
+      });
+  }, [engines]);
 
-  const visibleEngines = useMemo(() => engines.filter((entry) => !entry.isLab), [engines]);
+  const selectedEngine = useMemo(() => {
+    const candidate = availableEngines.find((entry) => entry.id === engineId);
+    return candidate ?? availableEngines[0] ?? engines[0];
+  }, [availableEngines, engineId, engines]);
+
+  const visibleEngines = availableEngines;
 
   const formatEngineShort = useCallback((engine: EngineCaps | null | undefined) => {
     if (!engine) return '';
@@ -379,6 +391,17 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
                     {visibleEngines.map((engine, index) => {
                       const active = engine.id === selectedEngine.id;
                       const highlighted = index === highlightedIndex;
+                      const rosterEntry = getModelByEngineId(engine.id);
+                      const availability: EngineAvailability = rosterEntry?.availability ?? engine.availability ?? 'available';
+                      const brand = getPartnerByEngineId(engine.id);
+                      const availabilityLabel = AVAILABILITY_LABELS[availability];
+                      const availabilityLink =
+                        availability === 'waitlist'
+                          ? brand?.availabilityLink ?? engine.apiAvailability ?? brand?.policy.linkToGuidelines ?? null
+                          : availability === 'limited'
+                            ? brand?.availabilityLink ?? engine.apiAvailability ?? null
+                            : null;
+                      const disabled = availability === 'paused';
                       return (
                         <li key={engine.id}>
                           <button
@@ -387,6 +410,7 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
                             }}
                             type="button"
                             onClick={() => {
+                              if (disabled) return;
                               onEngineChange(engine.id);
                               setOpen(false);
                               setHighlightedIndex(-1);
@@ -398,19 +422,22 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
                               'flex w-full items-start gap-3 px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                               'hover:bg-accentSoft/10',
                               active && 'bg-accentSoft/15',
-                              highlighted && !active && 'bg-accentSoft/10'
+                              highlighted && !active && 'bg-accentSoft/10',
+                              disabled && 'cursor-not-allowed opacity-60'
                             )}
                             role="option"
                             id={`${engine.id}-option`}
                             aria-selected={active}
+                            aria-disabled={disabled}
+                            disabled={disabled}
                             tabIndex={-1}
                           >
                             <EngineIcon engine={engine} size={32} className="mt-0.5 shrink-0 border border-hairline bg-white/90" />
                             <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
                               <div className="min-w-0 space-y-1">
-                                <p className="truncate text-sm font-medium text-text-primary">{formatEngineShort(engine)}</p>
+                                <p className="truncate text-sm font-medium text-text-primary">{rosterEntry?.marketingName ?? formatEngineShort(engine)}</p>
                                 <p className="truncate text-[12px] text-text-muted">
-                                  {engine.provider} • {engine.version ?? '—'}
+                                  {engine.provider} • {rosterEntry?.versionLabel ?? engine.version ?? '—'}
                                 </p>
                                 <div className="flex flex-wrap gap-1.5 text-[11px]">
                                   {engine.modes.map((engineMode) => (
@@ -422,6 +449,39 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
                                     <Chip variant="ghost" className="px-2 py-0.5 text-[11px]">Lab</Chip>
                                   )}
                                 </div>
+                                {availability !== 'available' && (
+                                  <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-text-muted">
+                                    <span
+                                      className={clsx(
+                                        'rounded-pill border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro',
+                                        AVAILABILITY_BADGE_CLASS[availability]
+                                      )}
+                                    >
+                                      {availabilityLabel}
+                                    </span>
+                                    {availability === 'waitlist' && availabilityLink && (
+                                      <a
+                                        href={availabilityLink}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="text-[11px] font-medium text-text-muted underline underline-offset-4 transition hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                                      >
+                                        Join waitlist
+                                      </a>
+                                    )}
+                                    {availability === 'limited' && availabilityLink && (
+                                      <a
+                                        href={availabilityLink}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="text-[11px] font-medium text-text-muted underline underline-offset-4 transition hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                                      >
+                                        Request access
+                                      </a>
+                                    )}
+                                    {availability === 'paused' && <span>Temporarily unavailable.</span>}
+                                  </div>
+                                )}
                               </div>
                               <div className="flex flex-col items-end gap-1 text-[11px] text-text-muted">
                                 {engine.latencyTier && <span>Latency {engine.latencyTier}</span>}

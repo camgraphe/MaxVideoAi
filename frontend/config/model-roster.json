@@ -1,0 +1,83 @@
+[
+  {
+    "engineId": "veo3",
+    "marketingName": "Veo 3",
+    "brandId": "google-veo",
+    "modelSlug": "google-veo-3",
+    "versionLabel": "3.0",
+    "availability": "waitlist",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "veo3fast",
+    "marketingName": "Veo 3 Fast",
+    "brandId": "google-veo",
+    "modelSlug": "google-veo-3-fast",
+    "versionLabel": "3.0",
+    "availability": "waitlist",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "kling25",
+    "marketingName": "Kling 2.5",
+    "brandId": "kling",
+    "modelSlug": "kling-2-5",
+    "versionLabel": "2.5",
+    "availability": "limited",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "kling25_turbo",
+    "marketingName": "Kling 2.5 Turbo",
+    "brandId": "kling",
+    "modelSlug": "kling-2-5-turbo",
+    "versionLabel": "2.5",
+    "availability": "limited",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "lumaDM",
+    "marketingName": "Luma Dream Machine",
+    "brandId": "luma",
+    "modelSlug": "luma-dream-machine",
+    "versionLabel": "1.0",
+    "availability": "available",
+    "logoPolicy": "logoAllowed"
+  },
+  {
+    "engineId": "lumaDM_fast",
+    "marketingName": "Luma Dream Machine Fast",
+    "brandId": "luma",
+    "modelSlug": "luma-dream-machine-fast",
+    "versionLabel": "1.0",
+    "availability": "limited",
+    "logoPolicy": "logoAllowed"
+  },
+  {
+    "engineId": "pika22",
+    "marketingName": "Pika 2.2",
+    "brandId": "pika",
+    "modelSlug": "pika-2-2",
+    "versionLabel": "2.2",
+    "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "pika22_keyframes",
+    "marketingName": "Pika 2.2 — Keyframes",
+    "brandId": "pika",
+    "modelSlug": "pika-2-2-keyframes",
+    "versionLabel": "2.2",
+    "availability": "limited",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "runwayg3",
+    "marketingName": "Runway Gen-3",
+    "brandId": "runway",
+    "modelSlug": "runway-gen-3",
+    "versionLabel": "3",
+    "availability": "available",
+    "logoPolicy": "logoAllowed"
+  }
+]

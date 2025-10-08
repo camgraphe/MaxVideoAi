@@ -1,5 +1,10 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import clsx from 'clsx';
 import { resolveDictionary } from '@/lib/i18n/server';
+import { listAvailableModels } from '@/lib/model-roster';
+import { AVAILABILITY_BADGE_CLASS } from '@/lib/availability';
+import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
 
 export const metadata: Metadata = {
   title: 'Workflows — MaxVideo AI',
@@ -29,6 +34,8 @@ export const metadata: Metadata = {
 export default function WorkflowsPage() {
   const { dictionary } = resolveDictionary();
   const content = dictionary.workflows;
+  const models = listAvailableModels(true);
+  const availabilityLabels = dictionary.models.availabilityLabels;
 
   return (
     <div className="mx-auto max-w-5xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
@@ -62,6 +69,39 @@ export default function WorkflowsPage() {
             ))}
           </ul>
         </article>
+      </section>
+      <section className="mt-12 rounded-card border border-hairline bg-white p-6 shadow-card">
+        <h2 className="text-xl font-semibold text-text-primary">Model roster</h2>
+        <p className="mt-2 text-sm text-text-secondary">
+          Choose the model that matches your workflow stage. Availability badges stay in sync with the global roster.
+        </p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          {models.map((model) => {
+            const brand = PARTNER_BRAND_MAP.get(model.brandId);
+            const availabilityLabel = availabilityLabels[model.availability] ?? model.availability;
+            return (
+              <article key={model.modelSlug} className="rounded-card border border-hairline bg-bg p-4">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <h3 className="text-sm font-semibold text-text-primary">{model.marketingName}</h3>
+                    <p className="text-xs uppercase tracking-micro text-text-muted">{model.versionLabel}</p>
+                  </div>
+                  <span
+                    className={clsx(
+                      'rounded-pill border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-secondary',
+                      AVAILABILITY_BADGE_CLASS[model.availability]
+                    )}
+                  >
+                    {availabilityLabel}
+                  </span>
+                </div>
+                <p className="mt-2 text-xs text-text-secondary">
+                  {brand ? `${brand.label}` : model.brandId} · <Link href={`/models/${model.modelSlug}`} className="text-accent hover:text-accentSoft">view details</Link>
+                </p>
+              </article>
+            );
+          })}
+        </div>
       </section>
     </div>
   );

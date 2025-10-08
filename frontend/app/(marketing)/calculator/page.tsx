@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Script from 'next/script';
 import { PriceEstimator } from '@/components/marketing/PriceEstimator';
 import { resolveDictionary } from '@/lib/i18n/server';
+import { getPricingKernel } from '@/lib/pricing-kernel';
+import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
 
 export const metadata: Metadata = {
   title: 'AI Video Price Calculator — MaxVideo AI',
@@ -31,6 +34,44 @@ export const metadata: Metadata = {
 export default function CalculatorPage() {
   const { dictionary } = resolveDictionary();
   const content = dictionary.calculator;
+  const kernel = getPricingKernel();
+  const starterQuote = kernel.quote(DEFAULT_MARKETING_SCENARIO);
+  const starterPrice = (starterQuote.snapshot.totalCents / 100).toFixed(2);
+  const starterCurrency = starterQuote.snapshot.currency;
+  const unitRate = starterQuote.snapshot.base.rate;
+  const canonical = 'https://www.maxvideo.ai/calculator';
+  const productSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: 'MaxVideoAI Starter Credits',
+    description: content.hero.subtitle,
+    brand: {
+      '@type': 'Brand',
+      name: 'MaxVideoAI',
+    },
+    url: canonical,
+    offers: {
+      '@type': 'Offer',
+      price: starterPrice,
+      priceCurrency: starterCurrency,
+      url: canonical,
+      category: 'Starter credits',
+      eligibleCustomerType: 'https://schema.org/BusinessCustomer',
+      availability: 'https://schema.org/InStock',
+      priceValidUntil: '2025-12-31',
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        price: unitRate,
+        priceCurrency: starterCurrency,
+        unitCode: 'SEC',
+        referenceQuantity: {
+          '@type': 'QuantitativeValue',
+          value: 1,
+          unitCode: 'SEC',
+        },
+      },
+    },
+  };
   return (
     <div className="mx-auto max-w-4xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
       <header className="space-y-3 text-center">
@@ -51,6 +92,9 @@ export default function CalculatorPage() {
           {content.lite.footer.split('{link}')[1] ?? ''}
         </p>
       </section>
+      <Script id="calculator-product-jsonld" type="application/ld+json">
+        {JSON.stringify(productSchema)}
+      </Script>
     </div>
   );
 }

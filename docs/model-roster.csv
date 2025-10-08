@@ -1,0 +1,10 @@
+engineId,marketingName,brandId,modelSlug,versionLabel,availability,logoPolicy
+veo3,Veo 3,google-veo,google-veo-3,3.0,waitlist,textOnly
+veo3fast,Veo 3 Fast,google-veo,google-veo-3-fast,3.0,waitlist,textOnly
+kling25,Kling 2.5,kling,kling-2-5,2.5,limited,textOnly
+kling25_turbo,Kling 2.5 Turbo,kling,kling-2-5-turbo,2.5,limited,textOnly
+lumaDM,Luma Dream Machine,luma,luma-dream-machine,1.0,available,logoAllowed
+lumaDM_fast,Luma Dream Machine Fast,luma,luma-dream-machine-fast,1.0,limited,logoAllowed
+pika22,Pika 2.2,pika,pika-2-2,2.2,available,textOnly
+pika22_keyframes,Pika 2.2 — Keyframes,pika,pika-2-2-keyframes,2.2,limited,textOnly
+runwayg3,Runway Gen-3,runway,runway-gen-3,3,available,logoAllowed

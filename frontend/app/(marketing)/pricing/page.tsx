@@ -3,6 +3,8 @@ import Link from 'next/link';
 import Script from 'next/script';
 import { PriceEstimator } from '@/components/marketing/PriceEstimator';
 import { resolveDictionary } from '@/lib/i18n/server';
+import { getPricingKernel } from '@/lib/pricing-kernel';
+import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
 
 export const metadata: Metadata = {
   title: 'Pricing — MaxVideo AI',
@@ -38,20 +40,43 @@ export default function PricingPage() {
   const refunds = content.refunds;
   const faq = content.faq;
   const canonical = 'https://www.maxvideo.ai/pricing';
+  const kernel = getPricingKernel();
+  const starterQuote = kernel.quote(DEFAULT_MARKETING_SCENARIO);
+  const starterPrice = (starterQuote.snapshot.totalCents / 100).toFixed(2);
+  const starterCurrency = starterQuote.snapshot.currency;
+  const unitRate = starterQuote.snapshot.base.rate;
 
   const productSchema = {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    name: 'MaxVideo AI Pricing',
+    name: 'MaxVideoAI Starter Credits',
     description: content.hero.subtitle,
-    offers: {
-      '@type': 'AggregateOffer',
-      priceCurrency: 'USD',
-      lowPrice: 5,
-      highPrice: 200,
-      offerCount: member.tiers.length,
+    brand: {
+      '@type': 'Brand',
+      name: 'MaxVideoAI',
     },
     url: canonical,
+    offers: {
+      '@type': 'Offer',
+      price: starterPrice,
+      priceCurrency: starterCurrency,
+      url: canonical,
+      category: 'Starter credits',
+      eligibleCustomerType: 'https://schema.org/BusinessCustomer',
+      availability: 'https://schema.org/InStock',
+      priceValidUntil: '2025-12-31',
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        price: unitRate,
+        priceCurrency: starterCurrency,
+        unitCode: 'SEC',
+        referenceQuantity: {
+          '@type': 'QuantitativeValue',
+          value: 1,
+          unitCode: 'SEC',
+        },
+      },
+    },
   };
 
   const faqSchema = {

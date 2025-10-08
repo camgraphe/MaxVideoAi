@@ -24,8 +24,9 @@ type Dictionary = {
     };
     worksWith: {
       label: string;
-      brands: string[];
+      brands?: string[];
       caption: string;
+      availabilityNotice: string;
     };
     proofTabs: Array<{ id: string; label: string; heading: string; body: string }>;
     whyCards: Array<{ title: string; body: string }>;
@@ -36,7 +37,16 @@ type Dictionary = {
       subtitle: string;
       caption: string;
       hoverLabel: string;
-      items: Array<{ id: string; label: string; description: string; alt: string }>;
+      items: Array<{
+        id: string;
+        label: string;
+        description: string;
+        alt: string;
+        meta: {
+          slug: string;
+          pricing: { engineId: string; durationSec: number; resolution: string; memberTier?: string };
+        };
+      }>;
     };
     pricing: {
       badge: string;
@@ -145,7 +155,8 @@ type Dictionary = {
       title: string;
       subtitle: string;
     };
-    cards: Array<{ name: string; version: string; description: string; priceBefore: string }>;
+    availabilityLabels: Record<'available' | 'limited' | 'waitlist' | 'paused', string>;
+    meta: Record<string, { displayName: string; description: string; priceBefore: string; versionLabel?: string }>;
     note: string;
   };
   examples: {
@@ -224,6 +235,11 @@ type Dictionary = {
     systems: Array<{ name: string; status: string; detail: string }>;
     incidents: Array<{ date: string; title: string; summary: string; status: string }>;
   };
+  systemMessages: {
+    refundInitiated: string;
+    partialRefund: string;
+    paymentRetried: string;
+  };
 };
 
 const en: Dictionary = {
@@ -271,8 +287,9 @@ const en: Dictionary = {
     },
     worksWith: {
       label: 'Works with',
-      brands: ['Veo', 'Luma', 'Pika', 'Runway', 'Kling', 'Stability'],
+      brands: ['Veo', 'Luma', 'Pika', 'Runway', 'Kling'],
       caption: 'Independent hub. Trademarks belong to their owners.',
+      availabilityNotice: 'Availability may vary. Some models are in limited access or waitlist.',
     },
     proofTabs: [
       {
@@ -331,40 +348,34 @@ const en: Dictionary = {
       hoverLabel: 'Hover loop preview',
       items: [
         {
-          id: 'veo-street',
-          label: 'Veo · Launch teaser',
-          description: 'Model routed for this shot. 12s · 16:9 · Dolby Vision preview.',
-          alt: 'Looping cinematic shot of rain-soaked city streets rendered with Veo.',
+          id: 'runway-brand',
+          label: 'Runway · Brand explainer',
+          description: 'Upscaled 4K storyboard with VO mixdown for the launch team.',
+          alt: '4K brand explainer storyboard animated with Runway.',
+          meta: {
+            slug: 'runway-gen-3',
+            pricing: { engineId: 'runwayg3', durationSec: 12, resolution: '1080p', memberTier: 'member' },
+          },
         },
         {
           id: 'luma-product',
           label: 'Luma · Product hero',
-          description: 'Model routed for this shot. 8s · 1:1 · Caption-ready loop.',
+          description: 'Photoreal tabletop hero loop routed through Dream Machine.',
           alt: 'Loop of a product hero turntable created with Luma.',
+          meta: {
+            slug: 'luma-dream-machine',
+            pricing: { engineId: 'lumaDM', durationSec: 8, resolution: '1080p', memberTier: 'member' },
+          },
         },
         {
           id: 'pika-social',
           label: 'Pika · Social cut',
-          description: 'Model routed for this shot. 6s · 9:16 · Captions enabled.',
+          description: 'Punchy 9:16 social loop with captions and remix-ready motion.',
           alt: 'Vertical social loop with motion captions produced via Pika.',
-        },
-        {
-          id: 'runway-brand',
-          label: 'Runway · Brand explainer',
-          description: 'Model routed for this shot. 18s · 4K · VO mixdown.',
-          alt: '4K brand explainer storyboard animated with Runway.',
-        },
-        {
-          id: 'kling-animatic',
-          label: 'Kling · Animation preview',
-          description: 'Model routed for this shot. 10s · 16:9 · Beta engine.',
-          alt: 'Stylised animation preview rendered by Kling beta.',
-        },
-        {
-          id: 'express-campaign',
-          label: 'Express · Campaign remix',
-          description: 'Model routed for this shot. 9s · Multi-ratio export.',
-          alt: 'Campaign collage generated via Express templates.',
+          meta: {
+            slug: 'pika-2-2',
+            pricing: { engineId: 'pika22', durationSec: 6, resolution: '1080p', memberTier: 'member' },
+          },
         },
       ],
     },
@@ -471,26 +482,28 @@ const en: Dictionary = {
         'Automatic refunds when renders fail or providers miss SLAs.',
         'Itemised receipts with engine, duration, resolution, and add-ons.',
         'Wallet protections with optional multi-approver top-ups.',
+        'Application fee is recognised immediately; vendor share settles on payout.',
+        'Every render attempt carries an idempotency key to prevent duplicate charges.',
       ],
     },
     faq: {
       title: 'Micro-FAQ',
       entries: [
         {
-          question: 'When am I charged?',
-          answer: 'Only on successful renders. Price Before shows the cost chip before you queue the job.',
+          question: 'How do credits work?',
+          answer: 'Starter Credits load $5 into your wallet. Spend them like cash and top up whenever you need more runs.',
         },
         {
-          question: 'Can teams share a wallet?',
-          answer: 'Yes. Shared wallets apply status and savings to every teammate with access.',
+          question: 'Do they expire?',
+          answer: 'No expiry. Balances roll forward month to month and sync across every teammate with access.',
         },
         {
-          question: 'Do I need a subscription?',
-          answer: 'No subscription, no lock-in. Add Starter Credits ($5) or top up $5 / $10 / $25 whenever you need.',
+          question: 'What if a generation fails?',
+          answer: 'Failed renders auto-refund within minutes. You only pay when the job completes successfully.',
         },
         {
-          question: 'How often does status update?',
-          answer: 'Member status refreshes daily based on the last 30 days of successful spend.',
+          question: 'What are member discounts?',
+          answer: 'Spend $50 in 30 days to save 5%, $200 to save 10%. Savings apply automatically to every eligible run.',
         },
       ],
     },
@@ -541,38 +554,68 @@ const en: Dictionary = {
       subtitle:
         'MaxVideo AI routes each brief to the best-fit engine. Price Before chips stay accurate because we refresh versions as providers ship updates.',
     },
-    cards: [
-      {
-        name: 'Veo',
-        version: 'V2',
+    availabilityLabels: {
+      available: 'Available',
+      limited: 'Limited access',
+      waitlist: 'Waitlist',
+      paused: 'Paused',
+    },
+    meta: {
+      'google-veo-3': {
+        displayName: 'Veo 3',
         description: 'Filmic controls for narrative spots and longer edits with Dolby Vision preview support.',
         priceBefore: 'Live cost chip with cinematic and fast queue tiers.',
+        versionLabel: 'V3',
       },
-      {
-        name: 'Luma',
-        version: 'Dream Machine',
-        description: 'Photoreal product hero shots, tabletop, and hardware explainers with depth-aware moves.',
-        priceBefore: 'Price Before shows photoreal vs stylised presets before you render.',
+      'google-veo-3-fast': {
+        displayName: 'Veo 3 Fast',
+        description: 'Faster queue for previz passes while keeping Veo’s cinematic look and audio support.',
+        priceBefore: 'Chip compares cinematic vs fast queues before you route.',
+        versionLabel: 'V3 Fast',
       },
-      {
-        name: 'Pika',
-        version: '1.5',
-        description: 'Social-first loops, caption overlays, and fast iterations for remixing prompts.',
+      'luma-dream-machine': {
+        displayName: 'Luma Dream Machine',
+        description: 'Photoreal hero shots, tabletop, and hardware explainers with depth-aware moves.',
+        priceBefore: 'Price Before surfaces photoreal vs stylised presets before you render.',
+        versionLabel: 'Dream Machine',
+      },
+      'luma-dream-machine-fast': {
+        displayName: 'Luma Dream Machine Fast',
+        description: 'Quick iterations on Dream Machine looks with balanced detail for look-dev and storyboards.',
+        priceBefore: 'Chip shows the fast queue rate versus full-quality before launch.',
+        versionLabel: 'Dream Machine Fast',
+      },
+      'pika-2-2': {
+        displayName: 'Pika 2.2',
+        description: 'Social-first loops, caption overlays, and rapid iterations for remixing prompts.',
         priceBefore: 'Chip displays loop duration and caption add-on cost.',
+        versionLabel: '2.2',
       },
-      {
-        name: 'Runway',
-        version: 'Gen-3 Alpha',
+      'pika-2-2-keyframes': {
+        displayName: 'Pika 2.2 Keyframes',
+        description: 'Guide motion across beats with 2–4 keyframes for directed social edits and animatics.',
+        priceBefore: 'See keyframe surcharge and duration cost before you submit.',
+        versionLabel: '2.2 Keyframes',
+      },
+      'runway-gen-3': {
+        displayName: 'Runway Gen-3',
         description: 'Brand explainers, upscale workflows, and voiceover sync with caption burn-in.',
         priceBefore: 'Preview 1080p vs 4K cost before routing to the queue.',
+        versionLabel: 'Gen-3',
       },
-      {
-        name: 'Kling',
-        version: 'Beta',
+      'kling-2-5': {
+        displayName: 'Kling 2.5',
         description: 'High-fidelity animation previews with stylised motion. Rotating beta slots updated weekly.',
         priceBefore: 'Beta pricing chip shows experimental rate before approval.',
+        versionLabel: '2.5',
       },
-    ],
+      'kling-2-5-turbo': {
+        displayName: 'Kling 2.5 Turbo',
+        description: 'Turbo queue for animation look-dev—faster feedback before sending to full Kling renders.',
+        priceBefore: 'Chip highlights turbo queue rate before you commit budget.',
+        versionLabel: '2.5 Turbo',
+      },
+    },
     note:
       'Independent hub. Works with Veo, Luma, Pika, Runway, Kling, and rotating betas. Trademarks belong to their owners.',
   },
@@ -587,36 +630,60 @@ const en: Dictionary = {
         engine: 'Veo · 16:9 · 12s',
         description: 'Narrative lighting, upscale ready.',
         alt: 'Veo render of a cinematic brand launch teaser.',
+        meta: {
+          slug: 'google-veo-3',
+          pricing: { engineId: 'veo3', durationSec: 12, resolution: '1080p', memberTier: 'member' },
+        },
       },
       {
         title: 'Product hero',
         engine: 'Luma · 1:1 · 8s loop',
         description: 'Depth-aware turntable with captions.',
         alt: 'Luma clip showing a rotating product hero shot.',
+        meta: {
+          slug: 'luma-dream-machine',
+          pricing: { engineId: 'lumaDM', durationSec: 8, resolution: '1080p', memberTier: 'member' },
+        },
       },
       {
         title: 'Social cut',
         engine: 'Pika · 9:16 · 6s',
         description: 'Auto captions + VO mixdown.',
         alt: 'Pika vertical social cut with captions.',
+        meta: {
+          slug: 'pika-2-2',
+          pricing: { engineId: 'pika22', durationSec: 6, resolution: '1080p', memberTier: 'member' },
+        },
       },
       {
         title: 'Explainer',
-        engine: 'Runway · 4K · 30s',
+        engine: 'Runway · 1080p · 18s',
         description: 'Brand kit palette and typography.',
         alt: 'Runway brand explainer frame with on-screen text.',
+        meta: {
+          slug: 'runway-gen-3',
+          pricing: { engineId: 'runwayg3', durationSec: 18, resolution: '1080p', memberTier: 'member' },
+        },
       },
       {
         title: 'Workflow hand-off',
-        engine: 'Kling · AE JSON',
-        description: 'Layered hand-off for post teams.',
+        engine: 'Kling · 16:9 · 12s',
+        description: 'Layered beta animation ready for AE JSON export.',
         alt: 'Kling animation preview ready for AE JSON export.',
+        meta: {
+          slug: 'kling-2-5',
+          pricing: { engineId: 'kling25', durationSec: 12, resolution: '1080p', memberTier: 'member' },
+        },
       },
       {
         title: 'Template remix',
-        engine: 'Express template',
-        description: 'One prompt, multiple aspect ratios.',
-        alt: 'Express template outputs arranged in a grid.',
+        engine: 'Luma Fast · 9:16 · 8s',
+        description: 'One prompt, multiple aspect ratios in the fast queue.',
+        alt: 'Luma Dream Machine Fast outputs arranged in a grid.',
+        meta: {
+          slug: 'luma-dream-machine-fast',
+          pricing: { engineId: 'lumaDM_fast', durationSec: 8, resolution: '1080p', memberTier: 'member' },
+        },
       },
     ],
     cta: 'Generate similar video',
@@ -788,6 +855,11 @@ const en: Dictionary = {
       },
     ],
   },
+  systemMessages: {
+    refundInitiated: 'Your payment is being refunded. It can take 5–10 business days to appear on your statement.',
+    partialRefund: 'We’ve issued a partial refund of {refundedAmount}. The remaining {remainingAmount} will stay on your statement.',
+    paymentRetried: 'We’ve safely retried your payment; you will not be double-charged.',
+  },
 };
 
 const fr: Dictionary = {
@@ -831,8 +903,9 @@ const fr: Dictionary = {
     },
     worksWith: {
       label: 'Compatible avec',
-      brands: ['Veo', 'Luma', 'Pika', 'Runway', 'Kling', 'Stability'],
+      brands: ['Veo', 'Luma', 'Pika', 'Runway', 'Kling'],
       caption: 'Hub indépendant. Les marques citées appartiennent à leurs propriétaires.',
+      availabilityNotice: 'La disponibilité peut varier. Certains modèles sont en accès limité ou sur liste d’attente.',
     },
     waysSection: {
       title: 'Deux modes pour avancer.',
@@ -844,6 +917,38 @@ const fr: Dictionary = {
       subtitle: 'Des rendus prêts pour les clients — survolez pour prévisualiser, cliquez pour agrandir.',
       caption: 'Modèle sélectionné automatiquement pour ce plan.',
       hoverLabel: 'Prévisualisation au survol',
+      items: [
+        {
+          id: 'runway-brand',
+          label: 'Runway · Vidéo marque',
+          description: 'Storyboard 4K upscalé avec mixage voix-off pour le lancement.',
+          alt: 'Storyboard animé en 4K réalisé avec Runway.',
+          meta: {
+            slug: 'runway-gen-3',
+            pricing: { engineId: 'runwayg3', durationSec: 12, resolution: '1080p', memberTier: 'member' },
+          },
+        },
+        {
+          id: 'luma-product',
+          label: 'Luma · Hero produit',
+          description: 'Boucle produit photoréaliste générée avec Dream Machine.',
+          alt: 'Boucle montrant un produit en rotation rendue avec Luma.',
+          meta: {
+            slug: 'luma-dream-machine',
+            pricing: { engineId: 'lumaDM', durationSec: 8, resolution: '1080p', memberTier: 'member' },
+          },
+        },
+        {
+          id: 'pika-social',
+          label: 'Pika · Cut social',
+          description: 'Loop 9:16 dynamique avec légendes intégrées, prête à remixer.',
+          alt: 'Loop verticale avec motion captions produite via Pika.',
+          meta: {
+            slug: 'pika-2-2',
+            pricing: { engineId: 'pika22', durationSec: 6, resolution: '1080p', memberTier: 'member' },
+          },
+        },
+      ],
     },
     pricing: {
       badge: 'Mise en avant tarifaire',
@@ -908,6 +1013,16 @@ const fr: Dictionary = {
       autoTopUpHint: 'Un email quotidien informe la finance.',
       addLabel: 'Ajouter {amount} $',
     },
+    refunds: {
+      title: 'Remboursements & protections',
+      points: [
+        'Remboursements automatiques lorsque les rendus échouent ou que les fournisseurs dépassent le SLA.',
+        'Reçus détaillant moteur, durée, résolution et add-ons.',
+        'Protections du portefeuille avec validation multi-approbateur en option.',
+        'Les frais de plateforme sont reconnus immédiatement ; la part fournisseur est versée lors du payout.',
+        'Chaque tentative de rendu transporte une clé d’idempotence pour éviter les doubles débits.',
+      ],
+    },
     teams: {
       ...en.pricing.teams,
       description:
@@ -937,6 +1052,27 @@ const fr: Dictionary = {
       ],
       chipBase: 'Tarif membre — Vous économisez',
       tooltip: 'Mise à jour quotidienne selon vos 30 derniers jours de dépenses.',
+    },
+    faq: {
+      title: 'Micro-FAQ',
+      entries: [
+        {
+          question: 'Comment fonctionnent les crédits ?',
+          answer: 'Les Starter Credits ajoutent 5 $ à votre portefeuille. Vous les utilisez comme du cash puis rechargez quand vous en avez besoin.',
+        },
+        {
+          question: 'Ont-ils une date d’expiration ?',
+          answer: 'Non. Le solde ne périme pas et reste partagé avec toute l’équipe d’un mois à l’autre.',
+        },
+        {
+          question: 'Que se passe-t-il si un rendu échoue ?',
+          answer: 'Les rendus échoués sont remboursés automatiquement en quelques minutes. Vous ne payez que les réussites.',
+        },
+        {
+          question: 'Quelles sont les remises membre ?',
+          answer: '50 $ dépensés sur 30 jours = -5 %, 200 $ = -10 %. Les remises s’appliquent automatiquement sur chaque rendu admissible.',
+        },
+      ],
     },
     priceChipSuffix: 'Calculez avant de générer.',
   },
@@ -976,6 +1112,68 @@ const fr: Dictionary = {
       subtitle:
         'MaxVideo AI route chaque brief vers le moteur idéal. Les pastilles tarifaires restent justes car nous mettons à jour les versions dès qu’elles sortent.',
     },
+    availabilityLabels: {
+      available: 'Disponible',
+      limited: 'Accès limité',
+      waitlist: 'Liste d’attente',
+      paused: 'Suspendu',
+    },
+    meta: {
+      'google-veo-3': {
+        displayName: 'Veo 3',
+        description: 'Contrôle filmique pour les spots narratifs et montages longs, avec prévisualisation Dolby Vision.',
+        priceBefore: 'Pastille live avec file cinématographique et file rapide.',
+        versionLabel: 'V3',
+      },
+      'google-veo-3-fast': {
+        displayName: 'Veo 3 Fast',
+        description: 'File accélérée pour les prévisualisations tout en conservant le rendu cinéma et l’audio.',
+        priceBefore: 'La pastille compare file cinéma vs fast avant lancement.',
+        versionLabel: 'V3 Fast',
+      },
+      'luma-dream-machine': {
+        displayName: 'Luma Dream Machine',
+        description: 'Plans produit photoréalistes, tabletop et explainers hardware avec mouvements depth-aware.',
+        priceBefore: 'Price Before distingue photoréaliste vs stylisé avant rendu.',
+        versionLabel: 'Dream Machine',
+      },
+      'luma-dream-machine-fast': {
+        displayName: 'Luma Dream Machine Fast',
+        description: 'Itérations rapides des looks Dream Machine pour look-dev et storyboards.',
+        priceBefore: 'La pastille indique le tarif fast vs qualité complète avant mise en file.',
+        versionLabel: 'Dream Machine Fast',
+      },
+      'pika-2-2': {
+        displayName: 'Pika 2.2',
+        description: 'Boucles social-first, overlays de légendes et itérations express pour remix de prompts.',
+        priceBefore: 'La pastille affiche la durée de boucle et l’option légendes.',
+        versionLabel: '2.2',
+      },
+      'pika-2-2-keyframes': {
+        displayName: 'Pika 2.2 Keyframes',
+        description: 'Contrôlez le mouvement avec 2 à 4 keyframes pour montages sociaux dirigés et animatics.',
+        priceBefore: 'Voir le surcoût keyframes et la durée avant de lancer.',
+        versionLabel: '2.2 Keyframes',
+      },
+      'runway-gen-3': {
+        displayName: 'Runway Gen-3',
+        description: 'Explainers de marque, upscale et synchro voix-off avec sous-titres intégrés.',
+        priceBefore: 'Anticipez le coût 1080p vs 4K avant mise en file.',
+        versionLabel: 'Gen-3',
+      },
+      'kling-2-5': {
+        displayName: 'Kling 2.5',
+        description: 'Prévisualisations animées haute fidélité avec motion stylisé. Slots beta tournants.',
+        priceBefore: 'La pastille beta montre le tarif expérimental avant validation.',
+        versionLabel: '2.5',
+      },
+      'kling-2-5-turbo': {
+        displayName: 'Kling 2.5 Turbo',
+        description: 'File turbo pour look-dev animation — feedback rapide avant Kling complet.',
+        priceBefore: 'La pastille indique le tarif turbo avant engagement budget.',
+        versionLabel: '2.5 Turbo',
+      },
+    },
     note:
       'Hub indépendant. Compatible avec Veo, Luma, Pika, Runway, Kling et les bêtas tournantes. Les marques appartiennent à leurs propriétaires.',
   },
@@ -986,6 +1184,68 @@ const fr: Dictionary = {
       subtitle:
         'Survolez pour lire en boucle, cliquez pour agrandir. Chaque clip affiche le moteur, la durée et le format livré.',
     },
+    items: [
+      {
+        title: 'Teaser lancement',
+        engine: 'Veo · 16:9 · 12s',
+        description: 'Éclairage narratif, prêt pour l’upscale.',
+        alt: 'Rendu Veo d’un teaser de lancement cinématographique.',
+        meta: {
+          slug: 'google-veo-3',
+          pricing: { engineId: 'veo3', durationSec: 12, resolution: '1080p', memberTier: 'member' },
+        },
+      },
+      {
+        title: 'Hero produit',
+        engine: 'Luma · 1:1 · boucle 8s',
+        description: 'Turntable photoréaliste avec sous-titres.',
+        alt: 'Clip Luma montrant un produit en rotation.',
+        meta: {
+          slug: 'luma-dream-machine',
+          pricing: { engineId: 'lumaDM', durationSec: 8, resolution: '1080p', memberTier: 'member' },
+        },
+      },
+      {
+        title: 'Cut social',
+        engine: 'Pika · 9:16 · 6s',
+        description: 'Légendes auto + mixage voix-off.',
+        alt: 'Cut vertical Pika avec légendes.',
+        meta: {
+          slug: 'pika-2-2',
+          pricing: { engineId: 'pika22', durationSec: 6, resolution: '1080p', memberTier: 'member' },
+        },
+      },
+      {
+        title: 'Explainer',
+        engine: 'Runway · 1080p · 18s',
+        description: 'Palette et typo issues du brand kit.',
+        alt: 'Frame d’un explainer Runway avec texte incrusté.',
+        meta: {
+          slug: 'runway-gen-3',
+          pricing: { engineId: 'runwayg3', durationSec: 18, resolution: '1080p', memberTier: 'member' },
+        },
+      },
+      {
+        title: 'Handoff workflow',
+        engine: 'Kling · 16:9 · 12s',
+        description: 'Fichiers animés prêts pour export AE JSON.',
+        alt: 'Prévisualisation Kling prête pour export AE JSON.',
+        meta: {
+          slug: 'kling-2-5',
+          pricing: { engineId: 'kling25', durationSec: 12, resolution: '1080p', memberTier: 'member' },
+        },
+      },
+      {
+        title: 'Remix template',
+        engine: 'Luma Fast · 9:16 · 8s',
+        description: 'Un prompt, plusieurs ratios en file rapide.',
+        alt: 'Variantes Luma Dream Machine Fast sur une grille.',
+        meta: {
+          slug: 'luma-dream-machine-fast',
+          pricing: { engineId: 'lumaDM_fast', durationSec: 8, resolution: '1080p', memberTier: 'member' },
+        },
+      },
+    ],
     cta: 'Générer une vidéo similaire',
   },
   docs: {
@@ -1081,6 +1341,11 @@ const fr: Dictionary = {
         status: 'Résolu',
       },
     ],
+  },
+  systemMessages: {
+    refundInitiated: 'Votre paiement est en cours de remboursement. Comptez 5 à 10 jours ouvrés pour le voir sur votre relevé.',
+    partialRefund: 'Nous avons remboursé {refundedAmount}. Le solde restant ({remainingAmount}) restera visible sur votre relevé.',
+    paymentRetried: 'Nous avons relancé votre paiement en toute sécurité ; aucun double débit ne sera appliqué.',
   },
 };
 
