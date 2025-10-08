@@ -10,7 +10,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 export function MarketingNav() {
   const pathname = usePathname();
   const { t } = useI18n();
-  const brand = t('nav.brand', 'MaxVideo AI');
+  const brand = t('nav.brand', 'MaxVideo AI') ?? 'MaxVideo AI';
   const links = t('nav.links', []) as Array<{ key: string; href: string }>;
   const login = t('nav.login', 'Log in');
   const cta = t('nav.cta', 'Create a video');
