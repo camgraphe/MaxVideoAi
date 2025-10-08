@@ -1,4 +1,5 @@
 import type { PricingSnapshot } from '@maxvideoai/pricing';
+export type { PricingSnapshot } from '@maxvideoai/pricing';
 
 export type EngineStatus = 'live' | 'busy' | 'degraded' | 'maintenance' | 'early_access';
 export type LatencyTier = 'fast' | 'standard';
@@ -52,6 +53,7 @@ export interface EngineInputField {
   min?: number;
   max?: number;
   step?: number;
+  default?: number;
   values?: string[];
 }
 
@@ -162,8 +164,6 @@ export interface PreflightResponse {
     suggestions?: Record<string, unknown>[];
   };
 }
-
-import type { PricingSnapshot } from '@maxvideoai/pricing';
 
 export interface EnginePricingDetails {
   currency: string;

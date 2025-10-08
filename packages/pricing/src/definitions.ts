@@ -131,46 +131,49 @@ function resolveBaseUnitPriceCents(engine: FixtureEngine): { baseUnitPriceCents:
 
 export function buildPricingDefinitionsFromFixtures(): PricingEngineDefinition[] {
   const engines: FixtureEngine[] = Array.isArray(enginesFixture.engines) ? (enginesFixture.engines as FixtureEngine[]) : [];
+  const definitions: PricingEngineDefinition[] = [];
 
-  return engines
-    .map((engine) => {
-      if (!engine?.id) return null;
-      const baseInfo = resolveBaseUnitPriceCents(engine);
-      if (!baseInfo || baseInfo.baseUnitPriceCents <= 0) {
-        return null;
-      }
+  for (const engine of engines) {
+    if (!engine?.id) {
+      continue;
+    }
+    const baseInfo = resolveBaseUnitPriceCents(engine);
+    if (!baseInfo || baseInfo.baseUnitPriceCents <= 0) {
+      continue;
+    }
 
-      const durationSteps = resolveDurationSteps(engine);
-      const resolutionMultipliers = normaliseResolutionMultipliers(
-        baseInfo.baseUnitPriceCents,
-        baseInfo.byResolution,
-        engine.pricing?.byResolution
-      );
+    const durationSteps = resolveDurationSteps(engine);
+    const resolutionMultipliers = normaliseResolutionMultipliers(
+      baseInfo.baseUnitPriceCents,
+      baseInfo.byResolution,
+      engine.pricing?.byResolution
+    );
 
-      return {
-        engineId: engine.id,
-        label: engine.label,
-        version: engine.version,
-        currency: baseInfo.currency,
-        baseUnitPriceCents: baseInfo.baseUnitPriceCents,
-        durationSteps,
-        resolutionMultipliers,
-        memberTierDiscounts: {
-          member: DEFAULT_MEMBER_DISCOUNTS.member,
-          plus: DEFAULT_MEMBER_DISCOUNTS.plus,
-          pro: DEFAULT_MEMBER_DISCOUNTS.pro,
-        },
-        minChargeCents: 0,
-        rounding: { mode: 'nearest', incrementCents: 1 },
-        taxPolicyHint: 'standard',
-        addons: engine.pricingDetails?.addons ?? undefined,
-        platformFeePct: engine.platform_fee_pct ?? 0.2,
-        platformFeeFlatCents: 0,
-        availability: engine.availability,
-        metadata: {
-          source: 'fixtures',
-        },
-      } satisfies PricingEngineDefinition;
-    })
-    .filter((definition): definition is PricingEngineDefinition => definition !== null);
+    definitions.push({
+      engineId: engine.id,
+      label: engine.label,
+      version: engine.version,
+      currency: baseInfo.currency,
+      baseUnitPriceCents: baseInfo.baseUnitPriceCents,
+      durationSteps,
+      resolutionMultipliers,
+      memberTierDiscounts: {
+        member: DEFAULT_MEMBER_DISCOUNTS.member,
+        plus: DEFAULT_MEMBER_DISCOUNTS.plus,
+        pro: DEFAULT_MEMBER_DISCOUNTS.pro,
+      },
+      minChargeCents: 0,
+      rounding: { mode: 'nearest', incrementCents: 1 },
+      taxPolicyHint: 'standard',
+      addons: engine.pricingDetails?.addons ?? undefined,
+      platformFeePct: engine.platform_fee_pct ?? 0.2,
+      platformFeeFlatCents: 0,
+      availability: engine.availability,
+      metadata: {
+        source: 'fixtures',
+      },
+    });
+  }
+
+  return definitions;
 }

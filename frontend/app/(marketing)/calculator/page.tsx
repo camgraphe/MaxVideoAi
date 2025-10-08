@@ -4,7 +4,7 @@ import Script from 'next/script';
 import { PriceEstimator } from '@/components/marketing/PriceEstimator';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { getPricingKernel } from '@/lib/pricing-kernel';
-import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
+import { DEFAULT_MARKETING_SCENARIO, scenarioToPricingInput } from '@/lib/pricing-scenarios';
 
 export const metadata: Metadata = {
   title: 'AI Video Price Calculator — MaxVideo AI',
@@ -35,7 +35,7 @@ export default function CalculatorPage() {
   const { dictionary } = resolveDictionary();
   const content = dictionary.calculator;
   const kernel = getPricingKernel();
-  const starterQuote = kernel.quote(DEFAULT_MARKETING_SCENARIO);
+  const starterQuote = kernel.quote(scenarioToPricingInput(DEFAULT_MARKETING_SCENARIO));
   const starterPrice = (starterQuote.snapshot.totalCents / 100).toFixed(2);
   const starterCurrency = starterQuote.snapshot.currency;
   const unitRate = starterQuote.snapshot.base.rate;

@@ -1,3 +1,5 @@
+import type { PricingScenario } from '@/lib/pricing-scenarios';
+
 export type Locale = 'en' | 'fr';
 
 type Dictionary = {
@@ -164,7 +166,16 @@ type Dictionary = {
       title: string;
       subtitle: string;
     };
-    items: Array<{ title: string; engine: string; description: string; alt: string }>;
+    items: Array<{
+      title: string;
+      engine: string;
+      description: string;
+      alt: string;
+      meta?: {
+        slug: string;
+        pricing: PricingScenario;
+      };
+    }>;
     cta: string;
   };
   docs: {

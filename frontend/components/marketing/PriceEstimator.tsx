@@ -22,7 +22,7 @@ interface EngineOption {
   maxDuration: number;
   resolutions: Array<{ value: string; label: string; rate: number }>;
   currency: string;
-  availability?: EngineAvailability;
+  availability: EngineAvailability;
   availabilityLink?: string | null;
 }
 
@@ -45,73 +45,77 @@ function getDurationField(engine: EngineCaps): EngineInputField | undefined {
 
 function buildEngineOptions(engines: EngineCaps[], descriptions: Record<string, string>) {
   const kernel = getPricingKernel();
-  return engines
-    .map((engine) => {
-      const definition = kernel.getDefinition(engine.id);
-      const rosterEntry = getModelByEngineId(engine.id);
-      const brand = getPartnerByEngineId(engine.id);
-      if (!rosterEntry || rosterEntry.availability === 'paused') {
-        return null;
-      }
-      const perSecond = engine.pricingDetails?.perSecondCents;
-      const perSecondDefault = centsToDollars(perSecond?.default);
-      const resolutionRates = engine.resolutions?.length
-        ? engine.resolutions
-        : definition
-            ? Object.keys(definition.resolutionMultipliers)
-            : ['720p', '1080p'];
-      let rates = resolutionRates
-        .map((resolution) => {
-          if (definition) {
-            const multiplier =
-              definition.resolutionMultipliers[resolution] ?? definition.resolutionMultipliers.default ?? 1;
-            const rate = (definition.baseUnitPriceCents * multiplier) / 100;
-            if (!rate) return null;
-            return { value: resolution, label: resolution.toUpperCase(), rate };
-          }
-          const cents = perSecond?.byResolution?.[resolution] ?? perSecond?.default;
-          const rate = centsToDollars(cents) ?? perSecondDefault;
+  const options: EngineOption[] = [];
+
+  engines.forEach((engine) => {
+    const definition = kernel.getDefinition(engine.id);
+    const rosterEntry = getModelByEngineId(engine.id);
+    const brand = getPartnerByEngineId(engine.id);
+    if (!rosterEntry || rosterEntry.availability === 'paused') {
+      return;
+    }
+
+    const perSecond = engine.pricingDetails?.perSecondCents;
+    const perSecondDefault = centsToDollars(perSecond?.default);
+    const resolutionRates = engine.resolutions?.length
+      ? engine.resolutions
+      : definition
+          ? Object.keys(definition.resolutionMultipliers)
+          : ['720p', '1080p'];
+
+    let rates = resolutionRates
+      .map((resolution) => {
+        if (definition) {
+          const multiplier =
+            definition.resolutionMultipliers[resolution] ?? definition.resolutionMultipliers.default ?? 1;
+          const rate = (definition.baseUnitPriceCents * multiplier) / 100;
           if (!rate) return null;
           return { value: resolution, label: resolution.toUpperCase(), rate };
-        })
-        .filter((rate): rate is { value: string; label: string; rate: number } => Boolean(rate));
+        }
+        const cents = perSecond?.byResolution?.[resolution] ?? perSecond?.default;
+        const rate = centsToDollars(cents) ?? perSecondDefault;
+        if (!rate) return null;
+        return { value: resolution, label: resolution.toUpperCase(), rate };
+      })
+      .filter((rate): rate is { value: string; label: string; rate: number } => Boolean(rate));
 
-      if (!rates.length && definition) {
-        const fallbackRate = definition.baseUnitPriceCents / 100;
-        rates = [
-          {
-            value: 'default',
-            label: 'DEFAULT',
-            rate: fallbackRate,
-          },
-        ];
-      }
+    if (!rates.length && definition) {
+      const fallbackRate = definition.baseUnitPriceCents / 100;
+      rates = [
+        {
+          value: 'default',
+          label: 'DEFAULT',
+          rate: fallbackRate,
+        },
+      ];
+    }
 
-      if (!rates.length) {
-        return null;
-      }
+    if (!rates.length) {
+      return;
+    }
 
-      const durationField = getDurationField(engine);
-      const minDuration = definition?.durationSteps?.min ?? durationField?.min ?? 4;
-      const maxDuration = definition?.durationSteps?.max ?? durationField?.max ?? engine.maxDurationSec ?? 30;
-      const description = descriptions[engine.id] ?? rosterEntry.marketingName;
+    const durationField = getDurationField(engine);
+    const minDuration = definition?.durationSteps?.min ?? durationField?.min ?? 4;
+    const maxDuration = definition?.durationSteps?.max ?? durationField?.max ?? engine.maxDurationSec ?? 30;
+    const description = descriptions[engine.id] ?? rosterEntry.marketingName;
 
-      return {
-        id: engine.id,
-        label: rosterEntry.marketingName,
-        description,
-        minDuration,
-        maxDuration,
-        resolutions: rates,
-        currency: definition?.currency ?? engine.pricingDetails?.currency ?? 'USD',
-        availability: rosterEntry.availability,
-        availabilityLink:
-          rosterEntry.availability !== 'available'
-            ? brand?.availabilityLink ?? engine.apiAvailability ?? null
-            : null,
-      } satisfies EngineOption;
-    })
-    .filter((option): option is EngineOption => Boolean(option));
+    options.push({
+      id: engine.id,
+      label: rosterEntry.marketingName,
+      description,
+      minDuration,
+      maxDuration,
+      resolutions: rates,
+      currency: definition?.currency ?? engine.pricingDetails?.currency ?? 'USD',
+      availability: rosterEntry.availability,
+      availabilityLink:
+        rosterEntry.availability !== 'available'
+          ? brand?.availabilityLink ?? engine.apiAvailability ?? null
+          : null,
+    });
+  });
+
+  return options;
 }
 
 function formatCurrency(value: number, currency: string) {
@@ -149,41 +153,45 @@ export function PriceEstimator({ showWalletActions = true, variant = 'full' }: P
 
   const fallbackEngines = useMemo<EngineOption[]>(() => {
     const kernel = getPricingKernel();
-    return listAvailableModels(true)
-      .map((entry) => {
-        const definition = kernel.getDefinition(entry.engineId);
-        if (!definition) return null;
-        const multiplierEntries = Object.entries(definition.resolutionMultipliers).filter(([key]) => key !== 'default');
-        const baseRate = definition.baseUnitPriceCents / 100;
-        const resolutions = multiplierEntries.length
-          ? multiplierEntries.map(([resolution, multiplier]) => ({
-              value: resolution,
-              label: resolution.toUpperCase(),
-              rate: (definition.baseUnitPriceCents * multiplier) / 100,
-            }))
-          : [
-              {
-                value: 'default',
-                label: 'DEFAULT',
-                rate: baseRate,
-              },
-            ];
-        const brand = getPartnerByEngineId(entry.engineId);
-        const minDuration = definition.durationSteps?.min ?? 4;
-        const maxDuration = definition.durationSteps?.max ?? 30;
-        return {
-          id: entry.engineId,
-          label: entry.marketingName,
-          description: descriptions[entry.engineId] ?? entry.marketingName,
-          minDuration,
-          maxDuration,
-          resolutions,
-          currency: definition.currency,
-          availability: entry.availability,
-          availabilityLink: entry.availability !== 'available' ? brand?.availabilityLink ?? null : null,
-        } satisfies EngineOption;
-      })
-      .filter((entry): entry is EngineOption => Boolean(entry));
+    const options: EngineOption[] = [];
+
+    listAvailableModels(true).forEach((entry) => {
+      const definition = kernel.getDefinition(entry.engineId);
+      if (!definition) {
+        return;
+      }
+      const multiplierEntries = Object.entries(definition.resolutionMultipliers).filter(([key]) => key !== 'default');
+      const baseRate = definition.baseUnitPriceCents / 100;
+      const resolutions = multiplierEntries.length
+        ? multiplierEntries.map(([resolution, multiplier]) => ({
+            value: resolution,
+            label: resolution.toUpperCase(),
+            rate: (definition.baseUnitPriceCents * multiplier) / 100,
+          }))
+        : [
+            {
+              value: 'default',
+              label: 'DEFAULT',
+              rate: baseRate,
+            },
+          ];
+      const brand = getPartnerByEngineId(entry.engineId);
+      const minDuration = definition.durationSteps?.min ?? 4;
+      const maxDuration = definition.durationSteps?.max ?? 30;
+      options.push({
+        id: entry.engineId,
+        label: entry.marketingName,
+        description: descriptions[entry.engineId] ?? entry.marketingName,
+        minDuration,
+        maxDuration,
+        resolutions,
+        currency: definition.currency,
+        availability: entry.availability,
+        availabilityLink: entry.availability !== 'available' ? brand?.availabilityLink ?? null : null,
+      });
+    });
+
+    return options;
   }, [descriptions]);
 
   const engineOptions = useMemo(() => {
