@@ -9,7 +9,8 @@ import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'r
 import type { Ref } from 'react';
 import type { EngineAvailability, EngineCaps, PricingSnapshot } from '@/types/engines';
 import type { Job } from '@/types/jobs';
-import { useEngines, useInfiniteJobs } from '@/lib/api';
+import type { GroupSummary } from '@/types/groups';
+import { hideJob, useEngines, useInfiniteJobs } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { JobMedia } from '@/components/JobMedia';
@@ -17,6 +18,10 @@ import { getPlaceholderMedia } from '@/lib/placeholderMedia';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getModelByEngineId } from '@/lib/model-roster';
 import { AVAILABILITY_BADGE_CLASS, AVAILABILITY_LABELS } from '@/lib/availability';
+import { getRenderEta } from '@/lib/render-eta';
+import { groupJobsIntoSummaries, loadPersistedGroupSummaries, GROUP_SUMMARIES_UPDATED_EVENT } from '@/lib/job-groups';
+import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
+import { getAspectRatioString } from '@/lib/aspect';
 
 function ThumbImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
   const baseClass = clsx('object-cover', className);
@@ -35,6 +40,10 @@ interface Props {
   onRequestEngineSwitch: (engineId: string) => void;
   pendingItems?: Array<{
     id: string;
+    localKey?: string;
+    batchId?: string;
+    iterationIndex?: number;
+    iterationCount?: number;
     engineId: string;
     engineLabel: string;
     createdAt: string;
@@ -48,8 +57,14 @@ interface Props {
     priceCents?: number;
     currency?: string;
     pricingSnapshot?: PricingSnapshot;
+    etaSeconds?: number;
+    etaLabel?: string;
   }>;
   onSelectPreview?: (payload: {
+    localKey?: string;
+    batchId?: string;
+    iterationIndex?: number;
+    iterationCount?: number;
     id?: string;
     videoUrl?: string;
     aspectRatio?: string;
@@ -58,7 +73,12 @@ interface Props {
     message?: string;
     priceCents?: number;
     currency?: string;
+    etaSeconds?: number;
+    etaLabel?: string;
   }) => void;
+  activeGroups?: GroupSummary[];
+  onOpenGroup?: (group: GroupSummary) => void;
+  onGroupAction?: (group: GroupSummary, action: GroupedJobAction) => void;
 }
 
 interface SnackbarAction {
@@ -81,17 +101,77 @@ export function GalleryRail({
   onFocusComposer,
   onRequestEngineSwitch,
   pendingItems,
+  activeGroups = [],
   onSelectPreview,
+  onOpenGroup,
+  onGroupAction,
 }: Props) {
   const { data, error, isLoading, isValidating, setSize, mutate } = useInfiniteJobs(24);
   const { data: enginesData } = useEngines();
   const engineList = useMemo(() => enginesData?.engines ?? [], [enginesData?.engines]);
   const jobs = useMemo(() => data?.flatMap((page) => page.jobs) ?? [], [data]);
+  const { groups: groupedJobSummariesFromApi, ungrouped: ungroupedJobs } = useMemo(() => groupJobsIntoSummaries(jobs), [jobs]);
+  const [storedGroups, setStoredGroups] = useState<GroupSummary[]>([]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const sync = () => setStoredGroups(loadPersistedGroupSummaries());
+    sync();
+    window.addEventListener(GROUP_SUMMARIES_UPDATED_EVENT, sync);
+    return () => window.removeEventListener(GROUP_SUMMARIES_UPDATED_EVENT, sync);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handleHidden = () => {
+      void mutate();
+    };
+    window.addEventListener('jobs:hidden', handleHidden);
+    return () => window.removeEventListener('jobs:hidden', handleHidden);
+  }, [mutate]);
+
+  const groupedJobSummaries = useMemo(() => {
+    const map = new Map<string, GroupSummary>();
+    [...groupedJobSummariesFromApi, ...storedGroups].forEach((group) => {
+      if (!group || group.count <= 1) return;
+      const current = map.get(group.id);
+      if (!current || Date.parse(group.createdAt) > Date.parse(current.createdAt)) {
+        map.set(group.id, group);
+      }
+    });
+    return Array.from(map.values()).sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+  }, [groupedJobSummariesFromApi, storedGroups]);
+  const activeGroupIds = useMemo(() => new Set(activeGroups.map((group) => group.id)), [activeGroups]);
+  const historicalGroups = useMemo(() => {
+    return groupedJobSummaries.filter((group) => !activeGroupIds.has(group.id));
+  }, [groupedJobSummaries, activeGroupIds]);
   const lastPage = data?.[data.length - 1];
   const hasMore = Boolean(lastPage?.nextCursor);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [snackbar, setSnackbar] = useState<SnackbarState | null>(null);
+  const handleRemoveJob = useCallback(
+    async (job: Job) => {
+      try {
+        await hideJob(job.jobId);
+        setSnackbar({ message: 'Vignette retirée de la galerie.', duration: 2400 });
+        await mutate(
+          (pages) => {
+            if (!pages) return pages;
+            return pages.map((page) => ({
+              ...page,
+              jobs: page.jobs.filter((entry) => entry.jobId !== job.jobId),
+            }));
+          },
+          false
+        );
+      } catch (error) {
+        console.error('Failed to hide job', error);
+        setSnackbar({ message: 'Impossible de retirer la vignette.', duration: 2400 });
+      }
+    },
+    [mutate]
+  );
 
   const engineMap = useMemo(() => {
     const map = new Map<string, EngineCaps>();
@@ -253,26 +333,36 @@ export function GalleryRail({
           <div className="space-y-4">
             {pendingItems.map((item, index) => {
               const placeholder = getPlaceholderMedia(`${item.id}-${index}`);
-              const videoUrl = item.videoUrl ?? placeholder.videoUrl;
+              const videoUrl = item.videoUrl;
               const aspectRatio = item.aspectRatio ?? placeholder.aspectRatio;
               const thumbUrl = item.thumbUrl ?? placeholder.posterUrl;
               const resolvedEngine = engineMap.get(item.engineId) ?? engineList.find((entry) => entry.label === item.engineLabel);
+              const etaInfo = resolvedEngine ? getRenderEta(resolvedEngine, item.durationSec) : null;
+              const etaLabel = item.etaLabel ?? etaInfo?.label;
+              const etaSeconds = item.etaSeconds ?? etaInfo?.seconds;
 
               if (!videoUrl) {
                 return (
                   <PendingTile
                     key={item.id}
                     item={item}
+                    etaLabel={etaLabel}
                     engine={resolvedEngine}
                     onOpenPreview={() =>
                       onSelectPreview?.({
                         id: item.id,
+                        localKey: item.localKey ?? item.id,
+                        batchId: item.batchId,
+                        iterationIndex: item.iterationIndex,
+                        iterationCount: item.iterationCount,
                         aspectRatio: item.aspectRatio,
                         thumbUrl: item.thumbUrl,
                         progress: item.progress,
                         message: item.message,
                         priceCents: item.priceCents,
                         currency: item.currency,
+                        etaSeconds,
+                        etaLabel,
                       })
                     }
                   />
@@ -300,11 +390,17 @@ export function GalleryRail({
                   onOpenPreview={() =>
                     onSelectPreview?.({
                       id: item.id,
+                      localKey: item.localKey ?? item.id,
+                      batchId: item.batchId,
+                      iterationIndex: item.iterationIndex,
+                      iterationCount: item.iterationCount,
                       videoUrl,
                       aspectRatio,
                       thumbUrl,
                       priceCents: item.priceCents,
                       currency: item.currency,
+                      etaSeconds,
+                      etaLabel,
                     })
                   }
                   engineCaps={resolvedEngine}
@@ -313,11 +409,45 @@ export function GalleryRail({
             })}
           </div>
         )}
-        {jobs.map((job, index) => {
+        {activeGroups.length > 0 && (
+          <div className="space-y-4">
+            {activeGroups.map((group) => {
+              const heroEngine = group.hero.engineId ? engineMap.get(group.hero.engineId) : undefined;
+              return (
+                <GroupedJobCard
+                  key={`active-group-${group.id}`}
+                  group={group}
+                  engine={heroEngine}
+                  onOpen={onOpenGroup}
+                  onAction={onGroupAction}
+                />
+              );
+            })}
+          </div>
+        )}
+        {historicalGroups.length > 0 && (
+          <div className="space-y-4">
+            {historicalGroups.map((group) => {
+              const heroEngine = group.hero.engineId ? engineMap.get(group.hero.engineId) : undefined;
+              return (
+                <GroupedJobCard
+                  key={`history-group-${group.id}`}
+                  group={group}
+                  engine={heroEngine}
+                  onOpen={onOpenGroup}
+                  onAction={onGroupAction}
+                />
+              );
+            })}
+          </div>
+        )}
+        {ungroupedJobs.map((job, index) => {
           const placeholder = getPlaceholderMedia(`${job.jobId}-${index}`);
           const videoUrl = job.videoUrl ?? placeholder.videoUrl;
           const aspectRatio = job.aspectRatio ?? placeholder.aspectRatio;
           const thumbUrl = job.thumbUrl ?? placeholder.posterUrl;
+          const jobEngine = job.engineId ? engineMap.get(job.engineId) : engineMap.get(engine.id);
+          const etaInfo = jobEngine ? getRenderEta(jobEngine, job.durationSec) : null;
 
           return (
             <JobTile
@@ -328,17 +458,21 @@ export function GalleryRail({
                 thumbUrl,
                 aspectRatio,
               }}
-              engineCaps={job.engineId ? engineMap.get(job.engineId) : engineMap.get(engine.id)}
+              engineCaps={jobEngine}
               onCopyPrompt={handleCopyPrompt}
               onOpenPreview={() =>
                 onSelectPreview?.({
+                  id: job.jobId,
                   videoUrl,
                   aspectRatio,
                   thumbUrl,
                   priceCents: job.finalPriceCents ?? job.pricingSnapshot?.totalCents,
                   currency: job.currency ?? job.pricingSnapshot?.currency,
+                  etaLabel: etaInfo?.label,
+                  etaSeconds: etaInfo?.seconds,
                 })
               }
+              onRemove={handleRemoveJob}
             />
           );
         })}
@@ -364,11 +498,13 @@ function JobTile({
   onCopyPrompt,
   onOpenPreview,
   engineCaps,
+  onRemove,
 }: {
   job: Job;
   onCopyPrompt: (job: Job) => void;
   onOpenPreview?: () => void;
   engineCaps?: EngineCaps;
+  onRemove?: (job: Job) => void;
 }) {
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
@@ -382,6 +518,9 @@ function JobTile({
 
   const supportsUpscale = Boolean(engineCaps?.upscale4k ?? job.canUpscale);
   const supportsAudio = Boolean(engineCaps?.audio ?? job.hasAudio);
+  const handleRemove = useCallback(() => {
+    onRemove?.(job);
+  }, [job, onRemove]);
 
   const updateAnchorRect = useCallback(() => {
     if (!buttonRef.current) return;
@@ -463,11 +602,7 @@ function JobTile({
     }
   }, [supportsAudio, audioPopoverOpen]);
 
-  const aspectClass = useMemo(() => {
-    if (job.aspectRatio === '9:16') return 'aspect-[9/16]';
-    if (job.aspectRatio === '1:1') return 'aspect-square';
-    return 'aspect-[16/9]';
-  }, [job.aspectRatio]);
+  const aspectRatio = useMemo(() => getAspectRatioString(job.aspectRatio), [job.aspectRatio]);
 
   const priceCents = job.finalPriceCents ?? job.pricingSnapshot?.totalCents;
   const currency = job.currency ?? job.pricingSnapshot?.currency ?? 'USD';
@@ -483,7 +618,7 @@ function JobTile({
   return (
     <Card className="relative overflow-hidden rounded-card border border-border bg-white/80 p-0 shadow-card">
       <figure className="relative overflow-hidden">
-        <div className={clsx('relative bg-[#EFF3FA] cursor-pointer', aspectClass)} onClick={onOpenPreview}>
+        <div className="relative cursor-pointer bg-[#EFF3FA]" style={{ aspectRatio }} onClick={onOpenPreview}>
           <JobMedia job={job} />
         </div>
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/35" aria-hidden />
@@ -525,12 +660,22 @@ function JobTile({
               </span>
             )}
           </div>
-          <IconOverlayButton
-            iconSrc="/assets/icons/copy.svg"
-            label="Copy prompt"
-            onClick={() => onCopyPrompt(job)}
-            aria-label="Copy prompt"
-          />
+          <div className="flex items-center gap-2">
+            <IconOverlayButton
+              iconSrc="/assets/icons/copy.svg"
+              label="Copy prompt"
+              onClick={() => onCopyPrompt(job)}
+              aria-label="Copy prompt"
+            />
+            {onRemove && (
+              <GhostOverlayButton
+                iconSrc="/assets/icons/unpin.svg"
+                label="Retirer"
+                onClick={handleRemove}
+                aria-label="Retirer de la galerie"
+              />
+            )}
+          </div>
         </div>
       </figure>
 
@@ -681,7 +826,7 @@ function EngineBadge({ engine, label }: { engine?: EngineCaps | null; label: str
   const version = rosterEntry?.versionLabel ?? engine?.version ?? null;
   return (
     <span className="inline-flex max-w-[200px] items-center gap-2 rounded-input border border-border bg-white/90 px-2.5 py-1 text-[11px] font-medium text-text-secondary">
-      <EngineIcon engine={engine ?? undefined} label={displayLabel} size={20} rounded="full" className="shrink-0 border border-hairline bg-white" />
+      <EngineIcon engine={engine ?? undefined} label={displayLabel} size={20} className="shrink-0" />
       <div className="flex min-w-0 flex-col">
         <span className="truncate">{displayLabel}</span>
         {version ? <span className="truncate text-[10px] uppercase tracking-micro text-text-muted">{version}</span> : null}
@@ -707,7 +852,10 @@ const GhostOverlayButton = forwardRef<HTMLButtonElement, { label: string; iconSr
   ({ label, iconSrc, onClick, ...rest }, ref) => (
     <button
       type="button"
-      onClick={onClick}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick?.();
+      }}
       ref={ref}
       className="inline-flex items-center gap-1.5 rounded-[10px] border border-white/30 bg-white/30 px-2.5 py-1 text-[11px] font-medium uppercase tracking-micro text-white shadow-sm backdrop-blur focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9DA7B8CC]"
       {...rest}
@@ -725,7 +873,10 @@ const IconOverlayButton = forwardRef<HTMLButtonElement, { iconSrc: string; label
     <div className="relative group inline-flex">
       <button
         type="button"
-        onClick={onClick}
+        onClick={(event) => {
+          event.stopPropagation();
+          onClick?.();
+        }}
         ref={ref}
         className="inline-flex h-6 w-6 items-center justify-center rounded-[8px] border border-white/30 bg-white/30 text-white shadow-sm backdrop-blur transition hover:bg-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9DA7B8CC]"
         {...rest}
@@ -746,7 +897,7 @@ function SkeletonTile() {
   return (
     <div className="rounded-card border border-border bg-white/60 p-0">
       <div className="relative overflow-hidden rounded-card">
-        <div className="relative aspect-[16/9]">
+        <div className="relative" style={{ aspectRatio: '16 / 9' }}>
           <div className="skeleton absolute inset-0" />
         </div>
       </div>
@@ -756,34 +907,38 @@ function SkeletonTile() {
 
 type PendingItem = NonNullable<Props['pendingItems']>[number];
 
-function PendingTile({ item, onOpenPreview, engine }: { item: PendingItem; onOpenPreview?: () => void; engine?: EngineCaps | null }) {
-  const aspectClass = item.aspectRatio === '9:16' ? 'aspect-[9/16]' : item.aspectRatio === '1:1' ? 'aspect-square' : 'aspect-[16/9]';
+function PendingTile({ item, onOpenPreview, etaLabel, engine }: { item: PendingItem; onOpenPreview?: () => void; etaLabel?: string; engine?: EngineCaps | null }) {
+  const aspectRatio = getAspectRatioString(item.aspectRatio);
   return (
     <div className="relative overflow-hidden rounded-card border border-border bg-white/80 p-0 shadow-card">
       <figure className="relative overflow-hidden">
-        <div className={clsx('relative bg-[#EFF3FA] cursor-pointer', aspectClass)} onClick={onOpenPreview}>
+        <div className="relative cursor-pointer bg-[#EFF3FA]" style={{ aspectRatio }} onClick={onOpenPreview}>
           {item.thumbUrl ? (
             <ThumbImage src={item.thumbUrl} alt="" className="object-cover" />
           ) : (
             <div className="absolute inset-0" />
           )}
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/30 text-white">
-            <span className="inline-flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro">
-              <Image src="/assets/icons/live.svg" alt="" width={12} height={12} className="h-3 w-3" />
-              Live
-            </span>
-            <div className="w-3/4 overflow-hidden rounded-full border border-white/30">
-              <div className="h-2 bg-white/80" style={{ width: `${Math.max(5, Math.min(100, item.progress))}%` }} />
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/35 px-4 py-6 text-white backdrop-blur-sm">
+            <div className="pointer-events-auto flex w-full max-w-sm flex-col items-center gap-3 rounded-card border border-white/40 bg-white/85 p-4 text-sm text-text-secondary shadow-card">
+              <span className="inline-flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-white">
+                <Image src="/assets/icons/live.svg" alt="" width={12} height={12} className="h-3 w-3" />
+                Live
+              </span>
+              <div className="relative h-2 w-full overflow-hidden rounded-full bg-hairline">
+                <div className="absolute inset-y-0 left-0 rounded-full bg-accent" style={{ width: `${Math.max(5, Math.min(100, item.progress))}%` }} />
+              </div>
+              <span className="text-[12px] text-text-muted text-center">{item.message}</span>
+              {etaLabel ? (
+                <span className="text-[11px] font-medium uppercase tracking-micro text-text-secondary/80">Estimated {etaLabel}</span>
+              ) : null}
             </div>
-            <span className="text-[12px] text-white/90">{item.message}</span>
           </div>
         </div>
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/35" aria-hidden />
         <div className="absolute inset-x-3 bottom-3 z-10 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-medium text-white">
-              <EngineIcon engine={engine ?? undefined} label={item.engineLabel} size={18} rounded="full" className="shrink-0 border border-white/40 bg-white/95 text-black" />
-              <span className="uppercase tracking-micro">{item.engineLabel}</span>
+              <EngineIcon engine={engine ?? undefined} label={item.engineLabel} size={18} className="shrink-0" />
             </span>
             <span className="inline-flex items-center rounded-full bg-black/45 px-2 py-1 text-[11px] font-medium text-white">
               {item.durationSec}s

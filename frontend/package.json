@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:exposure": "node ../scripts/check-public-exposure.mjs"
   },
   "dependencies": {
     "@maxvideoai/pricing": "file:../packages/pricing",

@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: 'MaxVideo AI',
   description: 'Professional AI video, price before you generate. One hub for every shot.',
   keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
+  metadataBase: new URL('https://www.maxvideo.ai'),
   alternates: {
     canonical: 'https://www.maxvideo.ai/',
     languages: {

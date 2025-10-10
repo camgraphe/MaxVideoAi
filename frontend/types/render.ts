@@ -6,4 +6,5 @@ export type VideoAsset = {
   durationSec: number | null;
   tags: string[];
   thumbnailUrl?: string | null;
+  aspectRatio?: string | null;
 };

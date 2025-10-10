@@ -46,6 +46,7 @@ const ICONS: Record<string, string | undefined> = {
 };
 
 export function PriceFactorsBar({ preflight, currency = 'USD', isLoading = false, onNavigate, iterations = 1 }: PriceFactorsBarProps) {
+  const safeIterations = Math.max(1, Math.floor(iterations || 1));
   const formatter = useMemo(() => new Intl.NumberFormat('en-US', { style: 'currency', currency }), [currency]);
 
   const items = useMemo<PriceFactorItem[]>(() => {
@@ -82,7 +83,6 @@ export function PriceFactorsBar({ preflight, currency = 'USD', isLoading = false
     });
 
     // Iterations multiplier (×N) — only if > 1
-    const safeIterations = Math.max(1, Math.floor(iterations || 1));
     if (safeIterations > 1) {
       factors.push({
         id: 'iterations',
@@ -139,7 +139,7 @@ export function PriceFactorsBar({ preflight, currency = 'USD', isLoading = false
     });
 
     return sortFactors(factors);
-  }, [preflight?.itemization, formatter, iterations]);
+  }, [preflight?.itemization, formatter, safeIterations]);
 
   if (isLoading && !items.length) {
     return (
@@ -161,6 +161,15 @@ export function PriceFactorsBar({ preflight, currency = 'USD', isLoading = false
   }
 
   const busy = isLoading && items.length > 0;
+  const totalLabel = safeIterations > 1 ? 'Total for this batch' : 'This render';
+  const memberDiscountTotal = safeIterations > 1
+    ? Math.abs(
+        (preflight?.itemization?.discounts ?? []).reduce(
+          (sum, discount) => sum + (discount.amount ?? discount.subtotal ?? 0),
+          0
+        )
+      )
+    : 0;
 
   return (
     <div
@@ -195,7 +204,12 @@ export function PriceFactorsBar({ preflight, currency = 'USD', isLoading = false
 
       {typeof preflight?.total === 'number' && (
         <span className="ml-auto inline-flex items-center rounded-full bg-accent px-3 py-1.5 text-[12px] font-medium text-white">
-          This render: {formatTotal((preflight.total || 0) * Math.max(1, Math.floor(iterations || 1)), formatter)}
+          {totalLabel}: {formatTotal((preflight.total || 0) * safeIterations, formatter)}
+          {safeIterations > 1 && memberDiscountTotal > AMOUNT_EPSILON && (
+            <span className="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-semibold text-white">
+              Member saves {formatTotal(memberDiscountTotal, formatter)}
+            </span>
+          )}
         </span>
       )}
     </div>

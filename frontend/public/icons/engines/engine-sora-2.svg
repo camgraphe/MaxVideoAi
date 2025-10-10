@@ -1,0 +1,6 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="14" fill="#EEF2FF"/>
+  <path d="M19 32C19 24.8203 24.8203 19 32 19C39.1797 19 45 24.8203 45 32C45 39.1797 39.1797 45 32 45C24.8203 45 19 39.1797 19 32Z" stroke="#4C1D95" stroke-width="3"/>
+  <path d="M24 33C24 28.0294 28.0294 24 33 24C37.9706 24 42 28.0294 42 33C42 37.9706 37.9706 42 33 42C28.0294 42 24 37.9706 24 33Z" fill="#4C1D95" fill-opacity="0.15"/>
+  <text x="32" y="51" text-anchor="middle" fill="#312E81" font-family="Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="600">S2</text>
+</svg>

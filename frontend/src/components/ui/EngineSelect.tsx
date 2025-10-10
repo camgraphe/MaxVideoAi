@@ -34,6 +34,16 @@ type EngineGuideEntry = {
 };
 
 const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
+  'sora-2': {
+    description:
+      'OpenAI’s second-gen video model with native audio and multi-aspect support. Great for polished storyboards when you want strong motion and sound out of the box.',
+    badges: ['🔊 Audio enabled', '🎬 Cinematic', '🆕 New release'],
+  },
+  'sora-2-pro': {
+    description:
+      'The pro tier unlocks 1080p renders and premium throughput while keeping audio on by default. Use it when you need hero shots or longer cuts with higher bitrate.',
+    badges: ['🔊 Audio enabled', '🖥️ 1080p', '💼 Pro tier'],
+  },
   'dev-sim': {
     description:
       'Our internal playground to validate prompts, UI, and wallet logic without calling external providers. Use it to test flows end-to-end, preview costs, and stress the queue before switching to real engines.',
@@ -147,6 +157,8 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
     const candidate = availableEngines.find((entry) => entry.id === engineId);
     return candidate ?? availableEngines[0] ?? engines[0];
   }, [availableEngines, engineId, engines]);
+
+  const selectedRosterEntry = useMemo(() => (selectedEngine ? getModelByEngineId(selectedEngine.id) : undefined), [selectedEngine]);
 
   const visibleEngines = availableEngines;
 
@@ -315,7 +327,7 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
   return (
     <Card ref={containerRef} className="relative space-y-5 p-5">
       <div className="flex items-center justify-between gap-4">
-        <EngineIcon engine={selectedEngine} size={42} className="shrink-0 border border-hairline bg-white/90" />
+        <EngineIcon engine={selectedEngine} size={42} className="shrink-0" />
         <div className="hidden flex-col items-end gap-2 text-xs text-text-muted lg:flex">
           {selectedEngine.latencyTier && (
             <Chip variant="ghost" className="text-[11px] lowercase first-letter:uppercase">
@@ -344,7 +356,7 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
             aria-expanded={open}
           >
             <div className="flex min-w-0 items-center gap-3">
-              <EngineIcon engine={selectedEngine} size={32} className="shrink-0 border border-hairline bg-white/90" />
+              <EngineIcon engine={selectedEngine} size={32} className="shrink-0" />
               <div className="min-w-0">
                 <p className="truncate font-medium">{formatEngineShort(selectedEngine)}</p>
                 <p className="truncate text-[11px] text-text-muted">{selectedEngine.provider}</p>
@@ -359,6 +371,10 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
               <path d="m6 8 4 4 4-4" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
+
+          {selectedRosterEntry?.billingNote && (
+            <p className="text-[11px] text-text-muted">{selectedRosterEntry.billingNote}</p>
+          )}
 
           {open && portalElement && position &&
             createPortal(
@@ -432,7 +448,7 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
                             disabled={disabled}
                             tabIndex={-1}
                           >
-                            <EngineIcon engine={engine} size={32} className="mt-0.5 shrink-0 border border-hairline bg-white/90" />
+                            <EngineIcon engine={engine} size={32} className="mt-0.5 shrink-0" />
                             <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
                               <div className="min-w-0 space-y-1">
                                 <p className="truncate text-sm font-medium text-text-primary">{rosterEntry?.marketingName ?? formatEngineShort(engine)}</p>
@@ -845,7 +861,7 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
                   onClick={() => onSelect(engine.id)}
                 >
                   <div className="flex items-start gap-3">
-                    <EngineIcon engine={engine} size={44} className="shrink-0 border border-hairline bg-white/95" />
+                    <EngineIcon engine={engine} size={44} className="shrink-0" />
                     <div className="flex flex-1 items-start justify-between gap-3">
                       <div className="space-y-1">
                         <h3 className="text-base font-semibold text-text-primary">{engine.label}</h3>

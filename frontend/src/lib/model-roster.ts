@@ -8,9 +8,11 @@ export interface ModelRosterEntry {
   marketingName: string;
   brandId: string;
   modelSlug: string;
+  family?: string;
   versionLabel: string;
   availability: ModelAvailability;
   logoPolicy: LogoPolicy;
+  billingNote?: string;
 }
 
 const rosterEntries = roster as ModelRosterEntry[];

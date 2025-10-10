@@ -56,9 +56,111 @@ export default function ModelDetailPage({ params }: PageParams) {
 
   const availabilityLabel = dictionary.models.availabilityLabels[rosterEntry.availability] ?? rosterEntry.availability;
   const brand = PARTNER_BRAND_MAP.get(rosterEntry.brandId);
+  const showSoraSeo = rosterEntry.modelSlug === 'openai-sora-2';
+
+  const soraFaqSchema = showSoraSeo
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: [
+          {
+            '@type': 'Question',
+            name: 'How does pricing work with FAL credits or my OpenAI API key?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text:
+                'MaxVideo AI routes Sora 2 runs through FAL by default at $0.10 per second in 720p. Drop your own OpenAI API key in the app to bill usage directly through OpenAI—the interface keeps showing the rate as guidance and adds a “Billed by OpenAI” badge so finance teams stay aligned.',
+            },
+          },
+        ],
+      }
+    : null;
+
+  const soraSoftwareSchema = showSoraSeo
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        name: 'OpenAI Sora 2 via MaxVideo AI',
+        applicationCategory: 'VideoGenerationApplication',
+        operatingSystem: 'Web',
+        offers: [
+          {
+            '@type': 'Offer',
+            description: 'Base HD 720p renders billed via FAL credits when no OpenAI API key is provided.',
+            priceCurrency: 'USD',
+            priceSpecification: {
+              '@type': 'UnitPriceSpecification',
+              priceCurrency: 'USD',
+              price: 0.1,
+              unitCode: 'SEC',
+            },
+          },
+          {
+            '@type': 'Offer',
+            description: 'Pro tier — 720p with OpenAI API key or FAL passthrough.',
+            priceCurrency: 'USD',
+            priceSpecification: {
+              '@type': 'UnitPriceSpecification',
+              priceCurrency: 'USD',
+              price: 0.3,
+              unitCode: 'SEC',
+            },
+          },
+          {
+            '@type': 'Offer',
+            description: 'Pro tier — 1080p with OpenAI API key support.',
+            priceCurrency: 'USD',
+            priceSpecification: {
+              '@type': 'UnitPriceSpecification',
+              priceCurrency: 'USD',
+              price: 0.5,
+              unitCode: 'SEC',
+            },
+          },
+        ],
+        provider: {
+          '@type': 'Organization',
+          name: 'MaxVideo AI',
+          url: 'https://www.maxvideo.ai',
+        },
+        description: meta.description,
+        isAccessibleForFree: false,
+      }
+    : null;
+
+  const soraEndpoints = showSoraSeo
+    ? [
+        {
+          title: 'Text → Video (Base)',
+          endpoint: 'fal-ai/sora-2/text-to-video',
+          price: '$0.10/s · 720p · Audio on by default',
+        },
+        {
+          title: 'Image → Video (Base)',
+          endpoint: 'fal-ai/sora-2/image-to-video',
+          price: '$0.10/s · Auto resolution defaults with reference frame upload',
+        },
+        {
+          title: 'Text → Video (Pro)',
+          endpoint: 'fal-ai/sora-2/text-to-video/pro',
+          price: '$0.30/s · 720p · $0.50/s · 1080p',
+        },
+        {
+          title: 'Image → Video (Pro)',
+          endpoint: 'fal-ai/sora-2/image-to-video/pro',
+          price: '$0.30/s · 720p · $0.50/s · 1080p',
+        },
+      ]
+    : [];
 
   return (
     <div className="mx-auto max-w-4xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
+      {showSoraSeo && soraFaqSchema && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(soraFaqSchema) }} />
+      )}
+      {showSoraSeo && soraSoftwareSchema && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(soraSoftwareSchema) }} />
+      )}
       <Link href="/models" className="text-sm font-semibold text-accent hover:text-accentSoft">
         ← {dictionary.models.hero.title}
       </Link>
@@ -83,8 +185,29 @@ export default function ModelDetailPage({ params }: PageParams) {
             {availabilityLabel}
           </span>
         </div>
-        {meta.description ? <p className="text-sm text-text-secondary">{meta.description}</p> : null}
+      {meta.description ? <p className="text-sm text-text-secondary">{meta.description}</p> : null}
       </header>
+
+      {showSoraSeo && soraEndpoints.length > 0 && (
+        <section className="mt-8 space-y-4">
+          <div className="rounded-card border border-accent/40 bg-accent/5 p-6 shadow-card">
+            <h2 className="text-lg font-semibold text-text-primary">Sora 2 pricing & routing</h2>
+            <p className="mt-2 text-sm text-text-secondary">
+              Base runs bill via FAL credits when you leave the OpenAI API key blank. Add your own key inside the workspace to move billing to OpenAI—our UI keeps
+              showing the indicative rate and surfaces a “Billed by OpenAI” badge for finance.
+            </p>
+            <ul className="mt-4 space-y-3 text-sm text-text-secondary">
+              {soraEndpoints.map((item) => (
+                <li key={item.endpoint} className="rounded-input border border-border bg-white/80 p-3">
+                  <p className="font-semibold text-text-primary">{item.title}</p>
+                  <p className="text-[13px] text-text-muted">Endpoint: {item.endpoint}</p>
+                  <p className="text-[13px] text-text-muted">{item.price}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
 
       <section className="mt-10 space-y-4">
         <div className="rounded-card border border-hairline bg-white p-6 shadow-card">

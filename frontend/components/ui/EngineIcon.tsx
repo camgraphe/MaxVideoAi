@@ -1,82 +1,54 @@
 import clsx from 'clsx';
-import Image from 'next/image';
-import { useMemo, useState } from 'react';
 import type { EngineCaps } from '@/types/engines';
+import { getEnginePictogram } from '@/lib/engine-branding';
 
-type EngineIconSource = Pick<EngineCaps, 'iconUrl' | 'fallbackIcon' | 'label' | 'id'> | null | undefined;
+type EngineIconSource = Pick<EngineCaps, 'id' | 'label' | 'brandId'> | null | undefined;
 
 interface EngineIconProps {
   engine?: EngineIconSource;
   label?: string;
-  iconUrl?: string | null;
-  fallbackIcon?: string | null;
   size?: number;
   className?: string;
   rounded?: 'full' | 'xl';
 }
 
-export function EngineIcon({
-  engine,
-  label,
-  iconUrl,
-  fallbackIcon,
-  size = 36,
-  className,
-  rounded = 'xl',
-}: EngineIconProps) {
-  const explicitLabel = label ?? engine?.label ?? 'Engine icon';
-  const primarySrc = iconUrl ?? engine?.iconUrl ?? undefined;
-  const backupSrc = fallbackIcon ?? engine?.fallbackIcon ?? '/icons/engines/engine-generic.svg';
+function computeFontSize(size: number) {
+  return Math.max(12, Math.round(size * 0.44));
+}
 
-  const [src, setSrc] = useState<string>(primarySrc ?? backupSrc);
-  const [hasTriedPrimary, setHasTriedPrimary] = useState(Boolean(primarySrc));
-
-  const initials = useMemo(() => {
-    const source = explicitLabel.trim();
-    if (!source) return 'MV';
-    const tokens = source.split(/\s|—|-/).filter(Boolean);
-    if (tokens.length >= 2) {
-      return `${tokens[0][0]}${tokens[1][0]}`.toUpperCase();
-    }
-    return source.slice(0, 2).toUpperCase();
-  }, [explicitLabel]);
+export function EngineIcon({ engine, label, size = 36, className, rounded = 'xl' }: EngineIconProps) {
+  const explicitLabel = label ?? engine?.label ?? 'Engine';
+  const pictogram = getEnginePictogram(
+    {
+      id: engine?.id ?? null,
+      brandId: engine?.brandId ?? null,
+      label: engine?.label ?? null,
+    },
+    explicitLabel
+  );
 
   const borderRadiusClass = rounded === 'full' ? 'rounded-full' : 'rounded-[12px]';
+  const fontSize = computeFontSize(size);
 
   return (
     <div
+      aria-label={`${explicitLabel} engine`}
+      role="img"
       className={clsx(
-        'flex items-center justify-center border border-hairline bg-white/90 text-[11px] font-semibold text-text-primary',
+        'flex items-center justify-center font-semibold leading-none tracking-tight shadow-sm text-opacity-90',
         borderRadiusClass,
         className
       )}
-      style={{ width: size, height: size }}
+      style={{
+        width: size,
+        height: size,
+        backgroundColor: pictogram.backgroundColor,
+        color: pictogram.textColor,
+        fontSize,
+      }}
+      title={explicitLabel}
     >
-      {src ? (
-        <Image
-          src={src}
-          alt={`${explicitLabel} logo`}
-          width={size}
-          height={size}
-          className={clsx('object-contain', rounded === 'full' ? 'rounded-full' : 'rounded-[10px]')}
-          onError={() => {
-            if (!hasTriedPrimary && primarySrc) {
-              setHasTriedPrimary(true);
-              setSrc(backupSrc);
-              return;
-            }
-            if (src !== backupSrc) {
-              setSrc(backupSrc);
-            } else {
-              setSrc('');
-            }
-          }}
-          priority={false}
-        />
-      ) : (
-        <span>{initials}</span>
-      )}
+      <span>{pictogram.code}</span>
     </div>
   );
 }
-

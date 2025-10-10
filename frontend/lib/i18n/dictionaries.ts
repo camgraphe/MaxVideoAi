@@ -626,6 +626,18 @@ const en: Dictionary = {
         priceBefore: 'Chip highlights turbo queue rate before you commit budget.',
         versionLabel: '2.5 Turbo',
       },
+      'openai-sora-2': {
+        displayName: 'OpenAI Sora 2',
+        description: 'Text-to-video and image-to-video with native audio via FAL routing. Base tier covers HD 720p runs.',
+        priceBefore: 'Price Before shows $0.10/s via FAL and reminds you can swap to your OpenAI key inside the app.',
+        versionLabel: 'v2',
+      },
+      'openai-sora-2-pro': {
+        displayName: 'OpenAI Sora 2 Pro',
+        description: 'Pro tier unlocks 1080p renders, premium throughput, and audio-on by default.',
+        priceBefore: 'Chip highlights $0.30/s (720p) and $0.50/s (1080p) with an OpenAI billing badge when you bring your own key.',
+        versionLabel: 'Pro',
+      },
     },
     note:
       'Independent hub. Works with Veo, Luma, Pika, Runway, Kling, and rotating betas. Trademarks belong to their owners.',

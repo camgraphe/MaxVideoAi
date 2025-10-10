@@ -14,8 +14,9 @@
       ],
       "maxDurationSec": 10,
       "resolutions": [
+        "1080p",
         "720p",
-        "1080p"
+        "auto"
       ],
       "aspectRatios": [
         "16:9",
@@ -101,6 +102,285 @@
       "fallback_icon": "/icons/engines/engine-dev-sim.svg",
       "updatedAt": "2025-10-05T10:00:00Z",
       "ttlSec": 600
+    },
+    {
+      "id": "sora-2",
+      "label": "Sora 2",
+      "provider": "OpenAI · via FAL",
+      "version": "2",
+      "status": "live",
+      "availability": "available",
+      "brandId": "openai",
+      "brandAssetPolicy": {
+        "logoAllowed": false,
+        "textOnly": true,
+        "linkToGuidelines": "https://openai.com/policies/brand",
+        "usageNotes": "Use the “OpenAI — Sora 2” textual lockup until explicit logo rights are granted."
+      },
+      "latencyTier": "standard",
+      "queueDepth": 2,
+      "region": "us-east-1",
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 12,
+      "resolutions": [
+        "720p",
+        "auto"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "auto"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 25,
+        "videoMaxMB": 0,
+        "videoMaxDurationSec": 0
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the scene or motion.",
+            "requiredInModes": [
+              "t2v"
+            ]
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Reference image",
+            "description": "Provide a starting frame.",
+            "maxCount": 1,
+            "requiredInModes": [
+              "i2v"
+            ]
+          }
+        ],
+        "optional": [
+          {
+            "id": "duration_seconds",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "values": [
+              "4",
+              "8",
+              "12"
+            ],
+            "default": 8
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p",
+              "auto"
+            ],
+            "default": "720p"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9",
+              "9:16",
+              "auto"
+            ],
+            "default": "16:9"
+          },
+          {
+            "id": "api_key",
+            "type": "text",
+            "label": "OpenAI API key",
+            "description": "Optional. Bill runs directly to your OpenAI account when provided."
+          }
+        ],
+        "constraints": {
+          "maxDurationSec": 12,
+          "resolutions": [
+            "720p"
+          ],
+          "aspectRatios": [
+            "16:9",
+            "9:16"
+          ]
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.1,
+        "currency": "USD",
+        "notes": "Billed by FAL unless an OpenAI API key is supplied."
+      },
+      "updatedAt": "2025-01-15T12:00:00Z",
+      "ttlSec": 600,
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 10
+        },
+        "maxDurationSec": 12
+      },
+      "fallback_icon": "/icons/engines/engine-sora-2.svg"
+    },
+    {
+      "id": "sora-2-pro",
+      "label": "Sora 2 Pro",
+      "provider": "OpenAI · via FAL",
+      "version": "2",
+      "variant": "pro",
+      "status": "live",
+      "availability": "available",
+      "brandId": "openai",
+      "brandAssetPolicy": {
+        "logoAllowed": false,
+        "textOnly": true,
+        "linkToGuidelines": "https://openai.com/policies/brand",
+        "usageNotes": "Use the “OpenAI — Sora 2” textual lockup until explicit logo rights are granted."
+      },
+      "latencyTier": "standard",
+      "queueDepth": 2,
+      "region": "us-east-1",
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 12,
+      "resolutions": [
+        "1080p",
+        "720p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "auto"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 25,
+        "videoMaxMB": 0,
+        "videoMaxDurationSec": 0
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the scene or motion.",
+            "requiredInModes": [
+              "t2v"
+            ]
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Reference image",
+            "description": "Provide a starting frame.",
+            "maxCount": 1,
+            "requiredInModes": [
+              "i2v"
+            ]
+          }
+        ],
+        "optional": [
+          {
+            "id": "duration_seconds",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "values": [
+              "4",
+              "8",
+              "12"
+            ],
+            "default": 8
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "1080p",
+              "720p",
+              "auto"
+            ],
+            "default": "1080p"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9",
+              "9:16",
+              "auto"
+            ],
+            "default": "16:9"
+          },
+          {
+            "id": "api_key",
+            "type": "text",
+            "label": "OpenAI API key",
+            "description": "Optional. Bill runs directly to your OpenAI account when provided."
+          }
+        ],
+        "constraints": {
+          "maxDurationSec": 12,
+          "resolutions": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatios": [
+            "16:9",
+            "9:16"
+          ]
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "byResolution": {
+          "720p": 0.3,
+          "1080p": 0.5
+        },
+        "currency": "USD",
+        "notes": "Billed by FAL unless an OpenAI API key is supplied."
+      },
+      "updatedAt": "2025-01-15T12:00:00Z",
+      "ttlSec": 600,
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "byResolution": {
+            "720p": 30,
+            "1080p": 50
+          }
+        },
+        "maxDurationSec": 12
+      },
+      "fallback_icon": "/icons/engines/engine-sora-2-pro.svg"
     },
     {
       "id": "minimax",

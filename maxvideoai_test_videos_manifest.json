@@ -1,616 +1,762 @@
 {
+  "generatedAt": "2025-10-09T20:20:49.673Z",
+  "cdnBase": "https://camgraphe.github.io/maxvideoai-test-videos",
   "videos": [
     {
-      "id": "gtv_forbiggerblazes",
-      "url": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-      "mime": "video/mp4",
-      "width": null,
-      "height": null,
-      "durationSec": null,
+      "id": "20251004-0220-remix-video-remix-01k6p9f2rneyv9xdvfectw9n0w",
+      "path": "portrait/20251004-0220-remix-video-remix-01k6p9f2rneyv9xdvfectw9n0w.mp4",
+      "aspectRatio": "1080:1620",
+      "width": 1080,
+      "height": 1620,
+      "durationSec": 5,
+      "bitrateKbps": 4548,
+      "sizeBytes": 2842346,
       "tags": [
-        "gtv",
-        "mp4"
-      ]
+        "portrait"
+      ],
+      "source": "20251004_0220_Remix Video_remix_01k6p9f2rneyv9xdvfectw9n0w.mp4"
     },
     {
-      "id": "gtv_forbiggerescapes",
-      "url": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-      "mime": "video/mp4",
-      "width": null,
-      "height": null,
-      "durationSec": null,
+      "id": "20251004-0221-remix-video-remix-01k6p9ge5sf2hbpb2a0gbwc02d",
+      "path": "portrait/20251004-0221-remix-video-remix-01k6p9ge5sf2hbpb2a0gbwc02d.mp4",
+      "aspectRatio": "1080:1620",
+      "width": 1080,
+      "height": 1620,
+      "durationSec": 5,
+      "bitrateKbps": 2314,
+      "sizeBytes": 1446098,
       "tags": [
-        "gtv",
-        "mp4"
-      ]
+        "portrait"
+      ],
+      "source": "20251004_0221_Remix Video_remix_01k6p9ge5sf2hbpb2a0gbwc02d.mp4"
     },
     {
-      "id": "gtv_forbiggerfun",
-      "url": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
-      "mime": "video/mp4",
-      "width": null,
-      "height": null,
-      "durationSec": null,
-      "tags": [
-        "gtv",
-        "mp4"
-      ]
-    },
-    {
-      "id": "gtv_forbiggerjoyrides",
-      "url": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
-      "mime": "video/mp4",
-      "width": null,
-      "height": null,
-      "durationSec": null,
-      "tags": [
-        "gtv",
-        "mp4"
-      ]
-    },
-    {
-      "id": "gtv_forbiggermeltdowns",
-      "url": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
-      "mime": "video/mp4",
-      "width": null,
-      "height": null,
-      "durationSec": null,
-      "tags": [
-        "gtv",
-        "mp4"
-      ]
-    },
-    {
-      "id": "gtv_sintel",
-      "url": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
-      "mime": "video/mp4",
-      "width": null,
-      "height": null,
-      "durationSec": null,
-      "tags": [
-        "gtv",
-        "mp4"
-      ]
-    },
-    {
-      "id": "gtv_tearsofsteel",
-      "url": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-      "mime": "video/mp4",
-      "width": null,
-      "height": null,
-      "durationSec": null,
-      "tags": [
-        "gtv",
-        "mp4"
-      ]
-    },
-    {
-      "id": "gtv_subaruoutbackonstreetanddirt",
-      "url": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
-      "mime": "video/mp4",
-      "width": null,
-      "height": null,
-      "durationSec": null,
-      "tags": [
-        "gtv",
-        "mp4"
-      ]
-    },
-    {
-      "id": "gtv_wearegoingonbullrun",
-      "url": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
-      "mime": "video/mp4",
-      "width": null,
-      "height": null,
-      "durationSec": null,
-      "tags": [
-        "gtv",
-        "mp4"
-      ]
-    },
-    {
-      "id": "gtv_volkswagengtireview",
-      "url": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4",
-      "mime": "video/mp4",
-      "width": null,
-      "height": null,
-      "durationSec": null,
-      "tags": [
-        "gtv",
-        "mp4"
-      ]
-    },
-    {
-      "id": "gtv_whatcarcanyougetforagrand",
-      "url": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4",
-      "mime": "video/mp4",
-      "width": null,
-      "height": null,
-      "durationSec": null,
-      "tags": [
-        "gtv",
-        "mp4"
-      ]
-    },
-    {
-      "id": "bbb_1080_10s_1mb",
-      "url": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_10s_1MB.mp4",
-      "mime": "video/mp4",
+      "id": "20251008-2216-new-video-simple-compose-01k72qe9qye2wtfss89qjw1n56",
+      "path": "landscape/20251008-2216-new-video-simple-compose-01k72qe9qye2wtfss89qjw1n56.mp4",
+      "aspectRatio": "16:9",
       "width": 1920,
       "height": 1080,
       "durationSec": 10,
+      "bitrateKbps": 5277,
+      "sizeBytes": 6596233,
       "tags": [
-        "test-videos",
-        "mp4",
-        "bbb"
-      ]
+        "landscape"
+      ],
+      "source": "20251008_2216_New Video_simple_compose_01k72qe9qye2wtfss89qjw1n56.mp4"
     },
     {
-      "id": "bbb_1080_10s_5mb",
-      "url": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_10s_5MB.mp4",
-      "mime": "video/mp4",
+      "id": "20251008-2216-remix-video-remix-01k72qewqgfrbsst81rhgg6c62",
+      "path": "portrait/20251008-2216-remix-video-remix-01k72qewqgfrbsst81rhgg6c62.mp4",
+      "aspectRatio": "9:16",
+      "width": 1080,
+      "height": 1920,
+      "durationSec": 10,
+      "bitrateKbps": 4275,
+      "sizeBytes": 5343569,
+      "tags": [
+        "portrait"
+      ],
+      "source": "20251008_2216_Remix Video_remix_01k72qewqgfrbsst81rhgg6c62.mp4"
+    },
+    {
+      "id": "20251008-2344-new-video-simple-compose-01k72wffbpe75tgr35e00wvyry",
+      "path": "landscape/20251008-2344-new-video-simple-compose-01k72wffbpe75tgr35e00wvyry.mp4",
+      "aspectRatio": "16:9",
       "width": 1920,
       "height": 1080,
       "durationSec": 10,
+      "bitrateKbps": 4437,
+      "sizeBytes": 5546376,
       "tags": [
-        "test-videos",
-        "mp4",
-        "bbb"
-      ]
+        "landscape"
+      ],
+      "source": "20251008_2344_New Video_simple_compose_01k72wffbpe75tgr35e00wvyry.mp4"
     },
     {
-      "id": "bbb_720_10s_1mb",
-      "url": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4",
-      "mime": "video/mp4",
-      "width": 1280,
-      "height": 720,
+      "id": "20251008-2353-new-video-simple-compose-01k72x0xh4ew1rh09pafdn68kf",
+      "path": "square/20251008-2353-new-video-simple-compose-01k72x0xh4ew1rh09pafdn68kf.mp4",
+      "aspectRatio": "1:1",
+      "width": 1080,
+      "height": 1080,
       "durationSec": 10,
+      "bitrateKbps": 3604,
+      "sizeBytes": 4505536,
       "tags": [
-        "test-videos",
-        "mp4",
-        "bbb"
-      ]
+        "square"
+      ],
+      "source": "20251008_2353_New Video_simple_compose_01k72x0xh4ew1rh09pafdn68kf.mp4"
     },
     {
-      "id": "bbb_720_10s_5mb",
-      "url": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_5MB.mp4",
-      "mime": "video/mp4",
-      "width": 1280,
-      "height": 720,
+      "id": "20251008-2353-new-video-simple-compose-01k72x1110e9ybrhy9j5mp3j93",
+      "path": "square/20251008-2353-new-video-simple-compose-01k72x1110e9ybrhy9j5mp3j93.mp4",
+      "aspectRatio": "1:1",
+      "width": 1080,
+      "height": 1080,
       "durationSec": 10,
+      "bitrateKbps": 2932,
+      "sizeBytes": 3664686,
       "tags": [
-        "test-videos",
-        "mp4",
-        "bbb"
-      ]
+        "square"
+      ],
+      "source": "20251008_2353_New Video_simple_compose_01k72x1110e9ybrhy9j5mp3j93.mp4"
     },
     {
-      "id": "bbb_360_10s_1mb",
-      "url": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4",
-      "mime": "video/mp4",
-      "width": 640,
-      "height": 360,
+      "id": "20251008-2357-new-video-simple-compose-01k72x8463fa88wdatk0hdg7td",
+      "path": "portrait/20251008-2357-new-video-simple-compose-01k72x8463fa88wdatk0hdg7td.mp4",
+      "aspectRatio": "9:16",
+      "width": 1080,
+      "height": 1920,
       "durationSec": 10,
+      "bitrateKbps": 2932,
+      "sizeBytes": 3665355,
       "tags": [
-        "test-videos",
-        "mp4",
-        "bbb"
-      ]
+        "portrait"
+      ],
+      "source": "20251008_2357_New Video_simple_compose_01k72x8463fa88wdatk0hdg7td.mp4"
     },
     {
-      "id": "bbb_360_10s_2mb",
-      "url": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_2MB.mp4",
-      "mime": "video/mp4",
-      "width": 640,
-      "height": 360,
+      "id": "20251008-2359-new-video-simple-compose-01k72xax7neka96gf19yhy9vv1",
+      "path": "square/20251008-2359-new-video-simple-compose-01k72xax7neka96gf19yhy9vv1.mp4",
+      "aspectRatio": "1:1",
+      "width": 1080,
+      "height": 1080,
       "durationSec": 10,
+      "bitrateKbps": 3481,
+      "sizeBytes": 4351815,
       "tags": [
-        "test-videos",
-        "mp4",
-        "bbb"
-      ]
+        "square"
+      ],
+      "source": "20251008_2359_New Video_simple_compose_01k72xax7neka96gf19yhy9vv1.mp4"
     },
     {
-      "id": "bbb_320x180_mp4",
-      "url": "https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4",
-      "mime": "video/mp4",
-      "width": 320,
-      "height": 180,
-      "durationSec": null,
+      "id": "20251009-0000-new-video-simple-compose-01k72xdxc6fkfrm2d807f9zj2b",
+      "path": "square/20251009-0000-new-video-simple-compose-01k72xdxc6fkfrm2d807f9zj2b.mp4",
+      "aspectRatio": "1:1",
+      "width": 1080,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 3496,
+      "sizeBytes": 4369715,
       "tags": [
-        "blender",
-        "bbb"
-      ]
+        "square"
+      ],
+      "source": "20251009_0000_New Video_simple_compose_01k72xdxc6fkfrm2d807f9zj2b.mp4"
     },
     {
-      "id": "bbb_640x360_m4v",
-      "url": "https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_640x360.m4v",
-      "mime": "video/mp4",
-      "width": 640,
-      "height": 360,
-      "durationSec": null,
+      "id": "20251009-0001-new-video-simple-compose-01k72xeb0se87arjngcee4zcnj",
+      "path": "landscape/20251009-0001-new-video-simple-compose-01k72xeb0se87arjngcee4zcnj.mp4",
+      "aspectRatio": "16:9",
+      "width": 1920,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 5302,
+      "sizeBytes": 6626886,
       "tags": [
-        "blender",
-        "bbb"
-      ]
+        "landscape"
+      ],
+      "source": "20251009_0001_New Video_simple_compose_01k72xeb0se87arjngcee4zcnj.mp4"
     },
     {
-      "id": "bbb_480p_h264_mov",
-      "url": "https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_480p_h264.mov",
-      "mime": "video/quicktime",
-      "width": 854,
+      "id": "20251009-0001-new-video-simple-compose-01k72xetggfcf8h4pcwcds7dxy",
+      "path": "portrait/20251009-0001-new-video-simple-compose-01k72xetggfcf8h4pcwcds7dxy.mp4",
+      "aspectRatio": "9:16",
+      "width": 1080,
+      "height": 1920,
+      "durationSec": 10,
+      "bitrateKbps": 3979,
+      "sizeBytes": 4973811,
+      "tags": [
+        "portrait"
+      ],
+      "source": "20251009_0001_New Video_simple_compose_01k72xetggfcf8h4pcwcds7dxy.mp4"
+    },
+    {
+      "id": "20251009-0034-remix-video-remix-01k72zbwmeekmar5gsyegckgtn",
+      "path": "landscape/20251009-0034-remix-video-remix-01k72zbwmeekmar5gsyegckgtn.mp4",
+      "aspectRatio": "16:9",
+      "width": 1920,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 4962,
+      "sizeBytes": 6202261,
+      "tags": [
+        "landscape"
+      ],
+      "source": "20251009_0034_Remix Video_remix_01k72zbwmeekmar5gsyegckgtn.mp4"
+    },
+    {
+      "id": "20251009-1445-new-video-simple-compose-01k74g0zz9f2a87snjhxg5ew67",
+      "path": "landscape/20251009-1445-new-video-simple-compose-01k74g0zz9f2a87snjhxg5ew67.mp4",
+      "aspectRatio": "16:9",
+      "width": 1920,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 5201,
+      "sizeBytes": 6500824,
+      "tags": [
+        "landscape"
+      ],
+      "source": "20251009_1445_New Video_simple_compose_01k74g0zz9f2a87snjhxg5ew67.mp4"
+    },
+    {
+      "id": "20251009-1446-new-video-simple-compose-01k74g3fshegxbwy7xvq1cc3ww",
+      "path": "landscape/20251009-1446-new-video-simple-compose-01k74g3fshegxbwy7xvq1cc3ww.mp4",
+      "aspectRatio": "16:9",
+      "width": 1920,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 3314,
+      "sizeBytes": 4143097,
+      "tags": [
+        "landscape"
+      ],
+      "source": "20251009_1446_New Video_simple_compose_01k74g3fshegxbwy7xvq1cc3ww.mp4"
+    },
+    {
+      "id": "20251009-1447-new-video-simple-compose-01k74g52e4ezdaqg3629s3ke7y",
+      "path": "portrait/20251009-1447-new-video-simple-compose-01k74g52e4ezdaqg3629s3ke7y.mp4",
+      "aspectRatio": "9:16",
+      "width": 1080,
+      "height": 1920,
+      "durationSec": 10,
+      "bitrateKbps": 4452,
+      "sizeBytes": 5564920,
+      "tags": [
+        "portrait"
+      ],
+      "source": "20251009_1447_New Video_simple_compose_01k74g52e4ezdaqg3629s3ke7y.mp4"
+    },
+    {
+      "id": "20251009-1448-new-video-simple-compose-01k74g7tagfz5sygncyz8qrqrc",
+      "path": "landscape/20251009-1448-new-video-simple-compose-01k74g7tagfz5sygncyz8qrqrc.mp4",
+      "aspectRatio": "16:9",
+      "width": 1920,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 5258,
+      "sizeBytes": 6572113,
+      "tags": [
+        "landscape"
+      ],
+      "source": "20251009_1448_New Video_simple_compose_01k74g7tagfz5sygncyz8qrqrc.mp4"
+    },
+    {
+      "id": "20251009-1450-new-video-simple-compose-01k74gc27jf569h5wy503nc58m",
+      "path": "square/20251009-1450-new-video-simple-compose-01k74gc27jf569h5wy503nc58m.mp4",
+      "aspectRatio": "1:1",
+      "width": 1080,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 1968,
+      "sizeBytes": 2459681,
+      "tags": [
+        "square"
+      ],
+      "source": "20251009_1450_New Video_simple_compose_01k74gc27jf569h5wy503nc58m.mp4"
+    },
+    {
+      "id": "20251009-1453-new-video-simple-compose-01k74gfafjf1ebxdtee1tra7bt",
+      "path": "portrait/20251009-1453-new-video-simple-compose-01k74gfafjf1ebxdtee1tra7bt.mp4",
+      "aspectRatio": "9:16",
+      "width": 1080,
+      "height": 1920,
+      "durationSec": 10,
+      "bitrateKbps": 4326,
+      "sizeBytes": 5406968,
+      "tags": [
+        "portrait"
+      ],
+      "source": "20251009_1453_New Video_simple_compose_01k74gfafjf1ebxdtee1tra7bt.mp4"
+    },
+    {
+      "id": "20251009-1453-new-video-simple-compose-01k74gfr7femfbf5ph2mp4gghn",
+      "path": "portrait/20251009-1453-new-video-simple-compose-01k74gfr7femfbf5ph2mp4gghn.mp4",
+      "aspectRatio": "9:16",
+      "width": 1080,
+      "height": 1920,
+      "durationSec": 10,
+      "bitrateKbps": 4570,
+      "sizeBytes": 5712817,
+      "tags": [
+        "portrait"
+      ],
+      "source": "20251009_1453_New Video_simple_compose_01k74gfr7femfbf5ph2mp4gghn.mp4"
+    },
+    {
+      "id": "20251009-1454-new-video-simple-compose-01k74ghx59fqz9sgecfwmdc1yf",
+      "path": "landscape/20251009-1454-new-video-simple-compose-01k74ghx59fqz9sgecfwmdc1yf.mp4",
+      "aspectRatio": "16:9",
+      "width": 1920,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 5313,
+      "sizeBytes": 6640738,
+      "tags": [
+        "landscape"
+      ],
+      "source": "20251009_1454_New Video_simple_compose_01k74ghx59fqz9sgecfwmdc1yf.mp4"
+    },
+    {
+      "id": "20251009-1524-new-video-simple-compose-01k74j97ztfapabnez3wn21sqz",
+      "path": "square/20251009-1524-new-video-simple-compose-01k74j97ztfapabnez3wn21sqz.mp4",
+      "aspectRatio": "1:1",
+      "width": 1080,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 3605,
+      "sizeBytes": 4506839,
+      "tags": [
+        "square"
+      ],
+      "source": "20251009_1524_New Video_simple_compose_01k74j97ztfapabnez3wn21sqz.mp4"
+    },
+    {
+      "id": "20251009-1524-new-video-simple-compose-01k74ja4zrfgkvn9rzjqh96ptn",
+      "path": "landscape/20251009-1524-new-video-simple-compose-01k74ja4zrfgkvn9rzjqh96ptn.mp4",
+      "aspectRatio": "16:9",
+      "width": 1920,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 3079,
+      "sizeBytes": 3848539,
+      "tags": [
+        "landscape"
+      ],
+      "source": "20251009_1524_New Video_simple_compose_01k74ja4zrfgkvn9rzjqh96ptn.mp4"
+    },
+    {
+      "id": "20251009-1525-new-video-simple-compose-01k74jadc7eqvrjdmjj5vay7md",
+      "path": "square/20251009-1525-new-video-simple-compose-01k74jadc7eqvrjdmjj5vay7md.mp4",
+      "aspectRatio": "1:1",
+      "width": 1080,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 3901,
+      "sizeBytes": 4876352,
+      "tags": [
+        "square"
+      ],
+      "source": "20251009_1525_New Video_simple_compose_01k74jadc7eqvrjdmjj5vay7md.mp4"
+    },
+    {
+      "id": "20251009-1526-new-video-simple-compose-01k74jcss4fnzadekdqttmasz6",
+      "path": "landscape/20251009-1526-new-video-simple-compose-01k74jcss4fnzadekdqttmasz6.mp4",
+      "aspectRatio": "16:9",
+      "width": 1920,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 4567,
+      "sizeBytes": 5709264,
+      "tags": [
+        "landscape"
+      ],
+      "source": "20251009_1526_New Video_simple_compose_01k74jcss4fnzadekdqttmasz6.mp4"
+    },
+    {
+      "id": "20251009-1547-new-video-simple-compose-01k74kk28be5erjpg26x2jk7zv",
+      "path": "square/20251009-1547-new-video-simple-compose-01k74kk28be5erjpg26x2jk7zv.mp4",
+      "aspectRatio": "1:1",
+      "width": 1080,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 2239,
+      "sizeBytes": 2798804,
+      "tags": [
+        "square"
+      ],
+      "source": "20251009_1547_New Video_simple_compose_01k74kk28be5erjpg26x2jk7zv.mp4"
+    },
+    {
+      "id": "20251009-1547-new-video-simple-compose-01k74kk7gpfdxvw9gwpk9c9g9g",
+      "path": "portrait/20251009-1547-new-video-simple-compose-01k74kk7gpfdxvw9gwpk9c9g9g.mp4",
+      "aspectRatio": "9:16",
+      "width": 1080,
+      "height": 1920,
+      "durationSec": 10,
+      "bitrateKbps": 4530,
+      "sizeBytes": 5662839,
+      "tags": [
+        "portrait"
+      ],
+      "source": "20251009_1547_New Video_simple_compose_01k74kk7gpfdxvw9gwpk9c9g9g.mp4"
+    },
+    {
+      "id": "20251009-1548-new-video-simple-compose-01k74kn47yezzv38drnyjay5zj",
+      "path": "landscape/20251009-1548-new-video-simple-compose-01k74kn47yezzv38drnyjay5zj.mp4",
+      "aspectRatio": "16:9",
+      "width": 1920,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 4167,
+      "sizeBytes": 5209330,
+      "tags": [
+        "landscape"
+      ],
+      "source": "20251009_1548_New Video_simple_compose_01k74kn47yezzv38drnyjay5zj.mp4"
+    },
+    {
+      "id": "20251009-1628-new-video-simple-compose-01k74nxzr0fkvs7kwwpqe194cp",
+      "path": "portrait/20251009-1628-new-video-simple-compose-01k74nxzr0fkvs7kwwpqe194cp.mp4",
+      "aspectRatio": "9:16",
+      "width": 1080,
+      "height": 1920,
+      "durationSec": 10,
+      "bitrateKbps": 3816,
+      "sizeBytes": 4770597,
+      "tags": [
+        "portrait"
+      ],
+      "source": "20251009_1628_New Video_simple_compose_01k74nxzr0fkvs7kwwpqe194cp.mp4"
+    },
+    {
+      "id": "20251009-1629-new-video-simple-compose-01k74nzwt8evbtw2q0z02dzv8x",
+      "path": "landscape/20251009-1629-new-video-simple-compose-01k74nzwt8evbtw2q0z02dzv8x.mp4",
+      "aspectRatio": "16:9",
+      "width": 1920,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 4202,
+      "sizeBytes": 5251978,
+      "tags": [
+        "landscape"
+      ],
+      "source": "20251009_1629_New Video_simple_compose_01k74nzwt8evbtw2q0z02dzv8x.mp4"
+    },
+    {
+      "id": "20251009-1630-new-video-simple-compose-01k74p1b9hf89v5g9hz70st50p",
+      "path": "landscape/20251009-1630-new-video-simple-compose-01k74p1b9hf89v5g9hz70st50p.mp4",
+      "aspectRatio": "16:9",
+      "width": 1920,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 5316,
+      "sizeBytes": 6645441,
+      "tags": [
+        "landscape"
+      ],
+      "source": "20251009_1630_New Video_simple_compose_01k74p1b9hf89v5g9hz70st50p.mp4"
+    },
+    {
+      "id": "20251009-1805-remix-video-remix-01k74vfkamfxb97mmdcydkftp0",
+      "path": "portrait/20251009-1805-remix-video-remix-01k74vfkamfxb97mmdcydkftp0.mp4",
+      "aspectRatio": "1080:1620",
+      "width": 1080,
+      "height": 1620,
+      "durationSec": 10,
+      "bitrateKbps": 1922,
+      "sizeBytes": 2402966,
+      "tags": [
+        "portrait"
+      ],
+      "source": "20251009_1805_Remix Video_remix_01k74vfkamfxb97mmdcydkftp0.mp4"
+    },
+    {
+      "id": "20251009-1810-new-video-simple-compose-01k74vsnxhefxr57m8zqg75hnv",
+      "path": "square/20251009-1810-new-video-simple-compose-01k74vsnxhefxr57m8zqg75hnv.mp4",
+      "aspectRatio": "1:1",
+      "width": 480,
       "height": 480,
-      "durationSec": null,
+      "durationSec": 10,
+      "bitrateKbps": 320,
+      "sizeBytes": 399706,
       "tags": [
-        "blender",
-        "bbb"
-      ]
+        "square"
+      ],
+      "source": "20251009_1810_New Video_simple_compose_01k74vsnxhefxr57m8zqg75hnv.mp4"
     },
     {
-      "id": "bbb_720p_h264_mov",
-      "url": "https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_720p_h264.mov",
-      "mime": "video/quicktime",
-      "width": 1280,
-      "height": 720,
-      "durationSec": null,
+      "id": "20251009-1812-new-video-simple-compose-01k74vxyrpfmcaw1y85xdxr220",
+      "path": "square/20251009-1812-new-video-simple-compose-01k74vxyrpfmcaw1y85xdxr220.mp4",
+      "aspectRatio": "1:1",
+      "width": 1080,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 1759,
+      "sizeBytes": 2199190,
       "tags": [
-        "blender",
-        "bbb"
-      ]
+        "square"
+      ],
+      "source": "20251009_1812_New Video_simple_compose_01k74vxyrpfmcaw1y85xdxr220.mp4"
     },
     {
-      "id": "bbb_1080p_h264_mov",
-      "url": "https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_1080p_h264.mov",
-      "mime": "video/quicktime",
+      "id": "20251009-1815-new-video-simple-compose-01k74w29rpev3vq08b6mw11vny",
+      "path": "portrait/20251009-1815-new-video-simple-compose-01k74w29rpev3vq08b6mw11vny.mp4",
+      "aspectRatio": "9:16",
+      "width": 1080,
+      "height": 1920,
+      "durationSec": 10,
+      "bitrateKbps": 2471,
+      "sizeBytes": 3088197,
+      "tags": [
+        "portrait"
+      ],
+      "source": "20251009_1815_New Video_simple_compose_01k74w29rpev3vq08b6mw11vny.mp4"
+    },
+    {
+      "id": "20251009-1816-new-video-simple-compose-01k74w4m47esk85gpmpm95qv76",
+      "path": "landscape/20251009-1816-new-video-simple-compose-01k74w4m47esk85gpmpm95qv76.mp4",
+      "aspectRatio": "16:9",
       "width": 1920,
       "height": 1080,
-      "durationSec": null,
+      "durationSec": 10,
+      "bitrateKbps": 2306,
+      "sizeBytes": 2882880,
       "tags": [
-        "blender",
-        "bbb"
-      ]
+        "landscape"
+      ],
+      "source": "20251009_1816_New Video_simple_compose_01k74w4m47esk85gpmpm95qv76.mp4"
     },
     {
-      "id": "hls_tears_unified",
-      "url": "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8",
-      "mime": "application/vnd.apple.mpegurl",
-      "width": null,
-      "height": null,
-      "durationSec": null,
+      "id": "20251009-1820-new-video-simple-compose-01k74wavcxfnjtzh0kqwqvx4sf",
+      "path": "square/20251009-1820-new-video-simple-compose-01k74wavcxfnjtzh0kqwqvx4sf.mp4",
+      "aspectRatio": "1:1",
+      "width": 1080,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 2856,
+      "sizeBytes": 3570373,
       "tags": [
-        "hls",
-        "m3u8"
-      ]
+        "square"
+      ],
+      "source": "20251009_1820_New Video_simple_compose_01k74wavcxfnjtzh0kqwqvx4sf.mp4"
     },
     {
-      "id": "hls_tears_mp4_unified",
-      "url": "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.mp4/.m3u8",
-      "mime": "application/vnd.apple.mpegurl",
-      "width": null,
-      "height": null,
-      "durationSec": null,
+      "id": "20251009-1827-new-video-simple-compose-01k74wseste8fayxraznky3ze5",
+      "path": "square/20251009-1827-new-video-simple-compose-01k74wseste8fayxraznky3ze5.mp4",
+      "aspectRatio": "1:1",
+      "width": 1080,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 631,
+      "sizeBytes": 789242,
       "tags": [
-        "hls",
-        "m3u8"
-      ]
+        "square"
+      ],
+      "source": "20251009_1827_New Video_simple_compose_01k74wseste8fayxraznky3ze5.mp4"
     },
     {
-      "id": "hls_apple_bipbop_fmp4",
-      "url": "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8",
-      "mime": "application/vnd.apple.mpegurl",
-      "width": null,
-      "height": null,
-      "durationSec": null,
+      "id": "20251009-1830-new-video-simple-compose-01k74wwy1be7nbz81a298q8ha9",
+      "path": "portrait/20251009-1830-new-video-simple-compose-01k74wwy1be7nbz81a298q8ha9.mp4",
+      "aspectRatio": "9:16",
+      "width": 1080,
+      "height": 1920,
+      "durationSec": 10,
+      "bitrateKbps": 3142,
+      "sizeBytes": 3926892,
       "tags": [
-        "hls",
-        "m3u8"
-      ]
+        "portrait"
+      ],
+      "source": "20251009_1830_New Video_simple_compose_01k74wwy1be7nbz81a298q8ha9.mp4"
     },
     {
-      "id": "hls_akamai_live1",
-      "url": "https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8",
-      "mime": "application/vnd.apple.mpegurl",
-      "width": null,
-      "height": null,
-      "durationSec": null,
-      "tags": [
-        "hls",
-        "m3u8"
-      ]
-    },
-    {
-      "id": "hls_akamai_live2",
-      "url": "https://moctobpltc-i.akamaihd.net/hls/live/571329/eight/playlist.m3u8",
-      "mime": "application/vnd.apple.mpegurl",
-      "width": null,
-      "height": null,
-      "durationSec": null,
-      "tags": [
-        "hls",
-        "m3u8"
-      ]
-    },
-    {
-      "id": "bbb_4k_webm_commons",
-      "url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Big_Buck_Bunny_4K.webm",
-      "mime": "video/webm",
-      "width": 3840,
-      "height": 2160,
-      "durationSec": null,
-      "tags": [
-        "webm",
-        "bbb"
-      ]
-    },
-    {
-      "id": "bbb_1080_30s_20mb",
-      "url": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_30s_20MB.mp4",
-      "mime": "video/mp4",
+      "id": "20251009-1831-new-video-simple-compose-01k74wyxf9ff7r4zpwzzm6xpdk",
+      "path": "landscape/20251009-1831-new-video-simple-compose-01k74wyxf9ff7r4zpwzzm6xpdk.mp4",
+      "aspectRatio": "16:9",
       "width": 1920,
       "height": 1080,
-      "durationSec": 30,
+      "durationSec": 10,
+      "bitrateKbps": 3055,
+      "sizeBytes": 3819358,
       "tags": [
-        "test-videos",
-        "mp4",
-        "bbb"
-      ]
+        "landscape"
+      ],
+      "source": "20251009_1831_New Video_simple_compose_01k74wyxf9ff7r4zpwzzm6xpdk.mp4"
     },
     {
-      "id": "bbb_1080_60s_30mb",
-      "url": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_60s_30MB.mp4",
-      "mime": "video/mp4",
+      "id": "20251009-1831-new-video-simple-compose-01k74wyy4bfperc8rzr15awdny",
+      "path": "landscape/20251009-1831-new-video-simple-compose-01k74wyy4bfperc8rzr15awdny.mp4",
+      "aspectRatio": "16:9",
       "width": 1920,
       "height": 1080,
-      "durationSec": 60,
+      "durationSec": 10,
+      "bitrateKbps": 3098,
+      "sizeBytes": 3872561,
       "tags": [
-        "test-videos",
-        "mp4",
-        "bbb"
-      ]
+        "landscape"
+      ],
+      "source": "20251009_1831_New Video_simple_compose_01k74wyy4bfperc8rzr15awdny.mp4"
     },
     {
-      "id": "bbb_720_30s_10mb",
-      "url": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_30s_10MB.mp4",
-      "mime": "video/mp4",
-      "width": 1280,
-      "height": 720,
-      "durationSec": 30,
+      "id": "20251009-1847-new-video-simple-compose-01k74xxqn7f4xttpsgpx7hfjsw",
+      "path": "square/20251009-1847-new-video-simple-compose-01k74xxqn7f4xttpsgpx7hfjsw.mp4",
+      "aspectRatio": "1:1",
+      "width": 1080,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 1727,
+      "sizeBytes": 2158977,
       "tags": [
-        "test-videos",
-        "mp4",
-        "bbb"
-      ]
+        "square"
+      ],
+      "source": "20251009_1847_New Video_simple_compose_01k74xxqn7f4xttpsgpx7hfjsw.mp4"
     },
     {
-      "id": "bbb_720_60s_20mb",
-      "url": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_60s_20MB.mp4",
-      "mime": "video/mp4",
-      "width": 1280,
-      "height": 720,
-      "durationSec": 60,
+      "id": "20251009-1858-new-video-simple-compose-01k74ygrqsf3y9kfhjv5bxqsxf",
+      "path": "square/20251009-1858-new-video-simple-compose-01k74ygrqsf3y9kfhjv5bxqsxf.mp4",
+      "aspectRatio": "1:1",
+      "width": 1080,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 2545,
+      "sizeBytes": 3180768,
       "tags": [
-        "test-videos",
-        "mp4",
-        "bbb"
-      ]
+        "square"
+      ],
+      "source": "20251009_1858_New Video_simple_compose_01k74ygrqsf3y9kfhjv5bxqsxf.mp4"
     },
     {
-      "id": "bbb_360_30s_5mb",
-      "url": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_30s_5MB.mp4",
-      "mime": "video/mp4",
-      "width": 640,
-      "height": 360,
-      "durationSec": 30,
+      "id": "20251009-1858-new-video-simple-compose-01k74yh5s7f8xsa7m17wjgaf94",
+      "path": "landscape/20251009-1858-new-video-simple-compose-01k74yh5s7f8xsa7m17wjgaf94.mp4",
+      "aspectRatio": "16:9",
+      "width": 1920,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 5348,
+      "sizeBytes": 6684859,
       "tags": [
-        "test-videos",
-        "mp4",
-        "bbb"
-      ]
+        "landscape"
+      ],
+      "source": "20251009_1858_New Video_simple_compose_01k74yh5s7f8xsa7m17wjgaf94.mp4"
     },
     {
-      "id": "bbb_360_60s_10mb",
-      "url": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_60s_10MB.mp4",
-      "mime": "video/mp4",
-      "width": 640,
-      "height": 360,
-      "durationSec": 60,
+      "id": "20251009-1906-new-video-simple-compose-01k74z0fy8e24r9fftw4gatrm7",
+      "path": "square/20251009-1906-new-video-simple-compose-01k74z0fy8e24r9fftw4gatrm7.mp4",
+      "aspectRatio": "1:1",
+      "width": 1080,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 3456,
+      "sizeBytes": 4319721,
       "tags": [
-        "test-videos",
-        "mp4",
-        "bbb"
-      ]
+        "square"
+      ],
+      "source": "20251009_1906_New Video_simple_compose_01k74z0fy8e24r9fftw4gatrm7.mp4"
     },
     {
-      "id": "bbb_480p_stereo_ogg",
-      "url": "https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_480p_stereo.ogg",
-      "mime": "video/ogg",
-      "width": null,
-      "height": null,
-      "durationSec": null,
+      "id": "20251009-1909-new-video-simple-compose-01k74z5m4gegvsxgcs8gh60g45",
+      "path": "landscape/20251009-1909-new-video-simple-compose-01k74z5m4gegvsxgcs8gh60g45.mp4",
+      "aspectRatio": "16:9",
+      "width": 1920,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 4509,
+      "sizeBytes": 5635773,
       "tags": [
-        "blender",
-        "bbb"
-      ]
+        "landscape"
+      ],
+      "source": "20251009_1909_New Video_simple_compose_01k74z5m4gegvsxgcs8gh60g45.mp4"
     },
     {
-      "id": "bbb_720p_stereo_ogg",
-      "url": "https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_720p_stereo.ogg",
-      "mime": "video/ogg",
-      "width": null,
-      "height": null,
-      "durationSec": null,
+      "id": "20251009-1910-new-video-simple-compose-01k74z6p8wer19hbwxv3z6vcst",
+      "path": "portrait/20251009-1910-new-video-simple-compose-01k74z6p8wer19hbwxv3z6vcst.mp4",
+      "aspectRatio": "9:16",
+      "width": 1080,
+      "height": 1920,
+      "durationSec": 10,
+      "bitrateKbps": 4346,
+      "sizeBytes": 5433042,
       "tags": [
-        "blender",
-        "bbb"
-      ]
+        "portrait"
+      ],
+      "source": "20251009_1910_New Video_simple_compose_01k74z6p8wer19hbwxv3z6vcst.mp4"
     },
     {
-      "id": "bbb_1080p_stereo_ogg",
-      "url": "https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_1080p_stereo.ogg",
-      "mime": "video/ogg",
-      "width": null,
-      "height": null,
-      "durationSec": null,
+      "id": "20251009-1914-new-video-simple-compose-01k74ze93wefsv8a53v5yy4v0d",
+      "path": "square/20251009-1914-new-video-simple-compose-01k74ze93wefsv8a53v5yy4v0d.mp4",
+      "aspectRatio": "1:1",
+      "width": 1080,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 1819,
+      "sizeBytes": 2274183,
       "tags": [
-        "blender",
-        "bbb"
-      ]
+        "square"
+      ],
+      "source": "20251009_1914_New Video_simple_compose_01k74ze93wefsv8a53v5yy4v0d.mp4"
     },
     {
-      "id": "bbb_480p_stereo_avi",
-      "url": "https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_480p_stereo.avi",
-      "mime": "video/x-msvideo",
-      "width": null,
-      "height": null,
-      "durationSec": null,
+      "id": "20251009-1928-new-video-simple-compose-01k7507dqmes98nqa54tqjs0pz",
+      "path": "square/20251009-1928-new-video-simple-compose-01k7507dqmes98nqa54tqjs0pz.mp4",
+      "aspectRatio": "1:1",
+      "width": 1080,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 3741,
+      "sizeBytes": 4675901,
       "tags": [
-        "blender",
-        "bbb"
-      ]
+        "square"
+      ],
+      "source": "20251009_1928_New Video_simple_compose_01k7507dqmes98nqa54tqjs0pz.mp4"
     },
     {
-      "id": "bbb_720p_stereo_avi",
-      "url": "https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_720p_stereo.avi",
-      "mime": "video/x-msvideo",
-      "width": null,
-      "height": null,
-      "durationSec": null,
+      "id": "20251009-1931-new-video-simple-compose-01k750ckftfjvazts7b6pjef5t",
+      "path": "portrait/20251009-1931-new-video-simple-compose-01k750ckftfjvazts7b6pjef5t.mp4",
+      "aspectRatio": "9:16",
+      "width": 1080,
+      "height": 1920,
+      "durationSec": 10,
+      "bitrateKbps": 3356,
+      "sizeBytes": 4195209,
       "tags": [
-        "blender",
-        "bbb"
-      ]
+        "portrait"
+      ],
+      "source": "20251009_1931_New Video_simple_compose_01k750ckftfjvazts7b6pjef5t.mp4"
     },
     {
-      "id": "bbb_1080p_stereo_avi",
-      "url": "https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_1080p_stereo.avi",
-      "mime": "video/x-msvideo",
-      "width": null,
-      "height": null,
-      "durationSec": null,
+      "id": "20251009-1931-new-video-simple-compose-01k750dfwvf5d97wjsv0h9qsgm",
+      "path": "landscape/20251009-1931-new-video-simple-compose-01k750dfwvf5d97wjsv0h9qsgm.mp4",
+      "aspectRatio": "16:9",
+      "width": 1920,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 5098,
+      "sizeBytes": 6372420,
       "tags": [
-        "blender",
-        "bbb"
-      ]
+        "landscape"
+      ],
+      "source": "20251009_1931_New Video_simple_compose_01k750dfwvf5d97wjsv0h9qsgm.mp4"
     },
     {
-      "id": "bbb_480p_surround_avi",
-      "url": "https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_480p_surround.avi",
-      "mime": "video/x-msvideo",
-      "width": null,
-      "height": null,
-      "durationSec": null,
+      "id": "20251009-1931-new-video-simple-compose-01k750e8yyf4ds62h0n6fy5w93",
+      "path": "landscape/20251009-1931-new-video-simple-compose-01k750e8yyf4ds62h0n6fy5w93.mp4",
+      "aspectRatio": "16:9",
+      "width": 1920,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 5245,
+      "sizeBytes": 6556032,
       "tags": [
-        "blender",
-        "bbb"
-      ]
+        "landscape"
+      ],
+      "source": "20251009_1931_New Video_simple_compose_01k750e8yyf4ds62h0n6fy5w93.mp4"
     },
     {
-      "id": "bbb_480p_surround_fix_avi",
-      "url": "https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_480p_surround-fix.avi",
-      "mime": "video/x-msvideo",
-      "width": null,
-      "height": null,
-      "durationSec": null,
+      "id": "20251009-1935-new-video-simple-compose-01k750mw40fv6b4qhf343sd654",
+      "path": "square/20251009-1935-new-video-simple-compose-01k750mw40fv6b4qhf343sd654.mp4",
+      "aspectRatio": "1:1",
+      "width": 1080,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 2130,
+      "sizeBytes": 2662571,
       "tags": [
-        "blender",
-        "bbb"
-      ]
+        "square"
+      ],
+      "source": "20251009_1935_New Video_simple_compose_01k750mw40fv6b4qhf343sd654.mp4"
     },
     {
-      "id": "bbb_720p_surround_avi",
-      "url": "https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_720p_surround.avi",
-      "mime": "video/x-msvideo",
-      "width": null,
-      "height": null,
-      "durationSec": null,
+      "id": "20251009-1935-new-video-simple-compose-01k750n7nkeretqphf6m275k35",
+      "path": "landscape/20251009-1935-new-video-simple-compose-01k750n7nkeretqphf6m275k35.mp4",
+      "aspectRatio": "16:9",
+      "width": 1920,
+      "height": 1080,
+      "durationSec": 10,
+      "bitrateKbps": 4698,
+      "sizeBytes": 5872996,
       "tags": [
-        "blender",
-        "bbb"
-      ]
-    },
-    {
-      "id": "bbb_1080p_surround_avi",
-      "url": "https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_1080p_surround.avi",
-      "mime": "video/x-msvideo",
-      "width": null,
-      "height": null,
-      "durationSec": null,
-      "tags": [
-        "blender",
-        "bbb"
-      ]
-    },
-    {
-      "id": "hls_dolby_stereo",
-      "url": "http://d3rlna7iyyu8wu.cloudfront.net/skip_armstrong/skip_armstrong_stereo_subs.m3u8",
-      "mime": "application/vnd.apple.mpegurl",
-      "width": null,
-      "height": null,
-      "durationSec": null,
-      "tags": [
-        "hls",
-        "m3u8"
-      ]
-    },
-    {
-      "id": "hls_dolby_multichannel",
-      "url": "http://d3rlna7iyyu8wu.cloudfront.net/skip_armstrong/skip_armstrong_multichannel_subs.m3u8",
-      "mime": "application/vnd.apple.mpegurl",
-      "width": null,
-      "height": null,
-      "durationSec": null,
-      "tags": [
-        "hls",
-        "m3u8"
-      ]
-    },
-    {
-      "id": "hls_dolby_multilang",
-      "url": "http://d3rlna7iyyu8wu.cloudfront.net/skip_armstrong/skip_armstrong_multi_language_subs.m3u8",
-      "mime": "application/vnd.apple.mpegurl",
-      "width": null,
-      "height": null,
-      "durationSec": null,
-      "tags": [
-        "hls",
-        "m3u8"
-      ]
-    },
-    {
-      "id": "hls_azure_promo",
-      "url": "http://amssamples.streaming.mediaservices.windows.net/91492735-c523-432b-ba01-faba6c2206a2/AzureMediaServicesPromo.ism/manifest(format=m3u8-aapl)",
-      "mime": "application/vnd.apple.mpegurl",
-      "width": null,
-      "height": null,
-      "durationSec": null,
-      "tags": [
-        "hls",
-        "m3u8"
-      ]
-    },
-    {
-      "id": "hls_azure_promo2",
-      "url": "http://amssamples.streaming.mediaservices.windows.net/69fbaeba-8e92-4740-aedc-ce09ae945073/AzurePromo.ism/manifest(format=m3u8-aapl)",
-      "mime": "application/vnd.apple.mpegurl",
-      "width": null,
-      "height": null,
-      "durationSec": null,
-      "tags": [
-        "hls",
-        "m3u8"
-      ]
-    },
-    {
-      "id": "hls_azure_4k",
-      "url": "http://amssamples.streaming.mediaservices.windows.net/634cd01c-6822-4630-8444-8dd6279f94c6/CaminandesLlamaDrama4K.ism/manifest(format=m3u8-aapl)",
-      "mime": "application/vnd.apple.mpegurl",
-      "width": null,
-      "height": null,
-      "durationSec": null,
-      "tags": [
-        "hls",
-        "m3u8"
-      ]
+        "landscape"
+      ],
+      "source": "20251009_1935_New Video_simple_compose_01k750n7nkeretqphf6m275k35.mp4"
     }
   ]
 }

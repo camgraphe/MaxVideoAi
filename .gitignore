@@ -24,3 +24,10 @@ pnpm-debug.log*
 
 # Vercel local
 .vercel
+
+# Generated test assets
+frontend/public/test-videos/
+video-gallery-dist/
+
+# Private modules extracted from public repo
+private/

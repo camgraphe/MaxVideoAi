@@ -7,5 +7,7 @@
   "pika22": "pika-2-2",
   "pika22_keyframes": "pika-2-2-keyframes",
   "kling25": "kling-2-5",
-  "kling25_turbo": "kling-2-5-turbo"
+  "kling25_turbo": "kling-2-5-turbo",
+  "sora-2": "openai-sora-2",
+  "sora-2-pro": "openai-sora-2-pro"
 }

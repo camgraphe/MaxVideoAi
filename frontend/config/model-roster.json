@@ -1,5 +1,27 @@
 [
   {
+    "engineId": "sora-2",
+    "marketingName": "Sora 2",
+    "brandId": "openai",
+    "modelSlug": "openai-sora-2",
+    "family": "sora",
+    "versionLabel": "2",
+    "availability": "available",
+    "logoPolicy": "textOnly",
+    "billingNote": "Si une clé OpenAI est fournie, la facturation passe directement chez OpenAI ; sinon FAL crédite MaxVideoAI."
+  },
+  {
+    "engineId": "sora-2-pro",
+    "marketingName": "Sora 2 Pro",
+    "brandId": "openai",
+    "modelSlug": "openai-sora-2-pro",
+    "family": "sora",
+    "versionLabel": "2",
+    "availability": "available",
+    "logoPolicy": "textOnly",
+    "billingNote": "Si une clé OpenAI est fournie, la facturation passe directement chez OpenAI ; sinon FAL crédite MaxVideoAI."
+  },
+  {
     "engineId": "veo3",
     "marketingName": "Veo 3",
     "brandId": "google-veo",

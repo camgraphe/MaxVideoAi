@@ -24,17 +24,40 @@ interface Props {
   renderPending?: boolean;
   renderProgress?: number;
   renderMessage?: string;
+  renderEtaLabel?: string;
   renderVideoUrl?: string;
   aspectRatio?: string;
+  billingBadge?: string;
+  billingNote?: string;
+  selectedResolution?: string;
 }
 
-export function PreviewCard({ engine, price: _price, currency: _currency, preflight: _preflight, isPricing: _isPricing, onNavigateFactor: _onNavigateFactor, iterations = 1, renderPending, renderProgress = 0, renderMessage, renderVideoUrl, aspectRatio }: Props) {
+export function PreviewCard({
+  engine,
+  price: _price,
+  currency: _currency,
+  preflight: _preflight,
+  isPricing: _isPricing,
+  onNavigateFactor: _onNavigateFactor,
+  iterations = 1,
+  renderPending,
+  renderProgress = 0,
+  renderMessage,
+  renderEtaLabel,
+  renderVideoUrl,
+  aspectRatio,
+  billingBadge,
+  billingNote,
+  selectedResolution,
+}: Props) {
   const [upscaleOpen, setUpscaleOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isHoveringPreview, setIsHoveringPreview] = useState(false);
+  const hideControlsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
+  const [showControls, setShowControls] = useState(false);
 
   // Price breakdown overlay state
   const [priceOpen, setPriceOpen] = useState(false);
@@ -149,9 +172,13 @@ export function PreviewCard({ engine, price: _price, currency: _currency, prefli
   useEffect(() => {
     if (!renderVideoUrl) {
       setIsVideoPlaying(false);
+      setIsMuted(true);
+      setShowControls(false);
       return;
     }
     setIsVideoPlaying(true);
+    setIsMuted(true);
+    setShowControls(false);
     const el = videoRef.current;
     if (el) {
       const playPromise = el.play();
@@ -160,13 +187,22 @@ export function PreviewCard({ engine, price: _price, currency: _currency, prefli
           setIsVideoPlaying(false);
         });
       }
+      el.muted = true;
     }
   }, [renderVideoUrl]);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (el) {
+      el.muted = isMuted;
+    }
+  }, [isMuted]);
 
   const togglePlayback = useCallback(() => {
     const el = videoRef.current;
     if (!el) return;
     if (el.paused) {
+      setShowControls(true);
       const playPromise = el.play();
       if (playPromise && typeof playPromise.then === 'function') {
         playPromise
@@ -178,8 +214,30 @@ export function PreviewCard({ engine, price: _price, currency: _currency, prefli
     } else {
       el.pause();
       setIsVideoPlaying(false);
+      setShowControls(true);
     }
   }, []);
+
+  const toggleMute = useCallback(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    const nextMuted = !isMuted;
+    el.muted = nextMuted;
+    setIsMuted(nextMuted);
+    if (!nextMuted) {
+      const playPromise = el.play();
+      if (playPromise && typeof playPromise.then === 'function') {
+        playPromise
+          .then(() => setIsVideoPlaying(!el.paused))
+          .catch(() => {});
+      } else {
+        setIsVideoPlaying(!el.paused);
+      }
+      setShowControls(true);
+    }
+  }, [isMuted]);
+
+  const controlsVisible = renderVideoUrl && showControls;
 
   return (
     <Card className="space-y-5 p-5">
@@ -189,6 +247,21 @@ export function PreviewCard({ engine, price: _price, currency: _currency, prefli
           <p className="text-sm text-text-secondary">Preflight • {engine.label}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs">
+          {billingBadge && (
+            <Chip variant="ghost" className="border border-accent/30 bg-accent/10 text-[11px] font-semibold text-accent">
+              {billingBadge}
+            </Chip>
+          )}
+          {engine.audio && (
+            <Chip variant="ghost" className="border border-emerald-300/60 bg-emerald-50 text-[11px] font-semibold text-emerald-700">
+              Audio enabled
+            </Chip>
+          )}
+          {((selectedResolution && selectedResolution.toLowerCase() === '1080p') || engine.id.includes('pro')) && (
+            <Chip variant="ghost" className="border border-indigo-300/70 bg-indigo-50 text-[11px] font-semibold text-indigo-700">
+              Pro tier
+            </Chip>
+          )}
           {_price != null && (
             <div className="relative" onMouseEnter={priceHoverOpen} onMouseLeave={scheduleClosePrice}>
               <button
@@ -279,6 +352,9 @@ export function PreviewCard({ engine, price: _price, currency: _currency, prefli
           )}
         </div>
       </header>
+      {billingNote && (
+        <p className="text-[11px] text-text-muted">{billingNote}</p>
+      )}
       <div className="mt-3">
         <PriceFactorsBar preflight={_preflight} currency={_currency} isLoading={_isPricing} onNavigate={_onNavigateFactor} iterations={iterations} />
       </div>
@@ -287,8 +363,19 @@ export function PreviewCard({ engine, price: _price, currency: _currency, prefli
         <div className="relative overflow-hidden rounded-card border border-border bg-[#EFF3FA]">
           <div
             className="relative mx-auto h-[360px] md:h-[420px]"
-            onMouseEnter={() => setIsHoveringPreview(true)}
-            onMouseLeave={() => setIsHoveringPreview(false)}
+            onMouseEnter={() => {
+              if (hideControlsTimer.current) {
+                clearTimeout(hideControlsTimer.current);
+                hideControlsTimer.current = null;
+              }
+              setShowControls(true);
+            }}
+            onMouseLeave={() => {
+              if (hideControlsTimer.current) clearTimeout(hideControlsTimer.current);
+              hideControlsTimer.current = setTimeout(() => {
+                setShowControls(false);
+              }, 1000);
+            }}
           >
             <div className={clsx('relative mx-auto h-full w-auto', aspectClass)}>
               {renderVideoUrl ? (
@@ -297,7 +384,7 @@ export function PreviewCard({ engine, price: _price, currency: _currency, prefli
                   src={renderVideoUrl}
                   className="absolute inset-0 h-full w-full object-cover"
                   loop
-                  muted
+                  muted={isMuted}
                   playsInline
                   autoPlay
                   preload="metadata"
@@ -318,21 +405,28 @@ export function PreviewCard({ engine, price: _price, currency: _currency, prefli
             {renderVideoUrl && (
               <div
                 className={clsx(
-                  'pointer-events-none absolute inset-0 flex items-end justify-center bg-gradient-to-t from-black/45 via-transparent to-transparent px-4 pb-4 transition-opacity',
-                  isHoveringPreview || !isVideoPlaying ? 'opacity-100' : 'opacity-0'
+                  'pointer-events-none absolute inset-0 z-40 flex items-end justify-center px-4 pb-4 transition-opacity duration-300',
+                  controlsVisible ? 'opacity-100' : 'opacity-0'
                 )}
               >
-                <button
-                  type="button"
-                  onClick={togglePlayback}
-                  className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full border border-hairline bg-white/90 px-3 py-1.5 text-xs font-medium text-text-primary shadow-card backdrop-blur-sm transition hover:bg-white"
-                  aria-label={isVideoPlaying ? 'Pause preview' : 'Play preview'}
-                >
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent/15 text-accent">
+                <div className="pointer-events-auto inline-flex items-center gap-2 rounded-full bg-white/70 px-2 py-1 shadow-card backdrop-blur-sm transition z-50">
+                  <button
+                    type="button"
+                    onClick={togglePlayback}
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-text-primary opacity-80 transition hover:opacity-100"
+                    aria-label={isVideoPlaying ? 'Pause preview' : 'Play preview'}
+                  >
                     <Image src={isVideoPlaying ? '/assets/icons/pause.svg' : '/assets/icons/play.svg'} alt="" width={12} height={12} />
-                  </span>
-                  <span>{isVideoPlaying ? 'Pause' : 'Play'}</span>
-                </button>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={toggleMute}
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-text-primary opacity-80 transition hover:opacity-100"
+                    aria-label={isMuted ? 'Unmute audio' : 'Mute audio'}
+                  >
+                    <Image src={isMuted ? '/assets/icons/audio-off.svg' : '/assets/icons/audio.svg'} alt="" width={12} height={12} />
+                  </button>
+                </div>
               </div>
             )}
             {!renderVideoUrl && (
@@ -346,7 +440,10 @@ export function PreviewCard({ engine, price: _price, currency: _currency, prefli
                     <div className="relative h-2 w-full overflow-hidden rounded-full bg-hairline">
                       <div className="absolute inset-y-0 left-0 rounded-full bg-accent" style={{ width: `${Math.max(5, Math.min(100, renderProgress))}%` }} />
                     </div>
-                    <div className="text-[12px] text-text-muted">{renderMessage ?? 'Preparing your video…'}</div>
+                    <div className="text-[12px] text-text-muted text-center">{renderMessage ?? 'Preparing your video…'}</div>
+                    {renderEtaLabel ? (
+                      <div className="text-[11px] font-medium uppercase tracking-micro text-text-secondary/80">Estimated {renderEtaLabel}</div>
+                    ) : null}
                   </div>
                 ) : (
                   <div className="flex h-20 w-20 items-center justify-center rounded-card border border-border bg-white/80 text-xs uppercase tracking-micro text-text-muted shadow-card backdrop-blur-sm">

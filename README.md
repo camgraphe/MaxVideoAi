@@ -66,6 +66,27 @@ Key behaviours implemented:
 - Overlays for Upscale 4K & Audio respect engine capabilities.
 - Basic badges (PAY-AS-YOU-GO / PRICE-BEFORE) and membership hints inline with the spec.
 
+## Licensing & Repository Layout
+
+- **Licence**: Business Source License 1.1 (BUSL 1.1). See [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE).  
+- **Change Date**: 10 October 2028 → Apache 2.0.  
+- **Usage**: Non-commercial evaluation of the UI and marketing assets only.
+
+Only marketing/UI modules remain in this public repo. Backend services, pricing logic, Fal.ai integrations, and monetisation code live in a private repository. Refer to [`docs/public-vs-private.md`](docs/public-vs-private.md) for the checklist used before mirroring changes; the `private/` folder (ignored by Git) is a temporary staging area before pushing code to the internal repo.
+
+Before syncing the public mirror, run:
+
+```bash
+npm run lint:exposure
+```
+
+The script (`scripts/check-public-exposure.mjs`) fails if sensitive folders or `.env*` files are still present.
+
+### Commercial Licence Track
+
+MaxVideoAI offers a separate commercial licence for partners that need production rights, backend access, or support. The operating model and contract checklist are described in [`docs/licensing/dual-license.md`](docs/licensing/dual-license.md).  
+Contact `licensing@maxvideo.ai` to initiate the commercial process.
+
 ## 4. Switching to Real Backend
 
 - Keep the same interface: `/api/engines`, `/api/preflight`.
@@ -77,3 +98,9 @@ Key behaviours implemented:
 - The mock API runs in-memory; persistence/job streaming left to the real backend.
 - No automated tests yet (awaiting backend contract confirmation).
 - Preview/gallery content is placeholder; real media wiring is pending asset APIs.
+
+## Deployment Overview
+
+- **Public marketing site** → GitHub (`maxvideoai-public`) → Vercel project `maxvideoai-marketing`.  
+- **Internal application** → private repo (`maxvideoai-internal`) → Vercel project `maxvideoai-app` (or alternative infrastructure).  
+- Deployment guidelines and checklists live in [`docs/deployment/github-vercel.md`](docs/deployment/github-vercel.md).

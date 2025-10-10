@@ -1,18 +1,109 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Script from 'next/script';
-import clsx from 'clsx';
 import { ProofTabs } from '@/components/marketing/ProofTabs';
 import { GalleryShowcase } from '@/components/marketing/GalleryShowcase';
 import { PriceChip } from '@/components/marketing/PriceChip';
 import { resolveDictionary } from '@/lib/i18n/server';
-import Image from 'next/image';
-import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
 import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
-import { listAvailableModels } from '@/lib/model-roster';
-import type { ModelAvailability } from '@/lib/model-roster';
-import { AVAILABILITY_BADGE_CLASS } from '@/lib/availability';
-import type { PartnerBrand } from '@/lib/brand-partners';
+import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
+import { getPricingKernel } from '@/lib/pricing-kernel';
+import { CURRENCY_LOCALE } from '@/lib/intl';
+
+type HeroTileConfig = {
+  id: string;
+  engineId: string;
+  label: string;
+  videoSrc: string;
+  posterSrc: string;
+  durationSec: number;
+  resolution: string;
+  fallbackPriceLabel: string;
+  badge?: string;
+  addons?: {
+    audio?: boolean;
+    upscale4k?: boolean;
+  };
+  alt: string;
+};
+
+const HERO_TILES: readonly HeroTileConfig[] = [
+  {
+    id: 'sora-2',
+    engineId: 'sora-2',
+    label: 'Sora 2',
+    videoSrc: '/hero/sora2.mp4',
+    posterSrc: '/hero/sora2.jpg',
+    durationSec: 8,
+    resolution: '1080p',
+    fallbackPriceLabel: 'from $0.10',
+    badge: 'Audio',
+    addons: { audio: true },
+    alt: 'Sora 2 — example clip',
+  },
+  {
+    id: 'runway-gen-3',
+    engineId: 'runwayg3',
+    label: 'Runway Gen-3',
+    videoSrc: '/hero/runway-gen3.mp4',
+    posterSrc: '/hero/runway-gen3.jpg',
+    durationSec: 8,
+    resolution: '1080p',
+    fallbackPriceLabel: 'from $0.08',
+    alt: 'Runway Gen-3 — example clip',
+  },
+  {
+    id: 'luma-dream',
+    engineId: 'luma-dm',
+    label: 'Luma Dream Machine',
+    videoSrc: '/hero/luma-dream.mp4',
+    posterSrc: '/hero/luma-dream.jpg',
+    durationSec: 8,
+    resolution: '1080p',
+    fallbackPriceLabel: 'from $0.09',
+    alt: 'Luma Dream Machine — example clip',
+    addons: { audio: true },
+  },
+  {
+    id: 'pika-15',
+    engineId: 'pika22',
+    label: 'Pika 1.5',
+    videoSrc: '/hero/pika-15.mp4',
+    posterSrc: '/hero/pika-15.jpg',
+    durationSec: 8,
+    resolution: '1080p',
+    fallbackPriceLabel: 'from $0.07',
+    alt: 'Pika 1.5 — example clip',
+  },
+] as const;
+
+const WORKS_WITH_BRANDS = ['OpenAI', 'Runway', 'Luma', 'Pika', 'Kling', 'Veo 3'] as const;
+
+async function resolveHeroTilePrices() {
+  const kernel = getPricingKernel();
+  const entries = await Promise.all(
+    HERO_TILES.map(async (tile) => {
+      try {
+        const { snapshot } = kernel.quote({
+          engineId: tile.engineId,
+          durationSec: tile.durationSec,
+          resolution: tile.resolution,
+          addons: tile.addons,
+          memberTier: 'member',
+        });
+        const formatted = new Intl.NumberFormat(CURRENCY_LOCALE, {
+          style: 'currency',
+          currency: snapshot.currency,
+          minimumFractionDigits: 2,
+        }).format(snapshot.totalCents / 100);
+        return [tile.id, `from ${formatted}`] as const;
+      } catch {
+        return [tile.id, tile.fallbackPriceLabel] as const;
+      }
+    })
+  );
+  return Object.fromEntries(entries);
+}
 
 export const metadata: Metadata = {
   title: 'MaxVideo AI — The right engine for every shot',
@@ -39,7 +130,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function HomePage() {
+export default async function HomePage() {
   const { dictionary } = resolveDictionary();
   const home = dictionary.home;
   const badges = home.badges;
@@ -50,26 +141,7 @@ export default function HomePage() {
   const pricing = home.pricing;
   const trust = home.trust;
   const waysSection = home.waysSection;
-  const availabilityLabels = dictionary.models.availabilityLabels;
-  const rosterEntries = listAvailableModels(true);
-  const availabilityRanking: Record<ModelAvailability, number> = {
-    available: 0,
-    limited: 1,
-    waitlist: 2,
-    paused: 3,
-  };
-  const worksWithEntries = Array.from(
-    rosterEntries.reduce((map, entry) => {
-      const existing = map.get(entry.brandId);
-      if (!existing || availabilityRanking[entry.availability] < availabilityRanking[existing.availability]) {
-        map.set(entry.brandId, entry);
-      }
-      return map;
-    }, new Map<string, typeof rosterEntries[number]>())
-  )
-    .map(([, entry]) => entry)
-    .sort((a, b) => a.brandId.localeCompare(b.brandId, 'en'));
-  const hasRestrictedModels = worksWithEntries.some((entry) => entry.availability === 'limited' || entry.availability === 'waitlist');
+  const heroPriceMap = await resolveHeroTilePrices();
   const softwareSchema = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -92,7 +164,7 @@ export default function HomePage() {
   };
   return (
     <div className="pb-24">
-      <section className="mx-auto flex max-w-5xl flex-col items-center gap-8 px-4 pt-16 text-center sm:px-6 lg:px-8">
+      <section className="mx-auto flex max-w-6xl flex-col items-center gap-10 px-4 pt-20 pb-16 text-center sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-center gap-3">
           {badges.map((badge) => (
             <span key={badge} className="rounded-pill border border-hairline bg-white px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary">
@@ -100,9 +172,11 @@ export default function HomePage() {
             </span>
           ))}
         </div>
-        <div className="space-y-5">
+        <div className="space-y-6">
           <h1 className="text-4xl font-semibold tracking-tight text-text-primary sm:text-5xl">{hero.title}</h1>
-          <p className="mx-auto max-w-2xl text-lg text-text-secondary">{hero.subtitle}</p>
+          <p className="mx-auto max-w-2xl text-lg text-text-secondary">
+            {hero.subtitle}
+          </p>
         </div>
         <div className="flex flex-col items-center gap-3 sm:flex-row">
           <Link
@@ -118,46 +192,33 @@ export default function HomePage() {
             {hero.secondaryCta}
           </Link>
         </div>
-        <div className="mt-6 flex w-full flex-col items-center gap-4 rounded-card border border-hairline bg-white/85 px-6 py-5 text-center shadow-card sm:flex-row sm:items-center sm:justify-between sm:text-left">
-          <span className="text-sm font-medium uppercase tracking-tiny text-text-muted">{worksWith.label}</span>
-          <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
-            {worksWithEntries.map((entry) => {
-              const brand = PARTNER_BRAND_MAP.get(entry.brandId) as PartnerBrand | undefined;
-              const availabilityLabel = availabilityLabels?.[entry.availability] ?? entry.availability;
-              const modelMeta = dictionary.models.meta?.[entry.modelSlug];
-              const displayName = modelMeta?.displayName ?? entry.marketingName;
-              return (
-                <div key={entry.modelSlug} className="flex flex-col items-center gap-2">
-                  {entry.logoPolicy === 'logoAllowed' && brand ? (
-                    <Link href={`/models/${entry.modelSlug}`} className="flex items-center">
-                      <Image src={brand.assets.light.svg} alt={`${displayName} logo`} width={120} height={32} className="h-8 w-auto transition hover:scale-105 dark:hidden" />
-                      <Image src={brand.assets.dark.svg} alt={`${displayName} logo`} width={120} height={32} className="hidden h-8 w-auto transition hover:scale-105 dark:inline-flex" />
-                      <span className="sr-only">{displayName}</span>
-                    </Link>
-                  ) : (
-                    <Link
-                      href={`/models/${entry.modelSlug}`}
-                      className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary hover:border-accent hover:text-accent"
-                    >
-                      Works with {displayName}
-                    </Link>
-                  )}
-                  <span
-                    className={clsx(
-                      'rounded-pill border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-secondary',
-                      AVAILABILITY_BADGE_CLASS[entry.availability]
-                    )}
-                  >
-                    {availabilityLabel}
-                  </span>
-                </div>
-              );
-            })}
+        <div className="grid w-full gap-4 sm:grid-cols-2">
+          {HERO_TILES.map((tile, index) => (
+            <HeroMediaTile
+              key={tile.id}
+              label={tile.label}
+              meta={`${heroPriceMap[tile.id] ?? tile.fallbackPriceLabel} · ${tile.durationSec}s · ${tile.resolution}`}
+              videoSrc={tile.videoSrc}
+              posterSrc={tile.posterSrc}
+              alt={tile.alt}
+              badge={tile.badge}
+              priority={index === 0}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section className="border-t border-hairline bg-white/90 px-4 py-8 text-text-secondary sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 text-center">
+          <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
+            {worksWith.label}
+          </span>
+          <div className="flex flex-wrap items-center justify-center gap-6 text-base font-semibold text-text-primary">
+            {WORKS_WITH_BRANDS.map((brand) => (
+              <span key={brand}>{brand}</span>
+            ))}
           </div>
-          <div className="flex flex-col items-center gap-1 text-xs text-text-muted sm:items-end">
-            {hasRestrictedModels && <span className="text-center sm:text-right">{worksWith.availabilityNotice}</span>}
-            <span className="text-center sm:text-right">{worksWith.caption}</span>
-          </div>
+          <p className="text-xs text-text-muted">{worksWith.caption}</p>
         </div>
       </section>
 

@@ -1,6 +1,6 @@
 import type { BrandAssetPolicy, EngineAvailability } from '@/types/engines';
 
-export type PartnerBrandId = 'runway' | 'luma' | 'google-veo' | 'pika' | 'kling';
+export type PartnerBrandId = 'runway' | 'luma' | 'google-veo' | 'pika' | 'kling' | 'openai';
 
 type PartnerBrandAsset = {
   svg: string;
@@ -58,6 +58,13 @@ const KLING_POLICY: BrandAssetPolicy = {
   textOnly: true,
   linkToGuidelines: 'https://www.kuaishou.com/en',
   usageNotes: 'Default to “Kling by Kuaishou” text unless corporate approval authorises the logo.',
+};
+
+const OPENAI_POLICY: BrandAssetPolicy = {
+  logoAllowed: false,
+  textOnly: true,
+  linkToGuidelines: 'https://openai.com/policies/brand',
+  usageNotes: 'Use the “OpenAI — Sora 2” textual lockup until explicit logo rights are granted.',
 };
 
 export const PARTNER_BRANDS: PartnerBrand[] = [
@@ -172,6 +179,28 @@ export const PARTNER_BRANDS: PartnerBrand[] = [
       dark: 'Kling by Kuaishou wordmark (inverse)',
     },
     engineIds: ['kling25', 'kling-2-5', 'kling25_turbo'],
+  },
+  {
+    id: 'openai',
+    label: 'OpenAI',
+    shortText: 'OpenAI',
+    policy: OPENAI_POLICY,
+    defaultAvailability: 'available',
+    assets: {
+      light: {
+        svg: '/brand/partners/openai/openai-wordmark-light.svg',
+        png: '/brand/partners/openai/openai-wordmark-light.svg',
+      },
+      dark: {
+        svg: '/brand/partners/openai/openai-wordmark-dark.svg',
+        png: '/brand/partners/openai/openai-wordmark-dark.svg',
+      },
+    },
+    alt: {
+      light: 'OpenAI wordmark',
+      dark: 'OpenAI wordmark (inverse)',
+    },
+    engineIds: ['sora-2', 'sora2', 'sora-2-pro', 'sora2pro'],
   },
 ];
 

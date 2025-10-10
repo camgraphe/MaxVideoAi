@@ -2,8 +2,8 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
-import type { Ref } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { MutableRefObject, Ref } from 'react';
 import type { EngineCaps, Mode } from '@/types/engines';
 import { Card } from '@/components/ui/Card';
 
@@ -22,10 +22,15 @@ interface Props {
   mode: Mode;
   iterations?: number;
   onIterationsChange?: (value: number) => void;
+  viewMode?: 'single' | 'quad';
+  onViewModeChange?: (mode: 'single' | 'quad') => void;
   seedLocked?: boolean;
   onSeedLockedChange?: (value: boolean) => void;
+  apiKey?: string;
+  onApiKeyChange?: (value: string) => void;
+  showApiKeyField?: boolean;
   focusRefs?: {
-    duration?: Ref<HTMLInputElement>;
+    duration?: Ref<HTMLElement>;
     resolution?: Ref<HTMLDivElement>;
     addons?: Ref<HTMLDivElement>;
   };
@@ -46,8 +51,13 @@ export function SettingsControls({
   mode,
   iterations,
   onIterationsChange,
+  viewMode,
+  onViewModeChange,
   seedLocked,
   onSeedLockedChange,
+  apiKey,
+  onApiKeyChange,
+  showApiKeyField = false,
   focusRefs,
 }: Props) {
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -56,6 +66,62 @@ export function SettingsControls({
   const [guidance, setGuidance] = useState<number | null>(null);
   const [initInfluence, setInitInfluence] = useState<number | null>(null);
   const [promptStrength, setPromptStrength] = useState<number | null>(null);
+
+  const durationSchemaField = useMemo(() => {
+    const schema = engine.inputSchema;
+    if (!schema) return null;
+    const optionalField = schema.optional?.find((field) => field.id === 'duration_seconds');
+    const requiredField = schema.required?.find((field) => field.id === 'duration_seconds');
+    return optionalField ?? requiredField ?? null;
+  }, [engine]);
+
+  const durationOptions = useMemo<number[] | null>(() => {
+    if (!durationSchemaField) return null;
+    if (durationSchemaField.type === 'enum' && Array.isArray(durationSchemaField.values) && durationSchemaField.values.length) {
+      const parsed = durationSchemaField.values
+        .map((value) => Number(value))
+        .filter((value) => Number.isFinite(value) && value > 0);
+      return parsed.length ? parsed : null;
+    }
+    const min = typeof durationSchemaField.min === 'number' ? durationSchemaField.min : undefined;
+    const max = typeof durationSchemaField.max === 'number' ? durationSchemaField.max : undefined;
+    const step = typeof durationSchemaField.step === 'number' ? durationSchemaField.step : undefined;
+    if (min != null && max != null && step != null && step > 0 && step <= max - min) {
+      const options: number[] = [];
+      for (let value = min; value <= max && options.length < 8; value += step) {
+        options.push(value);
+      }
+      return options.length && options.length <= 6 ? options : null;
+    }
+    return null;
+  }, [durationSchemaField]);
+
+  useEffect(() => {
+    if (!durationOptions || !durationOptions.length) return;
+    if (durationOptions.includes(duration)) return;
+    const closest = durationOptions.reduce((prev, current) =>
+      Math.abs(current - duration) < Math.abs(prev - duration) ? current : prev
+    , durationOptions[0]);
+    if (closest !== duration) {
+      onDurationChange(closest);
+    }
+  }, [durationOptions, duration, onDurationChange]);
+
+  const durationOptionsContainerRef = useRef<HTMLDivElement | null>(null);
+  const durationSliderRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    const target = focusRefs?.duration;
+    if (!target) return;
+    const node: HTMLElement | null = durationOptions?.length
+      ? durationOptionsContainerRef.current
+      : durationSliderRef.current;
+    if (typeof target === 'function') {
+      target(node as never);
+    } else {
+      (target as MutableRefObject<HTMLElement | null>).current = node;
+    }
+  }, [focusRefs?.duration, durationOptions]);
 
   useEffect(() => {
     try {
@@ -95,32 +161,68 @@ export function SettingsControls({
         </button>
       </header>
 
+      {showApiKeyField && (
+        <div className="rounded-input border border-dashed border-border bg-white/80 p-3 text-[12px] text-text-muted">
+          <span className="font-semibold text-text-secondary">Billing tip:</span>{' '}
+          Add your OpenAI API key in Advanced settings to bill runs directly through OpenAI. Leave it blank to route charges via FAL credits.
+        </div>
+      )}
+
       <div className="grid gap-3">
-        <label className="flex flex-col gap-2 text-sm text-text-secondary">
-          <span className="text-[12px] uppercase tracking-micro text-text-muted">
-            Duration — seconds
-            <span className="ml-2 align-middle text-[11px] text-text-muted/80">Max {engine.maxDurationSec}s</span>
-          </span>
-          <div className="flex items-center gap-3 rounded-input border border-border bg-white px-3 py-2">
-            <input
-              type="range"
-              min={1}
-              max={engine.maxDurationSec}
-              value={duration}
-              onChange={(event) => onDurationChange(Number(event.currentTarget.value))}
-              className="range-input h-1 flex-1 appearance-none overflow-hidden rounded-full bg-hairline"
-              ref={focusRefs?.duration}
-            />
-            <input
-              type="number"
-              min={1}
-              max={engine.maxDurationSec}
-              value={duration}
-              onChange={(event) => onDurationChange(Number(event.currentTarget.value))}
-              className="w-16 rounded-input border border-border bg-white px-2 py-1 text-right text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
+        {durationOptions?.length ? (
+          <div className="flex flex-col gap-2 text-sm text-text-secondary">
+            <span className="text-[12px] uppercase tracking-micro text-text-muted">
+              Duration — seconds
+              <span className="ml-2 align-middle text-[11px] text-text-muted/80">Max {engine.maxDurationSec}s</span>
+            </span>
+            <div className="flex flex-wrap gap-2" ref={durationOptionsContainerRef}>
+              {durationOptions.map((option) => {
+                const active = duration === option;
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => onDurationChange(option)}
+                    className={clsx(
+                      'rounded-input border px-3 py-1.5 text-[13px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      active
+                        ? 'border-accent bg-accent text-white'
+                        : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
+                    )}
+                  >
+                    {option}s
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </label>
+        ) : (
+          <label className="flex flex-col gap-2 text-sm text-text-secondary">
+            <span className="text-[12px] uppercase tracking-micro text-text-muted">
+              Duration — seconds
+              <span className="ml-2 align-middle text-[11px] text-text-muted/80">Max {engine.maxDurationSec}s</span>
+            </span>
+            <div className="flex items-center gap-3 rounded-input border border-border bg-white px-3 py-2">
+              <input
+                type="range"
+                min={1}
+                max={engine.maxDurationSec}
+                value={duration}
+                onChange={(event) => onDurationChange(Number(event.currentTarget.value))}
+                className="range-input h-1 flex-1 appearance-none overflow-hidden rounded-full bg-hairline"
+                ref={durationSliderRef}
+              />
+              <input
+                type="number"
+                min={1}
+                max={engine.maxDurationSec}
+                value={duration}
+                onChange={(event) => onDurationChange(Number(event.currentTarget.value))}
+                className="w-16 rounded-input border border-border bg-white px-2 py-1 text-right text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+            </div>
+          </label>
+        )}
       </div>
 
       {onIterationsChange && (
@@ -143,6 +245,35 @@ export function SettingsControls({
           ))}
         </div>
       )}
+      {onViewModeChange && (
+        <div className="-mt-1 flex items-center gap-2 px-1">
+          <span className="text-[11px] uppercase tracking-micro text-text-muted">View</span>
+          {(['single', 'quad'] as const).map((modeOption) => {
+            const isActive = viewMode === modeOption;
+            const iterationsCount = Math.max(1, iterations ?? 1);
+            const disabled = modeOption === 'quad' && iterationsCount <= 1;
+            return (
+              <button
+                key={modeOption}
+                type="button"
+                disabled={disabled}
+                onClick={() => !disabled && onViewModeChange(modeOption)}
+                className={clsx(
+                  'rounded-input border px-2.5 py-1 text-[12px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  disabled
+                    ? 'cursor-not-allowed border-hairline bg-white text-text-muted/60'
+                    : isActive
+                      ? 'border-accent bg-accent text-white'
+                      : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
+                )}
+                aria-pressed={isActive}
+              >
+                {modeOption === 'single' ? 'Single' : 'Quad'}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       <div className="space-y-3">
         <FieldGroup
@@ -151,17 +282,21 @@ export function SettingsControls({
           value={resolution}
           onChange={onResolutionChange}
           focusRef={focusRefs?.resolution}
-          labelFor={(opt) =>
-            ({
+          labelFor={(opt) => {
+            const baseMap: Record<string, string> = {
               '512P': '512P',
               '768P': '768P',
               '720p': '720p • HD',
               '1080p': '1080p • Full HD',
-              '4k': '4K • Ultra HD'
-            } as Record<string, string>)[
-              String(opt)
-            ] || String(opt)
-          }
+              '4k': '4K • Ultra HD',
+              auto: 'Auto',
+            };
+            let label = baseMap[String(opt)] ?? String(opt);
+            if (engine.id.includes('pro')) {
+              label = `${label} • Pro`;
+            }
+            return label;
+          }}
         />
         <FieldGroup
           label="Aspect"
@@ -176,6 +311,18 @@ export function SettingsControls({
               '4:5': '/assets/icons/ar-4-5.svg'
             } as Record<string, string | undefined>)[String(opt)] || undefined
           }
+          labelFor={(opt) => {
+            const labels: Record<string, string> = {
+              '16:9': '16:9',
+              '9:16': '9:16',
+              '1:1': '1:1',
+              '4:5': '4:5',
+              auto: 'Auto',
+              source: 'Source',
+              custom: 'Custom',
+            };
+            return labels[String(opt)] ?? String(opt);
+          }}
         />
       </div>
 
@@ -284,6 +431,23 @@ export function SettingsControls({
                   step={engine.params.guidance.step ?? 0.05}
                   onChange={(value) => setGuidance(value)}
                 />
+              </div>
+            )}
+
+            {showApiKeyField && (
+              <div className="space-y-2">
+                <span className="text-[12px] uppercase tracking-micro text-text-muted">OpenAI API key</span>
+                <input
+                  type="password"
+                  placeholder="sk-..."
+                  autoComplete="off"
+                  value={apiKey ?? ''}
+                  onChange={(event) => onApiKeyChange?.(event.currentTarget.value)}
+                  className="rounded-input border border-border bg-white px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+                <p className="text-[11px] text-text-muted">
+                  Provide your OpenAI key to bill directly through your account. We do not store the key server-side.
+                </p>
               </div>
             )}
 
