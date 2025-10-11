@@ -1,0 +1,9 @@
+*** Begin Patch
+*** Update File: .github/workflows/ci.yml
+@@
+-      - name: Test (only if tests exist)
+-        if: ${{ hashFiles('vitest.config.*', 'jest.config.*', '**/__tests__/**') != '' }}
+-        run: pnpm test -- --run
++      - name: Test
++        run: pnpm test -- --run
+*** End Patch

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+const isCI = process.env.CI === "true";
+
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   // DATABASE_URL is a postgres connection string (postgres:// or postgresql://),
@@ -41,7 +43,9 @@ const envSchema = z.object({
 
 export const env = envSchema.parse({
   NODE_ENV: process.env.NODE_ENV,
-  DATABASE_URL: process.env.DATABASE_URL,
+  DATABASE_URL:
+    process.env.DATABASE_URL ??
+    (isCI ? "postgres://example:example@localhost:5432/example" : undefined),
   SUPABASE_DB_URL: process.env.SUPABASE_DB_URL,
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
@@ -53,9 +57,14 @@ export const env = envSchema.parse({
   SUPABASE_URL: process.env.SUPABASE_URL,
   SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
-  NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL,
+  NEXT_PUBLIC_SUPABASE_URL:
+    process.env.NEXT_PUBLIC_SUPABASE_URL ??
+    process.env.SUPABASE_URL ??
+    (isCI ? "https://example.supabase.co" : undefined),
   NEXT_PUBLIC_SUPABASE_ANON_KEY:
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.SUPABASE_ANON_KEY,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+    process.env.SUPABASE_ANON_KEY ??
+    (isCI ? "public-anon-key" : undefined),
   VEO_API_KEY: process.env.VEO_API_KEY,
   FAL_API_KEY: process.env.FAL_API_KEY,
   FAL_KEY: process.env.FAL_KEY,

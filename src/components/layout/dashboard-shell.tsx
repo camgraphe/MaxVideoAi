@@ -1,12 +1,13 @@
+import type { ReactNode } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 interface DashboardShellProps {
-  children: React.ReactNode;
+  children: ReactNode;
   title?: string;
   description?: string;
-  actions?: React.ReactNode;
+  actions?: ReactNode;
   className?: string;
 }
 

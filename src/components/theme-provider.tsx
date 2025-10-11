@@ -4,8 +4,8 @@ import * as React from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 
 export interface ThemeProviderProps {
-  children: React.ReactNode;
-  attribute?: 'class' | 'data-theme';
+  children?: unknown;
+  attribute?: "class" | "data-theme";
   defaultTheme?: string;
   enableSystem?: boolean;
 }
@@ -23,7 +23,10 @@ export function ThemeProvider({
       enableSystem={enableSystem}
       disableTransitionOnChange
     >
-      {children}
+      {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Legacy provider expects React 18 node type.
+        children as any
+      }
     </NextThemesProvider>
   );
 }
