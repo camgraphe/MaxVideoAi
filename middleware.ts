@@ -1,7 +1,18 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const PROTECTED_PATHS = ["/dashboard", "/generate", "/jobs", "/billing", "/settings", "/api/jobs"];
+const PROTECTED_PATHS = [
+  "/dashboard",
+  "/generate",
+  "/jobs",
+  "/collections",
+  "/billing",
+  "/settings",
+  "/api/jobs",
+];
+
+const isPreviewEnv = process.env.VERCEL_ENV === "preview";
+const previewAllowsAnon = process.env.PREVIEW_ALLOW_ANON === "1";
 
 function requiresAuth(pathname: string) {
   return PROTECTED_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
@@ -40,6 +51,9 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
+    if (isPreviewEnv && previewAllowsAnon) {
+      return new NextResponse(null, { status: 401 });
+    }
     const redirectUrl = new URL("/login", request.url);
     redirectUrl.searchParams.set("redirect", request.nextUrl.pathname + request.nextUrl.search);
     return NextResponse.redirect(redirectUrl);
@@ -53,6 +67,7 @@ export const config = {
     "/dashboard/:path*",
     "/generate",
     "/jobs/:path*",
+    "/collections/:path*",
     "/billing",
     "/settings/:path*",
     "/api/jobs/:path*",
