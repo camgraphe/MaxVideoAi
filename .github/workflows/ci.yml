@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  build:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --dir frontend lint
+      - run: pnpm --dir frontend typecheck
+      - run: pnpm --dir frontend test -- --run
+      - run: pnpm --dir frontend build

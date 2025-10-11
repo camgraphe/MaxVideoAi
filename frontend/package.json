@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "lint:exposure": "node ../scripts/check-public-exposure.mjs"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint:exposure": "node ../scripts/check-public-exposure.mjs",
+    "check:env": "node scripts/check-env.js"
   },
   "dependencies": {
     "@maxvideoai/pricing": "file:../packages/pricing",
@@ -25,6 +28,9 @@
     "swr": "^2.3.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.4.3",
+    "@testing-library/react": "^14.3.1",
+    "@testing-library/user-event": "^14.5.2",
     "@types/node": "^20.12.7",
     "@types/pg": "^8.10.2",
     "@types/react": "^18.2.62",
@@ -32,8 +38,11 @@
     "autoprefixer": "^10.4.17",
     "eslint": "8.57.1",
     "eslint-config-next": "15.5.4",
+    "jsdom": "^24.0.0",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.3",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^1.6.0"
   }
 }
