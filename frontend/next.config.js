@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  transpilePackages: ['@maxvideoai/pricing'],
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'videohub-uploads-us.s3.amazonaws.com' },

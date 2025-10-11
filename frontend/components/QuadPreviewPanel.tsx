@@ -30,7 +30,7 @@ export interface QuadPreviewTile {
   engineId: string;
   etaLabel?: string;
   prompt: string;
-  status: 'pending' | 'completed';
+  status: 'pending' | 'completed' | 'failed';
 }
 
 interface QuadPreviewPanelProps {

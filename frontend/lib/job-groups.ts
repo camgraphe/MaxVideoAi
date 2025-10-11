@@ -41,7 +41,7 @@ function buildMember(job: Job): GroupMemberSummary {
     id: job.jobId,
     jobId: job.jobId,
     batchId: job.batchId ?? job.groupId ?? null,
-    localKey: job.localKey ?? null,
+    localKey: job.localKey ?? undefined,
     iterationIndex: typeof job.iterationIndex === 'number' ? job.iterationIndex : null,
     iterationCount,
     engineId: job.engineId,

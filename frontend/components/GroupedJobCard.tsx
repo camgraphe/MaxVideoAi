@@ -23,10 +23,11 @@ function ThumbImage({ src, alt, className }: { src: string; alt: string; classNa
 
 function GroupPreviewMedia({ preview }: { preview: GroupSummary['previews'][number] | undefined }) {
   if (preview?.videoUrl) {
+    const poster = preview.thumbUrl ?? undefined;
     return (
       <video
         src={preview.videoUrl}
-        poster={preview.thumbUrl}
+        poster={poster}
         className="absolute inset-0 h-full w-full object-cover pointer-events-none"
         muted
         playsInline
