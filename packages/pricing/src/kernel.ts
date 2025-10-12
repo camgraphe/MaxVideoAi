@@ -177,7 +177,10 @@ export function createPricingKernel(definitions: PricingEngineDefinition[]): Pri
       if (!definition) {
         throw new Error(`Unknown engineId "${input.engineId}" for pricing`);
       }
-      if (!definition.resolutionMultipliers[input.resolution]) {
+      const hasResolution =
+        typeof definition.resolutionMultipliers[input.resolution] === 'number' ||
+        typeof definition.resolutionMultipliers.default === 'number';
+      if (!hasResolution) {
         throw new Error(`Unsupported resolution "${input.resolution}" for engine "${definition.engineId}"`);
       }
       return computePricingSnapshot(definition, input).quote;

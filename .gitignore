@@ -31,3 +31,4 @@ video-gallery-dist/
 
 # Private modules extracted from public repo
 private/
+.env*.local
