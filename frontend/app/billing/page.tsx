@@ -6,8 +6,8 @@ import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { runPreflight, useEngines } from '@/lib/api';
 import type { EngineCaps, Mode, Resolution, AspectRatio, PricingSnapshot } from '@/types/engines';
-import { supabase } from '@/lib/supabaseClient';
 import { CURRENCY_LOCALE } from '@/lib/intl';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 type ReceiptItem = {
   id: number;
@@ -30,6 +30,7 @@ export const dynamic = 'force-dynamic';
 export default function BillingPage() {
   const { data, error } = useEngines();
   const engines = useMemo(() => data?.engines ?? [], [data]);
+  const { session, loading: authLoading } = useRequireAuth();
 
   const [engineId, setEngineId] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>('t2v');
@@ -90,10 +91,11 @@ export default function BillingPage() {
   }>({ items: [], nextCursor: null, loading: false });
 
   useEffect(() => {
+    if (authLoading || !session) return;
+
     let mounted = true;
     async function load() {
-      const { data } = await supabase.auth.getSession();
-      const token = data.session?.access_token;
+      const token = session?.access_token ?? null;
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
       fetch('/api/wallet', { headers })
         .then((r) => r.json())
@@ -115,7 +117,7 @@ export default function BillingPage() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [authLoading, session]);
 
   // Detect Stripe mode for badge
   useEffect(() => {
@@ -142,8 +144,7 @@ export default function BillingPage() {
   }, []);
 
   async function handleTopUp(amountCents: number) {
-    const { data } = await supabase.auth.getSession();
-    const token = data.session?.access_token;
+    const token = session?.access_token;
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) {
       headers.Authorization = `Bearer ${token}`;
@@ -156,8 +157,7 @@ export default function BillingPage() {
   async function loadMoreReceipts() {
     if (receipts.loading || receipts.nextCursor === null) return;
     setReceipts((s) => ({ ...s, loading: true }));
-    const { data } = await supabase.auth.getSession();
-    const token = data.session?.access_token;
+    const token = session?.access_token;
     const headers: Record<string, string> | undefined = token ? { Authorization: `Bearer ${token}` } : undefined;
     const url = receipts.nextCursor ? `/api/receipts?limit=25&cursor=${encodeURIComponent(receipts.nextCursor)}` : '/api/receipts?limit=25';
     try {
@@ -207,6 +207,10 @@ export default function BillingPage() {
       return `${currency} ${amount.toFixed(2)}`;
     }
   };
+
+  if (authLoading || !session) {
+    return null;
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-bg">

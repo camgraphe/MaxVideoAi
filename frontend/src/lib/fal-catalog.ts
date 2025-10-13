@@ -2,14 +2,21 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { EngineCaps, EnginePricingDetails } from '@/types/engines';
 import { ENV } from '@/lib/env';
+import { buildFalProxyUrl } from '@/lib/fal-proxy';
 
-const API_BASE = 'https://api.fal.ai/v1';
 const CATALOG_TTL_MS = 5 * 60 * 1000;
 
 const ENGINE_ID_OVERRIDES: Record<string, string> = {
-  'fal-ai/video/pika-2-2': 'pika-22',
-  'fal-ai/video/luma-dream-machine': 'luma-dm',
-  'fal-ai/video/veo-3': 'veo-3',
+  'fal-ai/video/pika-2-2': 'pika22',
+  'fal-ai/video/pika-2-2-keyframes': 'pika22_keyframes',
+  'fal-ai/video/luma-dream-machine': 'lumaDM',
+  'fal-ai/video/luma-dream-machine-fast': 'lumaDM_fast',
+  'fal-ai/video/veo-3': 'veo3',
+  'fal-ai/video/veo-3-fast': 'veo3fast',
+  'fal-ai/video/kling-2-5-turbo': 'kling25_turbo',
+  'fal-ai/video/minimax': 'minimax',
+  'fal-ai/video/haiper-video': 'haiper_video',
+  'fal-ai/video/hunyuan-video': 'hunyuan_video',
   'fal-ai/sora-2/text-to-video': 'sora-2',
   'fal-ai/sora-2/text-to-video/pro': 'sora-2-pro',
   'fal-ai/sora-2/image-to-video': 'sora-2',
@@ -104,7 +111,15 @@ function normaliseAspectRatio(value: string): string {
 }
 
 function deriveEngineId(modelId: string): string {
-  return ENGINE_ID_OVERRIDES[modelId] ?? modelId.split('/').slice(-1)[0];
+  if (ENGINE_ID_OVERRIDES[modelId]) {
+    return ENGINE_ID_OVERRIDES[modelId]!;
+  }
+  for (const [engineId, mappedSlug] of Object.entries(DEFAULT_MODEL_MAP)) {
+    if (mappedSlug === modelId) {
+      return engineId;
+    }
+  }
+  return modelId.split('/').slice(-1)[0];
 }
 
 function mapFalModel(model: FalModel): { engine: EngineCaps; pricing: EnginePricingDetails; slug: string } | null {
@@ -205,10 +220,31 @@ function mapFalModel(model: FalModel): { engine: EngineCaps; pricing: EnginePric
 function extractPricingDetails(pricingRaw: Record<string, unknown>, maxDurationSec: number): EnginePricingDetails {
   const currency = String(pricingRaw.currency ?? pricingRaw.currency_code ?? 'USD');
 
+  const toCents = (value: unknown, hintIsCents = false, debugLabel?: string): number | undefined => {
+    const numeric = toNumber(value);
+    if (numeric == null || !Number.isFinite(numeric)) return undefined;
+    if (hintIsCents) {
+      return Math.round(numeric);
+    }
+    if (Number.isInteger(numeric)) {
+      if (Math.abs(numeric) >= 1000) {
+        const adjusted = Math.round(numeric / 100);
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn(
+            `[fal-catalog] large integer pricing detected for ${debugLabel ?? 'value'} (${numeric}); assuming cents and scaling down to ${adjusted}`
+          );
+        }
+        return adjusted;
+      }
+      return Math.round(numeric);
+    }
+    return Math.round(numeric * 100);
+  };
+
   const defaultPerSecond =
-    toNumber(pricingRaw.per_second_cents) ??
-    (pricingRaw.per_second != null ? Math.round((toNumber(pricingRaw.per_second) ?? 0) * 100) : undefined) ??
-    (pricingRaw.perSecond != null ? Math.round((toNumber(pricingRaw.perSecond) ?? 0) * 100) : undefined);
+    toCents(pricingRaw.per_second_cents, true, 'per_second_cents') ??
+    toCents(pricingRaw.per_second, false, 'per_second') ??
+    toCents(pricingRaw.perSecond, false, 'perSecond');
 
   const resolutionsRaw = pricingRaw.resolutions ?? pricingRaw.by_resolution ?? pricingRaw.byResolution;
   const perResolution: Record<string, number> = {};
@@ -216,46 +252,38 @@ function extractPricingDetails(pricingRaw: Record<string, unknown>, maxDurationS
   if (resolutionsRaw && typeof resolutionsRaw === 'object') {
     for (const [key, entry] of Object.entries(resolutionsRaw as Record<string, unknown>)) {
       if (!entry || typeof entry !== 'object') continue;
-      const perSecond = toNumber((entry as Record<string, unknown>).per_second_cents) ?? toNumber((entry as Record<string, unknown>).per_second);
+      const perSecond =
+        toCents((entry as Record<string, unknown>).per_second_cents, true, `${key}.per_second_cents`) ??
+        toCents((entry as Record<string, unknown>).per_second, false, `${key}.per_second`);
       if (perSecond != null) {
-        const cents = (entry as Record<string, unknown>).per_second_cents != null ? Math.round(Number(perSecond)) : Math.round(perSecond * 100);
-        perResolution[key] = cents;
+        perResolution[key] = perSecond;
       }
-      const flat = toNumber((entry as Record<string, unknown>).flat_cents) ?? toNumber((entry as Record<string, unknown>).flat);
+      const flat =
+        toCents((entry as Record<string, unknown>).flat_cents, true, `${key}.flat_cents`) ??
+        toCents((entry as Record<string, unknown>).flat, false, `${key}.flat`);
       if (flat != null) {
-        const cents = (entry as Record<string, unknown>).flat_cents != null ? Math.round(Number(flat)) : Math.round(flat * 100);
-        flatByResolution[key] = cents;
+        flatByResolution[key] = flat;
       }
     }
   }
 
-  const flatDefaultRaw = toNumber(pricingRaw.flat_cents) ?? toNumber(pricingRaw.flat) ?? toNumber(pricingRaw.base_cents) ?? toNumber(pricingRaw.base);
   const flatDefaultCents =
-    flatDefaultRaw != null
-      ? pricingRaw.flat_cents != null || pricingRaw.base_cents != null
-        ? Math.round(Number(flatDefaultRaw))
-        : Math.round(flatDefaultRaw * 100)
-      : undefined;
+    toCents(pricingRaw.flat_cents, true, 'flat_cents') ??
+    toCents(pricingRaw.flat, false, 'flat') ??
+    toCents(pricingRaw.base_cents, true, 'base_cents') ??
+    toCents(pricingRaw.base, false, 'base');
 
   const addonsRaw = pricingRaw.addons ?? pricingRaw.add_ons ?? pricingRaw.features;
   const addons: EnginePricingDetails['addons'] = {};
   if (addonsRaw && typeof addonsRaw === 'object') {
     for (const [key, value] of Object.entries(addonsRaw as Record<string, unknown>)) {
       if (!value || typeof value !== 'object') continue;
-      const perSecond = toNumber((value as Record<string, unknown>).per_second_cents) ?? toNumber((value as Record<string, unknown>).per_second);
-      const flat = toNumber((value as Record<string, unknown>).flat_cents) ?? toNumber((value as Record<string, unknown>).flat);
       const perSecondCents =
-        perSecond != null
-          ? (value as Record<string, unknown>).per_second_cents != null
-            ? Math.round(Number(perSecond))
-            : Math.round(perSecond * 100)
-          : undefined;
+        toCents((value as Record<string, unknown>).per_second_cents, true, `${key}.per_second_cents`) ??
+        toCents((value as Record<string, unknown>).per_second, false, `${key}.per_second`);
       const flatCents =
-        flat != null
-          ? (value as Record<string, unknown>).flat_cents != null
-            ? Math.round(Number(flat))
-            : Math.round(flat * 100)
-          : undefined;
+        toCents((value as Record<string, unknown>).flat_cents, true, `${key}.flat_cents`) ??
+        toCents((value as Record<string, unknown>).flat, false, `${key}.flat`);
       if (perSecondCents != null || flatCents != null) {
         addons![key] = { perSecondCents: perSecondCents ?? undefined, flatCents: flatCents ?? undefined };
       }
@@ -283,11 +311,7 @@ function extractPricingDetails(pricingRaw: Record<string, unknown>, maxDurationS
 async function fetchFalCatalogFromApi(): Promise<Omit<EngineCatalog, 'fetchedAt'> | null> {
   if (!ENV.FAL_API_KEY) return null;
   try {
-    const res = await fetch(`${API_BASE}/models`, {
-      headers: {
-        Authorization: `Key ${ENV.FAL_API_KEY}`,
-      },
-    });
+    const res = await fetch(buildFalProxyUrl('/models'));
     if (!res.ok) {
       return null;
     }
@@ -313,8 +337,20 @@ async function fetchFalCatalogFromApi(): Promise<Omit<EngineCatalog, 'fetchedAt'
 
 async function loadFixtureCatalog(): Promise<Omit<EngineCatalog, 'fetchedAt'> | null> {
   try {
-    const file = path.join(process.cwd(), '..', 'fixtures', 'fal-models.json');
-    const raw = await fs.readFile(file, 'utf-8');
+    const candidates = [
+      path.join(process.cwd(), 'fixtures', 'fal-models.json'),
+      path.join(process.cwd(), '..', 'fixtures', 'fal-models.json'),
+    ];
+    let raw: string | null = null;
+    for (const candidate of candidates) {
+      try {
+        raw = await fs.readFile(candidate, 'utf-8');
+        break;
+      } catch {
+        // Try next location — monorepo vs standalone build layouts differ.
+      }
+    }
+    if (!raw) return null;
     const json = JSON.parse(raw) as { models?: FalModel[] };
     const models = Array.isArray(json?.models) ? json.models : [];
     if (!models.length) return null;

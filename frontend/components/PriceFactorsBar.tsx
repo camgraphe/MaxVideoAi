@@ -241,11 +241,17 @@ function isZero(value: number) {
   return Math.abs(value) < AMOUNT_EPSILON;
 }
 
+function centsToMajor(amount: number): number {
+  if (!Number.isFinite(amount)) return 0;
+  return amount / 100;
+}
+
 function formatAmount(amount: number, formatter: Intl.NumberFormat, emphasizeSign = true) {
+  const value = centsToMajor(amount);
   if (!emphasizeSign) {
-    return formatter.format(amount);
+    return formatter.format(value);
   }
-  const formatted = formatter.format(Math.abs(amount));
+  const formatted = formatter.format(Math.abs(value));
   if (amount < 0) {
     return `−${formatted}`;
   }
@@ -253,7 +259,7 @@ function formatAmount(amount: number, formatter: Intl.NumberFormat, emphasizeSig
 }
 
 function formatTotal(total: number, formatter: Intl.NumberFormat) {
-  return formatter.format(total);
+  return formatter.format(centsToMajor(total));
 }
 
 function buildBaseLabel(base: ItemizationLine) {
@@ -292,7 +298,7 @@ function buildAddonLabel(addon: ItemizationLine) {
 function buildAddonTooltip(addon: ItemizationLine, amount: number, formatter: Intl.NumberFormat) {
   const label = buildAddonLabel(addon);
   const sign = amount > 0 ? '+' : '−';
-  const price = formatter.format(Math.abs(amount));
+  const price = formatter.format(Math.abs(centsToMajor(amount)));
   return `${label} ${sign}${price}`;
 }
 
@@ -316,7 +322,7 @@ function buildDiscountLabel(discount: ItemizationLine) {
 function buildDiscountTooltip(discount: ItemizationLine, formatter: Intl.NumberFormat) {
   const rate = typeof discount.rate === 'number' ? formatPercent(discount.rate) : undefined;
   const amount = discount.amount ?? discount.subtotal ?? 0;
-  const price = formatter.format(Math.abs(amount));
+  const price = formatter.format(Math.abs(centsToMajor(amount)));
   const tier = discount.tier ? `${discount.tier} tier` : undefined;
   const pieces = [rate ? `${rate} off` : 'Discount'];
   if (tier) pieces.unshift(tier);
@@ -332,7 +338,7 @@ function buildFeeLabel(fee: ItemizationLine) {
 
 function buildFeeTooltip(fee: ItemizationLine, formatter: Intl.NumberFormat) {
   const amount = fee.subtotal ?? fee.amount ?? 0;
-  const price = formatter.format(Math.abs(amount));
+  const price = formatter.format(Math.abs(centsToMajor(amount)));
   if (fee.rateDisplay) {
     return `${fee.rateDisplay} · ${amount >= 0 ? '+' : '−'}${price}`;
   }
@@ -348,7 +354,7 @@ function buildTaxLabel(tax: ItemizationLine) {
 
 function buildTaxTooltip(tax: ItemizationLine, formatter: Intl.NumberFormat) {
   const amount = tax.subtotal ?? tax.amount ?? 0;
-  const formatted = formatter.format(Math.abs(amount));
+  const formatted = formatter.format(Math.abs(centsToMajor(amount)));
   return `${buildTaxLabel(tax)} ${amount < 0 ? '−' : '+'}${formatted}`;
 }
 

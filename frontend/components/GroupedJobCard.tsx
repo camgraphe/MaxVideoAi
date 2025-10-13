@@ -8,27 +8,28 @@ import type { EngineCaps } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
 import { Card } from '@/components/ui/Card';
 import { EngineIcon } from '@/components/ui/EngineIcon';
+import { ProcessingOverlay } from '@/components/groups/ProcessingOverlay';
 import { CURRENCY_LOCALE } from '@/lib/intl';
-import { getAspectRatioString } from '@/lib/aspect';
 
-export type GroupedJobAction = 'open' | 'continue' | 'refine' | 'branch' | 'compare';
+export type GroupedJobAction = 'open' | 'continue' | 'refine' | 'branch' | 'compare' | 'remove';
 
 function ThumbImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
-  const baseClass = clsx('object-cover', className);
+  const baseClass = clsx('h-full w-full pointer-events-none', className);
   if (src.startsWith('data:')) {
-    return <img src={src} alt={alt} className={clsx('absolute inset-0 h-full w-full', baseClass)} />;
+    return <img src={src} alt={alt} className={baseClass} />;
   }
   return <Image src={src} alt={alt} fill className={baseClass} />;
 }
 
 function GroupPreviewMedia({ preview }: { preview: GroupSummary['previews'][number] | undefined }) {
+  const baseClass = 'h-full w-full pointer-events-none object-cover';
   if (preview?.videoUrl) {
     const poster = preview.thumbUrl ?? undefined;
     return (
       <video
         src={preview.videoUrl}
         poster={poster}
-        className="absolute inset-0 h-full w-full object-cover pointer-events-none"
+        className={baseClass}
         muted
         playsInline
         autoPlay
@@ -37,13 +38,9 @@ function GroupPreviewMedia({ preview }: { preview: GroupSummary['previews'][numb
     );
   }
   if (preview?.thumbUrl) {
-    return <ThumbImage src={preview.thumbUrl} alt="" className="absolute inset-0 pointer-events-none object-cover" />;
+    return <ThumbImage src={preview.thumbUrl} alt="" className="object-cover" />;
   }
-  return (
-    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#dfe7ff] via-white to-[#f1f4ff] text-[10px] font-semibold uppercase tracking-micro text-text-muted pointer-events-none">
-      En attente
-    </div>
-  );
+  return null;
 }
 
 export interface GroupedJobCardProps {
@@ -52,9 +49,10 @@ export interface GroupedJobCardProps {
   onOpen?: (group: GroupSummary) => void;
   onAction?: (group: GroupSummary, action: GroupedJobAction) => void;
   actionMenu?: boolean;
+  allowRemove?: boolean;
 }
 
-export function GroupedJobCard({ group, engine, onOpen, onAction, actionMenu = true }: GroupedJobCardProps) {
+export function GroupedJobCard({ group, engine, onOpen, onAction, actionMenu = true, allowRemove = true }: GroupedJobCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -108,8 +106,12 @@ export function GroupedJobCard({ group, engine, onOpen, onAction, actionMenu = t
     if (group.previews.length >= 4) return group.previews.slice(0, 4);
     return group.previews;
   }, [group.previews]);
-
-  const heroAspectRatioStyle = getAspectRatioString(hero.aspectRatio);
+  const previewCount = useMemo(() => Math.max(1, Math.min(4, group.count)), [group.count]);
+  const previewGridClass = useMemo(() => {
+    if (previewCount === 1) return 'grid-cols-1';
+    if (previewCount === 3) return 'grid-cols-3';
+    return 'grid-cols-2';
+  }, [previewCount]);
 
   const showMenu = Boolean(onAction) && actionMenu;
 
@@ -134,23 +136,34 @@ export function GroupedJobCard({ group, engine, onOpen, onAction, actionMenu = t
           }
         }}
       >
-        <div className="relative w-full" style={{ aspectRatio: heroAspectRatioStyle }}>
-          <div className="absolute inset-0 grid grid-cols-2 gap-1 bg-[#E7ECF7] p-1">
-            {Array.from({ length: Math.max(1, Math.min(4, group.count)) }).map((_, index) => {
+        <div className="relative w-full" style={{ aspectRatio: '16 / 9' }}>
+          <div className={clsx('absolute inset-0 grid gap-1 bg-[#E7ECF7] p-1', previewGridClass)}>
+            {Array.from({ length: previewCount }).map((_, index) => {
               const preview = previews[index];
               const member = preview ? group.members.find((entry) => entry.id === preview.id) : undefined;
+              const memberStatus = member?.status ?? 'completed';
+              const isCompleted = memberStatus === 'completed';
               return (
-                <div key={preview?.id ?? index} className="relative overflow-hidden rounded-[10px] bg-white/80">
-                  <GroupPreviewMedia preview={preview} />
-                  {member && member.status !== 'completed' && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/45 px-2 text-center text-[10px] text-white backdrop-blur-sm">
-                      <span className="uppercase tracking-micro">Processing</span>
-                      {member.message && <span className="mt-1 line-clamp-2 text-[10px] text-white/80">{member.message}</span>}
-                      {typeof member.progress === 'number' && (
-                        <span className="mt-1 text-[10px] font-semibold">{member.progress}%</span>
-                      )}
-                    </div>
-                  )}
+                <div key={preview?.id ?? index} className="relative flex items-center justify-center overflow-hidden rounded-[10px] bg-black/90">
+                  <div className="absolute inset-0">
+                    {isCompleted ? (
+                      <GroupPreviewMedia preview={preview} />
+                    ) : preview?.thumbUrl ? (
+                      <Image src={preview.thumbUrl} alt="" fill className="pointer-events-none object-cover" />
+                    ) : null}
+                  </div>
+                  <div className="pointer-events-none block" style={{ width: '100%', aspectRatio: '16 / 9' }} aria-hidden />
+                  {!isCompleted && member ? (
+                    <ProcessingOverlay
+                      className="absolute inset-0"
+                      state={memberStatus === 'failed' ? 'error' : 'pending'}
+                      message={member.message}
+                      progress={member.progress ?? undefined}
+                      tone="light"
+                      tileIndex={index + 1}
+                      tileCount={previewCount}
+                    />
+                  ) : null}
                 </div>
               );
             })}
@@ -176,18 +189,14 @@ export function GroupedJobCard({ group, engine, onOpen, onAction, actionMenu = t
           </button>
         )}
       </figure>
-      <div className="flex items-center justify-between gap-3 border-t border-hairline bg-white px-3 py-2 text-sm text-text-secondary">
-        <div className="flex min-w-0 flex-col gap-1">
-          <span className="inline-flex items-center gap-2 font-semibold text-text-primary">
-            <EngineIcon engine={engine ?? undefined} label={hero.engineLabel} size={28} className="shrink-0" />
-            <span className="truncate">{hero.engineLabel}</span>
-          </span>
-          <span className="text-[11px] uppercase tracking-micro text-text-muted">
-            {splitModeLabel} • {splitLabel}
-          </span>
+      <div className="flex items-center justify-between gap-3 border-t border-hairline bg-white/80 px-3 py-2 text-sm text-text-secondary">
+        <div className="flex items-center gap-2">
+          <EngineIcon engine={engine ?? undefined} label={hero.engineLabel} size={28} className="shrink-0" />
+          <span className="text-[11px] uppercase tracking-micro text-text-muted">{splitModeLabel} • {splitLabel}</span>
         </div>
         {formattedPrice && <span className="flex-shrink-0 text-[12px] font-semibold text-text-primary">{formattedPrice}</span>}
       </div>
+
       {showMenu && menuOpen && (
         <div
           ref={menuRef}
@@ -229,6 +238,15 @@ export function GroupedJobCard({ group, engine, onOpen, onAction, actionMenu = t
           >
             <span>Compare</span>
           </button>
+          {allowRemove && group.count <= 1 && (
+            <button
+              type="button"
+              onClick={() => handleAction('remove')}
+              className="mt-2 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left text-red-600 transition hover:bg-red-50"
+            >
+              <span>Remove</span>
+            </button>
+          )}
         </div>
       )}
     </Card>

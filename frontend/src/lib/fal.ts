@@ -1,10 +1,12 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import type { QueueStatus } from '@fal-ai/client';
 import { ENV } from '@/lib/env';
 import { getResultProviderMode, shouldUseFalApis } from '@/lib/result-provider';
 import type { ResultProviderMode } from '@/types/providers';
 import type { VideoAsset } from '@/types/render';
 import { resolveFalModelId } from '@/lib/fal-catalog';
+import { getFalClient } from '@/lib/fal-client';
 
 const BLOCKED_VIDEO_HOSTS = new Set([
   'upload.wikimedia.org',
@@ -34,6 +36,7 @@ type FalVideoCandidate =
   | {
       url?: string;
       video_url?: string;
+      path?: string;
       mime?: string;
       mimetype?: string;
       content_type?: string;
@@ -179,6 +182,21 @@ function normalizeVideoUrl(rawUrl: string): string {
   return trimmed;
 }
 
+function unwrapFalResponse(payload: unknown): FalRunResponse | null {
+  if (!payload || typeof payload !== 'object') {
+    return null;
+  }
+  const candidate = payload as Record<string, unknown>;
+  if (typeof candidate.status === 'string' && candidate.status.toUpperCase() === 'ERROR') {
+    const errorMessage = typeof candidate.error === 'string' ? candidate.error : 'FAL request failed';
+    throw new Error(errorMessage);
+  }
+  if ('payload' in candidate && typeof candidate.payload === 'object') {
+    return candidate.payload as FalRunResponse;
+  }
+  return candidate as FalRunResponse;
+}
+
 function isBlockedUrl(url: string): boolean {
   if (!url || url.startsWith('/')) {
     return false;
@@ -249,12 +267,7 @@ async function generateFromManifest(payload: GeneratePayload, provider: ResultPr
 
 async function generateViaFal(payload: GeneratePayload, provider: ResultProviderMode, model: string): Promise<GenerateResult> {
   const fallbackThumb = getThumbForAspectRatio(payload.aspectRatio);
-  const runUrl = `https://api.fal.ai/v1/run/${model}`;
-  const headers: Record<string, string> = { Authorization: `Key ${ENV.FAL_API_KEY}`, 'Content-Type': 'application/json' };
-  if (payload.idempotencyKey) {
-    headers['Idempotency-Key'] = payload.idempotencyKey;
-    headers['X-Fal-Idempotency-Key'] = payload.idempotencyKey;
-  }
+  const falClient = getFalClient();
 
   let apiKey: string | undefined;
   if (payload.apiKey && payload.apiKey.trim().length > 10) {
@@ -289,18 +302,21 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
     requestBody.image_url = imageUrl;
   }
 
-  const res = await fetch(runUrl, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(requestBody),
+  let latestQueueStatus: QueueStatus | null = null;
+  const result = await falClient.subscribe(model, {
+    input: requestBody,
+    onQueueUpdate(update) {
+      latestQueueStatus = update;
+    },
   });
 
-  if (!res.ok) {
-    throw new Error(`FAL run failed (${res.status})`);
-  }
-
-  const json = (await res.json().catch(() => null)) as FalRunResponse | null;
-  const providerJobId: string | undefined = json?.request_id || json?.id;
+  const json = unwrapFalResponse(result.data);
+  const queueRequestId = (latestQueueStatus as { request_id?: string } | null)?.request_id;
+  const providerJobId: string | undefined =
+    result.requestId ??
+    json?.request_id ??
+    json?.id ??
+    queueRequestId;
   const immediateAsset = extractVideoAsset(json);
   if (immediateAsset) {
     const asset = ensureAssetShape(immediateAsset);
@@ -317,54 +333,7 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
     };
   }
 
-  // Short poll status until a video URL is available
-  let attempts = 10; // ~20s with 2s interval
-  let latestProgress: number | undefined;
-  const statusUrl = json?.status_url || (providerJobId ? `https://api.fal.ai/v1/status/${providerJobId}` : null);
-  while (attempts-- > 0 && statusUrl) {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    const sr = await fetch(statusUrl, { headers: { Authorization: `Key ${ENV.FAL_API_KEY}` } });
-    if (!sr.ok) continue;
-    const sj = (await sr.json().catch(() => null)) as FalRunResponse | null;
-    const assetCandidate = extractVideoAsset(sj);
-    if (assetCandidate) {
-      const asset = ensureAssetShape(assetCandidate);
-      const poster = asset.thumbnailUrl ?? (await getPosterFrame(asset.url).catch(() => null));
-      const thumbUrl = poster ?? fallbackThumb;
-      return {
-        provider,
-        thumbUrl,
-        providerJobId,
-        videoUrl: asset.url,
-        video: asset,
-        status: 'completed',
-        progress: 100,
-      };
-    }
-
-    const st: string | undefined = sj?.status || sj?.state;
-    const progValue: number | undefined = typeof sj?.progress === 'number' ? sj?.progress : typeof sj?.percent === 'number' ? sj?.percent : undefined;
-    if (st === 'failed') {
-      return {
-        provider,
-        thumbUrl: fallbackThumb,
-        providerJobId,
-        status: 'failed',
-        progress: latestProgress ?? 0,
-      };
-    }
-    if (typeof progValue === 'number') {
-      latestProgress = Math.max(0, Math.min(100, Math.round(progValue)));
-    }
-  }
-
-  return {
-    provider,
-    thumbUrl: fallbackThumb,
-    providerJobId,
-    status: latestProgress ? 'running' : 'queued',
-    progress: latestProgress ?? 0,
-  };
+  throw new Error('FAL response did not contain a video asset');
 }
 
 async function loadManifestVideos(): Promise<VideoAsset[]> {
@@ -453,8 +422,14 @@ function normalizeVideoCandidate(candidate: FalVideoCandidate | null | undefined
     };
   }
   const urlCandidate = typeof candidate.url === 'string' && candidate.url ? candidate.url : typeof candidate.video_url === 'string' && candidate.video_url ? candidate.video_url : null;
-  if (!urlCandidate) return null;
-  const normalizedUrl = normalizeVideoUrl(urlCandidate);
+  let normalizedUrl: string | null = null;
+  if (urlCandidate) {
+    normalizedUrl = normalizeVideoUrl(urlCandidate);
+  } else if (typeof candidate.path === 'string' && candidate.path.trim().length) {
+    const base = manifestCdnBase ?? ENV.TEST_VIDEO_BASE_URL ?? '/test-videos';
+    normalizedUrl = normalizeVideoUrl(joinUrl(base, candidate.path));
+  }
+  if (!normalizedUrl) return null;
   if (isBlockedUrl(normalizedUrl)) return null;
   const mime = candidate.mime || candidate.mimetype || candidate.content_type || guessMimeFromUrl(normalizedUrl) || null;
   const width =

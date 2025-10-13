@@ -2,19 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { syncSupabaseCookies, clearSupabaseCookies } from '@/lib/supabase-cookies';
 
 export const dynamic = 'force-dynamic';
 
-type Provider = 'github' | 'google';
-type AuthMode = 'magic' | 'password' | 'signup' | 'reset';
+type Provider = 'google' | 'apple';
+type AuthMode = 'signin' | 'signup' | 'reset';
 
 export default function LoginPage() {
   const router = useRouter();
   const [nextPath, setNextPath] = useState<string>('/app');
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')) as string;
-  const [mode, setMode] = useState<AuthMode>('magic');
+  const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -30,28 +30,19 @@ export default function LoginPage() {
     }
   }, []);
 
-  async function signInWithMagic(e: React.FormEvent) {
-    e.preventDefault();
-    setStatus('Sending magic link…');
-    setError(null);
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: siteUrl ? `${siteUrl}${nextPath && nextPath !== '/' ? `?next=${encodeURIComponent(nextPath)}` : ''}` : undefined },
-    });
-    if (error) setError(error.message);
-    else setStatus('Check your inbox for a sign-in link.');
-  }
-
   async function signInWithPassword(e: React.FormEvent) {
     e.preventDefault();
     setStatus('Signing in…');
     setError(null);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) setError(error.message);
-    else {
-      setStatus('Signed in. Redirecting…');
-      router.replace(nextPath);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      setError(error.message);
+      setStatus(null);
+      return;
     }
+    setStatus('Signed in. Redirecting…');
+    syncSupabaseCookies(data.session ?? null);
+    router.replace(nextPath);
   }
 
   async function signUpWithPassword(e: React.FormEvent) {
@@ -60,10 +51,12 @@ export default function LoginPage() {
     setError(null);
     if (!password || password.length < 6) {
       setError('Password must be at least 6 characters.');
+      setStatus(null);
       return;
     }
     if (password !== confirm) {
       setError('Passwords do not match.');
+      setStatus(null);
       return;
     }
     const { error } = await supabase.auth.signUp({
@@ -71,8 +64,12 @@ export default function LoginPage() {
       password,
       options: { emailRedirectTo: siteUrl ? `${siteUrl}${nextPath && nextPath !== '/' ? `?next=${encodeURIComponent(nextPath)}` : ''}` : undefined },
     });
-    if (error) setError(error.message);
-    else setStatus('Check your inbox to confirm your email.');
+    if (error) {
+      setError(error.message);
+      setStatus(null);
+      return;
+    }
+    setStatus('Check your inbox to confirm your email.');
   }
 
   async function sendReset(e: React.FormEvent) {
@@ -80,8 +77,12 @@ export default function LoginPage() {
     setStatus('Sending reset link…');
     setError(null);
     const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: siteUrl || undefined });
-    if (error) setError(error.message);
-    else setStatus('Password reset email sent.');
+    if (error) {
+      setError(error.message);
+      setStatus(null);
+      return;
+    }
+    setStatus('Password reset email sent.');
   }
 
   async function signInProvider(provider: Provider) {
@@ -96,12 +97,16 @@ export default function LoginPage() {
     if (error) setError(error.message);
   }
 
-  // If already signed in (e.g., returning from magic link/OAuth), redirect
   useEffect(() => {
     let cancelled = false;
     supabase.auth.getSession().then(({ data }) => {
-      if (!cancelled && data.session?.access_token) {
+      const session = data.session ?? null;
+      if (cancelled) return;
+      if (session?.access_token) {
+        syncSupabaseCookies(session);
         router.replace(nextPath);
+      } else {
+        clearSupabaseCookies();
       }
     });
     return () => {
@@ -111,95 +116,64 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-bg p-6">
-      <div className="w-full max-w-md space-y-4 rounded-card border border-border bg-white p-6 shadow-card">
-        <h1 className="text-lg font-semibold text-text-primary">Sign in</h1>
+      <div className="w-full max-w-md space-y-5 rounded-card border border-border bg-white p-6 shadow-card">
+        <header className="space-y-1">
+          <h1 className="text-lg font-semibold text-text-primary">Access your workspace</h1>
+          <p className="text-sm text-text-secondary">Sign in with email + password, or use Google / Apple.</p>
+        </header>
 
-        {/* Mode switcher */}
-        <div className="grid grid-cols-4 gap-2 text-xs">
-          <button onClick={() => setMode('magic')} className={`rounded-input border px-2 py-1 ${mode==='magic'?'bg-bg border-ring':'border-border hover:bg-bg'}`}>Magic link</button>
-          <button onClick={() => setMode('password')} className={`rounded-input border px-2 py-1 ${mode==='password'?'bg-bg border-ring':'border-border hover:bg-bg'}`}>Password</button>
-          <button onClick={() => setMode('signup')} className={`rounded-input border px-2 py-1 ${mode==='signup'?'bg-bg border-ring':'border-border hover:bg-bg'}`}>Sign up</button>
-          <button onClick={() => setMode('reset')} className={`rounded-input border px-2 py-1 ${mode==='reset'?'bg-bg border-ring':'border-border hover:bg-bg'}`}>Reset</button>
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={() => signInProvider('google')}
+            className="flex w-full items-center justify-center gap-2 rounded-input border border-border bg-white px-3 py-2 text-sm font-medium transition hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <span aria-hidden>🌐</span>
+            <span>Continue with Google</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => signInProvider('apple')}
+            className="flex w-full items-center justify-center gap-2 rounded-input border border-border bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-black/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <span aria-hidden></span>
+            <span>Continue with Apple</span>
+          </button>
         </div>
 
-        {mode === 'magic' && (
-          <form onSubmit={signInWithMagic} className="space-y-3">
-            <label className="block text-sm">
-              <span className="mb-1 block text-text-secondary">Email</span>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-input border border-border bg-bg px-3 py-2"
-                placeholder="you@domain.com"
-              />
-            </label>
-            <button type="submit" className="w-full rounded-input border border-border bg-white px-3 py-2 text-sm font-medium hover:bg-bg">
-              Send magic link
-            </button>
-          </form>
-        )}
+        <div className="relative text-xs uppercase tracking-micro text-text-muted">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-border" />
+          </div>
+          <span className="relative mx-auto block w-fit bg-white px-3">or with email</span>
+        </div>
 
-        {mode === 'password' && (
-          <form onSubmit={signInWithPassword} className="space-y-3">
-            <label className="block text-sm">
-              <span className="mb-1 block text-text-secondary">Email</span>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-input border border-border bg-bg px-3 py-2"
-                placeholder="you@domain.com"
-              />
-            </label>
-            <label className="block text-sm">
-              <span className="mb-1 block text-text-secondary">Password</span>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-input border border-border bg-bg px-3 py-2"
-                placeholder="••••••••"
-                autoComplete="current-password"
-              />
-            </label>
-            <div className="flex items-center justify-between text-xs">
-              <button type="button" onClick={() => setMode('reset')} className="text-accent hover:underline">Forgot password?</button>
-            </div>
-            <button type="submit" className="w-full rounded-input border border-border bg-white px-3 py-2 text-sm font-medium hover:bg-bg">
-              Sign in
-            </button>
-          </form>
-        )}
-
-        {mode === 'signup' && (
-          <form onSubmit={signUpWithPassword} className="space-y-3">
-            <label className="block text-sm">
-              <span className="mb-1 block text-text-secondary">Email</span>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-input border border-border bg-bg px-3 py-2"
-                placeholder="you@domain.com"
-              />
-            </label>
-            <label className="block text-sm">
-              <span className="mb-1 block text-text-secondary">Password</span>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-input border border-border bg-bg px-3 py-2"
-                placeholder="At least 6 characters"
-                autoComplete="new-password"
-              />
-            </label>
+        <form onSubmit={mode === 'signin' ? signInWithPassword : signUpWithPassword} className="space-y-3">
+          <label className="block text-sm">
+            <span className="mb-1 block text-text-secondary">Email</span>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-input border border-border bg-bg px-3 py-2"
+              placeholder="you@domain.com"
+              autoComplete="email"
+            />
+          </label>
+          <label className="block text-sm">
+            <span className="mb-1 block text-text-secondary">Password</span>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-input border border-border bg-bg px-3 py-2"
+              placeholder={mode === 'signup' ? 'At least 6 characters' : '••••••••'}
+              autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+            />
+          </label>
+          {mode === 'signup' && (
             <label className="block text-sm">
               <span className="mb-1 block text-text-secondary">Confirm password</span>
               <input
@@ -212,10 +186,40 @@ export default function LoginPage() {
                 autoComplete="new-password"
               />
             </label>
-            <button type="submit" className="w-full rounded-input border border-border bg-white px-3 py-2 text-sm font-medium hover:bg-bg">
-              Create account
+          )}
+
+          <button type="submit" className="w-full rounded-input border border-border bg-white px-3 py-2 text-sm font-medium transition hover:bg-bg">
+            {mode === 'signin' ? 'Sign in' : 'Create account'}
+          </button>
+        </form>
+
+        {mode === 'signin' && (
+          <div className="flex flex-col gap-2 text-xs">
+            <button type="button" onClick={() => setMode('reset')} className="self-start text-accent hover:underline">
+              Forgot password?
             </button>
-          </form>
+            <p className="text-text-secondary">
+              Need a workspace account?{' '}
+              <button
+                type="button"
+                onClick={() => setMode('signup')}
+                className="font-semibold text-text-primary hover:underline"
+              >
+                Create one now
+              </button>
+              .
+            </p>
+          </div>
+        )}
+
+        {mode === 'signup' && (
+          <button
+            type="button"
+            onClick={() => setMode('signin')}
+            className="text-xs text-text-secondary hover:underline"
+          >
+            Already have an account? Sign in
+          </button>
         )}
 
         {mode === 'reset' && (
@@ -229,35 +233,22 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-input border border-border bg-bg px-3 py-2"
                 placeholder="you@domain.com"
+                autoComplete="email"
               />
             </label>
-            <button type="submit" className="w-full rounded-input border border-border bg-white px-3 py-2 text-sm font-medium hover:bg-bg">
+            <div className="flex justify-between text-xs">
+              <button type="button" onClick={() => setMode('signin')} className="text-text-secondary hover:underline">
+                Back to sign in
+              </button>
+            </div>
+            <button type="submit" className="w-full rounded-input border border-border bg-white px-3 py-2 text-sm font-medium transition hover:bg-bg">
               Send reset link
             </button>
           </form>
         )}
 
-        <div className="flex items-center gap-2 text-xs text-text-muted">
-          <span className="flex-1 border-t border-border" />
-          <span>or</span>
-          <span className="flex-1 border-t border-border" />
-        </div>
-
-        <div className="grid gap-2">
-          <button onClick={() => signInProvider('github')} className="rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg">
-            Continue with GitHub
-          </button>
-          <button onClick={() => signInProvider('google')} className="rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg">
-            Continue with Google
-          </button>
-        </div>
-
         {status && <p className="text-xs text-text-secondary">{status}</p>}
         {error && <p className="text-xs text-state-warning">{error}</p>}
-
-        <p className="text-xs text-text-secondary">
-          Back to <Link href="/" className="text-accent hover:underline">Generate</Link>
-        </p>
       </div>
     </main>
   );

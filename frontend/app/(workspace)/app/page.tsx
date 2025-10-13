@@ -5,21 +5,28 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useEngines, useInfiniteJobs, runPreflight, runGenerate, getJobStatus } from '@/lib/api';
 import { supabase } from '@/lib/supabaseClient';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import type { EngineCaps, EngineInputField, Mode, PreflightRequest, PreflightResponse } from '@/types/engines';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { EngineSelect } from '@/components/ui/EngineSelect';
 import { SettingsControls } from '@/components/SettingsControls';
 import { Composer, type ComposerAttachment, type AssetFieldConfig } from '@/components/Composer';
-import { PreviewCard } from '@/components/PreviewCard';
-import { QuadPreviewPanel, type QuadPreviewTile, type QuadTileAction, type QuadGroupAction } from '@/components/QuadPreviewPanel';
+import type { QuadPreviewTile, QuadTileAction } from '@/components/QuadPreviewPanel';
 import { GalleryRail } from '@/components/GalleryRail';
 import type { GroupSummary, GroupMemberSummary } from '@/types/groups';
-import type { GroupedJobAction } from '@/components/GroupedJobCard';
-import type { PriceFactorKind } from '@/components/PriceFactorsBar';
+import { CompositePreviewDock } from '@/components/groups/CompositePreviewDock';
+import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getRenderEta } from '@/lib/render-eta';
 import { savePersistedGroupSummaries } from '@/lib/job-groups';
+import { getMockJob, subscribeMockJobs } from '@/lib/mock-jobs-store';
+import { ENV as CLIENT_ENV } from '@/lib/env';
+import { adaptGroupSummaries, adaptGroupSummary } from '@/lib/video-group-adapter';
+import type { VideoGroup } from '@/types/video-groups';
+import { useResultProvider } from '@/hooks/useResultProvider';
+import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
+import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
 
 function resolveRenderThumb(render: { thumbUrl?: string | null; aspectRatio?: string | null }): string {
   if (render.thumbUrl) return render.thumbUrl;
@@ -32,8 +39,6 @@ function resolveRenderThumb(render: { thumbUrl?: string | null; aspectRatio?: st
       return '/assets/frames/thumb-16x9.svg';
   }
 }
-
-type GroupCardAction = GroupedJobAction;
 
 type ReferenceAsset = {
   fieldId: string;
@@ -171,22 +176,18 @@ export default function Page() {
   const { data, error: enginesError, isLoading } = useEngines();
   const engines = useMemo(() => data?.engines ?? [], [data]);
   const { data: latestJobsPages } = useInfiniteJobs(1);
+  const provider = useResultProvider();
+  const showCenterGallery = CLIENT_ENV.WORKSPACE_CENTER_GALLERY === 'true';
 
-  const [form, setForm] = useState<FormState | null>(() => {
-    if (typeof window === 'undefined') return null;
-    const stored = window.localStorage.getItem(STORAGE_KEYS.form);
-    return stored ? parseStoredForm(stored) : null;
-  });
-  const [prompt, setPrompt] = useState<string>(() => {
-    if (typeof window === 'undefined') return DEFAULT_PROMPT;
-    const stored = window.localStorage.getItem(STORAGE_KEYS.prompt);
-    return stored ?? DEFAULT_PROMPT;
-  });
-  const [negativePrompt, setNegativePrompt] = useState<string>(() => {
-    if (typeof window === 'undefined') return '';
-    const stored = window.localStorage.getItem(STORAGE_KEYS.negativePrompt);
-    return stored ?? '';
-  });
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [userId, setUserId] = useState<string | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  const [form, setForm] = useState<FormState | null>(null);
+  const [prompt, setPrompt] = useState<string>(DEFAULT_PROMPT);
+  const [negativePrompt, setNegativePrompt] = useState<string>('');
   const [preflight, setPreflight] = useState<PreflightResponse | null>(null);
   const [preflightError, setPreflightError] = useState<string | undefined>();
   const [isPricing, setPricing] = useState(false);
@@ -201,31 +202,46 @@ export default function Page() {
   const [isTopUpLoading, setIsTopUpLoading] = useState(false);
   const [topUpError, setTopUpError] = useState<string | null>(null);
 
+  const storageKey = useCallback(
+    (base: string) => (userId ? `${base}:${userId}` : base),
+    [userId]
+  );
+  const nextPath = useMemo(() => {
+    const base = pathname || '/app';
+    const search = searchParams?.toString();
+    return search ? `${base}?${search}` : base;
+  }, [pathname, searchParams]);
+
 type LocalRender = {
   localKey: string;
   batchId: string;
   iterationIndex: number;
   iterationCount: number;
-    id: string;
-    jobId?: string;
-    engineId: string;
-    engineLabel: string;
-    createdAt: string;
-    aspectRatio: string;
-    durationSec: number;
-    prompt: string;
-    progress: number; // 0-100
-    message: string;
-    videoUrl?: string;
-    thumbUrl?: string;
-    priceCents?: number;
-    currency?: string;
-    pricingSnapshot?: PreflightResponse['pricing'];
-    paymentStatus?: string;
-    etaSeconds?: number;
-    etaLabel?: string;
-    startedAt: number;
+  id: string;
+  jobId?: string;
+  engineId: string;
+  engineLabel: string;
+  createdAt: string;
+  aspectRatio: string;
+  durationSec: number;
+  prompt: string;
+  progress: number; // 0-100
+  message: string;
+  status: 'pending' | 'completed' | 'failed';
+  videoUrl?: string;
+  readyVideoUrl?: string;
+  thumbUrl?: string;
+  priceCents?: number;
+  currency?: string;
+  pricingSnapshot?: PreflightResponse['pricing'];
+  paymentStatus?: string;
+  etaSeconds?: number;
+  etaLabel?: string;
+  startedAt: number;
   minReadyAt: number;
+  groupId?: string | null;
+  renderIds?: string[];
+  heroRenderId?: string | null;
 };
 
 type LocalRenderGroup = {
@@ -235,6 +251,7 @@ type LocalRenderGroup = {
   readyCount: number;
   totalPriceCents: number | null;
   currency?: string;
+  groupId?: string | null;
 };
 
   const [renders, setRenders] = useState<LocalRender[]>([]);
@@ -248,21 +265,101 @@ type LocalRenderGroup = {
     aspectRatio?: string;
     thumbUrl?: string;
     progress?: number;
+    status?: 'pending' | 'completed' | 'failed';
     message?: string;
     priceCents?: number;
     currency?: string;
     etaSeconds?: number;
     etaLabel?: string;
+    prompt?: string;
   } | null>(null);
-  const [viewMode, setViewMode] = useState<'single' | 'quad'>('single');
   const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
   const [batchHeroes, setBatchHeroes] = useState<Record<string, string>>({});
+  const [viewerTarget, setViewerTarget] = useState<{ kind: 'pending'; id: string } | { kind: 'summary'; summary: GroupSummary } | null>(null);
+  const [viewMode, setViewMode] = useState<'single' | 'quad'>('single');
+  const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
   const rendersRef = useRef<LocalRender[]>([]);
+  const hydratedUserRef = useRef<string | null>(null);
+  const clearUserState = useCallback(() => {
+    hydratedUserRef.current = null;
+    setUserId(null);
+    setAuthChecked(false);
+    setForm(null);
+    setPrompt(DEFAULT_PROMPT);
+    setNegativePrompt('');
+    setRenders([]);
+    setBatchHeroes({});
+    setActiveBatchId(null);
+    setSelectedPreview(null);
+    setViewMode('single');
+    setActiveGroupId(null);
+    setPreflight(null);
+    setPreflightError(undefined);
+    setPricing(false);
+    setNotice(null);
+    setTopUpModal(null);
+    setTopUpError(null);
+    setIsTopUpLoading(false);
+    setMemberTier('Member');
+    setTopUpAmount(500);
+  }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    let cancelled = false;
+
+    const ensureSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (cancelled) return;
+      const session = data.session;
+      if (!session?.access_token || !session.user?.id) {
+        clearUserState();
+        const target = nextPath && nextPath !== '/login' ? `/login?next=${encodeURIComponent(nextPath)}` : '/login';
+        router.replace(target);
+        return;
+      }
+      setUserId(session.user.id);
+      setAuthChecked(true);
+    };
+
+    ensureSession().catch(() => {
+      clearUserState();
+      const target = nextPath && nextPath !== '/login' ? `/login?next=${encodeURIComponent(nextPath)}` : '/login';
+      router.replace(target);
+    });
+
+    const { data: authSubscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session?.access_token || !session.user?.id) {
+        clearUserState();
+        const target = nextPath && nextPath !== '/login' ? `/login?next=${encodeURIComponent(nextPath)}` : '/login';
+        router.replace(target);
+        return;
+      }
+      setUserId(session.user.id);
+      setAuthChecked(true);
+    });
+
+    return () => {
+      cancelled = true;
+      authSubscription?.subscription.unsubscribe();
+    };
+  }, [nextPath, router, clearUserState]);
+
+  useEffect(() => {
+    if (!authChecked || !userId || typeof window === 'undefined') return;
+    if (hydratedUserRef.current === userId) return;
+    hydratedUserRef.current = userId;
+
     try {
-      const storedRendersValue = window.localStorage.getItem(STORAGE_KEYS.renders);
+      const promptValue = window.localStorage.getItem(storageKey(STORAGE_KEYS.prompt));
+      setPrompt(promptValue ?? DEFAULT_PROMPT);
+
+      const negativeValue = window.localStorage.getItem(storageKey(STORAGE_KEYS.negativePrompt));
+      setNegativePrompt(negativeValue ?? '');
+
+      const formValue = window.localStorage.getItem(storageKey(STORAGE_KEYS.form));
+      setForm(formValue ? parseStoredForm(formValue) : null);
+
+      const storedRendersValue = window.localStorage.getItem(storageKey(STORAGE_KEYS.renders));
       if (storedRendersValue) {
         const raw = JSON.parse(storedRendersValue);
         if (Array.isArray(raw)) {
@@ -284,20 +381,41 @@ type LocalRenderGroup = {
                 typeof candidate.prompt === 'string' &&
                 typeof candidate.progress === 'number' &&
                 typeof candidate.message === 'string' &&
+                (typeof candidate.status === 'string' || candidate.status === undefined) &&
                 typeof candidate.startedAt === 'number' &&
                 typeof candidate.minReadyAt === 'number'
               );
             })
+            .map((value) => {
+              const videoUrl = typeof value.videoUrl === 'string' ? value.videoUrl : undefined;
+              const readyVideoUrl = typeof value.readyVideoUrl === 'string' ? value.readyVideoUrl : undefined;
+              const status =
+                (value.status as LocalRender['status']) ??
+                (videoUrl ? 'completed' : 'pending');
+              return {
+                ...value,
+                videoUrl,
+                readyVideoUrl,
+                status,
+              };
+            })
             .slice(0, MAX_PERSISTED_RENDERS);
+          setRenders(storedRenders);
           if (storedRenders.length) {
-            setRenders((current) => (current.length ? current : storedRenders));
-            if (!activeBatchId) {
-              setActiveBatchId(storedRenders[0].batchId ?? null);
-            }
+            setActiveBatchId(storedRenders[0].batchId ?? null);
+          } else {
+            setActiveBatchId(null);
           }
+        } else {
+          setRenders([]);
+          setActiveBatchId(null);
         }
+      } else {
+        setRenders([]);
+        setActiveBatchId(null);
       }
-      const storedHeroesValue = window.localStorage.getItem(STORAGE_KEYS.batchHeroes);
+
+      const storedHeroesValue = window.localStorage.getItem(storageKey(STORAGE_KEYS.batchHeroes));
       if (storedHeroesValue) {
         const rawHeroes = JSON.parse(storedHeroesValue);
         if (rawHeroes && typeof rawHeroes === 'object') {
@@ -308,50 +426,108 @@ type LocalRenderGroup = {
               storedHeroes[batchId] = localKey;
             }
           });
-          if (Object.keys(storedHeroes).length) {
-            setBatchHeroes((current) => (Object.keys(current).length ? current : storedHeroes));
-          }
+          setBatchHeroes(storedHeroes);
+        } else {
+          setBatchHeroes({});
         }
+      } else {
+        setBatchHeroes({});
       }
     } catch {
-      // noop
+      setRenders([]);
+      setBatchHeroes({});
+      setActiveBatchId(null);
     }
-  }, [activeBatchId]);
+  }, [authChecked, userId, storageKey]);
 
   useEffect(() => {
     rendersRef.current = renders;
   }, [renders]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') return undefined;
+    const unsubscribe = subscribeMockJobs(() => {
+      setRenders((previous) =>
+        previous.map((render) => {
+          const job = getMockJob(render.id);
+          if (!job) return render;
+          const normalizedStatus = job.status;
+          const nextThumb = job.thumbUrl ?? render.thumbUrl;
+          const now = Date.now();
+          const gatingActive = Boolean(job.videoUrl) && now < render.minReadyAt;
+          const nextStatus = gatingActive ? 'pending' : normalizedStatus;
+          const nextProgress = gatingActive ? Math.min(job.progress, 95) : job.progress;
+          const readyVideo = job.videoUrl ?? render.readyVideoUrl;
+          const nextVideoUrl = gatingActive ? render.videoUrl : readyVideo;
+          if (
+            render.progress === nextProgress &&
+            render.status === nextStatus &&
+            render.videoUrl === nextVideoUrl &&
+            render.readyVideoUrl === readyVideo &&
+            render.thumbUrl === nextThumb
+          ) {
+            return render;
+          }
+          return {
+            ...render,
+            progress: nextProgress,
+            status: nextStatus,
+            readyVideoUrl: readyVideo,
+            videoUrl: nextVideoUrl,
+            thumbUrl: nextThumb ?? undefined,
+          };
+        })
+      );
+      setSelectedPreview((current) => {
+        if (!current?.id) return current;
+        const job = getMockJob(current.id);
+        if (!job) return current;
+        const nextVideoUrl = job.videoUrl ?? current.videoUrl;
+        const nextThumb = job.thumbUrl ?? current.thumbUrl;
+        return {
+          ...current,
+          progress: job.progress,
+          status: job.status,
+          videoUrl: nextVideoUrl,
+          thumbUrl: nextThumb ?? undefined,
+        };
+      });
+    });
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !authChecked || !userId) return;
     try {
+      const key = storageKey(STORAGE_KEYS.renders);
       if (!renders.length) {
-        window.localStorage.removeItem(STORAGE_KEYS.renders);
+        window.localStorage.removeItem(key);
         return;
       }
       const limited = renders.slice(0, MAX_PERSISTED_RENDERS);
-      window.localStorage.setItem(STORAGE_KEYS.renders, JSON.stringify(limited));
+      window.localStorage.setItem(key, JSON.stringify(limited));
     } catch {
       // noop
     }
-  }, [renders]);
+  }, [renders, authChecked, userId, storageKey]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !authChecked || !userId) return;
     try {
+      const key = storageKey(STORAGE_KEYS.batchHeroes);
       if (!Object.keys(batchHeroes).length) {
-        window.localStorage.removeItem(STORAGE_KEYS.batchHeroes);
+        window.localStorage.removeItem(key);
         return;
       }
-      window.localStorage.setItem(STORAGE_KEYS.batchHeroes, JSON.stringify(batchHeroes));
+      window.localStorage.setItem(key, JSON.stringify(batchHeroes));
     } catch {
       // noop
     }
-  }, [batchHeroes]);
+  }, [batchHeroes, authChecked, userId, storageKey]);
   const renderGroups = useMemo<Map<string, LocalRenderGroup>>(() => {
     const map = new Map<string, LocalRenderGroup>();
     renders.forEach((item) => {
-      const key = item.batchId ?? item.localKey;
+      const key = item.groupId ?? item.batchId ?? item.localKey;
       const existing = map.get(key);
       if (existing) {
         existing.items.push(item);
@@ -362,6 +538,9 @@ type LocalRenderGroup = {
         if (!existing.currency && item.currency) {
           existing.currency = item.currency;
         }
+        if (!existing.groupId && item.groupId) {
+          existing.groupId = item.groupId;
+        }
       } else {
         map.set(key, {
           id: key,
@@ -370,11 +549,19 @@ type LocalRenderGroup = {
           readyCount: item.videoUrl ? 1 : 0,
           totalPriceCents: typeof item.priceCents === 'number' ? item.priceCents : null,
           currency: item.currency,
+          groupId: item.groupId ?? item.batchId ?? null,
         });
       }
     });
     map.forEach((group) => {
       group.items.sort((a, b) => a.iterationIndex - b.iterationIndex);
+      if (!group.items.length) {
+        group.iterationCount = 1;
+        group.totalPriceCents = null;
+        return;
+      }
+      const observedCount = Math.max(group.iterationCount, group.items.length);
+      group.iterationCount = Math.max(1, Math.min(4, observedCount));
       if (group.totalPriceCents != null && group.iterationCount > group.items.length) {
         // scale total if some iterations missing price yet
         const average = group.totalPriceCents / group.items.length;
@@ -384,7 +571,6 @@ type LocalRenderGroup = {
     return map;
   }, [renders]);
   const effectiveBatchId = useMemo(() => activeBatchId ?? selectedPreview?.batchId ?? null, [activeBatchId, selectedPreview?.batchId]);
-  const activeGroup = effectiveBatchId ? renderGroups.get(effectiveBatchId) : undefined;
   useEffect(() => {
     if (!effectiveBatchId) return;
     if (batchHeroes[effectiveBatchId]) return;
@@ -395,49 +581,34 @@ type LocalRenderGroup = {
       return { ...prev, [effectiveBatchId]: group.items[0].localKey };
     });
   }, [effectiveBatchId, renderGroups, batchHeroes]);
-  const activeHeroKey = useMemo(() => {
-    if (!effectiveBatchId) return undefined;
-    const current = batchHeroes[effectiveBatchId];
-    if (current) return current;
-    const group = renderGroups.get(effectiveBatchId);
-    return group?.items[0]?.localKey;
-  }, [effectiveBatchId, batchHeroes, renderGroups]);
   useEffect(() => {
     const currentIterations = form?.iterations ?? 1;
     if (currentIterations <= 1 && viewMode !== 'single') {
       setViewMode('single');
     }
   }, [form?.iterations, viewMode]);
-  const activeTiles = useMemo<QuadPreviewTile[]>(() => {
-    if (!activeGroup) return [];
-    return activeGroup.items.map((item) => ({
-      localKey: item.localKey,
-      batchId: item.batchId,
-      id: item.id,
-      iterationIndex: item.iterationIndex,
-      iterationCount: activeGroup.iterationCount,
-      videoUrl: item.videoUrl,
-      thumbUrl: item.thumbUrl,
-      aspectRatio: item.aspectRatio,
-      progress: item.progress,
-      message: item.message,
-      priceCents: item.priceCents,
-      currency: item.currency ?? preflight?.currency ?? 'USD',
-      durationSec: item.durationSec,
-      engineLabel: item.engineLabel,
-      engineId: item.engineId,
-      etaLabel: item.etaLabel,
-      prompt: item.prompt,
-      status: item.videoUrl ? 'completed' : 'pending',
-    }));
-  }, [activeGroup, preflight?.currency]);
   const pendingGroups = useMemo<GroupSummary[]>(() => {
     const summaries: GroupSummary[] = [];
     renderGroups.forEach((group, id) => {
-      if (group.iterationCount <= 1) return;
 
+      const now = Date.now();
       const members: GroupMemberSummary[] = group.items.map((item) => {
         const thumb = item.thumbUrl ?? resolveRenderThumb(item);
+        const gatingActive = now < item.minReadyAt && item.status !== 'failed';
+        const memberVideoUrl = gatingActive ? null : item.videoUrl ?? item.readyVideoUrl ?? null;
+        const memberStatus: GroupMemberSummary['status'] = (() => {
+          if (item.status === 'failed') return 'failed';
+          if (gatingActive) return 'pending';
+          if (item.status === 'completed' || memberVideoUrl) return 'completed';
+          return 'pending';
+        })();
+        const memberProgress = typeof item.progress === 'number'
+          ? gatingActive
+            ? Math.min(Math.max(item.progress, 5), 95)
+            : item.progress
+          : memberStatus === 'completed'
+            ? 100
+            : item.progress;
         const member: GroupMemberSummary = {
           id: item.id,
           jobId: item.id,
@@ -451,11 +622,11 @@ type LocalRenderGroup = {
           priceCents: item.priceCents ?? null,
           currency: item.currency ?? group.currency ?? null,
           thumbUrl: thumb,
-          videoUrl: item.videoUrl ?? null,
+          videoUrl: memberVideoUrl,
           aspectRatio: item.aspectRatio ?? null,
           prompt: item.prompt,
-          status: item.videoUrl ? 'completed' : 'pending',
-          progress: item.progress,
+          status: memberStatus,
+          progress: memberProgress,
           message: item.message,
           etaLabel: item.etaLabel ?? null,
           etaSeconds: item.etaSeconds ?? null,
@@ -471,22 +642,25 @@ type LocalRenderGroup = {
       const hero = preferredHeroKey
         ? members.find((member) => member.localKey === preferredHeroKey) ?? members[0]
         : members[0];
+      const observedCount = Math.max(group.iterationCount, members.length);
+      const displayCount = Math.max(1, Math.min(4, observedCount));
 
       const previews = members
-        .slice(0, Math.max(1, Math.min(4, group.iterationCount)))
+        .slice(0, displayCount)
         .map((member) => ({
           id: member.id,
           thumbUrl: member.thumbUrl,
           videoUrl: member.videoUrl,
           aspectRatio: member.aspectRatio,
         }));
+      const batchKey = group.groupId ?? group.items[0]?.batchId ?? id;
 
       summaries.push({
         id,
         source: 'active',
-        splitMode: group.iterationCount > 1 ? 'quad' : 'single',
-        batchId: id,
-        count: group.iterationCount,
+        splitMode: displayCount > 1 ? 'quad' : 'single',
+        batchId: batchKey,
+        count: displayCount,
         totalPriceCents: group.totalPriceCents,
         currency: group.currency ?? hero.currency ?? null,
         createdAt: hero.createdAt,
@@ -502,72 +676,114 @@ type LocalRenderGroup = {
       return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
     });
   }, [renderGroups, batchHeroes]);
+  const normalizedPendingGroups = useMemo(() => normalizeGroupSummaries(pendingGroups), [pendingGroups]);
 
   useEffect(() => {
-    const groupsForStorage = pendingGroups.filter((group) => group.count > 1 && group.members.length > 1);
-    savePersistedGroupSummaries(groupsForStorage.slice(0, 12));
-  }, [pendingGroups]);
-  const nonGroupedRenders = useMemo(() => {
-    const groupedIds = new Set<string>();
-    renderGroups.forEach((group) => {
-      if (group.iterationCount > 1) {
-        group.items.forEach((item) => groupedIds.add(item.localKey));
-      }
+    if (!pendingGroups.length) {
+      setActiveGroupId(null);
+      return;
+    }
+    if (!activeGroupId || !pendingGroups.some((group) => group.id === activeGroupId)) {
+      setActiveGroupId(pendingGroups[0].id);
+    }
+  }, [pendingGroups, activeGroupId]);
+
+  useEffect(() => {
+    if (!authChecked || !userId) return;
+    const groupsForStorage = pendingGroups.filter((group) => group.members.length > 0);
+    savePersistedGroupSummaries(groupsForStorage.slice(0, 12), storageKey(STORAGE_KEYS.groupSummaries));
+  }, [pendingGroups, authChecked, userId, storageKey]);
+  const pendingSummaryMap = useMemo(() => {
+    const map = new Map<string, GroupSummary>();
+    pendingGroups.forEach((group) => {
+      map.set(group.id, group);
     });
-    return renders.filter((render) => !groupedIds.has(render.localKey));
-  }, [renderGroups, renders]);
+    return map;
+  }, [pendingGroups]);
+  const activeVideoGroups = useMemo(() => adaptGroupSummaries(pendingGroups, provider), [pendingGroups, provider]);
+  const activeVideoGroup = useMemo<VideoGroup | null>(() => {
+    if (!activeVideoGroups.length) return null;
+    if (!activeGroupId) return activeVideoGroups[0] ?? null;
+    return activeVideoGroups.find((group) => group.id === activeGroupId) ?? activeVideoGroups[0] ?? null;
+  }, [activeVideoGroups, activeGroupId]);
+  const isGenerationLoading = useMemo(() => pendingGroups.some((group) => group.members.some((member) => member.status !== 'completed')), [pendingGroups]);
+  const generationSkeletonCount = useMemo(() => {
+    const count = renders.length > 0 ? renders.length : form?.iterations ?? 1;
+    return Math.max(1, Math.min(4, count || 1));
+  }, [renders, form?.iterations]);
+  const viewerGroup = useMemo<VideoGroup | null>(() => {
+    if (!viewerTarget) return null;
+    if (viewerTarget.kind === 'pending') {
+      const summary = pendingSummaryMap.get(viewerTarget.id);
+      if (!summary) return null;
+      return adaptGroupSummary(normalizeGroupSummary(summary), provider);
+    }
+    return adaptGroupSummary(normalizeGroupSummary(viewerTarget.summary), provider);
+  }, [viewerTarget, pendingSummaryMap, provider]);
   const buildQuadTileFromRender = useCallback(
-    (render: LocalRender, group: LocalRenderGroup): QuadPreviewTile => ({
-      localKey: render.localKey,
-      batchId: render.batchId,
-      id: render.id,
-      iterationIndex: render.iterationIndex,
-      iterationCount: group.iterationCount,
-      videoUrl: render.videoUrl,
-      thumbUrl: render.thumbUrl,
-      aspectRatio: render.aspectRatio,
-      progress: render.progress,
-      message: render.message,
-      priceCents: render.priceCents,
-      currency: render.currency ?? group.currency ?? preflight?.currency ?? 'USD',
-      durationSec: render.durationSec,
-      engineLabel: render.engineLabel,
-      engineId: render.engineId,
-      etaLabel: render.etaLabel,
-      prompt: render.prompt,
-      status: render.videoUrl ? 'completed' : 'pending',
-    }),
+    (render: LocalRender, group: LocalRenderGroup): QuadPreviewTile => {
+      const gatingActive = render.status !== 'failed' && Date.now() < render.minReadyAt;
+      const videoUrl = gatingActive ? undefined : render.videoUrl ?? render.readyVideoUrl;
+      const progress = gatingActive ? Math.min(Math.max(render.progress ?? 5, 95), 95) : render.progress;
+      const status: QuadPreviewTile['status'] = render.status === 'failed'
+        ? 'failed'
+        : gatingActive
+          ? 'pending'
+          : render.status ?? (videoUrl ? 'completed' : 'pending');
+
+      return {
+        localKey: render.localKey,
+        batchId: render.batchId,
+        id: render.id,
+        iterationIndex: render.iterationIndex,
+        iterationCount: group.iterationCount,
+        videoUrl,
+        thumbUrl: render.thumbUrl,
+        aspectRatio: render.aspectRatio,
+        progress,
+        message: render.message,
+        priceCents: render.priceCents,
+        currency: render.currency ?? group.currency ?? preflight?.currency ?? 'USD',
+        durationSec: render.durationSec,
+        engineLabel: render.engineLabel,
+        engineId: render.engineId,
+        etaLabel: render.etaLabel,
+        prompt: render.prompt,
+        status,
+      };
+    },
     [preflight?.currency]
   );
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !authChecked || !userId) return;
+    const key = storageKey(STORAGE_KEYS.form);
     if (!form) {
-      window.localStorage.removeItem(STORAGE_KEYS.form);
+      window.localStorage.removeItem(key);
       return;
     }
     try {
-      window.localStorage.setItem(STORAGE_KEYS.form, JSON.stringify(form));
+      window.localStorage.setItem(key, JSON.stringify(form));
     } catch {
       // noop
     }
-  }, [form]);
+  }, [form, authChecked, userId, storageKey]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !authChecked || !userId) return;
     try {
-      window.localStorage.setItem(STORAGE_KEYS.prompt, prompt);
+      window.localStorage.setItem(storageKey(STORAGE_KEYS.prompt), prompt);
     } catch {
       // noop
     }
-  }, [prompt]);
+  }, [prompt, authChecked, userId, storageKey]);
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !authChecked || !userId) return;
     try {
-      window.localStorage.setItem(STORAGE_KEYS.negativePrompt, negativePrompt);
+      window.localStorage.setItem(storageKey(STORAGE_KEYS.negativePrompt), negativePrompt);
     } catch {
       // noop
     }
-  }, [negativePrompt]);
+  }, [negativePrompt, authChecked, userId, storageKey]);
 
   const durationRef = useRef<HTMLElement | null>(null);
   const resolutionRef = useRef<HTMLDivElement>(null);
@@ -596,12 +812,6 @@ useEffect(() => {
     });
   };
 }, []);
-
-  const focusElement = useCallback((element: HTMLElement | null) => {
-    if (!element) return;
-    element.focus({ preventScroll: true });
-    element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
-  }, []);
 
   const showNotice = useCallback((message: string) => {
     setNotice(message);
@@ -751,6 +961,7 @@ useEffect(() => {
   );
 
   useEffect(() => {
+    if (!authChecked) return undefined;
     let mounted = true;
     (async () => {
       try {
@@ -771,7 +982,7 @@ useEffect(() => {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [authChecked]);
 
   useEffect(() => {
     if (!topUpModal) return undefined;
@@ -803,62 +1014,15 @@ useEffect(() => {
       thumbUrl: latestJobWithMedia.thumbUrl ?? undefined,
       priceCents: latestJobWithMedia.finalPriceCents ?? latestJobWithMedia.pricingSnapshot?.totalCents,
       currency: latestJobWithMedia.currency ?? latestJobWithMedia.pricingSnapshot?.currency,
+      prompt: latestJobWithMedia.prompt ?? undefined,
     });
   }, [latestJobsPages, renders.length, selectedPreview]);
-
-  const handleNavigateFactor = useCallback(
-    (kind: PriceFactorKind) => {
-      if (kind === 'base' || kind === 'duration') {
-        focusElement(durationRef.current);
-        return;
-      }
-      if (kind === 'resolution') {
-        focusElement(resolutionRef.current);
-        return;
-      }
-      if (kind === 'upscale4k' || kind === 'audio') {
-        focusElement(addonsRef.current);
-        return;
-      }
-      if (kind === 'discount') {
-        focusElement(addonsRef.current);
-        return;
-      }
-      if (kind === 'tax') {
-        focusElement(resolutionRef.current ?? addonsRef.current);
-      }
-    },
-    [focusElement]
-  );
-
-  const handleReplacePrompt = useCallback((value: string) => {
-    setPrompt(value);
-  }, []);
-
-  const handleAppendPrompt = useCallback((value: string) => {
-    setPrompt((current) => {
-      if (!current?.trim()) {
-        return value;
-      }
-      return `${current.trim()}\n\n${value}`;
-    });
-  }, []);
 
   const focusComposer = useCallback(() => {
     if (!composerRef.current) return;
     composerRef.current.focus({ preventScroll: true });
     composerRef.current.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
   }, []);
-
-  const handleRequestEngineSwitch = useCallback(
-    (engineId: string) => {
-      if (!engines.length) return;
-      const exists = engines.some((entry) => entry.id === engineId);
-      if (!exists) return;
-      setForm((current) => (current ? { ...current, engineId } : current));
-    },
-    [engines]
-  );
 
   const selectedEngine = useMemo<EngineCaps | null>(() => {
     if (!engines.length) return null;
@@ -1000,7 +1164,7 @@ useEffect(() => {
   }, [inputAssets]);
 
   const startRender = useCallback(async () => {
-    if (!form || !selectedEngine) return;
+    if (!form || !selectedEngine || !authChecked) return;
     const trimmedPrompt = prompt.trim();
     const trimmedNegativePrompt = negativePrompt.trim();
     const supportsNegativePrompt = Boolean(inputSchemaSummary.negativePromptField);
@@ -1043,6 +1207,74 @@ useEffect(() => {
         total_cents: totalCents ?? null,
         currency: preflight?.pricing?.currency ?? preflight?.currency ?? 'USD',
       });
+    }
+
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token ?? null;
+    const paymentMode: 'wallet' | 'platform' = token ? 'wallet' : 'platform';
+    const currencyCode = preflight?.pricing?.currency ?? preflight?.currency ?? 'USD';
+
+    const presentInsufficientFunds = (shortfallCents?: number) => {
+      const normalizedShortfall = typeof shortfallCents === 'number' ? Math.max(0, shortfallCents) : undefined;
+
+      let friendlyNotice = 'Insufficient wallet balance. Please add funds to continue generating.';
+      let formattedShortfall: string | undefined;
+      if (typeof normalizedShortfall === 'number' && normalizedShortfall > 0) {
+        try {
+          formattedShortfall = new Intl.NumberFormat(CURRENCY_LOCALE, {
+            style: 'currency',
+            currency: currencyCode,
+          }).format(normalizedShortfall / 100);
+          friendlyNotice = `Insufficient wallet balance. Add at least ${formattedShortfall} to continue generating.`;
+        } catch {
+          formattedShortfall = `${currencyCode} ${(normalizedShortfall / 100).toFixed(2)}`;
+          friendlyNotice = `Insufficient wallet balance. Add at least ${formattedShortfall} to continue generating.`;
+        }
+      }
+
+      showNotice(friendlyNotice);
+      setTopUpModal({
+        message: friendlyNotice,
+        amountLabel: formattedShortfall,
+        shortfallCents: typeof normalizedShortfall === 'number' ? normalizedShortfall : undefined,
+      });
+      setPreflightError(friendlyNotice);
+    };
+
+    if (paymentMode === 'wallet') {
+      const unitCostCents =
+        typeof preflight?.pricing?.totalCents === 'number'
+          ? preflight.pricing.totalCents
+          : typeof preflight?.total === 'number'
+            ? preflight.total
+            : null;
+      if (typeof unitCostCents === 'number' && unitCostCents > 0) {
+        const requiredCents = unitCostCents * iterationCount;
+        try {
+          const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+          const res = await fetch('/api/wallet', { headers });
+          if (res.ok) {
+            const walletJson = await res.json();
+            const balanceCents =
+              typeof walletJson.balanceCents === 'number'
+                ? walletJson.balanceCents
+                : typeof walletJson.balance === 'number'
+                  ? Math.round(walletJson.balance * 100)
+                  : typeof walletJson.balance === 'string'
+                    ? Math.round(Number(walletJson.balance) * 100)
+                  : undefined;
+            if (typeof balanceCents === 'number') {
+              const shortfall = requiredCents - balanceCents;
+              if (shortfall > 0) {
+                presentInsufficientFunds(shortfall);
+                return;
+              }
+            }
+          }
+        } catch (walletError) {
+          console.warn('[startRender] wallet balance check failed', walletError);
+        }
+      }
     }
 
     let inputsPayload: Array<{
@@ -1114,10 +1346,60 @@ useEffect(() => {
           : '/assets/frames/thumb-16x9.svg';
 
       const { seconds: etaSeconds, label: etaLabel } = getRenderEta(selectedEngine, form.durationSec);
-      const friendlyMessage = iterationCount > 1 ? `Take ${iterationIndex + 1}/${iterationCount} • ${FRIENDLY_MESSAGES[Math.floor(Math.random() * FRIENDLY_MESSAGES.length)]}` : FRIENDLY_MESSAGES[Math.floor(Math.random() * FRIENDLY_MESSAGES.length)];
+      const friendlyMessage = iterationCount > 1
+        ? `Take ${iterationIndex + 1}/${iterationCount} • ${FRIENDLY_MESSAGES[Math.floor(Math.random() * FRIENDLY_MESSAGES.length)]}`
+        : FRIENDLY_MESSAGES[Math.floor(Math.random() * FRIENDLY_MESSAGES.length)];
       const startedAt = Date.now();
-      const minDurationMs = Math.max(etaSeconds, 15) * 1000;
+      const minEtaSeconds = Math.max(20, etaSeconds);
+      const minDurationMs = Math.max(2000, minEtaSeconds * 1000);
       const minReadyAt = startedAt + minDurationMs;
+
+      let progressMessage = friendlyMessage;
+      const totalMs = minDurationMs;
+      let progressInterval: number | null = null;
+      let progressTimeout: number | null = null;
+
+      const stopProgressTracking = () => {
+        if (typeof window === 'undefined') return;
+        if (progressInterval !== null) {
+          window.clearInterval(progressInterval);
+          progressInterval = null;
+        }
+        if (progressTimeout !== null) {
+          window.clearTimeout(progressTimeout);
+          progressTimeout = null;
+        }
+      };
+
+      const startProgressTracking = () => {
+        if (typeof window === 'undefined') return;
+        if (progressInterval !== null) return;
+        progressInterval = window.setInterval(() => {
+          const now = Date.now();
+          const elapsed = now - startedAt;
+          const pct = Math.min(95, Math.round((elapsed / totalMs) * 100));
+          setRenders((prev) =>
+            prev.map((r) =>
+              r.localKey === localKey && !r.videoUrl
+                ? {
+                    ...r,
+                    progress: pct < 5 ? 5 : pct,
+                    message: progressMessage,
+                  }
+                : r
+            )
+          );
+          setSelectedPreview((cur) =>
+            cur && cur.localKey === localKey && !cur.videoUrl
+              ? { ...cur, progress: pct < 5 ? 5 : pct, message: progressMessage }
+              : cur
+          );
+        }, 400);
+        const timeoutMs = Math.max(totalMs * 1.5, totalMs + 15000);
+        progressTimeout = window.setTimeout(() => {
+          stopProgressTracking();
+        }, timeoutMs);
+      };
 
       const initial: LocalRender = {
         localKey,
@@ -1133,7 +1415,9 @@ useEffect(() => {
         prompt,
         progress: 5,
         message: friendlyMessage,
+        status: 'pending',
         thumbUrl: thumb,
+        readyVideoUrl: undefined,
         priceCents: preflight?.pricing?.totalCents ?? undefined,
         currency: preflight?.pricing?.currency ?? preflight?.currency ?? 'USD',
         pricingSnapshot: preflight?.pricing,
@@ -1142,6 +1426,9 @@ useEffect(() => {
         etaLabel,
         startedAt,
         minReadyAt,
+        groupId: batchId,
+        renderIds: undefined,
+        heroRenderId: null,
       };
 
       setRenders((prev) => [initial, ...prev]);
@@ -1150,6 +1437,7 @@ useEffect(() => {
         return { ...prev, [batchId]: localKey };
       });
       setActiveBatchId(batchId);
+      setActiveGroupId(batchId);
       if (iterationCount > 1) {
         setViewMode((prev) => (prev === 'quad' ? prev : 'quad'));
       }
@@ -1167,12 +1455,13 @@ useEffect(() => {
         currency: initial.currency,
         etaSeconds,
         etaLabel,
+        prompt,
+        status: initial.status,
       });
 
+      startProgressTracking();
+
       try {
-        const { data } = await supabase.auth.getSession();
-        const token = data.session?.access_token;
-        const paymentMode = token ? 'wallet' : 'platform';
         const res = await runGenerate(
           {
             engineId: selectedEngine.id,
@@ -1189,178 +1478,214 @@ useEffect(() => {
             ...(inputsPayload ? { inputs: inputsPayload } : {}),
             ...(form.openaiApiKey ? { apiKey: form.openaiApiKey } : {}),
             idempotencyKey: id,
+            batchId,
+            groupId: batchId,
+            iterationIndex,
+            iterationCount,
+            localKey,
+            message: friendlyMessage,
+            etaSeconds,
+            etaLabel,
           },
           token ? { token } : undefined
         );
-        if (res?.jobId) {
-          setRenders((prev) =>
-            prev.map((r) =>
-              r.id === id
-                ? {
-                    ...r,
-                    id: res.jobId!,
-                    jobId: res.jobId!,
-                    thumbUrl: res.thumbUrl ?? r.thumbUrl,
-                    priceCents: res.pricing?.totalCents ?? r.priceCents,
-                    currency: res.pricing?.currency ?? r.currency,
-                    pricingSnapshot: res.pricing ?? r.pricingSnapshot,
-                    paymentStatus: res.paymentStatus ?? r.paymentStatus,
-                  }
-                : r
-            )
-          );
-          setSelectedPreview((cur) =>
-            cur && (cur.id === id || cur.localKey === localKey)
-              ? {
-                  ...cur,
-                  id: res.jobId!,
-                  localKey,
-                  thumbUrl: res.thumbUrl ?? cur.thumbUrl,
-                  priceCents: res.pricing?.totalCents ?? cur.priceCents,
-                  currency: res.pricing?.currency ?? cur.currency,
-                  etaLabel: cur.etaLabel,
-                  etaSeconds: cur.etaSeconds,
-                }
-              : cur
-          );
 
-          const jobId = res.jobId;
-          const poll = async () => {
-            try {
-              const status = await getJobStatus(jobId!);
-              const target = rendersRef.current.find((r) => r.id === jobId);
-              const now = Date.now();
-              const minReadyAtCurrent = target?.minReadyAt ?? 0;
-              const isCompleted = status.status === 'completed' || Boolean(status.videoUrl);
-              if (isCompleted && target && now < minReadyAtCurrent) {
-                window.setTimeout(poll, Math.max(500, minReadyAtCurrent - now));
-                return;
+        const resolvedJobId = res.jobId ?? id;
+        const resolvedBatchId = res.batchId ?? batchId;
+        const resolvedGroupId = res.groupId ?? batchId;
+        const resolvedIterationIndex = res.iterationIndex ?? iterationIndex;
+        const resolvedIterationCount = res.iterationCount ?? iterationCount;
+        const resolvedThumb = res.thumbUrl ?? thumb;
+        const resolvedPriceCents =
+          res.pricing?.totalCents ?? preflight?.pricing?.totalCents ?? undefined;
+        const resolvedCurrency =
+          res.pricing?.currency ?? preflight?.pricing?.currency ?? preflight?.currency ?? 'USD';
+        const resolvedEtaSeconds =
+          typeof res.etaSeconds === 'number' ? res.etaSeconds : etaSeconds;
+        const resolvedEtaLabel = res.etaLabel ?? etaLabel;
+        const resolvedMessage = res.message ?? friendlyMessage;
+        const resolvedStatus =
+          res.status ?? (res.videoUrl ? 'completed' : 'pending');
+        const resolvedProgress =
+          typeof res.progress === 'number' ? res.progress : res.videoUrl ? 100 : 5;
+        const resolvedPricingSnapshot = res.pricing ?? preflight?.pricing;
+        const resolvedPaymentStatus = res.paymentStatus ?? 'pending_payment';
+        const resolvedRenderIds = res.renderIds ?? undefined;
+        const resolvedHeroRenderId = res.heroRenderId ?? null;
+        const resolvedVideoUrl = res.videoUrl ?? undefined;
+
+        const now = Date.now();
+        const gatingActive = Boolean(resolvedVideoUrl) && now < minReadyAt;
+        const clampedProgress = resolvedProgress < 5 ? 5 : resolvedProgress;
+        const gatedProgress = gatingActive ? Math.min(clampedProgress, 95) : clampedProgress;
+
+        setRenders((prev) =>
+          prev.map((render) =>
+            render.localKey === localKey
+              ? {
+                  ...render,
+                  id: resolvedJobId,
+                  jobId: resolvedJobId,
+                  batchId: resolvedBatchId,
+                  groupId: resolvedGroupId,
+                  iterationIndex: resolvedIterationIndex,
+                  iterationCount: resolvedIterationCount,
+                  thumbUrl: resolvedThumb,
+                  message: resolvedMessage,
+                  progress: gatedProgress,
+                  status: gatingActive ? 'pending' : resolvedStatus,
+                  priceCents: resolvedPriceCents,
+                  currency: resolvedCurrency,
+                  pricingSnapshot: resolvedPricingSnapshot,
+                  paymentStatus: resolvedPaymentStatus,
+                  etaSeconds: resolvedEtaSeconds,
+                  etaLabel: resolvedEtaLabel,
+                  renderIds: resolvedRenderIds,
+                  heroRenderId: resolvedHeroRenderId,
+                  readyVideoUrl: resolvedVideoUrl ?? render.readyVideoUrl,
+                  videoUrl: gatingActive ? render.videoUrl : resolvedVideoUrl ?? render.videoUrl,
+                }
+              : render
+          )
+        );
+        progressMessage = resolvedMessage;
+        setSelectedPreview((cur) =>
+          cur && cur.localKey === localKey
+            ? {
+                ...cur,
+                id: resolvedJobId,
+                batchId: resolvedBatchId,
+                iterationIndex: resolvedIterationIndex,
+                iterationCount: resolvedIterationCount,
+                thumbUrl: resolvedThumb,
+                progress: gatedProgress,
+                message: resolvedMessage,
+                priceCents: resolvedPriceCents,
+                currency: resolvedCurrency,
+                etaSeconds: resolvedEtaSeconds,
+                etaLabel: resolvedEtaLabel,
+                videoUrl: gatingActive ? cur.videoUrl : resolvedVideoUrl ?? cur.videoUrl,
+                status: gatingActive ? 'pending' : resolvedStatus,
               }
-              setRenders((prev) =>
-                prev.map((r) =>
-                  r.id === jobId
-                    ? {
-                        ...r,
-                        progress: status.progress ?? r.progress,
-                        videoUrl: status.videoUrl ?? r.videoUrl,
-                        thumbUrl: status.thumbUrl ?? r.thumbUrl,
-                        priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? r.priceCents,
-                        currency: status.currency ?? status.pricing?.currency ?? r.currency,
-                        pricingSnapshot: status.pricing ?? r.pricingSnapshot,
-                        paymentStatus: status.paymentStatus ?? r.paymentStatus,
-                      }
-                    : r
-                )
-              );
-              setSelectedPreview((cur) =>
-                cur && (cur.id === jobId || cur.localKey === localKey)
-                  ? {
-                      ...cur,
-                      id: jobId,
-                      localKey,
-                      progress: status.progress ?? cur.progress,
-                      videoUrl: status.videoUrl ?? cur.videoUrl,
-                      thumbUrl: status.thumbUrl ?? cur.thumbUrl,
-                      priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? cur.priceCents,
-                      currency: status.currency ?? status.pricing?.currency ?? cur.currency,
-                      etaLabel: cur.etaLabel,
-                      etaSeconds: cur.etaSeconds,
-                    }
-                  : cur
-              );
-              if (status.status !== 'completed' && status.status !== 'failed') {
-                window.setTimeout(poll, 2000);
-              }
-            } catch {
-              window.setTimeout(poll, 3000);
-            }
-          };
-          window.setTimeout(poll, 1500);
+            : cur
+        );
+
+        if (resolvedIterationCount > 1) {
+          setViewMode((prev) => (prev === 'quad' ? prev : 'quad'));
         }
+        setActiveBatchId(resolvedBatchId);
+        setActiveGroupId(resolvedBatchId ?? batchId ?? id);
+        setBatchHeroes((prev) => {
+          if (prev[resolvedBatchId]) return prev;
+          return { ...prev, [resolvedBatchId]: localKey };
+        });
+
+        if (resolvedVideoUrl || resolvedStatus === 'completed') {
+          stopProgressTracking();
+        }
+
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new Event('wallet:invalidate'));
         }
+
+        const jobId = resolvedJobId;
+        const poll = async () => {
+          try {
+            const status = await getJobStatus(jobId);
+            if (status.message) {
+              progressMessage = status.message;
+            }
+            const target = rendersRef.current.find((r) => r.id === jobId);
+            const now = Date.now();
+            const minReadyAtCurrent = target?.minReadyAt ?? 0;
+            const isCompleted = status.status === 'completed' || Boolean(status.videoUrl);
+            if (isCompleted && target && now < minReadyAtCurrent) {
+              window.setTimeout(poll, Math.max(500, minReadyAtCurrent - now));
+              return;
+            }
+            setRenders((prev) =>
+              prev.map((r) =>
+                r.id === jobId
+                  ? {
+                      ...r,
+                      status: status.status ?? r.status,
+                      progress: status.progress ?? r.progress,
+                      readyVideoUrl: status.videoUrl ?? r.readyVideoUrl,
+                      videoUrl: status.videoUrl ?? r.videoUrl ?? r.readyVideoUrl,
+                      thumbUrl: status.thumbUrl ?? r.thumbUrl,
+                      priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? r.priceCents,
+                      currency: status.currency ?? status.pricing?.currency ?? r.currency,
+                      pricingSnapshot: status.pricing ?? r.pricingSnapshot,
+                      paymentStatus: status.paymentStatus ?? r.paymentStatus,
+                    }
+                  : r
+              )
+            );
+            setSelectedPreview((cur) =>
+              cur && (cur.id === jobId || cur.localKey === localKey)
+                ? {
+                    ...cur,
+                    status: status.status ?? cur.status,
+                    id: jobId,
+                    localKey,
+                    progress: status.progress ?? cur.progress,
+                    videoUrl: status.videoUrl ?? target?.readyVideoUrl ?? cur.videoUrl,
+                    thumbUrl: status.thumbUrl ?? cur.thumbUrl,
+                    priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? cur.priceCents,
+                    currency: status.currency ?? status.pricing?.currency ?? cur.currency,
+                    etaLabel: cur.etaLabel,
+                    etaSeconds: cur.etaSeconds,
+                  }
+                : cur
+            );
+            if (status.status !== 'completed' && status.status !== 'failed') {
+              window.setTimeout(poll, 2000);
+            }
+            if (status.status === 'completed' || status.status === 'failed' || status.videoUrl) {
+              stopProgressTracking();
+            }
+          } catch {
+            window.setTimeout(poll, 3000);
+          }
+        };
+        window.setTimeout(poll, 1500);
+
+        if (resolvedVideoUrl) {
+          stopProgressTracking();
+        }
       } catch (error) {
-        setRenders((prev) => prev.filter((r) => r.localKey !== localKey));
-        setSelectedPreview((cur) => (cur && (cur.id === id || cur.localKey === localKey) ? null : cur));
+        stopProgressTracking();
+        let fallbackBatchId: string | null = null;
+        setRenders((prev) => {
+          const next = prev.filter((r) => r.localKey !== localKey);
+          fallbackBatchId = next[0]?.batchId ?? null;
+          return next;
+        });
+        setBatchHeroes((prev) => {
+          if (!prev[batchId]) return prev;
+          const next = { ...prev };
+          delete next[batchId];
+          return next;
+        });
+        setActiveBatchId((current) => (current === batchId ? fallbackBatchId : current));
+        setActiveGroupId((current) => (current === batchId ? fallbackBatchId : current));
+        setSelectedPreview((cur) => (cur && cur.localKey === localKey ? null : cur));
         if (isInsufficientFundsError(error)) {
           const shortfallCents = error.details?.requiredCents;
-          const currencyCode = preflight?.pricing?.currency ?? preflight?.currency ?? 'USD';
-          let friendlyNotice = 'Insufficient wallet balance. Please add funds to continue generating.';
-          let formattedShortfall: string | undefined;
-          if (typeof shortfallCents === 'number' && shortfallCents > 0) {
-            try {
-              formattedShortfall = new Intl.NumberFormat(CURRENCY_LOCALE, {
-                style: 'currency',
-                currency: currencyCode,
-              }).format(shortfallCents / 100);
-              friendlyNotice = `Insufficient wallet balance. Add at least ${formattedShortfall} to continue generating.`;
-            } catch {
-              formattedShortfall = `${currencyCode} ${(shortfallCents / 100).toFixed(2)}`;
-              friendlyNotice = `Insufficient wallet balance. Add at least ${formattedShortfall} to continue generating.`;
-            }
-          }
-          showNotice(friendlyNotice);
-          setTopUpModal({
-            message: friendlyNotice,
-            amountLabel: formattedShortfall,
-            shortfallCents: typeof shortfallCents === 'number' ? shortfallCents : undefined,
-          });
-          setPreflightError(friendlyNotice);
+          presentInsufficientFunds(shortfallCents);
           return;
         }
         setPreflightError(error instanceof Error ? error.message : 'Generate failed');
       }
-
-      const totalMs = minDurationMs;
-      const started = startedAt;
-      const interval = window.setInterval(() => {
-        setRenders((prev) => {
-          const now = Date.now();
-          const elapsed = now - started;
-          const pct = Math.min(95, Math.round((elapsed / totalMs) * 100));
-          const updated = prev.map((r) =>
-            r.localKey === localKey && !r.videoUrl
-              ? {
-                  ...r,
-                  progress: pct < 5 ? 5 : pct,
-                  message: friendlyMessage,
-                }
-              : r
-          );
-          setSelectedPreview((cur) =>
-            cur && (cur.id === id || cur.localKey === localKey) && !cur.videoUrl
-              ? { ...cur, progress: pct < 5 ? 5 : pct, message: friendlyMessage }
-              : cur
-          );
-          return updated;
-        });
-      }, 400);
-      window.setTimeout(() => {
-        window.clearInterval(interval);
-      }, totalMs + 1000);
     };
 
     for (let iterationIndex = 0; iterationIndex < iterationCount; iterationIndex += 1) {
       void runIteration(iterationIndex);
     }
-  }, [form, prompt, negativePrompt, selectedEngine, preflight, memberTier, showNotice, inputSchemaSummary, inputAssets]);
-
-  const isSoraEngine = Boolean(selectedEngine?.id?.startsWith('sora-2'));
-  const hasOpenAiBilling = Boolean(form?.openaiApiKey && form.openaiApiKey.trim().length > 0);
-  const pricingBillingBadge = isSoraEngine
-    ? hasOpenAiBilling
-      ? 'Billed by OpenAI (via your key)'
-      : 'Billed via FAL credits'
-    : undefined;
-  const pricingBillingNote = isSoraEngine
-    ? hasOpenAiBilling
-      ? 'Charges settle on your OpenAI account; the price shown is indicative for budgeting.'
-      : 'Without an OpenAI key we run through FAL — price reflects what your wallet will be charged.'
-    : undefined;
+  }, [form, prompt, negativePrompt, selectedEngine, preflight, memberTier, showNotice, inputSchemaSummary, inputAssets, authChecked, setActiveGroupId]);
 
   useEffect(() => {
-    if (!selectedEngine) return;
+    if (!selectedEngine || !authChecked) return;
     setForm((current) => {
       const preservedApiKey = current?.openaiApiKey;
       if (current && current.engineId === selectedEngine.id) {
@@ -1383,10 +1708,10 @@ useEffect(() => {
         openaiApiKey: preservedApiKey,
       };
     });
-  }, [selectedEngine]);
+  }, [selectedEngine, authChecked]);
 
   useEffect(() => {
-    if (!form || !selectedEngine) return;
+    if (!form || !selectedEngine || !authChecked) return;
     let canceled = false;
 
     const payload: PreflightRequest = {
@@ -1405,13 +1730,15 @@ useEffect(() => {
     setPreflightError(undefined);
 
     const timeout = setTimeout(() => {
-      runPreflight(payload)
+      Promise.resolve()
+        .then(() => runPreflight(payload))
         .then((response) => {
           if (canceled) return;
           setPreflight(response);
         })
         .catch((err) => {
           if (canceled) return;
+          console.error('[preflight] failed', err);
           setPreflightError(err instanceof Error ? err.message : 'Preflight failed');
         })
         .finally(() => {
@@ -1425,44 +1752,7 @@ useEffect(() => {
       canceled = true;
       clearTimeout(timeout);
     };
-  }, [form, selectedEngine, memberTier]);
-
-  const handleHeroChange = useCallback(
-    (tile: QuadPreviewTile) => {
-      setBatchHeroes((prev) => {
-        const previous = prev[tile.batchId];
-        if (previous === tile.localKey) return prev;
-        emitClientMetric('hero_changed', { batchId: tile.batchId, from: previous ?? null, to: tile.localKey });
-        return { ...prev, [tile.batchId]: tile.localKey };
-      });
-      setSelectedPreview((current) => {
-        if (current && current.batchId === tile.batchId) {
-          return {
-            ...current,
-            id: tile.id,
-            localKey: tile.localKey,
-            videoUrl: tile.videoUrl,
-            aspectRatio: tile.aspectRatio,
-            priceCents: tile.priceCents,
-            currency: tile.currency,
-            etaLabel: tile.etaLabel,
-            iterationIndex: tile.iterationIndex,
-            iterationCount: tile.iterationCount,
-          };
-        }
-        return current;
-      });
-    },
-    []
-  );
-
-  const handleSelectHeroTile = useCallback(
-    (tile: QuadPreviewTile) => {
-      setActiveBatchId(tile.batchId);
-      handleHeroChange(tile);
-    },
-    [handleHeroChange]
-  );
+  }, [form, selectedEngine, memberTier, authChecked]);
 
   const handleQuadTileAction = useCallback(
     (action: QuadTileAction, tile: QuadPreviewTile) => {
@@ -1506,11 +1796,13 @@ useEffect(() => {
             iterationCount: tile.iterationCount,
             videoUrl: tile.videoUrl,
             aspectRatio: tile.aspectRatio,
+            thumbUrl: tile.thumbUrl,
             progress: tile.progress,
             message: tile.message,
             priceCents: tile.priceCents,
             currency: tile.currency,
             etaLabel: tile.etaLabel,
+            prompt: tile.prompt,
           });
           break;
         }
@@ -1521,32 +1813,14 @@ useEffect(() => {
     [focusComposer, setForm, setPrompt, showNotice]
   );
 
-  const handleGroupAction = useCallback(
-    (action: QuadGroupAction, tile?: QuadPreviewTile) => {
-      if (action === 'open') {
-        const target = tile ?? (activeTiles.length ? activeTiles[0] : undefined);
-        if (!target) return;
-        handleQuadTileAction('open', target);
-        handleNavigateFactor('base');
-        return;
-      }
-      if (action === 'compare') {
-        emitClientMetric('compare_used', { batchId: tile?.batchId ?? activeTiles[0]?.batchId ?? null });
-        showNotice('Compare view is coming soon.');
-        return;
-      }
-      if (action === 'hero' && tile) {
-        handleHeroChange(tile);
-        return;
-      }
-    },
-    [activeTiles, handleHeroChange, handleQuadTileAction, handleNavigateFactor, showNotice]
-  );
-
   const fallbackEngineId = selectedEngine?.id ?? 'unknown-engine';
 
   const handleGalleryGroupAction = useCallback(
-    (group: GroupSummary, action: GroupCardAction) => {
+    (group: GroupSummary, action: GroupedJobAction) => {
+      setActiveGroupId(group.id);
+      if (action === 'remove') {
+        return;
+      }
       if (group.source === 'active') {
         const renderGroup = renderGroups.get(group.id);
         if (!renderGroup || renderGroup.items.length === 0) return;
@@ -1564,6 +1838,7 @@ useEffect(() => {
         const tile = buildQuadTileFromRender(heroRender, renderGroup);
         if (action === 'open') {
           handleQuadTileAction('open', tile);
+          setViewerTarget({ kind: 'pending', id: group.id });
           return;
         }
         if (action === 'continue') {
@@ -1642,7 +1917,9 @@ useEffect(() => {
           priceCents: tile.priceCents,
           currency: tile.currency,
           etaLabel: tile.etaLabel,
+          prompt: tile.prompt,
         });
+        setViewerTarget({ kind: 'summary', summary: group });
         return;
       }
 
@@ -1658,6 +1935,8 @@ useEffect(() => {
       handleQuadTileAction,
       showNotice,
       fallbackEngineId,
+      setActiveGroupId,
+      setViewerTarget,
       setViewMode,
       setActiveBatchId,
       setSelectedPreview,
@@ -1666,10 +1945,43 @@ useEffect(() => {
 
   const openGroupViaGallery = useCallback(
     (group: GroupSummary) => {
+      setActiveGroupId(group.id);
       handleGalleryGroupAction(group, 'open');
     },
-    [handleGalleryGroupAction]
+    [handleGalleryGroupAction, setActiveGroupId]
   );
+  const handleActiveGroupOpen = useCallback(
+    (group: GroupSummary) => {
+      setActiveGroupId(group.id);
+      handleGalleryGroupAction(group, 'open');
+    },
+    [handleGalleryGroupAction, setActiveGroupId]
+  );
+  const handleActiveGroupAction = useCallback(
+    (group: GroupSummary, action: GroupedJobAction) => {
+      if (action === 'remove') return;
+      setActiveGroupId(group.id);
+      handleGalleryGroupAction(group, action);
+    },
+    [handleGalleryGroupAction, setActiveGroupId]
+  );
+
+  const singlePriceCents = typeof preflight?.total === 'number' ? preflight.total : null;
+  const singlePrice =
+    typeof singlePriceCents === 'number' ? singlePriceCents / 100 : null;
+  const price =
+    typeof singlePrice === 'number' && form?.iterations
+      ? singlePrice * form.iterations
+      : singlePrice;
+  const currency = preflight?.currency ?? 'USD';
+
+  if (!authChecked) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-bg text-text-secondary">
+        Checking session…
+      </main>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -1694,31 +2006,6 @@ useEffect(() => {
       </main>
     );
   }
-
-  const singlePrice = preflight?.total ?? null;
-  const price = typeof singlePrice === 'number' && form?.iterations ? singlePrice * form.iterations : singlePrice;
-  const currency = preflight?.currency ?? 'USD';
-  const currentRender = renders[0] ?? null;
-  const previewSourceSingle = selectedPreview ??
-    (currentRender
-      ? {
-          id: currentRender.id,
-          localKey: currentRender.localKey,
-          batchId: currentRender.batchId,
-          iterationIndex: currentRender.iterationIndex,
-          iterationCount: currentRender.iterationCount,
-          videoUrl: currentRender.videoUrl,
-          aspectRatio: currentRender.aspectRatio,
-          progress: currentRender.progress,
-          message: currentRender.message,
-          priceCents: currentRender.priceCents,
-          currency: currentRender.currency,
-          etaSeconds: currentRender.etaSeconds,
-          etaLabel: currentRender.etaLabel,
-        }
-      : null);
-
-  const shouldShowQuad = viewMode === 'quad' && activeTiles.length > 0;
 
   return (
     <div className="flex min-h-screen flex-col bg-bg">
@@ -1854,44 +2141,48 @@ useEffect(() => {
 
               <div className="order-2 xl:order-none xl:col-start-2 xl:row-start-1 xl:self-start">
                 <div className="space-y-5">
-                  {shouldShowQuad && activeGroup ? (
-                    <QuadPreviewPanel
-                      tiles={activeTiles}
-                      heroKey={activeHeroKey}
-                      preflight={preflight}
-                      iterations={form.iterations}
-                      currency={currency}
-                      totalPriceCents={activeGroup.totalPriceCents}
-                      onNavigateFactor={handleNavigateFactor}
-                      onTileAction={handleQuadTileAction}
-                      onGroupAction={handleGroupAction}
-                      onSelectHero={handleSelectHeroTile}
-                      engineMap={engineMap}
-                      onSaveComposite={() => {
-                        emitClientMetric('group_composite_saved', { batchId: activeGroup.id });
-                        showNotice('Composite saving is coming soon.');
-                      }}
-                    />
-                  ) : (
-                    <PreviewCard
-                      engine={selectedEngine}
-                      price={price}
-                      currency={currency}
-                      preflight={preflight}
-                      isPricing={isPricing}
-                      onNavigateFactor={handleNavigateFactor}
-                      iterations={form.iterations}
-                      renderPending={Boolean(previewSourceSingle && !previewSourceSingle.videoUrl)}
-                      renderProgress={previewSourceSingle?.progress ?? 0}
-                      renderMessage={previewSourceSingle?.message}
-                      renderEtaLabel={previewSourceSingle?.etaLabel}
-                      renderVideoUrl={previewSourceSingle?.videoUrl}
-                      aspectRatio={previewSourceSingle?.aspectRatio || form.aspectRatio}
-                      billingBadge={pricingBillingBadge}
-                      billingNote={pricingBillingNote}
-                      selectedResolution={form.resolution}
-                    />
-                  )}
+                  {showCenterGallery ? (
+                    normalizedPendingGroups.length === 0 && !isGenerationLoading ? (
+                      <div className="rounded-card border border-border bg-white/80 p-5 text-center text-sm text-text-secondary">
+                        Launch a generation to populate your gallery. Variants for each run will appear here.
+                      </div>
+                    ) : (
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        {normalizedPendingGroups.map((group) => {
+                          const engineId = group.hero.engineId;
+                          const engine = engineId ? engineMap.get(engineId) ?? null : null;
+                          return (
+                            <GroupedJobCard
+                              key={group.id}
+                              group={group}
+                              engine={engine ?? undefined}
+                              onOpen={handleActiveGroupOpen}
+                              onAction={handleActiveGroupAction}
+                              allowRemove={false}
+                            />
+                          );
+                        })}
+                        {isGenerationLoading &&
+                          Array.from({ length: normalizedPendingGroups.length ? 0 : generationSkeletonCount }).map((_, index) => (
+                            <div key={`workspace-gallery-skeleton-${index}`} className="rounded-card border border-border bg-white/60 p-0" aria-hidden>
+                              <div className="relative overflow-hidden rounded-card">
+                                <div className="relative" style={{ aspectRatio: '16 / 9' }}>
+                                  <div className="skeleton absolute inset-0" />
+                                </div>
+                              </div>
+                              <div className="border-t border-border bg-white/70 px-3 py-2">
+                                <div className="h-3 w-24 rounded-full bg-neutral-200" />
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    )
+                  ) : null}
+                  <CompositePreviewDock
+                    group={activeVideoGroup}
+                    isLoading={isGenerationLoading && !activeVideoGroup}
+                    onOpenModal={(group) => setViewerTarget({ kind: 'pending', id: group.id })}
+                  />
                   <Composer
                     engine={selectedEngine}
                     prompt={prompt}
@@ -1924,59 +2215,13 @@ useEffect(() => {
         </div>
         <GalleryRail
           engine={selectedEngine}
-          currentPrompt={prompt}
-          onReplacePrompt={handleReplacePrompt}
-          onAppendPrompt={handleAppendPrompt}
-          onFocusComposer={focusComposer}
-          onRequestEngineSwitch={handleRequestEngineSwitch}
-          pendingItems={nonGroupedRenders}
-          activeGroups={pendingGroups}
-                onSelectPreview={(payload) => {
-                  setViewMode('single');
-                  const render = payload?.id
-                    ? renders.find((item) => item.id === payload.id || item.localKey === payload.id)
-                    : undefined;
-                  if (render) {
-                    setActiveBatchId(render.batchId);
-                    setSelectedPreview({
-                      id: render.id,
-                      localKey: render.localKey,
-                      batchId: render.batchId,
-                      iterationIndex: render.iterationIndex,
-                      iterationCount: render.iterationCount,
-                      videoUrl: payload?.videoUrl ?? render.videoUrl,
-                      thumbUrl: payload?.thumbUrl ?? render.thumbUrl,
-                      aspectRatio: payload?.aspectRatio ?? render.aspectRatio,
-                      progress: typeof payload?.progress === 'number' ? payload.progress : render.progress,
-                      message: payload?.message ?? render.message,
-                      priceCents: payload?.priceCents ?? render.priceCents,
-                      currency: payload?.currency ?? render.currency,
-                      etaSeconds: render.etaSeconds,
-                      etaLabel: render.etaLabel,
-                    });
-                    return;
-                  }
-                  setSelectedPreview((current) => ({
-                    id: payload?.id ?? current?.id,
-                    localKey: payload?.localKey ?? current?.localKey,
-                    batchId: payload?.batchId ?? current?.batchId,
-                    iterationIndex: payload?.iterationIndex ?? current?.iterationIndex,
-                    iterationCount: payload?.iterationCount ?? current?.iterationCount,
-                    videoUrl: payload?.videoUrl ?? current?.videoUrl,
-                    thumbUrl: payload?.thumbUrl ?? current?.thumbUrl,
-                    aspectRatio: payload?.aspectRatio ?? current?.aspectRatio,
-                    progress: typeof payload?.progress === 'number' ? payload.progress : current?.progress ?? 0,
-                    message: payload?.message ?? current?.message ?? '',
-                    priceCents: payload?.priceCents ?? current?.priceCents,
-                    currency: payload?.currency ?? current?.currency,
-                    etaSeconds: current?.etaSeconds,
-                    etaLabel: current?.etaLabel,
-                  }));
-                }}
+          activeGroups={normalizedPendingGroups}
+          groupStorageKey={storageKey(STORAGE_KEYS.groupSummaries)}
           onOpenGroup={openGroupViaGallery}
           onGroupAction={handleGalleryGroupAction}
         />
       </div>
+      {viewerGroup ? <GroupViewerModal group={viewerGroup} onClose={() => setViewerTarget(null)} /> : null}
       {topUpModal && (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 px-4">
           <div className="absolute inset-0" role="presentation" onClick={closeTopUpModal} />

@@ -44,11 +44,6 @@ const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
       'The pro tier unlocks 1080p renders and premium throughput while keeping audio on by default. Use it when you need hero shots or longer cuts with higher bitrate.',
     badges: ['🔊 Audio enabled', '🖥️ 1080p', '💼 Pro tier'],
   },
-  'dev-sim': {
-    description:
-      'Our internal playground to validate prompts, UI, and wallet logic without calling external providers. Use it to test flows end-to-end, preview costs, and stress the queue before switching to real engines.',
-    badges: ['🧩 Internal use', '⚙️ Safe sandbox', '🧪 For testing flows']
-  },
   minimax: {
     description:
       'A pragmatic choice when you want quick concept checks with decent motion and budget control. Great for early cuts, pacing tests, and getting a first look before committing to higher-tier runs.',
@@ -145,12 +140,10 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
   const triggerId = useId();
 
   const availableEngines = useMemo(() => {
-    return engines
-      .filter((entry) => !entry.isLab)
-      .filter((entry) => {
-        const rosterEntry = getModelByEngineId(entry.id);
-        return rosterEntry && rosterEntry.availability !== 'paused';
-      });
+    return engines.filter((entry) => {
+      const rosterEntry = getModelByEngineId(entry.id);
+      return rosterEntry && rosterEntry.availability !== 'paused';
+    });
   }, [engines]);
 
   const selectedEngine = useMemo(() => {

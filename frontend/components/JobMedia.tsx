@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Job } from '@/types/jobs';
+import { normalizeMediaUrl } from '@/lib/media';
 import { getPlaceholderMedia } from '@/lib/placeholderMedia';
 
 export function JobMedia({
@@ -18,14 +19,8 @@ export function JobMedia({
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const placeholder = useMemo(() => getPlaceholderMedia(job.jobId), [job.jobId]);
-  const videoUrl =
-    typeof job.videoUrl === 'string' && job.videoUrl.startsWith('http')
-      ? job.videoUrl
-      : placeholder.videoUrl;
-  const poster =
-    typeof job.thumbUrl === 'string' && job.thumbUrl.startsWith('http')
-      ? job.thumbUrl
-      : placeholder.posterUrl;
+  const videoUrl = normalizeMediaUrl(job.videoUrl) ?? placeholder.videoUrl;
+  const poster = normalizeMediaUrl(job.thumbUrl) ?? placeholder.posterUrl;
   const [isHovered, setHovered] = useState(false);
   const [allowMotion, setAllowMotion] = useState(true);
 

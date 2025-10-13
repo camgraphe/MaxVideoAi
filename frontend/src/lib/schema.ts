@@ -38,6 +38,16 @@ export async function ensureBillingSchema(): Promise<void> {
           has_audio BOOLEAN DEFAULT FALSE,
           can_upscale BOOLEAN DEFAULT FALSE,
           preview_frame TEXT,
+          batch_id TEXT,
+          group_id TEXT,
+          iteration_index INTEGER,
+          iteration_count INTEGER,
+          render_ids JSONB,
+          hero_render_id TEXT,
+          local_key TEXT,
+          message TEXT,
+          eta_seconds INTEGER,
+          eta_label TEXT,
           provider_job_id TEXT,
           status TEXT NOT NULL DEFAULT 'queued',
           progress INTEGER NOT NULL DEFAULT 0,
@@ -60,7 +70,17 @@ export async function ensureBillingSchema(): Promise<void> {
 
       await query(`
         ALTER TABLE app_jobs
-        ADD COLUMN IF NOT EXISTS hidden BOOLEAN DEFAULT FALSE;
+        ADD COLUMN IF NOT EXISTS hidden BOOLEAN DEFAULT FALSE,
+        ADD COLUMN IF NOT EXISTS batch_id TEXT,
+        ADD COLUMN IF NOT EXISTS group_id TEXT,
+        ADD COLUMN IF NOT EXISTS iteration_index INTEGER,
+        ADD COLUMN IF NOT EXISTS iteration_count INTEGER,
+        ADD COLUMN IF NOT EXISTS render_ids JSONB,
+        ADD COLUMN IF NOT EXISTS hero_render_id TEXT,
+        ADD COLUMN IF NOT EXISTS local_key TEXT,
+        ADD COLUMN IF NOT EXISTS message TEXT,
+        ADD COLUMN IF NOT EXISTS eta_seconds INTEGER,
+        ADD COLUMN IF NOT EXISTS eta_label TEXT;
       `);
 
       await query(`

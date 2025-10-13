@@ -12,6 +12,7 @@ import { getUserIdFromRequest } from '@/lib/user';
 import type { PricingSnapshot } from '@/types/engines';
 import { ensureBillingSchema } from '@/lib/schema';
 import { reserveWalletCharge } from '@/lib/wallet';
+import { normalizeMediaUrl } from '@/lib/media';
 
 type PaymentMode = 'wallet' | 'direct' | 'platform';
 
@@ -29,6 +30,29 @@ export async function POST(req: NextRequest) {
   const prompt = String(body.prompt || '');
   const durationSec = Number(body.durationSec || 4);
   const ar = String(body.aspectRatio || '16:9');
+  const batchId = typeof body.batchId === 'string' && body.batchId.trim().length ? body.batchId.trim() : null;
+  const groupId = typeof body.groupId === 'string' && body.groupId.trim().length ? body.groupId.trim() : null;
+  const iterationIndex =
+    typeof body.iterationIndex === 'number' && Number.isFinite(body.iterationIndex)
+      ? Math.max(0, Math.trunc(body.iterationIndex))
+      : null;
+  const iterationCount =
+    typeof body.iterationCount === 'number' && Number.isFinite(body.iterationCount)
+      ? Math.max(1, Math.trunc(body.iterationCount))
+      : null;
+  const renderIds =
+    Array.isArray(body.renderIds) && body.renderIds.length
+      ? body.renderIds.map((value: unknown) => (typeof value === 'string' ? value : null)).filter(Boolean)
+      : null;
+  const heroRenderId =
+    typeof body.heroRenderId === 'string' && body.heroRenderId.trim().length ? body.heroRenderId.trim() : null;
+  const localKey = typeof body.localKey === 'string' && body.localKey.trim().length ? body.localKey.trim() : null;
+  const message = typeof body.message === 'string' && body.message.trim().length ? body.message.trim() : null;
+  const etaSeconds =
+    typeof body.etaSeconds === 'number' && Number.isFinite(body.etaSeconds)
+      ? Math.max(0, Math.trunc(body.etaSeconds))
+      : null;
+  const etaLabel = typeof body.etaLabel === 'string' && body.etaLabel.trim().length ? body.etaLabel.trim() : null;
 
   const requestedResolution = typeof body.resolution === 'string' && body.resolution.trim().length
     ? body.resolution.trim()
@@ -269,8 +293,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : 'Generation failed' }, { status: 500 });
   }
 
-  const thumb = generationResult.thumbUrl;
-  const video = generationResult.videoUrl ?? null;
+  const thumb = normalizeMediaUrl(generationResult.thumbUrl) ?? generationResult.thumbUrl ?? null;
+  const video = normalizeMediaUrl(generationResult.videoUrl) ?? generationResult.videoUrl ?? null;
   const videoAsset = generationResult.video ?? null;
   const providerMode = generationResult.provider;
   const status = generationResult.status ?? (video ? 'completed' : 'queued');
@@ -278,8 +302,43 @@ export async function POST(req: NextRequest) {
   const providerJobId = generationResult.providerJobId ?? null;
 
   await query(
-    `INSERT INTO app_jobs (job_id, user_id, engine_id, engine_label, duration_sec, prompt, thumb_url, aspect_ratio, has_audio, can_upscale, preview_frame, video_url, status, progress, provider_job_id, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17::jsonb,$18,$19,$20,$21,$22)`,
+    `INSERT INTO app_jobs (
+       job_id,
+       user_id,
+       engine_id,
+       engine_label,
+       duration_sec,
+       prompt,
+       thumb_url,
+       aspect_ratio,
+       has_audio,
+       can_upscale,
+       preview_frame,
+       batch_id,
+       group_id,
+       iteration_index,
+       iteration_count,
+       render_ids,
+       hero_render_id,
+       local_key,
+       message,
+       eta_seconds,
+       eta_label,
+       video_url,
+       status,
+       progress,
+       provider_job_id,
+       final_price_cents,
+       pricing_snapshot,
+       currency,
+       vendor_account_id,
+       payment_status,
+       stripe_payment_intent_id,
+       stripe_charge_id
+     )
+     VALUES (
+       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27::jsonb,$28,$29,$30,$31,$32
+     )`,
     [
       jobId,
       userId,
@@ -292,6 +351,16 @@ export async function POST(req: NextRequest) {
       Boolean(body.addons?.audio),
       Boolean(engine.upscale4k),
       thumb,
+      batchId,
+      groupId,
+      iterationIndex,
+      iterationCount,
+      renderIds ? JSON.stringify(renderIds) : null,
+      heroRenderId,
+      localKey,
+      message,
+      etaSeconds,
+      etaLabel,
       video,
       status,
       progress,
@@ -392,5 +461,15 @@ export async function POST(req: NextRequest) {
     paymentStatus: responsePaymentStatus,
     provider: providerMode,
     providerJobId,
+    batchId,
+    groupId,
+    iterationIndex,
+    iterationCount,
+    renderIds,
+    heroRenderId,
+    localKey,
+    message,
+    etaSeconds,
+    etaLabel,
   });
 }

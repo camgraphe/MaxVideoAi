@@ -2,83 +2,23 @@
 /* eslint-disable @next/next/no-img-element */
 
 import clsx from 'clsx';
-import Image from 'next/image';
 import Link from 'next/link';
 import { createPortal } from 'react-dom';
-import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { Ref } from 'react';
-import type { EngineAvailability, EngineCaps, PricingSnapshot } from '@/types/engines';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { EngineCaps } from '@/types/engines';
 import type { Job } from '@/types/jobs';
 import type { GroupSummary } from '@/types/groups';
 import { hideJob, useEngines, useInfiniteJobs } from '@/lib/api';
-import { Card } from '@/components/ui/Card';
-import { EngineIcon } from '@/components/ui/EngineIcon';
-import { JobMedia } from '@/components/JobMedia';
-import { getPlaceholderMedia } from '@/lib/placeholderMedia';
-import { CURRENCY_LOCALE } from '@/lib/intl';
-import { getModelByEngineId } from '@/lib/model-roster';
-import { AVAILABILITY_BADGE_CLASS, AVAILABILITY_LABELS } from '@/lib/availability';
-import { getRenderEta } from '@/lib/render-eta';
 import { groupJobsIntoSummaries, loadPersistedGroupSummaries, GROUP_SUMMARIES_UPDATED_EVENT } from '@/lib/job-groups';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
-import { getAspectRatioString } from '@/lib/aspect';
-
-function ThumbImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
-  const baseClass = clsx('object-cover', className);
-  if (src.startsWith('data:')) {
-    return <img src={src} alt={alt} className={clsx('absolute inset-0 h-full w-full', baseClass)} />;
-  }
-  return <Image src={src} alt={alt} fill className={baseClass} />;
-}
+import { normalizeGroupSummaries } from '@/lib/normalize-group-summary';
 
 interface Props {
   engine: EngineCaps;
-  currentPrompt: string;
-  onReplacePrompt: (value: string) => void;
-  onAppendPrompt: (value: string) => void;
-  onFocusComposer: () => void;
-  onRequestEngineSwitch: (engineId: string) => void;
-  pendingItems?: Array<{
-    id: string;
-    localKey?: string;
-    batchId?: string;
-    iterationIndex?: number;
-    iterationCount?: number;
-    engineId: string;
-    engineLabel: string;
-    createdAt: string;
-    aspectRatio: string;
-    durationSec: number;
-    prompt: string;
-    progress: number;
-    message: string;
-    videoUrl?: string;
-    thumbUrl?: string;
-    priceCents?: number;
-    currency?: string;
-    pricingSnapshot?: PricingSnapshot;
-    etaSeconds?: number;
-    etaLabel?: string;
-  }>;
-  onSelectPreview?: (payload: {
-    localKey?: string;
-    batchId?: string;
-    iterationIndex?: number;
-    iterationCount?: number;
-    id?: string;
-    videoUrl?: string;
-    aspectRatio?: string;
-    thumbUrl?: string;
-    progress?: number;
-    message?: string;
-    priceCents?: number;
-    currency?: string;
-    etaSeconds?: number;
-    etaLabel?: string;
-  }) => void;
   activeGroups?: GroupSummary[];
   onOpenGroup?: (group: GroupSummary) => void;
   onGroupAction?: (group: GroupSummary, action: GroupedJobAction) => void;
+  groupStorageKey: string;
 }
 
 interface SnackbarAction {
@@ -95,31 +35,28 @@ interface SnackbarState {
 
 export function GalleryRail({
   engine,
-  currentPrompt,
-  onReplacePrompt,
-  onAppendPrompt,
-  onFocusComposer,
-  onRequestEngineSwitch,
-  pendingItems,
   activeGroups = [],
-  onSelectPreview,
   onOpenGroup,
   onGroupAction,
+  groupStorageKey,
 }: Props) {
   const { data, error, isLoading, isValidating, setSize, mutate } = useInfiniteJobs(24);
   const { data: enginesData } = useEngines();
   const engineList = useMemo(() => enginesData?.engines ?? [], [enginesData?.engines]);
   const jobs = useMemo(() => data?.flatMap((page) => page.jobs) ?? [], [data]);
-  const { groups: groupedJobSummariesFromApi, ungrouped: ungroupedJobs } = useMemo(() => groupJobsIntoSummaries(jobs), [jobs]);
+  const { groups: groupedJobSummariesFromApi } = useMemo(
+    () => groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true }),
+    [jobs]
+  );
   const [storedGroups, setStoredGroups] = useState<GroupSummary[]>([]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const sync = () => setStoredGroups(loadPersistedGroupSummaries());
+    const sync = () => setStoredGroups(loadPersistedGroupSummaries(groupStorageKey));
     sync();
     window.addEventListener(GROUP_SUMMARIES_UPDATED_EVENT, sync);
     return () => window.removeEventListener(GROUP_SUMMARIES_UPDATED_EVENT, sync);
-  }, []);
+  }, [groupStorageKey]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -133,7 +70,7 @@ export function GalleryRail({
   const groupedJobSummaries = useMemo(() => {
     const map = new Map<string, GroupSummary>();
     [...groupedJobSummariesFromApi, ...storedGroups].forEach((group) => {
-      if (!group || group.count <= 1) return;
+      if (!group) return;
       const current = map.get(group.id);
       if (!current || Date.parse(group.createdAt) > Date.parse(current.createdAt)) {
         map.set(group.id, group);
@@ -145,6 +82,24 @@ export function GalleryRail({
   const historicalGroups = useMemo(() => {
     return groupedJobSummaries.filter((group) => !activeGroupIds.has(group.id));
   }, [groupedJobSummaries, activeGroupIds]);
+  const summaryIndex = useMemo(() => {
+    const map = new Map<string, GroupSummary>();
+    [...activeGroups, ...historicalGroups].forEach((group) => {
+      map.set(group.id, group);
+    });
+    return map;
+  }, [activeGroups, historicalGroups]);
+
+  const normalizedActiveGroups = useMemo(() => normalizeGroupSummaries(activeGroups), [activeGroups]);
+  const normalizedHistoricalGroups = useMemo(
+    () => normalizeGroupSummaries(historicalGroups),
+    [historicalGroups]
+  );
+  const combinedGroups = useMemo(
+    () => [...normalizedActiveGroups, ...normalizedHistoricalGroups],
+    [normalizedActiveGroups, normalizedHistoricalGroups]
+  );
+
   const lastPage = data?.[data.length - 1];
   const hasMore = Boolean(lastPage?.nextCursor);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -173,6 +128,16 @@ export function GalleryRail({
     [mutate]
   );
 
+  const handleRemoveGroup = useCallback(
+    (group: GroupSummary) => {
+      if (group.source === 'active' || group.count > 1) return;
+      const job = group.hero.job;
+      if (!job) return;
+      void handleRemoveJob(job);
+    },
+    [handleRemoveJob]
+  );
+
   const engineMap = useMemo(() => {
     const map = new Map<string, EngineCaps>();
     engineList.forEach((entry) => {
@@ -184,84 +149,32 @@ export function GalleryRail({
 
   const closeSnackbar = useCallback(() => setSnackbar(null), []);
 
-  const applyPrompt = useCallback(
-    (job: Job, mode: 'replace' | 'append', options?: { successMessage?: string }) => {
-      if (mode === 'replace') {
-        onReplacePrompt(job.prompt);
-      } else {
-        onAppendPrompt(job.prompt);
-      }
-      onFocusComposer();
-
-      if (typeof navigator !== 'undefined' && navigator.clipboard) {
-        void navigator.clipboard.writeText(job.prompt).catch(() => undefined);
-      }
-
-      const successMessage = options?.successMessage ?? (mode === 'replace' ? 'Prompt replaced' : 'Prompt appended');
-
-      if (job.engineId && job.engineId !== engine.id) {
-        setSnackbar({
-          message: `Switch to ${job.engineLabel}?`,
-          actions: [
-            {
-              label: 'Switch',
-              variant: 'primary',
-              onClick: () => {
-                if (job.engineId) {
-                  onRequestEngineSwitch(job.engineId);
-                }
-                setSnackbar({ message: `${job.engineLabel} selected`, duration: 2200 });
-              },
-            },
-            {
-              label: 'Keep current',
-              onClick: () => {
-                setSnackbar({ message: successMessage, duration: 2200 });
-              },
-            },
-          ],
-        });
+  const handleCardAction = useCallback(
+    (group: GroupSummary, action: GroupedJobAction) => {
+      const original = summaryIndex.get(group.id) ?? group;
+      if (action === 'remove') {
+        handleRemoveGroup(original);
         return;
       }
-
-      setSnackbar({ message: successMessage, duration: 2200 });
+      onGroupAction?.(original, action);
     },
-    [engine.id, onAppendPrompt, onFocusComposer, onReplacePrompt, onRequestEngineSwitch]
+    [handleRemoveGroup, onGroupAction, summaryIndex]
   );
 
-  const handleCopyPrompt = useCallback(
-    (job: Job) => {
-      if (!currentPrompt.trim()) {
-        applyPrompt(job, 'replace', { successMessage: 'Prompt pasted' });
-        return;
-      }
-
-      setSnackbar({
-        message: 'Replace or append this prompt?',
-        actions: [
-          {
-            label: 'Replace',
-            variant: 'primary',
-            onClick: () => {
-              applyPrompt(job, 'replace');
-            },
-          },
-          {
-            label: 'Append',
-            onClick: () => {
-              applyPrompt(job, 'append');
-            },
-          },
-          {
-            label: 'Cancel',
-            onClick: () => {
-              closeSnackbar();
-            },
-          },
-        ],
-      });
+  const handleCardOpen = useCallback(
+    (group: GroupSummary) => {
+      const original = summaryIndex.get(group.id) ?? group;
+      onOpenGroup?.(original);
     },
-    [applyPrompt, closeSnackbar, currentPrompt]
+    [onOpenGroup, summaryIndex]
+  );
+
+  const allowCardRemoval = useCallback(
+    (group: GroupSummary) => {
+      const original = summaryIndex.get(group.id) ?? group;
+      return original.source !== 'active' && original.count <= 1;
+    },
+    [summaryIndex]
   );
 
   const loadMore = useCallback(() => {
@@ -329,162 +242,33 @@ export function GalleryRail({
       )}
 
       <div ref={scrollContainerRef} className="mt-4 flex-1 space-y-4 overflow-y-auto pr-1">
-          {pendingItems && pendingItems.length > 0 && (
-          <div className="space-y-4">
-            {pendingItems.map((item, index) => {
-              const placeholder = getPlaceholderMedia(`${item.id}-${index}`);
-              const videoUrl = item.videoUrl;
-              const aspectRatio = item.aspectRatio ?? placeholder.aspectRatio;
-              const thumbUrl = item.thumbUrl ?? placeholder.posterUrl;
-              const resolvedEngine = engineMap.get(item.engineId) ?? engineList.find((entry) => entry.label === item.engineLabel);
-              const etaInfo = resolvedEngine ? getRenderEta(resolvedEngine, item.durationSec) : null;
-              const etaLabel = item.etaLabel ?? etaInfo?.label;
-              const etaSeconds = item.etaSeconds ?? etaInfo?.seconds;
-
-              if (!videoUrl) {
-                return (
-                  <PendingTile
-                    key={item.id}
-                    item={item}
-                    etaLabel={etaLabel}
-                    engine={resolvedEngine}
-                    onOpenPreview={() =>
-                      onSelectPreview?.({
-                        id: item.id,
-                        localKey: item.localKey ?? item.id,
-                        batchId: item.batchId,
-                        iterationIndex: item.iterationIndex,
-                        iterationCount: item.iterationCount,
-                        aspectRatio: item.aspectRatio,
-                        thumbUrl: item.thumbUrl,
-                        progress: item.progress,
-                        message: item.message,
-                        priceCents: item.priceCents,
-                        currency: item.currency,
-                        etaSeconds,
-                        etaLabel,
-                      })
-                    }
-                  />
-                );
-              }
-
-              return (
-                <JobTile
-                  key={item.id}
-                  job={{
-                    jobId: item.id,
-                    engineLabel: item.engineLabel,
-                    durationSec: item.durationSec,
-                    prompt: item.prompt,
-                    thumbUrl,
-                    videoUrl,
-                    createdAt: item.createdAt,
-                    engineId: item.engineId,
-                    aspectRatio,
-                    finalPriceCents: item.priceCents,
-                    currency: item.currency ?? 'USD',
-                    pricingSnapshot: item.pricingSnapshot,
-                  } as Job}
-                  onCopyPrompt={handleCopyPrompt}
-                  onOpenPreview={() =>
-                    onSelectPreview?.({
-                      id: item.id,
-                      localKey: item.localKey ?? item.id,
-                      batchId: item.batchId,
-                      iterationIndex: item.iterationIndex,
-                      iterationCount: item.iterationCount,
-                      videoUrl,
-                      aspectRatio,
-                      thumbUrl,
-                      priceCents: item.priceCents,
-                      currency: item.currency,
-                      etaSeconds,
-                      etaLabel,
-                    })
-                  }
-                  engineCaps={resolvedEngine}
-                />
-              );
-            })}
-          </div>
-        )}
-        {activeGroups.length > 0 && (
-          <div className="space-y-4">
-            {activeGroups.map((group) => {
-              const heroEngine = group.hero.engineId ? engineMap.get(group.hero.engineId) : undefined;
-              return (
-                <GroupedJobCard
-                  key={`active-group-${group.id}`}
-                  group={group}
-                  engine={heroEngine}
-                  onOpen={onOpenGroup}
-                  onAction={onGroupAction}
-                />
-              );
-            })}
-          </div>
-        )}
-        {historicalGroups.length > 0 && (
-          <div className="space-y-4">
-            {historicalGroups.map((group) => {
-              const heroEngine = group.hero.engineId ? engineMap.get(group.hero.engineId) : undefined;
-              return (
-                <GroupedJobCard
-                  key={`history-group-${group.id}`}
-                  group={group}
-                  engine={heroEngine}
-                  onOpen={onOpenGroup}
-                  onAction={onGroupAction}
-                />
-              );
-            })}
-          </div>
-        )}
-        {ungroupedJobs.map((job, index) => {
-          const placeholder = getPlaceholderMedia(`${job.jobId}-${index}`);
-          const videoUrl = job.videoUrl ?? placeholder.videoUrl;
-          const aspectRatio = job.aspectRatio ?? placeholder.aspectRatio;
-          const thumbUrl = job.thumbUrl ?? placeholder.posterUrl;
-          const jobEngine = job.engineId ? engineMap.get(job.engineId) : engineMap.get(engine.id);
-          const etaInfo = jobEngine ? getRenderEta(jobEngine, job.durationSec) : null;
-
+        {combinedGroups.map((group) => {
+          const engineId = group.hero.engineId;
+          const engineEntry = engineId ? engineMap.get(engineId) ?? null : null;
           return (
-            <JobTile
-              key={job.jobId}
-              job={{
-                ...job,
-                videoUrl,
-                thumbUrl,
-                aspectRatio,
-              }}
-              engineCaps={jobEngine}
-              onCopyPrompt={handleCopyPrompt}
-              onOpenPreview={() =>
-                onSelectPreview?.({
-                  id: job.jobId,
-                  videoUrl,
-                  aspectRatio,
-                  thumbUrl,
-                  priceCents: job.finalPriceCents ?? job.pricingSnapshot?.totalCents,
-                  currency: job.currency ?? job.pricingSnapshot?.currency,
-                  etaLabel: etaInfo?.label,
-                  etaSeconds: etaInfo?.seconds,
-                })
-              }
-              onRemove={handleRemoveJob}
+            <GroupedJobCard
+              key={group.id}
+              group={group}
+              engine={engineEntry ?? undefined}
+              onOpen={handleCardOpen}
+              onAction={handleCardAction}
+              allowRemove={allowCardRemoval(group)}
             />
           );
         })}
-
-        {(isInitialLoading || isFetchingMore) && (
-          <div className="space-y-4" aria-hidden>
-            {Array.from({ length: 3 }).map((_, index) => (
-              <SkeletonTile key={index} />
-            ))}
-          </div>
-        )}
-
+        {(isInitialLoading || isFetchingMore) &&
+          Array.from({ length: isInitialLoading ? 4 : 2 }).map((_, index) => (
+            <div key={`rail-skeleton-${index}`} className="rounded-card border border-border bg-white/60 p-0" aria-hidden>
+              <div className="relative overflow-hidden rounded-card">
+                <div className="relative" style={{ aspectRatio: '16 / 9' }}>
+                  <div className="skeleton absolute inset-0" />
+                </div>
+              </div>
+              <div className="border-t border-border bg-white/70 px-3 py-2">
+                <div className="h-3 w-24 rounded-full bg-neutral-200" />
+              </div>
+            </div>
+          ))}
         <div ref={sentinelRef} className="h-1 w-full" aria-hidden />
       </div>
 
@@ -492,472 +276,6 @@ export function GalleryRail({
     </aside>
   );
 }
-
-function JobTile({
-  job,
-  onCopyPrompt,
-  onOpenPreview,
-  engineCaps,
-  onRemove,
-}: {
-  job: Job;
-  onCopyPrompt: (job: Job) => void;
-  onOpenPreview?: () => void;
-  engineCaps?: EngineCaps;
-  onRemove?: (job: Job) => void;
-}) {
-  const [popoverOpen, setPopoverOpen] = useState(false);
-  const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const popoverRef = useRef<HTMLDivElement>(null);
-
-  const [audioPopoverOpen, setAudioPopoverOpen] = useState(false);
-  const [audioAnchorRect, setAudioAnchorRect] = useState<DOMRect | null>(null);
-  const audioButtonRef = useRef<HTMLButtonElement>(null);
-  const audioPopoverRef = useRef<HTMLDivElement>(null);
-
-  const supportsUpscale = Boolean(engineCaps?.upscale4k ?? job.canUpscale);
-  const supportsAudio = Boolean(engineCaps?.audio ?? job.hasAudio);
-  const handleRemove = useCallback(() => {
-    onRemove?.(job);
-  }, [job, onRemove]);
-
-  const updateAnchorRect = useCallback(() => {
-    if (!buttonRef.current) return;
-    setAnchorRect(buttonRef.current.getBoundingClientRect());
-  }, []);
-
-  const togglePopover = useCallback(() => {
-    if (popoverOpen) {
-      setPopoverOpen(false);
-      return;
-    }
-    updateAnchorRect();
-    setPopoverOpen(true);
-  }, [popoverOpen, updateAnchorRect]);
-
-  const updateAudioAnchorRect = useCallback(() => {
-    if (!audioButtonRef.current) return;
-    setAudioAnchorRect(audioButtonRef.current.getBoundingClientRect());
-  }, []);
-
-  const toggleAudioPopover = useCallback(() => {
-    if (audioPopoverOpen) {
-      setAudioPopoverOpen(false);
-      return;
-    }
-    updateAudioAnchorRect();
-    setAudioPopoverOpen(true);
-  }, [audioPopoverOpen, updateAudioAnchorRect]);
-
-  useEffect(() => {
-    if (!popoverOpen && !audioPopoverOpen) return undefined;
-
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setPopoverOpen(false);
-        setAudioPopoverOpen(false);
-      }
-    };
-
-    const handleClick = (event: MouseEvent) => {
-      const target = event.target as Node;
-      if (popoverRef.current?.contains(target) || buttonRef.current?.contains(target)) {
-        return;
-      }
-      if (audioPopoverRef.current?.contains(target) || audioButtonRef.current?.contains(target)) {
-        return;
-      }
-      setPopoverOpen(false);
-      setAudioPopoverOpen(false);
-    };
-
-    const handleScroll = () => {
-      if (popoverOpen) updateAnchorRect();
-      if (audioPopoverOpen) updateAudioAnchorRect();
-    };
-
-    document.addEventListener('keydown', handleKey);
-    document.addEventListener('mousedown', handleClick);
-    window.addEventListener('resize', handleScroll);
-    window.addEventListener('scroll', handleScroll, true);
-
-    return () => {
-      document.removeEventListener('keydown', handleKey);
-      document.removeEventListener('mousedown', handleClick);
-      window.removeEventListener('resize', handleScroll);
-      window.removeEventListener('scroll', handleScroll, true);
-    };
-  }, [popoverOpen, audioPopoverOpen, updateAnchorRect, updateAudioAnchorRect]);
-
-  useEffect(() => {
-    if (!supportsUpscale && popoverOpen) {
-      setPopoverOpen(false);
-    }
-  }, [supportsUpscale, popoverOpen]);
-
-  useEffect(() => {
-    if (!supportsAudio && audioPopoverOpen) {
-      setAudioPopoverOpen(false);
-    }
-  }, [supportsAudio, audioPopoverOpen]);
-
-  const aspectRatio = useMemo(() => getAspectRatioString(job.aspectRatio), [job.aspectRatio]);
-
-  const priceCents = job.finalPriceCents ?? job.pricingSnapshot?.totalCents;
-  const currency = job.currency ?? job.pricingSnapshot?.currency ?? 'USD';
-  const formattedPrice = useMemo(() => {
-    if (typeof priceCents !== 'number') return null;
-    try {
-      return new Intl.NumberFormat(CURRENCY_LOCALE, { style: 'currency', currency }).format(priceCents / 100);
-    } catch {
-      return `${currency} ${(priceCents / 100).toFixed(2)}`;
-    }
-  }, [currency, priceCents]);
-
-  return (
-    <Card className="relative overflow-hidden rounded-card border border-border bg-white/80 p-0 shadow-card">
-      <figure className="relative overflow-hidden">
-        <div className="relative cursor-pointer bg-[#EFF3FA]" style={{ aspectRatio }} onClick={onOpenPreview}>
-          <JobMedia job={job} />
-        </div>
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/35" aria-hidden />
-
-        {(supportsUpscale || supportsAudio) && (
-          <div className="absolute right-3 top-3 z-10 flex flex-col gap-1.5">
-            {supportsUpscale && (
-              <IconOverlayButton
-                ref={buttonRef}
-                iconSrc="/assets/icons/upscale.svg"
-                label="Upscale"
-                onClick={togglePopover}
-                aria-expanded={popoverOpen}
-                aria-label="Upscale"
-              />
-            )}
-            {supportsAudio && (
-              <IconOverlayButton
-                ref={audioButtonRef}
-                iconSrc="/assets/icons/audio.svg"
-                label="Add audio"
-                onClick={toggleAudioPopover}
-                aria-expanded={audioPopoverOpen}
-                aria-label="Add audio"
-              />
-            )}
-          </div>
-        )}
-
-        <div className="absolute inset-x-3 bottom-3 z-10 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <EngineBadge label={job.engineLabel} engine={engineCaps} />
-            <span className="inline-flex items-center rounded-full bg-black/45 px-2 py-1 text-[11px] font-medium text-white">
-              {job.durationSec}s
-            </span>
-            {formattedPrice && (
-              <span className="inline-flex items-center rounded-full bg-black/60 px-2 py-1 text-[11px] font-semibold text-white">
-                {formattedPrice}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <IconOverlayButton
-              iconSrc="/assets/icons/copy.svg"
-              label="Copy prompt"
-              onClick={() => onCopyPrompt(job)}
-              aria-label="Copy prompt"
-            />
-            {onRemove && (
-              <GhostOverlayButton
-                iconSrc="/assets/icons/unpin.svg"
-                label="Retirer"
-                onClick={handleRemove}
-                aria-label="Retirer de la galerie"
-              />
-            )}
-          </div>
-        </div>
-      </figure>
-
-      {popoverOpen && anchorRect &&
-        createPortal(
-          <UpscalePopover
-            anchorRect={anchorRect}
-            onClose={() => setPopoverOpen(false)}
-            popoverRef={popoverRef}
-          />,
-          document.body
-        )}
-
-      {audioPopoverOpen && audioAnchorRect &&
-        createPortal(
-          <AudioPopover
-            anchorRect={audioAnchorRect}
-            onClose={() => setAudioPopoverOpen(false)}
-            popoverRef={audioPopoverRef}
-          />,
-          document.body
-        )}
-    </Card>
-  );
-}
-
-interface UpscalePopoverProps {
-  anchorRect: DOMRect;
-  onClose: () => void;
-  popoverRef: Ref<HTMLDivElement>;
-}
-
-function UpscalePopover({ anchorRect, onClose, popoverRef }: UpscalePopoverProps) {
-  const width = 260;
-  const top = anchorRect.bottom + window.scrollY + 8;
-  const maxLeft = window.innerWidth - width - 16;
-  const left = Math.min(anchorRect.left + window.scrollX - width + anchorRect.width, Math.max(16, maxLeft));
-
-  return (
-    <div className="fixed inset-0 z-[9999]" role="presentation">
-      <div
-        ref={popoverRef}
-        style={{ top, left, width }}
-        className="absolute rounded-[12px] border border-border bg-white p-4 text-sm text-text-secondary shadow-float"
-        role="dialog"
-        aria-label="Upscale options"
-      >
-        <div className="flex items-center justify-between">
-          <h3 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Upscale</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-[8px] border border-transparent px-2 py-1 text-[11px] text-text-muted transition hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            Close
-          </button>
-        </div>
-        <dl className="mt-3 space-y-2 text-[13px]">
-          <PopoverOption label="Method" value="Neural 4×" />
-          <PopoverOption label="Intensity" value="Medium" />
-          <PopoverOption label="Estimated price" value="+$0.30" />
-        </dl>
-        <div className="mt-4 flex items-center justify-end gap-2">
-          <button
-            type="button"
-            className="rounded-[8px] border border-hairline bg-white/70 px-3 py-1.5 text-[12px] font-medium text-text-secondary transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            onClick={onClose}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            className="rounded-[8px] border border-transparent bg-accent px-3 py-1.5 text-[12px] font-semibold text-white opacity-60 cursor-not-allowed"
-          >
-            Coming soon
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AudioPopover({ anchorRect, onClose, popoverRef }: UpscalePopoverProps) {
-  const width = 260;
-  const top = anchorRect.bottom + window.scrollY + 8;
-  const maxLeft = window.innerWidth - width - 16;
-  const left = Math.min(anchorRect.left + window.scrollX - width + anchorRect.width, Math.max(16, maxLeft));
-
-  return (
-    <div className="fixed inset-0 z-[9999]" role="presentation">
-      <div
-        ref={popoverRef}
-        style={{ top, left, width }}
-        className="absolute rounded-[12px] border border-border bg-white p-4 text-sm text-text-secondary shadow-float"
-        role="dialog"
-        aria-label="Add audio options"
-      >
-        <div className="flex items-center justify-between">
-          <h3 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Add audio</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-[8px] border border-transparent px-2 py-1 text-[11px] text-text-muted transition hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            Close
-          </button>
-        </div>
-        <dl className="mt-3 space-y-2 text-[13px]">
-          <PopoverOption label="Mode" value="Generate music" />
-          <PopoverOption label="Style" value="Cinematic" />
-          <PopoverOption label="Estimated price" value="+$0.00 (placeholder)" />
-        </dl>
-        <div className="mt-4 flex items-center justify-end gap-2">
-          <button
-            type="button"
-            className="rounded-[8px] border border-hairline bg-white/70 px-3 py-1.5 text-[12px] font-medium text-text-secondary transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            onClick={onClose}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            className="rounded-[8px] border border-transparent bg-accent px-3 py-1.5 text-[12px] font-semibold text-white opacity-60 cursor-not-allowed"
-          >
-            Coming soon
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PopoverOption({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between text-[13px] text-text-secondary">
-      <span className="text-[12px] uppercase tracking-micro text-text-muted">{label}</span>
-      <span className="font-medium text-text-primary">{value}</span>
-    </div>
-  );
-}
-
-function EngineBadge({ engine, label }: { engine?: EngineCaps | null; label: string }) {
-  const rosterEntry = engine ? getModelByEngineId(engine.id) : undefined;
-  const availability: EngineAvailability = rosterEntry?.availability ?? engine?.availability ?? 'available';
-  const showAvailability = availability !== 'available';
-  const availabilityLabel = AVAILABILITY_LABELS[availability];
-  const displayLabel = rosterEntry?.marketingName ?? label;
-  const version = rosterEntry?.versionLabel ?? engine?.version ?? null;
-  return (
-    <span className="inline-flex max-w-[200px] items-center gap-2 rounded-input border border-border bg-white/90 px-2.5 py-1 text-[11px] font-medium text-text-secondary">
-      <EngineIcon engine={engine ?? undefined} label={displayLabel} size={20} className="shrink-0" />
-      <div className="flex min-w-0 flex-col">
-        <span className="truncate">{displayLabel}</span>
-        {version ? <span className="truncate text-[10px] uppercase tracking-micro text-text-muted">{version}</span> : null}
-        {showAvailability && (
-          <span
-            className={clsx(
-              'mt-0.5 inline-flex w-max items-center rounded-pill border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro',
-              AVAILABILITY_BADGE_CLASS[availability]
-            )}
-          >
-            {availabilityLabel}
-          </span>
-        )}
-        {availability === 'paused' && (
-          <span className="mt-0.5 text-[10px] font-medium text-slate-600">Temporarily unavailable.</span>
-        )}
-      </div>
-    </span>
-  );
-}
-
-const GhostOverlayButton = forwardRef<HTMLButtonElement, { label: string; iconSrc: string; onClick?: () => void; 'aria-expanded'?: boolean }>(
-  ({ label, iconSrc, onClick, ...rest }, ref) => (
-    <button
-      type="button"
-      onClick={(event) => {
-        event.stopPropagation();
-        onClick?.();
-      }}
-      ref={ref}
-      className="inline-flex items-center gap-1.5 rounded-[10px] border border-white/30 bg-white/30 px-2.5 py-1 text-[11px] font-medium uppercase tracking-micro text-white shadow-sm backdrop-blur focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9DA7B8CC]"
-      {...rest}
-    >
-      <Image src={iconSrc} alt="" width={14} height={14} aria-hidden className="h-3.5 w-3.5" />
-      <span>{label}</span>
-    </button>
-  )
-);
-GhostOverlayButton.displayName = 'GhostOverlayButton';
-
-// Icon-only, smaller sticker-like button
-const IconOverlayButton = forwardRef<HTMLButtonElement, { iconSrc: string; label: string; onClick?: () => void; 'aria-expanded'?: boolean; 'aria-label'?: string }>(
-  ({ iconSrc, label, onClick, ...rest }, ref) => (
-    <div className="relative group inline-flex">
-      <button
-        type="button"
-        onClick={(event) => {
-          event.stopPropagation();
-          onClick?.();
-        }}
-        ref={ref}
-        className="inline-flex h-6 w-6 items-center justify-center rounded-[8px] border border-white/30 bg-white/30 text-white shadow-sm backdrop-blur transition hover:bg-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9DA7B8CC]"
-        {...rest}
-      >
-        <Image src={iconSrc} alt="" width={12} height={12} aria-hidden className="h-3 w-3" />
-      </button>
-      <div className="pointer-events-none absolute right-full top-1/2 z-[1] -translate-y-1/2 pr-2 opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
-        <div className="rounded-[8px] border border-border bg-black/85 px-2 py-1 text-[11px] font-medium text-white shadow-float whitespace-nowrap">
-          {label}
-        </div>
-      </div>
-    </div>
-  )
-);
-IconOverlayButton.displayName = 'IconOverlayButton';
-
-function SkeletonTile() {
-  return (
-    <div className="rounded-card border border-border bg-white/60 p-0">
-      <div className="relative overflow-hidden rounded-card">
-        <div className="relative" style={{ aspectRatio: '16 / 9' }}>
-          <div className="skeleton absolute inset-0" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-type PendingItem = NonNullable<Props['pendingItems']>[number];
-
-function PendingTile({ item, onOpenPreview, etaLabel, engine }: { item: PendingItem; onOpenPreview?: () => void; etaLabel?: string; engine?: EngineCaps | null }) {
-  const aspectRatio = getAspectRatioString(item.aspectRatio);
-  return (
-    <div className="relative overflow-hidden rounded-card border border-border bg-white/80 p-0 shadow-card">
-      <figure className="relative overflow-hidden">
-        <div className="relative cursor-pointer bg-[#EFF3FA]" style={{ aspectRatio }} onClick={onOpenPreview}>
-          {item.thumbUrl ? (
-            <ThumbImage src={item.thumbUrl} alt="" className="object-cover" />
-          ) : (
-            <div className="absolute inset-0" />
-          )}
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/35 px-4 py-6 text-white backdrop-blur-sm">
-            <div className="pointer-events-auto flex w-full max-w-sm flex-col items-center gap-3 rounded-card border border-white/40 bg-white/85 p-4 text-sm text-text-secondary shadow-card">
-              <span className="inline-flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-white">
-                <Image src="/assets/icons/live.svg" alt="" width={12} height={12} className="h-3 w-3" />
-                Live
-              </span>
-              <div className="relative h-2 w-full overflow-hidden rounded-full bg-hairline">
-                <div className="absolute inset-y-0 left-0 rounded-full bg-accent" style={{ width: `${Math.max(5, Math.min(100, item.progress))}%` }} />
-              </div>
-              <span className="text-[12px] text-text-muted text-center">{item.message}</span>
-              {etaLabel ? (
-                <span className="text-[11px] font-medium uppercase tracking-micro text-text-secondary/80">Estimated {etaLabel}</span>
-              ) : null}
-            </div>
-          </div>
-        </div>
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/35" aria-hidden />
-        <div className="absolute inset-x-3 bottom-3 z-10 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-medium text-white">
-              <EngineIcon engine={engine ?? undefined} label={item.engineLabel} size={18} className="shrink-0" />
-            </span>
-            <span className="inline-flex items-center rounded-full bg-black/45 px-2 py-1 text-[11px] font-medium text-white">
-              {item.durationSec}s
-            </span>
-            {typeof item.priceCents === 'number' && (
-              <span className="inline-flex items-center rounded-full bg-black/60 px-2 py-1 text-[11px] font-semibold text-white">
-                {new Intl.NumberFormat(CURRENCY_LOCALE, {
-                  style: 'currency',
-                  currency: item.currency ?? 'USD',
-                }).format(item.priceCents / 100)}
-              </span>
-            )}
-          </div>
-        </div>
-      </figure>
-    </div>
-  );
-}
-
 function Snackbar({ state, onClose }: { state: SnackbarState | null; onClose: () => void }) {
   useEffect(() => {
     if (!state?.duration) return undefined;

@@ -3,11 +3,17 @@
 import { useState } from 'react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 type Tab = 'account' | 'team' | 'keys' | 'privacy' | 'notifications';
 
 export default function SettingsPage() {
   const [tab, setTab] = useState<Tab>('account');
+  const { loading: authLoading, session } = useRequireAuth();
+
+  if (authLoading || !session) {
+    return null;
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-bg">

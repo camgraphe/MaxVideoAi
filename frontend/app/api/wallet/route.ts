@@ -7,44 +7,71 @@ import { getEngineById } from '@/lib/engines';
 import { computePricingSnapshot, getPlatformFeeCents, getVendorShareCents } from '@/lib/pricing';
 import { randomUUID } from 'crypto';
 import { ensureBillingSchema } from '@/lib/schema';
+import { applyMockWalletTopUp, getMockWalletBalance } from '@/lib/wallet';
 
 export async function GET(req: NextRequest) {
-  await ensureBillingSchema();
-
   const userId = await getUserIdFromRequest(req);
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const rows = await query<{ type: string; amount_cents: number }>(
-    `SELECT type, amount_cents FROM app_receipts WHERE user_id = $1`,
-    [userId]
-  );
-
-  let topups = 0;
-  let charges = 0;
-  let refunds = 0;
-  for (const r of rows) {
-    if (r.type === 'topup') topups += r.amount_cents;
-    if (r.type === 'charge') charges += r.amount_cents;
-    if (r.type === 'refund') refunds += r.amount_cents;
+  let useMock = false;
+  try {
+    await ensureBillingSchema();
+  } catch (error) {
+    console.warn('[wallet] falling back to mock ledger (schema init failed)', error);
+    useMock = true;
   }
 
-  const balanceCents = Math.max(0, topups + refunds - charges);
-  return NextResponse.json({ balance: balanceCents / 100, currency: 'USD' });
+  if (useMock || !process.env.DATABASE_URL) {
+    const balanceCents = getMockWalletBalance(userId);
+    return NextResponse.json({ balance: balanceCents / 100, currency: 'USD', mock: true });
+  }
+
+  try {
+    const rows = await query<{ type: string; amount_cents: number }>(
+      `SELECT type, amount_cents FROM app_receipts WHERE user_id = $1`,
+      [userId]
+    );
+
+    let topups = 0;
+    let charges = 0;
+    let refunds = 0;
+    for (const r of rows) {
+      if (r.type === 'topup') topups += r.amount_cents;
+      if (r.type === 'charge') charges += r.amount_cents;
+      if (r.type === 'refund') refunds += r.amount_cents;
+    }
+
+    const balanceCents = Math.max(0, topups + refunds - charges);
+    return NextResponse.json({ balance: balanceCents / 100, currency: 'USD' });
+  } catch (error) {
+    console.warn('[wallet] query failed, using mock ledger', error);
+    const balanceCents = getMockWalletBalance(userId);
+    return NextResponse.json({ balance: balanceCents / 100, currency: 'USD', mock: true });
+  }
 }
 
 export async function POST(req: NextRequest) {
-  await ensureBillingSchema();
-
   const userId = await getUserIdFromRequest(req);
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  if (!ENV.STRIPE_SECRET_KEY) {
-    return NextResponse.json({ error: 'Stripe not configured' }, { status: 501 });
+  let useMock = false;
+  try {
+    await ensureBillingSchema();
+  } catch (error) {
+    console.warn('[wallet] using mock ledger for top-up (schema init failed)', error);
+    useMock = true;
   }
 
   const body = await req.json().catch(() => null);
   if (!body) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+
+  const amountCents = Math.max(100, Number(body.amountCents ?? 0));
+
+  if (useMock || !ENV.STRIPE_SECRET_KEY || !process.env.DATABASE_URL) {
+    const balanceCents = applyMockWalletTopUp(userId, amountCents);
+    return NextResponse.json({ ok: true, balanceCents, currency: 'USD', mock: true });
   }
 
   const stripe = new Stripe(ENV.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' });
@@ -135,8 +162,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: message }, { status: 500 });
     }
   }
-
-  const amountCents = Math.max(100, Number(body.amountCents ?? 0));
 
   try {
     // Create a one-off Checkout Session for top-up

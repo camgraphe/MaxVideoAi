@@ -93,7 +93,43 @@ Contact `licensing@maxvideo.ai` to initiate the commercial process.
 - Adjust `NEXT_PUBLIC_API_BASE` to the live endpoint.
 - Preserve the mock by running it on a different port (e.g. 3334) and toggling via env.
 
-## 5. Known Limitations
+## 5. Environment Variables & Health Checks
+
+The application expects the following environment variables (scoped per Vercel environment unless noted):
+
+| Variable | Scope | Purpose |
+| --- | --- | --- |
+| `FAL_KEY` / `FAL_API_KEY` | Server | Fal.ai API key injected into the edge proxy. Prefer `FAL_KEY` on Vercel. |
+| `NEXT_PUBLIC_SUPABASE_URL` | Public | Supabase project URL used by the browser. |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public | Supabase anon key (RLS must stay enabled). |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server (optional) | Service role key for backend operations. |
+| `DATABASE_URL` | Server | Neon Postgres connection string for API routes. |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Public | Stripe publishable key. |
+| `STRIPE_SECRET_KEY` | Server | Stripe secret key for server-side operations. |
+| `STRIPE_WEBHOOK_SECRET` | Server (optional) | Stripe webhook signing secret. |
+| `SLACK_BOT_TOKEN` / `SLACK_SIGNING_SECRET` / `SLACK_WEBHOOK_URL` | Server (optional) | Slack integration secrets if hooks/bots are enabled. |
+
+### Health Endpoints
+
+Additional read-only endpoints help verify deployment wiring (Preview/Production):
+
+- `GET /api/health/env` — Edge runtime. Returns a JSON map of required env vars → boolean.
+- `GET /api/health/fal` — Edge runtime. Performs an `OPTIONS` call through the Fal proxy.
+- `GET /api/health/db` — Node runtime. Executes `SELECT 1` against the Neon database.
+- `GET /api/health/stripe` — Node runtime. Calls `stripe.prices.list(limit: 1)` to ensure the secret key is valid.
+
+All endpoints respond with `{ ok: true }` on success (or include an `error` string on failure). Share Preview/Production URLs during verification.
+
+### Fal Fixtures Utility
+
+Run `npx tsx scripts/dump-fal-models.ts` (server running) to regenerate:
+
+- `frontend/fixtures/fal-models.json`
+- `fixtures/fal-models.json`
+
+The script calls the Fal proxy, so no direct DNS access to `api.fal.ai` is required.
+
+## 6. Known Limitations
 
 - The mock API runs in-memory; persistence/job streaming left to the real backend.
 - No automated tests yet (awaiting backend contract confirmation).

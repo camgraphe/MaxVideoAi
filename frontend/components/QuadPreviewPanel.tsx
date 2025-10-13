@@ -56,6 +56,41 @@ const TILE_ACTIONS: Array<{ id: QuadTileAction; label: string; icon: string }> =
   { id: 'open', label: 'Open in player', icon: '/assets/icons/expand.svg' },
 ];
 
+function getAspectClass(aspectRatio?: string | null): string {
+  const normalized = (aspectRatio ?? '').trim();
+  switch (normalized) {
+    case '1:1':
+    case 'square':
+      return 'aspect-square';
+    case '9:16':
+    case '9/16':
+      return 'aspect-[9/16]';
+    case '9:21':
+    case '9/21':
+      return 'aspect-[9/21]';
+    case '16:9':
+    case '16/9':
+      return 'aspect-[16/9]';
+    case '3:4':
+    case '3/4':
+      return 'aspect-[3/4]';
+    case '4:3':
+    case '4/3':
+      return 'aspect-[4/3]';
+    case '4:5':
+    case '4/5':
+      return 'aspect-[4/5]';
+    case '5:4':
+    case '5/4':
+      return 'aspect-[5/4]';
+    case '21:9':
+    case '21/9':
+      return 'aspect-[21/9]';
+    default:
+      return 'aspect-[16/9]';
+  }
+}
+
 function formatCurrency(amountCents?: number, currency = 'USD') {
   if (typeof amountCents !== 'number') return null;
   try {
@@ -63,15 +98,6 @@ function formatCurrency(amountCents?: number, currency = 'USD') {
   } catch {
     return `${currency} ${(amountCents / 100).toFixed(2)}`;
   }
-}
-
-function getLayoutPlaceholder(count: number, iterationCount: number): number {
-  if (iterationCount <= count) return 0;
-  const missing = iterationCount - count;
-  if (iterationCount === 3 && count === 3) {
-    return 1;
-  }
-  return Math.max(0, missing);
 }
 
 export function QuadPreviewPanel({
@@ -93,18 +119,32 @@ export function QuadPreviewPanel({
 
   const sortedTiles = useMemo(() => [...tiles].sort((a, b) => a.iterationIndex - b.iterationIndex), [tiles]);
   const iterationCount = sortedTiles[0]?.iterationCount ?? iterations ?? 1;
-  const placeholders = getLayoutPlaceholder(sortedTiles.length, iterationCount);
 
   const tilesWithPlaceholders: Array<QuadPreviewTile | null> = useMemo(() => {
+    if (sortedTiles.length === 0) return [];
+
+    const primaryAspectRatio = sortedTiles[0]?.aspectRatio ?? '16:9';
+    const desiredSlots = (() => {
+      if (iterationCount <= 1) return 1;
+      if (iterationCount === 2) return 2;
+      if (primaryAspectRatio === '9:16' && iterationCount === 3) return 3;
+      if (iterationCount >= 3) return 4;
+      return 1;
+    })();
+
     const list: Array<QuadPreviewTile | null> = [...sortedTiles];
-    for (let index = 0; index < placeholders; index += 1) {
+    while (list.length < desiredSlots) {
       list.push(null);
     }
-    if (iterationCount === 3 && list.length < 4) {
-      list.push(null);
+
+    if (primaryAspectRatio === '9:16' && desiredSlots === 4 && sortedTiles.length === 2) {
+      const first = sortedTiles[0] ?? null;
+      const second = sortedTiles[1] ?? null;
+      return [null, first, second, null];
     }
-    return list;
-  }, [sortedTiles, placeholders, iterationCount]);
+
+    return list.slice(0, desiredSlots);
+  }, [sortedTiles, iterationCount]);
 
   const totalPrice = useMemo(() => {
     if (typeof totalPriceCents === 'number') return formatCurrency(totalPriceCents, currency);
@@ -112,52 +152,22 @@ export function QuadPreviewPanel({
     return aggregate > 0 ? formatCurrency(aggregate, currency) : null;
   }, [sortedTiles, totalPriceCents, currency]);
 
-  const mosaicSlots = Math.max(1, Math.min(4, iterationCount));
-  const primaryAspect = sortedTiles[0]?.aspectRatio;
+  const primaryAspect = sortedTiles[0]?.aspectRatio ?? '16:9';
   const isVerticalComposite = primaryAspect === '9:16';
-  const compositeAspectClass = 'aspect-[16/9]';
-  const mosaicGridClass = isVerticalComposite
-    ? mosaicSlots >= 4
-      ? 'grid-cols-4'
-      : mosaicSlots === 3
-        ? 'grid-cols-3'
-        : 'grid-cols-2'
-    : 'grid-cols-2';
-
-  const getAspectClass = (aspect?: string): string => {
-    if (!aspect) return 'aspect-[16/9]';
-    switch (aspect) {
-      case '9:16':
-        return 'aspect-[9/16]';
-      case '1:1':
-        return 'aspect-square';
-      case '4:5':
-        return 'aspect-[4/5]';
-      case '16:9':
-        return 'aspect-[16/9]';
-      default: {
-        if (aspect.includes(':')) {
-          const [w, h] = aspect.split(':').map((value) => Number(value));
-          if (Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0) {
-            return `aspect-[${w}/${h}]`;
-          }
-        }
-        return 'aspect-[16/9]';
-      }
+  const mosaicSlots = tilesWithPlaceholders.length;
+  const compositeAspectClass = getAspectClass(primaryAspect);
+  const mosaicGridClass = useMemo(() => {
+    if (mosaicSlots <= 1) return 'grid-cols-1';
+    if (isVerticalComposite) {
+      if (mosaicSlots === 2) return 'grid-cols-2';
+      if (mosaicSlots === 3) return 'grid-cols-3';
+      return 'grid-cols-4';
     }
-  };
+    return 'grid-cols-2';
+  }, [mosaicSlots, isVerticalComposite]);
 
-  const mosaicPreviews = useMemo(
-    () =>
-      sortedTiles.slice(0, mosaicSlots).map((tile) => ({
-        id: tile.localKey,
-        localKey: tile.localKey,
-        thumbUrl: tile.thumbUrl ?? undefined,
-        videoUrl: tile.videoUrl ?? undefined,
-        aspectRatio: tile.aspectRatio,
-      })),
-    [sortedTiles, mosaicSlots]
-  );
+
+  const mosaicTiles = useMemo(() => tilesWithPlaceholders.slice(0, mosaicSlots), [tilesWithPlaceholders, mosaicSlots]);
   const mosaicStatusMap = useMemo(() => {
     const map = new Map<string, { status: QuadPreviewTile['status']; progress: number; message: string; etaLabel?: string }>();
     sortedTiles.forEach((tile) => {
@@ -234,18 +244,17 @@ export function QuadPreviewPanel({
         <figure className="overflow-hidden rounded-card border border-border bg-white/80 p-3 text-center">
           <div className={clsx('relative w-full', compositeAspectClass)}>
             <div className={clsx('absolute inset-0 grid gap-2 rounded-[12px] bg-[#E7ECF7] p-1', mosaicGridClass)}>
-              {Array.from({ length: mosaicSlots }).map((_, index) => {
-                const preview = mosaicPreviews[index];
-                const slotKey = preview?.localKey ?? preview?.id ?? `slot-${index}`;
+              {mosaicTiles.map((preview, index) => {
+                const slotKey = preview?.localKey ?? `slot-${index}`;
                 const statusInfo = preview?.localKey ? mosaicStatusMap.get(preview.localKey) : undefined;
-                const aspectClass = getAspectClass(preview?.aspectRatio);
+                const cellAspect = getAspectClass(preview?.aspectRatio ?? primaryAspect);
                 return (
                   <div
                     key={slotKey}
                     data-quad-cell={slotKey}
                     className="relative flex items-center justify-center overflow-hidden rounded-[10px] bg-white/70"
                   >
-                    <div className={clsx('relative w-full', aspectClass)}>
+                    <div className={clsx('relative h-full w-full', cellAspect)}>
                       {preview?.videoUrl ? (
                         <video
                           data-quad-video
@@ -268,9 +277,7 @@ export function QuadPreviewPanel({
                           priority={false}
                         />
                       ) : (
-                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#dfe7ff] via-white to-[#f1f4ff] text-[10px] font-semibold uppercase tracking-micro text-text-muted pointer-events-none">
-                          En attente
-                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#dfe7ff] via-white to-[#f1f4ff]" />
                       )}
                     </div>
                     <div className="absolute inset-0 z-10" data-quad-player-root={slotKey} />
@@ -291,39 +298,11 @@ export function QuadPreviewPanel({
         </figure>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-input border border-dashed border-border bg-white/70 px-3 py-2 text-[11px] font-medium uppercase tracking-micro text-text-muted">
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setIsPlaying((prev) => !prev)}
-            className={clsx(
-              'inline-flex items-center gap-1 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              isPlaying ? 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10' : 'border-accent bg-accent/10 text-accent'
-            )}
-          >
-            {isPlaying ? 'Pause' : 'Play'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsLightboxOpen(true)}
-            className="inline-flex items-center gap-1 rounded-full border border-hairline bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <Image src="/assets/icons/expand.svg" alt="" width={12} height={12} className="h-3 w-3" />
-            Open takes
-          </button>
-        </div>
-        {heroTile && (
-          <span className="text-[10px] uppercase tracking-micro text-text-muted">
-            Hero • V{heroTile.iterationIndex + 1}
-          </span>
-        )}
-      </div>
-
       {iterationCount <= 1 && (
         <div
           className={clsx(
             'grid gap-3',
-            iterationCount <= 2 ? 'md:grid-cols-2' : 'md:grid-cols-2',
+            sortedTiles.length === 1 ? 'md:grid-cols-1' : 'md:grid-cols-2',
             iterationCount >= 3 ? 'auto-rows-[minmax(120px,1fr)]' : undefined
           )}
         >
@@ -332,11 +311,8 @@ export function QuadPreviewPanel({
               return (
                 <div
                   key={`placeholder-${index}`}
-                  className="flex flex-col items-center justify-center rounded-card border border-dashed border-border bg-white/70 p-6 text-center text-sm text-text-muted"
-                >
-                  <span className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Waiting</span>
-                  <span className="mt-1 text-[12px] text-text-secondary">Processing slot</span>
-                </div>
+                  className="flex rounded-card border border-dashed border-border bg-gradient-to-br from-[#eef2ff] via-white to-[#f2f6ff]"
+                />
               );
             }
 
@@ -346,7 +322,8 @@ export function QuadPreviewPanel({
             const versionLabel = `V${tile.iterationIndex + 1}`;
             const branchLabel = `Branch ${String.fromCharCode(65 + tile.iterationIndex)}`;
             const isHero = heroKey === tile.localKey;
-            const aspectClass = tile.aspectRatio === '9:16' ? 'aspect-[9/16]' : tile.aspectRatio === '1:1' ? 'aspect-square' : 'aspect-[16/9]';
+            const tileAspectClass = getAspectClass(tile.aspectRatio);
+            
 
             return (
               <div
@@ -377,34 +354,34 @@ export function QuadPreviewPanel({
                   </button>
                 </div>
 
-                <div className={clsx('relative bg-[#E7ECF7]', aspectClass)} data-quad-tile={tile.localKey}>
-                  {tile.videoUrl ? (
-                    <video
-                      data-quad-video
-                      data-quad-tile-fallback
-                      key={tile.videoUrl}
-                      src={tile.videoUrl}
-                      className="absolute inset-0 h-full w-full object-cover pointer-events-none"
-                      muted
-                      playsInline
-                      autoPlay={isPlaying}
-                      loop
-                      poster={tile.thumbUrl}
-                    />
-                  ) : tile.thumbUrl ? (
-                    <Image
-                      src={tile.thumbUrl}
-                      alt=""
-                      fill
-                      sizes="(min-width: 768px) 50vw, 100vw"
-                      className="absolute inset-0 object-cover pointer-events-none"
-                      priority={false}
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#dfe7ff] via-white to-[#f1f4ff] text-[11px] font-medium uppercase tracking-micro text-text-muted pointer-events-none">
-                      Aperçu à venir
-                    </div>
-                  )}
+                <div className={clsx('relative bg-[#E7ECF7]', tileAspectClass)} data-quad-tile={tile.localKey}>
+                  <div className="relative h-full w-full">
+                    {tile.videoUrl ? (
+                      <video
+                        data-quad-video
+                        data-quad-tile-fallback
+                        key={tile.videoUrl}
+                        src={tile.videoUrl}
+                        className="absolute inset-0 h-full w-full object-cover pointer-events-none"
+                        muted
+                        playsInline
+                        autoPlay={isPlaying}
+                        loop
+                        poster={tile.thumbUrl}
+                      />
+                    ) : tile.thumbUrl ? (
+                      <Image
+                        src={tile.thumbUrl}
+                        alt=""
+                        fill
+                        sizes="(min-width: 768px) 50vw, 100vw"
+                        className="absolute inset-0 object-cover pointer-events-none"
+                        priority={false}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-[#dfe7ff] via-white to-[#f1f4ff]" />
+                    )}
+                  </div>
                   <div className="absolute inset-0 z-10" data-quad-tile-root={tile.localKey} />
                   {tile.status !== 'completed' && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 text-center text-[12px] text-white backdrop-blur-sm">
@@ -456,6 +433,35 @@ export function QuadPreviewPanel({
           })}
         </div>
       )}
+
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-input border border-dashed border-border bg-white/70 px-3 py-2 text-[11px] font-medium uppercase tracking-micro text-text-muted">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsPlaying((prev) => !prev)}
+            className={clsx(
+              'inline-flex items-center gap-1 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              isPlaying ? 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10' : 'border-accent bg-accent/10 text-accent'
+            )}
+          >
+            {isPlaying ? 'Pause' : 'Play'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsLightboxOpen(true)}
+            className="inline-flex items-center gap-1 rounded-full border border-hairline bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Image src="/assets/icons/expand.svg" alt="" width={12} height={12} className="h-3 w-3" />
+            Open takes
+          </button>
+        </div>
+        {heroTile && (
+          <span className="text-[10px] uppercase tracking-micro text-text-muted">
+            Hero • V{heroTile.iterationIndex + 1}
+          </span>
+        )}
+      </div>
+
       {isLightboxOpen && (
         <MediaLightbox
           title={groupTitle}

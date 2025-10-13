@@ -8,7 +8,12 @@ import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { hideJob, useEngines, useInfiniteJobs } from '@/lib/api';
 import { JobMedia } from '@/components/JobMedia';
-import { groupJobsIntoSummaries, loadPersistedGroupSummaries, GROUP_SUMMARIES_UPDATED_EVENT } from '@/lib/job-groups';
+import {
+  groupJobsIntoSummaries,
+  loadPersistedGroupSummaries,
+  GROUP_SUMMARIES_UPDATED_EVENT,
+  GROUP_SUMMARY_STORAGE_KEY,
+} from '@/lib/job-groups';
 import { GroupedJobCard } from '@/components/GroupedJobCard';
 import type { GroupSummary } from '@/types/groups';
 import type { Job } from '@/types/jobs';
@@ -18,10 +23,12 @@ import { supabase } from '@/lib/supabaseClient';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { MediaLightbox, type MediaLightboxEntry } from '@/components/MediaLightbox';
 import { getAspectRatioNumber } from '@/lib/aspect';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 export default function DashboardPage() {
   const { data: enginesData, error: enginesError } = useEngines();
   const { data: jobsPages, error: jobsError, isLoading, mutate: mutateJobs } = useInfiniteJobs(9);
+  const { userId, loading: authLoading } = useRequireAuth();
 
   const engineLookup = useMemo(() => {
     const byId = new Map<string, EngineCaps>();
@@ -53,13 +60,19 @@ export default function DashboardPage() {
   const { groups: apiGroups, ungrouped: apiUngrouped } = useMemo(() => groupJobsIntoSummaries(jobs), [jobs]);
   const [storedGroups, setStoredGroups] = useState<GroupSummary[]>([]);
 
+  const storageKey = useCallback(
+    (base: string) => (userId ? `${base}:${userId}` : base),
+    [userId]
+  );
+
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const sync = () => setStoredGroups(loadPersistedGroupSummaries());
+    if (authLoading || typeof window === 'undefined') return;
+    const key = storageKey(GROUP_SUMMARY_STORAGE_KEY);
+    const sync = () => setStoredGroups(loadPersistedGroupSummaries(key));
     sync();
     window.addEventListener(GROUP_SUMMARIES_UPDATED_EVENT, sync);
     return () => window.removeEventListener(GROUP_SUMMARIES_UPDATED_EVENT, sync);
-  }, []);
+  }, [authLoading, storageKey]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -73,7 +86,7 @@ export default function DashboardPage() {
   const groupedJobs = useMemo(() => {
     const map = new Map<string, GroupSummary>();
     [...apiGroups, ...storedGroups].forEach((group) => {
-      if (!group || group.count <= 1) return;
+      if (!group || !group.members.length) return;
       const current = map.get(group.id);
       if (!current || Date.parse(group.createdAt) > Date.parse(current.createdAt)) {
         map.set(group.id, group);
@@ -175,6 +188,8 @@ export default function DashboardPage() {
   const spend30Display = formatCurrency(memberSummary?.spent30 ?? 0, currencyCode);
 
   useEffect(() => {
+    if (authLoading) return;
+
     let mounted = true;
 
     const fetchAccountState = async (token?: string | null) => {
@@ -241,7 +256,11 @@ export default function DashboardPage() {
       authSubscription?.subscription.unsubscribe();
       window.removeEventListener('wallet:invalidate', handleInvalidate);
     };
-  }, []);
+  }, [authLoading]);
+
+  if (authLoading) {
+    return null;
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-bg">

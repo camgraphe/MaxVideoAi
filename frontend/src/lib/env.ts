@@ -15,6 +15,8 @@ export function getOptionalEnv(name: string, fallback?: string): string | undefi
   return String(value);
 }
 
+const falKey = getOptionalEnv('FAL_API_KEY') ?? getOptionalEnv('FAL_KEY');
+
 export const ENV = {
   NEXT_PUBLIC_API_BASE: getOptionalEnv('NEXT_PUBLIC_API_BASE', '/api'),
   NEXT_PUBLIC_SUPABASE_URL: getOptionalEnv('NEXT_PUBLIC_SUPABASE_URL'),
@@ -24,7 +26,9 @@ export const ENV = {
   STRIPE_WEBHOOK_SECRET: getOptionalEnv('STRIPE_WEBHOOK_SECRET'),
   STRIPE_PRICE_PLUS: getOptionalEnv('STRIPE_PRICE_PLUS'),
   STRIPE_PRICE_PRO: getOptionalEnv('STRIPE_PRICE_PRO'),
-  FAL_API_KEY: getOptionalEnv('FAL_API_KEY'),
+  FAL_API_KEY: falKey,
+  FAL_KEY: falKey,
   RESULT_PROVIDER: getOptionalEnv('RESULT_PROVIDER'),
   TEST_VIDEO_BASE_URL: getOptionalEnv('TEST_VIDEO_BASE_URL'),
+  WORKSPACE_CENTER_GALLERY: getOptionalEnv('NEXT_PUBLIC_WORKSPACE_CENTER_GALLERY'),
 };

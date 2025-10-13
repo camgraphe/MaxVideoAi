@@ -1,5 +1,6 @@
 import enginesFixture from '../../fixtures/engines.json';
 import { getPricingKernel } from '@/lib/pricing-kernel';
+import { getModelRoster } from '@/lib/model-roster';
 import type {
   AspectRatio,
   EngineAvailability,
@@ -262,9 +263,24 @@ const RAW_ENGINES = Array.isArray((enginesFixture as EnginesFixture).engines)
   ? ((enginesFixture as EnginesFixture).engines as RawEngine[])
   : [];
 
-const ENGINES: EngineCaps[] = RAW_ENGINES.map((entry) => sanitizeEngine(entry)).filter(
-  (engine): engine is EngineCaps => engine !== null
+const ENGINE_BLOCKLIST = new Set(['dev-sim', 'developer', 'developer-simulator']);
+const MODEL_PRIORITY_ENTRIES = getModelRoster().map(
+  (entry, index) => [String(entry.engineId).toLowerCase(), index] as [string, number]
 );
+const MODEL_PRIORITY = new Map<string, number>(MODEL_PRIORITY_ENTRIES);
+const DEFAULT_PRIORITY = MODEL_PRIORITY_ENTRIES.length;
+
+const ENGINES: EngineCaps[] = RAW_ENGINES.map((entry) => sanitizeEngine(entry)).filter(
+  (engine): engine is EngineCaps =>
+    engine !== null && !ENGINE_BLOCKLIST.has(engine.id.trim().toLowerCase())
+).sort((a, b) => {
+  const aPriority = MODEL_PRIORITY.get(a.id.toLowerCase()) ?? DEFAULT_PRIORITY;
+  const bPriority = MODEL_PRIORITY.get(b.id.toLowerCase()) ?? DEFAULT_PRIORITY;
+  if (aPriority !== bPriority) {
+    return aPriority - bPriority;
+  }
+  return a.label.localeCompare(b.label);
+});
 
 function ensureEngine(engineId: string): EngineCaps | undefined {
   const normalisedId = engineId.trim().toLowerCase();

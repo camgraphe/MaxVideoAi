@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { ENV } from '@/lib/env';
 import { ensureBillingSchema } from '@/lib/schema';
 import { query } from '@/lib/db';
+import { recordMockWalletTopUp } from '@/lib/wallet';
 
 const stripeSecret = ENV.STRIPE_SECRET_KEY;
 const webhookSecret = ENV.STRIPE_WEBHOOK_SECRET;
@@ -121,51 +122,74 @@ async function recordTopup({
   chargeId?: string | null;
   metadata?: Record<string, unknown>;
 }) {
-  await ensureBillingSchema();
-
   const normalizedCurrency = currency ? currency.toUpperCase() : 'USD';
   const normalizedAmount = Math.max(0, Math.round(amountCents));
   if (normalizedAmount <= 0) return;
 
-  if (paymentIntentId) {
-    const existing = await query<{ id: string }>(
-      `SELECT id FROM app_receipts WHERE stripe_payment_intent_id = $1 LIMIT 1`,
-      [paymentIntentId]
-    );
-    if (existing.length > 0) {
-      return;
-    }
-  }
-
-  if (chargeId) {
-    const existingCharge = await query<{ id: string }>(
-      `SELECT id FROM app_receipts WHERE stripe_charge_id = $1 LIMIT 1`,
-      [chargeId]
-    );
-    if (existingCharge.length > 0) {
-      return;
-    }
-  }
-
-  await query(
-    `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, metadata, stripe_payment_intent_id, stripe_charge_id)
-     VALUES ($1, 'topup', $2, $3, $4, $5, $6, $7)`,
-    [
+  if (!process.env.DATABASE_URL) {
+    recordMockWalletTopUp(userId, normalizedAmount, paymentIntentId, chargeId);
+    console.log('[stripe-webhook] Recorded wallet top-up (mock)', {
       userId,
-      normalizedAmount,
-      normalizedCurrency,
-      'Wallet top-up',
-      metadata ?? null,
-      paymentIntentId ?? null,
-      chargeId ?? null,
-    ]
-  );
+      amountCents: normalizedAmount,
+      currency: normalizedCurrency,
+      paymentIntentId,
+      chargeId,
+    });
+    return;
+  }
 
-  console.log('[stripe-webhook] Recorded wallet top-up', {
-    userId,
-    amountCents: normalizedAmount,
-    currency: normalizedCurrency,
-    paymentIntentId,
-    chargeId,
-  });
+  try {
+    await ensureBillingSchema();
+  } catch (error) {
+    console.warn('[stripe-webhook] ensureBillingSchema failed, using mock ledger', error);
+    recordMockWalletTopUp(userId, normalizedAmount, paymentIntentId, chargeId);
+    return;
+  }
+
+  try {
+    if (paymentIntentId) {
+      const existing = await query<{ id: string }>(
+        `SELECT id FROM app_receipts WHERE stripe_payment_intent_id = $1 LIMIT 1`,
+        [paymentIntentId]
+      );
+      if (existing.length > 0) {
+        return;
+      }
+    }
+
+    if (chargeId) {
+      const existingCharge = await query<{ id: string }>(
+        `SELECT id FROM app_receipts WHERE stripe_charge_id = $1 LIMIT 1`,
+        [chargeId]
+      );
+      if (existingCharge.length > 0) {
+        return;
+      }
+    }
+
+    await query(
+      `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, metadata, stripe_payment_intent_id, stripe_charge_id)
+       VALUES ($1, 'topup', $2, $3, $4, $5, $6, $7)`,
+      [
+        userId,
+        normalizedAmount,
+        normalizedCurrency,
+        'Wallet top-up',
+        metadata ?? null,
+        paymentIntentId ?? null,
+        chargeId ?? null,
+      ]
+    );
+
+    console.log('[stripe-webhook] Recorded wallet top-up', {
+      userId,
+      amountCents: normalizedAmount,
+      currency: normalizedCurrency,
+      paymentIntentId,
+      chargeId,
+    });
+  } catch (error) {
+    console.error('[stripe-webhook] Failed to persist top-up, using mock ledger', error);
+    recordMockWalletTopUp(userId, normalizedAmount, paymentIntentId, chargeId);
+  }
 }

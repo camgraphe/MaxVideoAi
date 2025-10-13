@@ -50,7 +50,6 @@ const ENGINE_PICTOGRAMS: Record<string, EnginePictogram> = {
   svd_xt: BRAND_PICTOGRAMS.stability,
   'svd-x0': BRAND_PICTOGRAMS.stability,
   hunyuan_video: { code: 'Hy', backgroundColor: '#E1E8FF', textColor: DEFAULT_TEXT_COLOR },
-  'dev-sim': { code: 'Ds', backgroundColor: '#E5E9F2', textColor: DEFAULT_TEXT_COLOR },
   minimax: { code: 'Mi', backgroundColor: '#FFE7F0', textColor: DEFAULT_TEXT_COLOR },
 };
 

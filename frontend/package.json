@@ -10,6 +10,8 @@
     "lint:exposure": "node ../scripts/check-public-exposure.mjs"
   },
   "dependencies": {
+    "@fal-ai/client": "^1.6.2",
+    "@fal-ai/server-proxy": "^1.1.1",
     "@maxvideoai/pricing": "file:../packages/pricing",
     "@supabase/supabase-js": "^2.45.4",
     "clsx": "^2.1.0",
