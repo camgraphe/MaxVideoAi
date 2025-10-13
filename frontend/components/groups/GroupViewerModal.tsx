@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { MediaLightbox } from '@/components/MediaLightbox';
+import { MediaLightbox, type MediaLightboxEntry } from '@/components/MediaLightbox';
 import type { VideoGroup, VideoItem } from '@/types/video-groups';
 
 interface GroupViewerModalProps {
@@ -18,15 +18,21 @@ function isVideo(item: VideoItem): boolean {
 }
 
 export function GroupViewerModal({ group, onClose }: GroupViewerModalProps) {
-  const entries = useMemo(() => {
+  const entries: MediaLightboxEntry[] = useMemo(() => {
     if (!group) return [];
     return group.items.map((item, index) => {
       const label = `Variant ${index + 1}`;
       const video = isVideo(item) ? item.url : undefined;
       const thumb = item.thumb ?? (video ? undefined : item.url);
-      const rawStatus = typeof item.meta?.status === 'string' ? (item.meta.status as string) : undefined;
-      const status =
-        rawStatus === 'pending' || rawStatus === 'completed' || rawStatus === 'failed' ? rawStatus : undefined;
+      const rawStatus = typeof item.meta?.status === 'string' ? String(item.meta.status) : undefined;
+      const status: MediaLightboxEntry['status'] = (() => {
+        if (!rawStatus) return undefined;
+        const normalized = rawStatus.toLowerCase();
+        if (normalized === 'completed' || normalized === 'ready') return 'completed';
+        if (normalized === 'failed' || normalized === 'error') return 'failed';
+        if (normalized === 'pending' || normalized === 'loading') return 'pending';
+        return undefined;
+      })();
       const progress =
         typeof item.meta?.progress === 'number'
           ? Math.max(0, Math.min(100, Math.round(item.meta.progress as number)))

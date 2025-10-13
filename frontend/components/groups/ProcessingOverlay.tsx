@@ -59,7 +59,11 @@ export function ProcessingOverlay({
         aria-valuenow={state === 'error' ? undefined : safeProgress ?? undefined}
         aria-label={ariaLabel}
       >
-        <div className="processing-overlay__content flex flex-col items-center gap-2 px-6 py-4 text-center">
+        <div
+          className="processing-overlay__content flex flex-col items-center gap-2 px-6 py-4 text-center"
+          aria-live={state === 'error' ? 'assertive' : 'polite'}
+          aria-atomic="true"
+        >
           <div className="processing-overlay__spinner" aria-hidden />
           <span className="processing-overlay__title text-xs font-semibold uppercase tracking-micro">
             {state === 'error' ? 'Generation failed' : 'Processing…'}

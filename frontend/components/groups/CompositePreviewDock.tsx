@@ -48,8 +48,7 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal }: 
     if (!group) return [] as Array<VideoItem | null>;
     const desired = LAYOUT_SLOT_COUNT[group.layout] ?? Math.min(group.items.length, 4);
     const list = group.items.slice(0, desired);
-    const padded = [...list];
-    while (padded.length < desired) padded.push(null);
+    const padded: Array<VideoItem | null> = Array.from({ length: desired }, (_, index) => list[index] ?? null);
     if (group.layout === 'x3' && padded.length === 4 && !padded[2]) {
       padded[2] = padded[3];
       padded[3] = null;
