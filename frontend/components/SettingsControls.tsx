@@ -142,14 +142,7 @@ export function SettingsControls({
     } catch {}
   }, [showAdvanced]);
 
-  useEffect(() => {
-    if ((!audioSupported || mode !== 't2v') && addons.audio) {
-      onAddonToggle('audio', false);
-    }
-    if (!engine.upscale4k && addons.upscale4k) {
-      onAddonToggle('upscale4k', false);
-    }
-  }, [audioSupported, mode, engine.upscale4k, addons.audio, addons.upscale4k, onAddonToggle]);
+  const audioSupported = caps?.audioToggle === true;
 
   const resolutionOptions = useMemo(() => {
     if (caps?.resolution && caps.resolution.length) return caps.resolution;
@@ -163,7 +156,15 @@ export function SettingsControls({
 
   const showResolutionControl = caps ? Boolean(caps.resolution && caps.resolution.length) : resolutionOptions.length > 0;
   const showAspectControl = caps ? Boolean(caps.aspectRatio && caps.aspectRatio.length) : aspectOptions.length > 0;
-  const audioSupported = caps?.audioToggle === true;
+
+  useEffect(() => {
+    if ((!audioSupported || mode !== 't2v') && addons.audio) {
+      onAddonToggle('audio', false);
+    }
+    if (!engine.upscale4k && addons.upscale4k) {
+      onAddonToggle('upscale4k', false);
+    }
+  }, [audioSupported, mode, engine.upscale4k, addons.audio, addons.upscale4k, onAddonToggle]);
 
   return (
     <Card className="space-y-4 p-4">
