@@ -22,24 +22,6 @@
     "billingNote": "Si une clé OpenAI est fournie, la facturation passe directement chez OpenAI ; sinon FAL crédite MaxVideoAI."
   },
   {
-    "engineId": "veo3",
-    "marketingName": "Veo 3",
-    "brandId": "google-veo",
-    "modelSlug": "google-veo-3",
-    "versionLabel": "3.0",
-    "availability": "waitlist",
-    "logoPolicy": "textOnly"
-  },
-  {
-    "engineId": "veo3fast",
-    "marketingName": "Veo 3 Fast",
-    "brandId": "google-veo",
-    "modelSlug": "google-veo-3-fast",
-    "versionLabel": "3.0",
-    "availability": "waitlist",
-    "logoPolicy": "textOnly"
-  },
-  {
     "engineId": "kling25",
     "marketingName": "Kling 2.5",
     "brandId": "kling",
@@ -82,6 +64,15 @@
     "modelSlug": "pika-2-2",
     "versionLabel": "2.2",
     "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "minimax",
+    "marketingName": "Minimax (Hailuo AI)",
+    "brandId": "minimax",
+    "modelSlug": "minimax",
+    "versionLabel": "1.0",
+    "availability": "limited",
     "logoPolicy": "textOnly"
   },
   {
