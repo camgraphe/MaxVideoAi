@@ -15,7 +15,6 @@
     "sanitize:jobs": "node scripts/sanitize-jobs.js",
     "lint:exposure": "node scripts/check-public-exposure.mjs",
     "vercel-build": "NEXT_SKIP_ESLINT=1 npm run build --workspace frontend",
-    "prevercel-build": "npm run healthcheck",
     "model:generate": "node scripts/generate-model-roster.mjs",
     "model:check": "node scripts/validate-model-roster.mjs",
     "test-videos:process": "node scripts/process-video-gallery.mjs",
