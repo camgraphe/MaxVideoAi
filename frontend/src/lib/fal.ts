@@ -104,6 +104,19 @@ export type GenerateResult = {
   progress?: number;
 };
 
+export function getFalWebhookUrl(): string | null {
+  const base =
+    process.env.NEXT_PUBLIC_APP_URL ??
+    process.env.APP_URL ??
+    process.env.APP_BASE_URL ??
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    null;
+  if (!base) return null;
+  const trimmed = base.trim();
+  if (!trimmed) return null;
+  return `${trimmed.replace(/\/+$/, '')}/api/fal/webhook`;
+}
+
 const MANIFEST_FILENAME = 'maxvideoai_test_videos_manifest.json';
 const FAL_FILES_BASE_URL = (process.env.FAL_FILES_BASE_URL || process.env.NEXT_PUBLIC_FAL_FILES_BASE_URL || 'https://fal.media/files').replace(/\/+$/, '');
 let manifestPromise: Promise<VideoAsset[]> | null = null;
@@ -322,8 +335,17 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
   }
 
   let latestQueueStatus: QueueStatus | null = null;
+  const webhookUrl = getFalWebhookUrl() ?? undefined;
+  let enqueuedRequestId: string | undefined;
   const result = await falClient.subscribe(model, {
     input: requestBody,
+    webhookUrl,
+    mode: 'polling',
+    onEnqueue(requestId) {
+      if (typeof requestId === 'string') {
+        enqueuedRequestId = requestId;
+      }
+    },
     onQueueUpdate(update) {
       latestQueueStatus = update;
     },
@@ -332,6 +354,7 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
   const json = unwrapFalResponse(result.data);
   const queueRequestId = (latestQueueStatus as { request_id?: string } | null)?.request_id;
   const providerJobId: string | undefined =
+    enqueuedRequestId ??
     result.requestId ??
     json?.request_id ??
     json?.id ??
