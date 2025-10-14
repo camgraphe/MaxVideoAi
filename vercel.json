@@ -1,5 +1,5 @@
 {
-  "installCommand": "npm install --workspace frontend --omit=dev",
+  "installCommand": "npm install --omit=dev --prefix frontend",
   "buildCommand": "npm run vercel-build",
   "builds": [
     { "src": "frontend/package.json", "use": "@vercel/next" }
