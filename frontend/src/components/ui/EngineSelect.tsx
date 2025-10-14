@@ -31,6 +31,14 @@ type EngineGuideEntry = {
   badges: string[];
 };
 
+interface EngineSelectProps {
+  engines: EngineCaps[];
+  engineId: string;
+  onEngineChange: (engineId: string) => void;
+  mode: Mode;
+  onModeChange: (mode: Mode) => void;
+}
+
 const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
   'sora-2': {
     description:
