@@ -12,7 +12,7 @@ export interface PricingScenario {
 }
 
 export const DEFAULT_MARKETING_SCENARIO: PricingScenario = {
-  engineId: 'runwayg3',
+  engineId: 'veo3',
   durationSec: 12,
   resolution: '1080p',
   memberTier: 'member',

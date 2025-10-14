@@ -1,56 +1,78 @@
 [
   {
+    "engineId": "sora-2",
+    "marketingName": "Sora 2",
+    "brandId": "openai",
+    "modelSlug": "openai-sora-2",
+    "family": "sora",
+    "versionLabel": "2",
+    "availability": "available",
+    "logoPolicy": "textOnly",
+    "billingNote": "Si une clé OpenAI est fournie, la facturation passe directement chez OpenAI ; sinon Fal crédite MaxVideoAI."
+  },
+  {
+    "engineId": "sora-2-pro",
+    "marketingName": "Sora 2 Pro",
+    "brandId": "openai",
+    "modelSlug": "openai-sora-2-pro",
+    "family": "sora",
+    "versionLabel": "2 Pro",
+    "availability": "available",
+    "logoPolicy": "textOnly",
+    "billingNote": "Si une clé OpenAI est fournie, la facturation passe directement chez OpenAI ; sinon Fal crédite MaxVideoAI."
+  },
+  {
     "engineId": "veo3",
-    "marketingName": "Veo 3",
+    "marketingName": "Google Veo 3",
     "brandId": "google-veo",
     "modelSlug": "google-veo-3",
     "versionLabel": "3.0",
-    "availability": "waitlist",
+    "availability": "available",
     "logoPolicy": "textOnly"
   },
   {
     "engineId": "veo3fast",
-    "marketingName": "Veo 3 Fast",
+    "marketingName": "Google Veo 3 Fast",
     "brandId": "google-veo",
     "modelSlug": "google-veo-3-fast",
-    "versionLabel": "3.0",
-    "availability": "waitlist",
+    "versionLabel": "3.0 Fast",
+    "availability": "available",
     "logoPolicy": "textOnly"
   },
   {
-    "engineId": "kling25",
-    "marketingName": "Kling 2.5",
+    "engineId": "kling25_turbo_pro",
+    "marketingName": "Kling 2.5 Turbo Pro",
     "brandId": "kling",
-    "modelSlug": "kling-2-5",
-    "versionLabel": "2.5",
-    "availability": "limited",
-    "logoPolicy": "textOnly"
-  },
-  {
-    "engineId": "kling25_turbo",
-    "marketingName": "Kling 2.5 Turbo",
-    "brandId": "kling",
-    "modelSlug": "kling-2-5-turbo",
-    "versionLabel": "2.5",
-    "availability": "limited",
+    "modelSlug": "kling-25-turbo-pro",
+    "versionLabel": "2.5 Turbo Pro",
+    "availability": "available",
     "logoPolicy": "textOnly"
   },
   {
     "engineId": "lumaDM",
-    "marketingName": "Luma Dream Machine",
+    "marketingName": "Luma Dream Machine v1.5",
     "brandId": "luma",
     "modelSlug": "luma-dream-machine",
-    "versionLabel": "1.0",
+    "versionLabel": "1.5",
     "availability": "available",
     "logoPolicy": "logoAllowed"
   },
   {
-    "engineId": "lumaDM_fast",
-    "marketingName": "Luma Dream Machine Fast",
+    "engineId": "lumaRay2",
+    "marketingName": "Luma Ray 2",
     "brandId": "luma",
-    "modelSlug": "luma-dream-machine-fast",
-    "versionLabel": "1.0",
-    "availability": "limited",
+    "modelSlug": "luma-ray-2",
+    "versionLabel": "Ray 2",
+    "availability": "available",
+    "logoPolicy": "logoAllowed"
+  },
+  {
+    "engineId": "lumaRay2_flash",
+    "marketingName": "Luma Ray 2 Flash",
+    "brandId": "luma",
+    "modelSlug": "luma-ray-2-flash",
+    "versionLabel": "Ray 2 Flash",
+    "availability": "available",
     "logoPolicy": "logoAllowed"
   },
   {
@@ -63,21 +85,30 @@
     "logoPolicy": "textOnly"
   },
   {
-    "engineId": "pika22_keyframes",
-    "marketingName": "Pika 2.2 — Keyframes",
-    "brandId": "pika",
-    "modelSlug": "pika-2-2-keyframes",
-    "versionLabel": "2.2",
-    "availability": "limited",
+    "engineId": "minimax_video_01",
+    "marketingName": "MiniMax Video 01",
+    "brandId": "minimax",
+    "modelSlug": "minimax-video-01",
+    "versionLabel": "Video 01",
+    "availability": "available",
     "logoPolicy": "textOnly"
   },
   {
-    "engineId": "runwayg3",
-    "marketingName": "Runway Gen-3",
-    "brandId": "runway",
-    "modelSlug": "runway-gen-3",
-    "versionLabel": "3",
+    "engineId": "minimax_hailuo_02_pro",
+    "marketingName": "MiniMax Hailuo 02 Pro",
+    "brandId": "minimax",
+    "modelSlug": "minimax-hailuo-02-pro",
+    "versionLabel": "Hailuo 02 Pro",
     "availability": "available",
-    "logoPolicy": "logoAllowed"
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "hunyuan_video",
+    "marketingName": "Hunyuan Video",
+    "brandId": "tencent",
+    "modelSlug": "hunyuan-video",
+    "versionLabel": "Hunyuan Video",
+    "availability": "available",
+    "logoPolicy": "textOnly"
   }
 ]

@@ -197,7 +197,7 @@ export function PriceEstimator({ showWalletActions = true, variant = 'full' }: P
   const engineOptions = useMemo(() => {
     const payload = data?.engines ?? [];
     if (!payload.length) return fallbackEngines;
-    const preferredOrder = ['veo3', 'lumaDM', 'pika22', 'runwayg3', 'kling25'];
+    const preferredOrder = ['veo3', 'sora-2', 'lumaDM', 'pika22', 'minimax_video_01'];
     const filtered = payload.filter((engine) => preferredOrder.includes(engine.id));
     const mapped = buildEngineOptions(filtered.length ? filtered : payload, descriptions);
     if (!mapped.length) return fallbackEngines;

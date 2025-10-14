@@ -37,7 +37,6 @@ const ENGINE_PICTOGRAMS: Record<string, EnginePictogram> = {
   'runway-gen3': BRAND_PICTOGRAMS.runway,
   'pika-22': BRAND_PICTOGRAMS.pika,
   pika22: BRAND_PICTOGRAMS.pika,
-  pika22_keyframes: BRAND_PICTOGRAMS.pika,
   'luma-dm': BRAND_PICTOGRAMS.luma,
   lumadm: BRAND_PICTOGRAMS.luma,
   'luma-dream-machine': BRAND_PICTOGRAMS.luma,
@@ -45,12 +44,17 @@ const ENGINE_PICTOGRAMS: Record<string, EnginePictogram> = {
   kling25: BRAND_PICTOGRAMS.kling,
   'kling-2-5': BRAND_PICTOGRAMS.kling,
   kling25_turbo: BRAND_PICTOGRAMS.kling,
+  kling25_turbo_pro: BRAND_PICTOGRAMS.kling,
   haiper_video: BRAND_PICTOGRAMS.haiper,
   'haiper-video': BRAND_PICTOGRAMS.haiper,
   svd_xt: BRAND_PICTOGRAMS.stability,
   'svd-x0': BRAND_PICTOGRAMS.stability,
   hunyuan_video: { code: 'Hy', backgroundColor: '#E1E8FF', textColor: DEFAULT_TEXT_COLOR },
   minimax: { code: 'Mi', backgroundColor: '#FFE7F0', textColor: DEFAULT_TEXT_COLOR },
+  minimax_video_01: { code: 'Mi', backgroundColor: '#FFE7F0', textColor: DEFAULT_TEXT_COLOR },
+  minimax_hailuo_02_pro: { code: 'Mi', backgroundColor: '#FFE7F0', textColor: DEFAULT_TEXT_COLOR },
+  lumaRay2: BRAND_PICTOGRAMS.luma,
+  lumaRay2_flash: BRAND_PICTOGRAMS.luma
 };
 
 const FALLBACK_COLORS = ['#E8EDFF', '#FFE6F1', '#E6F5EB', '#FFF2DC', '#F2E9FF', '#E2F7F4', '#FFECE1', '#E9EEF5'];

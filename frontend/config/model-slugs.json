@@ -1,13 +1,14 @@
 {
-  "runwayg3": "runway-gen-3",
-  "lumaDM": "luma-dream-machine",
-  "lumaDM_fast": "luma-dream-machine-fast",
+  "sora-2": "openai-sora-2",
+  "sora-2-pro": "openai-sora-2-pro",
   "veo3": "google-veo-3",
   "veo3fast": "google-veo-3-fast",
+  "kling25_turbo_pro": "kling-25-turbo-pro",
+  "lumaDM": "luma-dream-machine",
+  "lumaRay2": "luma-ray-2",
+  "lumaRay2_flash": "luma-ray-2-flash",
   "pika22": "pika-2-2",
-  "pika22_keyframes": "pika-2-2-keyframes",
-  "kling25": "kling-2-5",
-  "kling25_turbo": "kling-2-5-turbo",
-  "sora-2": "openai-sora-2",
-  "sora-2-pro": "openai-sora-2-pro"
+  "minimax_video_01": "minimax-video-01",
+  "minimax_hailuo_02_pro": "minimax-hailuo-02-pro",
+  "hunyuan_video": "hunyuan-video"
 }

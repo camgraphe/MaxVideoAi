@@ -34,88 +34,66 @@ type EngineGuideEntry = {
 const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
   'sora-2': {
     description:
-      'OpenAI’s second-gen video model with native audio and multi-aspect support. Great for polished storyboards when you want strong motion and sound out of the box.',
-    badges: ['🔊 Audio enabled', '🎬 Cinematic', '🆕 New release'],
+      'Baseline Sora endpoints for text, image, or video remix with native audio. Reliable when you need cinematic motion with predictable pricing.',
+    badges: ['🔊 Audio natif', '🎬 Cinématique', '🧠 Remix IA'],
   },
   'sora-2-pro': {
     description:
-      'The pro tier unlocks 1080p renders and premium throughput while keeping audio on by default. Use it when you need hero shots or longer cuts with higher bitrate.',
-    badges: ['🔊 Audio enabled', '🖥️ 1080p', '💼 Pro tier'],
-  },
-  minimax: {
-    description:
-      'A pragmatic choice when you want quick concept checks with decent motion and budget control. Great for early cuts, pacing tests, and getting a first look before committing to higher-tier runs.',
-    badges: ['⚡ Fast iteration', '💰 Budget friendly', '🎞️ Concept drafts']
+      'Pro tier unlocks 1080p output and higher throughput—ideal for hero shots or longer edits.',
+    badges: ['🖥️ 1080p', '⚡ Débit pro', '🏆 Hero'],
   },
   veo3: {
     description:
-      'Cinematic quality with native audio generation for sound-aware previews and polished shots. Strong temporal consistency makes it reliable for brand-grade assets and premium social outputs.',
-    badges: ['🎬 Cinematic look', '🔊 Audio support', '🏆 Brand quality']
+      'Google Veo 3 delivers cinematic realism with lip-sync and robust camera control.',
+    badges: ['🎥 Réalisme', '🔊 Audio', '🌆 Narratif'],
   },
   veo3fast: {
     description:
-      'The Veo look, optimised for iteration speed and lower cost per second. Ideal for storyboard passes, rapid prompt exploration, and quick social drafts before you lock the hero take.',
-    badges: ['⚡ Fast variant', '💰 Lower cost', '🎞️ Storyboard friendly']
+      'Fast queue Veo for previsualisation while keeping the Veo look and audio toggle.',
+    badges: ['⚡ File rapide', '💰 Optimisé', '🔄 Préviz'],
   },
-  pika22: {
+  kling25_turbo_pro: {
     description:
-      'Nimble and expressive for short-form clips. Supports text-to-video and image-to-video with 10-second 1080p outputs—perfect for punchy motion and trend-friendly edits.',
-    badges: ['📱 Social clips', '⚡ Quick output', '🎥 Expressive motion']
-  },
-  pika22_keyframes: {
-    description:
-      'Adds keyframe transitions so you can guide motion across beats for more directed results. Useful for planned story moments or matching edits to music when you want control beyond one prompt.',
-    badges: ['🧭 Keyframe control', '🎬 Directed motion', '🧪 Labs']
-  },
-  kling25: {
-    description:
-      'High fidelity with strong style and reference adherence—great at carrying over colour, lighting, and texture from your inputs. Pick it when you need brand-faithful visuals.',
-    badges: ['🎨 Reference fidelity', '✨ High detail', '🏢 Brand match']
-  },
-  kling25_turbo: {
-    description:
-      'A faster, more affordable cut of Kling tuned for previsualisation. Iterate quickly while keeping that reference-faithful look, then finalise on a premium engine if needed.',
-    badges: ['⚡ Turbo speed', '💰 Efficient tests', '🧪 Labs']
+      'Stylised animation with guided camera moves—use it for motion boards and concept passes.',
+    badges: ['🎯 Caméra', '🎞️ Animatique', '🧪 Turbo'],
   },
   lumaDM: {
     description:
-      'Rich textures and crisp detail with a balanced, modern look—an all-rounder for lifestyle, travel, and texture-centric scenes. Strong option when you want detail without heavy prompt craft.',
-    badges: ['🧵 Texture detail', '🌍 Lifestyle scenes', '🎥 Balanced look']
+      'Luma Dream Machine v1.5 handles photoreal product loops and lifestyle scenes with balanced detail.',
+    badges: ['🧵 Photoréalisme', '🍽️ Tabletop', '🌍 Lifestyle'],
   },
-  lumaDM_fast: {
+  lumaRay2: {
     description:
-      'A quicker Luma variant to explore ideas at speed while staying close to that detailed aesthetic. Ideal for draft passes and look development before committing more budget.',
-    badges: ['⚡ Fast variant', '🧵 Detailed look', '🧪 Labs']
+      'Ray 2 pushes fidelity for flagship footage when you need premium detail from scratch.',
+    badges: ['✨ Haute fidélité', '🏆 Flagship', '🪄 Ray'],
   },
-  runwayg3: {
+  lumaRay2_flash: {
     description:
-      'Creator-friendly with solid tooling around control and editing. Works well in workflows that mix captions, effects, or post-edits, with safety layers suited to production teams.',
-    badges: ['🎬 Workflow friendly', '🧰 Easy editing', '🔒 Reliable']
+      'Flash mode keeps the Ray aesthetic with faster turnaround—perfect for look-dev.',
+    badges: ['⚡ Flash', '🗒️ Storyboard', '💡 Look-dev'],
   },
-  svd_xt: {
+  pika22: {
     description:
-      'Great when you start from a single image and want coherent motion. Turns stills into short sequences with controllable camera moves—handy for animating key visuals or boards.',
-    badges: ['🖼️ From image', '📸 Camera control', '🎞️ Short runs']
+      'Fast social-first clips with caption overlays and Pikascenes motion controls.',
+    badges: ['📱 Social', '🔤 Légendes', '🎞️ Motion rapide'],
   },
-  haiper_video: {
+  minimax_video_01: {
     description:
-      'A fast, social-ready generator for short, catchy clips when you want momentum and style more than filmic realism. Go-to for trend pieces, loops, and motion-first experiments.',
-    badges: ['📱 Social ready', '⚡ Quick style', '🧪 Labs']
+      'MiniMax Video 01 uses camera tags to produce concept animations and Live2D-style motion.',
+    badges: ['🎯 Tags caméra', '🧪 Concepts', '🎨 Live2D'],
+  },
+  minimax_hailuo_02_pro: {
+    description:
+      'Hailuo 02 Pro handles 1080p image-to-video hero renders when you have a strong reference.',
+    badges: ['🖼️ I2V', '🖥️ 1080p', '🏅 Qualité'],
   },
   hunyuan_video: {
     description:
-      'An open framework pushing high-quality motion and text alignment—great for exploratory work, references, and R&D where flexible control and evolving capabilities matter.',
-    badges: ['🔬 Research use', '🎥 Balanced output', '🧪 Labs']
-  }
+      'Tencent’s Hunyuan Video offers research-grade realism with a Pro mode switch.',
+    badges: ['🔬 Recherche', '🌌 Réalisme', '⚙️ Mode Pro'],
+  },
 };
 
-interface EngineSelectProps {
-  engines: EngineCaps[];
-  engineId: string;
-  onEngineChange: (engineId: string) => void;
-  mode: Mode;
-  onModeChange: (mode: Mode) => void;
-}
 
 interface DropdownPosition {
   top: number;

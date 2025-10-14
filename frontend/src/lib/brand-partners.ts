@@ -110,7 +110,7 @@ export const PARTNER_BRANDS: PartnerBrand[] = [
       light: 'Luma AI wordmark',
       dark: 'Luma AI wordmark (inverse)',
     },
-    engineIds: ['luma-dm', 'lumadm', 'luma-dream-machine', 'lumadm_fast'],
+    engineIds: ['luma-dm', 'lumadm', 'luma-dream-machine', 'lumaRay2', 'lumaRay2_flash'],
   },
   {
     id: 'google-veo',
@@ -155,7 +155,7 @@ export const PARTNER_BRANDS: PartnerBrand[] = [
       light: 'Pika Labs wordmark',
       dark: 'Pika Labs wordmark (inverse)',
     },
-    engineIds: ['pika-22', 'pika22', 'pika22_keyframes'],
+    engineIds: ['pika-22', 'pika22'],
   },
   {
     id: 'kling',
@@ -178,7 +178,7 @@ export const PARTNER_BRANDS: PartnerBrand[] = [
       light: 'Kling by Kuaishou wordmark',
       dark: 'Kling by Kuaishou wordmark (inverse)',
     },
-    engineIds: ['kling25', 'kling-2-5', 'kling25_turbo'],
+    engineIds: ['kling25', 'kling-2-5', 'kling25_turbo', 'kling25_turbo_pro'],
   },
   {
     id: 'openai',
