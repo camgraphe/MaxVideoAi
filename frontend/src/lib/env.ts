@@ -15,7 +15,11 @@ export function getOptionalEnv(name: string, fallback?: string): string | undefi
   return String(value);
 }
 
-const falKey = getOptionalEnv('FAL_API_KEY') ?? getOptionalEnv('FAL_KEY');
+const falKey =
+  getOptionalEnv('FAL_API_KEY') ??
+  getOptionalEnv('FAL_KEY') ??
+  getOptionalEnv('NEXT_PUBLIC_FAL_API_KEY') ??
+  getOptionalEnv('NEXT_PUBLIC_FAL_KEY');
 
 export const ENV = {
   NEXT_PUBLIC_API_BASE: getOptionalEnv('NEXT_PUBLIC_API_BASE', '/api'),

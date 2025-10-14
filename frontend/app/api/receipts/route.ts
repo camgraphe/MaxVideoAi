@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { isDatabaseConfigured, query } from '@/lib/db';
 import { getUserIdFromRequest } from '@/lib/user';
 import type { PricingSnapshot } from '@/types/engines';
 import { ensureBillingSchema } from '@/lib/schema';
 
 export async function GET(req: NextRequest) {
-  await ensureBillingSchema();
+  const databaseConfigured = isDatabaseConfigured();
+  if (!databaseConfigured) {
+    return NextResponse.json({ ok: true, receipts: [], nextCursor: null, mock: true });
+  }
+
+  try {
+    await ensureBillingSchema();
+  } catch (error) {
+    console.warn('[api/receipts] schema init failed, returning mock ledger', error);
+    return NextResponse.json({ ok: true, receipts: [], nextCursor: null, mock: true });
+  }
 
   const url = new URL(req.url);
   const limit = Math.min(100, Math.max(1, Number(url.searchParams.get('limit') ?? '50')));
@@ -22,7 +32,7 @@ export async function GET(req: NextRequest) {
   }
 
   params.push(limit + 1);
-  const rows = await query<{
+  type ReceiptRow = {
     id: number;
     type: string;
     amount_cents: number;
@@ -36,14 +46,22 @@ export async function GET(req: NextRequest) {
     stripe_payment_intent_id: string | null;
     stripe_charge_id: string | null;
     stripe_refund_id: string | null;
-  }>(
-    `SELECT id, type, amount_cents, currency, description, created_at, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, stripe_refund_id
-     FROM app_receipts
-     ${where}
-     ORDER BY id DESC
-     LIMIT $${params.length}`,
-    params
-  );
+  };
+
+  let rows: ReceiptRow[];
+  try {
+    rows = await query<ReceiptRow>(
+      `SELECT id, type, amount_cents, currency, description, created_at, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, stripe_refund_id
+       FROM app_receipts
+       ${where}
+       ORDER BY id DESC
+       LIMIT $${params.length}`,
+      params
+    );
+  } catch (error) {
+    console.warn('[api/receipts] query failed, returning mock ledger', error);
+    return NextResponse.json({ ok: true, receipts: [], nextCursor: null, mock: true });
+  }
 
   const hasMore = rows.length > limit;
   const items = hasMore ? rows.slice(0, -1) : rows;
