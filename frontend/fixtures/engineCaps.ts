@@ -55,6 +55,14 @@ export const ENGINE_CAPS: Record<string, EngineCaps> = {
     audioToggle: false,
     notes: 'Supports optional api_key to bill OpenAI directly.',
   },
+  'fal-ai/sora-2/text-to-video': {
+    modes: ['t2v'],
+    duration: { options: [4, 8, 12], default: 4 },
+    resolution: ['720p'],
+    aspectRatio: ['9:16', '16:9'],
+    audioToggle: false,
+    notes: 'Supports optional api_key to bill OpenAI directly.',
+  },
   'fal-ai/sora-2/text-to-video/pro': {
     modes: ['t2v'],
     duration: { options: [4, 8, 12], default: 4 },
@@ -191,6 +199,7 @@ export const ENGINE_CAP_INDEX: Record<string, ModeCapsMap> = {
     i2v: 'fal-ai/pika/v2.2/image-to-video',
   },
   'sora-2': {
+    t2v: 'fal-ai/sora-2/text-to-video',
     i2v: 'fal-ai/sora-2/image-to-video',
     v2v: 'fal-ai/sora-2/video-to-video/remix',
   },
