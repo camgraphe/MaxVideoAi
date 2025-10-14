@@ -977,7 +977,7 @@ const fr: Dictionary = {
             pricing: { engineId: 'minimax_video_01', durationSec: 6, resolution: '720p', memberTier: 'member' },
           },
         },
-      ],      ],
+      ],
     },
     pricing: {
       badge: 'Mise en avant tarifaire',
