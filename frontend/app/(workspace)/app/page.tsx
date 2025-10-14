@@ -7,6 +7,7 @@ import { useEngines, useInfiniteJobs, runPreflight, runGenerate, getJobStatus } 
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import type { EngineCaps, EngineInputField, Mode, PreflightRequest, PreflightResponse } from '@/types/engines';
+import { getEngineCaps, type EngineCaps as EngineCapabilityCaps } from '@/fixtures/engineCaps';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { EngineSelect } from '@/components/ui/EngineSelect';
@@ -59,6 +60,166 @@ function readFileAsDataUrl(file: File): Promise<string> {
   });
 }
 
+const MODE_DISPLAY_LABEL: Record<Mode, string> = {
+  t2v: 'Text → Video',
+  i2v: 'Image → Video',
+  v2v: 'Video → Video',
+};
+
+type DurationOptionMeta = {
+  raw: number | string;
+  value: number;
+  label: string;
+};
+
+function parseDurationOptionValue(option: number | string): DurationOptionMeta {
+  if (typeof option === 'number') {
+    return {
+      raw: option,
+      value: option,
+      label: `${option}s`,
+    };
+  }
+  const numeric = Number(option.replace(/[^\d.]/g, ''));
+  return {
+    raw: option,
+    value: Number.isFinite(numeric) ? numeric : 0,
+    label: option,
+  };
+}
+
+function matchesDurationOption(meta: DurationOptionMeta, previousOption: number | string | null | undefined, previousSeconds: number | null | undefined): boolean {
+  if (previousOption != null) {
+    if (typeof previousOption === 'number') {
+      return Math.abs(meta.value - previousOption) < 0.001;
+    }
+    if (typeof previousOption === 'string') {
+      if (previousOption === meta.raw || previousOption === meta.label) return true;
+      const previousNumeric = Number(previousOption.replace(/[^\d.]/g, ''));
+      if (Number.isFinite(previousNumeric)) {
+        return Math.abs(meta.value - previousNumeric) < 0.001;
+      }
+    }
+  }
+  if (previousSeconds != null) {
+    return Math.abs(meta.value - previousSeconds) < 0.001;
+  }
+  return false;
+}
+
+function framesToSeconds(frames: number): number {
+  if (!Number.isFinite(frames) || frames <= 0) return 1;
+  return Math.max(1, Math.round(frames / 24));
+}
+
+function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | null | undefined): FormState {
+  const capability = getEngineCaps(engine.id, mode) as EngineCapabilityCaps | undefined;
+
+  const durationResult = (() => {
+    const prevOption = previous?.durationOption ?? null;
+    const prevSeconds = previous?.durationSec ?? null;
+    const prevFrames = previous?.numFrames ?? null;
+    if (capability?.frames && capability.frames.length) {
+      const framesList = capability.frames;
+      const selectedFrames = prevFrames && framesList.includes(prevFrames) ? prevFrames : framesList[0];
+      const durationSec = framesToSeconds(selectedFrames);
+      return {
+        durationSec,
+        durationOption: selectedFrames,
+        numFrames: selectedFrames,
+      };
+    }
+    if (capability?.duration) {
+      if ('options' in capability.duration) {
+        const parsedOptions = capability.duration.options.map(parseDurationOptionValue).filter((entry) => entry.value > 0);
+        const defaultRaw = capability.duration.default ?? parsedOptions[0]?.raw ?? engine.maxDurationSec;
+        const defaultMeta = parseDurationOptionValue(defaultRaw as number | string);
+        const selected = parsedOptions.find((meta) => matchesDurationOption(meta, prevOption, prevSeconds))
+          ?? parsedOptions.find((meta) => matchesDurationOption(meta, defaultRaw as number | string, defaultMeta.value))
+          ?? parsedOptions[0]
+          ?? defaultMeta;
+        const clampedSeconds = Math.max(1, Math.min(engine.maxDurationSec, Math.round(selected.value)));
+        return {
+          durationSec: clampedSeconds,
+          durationOption: selected.raw,
+          numFrames: null,
+        };
+      }
+      const min = capability.duration.min;
+      const defaultValue = typeof capability.duration.default === 'number' ? capability.duration.default : min;
+      const candidate = prevSeconds != null ? Math.max(min, prevSeconds) : defaultValue;
+      const clampedSeconds = Math.max(min, Math.min(engine.maxDurationSec, Math.round(candidate)));
+      return {
+        durationSec: clampedSeconds,
+        durationOption: clampedSeconds,
+        numFrames: null,
+      };
+    }
+    const fallback = prevSeconds != null ? prevSeconds : Math.min(engine.maxDurationSec, 8);
+    return {
+      durationSec: Math.max(1, Math.round(fallback)),
+      durationOption: fallback,
+      numFrames: null,
+    };
+  })();
+
+  const resolutionOptions = capability?.resolution && capability.resolution.length ? capability.resolution : engine.resolutions;
+  const aspectOptions = capability?.aspectRatio && capability.aspectRatio.length ? capability.aspectRatio : engine.aspectRatios;
+
+  const resolution = (() => {
+    if (resolutionOptions.length === 0) {
+      return previous?.resolution ?? engine.resolutions[0] ?? '1080p';
+    }
+    const previousResolution = previous?.resolution;
+    if (previousResolution && resolutionOptions.includes(previousResolution)) {
+      return previousResolution;
+    }
+    return resolutionOptions[0];
+  })();
+
+  const aspectRatio = (() => {
+    if (aspectOptions.length === 0) {
+      return previous?.aspectRatio ?? engine.aspectRatios[0] ?? '16:9';
+    }
+    const previousAspect = previous?.aspectRatio;
+    if (previousAspect && aspectOptions.includes(previousAspect)) {
+      return previousAspect;
+    }
+    return aspectOptions[0];
+  })();
+
+  const fpsOptions = engine.fps && engine.fps.length ? engine.fps : [24];
+  const fps = (() => {
+    if (previous?.fps && fpsOptions.includes(previous.fps)) {
+      return previous.fps;
+    }
+    return fpsOptions[0];
+  })();
+
+  const audioSupported = capability?.audioToggle === true && mode === 't2v';
+  const addons = {
+    audio: audioSupported ? Boolean(previous?.addons.audio) : false,
+    upscale4k: engine.upscale4k ? Boolean(previous?.addons.upscale4k) : false,
+  };
+
+  const iterations = previous?.iterations ? Math.max(1, Math.min(4, previous.iterations)) : 1;
+
+  return {
+    engineId: engine.id,
+    mode,
+    durationSec: durationResult.durationSec,
+    durationOption: durationResult.durationOption,
+    numFrames: durationResult.numFrames ?? undefined,
+    resolution,
+    aspectRatio,
+    fps,
+    iterations,
+    addons,
+    seedLocked: previous?.seedLocked ?? false,
+    openaiApiKey: previous?.openaiApiKey,
+  };
+}
+
 type GenerateClientError = Error & {
   code?: string;
   details?: {
@@ -84,6 +245,8 @@ interface FormState {
   engineId: string;
   mode: Mode;
   durationSec: number;
+  durationOption?: number | string | null;
+  numFrames?: number | null;
   resolution: string;
   aspectRatio: string;
   fps: number;
@@ -118,6 +281,8 @@ function parseStoredForm(value: string): FormState | null {
       engineId,
       mode,
       durationSec,
+      durationOption,
+      numFrames,
       resolution,
       aspectRatio,
       fps,
@@ -150,6 +315,14 @@ function parseStoredForm(value: string): FormState | null {
       engineId,
       mode: mode as Mode,
       durationSec,
+      durationOption:
+        typeof durationOption === 'number' || typeof durationOption === 'string'
+          ? durationOption
+          : undefined,
+      numFrames:
+        typeof numFrames === 'number' && Number.isFinite(numFrames) && numFrames > 0
+          ? Math.round(numFrames)
+          : undefined,
       resolution,
       aspectRatio,
       fps,
@@ -1103,6 +1276,117 @@ useEffect(() => {
 
   const activeMode: Mode = form?.mode ?? (selectedEngine?.modes[0] ?? 't2v');
 
+  const capability = useMemo(() => {
+    if (!selectedEngine) return undefined;
+    return getEngineCaps(selectedEngine.id, activeMode) ?? undefined;
+  }, [selectedEngine, activeMode]);
+
+  const handleEngineChange = useCallback(
+    (engineId: string) => {
+      const nextEngine = engines.find((entry) => entry.id === engineId);
+      if (!nextEngine) return;
+      setForm((current) => {
+        const candidate = current ?? null;
+        const nextMode = candidate && nextEngine.modes.includes(candidate.mode) ? candidate.mode : nextEngine.modes[0];
+        const normalizedPrevious = candidate ? { ...candidate, engineId: nextEngine.id, mode: nextMode } : null;
+        return coerceFormState(nextEngine, nextMode, normalizedPrevious);
+      });
+    },
+    [engines]
+  );
+
+  const handleModeChange = useCallback(
+    (mode: Mode) => {
+      if (!selectedEngine) return;
+      const nextMode = selectedEngine.modes.includes(mode) ? mode : selectedEngine.modes[0];
+      setForm((current) => coerceFormState(selectedEngine, nextMode, current ? { ...current, mode: nextMode } : null));
+    },
+    [selectedEngine]
+  );
+
+  const handleDurationChange = useCallback((raw: number | string) => {
+    setForm((current) => {
+      if (!current) return current;
+      const numeric = typeof raw === 'number' ? raw : Number(String(raw).replace(/[^\d.]/g, ''));
+      const durationSec = Number.isFinite(numeric) ? Math.max(1, Math.round(numeric)) : current.durationSec;
+      return {
+        ...current,
+        durationSec,
+        durationOption: raw,
+        numFrames: null,
+      };
+    });
+  }, []);
+
+  const handleFramesChange = useCallback((value: number) => {
+    setForm((current) => {
+      if (!current) return current;
+      const safeFrames = Math.max(1, Math.round(value));
+      return {
+        ...current,
+        numFrames: safeFrames,
+        durationSec: framesToSeconds(safeFrames),
+        durationOption: safeFrames,
+      };
+    });
+  }, []);
+
+  const handleResolutionChange = useCallback(
+    (resolution: string) => {
+      setForm((current) => {
+        if (!current) return current;
+        if (!selectedEngine) return current;
+        const allowed = capability?.resolution && capability.resolution.length ? capability.resolution : selectedEngine.resolutions;
+        if (allowed.length && !allowed.includes(resolution)) {
+          const fallback = allowed.includes(current.resolution) ? current.resolution : allowed[0];
+          return fallback === current.resolution ? current : { ...current, resolution: fallback };
+        }
+        if (current.resolution === resolution) return current;
+        return { ...current, resolution };
+      });
+    },
+    [capability, selectedEngine]
+  );
+
+  const handleAspectRatioChange = useCallback(
+    (ratio: string) => {
+      setForm((current) => {
+        if (!current) return current;
+        if (!selectedEngine) return current;
+        const allowed = capability?.aspectRatio && capability.aspectRatio.length ? capability.aspectRatio : selectedEngine.aspectRatios;
+        if (allowed.length && !allowed.includes(ratio)) {
+          const fallback = allowed.includes(current.aspectRatio) ? current.aspectRatio : allowed[0];
+          return fallback === current.aspectRatio ? current : { ...current, aspectRatio: fallback };
+        }
+        if (current.aspectRatio === ratio) return current;
+        return { ...current, aspectRatio: ratio };
+      });
+    },
+    [capability, selectedEngine]
+  );
+
+  const handleFpsChange = useCallback((fps: number) => {
+    setForm((current) => {
+      if (!current) return current;
+      if (current.fps === fps) return current;
+      return { ...current, fps };
+    });
+  }, []);
+
+  const handleAddonToggle = useCallback((key: 'audio' | 'upscale4k', value: boolean) => {
+    setForm((current) => {
+      if (!current) return current;
+      if (current.addons[key] === value) return current;
+      return {
+        ...current,
+        addons: {
+          ...current.addons,
+          [key]: value,
+        },
+      };
+    });
+  }, []);
+
   const inputSchemaSummary = useMemo(() => {
     const schema = selectedEngine?.inputSchema;
     if (!schema) {
@@ -1529,6 +1813,7 @@ useEffect(() => {
             engineId: selectedEngine.id,
             prompt: trimmedPrompt,
             durationSec: form.durationSec,
+            numFrames: form.numFrames ?? undefined,
             aspectRatio: form.aspectRatio,
             resolution: form.resolution,
             fps: form.fps,
@@ -1749,26 +2034,28 @@ useEffect(() => {
   useEffect(() => {
     if (!selectedEngine || !authChecked) return;
     setForm((current) => {
-      const preservedApiKey = current?.openaiApiKey;
-      if (current && current.engineId === selectedEngine.id) {
-        return current;
+      const candidate = current ?? null;
+      const nextMode = candidate && selectedEngine.modes.includes(candidate.mode) ? candidate.mode : selectedEngine.modes[0];
+      const normalizedPrevious = candidate ? { ...candidate, mode: nextMode } : null;
+      const nextState = coerceFormState(selectedEngine, nextMode, normalizedPrevious);
+      if (candidate) {
+        const hasChanged =
+          candidate.engineId !== nextState.engineId ||
+          candidate.mode !== nextState.mode ||
+          candidate.durationSec !== nextState.durationSec ||
+          candidate.durationOption !== nextState.durationOption ||
+          candidate.numFrames !== nextState.numFrames ||
+          candidate.resolution !== nextState.resolution ||
+          candidate.aspectRatio !== nextState.aspectRatio ||
+          candidate.fps !== nextState.fps ||
+          candidate.iterations !== nextState.iterations ||
+          candidate.addons.audio !== nextState.addons.audio ||
+          candidate.addons.upscale4k !== nextState.addons.upscale4k ||
+          candidate.seedLocked !== nextState.seedLocked ||
+          candidate.openaiApiKey !== nextState.openaiApiKey;
+        return hasChanged ? nextState : candidate;
       }
-      const defaultMode = selectedEngine.modes[0];
-      return {
-        engineId: selectedEngine.id,
-        mode: defaultMode,
-        durationSec: Math.min(8, selectedEngine.maxDurationSec),
-        resolution: selectedEngine.resolutions[0],
-        aspectRatio: selectedEngine.aspectRatios[0],
-        fps: selectedEngine.fps[0],
-        iterations: 1,
-        addons: {
-          audio: selectedEngine.audio && defaultMode === 't2v',
-          upscale4k: false,
-        },
-        seedLocked: false,
-        openaiApiKey: preservedApiKey,
-      };
+      return nextState;
     });
   }, [selectedEngine, authChecked]);
 
@@ -2088,36 +2375,9 @@ useEffect(() => {
                     <EngineSelect
                       engines={engines}
                       engineId={form.engineId}
-                      onEngineChange={(engineId: string) =>
-                        setForm((current) => (current ? { ...current, engineId } : current))
-                      }
+                      onEngineChange={handleEngineChange}
                       mode={form.mode}
-                      onModeChange={(mode: Mode) =>
-                        setForm((current) =>
-                          current
-                            ? {
-                                ...current,
-                                mode,
-                                resolution:
-                                  mode === 'i2v' && selectedEngine.resolutions.includes('auto')
-                                    ? 'auto'
-                                    : mode === 't2v' && current.resolution === 'auto'
-                                      ? selectedEngine.resolutions.find((value) => value !== 'auto') ?? selectedEngine.resolutions[0]
-                                      : current.resolution,
-                                aspectRatio:
-                                  mode === 'i2v' && selectedEngine.aspectRatios.includes('auto')
-                                    ? 'auto'
-                                    : mode === 't2v' && current.aspectRatio === 'auto'
-                                      ? selectedEngine.aspectRatios.find((value) => value !== 'auto') ?? selectedEngine.aspectRatios[0]
-                                      : current.aspectRatio,
-                                addons: {
-                                  ...current.addons,
-                                  audio: selectedEngine.audio && mode === 't2v'
-                                }
-                              }
-                            : current
-                        )
-                      }
+                      onModeChange={handleModeChange}
                     />
                   </div>
                 </div>
@@ -2125,36 +2385,20 @@ useEffect(() => {
                   <div className="min-w-0">
                     <SettingsControls
                       engine={selectedEngine}
-                      duration={form.durationSec}
-                      onDurationChange={(durationSec) =>
-                        setForm((current) => (current ? { ...current, durationSec } : current))
-                      }
+                      caps={capability}
+                      durationSec={form.durationSec}
+                      durationOption={form.durationOption ?? null}
+                      onDurationChange={handleDurationChange}
+                      numFrames={form.numFrames ?? undefined}
+                      onNumFramesChange={handleFramesChange}
                       resolution={form.resolution}
-                      onResolutionChange={(resolution) =>
-                        setForm((current) => (current ? { ...current, resolution } : current))
-                      }
+                      onResolutionChange={handleResolutionChange}
                       aspectRatio={form.aspectRatio}
-                      onAspectRatioChange={(aspectRatio) =>
-                        setForm((current) => (current ? { ...current, aspectRatio } : current))
-                      }
+                      onAspectRatioChange={handleAspectRatioChange}
                       fps={form.fps}
-                      onFpsChange={(fps) =>
-                        setForm((current) => (current ? { ...current, fps } : current))
-                      }
+                      onFpsChange={handleFpsChange}
                       addons={form.addons}
-                      onAddonToggle={(key, value) =>
-                        setForm((current) =>
-                          current
-                            ? {
-                                ...current,
-                                addons: {
-                                  ...current.addons,
-                                  [key]: value,
-                                },
-                              }
-                            : current
-                        )
-                      }
+                      onAddonToggle={handleAddonToggle}
                       mode={form.mode}
                       iterations={form.iterations}
                       onIterationsChange={(iterations) =>
@@ -2197,6 +2441,23 @@ useEffect(() => {
                         addons: addonsRef,
                       }}
                     />
+                    {selectedEngine && (
+                      <div className="mt-3 space-y-1 rounded-input border border-border/80 bg-white/80 p-3 text-[12px] text-text-secondary">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-semibold text-text-primary">{selectedEngine.label}</span>
+                          <span className="text-text-muted">• {MODE_DISPLAY_LABEL[form.mode]}</span>
+                        </div>
+                        {capability?.notes && <p className="text-[11px] text-text-muted">{capability.notes}</p>}
+                        {capability?.maxUploadMB && form.mode === 'i2v' && (
+                          <p className="text-[11px] text-text-muted">Max upload: {capability.maxUploadMB} MB</p>
+                        )}
+                        {capability?.acceptsImageFormats && capability.acceptsImageFormats.length > 0 && form.mode === 'i2v' && (
+                          <p className="text-[11px] text-text-muted">
+                            Accepted formats: {capability.acceptsImageFormats.map((format) => format.toUpperCase()).join(', ')}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

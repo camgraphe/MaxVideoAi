@@ -5,12 +5,17 @@ import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MutableRefObject, Ref } from 'react';
 import type { EngineCaps, Mode } from '@/types/engines';
+import type { EngineCaps as CapabilityCaps } from '@/fixtures/engineCaps';
 import { Card } from '@/components/ui/Card';
 
 interface Props {
   engine: EngineCaps;
-  duration: number;
-  onDurationChange: (value: number) => void;
+  caps?: CapabilityCaps;
+  durationSec: number;
+  durationOption?: number | string | null;
+  onDurationChange: (value: number | string) => void;
+  numFrames?: number | null;
+  onNumFramesChange?: (value: number) => void;
   resolution: string;
   onResolutionChange: (value: string) => void;
   aspectRatio: string;
@@ -38,8 +43,12 @@ interface Props {
 
 export function SettingsControls({
   engine,
-  duration,
+  caps,
+  durationSec,
+  durationOption,
   onDurationChange,
+  numFrames,
+  onNumFramesChange,
   resolution,
   onResolutionChange,
   aspectRatio,
@@ -67,61 +76,59 @@ export function SettingsControls({
   const [initInfluence, setInitInfluence] = useState<number | null>(null);
   const [promptStrength, setPromptStrength] = useState<number | null>(null);
 
-  const durationSchemaField = useMemo(() => {
-    const schema = engine.inputSchema;
-    if (!schema) return null;
-    const optionalField = schema.optional?.find((field) => field.id === 'duration_seconds');
-    const requiredField = schema.required?.find((field) => field.id === 'duration_seconds');
-    return optionalField ?? requiredField ?? null;
-  }, [engine]);
-
-  const durationOptions = useMemo<number[] | null>(() => {
-    if (!durationSchemaField) return null;
-    if (durationSchemaField.type === 'enum' && Array.isArray(durationSchemaField.values) && durationSchemaField.values.length) {
-      const parsed = durationSchemaField.values
-        .map((value) => Number(value))
-        .filter((value) => Number.isFinite(value) && value > 0);
-      return parsed.length ? parsed : null;
-    }
-    const min = typeof durationSchemaField.min === 'number' ? durationSchemaField.min : undefined;
-    const max = typeof durationSchemaField.max === 'number' ? durationSchemaField.max : undefined;
-    const step = typeof durationSchemaField.step === 'number' ? durationSchemaField.step : undefined;
-    if (min != null && max != null && step != null && step > 0 && step <= max - min) {
-      const options: number[] = [];
-      for (let value = min; value <= max && options.length < 8; value += step) {
-        options.push(value);
-      }
-      return options.length && options.length <= 6 ? options : null;
+  const enumeratedDurationOptions = useMemo(() => {
+    if (!caps?.duration) return null;
+    if ('options' in caps.duration) {
+      return caps.duration.options.map(parseDurationOptionValue).filter((entry) => entry.value > 0);
     }
     return null;
-  }, [durationSchemaField]);
+  }, [caps]);
+
+  const durationRange = useMemo(() => {
+    if (!caps?.duration) return null;
+    return 'min' in caps.duration ? caps.duration : null;
+  }, [caps]);
+
+  const frameOptions = useMemo(() => {
+    if (!caps?.frames || caps.frames.length === 0) return null;
+    return caps.frames;
+  }, [caps]);
 
   useEffect(() => {
-    if (!durationOptions || !durationOptions.length) return;
-    if (durationOptions.includes(duration)) return;
-    const closest = durationOptions.reduce((prev, current) =>
-      Math.abs(current - duration) < Math.abs(prev - duration) ? current : prev
-    , durationOptions[0]);
-    if (closest !== duration) {
-      onDurationChange(closest);
-    }
-  }, [durationOptions, duration, onDurationChange]);
+    if (!enumeratedDurationOptions || !enumeratedDurationOptions.length) return;
+    if (enumeratedDurationOptions.some((option) => matchesDurationOptionValue(option, durationOption, durationSec))) return;
+    const fallback = enumeratedDurationOptions[0];
+    onDurationChange(fallback.raw);
+  }, [enumeratedDurationOptions, durationOption, durationSec, onDurationChange]);
+
+  useEffect(() => {
+    if (!frameOptions || !frameOptions.length) return;
+    if (typeof numFrames === 'number' && frameOptions.includes(numFrames)) return;
+    const fallback = frameOptions[0];
+    onNumFramesChange?.(fallback);
+  }, [frameOptions, numFrames, onNumFramesChange]);
 
   const durationOptionsContainerRef = useRef<HTMLDivElement | null>(null);
   const durationSliderRef = useRef<HTMLInputElement | null>(null);
+  const frameOptionsContainerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const target = focusRefs?.duration;
     if (!target) return;
-    const node: HTMLElement | null = durationOptions?.length
-      ? durationOptionsContainerRef.current
-      : durationSliderRef.current;
+    let node: HTMLElement | null = null;
+    if (frameOptions && frameOptions.length) {
+      node = frameOptionsContainerRef.current;
+    } else if (enumeratedDurationOptions && enumeratedDurationOptions.length) {
+      node = durationOptionsContainerRef.current;
+    } else if (durationRange) {
+      node = durationSliderRef.current;
+    }
     if (typeof target === 'function') {
       target(node as never);
-    } else {
+    } else if (target) {
       (target as MutableRefObject<HTMLElement | null>).current = node;
     }
-  }, [focusRefs?.duration, durationOptions]);
+  }, [focusRefs?.duration, frameOptions, enumeratedDurationOptions, durationRange]);
 
   useEffect(() => {
     try {
@@ -136,13 +143,27 @@ export function SettingsControls({
   }, [showAdvanced]);
 
   useEffect(() => {
-    if (!engine.audio && addons.audio) {
+    if ((!audioSupported || mode !== 't2v') && addons.audio) {
       onAddonToggle('audio', false);
     }
     if (!engine.upscale4k && addons.upscale4k) {
       onAddonToggle('upscale4k', false);
     }
-  }, [engine.audio, engine.upscale4k, addons.audio, addons.upscale4k, onAddonToggle]);
+  }, [audioSupported, mode, engine.upscale4k, addons.audio, addons.upscale4k, onAddonToggle]);
+
+  const resolutionOptions = useMemo(() => {
+    if (caps?.resolution && caps.resolution.length) return caps.resolution;
+    return engine.resolutions;
+  }, [caps?.resolution, engine.resolutions]);
+
+  const aspectOptions = useMemo(() => {
+    if (caps?.aspectRatio && caps.aspectRatio.length) return caps.aspectRatio;
+    return engine.aspectRatios;
+  }, [caps?.aspectRatio, engine.aspectRatios]);
+
+  const showResolutionControl = caps ? Boolean(caps.resolution && caps.resolution.length) : resolutionOptions.length > 0;
+  const showAspectControl = caps ? Boolean(caps.aspectRatio && caps.aspectRatio.length) : aspectOptions.length > 0;
+  const audioSupported = caps?.audioToggle === true;
 
   return (
     <Card className="space-y-4 p-4">
@@ -169,20 +190,50 @@ export function SettingsControls({
       )}
 
       <div className="grid gap-3">
-        {durationOptions?.length ? (
-          <div className="flex flex-col gap-2 text-sm text-text-secondary">
+        {frameOptions && frameOptions.length ? (
+          <div className="flex flex-col gap-2 text-sm text-text-secondary" ref={frameOptionsContainerRef}>
             <span className="text-[12px] uppercase tracking-micro text-text-muted">
-              Duration — seconds
-              <span className="ml-2 align-middle text-[11px] text-text-muted/80">Max {engine.maxDurationSec}s</span>
+              Frames
+              <span className="ml-2 align-middle text-[11px] text-text-muted/80">Options: {frameOptions.join(', ')}</span>
             </span>
-            <div className="flex flex-wrap gap-2" ref={durationOptionsContainerRef}>
-              {durationOptions.map((option) => {
-                const active = duration === option;
+            <div className="flex flex-wrap gap-2">
+              {frameOptions.map((option) => {
+                const active = numFrames === option;
                 return (
                   <button
                     key={option}
                     type="button"
-                    onClick={() => onDurationChange(option)}
+                    onClick={() => onNumFramesChange?.(option)}
+                    disabled={!onNumFramesChange}
+                    className={clsx(
+                      'rounded-input border px-3 py-1.5 text-[13px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      active
+                        ? 'border-accent bg-accent text-white'
+                        : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10',
+                      !onNumFramesChange && 'cursor-not-allowed opacity-60'
+                    )}
+                  >
+                    {option} frames
+                  </button>
+                );
+              })}
+            </div>
+            <span className="text-[11px] text-text-muted">Frames control clip length; values are forwarded without converting to seconds.</span>
+          </div>
+        ) : enumeratedDurationOptions && enumeratedDurationOptions.length ? (
+          <div className="flex flex-col gap-2 text-sm text-text-secondary">
+            <span className="text-[12px] uppercase tracking-micro text-text-muted">
+              Duration
+              <span className="ml-2 align-middle text-[11px] text-text-muted/80">Max {engine.maxDurationSec}s</span>
+            </span>
+            <div className="flex flex-wrap gap-2" ref={durationOptionsContainerRef}>
+              {enumeratedDurationOptions.map((option) => {
+                const active = matchesDurationOptionValue(option, durationOption, durationSec);
+                return (
+                  <button
+                    key={String(option.raw)}
+                    type="button"
+                    onClick={() => onDurationChange(option.raw)}
                     className={clsx(
                       'rounded-input border px-3 py-1.5 text-[13px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                       active
@@ -190,38 +241,97 @@ export function SettingsControls({
                         : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
                     )}
                   >
-                    {option}s
+                    {option.label}
                   </button>
                 );
               })}
             </div>
           </div>
-        ) : (
+        ) : durationRange ? (
           <label className="flex flex-col gap-2 text-sm text-text-secondary">
             <span className="text-[12px] uppercase tracking-micro text-text-muted">
               Duration — seconds
-              <span className="ml-2 align-middle text-[11px] text-text-muted/80">Max {engine.maxDurationSec}s</span>
+              <span className="ml-2 align-middle text-[11px] text-text-muted/80">Min {durationRange.min}s · Max {engine.maxDurationSec}s</span>
             </span>
             <div className="flex items-center gap-3 rounded-input border border-border bg-white px-3 py-2">
               <input
                 type="range"
-                min={1}
+                min={durationRange.min}
                 max={engine.maxDurationSec}
-                value={duration}
+                value={durationSec}
                 onChange={(event) => onDurationChange(Number(event.currentTarget.value))}
                 className="range-input h-1 flex-1 appearance-none overflow-hidden rounded-full bg-hairline"
                 ref={durationSliderRef}
               />
               <input
                 type="number"
-                min={1}
+                min={durationRange.min}
                 max={engine.maxDurationSec}
-                value={duration}
+                value={durationSec}
                 onChange={(event) => onDurationChange(Number(event.currentTarget.value))}
                 className="w-16 rounded-input border border-border bg-white px-2 py-1 text-right text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
             </div>
           </label>
+        ) : (
+          <div className="rounded-input border border-dashed border-border bg-white/60 p-3 text-[12px] text-text-muted">
+            Duration is managed directly by this engine.
+          </div>
+        )}
+
+        {showResolutionControl && (
+          <FieldGroup
+            label="Resolution"
+            options={resolutionOptions}
+            value={resolution}
+            onChange={onResolutionChange}
+            focusRef={focusRefs?.resolution}
+            labelFor={(opt) => {
+              const baseMap: Record<string, string> = {
+                '512P': '512P',
+                '768P': '768P',
+                '720p': '720p • HD',
+                '1080p': '1080p • Full HD',
+                '1080P': '1080P • Full HD',
+                '4k': '4K • Ultra HD',
+                auto: 'Auto',
+              };
+              let label = baseMap[String(opt)] ?? String(opt);
+              if (engine.id.includes('pro')) {
+                label = `${label} • Pro`;
+              }
+              return label;
+            }}
+          />
+        )}
+
+        {showAspectControl && (
+          <FieldGroup
+            label="Aspect"
+            options={aspectOptions}
+            value={aspectRatio}
+            onChange={onAspectRatioChange}
+            iconFor={(opt) =>
+              ({
+                '16:9': '/assets/icons/ar-16-9.svg',
+                '9:16': '/assets/icons/ar-9-16.svg',
+                '1:1': '/assets/icons/ar-1-1.svg',
+                '4:5': '/assets/icons/ar-4-5.svg',
+              } as Record<string, string | undefined>)[String(opt)] || undefined
+            }
+            labelFor={(opt) => {
+              const labels: Record<string, string> = {
+                '16:9': '16:9',
+                '9:16': '9:16',
+                '1:1': '1:1',
+                '4:5': '4:5',
+                auto: 'Auto',
+                source: 'Source',
+                custom: 'Custom',
+              };
+              return labels[String(opt)] ?? String(opt);
+            }}
+          />
         )}
       </div>
 
@@ -326,7 +436,7 @@ export function SettingsControls({
         />
       </div>
 
-      {engine.audio && (
+      {audioSupported && (
         <div className="flex items-center justify-between rounded-input border border-border bg-white p-3 text-sm text-text-secondary">
           <span className="text-[12px] uppercase tracking-micro text-text-muted">Audio</span>
           <TogglePill
@@ -604,4 +714,42 @@ function RangeWithInput({
       />
     </div>
   );
+}
+
+type DurationOptionMeta = {
+  raw: number | string;
+  value: number;
+  label: string;
+};
+
+function parseDurationOptionValue(option: number | string): DurationOptionMeta {
+  if (typeof option === 'number') {
+    return {
+      raw: option,
+      value: option,
+      label: `${option}s`,
+    };
+  }
+  const numeric = Number(option.replace(/[^\d.]/g, ''));
+  return {
+    raw: option,
+    value: Number.isFinite(numeric) ? numeric : 0,
+    label: option,
+  };
+}
+
+function matchesDurationOptionValue(option: DurationOptionMeta, raw: number | string | null | undefined, seconds: number): boolean {
+  if (raw != null) {
+    if (typeof raw === 'number') {
+      return Math.abs(option.value - raw) < 0.001;
+    }
+    if (typeof raw === 'string') {
+      if (raw === option.raw || raw === option.label) return true;
+      const numeric = Number(raw.replace(/[^\d.]/g, ''));
+      if (Number.isFinite(numeric)) {
+        return Math.abs(option.value - numeric) < 0.001;
+      }
+    }
+  }
+  return Math.abs(option.value - seconds) < 0.001;
 }

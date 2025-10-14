@@ -5,6 +5,8 @@ export type MockGeneratePayload = {
   engineId: string;
   prompt: string;
   durationSec: number;
+  durationOption?: number | string | null;
+  numFrames?: number | null;
   aspectRatio: string;
   resolution: string;
   fps: number;

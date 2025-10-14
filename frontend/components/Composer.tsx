@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import { useMemo, useCallback, useRef } from 'react';
 import type { Ref, ChangeEvent, DragEvent } from 'react';
 import type { EngineCaps, EngineInputField, PreflightResponse } from '@/types/engines';
+import type { EngineCaps as CapabilityCaps } from '@/fixtures/engineCaps';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { CURRENCY_LOCALE } from '@/lib/intl';
@@ -24,6 +25,7 @@ export type AssetFieldConfig = {
 
 interface Props {
   engine: EngineCaps;
+  caps?: CapabilityCaps;
   prompt: string;
   onPromptChange: (value: string) => void;
   negativePrompt?: string;
@@ -50,6 +52,7 @@ interface Props {
 
 export function Composer({
   engine,
+  caps,
   prompt,
   onPromptChange,
   negativePrompt,
@@ -181,6 +184,7 @@ export function Composer({
               <AssetDropzone
                 key={field.id}
                 engine={engine}
+                caps={caps}
                 field={field}
                 required={required}
                 assets={assets[field.id] ?? []}
@@ -233,6 +237,7 @@ export function Composer({
 
 interface AssetDropzoneProps {
   engine: EngineCaps;
+  caps?: CapabilityCaps;
   field: EngineInputField;
   required: boolean;
   assets: (ComposerAttachment | null)[];
@@ -241,11 +246,19 @@ interface AssetDropzoneProps {
   onError?: (message: string) => void;
 }
 
-function AssetDropzone({ engine, field, required, assets, onSelect, onRemove, onError }: AssetDropzoneProps) {
+function AssetDropzone({ engine, caps, field, required, assets, onSelect, onRemove, onError }: AssetDropzoneProps) {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const maxCount = field.maxCount ?? 0;
   const minCount = field.minCount ?? (required ? 1 : 0);
-  const accept = field.type === 'image' ? 'image/*' : 'video/*';
+  const acceptFormats = useMemo(
+    () => caps?.acceptsImageFormats?.map((format) => format.toLowerCase()) ?? [],
+    [caps?.acceptsImageFormats]
+  );
+  const accept = field.type === 'image'
+    ? acceptFormats.length
+      ? acceptFormats.map((ext) => `.${ext.replace(/^\./, '').toLowerCase()}`).join(',')
+      : 'image/*'
+    : 'video/*';
   const limits = engine.inputLimits;
   const constraints = engine.inputSchema?.constraints ?? {};
 
@@ -267,16 +280,25 @@ function AssetDropzone({ engine, field, required, assets, onSelect, onRemove, on
   const handleFile = useCallback(
     (file: File, slotIndex: number) => {
       if (!onSelect) return;
-      if (field.type === 'image' && !file.type.startsWith('image/')) {
-        onError?.('Please drop an image file (PNG, JPG, WebP...).');
-        return;
+      if (field.type === 'image') {
+        if (!file.type.startsWith('image/')) {
+          onError?.('Please drop an image file (PNG, JPG, WebP...).');
+          return;
+        }
+        if (acceptFormats.length) {
+          const ext = file.name.split('.').pop()?.toLowerCase();
+          if (!ext || !acceptFormats.includes(ext)) {
+            onError?.(`Format not supported. Allowed: ${acceptFormats.map((entry) => entry.toUpperCase()).join(', ')}`);
+            return;
+          }
+        }
       }
       if (field.type === 'video' && !file.type.startsWith('video/')) {
         onError?.('Please drop a video file (MP4, MOV...).');
         return;
       }
       const maxSizeMB = field.type === 'image'
-        ? constraints.maxImageSizeMB ?? limits.imageMaxMB
+        ? caps?.maxUploadMB ?? constraints.maxImageSizeMB ?? limits.imageMaxMB
         : constraints.maxVideoSizeMB ?? limits.videoMaxMB;
       if (maxSizeMB && file.size > maxSizeMB * 1024 * 1024) {
         onError?.(`File exceeds the ${maxSizeMB} MB limit.`);
@@ -284,7 +306,7 @@ function AssetDropzone({ engine, field, required, assets, onSelect, onRemove, on
       }
       onSelect(field, file, slotIndex);
     },
-    [constraints.maxImageSizeMB, constraints.maxVideoSizeMB, field, limits.imageMaxMB, limits.videoMaxMB, onError, onSelect]
+    [acceptFormats, caps?.maxUploadMB, constraints.maxImageSizeMB, constraints.maxVideoSizeMB, field, limits.imageMaxMB, limits.videoMaxMB, onError, onSelect]
   );
 
   const onInputChange = useCallback(
@@ -310,8 +332,12 @@ function AssetDropzone({ engine, field, required, assets, onSelect, onRemove, on
   const helperLines = useMemo(() => {
     const lines: string[] = [];
     if (field.type === 'image') {
-      lines.push('Formats: PNG, JPG, WebP');
-      const maxImage = constraints.maxImageSizeMB ?? limits.imageMaxMB;
+      if (acceptFormats.length) {
+        lines.push(`Formats: ${acceptFormats.map((ext) => ext.toUpperCase()).join(', ')}`);
+      } else {
+        lines.push('Formats: PNG, JPG, WebP');
+      }
+      const maxImage = caps?.maxUploadMB ?? constraints.maxImageSizeMB ?? limits.imageMaxMB;
       if (maxImage) lines.push(`${maxImage} MB max`);
     } else {
       lines.push('Formats: MP4, MOV');
@@ -326,7 +352,7 @@ function AssetDropzone({ engine, field, required, assets, onSelect, onRemove, on
       lines.push(`At least ${field.minCount} files`);
     }
     return lines.join(' • ');
-  }, [constraints.maxImageSizeMB, constraints.maxVideoSizeMB, field.maxCount, field.minCount, field.type, limits.imageMaxMB, limits.videoMaxDurationSec, limits.videoMaxMB]);
+  }, [acceptFormats, caps?.maxUploadMB, constraints.maxImageSizeMB, constraints.maxVideoSizeMB, field.maxCount, field.minCount, field.type, limits.imageMaxMB, limits.videoMaxDurationSec, limits.videoMaxMB]);
 
   return (
     <div className="flex min-w-[260px] flex-1">

@@ -83,6 +83,7 @@ export type GeneratePayload = {
   engineId: string;
   prompt: string;
   durationSec: number;
+  numFrames?: number | null;
   aspectRatio: string;
   resolution?: string;
   fps?: number;
@@ -299,7 +300,6 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
 
   const requestBody: Record<string, unknown> = {
     prompt: payload.prompt,
-    duration: payload.durationSec,
     aspect_ratio: payload.aspectRatio,
     resolution: payload.resolution,
     fps: payload.fps,
@@ -307,6 +307,12 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
     audio: Boolean(payload.addons?.audio),
     upscale: Boolean(payload.addons?.upscale4k),
   };
+
+  if (typeof payload.numFrames === 'number' && Number.isFinite(payload.numFrames) && payload.numFrames > 0) {
+    requestBody.num_frames = Math.round(payload.numFrames);
+  } else {
+    requestBody.duration = payload.durationSec;
+  }
 
   if (apiKey) {
     requestBody.api_key = apiKey;

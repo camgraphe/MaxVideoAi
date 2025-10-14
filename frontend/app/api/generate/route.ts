@@ -13,6 +13,8 @@ import type { PricingSnapshot } from '@/types/engines';
 import { ensureBillingSchema } from '@/lib/schema';
 import { applyMockWalletTopUp, reserveWalletCharge } from '@/lib/wallet';
 import { normalizeMediaUrl } from '@/lib/media';
+import type { Mode } from '@/types/engines';
+import { validateRequest } from './_lib/validate';
 
 type PaymentMode = 'wallet' | 'direct' | 'platform';
 
@@ -30,9 +32,20 @@ export async function POST(req: NextRequest) {
 
   const requestedJobId = typeof body.jobId === 'string' && body.jobId.trim() ? String(body.jobId).trim() : null;
   const jobId = requestedJobId ?? `job_${randomUUID()}`;
+  const rawMode = typeof body.mode === 'string' ? body.mode.trim().toLowerCase() : '';
+  const mode: Mode = (['t2v', 'i2v', 'v2v'] as const).includes(rawMode as Mode)
+    ? ((rawMode as Mode) ?? engine.modes[0] ?? 't2v')
+    : engine.modes.includes('t2v')
+      ? 't2v'
+      : engine.modes[0];
+
   const prompt = String(body.prompt || '');
   const durationSec = Number(body.durationSec || 4);
-  const ar = String(body.aspectRatio || '16:9');
+  const rawAspectRatio =
+    typeof body.aspectRatio === 'string' && body.aspectRatio.trim().length ? body.aspectRatio.trim() : '16:9';
+  const fallbackAspectRatio =
+    engine.aspectRatios?.find((value) => value !== 'auto') ?? engine.aspectRatios?.[0] ?? '16:9';
+  const aspectRatio = rawAspectRatio === 'auto' ? fallbackAspectRatio : rawAspectRatio;
   const batchId = typeof body.batchId === 'string' && body.batchId.trim().length ? body.batchId.trim() : null;
   const groupId = typeof body.groupId === 'string' && body.groupId.trim().length ? body.groupId.trim() : null;
   const iterationIndex =
@@ -57,12 +70,24 @@ export async function POST(req: NextRequest) {
       : null;
   const etaLabel = typeof body.etaLabel === 'string' && body.etaLabel.trim().length ? body.etaLabel.trim() : null;
 
-  const requestedResolution = typeof body.resolution === 'string' && body.resolution.trim().length
-    ? body.resolution.trim()
-    : engine.resolutions?.[0] ?? '1080p';
-  const pricingResolution = requestedResolution === 'auto'
-    ? engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '1080p'
-    : requestedResolution;
+  const requestedResolution =
+    typeof body.resolution === 'string' && body.resolution.trim().length
+      ? body.resolution.trim()
+      : engine.resolutions?.[0] ?? '1080p';
+  const pricingResolution =
+    requestedResolution === 'auto'
+      ? engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '1080p'
+      : requestedResolution;
+  const effectiveResolution = requestedResolution === 'auto' ? pricingResolution : requestedResolution;
+
+  const rawNumFrames =
+    typeof body.numFrames === 'number'
+      ? body.numFrames
+      : typeof body.num_frames === 'number'
+        ? body.num_frames
+        : null;
+  const numFrames =
+    rawNumFrames != null && Number.isFinite(rawNumFrames) && rawNumFrames > 0 ? Math.round(rawNumFrames) : null;
 
   const pricing = await computePricingSnapshot({
     engine,
@@ -76,10 +101,10 @@ export async function POST(req: NextRequest) {
     request: {
       engineId: engine.id,
       engineLabel: engine.label,
-      mode: typeof body.mode === 'string' ? body.mode : 't2v',
+      mode,
       durationSec,
-      aspectRatio: ar,
-      resolution: requestedResolution,
+      aspectRatio,
+      resolution: effectiveResolution,
       effectiveResolution: pricingResolution,
       fps: typeof body.fps === 'number' ? body.fps : engine.fps?.[0],
       addons: {
@@ -256,15 +281,50 @@ export async function POST(req: NextRequest) {
         .filter((entry): entry is NormalizedAttachment => entry !== null)
     : undefined;
 
+  const maxUploadedBytes = inputs?.reduce((max, attachment) => Math.max(max, attachment.size ?? 0), 0) ?? 0;
+  const validationPayload: Record<string, unknown> = {
+    resolution: effectiveResolution,
+    aspect_ratio: aspectRatio,
+  };
+
+  if (numFrames != null) {
+    validationPayload.num_frames = numFrames;
+  } else if (Number.isFinite(durationSec)) {
+    validationPayload.duration = durationSec;
+  }
+
+  if (mode === 't2v' && typeof body.addons?.audio === 'boolean') {
+    validationPayload.generate_audio = body.addons.audio;
+    validationPayload.audio = body.addons.audio;
+  }
+
+  if (maxUploadedBytes > 0) {
+    validationPayload._uploadedFileMB = maxUploadedBytes / (1024 * 1024);
+  }
+
+  const validationResult = validateRequest(engine.id, mode, validationPayload);
+  if (!validationResult.ok) {
+    return NextResponse.json(
+      {
+        ok: false,
+        code: validationResult.error.code,
+        field: validationResult.error.field,
+        error: validationResult.error.message,
+      },
+      { status: 400 }
+    );
+  }
+
   try {
     generationResult = await generateVideo({
       engineId: engine.id,
       prompt,
       durationSec,
-      aspectRatio: ar,
-      resolution: body.resolution,
+      numFrames,
+      aspectRatio,
+      resolution: effectiveResolution,
       fps: body.fps,
-      mode: body.mode,
+      mode,
       addons: body.addons,
       apiKey,
       inputs,
@@ -356,7 +416,7 @@ export async function POST(req: NextRequest) {
           durationSec,
           prompt,
           thumb,
-          ar,
+          aspectRatio,
           Boolean(body.addons?.audio),
           Boolean(engine.upscale4k),
           thumb,
@@ -423,8 +483,8 @@ export async function POST(req: NextRequest) {
           JSON.stringify({
             request: {
               durationSec,
-              aspectRatio: ar,
-              resolution: body.resolution,
+              aspectRatio,
+              resolution: effectiveResolution,
               addons: body.addons,
             },
             pricing: {
