@@ -293,9 +293,9 @@ export async function POST(req: NextRequest) {
     validationPayload.duration = durationSec;
   }
 
-  if (mode === 't2v' && body.addons?.audio === true) {
-    validationPayload.generate_audio = true;
-    validationPayload.audio = true;
+  if (mode === 't2v' && typeof body.addons?.audio === 'boolean') {
+    validationPayload.generate_audio = body.addons.audio;
+    validationPayload.audio = body.addons.audio;
   }
 
   if (maxUploadedBytes > 0) {
