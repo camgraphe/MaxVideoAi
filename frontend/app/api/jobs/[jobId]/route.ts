@@ -106,9 +106,38 @@ async function respondWithFallbackJob(jobId: string) {
   });
 }
 
+async function respondWithQueueLogJob(jobId: string) {
+  if (!process.env.DATABASE_URL) return null;
+  try {
+    const rows = await query<{ status: string | null }>(
+      `SELECT status
+       FROM fal_queue_log
+       WHERE job_id = $1
+       ORDER BY created_at DESC
+       LIMIT 1`,
+      [jobId]
+    );
+    if (!rows.length) return null;
+    const statusRaw = rows[0].status ?? null;
+    const normalized =
+      typeof statusRaw === 'string' && statusRaw.toLowerCase().includes('fail') ? 'failed' : 'pending';
+    return NextResponse.json({
+      ok: true,
+      jobId,
+      status: normalized,
+      progress: normalized === 'failed' ? 100 : 0,
+    });
+  } catch (error) {
+    console.warn('[api/jobs] queue lookup failed', error);
+    return null;
+  }
+}
+
 async function respondNotFound(jobId: string) {
   const mock = respondWithMockJob(jobId);
   if (mock) return mock;
+  const queued = await respondWithQueueLogJob(jobId);
+  if (queued) return queued;
   const fallback = await respondWithFallbackJob(jobId);
   if (fallback) return fallback;
   return NextResponse.json({ ok: false, error: 'Not found' }, { status: 404 });

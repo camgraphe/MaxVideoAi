@@ -107,7 +107,7 @@ export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries,
           return next;
         });
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Impossible de rafraîchir le statut';
+        const message = error instanceof Error ? error.message : 'Unable to refresh status';
         setRefreshStates((prev) => ({
           ...prev,
           [entry.id]: { loading: false, error: message },
@@ -281,7 +281,7 @@ export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries,
                           : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
                       )}
                     >
-                      {copiedId === entry.id ? 'Lien copié' : 'Copier le lien'}
+                    {copiedId === entry.id ? 'Link copied' : 'Copy link'}
                     </button>
                     {canRefresh ? (
                       <button
@@ -297,7 +297,7 @@ export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries,
                             : 'border-accent bg-accent/10 text-accent hover:bg-accent/20'
                         )}
                       >
-                        {isRefreshing ? 'Vérification...' : 'Rafraîchir le statut'}
+                        {isRefreshing ? 'Checking...' : 'Refresh status'}
                       </button>
                     ) : null}
                   </div>

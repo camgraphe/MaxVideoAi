@@ -109,7 +109,7 @@ export function GalleryRail({
     async (job: Job) => {
       try {
         await hideJob(job.jobId);
-        setSnackbar({ message: 'Vignette retirée de la galerie.', duration: 2400 });
+        setSnackbar({ message: 'Removed from gallery.', duration: 2400 });
         await mutate(
           (pages) => {
             if (!pages) return pages;
@@ -122,7 +122,7 @@ export function GalleryRail({
         );
       } catch (error) {
         console.error('Failed to hide job', error);
-        setSnackbar({ message: 'Impossible de retirer la vignette.', duration: 2400 });
+        setSnackbar({ message: 'Unable to remove from gallery.', duration: 2400 });
       }
     },
     [mutate]

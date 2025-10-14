@@ -43,37 +43,37 @@ const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
   'sora-2': {
     description:
       'Baseline Sora endpoints for text, image, or video remix with native audio. Reliable when you need cinematic motion with predictable pricing.',
-    badges: ['🔊 Audio natif', '🎬 Cinématique', '🧠 Remix IA'],
+    badges: ['🔊 Native audio', '🎬 Cinematic', '🧠 AI remix'],
   },
   'sora-2-pro': {
     description:
       'Pro tier unlocks 1080p output and higher throughput—ideal for hero shots or longer edits.',
-    badges: ['🖥️ 1080p', '⚡ Débit pro', '🏆 Hero'],
+    badges: ['🖥️ 1080p', '⚡ Pro throughput', '🏆 Hero'],
   },
   veo3: {
     description:
       'Google Veo 3 delivers cinematic realism with lip-sync and robust camera control.',
-    badges: ['🎥 Réalisme', '🔊 Audio', '🌆 Narratif'],
+    badges: ['🎥 Realism', '🔊 Audio', '🌆 Narrative'],
   },
   veo3fast: {
     description:
       'Fast queue Veo for previsualisation while keeping the Veo look and audio toggle.',
-    badges: ['⚡ File rapide', '💰 Optimisé', '🔄 Préviz'],
+    badges: ['⚡ Fast queue', '💰 Optimized', '🔄 Previz'],
   },
   kling25_turbo_pro: {
     description:
       'Stylised animation with guided camera moves—use it for motion boards and concept passes.',
-    badges: ['🎯 Caméra', '🎞️ Animatique', '🧪 Turbo'],
+    badges: ['🎯 Camera', '🎞️ Animatic', '🧪 Turbo'],
   },
   lumaDM: {
     description:
       'Luma Dream Machine v1.5 handles photoreal product loops and lifestyle scenes with balanced detail.',
-    badges: ['🧵 Photoréalisme', '🍽️ Tabletop', '🌍 Lifestyle'],
+    badges: ['🧵 Photorealism', '🍽️ Tabletop', '🌍 Lifestyle'],
   },
   lumaRay2: {
     description:
       'Ray 2 pushes fidelity for flagship footage when you need premium detail from scratch.',
-    badges: ['✨ Haute fidélité', '🏆 Flagship', '🪄 Ray'],
+    badges: ['✨ High fidelity', '🏆 Flagship', '🪄 Ray'],
   },
   lumaRay2_flash: {
     description:
@@ -83,22 +83,22 @@ const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
   pika22: {
     description:
       'Fast social-first clips with caption overlays and Pikascenes motion controls.',
-    badges: ['📱 Social', '🔤 Légendes', '🎞️ Motion rapide'],
+    badges: ['📱 Social', '🔤 Captions', '🎞️ Fast motion'],
   },
   minimax_video_01: {
     description:
       'MiniMax Video 01 uses camera tags to produce concept animations and Live2D-style motion.',
-    badges: ['🎯 Tags caméra', '🧪 Concepts', '🎨 Live2D'],
+    badges: ['🎯 Camera tags', '🧪 Concepts', '🎨 Live2D'],
   },
   minimax_hailuo_02_pro: {
     description:
       'Hailuo 02 Pro handles 1080p image-to-video hero renders when you have a strong reference.',
-    badges: ['🖼️ I2V', '🖥️ 1080p', '🏅 Qualité'],
+    badges: ['🖼️ I2V', '🖥️ 1080p', '🏅 Quality'],
   },
   hunyuan_video: {
     description:
       'Tencent’s Hunyuan Video offers research-grade realism with a Pro mode switch.',
-    badges: ['🔬 Recherche', '🌌 Réalisme', '⚙️ Mode Pro'],
+    badges: ['🔬 Research', '🌌 Realism', '⚙️ Pro mode'],
   },
 };
 

@@ -1049,13 +1049,13 @@ useEffect(() => {
     try {
       const status = await getJobStatus(jobId);
       if (status.status === 'failed') {
-        throw new Error(status.message ?? 'Le rendu a été signalé comme échoué côté fournisseur.');
+        throw new Error(status.message ?? 'Provider reported this render as failed.');
       }
       if (status.status !== 'completed' && !status.videoUrl) {
-        throw new Error('Le rendu est toujours en cours côté fournisseur.');
+        throw new Error('The provider is still processing this render.');
       }
     } catch (error) {
-      throw error instanceof Error ? error : new Error("Impossible d'actualiser le statut du rendu.");
+      throw error instanceof Error ? error : new Error('Unable to refresh render status.');
     }
   }, []);
 

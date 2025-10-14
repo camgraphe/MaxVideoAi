@@ -116,13 +116,13 @@ export default function DashboardPage() {
     try {
       const status = await getJobStatus(jobId);
       if (status.status === 'failed') {
-        throw new Error(status.message ?? 'Le rendu a été signalé comme échoué côté fournisseur.');
+        throw new Error(status.message ?? 'Provider reported this render as failed.');
       }
       if (status.status !== 'completed' && !status.videoUrl) {
-        throw new Error('Le rendu est toujours en cours côté fournisseur.');
+        throw new Error('The provider is still processing this render.');
       }
     } catch (error) {
-      throw error instanceof Error ? error : new Error("Impossible d'actualiser le statut du rendu.");
+      throw error instanceof Error ? error : new Error('Unable to refresh render status.');
     }
   }, []);
   const handleRemoveJob = useCallback(
@@ -424,17 +424,17 @@ export default function DashboardPage() {
           metadata={
             lightbox.kind === 'group'
               ? [
-                  { label: 'Créé le', value: formatDateTime(lightbox.group.createdAt) },
+                  { label: 'Created', value: formatDateTime(lightbox.group.createdAt) },
                   {
-                    label: 'Durée du héros',
-                    value: lightbox.group.hero.durationSec ? `${lightbox.group.hero.durationSec}s` : 'Non renseigné',
+                    label: 'Hero duration',
+                    value: lightbox.group.hero.durationSec ? `${lightbox.group.hero.durationSec}s` : 'Not provided',
                   },
-                  { label: 'Moteur', value: lightbox.group.hero.engineLabel },
+                  { label: 'Engine', value: lightbox.group.hero.engineLabel },
                 ]
               : [
-                  { label: 'Durée', value: `${lightbox.job.durationSec}s` },
-                  { label: 'Statut', value: lightbox.job.paymentStatus ?? 'N/A' },
-                  { label: 'Créé le', value: formatDateTime(lightbox.job.createdAt) },
+                  { label: 'Duration', value: `${lightbox.job.durationSec}s` },
+                  { label: 'Status', value: lightbox.job.paymentStatus ?? 'N/A' },
+                  { label: 'Created', value: formatDateTime(lightbox.job.createdAt) },
                 ]
           }
           entries={lightbox.kind === 'group' ? buildEntriesFromGroup(lightbox.group) : buildEntriesFromJob(lightbox.job)}

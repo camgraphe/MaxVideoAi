@@ -472,7 +472,7 @@ export function QuadPreviewPanel({
           prompt={heroTile?.prompt ?? undefined}
           metadata={[
             { label: 'Iterations', value: String(iterationCount) },
-            { label: 'Durée (Hero)', value: heroTile ? `${heroTile.durationSec}s` : 'N/A' },
+            { label: 'Duration (hero)', value: heroTile ? `${heroTile.durationSec}s` : 'N/A' },
           ]}
           entries={lightboxEntries}
           onClose={() => setIsLightboxOpen(false)}

@@ -8,7 +8,7 @@
     "versionLabel": "2",
     "availability": "available",
     "logoPolicy": "textOnly",
-    "billingNote": "Si une clé OpenAI est fournie, la facturation passe directement chez OpenAI ; sinon Fal crédite MaxVideoAI."
+    "billingNote": "If you supply your own OpenAI key, billing goes through OpenAI; otherwise Fal credits MaxVideoAI."
   },
   {
     "engineId": "sora-2-pro",
@@ -19,7 +19,7 @@
     "versionLabel": "2 Pro",
     "availability": "available",
     "logoPolicy": "textOnly",
-    "billingNote": "Si une clé OpenAI est fournie, la facturation passe directement chez OpenAI ; sinon Fal crédite MaxVideoAI."
+    "billingNote": "If you supply your own OpenAI key, billing goes through OpenAI; otherwise Fal credits MaxVideoAI."
   },
   {
     "engineId": "veo3",
