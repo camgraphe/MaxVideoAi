@@ -105,16 +105,30 @@ export type GenerateResult = {
 };
 
 export function getFalWebhookUrl(): string | null {
-  const base =
-    process.env.NEXT_PUBLIC_APP_URL ??
-    process.env.APP_URL ??
-    process.env.APP_BASE_URL ??
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    null;
-  if (!base) return null;
-  const trimmed = base.trim();
-  if (!trimmed) return null;
-  return `${trimmed.replace(/\/+$/, '')}/api/fal/webhook`;
+  const candidates: Array<{ value: string | undefined | null; normalize?: (raw: string) => string }> = [
+    { value: process.env.NEXT_PUBLIC_APP_URL },
+    { value: process.env.APP_URL },
+    { value: process.env.APP_BASE_URL },
+    { value: process.env.NEXT_PUBLIC_SITE_URL },
+    {
+      value: process.env.VERCEL_URL,
+      normalize: (raw) => (raw.startsWith('http') ? raw : `https://${raw}`),
+    },
+    {
+      value: process.env.NEXT_PUBLIC_VERCEL_URL,
+      normalize: (raw) => (raw.startsWith('http') ? raw : `https://${raw}`),
+    },
+  ];
+
+  for (const candidate of candidates) {
+    const raw = typeof candidate.value === 'string' ? candidate.value.trim() : '';
+    if (!raw) continue;
+    const normalized = candidate.normalize ? candidate.normalize(raw) : raw;
+    if (!/^https?:\/\//i.test(normalized)) continue;
+    return `${normalized.replace(/\/+$/, '')}/api/fal/webhook`;
+  }
+
+  return null;
 }
 
 const MANIFEST_FILENAME = 'maxvideoai_test_videos_manifest.json';
