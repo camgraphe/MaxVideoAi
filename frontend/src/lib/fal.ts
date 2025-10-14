@@ -346,7 +346,80 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
     };
   }
 
-  throw new Error('FAL response did not contain a video asset');
+  const fallbackStatus = normalizePendingStatus(latestQueueStatus, json);
+  const fallbackProgress = normalizePendingProgress(latestQueueStatus, json);
+
+  if (!providerJobId && !fallbackStatus.providerJobIdFallback) {
+    throw new Error('FAL response did not contain a video asset');
+  }
+
+  return {
+    provider,
+    thumbUrl: fallbackThumb,
+    providerJobId: providerJobId ?? fallbackStatus.providerJobIdFallback ?? undefined,
+    status: fallbackStatus.status,
+    progress: fallbackProgress,
+  };
+}
+
+type PendingStatusInfo = {
+  status: 'queued' | 'running' | 'failed';
+  providerJobIdFallback?: string;
+};
+
+function normalizePendingStatus(queueStatus: QueueStatus | null, response: FalRunResponse | null | undefined): PendingStatusInfo {
+  const providerJobIdFallback =
+    response?.request_id ??
+    response?.id ??
+    (queueStatus?.request_id ?? null) ??
+    null;
+
+  const rawStatuses = [
+    queueStatus?.status,
+    typeof response?.status === 'string' ? response.status : null,
+    typeof response?.state === 'string' ? response.state : null,
+  ]
+    .map((value) => (typeof value === 'string' ? value.toUpperCase() : null))
+    .filter((value): value is string => Boolean(value));
+
+  let normalized: PendingStatusInfo['status'] = queueStatus?.status === 'IN_PROGRESS' ? 'running' : 'queued';
+
+  for (const raw of rawStatuses) {
+    if (raw === 'IN_QUEUE' || raw === 'QUEUED' || raw === 'PENDING') {
+      normalized = normalized === 'running' ? 'running' : 'queued';
+    } else if (raw === 'IN_PROGRESS' || raw === 'PROCESSING' || raw === 'RUNNING' || raw === 'STARTED') {
+      normalized = 'running';
+    } else if (raw === 'COMPLETED' || raw === 'FINISHED' || raw === 'COMPLETE') {
+      normalized = 'running';
+    } else if (raw === 'FAILED' || raw === 'ERROR' || raw === 'CANCELLED' || raw === 'CANCELED' || raw === 'ABORTED') {
+      return { status: 'failed', providerJobIdFallback: providerJobIdFallback ?? undefined };
+    }
+  }
+
+  return { status: normalized, providerJobIdFallback: providerJobIdFallback ?? undefined };
+}
+
+function normalizePendingProgress(queueStatus: QueueStatus | null, response: FalRunResponse | null | undefined): number | undefined {
+  const progressCandidates: Array<number | undefined> = [
+    typeof response?.progress === 'number' ? response.progress : undefined,
+    typeof response?.percent === 'number' ? response.percent : undefined,
+  ];
+
+  for (const candidate of progressCandidates) {
+    if (typeof candidate === 'number' && Number.isFinite(candidate)) {
+      const value = candidate > 1 ? candidate : candidate * 100;
+      return Math.max(0, Math.min(100, Math.round(value)));
+    }
+  }
+
+  if (queueStatus?.status === 'IN_QUEUE') {
+    return 0;
+  }
+  if (queueStatus?.status === 'IN_PROGRESS') {
+    return undefined;
+  }
+
+  return undefined;
 }
 
 async function loadManifestVideos(): Promise<VideoAsset[]> {
