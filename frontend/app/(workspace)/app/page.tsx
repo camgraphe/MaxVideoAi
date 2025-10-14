@@ -2092,7 +2092,7 @@ useEffect(() => {
                         setForm((current) => (current ? { ...current, engineId } : current))
                       }
                       mode={form.mode}
-                      onModeChange={(mode) =>
+                      onModeChange={(mode: Mode) =>
                         setForm((current) =>
                           current
                             ? {
