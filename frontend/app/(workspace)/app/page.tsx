@@ -104,6 +104,7 @@ const STORAGE_KEYS = {
   renders: 'maxvideoai.generate.renders.v1',
   batchHeroes: 'maxvideoai.generate.batchHeroes.v1',
   groupSummaries: 'maxvideoai.generate.groupSummaries.v1',
+  memberTier: 'maxvideoai.generate.memberTier.v1',
 } as const;
 
 const MAX_PERSISTED_RENDERS = 40;
@@ -202,9 +203,47 @@ export default function Page() {
   const [isTopUpLoading, setIsTopUpLoading] = useState(false);
   const [topUpError, setTopUpError] = useState<string | null>(null);
 
+  const storageScope = useMemo(() => userId ?? 'anon', [userId]);
   const storageKey = useCallback(
-    (base: string) => (userId ? `${base}:${userId}` : base),
-    [userId]
+    (base: string, scope: string = storageScope) => `${base}:${scope}`,
+    [storageScope]
+  );
+  const readStorage = useCallback(
+    (base: string): string | null => {
+      if (typeof window === 'undefined') return null;
+      const scopedValue = window.localStorage.getItem(storageKey(base));
+      if (scopedValue !== null) {
+        return scopedValue;
+      }
+      if (storageScope !== 'anon') {
+        const anonValue = window.localStorage.getItem(storageKey(base, 'anon'));
+        if (anonValue !== null) {
+          return anonValue;
+        }
+      }
+      return window.localStorage.getItem(base);
+    },
+    [storageKey, storageScope]
+  );
+  const writeStorage = useCallback(
+    (base: string, value: string | null) => {
+      if (typeof window === 'undefined') return;
+      const key = storageKey(base);
+      if (value === null) {
+        window.localStorage.removeItem(key);
+      } else {
+        window.localStorage.setItem(key, value);
+      }
+      if (storageScope !== 'anon') {
+        window.localStorage.removeItem(storageKey(base, 'anon'));
+        window.localStorage.removeItem(base);
+      } else if (value === null) {
+        window.localStorage.removeItem(base);
+      } else {
+        window.localStorage.setItem(base, value);
+      }
+    },
+    [storageKey, storageScope]
   );
   const nextPath = useMemo(() => {
     const base = pathname || '/app';
@@ -279,9 +318,9 @@ type LocalRenderGroup = {
   const [viewMode, setViewMode] = useState<'single' | 'quad'>('single');
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
   const rendersRef = useRef<LocalRender[]>([]);
-  const hydratedUserRef = useRef<string | null>(null);
+  const hydratedScopeRef = useRef<string | null>(null);
   const clearUserState = useCallback(() => {
-    hydratedUserRef.current = null;
+    hydratedScopeRef.current = null;
     setUserId(null);
     setAuthChecked(false);
     setForm(null);
@@ -345,21 +384,21 @@ type LocalRenderGroup = {
   }, [nextPath, router, clearUserState]);
 
   useEffect(() => {
-    if (!authChecked || !userId || typeof window === 'undefined') return;
-    if (hydratedUserRef.current === userId) return;
-    hydratedUserRef.current = userId;
+    if (typeof window === 'undefined') return;
+    if (hydratedScopeRef.current === storageScope) return;
+    hydratedScopeRef.current = storageScope;
 
     try {
-      const promptValue = window.localStorage.getItem(storageKey(STORAGE_KEYS.prompt));
+      const promptValue = readStorage(STORAGE_KEYS.prompt);
       setPrompt(promptValue ?? DEFAULT_PROMPT);
 
-      const negativeValue = window.localStorage.getItem(storageKey(STORAGE_KEYS.negativePrompt));
+      const negativeValue = readStorage(STORAGE_KEYS.negativePrompt);
       setNegativePrompt(negativeValue ?? '');
 
-      const formValue = window.localStorage.getItem(storageKey(STORAGE_KEYS.form));
+      const formValue = readStorage(STORAGE_KEYS.form);
       setForm(formValue ? parseStoredForm(formValue) : null);
 
-      const storedRendersValue = window.localStorage.getItem(storageKey(STORAGE_KEYS.renders));
+      const storedRendersValue = readStorage(STORAGE_KEYS.renders);
       if (storedRendersValue) {
         const raw = JSON.parse(storedRendersValue);
         if (Array.isArray(raw)) {
@@ -415,7 +454,7 @@ type LocalRenderGroup = {
         setActiveBatchId(null);
       }
 
-      const storedHeroesValue = window.localStorage.getItem(storageKey(STORAGE_KEYS.batchHeroes));
+      const storedHeroesValue = readStorage(STORAGE_KEYS.batchHeroes);
       if (storedHeroesValue) {
         const rawHeroes = JSON.parse(storedHeroesValue);
         if (rawHeroes && typeof rawHeroes === 'object') {
@@ -433,12 +472,16 @@ type LocalRenderGroup = {
       } else {
         setBatchHeroes({});
       }
+      const storedTier = readStorage(STORAGE_KEYS.memberTier);
+      if (storedTier === 'Member' || storedTier === 'Plus' || storedTier === 'Pro') {
+        setMemberTier(storedTier);
+      }
     } catch {
       setRenders([]);
       setBatchHeroes({});
       setActiveBatchId(null);
     }
-  }, [authChecked, userId, storageKey]);
+  }, [readStorage, setMemberTier, storageScope]);
 
   useEffect(() => {
     rendersRef.current = renders;
@@ -497,33 +540,31 @@ type LocalRenderGroup = {
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !authChecked || !userId) return;
+    if (typeof window === 'undefined') return;
     try {
-      const key = storageKey(STORAGE_KEYS.renders);
       if (!renders.length) {
-        window.localStorage.removeItem(key);
+        writeStorage(STORAGE_KEYS.renders, null);
         return;
       }
       const limited = renders.slice(0, MAX_PERSISTED_RENDERS);
-      window.localStorage.setItem(key, JSON.stringify(limited));
+      writeStorage(STORAGE_KEYS.renders, JSON.stringify(limited));
     } catch {
       // noop
     }
-  }, [renders, authChecked, userId, storageKey]);
+  }, [renders, writeStorage]);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !authChecked || !userId) return;
+    if (typeof window === 'undefined') return;
     try {
-      const key = storageKey(STORAGE_KEYS.batchHeroes);
       if (!Object.keys(batchHeroes).length) {
-        window.localStorage.removeItem(key);
+        writeStorage(STORAGE_KEYS.batchHeroes, null);
         return;
       }
-      window.localStorage.setItem(key, JSON.stringify(batchHeroes));
+      writeStorage(STORAGE_KEYS.batchHeroes, JSON.stringify(batchHeroes));
     } catch {
       // noop
     }
-  }, [batchHeroes, authChecked, userId, storageKey]);
+  }, [batchHeroes, writeStorage]);
   const renderGroups = useMemo<Map<string, LocalRenderGroup>>(() => {
     const map = new Map<string, LocalRenderGroup>();
     renders.forEach((item) => {
@@ -689,10 +730,9 @@ type LocalRenderGroup = {
   }, [pendingGroups, activeGroupId]);
 
   useEffect(() => {
-    if (!authChecked || !userId) return;
     const groupsForStorage = pendingGroups.filter((group) => group.members.length > 0);
     savePersistedGroupSummaries(groupsForStorage.slice(0, 12), storageKey(STORAGE_KEYS.groupSummaries));
-  }, [pendingGroups, authChecked, userId, storageKey]);
+  }, [pendingGroups, storageKey]);
   const pendingSummaryMap = useMemo(() => {
     const map = new Map<string, GroupSummary>();
     pendingGroups.forEach((group) => {
@@ -755,35 +795,43 @@ type LocalRenderGroup = {
     [preflight?.currency]
   );
   useEffect(() => {
-    if (typeof window === 'undefined' || !authChecked || !userId) return;
-    const key = storageKey(STORAGE_KEYS.form);
+    if (typeof window === 'undefined') return;
     if (!form) {
-      window.localStorage.removeItem(key);
+      writeStorage(STORAGE_KEYS.form, null);
       return;
     }
     try {
-      window.localStorage.setItem(key, JSON.stringify(form));
+      writeStorage(STORAGE_KEYS.form, JSON.stringify(form));
     } catch {
       // noop
     }
-  }, [form, authChecked, userId, storageKey]);
+  }, [form, writeStorage]);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !authChecked || !userId) return;
+    if (typeof window === 'undefined') return;
     try {
-      window.localStorage.setItem(storageKey(STORAGE_KEYS.prompt), prompt);
+      writeStorage(STORAGE_KEYS.prompt, prompt);
     } catch {
       // noop
     }
-  }, [prompt, authChecked, userId, storageKey]);
+  }, [prompt, writeStorage]);
   useEffect(() => {
-    if (typeof window === 'undefined' || !authChecked || !userId) return;
+    if (typeof window === 'undefined') return;
     try {
-      window.localStorage.setItem(storageKey(STORAGE_KEYS.negativePrompt), negativePrompt);
+      writeStorage(STORAGE_KEYS.negativePrompt, negativePrompt);
     } catch {
       // noop
     }
-  }, [negativePrompt, authChecked, userId, storageKey]);
+  }, [negativePrompt, writeStorage]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      writeStorage(STORAGE_KEYS.memberTier, memberTier);
+    } catch {
+      // noop
+    }
+  }, [memberTier, writeStorage]);
 
   const durationRef = useRef<HTMLElement | null>(null);
   const resolutionRef = useRef<HTMLDivElement>(null);
