@@ -104,6 +104,7 @@ export type GenerateResult = {
 };
 
 const MANIFEST_FILENAME = 'maxvideoai_test_videos_manifest.json';
+const FAL_FILES_BASE_URL = (process.env.FAL_FILES_BASE_URL || process.env.NEXT_PUBLIC_FAL_FILES_BASE_URL || 'https://fal.media/files').replace(/\/+$/, '');
 let manifestPromise: Promise<VideoAsset[]> | null = null;
 let manifestCache: VideoAsset[] | null = null;
 let manifestCdnBase: string | null = null;
@@ -176,10 +177,22 @@ const DEFAULT_TEST_ASSETS: VideoAsset[] = [
 
 function normalizeVideoUrl(rawUrl: string): string {
   const trimmed = rawUrl.trim();
+  if (!trimmed) return trimmed;
   if (trimmed.startsWith('http://commondatastorage.googleapis.com')) {
     return `https://${trimmed.slice('http://'.length)}`;
   }
-  return trimmed;
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  if (trimmed.startsWith('/')) {
+    return trimmed.replace(/\/{2,}/g, '/');
+  }
+  const normalized = trimmed.replace(/^\.?\/+/, '');
+  if (looksLikeFalAsset(normalized)) {
+    return `${FAL_FILES_BASE_URL}/${normalized}`;
+  }
+  const base = manifestCdnBase ?? ENV.TEST_VIDEO_BASE_URL ?? '/test-videos';
+  return joinUrl(base, normalized);
 }
 
 function unwrapFalResponse(payload: unknown): FalRunResponse | null {
@@ -205,7 +218,7 @@ function isBlockedUrl(url: string): boolean {
     const parsed = new URL(url);
     return BLOCKED_VIDEO_HOSTS.has(parsed.hostname);
   } catch {
-    return true;
+    return false;
   }
 }
 
@@ -421,13 +434,15 @@ function normalizeVideoCandidate(candidate: FalVideoCandidate | null | undefined
       thumbnailUrl: null,
     };
   }
-  const urlCandidate = typeof candidate.url === 'string' && candidate.url ? candidate.url : typeof candidate.video_url === 'string' && candidate.video_url ? candidate.video_url : null;
+  const urlCandidate =
+    (typeof candidate.url === 'string' && candidate.url) ||
+    (typeof candidate.video_url === 'string' && candidate.video_url) ||
+    null;
   let normalizedUrl: string | null = null;
   if (urlCandidate) {
     normalizedUrl = normalizeVideoUrl(urlCandidate);
   } else if (typeof candidate.path === 'string' && candidate.path.trim().length) {
-    const base = manifestCdnBase ?? ENV.TEST_VIDEO_BASE_URL ?? '/test-videos';
-    normalizedUrl = normalizeVideoUrl(joinUrl(base, candidate.path));
+    normalizedUrl = normalizeVideoUrl(candidate.path);
   }
   if (!normalizedUrl) return null;
   if (isBlockedUrl(normalizedUrl)) return null;
@@ -511,6 +526,20 @@ function getThumbForAspectRatio(aspectRatio: string): string {
   if (aspectRatio === '9:16') return '/assets/frames/thumb-9x16.svg';
   if (aspectRatio === '1:1') return '/assets/frames/thumb-1x1.svg';
   return '/assets/frames/thumb-16x9.svg';
+}
+
+function looksLikeFalAsset(path: string): boolean {
+  const normalized = path.replace(/^\/+/, '').toLowerCase();
+  if (!normalized) return false;
+  const [head] = normalized.split('/');
+  return (
+    head.startsWith('local_batch') ||
+    head.startsWith('local-invocation') ||
+    head.startsWith('local_invocation') ||
+    head.startsWith('fal') ||
+    head.startsWith('tmp') ||
+    head.startsWith('storage')
+  );
 }
 
 function selectRandom<T>(items: readonly T[]): T | undefined {
