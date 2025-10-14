@@ -70,9 +70,9 @@ Key behaviours implemented:
 
 - **Licence**: Business Source License 1.1 (BUSL 1.1). See [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE).  
 - **Change Date**: 10 October 2028 → Apache 2.0.  
-- **Usage**: Non-commercial evaluation of the UI and marketing assets only.
+- **Usage**: Non-commercial evaluation of the software. Commercial deployments require a licence.
 
-Only marketing/UI modules remain in this public repo. Backend services, pricing logic, Fal.ai integrations, and monetisation code live in a private repository. Refer to [`docs/public-vs-private.md`](docs/public-vs-private.md) for the checklist used before mirroring changes; the `private/` folder (ignored by Git) is a temporary staging area before pushing code to the internal repo.
+This repository hosts the full MaxVideoAI application. Review [`docs/public-vs-private.md`](docs/public-vs-private.md) before publishing to ensure no secrets or contractual data ship with the codebase.
 
 Before syncing the public mirror, run:
 
@@ -137,6 +137,5 @@ The script calls the Fal proxy, so no direct DNS access to `api.fal.ai` is requi
 
 ## Deployment Overview
 
-- **Public marketing site** → GitHub (`maxvideoai-public`) → Vercel project `maxvideoai-marketing`.  
-- **Internal application** → private repo (`maxvideoai-internal`) → Vercel project `maxvideoai-app` (or alternative infrastructure).  
+- **Application** → this repository → Vercel project `maxvideoai-app` (or alternative infrastructure).  
 - Deployment guidelines and checklists live in [`docs/deployment/github-vercel.md`](docs/deployment/github-vercel.md).

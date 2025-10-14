@@ -21,7 +21,7 @@
 
 **2. Deliverables**
 
-- Access to private repository/packages (`maxvideoai-internal`, premium SDKs, deployment manifests).  
+- Access to the MaxVideoAI source repository, premium SDKs, and deployment manifests required to operate the software.  
 - Release cadence & versioning policy (semantic).  
 - Documentation and onboarding materials.  
 - Optional managed services or professional services (if purchased separately).
@@ -87,7 +87,7 @@ Licensee: ______________________   Date: ___________
 ---
 
 ### Attachment A – Deliverables & Access
-- Repository: `git@github.com:maxvideoai/maxvideoai-internal.git`
+- Repository: `git@github.com:maxvideoai/maxvideoai.git`
 - Packages: `npm.pkg.github.com/@maxvideoai-pro/*`
 - Deployment assets: Docker images (registry URL), Helm charts.
 

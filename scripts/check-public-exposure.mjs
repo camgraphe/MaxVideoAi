@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 /**
- * Safeguard to ensure that sensitive backend/pricing/provider code does not
- * reappear in the public repository.
+ * Safeguard to ensure that accidental secrets (.env files, raw credentials)
+ * do not land in the repository.
  *
  * Run with: `node scripts/check-public-exposure.mjs`
  */
 
-import { existsSync, statSync } from 'node:fs';
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -14,46 +13,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
 
-const forbiddenPaths = [
-  'frontend/app/api',
-  'frontend/app/(workspace)',
-  'frontend/src/lib/pricing.ts',
-  'frontend/src/lib/fal.ts',
-  'frontend/src/lib/fal-catalog.ts',
-  'frontend/src/lib/env.ts',
-  'frontend/src/lib/wallet.ts',
-  'frontend/src/lib/schema.ts',
-  'frontend/src/lib/fal.ts',
-  'packages',
-  'db',
-  'scripts/process-video-gallery.mjs',
-  'scripts/serve-video-gallery.mjs',
-];
-
 const forbiddenEnvFiles = ['.env', '.env.local', '.env.production', '.env.development'];
-
-function hasPath(relativePath) {
-  const abs = path.resolve(repoRoot, relativePath);
-  return existsSync(abs);
-}
-
-async function collectForbiddenPaths() {
-  const hits = [];
-  for (const rel of new Set(forbiddenPaths)) {
-    if (hasPath(rel)) {
-      const abs = path.resolve(repoRoot, rel);
-      try {
-        const stat = statSync(abs);
-        if (stat.isFile() || stat.isDirectory()) {
-          hits.push(rel);
-        }
-      } catch {
-        // ignore
-      }
-    }
-  }
-  return hits;
-}
 
 async function collectForbiddenEnvFiles(startDir = repoRoot) {
   const results = [];
@@ -73,19 +33,14 @@ async function collectForbiddenEnvFiles(startDir = repoRoot) {
   return results;
 }
 
-const [pathHits, envHits] = await Promise.all([collectForbiddenPaths(), collectForbiddenEnvFiles()]);
+const envHits = await collectForbiddenEnvFiles();
 
-if (!pathHits.length && !envHits.length) {
+if (!envHits.length) {
   console.log('✅  Public exposure check passed.');
   process.exit(0);
 }
 
 console.error('❌  Public exposure check failed.');
-if (pathHits.length) {
-  console.error('Forbidden paths present:\n  - ' + pathHits.join('\n  - '));
-}
-if (envHits.length) {
-  console.error('Forbidden env files present:\n  - ' + envHits.join('\n  - '));
-}
-console.error('\nMove these items to the private repository before pushing to the public mirror.');
+console.error('Forbidden env files present:\n  - ' + envHits.join('\n  - '));
+console.error('\nRemove the files listed above or move their contents into your secret manager before committing.');
 process.exit(1);

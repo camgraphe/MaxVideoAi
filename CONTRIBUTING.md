@@ -1,17 +1,14 @@
-# Contributing to MaxVideoAI (Public Repository)
-
-This repository intentionally contains **only** marketing/UI assets that can be shared under the Business Source License 1.1. All production logic, pricing engines, Fal.ai integrations, and monetisation code live in the private `maxvideoai-internal` repository.
+# Contributing to MaxVideoAI
 
 ## Ground Rules
 
-1. **Do not commit sensitive code here.** Backend routes, pricing constants, provider SDKs, or API keys belong in the private repo.  
+1. **Keep secrets out of source control.** Never commit `.env` files, API keys, or credentials. Use Vercel/GitHub secrets instead.  
 2. **Run the exposure guard before pushing:**
    ```bash
    npm run lint:exposure
    ```
    The script fails if any forbidden paths or `.env*` files are present.  
-3. **No secrets in Git.** Never commit `.env` files or keys. Use Vercel/GitHub secrets.  
-4. **UI contributions only.** Focus on marketing pages, mock data, and visual polish. Functional changes to the product go through the private repo.
+3. **Stay production-safe.** Review changes for anything that could leak pricing terms, partner contracts, or user data.
 
 ## Development Flow
 
