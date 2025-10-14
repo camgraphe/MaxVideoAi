@@ -7,6 +7,7 @@ export interface VideoItem {
   url: string;
   aspect: VideoAspect;
   thumb?: string;
+  jobId?: string;
   durationSec?: number;
   engineId?: string;
   costCents?: number;

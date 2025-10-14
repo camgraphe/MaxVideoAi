@@ -46,6 +46,7 @@ interface QuadPreviewPanelProps {
   onSelectHero: (tile: QuadPreviewTile) => void;
   engineMap: Map<string, EngineCaps>;
   onSaveComposite?: () => void;
+  onRefreshJob?: (jobId: string) => Promise<void> | void;
 }
 
 const TILE_ACTIONS: Array<{ id: QuadTileAction; label: string; icon: string }> = [
@@ -113,6 +114,7 @@ export function QuadPreviewPanel({
   onSelectHero,
   engineMap,
   onSaveComposite,
+  onRefreshJob,
 }: QuadPreviewPanelProps) {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -195,6 +197,7 @@ export function QuadPreviewPanel({
     () =>
       sortedTiles.map((tile) => ({
         id: tile.id,
+        jobId: tile.id,
         label: `Version ${tile.iterationIndex + 1}`,
         videoUrl: tile.videoUrl ?? undefined,
         thumbUrl: tile.thumbUrl ?? undefined,
@@ -473,6 +476,15 @@ export function QuadPreviewPanel({
           ]}
           entries={lightboxEntries}
           onClose={() => setIsLightboxOpen(false)}
+          onRefreshEntry={
+            onRefreshJob
+              ? (entry) => {
+                  const jobId = entry.jobId ?? entry.id;
+                  if (!jobId) return;
+                  return onRefreshJob(jobId);
+                }
+              : undefined
+          }
         />
       )}
     </Card>

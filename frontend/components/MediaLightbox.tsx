@@ -10,6 +10,7 @@ export interface MediaLightboxEntry {
   videoUrl?: string | null;
   thumbUrl?: string | null;
   aspectRatio?: string | null;
+  jobId?: string | null;
   status?: 'pending' | 'completed' | 'failed';
   progress?: number | null;
   message?: string | null;
@@ -25,6 +26,7 @@ export interface MediaLightboxProps {
   metadata?: Array<{ label: string; value: string }>;
   entries: MediaLightboxEntry[];
   onClose: () => void;
+  onRefreshEntry?: (entry: MediaLightboxEntry) => Promise<void> | void;
 }
 
 function aspectRatioClass(aspectRatio?: string | null): string {
@@ -43,8 +45,9 @@ function aspectRatioClass(aspectRatio?: string | null): string {
   return 'aspect-[16/9]';
 }
 
-export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries, onClose }: MediaLightboxProps) {
+export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries, onClose, onRefreshEntry }: MediaLightboxProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [refreshStates, setRefreshStates] = useState<Record<string, { loading: boolean; error: string | null }>>({});
 
   const handleCopyLink = useCallback(
     async (entryId: string, url?: string | null) => {
@@ -73,6 +76,46 @@ export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries,
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
+
+  useEffect(() => {
+    setRefreshStates((prev) => {
+      const activeIds = new Set(entries.map((entry) => entry.id));
+      let mutated = false;
+      const next = { ...prev };
+      Object.keys(next).forEach((key) => {
+        if (!activeIds.has(key)) {
+          delete next[key];
+          mutated = true;
+        }
+      });
+      return mutated ? next : prev;
+    });
+  }, [entries]);
+
+  const handleRefreshEntry = useCallback(
+    async (entry: MediaLightboxEntry) => {
+      if (!onRefreshEntry) return;
+      setRefreshStates((prev) => ({
+        ...prev,
+        [entry.id]: { loading: true, error: null },
+      }));
+      try {
+        await onRefreshEntry(entry);
+        setRefreshStates((prev) => {
+          const next = { ...prev };
+          delete next[entry.id];
+          return next;
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Impossible de rafraîchir le statut';
+        setRefreshStates((prev) => ({
+          ...prev,
+          [entry.id]: { loading: false, error: message },
+        }));
+      }
+    },
+    [onRefreshEntry]
+  );
 
   const hasAtLeastOneVideo = useMemo(() => entries.some((entry) => Boolean(entry.videoUrl)), [entries]);
 
@@ -125,10 +168,19 @@ export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries,
             const isProcessing = entry.status === 'pending';
             const progressLabel =
               typeof entry.progress === 'number'
-                ? `${Math.max(0, Math.min(100, Math.round(entry.progress)))}%`
-                : isProcessing
-                  ? 'En cours'
-                  : undefined;
+                  ? `${Math.max(0, Math.min(100, Math.round(entry.progress)))}%`
+                  : isProcessing
+                    ? 'En cours'
+                    : undefined;
+            const refreshState = refreshStates[entry.id];
+            const isRefreshing = Boolean(refreshState?.loading);
+            const refreshError = refreshState?.error ?? null;
+            const refreshTarget = entry.jobId ?? entry.id;
+            const hasRefreshTarget = typeof refreshTarget === 'string' && refreshTarget.trim().length > 0;
+            const canRefresh =
+              Boolean(onRefreshEntry) &&
+              hasRefreshTarget &&
+              (entry.status === 'pending' || !entry.videoUrl);
 
             return (
               <article
@@ -231,10 +283,30 @@ export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries,
                     >
                       {copiedId === entry.id ? 'Lien copié' : 'Copier le lien'}
                     </button>
+                    {canRefresh ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void handleRefreshEntry(entry).catch(() => undefined);
+                        }}
+                        disabled={isRefreshing}
+                        className={clsx(
+                          'rounded-input border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed',
+                          isRefreshing
+                            ? 'border-border bg-bg text-text-muted'
+                            : 'border-accent bg-accent/10 text-accent hover:bg-accent/20'
+                        )}
+                      >
+                        {isRefreshing ? 'Vérification...' : 'Rafraîchir le statut'}
+                      </button>
+                    ) : null}
                   </div>
 
                   {entry.message && !isProcessing ? (
                     <p className="mt-3 text-sm text-text-secondary">{entry.message}</p>
+                  ) : null}
+                  {refreshError ? (
+                    <p className="mt-2 text-xs text-state-warning">{refreshError}</p>
                   ) : null}
                 </div>
               </article>

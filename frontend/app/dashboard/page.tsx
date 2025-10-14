@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { hideJob, useEngines, useInfiniteJobs } from '@/lib/api';
+import { getJobStatus, hideJob, useEngines, useInfiniteJobs } from '@/lib/api';
 import { JobMedia } from '@/components/JobMedia';
 import {
   groupJobsIntoSummaries,
@@ -112,6 +112,19 @@ export default function DashboardPage() {
     spentToday?: number;
   } | null>(null);
   const [lightbox, setLightbox] = useState<{ kind: 'group'; group: GroupSummary } | { kind: 'job'; job: Job } | null>(null);
+  const handleRefreshJob = useCallback(async (jobId: string) => {
+    try {
+      const status = await getJobStatus(jobId);
+      if (status.status === 'failed') {
+        throw new Error(status.message ?? 'Le rendu a été signalé comme échoué côté fournisseur.');
+      }
+      if (status.status !== 'completed' && !status.videoUrl) {
+        throw new Error('Le rendu est toujours en cours côté fournisseur.');
+      }
+    } catch (error) {
+      throw error instanceof Error ? error : new Error("Impossible d'actualiser le statut du rendu.");
+    }
+  }, []);
   const handleRemoveJob = useCallback(
     async (job: Job) => {
       try {
@@ -426,6 +439,11 @@ export default function DashboardPage() {
           }
           entries={lightbox.kind === 'group' ? buildEntriesFromGroup(lightbox.group) : buildEntriesFromJob(lightbox.job)}
           onClose={() => setLightbox(null)}
+          onRefreshEntry={(entry) => {
+            const jobId = entry.jobId ?? entry.id;
+            if (!jobId) return;
+            return handleRefreshJob(jobId);
+          }}
         />
       )}
     </div>
@@ -567,6 +585,7 @@ function buildEntriesFromJob(job: Job): MediaLightboxEntry[] {
   return [
     {
       id: job.jobId,
+      jobId: job.jobId,
       label: job.engineLabel,
       videoUrl: job.videoUrl ?? undefined,
       thumbUrl: job.thumbUrl ?? undefined,
@@ -584,6 +603,7 @@ function buildEntriesFromJob(job: Job): MediaLightboxEntry[] {
 function buildEntriesFromGroup(group: GroupSummary): MediaLightboxEntry[] {
   return group.members.map((member) => ({
     id: member.id,
+    jobId: member.jobId ?? member.id,
     label:
       typeof member.iterationIndex === 'number'
         ? `Version ${member.iterationIndex + 1}`

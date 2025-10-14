@@ -872,6 +872,20 @@ useEffect(() => {
     }, 6000);
   }, []);
 
+  const handleRefreshJob = useCallback(async (jobId: string) => {
+    try {
+      const status = await getJobStatus(jobId);
+      if (status.status === 'failed') {
+        throw new Error(status.message ?? 'Le rendu a été signalé comme échoué côté fournisseur.');
+      }
+      if (status.status !== 'completed' && !status.videoUrl) {
+        throw new Error('Le rendu est toujours en cours côté fournisseur.');
+      }
+    } catch (error) {
+      throw error instanceof Error ? error : new Error("Impossible d'actualiser le statut du rendu.");
+    }
+  }, []);
+
   const closeTopUpModal = useCallback(() => {
     setTopUpModal(null);
     setTopUpAmount(500);
@@ -2269,7 +2283,13 @@ useEffect(() => {
           onGroupAction={handleGalleryGroupAction}
         />
       </div>
-      {viewerGroup ? <GroupViewerModal group={viewerGroup} onClose={() => setViewerTarget(null)} /> : null}
+      {viewerGroup ? (
+        <GroupViewerModal
+          group={viewerGroup}
+          onClose={() => setViewerTarget(null)}
+          onRefreshJob={handleRefreshJob}
+        />
+      ) : null}
       {topUpModal && (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 px-4">
           <div className="absolute inset-0" role="presentation" onClick={closeTopUpModal} />

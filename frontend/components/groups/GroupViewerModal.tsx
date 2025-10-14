@@ -7,6 +7,7 @@ import type { VideoGroup, VideoItem } from '@/types/video-groups';
 interface GroupViewerModalProps {
   group: VideoGroup | null;
   onClose: () => void;
+  onRefreshJob?: (jobId: string) => Promise<void> | void;
 }
 
 function isVideo(item: VideoItem): boolean {
@@ -17,7 +18,7 @@ function isVideo(item: VideoItem): boolean {
   return url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.mov');
 }
 
-export function GroupViewerModal({ group, onClose }: GroupViewerModalProps) {
+export function GroupViewerModal({ group, onClose, onRefreshJob }: GroupViewerModalProps) {
   const entries: MediaLightboxEntry[] = useMemo(() => {
     if (!group) return [];
     return group.items.map((item, index) => {
@@ -25,6 +26,8 @@ export function GroupViewerModal({ group, onClose }: GroupViewerModalProps) {
       const video = isVideo(item) ? item.url : undefined;
       const thumb = item.thumb ?? (video ? undefined : item.url);
       const rawStatus = typeof item.meta?.status === 'string' ? String(item.meta.status) : undefined;
+      const jobIdMeta = typeof item.meta?.jobId === 'string' ? String(item.meta.jobId) : null;
+      const jobId = item.jobId ?? jobIdMeta ?? item.id;
       const status: MediaLightboxEntry['status'] = (() => {
         if (!rawStatus) return undefined;
         const normalized = rawStatus.toLowerCase();
@@ -43,6 +46,7 @@ export function GroupViewerModal({ group, onClose }: GroupViewerModalProps) {
       return {
         id: item.id,
         label,
+        jobId,
         videoUrl: video,
         thumbUrl: thumb,
         aspectRatio: item.aspect,
@@ -89,6 +93,15 @@ export function GroupViewerModal({ group, onClose }: GroupViewerModalProps) {
       metadata={metadata}
       entries={entries}
       onClose={onClose}
+      onRefreshEntry={
+        onRefreshJob
+          ? (entry) => {
+              const jobId = entry.jobId ?? entry.id;
+              if (!jobId) return;
+              return onRefreshJob(jobId);
+            }
+          : undefined
+      }
     />
   );
 }

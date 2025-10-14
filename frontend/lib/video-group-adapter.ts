@@ -70,12 +70,16 @@ function toVideoItem(member: GroupMemberSummary): VideoItem {
   if (member.status) {
     meta.status = member.status;
   }
+  if (member.jobId) {
+    meta.jobId = member.jobId;
+  }
 
   return {
     id: member.id,
     url: videoUrl ?? thumb ?? '',
     aspect,
     thumb,
+    jobId: member.jobId ?? member.id,
     durationSec: member.durationSec,
     engineId: member.engineId,
     costCents: typeof member.priceCents === 'number' ? member.priceCents : undefined,

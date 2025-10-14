@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { hideJob, useEngines, useInfiniteJobs } from '@/lib/api';
+import { getJobStatus, hideJob, useEngines, useInfiniteJobs } from '@/lib/api';
 import {
   groupJobsIntoSummaries,
   loadPersistedGroupSummaries,
@@ -78,6 +78,20 @@ export default function JobsPage() {
   }, [enginesData?.engines]);
 
   const provider = useResultProvider();
+
+  const handleRefreshJob = useCallback(async (jobId: string) => {
+    try {
+      const status = await getJobStatus(jobId);
+      if (status.status === 'failed') {
+        throw new Error(status.message ?? 'Le rendu a été signalé comme échoué côté fournisseur.');
+      }
+      if (status.status !== 'completed' && !status.videoUrl) {
+        throw new Error('Le rendu est toujours en cours côté fournisseur.');
+      }
+    } catch (error) {
+      throw error instanceof Error ? error : new Error("Impossible d'actualiser le statut du rendu.");
+    }
+  }, []);
 
   const summaryMap = useMemo(() => {
     const map = new Map<string, GroupSummary>();
@@ -234,7 +248,13 @@ export default function JobsPage() {
           </div>
         </main>
       </div>
-      {viewerGroup ? <GroupViewerModal group={viewerGroup} onClose={() => setActiveGroupId(null)} /> : null}
+      {viewerGroup ? (
+        <GroupViewerModal
+          group={viewerGroup}
+          onClose={() => setActiveGroupId(null)}
+          onRefreshJob={handleRefreshJob}
+        />
+      ) : null}
     </div>
   );
 }
