@@ -1,12 +1,20 @@
 import { Pool } from 'pg';
 
+const DATABASE_URL = (process.env.DATABASE_URL ?? '').trim();
+const DATABASE_CONFIGURED = DATABASE_URL.length > 0;
+
 let pool: Pool | null = null;
 
+export function isDatabaseConfigured(): boolean {
+  return DATABASE_CONFIGURED;
+}
+
 export function getDb() {
+  if (!DATABASE_CONFIGURED) {
+    throw new Error('DATABASE_URL is not set');
+  }
   if (!pool) {
-    const url = process.env.DATABASE_URL;
-    if (!url) throw new Error('DATABASE_URL is not set');
-    pool = new Pool({ connectionString: url });
+    pool = new Pool({ connectionString: DATABASE_URL });
   }
   return pool;
 }

@@ -1,4 +1,4 @@
-import { query } from '@/lib/db';
+import { isDatabaseConfigured, query } from '@/lib/db';
 
 type MockWalletStore = Map<string, number>;
 type MockReceiptStore = Set<string>;
@@ -114,7 +114,7 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
     };
   };
 
-  if (!process.env.DATABASE_URL) {
+  if (!isDatabaseConfigured()) {
     return fallbackToMock();
   }
 

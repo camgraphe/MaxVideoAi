@@ -1,7 +1,7 @@
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { isDatabaseConfigured, query } from '@/lib/db';
 import { getEngineById } from '@/lib/engines';
 import { randomUUID } from 'crypto';
 import { generateVideo } from '@/lib/fal';
@@ -11,7 +11,7 @@ import { ENV } from '@/lib/env';
 import { getUserIdFromRequest } from '@/lib/user';
 import type { PricingSnapshot } from '@/types/engines';
 import { ensureBillingSchema } from '@/lib/schema';
-import { reserveWalletCharge } from '@/lib/wallet';
+import { applyMockWalletTopUp, reserveWalletCharge } from '@/lib/wallet';
 import { normalizeMediaUrl } from '@/lib/media';
 
 type PaymentMode = 'wallet' | 'direct' | 'platform';
@@ -23,7 +23,10 @@ export async function POST(req: NextRequest) {
   const engine = await getEngineById(String(body.engineId || ''));
   if (!engine) return NextResponse.json({ ok: false, error: 'Unknown engine' }, { status: 400 });
 
-  await ensureBillingSchema();
+  const databaseConfigured = isDatabaseConfigured();
+  if (databaseConfigured) {
+    await ensureBillingSchema();
+  }
 
   const requestedJobId = typeof body.jobId === 'string' && body.jobId.trim() ? String(body.jobId).trim() : null;
   const jobId = requestedJobId ?? `job_${randomUUID()}`;
@@ -269,6 +272,173 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     if (walletChargeReserved && pendingReceipt) {
+      if (databaseConfigured) {
+        try {
+          await query(
+            `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id)
+             VALUES ($1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10)`,
+            [
+              pendingReceipt.userId,
+              pendingReceipt.amountCents,
+              pendingReceipt.currency,
+              `Refund ${engine.label} • ${durationSec}s`,
+              pendingReceipt.jobId,
+              JSON.stringify(pendingReceipt.snapshot),
+              0,
+              pendingReceipt.vendorAccountId,
+              pendingReceipt.stripePaymentIntentId ?? null,
+              pendingReceipt.stripeChargeId ?? null,
+            ]
+          );
+        } catch (refundError) {
+          console.warn('[wallet] failed to roll back reservation after generation error', refundError);
+        }
+      } else {
+        applyMockWalletTopUp(pendingReceipt.userId, pendingReceipt.amountCents);
+      }
+    }
+    return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : 'Generation failed' }, { status: 500 });
+  }
+
+  const thumb = normalizeMediaUrl(generationResult.thumbUrl) ?? generationResult.thumbUrl ?? null;
+  const video = normalizeMediaUrl(generationResult.videoUrl) ?? generationResult.videoUrl ?? null;
+  const videoAsset = generationResult.video ?? null;
+  const providerMode = generationResult.provider;
+  const status = generationResult.status ?? (video ? 'completed' : 'queued');
+  const progress = typeof generationResult.progress === 'number' ? generationResult.progress : video ? 100 : 0;
+  const providerJobId = generationResult.providerJobId ?? null;
+
+  if (databaseConfigured) {
+    try {
+      await query(
+        `INSERT INTO app_jobs (
+           job_id,
+           user_id,
+           engine_id,
+           engine_label,
+           duration_sec,
+           prompt,
+           thumb_url,
+           aspect_ratio,
+           has_audio,
+           can_upscale,
+           preview_frame,
+           batch_id,
+           group_id,
+           iteration_index,
+           iteration_count,
+           render_ids,
+           hero_render_id,
+           local_key,
+           message,
+           eta_seconds,
+           eta_label,
+           video_url,
+           status,
+           progress,
+           provider_job_id,
+           final_price_cents,
+           pricing_snapshot,
+           currency,
+           vendor_account_id,
+           payment_status,
+           stripe_payment_intent_id,
+           stripe_charge_id
+         )
+         VALUES (
+           $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27::jsonb,$28,$29,$30,$31,$32
+         )`,
+        [
+          jobId,
+          userId,
+          engine.id,
+          engine.label,
+          durationSec,
+          prompt,
+          thumb,
+          ar,
+          Boolean(body.addons?.audio),
+          Boolean(engine.upscale4k),
+          thumb,
+          batchId,
+          groupId,
+          iterationIndex,
+          iterationCount,
+          renderIds ? JSON.stringify(renderIds) : null,
+          heroRenderId,
+          localKey,
+          message,
+          etaSeconds,
+          etaLabel,
+          video,
+          status,
+          progress,
+          providerJobId,
+          pricing.totalCents,
+          pricingSnapshotJson,
+          pricing.currency,
+          vendorAccountId,
+          paymentStatus,
+          stripePaymentIntentId,
+          stripeChargeId,
+        ]
+      );
+    } catch (error) {
+      console.error('[api/generate] failed to persist job record', error);
+    }
+
+    if (pendingReceipt && !walletChargeReserved) {
+      try {
+        await query(
+          `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id)
+           VALUES ($1,'charge',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10)`,
+          [
+            pendingReceipt.userId,
+            pendingReceipt.amountCents,
+            pendingReceipt.currency,
+            pendingReceipt.description,
+            pendingReceipt.jobId,
+            JSON.stringify(pendingReceipt.snapshot),
+            pendingReceipt.applicationFeeCents,
+            pendingReceipt.vendorAccountId,
+            pendingReceipt.stripePaymentIntentId ?? null,
+            pendingReceipt.stripeChargeId ?? null,
+          ]
+        );
+      } catch (error) {
+        console.error('[api/generate] failed to persist payment receipt', error);
+      }
+    }
+
+    try {
+      await query(
+        `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
+         VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
+        [
+          jobId,
+          providerMode,
+          providerJobId,
+          engine.id,
+          status,
+          JSON.stringify({
+            request: {
+              durationSec,
+              aspectRatio: ar,
+              resolution: body.resolution,
+              addons: body.addons,
+            },
+            pricing: {
+              totalCents: pricing.totalCents,
+              currency: pricing.currency,
+            },
+          }),
+        ]
+      );
+    } catch (error) {
+      console.warn('[queue-log] failed to insert entry', error);
+    }
+
+    if (status === 'failed' && pendingReceipt && paymentMode === 'wallet') {
       try {
         await query(
           `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id)
@@ -286,164 +456,13 @@ export async function POST(req: NextRequest) {
             pendingReceipt.stripeChargeId ?? null,
           ]
         );
-      } catch (refundError) {
-        console.warn('[wallet] failed to roll back reservation after generation error', refundError);
+        await query(`UPDATE app_jobs SET payment_status = 'refunded_wallet' WHERE job_id = $1`, [jobId]);
+      } catch (error) {
+        console.warn('[wallet] failed to record refund', error);
       }
     }
-    return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : 'Generation failed' }, { status: 500 });
-  }
-
-  const thumb = normalizeMediaUrl(generationResult.thumbUrl) ?? generationResult.thumbUrl ?? null;
-  const video = normalizeMediaUrl(generationResult.videoUrl) ?? generationResult.videoUrl ?? null;
-  const videoAsset = generationResult.video ?? null;
-  const providerMode = generationResult.provider;
-  const status = generationResult.status ?? (video ? 'completed' : 'queued');
-  const progress = typeof generationResult.progress === 'number' ? generationResult.progress : video ? 100 : 0;
-  const providerJobId = generationResult.providerJobId ?? null;
-
-  await query(
-    `INSERT INTO app_jobs (
-       job_id,
-       user_id,
-       engine_id,
-       engine_label,
-       duration_sec,
-       prompt,
-       thumb_url,
-       aspect_ratio,
-       has_audio,
-       can_upscale,
-       preview_frame,
-       batch_id,
-       group_id,
-       iteration_index,
-       iteration_count,
-       render_ids,
-       hero_render_id,
-       local_key,
-       message,
-       eta_seconds,
-       eta_label,
-       video_url,
-       status,
-       progress,
-       provider_job_id,
-       final_price_cents,
-       pricing_snapshot,
-       currency,
-       vendor_account_id,
-       payment_status,
-       stripe_payment_intent_id,
-       stripe_charge_id
-     )
-     VALUES (
-       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27::jsonb,$28,$29,$30,$31,$32
-     )`,
-    [
-      jobId,
-      userId,
-      engine.id,
-      engine.label,
-      durationSec,
-      prompt,
-      thumb,
-      ar,
-      Boolean(body.addons?.audio),
-      Boolean(engine.upscale4k),
-      thumb,
-      batchId,
-      groupId,
-      iterationIndex,
-      iterationCount,
-      renderIds ? JSON.stringify(renderIds) : null,
-      heroRenderId,
-      localKey,
-      message,
-      etaSeconds,
-      etaLabel,
-      video,
-      status,
-      progress,
-      providerJobId,
-      pricing.totalCents,
-      pricingSnapshotJson,
-      pricing.currency,
-      vendorAccountId,
-      paymentStatus,
-      stripePaymentIntentId,
-      stripeChargeId,
-    ]
-  );
-
-  if (pendingReceipt && !walletChargeReserved) {
-    await query(
-      `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id)
-       VALUES ($1,'charge',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10)`,
-      [
-        pendingReceipt.userId,
-        pendingReceipt.amountCents,
-        pendingReceipt.currency,
-        pendingReceipt.description,
-        pendingReceipt.jobId,
-        JSON.stringify(pendingReceipt.snapshot),
-        pendingReceipt.applicationFeeCents,
-        pendingReceipt.vendorAccountId,
-        pendingReceipt.stripePaymentIntentId ?? null,
-        pendingReceipt.stripeChargeId ?? null,
-      ]
-    );
-  }
-
-  try {
-    await query(
-      `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
-       VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
-      [
-        jobId,
-        providerMode,
-        providerJobId,
-        engine.id,
-        status,
-        JSON.stringify({
-          request: {
-            durationSec,
-            aspectRatio: ar,
-            resolution: body.resolution,
-            addons: body.addons,
-          },
-          pricing: {
-            totalCents: pricing.totalCents,
-            currency: pricing.currency,
-          },
-        }),
-      ]
-    );
-  } catch (error) {
-    console.warn('[queue-log] failed to insert entry', error);
-  }
-
-  if (status === 'failed' && pendingReceipt && paymentMode === 'wallet') {
-    try {
-      await query(
-        `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id)
-         VALUES ($1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10)`,
-        [
-          pendingReceipt.userId,
-          pendingReceipt.amountCents,
-          pendingReceipt.currency,
-          `Refund ${engine.label} • ${durationSec}s`,
-          pendingReceipt.jobId,
-          JSON.stringify(pendingReceipt.snapshot),
-          0,
-          pendingReceipt.vendorAccountId,
-          pendingReceipt.stripePaymentIntentId ?? null,
-          pendingReceipt.stripeChargeId ?? null,
-        ]
-      );
-      await query(`UPDATE app_jobs SET payment_status = 'refunded_wallet' WHERE job_id = $1`, [jobId]);
-    } catch (error) {
-      console.warn('[wallet] failed to record refund', error);
-    }
+  } else {
+    console.warn('[api/generate] DATABASE_URL not configured; skipping persistence for job', jobId);
   }
 
   const responsePaymentStatus =

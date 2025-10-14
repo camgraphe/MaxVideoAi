@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { resolveLocale } from '@/lib/i18n/server';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export const metadata: Metadata = {
   title: 'MaxVideo AI',
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang={locale}>
       <body>
         {children}
+        <SpeedInsights />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }} />
       </body>
     </html>
