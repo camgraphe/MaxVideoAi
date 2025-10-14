@@ -10,6 +10,11 @@ const nextConfig = {
       { protocol: 'https', hostname: 'upload.wikimedia.org' },
     ],
   },
+  experimental: {
+    outputFileTracingExcludes: {
+      '*': ['.next/cache/**/*', 'tsconfig.tsbuildinfo'],
+    },
+  },
 };
 
 module.exports = nextConfig;
