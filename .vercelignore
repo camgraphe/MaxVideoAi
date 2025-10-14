@@ -1,0 +1,38 @@
+#
+# Ignore build artifacts and local-only files when deploying with Vercel.
+#
+
+# Node / Next.js
+node_modules/
+.next/
+dist/
+out/
+coverage/
+
+# Env files (keep examples)
+.env
+.env.*
+!.env.example
+!frontend/.env.local.example
+
+# OS / IDE clutter
+.DS_Store
+.idea/
+.vscode/
+.cache/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Vercel local state
+.vercel
+
+# Generated test assets
+frontend/public/test-videos/
+video-gallery-dist/
+
+# Private modules extracted from public repo
+private/
+.env*.local
