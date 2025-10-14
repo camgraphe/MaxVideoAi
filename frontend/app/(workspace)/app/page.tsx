@@ -2088,7 +2088,7 @@ useEffect(() => {
                     <EngineSelect
                       engines={engines}
                       engineId={form.engineId}
-                      onEngineChange={(engineId) =>
+                      onEngineChange={(engineId: string) =>
                         setForm((current) => (current ? { ...current, engineId } : current))
                       }
                       mode={form.mode}
