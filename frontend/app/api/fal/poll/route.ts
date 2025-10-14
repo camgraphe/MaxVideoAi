@@ -38,7 +38,7 @@ export async function POST() {
       await updateJobFromFalWebhook({
         request_id: job.provider_job_id,
         status: status.status,
-        response: status.response ?? status.payload,
+        data: status as unknown,
       });
       updates += 1;
     } catch (error) {
