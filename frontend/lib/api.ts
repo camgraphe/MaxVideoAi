@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import { computePreflight, enginesResponse } from '@/lib/engines';
@@ -142,7 +143,7 @@ async function fetchJobsPage(limit: number, cursor?: string | null): Promise<Job
 }
 
 export function useInfiniteJobs(pageSize = 12) {
-  return useSWRInfinite<JobsPage>(
+  const swr = useSWRInfinite<JobsPage>(
     (index, previousPage) => {
       if (previousPage && !previousPage.nextCursor) {
         return null;
@@ -163,6 +164,60 @@ export function useInfiniteJobs(pageSize = 12) {
     },
     { revalidateOnFocus: false }
   );
+
+  const { mutate } = swr;
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<JobStatusResult>).detail;
+      if (!detail || !detail.jobId) return;
+      void mutate(
+        (pages) => {
+          if (!pages) return pages;
+          return pages.map((page) => {
+            const jobs = page.jobs.map((job) => {
+              if (job.jobId !== detail.jobId) {
+                return job;
+              }
+              const next = {
+                ...job,
+                status: detail.status ?? job.status,
+                progress: detail.progress ?? job.progress,
+                videoUrl: detail.videoUrl ?? job.videoUrl,
+                thumbUrl: detail.thumbUrl ?? job.thumbUrl,
+                finalPriceCents: detail.finalPriceCents ?? job.finalPriceCents,
+                currency: detail.currency ?? job.currency,
+                pricingSnapshot: detail.pricing ?? job.pricingSnapshot,
+                paymentStatus: detail.paymentStatus ?? job.paymentStatus,
+                batchId: detail.batchId ?? job.batchId,
+                groupId: detail.groupId ?? job.groupId,
+                iterationIndex: detail.iterationIndex ?? job.iterationIndex,
+                iterationCount: detail.iterationCount ?? job.iterationCount,
+                heroRenderId: detail.heroRenderId ?? job.heroRenderId,
+                localKey: detail.localKey ?? job.localKey,
+                message: detail.message ?? job.message,
+                etaSeconds: detail.etaSeconds ?? job.etaSeconds,
+                etaLabel: detail.etaLabel ?? job.etaLabel,
+              };
+              if (detail.renderIds !== undefined) {
+                next.renderIds = detail.renderIds;
+              }
+              return next;
+            });
+            return { ...page, jobs };
+          });
+        },
+        { revalidate: false }
+      );
+    };
+    window.addEventListener('jobs:status', handler as EventListener);
+    return () => {
+      window.removeEventListener('jobs:status', handler as EventListener);
+    };
+  }, [mutate]);
+
+  return swr;
 }
 
 export async function runPreflight(payload: PreflightRequest): Promise<PreflightResponse> {
@@ -253,7 +308,7 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResult> {
         ? null
         : undefined;
 
-  return {
+  const result: JobStatusResult = {
     ok: true,
     jobId: payload.jobId ?? jobId,
     status: normalizedStatus,
@@ -275,6 +330,12 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResult> {
     etaSeconds: payload.etaSeconds ?? null,
     etaLabel: payload.etaLabel ?? null,
   };
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent<JobStatusResult>('jobs:status', { detail: result }));
+  }
+
+  return result;
 }
 
 export async function hideJob(jobId: string): Promise<void> {
