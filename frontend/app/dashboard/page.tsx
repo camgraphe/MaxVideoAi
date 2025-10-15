@@ -6,8 +6,7 @@ import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { getJobStatus, hideJob, useEngines, useInfiniteJobs } from '@/lib/api';
-import { JobMedia } from '@/components/JobMedia';
+import { getJobStatus, useEngines, useInfiniteJobs } from '@/lib/api';
 import {
   groupJobsIntoSummaries,
   loadPersistedGroupSummaries,
@@ -15,14 +14,13 @@ import {
   GROUP_SUMMARY_STORAGE_KEY,
 } from '@/lib/job-groups';
 import { GroupedJobCard } from '@/components/GroupedJobCard';
+import { normalizeGroupSummaries } from '@/lib/normalize-group-summary';
 import type { GroupSummary } from '@/types/groups';
 import type { Job } from '@/types/jobs';
 import type { EngineCaps } from '@/types/engines';
-import { EngineIcon } from '@/components/ui/EngineIcon';
 import { supabase } from '@/lib/supabaseClient';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { MediaLightbox, type MediaLightboxEntry } from '@/components/MediaLightbox';
-import { getAspectRatioNumber } from '@/lib/aspect';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 export default function DashboardPage() {
@@ -40,24 +38,12 @@ export default function DashboardPage() {
     return { byId, byLabel };
   }, [enginesData?.engines]);
 
-  const resolveEngine = useCallback(
-    (job: Job) => {
-      if (job.engineId) {
-        const byId = engineLookup.byId.get(job.engineId);
-        if (byId) return byId;
-      }
-      const labelKey = job.engineLabel?.toLowerCase();
-      if (labelKey) {
-        const byLabel = engineLookup.byLabel.get(labelKey);
-        if (byLabel) return byLabel;
-      }
-      return undefined;
-    },
-    [engineLookup]
-  );
 
   const jobs = useMemo(() => jobsPages?.[0]?.jobs ?? [], [jobsPages]);
-  const { groups: apiGroups, ungrouped: apiUngrouped } = useMemo(() => groupJobsIntoSummaries(jobs), [jobs]);
+  const { groups: apiGroups } = useMemo(
+    () => groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true }),
+    [jobs]
+  );
   const [storedGroups, setStoredGroups] = useState<GroupSummary[]>([]);
 
   const storageKey = useCallback(
@@ -95,15 +81,7 @@ export default function DashboardPage() {
     return Array.from(map.values()).sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
   }, [apiGroups, storedGroups]);
 
-  const ungroupedJobs = useMemo(() => {
-    const groupedIds = new Set<string>();
-    groupedJobs.forEach((group) => {
-      group.members.forEach((member) => {
-        if (member.jobId) groupedIds.add(member.jobId);
-      });
-    });
-    return apiUngrouped.filter((job) => !groupedIds.has(job.jobId));
-  }, [apiUngrouped, groupedJobs]);
+  const normalizedGroupedJobs = useMemo(() => normalizeGroupSummaries(groupedJobs), [groupedJobs]);
   const [walletSummary, setWalletSummary] = useState<{ balance: number; currency: string } | null>(null);
   const [memberSummary, setMemberSummary] = useState<{
     tier: string;
@@ -125,68 +103,12 @@ export default function DashboardPage() {
       throw error instanceof Error ? error : new Error('Unable to refresh render status.');
     }
   }, []);
-  const handleRemoveJob = useCallback(
-    async (job: Job) => {
-      try {
-        await hideJob(job.jobId);
-        setLightbox((current) =>
-          current && current.kind === 'job' && current.job.jobId === job.jobId ? null : current
-        );
-        await mutateJobs(
-          (pages) => {
-            if (!pages) return pages;
-            return pages.map((page) => ({
-              ...page,
-              jobs: page.jobs.filter((entry) => entry.jobId !== job.jobId),
-            }));
-          },
-          false
-        );
-      } catch (error) {
-        console.error('Failed to hide job', error);
-      }
-    },
-    [mutateJobs]
-  );
-
-  const handleCopyPrompt = useCallback(async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch {}
-  }, []);
-
-  type DashboardItem = { kind: 'group'; group: GroupSummary } | { kind: 'job'; job: Job } | { kind: 'placeholder'; id: string };
-  const placeholderItems = useMemo<DashboardItem[]>(
-    () =>
-      Array.from({ length: 8 }, (_, index) => ({
-        kind: 'placeholder',
-        id: `dashboard-placeholder-${index}`,
-      })),
-    []
-  );
+  const placeholderIds = useMemo(() => Array.from({ length: 6 }, (_, index) => `dashboard-placeholder-${index}`), []);
   const isInitialLoading = isLoading && jobs.length === 0 && groupedJobs.length === 0;
-  const itemsToRender: DashboardItem[] = useMemo(() => {
-    if (isInitialLoading) return placeholderItems;
-    const items: DashboardItem[] = [];
-    const limitedGroups = groupedJobs.slice(0, 6);
-    limitedGroups.forEach((group) => {
-      items.push({ kind: 'group', group });
-    });
-    const remainingSlots = Math.max(0, 12 - limitedGroups.length);
-    const groupedJobIds = new Set<string>();
-    limitedGroups.forEach((group) => {
-      group.members.forEach((member) => {
-        if (member.jobId) groupedJobIds.add(member.jobId);
-      });
-    });
-    ungroupedJobs
-      .filter((job) => !groupedJobIds.has(job.jobId))
-      .slice(0, remainingSlots)
-      .forEach((job) => {
-        items.push({ kind: 'job', job });
-      });
-    return items.length ? items : placeholderItems;
-  }, [groupedJobs, ungroupedJobs, isInitialLoading, placeholderItems]);
+  const latestGroups = useMemo(() => normalizedGroupedJobs.slice(0, 12), [normalizedGroupedJobs]);
+  const latestSkeletonCount =
+    isInitialLoading || (isLoading && latestGroups.length === 0) ? placeholderIds.length : 0;
+  const showEmptyLatest = !isLoading && latestGroups.length === 0;
   const formatCurrency = useCallback((amount: number, currencyCode?: string) => {
     const safeCurrency = currencyCode ?? 'USD';
     try {
@@ -340,48 +262,44 @@ export default function DashboardPage() {
                   Retry
                 </button>
               </div>
+            ) : showEmptyLatest ? (
+              <div className="rounded-card border border-border bg-white p-6 text-sm text-text-secondary">
+                Start a generation to populate your latest renders.
+              </div>
             ) : (
               <div className="flex w-full gap-4 overflow-x-auto pb-2">
-                {itemsToRender.map((item) => {
-                  if (item.kind === 'group') {
-                    const heroEngineId = item.group.hero.engineId ?? null;
-                    const heroEngineLabelKey = item.group.hero.engineLabel?.toLowerCase?.() ?? null;
-                    const heroEngine = heroEngineId
-                      ? engineLookup.byId.get(heroEngineId)
-                      : heroEngineLabelKey
-                        ? engineLookup.byLabel.get(heroEngineLabelKey)
-                        : undefined;
-                    const baseHeight = 225;
-                    const heroAspect = getAspectRatioNumber(item.group.hero.aspectRatio);
-                    const width = Math.max(110, baseHeight * heroAspect);
-                    return (
-                      <div
-                        key={`group-${item.group.id}`}
-                        className="flex-shrink-0"
-                        style={{ width, minWidth: width }}
-                      >
-                        <GroupedJobCard
-                          group={item.group}
-                          engine={heroEngine}
-                          actionMenu={false}
-                          onOpen={(group) => setLightbox({ kind: 'group', group })}
-                        />
+                {latestSkeletonCount > 0 &&
+                  placeholderIds.slice(0, latestSkeletonCount).map((id) => (
+                    <div
+                      key={id}
+                      className="flex h-full min-w-[280px] flex-shrink-0 flex-col overflow-hidden rounded-card border border-border bg-white/60"
+                    >
+                      <div className="relative" style={{ aspectRatio: '16 / 9' }}>
+                        <div className="skeleton absolute inset-0" />
                       </div>
-                    );
-                  }
-                  if (item.kind === 'job') {
-                    return (
-                      <DashboardJobCard
-                        key={item.job.jobId}
-                        job={item.job}
-                        onCopyPrompt={handleCopyPrompt}
-                        onSelect={(job) => setLightbox({ kind: 'job', job })}
-                        engine={resolveEngine(item.job)}
-                        onRemove={handleRemoveJob}
+                      <div className="border-t border-border bg-white/70 px-3 py-2">
+                        <div className="h-3 w-24 rounded-full bg-neutral-200" />
+                      </div>
+                    </div>
+                  ))}
+                {latestGroups.map((group) => {
+                  const heroEngineId = group.hero.engineId ?? null;
+                  const heroEngineLabelKey = group.hero.engineLabel?.toLowerCase?.() ?? null;
+                  const heroEngine = heroEngineId
+                    ? engineLookup.byId.get(heroEngineId)
+                    : heroEngineLabelKey
+                      ? engineLookup.byLabel.get(heroEngineLabelKey)
+                      : undefined;
+                  return (
+                    <div key={`group-${group.id}`} className="min-w-[280px] flex-shrink-0 md:min-w-[320px]">
+                      <GroupedJobCard
+                        group={group}
+                        engine={heroEngine}
+                        actionMenu={false}
+                        onOpen={(nextGroup) => setLightbox({ kind: 'group', group: nextGroup })}
                       />
-                    );
-                  }
-                  return <DashboardJobSkeleton key={item.id} />;
+                    </div>
+                  );
                 })}
               </div>
             )}
@@ -461,123 +379,6 @@ function QuickAction({ href, icon, label }: { href: string; icon: string; label:
       </span>
       <span>{label}</span>
     </Link>
-  );
-}
-
-function DashboardJobCard({
-  job,
-  onCopyPrompt,
-  onSelect,
-  engine,
-  onRemove,
-}: {
-  job: Job;
-  onCopyPrompt: (prompt: string) => void;
-  onSelect: (job: Job) => void;
-  engine?: EngineCaps | undefined;
-  onRemove?: (job: Job) => void;
-}) {
-  const baseHeight = 225;
-  const ratio = getAspectRatioNumber(job.aspectRatio);
-  const height = baseHeight;
-  const width = Math.max(110, height * ratio);
-
-  const handleSelect = useCallback(() => {
-    onSelect(job);
-  }, [job, onSelect]);
-
-  return (
-    <article
-      className="group relative shrink-0 cursor-pointer overflow-hidden rounded-card border border-border bg-white shadow-card"
-      style={{ width, height }}
-      role="button"
-      tabIndex={0}
-      onClick={handleSelect}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          onSelect(job);
-        }
-      }}
-    >
-      <div className="absolute inset-0 flex items-center justify-center bg-[#EFF3FA]">
-        <JobMedia
-          job={job}
-          className="h-full w-auto"
-          objectFit="contain"
-        />
-      </div>
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-      <div className="absolute right-2 top-2 flex gap-1">
-        {job.canUpscale && (
-          <span className="rounded-input border border-border bg-white/90 px-2 py-1 text-xs font-medium text-text-secondary">
-            <Image src="/assets/icons/upscale.svg" alt="" width={14} height={14} className="inline" />
-          </span>
-        )}
-        {job.hasAudio && (
-          <span className="rounded-input border border-border bg-white/90 px-2 py-1 text-xs font-medium text-text-secondary">
-            <Image src="/assets/icons/audio.svg" alt="" width={14} height={14} className="inline" />
-          </span>
-        )}
-      </div>
-      <div className="absolute bottom-2 left-2 flex items-center gap-2">
-        <span className="inline-flex items-center gap-1.5 rounded-input border border-border bg-white/90 px-2.5 py-1 text-xs font-medium text-text-secondary">
-          <EngineIcon engine={engine} label={job.engineLabel} size={20} className="shrink-0" />
-          <span className="truncate max-w-[120px]">{job.engineLabel}</span>
-        </span>
-        <span className="rounded-input border border-border bg-white/90 px-2 py-1 text-xs font-medium text-text-secondary">{job.durationSec}s</span>
-      </div>
-      <div className="absolute bottom-2 right-2 flex gap-2">
-        <button
-          type="button"
-          onClick={(event) => {
-            event.stopPropagation();
-            onCopyPrompt(job.prompt);
-          }}
-          className="rounded-input border border-border bg-white/90 px-2 py-1 text-xs font-medium text-text-secondary transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <Image src="/assets/icons/copy.svg" alt="" width={14} height={14} className="mr-1 inline" /> Copy prompt
-        </button>
-        {onRemove && (
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onRemove(job);
-            }}
-            className="rounded-input border border-border bg-white/90 px-2 py-1 text-xs font-medium text-text-secondary transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            Retirer
-          </button>
-        )}
-      </div>
-    </article>
-  );
-}
-
-function DashboardJobSkeleton() {
-  const baseHeight = 225;
-  const ratio = 16 / 9;
-  const height = baseHeight;
-  const width = height * ratio;
-  return (
-    <article
-      className="relative shrink-0 overflow-hidden rounded-card border border-border bg-white shadow-card"
-      style={{ width, height }}
-    >
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 skeleton" />
-        <div className="absolute right-2 top-2 flex gap-1">
-          <span className="h-6 w-12 rounded-full bg-white/70" />
-          <span className="h-6 w-12 rounded-full bg-white/70" />
-        </div>
-        <div className="absolute bottom-2 left-2 flex items-center gap-2">
-          <span className="h-6 w-24 rounded-full bg-white/80" />
-          <span className="h-6 w-12 rounded-full bg-white/80" />
-        </div>
-        <div className="absolute bottom-2 right-2 h-6 w-16 rounded-full bg-white/80" />
-      </div>
-    </article>
   );
 }
 

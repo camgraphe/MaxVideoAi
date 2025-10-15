@@ -163,60 +163,64 @@ export function Composer({
         </div>
       </header>
 
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <span className="text-sm font-medium text-text-primary">{promptLabel}</span>
-              {promptDescription && (
-                <p className="text-[12px] text-text-muted">{promptDescription}</p>
+      <div className={clsx(
+        assetFields.length > 0 ? 'flex flex-col gap-4 lg:flex-row lg:items-start' : 'space-y-4'
+      )}>
+        <div className={clsx('space-y-4', assetFields.length > 0 ? 'flex-1' : '')}>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <span className="text-sm font-medium text-text-primary">{promptLabel}</span>
+                {promptDescription && (
+                  <p className="text-[12px] text-text-muted">{promptDescription}</p>
+                )}
+              </div>
+              <span className={clsx('rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-micro', promptRequired ? 'border-accent text-accent' : 'border-border text-text-muted')}>
+                {promptRequired ? 'Required' : 'Optional'}
+              </span>
+            </div>
+            <div className="relative">
+              <textarea
+                value={prompt}
+                onChange={(event) => onPromptChange(event.currentTarget.value)}
+                placeholder="Describe the shot..."
+                rows={6}
+                className="w-full rounded-input border border-border bg-white px-4 py-3 pr-28 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                ref={textareaRef}
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-input border border-hairline bg-white px-3 py-1.5 text-[12px] font-medium uppercase tracking-micro text-text-secondary transition hover:border-accentSoft/50 hover:bg-accentSoft/10 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Enhance prompt
+              </button>
+            </div>
+          </div>
+
+          {negativePromptField && (
+            <div className="space-y-1">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[12px] uppercase tracking-micro text-text-muted">{negativePromptLabel}</span>
+                {negativePromptRequired && (
+                  <span className="text-[11px] text-text-muted/80">Required</span>
+                )}
+              </div>
+              <input
+                type="text"
+                value={negativePrompt ?? ''}
+                onChange={(event) => onNegativePromptChange?.(event.currentTarget.value)}
+                placeholder="Elements to avoid…"
+                className="w-full rounded-input border border-border bg-white px-4 py-2 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+              {negativePromptDescription && (
+                <p className="text-[12px] text-text-muted">{negativePromptDescription}</p>
               )}
             </div>
-            <span className={clsx('rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-micro', promptRequired ? 'border-accent text-accent' : 'border-border text-text-muted')}>
-              {promptRequired ? 'Required' : 'Optional'}
-            </span>
-          </div>
-          <div className="relative">
-            <textarea
-              value={prompt}
-              onChange={(event) => onPromptChange(event.currentTarget.value)}
-              placeholder="Describe the shot..."
-              rows={6}
-              className="w-full rounded-input border border-border bg-white px-4 py-3 pr-28 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              ref={textareaRef}
-            />
-            <button
-              type="button"
-              className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-input border border-hairline bg-white px-3 py-1.5 text-[12px] font-medium uppercase tracking-micro text-text-secondary transition hover:border-accentSoft/50 hover:bg-accentSoft/10 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              Enhance prompt
-            </button>
-          </div>
+          )}
         </div>
 
-        {negativePromptField && (
-          <div className="space-y-1">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[12px] uppercase tracking-micro text-text-muted">{negativePromptLabel}</span>
-              {negativePromptRequired && (
-                <span className="text-[11px] text-text-muted/80">Required</span>
-              )}
-            </div>
-            <input
-              type="text"
-              value={negativePrompt ?? ''}
-              onChange={(event) => onNegativePromptChange?.(event.currentTarget.value)}
-              placeholder="Elements to avoid…"
-              className="w-full rounded-input border border-border bg-white px-4 py-2 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-            {negativePromptDescription && (
-              <p className="text-[12px] text-text-muted">{negativePromptDescription}</p>
-            )}
-          </div>
-        )}
-
         {assetFields.length > 0 && (
-          <div className="flex flex-wrap gap-3 text-sm">
+          <div className="flex flex-col gap-3 text-sm lg:w-64">
             {assetFields.map(({ field, required }) => (
               <AssetDropzone
                 key={field.id}
@@ -401,7 +405,7 @@ function AssetDropzone({ engine, caps, field, required, assets, onSelect, onRemo
   }, [acceptFormats, caps?.maxUploadMB, constraints.maxImageSizeMB, constraints.maxVideoSizeMB, field.maxCount, field.minCount, field.type, limits.imageMaxMB, limits.videoMaxDurationSec, limits.videoMaxMB]);
 
   return (
-    <div className="flex min-w-[260px] flex-1">
+    <div className="flex min-w-0 flex-1">
       <div className="flex w-full flex-col gap-3 rounded-input border border-dashed border-border bg-white/80 p-4 text-text-secondary">
         <div className="flex items-center justify-between gap-2">
           <div>

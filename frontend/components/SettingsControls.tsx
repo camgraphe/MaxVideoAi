@@ -74,6 +74,8 @@ export function SettingsControls({
   const [guidance, setGuidance] = useState<number | null>(null);
   const [initInfluence, setInitInfluence] = useState<number | null>(null);
   const [promptStrength, setPromptStrength] = useState<number | null>(null);
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(true);
+
 
   const enumeratedDurationOptions = useMemo(() => {
     if (!caps?.duration) return null;
@@ -429,148 +431,166 @@ export function SettingsControls({
         </div>
       )}
 
-      <div className="space-y-3 rounded-input border border-border bg-white p-3">
-        <span className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Advanced settings</span>
-        <label className="flex flex-col gap-2 text-sm text-text-secondary">
-          <span className="text-[12px] uppercase tracking-micro text-text-muted">Seed</span>
-          <input
-            type="number"
-            placeholder="Random"
-            value={seed}
-            onChange={(e) => setSeed(e.currentTarget.value)}
-            className="rounded-input border border-border bg-white px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        </label>
-        <div className="flex items-center justify-between gap-3">
-          <label className="inline-flex items-center gap-2 text-[13px] text-text-secondary">
-            <input
-              type="checkbox"
-              checked={Boolean(seedLocked)}
-              onChange={(e) => onSeedLockedChange?.(e.currentTarget.checked)}
-            />
-            <span>Lock seed</span>
-          </label>
-          <label className="flex items-center gap-2 text-[13px] text-text-secondary">
-            <span className="text-[12px] uppercase tracking-micro text-text-muted">Jitter</span>
-            <input
-              type="number"
-              min={0}
-              max={100}
-              value={jitter}
-              onChange={(e) => setJitter(Number(e.currentTarget.value))}
-              className="w-20 rounded-input border border-border bg-white px-2 py-1 text-right text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-            <span className="text-[12px] text-text-muted">%</span>
-          </label>
-        </div>
-
-        {/* Iterations moved to Core next to Duration */}
-
-        {engine.fps.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {engine.fps.map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => onFpsChange(option)}
-                className={clsx(
-                  'rounded-input border px-3 py-1.5 text-[13px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  option === fps
-                    ? 'border-accent bg-accent text-white'
-                    : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
-                )}
-              >
-                {option} fps
-              </button>
-            ))}
-          </div>
-        )}
-
-        {engine.params.promptStrength && (
-          <div className="space-y-2">
-            <span className="text-[12px] uppercase tracking-micro text-text-muted">Prompt strength</span>
-            <RangeWithInput
-              value={promptStrength ?? engine.params.promptStrength.default ?? 0.5}
-              min={engine.params.promptStrength.min ?? 0}
-              max={engine.params.promptStrength.max ?? 1}
-              step={engine.params.promptStrength.step ?? 0.05}
-              onChange={(value) => setPromptStrength(value)}
-            />
-          </div>
-        )}
-
-        {engine.params.guidance && (
-          <div className="space-y-2">
-            <span className="text-[12px] uppercase tracking-micro text-text-muted">Guidance</span>
-            <RangeWithInput
-              value={guidance ?? engine.params.guidance.default ?? 0.5}
-              min={engine.params.guidance.min ?? 0}
-              max={engine.params.guidance.max ?? 1}
-              step={engine.params.guidance.step ?? 0.05}
-              onChange={(value) => setGuidance(value)}
-            />
-          </div>
-        )}
-
-        {showApiKeyField && (
-          <div className="space-y-2">
-            <span className="text-[12px] uppercase tracking-micro text-text-muted">OpenAI API key</span>
-            <input
-              type="password"
-              placeholder="sk-..."
-              autoComplete="off"
-              value={apiKey ?? ''}
-              onChange={(event) => onApiKeyChange?.(event.currentTarget.value)}
-              className="rounded-input border border-border bg-white px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-            <p className="text-[11px] text-text-muted">
-              Provide your OpenAI key to bill directly through your account. We do not store the key server-side.
-            </p>
-          </div>
-        )}
-
-        {(mode === 'i2v' || mode === 'v2v') && engine.params.initInfluence && (
-          <div className="space-y-2">
-            <h4 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Input influence</h4>
-            <RangeWithInput
-              value={initInfluence ?? engine.params.initInfluence.default ?? 0.5}
-              min={engine.params.initInfluence.min ?? 0}
-              max={engine.params.initInfluence.max ?? 1}
-              step={engine.params.initInfluence.step ?? 0.05}
-              onChange={(value) => setInitInfluence(value)}
-            />
-          </div>
-        )}
-
-        {engine.extend && (
-          <div className="space-y-2">
-            <h4 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Extend</h4>
-            <div className="flex items-center gap-2 text-[13px]">
-              <span>Extend by</span>
-              <input type="number" min={1} max={30} defaultValue={5} className="w-20 rounded-input border border-border bg-white px-2 py-1 text-right focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
-              <span>seconds</span>
-            </div>
-          </div>
-        )}
-
-        {engine.keyframes && (
-          <div className="text-[12px] text-text-muted">Keyframes supported (Pika 2.2)</div>
-        )}
-
-        <div
-          className={clsx(
-            'space-y-3',
-            focusRefs?.addons && 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-          )}
-          ref={focusRefs?.addons}
-          tabIndex={focusRefs?.addons ? -1 : undefined}
+      <div className="rounded-input border border-border bg-white">
+        <button
+          type="button"
+          className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left"
+          onClick={() => setIsAdvancedOpen((prev) => !prev)}
+          aria-expanded={isAdvancedOpen}
         >
-          <h3 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Add-ons</h3>
-          <div className="flex flex-wrap gap-2">
-            {engine.upscale4k && (
-              <TogglePill label="Upscale" active={addons.upscale4k} onClick={() => onAddonToggle('upscale4k', !addons.upscale4k)} />
+          <span className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Advanced settings</span>
+          <svg
+            className={clsx('h-4 w-4 text-text-muted transition-transform', isAdvancedOpen ? 'rotate-180' : 'rotate-0')}
+            viewBox="0 0 20 20"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        {isAdvancedOpen && (
+          <div className="space-y-3 border-t border-border px-3 pb-3 pt-2">
+            <label className="flex flex-col gap-2 text-sm text-text-secondary">
+              <span className="text-[12px] uppercase tracking-micro text-text-muted">Seed</span>
+              <input
+                type="number"
+                placeholder="Random"
+                value={seed}
+                onChange={(e) => setSeed(e.currentTarget.value)}
+                className="rounded-input border border-border bg-white px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+            </label>
+            <div className="flex items-center justify-between gap-3">
+              <label className="inline-flex items-center gap-2 text-[13px] text-text-secondary">
+                <input
+                  type="checkbox"
+                  checked={Boolean(seedLocked)}
+                  onChange={(e) => onSeedLockedChange?.(e.currentTarget.checked)}
+                />
+                <span>Lock seed</span>
+              </label>
+              <label className="flex items-center gap-2 text-[13px] text-text-secondary">
+                <span className="text-[12px] uppercase tracking-micro text-text-muted">Jitter</span>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={jitter}
+                  onChange={(e) => setJitter(Number(e.currentTarget.value))}
+                  className="w-20 rounded-input border border-border bg-white px-2 py-1 text-right text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+                <span className="text-[12px] text-text-muted">%</span>
+              </label>
+            </div>
+
+            {engine.fps.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {engine.fps.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => onFpsChange(option)}
+                    className={clsx(
+                      'rounded-input border px-3 py-1.5 text-[13px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      option === fps
+                        ? 'border-accent bg-accent text-white'
+                        : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
+                    )}
+                  >
+                    {option} fps
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {engine.params.promptStrength && (
+              <div className="space-y-2">
+                <span className="text-[12px] uppercase tracking-micro text-text-muted">Prompt strength</span>
+                <RangeWithInput
+                  value={promptStrength ?? engine.params.promptStrength.default ?? 0.5}
+                  min={engine.params.promptStrength.min ?? 0}
+                  max={engine.params.promptStrength.max ?? 1}
+                  step={engine.params.promptStrength.step ?? 0.05}
+                  onChange={(value) => setPromptStrength(value)}
+                />
+              </div>
+            )}
+
+            {engine.params.guidance && (
+              <div className="space-y-2">
+                <span className="text-[12px] uppercase tracking-micro text-text-muted">Guidance</span>
+                <RangeWithInput
+                  value={guidance ?? engine.params.guidance.default ?? 0.5}
+                  min={engine.params.guidance.min ?? 0}
+                  max={engine.params.guidance.max ?? 1}
+                  step={engine.params.guidance.step ?? 0.05}
+                  onChange={(value) => setGuidance(value)}
+                />
+              </div>
+            )}
+
+            {showApiKeyField && (
+              <div className="space-y-2">
+                <span className="text-[12px] uppercase tracking-micro text-text-muted">OpenAI API key</span>
+                <input
+                  type="password"
+                  placeholder="sk-..."
+                  autoComplete="off"
+                  value={apiKey ?? ''}
+                  onChange={(event) => onApiKeyChange?.(event.currentTarget.value)}
+                  className="rounded-input border border-border bg-white px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+                <p className="text-[11px] text-text-muted">
+                  Provide your OpenAI key to bill directly through your account. We do not store the key server-side.
+                </p>
+              </div>
+            )}
+
+            {(mode === 'i2v' || mode === 'v2v') && engine.params.initInfluence && (
+              <div className="space-y-2">
+                <h4 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Input influence</h4>
+                <RangeWithInput
+                  value={initInfluence ?? engine.params.initInfluence.default ?? 0.5}
+                  min={engine.params.initInfluence.min ?? 0}
+                  max={engine.params.initInfluence.max ?? 1}
+                  step={engine.params.initInfluence.step ?? 0.05}
+                  onChange={(value) => setInitInfluence(value)}
+                />
+              </div>
+            )}
+
+            {engine.extend && (
+              <div className="space-y-2">
+                <h4 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Extend</h4>
+                <div className="flex items-center gap-2 text-[13px]">
+                  <span>Extend by</span>
+                  <input type="number" min={1} max={30} defaultValue={5} className="w-20 rounded-input border border-border bg-white px-2 py-1 text-right focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+                  <span>seconds</span>
+                </div>
+              </div>
+            )}
+
+            {engine.keyframes && (
+              <div className="text-[12px] text-text-muted">Keyframes supported (Pika 2.2)</div>
             )}
           </div>
+        )}
+      </div>
+
+      <div
+        className={clsx(
+          'space-y-3',
+          focusRefs?.addons && 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+        )}
+        ref={focusRefs?.addons}
+        tabIndex={focusRefs?.addons ? -1 : undefined}
+      >
+        <h3 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Add-ons</h3>
+        <div className="flex flex-wrap gap-2">
+          {engine.upscale4k && (
+            <TogglePill label="Upscale" active={addons.upscale4k} onClick={() => onAddonToggle('upscale4k', !addons.upscale4k)} />
+          )}
         </div>
       </div>
     </Card>
