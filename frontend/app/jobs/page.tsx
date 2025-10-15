@@ -4,12 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { getJobStatus, hideJob, useEngines, useInfiniteJobs } from '@/lib/api';
-import {
-  groupJobsIntoSummaries,
-  loadPersistedGroupSummaries,
-  GROUP_SUMMARIES_UPDATED_EVENT,
-  GROUP_SUMMARY_STORAGE_KEY,
-} from '@/lib/job-groups';
+import { groupJobsIntoSummaries } from '@/lib/job-groups';
 import type { GroupSummary } from '@/types/groups';
 import type { EngineCaps } from '@/types/engines';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
@@ -22,7 +17,7 @@ import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-
 export default function JobsPage() {
   const { data: enginesData } = useEngines();
   const { data, error, isLoading, size, setSize, isValidating, mutate } = useInfiniteJobs(24);
-  const { userId, loading: authLoading } = useRequireAuth();
+  const { loading: authLoading } = useRequireAuth();
 
   const pages = data ?? [];
   const jobs = pages.flatMap((p) => p.jobs);
@@ -32,21 +27,6 @@ export default function JobsPage() {
     () => groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true }),
     [jobs]
   );
-  const [storedGroups, setStoredGroups] = useState<GroupSummary[]>([]);
-
-  const storageKey = useCallback(
-    (base: string) => (userId ? `${base}:${userId}` : base),
-    [userId]
-  );
-
-  useEffect(() => {
-    if (authLoading || typeof window === 'undefined') return;
-    const key = storageKey(GROUP_SUMMARY_STORAGE_KEY);
-    const sync = () => setStoredGroups(loadPersistedGroupSummaries(key));
-    sync();
-    window.addEventListener(GROUP_SUMMARIES_UPDATED_EVENT, sync);
-    return () => window.removeEventListener(GROUP_SUMMARIES_UPDATED_EVENT, sync);
-  }, [authLoading, storageKey]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -57,17 +37,10 @@ export default function JobsPage() {
     return () => window.removeEventListener('jobs:hidden', handleHidden);
   }, [mutate]);
 
-  const groupedJobs = useMemo(() => {
-    const map = new Map<string, GroupSummary>();
-    [...apiGroups, ...storedGroups].forEach((group) => {
-      if (!group) return;
-      const current = map.get(group.id);
-      if (!current || Date.parse(group.createdAt) > Date.parse(current.createdAt)) {
-        map.set(group.id, group);
-      }
-    });
-    return Array.from(map.values()).sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
-  }, [apiGroups, storedGroups]);
+  const groupedJobs = useMemo(
+    () => [...apiGroups].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
+    [apiGroups]
+  );
 
   const engineLookup = useMemo(() => {
     const byId = new Map<string, EngineCaps>();

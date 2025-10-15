@@ -5,9 +5,8 @@ let ensurePromise: Promise<void> | null = null;
 export async function ensureBillingSchema(): Promise<void> {
   if (ensurePromise) return ensurePromise;
 
-  ensurePromise = (async () => {
-    try {
-      await query(`
+  const ensure = async () => {
+    await query(`
         CREATE TABLE IF NOT EXISTS app_pricing_rules (
           id TEXT PRIMARY KEY,
           engine_id TEXT,
@@ -128,10 +127,13 @@ export async function ensureBillingSchema(): Promise<void> {
       await query(`
         CREATE INDEX IF NOT EXISTS fal_queue_log_job_idx ON fal_queue_log (job_id, created_at DESC);
       `);
-    } catch (error) {
-      console.error('[schema] Failed to ensure app schema', error);
-    }
-  })();
+  };
+
+  ensurePromise = ensure().catch((error) => {
+    ensurePromise = null;
+    console.error('[schema] Failed to ensure app schema', error);
+    throw error;
+  });
 
   await ensurePromise;
 }

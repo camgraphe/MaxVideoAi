@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { isDatabaseConfigured, query } from '@/lib/db';
 import { shouldUseFalApis } from '@/lib/result-provider';
 import { getPosterFrame } from '@/lib/fal';
 import type { PricingSnapshot } from '@/types/engines';
 import { ensureBillingSchema } from '@/lib/schema';
-import { loadFallbackJob } from '../fallback';
 import { buildFalProxyUrl } from '@/lib/fal-proxy';
 import { normalizeMediaUrl } from '@/lib/media';
-import { getMockJob } from '@/lib/mock-jobs-store';
 
 type DbJobRow = {
   id: number;
@@ -40,121 +38,18 @@ type DbJobRow = {
   eta_label: string | null;
 };
 
-function respondWithMockJob(jobId: string) {
-  const job = getMockJob(jobId);
-  if (!job) return null;
-  const status =
-    job.status === 'failed'
-      ? 'failed'
-      : job.status === 'completed' || job.videoUrl
-        ? 'completed'
-        : 'pending';
-  return NextResponse.json({
-    ok: true,
-    jobId: job.jobId,
-    status,
-    progress: job.progress,
-    videoUrl: normalizeMediaUrl(job.videoUrl) ?? undefined,
-    thumbUrl: normalizeMediaUrl(job.thumbUrl) ?? undefined,
-    pricing: job.pricing ?? undefined,
-    finalPriceCents: job.pricing?.totalCents ?? undefined,
-    currency: job.pricing?.currency ?? 'USD',
-    paymentStatus: job.paymentStatus ?? undefined,
-    vendorAccountId: undefined,
-    stripePaymentIntentId: undefined,
-    stripeChargeId: undefined,
-    batchId: job.batchId ?? undefined,
-    groupId: job.groupId ?? undefined,
-    iterationIndex: job.iterationIndex ?? undefined,
-    iterationCount: job.iterationCount ?? undefined,
-    renderIds: job.renderIds ?? undefined,
-    heroRenderId: job.heroRenderId ?? undefined,
-    localKey: job.localKey ?? undefined,
-    message: job.message ?? undefined,
-    etaSeconds: job.etaSeconds ?? undefined,
-    etaLabel: job.etaLabel ?? undefined,
-  });
-}
-
-async function respondWithFallbackJob(jobId: string) {
-  const fallback = await loadFallbackJob(jobId);
-  if (!fallback) return null;
-  return NextResponse.json({
-    ok: true,
-    jobId: fallback.jobId,
-    status: 'completed',
-    progress: 100,
-    videoUrl: normalizeMediaUrl(fallback.videoUrl) ?? undefined,
-    thumbUrl: normalizeMediaUrl(fallback.thumbUrl) ?? undefined,
-    pricing: fallback.pricingSnapshot ?? undefined,
-    finalPriceCents: fallback.finalPriceCents ?? undefined,
-    currency: fallback.currency ?? 'USD',
-    paymentStatus: undefined,
-    vendorAccountId: undefined,
-    stripePaymentIntentId: undefined,
-    stripeChargeId: undefined,
-    batchId: fallback.batchId ?? undefined,
-    groupId: fallback.groupId ?? undefined,
-    iterationIndex: fallback.iterationIndex ?? undefined,
-    iterationCount: fallback.iterationCount ?? undefined,
-    renderIds: fallback.renderIds ?? undefined,
-    heroRenderId: fallback.heroRenderId ?? undefined,
-    localKey: fallback.localKey ?? undefined,
-    message: fallback.message ?? undefined,
-    etaSeconds: fallback.etaSeconds ?? undefined,
-    etaLabel: fallback.etaLabel ?? undefined,
-  });
-}
-
-async function respondWithQueueLogJob(jobId: string) {
-  if (!process.env.DATABASE_URL) return null;
-  try {
-    const rows = await query<{ status: string | null }>(
-      `SELECT status
-       FROM fal_queue_log
-       WHERE job_id = $1
-       ORDER BY created_at DESC
-       LIMIT 1`,
-      [jobId]
-    );
-    if (!rows.length) return null;
-    const statusRaw = rows[0].status ?? null;
-    const normalized =
-      typeof statusRaw === 'string' && statusRaw.toLowerCase().includes('fail') ? 'failed' : 'pending';
-    return NextResponse.json({
-      ok: true,
-      jobId,
-      status: normalized,
-      progress: normalized === 'failed' ? 100 : 0,
-    });
-  } catch (error) {
-    console.warn('[api/jobs] queue lookup failed', error);
-    return null;
-  }
-}
-
-async function respondNotFound(jobId: string) {
-  const mock = respondWithMockJob(jobId);
-  if (mock) return mock;
-  const queued = await respondWithQueueLogJob(jobId);
-  if (queued) return queued;
-  const fallback = await respondWithFallbackJob(jobId);
-  if (fallback) return fallback;
-  return NextResponse.json({ ok: false, error: 'Not found' }, { status: 404 });
-}
-
 export async function GET(_req: NextRequest, { params }: { params: { jobId: string } }) {
   const jobId = params.jobId;
 
-  if (!process.env.DATABASE_URL) {
-    return respondNotFound(jobId);
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }
 
   try {
     await ensureBillingSchema();
   } catch (error) {
-    console.warn('[api/jobs] schema init failed, using mock store', error);
-    return respondNotFound(jobId);
+    console.warn('[api/jobs] schema init failed', error);
+    return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }
 
   let rows: DbJobRow[];
@@ -167,12 +62,12 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
       [jobId]
     );
   } catch (error) {
-    console.warn('[api/jobs] query failed, using mock store', error);
-    return respondNotFound(jobId);
+    console.warn('[api/jobs] query failed', error);
+    return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }
 
   if (!rows.length) {
-    return respondNotFound(jobId);
+    return NextResponse.json({ ok: false, error: 'Not found' }, { status: 404 });
   }
 
   const job = rows[0];

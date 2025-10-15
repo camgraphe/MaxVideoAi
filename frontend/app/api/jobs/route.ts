@@ -3,39 +3,33 @@ import { isDatabaseConfigured, query } from '@/lib/db';
 import type { PricingSnapshot } from '@/types/engines';
 import { normalizeMediaUrl } from '@/lib/media';
 import { ensureBillingSchema } from '@/lib/schema';
-import { loadFallbackJobs } from './fallback';
 import { getUserIdFromRequest } from '@/lib/user';
-import { ENV } from '@/lib/env';
 
 export async function GET(req: NextRequest) {
-  const databaseConfigured = isDatabaseConfigured();
-  let schemaReady = databaseConfigured;
-  if (databaseConfigured) {
-    try {
-      await ensureBillingSchema();
-    } catch (error) {
-      console.warn('[api/jobs] schema init failed, using fallback jobs', error);
-      schemaReady = false;
-    }
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json(
+      { ok: false, jobs: [], nextCursor: null, error: 'Database unavailable' },
+      { status: 503 }
+    );
   }
+
+  try {
+    await ensureBillingSchema();
+  } catch (error) {
+    console.warn('[api/jobs] schema init failed', error);
+    return NextResponse.json(
+      { ok: false, jobs: [], nextCursor: null, error: 'Database unavailable' },
+      { status: 503 }
+    );
+  }
+
   const url = new URL(req.url);
   const limit = Math.min(100, Math.max(1, Number(url.searchParams.get('limit') ?? '24')));
   const cursor = url.searchParams.get('cursor');
   const userId = await getUserIdFromRequest(req);
-  const allowAnonymous =
-    (ENV.RESULT_PROVIDER ?? '').toUpperCase() === 'TEST' || (ENV.RESULT_PROVIDER ?? '').toUpperCase() === '';
 
   if (!userId) {
-    if (allowAnonymous) {
-      const fallback = await loadFallbackJobs(limit, cursor);
-      return NextResponse.json({ ok: true, jobs: fallback.jobs, nextCursor: fallback.nextCursor });
-    }
     return NextResponse.json({ ok: false, jobs: [], nextCursor: null, error: 'Unauthorized' }, { status: 401 });
-  }
-
-  if (!schemaReady) {
-    const fallback = await loadFallbackJobs(limit, cursor);
-    return NextResponse.json({ ok: true, jobs: fallback.jobs, nextCursor: fallback.nextCursor, mock: true });
   }
 
   try {
@@ -92,8 +86,7 @@ export async function GET(req: NextRequest) {
     );
 
     if (!rows.length) {
-      const fallback = await loadFallbackJobs(limit, cursor);
-      return NextResponse.json({ ok: true, jobs: fallback.jobs, nextCursor: fallback.nextCursor });
+      return NextResponse.json({ ok: true, jobs: [], nextCursor: null });
     }
 
     const hasMore = rows.length > limit;
@@ -139,13 +132,10 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ ok: true, jobs: mapped, nextCursor });
   } catch (error) {
-    console.warn('[api/jobs] query failed, using fallback jobs', error);
-    try {
-      const fallback = await loadFallbackJobs(limit, cursor);
-      return NextResponse.json({ ok: true, jobs: fallback.jobs, nextCursor: fallback.nextCursor, mock: true });
-    } catch (fallbackError) {
-      console.error('[api/jobs] failed to load fallback jobs', fallbackError);
-      return NextResponse.json({ ok: false, jobs: [], nextCursor: null, error: 'Jobs unavailable' }, { status: 500 });
-    }
+    console.warn('[api/jobs] query failed', error);
+    return NextResponse.json(
+      { ok: false, jobs: [], nextCursor: null, error: 'Database unavailable' },
+      { status: 503 }
+    );
   }
 }

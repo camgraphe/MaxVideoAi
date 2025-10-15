@@ -7,12 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { getJobStatus, useEngines, useInfiniteJobs } from '@/lib/api';
-import {
-  groupJobsIntoSummaries,
-  loadPersistedGroupSummaries,
-  GROUP_SUMMARIES_UPDATED_EVENT,
-  GROUP_SUMMARY_STORAGE_KEY,
-} from '@/lib/job-groups';
+import { groupJobsIntoSummaries } from '@/lib/job-groups';
 import { GroupedJobCard } from '@/components/GroupedJobCard';
 import { normalizeGroupSummaries } from '@/lib/normalize-group-summary';
 import type { GroupSummary } from '@/types/groups';
@@ -26,7 +21,7 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 export default function DashboardPage() {
   const { data: enginesData, error: enginesError } = useEngines();
   const { data: jobsPages, error: jobsError, isLoading, mutate: mutateJobs } = useInfiniteJobs(9);
-  const { userId, loading: authLoading } = useRequireAuth();
+  const { loading: authLoading } = useRequireAuth();
 
   const engineLookup = useMemo(() => {
     const byId = new Map<string, EngineCaps>();
@@ -44,21 +39,6 @@ export default function DashboardPage() {
     () => groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true }),
     [jobs]
   );
-  const [storedGroups, setStoredGroups] = useState<GroupSummary[]>([]);
-
-  const storageKey = useCallback(
-    (base: string) => (userId ? `${base}:${userId}` : base),
-    [userId]
-  );
-
-  useEffect(() => {
-    if (authLoading || typeof window === 'undefined') return;
-    const key = storageKey(GROUP_SUMMARY_STORAGE_KEY);
-    const sync = () => setStoredGroups(loadPersistedGroupSummaries(key));
-    sync();
-    window.addEventListener(GROUP_SUMMARIES_UPDATED_EVENT, sync);
-    return () => window.removeEventListener(GROUP_SUMMARIES_UPDATED_EVENT, sync);
-  }, [authLoading, storageKey]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -69,17 +49,13 @@ export default function DashboardPage() {
     return () => window.removeEventListener('jobs:hidden', handleHidden);
   }, [mutateJobs]);
 
-  const groupedJobs = useMemo(() => {
-    const map = new Map<string, GroupSummary>();
-    [...apiGroups, ...storedGroups].forEach((group) => {
-      if (!group || !group.members.length) return;
-      const current = map.get(group.id);
-      if (!current || Date.parse(group.createdAt) > Date.parse(current.createdAt)) {
-        map.set(group.id, group);
-      }
-    });
-    return Array.from(map.values()).sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
-  }, [apiGroups, storedGroups]);
+  const groupedJobs = useMemo(
+    () =>
+      [...apiGroups]
+        .filter((group) => group.members.length > 0)
+        .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
+    [apiGroups]
+  );
 
   const normalizedGroupedJobs = useMemo(() => normalizeGroupSummaries(groupedJobs), [groupedJobs]);
   const [walletSummary, setWalletSummary] = useState<{ balance: number; currency: string } | null>(null);
@@ -262,19 +238,17 @@ export default function DashboardPage() {
                   Retry
                 </button>
               </div>
-            ) : showEmptyLatest ? (
-              <div className="rounded-card border border-border bg-white p-6 text-sm text-text-secondary">
-                Start a generation to populate your latest renders.
-              </div>
             ) : (
               <div className="flex w-full gap-4 overflow-x-auto pb-2">
-                {latestSkeletonCount > 0 &&
-                  placeholderIds.slice(0, latestSkeletonCount).map((id) => (
-                    <div
-                      key={id}
-                      className="flex h-full min-w-[280px] flex-shrink-0 flex-col overflow-hidden rounded-card border border-border bg-white/60"
-                    >
-                      <div className="relative" style={{ aspectRatio: '16 / 9' }}>
+                {(showEmptyLatest || latestSkeletonCount > 0) &&
+                  placeholderIds
+                    .slice(0, showEmptyLatest ? placeholderIds.length : latestSkeletonCount)
+                    .map((id) => (
+                      <div
+                        key={id}
+                        className="flex h-full min-w-[280px] flex-shrink-0 flex-col overflow-hidden rounded-card border border-border bg-white/60"
+                      >
+                        <div className="relative" style={{ aspectRatio: '16 / 9' }}>
                         <div className="skeleton absolute inset-0" />
                       </div>
                       <div className="border-t border-border bg-white/70 px-3 py-2">
@@ -303,6 +277,11 @@ export default function DashboardPage() {
                 })}
               </div>
             )}
+            {showEmptyLatest ? (
+              <p className="mt-2 text-sm text-text-secondary">
+                Start a generation to populate your latest renders.
+              </p>
+            ) : null}
           </section>
 
           <section className="mb-5">

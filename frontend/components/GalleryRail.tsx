@@ -9,7 +9,7 @@ import type { EngineCaps } from '@/types/engines';
 import type { Job } from '@/types/jobs';
 import type { GroupSummary } from '@/types/groups';
 import { hideJob, useEngines, useInfiniteJobs } from '@/lib/api';
-import { groupJobsIntoSummaries, loadPersistedGroupSummaries, GROUP_SUMMARIES_UPDATED_EVENT } from '@/lib/job-groups';
+import { groupJobsIntoSummaries } from '@/lib/job-groups';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
 import { normalizeGroupSummaries } from '@/lib/normalize-group-summary';
 
@@ -18,7 +18,6 @@ interface Props {
   activeGroups?: GroupSummary[];
   onOpenGroup?: (group: GroupSummary) => void;
   onGroupAction?: (group: GroupSummary, action: GroupedJobAction) => void;
-  groupStorageKey: string;
 }
 
 interface SnackbarAction {
@@ -38,7 +37,6 @@ export function GalleryRail({
   activeGroups = [],
   onOpenGroup,
   onGroupAction,
-  groupStorageKey,
 }: Props) {
   const { data, error, isLoading, isValidating, setSize, mutate } = useInfiniteJobs(24);
   const { data: enginesData } = useEngines();
@@ -48,16 +46,6 @@ export function GalleryRail({
     () => groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true }),
     [jobs]
   );
-  const [storedGroups, setStoredGroups] = useState<GroupSummary[]>([]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const sync = () => setStoredGroups(loadPersistedGroupSummaries(groupStorageKey));
-    sync();
-    window.addEventListener(GROUP_SUMMARIES_UPDATED_EVENT, sync);
-    return () => window.removeEventListener(GROUP_SUMMARIES_UPDATED_EVENT, sync);
-  }, [groupStorageKey]);
-
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     const handleHidden = () => {
@@ -67,17 +55,10 @@ export function GalleryRail({
     return () => window.removeEventListener('jobs:hidden', handleHidden);
   }, [mutate]);
 
-  const groupedJobSummaries = useMemo(() => {
-    const map = new Map<string, GroupSummary>();
-    [...groupedJobSummariesFromApi, ...storedGroups].forEach((group) => {
-      if (!group) return;
-      const current = map.get(group.id);
-      if (!current || Date.parse(group.createdAt) > Date.parse(current.createdAt)) {
-        map.set(group.id, group);
-      }
-    });
-    return Array.from(map.values()).sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
-  }, [groupedJobSummariesFromApi, storedGroups]);
+  const groupedJobSummaries = useMemo(
+    () => [...groupedJobSummariesFromApi].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
+    [groupedJobSummariesFromApi]
+  );
   const activeGroupIds = useMemo(() => new Set(activeGroups.map((group) => group.id)), [activeGroups]);
   const historicalGroups = useMemo(() => {
     return groupedJobSummaries.filter((group) => !activeGroupIds.has(group.id));

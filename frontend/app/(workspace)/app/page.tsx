@@ -20,8 +20,6 @@ import { CompositePreviewDock } from '@/components/groups/CompositePreviewDock';
 import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getRenderEta } from '@/lib/render-eta';
-import { savePersistedGroupSummaries } from '@/lib/job-groups';
-import { getMockJob, subscribeMockJobs } from '@/lib/mock-jobs-store';
 import { ENV as CLIENT_ENV } from '@/lib/env';
 import { adaptGroupSummaries, adaptGroupSummary } from '@/lib/video-group-adapter';
 import type { VideoGroup } from '@/types/video-groups';
@@ -264,13 +262,8 @@ const STORAGE_KEYS = {
   prompt: 'maxvideoai.generate.prompt.v1',
   negativePrompt: 'maxvideoai.generate.negativePrompt.v1',
   form: 'maxvideoai.generate.form.v1',
-  renders: 'maxvideoai.generate.renders.v1',
-  batchHeroes: 'maxvideoai.generate.batchHeroes.v1',
-  groupSummaries: 'maxvideoai.generate.groupSummaries.v1',
   memberTier: 'maxvideoai.generate.memberTier.v1',
 } as const;
-
-const MAX_PERSISTED_RENDERS = 40;
 
 function parseStoredForm(value: string): FormState | null {
   try {
@@ -561,6 +554,10 @@ type LocalRenderGroup = {
     if (hydratedScopeRef.current === storageScope) return;
     hydratedScopeRef.current = storageScope;
 
+    setRenders([]);
+    setBatchHeroes({});
+    setActiveBatchId(null);
+
     try {
       const promptValue = readStorage(STORAGE_KEYS.prompt);
       setPrompt(promptValue ?? DEFAULT_PROMPT);
@@ -571,80 +568,6 @@ type LocalRenderGroup = {
       const formValue = readStorage(STORAGE_KEYS.form);
       setForm(formValue ? parseStoredForm(formValue) : null);
 
-      const storedRendersValue = readStorage(STORAGE_KEYS.renders);
-      if (storedRendersValue) {
-        const raw = JSON.parse(storedRendersValue);
-        if (Array.isArray(raw)) {
-          const storedRenders = raw
-            .filter((value): value is LocalRender => {
-              if (!value || typeof value !== 'object') return false;
-              const candidate = value as Partial<LocalRender>;
-              return (
-                typeof candidate.localKey === 'string' &&
-                typeof candidate.batchId === 'string' &&
-                typeof candidate.iterationIndex === 'number' &&
-                typeof candidate.iterationCount === 'number' &&
-                typeof candidate.id === 'string' &&
-                typeof candidate.engineId === 'string' &&
-                typeof candidate.engineLabel === 'string' &&
-                typeof candidate.createdAt === 'string' &&
-                typeof candidate.aspectRatio === 'string' &&
-                typeof candidate.durationSec === 'number' &&
-                typeof candidate.prompt === 'string' &&
-                typeof candidate.progress === 'number' &&
-                typeof candidate.message === 'string' &&
-                (typeof candidate.status === 'string' || candidate.status === undefined) &&
-                typeof candidate.startedAt === 'number' &&
-                typeof candidate.minReadyAt === 'number'
-              );
-            })
-            .map((value) => {
-              const videoUrl = typeof value.videoUrl === 'string' ? value.videoUrl : undefined;
-              const readyVideoUrl = typeof value.readyVideoUrl === 'string' ? value.readyVideoUrl : undefined;
-              const status =
-                (value.status as LocalRender['status']) ??
-                (videoUrl ? 'completed' : 'pending');
-              return {
-                ...value,
-                videoUrl,
-                readyVideoUrl,
-                status,
-              };
-            })
-            .slice(0, MAX_PERSISTED_RENDERS);
-          setRenders(storedRenders);
-          if (storedRenders.length) {
-            setActiveBatchId(storedRenders[0].batchId ?? null);
-          } else {
-            setActiveBatchId(null);
-          }
-        } else {
-          setRenders([]);
-          setActiveBatchId(null);
-        }
-      } else {
-        setRenders([]);
-        setActiveBatchId(null);
-      }
-
-      const storedHeroesValue = readStorage(STORAGE_KEYS.batchHeroes);
-      if (storedHeroesValue) {
-        const rawHeroes = JSON.parse(storedHeroesValue);
-        if (rawHeroes && typeof rawHeroes === 'object') {
-          const entries = Object.entries(rawHeroes as Record<string, unknown>);
-          const storedHeroes: Record<string, string> = {};
-          entries.forEach(([batchId, localKey]) => {
-            if (typeof batchId === 'string' && typeof localKey === 'string') {
-              storedHeroes[batchId] = localKey;
-            }
-          });
-          setBatchHeroes(storedHeroes);
-        } else {
-          setBatchHeroes({});
-        }
-      } else {
-        setBatchHeroes({});
-      }
       const storedTier = readStorage(STORAGE_KEYS.memberTier);
       if (storedTier === 'Member' || storedTier === 'Plus' || storedTier === 'Pro') {
         setMemberTier(storedTier);
@@ -660,84 +583,6 @@ type LocalRenderGroup = {
     rendersRef.current = renders;
   }, [renders]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-    const unsubscribe = subscribeMockJobs(() => {
-      setRenders((previous) =>
-        previous.map((render) => {
-          const job = getMockJob(render.id);
-          if (!job) return render;
-          const normalizedStatus = job.status;
-          const nextThumb = job.thumbUrl ?? render.thumbUrl;
-          const now = Date.now();
-          const gatingActive = Boolean(job.videoUrl) && now < render.minReadyAt;
-          const nextStatus = gatingActive ? 'pending' : normalizedStatus;
-          const nextProgress = gatingActive ? Math.min(job.progress, 95) : job.progress;
-          const readyVideo = job.videoUrl ?? render.readyVideoUrl;
-          const nextVideoUrl = gatingActive ? render.videoUrl : readyVideo;
-          if (
-            render.progress === nextProgress &&
-            render.status === nextStatus &&
-            render.videoUrl === nextVideoUrl &&
-            render.readyVideoUrl === readyVideo &&
-            render.thumbUrl === nextThumb
-          ) {
-            return render;
-          }
-          return {
-            ...render,
-            progress: nextProgress,
-            status: nextStatus,
-            readyVideoUrl: readyVideo,
-            videoUrl: nextVideoUrl,
-            thumbUrl: nextThumb ?? undefined,
-          };
-        })
-      );
-      setSelectedPreview((current) => {
-        if (!current?.id) return current;
-        const job = getMockJob(current.id);
-        if (!job) return current;
-        const nextVideoUrl = job.videoUrl ?? current.videoUrl;
-        const nextThumb = job.thumbUrl ?? current.thumbUrl;
-        return {
-          ...current,
-          progress: job.progress,
-          status: job.status,
-          videoUrl: nextVideoUrl,
-          thumbUrl: nextThumb ?? undefined,
-        };
-      });
-    });
-    return unsubscribe;
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      if (!renders.length) {
-        writeStorage(STORAGE_KEYS.renders, null);
-        return;
-      }
-      const limited = renders.slice(0, MAX_PERSISTED_RENDERS);
-      writeStorage(STORAGE_KEYS.renders, JSON.stringify(limited));
-    } catch {
-      // noop
-    }
-  }, [renders, writeStorage]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      if (!Object.keys(batchHeroes).length) {
-        writeStorage(STORAGE_KEYS.batchHeroes, null);
-        return;
-      }
-      writeStorage(STORAGE_KEYS.batchHeroes, JSON.stringify(batchHeroes));
-    } catch {
-      // noop
-    }
-  }, [batchHeroes, writeStorage]);
   const renderGroups = useMemo<Map<string, LocalRenderGroup>>(() => {
     const map = new Map<string, LocalRenderGroup>();
     renders.forEach((item) => {
@@ -902,10 +747,6 @@ type LocalRenderGroup = {
     }
   }, [pendingGroups, activeGroupId]);
 
-  useEffect(() => {
-    const groupsForStorage = pendingGroups.filter((group) => group.members.length > 0);
-    savePersistedGroupSummaries(groupsForStorage.slice(0, 12), storageKey(STORAGE_KEYS.groupSummaries));
-  }, [pendingGroups, storageKey]);
   const pendingSummaryMap = useMemo(() => {
     const map = new Map<string, GroupSummary>();
     pendingGroups.forEach((group) => {
@@ -2535,14 +2376,13 @@ useEffect(() => {
               </div>
             </div>
           </main>
-        </div>
-        <GalleryRail
-          engine={selectedEngine}
-          activeGroups={normalizedPendingGroups}
-          groupStorageKey={storageKey(STORAGE_KEYS.groupSummaries)}
-          onOpenGroup={openGroupViaGallery}
-          onGroupAction={handleGalleryGroupAction}
-        />
+      </div>
+      <GalleryRail
+        engine={selectedEngine}
+        activeGroups={normalizedPendingGroups}
+        onOpenGroup={openGroupViaGallery}
+        onGroupAction={handleGalleryGroupAction}
+      />
       </div>
       {viewerGroup ? (
         <GroupViewerModal
