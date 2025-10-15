@@ -93,6 +93,40 @@ type JobStatusResult = {
   etaLabel?: string | null;
 };
 
+type StatusRetryMeta = {
+  attempt: number;
+  timer: number | null;
+};
+
+const STATUS_RETRY_TIMERS = new Map<string, StatusRetryMeta>();
+const STATUS_RETRY_BASE_DELAY_MS = 60_000;
+const STATUS_RETRY_MAX_DELAY_MS = 30 * 60 * 1000;
+
+function clearStatusRetry(jobId: string): void {
+  if (typeof window === 'undefined') return;
+  const existing = STATUS_RETRY_TIMERS.get(jobId);
+  if (existing?.timer != null) {
+    window.clearTimeout(existing.timer);
+  }
+  STATUS_RETRY_TIMERS.delete(jobId);
+}
+
+function scheduleStatusRetry(jobId: string, attempt: number): void {
+  if (typeof window === 'undefined') return;
+  const existing = STATUS_RETRY_TIMERS.get(jobId);
+  if (existing?.timer != null) {
+    window.clearTimeout(existing.timer);
+  }
+  const delay = Math.min(STATUS_RETRY_BASE_DELAY_MS * Math.pow(2, attempt), STATUS_RETRY_MAX_DELAY_MS);
+  const timer = window.setTimeout(() => {
+    STATUS_RETRY_TIMERS.set(jobId, { attempt: attempt + 1, timer: null });
+    void getJobStatus(jobId).catch(() => {
+      scheduleStatusRetry(jobId, attempt + 1);
+    });
+  }, delay);
+  STATUS_RETRY_TIMERS.set(jobId, { attempt, timer });
+}
+
 export function useEngines() {
   return useSWR<EnginesResponse>(
     'static-engines',
@@ -173,6 +207,16 @@ export function useInfiniteJobs(pageSize = 12) {
       const detail = (event as CustomEvent<JobStatusResult>).detail;
       if (!detail || !detail.jobId) return;
 
+      const normalizedStatus = typeof detail.status === 'string' ? detail.status.toLowerCase() : '';
+      if (normalizedStatus === 'completed' || normalizedStatus === 'failed') {
+        clearStatusRetry(detail.jobId);
+      } else {
+        const meta = STATUS_RETRY_TIMERS.get(detail.jobId);
+        if (!meta || meta.timer === null) {
+          scheduleStatusRetry(detail.jobId, meta?.attempt ?? 0);
+        }
+      }
+
       let jobFound = false;
       void mutate(
         (pages) => {
@@ -221,11 +265,49 @@ export function useInfiniteJobs(pageSize = 12) {
         void mutate(undefined, { revalidate: true });
       }
     };
+
+    const errorHandler = (event: Event) => {
+      const detail = (event as CustomEvent<{ jobId?: string }>).detail;
+      const jobId = detail?.jobId;
+      if (!jobId) return;
+      const meta = STATUS_RETRY_TIMERS.get(jobId);
+      if (meta?.timer) return;
+      scheduleStatusRetry(jobId, meta?.attempt ?? 0);
+      void mutate(undefined, { revalidate: true });
+    };
+
     window.addEventListener('jobs:status', handler as EventListener);
+    window.addEventListener('jobs:status-error', errorHandler as EventListener);
     return () => {
       window.removeEventListener('jobs:status', handler as EventListener);
+      window.removeEventListener('jobs:status-error', errorHandler as EventListener);
     };
   }, [mutate]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const jobs = swr.data?.flatMap((page) => page.jobs) ?? [];
+    const seen = new Set<string>();
+    jobs.forEach((job) => {
+      const jobId = job?.jobId;
+      if (!jobId) return;
+      seen.add(jobId);
+      const status = typeof job.status === 'string' ? job.status.toLowerCase() : '';
+      if (status === 'completed' || status === 'failed') {
+        clearStatusRetry(jobId);
+      } else if (status === 'pending' || status === 'running' || (!job.videoUrl && status !== 'completed')) {
+        const meta = STATUS_RETRY_TIMERS.get(jobId);
+        if (!meta || meta.timer === null) {
+          scheduleStatusRetry(jobId, meta?.attempt ?? 0);
+        }
+      }
+    });
+    STATUS_RETRY_TIMERS.forEach((_meta, jobId) => {
+      if (!seen.has(jobId)) {
+        clearStatusRetry(jobId);
+      }
+    });
+  }, [swr.data]);
 
   return swr;
 }
@@ -277,21 +359,35 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResult> {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`/api/jobs/${encodeURIComponent(jobId)}`, {
-    credentials: 'include',
-    headers: Object.keys(headers).length ? headers : undefined,
-  });
+  let response: Response;
+  try {
+    response = await fetch(`/api/jobs/${encodeURIComponent(jobId)}`, {
+      credentials: 'include',
+      headers: Object.keys(headers).length ? headers : undefined,
+    });
+  } catch (error) {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('jobs:status-error', { detail: { jobId } }));
+    }
+    throw error;
+  }
 
   const payload = (await response.json().catch(() => null)) as
     | (Partial<JobStatusResult> & { error?: string; status?: string; progress?: number })
     | null;
 
   if (!response.ok) {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('jobs:status-error', { detail: { jobId, status: response.status } }));
+    }
     const message = payload?.error ?? `Status fetch failed (${response.status})`;
     throw new Error(message);
   }
 
   if (!payload) {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('jobs:status-error', { detail: { jobId } }));
+    }
     throw new Error('Status payload missing');
   }
 
