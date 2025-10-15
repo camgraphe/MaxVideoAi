@@ -378,7 +378,6 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResult> {
 
   if (!response.ok) {
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('jobs:status-error', { detail: { jobId, status: response.status } }));
     }
     const message = payload?.error ?? `Status fetch failed (${response.status})`;
     throw new Error(message);
