@@ -361,7 +361,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : 'Generation failed' }, { status: 500 });
   }
 
-  const thumb = normalizeMediaUrl(generationResult.thumbUrl) ?? generationResult.thumbUrl ?? null;
+  const placeholderThumb =
+    aspectRatio === '9:16'
+      ? '/assets/frames/thumb-9x16.svg'
+      : aspectRatio === '1:1'
+        ? '/assets/frames/thumb-1x1.svg'
+        : '/assets/frames/thumb-16x9.svg';
+  const thumb =
+    normalizeMediaUrl(generationResult.thumbUrl) ??
+      (typeof generationResult.thumbUrl === 'string' && generationResult.thumbUrl.trim().length
+        ? generationResult.thumbUrl
+        : null) ??
+    placeholderThumb;
   const video = normalizeMediaUrl(generationResult.videoUrl) ?? generationResult.videoUrl ?? null;
   const videoAsset = generationResult.video ?? null;
   const providerMode = generationResult.provider;
