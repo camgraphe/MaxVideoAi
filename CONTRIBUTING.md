@@ -17,7 +17,7 @@
 3. Run lint/checks:
    ```bash
    npm run lint:exposure
-   npm run lint --workspace frontend
+   npm --prefix frontend run lint
    ```
 4. Open a pull request. A maintainer will confirm the exposure checklist before merging.
 

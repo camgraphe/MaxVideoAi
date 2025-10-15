@@ -1,13 +1,10 @@
 {
-  "installCommand": "cd frontend && NPM_CONFIG_WORKSPACES=false npm install --omit=dev --workspaces=false",
+  "installCommand": "cd frontend && npm install --omit=dev",
   "buildCommand": "NPM_CONFIG_WORKSPACES=false npm run vercel-build",
   "builds": [
     { "src": "frontend/package.json", "use": "@vercel/next" }
   ],
   "routes": [
     { "src": "/(.*)", "dest": "frontend/$1" }
-  ],
-  "crons": [
-    { "path": "/api/fal/poll", "schedule": "*/2 * * * *" }
   ]
 }

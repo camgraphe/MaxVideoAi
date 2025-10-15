@@ -39,6 +39,16 @@ const config: Config = {
       letterSpacing: {
         micro: '0.08em',
         tiny: '0.02em'
+      },
+      keyframes: {
+        'button-pop': {
+          '0%': { transform: 'scale(1)', opacity: '1' },
+          '40%': { transform: 'scale(0.96)', opacity: '0.96' },
+          '100%': { transform: 'scale(1)', opacity: '1' }
+        }
+      },
+      animation: {
+        'button-pop': 'button-pop 180ms ease-out'
       }
     }
   },

@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import clsx from 'clsx';
-import { useMemo, useCallback, useRef } from 'react';
+import { useMemo, useCallback, useRef, useEffect, useState } from 'react';
 import type { Ref, ChangeEvent, DragEvent } from 'react';
 import type { EngineCaps, EngineInputField, PreflightResponse } from '@/types/engines';
 import type { EngineCaps as CapabilityCaps } from '@/fixtures/engineCaps';
@@ -76,6 +76,10 @@ export function Composer({
   onAssetRemove,
   onNotice,
 }: Props) {
+  const [isButtonAnimating, setIsButtonAnimating] = useState(false);
+  const [isPulseVisible, setIsPulseVisible] = useState(false);
+  const animationTimeoutRef = useRef<number | null>(null);
+
   const formattedPrice = useMemo(() => {
     if (price == null) return null;
     try {
@@ -95,6 +99,39 @@ export function Composer({
     isLoading ||
     (promptRequired && !prompt.trim()) ||
     (negativePromptField && negativePromptRequired && !negativePromptValue);
+
+  const triggerButtonAnimation = useCallback(() => {
+    if (animationTimeoutRef.current) {
+      window.clearTimeout(animationTimeoutRef.current);
+    }
+    setIsButtonAnimating(true);
+    setIsPulseVisible(true);
+    animationTimeoutRef.current = window.setTimeout(() => {
+      setIsButtonAnimating(false);
+      setIsPulseVisible(false);
+      animationTimeoutRef.current = null;
+    }, 240);
+  }, []);
+
+  const handleGenerateClick = useCallback(() => {
+    if (disableGenerate) return;
+    triggerButtonAnimation();
+    onGenerate?.();
+  }, [disableGenerate, onGenerate, triggerButtonAnimation]);
+
+  useEffect(() => {
+    return () => {
+      if (animationTimeoutRef.current) {
+        window.clearTimeout(animationTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading) return;
+    setIsPulseVisible(false);
+    setIsButtonAnimating(false);
+  }, [isLoading]);
 
   return (
     <Card className="space-y-5 p-5">
@@ -211,14 +248,23 @@ export function Composer({
             type="button"
             disabled={disableGenerate}
             className={clsx(
-              'inline-flex items-center justify-center rounded-input px-5 py-3 text-sm font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              'relative inline-flex items-center justify-center rounded-input px-5 py-3 text-sm font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              'overflow-hidden transform-gpu transition-transform duration-200 ease-out',
+              isButtonAnimating && !disableGenerate ? 'animate-button-pop' : '',
               disableGenerate
                 ? 'cursor-not-allowed border border-border bg-white text-text-muted'
-                : 'border border-accent bg-accent text-white shadow-card hover:brightness-[0.98]'
+                : 'border border-accent bg-accent text-white shadow-card hover:brightness-[0.98] active:scale-[0.97]'
             )}
-            onClick={onGenerate}
+            onClick={handleGenerateClick}
           >
-            {isLoading ? 'Checking price…' : 'Generate'}
+            <span className="relative z-10">{isLoading ? 'Checking price…' : 'Generate'}</span>
+            <span
+              aria-hidden
+              className={clsx(
+                'pointer-events-none absolute inset-0 rounded-input bg-white/20 opacity-0 transition-opacity duration-200 ease-out',
+                isPulseVisible && !disableGenerate ? 'opacity-100' : ''
+              )}
+            />
           </button>
         </div>
       </footer>
