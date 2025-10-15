@@ -172,14 +172,19 @@ export function useInfiniteJobs(pageSize = 12) {
     const handler = (event: Event) => {
       const detail = (event as CustomEvent<JobStatusResult>).detail;
       if (!detail || !detail.jobId) return;
+
+      let jobFound = false;
       void mutate(
         (pages) => {
           if (!pages) return pages;
-          return pages.map((page) => {
+          const nextPages = pages.map((page) => {
+            let pageModified = false;
             const jobs = page.jobs.map((job) => {
               if (job.jobId !== detail.jobId) {
                 return job;
               }
+              jobFound = true;
+              pageModified = true;
               const next = {
                 ...job,
                 status: detail.status ?? job.status,
@@ -205,11 +210,16 @@ export function useInfiniteJobs(pageSize = 12) {
               }
               return next;
             });
-            return { ...page, jobs };
+            return pageModified ? { ...page, jobs } : page;
           });
+          return jobFound ? nextPages : pages;
         },
         { revalidate: false }
       );
+
+      if (!jobFound) {
+        void mutate(undefined, { revalidate: true });
+      }
     };
     window.addEventListener('jobs:status', handler as EventListener);
     return () => {
