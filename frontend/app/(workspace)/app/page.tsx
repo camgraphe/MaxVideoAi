@@ -26,6 +26,7 @@ import type { VideoGroup } from '@/types/video-groups';
 import { useResultProvider } from '@/hooks/useResultProvider';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
+import type { Job } from '@/types/jobs';
 
 function resolveRenderThumb(render: { thumbUrl?: string | null; aspectRatio?: string | null }): string {
   if (render.thumbUrl) return render.thumbUrl;
@@ -343,6 +344,17 @@ export default function Page() {
   const { data, error: enginesError, isLoading } = useEngines();
   const engines = useMemo(() => data?.engines ?? [], [data]);
   const { data: latestJobsPages } = useInfiniteJobs(1);
+  const engineIdByLabel = useMemo(() => {
+    const map = new Map<string, string>();
+    engines.forEach((engine) => {
+      map.set(engine.label.toLowerCase(), engine.id);
+    });
+    return map;
+  }, [engines]);
+  const recentJobs = useMemo(
+    () => latestJobsPages?.flatMap((page) => page.jobs ?? []) ?? [],
+    [latestJobsPages]
+  );
   const provider = useResultProvider();
   const showCenterGallery = CLIENT_ENV.WORKSPACE_CENTER_GALLERY === 'true';
 
@@ -484,6 +496,79 @@ type LocalRenderGroup = {
   const [viewMode, setViewMode] = useState<'single' | 'quad'>('single');
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
   const rendersRef = useRef<LocalRender[]>([]);
+  const convertJobToLocalRender = useCallback(
+    (job: Job): LocalRender => {
+      const baseLocalKey = job.localKey ?? job.jobId;
+      const localKey = baseLocalKey ?? `job_${job.jobId}`;
+      const batchId = job.batchId ?? job.groupId ?? localKey;
+      const renderIds = Array.isArray(job.renderIds)
+        ? job.renderIds.filter((value): value is string => typeof value === 'string' && value.length > 0)
+        : undefined;
+      const normalizedStatus = (() => {
+        const raw = (job.status ?? '').toLowerCase();
+        if (raw === 'failed') return 'failed' as const;
+        if (raw === 'completed') return 'completed' as const;
+        if (job.videoUrl) return 'completed' as const;
+        return 'pending' as const;
+      })();
+      const normalizedProgress = (() => {
+        if (typeof job.progress === 'number' && Number.isFinite(job.progress)) {
+          return Math.max(0, Math.min(100, Math.round(job.progress)));
+        }
+        if (normalizedStatus === 'completed' || job.videoUrl) return 100;
+        if (normalizedStatus === 'failed') return 100;
+        return 0;
+      })();
+      const createdAt = typeof job.createdAt === 'string' && job.createdAt.length ? job.createdAt : new Date().toISOString();
+      const parsedCreated = Number.isFinite(Date.parse(createdAt)) ? Date.parse(createdAt) : Date.now();
+      const priceCents = typeof job.finalPriceCents === 'number' ? job.finalPriceCents : job.pricingSnapshot?.totalCents;
+      const currency = job.currency ?? job.pricingSnapshot?.currency ?? undefined;
+      const message = job.message ?? (normalizedStatus === 'completed' ? 'Render completed.' : normalizedStatus === 'failed' ? 'Render failed.' : 'Render pending.');
+      const engineId = job.engineId ?? (job.engineLabel ? engineIdByLabel.get(job.engineLabel.toLowerCase()) ?? undefined : undefined) ?? 'unknown-engine';
+      const thumbUrl = job.thumbUrl ?? job.previewFrame ?? resolveRenderThumb({ thumbUrl: job.thumbUrl, aspectRatio: job.aspectRatio ?? null });
+
+      return {
+        localKey,
+        batchId,
+        iterationIndex:
+          typeof job.iterationIndex === 'number' && Number.isFinite(job.iterationIndex)
+            ? Math.max(0, Math.trunc(job.iterationIndex))
+            : 0,
+        iterationCount: Math.max(
+          1,
+          typeof job.iterationCount === 'number' && Number.isFinite(job.iterationCount)
+            ? Math.trunc(job.iterationCount)
+            : renderIds?.length ?? 1
+        ),
+        id: job.jobId,
+        jobId: job.jobId,
+        engineId,
+        engineLabel: job.engineLabel ?? 'Unknown engine',
+        createdAt,
+        aspectRatio: job.aspectRatio ?? '16:9',
+        durationSec: job.durationSec,
+        prompt: job.prompt ?? '',
+        progress: normalizedProgress,
+        message,
+        status: normalizedStatus,
+        videoUrl: job.videoUrl ?? undefined,
+        readyVideoUrl: job.videoUrl ?? undefined,
+        thumbUrl,
+        priceCents: priceCents ?? undefined,
+        currency,
+        pricingSnapshot: job.pricingSnapshot,
+        paymentStatus: job.paymentStatus ?? 'platform',
+        etaSeconds: job.etaSeconds ?? undefined,
+        etaLabel: job.etaLabel ?? undefined,
+        startedAt: parsedCreated,
+        minReadyAt: parsedCreated,
+        groupId: job.groupId ?? job.batchId ?? null,
+        renderIds,
+        heroRenderId: job.heroRenderId ?? null,
+      };
+    },
+    [engineIdByLabel]
+  );
   const hydratedScopeRef = useRef<string | null>(null);
   const clearUserState = useCallback(() => {
     hydratedScopeRef.current = null;
@@ -582,6 +667,47 @@ type LocalRenderGroup = {
   useEffect(() => {
     rendersRef.current = renders;
   }, [renders]);
+
+  useEffect(() => {
+    if (!recentJobs.length) return;
+    const additions: LocalRender[] = [];
+    setRenders((previous) => {
+      const seen = new Set<string>();
+      previous.forEach((render) => {
+        const key = render.jobId ?? render.id;
+        if (key) {
+          seen.add(key);
+        }
+      });
+
+      recentJobs.forEach((job) => {
+        if (!job.jobId || seen.has(job.jobId)) return;
+        const converted = convertJobToLocalRender(job);
+        additions.push(converted);
+        seen.add(job.jobId);
+      });
+
+      if (!additions.length) return previous;
+
+      const merged = [...previous, ...additions];
+      merged.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+      return merged;
+    });
+
+    if (additions.length) {
+      setBatchHeroes((previous) => {
+        const next = { ...previous };
+        let changed = false;
+        additions.forEach((render) => {
+          if (render.batchId && render.localKey && !next[render.batchId]) {
+            next[render.batchId] = render.localKey;
+            changed = true;
+          }
+        });
+        return changed ? next : previous;
+      });
+    }
+  }, [convertJobToLocalRender, recentJobs]);
 
   const renderGroups = useMemo<Map<string, LocalRenderGroup>>(() => {
     const map = new Map<string, LocalRenderGroup>();
@@ -1081,7 +1207,7 @@ useEffect(() => {
 
   useEffect(() => {
     if (selectedPreview || renders.length > 0) return;
-    const latestJobWithMedia = latestJobsPages?.[0]?.jobs?.find((job) => job.thumbUrl || job.videoUrl);
+    const latestJobWithMedia = recentJobs.find((job) => job.thumbUrl || job.videoUrl);
     if (!latestJobWithMedia) return;
     setSelectedPreview({
       id: latestJobWithMedia.jobId,
@@ -1092,7 +1218,7 @@ useEffect(() => {
       currency: latestJobWithMedia.currency ?? latestJobWithMedia.pricingSnapshot?.currency,
       prompt: latestJobWithMedia.prompt ?? undefined,
     });
-  }, [latestJobsPages, renders.length, selectedPreview]);
+  }, [recentJobs, renders.length, selectedPreview]);
 
   const focusComposer = useCallback(() => {
     if (!composerRef.current) return;
