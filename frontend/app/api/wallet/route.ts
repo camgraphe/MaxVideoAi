@@ -93,8 +93,13 @@ export async function POST(req: NextRequest) {
       membershipTier: body.membershipTier,
     });
 
-    if (!pricing.vendorAccountId) {
-      return NextResponse.json({ error: 'Engine not configured for direct payments' }, { status: 409 });
+    const destinationAccountId =
+      pricing.vendorAccountId ??
+      ENV.COGS_VAULT_ACCOUNT_ID ??
+      process.env.COGS_VAULT_ACCOUNT_ID;
+
+    if (!destinationAccountId) {
+      return NextResponse.json({ error: 'No destination account configured' }, { status: 503 });
     }
 
     const applicationFeeCents = getPlatformFeeCents(pricing);
@@ -127,8 +132,17 @@ export async function POST(req: NextRequest) {
     if (pricingSnapshotJson.length <= 450) {
       metadata.pricing_snapshot = pricingSnapshotJson;
     }
+    metadata.destination_account_id = destinationAccountId;
     if (pricing.vendorAccountId) {
       metadata.vendor_account_id = pricing.vendorAccountId;
+    }
+
+    const transferData: Stripe.PaymentIntentCreateParams.TransferData = {
+      destination: destinationAccountId,
+    };
+
+    if (pricing.vendorAccountId) {
+      transferData.amount = vendorShareCents;
     }
 
     try {
@@ -136,10 +150,7 @@ export async function POST(req: NextRequest) {
         amount: pricing.totalCents,
         currency: pricing.currency.toLowerCase(),
         automatic_payment_methods: { enabled: true },
-        transfer_data: {
-          destination: pricing.vendorAccountId,
-          amount: vendorShareCents,
-        },
+        transfer_data: transferData,
         application_fee_amount: applicationFeeCents,
         metadata,
       });
@@ -166,6 +177,13 @@ export async function POST(req: NextRequest) {
   try {
     // Create a one-off Checkout Session for top-up
     const origin = req.headers.get('origin') ?? process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+    const destinationAccountId = ENV.COGS_VAULT_ACCOUNT_ID ?? process.env.COGS_VAULT_ACCOUNT_ID;
+
+    if (!destinationAccountId) {
+      return NextResponse.json({ error: 'COGS vault account not configured' }, { status: 503 });
+    }
+
+    const platformFeeCents = Math.round(amountCents * 0.3);
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
@@ -181,9 +199,14 @@ export async function POST(req: NextRequest) {
           quantity: 1,
         },
       ],
+      payment_intent_data: {
+        application_fee_amount: platformFeeCents,
+        transfer_data: { destination: destinationAccountId },
+      },
       metadata: {
         kind: 'topup',
         user_id: userId,
+        destination_account_id: destinationAccountId,
       },
     });
 
