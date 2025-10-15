@@ -1,8 +1,6 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import type { QueueStatus } from '@fal-ai/client';
 import { ENV } from '@/lib/env';
-import { getResultProviderMode, shouldUseFalApis } from '@/lib/result-provider';
+import { getResultProviderMode } from '@/lib/result-provider';
 import type { ResultProviderMode } from '@/types/providers';
 import type { VideoAsset } from '@/types/render';
 import { resolveFalModelId } from '@/lib/fal-catalog';
@@ -14,22 +12,6 @@ const BLOCKED_VIDEO_HOSTS = new Set([
   'd3rlna7iyyu8wu.cloudfront.net',
   'amssamples.streaming.mediaservices.windows.net',
 ]);
-
-type ManifestEntry = {
-  id?: string;
-  url?: unknown;
-  mime?: unknown;
-  width?: unknown;
-  height?: unknown;
-  durationSec?: unknown;
-  tags?: unknown;
-  thumbUrl?: unknown;
-  thumbnail?: unknown;
-  poster?: unknown;
-  path?: unknown;
-  aspectRatio?: unknown;
-  sizeBytes?: unknown;
-};
 
 type FalVideoCandidate =
   | string
@@ -131,77 +113,7 @@ export function getFalWebhookUrl(): string | null {
   return null;
 }
 
-const MANIFEST_FILENAME = 'maxvideoai_test_videos_manifest.json';
 const FAL_FILES_BASE_URL = (process.env.FAL_FILES_BASE_URL || process.env.NEXT_PUBLIC_FAL_FILES_BASE_URL || 'https://fal.media/files').replace(/\/+$/, '');
-let manifestPromise: Promise<VideoAsset[]> | null = null;
-let manifestCache: VideoAsset[] | null = null;
-let manifestCdnBase: string | null = null;
-
-const DEFAULT_TEST_ASSETS: VideoAsset[] = [
-  {
-    url: '/assets/gallery/adraga-beach.mp4',
-    mime: 'video/mp4',
-    width: null,
-    height: null,
-    durationSec: null,
-    tags: ['sample', 'local'],
-    aspectRatio: '16:9',
-  },
-  {
-    url: '/assets/gallery/drone-snow.mp4',
-    mime: 'video/mp4',
-    width: null,
-    height: null,
-    durationSec: null,
-    tags: ['sample', 'local'],
-    aspectRatio: '16:9',
-  },
-  {
-    url: '/assets/gallery/swimmer.mp4',
-    mime: 'video/mp4',
-    width: null,
-    height: null,
-    durationSec: null,
-    tags: ['sample', 'local'],
-    aspectRatio: '16:9',
-  },
-  {
-    url: '/assets/gallery/aerial-road.mp4',
-    mime: 'video/mp4',
-    width: null,
-    height: null,
-    durationSec: null,
-    tags: ['sample', 'local'],
-    aspectRatio: '16:9',
-  },
-  {
-    url: '/assets/gallery/parking-portrait.mp4',
-    mime: 'video/mp4',
-    width: null,
-    height: null,
-    durationSec: null,
-    tags: ['sample', 'local', 'portrait'],
-    aspectRatio: '9:16',
-  },
-  {
-    url: '/assets/gallery/robot-eyes.mp4',
-    mime: 'video/mp4',
-    width: null,
-    height: null,
-    durationSec: null,
-    tags: ['sample', 'local'],
-    aspectRatio: '9:16',
-  },
-  {
-    url: '/assets/gallery/robot-look.mp4',
-    mime: 'video/mp4',
-    width: null,
-    height: null,
-    durationSec: null,
-    tags: ['sample', 'local'],
-    aspectRatio: '16:9',
-  },
-];
 
 function normalizeVideoUrl(rawUrl: string): string {
   const trimmed = rawUrl.trim();
@@ -219,8 +131,7 @@ function normalizeVideoUrl(rawUrl: string): string {
   if (looksLikeFalAsset(normalized)) {
     return `${FAL_FILES_BASE_URL}/${normalized}`;
   }
-  const base = manifestCdnBase ?? ENV.TEST_VIDEO_BASE_URL ?? '/test-videos';
-  return joinUrl(base, normalized);
+  return `/${normalized}`;
 }
 
 function unwrapFalResponse(payload: unknown): FalRunResponse | null {
@@ -265,45 +176,16 @@ function resolveModelSlug(payload: GeneratePayload, fallback?: string): string |
 
 export async function generateVideo(payload: GeneratePayload): Promise<GenerateResult> {
   const provider = getResultProviderMode();
-  if (provider === 'FAL' && !ENV.FAL_API_KEY) {
-    throw new Error('FAL provider selected but FAL_API_KEY is missing');
+  if (!ENV.FAL_API_KEY) {
+    throw new Error('FAL_API_KEY is missing');
   }
-
   const resolvedFallback = await resolveFalModelId(payload.engineId);
   const model = resolveModelSlug(payload, resolvedFallback);
-  const canUseFal = shouldUseFalApis() && Boolean(model);
-  if (!canUseFal) {
-    return generateFromManifest(payload, provider);
+  if (!model) {
+    throw new Error('Unable to resolve FAL model for requested engine');
   }
 
-  try {
-    return await generateViaFal(payload, provider, model!);
-  } catch (error) {
-    if (provider === 'FAL') {
-      throw error instanceof Error ? error : new Error('FAL generation failed');
-    }
-    console.warn('[result-provider] FAL generation failed, falling back to manifest:', error);
-    return generateFromManifest(payload, provider);
-  }
-}
-
-async function generateFromManifest(payload: GeneratePayload, provider: ResultProviderMode): Promise<GenerateResult> {
-  const manifestEntries = await loadManifestVideos();
-  const aspectMatches = manifestEntries.filter((asset) => matchesAspect(payload.aspectRatio, asset));
-  const candidates = aspectMatches.length ? aspectMatches : manifestEntries.length ? manifestEntries : DEFAULT_TEST_ASSETS;
-  const selected = selectRandom(candidates) ?? DEFAULT_TEST_ASSETS[0];
-  const asset = ensureAssetShape(selected);
-  const fallbackThumb = getThumbForAspectRatio(payload.aspectRatio);
-  const poster = asset.thumbnailUrl ?? (await getPosterFrame(asset.url).catch(() => null));
-  const thumbUrl = poster ?? fallbackThumb;
-  return {
-    provider,
-    thumbUrl,
-    videoUrl: asset.url,
-    video: asset,
-    status: 'completed',
-    progress: 100,
-  };
+  return generateViaFal(payload, provider, model);
 }
 
 async function generateViaFal(payload: GeneratePayload, provider: ResultProviderMode, model: string): Promise<GenerateResult> {
@@ -465,55 +347,6 @@ function normalizePendingProgress(queueStatus: QueueStatus | null, response: Fal
   return undefined;
 }
 
-async function loadManifestVideos(): Promise<VideoAsset[]> {
-  if (manifestCache) return manifestCache;
-  if (!manifestPromise) {
-    manifestPromise = readManifestFileContents()
-      .then((raw) => JSON.parse(raw) as { videos?: ManifestEntry[]; cdnBase?: unknown })
-      .then((json) => {
-        manifestCdnBase = resolveManifestBase(json?.cdnBase);
-        return Array.isArray(json?.videos) ? json.videos : [];
-      })
-      .then((entries) => entries.map(normalizeManifestEntry).filter((entry): entry is VideoAsset => Boolean(entry)))
-      .catch((error) => {
-        console.warn(`[result-provider] Failed to load ${MANIFEST_FILENAME}:`, error);
-        return [];
-      });
-  }
-  manifestCache = await manifestPromise;
-  return manifestCache;
-}
-
-function normalizeManifestEntry(entry: ManifestEntry | null | undefined): VideoAsset | null {
-  if (!entry || typeof entry !== 'object') return null;
-  let normalizedUrl: string | null = null;
-  if (typeof entry.url === 'string' && entry.url.trim().length) {
-    normalizedUrl = normalizeVideoUrl(entry.url);
-  } else if (typeof entry.path === 'string' && entry.path.trim().length) {
-    const base = manifestCdnBase ?? ENV.TEST_VIDEO_BASE_URL ?? '/test-videos';
-    normalizedUrl = normalizeVideoUrl(joinUrl(base, entry.path));
-  }
-  if (!normalizedUrl) return null;
-  if (isBlockedUrl(normalizedUrl)) return null;
-  const mime = typeof entry.mime === 'string' && entry.mime ? entry.mime : guessMimeFromUrl(normalizedUrl) ?? 'video/mp4';
-  const width = typeof entry.width === 'number' ? entry.width : null;
-  const height = typeof entry.height === 'number' ? entry.height : null;
-  const durationSec = typeof entry.durationSec === 'number' ? entry.durationSec : null;
-  const tags = Array.isArray(entry.tags) ? entry.tags.filter((tag): tag is string => typeof tag === 'string') : [];
-  const aspectRatio = resolveAspectRatio(entry.aspectRatio, width, height, tags);
-  const thumbCandidate = [entry.thumbUrl, entry.thumbnail, entry.poster].find((value) => typeof value === 'string' && value.length > 0) as string | undefined;
-  return {
-    url: normalizedUrl,
-    mime,
-    width,
-    height,
-    durationSec,
-    tags,
-    thumbnailUrl: thumbCandidate ?? null,
-    aspectRatio,
-  };
-}
-
 function extractVideoAsset(response: FalRunResponse | null | undefined): VideoAsset | null {
   if (!response) return null;
   const candidates: FalVideoCandidate[] = [];
@@ -658,75 +491,6 @@ function looksLikeFalAsset(path: string): boolean {
   );
 }
 
-function selectRandom<T>(items: readonly T[]): T | undefined {
-  if (!items.length) return undefined;
-  const index = Math.floor(Math.random() * items.length);
-  return items[index];
-}
-
-async function readManifestFileContents(): Promise<string> {
-  const candidates = [
-    path.resolve(process.cwd(), MANIFEST_FILENAME),
-    path.resolve(process.cwd(), '..', MANIFEST_FILENAME),
-  ];
-
-  for (const candidate of candidates) {
-    try {
-      return await fs.readFile(candidate, 'utf8');
-    } catch (error) {
-      const err = error as NodeJS.ErrnoException;
-      if (err.code !== 'ENOENT') {
-        throw err;
-      }
-    }
-  }
-
-  throw new Error(`Unable to locate ${MANIFEST_FILENAME}`);
-}
-
-function resolveManifestBase(raw: unknown): string | null {
-  if (typeof raw !== 'string') return null;
-  const trimmed = raw.trim();
-  if (!trimmed) return null;
-  if (trimmed === '.') return '';
-  return trimmed.replace(/\/+$/, '');
-}
-
-function joinUrl(base: string, segment: unknown): string {
-  const safeBase = base.replace(/\/+$/, '');
-  const safeSegment = typeof segment === 'string' ? segment.replace(/^\/+/, '') : '';
-  if (!safeSegment) return safeBase;
-  if (!safeBase) return `/${safeSegment}`;
-  return `${safeBase}/${safeSegment}`;
-}
-
-function resolveAspectRatio(
-  rawAspect: unknown,
-  width: number | null,
-  height: number | null,
-  tags: string[] | null | undefined
-): string | null {
-  const candidate =
-    normaliseAspectString(typeof rawAspect === 'string' ? rawAspect : null) ??
-    extractAspectFromTags(tags) ??
-    deriveAspectFromDimensions(width, height);
-  return candidate;
-}
-
-function extractAspectFromTags(tags: string[] | null | undefined): string | null {
-  if (!Array.isArray(tags)) return null;
-  for (const tag of tags) {
-    const value = typeof tag === 'string' ? tag.toLowerCase() : '';
-    if (value.startsWith('aspect:')) {
-      return normaliseAspectString(tag.slice('aspect:'.length));
-    }
-    if (value === 'landscape') return '16:9';
-    if (value === 'portrait') return '9:16';
-    if (value === 'square') return '1:1';
-  }
-  return null;
-}
-
 function deriveAspectFromDimensions(width: number | null | undefined, height: number | null | undefined): string | null {
   if (!width || !height) return null;
   const ratio = width / height;
@@ -734,56 +498,4 @@ function deriveAspectFromDimensions(width: number | null | undefined, height: nu
   if (Math.abs(ratio - 9 / 16) < 0.08) return '9:16';
   if (Math.abs(ratio - 1) < 0.08) return '1:1';
   return `${width}:${height}`;
-}
-
-function matchesAspect(requested: string, asset: VideoAsset): boolean {
-  const desired = normaliseAspectString(requested);
-  if (!desired) return true;
-  const assetAspect = normaliseAspectString(asset.aspectRatio) ?? deriveAspectFromDimensions(asset.width, asset.height);
-  if (!assetAspect) return true;
-  if (desired === assetAspect) return true;
-  const desiredRatio = parseAspect(desired);
-  const assetRatio = parseAspect(assetAspect);
-  if (!desiredRatio || !assetRatio) return false;
-  if (Math.abs(desiredRatio - assetRatio) <= 0.08) return true;
-  const desiredOrientation = orientationFromAspect(desired);
-  const assetOrientation = orientationFromAspect(assetAspect) ?? orientationFromTags(asset.tags);
-  return Boolean(desiredOrientation && assetOrientation && desiredOrientation === assetOrientation);
-}
-
-function normaliseAspectString(raw: string | null | undefined): string | null {
-  if (!raw) return null;
-  const trimmed = raw.trim().toLowerCase();
-  if (!trimmed) return null;
-  if (trimmed === '16x9' || trimmed === 'landscape') return '16:9';
-  if (trimmed === '9x16' || trimmed === 'portrait') return '9:16';
-  if (trimmed === '1x1' || trimmed === 'square') return '1:1';
-  if (/^\d+:\d+$/.test(trimmed)) return trimmed;
-  return null;
-}
-
-function parseAspect(aspect: string | null | undefined): number | null {
-  if (!aspect) return null;
-  const match = aspect.match(/^(\d+):(\d+)$/);
-  if (!match) return null;
-  const a = Number.parseInt(match[1], 10);
-  const b = Number.parseInt(match[2], 10);
-  if (!a || !b) return null;
-  return a / b;
-}
-
-function orientationFromAspect(aspect: string | null | undefined): 'landscape' | 'portrait' | 'square' | null {
-  const ratio = parseAspect(aspect);
-  if (!ratio) return null;
-  if (Math.abs(ratio - 1) < 0.08) return 'square';
-  return ratio > 1 ? 'landscape' : 'portrait';
-}
-
-function orientationFromTags(tags: string[] | null | undefined): 'landscape' | 'portrait' | 'square' | null {
-  if (!Array.isArray(tags)) return null;
-  const lower = tags.map((tag) => tag.toLowerCase());
-  if (lower.includes('portrait')) return 'portrait';
-  if (lower.includes('square')) return 'square';
-  if (lower.includes('landscape')) return 'landscape';
-  return null;
 }
