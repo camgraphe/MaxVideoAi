@@ -486,7 +486,7 @@ export async function POST(req: NextRequest) {
           error: 'FAL_UNPROCESSABLE_ENTITY',
           detail: detail ?? providerMessage,
           userMessage:
-            'Le fournisseur a refusé l’image de référence (conflit avec ses règles de sécurité). Merci de choisir une image différente.',
+            'The provider rejected this reference image because it conflicts with their safety policies. Please upload a different image.',
           providerMessage,
         },
         { status: 422 }

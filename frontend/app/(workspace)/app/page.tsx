@@ -2319,7 +2319,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           const userMessage =
             typeof payload.userMessage === 'string'
               ? payload.userMessage
-              : 'Le fournisseur a refusé cette image de référence. Merci d’en essayer une autre.';
+              : 'The provider rejected this reference image. Please try with a different one.';
           const providerMessage =
             typeof payload.providerMessage === 'string'
               ? payload.providerMessage
