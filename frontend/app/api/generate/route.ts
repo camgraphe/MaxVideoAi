@@ -427,7 +427,9 @@ export async function POST(req: NextRequest) {
       apiKey,
       imageUrl: typeof body.imageUrl === 'string' ? body.imageUrl.trim() : undefined,
       referenceImages: Array.isArray(body.referenceImages)
-        ? body.referenceImages.map((value: unknown) => (typeof value === 'string' ? value.trim() : null)).filter((value): value is string => Boolean(value))
+        ? body.referenceImages
+            .map((candidate: unknown) => (typeof candidate === 'string' ? candidate.trim() : null))
+            .filter((value: string | null): value is string => typeof value === 'string' && value.length > 0)
         : undefined,
       inputs: processedAttachments,
       idempotencyKey: body.idempotencyKey && typeof body.idempotencyKey === 'string' ? body.idempotencyKey : undefined,

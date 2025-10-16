@@ -1221,7 +1221,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         width: asset.width ?? null,
         height: asset.height ?? null,
         assetId: asset.id,
-        status: 'ready',
+        status: 'ready' as const,
       };
 
       setInputAssets((previous) => {
@@ -1278,7 +1278,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         name: file.name,
         size: file.size,
         type: file.type,
-        status: 'uploading',
+        status: 'uploading' as const,
       };
 
       setInputAssets((previous) => {
@@ -1343,7 +1343,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
               if (!entry || entry.id !== assetId) return entry;
               return {
                 ...entry,
-                status: 'ready',
+                status: 'ready' as const,
                 url: assetResponse.url,
                 width: assetResponse.width ?? entry.width,
                 height: assetResponse.height ?? entry.height,
@@ -1363,7 +1363,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
               if (!entry || entry.id !== assetId) return entry;
               return {
                 ...entry,
-                status: 'error',
+                status: 'error' as const,
                 error: error instanceof Error ? error.message : 'Upload failed',
               };
             });
