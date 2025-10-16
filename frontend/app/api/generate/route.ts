@@ -459,6 +459,29 @@ export async function POST(req: NextRequest) {
         console.warn('[wallet] failed to roll back reservation after generation error', refundError);
       }
     }
+
+    const rawStatus = (error && typeof error === 'object' && 'status' in error) ? (error as { status?: number }).status : undefined;
+    const metadataStatus = (error && typeof error === 'object' && '$metadata' in error)
+      ? ((error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode)
+      : undefined;
+    const status = rawStatus ?? metadataStatus;
+
+    if (status === 422) {
+      const detail =
+        (error && typeof error === 'object' && 'body' in error)
+          ? (error as { body?: unknown }).body ?? null
+          : null;
+      console.error('[generate] fal returned 422', detail ?? error);
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'FAL_UNPROCESSABLE_ENTITY',
+          detail: detail ?? (error instanceof Error ? error.message : 'Fal returned status 422'),
+        },
+        { status: 422 }
+      );
+    }
+
     return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : 'Generation failed' }, { status: 500 });
   }
 
