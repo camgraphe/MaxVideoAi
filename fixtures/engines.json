@@ -9,11 +9,22 @@
       "latencyTier": "standard",
       "queueDepth": 0,
       "region": "global",
-      "modes": ["t2v", "i2v", "v2v"],
+    "modes": [
+    "t2v",
+    "i2v"
+  ],
       "maxDurationSec": 12,
-      "resolutions": ["720p"],
-      "aspectRatios": ["16:9", "9:16", "1:1"],
-      "fps": [24],
+      "resolutions": [
+        "720p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
       "audio": true,
       "upscale4k": false,
       "extend": false,
@@ -21,19 +32,63 @@
       "keyframes": false,
       "params": {},
       "inputLimits": {
-        "imageMaxMB": 20
+        "imageMaxMB": 50
       },
       "inputSchema": {
         "required": [
-          { "id": "prompt", "type": "text", "label": "Prompt" }
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          }
         ],
         "optional": [
-          { "id": "duration_seconds", "type": "number", "label": "Duration (seconds)", "min": 4, "max": 12, "step": 4 },
-          { "id": "aspect_ratio", "type": "enum", "label": "Aspect ratio", "values": ["16:9", "9:16", "1:1"] },
-          { "id": "seed", "type": "number", "label": "Seed" }
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 4,
+            "max": 12,
+            "step": 4
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9",
+              "9:16",
+              "1:1"
+            ]
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed"
+          },
+          {
+            "id": "input_image",
+            "type": "image",
+            "label": "Reference image",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either",
+            "engineParam": "input_image"
+          }
         ],
         "constraints": {
-          "supportedFormats": ["jpg", "jpeg", "png", "webp", "gif", "avif"]
+          "supportedFormats": [
+            "png",
+            "jpeg",
+            "jpg",
+            "webp"
+          ]
         }
       },
       "pricing": {
@@ -44,7 +99,9 @@
       },
       "pricingDetails": {
         "currency": "USD",
-        "perSecondCents": { "default": 10 }
+        "perSecondCents": {
+          "default": 10
+        }
       },
       "updatedAt": "2025-10-14T00:00:00Z",
       "ttlSec": 600,
@@ -59,11 +116,23 @@
       "latencyTier": "standard",
       "queueDepth": 0,
       "region": "global",
-      "modes": ["t2v", "i2v"],
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
       "maxDurationSec": 12,
-      "resolutions": ["720p", "1080p"],
-      "aspectRatios": ["16:9", "9:16", "1:1"],
-      "fps": [24],
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
       "audio": true,
       "upscale4k": false,
       "extend": false,
@@ -71,19 +140,62 @@
       "keyframes": false,
       "params": {},
       "inputLimits": {
-        "imageMaxMB": 20
+        "imageMaxMB": 50
       },
       "inputSchema": {
         "required": [
-          { "id": "prompt", "type": "text", "label": "Prompt" }
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          }
         ],
         "optional": [
-          { "id": "duration_seconds", "type": "number", "label": "Duration (seconds)", "min": 4, "max": 12, "step": 4 },
-          { "id": "resolution", "type": "enum", "label": "Resolution", "values": ["720p", "1080p"] },
-          { "id": "seed", "type": "number", "label": "Seed" }
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 4,
+            "max": 12,
+            "step": 4
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p",
+              "1080p"
+            ]
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed"
+          },
+          {
+            "id": "input_image",
+            "type": "image",
+            "label": "Reference image",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either",
+            "engineParam": "input_image"
+          }
         ],
         "constraints": {
-          "supportedFormats": ["jpg", "jpeg", "png", "webp", "gif", "avif"]
+          "supportedFormats": [
+            "png",
+            "jpeg",
+            "jpg",
+            "webp"
+          ]
         }
       },
       "pricing": {
@@ -115,11 +227,22 @@
       "latencyTier": "standard",
       "queueDepth": 0,
       "region": "global",
-      "modes": ["t2v", "i2v"],
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
       "maxDurationSec": 12,
-      "resolutions": ["1080p"],
-      "aspectRatios": ["16:9", "9:16", "1:1"],
-      "fps": [24],
+      "resolutions": [
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
       "audio": true,
       "upscale4k": false,
       "extend": false,
@@ -127,18 +250,50 @@
       "keyframes": false,
       "params": {},
       "inputLimits": {
-        "imageMaxMB": 20
+        "imageMaxMB": 50
       },
       "inputSchema": {
         "required": [
-          { "id": "prompt", "type": "text", "label": "Prompt" }
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          }
         ],
         "optional": [
-          { "id": "duration_seconds", "type": "number", "label": "Duration (seconds)", "min": 4, "max": 12, "step": 4 },
-          { "id": "audio", "type": "boolean", "label": "Generate audio" }
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 4,
+            "max": 12,
+            "step": 4
+          },
+          {
+            "id": "audio",
+            "type": "boolean",
+            "label": "Generate audio"
+          },
+          {
+            "id": "reference_images",
+            "type": "image",
+            "label": "Reference images",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 3,
+            "source": "either",
+            "engineParam": "reference_images"
+          }
         ],
         "constraints": {
-          "supportedFormats": ["jpg", "jpeg", "png", "webp", "gif", "avif"]
+          "supportedFormats": [
+            "png",
+            "jpeg",
+            "jpg",
+            "webp"
+          ]
         }
       },
       "pricing": {
@@ -166,26 +321,73 @@
       "latencyTier": "fast",
       "queueDepth": 0,
       "region": "global",
-      "modes": ["t2v"],
+      "modes": [
+        "t2v"
+      ],
       "maxDurationSec": 12,
-      "resolutions": ["1080p"],
-      "aspectRatios": ["16:9", "9:16", "1:1"],
-      "fps": [24],
+      "resolutions": [
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
       "audio": true,
       "upscale4k": false,
       "extend": false,
       "motionControls": false,
       "keyframes": false,
       "params": {},
-      "inputLimits": {},
+      "inputLimits": {
+        "imageMaxMB": 50
+      },
       "inputSchema": {
         "required": [
-          { "id": "prompt", "type": "text", "label": "Prompt" }
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          }
         ],
         "optional": [
-          { "id": "duration_seconds", "type": "number", "label": "Duration (seconds)", "min": 4, "max": 12, "step": 4 },
-          { "id": "audio", "type": "boolean", "label": "Generate audio" }
-        ]
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 4,
+            "max": 12,
+            "step": 4
+          },
+          {
+            "id": "audio",
+            "type": "boolean",
+            "label": "Generate audio"
+          },
+          {
+            "id": "reference_images",
+            "type": "image",
+            "label": "Reference images",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 3,
+            "source": "either",
+            "engineParam": "reference_images"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "png",
+            "jpeg",
+            "jpg",
+            "webp"
+          ]
+        }
       },
       "pricing": {
         "unit": "USD/s",
@@ -212,11 +414,22 @@
       "latencyTier": "fast",
       "queueDepth": 0,
       "region": "global",
-      "modes": ["t2v", "i2v"],
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
       "maxDurationSec": 12,
-      "resolutions": ["1080p"],
-      "aspectRatios": ["16:9", "9:16", "1:1"],
-      "fps": [24],
+      "resolutions": [
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
       "audio": false,
       "upscale4k": false,
       "extend": false,
@@ -224,16 +437,51 @@
       "keyframes": false,
       "params": {},
       "inputLimits": {
-        "imageMaxMB": 20
+        "imageMaxMB": 50
       },
       "inputSchema": {
         "required": [
-          { "id": "prompt", "type": "text", "label": "Prompt" }
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          }
         ],
         "optional": [
-          { "id": "duration_seconds", "type": "number", "label": "Duration (seconds)", "min": 4, "max": 12, "step": 4 },
-          { "id": "seed", "type": "number", "label": "Seed" }
-        ]
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 4,
+            "max": 12,
+            "step": 4
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed"
+          },
+          {
+            "id": "image",
+            "type": "image",
+            "label": "Reference image",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either",
+            "engineParam": "image"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "png",
+            "jpeg",
+            "jpg",
+            "webp"
+          ]
+        }
       },
       "pricing": {
         "unit": "USD/s",
@@ -260,11 +508,22 @@
       "latencyTier": "standard",
       "queueDepth": 0,
       "region": "global",
-      "modes": ["t2v", "i2v"],
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
       "maxDurationSec": 8,
-      "resolutions": ["720p"],
-      "aspectRatios": ["16:9", "9:16", "1:1"],
-      "fps": [24],
+      "resolutions": [
+        "720p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
       "audio": false,
       "upscale4k": false,
       "extend": false,
@@ -272,17 +531,45 @@
       "keyframes": false,
       "params": {},
       "inputLimits": {
-        "imageMaxMB": 20
+        "imageMaxMB": 50
       },
       "inputSchema": {
         "required": [
-          { "id": "prompt", "type": "text", "label": "Prompt" }
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          }
         ],
         "optional": [
-          { "id": "duration_seconds", "type": "number", "label": "Duration (seconds)", "min": 4, "max": 8, "step": 1 }
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 4,
+            "max": 8,
+            "step": 1
+          },
+          {
+            "id": "image",
+            "type": "image",
+            "label": "Reference image",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either",
+            "engineParam": "image"
+          }
         ],
         "constraints": {
-          "supportedFormats": ["jpg", "jpeg", "png", "webp", "gif", "avif"]
+          "supportedFormats": [
+            "png",
+            "jpeg",
+            "jpg",
+            "webp"
+          ]
         }
       },
       "pricing": {
@@ -310,25 +597,67 @@
       "latencyTier": "standard",
       "queueDepth": 0,
       "region": "global",
-      "modes": ["t2v"],
+      "modes": [
+        "t2v"
+      ],
       "maxDurationSec": 8,
-      "resolutions": ["720p"],
-      "aspectRatios": ["16:9", "9:16"],
-      "fps": [24],
+      "resolutions": [
+        "720p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16"
+      ],
+      "fps": [
+        24
+      ],
       "audio": false,
       "upscale4k": false,
       "extend": false,
       "motionControls": false,
       "keyframes": false,
       "params": {},
-      "inputLimits": {},
+      "inputLimits": {
+        "imageMaxMB": 50
+      },
       "inputSchema": {
         "required": [
-          { "id": "prompt", "type": "text", "label": "Prompt" }
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          }
         ],
         "optional": [
-          { "id": "duration_seconds", "type": "number", "label": "Duration (seconds)", "min": 4, "max": 8, "step": 1 }
-        ]
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 4,
+            "max": 8,
+            "step": 1
+          },
+          {
+            "id": "image",
+            "type": "image",
+            "label": "Reference image",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either",
+            "engineParam": "image"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "png",
+            "jpeg",
+            "jpg",
+            "webp"
+          ]
+        }
       },
       "pricing": {
         "unit": "USD/video",
@@ -355,11 +684,21 @@
       "latencyTier": "fast",
       "queueDepth": 0,
       "region": "global",
-      "modes": ["t2v", "i2v"],
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
       "maxDurationSec": 8,
-      "resolutions": ["720p"],
-      "aspectRatios": ["16:9", "9:16"],
-      "fps": [24],
+      "resolutions": [
+        "720p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16"
+      ],
+      "fps": [
+        24
+      ],
       "audio": false,
       "upscale4k": false,
       "extend": false,
@@ -367,17 +706,45 @@
       "keyframes": false,
       "params": {},
       "inputLimits": {
-        "imageMaxMB": 20
+        "imageMaxMB": 50
       },
       "inputSchema": {
         "required": [
-          { "id": "prompt", "type": "text", "label": "Prompt" }
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          }
         ],
         "optional": [
-          { "id": "duration_seconds", "type": "number", "label": "Duration (seconds)", "min": 4, "max": 8, "step": 1 }
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 4,
+            "max": 8,
+            "step": 1
+          },
+          {
+            "id": "image",
+            "type": "image",
+            "label": "Reference image",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either",
+            "engineParam": "image"
+          }
         ],
         "constraints": {
-          "supportedFormats": ["jpg", "jpeg", "png", "webp", "gif", "avif"]
+          "supportedFormats": [
+            "png",
+            "jpeg",
+            "jpg",
+            "webp"
+          ]
         }
       },
       "pricing": {
@@ -405,11 +772,23 @@
       "latencyTier": "fast",
       "queueDepth": 0,
       "region": "global",
-      "modes": ["t2v", "i2v"],
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
       "maxDurationSec": 10,
-      "resolutions": ["720p", "1080p"],
-      "aspectRatios": ["16:9", "9:16", "1:1"],
-      "fps": [24],
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
       "audio": false,
       "upscale4k": false,
       "extend": false,
@@ -417,18 +796,69 @@
       "keyframes": false,
       "params": {},
       "inputLimits": {
-        "imageMaxMB": 20
+        "imageMaxMB": 50
       },
       "inputSchema": {
         "required": [
-          { "id": "prompt", "type": "text", "label": "Prompt" }
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          }
         ],
         "optional": [
-          { "id": "duration_seconds", "type": "number", "label": "Duration (seconds)", "min": 3, "max": 10, "step": 1 },
-          { "id": "resolution", "type": "enum", "label": "Resolution", "values": ["720p", "1080p"] }
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 3,
+            "max": 10,
+            "step": 1
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p",
+              "1080p"
+            ]
+          },
+          {
+            "id": "image",
+            "type": "image",
+            "label": "Reference image",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either",
+            "engineParam": "image"
+          },
+          {
+            "id": "images",
+            "type": "image",
+            "label": "Additional reference images",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 5,
+            "source": "either",
+            "engineParam": "images"
+          }
         ],
         "constraints": {
-          "supportedFormats": ["jpg", "jpeg", "png", "webp", "gif", "avif"]
+          "supportedFormats": [
+            "png",
+            "jpeg",
+            "jpg",
+            "webp"
+          ]
         }
       },
       "pricing": {
@@ -459,11 +889,22 @@
       "latencyTier": "fast",
       "queueDepth": 0,
       "region": "global",
-      "modes": ["t2v", "i2v"],
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
       "maxDurationSec": 10,
-      "resolutions": ["720p"],
-      "aspectRatios": ["16:9", "9:16", "1:1"],
-      "fps": [25],
+      "resolutions": [
+        "720p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        25
+      ],
       "audio": false,
       "upscale4k": false,
       "extend": false,
@@ -471,18 +912,38 @@
       "keyframes": false,
       "params": {},
       "inputLimits": {
-        "imageMaxMB": 20
+        "imageMaxMB": 50
       },
       "inputSchema": {
         "required": [
-          { "id": "prompt", "type": "text", "label": "Prompt" }
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          }
         ],
         "optional": [
-          { "id": "duration_seconds", "type": "number", "label": "Duration (seconds)", "min": 2, "max": 10, "step": 1 },
-          { "id": "camera_tags", "type": "text", "label": "Camera tags" }
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 2,
+            "max": 10,
+            "step": 1
+          },
+          {
+            "id": "camera_tags",
+            "type": "text",
+            "label": "Camera tags"
+          }
         ],
         "constraints": {
-          "supportedFormats": ["jpg", "jpeg", "png", "webp", "gif", "avif"]
+          "supportedFormats": [
+            "png",
+            "jpeg",
+            "jpg",
+            "webp"
+          ]
         }
       },
       "pricing": {
@@ -510,11 +971,21 @@
       "latencyTier": "standard",
       "queueDepth": 0,
       "region": "global",
-      "modes": ["i2v"],
+      "modes": [
+        "i2v"
+      ],
       "maxDurationSec": 6,
-      "resolutions": ["1080p"],
-      "aspectRatios": ["16:9", "9:16", "1:1"],
-      "fps": [25],
+      "resolutions": [
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        25
+      ],
       "audio": false,
       "upscale4k": false,
       "extend": false,
@@ -522,18 +993,42 @@
       "keyframes": false,
       "params": {},
       "inputLimits": {
-        "imageMaxMB": 20
+        "imageMaxMB": 50
       },
       "inputSchema": {
         "required": [
-          { "id": "image_url", "type": "image", "label": "Reference image", "maxCount": 1 }
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Reference image",
+            "maxCount": 1,
+            "minCount": 1,
+            "source": "either",
+            "engineParam": "image_url"
+          }
         ],
         "optional": [
-          { "id": "prompt", "type": "text", "label": "Prompt" },
-          { "id": "duration_seconds", "type": "number", "label": "Duration (seconds)", "min": 2, "max": 6, "step": 1 }
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          },
+          {
+            "id": "duration_seconds",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "min": 2,
+            "max": 6,
+            "step": 1
+          }
         ],
         "constraints": {
-          "supportedFormats": ["jpg", "jpeg", "png", "webp", "gif", "avif"]
+          "supportedFormats": [
+            "png",
+            "jpeg",
+            "jpg",
+            "webp"
+          ]
         }
       },
       "pricing": {
@@ -561,11 +1056,22 @@
       "latencyTier": "standard",
       "queueDepth": 0,
       "region": "global",
-      "modes": ["t2v"],
+      "modes": [
+        "t2v"
+      ],
       "maxDurationSec": 6,
-      "resolutions": ["480p", "580p", "720p"],
-      "aspectRatios": ["16:9", "9:16"],
-      "fps": [24],
+      "resolutions": [
+        "480p",
+        "580p",
+        "720p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16"
+      ],
+      "fps": [
+        24
+      ],
       "audio": false,
       "upscale4k": false,
       "extend": true,
@@ -575,12 +1081,39 @@
       "inputLimits": {},
       "inputSchema": {
         "required": [
-          { "id": "prompt", "type": "text", "label": "Prompt" }
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          }
         ],
         "optional": [
-          { "id": "steps", "type": "number", "label": "Inference steps", "min": 25, "max": 55, "step": 5 },
-          { "id": "frames", "type": "number", "label": "Frames", "values": [85, 129] }
-        ]
+          {
+            "id": "steps",
+            "type": "number",
+            "label": "Inference steps",
+            "min": 25,
+            "max": 55,
+            "step": 5
+          },
+          {
+            "id": "frames",
+            "type": "number",
+            "label": "Frames",
+            "values": [
+              85,
+              129
+            ]
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "png",
+            "jpeg",
+            "jpg",
+            "webp"
+          ]
+        }
       },
       "pricing": {
         "unit": "USD/video",

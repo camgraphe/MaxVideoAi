@@ -29,7 +29,7 @@ type RawEngine = Record<string, unknown>;
 const ENGINE_STATUS: EngineStatus[] = ['live', 'busy', 'degraded', 'maintenance', 'early_access'];
 const LATENCY: LatencyTier[] = ['fast', 'standard'];
 const AVAILABILITY: EngineAvailability[] = ['available', 'limited', 'waitlist', 'paused'];
-const MODES: Mode[] = ['t2v', 'i2v', 'v2v'];
+const MODES: Mode[] = ['t2v', 'i2v'];
 const RESOLUTIONS: Resolution[] = ['720p', '1080p', '4k', '512P', '768P', 'auto'];
 const ASPECT_RATIOS: AspectRatio[] = ['16:9', '9:16', '1:1', '4:5', 'custom', 'source', 'auto'];
 

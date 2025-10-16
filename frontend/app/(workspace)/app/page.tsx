@@ -62,7 +62,6 @@ function readFileAsDataUrl(file: File): Promise<string> {
 const MODE_DISPLAY_LABEL: Record<Mode, string> = {
   t2v: 'Text → Video',
   i2v: 'Image → Video',
-  v2v: 'Video → Video',
 };
 
 type DurationOptionMeta = {
@@ -862,17 +861,6 @@ type LocalRenderGroup = {
     });
   }, [renderGroups, batchHeroes]);
   const normalizedPendingGroups = useMemo(() => normalizeGroupSummaries(pendingGroups), [pendingGroups]);
-
-  useEffect(() => {
-    if (!pendingGroups.length) {
-      setActiveGroupId(null);
-      return;
-    }
-    if (!activeGroupId || !pendingGroups.some((group) => group.id === activeGroupId)) {
-      setActiveGroupId(pendingGroups[0].id);
-    }
-  }, [pendingGroups, activeGroupId]);
-
   const pendingSummaryMap = useMemo(() => {
     const map = new Map<string, GroupSummary>();
     pendingGroups.forEach((group) => {
@@ -881,11 +869,31 @@ type LocalRenderGroup = {
     return map;
   }, [pendingGroups]);
   const activeVideoGroups = useMemo(() => adaptGroupSummaries(pendingGroups, provider), [pendingGroups, provider]);
+  const [compositeOverride, setCompositeOverride] = useState<VideoGroup | null>(null);
+  const [compositeOverrideSummary, setCompositeOverrideSummary] = useState<GroupSummary | null>(null);
   const activeVideoGroup = useMemo<VideoGroup | null>(() => {
+    if (compositeOverride) return null;
     if (!activeVideoGroups.length) return null;
     if (!activeGroupId) return activeVideoGroups[0] ?? null;
     return activeVideoGroups.find((group) => group.id === activeGroupId) ?? activeVideoGroups[0] ?? null;
-  }, [activeVideoGroups, activeGroupId]);
+  }, [activeVideoGroups, activeGroupId, compositeOverride]);
+  const compositeGroup = compositeOverride ?? activeVideoGroup ?? null;
+
+  useEffect(() => {
+    if (compositeOverrideSummary) {
+      return;
+    }
+    if (!pendingGroups.length) {
+      if (activeGroupId !== null) {
+        setActiveGroupId(null);
+      }
+      return;
+    }
+    if (!activeGroupId || !pendingGroups.some((group) => group.id === activeGroupId)) {
+      setActiveGroupId(pendingGroups[0].id);
+    }
+  }, [pendingGroups, activeGroupId, compositeOverrideSummary]);
+
   const isGenerationLoading = useMemo(() => pendingGroups.some((group) => group.members.some((member) => member.status !== 'completed')), [pendingGroups]);
   const generationSkeletonCount = useMemo(() => {
     const count = renders.length > 0 ? renders.length : form?.iterations ?? 1;
@@ -900,6 +908,13 @@ type LocalRenderGroup = {
     }
     return adaptGroupSummary(normalizeGroupSummary(viewerTarget.summary), provider);
   }, [viewerTarget, pendingSummaryMap, provider]);
+  useEffect(() => {
+    if (!activeGroupId) return;
+    if (renderGroups.has(activeGroupId)) {
+      setCompositeOverride(null);
+      setCompositeOverrideSummary(null);
+    }
+  }, [activeGroupId, renderGroups]);
   const buildQuadTileFromRender = useCallback(
     (render: LocalRender, group: LocalRenderGroup): QuadPreviewTile => {
       const gatingActive = render.status !== 'failed' && Date.now() < render.minReadyAt;
@@ -2154,7 +2169,8 @@ useEffect(() => {
         const tile = buildQuadTileFromRender(heroRender, renderGroup);
         if (action === 'open') {
           handleQuadTileAction('open', tile);
-          setViewerTarget({ kind: 'pending', id: group.id });
+          setCompositeOverride(null);
+          setCompositeOverrideSummary(null);
           return;
         }
         if (action === 'continue') {
@@ -2235,7 +2251,9 @@ useEffect(() => {
           etaLabel: tile.etaLabel,
           prompt: tile.prompt,
         });
-        setViewerTarget({ kind: 'summary', summary: group });
+        const normalizedSummary = normalizeGroupSummary(group);
+        setCompositeOverride(adaptGroupSummary(normalizedSummary, provider));
+        setCompositeOverrideSummary(normalizedSummary);
         return;
       }
 
@@ -2252,10 +2270,12 @@ useEffect(() => {
       showNotice,
       fallbackEngineId,
       setActiveGroupId,
-      setViewerTarget,
       setViewMode,
       setActiveBatchId,
       setSelectedPreview,
+      provider,
+      setCompositeOverride,
+      setCompositeOverrideSummary,
     ]
   );
 
@@ -2469,9 +2489,18 @@ useEffect(() => {
                     )
                   ) : null}
                   <CompositePreviewDock
-                    group={activeVideoGroup}
-                    isLoading={isGenerationLoading && !activeVideoGroup}
-                    onOpenModal={(group) => setViewerTarget({ kind: 'pending', id: group.id })}
+                    group={compositeGroup}
+                    isLoading={isGenerationLoading && !compositeGroup}
+                    onOpenModal={(group) => {
+                      if (!group) return;
+                      if (renderGroups.has(group.id)) {
+                        setViewerTarget({ kind: 'pending', id: group.id });
+                        return;
+                      }
+                      if (compositeOverrideSummary && compositeOverrideSummary.id === group.id) {
+                        setViewerTarget({ kind: 'summary', summary: compositeOverrideSummary });
+                      }
+                    }}
                   />
                   <Composer
                     engine={selectedEngine}

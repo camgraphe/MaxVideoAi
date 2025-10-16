@@ -144,8 +144,8 @@ export function SettingsControls({
     return engine.aspectRatios;
   }, [caps?.aspectRatio, engine.aspectRatios]);
 
-  const showResolutionControl = caps ? Boolean(caps.resolution && caps.resolution.length) : resolutionOptions.length > 0;
-  const showAspectControl = caps ? Boolean(caps.aspectRatio && caps.aspectRatio.length) : aspectOptions.length > 0;
+  const showResolutionControl = resolutionOptions.length > 0;
+  const showAspectControl = aspectOptions.length > 0;
 
   useEffect(() => {
     if ((!audioSupported || mode !== 't2v') && addons.audio) {
@@ -368,57 +368,6 @@ export function SettingsControls({
         </div>
       )}
 
-      <div className="space-y-3">
-        <FieldGroup
-          label="Resolution"
-          options={engine.resolutions}
-          value={resolution}
-          onChange={onResolutionChange}
-          focusRef={focusRefs?.resolution}
-          labelFor={(opt) => {
-            const baseMap: Record<string, string> = {
-              '512P': '512P',
-              '768P': '768P',
-              '720p': '720p • HD',
-              '1080p': '1080p • Full HD',
-              '4k': '4K • Ultra HD',
-              auto: 'Auto',
-            };
-            let label = baseMap[String(opt)] ?? String(opt);
-            if (engine.id.includes('pro')) {
-              label = `${label} • Pro`;
-            }
-            return label;
-          }}
-        />
-        <FieldGroup
-          label="Aspect"
-          options={engine.aspectRatios}
-          value={aspectRatio}
-          onChange={onAspectRatioChange}
-          iconFor={(opt) =>
-            ({
-              '16:9': '/assets/icons/ar-16-9.svg',
-              '9:16': '/assets/icons/ar-9-16.svg',
-              '1:1': '/assets/icons/ar-1-1.svg',
-              '4:5': '/assets/icons/ar-4-5.svg'
-            } as Record<string, string | undefined>)[String(opt)] || undefined
-          }
-          labelFor={(opt) => {
-            const labels: Record<string, string> = {
-              '16:9': '16:9',
-              '9:16': '9:16',
-              '1:1': '1:1',
-              '4:5': '4:5',
-              auto: 'Auto',
-              source: 'Source',
-              custom: 'Custom',
-            };
-            return labels[String(opt)] ?? String(opt);
-          }}
-        />
-      </div>
-
       {audioSupported && (
         <div className="flex items-center justify-between rounded-input border border-border bg-white p-3 text-sm text-text-secondary">
           <span className="text-[12px] uppercase tracking-micro text-text-muted">Audio</span>
@@ -547,7 +496,7 @@ export function SettingsControls({
               </div>
             )}
 
-            {(mode === 'i2v' || mode === 'v2v') && engine.params.initInfluence && (
+            {mode === 'i2v' && engine.params.initInfluence && (
               <div className="space-y-2">
                 <h4 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Input influence</h4>
                 <RangeWithInput

@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
   const requestedJobId = typeof body.jobId === 'string' && body.jobId.trim() ? String(body.jobId).trim() : null;
   const jobId = requestedJobId ?? `job_${randomUUID()}`;
   const rawMode = typeof body.mode === 'string' ? body.mode.trim().toLowerCase() : '';
-  const mode: Mode = (['t2v', 'i2v', 'v2v'] as const).includes(rawMode as Mode)
+  const mode: Mode = (['t2v', 'i2v'] as const).includes(rawMode as Mode)
     ? ((rawMode as Mode) ?? engine.modes[0] ?? 't2v')
     : engine.modes.includes('t2v')
       ? 't2v'

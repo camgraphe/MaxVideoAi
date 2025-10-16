@@ -3,7 +3,7 @@ export type { PricingSnapshot } from '@maxvideoai/pricing';
 
 export type EngineStatus = 'live' | 'busy' | 'degraded' | 'maintenance' | 'early_access';
 export type LatencyTier = 'fast' | 'standard';
-export type Mode = 't2v' | 'i2v' | 'v2v';
+export type Mode = 't2v' | 'i2v';
 export type Resolution = '720p' | '1080p' | '4k' | '512P' | '768P' | 'auto';
 export type AspectRatio = '16:9' | '9:16' | '1:1' | '4:5' | 'custom' | 'source' | 'auto';
 export type EngineAvailability = 'available' | 'limited' | 'waitlist' | 'paused';
@@ -55,6 +55,8 @@ export interface EngineInputField {
   step?: number;
   default?: number | string;
   values?: string[];
+  source?: 'upload' | 'url' | 'either';
+  engineParam?: string;
 }
 
 export interface EngineInputSchema {

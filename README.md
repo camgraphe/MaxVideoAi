@@ -61,7 +61,7 @@ Set `NEXT_PUBLIC_API_BASE` in `.env.local` to match the mock base URL.
 Key behaviours implemented:
 
 - Engine selection updates capability-driven controls instantly.
-- Composer sits below the preview, with dropzones that appear only for `i2v`/`v2v` modes supported by the engine.
+- Composer sits below the preview, with dropzones that appear only for `i2v` modes supported by the engine.
 - PRICE-BEFORE pill fed by `POST /preflight`, refreshes (<200 ms debounce) when core settings change.
 - Overlays for Upscale 4K & Audio respect engine capabilities.
 - Basic badges (PAY-AS-YOU-GO / PRICE-BEFORE) and membership hints inline with the spec.

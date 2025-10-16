@@ -71,11 +71,6 @@ export const ENGINE_CAPS: Record<string, EngineCaps> = {
     audioToggle: false,
     notes: 'Supports optional api_key to bill OpenAI directly.',
   },
-  'fal-ai/sora-2/video-to-video/remix': {
-    modes: ['v2v'],
-    audioToggle: false,
-  },
-
   // --- GOOGLE VEO 3 ---
   'fal-ai/veo3': {
     modes: ['t2v'],
@@ -201,7 +196,6 @@ export const ENGINE_CAP_INDEX: Record<string, ModeCapsMap> = {
   'sora-2': {
     t2v: 'fal-ai/sora-2/text-to-video',
     i2v: 'fal-ai/sora-2/image-to-video',
-    v2v: 'fal-ai/sora-2/video-to-video/remix',
   },
   'sora-2-pro': {
     t2v: 'fal-ai/sora-2/text-to-video/pro',

@@ -23,7 +23,6 @@ import { getModelByEngineId } from '@/lib/model-roster';
 const MODE_LABELS: Record<Mode, string> = {
   t2v: 'Text → Video',
   i2v: 'Image → Video',
-  v2v: 'Video → Video'
 };
 
 type EngineGuideEntry = {
@@ -461,7 +460,7 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
         <div className="min-w-[200px] flex-1 space-y-3">
           <p className="text-[12px] uppercase tracking-micro text-text-muted">Input mode</p>
           <div className="flex flex-wrap gap-2">
-            {(['t2v', 'i2v', 'v2v'] as Mode[]).map((candidate) => {
+            {(['t2v', 'i2v'] as Mode[]).map((candidate) => {
               const supported = selectedEngine.modes.includes(candidate);
               return (
                 <button
@@ -743,7 +742,7 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
               <FilterChip active={modeFilter === 'all'} onClick={() => setModeFilter('all')}>
                 Mode · All
               </FilterChip>
-              {(['t2v', 'i2v', 'v2v'] as Mode[]).map((candidate) => (
+              {(['t2v', 'i2v'] as Mode[]).map((candidate) => (
                 <FilterChip key={candidate} active={modeFilter === candidate} onClick={() => setModeFilter(candidate)}>
                   Mode · {candidate.toUpperCase()}
                 </FilterChip>
