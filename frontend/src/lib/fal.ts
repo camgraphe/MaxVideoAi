@@ -1,4 +1,5 @@
 import type { QueueStatus } from '@fal-ai/client';
+import { Buffer } from 'node:buffer';
 import { ENV } from '@/lib/env';
 import { getResultProviderMode } from '@/lib/result-provider';
 import type { ResultProviderMode } from '@/types/providers';
@@ -188,6 +189,45 @@ export async function generateVideo(payload: GeneratePayload): Promise<GenerateR
   return generateViaFal(payload, provider, model);
 }
 
+function inferExtensionFromMime(mime: string): string {
+  const match = mime.match(/^[^/]+\/([^;]+)/);
+  if (!match) return 'bin';
+  return match[1].toLowerCase();
+}
+
+function extractDataUrlParts(dataUrl: string): { mime: string; data: string } | null {
+  const match = /^data:([^;,]+);base64,(.+)$/i.exec(dataUrl);
+  if (!match) return null;
+  return { mime: match[1], data: match[2] };
+}
+
+async function uploadDataUrlToFalStorage(
+  dataUrl: string,
+  falClient: ReturnType<typeof getFalClient>,
+  fileName?: string
+): Promise<string> {
+  const parsed = extractDataUrlParts(dataUrl);
+  if (!parsed) {
+    throw new Error('Invalid data URL for attachment');
+  }
+  const { mime, data } = parsed;
+  const extension = inferExtensionFromMime(mime);
+  const effectiveName =
+    (fileName && fileName.trim()) || `attachment-${Date.now().toString(36)}.${extension}`;
+  const buffer = Buffer.from(data, 'base64');
+  let fileLike: Blob;
+  if (typeof File !== 'undefined') {
+    try {
+      fileLike = new File([buffer], effectiveName, { type: mime });
+    } catch {
+      fileLike = new Blob([buffer], { type: mime });
+    }
+  } else {
+    fileLike = new Blob([buffer], { type: mime });
+  }
+  return falClient.storage.upload(fileLike);
+}
+
 async function generateViaFal(payload: GeneratePayload, provider: ResultProviderMode, model: string): Promise<GenerateResult> {
   const fallbackThumb = getThumbForAspectRatio(payload.aspectRatio);
   const falClient = getFalClient();
@@ -198,13 +238,18 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
   }
 
   let imageUrl: string | undefined;
+  let primaryImage: GenerateAttachment | undefined;
   if (payload.mode === 'i2v' && payload.inputs?.length) {
-    const primaryImage = payload.inputs.find(
+    primaryImage = payload.inputs.find(
       (entry) => entry.kind === 'image' || entry.slotId === 'image_url' || entry.type.startsWith('image/')
     );
     if (primaryImage?.dataUrl) {
       imageUrl = primaryImage.dataUrl;
     }
+  }
+
+  if (imageUrl?.startsWith('data:')) {
+    imageUrl = await uploadDataUrlToFalStorage(imageUrl, falClient, primaryImage?.name);
   }
 
   const requestBody: Record<string, unknown> = {
