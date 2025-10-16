@@ -8,13 +8,14 @@ import type { EngineCaps } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
 import { Card } from '@/components/ui/Card';
 import { EngineIcon } from '@/components/ui/EngineIcon';
+import { AspectBox } from '@/components/ui/AspectBox';
 import { ProcessingOverlay } from '@/components/groups/ProcessingOverlay';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 
 export type GroupedJobAction = 'open' | 'continue' | 'refine' | 'branch' | 'compare' | 'remove';
 
 function ThumbImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
-  const baseClass = clsx('h-full w-full pointer-events-none', className);
+  const baseClass = clsx('aspect-box__media pointer-events-none', className);
   if (src.startsWith('data:')) {
     return <img src={src} alt={alt} className={baseClass} />;
   }
@@ -22,7 +23,7 @@ function ThumbImage({ src, alt, className }: { src: string; alt: string; classNa
 }
 
 function GroupPreviewMedia({ preview }: { preview: GroupSummary['previews'][number] | undefined }) {
-  const baseClass = 'h-full w-full pointer-events-none object-cover';
+  const baseClass = 'aspect-box__media pointer-events-none';
   if (preview?.videoUrl) {
     const poster = preview.thumbUrl ?? undefined;
     return (
@@ -34,11 +35,13 @@ function GroupPreviewMedia({ preview }: { preview: GroupSummary['previews'][numb
         playsInline
         autoPlay
         loop
+        preload="metadata"
+        aria-hidden="true"
       />
     );
   }
   if (preview?.thumbUrl) {
-    return <ThumbImage src={preview.thumbUrl} alt="" className="object-cover" />;
+    return <ThumbImage src={preview.thumbUrl} alt="" />;
   }
   return null;
 }
@@ -121,6 +124,14 @@ export function GroupedJobCard({ group, engine, onOpen, onAction, actionMenu = t
   };
 
   const splitModeLabel = group.splitMode ? group.splitMode.charAt(0).toUpperCase() + group.splitMode.slice(1) : 'Split mode';
+  const heroDuration = Math.round(hero.durationSec);
+  const durationLabel = Number.isFinite(heroDuration) && heroDuration > 0 ? `${heroDuration} ${heroDuration === 1 ? 'seconde' : 'secondes'}` : null;
+  const aspectLabel = hero.aspectRatio ?? 'format inconnu';
+  const heroEngineLabel = hero.engineLabel ?? engine?.label ?? '';
+  const ariaSegments = [`Vidéo ${aspectLabel}`.trim()];
+  if (durationLabel) ariaSegments.push(durationLabel);
+  if (heroEngineLabel) ariaSegments.push(heroEngineLabel);
+  const ariaLabel = ariaSegments.join(', ');
 
   return (
     <Card className="relative overflow-hidden rounded-card border border-border bg-white/90 p-0 shadow-card">
@@ -128,6 +139,7 @@ export function GroupedJobCard({ group, engine, onOpen, onAction, actionMenu = t
         className="relative cursor-pointer"
         role="button"
         tabIndex={0}
+        aria-label={ariaLabel}
         onClick={() => onOpen?.(group)}
         onKeyDown={(event) => {
           if (event.key === 'Enter' || event.key === ' ') {
@@ -137,25 +149,30 @@ export function GroupedJobCard({ group, engine, onOpen, onAction, actionMenu = t
         }}
       >
         <div className="relative w-full" style={{ aspectRatio: '16 / 9' }}>
-          <div className={clsx('absolute inset-0 grid gap-1 bg-[#E7ECF7] p-1', previewGridClass)}>
+          <div className={clsx('absolute inset-0 grid gap-1 bg-[var(--surface-2)] p-1', previewGridClass)}>
             {Array.from({ length: previewCount }).map((_, index) => {
               const preview = previews[index];
               const member = preview ? group.members.find((entry) => entry.id === preview.id) : undefined;
               const memberStatus = member?.status ?? 'completed';
               const isCompleted = memberStatus === 'completed';
+              const aspectRatio = preview?.aspectRatio ?? member?.aspectRatio ?? group.hero.aspectRatio ?? null;
+              const placeholder = (
+                <div className="aspect-box__media flex items-center justify-center bg-gradient-to-br from-[#e5ebf6] via-white to-[#f1f4ff] text-[11px] uppercase tracking-micro text-text-muted" aria-hidden="true">
+                  Media
+                </div>
+              );
               return (
-                <div key={preview?.id ?? index} className="relative flex items-center justify-center overflow-hidden rounded-[10px] bg-black/90">
-                  <div className="absolute inset-0">
-                    {isCompleted ? (
-                      <GroupPreviewMedia preview={preview} />
-                    ) : preview?.thumbUrl ? (
-                      <Image src={preview.thumbUrl} alt="" fill className="pointer-events-none object-cover" />
-                    ) : null}
-                  </div>
-                  <div className="pointer-events-none block" style={{ width: '100%', aspectRatio: '16 / 9' }} aria-hidden />
+                <AspectBox key={preview?.id ?? index} aspectRatio={aspectRatio} className="rounded-[10px]">
+                  {isCompleted ? (
+                    <GroupPreviewMedia preview={preview} />
+                  ) : preview?.thumbUrl ? (
+                    <ThumbImage src={preview.thumbUrl} alt="" />
+                  ) : (
+                    placeholder
+                  )}
                   {!isCompleted && member ? (
                     <ProcessingOverlay
-                      className="absolute inset-0"
+                      className="aspect-box__overlay"
                       state={memberStatus === 'failed' ? 'error' : 'pending'}
                       message={member.message}
                       progress={member.progress ?? undefined}
@@ -164,7 +181,7 @@ export function GroupedJobCard({ group, engine, onOpen, onAction, actionMenu = t
                       tileCount={previewCount}
                     />
                   ) : null}
-                </div>
+                </AspectBox>
               );
             })}
           </div>

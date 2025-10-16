@@ -8,6 +8,7 @@
 :root {
   color-scheme: light;
   --header-height: 72px;
+  --surface-2: #E7ECF7;
 }
 
 * {
@@ -84,4 +85,79 @@ main {
 
 .range-input:focus-visible::-moz-range-thumb {
   outline: 2px solid theme('colors.ring');
+}
+
+.aspect-box {
+  position: relative;
+  width: 100%;
+  background: var(--surface-2);
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.aspect-box__inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aspect-box__inner > * {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.aspect-box__inner > video,
+.aspect-box__inner > img,
+.aspect-box__media {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  background: transparent;
+}
+
+.aspect-box__overlay {
+  position: absolute;
+  inset: 0;
+}
+
+.aspect-box.ar-16-9 {
+  aspect-ratio: 16 / 9;
+}
+
+.aspect-box.ar-9-16 {
+  aspect-ratio: 9 / 16;
+}
+
+.aspect-box.ar-1-1 {
+  aspect-ratio: 1 / 1;
+}
+
+.aspect-box.ar-auto {
+  aspect-ratio: 16 / 9;
+}
+
+@supports not (aspect-ratio: 1 / 1) {
+  .aspect-box::before {
+    content: '';
+    display: block;
+    width: 100%;
+    padding-top: var(--aspect-box-padding, 56.25%);
+  }
+
+  .aspect-box.ar-16-9 {
+    --aspect-box-padding: calc(9 / 16 * 100%);
+  }
+
+  .aspect-box.ar-9-16 {
+    --aspect-box-padding: calc(16 / 9 * 100%);
+  }
+
+  .aspect-box.ar-1-1 {
+    --aspect-box-padding: 100%;
+  }
 }
