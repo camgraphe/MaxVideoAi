@@ -7,11 +7,27 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function GET(req: Request) {
   try {
-    // Optional: verify which account just completed onboarding.
-    // If you pass state/accountId via the onboarding link (accountLinks doesn't support state),
-    // you can alternatively verify later via dashboard or webhook (account.updated).
-    // Here we list last created accounts and pick the most recent Express (quick & dirty admin flow).
-    const list = await stripe.accounts.list({ limit: 1 });
+    const url = new URL(req.url);
+    const fromQuery = url.searchParams.get("account");
+    let acctId = fromQuery ?? undefined;
+
+    if (acctId) {
+      try {
+        const acct = await stripe.accounts.retrieve(acctId);
+        if (acct) {
+          const dest = new URL(req.url);
+          dest.pathname = "/";
+          dest.searchParams.set("cogs_vault", acct.id);
+          return NextResponse.redirect(dest);
+        }
+      } catch (error) {
+        console.warn("[connect.return] failed to retrieve account from query", error);
+        acctId = undefined;
+      }
+    }
+
+    // Fallback: list latest Express account (e.g., if query param missing or retrieval failed).
+    const list = await stripe.accounts.list({ limit: 1, type: "express" });
     const acct = list.data[0];
 
     if (!acct) {
@@ -23,7 +39,9 @@ export async function GET(req: Request) {
     // 2) DB table (recommended): settings(key,value) or vendors(id, stripe_account_id)
 
     // For now, render it plainly so the operator can copy it:
-    const dest = new URL(`/?cogs_vault=${acct.id}`, req.url);
+    const dest = new URL(req.url);
+    dest.pathname = "/";
+    dest.searchParams.set("cogs_vault", acct.id);
     return NextResponse.redirect(dest);
   } catch (e) {
     console.error("[connect.return]", e);

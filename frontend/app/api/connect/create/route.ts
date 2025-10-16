@@ -21,11 +21,14 @@ export async function POST() {
     });
 
     // 2) Create hosted onboarding link
+    const returnUrl = new URL(process.env.CONNECT_RETURN_URL!);
+    returnUrl.searchParams.set("account", account.id);
+
     const link = await stripe.accountLinks.create({
       account: account.id,
       type: "account_onboarding",
       refresh_url: process.env.CONNECT_REFRESH_URL!,
-      return_url: process.env.CONNECT_RETURN_URL!,
+      return_url: returnUrl.toString(),
     });
 
     // TEMP: return link to open in browser
