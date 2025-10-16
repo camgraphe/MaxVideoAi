@@ -277,6 +277,42 @@ async function checkStripe(): Promise<CheckResult> {
   }
 }
 
+function checkBatchPayoutMode(): CheckResult {
+  const thresholdRaw = process.env.BATCH_TRANSFER_THRESHOLD_CENTS;
+  const cronSecretSet = hasValue('CRON_SECRET');
+  if (!thresholdRaw) {
+    return {
+      name: 'Stripe batch payouts',
+      status: 'warn',
+      message: 'BATCH_TRANSFER_THRESHOLD_CENTS not set – batched transfers disabled',
+    };
+  }
+
+  const threshold = Number(thresholdRaw);
+  if (!Number.isFinite(threshold) || threshold <= 0) {
+    return {
+      name: 'Stripe batch payouts',
+      status: 'warn',
+      message: 'Invalid BATCH_TRANSFER_THRESHOLD_CENTS value',
+      details: { value: thresholdRaw },
+    };
+  }
+
+  const currency = (process.env.BATCH_TRANSFER_CURRENCY || 'usd').toUpperCase();
+  const cron = process.env.BATCH_TRANSFER_CRON || '0 3 * * *';
+  const message = `Batch mode active, threshold = ${(threshold / 100).toFixed(2)} ${currency}`;
+
+  return {
+    name: 'Stripe batch payouts',
+    status: cronSecretSet ? 'ok' : 'warn',
+    message,
+    details: {
+      cron,
+      cronSecret: cronSecretSet ? 'set' : 'missing',
+    },
+  };
+}
+
 async function checkFalProxy(): Promise<CheckResult> {
   const present = hasValue('FAL_KEY') || hasValue('FAL_API_KEY');
   if (!present) {
@@ -387,6 +423,7 @@ async function main() {
   results.push(checkEnvGroup('Stripe server keys', ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'], true));
   results.push(checkEnvGroup('Stripe pricing IDs (optional)', ['STRIPE_PRICE_PLUS', 'STRIPE_PRICE_PRO'], false));
   results.push(checkEnvGroup('Stripe publishable key', ['NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY'], true));
+  results.push(checkBatchPayoutMode());
   results.push(checkAtLeastOne('FAL API keys', ['FAL_KEY', 'FAL_API_KEY'], true));
 
   const hygieneChecks: CheckResult[] = [];

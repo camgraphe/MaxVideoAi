@@ -149,7 +149,9 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
             application_fee_cents,
             vendor_account_id,
             stripe_payment_intent_id,
-            stripe_charge_id
+            stripe_charge_id,
+            platform_revenue_cents,
+            destination_acct
           )
           SELECT
             $1,
@@ -162,7 +164,9 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
             $7,
             $8,
             $9,
-            $10
+            $10,
+            $7,
+            $8
           FROM balance
           WHERE balance.balance_cents >= $2::bigint
           RETURNING id

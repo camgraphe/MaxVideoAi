@@ -133,16 +133,9 @@ export async function POST(req: NextRequest) {
       metadata.pricing_snapshot = pricingSnapshotJson;
     }
     metadata.destination_account_id = destinationAccountId;
+    metadata.vendor_share_cents = String(vendorShareCents);
     if (pricing.vendorAccountId) {
       metadata.vendor_account_id = pricing.vendorAccountId;
-    }
-
-    const transferData: Stripe.PaymentIntentCreateParams.TransferData = {
-      destination: destinationAccountId,
-    };
-
-    if (pricing.vendorAccountId) {
-      transferData.amount = vendorShareCents;
     }
 
     try {
@@ -150,7 +143,6 @@ export async function POST(req: NextRequest) {
         amount: pricing.totalCents,
         currency: pricing.currency.toLowerCase(),
         automatic_payment_methods: { enabled: true },
-        transfer_data: transferData,
         application_fee_amount: applicationFeeCents,
         metadata,
       });
@@ -184,6 +176,14 @@ export async function POST(req: NextRequest) {
     }
 
     const platformFeeCents = Math.round(amountCents * 0.3);
+    const vendorShareCents = Math.max(0, amountCents - platformFeeCents);
+    const sessionMetadata = {
+      kind: 'topup',
+      user_id: userId,
+      destination_account_id: destinationAccountId,
+      platform_fee_cents: String(platformFeeCents),
+      vendor_share_cents: String(vendorShareCents),
+    };
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
@@ -201,13 +201,9 @@ export async function POST(req: NextRequest) {
       ],
       payment_intent_data: {
         application_fee_amount: platformFeeCents,
-        transfer_data: { destination: destinationAccountId },
+        metadata: sessionMetadata,
       },
-      metadata: {
-        kind: 'topup',
-        user_id: userId,
-        destination_account_id: destinationAccountId,
-      },
+      metadata: sessionMetadata,
     });
 
     return NextResponse.json({ id: session.id, url: session.url });

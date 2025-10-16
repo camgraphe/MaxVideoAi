@@ -71,6 +71,8 @@ async function handleCheckoutSession(session: Stripe.Checkout.Session) {
         ? session.payment_intent.latest_charge
         : session.payment_intent.latest_charge?.id ?? null)
     : null;
+  const platformRevenueCents = session.metadata.platform_fee_cents ? Number(session.metadata.platform_fee_cents) : undefined;
+  const destinationAcct = session.metadata.destination_account_id ?? undefined;
 
   if (!amountCents || amountCents <= 0) return;
 
@@ -80,31 +82,64 @@ async function handleCheckoutSession(session: Stripe.Checkout.Session) {
     currency,
     paymentIntentId,
     chargeId,
+    platformRevenueCents,
+    destinationAcct,
     metadata: { sessionId: session.id, source: 'checkout.session.completed' },
   });
 }
 
 async function handlePaymentIntent(intent: Stripe.PaymentIntent) {
-  if (!intent.metadata || intent.metadata.kind !== 'topup') {
-    return;
+  if (!intent.metadata) return;
+
+  const kind = intent.metadata.kind ?? null;
+  const destinationAcct =
+    intent.metadata.destination_account_id ??
+    intent.metadata.vendor_account_id ??
+    null;
+
+  if (kind === 'topup') {
+    const userId = intent.metadata.user_id;
+    if (!userId) return;
+
+    const amountCents = intent.amount_received ?? intent.amount ?? null;
+    const currency = intent.currency ?? 'usd';
+    const chargeId = typeof intent.latest_charge === 'string' ? intent.latest_charge : intent.latest_charge?.id ?? null;
+    const platformRevenueCents = intent.application_fee_amount ?? undefined;
+    const vendorShareCents =
+      amountCents !== null && platformRevenueCents !== undefined ? amountCents - platformRevenueCents : null;
+
+    if (destinationAcct && vendorShareCents && vendorShareCents !== 0) {
+      await upsertVendorBalance({
+        destinationAcct,
+        currency: currency ?? 'usd',
+        deltaCents: vendorShareCents,
+      });
+    }
+
+    if (!amountCents || amountCents <= 0) return;
+
+    await recordTopup({
+      userId,
+      amountCents,
+      currency,
+      paymentIntentId: intent.id,
+      chargeId,
+      platformRevenueCents,
+      destinationAcct: destinationAcct ?? undefined,
+      metadata: { source: 'payment_intent.succeeded' },
+    });
+  } else if (destinationAcct) {
+    const totalCents = intent.amount_received ?? intent.amount ?? 0;
+    const appFee = intent.application_fee_amount ?? 0;
+    const vendorShare = totalCents - appFee;
+    if (vendorShare !== 0) {
+      await upsertVendorBalance({
+        destinationAcct,
+        currency: intent.currency ?? 'usd',
+        deltaCents: vendorShare,
+      });
+    }
   }
-  const userId = intent.metadata.user_id;
-  if (!userId) return;
-
-  const amountCents = intent.amount_received ?? intent.amount ?? null;
-  const currency = intent.currency ?? 'usd';
-  const chargeId = typeof intent.latest_charge === 'string' ? intent.latest_charge : intent.latest_charge?.id ?? null;
-
-  if (!amountCents || amountCents <= 0) return;
-
-  await recordTopup({
-    userId,
-    amountCents,
-    currency,
-    paymentIntentId: intent.id,
-    chargeId,
-    metadata: { source: 'payment_intent.succeeded' },
-  });
 }
 
 async function recordTopup({
@@ -113,6 +148,8 @@ async function recordTopup({
   currency,
   paymentIntentId,
   chargeId,
+  platformRevenueCents,
+  destinationAcct,
   metadata,
 }: {
   userId: string;
@@ -120,6 +157,8 @@ async function recordTopup({
   currency: string;
   paymentIntentId?: string | null;
   chargeId?: string | null;
+  platformRevenueCents?: number | null | undefined;
+  destinationAcct?: string | null | undefined;
   metadata?: Record<string, unknown>;
 }) {
   const normalizedCurrency = currency ? currency.toUpperCase() : 'USD';
@@ -168,8 +207,8 @@ async function recordTopup({
     }
 
     await query(
-      `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, metadata, stripe_payment_intent_id, stripe_charge_id)
-       VALUES ($1, 'topup', $2, $3, $4, $5, $6, $7)`,
+      `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, metadata, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct)
+       VALUES ($1, 'topup', $2, $3, $4, $5, $6, $7, $8, $9)`,
       [
         userId,
         normalizedAmount,
@@ -178,6 +217,8 @@ async function recordTopup({
         metadata ?? null,
         paymentIntentId ?? null,
         chargeId ?? null,
+        platformRevenueCents ?? null,
+        destinationAcct ?? null,
       ]
     );
 
@@ -187,9 +228,54 @@ async function recordTopup({
       currency: normalizedCurrency,
       paymentIntentId,
       chargeId,
+      platformRevenueCents,
+      destinationAcct,
     });
   } catch (error) {
     console.error('[stripe-webhook] Failed to persist top-up, using mock ledger', error);
     recordMockWalletTopUp(userId, normalizedAmount, paymentIntentId, chargeId);
+  }
+}
+
+async function upsertVendorBalance({
+  destinationAcct,
+  currency,
+  deltaCents,
+}: {
+  destinationAcct: string;
+  currency: string;
+  deltaCents: number;
+}) {
+  if (!destinationAcct || !Number.isFinite(deltaCents) || deltaCents === 0) {
+    return;
+  }
+  if (!process.env.DATABASE_URL) {
+    console.log('[stripe-webhook] Skipping vendor balance update (no database)', {
+      destinationAcct,
+      currency,
+      deltaCents,
+    });
+    return;
+  }
+
+  const normalizedCurrency = currency ? currency.toLowerCase() : 'usd';
+
+  try {
+    await ensureBillingSchema();
+    await query(
+      `INSERT INTO vendor_balances (destination_acct, currency, pending_cents)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (destination_acct, currency)
+       DO UPDATE SET pending_cents = vendor_balances.pending_cents + EXCLUDED.pending_cents,
+                     updated_at = NOW()`,
+      [destinationAcct, normalizedCurrency, deltaCents]
+    );
+  } catch (error) {
+    console.error('[stripe-webhook] Failed to upsert vendor balance', {
+      destinationAcct,
+      currency: normalizedCurrency,
+      deltaCents,
+      error,
+    });
   }
 }

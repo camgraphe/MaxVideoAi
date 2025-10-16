@@ -112,6 +112,38 @@ export async function ensureBillingSchema(): Promise<void> {
       `);
 
       await query(`
+        ALTER TABLE app_receipts
+        ADD COLUMN IF NOT EXISTS platform_revenue_cents BIGINT,
+        ADD COLUMN IF NOT EXISTS destination_acct TEXT,
+        ADD COLUMN IF NOT EXISTS currency TEXT DEFAULT 'USD';
+      `);
+
+      await query(`
+        CREATE TABLE IF NOT EXISTS vendor_balances (
+          id BIGSERIAL PRIMARY KEY,
+          destination_acct TEXT NOT NULL,
+          currency TEXT NOT NULL DEFAULT 'usd',
+          pending_cents BIGINT NOT NULL DEFAULT 0,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          UNIQUE (destination_acct, currency)
+        );
+      `);
+
+      await query(`
+        CREATE TABLE IF NOT EXISTS payout_batches (
+          id BIGSERIAL PRIMARY KEY,
+          destination_acct TEXT NOT NULL,
+          currency TEXT NOT NULL DEFAULT 'usd',
+          amount_cents BIGINT NOT NULL,
+          stripe_transfer_id TEXT,
+          status TEXT NOT NULL DEFAULT 'created',
+          error_message TEXT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          sent_at TIMESTAMPTZ
+        );
+      `);
+
+      await query(`
         CREATE TABLE IF NOT EXISTS fal_queue_log (
           id BIGSERIAL PRIMARY KEY,
           job_id TEXT NOT NULL,

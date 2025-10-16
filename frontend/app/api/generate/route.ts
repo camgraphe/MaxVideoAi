@@ -339,8 +339,8 @@ export async function POST(req: NextRequest) {
     if (walletChargeReserved && pendingReceipt) {
       try {
         await query(
-          `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id)
-           VALUES ($1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10)`,
+          `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct)
+           VALUES ($1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12)`,
           [
             pendingReceipt.userId,
             pendingReceipt.amountCents,
@@ -352,6 +352,8 @@ export async function POST(req: NextRequest) {
             pendingReceipt.vendorAccountId,
             pendingReceipt.stripePaymentIntentId ?? null,
             pendingReceipt.stripeChargeId ?? null,
+            0,
+            pendingReceipt.vendorAccountId,
           ]
         );
       } catch (refundError) {
@@ -459,8 +461,8 @@ export async function POST(req: NextRequest) {
     if (walletChargeReserved && pendingReceipt) {
       try {
         await query(
-          `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id)
-           VALUES ($1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10)`,
+          `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct)
+           VALUES ($1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12)`,
           [
             pendingReceipt.userId,
             pendingReceipt.amountCents,
@@ -472,6 +474,8 @@ export async function POST(req: NextRequest) {
             pendingReceipt.vendorAccountId,
             pendingReceipt.stripePaymentIntentId ?? null,
             pendingReceipt.stripeChargeId ?? null,
+            0,
+            pendingReceipt.vendorAccountId,
           ]
         );
       } catch (refundError) {
@@ -484,8 +488,8 @@ export async function POST(req: NextRequest) {
   if (pendingReceipt && !walletChargeReserved) {
     try {
       await query(
-        `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id)
-         VALUES ($1,'charge',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10)`,
+        `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct)
+         VALUES ($1,'charge',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12)`,
         [
           pendingReceipt.userId,
           pendingReceipt.amountCents,
@@ -497,6 +501,8 @@ export async function POST(req: NextRequest) {
           pendingReceipt.vendorAccountId,
           pendingReceipt.stripePaymentIntentId ?? null,
           pendingReceipt.stripeChargeId ?? null,
+          pendingReceipt.applicationFeeCents,
+          pendingReceipt.vendorAccountId,
         ]
       );
     } catch (error) {
@@ -535,8 +541,8 @@ export async function POST(req: NextRequest) {
   if (status === 'failed' && pendingReceipt && paymentMode === 'wallet') {
     try {
       await query(
-        `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id)
-         VALUES ($1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10)`,
+        `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct)
+         VALUES ($1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12)`,
         [
           pendingReceipt.userId,
           pendingReceipt.amountCents,
@@ -548,6 +554,8 @@ export async function POST(req: NextRequest) {
           pendingReceipt.vendorAccountId,
           pendingReceipt.stripePaymentIntentId ?? null,
           pendingReceipt.stripeChargeId ?? null,
+          0,
+          pendingReceipt.vendorAccountId,
         ]
       );
       await query(`UPDATE app_jobs SET payment_status = 'refunded_wallet' WHERE job_id = $1`, [jobId]);
