@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-06-20",
+  apiVersion: "2023-10-16",
 });
 
 export async function GET(req: Request) {
@@ -26,9 +26,9 @@ export async function GET(req: Request) {
       }
     }
 
-    // Fallback: list latest Express account (e.g., if query param missing or retrieval failed).
-    const list = await stripe.accounts.list({ limit: 1, type: "express" });
-    const acct = list.data[0];
+    // Fallback: list latest accounts (e.g., if query param missing or retrieval failed).
+    const list = await stripe.accounts.list({ limit: 5 });
+    const acct = list.data.find((item) => item.type === "express") ?? list.data[0];
 
     if (!acct) {
       return NextResponse.redirect(new URL("/?onboarding=missing", req.url));
