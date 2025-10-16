@@ -161,11 +161,11 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
             $4,
             $5,
             $6::jsonb,
-            $7,
+            $7::integer,
             $8,
             $9,
             $10,
-            $7,
+            $7::integer,
             $8
           FROM balance
           WHERE balance.balance_cents >= $2::bigint
