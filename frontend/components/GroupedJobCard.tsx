@@ -22,7 +22,7 @@ function ThumbImage({ src, alt, className }: { src: string; alt: string; classNa
 }
 
 function GroupPreviewMedia({ preview }: { preview: GroupSummary['previews'][number] | undefined }) {
-  const baseClass = 'h-full w-full pointer-events-none object-cover';
+  const baseClass = 'h-full w-full pointer-events-none object-contain';
   if (preview?.videoUrl) {
     const poster = preview.thumbUrl ?? undefined;
     return (
@@ -34,11 +34,12 @@ function GroupPreviewMedia({ preview }: { preview: GroupSummary['previews'][numb
         playsInline
         autoPlay
         loop
+        preload="metadata"
       />
     );
   }
   if (preview?.thumbUrl) {
-    return <ThumbImage src={preview.thumbUrl} alt="" className="object-cover" />;
+    return <ThumbImage src={preview.thumbUrl} alt="" className="object-contain" />;
   }
   return null;
 }
@@ -144,12 +145,12 @@ export function GroupedJobCard({ group, engine, onOpen, onAction, actionMenu = t
               const memberStatus = member?.status ?? 'completed';
               const isCompleted = memberStatus === 'completed';
               return (
-                <div key={preview?.id ?? index} className="relative flex items-center justify-center overflow-hidden rounded-[10px] bg-black/90">
+                <div key={preview?.id ?? index} className="relative flex items-center justify-center overflow-hidden rounded-[10px] bg-[var(--surface-2)]">
                   <div className="absolute inset-0">
                     {isCompleted ? (
                       <GroupPreviewMedia preview={preview} />
                     ) : preview?.thumbUrl ? (
-                      <Image src={preview.thumbUrl} alt="" fill className="pointer-events-none object-cover" />
+                      <Image src={preview.thumbUrl} alt="" fill className="pointer-events-none object-contain" />
                     ) : null}
                   </div>
                   <div className="pointer-events-none block" style={{ width: '100%', aspectRatio: '16 / 9' }} aria-hidden />

@@ -221,14 +221,14 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal }: 
                 const itemMessage = typeof item.meta?.message === 'string' ? (item.meta.message as string) : undefined;
 
                 return (
-                  <figure key={item.id ?? index} className="group relative flex items-center justify-center overflow-hidden rounded-[12px] bg-black/90">
+                  <figure key={item.id ?? index} className="group relative flex items-center justify-center overflow-hidden rounded-[12px] bg-[var(--surface-2)]">
                     <div className="absolute inset-0">
                       {itemStatus === 'completed' && video ? (
                         <video
                           ref={registerVideo(item.id)}
                           src={item.url}
                           poster={item.thumb}
-                          className="h-full w-full object-cover"
+                          className="h-full w-full object-contain"
                           muted={isMuted}
                           playsInline
                           preload="metadata"
@@ -236,7 +236,7 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal }: 
                           autoPlay={isPlaying}
                         />
                       ) : item.thumb ? (
-                        <Image src={item.thumb} alt="" fill className="object-cover" />
+                        <Image src={item.thumb} alt="" fill className="object-contain pointer-events-none" />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#e5ebf6] via-white to-[#f1f4ff] text-[11px] uppercase tracking-micro text-text-muted">
                           Media

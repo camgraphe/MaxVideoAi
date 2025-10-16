@@ -198,7 +198,7 @@ export function GroupCard({
               return (
                 <div
                   key={item?.id ?? `slot-${group.id}-${index}`}
-                  className="relative flex items-center justify-center overflow-hidden rounded-[12px] bg-black/90"
+                  className="relative flex items-center justify-center overflow-hidden rounded-[12px] bg-[var(--surface-2)]"
                 >
                   {item ? <GroupMedia item={item} autoPlay /> : null}
                   {showGroupOverlay && (
