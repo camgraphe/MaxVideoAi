@@ -2314,6 +2314,26 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           presentInsufficientFunds(shortfallCents);
           return;
         }
+        if (error && typeof error === 'object' && (error as { error?: string }).error === 'FAL_UNPROCESSABLE_ENTITY') {
+          const payload = error as { userMessage?: string; providerMessage?: string; detail?: unknown };
+          const userMessage =
+            typeof payload.userMessage === 'string'
+              ? payload.userMessage
+              : 'Le fournisseur a refusé cette image de référence. Merci d’en essayer une autre.';
+          const providerMessage =
+            typeof payload.providerMessage === 'string'
+              ? payload.providerMessage
+              : typeof payload.detail === 'string'
+                ? payload.detail
+                : undefined;
+          const composed =
+            providerMessage && providerMessage !== userMessage
+              ? `${userMessage}\n(${providerMessage})`
+              : userMessage;
+          showNotice(composed);
+          setPreflightError(composed);
+          return;
+        }
         setPreflightError(error instanceof Error ? error.message : 'Generate failed');
       }
     };

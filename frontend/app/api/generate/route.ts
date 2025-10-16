@@ -468,15 +468,26 @@ export async function POST(req: NextRequest) {
 
     if (status === 422) {
       const detail =
-        (error && typeof error === 'object' && 'body' in error)
+        error && typeof error === 'object' && 'body' in error
           ? (error as { body?: unknown }).body ?? null
           : null;
-      console.error('[generate] fal returned 422', detail ?? error);
+      const providerMessage =
+        typeof detail === 'string'
+          ? detail
+          : detail && typeof detail === 'object' && 'detail' in (detail as Record<string, unknown>)
+            ? String((detail as Record<string, unknown>).detail)
+            : error instanceof Error
+              ? error.message
+              : 'Fal returned status 422';
+      console.error('[generate] fal returned 422', providerMessage);
       return NextResponse.json(
         {
           ok: false,
           error: 'FAL_UNPROCESSABLE_ENTITY',
-          detail: detail ?? (error instanceof Error ? error.message : 'Fal returned status 422'),
+          detail: detail ?? providerMessage,
+          userMessage:
+            'Le fournisseur a refusé l’image de référence (conflit avec ses règles de sécurité). Merci de choisir une image différente.',
+          providerMessage,
         },
         { status: 422 }
       );
