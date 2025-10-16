@@ -15,6 +15,7 @@ import { reserveWalletCharge } from '@/lib/wallet';
 import { normalizeMediaUrl } from '@/lib/media';
 import type { Mode } from '@/types/engines';
 import { validateRequest } from './_lib/validate';
+import { uploadImageToStorage, isAllowedAssetHost, probeImageUrl, recordUserAsset } from '@/server/storage';
 
 type PaymentMode = 'wallet' | 'direct' | 'platform';
 
@@ -260,33 +261,125 @@ export async function POST(req: NextRequest) {
     kind?: 'image' | 'video';
     slotId?: string;
     label?: string;
-    dataUrl: string;
+    url?: string;
+    width?: number | null;
+    height?: number | null;
+    assetId?: string;
   };
 
-  const inputs = Array.isArray(body.inputs)
-    ? (body.inputs as unknown[])
-        .map((entry): NormalizedAttachment | null => {
-          if (!entry || typeof entry !== 'object') return null;
-          const candidate = entry as Record<string, unknown>;
-          const dataUrl = typeof candidate.dataUrl === 'string' ? candidate.dataUrl : null;
-          if (!dataUrl || !dataUrl.startsWith('data:')) return null;
-          return {
-            name: typeof candidate.name === 'string' ? candidate.name : 'attachment',
-            type: typeof candidate.type === 'string' ? candidate.type : 'application/octet-stream',
-            size: typeof candidate.size === 'number' ? candidate.size : 0,
-            kind:
-              candidate.kind === 'image' || candidate.kind === 'video'
-                ? (candidate.kind as 'image' | 'video')
-                : undefined,
-            slotId: typeof candidate.slotId === 'string' ? candidate.slotId : undefined,
-            label: typeof candidate.label === 'string' ? candidate.label : undefined,
-            dataUrl,
-          };
-        })
-        .filter((entry): entry is NormalizedAttachment => entry !== null)
-    : undefined;
+  const rawAttachments = Array.isArray(body.inputs) ? (body.inputs as unknown[]) : [];
+  const processedAttachments: NormalizedAttachment[] = [];
 
-  const maxUploadedBytes = inputs?.reduce((max, attachment) => Math.max(max, attachment.size ?? 0), 0) ?? 0;
+  const decodeDataUrl = (value: string): { buffer: Buffer; mime: string } => {
+    const match = /^data:([^;,]+);base64,(.+)$/i.exec(value);
+    if (!match) {
+      throw new Error('Invalid data URL');
+    }
+    const [, mime, base64] = match;
+    return {
+      mime,
+      buffer: Buffer.from(base64, 'base64'),
+    };
+  };
+
+  for (const entry of rawAttachments) {
+    if (!entry || typeof entry !== 'object') continue;
+    const candidate = entry as Record<string, unknown>;
+    const base: NormalizedAttachment = {
+      name: typeof candidate.name === 'string' ? candidate.name : 'attachment',
+      type: typeof candidate.type === 'string' ? candidate.type : 'application/octet-stream',
+      size: typeof candidate.size === 'number' ? candidate.size : 0,
+      kind:
+        candidate.kind === 'image' || candidate.kind === 'video'
+          ? (candidate.kind as 'image' | 'video')
+          : undefined,
+      slotId: typeof candidate.slotId === 'string' ? candidate.slotId : undefined,
+      label: typeof candidate.label === 'string' ? candidate.label : undefined,
+    };
+
+    const urlCandidate = typeof candidate.url === 'string' ? candidate.url.trim() : null;
+    const dataUrlCandidate = typeof candidate.dataUrl === 'string' ? candidate.dataUrl.trim() : null;
+    const width = typeof candidate.width === 'number' ? candidate.width : null;
+    const height = typeof candidate.height === 'number' ? candidate.height : null;
+    const assetId = typeof candidate.assetId === 'string' ? candidate.assetId : undefined;
+
+    if (urlCandidate) {
+      if (!isAllowedAssetHost(urlCandidate)) {
+        return NextResponse.json(
+          { ok: false, error: 'IMAGE_HOST_NOT_ALLOWED', url: urlCandidate },
+          { status: 422 }
+        );
+      }
+
+      let sizeBytes = base.size;
+      let mimeType = base.type;
+      if (!sizeBytes || !mimeType || mimeType === 'application/octet-stream') {
+        const probe = await probeImageUrl(urlCandidate);
+        if (!probe.ok) {
+          return NextResponse.json({ ok: false, error: 'IMAGE_UNREACHABLE', url: urlCandidate }, { status: 422 });
+        }
+        sizeBytes = sizeBytes || probe.size || 0;
+        mimeType = mimeType === 'application/octet-stream' && probe.mime ? probe.mime : mimeType;
+      }
+
+      processedAttachments.push({
+        ...base,
+        type: mimeType,
+        size: sizeBytes,
+        url: urlCandidate,
+        width,
+        height,
+        assetId,
+      });
+      continue;
+    }
+
+    if (dataUrlCandidate && dataUrlCandidate.startsWith('data:')) {
+      const { buffer, mime } = decodeDataUrl(dataUrlCandidate);
+      let uploadResult;
+      try {
+        uploadResult = await uploadImageToStorage({
+          data: buffer,
+          mime,
+          userId,
+          fileName: base.name,
+          prefix: 'inline',
+        });
+      } catch (error) {
+        console.error('[generate] failed to upload inline attachment', error);
+        return NextResponse.json({ ok: false, error: 'IMAGE_UPLOAD_FAILED' }, { status: 500 });
+      }
+
+      try {
+        const assetIdCreated = await recordUserAsset({
+          userId,
+          url: uploadResult.url,
+          mime: uploadResult.mime,
+          width: uploadResult.width,
+          height: uploadResult.height,
+          size: uploadResult.size,
+          source: 'inline',
+          metadata: { originalName: base.name },
+        });
+
+        processedAttachments.push({
+          ...base,
+          type: uploadResult.mime,
+          size: uploadResult.size,
+          url: uploadResult.url,
+          width: uploadResult.width,
+          height: uploadResult.height,
+          assetId: assetIdCreated,
+        });
+      } catch (error) {
+        console.error('[generate] failed to record inline asset', error);
+      }
+      continue;
+    }
+  }
+
+  const maxUploadedBytes =
+    processedAttachments.reduce((max, attachment) => Math.max(max, attachment.size ?? 0), 0) ?? 0;
   const validationPayload: Record<string, unknown> = {
     resolution: effectiveResolution,
     aspect_ratio: aspectRatio,
@@ -332,7 +425,11 @@ export async function POST(req: NextRequest) {
       mode,
       addons: body.addons,
       apiKey,
-      inputs,
+      imageUrl: typeof body.imageUrl === 'string' ? body.imageUrl.trim() : undefined,
+      referenceImages: Array.isArray(body.referenceImages)
+        ? body.referenceImages.map((value: unknown) => (typeof value === 'string' ? value.trim() : null)).filter((value): value is string => Boolean(value))
+        : undefined,
+      inputs: processedAttachments,
       idempotencyKey: body.idempotencyKey && typeof body.idempotencyKey === 'string' ? body.idempotencyKey : undefined,
     });
   } catch (error) {

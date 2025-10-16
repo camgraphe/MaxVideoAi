@@ -16,6 +16,8 @@ export type ComposerAttachment = {
   size: number;
   type: string;
   previewUrl: string;
+  status?: 'uploading' | 'ready' | 'error';
+  error?: string;
 };
 
 export type AssetFieldConfig = {
@@ -48,6 +50,7 @@ interface Props {
   onAssetAdd?: (field: EngineInputField, file: File, slotIndex?: number) => void;
   onAssetRemove?: (field: EngineInputField, index: number) => void;
   onNotice?: (message: string) => void;
+  onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;
 }
 
 export function Composer({
@@ -75,6 +78,7 @@ export function Composer({
   onAssetAdd,
   onAssetRemove,
   onNotice,
+  onOpenLibrary,
 }: Props) {
   const [isButtonAnimating, setIsButtonAnimating] = useState(false);
   const [isPulseVisible, setIsPulseVisible] = useState(false);
@@ -228,6 +232,7 @@ export function Composer({
                 onSelect={onAssetAdd}
                 onRemove={onAssetRemove}
                 onError={onNotice}
+                onOpenLibrary={onOpenLibrary}
               />
             ))}
           </div>
@@ -290,9 +295,10 @@ interface AssetDropzoneProps {
   onSelect?: (field: EngineInputField, file: File, slotIndex: number) => void;
   onRemove?: (field: EngineInputField, index: number) => void;
   onError?: (message: string) => void;
+  onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;
 }
 
-function AssetDropzone({ engine, caps, field, required, assets, onSelect, onRemove, onError }: AssetDropzoneProps) {
+function AssetDropzone({ engine, caps, field, required, assets, onSelect, onRemove, onError, onOpenLibrary }: AssetDropzoneProps) {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const maxCount = field.maxCount ?? 0;
   const minCount = field.minCount ?? (required ? 1 : 0);
@@ -467,6 +473,26 @@ function AssetDropzone({ engine, caps, field, required, assets, onSelect, onRemo
                         Remove
                       </button>
                     </div>
+                    {asset.status === 'uploading' && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/50 px-3 text-xs font-medium uppercase tracking-widest text-white">
+                        Uploading…
+                      </div>
+                    )}
+                    {asset.status === 'error' && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/60 px-4 text-center text-xs text-white">
+                        <span>{asset.error ?? 'Upload failed'}</span>
+                        <button
+                          type="button"
+                          className="rounded-full bg-white px-3 py-1 text-[11px] font-medium text-text-primary"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            onRemove?.(field, index);
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )}
                   </>
                 ) : (
                   <div className="flex h-full flex-col items-center justify-center gap-2 px-4">
@@ -475,6 +501,18 @@ function AssetDropzone({ engine, caps, field, required, assets, onSelect, onRemo
                     {helperLines && <span className="text-[11px] text-text-muted">{helperLines}</span>}
                     {slotRequired && <span className="text-[11px] text-[#F97316]">Needed before generating.</span>}
                   </div>
+                )}
+                {onOpenLibrary && field.type === 'image' && (
+                  <button
+                    type="button"
+                    className="absolute bottom-2 right-2 rounded-full bg-white/90 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-text-secondary shadow transition hover:bg-white hover:text-text-primary"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onOpenLibrary(field, index);
+                    }}
+                  >
+                    Library
+                  </button>
                 )}
               </div>
             );

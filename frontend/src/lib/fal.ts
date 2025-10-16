@@ -1,5 +1,4 @@
 import type { QueueStatus } from '@fal-ai/client';
-import { Buffer } from 'node:buffer';
 import { ENV } from '@/lib/env';
 import { getResultProviderMode } from '@/lib/result-provider';
 import type { ResultProviderMode } from '@/types/providers';
@@ -59,7 +58,11 @@ export type GenerateAttachment = {
   kind?: 'image' | 'video';
   slotId?: string;
   label?: string;
-  dataUrl: string;
+  url?: string;
+  dataUrl?: string;
+  width?: number | null;
+  height?: number | null;
+  assetId?: string;
 };
 
 export type GeneratePayload = {
@@ -74,6 +77,8 @@ export type GeneratePayload = {
   addons?: { audio?: boolean; upscale4k?: boolean };
   apiKey?: string;
   idempotencyKey?: string;
+  imageUrl?: string;
+  referenceImages?: string[];
   inputs?: GenerateAttachment[];
 };
 
@@ -189,45 +194,6 @@ export async function generateVideo(payload: GeneratePayload): Promise<GenerateR
   return generateViaFal(payload, provider, model);
 }
 
-function inferExtensionFromMime(mime: string): string {
-  const match = mime.match(/^[^/]+\/([^;]+)/);
-  if (!match) return 'bin';
-  return match[1].toLowerCase();
-}
-
-function extractDataUrlParts(dataUrl: string): { mime: string; data: string } | null {
-  const match = /^data:([^;,]+);base64,(.+)$/i.exec(dataUrl);
-  if (!match) return null;
-  return { mime: match[1], data: match[2] };
-}
-
-async function uploadDataUrlToFalStorage(
-  dataUrl: string,
-  falClient: ReturnType<typeof getFalClient>,
-  fileName?: string
-): Promise<string> {
-  const parsed = extractDataUrlParts(dataUrl);
-  if (!parsed) {
-    throw new Error('Invalid data URL for attachment');
-  }
-  const { mime, data } = parsed;
-  const extension = inferExtensionFromMime(mime);
-  const effectiveName =
-    (fileName && fileName.trim()) || `attachment-${Date.now().toString(36)}.${extension}`;
-  const buffer = Buffer.from(data, 'base64');
-  let fileLike: Blob;
-  if (typeof File !== 'undefined') {
-    try {
-      fileLike = new File([buffer], effectiveName, { type: mime });
-    } catch {
-      fileLike = new Blob([buffer], { type: mime });
-    }
-  } else {
-    fileLike = new Blob([buffer], { type: mime });
-  }
-  return falClient.storage.upload(fileLike);
-}
-
 async function generateViaFal(payload: GeneratePayload, provider: ResultProviderMode, model: string): Promise<GenerateResult> {
   const fallbackThumb = getThumbForAspectRatio(payload.aspectRatio);
   const falClient = getFalClient();
@@ -235,21 +201,6 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
   let apiKey: string | undefined;
   if (payload.apiKey && payload.apiKey.trim().length > 10) {
     apiKey = payload.apiKey.trim();
-  }
-
-  let imageUrl: string | undefined;
-  let primaryImage: GenerateAttachment | undefined;
-  if (payload.mode === 'i2v' && payload.inputs?.length) {
-    primaryImage = payload.inputs.find(
-      (entry) => entry.kind === 'image' || entry.slotId === 'image_url' || entry.type.startsWith('image/')
-    );
-    if (primaryImage?.dataUrl) {
-      imageUrl = primaryImage.dataUrl;
-    }
-  }
-
-  if (imageUrl?.startsWith('data:')) {
-    imageUrl = await uploadDataUrlToFalStorage(imageUrl, falClient, primaryImage?.name);
   }
 
   const requestBody: Record<string, unknown> = {
@@ -271,9 +222,59 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
   if (apiKey) {
     requestBody.api_key = apiKey;
   }
-  if (imageUrl) {
-    requestBody.image_url = imageUrl;
-    requestBody.input_image = imageUrl;
+
+  const arrayCollectors = new Map<string, Set<string>>();
+  const addToArray = (key: string, value: string) => {
+    if (!arrayCollectors.has(key)) {
+      arrayCollectors.set(key, new Set());
+    }
+    arrayCollectors.get(key)!.add(value);
+  };
+
+  const attachments = payload.inputs ?? [];
+  let primaryImageUrl = payload.imageUrl?.trim();
+
+  for (const attachment of attachments) {
+    const urlCandidate = attachment.url?.trim() ?? attachment.dataUrl?.trim();
+    if (!urlCandidate) continue;
+
+    if (!primaryImageUrl && attachment.kind === 'image') {
+      primaryImageUrl = urlCandidate;
+    }
+
+    const slotId = attachment.slotId?.trim();
+    if (slotId === 'reference_images' || slotId === 'images' || slotId === 'image_urls') {
+      addToArray(slotId === 'reference_images' ? 'reference_images' : slotId, urlCandidate);
+      continue;
+    }
+    if (slotId === 'input_image' || slotId === 'image' || slotId === 'image_url') {
+      requestBody[slotId] = urlCandidate;
+      continue;
+    }
+  }
+
+  const referenceImages = payload.referenceImages ?? [];
+  referenceImages.forEach((url) => {
+    const trimmed = url.trim();
+    if (trimmed) addToArray('reference_images', trimmed);
+  });
+
+  for (const [key, values] of arrayCollectors.entries()) {
+    requestBody[key] = Array.from(values);
+  }
+
+  if (!primaryImageUrl) {
+    const referenceArray = requestBody.reference_images as string[] | undefined;
+    if (referenceArray?.length) {
+      primaryImageUrl = referenceArray[0];
+    }
+  }
+
+  if (!requestBody.image_url && primaryImageUrl) {
+    requestBody.image_url = primaryImageUrl;
+  }
+  if (!requestBody.input_image && primaryImageUrl && payload.engineId.startsWith('sora-2')) {
+    requestBody.input_image = primaryImageUrl;
   }
 
   let latestQueueStatus: QueueStatus | null = null;

@@ -41,22 +41,129 @@ function resolveRenderThumb(render: { thumbUrl?: string | null; aspectRatio?: st
 }
 
 type ReferenceAsset = {
+  id: string;
   fieldId: string;
-  file: File;
   previewUrl: string;
   kind: 'image' | 'video';
   name: string;
   size: number;
   type: string;
+  url?: string;
+  width?: number | null;
+  height?: number | null;
+  assetId?: string;
+  status: 'uploading' | 'ready' | 'error';
+  error?: string;
 };
 
-function readFileAsDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : '');
-    reader.onerror = () => reject(reader.error ?? new Error('File reading failed'));
-    reader.readAsDataURL(file);
-  });
+type UserAsset = {
+  id: string;
+  url: string;
+  width?: number | null;
+  height?: number | null;
+  size?: number | null;
+  mime?: string | null;
+  createdAt?: string;
+};
+
+type AssetLibraryModalProps = {
+  fieldLabel: string;
+  assets: UserAsset[];
+  isLoading: boolean;
+  error: string | null;
+  onClose: () => void;
+  onSelect: (asset: UserAsset) => void;
+  onRefresh: () => void;
+};
+
+function AssetLibraryModal({ fieldLabel, assets, isLoading, error, onClose, onSelect, onRefresh }: AssetLibraryModalProps) {
+  const formatSize = (bytes?: number | null) => {
+    if (!bytes || bytes <= 0) return null;
+    if (bytes >= 1024 * 1024) {
+      return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    }
+    if (bytes >= 1024) {
+      return `${(bytes / 1024).toFixed(1)} KB`;
+    }
+    return `${bytes} B`;
+  };
+
+  return (
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 px-4">
+      <div className="absolute inset-0" role="presentation" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-3xl rounded-[16px] border border-border bg-white p-6 shadow-2xl">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-text-primary">Select reference image</h2>
+            <p className="text-sm text-text-secondary">{fieldLabel}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="rounded-input border border-border px-3 py-1.5 text-sm text-text-secondary transition hover:border-accentSoft/60 hover:bg-accentSoft/10"
+              onClick={onRefresh}
+            >
+              Refresh
+            </button>
+            <button
+              type="button"
+              className="rounded-input border border-border px-3 py-1.5 text-sm text-text-secondary transition hover:border-accentSoft/60 hover:bg-accentSoft/10"
+              onClick={onClose}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-4 max-h-[60vh] overflow-y-auto">
+          {error ? (
+            <div className="rounded-input border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">
+              {error}
+            </div>
+          ) : isLoading ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={`asset-skeleton-${index}`} className="h-40 rounded-card border border-border bg-neutral-100" aria-hidden>
+                  <div className="skeleton h-full w-full" />
+                </div>
+              ))}
+            </div>
+          ) : assets.length === 0 ? (
+            <div className="rounded-input border border-border bg-neutral-50 px-4 py-6 text-center text-sm text-text-secondary">
+              No saved images yet. Upload a reference image to see it here.
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {assets.map((asset) => {
+                const dimensions = asset.width && asset.height ? `${asset.width}×${asset.height}` : null;
+                const sizeLabel = formatSize(asset.size);
+                return (
+                  <div key={asset.id} className="overflow-hidden rounded-card border border-border/60 bg-white">
+                    <div className="relative" style={{ aspectRatio: '16 / 9' }}>
+                      <img src={asset.url} alt="Reference" className="h-full w-full object-cover" />
+                    </div>
+                    <div className="flex items-center justify-between gap-3 border-t border-border bg-white px-3 py-2 text-[12px] text-text-secondary">
+                      <div className="flex flex-col gap-1">
+                        {dimensions && <span>{dimensions}</span>}
+                        {sizeLabel && <span>{sizeLabel}</span>}
+                      </div>
+                      <button
+                        type="button"
+                        className="rounded-input border border-accent bg-accent/10 px-3 py-1 text-[12px] font-semibold uppercase tracking-micro text-accent transition hover:bg-accent/20"
+                        onClick={() => onSelect(asset)}
+                      >
+                        Use
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const MODE_DISPLAY_LABEL: Record<Mode, string> = {
@@ -994,12 +1101,19 @@ type LocalRenderGroup = {
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
   const noticeTimeoutRef = useRef<number | null>(null);
 const [inputAssets, setInputAssets] = useState<Record<string, (ReferenceAsset | null)[]>>({});
+const [assetPickerTarget, setAssetPickerTarget] = useState<{ field: EngineInputField; slotIndex?: number } | null>(null);
+const [assetLibrary, setAssetLibrary] = useState<UserAsset[]>([]);
+const [isAssetLibraryLoading, setIsAssetLibraryLoading] = useState(false);
+const [assetLibraryError, setAssetLibraryError] = useState<string | null>(null);
+const [assetLibraryLoaded, setAssetLibraryLoaded] = useState(false);
 
 const assetsRef = useRef<Record<string, (ReferenceAsset | null)[]>>({});
 
 const revokeAssetPreview = (asset: ReferenceAsset | null | undefined) => {
   if (!asset) return;
-  URL.revokeObjectURL(asset.previewUrl);
+  if (asset.previewUrl.startsWith('blob:')) {
+    URL.revokeObjectURL(asset.previewUrl);
+  }
 };
 
 useEffect(() => {
@@ -1016,7 +1130,7 @@ useEffect(() => {
   };
 }, []);
 
-  const showNotice = useCallback((message: string) => {
+const showNotice = useCallback((message: string) => {
     setNotice(message);
     if (noticeTimeoutRef.current !== null) {
       window.clearTimeout(noticeTimeoutRef.current);
@@ -1027,7 +1141,43 @@ useEffect(() => {
     }, 6000);
   }, []);
 
-  const handleRefreshJob = useCallback(async (jobId: string) => {
+  const fetchAssetLibrary = useCallback(async () => {
+    setIsAssetLibraryLoading(true);
+    setAssetLibraryError(null);
+    try {
+      const response = await fetch('/api/user-assets', { credentials: 'include' });
+      if (response.status === 401) {
+        setAssetLibrary([]);
+        setAssetLibraryError('Sign in to access your image library.');
+        return;
+      }
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.ok) {
+        const message = typeof payload?.error === 'string' ? payload.error : 'Failed to load images';
+        throw new Error(message);
+      }
+      const assets = Array.isArray(payload.assets)
+        ? (payload.assets as UserAsset[]).map((asset) => ({
+            id: asset.id,
+            url: asset.url,
+            width: asset.width ?? null,
+            height: asset.height ?? null,
+            size: asset.size ?? null,
+            mime: asset.mime ?? null,
+            createdAt: asset.createdAt,
+          }))
+        : [];
+      setAssetLibrary(assets);
+      setAssetLibraryLoaded(true);
+    } catch (error) {
+      console.error('[assets] failed to load library', error);
+      setAssetLibraryError(error instanceof Error ? error.message : 'Failed to load images');
+    } finally {
+      setIsAssetLibraryLoading(false);
+    }
+  }, []);
+
+const handleRefreshJob = useCallback(async (jobId: string) => {
     try {
       const status = await getJobStatus(jobId);
       if (status.status === 'failed') {
@@ -1039,7 +1189,7 @@ useEffect(() => {
     } catch (error) {
       throw error instanceof Error ? error : new Error('Unable to refresh render status.');
     }
-  }, []);
+}, []);
 
   const closeTopUpModal = useCallback(() => {
     setTopUpModal(null);
@@ -1047,51 +1197,186 @@ useEffect(() => {
     setTopUpError(null);
   }, []);
 
-  const handleAssetAdd = useCallback((field: EngineInputField, file: File, slotIndex?: number) => {
-    setInputAssets((previous) => {
-      const maxCount = field.maxCount ?? 0;
-      const current = previous[field.id] ? [...previous[field.id]] : [];
-
-      if (maxCount > 0 && current.length < maxCount) {
-        while (current.length < maxCount) {
-          current.push(null);
-        }
+  const handleOpenAssetLibrary = useCallback(
+    (field: EngineInputField, slotIndex?: number) => {
+      setAssetPickerTarget({ field, slotIndex });
+      if (!assetLibraryLoaded && !isAssetLibraryLoading) {
+        void fetchAssetLibrary();
       }
+    },
+    [assetLibraryLoaded, fetchAssetLibrary, isAssetLibraryLoading]
+  );
 
+  const handleSelectLibraryAsset = useCallback(
+    (field: EngineInputField, asset: UserAsset, slotIndex?: number) => {
       const newAsset: ReferenceAsset = {
+        id: asset.id || `library_${Date.now().toString(36)}`,
         fieldId: field.id,
-        file,
-        previewUrl: URL.createObjectURL(file),
+        previewUrl: asset.url,
+        kind: 'image',
+        name: asset.url.split('/').pop() ?? 'Image',
+        size: asset.size ?? 0,
+        type: asset.mime ?? 'image/*',
+        url: asset.url,
+        width: asset.width ?? null,
+        height: asset.height ?? null,
+        assetId: asset.id,
+        status: 'ready',
+      };
+
+      setInputAssets((previous) => {
+        const maxCount = field.maxCount ?? 0;
+        const current = previous[field.id] ? [...previous[field.id]] : [];
+
+        if (maxCount > 0 && current.length < maxCount) {
+          while (current.length < maxCount) {
+            current.push(null);
+          }
+        }
+
+        let targetIndex = typeof slotIndex === 'number' ? slotIndex : -1;
+        if (maxCount > 0 && targetIndex >= maxCount) {
+          targetIndex = -1;
+        }
+        if (targetIndex < 0) {
+          targetIndex = current.findIndex((entry) => entry === null);
+        }
+        if (targetIndex < 0) {
+          if (maxCount > 0 && current.length >= maxCount) {
+            showNotice('Maximum reference image count reached for this engine.');
+            return previous;
+          }
+          current.push(newAsset);
+        } else {
+          const existing = current[targetIndex];
+          if (existing) {
+            revokeAssetPreview(existing);
+          }
+          current[targetIndex] = newAsset;
+        }
+
+        return { ...previous, [field.id]: current };
+      });
+
+      setAssetPickerTarget(null);
+    },
+    [showNotice]
+  );
+
+  const handleAssetAdd = useCallback(
+    (field: EngineInputField, file: File, slotIndex?: number) => {
+      const assetId =
+        typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+          ? crypto.randomUUID()
+          : `asset_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+      const previewUrl = URL.createObjectURL(file);
+      const baseAsset: ReferenceAsset = {
+        id: assetId,
+        fieldId: field.id,
+        previewUrl,
         kind: field.type === 'video' ? 'video' : 'image',
         name: file.name,
         size: file.size,
         type: file.type,
+        status: 'uploading',
       };
 
-      let targetIndex = typeof slotIndex === 'number' ? slotIndex : -1;
-      if (maxCount > 0 && targetIndex >= maxCount) {
-        targetIndex = -1;
-      }
-      if (targetIndex < 0) {
-        targetIndex = current.findIndex((asset) => asset === null);
-      }
-      if (targetIndex < 0) {
-        if (maxCount > 0 && current.length >= maxCount) {
-          revokeAssetPreview(newAsset);
-          return previous;
-        }
-        current.push(newAsset);
-      } else {
-        const existing = current[targetIndex];
-        if (existing) {
-          revokeAssetPreview(existing);
-        }
-        current[targetIndex] = newAsset;
-      }
+      setInputAssets((previous) => {
+        const maxCount = field.maxCount ?? 0;
+        const current = previous[field.id] ? [...previous[field.id]] : [];
 
-      return { ...previous, [field.id]: current };
-    });
-  }, []);
+        if (maxCount > 0 && current.length < maxCount) {
+          while (current.length < maxCount) {
+            current.push(null);
+          }
+        }
+
+        let targetIndex = typeof slotIndex === 'number' ? slotIndex : -1;
+        if (maxCount > 0 && targetIndex >= maxCount) {
+          targetIndex = -1;
+        }
+        if (targetIndex < 0) {
+          targetIndex = current.findIndex((asset) => asset === null);
+        }
+        if (targetIndex < 0) {
+          if (maxCount > 0 && current.length >= maxCount) {
+            revokeAssetPreview(baseAsset);
+            return previous;
+          }
+          current.push(baseAsset);
+        } else {
+          const existing = current[targetIndex];
+          if (existing) {
+            revokeAssetPreview(existing);
+          }
+          current[targetIndex] = baseAsset;
+        }
+
+        return { ...previous, [field.id]: current };
+      });
+
+      const upload = async () => {
+        try {
+          const formData = new FormData();
+          formData.append('file', file, file.name);
+          const response = await fetch('/api/uploads/image', {
+            method: 'POST',
+            body: formData,
+          });
+          const payload = await response.json().catch(() => null);
+          if (!response.ok || !payload?.ok) {
+            throw new Error(typeof payload?.error === 'string' ? payload.error : 'UPLOAD_FAILED');
+          }
+          const assetResponse = payload.asset as {
+            id: string;
+            url: string;
+            width?: number | null;
+            height?: number | null;
+            size?: number;
+            mime?: string;
+            name?: string;
+          };
+          setInputAssets((previous) => {
+            const current = previous[field.id];
+            if (!current) return previous;
+            const next = current.map((entry) => {
+              if (!entry || entry.id !== assetId) return entry;
+              return {
+                ...entry,
+                status: 'ready',
+                url: assetResponse.url,
+                width: assetResponse.width ?? entry.width,
+                height: assetResponse.height ?? entry.height,
+                size: assetResponse.size ?? entry.size,
+                type: assetResponse.mime ?? entry.type,
+                assetId: assetResponse.id,
+              };
+            });
+            return { ...previous, [field.id]: next };
+          });
+        } catch (error) {
+          console.error('[assets] upload failed', error);
+          setInputAssets((previous) => {
+            const current = previous[field.id];
+            if (!current) return previous;
+            const next = current.map((entry) => {
+              if (!entry || entry.id !== assetId) return entry;
+              return {
+                ...entry,
+                status: 'error',
+                error: error instanceof Error ? error.message : 'Upload failed',
+              };
+            });
+            return { ...previous, [field.id]: next };
+          });
+          showNotice?.('Upload failed. Please try again.');
+        }
+      };
+
+      void upload();
+    },
+    [showNotice]
+  );
 
   const handleAssetRemove = useCallback((field: EngineInputField, index: number) => {
     setInputAssets((previous) => {
@@ -1484,6 +1769,8 @@ useEffect(() => {
               size: asset.size,
               type: asset.type,
               previewUrl: asset.previewUrl,
+              status: asset.status,
+              error: asset.error,
             }
           : null
       );
@@ -1605,6 +1892,33 @@ useEffect(() => {
       }
     }
 
+    const schema = selectedEngine?.inputSchema;
+    const fieldIndex = new Map<string, EngineInputField>();
+    if (schema) {
+      [...(schema.required ?? []), ...(schema.optional ?? [])].forEach((field) => {
+        fieldIndex.set(field.id, field);
+      });
+    }
+
+    const orderedAttachments: Array<{ field: EngineInputField; asset: ReferenceAsset }> = [];
+    inputSchemaSummary.assetFields.forEach(({ field }) => {
+      const items = inputAssets[field.id] ?? [];
+      items.forEach((asset) => {
+        if (!asset) return;
+        orderedAttachments.push({ field, asset });
+      });
+    });
+
+    Object.entries(inputAssets).forEach(([fieldId, items]) => {
+      if (orderedAttachments.some((entry) => entry.field.id === fieldId)) return;
+      const field = fieldIndex.get(fieldId);
+      if (!field) return;
+      items.forEach((asset) => {
+        if (!asset) return;
+        orderedAttachments.push({ field, asset });
+      });
+    });
+
     let inputsPayload: Array<{
       name: string;
       type: string;
@@ -1612,56 +1926,50 @@ useEffect(() => {
       kind: 'image' | 'video';
       slotId?: string;
       label?: string;
-      dataUrl: string;
+      url: string;
+      width?: number | null;
+      height?: number | null;
+      assetId?: string;
     }> | undefined;
 
-    try {
-      const schema = selectedEngine?.inputSchema;
-      const fieldIndex = new Map<string, EngineInputField>();
-      if (schema) {
-        [...(schema.required ?? []), ...(schema.optional ?? [])].forEach((field) => {
-          fieldIndex.set(field.id, field);
+    if (orderedAttachments.length) {
+      const collected: typeof inputsPayload = [];
+      for (const { field, asset } of orderedAttachments) {
+        if (!asset) continue;
+        if (asset.status === 'uploading') {
+          showNotice('Please wait for uploads to finish before generating.');
+          return;
+        }
+        if (asset.status === 'error' || !asset.url) {
+          showNotice('One of your reference files is unavailable. Remove it and try again.');
+          return;
+        }
+        collected.push({
+          name: asset.name,
+          type: asset.type || (asset.kind === 'image' ? 'image/*' : 'video/*'),
+          size: asset.size,
+          kind: asset.kind,
+          slotId: field.id,
+          label: field.label,
+          url: asset.url,
+          width: asset.width,
+          height: asset.height,
+          assetId: asset.assetId,
         });
       }
-
-      const orderedAttachments: Array<{ field: EngineInputField; asset: ReferenceAsset }> = [];
-      inputSchemaSummary.assetFields.forEach(({ field }) => {
-        const items = inputAssets[field.id] ?? [];
-        items.forEach((asset) => {
-          if (!asset) return;
-          orderedAttachments.push({ field, asset });
-        });
-      });
-
-      // Include any remaining assets that might not be in the schema summary
-      Object.entries(inputAssets).forEach(([fieldId, items]) => {
-        if (orderedAttachments.some((entry) => entry.field.id === fieldId)) return;
-        const field = fieldIndex.get(fieldId);
-        if (!field) return;
-        items.forEach((asset) => {
-          if (!asset) return;
-          orderedAttachments.push({ field, asset });
-        });
-      });
-
-      if (orderedAttachments.length) {
-        inputsPayload = await Promise.all(
-          orderedAttachments.map(async ({ field, asset }) => ({
-            name: asset.name,
-            type: asset.type || (asset.kind === 'image' ? 'image/*' : 'video/*'),
-            size: asset.size,
-            kind: asset.kind,
-            slotId: field.id,
-            label: field.label,
-            dataUrl: await readFileAsDataUrl(asset.file),
-          }))
-        );
+      if (collected.length) {
+        inputsPayload = collected;
       }
-    } catch (fileError) {
-      console.error('[startRender] Unable to read attachment', fileError);
-      showNotice('We could not read one of the uploaded files. Please try another format.');
-      return;
     }
+
+    const referenceImageUrls = inputsPayload
+      ? inputsPayload
+          .filter((attachment) => attachment.kind === 'image' && typeof attachment.url === 'string')
+          .map((attachment) => attachment.url)
+          .filter((url, index, self) => self.indexOf(url) === index)
+      : [];
+
+    const primaryImageUrl = referenceImageUrls[0];
 
     const runIteration = async (iterationIndex: number) => {
       const localKey = `local_${batchId}_${iterationIndex + 1}`;
@@ -1805,6 +2113,8 @@ useEffect(() => {
             payment: { mode: paymentMode },
             ...(supportsNegativePrompt && trimmedNegativePrompt ? { negativePrompt: trimmedNegativePrompt } : {}),
             ...(inputsPayload ? { inputs: inputsPayload } : {}),
+            ...(primaryImageUrl ? { imageUrl: primaryImageUrl } : {}),
+            ...(referenceImageUrls.length ? { referenceImages: referenceImageUrls } : {}),
             ...(form.openaiApiKey ? { apiKey: form.openaiApiKey } : {}),
             idempotencyKey: id,
             batchId,
@@ -2526,6 +2836,7 @@ useEffect(() => {
                     onAssetAdd={handleAssetAdd}
                     onAssetRemove={handleAssetRemove}
                     onNotice={showNotice}
+                    onOpenLibrary={handleOpenAssetLibrary}
                   />
                 </div>
               </div>
@@ -2646,6 +2957,17 @@ useEffect(() => {
             </div>
           </form>
         </div>
+      )}
+      {assetPickerTarget && (
+        <AssetLibraryModal
+          fieldLabel={assetPickerTarget.field.label ?? 'Reference image'}
+          assets={assetLibrary}
+          isLoading={isAssetLibraryLoading}
+          error={assetLibraryError}
+          onClose={() => setAssetPickerTarget(null)}
+          onRefresh={fetchAssetLibrary}
+          onSelect={(asset) => handleSelectLibraryAsset(assetPickerTarget.field, asset, assetPickerTarget.slotIndex)}
+        />
       )}
     </div>
   );
