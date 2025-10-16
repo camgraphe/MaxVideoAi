@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { EngineCaps } from '@/types/engines';
 import type { VideoGroup, VideoItem } from '@/types/video-groups';
-import { AspectBox } from '@/components/ui/AspectBox';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 
@@ -43,21 +42,20 @@ function GroupMedia({ item, autoPlay = true }: { item: VideoItem; autoPlay?: boo
         data-group-video
         src={item.url}
         poster={item.thumb}
-        className="aspect-box__media pointer-events-none"
+        className="h-full w-full object-contain"
         muted
         playsInline
         preload="metadata"
         loop
         autoPlay={autoPlay}
-        aria-hidden="true"
       />
     );
   }
   if (item.thumb) {
-    return <Image src={item.thumb} alt="" fill className="aspect-box__media pointer-events-none" />;
+    return <Image src={item.thumb} alt="" fill className="object-contain" />;
   }
   return (
-    <div className="aspect-box__media flex items-center justify-center bg-gradient-to-br from-[#e5ebf6] via-white to-[#f1f4ff] text-[11px] uppercase tracking-micro text-text-muted">
+    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#e5ebf6] via-white to-[#f1f4ff] text-[11px] uppercase tracking-micro text-text-muted">
       Media
     </div>
   );
@@ -164,21 +162,6 @@ export function GroupCard({
 
   const engineLabel = String(group.paramsSnapshot?.engineLabel ?? engine?.label ?? '').trim() || undefined;
   const promptLabel = group.paramsSnapshot?.prompt ? String(group.paramsSnapshot.prompt) : undefined;
-  const heroItem = useMemo(() => {
-    if (group.heroItemId) {
-      return group.items.find((item) => item.id === group.heroItemId) ?? group.items[0] ?? null;
-    }
-    return group.items[0] ?? null;
-  }, [group.heroItemId, group.items]);
-
-  const heroDuration = typeof heroItem?.durationSec === 'number' ? Math.round(heroItem.durationSec) : null;
-  const durationLabel =
-    typeof heroDuration === 'number' ? `${heroDuration} ${heroDuration === 1 ? 'seconde' : 'secondes'}` : null;
-  const aspectLabel = heroItem?.aspect ?? 'format inconnu';
-  const ariaSegments = [`Vidéo ${aspectLabel}`];
-  if (durationLabel) ariaSegments.push(durationLabel);
-  if (engineLabel) ariaSegments.push(engineLabel);
-  const ariaLabel = ariaSegments.join(', ');
 
   return (
     <article className="relative overflow-hidden rounded-card border border-border bg-white/90 shadow-card">
@@ -193,10 +176,9 @@ export function GroupCard({
             onOpen?.(group);
           }
         }}
-        aria-label={ariaLabel}
       >
         <div className="relative w-full" style={{ aspectRatio: '16 / 9' }}>
-          <div className={clsx('absolute inset-0 grid gap-[6px] bg-[var(--surface-2)] p-[6px]', gridClass)}>
+          <div className={clsx('absolute inset-0 grid gap-[6px] bg-[#E7ECF7] p-[6px]', gridClass)}>
             {slots.map((item, index) => {
               const itemStatusRaw = typeof item?.meta?.status === 'string' ? String(item.meta.status).toLowerCase() : null;
               const itemStatus: 'pending' | 'completed' | 'failed' | 'unknown' = (() => {
@@ -213,40 +195,29 @@ export function GroupCard({
               const itemMessage = typeof item?.meta?.message === 'string' ? (item.meta.message as string) : undefined;
               const showItemOverlay = !showGroupOverlay && item && (itemStatus === 'pending' || (itemStatus === 'unknown' && !item.url));
 
-              const aspect = item?.aspect ?? (typeof item?.meta?.aspectRatio === 'string' ? String(item.meta.aspectRatio) : undefined);
-              const placeholder = (
-                <div
-                  className="aspect-box__media flex items-center justify-center bg-gradient-to-br from-[#e5ebf6] via-white to-[#f1f4ff] text-[11px] uppercase tracking-micro text-text-muted"
-                  aria-hidden="true"
-                >
-                  Media
-                </div>
-              );
               return (
                 <div
                   key={item?.id ?? `slot-${group.id}-${index}`}
-                  className="relative"
+                  className="relative flex items-center justify-center overflow-hidden rounded-[12px] bg-black/90"
                 >
-                  <AspectBox aspectRatio={aspect} className="rounded-[12px]">
-                    {item ? <GroupMedia item={item} autoPlay /> : placeholder}
-                    {showGroupOverlay && (
-                      <div className="aspect-box__overlay flex flex-col items-center justify-center bg-black/45 px-3 text-center text-[11px] text-white backdrop-blur-sm">
-                        <span className="uppercase tracking-micro">
-                          {group.status === 'loading' ? 'Processing…' : group.status === 'error' ? 'Error' : 'Pending'}
-                        </span>
-                        {group.errorMsg ? <span className="mt-1 line-clamp-2 text-white/80">{group.errorMsg}</span> : null}
-                      </div>
-                    )}
-                    {showItemOverlay && (
-                      <div className="aspect-box__overlay flex flex-col items-center justify-center bg-black/45 px-3 text-center text-[11px] text-white backdrop-blur-sm">
-                        <span className="uppercase tracking-micro">Processing…</span>
-                        {itemMessage ? <span className="mt-1 line-clamp-2 text-white/80">{itemMessage}</span> : null}
-                        {typeof itemProgress === 'number' ? (
-                          <span className="mt-1 text-[12px] font-semibold">{itemProgress}%</span>
-                        ) : null}
-                      </div>
-                    )}
-                  </AspectBox>
+                  {item ? <GroupMedia item={item} autoPlay /> : null}
+                  {showGroupOverlay && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/45 px-3 text-center text-[11px] text-white backdrop-blur-sm">
+                      <span className="uppercase tracking-micro">
+                        {group.status === 'loading' ? 'Processing…' : group.status === 'error' ? 'Error' : 'Pending'}
+                      </span>
+                      {group.errorMsg ? <span className="mt-1 line-clamp-2 text-white/80">{group.errorMsg}</span> : null}
+                    </div>
+                  )}
+                  {showItemOverlay && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/45 px-3 text-center text-[11px] text-white backdrop-blur-sm">
+                      <span className="uppercase tracking-micro">Processing…</span>
+                      {itemMessage ? <span className="mt-1 line-clamp-2 text-white/80">{itemMessage}</span> : null}
+                      {typeof itemProgress === 'number' ? (
+                        <span className="mt-1 text-[12px] font-semibold">{itemProgress}%</span>
+                      ) : null}
+                    </div>
+                  )}
                 </div>
               );
             })}

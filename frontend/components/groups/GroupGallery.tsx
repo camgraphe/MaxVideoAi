@@ -4,7 +4,6 @@ import clsx from 'clsx';
 import type { ReactNode } from 'react';
 import type { EngineCaps } from '@/types/engines';
 import type { VideoGroup } from '@/types/video-groups';
-import { AspectBox } from '@/components/ui/AspectBox';
 import { GroupCard, type GroupCardAction } from '@/components/groups/GroupCard';
 
 interface GroupGalleryProps {
@@ -23,9 +22,11 @@ interface GroupGalleryProps {
 function SkeletonCard() {
   return (
     <div className="rounded-card border border-border bg-white/60 p-0" aria-hidden>
-      <AspectBox aspectRatio="16:9" className="rounded-card">
-        <div className="aspect-box__overlay skeleton" />
-      </AspectBox>
+      <div className="relative overflow-hidden rounded-card">
+        <div className="relative" style={{ aspectRatio: '16 / 9' }}>
+          <div className="skeleton absolute inset-0" />
+        </div>
+      </div>
       <div className="border-t border-border bg-white/70 px-3 py-2">
         <div className="h-3 w-24 rounded-full bg-neutral-200" />
       </div>
