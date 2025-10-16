@@ -245,7 +245,12 @@ export function Composer({
           <span>G • Price-before</span>
           <span>S • Lock seed</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-1 flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-end">
+          {error && (
+            <div className="rounded-input border border-rose-200 bg-rose-50 px-3 py-2 text-[13px] text-rose-700 whitespace-pre-line">
+              {error}
+            </div>
+          )}
           <span className="inline-flex items-center rounded-full bg-black/5 px-2.5 py-1 text-[12px] font-semibold uppercase tracking-micro text-text-secondary">
             ×{Math.max(1, iterations)}
           </span>
@@ -273,8 +278,6 @@ export function Composer({
           </button>
         </div>
       </footer>
-
-      {error && <p className="text-sm text-[#F59E0B]">{error}</p>}
       {messages && messages.length > 0 && (
         <ul className="space-y-1 text-xs text-text-muted">
           {messages.map((message) => (
