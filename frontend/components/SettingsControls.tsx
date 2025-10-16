@@ -140,9 +140,12 @@ export function SettingsControls({
   }, [caps?.resolution, engine.resolutions]);
 
   const aspectOptions = useMemo(() => {
-    if (caps?.aspectRatio && caps.aspectRatio.length) return caps.aspectRatio;
+    if (caps) {
+      if (caps.aspectRatio && caps.aspectRatio.length) return caps.aspectRatio;
+      return [];
+    }
     return engine.aspectRatios;
-  }, [caps?.aspectRatio, engine.aspectRatios]);
+  }, [caps, engine.aspectRatios]);
 
   const showResolutionControl = resolutionOptions.length > 0;
   const showAspectControl = aspectOptions.length > 0;

@@ -70,7 +70,7 @@ export type GeneratePayload = {
   prompt: string;
   durationSec: number;
   numFrames?: number | null;
-  aspectRatio: string;
+  aspectRatio?: string;
   resolution?: string;
   fps?: number;
   mode?: string;
@@ -205,13 +205,15 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
 
   const requestBody: Record<string, unknown> = {
     prompt: payload.prompt,
-    aspect_ratio: payload.aspectRatio,
     resolution: payload.resolution,
     fps: payload.fps,
     mode: payload.mode,
     audio: Boolean(payload.addons?.audio),
     upscale: Boolean(payload.addons?.upscale4k),
   };
+  if (payload.aspectRatio) {
+    requestBody.aspect_ratio = payload.aspectRatio;
+  }
 
   if (typeof payload.numFrames === 'number' && Number.isFinite(payload.numFrames) && payload.numFrames > 0) {
     requestBody.num_frames = Math.round(payload.numFrames);
@@ -518,7 +520,7 @@ function guessMimeFromUrl(url: string): string | null {
   return null;
 }
 
-function getThumbForAspectRatio(aspectRatio: string): string {
+function getThumbForAspectRatio(aspectRatio?: string): string {
   if (aspectRatio === '9:16') return '/assets/frames/thumb-9x16.svg';
   if (aspectRatio === '1:1') return '/assets/frames/thumb-1x1.svg';
   return '/assets/frames/thumb-16x9.svg';

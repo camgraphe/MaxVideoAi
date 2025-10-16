@@ -16,6 +16,7 @@ import { normalizeMediaUrl } from '@/lib/media';
 import type { Mode } from '@/types/engines';
 import { validateRequest } from './_lib/validate';
 import { uploadImageToStorage, isAllowedAssetHost, probeImageUrl, recordUserAsset } from '@/server/storage';
+import { getEngineCaps } from '@/fixtures/engineCaps';
 
 type PaymentMode = 'wallet' | 'direct' | 'platform';
 
@@ -47,11 +48,21 @@ export async function POST(req: NextRequest) {
 
   const prompt = String(body.prompt || '');
   const durationSec = Number(body.durationSec || 4);
+  const capability = getEngineCaps(engine.id, mode);
+  const supportsAspectRatio = capability ? Boolean(capability.aspectRatio && capability.aspectRatio.length) : true;
   const rawAspectRatio =
-    typeof body.aspectRatio === 'string' && body.aspectRatio.trim().length ? body.aspectRatio.trim() : '16:9';
-  const fallbackAspectRatio =
-    engine.aspectRatios?.find((value) => value !== 'auto') ?? engine.aspectRatios?.[0] ?? '16:9';
-  const aspectRatio = rawAspectRatio === 'auto' ? fallbackAspectRatio : rawAspectRatio;
+    supportsAspectRatio && typeof body.aspectRatio === 'string' && body.aspectRatio.trim().length
+      ? body.aspectRatio.trim()
+      : null;
+  const fallbackAspectRatio = supportsAspectRatio
+    ? engine.aspectRatios?.find((value) => value !== 'auto') ?? engine.aspectRatios?.[0] ?? '16:9'
+    : null;
+  const aspectRatio =
+    rawAspectRatio && fallbackAspectRatio
+      ? rawAspectRatio === 'auto'
+        ? fallbackAspectRatio
+        : rawAspectRatio
+      : rawAspectRatio ?? fallbackAspectRatio ?? null;
   const batchId = typeof body.batchId === 'string' && body.batchId.trim().length ? body.batchId.trim() : null;
   const groupId = typeof body.groupId === 'string' && body.groupId.trim().length ? body.groupId.trim() : null;
   const iterationIndex =
@@ -104,16 +115,16 @@ export async function POST(req: NextRequest) {
   });
   pricing.meta = {
     ...(pricing.meta ?? {}),
-    request: {
-      engineId: engine.id,
-      engineLabel: engine.label,
-      mode,
-      durationSec,
-      aspectRatio,
-      resolution: effectiveResolution,
-      effectiveResolution: pricingResolution,
-      fps: typeof body.fps === 'number' ? body.fps : engine.fps?.[0],
-      addons: {
+      request: {
+        engineId: engine.id,
+        engineLabel: engine.label,
+        mode,
+        durationSec,
+        aspectRatio: aspectRatio ?? 'source',
+        resolution: effectiveResolution,
+        effectiveResolution: pricingResolution,
+        fps: typeof body.fps === 'number' ? body.fps : engine.fps?.[0],
+        addons: {
         audio: Boolean(body.addons?.audio),
         upscale4k: Boolean(body.addons?.upscale4k),
       },
@@ -382,8 +393,10 @@ export async function POST(req: NextRequest) {
     processedAttachments.reduce((max, attachment) => Math.max(max, attachment.size ?? 0), 0) ?? 0;
   const validationPayload: Record<string, unknown> = {
     resolution: effectiveResolution,
-    aspect_ratio: aspectRatio,
   };
+  if (aspectRatio) {
+    validationPayload.aspect_ratio = aspectRatio;
+  }
 
   if (numFrames != null) {
     validationPayload.num_frames = numFrames;
@@ -419,7 +432,6 @@ export async function POST(req: NextRequest) {
       prompt,
       durationSec,
       numFrames,
-      aspectRatio,
       resolution: effectiveResolution,
       fps: body.fps,
       mode,
@@ -432,6 +444,7 @@ export async function POST(req: NextRequest) {
             .filter((value: string | null): value is string => typeof value === 'string' && value.length > 0)
         : undefined,
       inputs: processedAttachments,
+      ...(aspectRatio ? { aspectRatio } : {}),
       idempotencyKey: body.idempotencyKey && typeof body.idempotencyKey === 'string' ? body.idempotencyKey : undefined,
     });
   } catch (error) {

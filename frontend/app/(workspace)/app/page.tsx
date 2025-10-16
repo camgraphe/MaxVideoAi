@@ -269,7 +269,11 @@ function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | n
   })();
 
   const resolutionOptions = capability?.resolution && capability.resolution.length ? capability.resolution : engine.resolutions;
-  const aspectOptions = capability?.aspectRatio && capability.aspectRatio.length ? capability.aspectRatio : engine.aspectRatios;
+  const aspectOptions = capability
+    ? capability.aspectRatio && capability.aspectRatio.length
+      ? capability.aspectRatio
+      : []
+    : engine.aspectRatios;
 
   const resolution = (() => {
     if (resolutionOptions.length === 0) {
@@ -284,7 +288,7 @@ function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | n
 
   const aspectRatio = (() => {
     if (aspectOptions.length === 0) {
-      return previous?.aspectRatio ?? engine.aspectRatios[0] ?? '16:9';
+      return previous?.aspectRatio ?? 'source';
     }
     const previousAspect = previous?.aspectRatio;
     if (previousAspect && aspectOptions.includes(previousAspect)) {
@@ -1620,7 +1624,12 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       setForm((current) => {
         if (!current) return current;
         if (!selectedEngine) return current;
-        const allowed = capability?.aspectRatio && capability.aspectRatio.length ? capability.aspectRatio : selectedEngine.aspectRatios;
+        const allowed =
+          capability?.aspectRatio && capability.aspectRatio.length
+            ? capability.aspectRatio
+            : capability
+              ? []
+              : selectedEngine.aspectRatios;
         if (allowed.length && !allowed.includes(ratio)) {
           const fallback = allowed.includes(current.aspectRatio) ? current.aspectRatio : allowed[0];
           return fallback === current.aspectRatio ? current : { ...current, aspectRatio: fallback };
@@ -2098,36 +2107,35 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       startProgressTracking();
 
       try {
-        const res = await runGenerate(
-          {
-            engineId: selectedEngine.id,
-            prompt: trimmedPrompt,
-            durationSec: form.durationSec,
-            numFrames: form.numFrames ?? undefined,
-            aspectRatio: form.aspectRatio,
-            resolution: form.resolution,
-            fps: form.fps,
-            mode: form.mode,
-            addons: form.addons,
-            membershipTier: memberTier,
-            payment: { mode: paymentMode },
-            ...(supportsNegativePrompt && trimmedNegativePrompt ? { negativePrompt: trimmedNegativePrompt } : {}),
-            ...(inputsPayload ? { inputs: inputsPayload } : {}),
-            ...(primaryImageUrl ? { imageUrl: primaryImageUrl } : {}),
-            ...(referenceImageUrls.length ? { referenceImages: referenceImageUrls } : {}),
-            ...(form.openaiApiKey ? { apiKey: form.openaiApiKey } : {}),
-            idempotencyKey: id,
-            batchId,
-            groupId: batchId,
-            iterationIndex,
-            iterationCount,
-            localKey,
-            message: friendlyMessage,
-            etaSeconds,
-            etaLabel,
-          },
-          token ? { token } : undefined
-        );
+        const shouldSendAspectRatio = !capability || (capability.aspectRatio?.length ?? 0) > 0;
+        const generatePayload = {
+          engineId: selectedEngine.id,
+          prompt: trimmedPrompt,
+          durationSec: form.durationSec,
+          numFrames: form.numFrames ?? undefined,
+          resolution: form.resolution,
+          fps: form.fps,
+          mode: form.mode,
+          addons: form.addons,
+          membershipTier: memberTier,
+          payment: { mode: paymentMode },
+          ...(shouldSendAspectRatio ? { aspectRatio: form.aspectRatio } : {}),
+          ...(supportsNegativePrompt && trimmedNegativePrompt ? { negativePrompt: trimmedNegativePrompt } : {}),
+          ...(inputsPayload ? { inputs: inputsPayload } : {}),
+          ...(primaryImageUrl ? { imageUrl: primaryImageUrl } : {}),
+          ...(referenceImageUrls.length ? { referenceImages: referenceImageUrls } : {}),
+          ...(form.openaiApiKey ? { apiKey: form.openaiApiKey } : {}),
+          idempotencyKey: id,
+          batchId,
+          groupId: batchId,
+          iterationIndex,
+          iterationCount,
+          localKey,
+          message: friendlyMessage,
+          etaSeconds,
+          etaLabel,
+        };
+        const res = await runGenerate(generatePayload, token ? { token } : undefined);
 
         const resolvedJobId = res.jobId ?? id;
         const resolvedBatchId = res.batchId ?? batchId;
@@ -2341,7 +2349,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     for (let iterationIndex = 0; iterationIndex < iterationCount; iterationIndex += 1) {
       void runIteration(iterationIndex);
     }
-  }, [form, prompt, negativePrompt, selectedEngine, preflight, memberTier, showNotice, inputSchemaSummary, inputAssets, authChecked, setActiveGroupId]);
+  }, [form, prompt, negativePrompt, selectedEngine, preflight, memberTier, showNotice, inputSchemaSummary, inputAssets, authChecked, setActiveGroupId, capability]);
 
   useEffect(() => {
     if (!selectedEngine || !authChecked) return;

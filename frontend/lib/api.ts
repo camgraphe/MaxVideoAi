@@ -15,7 +15,7 @@ type GeneratePayload = {
   durationSec: number;
   durationOption?: number | string | null;
   numFrames?: number | null;
-  aspectRatio: string;
+  aspectRatio?: string;
   resolution: string;
   fps: number;
   mode: string;
