@@ -228,6 +228,7 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
   }
   if (imageUrl) {
     requestBody.image_url = imageUrl;
+    requestBody.input_image = imageUrl;
   }
 
   let latestQueueStatus: QueueStatus | null = null;
