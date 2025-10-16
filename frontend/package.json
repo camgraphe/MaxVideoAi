@@ -10,6 +10,7 @@
     "lint:exposure": "node ../scripts/check-public-exposure.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.911.0",
     "@fal-ai/client": "^1.6.2",
     "@fal-ai/server-proxy": "^1.1.1",
     "@maxvideoai/pricing": "file:../packages/pricing",

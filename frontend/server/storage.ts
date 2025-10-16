@@ -1,32 +1,43 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
 import { ensureAssetSchema } from '@/lib/schema';
 import { query } from '@/lib/db';
 
-type UploadResult = {
+export type UploadResult = {
   url: string;
-  path: string;
+  key: string;
   width: number | null;
   height: number | null;
   size: number;
   mime: string;
 };
 
-const SUPABASE_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
-const SUPABASE_SERVICE_ROLE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
-const ASSETS_BUCKET = (process.env.SUPABASE_ASSETS_BUCKET || 'user-assets').trim();
+const S3_BUCKET = (process.env.S3_BUCKET || '').trim();
+const S3_REGION = (process.env.S3_REGION || '').trim();
+const S3_ACCESS_KEY_ID = (process.env.S3_ACCESS_KEY_ID || '').trim();
+const S3_SECRET_ACCESS_KEY = (process.env.S3_SECRET_ACCESS_KEY || '').trim();
+const S3_PUBLIC_BASE_URL = (process.env.S3_PUBLIC_BASE_URL || '').trim();
+const S3_UPLOAD_ACL = (process.env.S3_UPLOAD_ACL || '').trim();
+const S3_CACHE_CONTROL = (process.env.S3_CACHE_CONTROL || 'public, max-age=3600').trim();
 
-let supabaseAdmin: SupabaseClient | null = null;
+let s3Client: S3Client | null = null;
 
-function getSupabaseAdmin(): SupabaseClient {
-  if (!supabaseAdmin) {
-    if (!SUPABASE_URL) throw new Error('NEXT_PUBLIC_SUPABASE_URL is missing');
-    if (!SUPABASE_SERVICE_ROLE_KEY) throw new Error('SUPABASE_SERVICE_ROLE_KEY is missing');
-    supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-      auth: { persistSession: false, autoRefreshToken: false },
+function getS3Client(): S3Client {
+  if (!s3Client) {
+    if (!S3_BUCKET) throw new Error('S3_BUCKET is missing');
+    if (!S3_REGION) throw new Error('S3_REGION is missing');
+    if (!S3_ACCESS_KEY_ID) throw new Error('S3_ACCESS_KEY_ID is missing');
+    if (!S3_SECRET_ACCESS_KEY) throw new Error('S3_SECRET_ACCESS_KEY is missing');
+
+    s3Client = new S3Client({
+      region: S3_REGION,
+      credentials: {
+        accessKeyId: S3_ACCESS_KEY_ID,
+        secretAccessKey: S3_SECRET_ACCESS_KEY,
+      },
     });
   }
-  return supabaseAdmin!;
+  return s3Client;
 }
 
 function inferExtension(mime: string, fallback = 'bin'): string {
@@ -37,7 +48,7 @@ function inferExtension(mime: string, fallback = 'bin'): string {
 
 function getPngDimensions(data: Buffer): { width: number; height: number } | null {
   if (data.length < 24) return null;
-  if (data.readUInt32BE(12) !== 0x49484452) return null; // IHDR
+  if (data.readUInt32BE(12) !== 0x49484452) return null;
   const width = data.readUInt32BE(16);
   const height = data.readUInt32BE(20);
   return { width, height };
@@ -67,24 +78,20 @@ function getWebpDimensions(data: Buffer): { width: number; height: number } | nu
   if (data.toString('ascii', 0, 4) !== 'RIFF' || data.toString('ascii', 8, 12) !== 'WEBP') {
     return null;
   }
-  const format = data.toString('ascii', 12, 16);
-  if (format === 'VP8L') {
-    const vp8lChunk = data.subarray(21);
-    if (vp8lChunk.length < 5) return null;
-    const width = (vp8lChunk[1] | ((vp8lChunk[2] & 0x3f) << 8)) + 1;
-    const height = ((vp8lChunk[2] >> 6) | (vp8lChunk[3] << 2) | ((vp8lChunk[4] & 0x0f) << 10)) + 1;
+  const chunkType = data.toString('ascii', 12, 16);
+  if (chunkType === 'VP8L') {
+    const chunk = data.subarray(21);
+    if (chunk.length < 5) return null;
+    const width = (chunk[1] | ((chunk[2] & 0x3f) << 8)) + 1;
+    const height = ((chunk[2] >> 6) | (chunk[3] << 2) | ((chunk[4] & 0x0f) << 10)) + 1;
     return { width, height };
   }
-  if (format === 'VP8X') {
-    if (data.length < 30) return null;
+  if (chunkType === 'VP8X') {
     const width = 1 + data.readUIntLE(24, 3);
     const height = 1 + data.readUIntLE(27, 3);
     return { width, height };
   }
-  if (format === 'VP8 ') {
-    // Lossy bitstream
-    // Width and height stored as 14-bit values starting at byte 26
-    if (data.length < 30) return null;
+  if (chunkType === 'VP8 ') {
     const rawWidth = data.readUInt16LE(26) & 0x3fff;
     const rawHeight = data.readUInt16LE(28) & 0x3fff;
     return { width: rawWidth, height: rawHeight };
@@ -105,9 +112,33 @@ function getImageDimensions(buffer: Buffer, mime: string): { width: number | nul
       if (dims) return dims;
     }
   } catch {
-    // ignore parsing errors
+    // ignore parse errors
   }
   return { width: null, height: null };
+}
+
+function sanitizeSegment(segment: string): string {
+  return segment
+    .replace(/^\/+|\/+$/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/[^a-zA-Z0-9._-]/g, '')
+    .replace(/-+/g, '-');
+}
+
+function buildObjectKey(params: { prefix?: string; userId?: string | null; fileName: string }): string {
+  const { prefix, userId, fileName } = params;
+  return [prefix || 'uploads', userId ?? 'anonymous', fileName]
+    .map((segment) => sanitizeSegment(segment))
+    .filter((segment) => segment.length > 0)
+    .join('/');
+}
+
+function buildPublicUrl(key: string): string {
+  if (S3_PUBLIC_BASE_URL) {
+    return `${S3_PUBLIC_BASE_URL.replace(/\/+$/, '')}/${key}`;
+  }
+  const host = S3_REGION ? `${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com` : `${S3_BUCKET}.s3.amazonaws.com`;
+  return `https://${host}/${key}`;
 }
 
 export async function uploadImageToStorage(params: {
@@ -117,76 +148,64 @@ export async function uploadImageToStorage(params: {
   fileName?: string | null;
   prefix?: string;
 }): Promise<UploadResult> {
-  const { data, mime, userId, fileName, prefix } = params;
-  const admin = getSupabaseAdmin();
-  const safeMime = mime && mime.startsWith('image/') ? mime : 'image/png';
+  const client = getS3Client();
+  const safeMime = params.mime && params.mime.startsWith('image/') ? params.mime : 'image/png';
   const extension = inferExtension(safeMime, 'png');
   const slug = randomUUID();
-  const safeName = fileName?.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9._-]/g, '') || `${slug}.${extension}`;
-  const path = [prefix || 'uploads', userId ?? 'anonymous', `${slug}-${safeName}`]
-    .map((entry) => entry.replace(/^\/+|\/+$/g, ''))
-    .join('/');
+  const baseName = params.fileName?.replace(/\s+/g, '-')?.replace(/[^a-zA-Z0-9._-]/g, '') || `${slug}.${extension}`;
+  const key = buildObjectKey({ prefix: params.prefix, userId: params.userId, fileName: `${slug}-${baseName}` });
 
-  const { width, height } = getImageDimensions(data, safeMime);
-
-  const uploadResponse = await admin.storage.from(ASSETS_BUCKET).upload(path, data, {
-    contentType: safeMime,
-    upsert: false,
-    cacheControl: '3600',
+  const putCommand = new PutObjectCommand({
+    Bucket: S3_BUCKET,
+    Key: key,
+    Body: params.data,
+    ContentType: safeMime,
+    CacheControl: S3_CACHE_CONTROL,
   });
-
-  if (uploadResponse.error) {
-    throw uploadResponse.error;
+  if (S3_UPLOAD_ACL) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - ACL accepts specific string literals; keep runtime flexible via env
+    putCommand.input.ACL = S3_UPLOAD_ACL;
   }
 
-  const {
-    data: { publicUrl },
-  } = admin.storage.from(ASSETS_BUCKET).getPublicUrl(path);
+  await client.send(putCommand);
 
-  if (!publicUrl) {
-    throw new Error('Failed to obtain public URL for uploaded asset');
-  }
+  const { width, height } = getImageDimensions(params.data, safeMime);
 
   return {
-    url: publicUrl,
-    path,
+    url: buildPublicUrl(key),
+    key,
     width,
     height,
-    size: data.length,
+    size: params.data.length,
     mime: safeMime,
   };
 }
 
-const DEFAULT_ALLOWED_HOSTS = [
+const DEFAULT_ALLOWED_HOSTS = new Set([
   'cdn.maxvideoai.com',
   'blob.vercel-storage.com',
   'storage.googleapis.com',
-];
+  's3.amazonaws.com',
+]);
 
 function buildHostAllowList(): Set<string> {
-  const hosts = new Set<string>();
-  DEFAULT_ALLOWED_HOSTS.forEach((host) => hosts.add(host));
-  if (SUPABASE_URL) {
+  const hosts = new Set(DEFAULT_ALLOWED_HOSTS);
+  if (S3_PUBLIC_BASE_URL) {
     try {
-      const supabaseHost = new URL(SUPABASE_URL).host;
-      hosts.add(supabaseHost);
+      hosts.add(new URL(S3_PUBLIC_BASE_URL).host);
     } catch {
       // ignore invalid URL
     }
+  } else if (S3_BUCKET) {
+    const regionalHost = S3_REGION ? `${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com` : `${S3_BUCKET}.s3.amazonaws.com`;
+    hosts.add(regionalHost);
   }
   if (process.env.ASSET_HOST_ALLOWLIST) {
     process.env.ASSET_HOST_ALLOWLIST.split(',')
       .map((entry) => entry.trim())
       .filter(Boolean)
-      .forEach((entry) => hosts.add(entry));
-  }
-  if (process.env.S3_PUBLIC_BASE_URL) {
-    try {
-      const s3Host = new URL(process.env.S3_PUBLIC_BASE_URL).host;
-      hosts.add(s3Host);
-    } catch {
-      // ignore
-    }
+      .forEach((host) => hosts.add(host));
   }
   return hosts;
 }
@@ -209,9 +228,9 @@ export async function probeImageUrl(
 ): Promise<{ ok: boolean; mime?: string; size?: number }> {
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
     const response = await fetch(url, { method: 'HEAD', signal: controller.signal });
-    clearTimeout(timeout);
+    clearTimeout(timer);
     if (!response.ok) {
       return { ok: false };
     }
@@ -223,18 +242,6 @@ export async function probeImageUrl(
     return { ok: false };
   }
 }
-
-export type AssetRecord = {
-  asset_id: string;
-  user_id: string | null;
-  url: string;
-  mime_type: string | null;
-  width: number | null;
-  height: number | null;
-  size_bytes: number | null;
-  source: string | null;
-  created_at: string;
-};
 
 export async function recordUserAsset(params: {
   assetId?: string;

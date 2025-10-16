@@ -4,10 +4,10 @@ This document tracks the new asset pipeline introduced in October 2025.
 
 ## Overview
 
-Video engines (Sora, Veo, Luma, Pika, Minimax, Kling, etc.) now receive public image URLs instead of inline base64 payloads. Images are uploaded to our Supabase Storage bucket, and `/api/generate` forwards validated URLs to Fal.
+Video engines (Sora, Veo, Luma, Pika, Minimax, Kling, etc.) now receive public image URLs instead of inline base64 payloads. Images are uploaded to our S3 bucket, and `/api/generate` forwards validated URLs to Fal.
 
 ```
-Client Dropzone → `/api/uploads/image` → Supabase Storage (user-assets bucket)
+Client Dropzone → `/api/uploads/image` → S3 bucket → public URL
                                ↓
                          user_assets table
                                ↓
@@ -18,12 +18,15 @@ Client Dropzone → `/api/uploads/image` → Supabase Storage (user-assets bucke
 
 | Key | Description |
 | --- | --- |
-| `SUPABASE_ASSETS_BUCKET` | Public bucket for user assets (default `user-assets`). |
+| `S3_BUCKET` | S3 bucket storing uploaded assets. |
+| `S3_REGION` | AWS region for the bucket. |
+| `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | Credentials with write access to the bucket. |
+| `S3_PUBLIC_BASE_URL` | Base URL used to expose uploaded assets (e.g., `https://videohub-uploads-us.s3.amazonaws.com`). |
+| `S3_UPLOAD_ACL` | Optional ACL applied on upload (default `public-read`). |
+| `S3_CACHE_CONTROL` | Cache header applied to uploaded objects (default `public, max-age=3600`). |
 | `ASSET_MAX_IMAGE_MB` | Max upload size enforced by the upload route (default 25 MB). |
 | `ASSET_HOST_ALLOWLIST` | Optional comma-separated list of additional trusted hosts. |
 | `FAL_USE_UPLOAD` | Feature flag. When `true`, falls back to Fal storage uploads (default `false`). |
-
-Ensure the Supabase service role key is present (`SUPABASE_SERVICE_ROLE_KEY`) and the bucket is configured as public.
 
 ## API additions
 
