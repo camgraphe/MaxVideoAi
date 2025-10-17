@@ -374,6 +374,7 @@ const STORAGE_KEYS = {
   negativePrompt: 'maxvideoai.generate.negativePrompt.v1',
   form: 'maxvideoai.generate.form.v1',
   memberTier: 'maxvideoai.generate.memberTier.v1',
+  pendingRenders: 'maxvideoai.generate.pendingRenders.v1',
 } as const;
 
 function parseStoredForm(value: string): FormState | null {
@@ -435,6 +436,216 @@ function parseStoredForm(value: string): FormState | null {
       seedLocked: typeof seedLocked === 'boolean' ? seedLocked : undefined,
       openaiApiKey: typeof openaiApiKey === 'string' ? openaiApiKey : undefined,
     };
+  } catch {
+    return null;
+  }
+}
+
+type LocalRender = {
+  localKey: string;
+  batchId: string;
+  iterationIndex: number;
+  iterationCount: number;
+  id: string;
+  jobId?: string;
+  engineId: string;
+  engineLabel: string;
+  createdAt: string;
+  aspectRatio: string;
+  durationSec: number;
+  prompt: string;
+  progress: number; // 0-100
+  message: string;
+  status: 'pending' | 'completed' | 'failed';
+  videoUrl?: string;
+  readyVideoUrl?: string;
+  thumbUrl?: string;
+  priceCents?: number;
+  currency?: string;
+  pricingSnapshot?: PreflightResponse['pricing'];
+  paymentStatus?: string;
+  etaSeconds?: number;
+  etaLabel?: string;
+  startedAt: number;
+  minReadyAt: number;
+  groupId?: string | null;
+  renderIds?: string[];
+  heroRenderId?: string | null;
+};
+
+type LocalRenderGroup = {
+  id: string;
+  items: LocalRender[];
+  iterationCount: number;
+  readyCount: number;
+  totalPriceCents: number | null;
+  currency?: string;
+  groupId?: string | null;
+};
+
+const PERSISTED_RENDER_VERSION = 1;
+const MAX_PERSISTED_RENDERS = 24;
+
+type PersistedRender = {
+  version: number;
+  localKey: string;
+  batchId: string;
+  iterationIndex: number;
+  iterationCount: number;
+  id: string;
+  jobId?: string;
+  engineId: string;
+  engineLabel: string;
+  createdAt: string;
+  aspectRatio: string;
+  durationSec: number;
+  prompt: string;
+  progress: number;
+  message: string;
+  status: 'pending' | 'completed' | 'failed';
+  videoUrl?: string | null;
+  readyVideoUrl?: string | null;
+  thumbUrl?: string | null;
+  priceCents?: number | null;
+  currency?: string | null;
+  paymentStatus?: string | null;
+  etaSeconds?: number | null;
+  etaLabel?: string | null;
+  startedAt: number;
+  minReadyAt: number;
+  groupId?: string | null;
+  renderIds?: string[];
+  heroRenderId?: string | null;
+};
+
+function coercePersistedRender(entry: PersistedRender): LocalRender | null {
+  const localKey = typeof entry.localKey === 'string' && entry.localKey.length ? entry.localKey : null;
+  const engineId = typeof entry.engineId === 'string' && entry.engineId.length ? entry.engineId : null;
+  const engineLabel = typeof entry.engineLabel === 'string' && entry.engineLabel.length ? entry.engineLabel : null;
+  if (!localKey || !engineId || !engineLabel) {
+    return null;
+  }
+
+  const createdAt =
+    typeof entry.createdAt === 'string' && entry.createdAt.length ? entry.createdAt : new Date().toISOString();
+  const iterationIndex =
+    Number.isFinite(entry.iterationIndex) && entry.iterationIndex >= 0 ? Math.trunc(entry.iterationIndex) : 0;
+  const iterationCount =
+    Number.isFinite(entry.iterationCount) && entry.iterationCount > 0 ? Math.trunc(entry.iterationCount) : 1;
+  const durationSec =
+    Number.isFinite(entry.durationSec) && entry.durationSec >= 0 ? Math.round(entry.durationSec) : 0;
+  const progress =
+    Number.isFinite(entry.progress) && entry.progress >= 0
+      ? Math.max(0, Math.min(100, Math.round(entry.progress)))
+      : 0;
+  const status: 'pending' | 'completed' | 'failed' =
+    entry.status === 'completed' || entry.status === 'failed' ? entry.status : 'pending';
+  const startedAt =
+    Number.isFinite(entry.startedAt) && entry.startedAt > 0 ? Math.trunc(entry.startedAt) : Date.now();
+  const minReadyAt =
+    Number.isFinite(entry.minReadyAt) && entry.minReadyAt > 0 ? Math.trunc(entry.minReadyAt) : startedAt;
+
+  return {
+    localKey,
+    batchId: typeof entry.batchId === 'string' && entry.batchId.length ? entry.batchId : localKey,
+    iterationIndex,
+    iterationCount,
+    id: typeof entry.id === 'string' && entry.id.length ? entry.id : localKey,
+    jobId: typeof entry.jobId === 'string' && entry.jobId.length ? entry.jobId : undefined,
+    engineId,
+    engineLabel,
+    createdAt,
+    aspectRatio: typeof entry.aspectRatio === 'string' && entry.aspectRatio.length ? entry.aspectRatio : '16:9',
+    durationSec,
+    prompt: typeof entry.prompt === 'string' ? entry.prompt : '',
+    progress,
+    message: typeof entry.message === 'string' && entry.message.length ? entry.message : 'Processing…',
+    status,
+    videoUrl: typeof entry.videoUrl === 'string' && entry.videoUrl.length ? entry.videoUrl : undefined,
+    readyVideoUrl:
+      typeof entry.readyVideoUrl === 'string' && entry.readyVideoUrl.length ? entry.readyVideoUrl : undefined,
+    thumbUrl: typeof entry.thumbUrl === 'string' && entry.thumbUrl.length ? entry.thumbUrl : undefined,
+    priceCents: typeof entry.priceCents === 'number' ? entry.priceCents : undefined,
+    currency: typeof entry.currency === 'string' && entry.currency.length ? entry.currency : undefined,
+    pricingSnapshot: undefined,
+    paymentStatus: typeof entry.paymentStatus === 'string' && entry.paymentStatus.length ? entry.paymentStatus : undefined,
+    etaSeconds: typeof entry.etaSeconds === 'number' ? entry.etaSeconds : undefined,
+    etaLabel: typeof entry.etaLabel === 'string' && entry.etaLabel.length ? entry.etaLabel : undefined,
+    startedAt,
+    minReadyAt,
+    groupId:
+      typeof entry.groupId === 'string'
+        ? entry.groupId
+        : entry.groupId === null
+          ? null
+          : undefined,
+    renderIds: Array.isArray(entry.renderIds)
+      ? entry.renderIds.filter((value): value is string => typeof value === 'string' && value.length > 0)
+      : undefined,
+    heroRenderId: typeof entry.heroRenderId === 'string' ? entry.heroRenderId : null,
+  };
+}
+
+function deserializePendingRenders(value: string | null): LocalRender[] {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value) as Array<Partial<PersistedRender>> | null;
+    if (!Array.isArray(parsed)) return [];
+    const items: LocalRender[] = [];
+    parsed.forEach((entry) => {
+      if (!entry || typeof entry !== 'object') return;
+      if (entry.version !== PERSISTED_RENDER_VERSION) return;
+      const normalized = coercePersistedRender(entry as PersistedRender);
+      if (normalized && normalized.status === 'pending') {
+        items.push(normalized);
+      }
+    });
+    items.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+    return items;
+  } catch {
+    return [];
+  }
+}
+
+function serializePendingRenders(renders: LocalRender[]): string | null {
+  const pending = renders
+    .filter((render) => render.status === 'pending')
+    .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
+    .slice(0, MAX_PERSISTED_RENDERS)
+    .map((render) => ({
+      version: PERSISTED_RENDER_VERSION,
+      localKey: render.localKey,
+      batchId: render.batchId,
+      iterationIndex: render.iterationIndex,
+      iterationCount: render.iterationCount,
+      id: render.id,
+      jobId: render.jobId,
+      engineId: render.engineId,
+      engineLabel: render.engineLabel,
+      createdAt: render.createdAt,
+      aspectRatio: render.aspectRatio,
+      durationSec: render.durationSec,
+      prompt: render.prompt,
+      progress: render.progress,
+      message: render.message,
+      status: render.status,
+      videoUrl: render.videoUrl,
+      readyVideoUrl: render.readyVideoUrl,
+      thumbUrl: render.thumbUrl,
+      priceCents: render.priceCents,
+      currency: render.currency,
+      paymentStatus: render.paymentStatus,
+      etaSeconds: render.etaSeconds,
+      etaLabel: render.etaLabel,
+      startedAt: render.startedAt,
+      minReadyAt: render.minReadyAt,
+      groupId: render.groupId ?? null,
+      renderIds: render.renderIds,
+      heroRenderId: render.heroRenderId ?? null,
+    }));
+  if (!pending.length) return null;
+  try {
+    return JSON.stringify(pending);
   } catch {
     return null;
   }
@@ -538,49 +749,6 @@ export default function Page() {
     const search = searchParams?.toString();
     return search ? `${base}?${search}` : base;
   }, [pathname, searchParams]);
-
-type LocalRender = {
-  localKey: string;
-  batchId: string;
-  iterationIndex: number;
-  iterationCount: number;
-  id: string;
-  jobId?: string;
-  engineId: string;
-  engineLabel: string;
-  createdAt: string;
-  aspectRatio: string;
-  durationSec: number;
-  prompt: string;
-  progress: number; // 0-100
-  message: string;
-  status: 'pending' | 'completed' | 'failed';
-  videoUrl?: string;
-  readyVideoUrl?: string;
-  thumbUrl?: string;
-  priceCents?: number;
-  currency?: string;
-  pricingSnapshot?: PreflightResponse['pricing'];
-  paymentStatus?: string;
-  etaSeconds?: number;
-  etaLabel?: string;
-  startedAt: number;
-  minReadyAt: number;
-  groupId?: string | null;
-  renderIds?: string[];
-  heroRenderId?: string | null;
-};
-
-type LocalRenderGroup = {
-  id: string;
-  items: LocalRender[];
-  iterationCount: number;
-  readyCount: number;
-  totalPriceCents: number | null;
-  currency?: string;
-  groupId?: string | null;
-};
-
   const [renders, setRenders] = useState<LocalRender[]>([]);
   const [selectedPreview, setSelectedPreview] = useState<{
     localKey?: string;
@@ -606,6 +774,8 @@ type LocalRenderGroup = {
   const [viewMode, setViewMode] = useState<'single' | 'quad'>('single');
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
   const rendersRef = useRef<LocalRender[]>([]);
+  const persistedRendersRef = useRef<string | null>(null);
+  const pendingPollRef = useRef<number | null>(null);
   const convertJobToLocalRender = useCallback(
     (job: Job): LocalRender => {
       const baseLocalKey = job.localKey ?? job.jobId;
@@ -702,7 +872,13 @@ type LocalRenderGroup = {
     setIsTopUpLoading(false);
     setMemberTier('Member');
     setTopUpAmount(500);
-  }, []);
+    writeStorage(STORAGE_KEYS.pendingRenders, null);
+    persistedRendersRef.current = null;
+    if (typeof window !== 'undefined' && pendingPollRef.current !== null) {
+      window.clearInterval(pendingPollRef.current);
+      pendingPollRef.current = null;
+    }
+  }, [writeStorage]);
 
   useEffect(() => {
     let cancelled = false;
@@ -752,6 +928,7 @@ type LocalRenderGroup = {
     setRenders([]);
     setBatchHeroes({});
     setActiveBatchId(null);
+    setActiveGroupId(null);
 
     try {
       const promptValue = readStorage(STORAGE_KEYS.prompt);
@@ -767,16 +944,126 @@ type LocalRenderGroup = {
       if (storedTier === 'Member' || storedTier === 'Plus' || storedTier === 'Pro') {
         setMemberTier(storedTier);
       }
+
+      const pendingValue = readStorage(STORAGE_KEYS.pendingRenders);
+      const pendingRenders = deserializePendingRenders(pendingValue);
+      if (pendingRenders.length) {
+        setRenders(pendingRenders);
+        setBatchHeroes(() => {
+          const next: Record<string, string> = {};
+          pendingRenders.forEach((render) => {
+            if (render.batchId && render.localKey && !next[render.batchId]) {
+              next[render.batchId] = render.localKey;
+            }
+          });
+          return next;
+        });
+        const first = pendingRenders[0];
+        const batchId = first.batchId ?? first.groupId ?? first.localKey ?? null;
+        setActiveBatchId(batchId);
+        setActiveGroupId(first.groupId ?? batchId);
+      }
+      persistedRendersRef.current = serializePendingRenders(pendingRenders);
     } catch {
       setRenders([]);
       setBatchHeroes({});
       setActiveBatchId(null);
+      setActiveGroupId(null);
     }
   }, [readStorage, setMemberTier, storageScope]);
 
   useEffect(() => {
     rendersRef.current = renders;
   }, [renders]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (hydratedScopeRef.current !== storageScope) return;
+    const serialized = serializePendingRenders(renders);
+    if (serialized === persistedRendersRef.current) return;
+    persistedRendersRef.current = serialized;
+    writeStorage(STORAGE_KEYS.pendingRenders, serialized);
+  }, [renders, storageScope, writeStorage]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const pendingJobs = renders.filter(
+      (render) => render.status === 'pending' && typeof render.jobId === 'string' && render.jobId.length > 0
+    );
+    if (!pendingJobs.length) {
+      if (pendingPollRef.current !== null) {
+        window.clearInterval(pendingPollRef.current);
+        pendingPollRef.current = null;
+      }
+      return;
+    }
+    let cancelled = false;
+
+    const poll = async () => {
+      await Promise.all(
+        pendingJobs.map(async (render) => {
+          if (!render.jobId) return;
+          try {
+            const status = await getJobStatus(render.jobId);
+            if (cancelled) return;
+            setRenders((prev) =>
+              prev.map((item) =>
+                item.jobId === render.jobId
+                  ? {
+                      ...item,
+                      status: status.status ?? item.status,
+                      progress: status.progress ?? item.progress,
+                      readyVideoUrl: status.videoUrl ?? item.readyVideoUrl,
+                      videoUrl: status.videoUrl ?? item.videoUrl ?? item.readyVideoUrl,
+                      thumbUrl: status.thumbUrl ?? item.thumbUrl,
+                      priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? item.priceCents,
+                      currency: status.currency ?? status.pricing?.currency ?? item.currency,
+                      pricingSnapshot: status.pricing ?? item.pricingSnapshot,
+                      paymentStatus: status.paymentStatus ?? item.paymentStatus,
+                      message: status.message ?? item.message,
+                    }
+                  : item
+              )
+            );
+            setSelectedPreview((cur) =>
+              cur && (cur.id === render.jobId || cur.localKey === render.localKey)
+                ? {
+                    ...cur,
+                    id: render.jobId,
+                    localKey: render.localKey,
+                    status: status.status ?? cur.status,
+                    progress: status.progress ?? cur.progress,
+                    videoUrl: status.videoUrl ?? cur.videoUrl,
+                    thumbUrl: status.thumbUrl ?? cur.thumbUrl,
+                    priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? cur.priceCents,
+                    currency: status.currency ?? status.pricing?.currency ?? cur.currency,
+                    message: status.message ?? cur.message,
+                  }
+                : cur
+            );
+          } catch {
+            // ignore transient errors and retry on next tick
+          }
+        })
+      );
+    };
+
+    void poll();
+    if (pendingPollRef.current !== null) {
+      window.clearInterval(pendingPollRef.current);
+    }
+    pendingPollRef.current = window.setInterval(() => {
+      void poll();
+    }, 4000);
+
+    return () => {
+      cancelled = true;
+      if (pendingPollRef.current !== null) {
+        window.clearInterval(pendingPollRef.current);
+        pendingPollRef.current = null;
+      }
+    };
+  }, [renders, setSelectedPreview]);
 
   useEffect(() => {
     if (!recentJobs.length) return;
