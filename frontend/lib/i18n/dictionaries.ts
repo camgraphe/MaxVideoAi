@@ -30,6 +30,11 @@ type Dictionary = {
       caption: string;
       availabilityNotice: string;
     };
+    heroScreenshot: {
+      title: string;
+      body: string;
+      alt: string;
+    };
     proofTabs: Array<{ id: string; label: string; heading: string; body: string }>;
     whyCards: Array<{ title: string; body: string }>;
     ways: Array<{ title: string; description: string; bullets: string[] }>;
@@ -306,60 +311,73 @@ const en: Dictionary = {
       caption: 'Independent hub. Trademarks belong to their owners.',
       availabilityNotice: 'Availability may vary by provider; pricing chips refresh automatically.',
     },
+    heroScreenshot: {
+      title: 'Every control in one view.',
+      body: 'Composer, live pricing, gallery rail, and job feed stay together so you can tweak prompts, review outputs, and monitor the queue without leaving the screen.',
+      alt: 'MaxVideo AI workspace showing the composer, live price chip, and gallery preview in a single dashboard.',
+    },
     proofTabs: [
       {
-        id: 'brief',
-        label: 'Brief',
-        heading: 'Describe goal & tone → Prompt Director assists.',
-        body: 'Capture the shot once. Prompt Director applies tone, brand guardrails, and suggests the right engine based on budget.',
+        id: 'workspace',
+        label: 'Workspace',
+        heading: 'Start in the same workspace we use every day.',
+        body: 'Pick an engine, set duration and resolution, and the composer reveals the fields that engine expects. No waitlist, no mockups.',
       },
       {
         id: 'price',
-        label: 'Price Before',
-        heading: 'Choose engine / duration / resolution → see cost chip.',
-        body: 'Preview wallet impact before running the job. Swap engines without losing your brief. Charged only if the render succeeds.',
+        label: 'Price',
+        heading: 'Wallet pricing updates before you press Generate.',
+        body: 'Adjust settings and see the live “This render” chip before you commit. Funds only move when the render succeeds.',
       },
       {
-        id: 'outputs',
-        label: 'Outputs',
-        heading: 'Approve best take → export formats.',
-        body: 'Lock the take, apply brand kits, and export clips, captions, VO, or project files for post teams.',
+        id: 'tracking',
+        label: 'Tracking',
+        heading: 'Job feed tracks every output automatically.',
+        body: 'Review renders, compare takes, and grab downloads from the gallery rail as soon as they finish.',
       },
     ],
     whyCards: [
       {
-        title: 'Pro results without the model mess.',
-        body: 'Stay focused on the shot. We handle routing, updates, and guardrails so the right engine runs every time.',
+        title: 'Live product, not a roadmap.',
+        body: 'Log in and use the same workspace we run internally — pricing, composer, wallet, and job history are active today.',
       },
       {
-        title: 'Price before you generate.',
-        body: 'Every render shows an upfront cost chip. You only pay when the job succeeds.',
+        title: 'Wallet-first billing.',
+        body: 'Top up once, monitor spend from the header, and refund automatically if a render fails.',
       },
       {
-        title: 'Always the latest engines (no vendor lock-in).',
-        body: 'Run Sora, Veo, Luma, Pika, MiniMax, and rotating betas without switching platforms.',
+        title: 'All your engines in one place.',
+        body: 'Switch between Sora, Veo, Luma, Pika, MiniMax, Kling, and Hunyuan without juggling dashboards or API keys.',
       },
     ],
     ways: [
       {
-        title: 'Express — Publish in minutes.',
-        description: 'Templates cover shorts, motion captions, and auto VO. Export every social ratio in one run.',
-        bullets: ['Template prompts ready to remix', 'Caption + VO mixdown optional', 'Auto 16:9, 1:1, 9:16 crops'],
+        title: 'Generate',
+        description: 'Prompt with references, audio toggles, and model-specific controls — all with live pricing.',
+        bullets: [
+          'Live price chip updates as you tweak duration or resolution',
+          'Upload image references or reuse assets from your library',
+          'Queue multiple iterations and monitor progress in real time',
+        ],
       },
       {
-        title: 'Workflows — Plug into your process.',
-        description: 'Full creative control with brand kits, approvals, and delivery hand-offs for Drive, Dropbox, OneDrive, or S3.',
-        bullets: ['Brand kits + Saved Styles', 'Approvals, comments, and version lock', 'Optional FCPXML / AE JSON hand-off'],
+        title: 'Review & deliver',
+        description: 'Lock the best take, grab downloads, and share job links without leaving the workspace.',
+        bullets: [
+          'Gallery rail lines up every render for quick comparisons',
+          'Job feed keeps notes, iterations, and status together',
+          'Download renders, thumbnails, and metadata instantly',
+        ],
       },
     ],
     waysSection: {
-      title: 'Two ways to use it.',
-      subtitle: 'Switch engines fast. Not platforms.',
+      title: 'Everything lives in the workspace.',
+      subtitle: 'Composer, wallet, job history, and gallery stay side-by-side so your team stays aligned.',
     },
     gallery: {
       title: 'Gallery',
-      subtitle: 'Real client-ready outputs — hover to preview, tap to expand.',
-      caption: 'Model routed for this shot.',
+      subtitle: 'Captured directly from the live workspace — hover to preview, tap to expand.',
+      caption: 'Engine routed for this render.',
       hoverLabel: 'Hover loop preview',
       items: [
         {
@@ -407,21 +425,21 @@ const en: Dictionary = {
       ],
     },
     pricing: {
-      badge: 'Pricing callout',
-      title: 'Price before you generate.',
-      body: 'Pay only for what you run. Start with Starter Credits ($5). No subscription. No lock-in.',
-      link: 'See pricing',
+      badge: 'Pricing',
+      title: 'Starter Credits unlock the full workspace.',
+      body: 'Load $5 and run your first renders immediately. Add $5 / $10 / $25 whenever you need more wallet balance.',
+      link: 'Go to pricing',
     },
     trust: {
-      badge: 'Trust & safety',
+      badge: 'Operations',
       points: [
-        'Independent hub. No vendor lock-in.',
-        'Brand-safe filters plus human escalation for sensitive prompts.',
-        'Refunds on failed renders. Itemised receipts for every job.',
-        'Works with leading engines; trademarks belong to their owners.',
+        'Independent hub — plug in existing provider accounts or use ours.',
+        'Automatic refunds on failed renders with itemised receipts.',
+        'Daily status emails keep teams on top of spend and queue health.',
+        'Trademarks and logos belong to their owners; we route responsibly.',
       ],
     },
-    priceChipSuffix: 'Price before you generate.',
+    priceChipSuffix: 'No subscription. Pay-as-you-go.',
   },
   pricing: {
     hero: {

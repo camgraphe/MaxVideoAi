@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import Script from 'next/script';
 import { ProofTabs } from '@/components/marketing/ProofTabs';
@@ -137,6 +138,7 @@ export default async function HomePage() {
   const badges = home.badges;
   const hero = home.hero;
   const worksWith = home.worksWith;
+  const heroScreenshot = home.heroScreenshot;
   const whyCards = home.whyCards;
   const ways = home.ways;
   const pricing = home.pricing;
@@ -220,6 +222,27 @@ export default async function HomePage() {
             ))}
           </div>
           <p className="text-xs text-text-muted">{worksWith.caption}</p>
+        </div>
+      </section>
+
+      <section className="border-t border-hairline bg-white px-4 py-24 text-left sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col-reverse items-center gap-12 text-center lg:flex-row lg:items-center lg:text-left">
+          <div className="w-full max-w-2xl space-y-5 lg:w-[40%]">
+            <h2 className="text-3xl font-semibold text-text-primary sm:text-4xl">{heroScreenshot.title}</h2>
+            <p className="text-sm text-text-secondary sm:text-base">{heroScreenshot.body}</p>
+          </div>
+          <div className="relative w-full max-w-4xl">
+            <div className="relative mx-auto aspect-[3/2] w-full overflow-hidden rounded-[48px] border border-hairline bg-white shadow-[0_60px_160px_-60px_rgba(28,37,65,0.6)]">
+              <Image
+                src="/assets/marketing/monitor-mockup-app.png"
+                alt={heroScreenshot.alt}
+                fill
+                sizes="(min-width: 1280px) 960px, (min-width: 1024px) 720px, 100vw"
+                priority
+                className="object-contain object-center lg:scale-[1.08]"
+              />
+            </div>
+          </div>
         </div>
       </section>
 

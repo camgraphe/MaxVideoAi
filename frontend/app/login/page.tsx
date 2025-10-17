@@ -7,7 +7,6 @@ import { syncSupabaseCookies, clearSupabaseCookies } from '@/lib/supabase-cookie
 
 export const dynamic = 'force-dynamic';
 
-type Provider = 'google' | 'apple';
 type AuthMode = 'signin' | 'signup' | 'reset';
 
 export default function LoginPage() {
@@ -85,18 +84,6 @@ export default function LoginPage() {
     setStatus('Password reset email sent.');
   }
 
-  async function signInProvider(provider: Provider) {
-    setStatus(`Redirecting to ${provider}…`);
-    setError(null);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: siteUrl ? `${siteUrl}${nextPath && nextPath !== '/' ? `?next=${encodeURIComponent(nextPath)}` : ''}` : undefined,
-      },
-    });
-    if (error) setError(error.message);
-  }
-
   useEffect(() => {
     let cancelled = false;
     supabase.auth.getSession().then(({ data }) => {
@@ -119,34 +106,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-5 rounded-card border border-border bg-white p-6 shadow-card">
         <header className="space-y-1">
           <h1 className="text-lg font-semibold text-text-primary">Access your workspace</h1>
-          <p className="text-sm text-text-secondary">Sign in with email + password, or use Google / Apple.</p>
+          <p className="text-sm text-text-secondary">Sign in with email and password. Social login returns soon.</p>
         </header>
-
-        <div className="space-y-2">
-          <button
-            type="button"
-            onClick={() => signInProvider('google')}
-            className="flex w-full items-center justify-center gap-2 rounded-input border border-border bg-white px-3 py-2 text-sm font-medium transition hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <span aria-hidden>🌐</span>
-            <span>Continue with Google</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => signInProvider('apple')}
-            className="flex w-full items-center justify-center gap-2 rounded-input border border-border bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-black/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <span aria-hidden></span>
-            <span>Continue with Apple</span>
-          </button>
-        </div>
-
-        <div className="relative text-xs uppercase tracking-micro text-text-muted">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-border" />
-          </div>
-          <span className="relative mx-auto block w-fit bg-white px-3">or with email</span>
-        </div>
 
         <form onSubmit={mode === 'signin' ? signInWithPassword : signUpWithPassword} className="space-y-3">
           <label className="block text-sm">
