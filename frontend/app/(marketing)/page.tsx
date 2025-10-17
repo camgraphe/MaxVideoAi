@@ -75,17 +75,6 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     fallbackPriceLabel: 'from $0.20',
     alt: 'Pika 2.2 — example clip',
   },
-  {
-    id: 'minimax-video-01',
-    engineId: 'minimax_video_01',
-    label: 'MiniMax Video 01',
-    videoSrc: '/hero/minimax-video01.mp4',
-    posterSrc: '/hero/minimax-video01.jpg',
-    durationSec: 6,
-    resolution: '720p',
-    fallbackPriceLabel: 'from $0.50',
-    alt: 'MiniMax Video 01 — example clip',
-  },
 ] as const;
 
 const WORKS_WITH_BRANDS = ['OpenAI', 'Google Veo', 'Luma', 'Pika', 'MiniMax', 'Hunyuan'] as const;

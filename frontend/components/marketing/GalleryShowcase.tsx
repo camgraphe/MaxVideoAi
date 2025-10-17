@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import type { MemberTier as PricingMemberTier } from '@maxvideoai/pricing';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -37,16 +38,35 @@ export function GalleryShowcase() {
     subtitle: string;
     caption: string;
     hoverLabel: string;
-      items: Array<{
-        id: string;
-        label: string;
-        description: string;
-        alt: string;
-        meta: { slug: string; pricing: PricingScenario };
-      }>;
+    items: Array<{
+      id: string;
+      label: string;
+      description: string;
+      alt: string;
+      meta: { slug: string; pricing: PricingScenario };
+      media?: {
+        videoSrc: string;
+        posterSrc?: string;
+      };
+    }>;
   };
 
   const kernel = useMemo(() => getPricingKernel(), []);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setPrefersReducedMotion(mediaQuery.matches);
+    update();
+    mediaQuery.addEventListener('change', update);
+    return () => mediaQuery.removeEventListener('change', update);
+  }, []);
 
   return (
     <section className="mx-auto mt-20 max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -82,7 +102,34 @@ export function GalleryShowcase() {
               className="group relative overflow-hidden rounded-card border border-border bg-white shadow-card"
               aria-labelledby={`${item.id}-label`}
             >
-              <div className={`aspect-video w-full bg-gradient-to-br ${GRADIENTS[index % GRADIENTS.length]}`} aria-hidden />
+              <div className="relative aspect-video w-full overflow-hidden bg-black">
+                {item.media?.videoSrc ? (
+                  prefersReducedMotion && item.media.posterSrc ? (
+                    <Image
+                      src={item.media.posterSrc}
+                      alt={item.alt}
+                      fill
+                      className="object-cover"
+                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                    />
+                  ) : (
+                    <video
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      preload="metadata"
+                      poster={item.media?.posterSrc}
+                      aria-label={item.alt}
+                    >
+                      <source src={item.media.videoSrc} type="video/mp4" />
+                    </video>
+                  )
+                ) : (
+                  <div className={`h-full w-full bg-gradient-to-br ${GRADIENTS[index % GRADIENTS.length]}`} aria-hidden />
+                )}
+              </div>
               <div className="flex flex-col gap-1 border-t border-hairline p-4">
                 <span id={`${item.id}-label`} className="text-sm font-semibold text-text-primary">
                   {item.label}

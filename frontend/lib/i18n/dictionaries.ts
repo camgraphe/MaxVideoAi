@@ -48,6 +48,10 @@ type Dictionary = {
           slug: string;
           pricing: { engineId: string; durationSec: number; resolution: string; memberTier?: string };
         };
+        media?: {
+          videoSrc: string;
+          posterSrc?: string;
+        };
       }>;
     };
     pricing: {
@@ -367,6 +371,10 @@ const en: Dictionary = {
             slug: 'veo-3',
             pricing: { engineId: 'veo3', durationSec: 12, resolution: '1080p', memberTier: 'member' },
           },
+          media: {
+            videoSrc: '/assets/gallery/robot-look.mp4',
+            posterSrc: '/hero/veo3.jpg',
+          },
         },
         {
           id: 'luma-ray2',
@@ -377,6 +385,10 @@ const en: Dictionary = {
             slug: 'luma-ray-2-flash',
             pricing: { engineId: 'lumaRay2_flash', durationSec: 8, resolution: '720p', memberTier: 'member' },
           },
+          media: {
+            videoSrc: '/assets/gallery/robot-eyes.mp4',
+            posterSrc: '/hero/luma-ray2-flash.jpg',
+          },
         },
         {
           id: 'minimax-concept',
@@ -386,6 +398,10 @@ const en: Dictionary = {
           meta: {
             slug: 'minimax-video-1',
             pricing: { engineId: 'minimax_video_01', durationSec: 6, resolution: '720p', memberTier: 'member' },
+          },
+          media: {
+            videoSrc: '/assets/gallery/aerial-road.mp4',
+            posterSrc: '/hero/minimax-video01.jpg',
           },
         },
       ],
