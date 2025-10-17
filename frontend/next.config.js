@@ -1,3 +1,5 @@
+const isPreviewDeployment = process.env.VERCEL_ENV === 'preview';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -14,6 +16,23 @@ const nextConfig = {
     outputFileTracingExcludes: {
       '*': ['.next/cache/**/*', 'tsconfig.tsbuildinfo'],
     },
+  },
+  async headers() {
+    if (!isPreviewDeployment) {
+      return [];
+    }
+
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow',
+          },
+        ],
+      },
+    ];
   },
 };
 
