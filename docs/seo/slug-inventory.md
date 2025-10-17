@@ -1,0 +1,66 @@
+# Slug Inventory & Intent Map
+
+This table covers current public routes (and near-term additions), the recommended canonical slug, two alternative options, and the primary search intent each URL should serve.
+
+| Route actuelle | Slug proposé (primaire) | Alternative 1 | Alternative 2 | Intention de recherche |
+| --- | --- | --- | --- | --- |
+| / | / | /home | /ai-video-platform | Brand + product overview for AI video platform. |
+| /models | /models | /ai-video-models | /video-model-catalog | Browse catalog of available AI video generation models. |
+| /models/openai-sora-2 | /models/sora-2 | /models/openai-sora-2 | /models/sora-text-to-video | Learn about OpenAI Sora 2 capabilities and pricing. |
+| /models/openai-sora-2-pro | /models/sora-2-pro | /models/sora-pro | /models/sora-2-plus | Comparison of Sora 2 pro tier pricing and specs. |
+| /models/google-veo-3 | /models/veo-3 | /models/google-veo-3 | /models/veo-text-to-video | Google Veo 3 feature and pricing breakdown. |
+| /models/google-veo-3-fast | /models/veo-3-fast | /models/veo-3-stream | /models/veo-fast | Fast Veo 3 render option for quick generation. |
+| /models/kling-25-turbo-pro | /models/kling-2-5-turbo-pro | /models/kling-2-5 | /models/kling-video-model | Kling 2.5 turbo pro model specs. |
+| /models/luma-dream-machine | /models/luma-dream-machine | /models/luma-dream | /models/dream-machine | Luma Dream Machine overview. |
+| /models/luma-ray-2 | /models/luma-ray-2 | /models/ray-2 | /models/luma-ray | Luma Ray 2 product info. |
+| /models/luma-ray-2-flash | /models/luma-ray-2-flash | /models/ray-2-flash | /models/luma-flash | Flash variation of Luma Ray 2 with performance details. |
+| /models/pika-2-2 | /models/pika-2-2 | /models/pika-22 | /models/pika-video | Pika 2.2 roadmap and pricing. |
+| /models/minimax-video-01 | /models/minimax-video-1 | /models/minimax-video | /models/video-1 | MiniMax Video 1 capabilities. |
+| /models/minimax-hailuo-02-pro | /models/hailuo-2-pro | /models/minimax-hailuo-2 | /models/hailuo-video | Hailuo 2 Pro specs for MiniMax pipeline. |
+| /models/hunyuan-video | /models/hunyuan-video | /models/hunyuan | /models/tencent-hunyuan | Hunyuan video model info. |
+| /examples | /examples | /ai-video-examples | /video-examples | Gallery of AI video outputs and use cases. |
+| /workflows | /workflows | /video-workflows | /ai-video-workflows | Workflow templates for AI video generation. |
+| (planned) /workflows/prompt-director | /workflows/prompt-director | /workflows/prompt-engine | /workflows/prompt-production | Guide to using Prompt Director workflow. |
+| (planned) /workflows/price-before-you-generate | /workflows/price-before-you-generate | /workflows/pricing-preview | /workflows/pre-price | Workflow for estimating video pricing before runs. |
+| /pricing | /pricing | /ai-video-pricing | /pricing-plans | Pricing overview and plan comparison. |
+| /calculator | /pricing-calculator | /ai-video-pricing-calculator | /video-generation-pricing | Interactive calculator for AI video run costs. |
+| /docs | /docs | /documentation | /help-center | Documentation index for MaxVideoAI. |
+| /docs/get-started | /docs/get-started | /docs/start | /docs/onboarding | Onboarding instructions for new users (redirect legacy `/docs/getting-started`). |
+| /docs/brand-safety | /docs/brand-safety | /docs/brand-policy | /docs/creative-safety | Brand safety guidelines for generated outputs. |
+| (planned) /docs/wallet-and-credits | /docs/wallet-credits | /docs/credits-wallet | /docs/billing-wallet | How wallet and credits work for billing. |
+| (planned) /docs/engines | /docs/engines | /docs/model-engines | /docs/video-engines | Overview of supported engines and capabilities. |
+| (planned) /docs/pricing-policy | /docs/pricing-policy | /docs/pricing-rules | /docs/usage-pricing | Policies around pricing and usage limits. |
+| (planned) /docs/faqs | /docs/faqs | /docs/faq | /docs/common-questions | Frequently asked questions. |
+| /blog | /blog | /ai-video-blog | /video-generation-blog | Insights and updates about AI video. |
+| /blog/express-case-study | /blog/express-case-study | /blog/express-ai-video-case-study | /blog/express-retail-video | Case study on Express using AI video. |
+| /blog/veo-3-updates | /blog/veo-3-updates | /blog/veo-3-release | /blog/google-veo-updates | Announcement of Veo v3 launch and features (redirect legacy `/blog/veo-v2-arrives`). |
+| (planned) /blog/topics/<topic> | /blog/topics/<topic> | /blog/category/<topic> | /blog/tags/<topic> | Topic taxonomy landing pages for blog content. |
+| /about | /about | /company | /about-maxvideo | Company background and team. |
+| /contact | /contact | /contact-us | /get-in-touch | Contact options for sales and support. |
+| /legal | /legal | /legal-center | /legal-hub | Legal hub linking to policies. |
+| /privacy | /legal/privacy | /legal/privacy-policy | /legal/privacy-notice | Privacy policy details. |
+| /terms | /legal/terms | /legal/terms-of-service | /legal/terms-conditions | Terms of service. |
+| /changelog | /changelog | /product-changelog | /updates | Product update log. |
+| /status | /status | /service-status | /system-status | Service status overview. |
+| (planned) /partners | /partners | /alliances | /partner-program | Information for potential partners. |
+| (planned) /affiliates | /affiliates | /affiliate-program | /affiliates-program | Affiliate program details. |
+
+## Documentation Roadmap
+
+- `/docs/get-started` (rename from `getting-started`) — high-level onboarding, connect wallet, first render.
+- `/docs/brand-safety` — maintain existing content, ensure outbound links reference policy.
+- `/docs/wallet-credits` — explain funding, credit expiry, multi-team billing.
+- `/docs/engines` — matrix of engines, capabilities, guardrails.
+- `/docs/pricing-policy` — rate changes, surcharge rules, overages, currency handling.
+- `/docs/faqs` — curated top 20 customer questions, link to contact.
+
+Each new doc should include:
+1. `<link rel="canonical">` pointing to the slug above.
+2. Updated entry in `slug-map.yaml` and main docs navigation.
+3. Addition to the sitemap via the postbuild automation.
+
+## Reserved Workflow Slugs
+
+- `/workflows/prompt-director` — focus on prompt orchestration and template sharing.
+- `/workflows/price-before-you-generate` — highlight credit estimation and forecasting.
+- Additional workflows must follow the same naming pattern; reserve future slugs in `slug-map.yaml` before shipping.

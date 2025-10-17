@@ -56,7 +56,7 @@ export default function ModelDetailPage({ params }: PageParams) {
 
   const availabilityLabel = dictionary.models.availabilityLabels[rosterEntry.availability] ?? rosterEntry.availability;
   const brand = PARTNER_BRAND_MAP.get(rosterEntry.brandId);
-  const showSoraSeo = rosterEntry.modelSlug === 'openai-sora-2';
+  const showSoraSeo = rosterEntry.modelSlug === 'sora-2';
 
   const soraFaqSchema = showSoraSeo
     ? {

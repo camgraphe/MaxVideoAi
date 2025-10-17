@@ -61,11 +61,11 @@ export default async function DocsIndexPage() {
                       <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-accent" />
                       <span>
                         {item.before}
-                        <Link href="/terms" className="text-accent hover:text-accentSoft">
+                        <Link href="/legal/terms" className="text-accent hover:text-accentSoft">
                           {item.terms}
                         </Link>
                         {item.and}
-                        <Link href="/privacy" className="text-accent hover:text-accentSoft">
+                        <Link href="/legal/privacy" className="text-accent hover:text-accentSoft">
                           {item.privacy}
                         </Link>
                         {item.after}

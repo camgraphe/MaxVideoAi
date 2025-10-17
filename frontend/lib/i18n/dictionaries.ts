@@ -275,8 +275,8 @@ const en: Dictionary = {
   },
   footer: {
     links: [
-      { label: 'Terms', href: '/terms' },
-      { label: 'Privacy', href: '/privacy' },
+      { label: 'Terms', href: '/legal/terms' },
+      { label: 'Privacy', href: '/legal/privacy' },
       { label: 'Docs', href: '/docs' },
       { label: 'Support', href: '/contact' },
     ],
@@ -364,7 +364,7 @@ const en: Dictionary = {
           description: 'Narrative lighting with audio on for the campaign reveal.',
           alt: 'Google Veo 3 cinematic teaser.',
           meta: {
-            slug: 'google-veo-3',
+            slug: 'veo-3',
             pricing: { engineId: 'veo3', durationSec: 12, resolution: '1080p', memberTier: 'member' },
           },
         },
@@ -384,7 +384,7 @@ const en: Dictionary = {
           description: 'Camera-tag animation for director boards before the hero pass.',
           alt: 'MiniMax Video 01 concept animation.',
           meta: {
-            slug: 'minimax-video-01',
+            slug: 'minimax-video-1',
             pricing: { engineId: 'minimax_video_01', durationSec: 6, resolution: '720p', memberTier: 'member' },
           },
         },
@@ -572,31 +572,31 @@ const en: Dictionary = {
       paused: 'Paused',
     },
     meta: {
-      'openai-sora-2': {
+      'sora-2': {
         displayName: 'OpenAI Sora 2',
         description: 'Base Sora endpoints for text-to-video, remix, and audio-on renders via Fal routing.',
         priceBefore: '$0.10/s via Fal, with a badge when you bring your own OpenAI key.',
         versionLabel: 'v2',
       },
-      'openai-sora-2-pro': {
+      'sora-2-pro': {
         displayName: 'OpenAI Sora 2 Pro',
         description: 'Unlocks 1080p output and higher throughput while keeping native audio.',
         priceBefore: '$0.30/s (720p) and $0.50/s (1080p) surfaced before you queue.',
         versionLabel: 'v2 Pro',
       },
-      'google-veo-3': {
+      'veo-3': {
         displayName: 'Google Veo 3',
         description: 'Cinematic realism with lip-sync and Dolby Vision previews.',
         priceBefore: '$0.50/s audio off or $0.75/s audio on highlighted ahead of launch.',
         versionLabel: 'Veo 3',
       },
-      'google-veo-3-fast': {
+      'veo-3-fast': {
         displayName: 'Google Veo 3 Fast',
         description: 'Faster queue for previz while keeping the Veo look and audio toggle.',
         priceBefore: '$0.25/s audio off or $0.40/s audio on in the chip.',
         versionLabel: 'Veo 3 Fast',
       },
-      'kling-25-turbo-pro': {
+      'kling-2-5-turbo-pro': {
         displayName: 'Kling 2.5 Turbo Pro',
         description: 'Stylised animation drafts with improved camera control.',
         priceBefore: 'Fal turbo queue rate surfaced before you spend budget.',
@@ -626,13 +626,13 @@ const en: Dictionary = {
         priceBefore: 'Chip compares 720p vs 1080p cost before you remix.',
         versionLabel: '2.2',
       },
-      'minimax-video-01': {
+      'minimax-video-1': {
         displayName: 'MiniMax Video 01',
         description: 'Camera-tag driven I2V/T2V for concept boards and Live2D-style motion.',
         priceBefore: '$0.50/video surfaced before you lock the prompt.',
         versionLabel: 'Video 01',
       },
-      'minimax-hailuo-02-pro': {
+      'hailuo-2-pro': {
         displayName: 'MiniMax Hailuo 02 Pro',
         description: '1080p image-to-video with higher fidelity output for hero shots.',
         priceBefore: '$0.08/s (6 s = $0.48) shown ahead of launch.',
@@ -660,7 +660,7 @@ const en: Dictionary = {
         description: 'Cinematic realism with native audio switched on.',
         alt: 'Google Veo 3 cinematic teaser frame.',
         meta: {
-          slug: 'google-veo-3',
+          slug: 'veo-3',
           pricing: { engineId: 'veo3', durationSec: 12, resolution: '1080p', memberTier: 'member' },
         },
       },
@@ -680,7 +680,7 @@ const en: Dictionary = {
         description: 'Stylised beta animation for motion approvals.',
         alt: 'Kling 2.5 Turbo Pro storyboard preview.',
         meta: {
-          slug: 'kling-25-turbo-pro',
+          slug: 'kling-2-5-turbo-pro',
           pricing: { engineId: 'kling25_turbo_pro', durationSec: 10, resolution: '1080p', memberTier: 'member' },
         },
       },
@@ -690,7 +690,7 @@ const en: Dictionary = {
         description: 'Camera-tag I2V concept mix before hero render.',
         alt: 'MiniMax Video 01 concept frames.',
         meta: {
-          slug: 'minimax-video-01',
+          slug: 'minimax-video-1',
           pricing: { engineId: 'minimax_video_01', durationSec: 6, resolution: '720p', memberTier: 'member' },
         },
       },
@@ -821,7 +821,7 @@ const en: Dictionary = {
     terms: {
       title: 'Terms of service',
       intro: 'This overview will be replaced by the final legal document. Contact legal@maxvideo.ai for questions.',
-    sections: [
+      sections: [
         { heading: '1. Overview', body: 'These Terms govern your use of MaxVideo AI. By accessing the service you agree to the obligations below.' },
         { heading: '2. Accounts', body: 'You are responsible for maintaining account security and ensuring teammates comply with these Terms.' },
         { heading: '3. Usage', body: 'Use MaxVideo AI in compliance with all applicable laws, respect licensing limits, and avoid prohibited content.' },

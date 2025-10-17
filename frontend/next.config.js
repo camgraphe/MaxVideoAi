@@ -17,6 +17,85 @@ const nextConfig = {
       '*': ['.next/cache/**/*', 'tsconfig.tsbuildinfo'],
     },
   },
+  async redirects() {
+    return [
+      {
+        source: '/:path*/',
+        destination: '/:path*',
+        permanent: true,
+      },
+      {
+        source: '/calculator',
+        destination: '/pricing-calculator',
+        permanent: true,
+      },
+      {
+        source: '/docs/getting-started',
+        destination: '/docs/get-started',
+        permanent: true,
+      },
+      {
+        source: '/models/openai-sora-2',
+        destination: '/models/sora-2',
+        permanent: true,
+      },
+      {
+        source: '/models/openai-sora-2-pro',
+        destination: '/models/sora-2-pro',
+        permanent: true,
+      },
+      {
+        source: '/models/google-veo-3',
+        destination: '/models/veo-3',
+        permanent: true,
+      },
+      {
+        source: '/models/google-veo-3-fast',
+        destination: '/models/veo-3-fast',
+        permanent: true,
+      },
+      {
+        source: '/models/kling-25-turbo-pro',
+        destination: '/models/kling-2-5-turbo-pro',
+        permanent: true,
+      },
+      {
+        source: '/models/minimax-video-01',
+        destination: '/models/minimax-video-1',
+        permanent: true,
+      },
+      {
+        source: '/models/minimax-hailuo-02-pro',
+        destination: '/models/hailuo-2-pro',
+        permanent: true,
+      },
+      {
+        source: '/blog/veo-v2-arrives',
+        destination: '/blog/veo-3-updates',
+        permanent: true,
+      },
+      {
+        source: '/privacy',
+        destination: '/legal/privacy',
+        permanent: true,
+      },
+      {
+        source: '/terms',
+        destination: '/legal/terms',
+        permanent: true,
+      },
+      {
+        source: '/legal/privacy/',
+        destination: '/legal/privacy',
+        permanent: true,
+      },
+      {
+        source: '/legal/terms/',
+        destination: '/legal/terms',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     if (!isPreviewDeployment) {
       return [];

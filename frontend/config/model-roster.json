@@ -3,7 +3,7 @@
     "engineId": "sora-2",
     "marketingName": "Sora 2",
     "brandId": "openai",
-    "modelSlug": "openai-sora-2",
+    "modelSlug": "sora-2",
     "family": "sora",
     "versionLabel": "2",
     "availability": "available",
@@ -14,7 +14,7 @@
     "engineId": "sora-2-pro",
     "marketingName": "Sora 2 Pro",
     "brandId": "openai",
-    "modelSlug": "openai-sora-2-pro",
+    "modelSlug": "sora-2-pro",
     "family": "sora",
     "versionLabel": "2 Pro",
     "availability": "available",
@@ -25,7 +25,7 @@
     "engineId": "veo3",
     "marketingName": "Google Veo 3",
     "brandId": "google-veo",
-    "modelSlug": "google-veo-3",
+    "modelSlug": "veo-3",
     "versionLabel": "3.0",
     "availability": "available",
     "logoPolicy": "textOnly"
@@ -34,7 +34,7 @@
     "engineId": "veo3fast",
     "marketingName": "Google Veo 3 Fast",
     "brandId": "google-veo",
-    "modelSlug": "google-veo-3-fast",
+    "modelSlug": "veo-3-fast",
     "versionLabel": "3.0 Fast",
     "availability": "available",
     "logoPolicy": "textOnly"
@@ -43,7 +43,7 @@
     "engineId": "kling25_turbo_pro",
     "marketingName": "Kling 2.5 Turbo Pro",
     "brandId": "kling",
-    "modelSlug": "kling-25-turbo-pro",
+    "modelSlug": "kling-2-5-turbo-pro",
     "versionLabel": "2.5 Turbo Pro",
     "availability": "available",
     "logoPolicy": "textOnly"
@@ -88,7 +88,7 @@
     "engineId": "minimax_video_01",
     "marketingName": "MiniMax Video 01",
     "brandId": "minimax",
-    "modelSlug": "minimax-video-01",
+    "modelSlug": "minimax-video-1",
     "versionLabel": "Video 01",
     "availability": "available",
     "logoPolicy": "textOnly"
@@ -97,7 +97,7 @@
     "engineId": "minimax_hailuo_02_pro",
     "marketingName": "MiniMax Hailuo 02 Pro",
     "brandId": "minimax",
-    "modelSlug": "minimax-hailuo-02-pro",
+    "modelSlug": "hailuo-2-pro",
     "versionLabel": "Hailuo 02 Pro",
     "availability": "available",
     "logoPolicy": "textOnly"

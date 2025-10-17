@@ -108,7 +108,7 @@ export default function PricingPage() {
           </div>
           <p className="mt-6 text-xs text-text-muted">
             {content.estimator.walletLink}{' '}
-            <Link href="/calculator" className="font-semibold text-accent hover:text-accentSoft">
+            <Link href="/pricing-calculator" className="font-semibold text-accent hover:text-accentSoft">
               {content.estimator.walletLinkCta}
             </Link>
             .
