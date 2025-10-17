@@ -3,17 +3,27 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 
+function SpeakerIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="h-5 w-5">
+      <path d="M10 9H7v6h3l4 4V5l-4 4Z" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M18 9.5c.64.64 1 1.52 1 2.5s-.36 1.86-1 2.5" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 interface HeroMediaTileProps {
   label: string;
-  meta: string;
+  priceLabel: string;
   videoSrc: string;
   posterSrc: string;
   alt: string;
+  showAudioIcon?: boolean;
   badge?: string;
   priority?: boolean;
 }
 
-export function HeroMediaTile({ label, meta, videoSrc, posterSrc, alt, badge, priority }: HeroMediaTileProps) {
+export function HeroMediaTile({ label, priceLabel, videoSrc, posterSrc, alt, showAudioIcon, badge, priority }: HeroMediaTileProps) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
     if (typeof window === 'undefined') {
       return false;
@@ -33,6 +43,12 @@ export function HeroMediaTile({ label, meta, videoSrc, posterSrc, alt, badge, pr
   return (
     <figure className="group relative overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-card">
       <div className="relative aspect-[16/9] w-full">
+        {showAudioIcon ? (
+          <span className="absolute right-3 top-3 z-10 inline-flex items-center justify-center rounded-full bg-black/65 p-2 text-white shadow-card">
+            <SpeakerIcon />
+            <span className="sr-only">Audio on by default</span>
+          </span>
+        ) : null}
         {prefersReducedMotion ? (
           <Image src={posterSrc} alt={alt} fill priority={priority} sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover" />
         ) : (
@@ -56,8 +72,8 @@ export function HeroMediaTile({ label, meta, videoSrc, posterSrc, alt, badge, pr
             </span>
           ) : null}
           <figcaption className="space-y-1">
-            <p className="text-sm font-semibold">{label}</p>
-            <p className="text-xs font-medium text-white/80">{meta}</p>
+            <p className="text-2xl font-semibold sm:text-3xl">{label}</p>
+            <p className="text-sm font-medium text-white/80">{priceLabel}</p>
           </figcaption>
         </div>
       </div>

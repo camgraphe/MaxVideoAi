@@ -19,11 +19,11 @@ type HeroTileConfig = {
   durationSec: number;
   resolution: string;
   fallbackPriceLabel: string;
-  badge?: string;
   addons?: {
     audio?: boolean;
     upscale4k?: boolean;
   };
+  showAudioIcon?: boolean;
   alt: string;
 };
 
@@ -37,8 +37,8 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     durationSec: 8,
     resolution: '1080p',
     fallbackPriceLabel: 'from $0.10',
-    badge: 'Audio',
     addons: { audio: true },
+    showAudioIcon: true,
     alt: 'Sora 2 — example clip',
   },
   {
@@ -50,6 +50,7 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     durationSec: 12,
     resolution: '1080p',
     fallbackPriceLabel: 'from $0.50',
+    showAudioIcon: true,
     alt: 'Veo 3 — example clip',
   },
   {
@@ -77,7 +78,7 @@ const HERO_TILES: readonly HeroTileConfig[] = [
   },
 ] as const;
 
-const WORKS_WITH_BRANDS = ['OpenAI', 'Google Veo', 'Luma', 'Pika', 'MiniMax', 'Hunyuan'] as const;
+const WORKS_WITH_BRANDS = ['Sora 2', 'Veo 3', 'Luma Dream Machine', 'Luma Ray 2 Flash', 'Pika 2.2', 'MiniMax Video 1', 'Hunyuan Video'] as const;
 
 async function resolveHeroTilePrices() {
   const kernel = getPricingKernel();
@@ -197,11 +198,11 @@ export default async function HomePage() {
             <HeroMediaTile
               key={tile.id}
               label={tile.label}
-              meta={`${heroPriceMap[tile.id] ?? tile.fallbackPriceLabel} · ${tile.durationSec}s · ${tile.resolution}`}
+              priceLabel={heroPriceMap[tile.id] ?? tile.fallbackPriceLabel}
               videoSrc={tile.videoSrc}
               posterSrc={tile.posterSrc}
               alt={tile.alt}
-              badge={tile.badge}
+              showAudioIcon={tile.showAudioIcon}
               priority={index === 0}
             />
           ))}
@@ -213,7 +214,7 @@ export default async function HomePage() {
           <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
             {worksWith.label}
           </span>
-          <div className="flex flex-wrap items-center justify-center gap-6 text-base font-semibold text-text-primary">
+          <div className="flex flex-wrap items-center justify-center gap-6 text-2xl font-semibold text-text-primary sm:text-3xl">
             {WORKS_WITH_BRANDS.map((brand) => (
               <span key={brand}>{brand}</span>
             ))}
