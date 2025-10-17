@@ -49,7 +49,7 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     posterSrc: '/hero/veo3.jpg',
     durationSec: 12,
     resolution: '1080p',
-    fallbackPriceLabel: 'from $0.50',
+    fallbackPriceLabel: 'from $0.20',
     showAudioIcon: true,
     alt: 'Veo 3 — example clip',
   },

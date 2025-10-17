@@ -298,14 +298,19 @@
       },
       "pricing": {
         "unit": "USD/s",
-        "base": 0.75,
+        "base": 0.4,
         "currency": "USD",
-        "notes": "0.50$/s audio off, 0.75$/s audio on (Fal.ai)."
+        "notes": "Fal.ai: $0.20/s audio off, $0.40/s audio on."
       },
       "pricingDetails": {
         "currency": "USD",
         "perSecondCents": {
-          "default": 75
+          "default": 20
+        },
+        "addons": {
+          "audio": {
+            "perSecondCents": 20
+          }
         }
       },
       "updatedAt": "2025-10-14T00:00:00Z",
@@ -391,14 +396,19 @@
       },
       "pricing": {
         "unit": "USD/s",
-        "base": 0.4,
+        "base": 0.15,
         "currency": "USD",
-        "notes": "Fal.ai précise 0.25$/s (audio off) et 0.40$/s (audio on)."
+        "notes": "Fal.ai: $0.10/s audio off, $0.15/s audio on."
       },
       "pricingDetails": {
         "currency": "USD",
         "perSecondCents": {
-          "default": 40
+          "default": 10
+        },
+        "addons": {
+          "audio": {
+            "perSecondCents": 5
+          }
         }
       },
       "updatedAt": "2025-10-14T00:00:00Z",

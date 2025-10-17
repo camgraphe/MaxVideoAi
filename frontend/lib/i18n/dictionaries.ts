@@ -603,13 +603,13 @@ const en: Dictionary = {
       'veo-3': {
         displayName: 'Google Veo 3',
         description: 'Cinematic realism with lip-sync and Dolby Vision previews.',
-        priceBefore: '$0.50/s audio off or $0.75/s audio on highlighted ahead of launch.',
+        priceBefore: '$0.20/s audio off or $0.40/s audio on highlighted ahead of launch.',
         versionLabel: 'Veo 3',
       },
       'veo-3-fast': {
         displayName: 'Google Veo 3 Fast',
         description: 'Faster queue for previz while keeping the Veo look and audio toggle.',
-        priceBefore: '$0.25/s audio off or $0.40/s audio on in the chip.',
+        priceBefore: '$0.10/s audio off or $0.15/s audio on in the chip.',
         versionLabel: 'Veo 3 Fast',
       },
       'kling-2-5-turbo-pro': {

@@ -1,0 +1,150 @@
+[
+  {
+    "engine": "Sora 2",
+    "catalogSlug": "sora-2",
+    "falSlug": "fal-ai/sora-2",
+    "source_url": "https://fal.ai/models/fal-ai/sora-2/text-to-video",
+    "last_checked_at": "",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      { "raw": { "currency": "USD", "unit": "second", "amount": 0.10 } }
+    ]
+  },
+  {
+    "engine": "Sora 2 Pro",
+    "catalogSlug": "sora-2-pro",
+    "falSlug": "fal-ai/sora-2",
+    "source_url": "https://fal.ai/models/fal-ai/sora-2/text-to-video/pro",
+    "last_checked_at": "",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      { "variant": { "mode": "pro", "resolution": "720p" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.30 } },
+      { "variant": { "mode": "pro", "resolution": "1080p" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.50 } }
+    ]
+  },
+  {
+    "engine": "Google Veo 3",
+    "catalogSlug": "veo-3",
+    "falSlug": "fal-ai/veo3",
+    "source_url": "https://fal.ai/models/fal-ai/veo3",
+    "last_checked_at": "",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      { "variant": { "audio": "off" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.20 } },
+      { "variant": { "audio": "on" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.40 } }
+    ]
+  },
+  {
+    "engine": "Google Veo 3 Fast",
+    "catalogSlug": "veo-3-fast",
+    "falSlug": "fal-ai/veo3/fast",
+    "source_url": "https://fal.ai/models/fal-ai/veo3/fast/image-to-video",
+    "last_checked_at": "",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      { "variant": { "audio": "off" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.10 } },
+      { "variant": { "audio": "on" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.15 } }
+    ]
+  },
+  {
+    "engine": "Kling 2.5 Turbo Pro",
+    "catalogSlug": "kling-2-5-turbo-pro",
+    "falSlug": "fal-ai/kling-video/v2.5-turbo/pro",
+    "source_url": "https://fal.ai/models/fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
+    "last_checked_at": "",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      { "variant": { "mode": "pro" }, "raw": { "currency": "USD", "unit": "second", "base_seconds": 5, "base_amount": 0.35, "extra_per_second": 0.07 } }
+    ]
+  },
+  {
+    "engine": "Luma Dream Machine v1.5",
+    "catalogSlug": "luma-dream-machine",
+    "falSlug": "fal-ai/luma-dream-machine",
+    "source_url": "https://fal.ai/models/fal-ai/luma-dream-machine",
+    "last_checked_at": "",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      { "raw": { "currency": "USD", "unit": "video", "amount": 0.50 } }
+    ]
+  },
+  {
+    "engine": "Luma Ray 2",
+    "catalogSlug": "luma-ray-2",
+    "falSlug": "fal-ai/luma-dream-machine/ray-2",
+    "source_url": "https://fal.ai/models/fal-ai/luma-dream-machine/ray-2",
+    "last_checked_at": "",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      { "variant": { "mode": "ray-2" }, "raw": { "currency": "USD", "unit": "5s", "amount": 0.50 } }
+    ]
+  },
+  {
+    "engine": "Luma Ray 2 Flash",
+    "catalogSlug": "luma-ray-2-flash",
+    "falSlug": "fal-ai/luma-dream-machine/ray-2-flash",
+    "source_url": "https://fal.ai/models/fal-ai/luma-dream-machine/ray-2-flash",
+    "last_checked_at": "",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      { "variant": { "mode": "flash" }, "raw": { "currency": "USD", "unit": "5s", "amount": 0.20 } }
+    ]
+  },
+  {
+    "engine": "Pika 2.2",
+    "catalogSlug": "pika-2-2",
+    "falSlug": "fal-ai/pika/v2.2",
+    "source_url": "https://fal.ai/models/fal-ai/pika/v2.2/image-to-video",
+    "last_checked_at": "",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      { "variant": { "resolution": "720p" }, "raw": { "currency": "USD", "unit": "5s", "amount": 0.20 } },
+      { "variant": { "resolution": "1080p" }, "raw": { "currency": "USD", "unit": "5s", "amount": 0.45 } }
+    ]
+  },
+  {
+    "engine": "MiniMax Video 1",
+    "catalogSlug": "minimax-video-1",
+    "falSlug": "fal-ai/minimax/video-01",
+    "source_url": "https://fal.ai/models/fal-ai/minimax/video-01",
+    "last_checked_at": "",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      { "raw": { "currency": "USD", "unit": "video", "amount": 0.50 } }
+    ]
+  },
+  {
+    "engine": "MiniMax Hailuo 02 Pro",
+    "catalogSlug": "hailuo-2-pro",
+    "falSlug": "fal-ai/minimax/hailuo-02/pro",
+    "source_url": "https://fal.ai/models/fal-ai/minimax/hailuo-02/pro/text-to-video",
+    "last_checked_at": "",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      { "variant": { "mode": "pro", "resolution": "1080p" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.08 } }
+    ]
+  },
+  {
+    "engine": "Hunyuan Video",
+    "catalogSlug": "hunyuan-video",
+    "falSlug": "fal-ai/hunyuan-video",
+    "source_url": "https://fal.ai/models/fal-ai/hunyuan-video",
+    "last_checked_at": "",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      { "raw": { "currency": "USD", "unit": "video", "amount": 0.40 } }
+    ]
+  }
+]
