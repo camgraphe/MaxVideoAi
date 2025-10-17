@@ -3066,7 +3066,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                           <span className="font-semibold text-text-primary">{selectedEngine.label}</span>
                           <span className="text-text-muted">• {MODE_DISPLAY_LABEL[form.mode]}</span>
                         </div>
-                        {capability?.notes && <p className="text-[11px] text-text-muted">{capability.notes}</p>}
                         {capability?.maxUploadMB && form.mode === 'i2v' && (
                           <p className="text-[11px] text-text-muted">Max upload: {capability.maxUploadMB} MB</p>
                         )}

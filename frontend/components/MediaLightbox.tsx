@@ -48,6 +48,7 @@ function aspectRatioClass(aspectRatio?: string | null): string {
 export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries, onClose, onRefreshEntry }: MediaLightboxProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [refreshStates, setRefreshStates] = useState<Record<string, { loading: boolean; error: string | null }>>({});
+  const [downloadStates, setDownloadStates] = useState<Record<string, { loading: boolean; error: string | null }>>({});
 
   const handleCopyLink = useCallback(
     async (entryId: string, url?: string | null) => {
@@ -62,6 +63,52 @@ export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries,
     },
     []
   );
+
+  const handleDownloadEntry = useCallback(async (entry: MediaLightboxEntry, url?: string | null) => {
+    if (!url) return;
+    setDownloadStates((prev) => ({
+      ...prev,
+      [entry.id]: { loading: true, error: null },
+    }));
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Download failed (${response.status})`);
+      }
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = downloadUrl;
+      const extension = (() => {
+        try {
+          const pathname = new URL(url).pathname;
+          const part = pathname.split('.').pop();
+          return part && part.length <= 5 ? part : 'mp4';
+        } catch {
+          return 'mp4';
+        }
+      })();
+      const safeLabel =
+        entry.label?.trim().replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '') ||
+        (entry.jobId ?? entry.id ?? 'download');
+      anchor.download = `${safeLabel}.${extension}`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      window.URL.revokeObjectURL(downloadUrl);
+      setDownloadStates((prev) => {
+        const next = { ...prev };
+        delete next[entry.id];
+        return next;
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to download file';
+      setDownloadStates((prev) => ({
+        ...prev,
+        [entry.id]: { loading: false, error: message },
+      }));
+    }
+  }, []);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -79,6 +126,21 @@ export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries,
 
   useEffect(() => {
     setRefreshStates((prev) => {
+      const activeIds = new Set(entries.map((entry) => entry.id));
+      let mutated = false;
+      const next = { ...prev };
+      Object.keys(next).forEach((key) => {
+        if (!activeIds.has(key)) {
+          delete next[key];
+          mutated = true;
+        }
+      });
+      return mutated ? next : prev;
+    });
+  }, [entries]);
+
+  useEffect(() => {
+    setDownloadStates((prev) => {
       const activeIds = new Set(entries.map((entry) => entry.id));
       let mutated = false;
       const next = { ...prev };
@@ -136,7 +198,7 @@ export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries,
           onClick={onClose}
           className="absolute right-5 top-5 rounded-input border border-border bg-white px-3 py-1 text-sm font-medium text-text-secondary transition hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          Fermer
+          Close
         </button>
 
         <header className="pr-14">
@@ -144,7 +206,7 @@ export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries,
           {subtitle ? <p className="mt-1 text-sm text-text-secondary">{subtitle}</p> : null}
           {!hasAtLeastOneVideo ? (
             <p className="mt-2 rounded-input border border-dashed border-border bg-bg px-3 py-2 text-sm text-text-muted">
-              Les médias seront disponibles une fois le traitement terminé.
+              Media will be available once the render completes.
             </p>
           ) : null}
         </header>
@@ -168,10 +230,10 @@ export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries,
             const isProcessing = entry.status === 'pending';
             const progressLabel =
               typeof entry.progress === 'number'
-                  ? `${Math.max(0, Math.min(100, Math.round(entry.progress)))}%`
-                  : isProcessing
-                    ? 'En cours'
-                    : undefined;
+                ? `${Math.max(0, Math.min(100, Math.round(entry.progress)))}%`
+                : isProcessing
+                  ? 'Processing'
+                  : undefined;
             const refreshState = refreshStates[entry.id];
             const isRefreshing = Boolean(refreshState?.loading);
             const refreshError = refreshState?.error ?? null;
@@ -181,6 +243,9 @@ export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries,
               Boolean(onRefreshEntry) &&
               hasRefreshTarget &&
               (entry.status === 'pending' || !entry.videoUrl);
+            const downloadState = downloadStates[entry.id];
+            const isDownloading = Boolean(downloadState?.loading);
+            const downloadError = downloadState?.error ?? null;
 
             return (
               <article
@@ -203,7 +268,7 @@ export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries,
                     <Image src={thumbUrl} alt="" fill className="object-cover" />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#dfe7ff] via-white to-[#f1f4ff] text-[12px] font-medium uppercase tracking-micro text-text-muted">
-                      Aperçu indisponible
+                      Preview unavailable
                     </div>
                   )}
                   {isProcessing && (
@@ -256,20 +321,21 @@ export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries,
                           : 'pointer-events-none border-border/60 bg-bg text-text-muted'
                       )}
                     >
-                      Ouvrir
+                      Open
                     </a>
-                    <a
-                      href={videoUrl ?? undefined}
-                      download
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadEntry(entry, videoUrl)}
+                      disabled={!videoUrl || isDownloading}
                       className={clsx(
                         'rounded-input border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                         videoUrl
-                          ? 'border-border bg-white text-text-secondary hover:bg-bg'
-                          : 'pointer-events-none border-border/60 bg-bg text-text-muted'
+                          ? 'border-border bg-white text-text-secondary hover:bg-bg disabled:cursor-not-allowed'
+                          : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
                       )}
                     >
-                      Télécharger
-                    </a>
+                      {isDownloading ? 'Downloading…' : 'Download'}
+                    </button>
                     <button
                       type="button"
                       onClick={() => handleCopyLink(entry.id, videoUrl)}
@@ -281,7 +347,7 @@ export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries,
                           : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
                       )}
                     >
-                    {copiedId === entry.id ? 'Link copied' : 'Copy link'}
+                      {copiedId === entry.id ? 'Link copied' : 'Copy link'}
                     </button>
                     {canRefresh ? (
                       <button
@@ -305,6 +371,9 @@ export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries,
                   {entry.message && !isProcessing ? (
                     <p className="mt-3 text-sm text-text-secondary">{entry.message}</p>
                   ) : null}
+                  {downloadError ? (
+                    <p className="mt-2 text-xs text-state-warning">{downloadError}</p>
+                  ) : null}
                   {refreshError ? (
                     <p className="mt-2 text-xs text-state-warning">{refreshError}</p>
                   ) : null}
@@ -327,7 +396,7 @@ export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries,
               }}
               className="rounded-input border border-border bg-white px-3 py-1 text-xs font-medium text-text-secondary transition hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              Copier
+              Copy
             </button>
             </div>
             <div className="mt-2 max-h-[180px] overflow-y-auto rounded-input border border-border bg-bg px-4 py-3 text-sm text-text-primary">

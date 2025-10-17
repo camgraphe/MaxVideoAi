@@ -530,21 +530,6 @@ export function SettingsControls({
         )}
       </div>
 
-      <div
-        className={clsx(
-          'space-y-3',
-          focusRefs?.addons && 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-        )}
-        ref={focusRefs?.addons}
-        tabIndex={focusRefs?.addons ? -1 : undefined}
-      >
-        <h3 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Add-ons</h3>
-        <div className="flex flex-wrap gap-2">
-          {engine.upscale4k && (
-            <TogglePill label="Upscale" active={addons.upscale4k} onClick={() => onAddonToggle('upscale4k', !addons.upscale4k)} />
-          )}
-        </div>
-      </div>
     </Card>
   );
 }

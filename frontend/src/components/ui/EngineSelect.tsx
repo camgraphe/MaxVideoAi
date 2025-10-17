@@ -15,9 +15,7 @@ import {
 import type { EngineAvailability, EngineCaps, Mode, Resolution } from '@/types/engines';
 import { Card } from './Card';
 import { Chip } from './Chip';
-import { supabase } from '@/lib/supabaseClient';
 import { EngineIcon } from '@/components/ui/EngineIcon';
-import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getModelByEngineId } from '@/lib/model-roster';
 
 const MODE_LABELS: Record<Mode, string> = {
@@ -513,9 +511,6 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
   const [searchTerm, setSearchTerm] = useState('');
   const [modeFilter, setModeFilter] = useState<ModeFilter>('all');
   const [resolutionFilter, setResolutionFilter] = useState<'all' | Resolution>('all');
-  const [speedFilter, setSpeedFilter] = useState<'all' | string>('all');
-  const [labsOnly, setLabsOnly] = useState(false);
-  const [accountSummary, setAccountSummary] = useState<{ tier: string; balance: number; currency: string } | null>(null);
 
   useEffect(() => {
     const element = document.createElement('div');
@@ -547,49 +542,6 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
     return () => document.removeEventListener('keydown', handleKey);
   }, [onClose]);
 
-  useEffect(() => {
-    let mounted = true;
-    const loadAccount = async (token?: string | null) => {
-      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-      try {
-        const [walletRes, memberRes] = await Promise.all([
-          fetch('/api/wallet', { headers }).then((r) => r.json()),
-          fetch('/api/member-status', { headers }).then((r) => r.json()),
-        ]);
-        if (!mounted) {
-          return;
-        }
-        setAccountSummary({
-          balance:
-            typeof walletRes?.balance === 'number'
-              ? walletRes.balance
-              : Number(walletRes?.balance ?? 0),
-          currency:
-            typeof walletRes?.currency === 'string'
-              ? walletRes.currency.toUpperCase()
-              : 'USD',
-          tier: typeof memberRes?.tier === 'string' ? memberRes.tier : 'Member',
-        });
-      } catch {
-        if (mounted) {
-          setAccountSummary((current) => current ?? { tier: 'Member', balance: 0, currency: 'USD' });
-        }
-      }
-    };
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
-      void loadAccount(data.session?.access_token);
-    });
-    const { data: authSubscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      void loadAccount(session?.access_token);
-    });
-    return () => {
-      mounted = false;
-      authSubscription?.subscription.unsubscribe();
-    };
-  }, []);
-
   const resolutions = useMemo<Resolution[]>(() => {
     const set = new Set<Resolution>();
     engines.forEach((engine) => {
@@ -598,26 +550,16 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [engines]);
 
-  const speedOptions = useMemo(() => {
-    const set = new Set<string>();
-    engines.forEach((engine) => {
-      if (engine.latencyTier) {
-        set.add(engine.latencyTier);
-      }
-    });
-    return Array.from(set).sort((a, b) => a.localeCompare(b));
-  }, [engines]);
-
   const searchValue = searchTerm.trim().toLowerCase();
 
   const filteredEngines = useMemo(() => {
+    const priorityOrder = ['sora-2', 'sora-2-pro', 'veo3', 'veo3fast'];
+    const priorityIndex = new Map(priorityOrder.map((id, index) => [id, index]));
     const ranked = engines
       .slice()
       .filter((engine) => {
-        if (labsOnly && !engine.isLab) return false;
         if (modeFilter !== 'all' && !engine.modes.includes(modeFilter)) return false;
         if (resolutionFilter !== 'all' && !engine.resolutions.includes(resolutionFilter)) return false;
-        if (speedFilter !== 'all' && engine.latencyTier !== speedFilter) return false;
 
         if (!searchValue) return true;
         const guide = ENGINE_GUIDE[engine.id];
@@ -633,24 +575,18 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
         return haystack.includes(searchValue);
       })
       .sort((a, b) => {
+        const aPriority = priorityIndex.has(a.id) ? priorityIndex.get(a.id)! : Number.MAX_SAFE_INTEGER;
+        const bPriority = priorityIndex.has(b.id) ? priorityIndex.get(b.id)! : Number.MAX_SAFE_INTEGER;
+        if (aPriority !== bPriority) {
+          return aPriority - bPriority;
+        }
         if (a.isLab === b.isLab) {
           return a.label.localeCompare(b.label);
         }
         return a.isLab ? 1 : -1;
       });
     return ranked;
-  }, [engines, labsOnly, modeFilter, resolutionFilter, speedFilter, searchValue]);
-
-  const formattedBalance = useMemo(() => {
-    if (!accountSummary) return null;
-    const amount = accountSummary.balance ?? 0;
-    const currency = accountSummary.currency ?? 'USD';
-    try {
-      return new Intl.NumberFormat(CURRENCY_LOCALE, { style: 'currency', currency }).format(amount);
-    } catch {
-      return `${currency} ${amount.toFixed(2)}`;
-    }
-  }, [accountSummary]);
+  }, [engines, modeFilter, resolutionFilter, searchValue]);
 
   const handleBackdropClick = useCallback(
     (event: ReactMouseEvent<HTMLDivElement>) => {
@@ -712,11 +648,6 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
               </p>
             </div>
             <div className="flex flex-col items-end gap-2">
-              {accountSummary && (
-                <Chip variant="outline" className="px-3 py-1 text-xs font-medium text-text-secondary">
-                  Wallet {formattedBalance ?? '$0.00'} · {accountSummary.tier}
-                </Chip>
-              )}
               <a
                 href="/docs/pricing"
                 target="_blank"
@@ -761,19 +692,6 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
                   {resolution}
                 </FilterChip>
               ))}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <FilterChip active={speedFilter === 'all'} onClick={() => setSpeedFilter('all')}>
-                Speed · All
-              </FilterChip>
-              {speedOptions.map((speed) => (
-                <FilterChip key={speed} active={speedFilter === speed} onClick={() => setSpeedFilter(speed)}>
-                  Speed · {speed}
-                </FilterChip>
-              ))}
-              <FilterChip active={labsOnly} onClick={() => setLabsOnly((previous) => !previous)}>
-                {labsOnly ? 'Labs · On' : 'Labs · Off'}
-              </FilterChip>
             </div>
           </div>
         </header>

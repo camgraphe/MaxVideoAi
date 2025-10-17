@@ -193,7 +193,7 @@ export function HeaderBar() {
 
 function LogoMark() {
   return (
-    <Link href="/app" className="flex items-center gap-2" aria-label="Go to workspace home">
+    <Link href="/" className="flex items-center gap-2" aria-label="Go to marketing homepage">
       <Image src="/assets/branding/logo-mark.svg" alt="MaxVideoAI" width={28} height={28} priority />
       <span className="text-lg font-semibold tracking-tight text-text-primary">MaxVideo AI</span>
     </Link>
