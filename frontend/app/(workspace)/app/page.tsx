@@ -1317,12 +1317,19 @@ export default function Page() {
     (render: LocalRender, group: LocalRenderGroup): QuadPreviewTile => {
       const gatingActive = render.status !== 'failed' && Date.now() < render.minReadyAt;
       const videoUrl = gatingActive ? undefined : render.videoUrl ?? render.readyVideoUrl;
-      const progress = gatingActive ? Math.min(Math.max(render.progress ?? 5, 95), 95) : render.progress;
-      const status: QuadPreviewTile['status'] = render.status === 'failed'
-        ? 'failed'
-        : gatingActive
-          ? 'pending'
-          : render.status ?? (videoUrl ? 'completed' : 'pending');
+      const progress = gatingActive
+        ? Math.min(Math.max(render.progress ?? 5, 95), 95)
+        : videoUrl
+          ? 100
+          : render.progress;
+      const status: QuadPreviewTile['status'] =
+        render.status === 'failed'
+          ? 'failed'
+          : gatingActive
+            ? 'pending'
+            : videoUrl
+              ? 'completed'
+              : render.status ?? 'pending';
 
       return {
         localKey: render.localKey,
@@ -2282,8 +2289,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         ? `Take ${iterationIndex + 1}/${iterationCount} • ${FRIENDLY_MESSAGES[Math.floor(Math.random() * FRIENDLY_MESSAGES.length)]}`
         : FRIENDLY_MESSAGES[Math.floor(Math.random() * FRIENDLY_MESSAGES.length)];
       const startedAt = Date.now();
-      const minEtaSeconds = Math.max(20, etaSeconds);
-      const minDurationMs = Math.max(2000, minEtaSeconds * 1000);
+      const minEtaSeconds = Math.min(Math.max(etaSeconds ?? 4, 0), 8);
+      const minDurationMs = Math.max(1200, minEtaSeconds * 1000);
       const minReadyAt = startedAt + minDurationMs;
 
       let progressMessage = friendlyMessage;
