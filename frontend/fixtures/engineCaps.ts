@@ -121,17 +121,20 @@ export const ENGINE_CAPS: Record<string, EngineCaps> = {
 // --- LUMA DREAM MACHINE (v1.5) & LUMA RAY 2 family ---
 'fal-ai/luma-dream-machine/image-to-video': {
   modes: ['i2v'],
+  resolution: ['720p'],
   audioToggle: false,
 },
 'fal-ai/luma-dream-machine': {
   modes: ['t2v'],
   duration: { min: 5, default: 5 },
+  resolution: ['720p'],
   aspectRatio: ['16:9', '9:16'],
   audioToggle: false,
 },
 'fal-ai/luma-dream-machine/ray-2': {
   modes: ['t2v'],
   duration: { min: 5, default: 5 },
+  resolution: ['720p'],
   aspectRatio: ['16:9', '9:16'],
   audioToggle: false,
   notes: 'Billed at $0.50 per 5s block via Fal.ai (≈$0.10/s).',
@@ -139,11 +142,13 @@ export const ENGINE_CAPS: Record<string, EngineCaps> = {
 'fal-ai/luma-dream-machine/ray-2/image-to-video': {
   modes: ['i2v'],
   audioToggle: false,
+  resolution: ['720p'],
   duration: { min: 5, default: 5 },
 },
 'fal-ai/luma-dream-machine/ray-2/modify': {
   modes: ['i2v'],
   duration: { min: 1, default: 5 },
+  resolution: ['source', '720p'],
   audioToggle: false,
   maxUploadMB: 500,
   notes: 'Video→Video restyle. Fal.ai bills $0.35 per output second.',
@@ -151,6 +156,7 @@ export const ENGINE_CAPS: Record<string, EngineCaps> = {
 'fal-ai/luma-dream-machine/ray-2/reframe': {
   modes: ['i2v'],
   duration: { min: 1, default: 5 },
+  resolution: ['source', '720p'],
   aspectRatio: ['16:9', '9:16', '1:1', '4:5'],
   audioToggle: false,
   maxUploadMB: 500,
@@ -159,6 +165,7 @@ export const ENGINE_CAPS: Record<string, EngineCaps> = {
 'fal-ai/luma-dream-machine/ray-2-flash': {
   modes: ['t2v'],
   duration: { min: 5, default: 5 },
+  resolution: ['720p'],
   aspectRatio: ['16:9', '9:16'],
   audioToggle: false,
   notes: 'Flash variant tuned for faster Ray-2 generations.',
@@ -166,11 +173,13 @@ export const ENGINE_CAPS: Record<string, EngineCaps> = {
 'fal-ai/luma-dream-machine/ray-2-flash/image-to-video': {
   modes: ['i2v'],
   audioToggle: false,
+  resolution: ['720p'],
   duration: { min: 5, default: 5 },
 },
 'fal-ai/luma-dream-machine/ray-2-flash/reframe': {
   modes: ['i2v'],
   duration: { min: 1, default: 5 },
+  resolution: ['source', '720p'],
   aspectRatio: ['16:9', '9:16', '1:1', '4:5'],
   audioToggle: false,
   maxUploadMB: 500,
