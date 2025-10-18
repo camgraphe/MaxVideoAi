@@ -27,6 +27,12 @@ export const metadata: Metadata = {
   },
 };
 
+function toAspectClass(aspect?: '16:9' | '9:16' | '1:1') {
+  if (aspect === '9:16') return 'aspect-[9/16]';
+  if (aspect === '1:1') return 'aspect-square';
+  return 'aspect-video';
+}
+
 export default function ExamplesPage() {
   const { dictionary } = resolveDictionary();
   const content = dictionary.examples;
@@ -38,28 +44,51 @@ export default function ExamplesPage() {
         <p className="text-base text-text-secondary">{content.hero.subtitle}</p>
       </header>
       <section className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {content.items.map((item) => (
-          <article key={item.title} className="group overflow-hidden rounded-card border border-hairline bg-white shadow-card">
-            <div className="relative aspect-[4/5] bg-gradient-to-br from-slate-200 via-white to-amber-50">
-              <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs font-semibold uppercase tracking-micro text-text-muted opacity-0 transition group-hover:opacity-100">
-                {dictionary.home.gallery.hoverLabel}
+        {content.items.map((item) => {
+          const aspectClass = toAspectClass(item.media?.aspectRatio);
+          return (
+            <article key={item.title} className="group overflow-hidden rounded-card border border-hairline bg-white shadow-card">
+              <div className={`relative ${aspectClass} overflow-hidden bg-gradient-to-br from-slate-200 via-white to-amber-50`}>
+                {item.media?.videoSrc ? (
+                  <>
+                    <video
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      preload="metadata"
+                      poster={item.media.posterSrc}
+                      aria-label={item.alt}
+                    >
+                      <source src={item.media.videoSrc} type="video/mp4" />
+                    </video>
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/40 text-xs font-semibold uppercase tracking-micro text-white opacity-0 transition duration-200 group-hover:opacity-100">
+                      {dictionary.home.gallery.hoverLabel}
+                    </div>
+                  </>
+                ) : (
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs font-semibold uppercase tracking-micro text-text-muted opacity-80">
+                    {dictionary.home.gallery.hoverLabel}
+                  </div>
+                )}
+                <span className="sr-only">{item.alt}</span>
               </div>
-              <span className="sr-only">{item.alt}</span>
-            </div>
-            <div className="space-y-2 border-t border-hairline p-4">
-              <h2 className="text-lg font-semibold text-text-primary">{item.title}</h2>
-              <p className="text-xs font-medium uppercase tracking-micro text-text-muted">{dictionary.home.gallery.caption}</p>
-              <p className="text-sm text-text-secondary">{item.engine}</p>
-              <p className="text-xs text-text-muted">{item.description}</p>
-              <Link
-                href="/app"
-                className="inline-flex items-center rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-              >
-                {content.cta}
-              </Link>
-            </div>
-          </article>
-        ))}
+              <div className="space-y-2 border-t border-hairline p-4">
+                <h2 className="text-lg font-semibold text-text-primary">{item.title}</h2>
+                <p className="text-xs font-medium uppercase tracking-micro text-text-muted">{dictionary.home.gallery.caption}</p>
+                <p className="text-sm text-text-secondary">{item.engine}</p>
+                <p className="text-xs text-text-muted">{item.description}</p>
+                <Link
+                  href="/app"
+                  className="inline-flex items-center rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                >
+                  {content.cta}
+                </Link>
+              </div>
+            </article>
+          );
+        })}
       </section>
     </div>
   );

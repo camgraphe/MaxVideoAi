@@ -184,6 +184,11 @@ type Dictionary = {
         slug: string;
         pricing: PricingScenario;
       };
+      media?: {
+        videoSrc: string;
+        posterSrc?: string;
+        aspectRatio?: '16:9' | '9:16' | '1:1';
+      };
     }>;
     cta: string;
   };
@@ -684,68 +689,92 @@ const en: Dictionary = {
   },
   examples: {
     hero: {
-      title: 'Examples routed automatically.',
-      subtitle: 'Hover to loop, click to expand. Every clip lists the engine we routed, the duration, and the deliverable format.',
+      title: 'Engine showcases.',
+      subtitle: 'Hover to loop, click to expand. Each clip previews the motion and style you can route in MaxVideo AI.',
     },
     items: [
       {
-        title: 'Launch teaser',
-        engine: 'Veo 3 · 16:9 · 12s',
-        description: 'Cinematic realism with native audio switched on.',
-        alt: 'Google Veo 3 cinematic teaser frame.',
+        title: 'Sora 2 cinematic',
+        engine: 'Sora 2 · Text-to-video · 16:9',
+        description: 'Cinematic motion pass capturing atmospheric lighting and parallax.',
+        alt: 'Sora 2 example clip.',
+        meta: {
+          slug: 'sora-2',
+          pricing: { engineId: 'sora-2', durationSec: 10, resolution: '1080p', memberTier: 'member' },
+        },
+        media: {
+          videoSrc: 'https://storage.googleapis.com/falserverless/example_outputs/sora_t2v_output.mp4',
+          aspectRatio: '16:9',
+        },
+      },
+      {
+        title: 'Veo 3 branded flythrough',
+        engine: 'Veo 3 · Image-to-video · 16:9',
+        description: 'Depth-rich branded flythrough emphasising camera control.',
+        alt: 'Veo 3 example clip.',
         meta: {
           slug: 'veo-3',
           pricing: { engineId: 'veo3', durationSec: 12, resolution: '1080p', memberTier: 'member' },
         },
-      },
-      {
-        title: 'Product hero',
-        engine: 'Luma Ray 2 Flash · 1:1 · 8s loop',
-        description: 'Depth-aware turntable ready for social cutdowns.',
-        alt: 'Luma Ray 2 Flash product hero loop.',
-        meta: {
-          slug: 'luma-ray-2-flash',
-          pricing: { engineId: 'lumaRay2_flash', durationSec: 8, resolution: '720p', memberTier: 'member' },
+        media: {
+          videoSrc: 'https://storage.googleapis.com/falserverless/example_outputs/veo3-i2v-output.mp4',
+          aspectRatio: '16:9',
         },
       },
       {
-        title: 'Storyboard pass',
-        engine: 'Kling 2.5 Turbo Pro · 16:9 · 10s',
-        description: 'Stylised beta animation for motion approvals.',
-        alt: 'Kling 2.5 Turbo Pro storyboard preview.',
+        title: 'Kling 2.5 Turbo Pro narrative',
+        engine: 'Kling 2.5 Turbo Pro · Text-to-video · 16:9',
+        description: 'Narrative beat showcasing Kling’s motion fidelity and detail.',
+        alt: 'Kling 2.5 Turbo Pro example clip.',
         meta: {
           slug: 'kling-2-5-turbo-pro',
           pricing: { engineId: 'kling25_turbo_pro', durationSec: 10, resolution: '1080p', memberTier: 'member' },
         },
-      },
-      {
-        title: 'Concept draft',
-        engine: 'MiniMax Video 01 · 16:9 · 6s',
-        description: 'Camera-tag I2V concept mix before hero render.',
-        alt: 'MiniMax Video 01 concept frames.',
-        meta: {
-          slug: 'minimax-video-1',
-          pricing: { engineId: 'minimax_video_01', durationSec: 6, resolution: '720p', memberTier: 'member' },
+        media: {
+          videoSrc: 'https://storage.googleapis.com/falserverless/model_tests/kling/kling-v2.5-turbo-pro-text-to-video-output.mp4',
+          aspectRatio: '16:9',
         },
       },
       {
-        title: 'Social cut',
-        engine: 'Pika 2.2 · 9:16 · 6s',
-        description: 'Auto captions and motion accents for vertical drops.',
-        alt: 'Pika 2.2 vertical social cut with captions.',
+        title: 'Luma Dream Machine showcase',
+        engine: 'Luma Dream Machine · Image-to-video · 16:9',
+        description: 'Texture-rich environment render with fluid camera moves.',
+        alt: 'Luma Dream Machine example clip.',
+        meta: {
+          slug: 'luma-dream-machine',
+          pricing: { engineId: 'lumaDM', durationSec: 10, resolution: '1080p', memberTier: 'member' },
+        },
+        media: {
+          videoSrc: 'https://v3.fal.media/files/lion/L9nkXSW1MCj2oDimeJ4w5_output.mp4',
+          aspectRatio: '16:9',
+        },
+      },
+      {
+        title: 'Pika 2.2 social loop',
+        engine: 'Pika 2.2 · Image-to-video · 16:9',
+        description: 'Fast-paced social loop with stylised motion accents.',
+        alt: 'Pika 2.2 example clip.',
         meta: {
           slug: 'pika-2-2',
-          pricing: { engineId: 'pika22', durationSec: 6, resolution: '1080p', memberTier: 'member' },
+          pricing: { engineId: 'pika22', durationSec: 8, resolution: '1080p', memberTier: 'member' },
+        },
+        media: {
+          videoSrc: 'https://storage.googleapis.com/falserverless/web-examples/pika/pika%202.2/pika22_output.mp4',
+          aspectRatio: '16:9',
         },
       },
       {
-        title: 'Pro mode render',
-        engine: 'Hunyuan Video · 16:9 · 5s',
-        description: 'Open-source realism with Pro mode enabled.',
-        alt: 'Hunyuan Video output showcasing lighting and motion.',
+        title: 'MiniMax concept pass',
+        engine: 'MiniMax Video 01 · Image-to-video · 16:9',
+        description: 'Animated concept art pass with dynamic framing.',
+        alt: 'MiniMax Video 01 example clip.',
         meta: {
-          slug: 'hunyuan-video',
-          pricing: { engineId: 'hunyuan_video', durationSec: 5, resolution: '720p', memberTier: 'member' },
+          slug: 'minimax-video-1',
+          pricing: { engineId: 'minimax_video_01', durationSec: 10, resolution: '1080p', memberTier: 'member' },
+        },
+        media: {
+          videoSrc: 'https://fal.media/files/monkey/bkT4T4uLOXr0jDsIMlNd5_output.mp4',
+          aspectRatio: '16:9',
         },
       },
     ],
