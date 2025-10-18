@@ -144,6 +144,9 @@ export async function POST(req: NextRequest) {
         currency: pricing.currency.toLowerCase(),
         automatic_payment_methods: { enabled: true },
         application_fee_amount: applicationFeeCents,
+        transfer_data: {
+          destination: destinationAccountId,
+        },
         metadata,
       });
 
@@ -201,6 +204,9 @@ export async function POST(req: NextRequest) {
       ],
       payment_intent_data: {
         application_fee_amount: platformFeeCents,
+        transfer_data: {
+          destination: destinationAccountId,
+        },
         metadata: sessionMetadata,
       },
       metadata: sessionMetadata,
