@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { syncSupabaseCookies, clearSupabaseCookies } from '@/lib/supabase-cookies';
 import clsx from 'clsx';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
@@ -140,7 +141,16 @@ export default function LoginPage() {
   const effectiveMode: AuthMode = mode === 'reset' ? 'signin' : mode;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-bg p-6">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-bg p-6">
+      <div className="mb-6 w-full max-w-md">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm font-medium text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+        >
+          <span aria-hidden>←</span>
+          <span>Retour au site public</span>
+        </Link>
+      </div>
       <div className="w-full max-w-md space-y-5 rounded-card border border-border bg-white p-6 shadow-card">
         <header className="space-y-4">
           <div>
