@@ -148,7 +148,7 @@ export default function LoginPage() {
           className="inline-flex items-center gap-2 text-sm font-medium text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
         >
           <span aria-hidden>←</span>
-          <span>Retour au site public</span>
+          <span>Back to homepage</span>
         </Link>
       </div>
       <div className="w-full max-w-md space-y-5 rounded-card border border-border bg-white p-6 shadow-card">
