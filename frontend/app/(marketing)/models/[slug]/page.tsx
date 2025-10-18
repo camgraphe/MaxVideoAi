@@ -7,11 +7,78 @@ import { resolveDictionary } from '@/lib/i18n/server';
 import { getModelRoster, getModelBySlug } from '@/lib/model-roster';
 import { AVAILABILITY_BADGE_CLASS } from '@/lib/availability';
 import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
+import FaqJsonLd from '@/components/FaqJsonLd';
 
 type PageParams = {
   params: {
     slug: string;
   };
+};
+
+const SORA_FAQ = [
+  {
+    q: 'Can I access Sora 2 from Europe?',
+    a: 'Yes. MaxVideoAI brokers Sora 2 access through vetted partners so European teams can render without waiting on an OpenAI invite.',
+  },
+  {
+    q: 'Do Sora 2 renders include a watermark?',
+    a: 'No. Sora 2 outputs produced via MaxVideoAI are delivered clean, ready for editing and distribution.',
+  },
+] as const satisfies readonly { q: string; a: string }[];
+
+const VEO_FAQ = [
+  {
+    q: 'Does Veo 3 ship with the latest motion tuning?',
+    a: 'Yes. MaxVideoAI keeps Veo 3 routing synced with Google DeepMind updates, so motion tuning and camera controls stay current without manual work.',
+  },
+  {
+    q: 'Can I brief Veo 3 with reference images?',
+    a: 'Upload stills when drafting your Veo 3 prompt in the MaxVideoAI workspace. The render queue keeps the references attached end-to-end.',
+  },
+] as const satisfies readonly { q: string; a: string }[];
+
+const PIKA_FAQ = [
+  {
+    q: 'Can I create both 9:16 and 16:9 clips with Pika 2.2?',
+    a: 'Yes. Pick your aspect ratio inside the MaxVideoAI editor and the job will render in the requested format without extra tooling.',
+  },
+  {
+    q: 'Does Pika 2.2 include audio?',
+    a: 'The base model renders silent clips. You can layer audio in MaxVideoAI with one click using the built-in soundtrack add-on.',
+  },
+] as const satisfies readonly { q: string; a: string }[];
+
+const DREAM_MACHINE_FAQ = [
+  {
+    q: 'How long do Luma Dream Machine renders take?',
+    a: 'Most Dream Machine videos complete in about 90–120 seconds. MaxVideoAI shows live progress and pings you when the run is done.',
+  },
+  {
+    q: 'Can I upscale Dream Machine outputs to 4K?',
+    a: 'Yes. Enable the 4K upscale toggle in MaxVideoAI and the clip will be reprocessed for higher resolution delivery.',
+  },
+] as const satisfies readonly { q: string; a: string }[];
+
+const RAY_FLASH_FAQ = [
+  {
+    q: "What's the advantage of Ray 2 Flash?",
+    a: 'Flash prioritises real-time previews so you can iterate quickly. MaxVideoAI surfaces full-quality files in the asset library once they finish.',
+  },
+  {
+    q: 'Is Ray 2 Flash covered by the queue SLA?',
+    a: 'Yes. Flash jobs still benefit from MaxVideoAI queue monitoring, with automatic retries if an upstream error occurs.',
+  },
+] as const satisfies readonly { q: string; a: string }[];
+
+const MODEL_FAQ_ENTRIES: Record<string, { q: string; a: string }[]> = {
+  'sora-2': [...SORA_FAQ],
+  'sora-2-pro': [...SORA_FAQ],
+  'veo-3': [...VEO_FAQ],
+  'veo-3-fast': [...VEO_FAQ],
+  'pika-2-2': [...PIKA_FAQ],
+  'luma-dream-machine': [...DREAM_MACHINE_FAQ],
+  'luma-ray-2': [...DREAM_MACHINE_FAQ],
+  'luma-ray-2-flash': [...RAY_FLASH_FAQ],
 };
 
 export function generateStaticParams() {
@@ -57,6 +124,7 @@ export default function ModelDetailPage({ params }: PageParams) {
   const availabilityLabel = dictionary.models.availabilityLabels[rosterEntry.availability] ?? rosterEntry.availability;
   const brand = PARTNER_BRAND_MAP.get(rosterEntry.brandId);
   const showSoraSeo = rosterEntry.modelSlug === 'sora-2';
+  const faqEntries = MODEL_FAQ_ENTRIES[slug];
 
   const soraFaqSchema = showSoraSeo
     ? {
@@ -252,6 +320,7 @@ export default function ModelDetailPage({ params }: PageParams) {
           Launch workspace
         </Link>
       </footer>
+      {faqEntries ? <FaqJsonLd qa={faqEntries} /> : null}
     </div>
   );
 }

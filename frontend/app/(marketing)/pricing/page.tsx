@@ -5,6 +5,7 @@ import { PriceEstimator } from '@/components/marketing/PriceEstimator';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { DEFAULT_MARKETING_SCENARIO, scenarioToPricingInput } from '@/lib/pricing-scenarios';
+import FaqJsonLd from '@/components/FaqJsonLd';
 
 export const metadata: Metadata = {
   title: 'Pricing — MaxVideo AI',
@@ -187,6 +188,18 @@ export default function PricingPage() {
       <Script id="faq-jsonld" type="application/ld+json">
         {JSON.stringify(faqSchema)}
       </Script>
+      <FaqJsonLd
+        qa={[
+          {
+            q: 'Can I use Sora 2 in Europe?',
+            a: 'Direct access is invite-only. MaxVideoAI provides paid access to Sora 2 rendering from Europe via our hub.',
+          },
+          {
+            q: 'Do videos have watermarks?',
+            a: 'No. Renders produced through MaxVideoAI are delivered without watermarks.',
+          },
+        ]}
+      />
     </div>
   );
 }

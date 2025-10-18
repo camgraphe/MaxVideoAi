@@ -185,12 +185,14 @@ export default async function HomePage() {
           <Link
             href="/app"
             className="inline-flex items-center rounded-pill bg-accent px-6 py-3 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            aria-label="Launch the MaxVideoAI workspace"
           >
             {hero.primaryCta}
           </Link>
           <Link
             href="#how-it-works"
             className="inline-flex items-center rounded-pill border border-hairline px-6 py-3 text-sm font-semibold text-text-primary transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            aria-label="Jump to the How it works section"
           >
             {hero.secondaryCta}
           </Link>
@@ -304,6 +306,7 @@ export default async function HomePage() {
             <Link
               href="/pricing"
               className="mt-6 inline-flex items-center text-sm font-semibold text-accent hover:text-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              aria-label="Explore MaxVideoAI pricing"
             >
               {pricing.link}
             </Link>
