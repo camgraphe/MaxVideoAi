@@ -19,6 +19,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [status, setStatus] = useState<string | null>(null);
+  const [statusTone, setStatusTone] = useState<'info' | 'success'>('info');
   const [error, setError] = useState<string | null>(null);
   const nextQuery = useMemo(() => (nextPath && nextPath !== '/' ? `?next=${encodeURIComponent(nextPath)}` : ''), [nextPath]);
   const redirectTo = useMemo(() => (siteUrl ? `${siteUrl}${nextQuery}` : undefined), [siteUrl, nextQuery]);
@@ -34,6 +35,7 @@ export default function LoginPage() {
 
   async function signInWithPassword(e: React.FormEvent) {
     e.preventDefault();
+    setStatusTone('info');
     setStatus('Signing in…');
     setError(null);
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -43,12 +45,14 @@ export default function LoginPage() {
       return;
     }
     setStatus('Signed in. Redirecting…');
+    setStatusTone('info');
     syncSupabaseCookies(data.session ?? null);
     router.replace(nextPath);
   }
 
   async function signUpWithPassword(e: React.FormEvent) {
     e.preventDefault();
+    setStatusTone('info');
     setStatus('Creating account…');
     setError(null);
     if (!password || password.length < 6) {
@@ -71,11 +75,13 @@ export default function LoginPage() {
       setStatus(null);
       return;
     }
+    setStatusTone('success');
     setStatus('Check your inbox to confirm your email.');
   }
 
   async function sendReset(e: React.FormEvent) {
     e.preventDefault();
+    setStatusTone('info');
     setStatus('Sending reset link…');
     setError(null);
     const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: siteUrl || undefined });
@@ -84,15 +90,18 @@ export default function LoginPage() {
       setStatus(null);
       return;
     }
+    setStatusTone('info');
     setStatus('Password reset email sent.');
   }
 
   async function signInWithGoogle() {
     setError(null);
     if (!siteUrl) {
+      setStatusTone('info');
       setStatus('Google sign-in requires NEXT_PUBLIC_SITE_URL to be set.');
       return;
     }
+    setStatusTone('info');
     setStatus('Redirecting to Google…');
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -287,7 +296,18 @@ export default function LoginPage() {
           </form>
         )}
 
-        {status && <p className="text-xs text-text-secondary">{status}</p>}
+        {status && (
+          <div
+            className={clsx(
+              'rounded-card border px-3 py-3 text-sm font-medium',
+              statusTone === 'success'
+                ? 'border-accent bg-accent/10 text-accent'
+                : 'border-border bg-bg text-text-secondary'
+            )}
+          >
+            {status}
+          </div>
+        )}
         {error && <p className="text-xs text-state-warning">{error}</p>}
       </div>
     </main>
