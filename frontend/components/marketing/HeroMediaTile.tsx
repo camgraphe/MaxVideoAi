@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { supabase } from '@/lib/supabaseClient';
 
 function SpeakerIcon() {
   return (
@@ -21,15 +23,57 @@ interface HeroMediaTileProps {
   showAudioIcon?: boolean;
   badge?: string;
   priority?: boolean;
+  authenticatedHref?: string;
+  guestHref?: string;
 }
 
-export function HeroMediaTile({ label, priceLabel, videoSrc, posterSrc, alt, showAudioIcon, badge, priority }: HeroMediaTileProps) {
+export function HeroMediaTile({
+  label,
+  priceLabel,
+  videoSrc,
+  posterSrc,
+  alt,
+  showAudioIcon,
+  badge,
+  priority,
+  authenticatedHref,
+  guestHref,
+}: HeroMediaTileProps) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
     if (typeof window === 'undefined') {
       return false;
     }
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   });
+  const [targetHref, setTargetHref] = useState<string | null>(() => guestHref ?? authenticatedHref ?? null);
+
+  useEffect(() => {
+    if (!authenticatedHref && !guestHref) {
+      return;
+    }
+    let mounted = true;
+    const resolveHref = (sessionPresent: boolean) => {
+      const next = sessionPresent ? authenticatedHref ?? guestHref ?? null : guestHref ?? authenticatedHref ?? null;
+      if (mounted) {
+        setTargetHref(next);
+      }
+    };
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        resolveHref(Boolean(data.session));
+      })
+      .catch(() => {
+        resolveHref(false);
+      });
+    const { data: authSubscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      resolveHref(Boolean(session));
+    });
+    return () => {
+      mounted = false;
+      authSubscription?.subscription.unsubscribe();
+    };
+  }, [authenticatedHref, guestHref]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -40,7 +84,7 @@ export function HeroMediaTile({ label, priceLabel, videoSrc, posterSrc, alt, sho
     return () => mediaQuery.removeEventListener('change', update);
   }, []);
 
-  return (
+  const content = (
     <figure className="group relative overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-card">
       <div className="relative aspect-[16/9] w-full">
         {showAudioIcon ? (
@@ -80,4 +124,18 @@ export function HeroMediaTile({ label, priceLabel, videoSrc, posterSrc, alt, sho
       <span className="sr-only">{alt}</span>
     </figure>
   );
+
+  if (targetHref) {
+    return (
+      <Link
+        href={targetHref}
+        className="block rounded-[28px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+        aria-label={`Open ${label} generator`}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return content;
 }

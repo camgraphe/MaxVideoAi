@@ -110,7 +110,7 @@ export const PARTNER_BRANDS: PartnerBrand[] = [
       light: 'Luma AI wordmark',
       dark: 'Luma AI wordmark (inverse)',
     },
-    engineIds: ['luma-dm', 'lumadm', 'luma-dream-machine', 'lumaRay2', 'lumaRay2_flash'],
+    engineIds: ['luma-dm', 'lumadm', 'luma-dream-machine', 'lumaRay2', 'lumaRay2_flash', 'lumaRay2_modify', 'lumaRay2_reframe', 'lumaRay2_flash_reframe'],
   },
   {
     id: 'google-veo',

@@ -177,6 +177,49 @@ function resolveModelSlug(payload: GeneratePayload, fallback?: string): string |
     return `fal-ai/sora-2/${mode}${suffix}`;
   }
 
+  if (!baseSlug) {
+    return undefined;
+  }
+
+  const stripVariantSuffix = (slug: string) => slug.replace(/\/(text-to-video|image-to-video|modify|reframe)$/i, '');
+  const normalized = baseSlug.replace(/\/+$/, '');
+
+  if (payload.engineId === 'lumaDM') {
+    const root = stripVariantSuffix(normalized);
+    const base = root.endsWith('/luma-dream-machine') ? root : `${root}/luma-dream-machine`;
+    return mode === 'image-to-video' ? `${base}/image-to-video` : base;
+  }
+
+  if (payload.engineId === 'lumaRay2') {
+    const root = stripVariantSuffix(normalized);
+    const base = root.endsWith('/ray-2') ? root : `${root.replace(/\/ray-2$/, '')}/ray-2`;
+    return mode === 'image-to-video' ? `${base}/image-to-video` : base;
+  }
+
+  if (payload.engineId === 'lumaRay2_flash') {
+    const root = stripVariantSuffix(normalized);
+    const base = root.endsWith('/ray-2-flash') ? root : `${root.replace(/\/ray-2-flash$/, '')}/ray-2-flash`;
+    return mode === 'image-to-video' ? `${base}/image-to-video` : base;
+  }
+
+  if (payload.engineId === 'lumaRay2_modify') {
+    const root = stripVariantSuffix(normalized);
+    const base = root.endsWith('/modify') ? root : `${root.replace(/\/modify$/, '')}/modify`;
+    return base;
+  }
+
+  if (payload.engineId === 'lumaRay2_reframe') {
+    const root = stripVariantSuffix(normalized);
+    const base = root.endsWith('/reframe') ? root : `${root.replace(/\/reframe$/, '')}/reframe`;
+    return base;
+  }
+
+  if (payload.engineId === 'lumaRay2_flash_reframe') {
+    const root = stripVariantSuffix(normalized);
+    const base = root.endsWith('/reframe') ? root : `${root.replace(/\/reframe$/, '')}/reframe`;
+    return base;
+  }
+
   return baseSlug;
 }
 

@@ -327,7 +327,8 @@
       "queueDepth": 0,
       "region": "global",
       "modes": [
-        "t2v"
+        "t2v",
+        "i2v"
       ],
       "maxDurationSec": 12,
       "resolutions": [
@@ -608,7 +609,8 @@
       "queueDepth": 0,
       "region": "global",
       "modes": [
-        "t2v"
+        "t2v",
+        "i2v"
       ],
       "maxDurationSec": 8,
       "resolutions": [
@@ -670,15 +672,15 @@
         }
       },
       "pricing": {
-        "unit": "USD/video",
-        "base": 0.5,
+        "unit": "USD/s",
+        "base": 0.1,
         "currency": "USD",
-        "notes": "Tarif aligné sur Luma Ray 2."
+        "notes": "Fal.ai Ray-2 • $0.50 per 5s block (≈$0.10/s)."
       },
       "pricingDetails": {
         "currency": "USD",
-        "flatCents": {
-          "default": 50
+        "perSecondCents": {
+          "default": 10
         }
       },
       "updatedAt": "2025-10-14T00:00:00Z",
@@ -758,15 +760,230 @@
         }
       },
       "pricing": {
-        "unit": "USD/video",
-        "base": 0.35,
+        "unit": "USD/s",
+        "base": 0.05,
         "currency": "USD",
-        "notes": "Ray 2 Flash : 0.35$ par vidéo (Fal.ai)."
+        "notes": "Ray-2 Flash fast generations • tuned to approx. $0.40 for 8s (≈$0.05/s)."
       },
       "pricingDetails": {
         "currency": "USD",
-        "flatCents": {
+        "perSecondCents": {
+          "default": 5
+        }
+      },
+      "updatedAt": "2025-10-14T00:00:00Z",
+      "ttlSec": 600,
+      "brandId": "luma"
+    },
+    {
+      "id": "lumaRay2_modify",
+      "label": "Luma Ray 2 Modify",
+      "provider": "Luma Labs",
+      "version": "Ray 2 Modify",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "i2v"
+      ],
+      "maxDurationSec": 60,
+      "resolutions": [
+        "720p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": false,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "videoMaxMB": 500
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Input video URL"
+          }
+        ],
+        "optional": [
+          {
+            "id": "style_image",
+            "type": "image",
+            "label": "Reference image",
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either",
+            "engineParam": "image_url"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "mp4",
+            "mov"
+          ]
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.35,
+        "currency": "USD",
+        "notes": "Fal.ai Modify endpoint • $0.35 per rendered second."
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
           "default": 35
+        }
+      },
+      "updatedAt": "2025-10-14T00:00:00Z",
+      "ttlSec": 600,
+      "brandId": "luma"
+    },
+    {
+      "id": "lumaRay2_reframe",
+      "label": "Luma Ray 2 Reframe",
+      "provider": "Luma Labs",
+      "version": "Ray 2 Reframe",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "i2v"
+      ],
+      "maxDurationSec": 60,
+      "resolutions": [
+        "720p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1",
+        "4:5"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": false,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "videoMaxMB": 500
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Input video URL"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "select",
+            "label": "Target aspect ratio",
+            "options": [
+              "16:9",
+              "9:16",
+              "1:1",
+              "4:5"
+            ]
+          }
+        ]
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.2,
+        "currency": "USD",
+        "notes": "Fal.ai Reframe • $0.20 per rendered second."
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 20
+        }
+      },
+      "updatedAt": "2025-10-14T00:00:00Z",
+      "ttlSec": 600,
+      "brandId": "luma"
+    },
+    {
+      "id": "lumaRay2_flash_reframe",
+      "label": "Luma Ray 2 Flash Reframe",
+      "provider": "Luma Labs",
+      "version": "Ray 2 Flash Reframe",
+      "status": "live",
+      "latencyTier": "fast",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "i2v"
+      ],
+      "maxDurationSec": 60,
+      "resolutions": [
+        "720p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1",
+        "4:5"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": false,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "videoMaxMB": 500
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Input video URL"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "select",
+            "label": "Target aspect ratio",
+            "options": [
+              "16:9",
+              "9:16",
+              "1:1",
+              "4:5"
+            ]
+          }
+        ]
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.06,
+        "currency": "USD",
+        "notes": "Fal.ai Flash Reframe • $0.06 per rendered second."
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 6
         }
       },
       "updatedAt": "2025-10-14T00:00:00Z",

@@ -76,6 +76,33 @@
     "logoPolicy": "logoAllowed"
   },
   {
+    "engineId": "lumaRay2_modify",
+    "marketingName": "Luma Ray 2 Modify",
+    "brandId": "luma",
+    "modelSlug": "luma-ray-2-modify",
+    "versionLabel": "Modify",
+    "availability": "available",
+    "logoPolicy": "logoAllowed"
+  },
+  {
+    "engineId": "lumaRay2_reframe",
+    "marketingName": "Luma Ray 2 Reframe",
+    "brandId": "luma",
+    "modelSlug": "luma-ray-2-reframe",
+    "versionLabel": "Reframe",
+    "availability": "available",
+    "logoPolicy": "logoAllowed"
+  },
+  {
+    "engineId": "lumaRay2_flash_reframe",
+    "marketingName": "Luma Ray 2 Flash Reframe",
+    "brandId": "luma",
+    "modelSlug": "luma-ray-2-flash-reframe",
+    "versionLabel": "Flash Reframe",
+    "availability": "available",
+    "logoPolicy": "logoAllowed"
+  },
+  {
     "engineId": "pika22",
     "marketingName": "Pika 2.2",
     "brandId": "pika",

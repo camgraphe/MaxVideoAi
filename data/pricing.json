@@ -83,7 +83,7 @@
     "stale": false,
     "checksum": "",
     "prices": [
-      { "variant": { "mode": "ray-2" }, "raw": { "currency": "USD", "unit": "5s", "amount": 0.50 } }
+      { "variant": { "mode": "ray-2" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.10 } }
     ]
   },
   {
@@ -95,7 +95,43 @@
     "stale": false,
     "checksum": "",
     "prices": [
-      { "variant": { "mode": "flash" }, "raw": { "currency": "USD", "unit": "5s", "amount": 0.20 } }
+      { "variant": { "mode": "flash" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.05 } }
+    ]
+  },
+  {
+    "engine": "Luma Ray 2 Modify",
+    "catalogSlug": "luma-ray-2-modify",
+    "falSlug": "fal-ai/luma-dream-machine/ray-2/modify",
+    "source_url": "https://fal.ai/models/fal-ai/luma-dream-machine/ray-2/modify",
+    "last_checked_at": "",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      { "variant": { "mode": "modify" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.35 } }
+    ]
+  },
+  {
+    "engine": "Luma Ray 2 Reframe",
+    "catalogSlug": "luma-ray-2-reframe",
+    "falSlug": "fal-ai/luma-dream-machine/ray-2/reframe",
+    "source_url": "https://fal.ai/models/fal-ai/luma-dream-machine/ray-2/reframe",
+    "last_checked_at": "",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      { "variant": { "mode": "reframe" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.20 } }
+    ]
+  },
+  {
+    "engine": "Luma Ray 2 Flash Reframe",
+    "catalogSlug": "luma-ray-2-flash-reframe",
+    "falSlug": "fal-ai/luma-dream-machine/ray-2-flash/reframe",
+    "source_url": "https://fal.ai/models/fal-ai/luma-dream-machine/ray-2-flash/reframe",
+    "last_checked_at": "",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      { "variant": { "mode": "flash-reframe" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.06 } }
     ]
   },
   {

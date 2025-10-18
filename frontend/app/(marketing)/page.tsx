@@ -20,6 +20,8 @@ type HeroTileConfig = {
   durationSec: number;
   resolution: string;
   fallbackPriceLabel: string;
+  minPriceCents?: number;
+  minPriceCurrency?: string;
   addons?: {
     audio?: boolean;
     upscale4k?: boolean;
@@ -37,7 +39,8 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     posterSrc: '/hero/sora2.jpg',
     durationSec: 8,
     resolution: '1080p',
-    fallbackPriceLabel: 'from $0.10',
+    fallbackPriceLabel: 'from $0.43',
+    minPriceCents: 43,
     addons: { audio: true },
     showAudioIcon: true,
     alt: 'Sora 2 — example clip',
@@ -50,7 +53,8 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     posterSrc: '/hero/veo3.jpg',
     durationSec: 12,
     resolution: '1080p',
-    fallbackPriceLabel: 'from $0.20',
+    fallbackPriceLabel: 'from $0.43',
+    minPriceCents: 43,
     showAudioIcon: true,
     alt: 'Veo 3 — example clip',
   },
@@ -62,7 +66,8 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     posterSrc: '/hero/luma-ray2-flash.jpg',
     durationSec: 8,
     resolution: '1080p',
-    fallbackPriceLabel: 'from $0.09',
+    fallbackPriceLabel: 'from $0.40',
+    minPriceCents: 40,
     alt: 'Luma Dream Machine — example clip',
     addons: { audio: true },
   },
@@ -74,7 +79,8 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     posterSrc: '/hero/pika-22.jpg',
     durationSec: 6,
     resolution: '1080p',
-    fallbackPriceLabel: 'from $0.20',
+    fallbackPriceLabel: 'from $0.24',
+    minPriceCents: 24,
     alt: 'Pika 2.2 — example clip',
   },
 ] as const;
@@ -85,6 +91,15 @@ async function resolveHeroTilePrices() {
   const kernel = getPricingKernel();
   const entries = await Promise.all(
     HERO_TILES.map(async (tile) => {
+      const formatPriceLabel = (cents: number, currency: string) =>
+        `from ${new Intl.NumberFormat(CURRENCY_LOCALE, {
+          style: 'currency',
+          currency,
+          minimumFractionDigits: 2,
+        }).format(cents / 100)}`;
+      const minPriceCents = tile.minPriceCents ?? null;
+      const minPriceCurrency = tile.minPriceCurrency ?? 'USD';
+      const fallbackLabel = minPriceCents != null ? formatPriceLabel(minPriceCents, minPriceCurrency) : tile.fallbackPriceLabel;
       try {
         const { snapshot } = kernel.quote({
           engineId: tile.engineId,
@@ -93,14 +108,15 @@ async function resolveHeroTilePrices() {
           addons: tile.addons,
           memberTier: 'member',
         });
-        const formatted = new Intl.NumberFormat(CURRENCY_LOCALE, {
-          style: 'currency',
-          currency: snapshot.currency,
-          minimumFractionDigits: 2,
-        }).format(snapshot.totalCents / 100);
-        return [tile.id, `from ${formatted}`] as const;
+        let cents = snapshot.totalCents;
+        let currency = snapshot.currency;
+        if (minPriceCents != null && minPriceCents < snapshot.totalCents) {
+          cents = minPriceCents;
+          currency = minPriceCurrency;
+        }
+        return [tile.id, formatPriceLabel(cents, currency)] as const;
       } catch {
-        return [tile.id, tile.fallbackPriceLabel] as const;
+        return [tile.id, fallbackLabel ?? tile.fallbackPriceLabel] as const;
       }
     })
   );
@@ -208,6 +224,8 @@ export default async function HomePage() {
               alt={tile.alt}
               showAudioIcon={tile.showAudioIcon}
               priority={index === 0}
+              authenticatedHref="/generate"
+              guestHref="/login?next=/generate"
             />
           ))}
         </div>

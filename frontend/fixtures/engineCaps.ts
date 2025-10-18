@@ -118,24 +118,69 @@ export const ENGINE_CAPS: Record<string, EngineCaps> = {
     audioToggle: false,
   },
 
-  // --- LUMA DREAM MACHINE (v1.5) & LUMA RAY 2 family ---
-  'fal-ai/luma-dream-machine/image-to-video': {
-    modes: ['i2v'],
-    audioToggle: false,
-  },
-  'fal-ai/luma-dream-machine/ray-2/image-to-video': {
-    modes: ['i2v'],
-    audioToggle: false,
-  },
-  'fal-ai/luma-dream-machine/ray-2-flash/image-to-video': {
-    modes: ['i2v'],
-    audioToggle: false,
-  },
+// --- LUMA DREAM MACHINE (v1.5) & LUMA RAY 2 family ---
+'fal-ai/luma-dream-machine/image-to-video': {
+  modes: ['i2v'],
+  audioToggle: false,
+},
+'fal-ai/luma-dream-machine': {
+  modes: ['t2v'],
+  duration: { min: 5, default: 5 },
+  aspectRatio: ['16:9', '9:16'],
+  audioToggle: false,
+},
+'fal-ai/luma-dream-machine/ray-2': {
+  modes: ['t2v'],
+  duration: { min: 5, default: 5 },
+  aspectRatio: ['16:9', '9:16'],
+  audioToggle: false,
+  notes: 'Billed at $0.50 per 5s block via Fal.ai (≈$0.10/s).',
+},
+'fal-ai/luma-dream-machine/ray-2/image-to-video': {
+  modes: ['i2v'],
+  audioToggle: false,
+  duration: { min: 5, default: 5 },
+},
+'fal-ai/luma-dream-machine/ray-2/modify': {
+  modes: ['i2v'],
+  duration: { min: 1, default: 5 },
+  audioToggle: false,
+  maxUploadMB: 500,
+  notes: 'Video→Video restyle. Fal.ai bills $0.35 per output second.',
+},
+'fal-ai/luma-dream-machine/ray-2/reframe': {
+  modes: ['i2v'],
+  duration: { min: 1, default: 5 },
+  aspectRatio: ['16:9', '9:16', '1:1', '4:5'],
+  audioToggle: false,
+  maxUploadMB: 500,
+  notes: 'Aspect conversion / smart inpaint. Fal.ai bills $0.20 per output second.',
+},
+'fal-ai/luma-dream-machine/ray-2-flash': {
+  modes: ['t2v'],
+  duration: { min: 5, default: 5 },
+  aspectRatio: ['16:9', '9:16'],
+  audioToggle: false,
+  notes: 'Flash variant tuned for faster Ray-2 generations.',
+},
+'fal-ai/luma-dream-machine/ray-2-flash/image-to-video': {
+  modes: ['i2v'],
+  audioToggle: false,
+  duration: { min: 5, default: 5 },
+},
+'fal-ai/luma-dream-machine/ray-2-flash/reframe': {
+  modes: ['i2v'],
+  duration: { min: 1, default: 5 },
+  aspectRatio: ['16:9', '9:16', '1:1', '4:5'],
+  audioToggle: false,
+  maxUploadMB: 500,
+  notes: 'Flash Reframe • Fal.ai bills $0.06 per output second.',
+},
 
-  // --- MINIMAX / HAILUO ---
-  'fal-ai/minimax/hailuo-02/standard/image-to-video': {
-    modes: ['i2v'],
-    duration: { options: [6, 10], default: 6 },
+// --- MINIMAX / HAILUO ---
+'fal-ai/minimax/hailuo-02/standard/image-to-video': {
+  modes: ['i2v'],
+  duration: { options: [6, 10], default: 6 },
     resolution: ['512P', '768P'],
     fps: 25,
     audioToggle: false,
@@ -213,13 +258,25 @@ export const ENGINE_CAP_INDEX: Record<string, ModeCapsMap> = {
     i2v: 'fal-ai/kling-video/v2.5-turbo/pro/image-to-video',
   },
   lumaDM: {
+    t2v: 'fal-ai/luma-dream-machine',
     i2v: 'fal-ai/luma-dream-machine/image-to-video',
   },
   lumaRay2: {
+    t2v: 'fal-ai/luma-dream-machine/ray-2',
     i2v: 'fal-ai/luma-dream-machine/ray-2/image-to-video',
   },
   lumaRay2_flash: {
+    t2v: 'fal-ai/luma-dream-machine/ray-2-flash',
     i2v: 'fal-ai/luma-dream-machine/ray-2-flash/image-to-video',
+  },
+  lumaRay2_modify: {
+    i2v: 'fal-ai/luma-dream-machine/ray-2/modify',
+  },
+  lumaRay2_reframe: {
+    i2v: 'fal-ai/luma-dream-machine/ray-2/reframe',
+  },
+  lumaRay2_flash_reframe: {
+    i2v: 'fal-ai/luma-dream-machine/ray-2-flash/reframe',
   },
   minimax_hailuo_02_pro: {
     i2v: 'fal-ai/minimax/hailuo-02/pro/image-to-video',

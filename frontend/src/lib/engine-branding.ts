@@ -54,7 +54,10 @@ const ENGINE_PICTOGRAMS: Record<string, EnginePictogram> = {
   minimax_video_01: { code: 'Mi', backgroundColor: '#FFE7F0', textColor: DEFAULT_TEXT_COLOR },
   minimax_hailuo_02_pro: { code: 'Mi', backgroundColor: '#FFE7F0', textColor: DEFAULT_TEXT_COLOR },
   lumaRay2: BRAND_PICTOGRAMS.luma,
-  lumaRay2_flash: BRAND_PICTOGRAMS.luma
+  lumaRay2_flash: BRAND_PICTOGRAMS.luma,
+  lumaRay2_modify: BRAND_PICTOGRAMS.luma,
+  lumaRay2_reframe: BRAND_PICTOGRAMS.luma,
+  lumaRay2_flash_reframe: BRAND_PICTOGRAMS.luma
 };
 
 const FALLBACK_COLORS = ['#E8EDFF', '#FFE6F1', '#E6F5EB', '#FFF2DC', '#F2E9FF', '#E2F7F4', '#FFECE1', '#E9EEF5'];

@@ -77,6 +77,21 @@ const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
       'Flash mode keeps the Ray aesthetic with faster turnaround—perfect for look-dev.',
     badges: ['⚡ Flash', '🗒️ Storyboard', '💡 Look-dev'],
   },
+  lumaRay2_modify: {
+    description:
+      'Upload an existing shot and restyle it with Ray 2 Modify—ideal for brand-safe alternates.',
+    badges: ['🎬 Restyle', '🖌️ Texture swap', '🧵 Continuity'],
+  },
+  lumaRay2_reframe: {
+    description:
+      'Convert hero cuts between aspect ratios with AI-aware reframing and inpainting.',
+    badges: ['↔️ Aspect', '🧠 Smart fill', '📲 Social crops'],
+  },
+  lumaRay2_flash_reframe: {
+    description:
+      'Flash Reframe brings rapid aspect swaps at a lower price for quick turnarounds.',
+    badges: ['⚡ Fast', '↔️ Aspect', '💰 Budget'],
+  },
   pika22: {
     description:
       'Fast social-first clips with caption overlays and Pikascenes motion controls.',
