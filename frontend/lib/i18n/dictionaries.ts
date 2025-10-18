@@ -432,7 +432,7 @@ const en: Dictionary = {
     pricing: {
       badge: 'Pricing',
       title: 'Starter Credits unlock the full workspace.',
-      body: 'Load $5 and run your first renders immediately. Add $5 / $10 / $25 whenever you need more wallet balance.',
+      body: 'Load $10 and run your first renders immediately. Add $10 / $25 / $50 whenever you need more wallet balance.',
       link: 'Go to pricing',
     },
     trust: {
@@ -448,7 +448,7 @@ const en: Dictionary = {
   },
   pricing: {
     hero: {
-      title: 'Price before you generate. Pay only for what you run. Start with Starter Credits ($5). No subscription. No lock-in.',
+      title: 'Price before you generate. Pay only for what you run. Start with Starter Credits ($10). No subscription. No lock-in.',
       subtitle: 'Every estimate updates live as you adjust engines, durations, and outputs. Wallet balances sync across teams with daily status checks.',
     },
     estimator: {
@@ -482,14 +482,14 @@ const en: Dictionary = {
     },
     wallet: {
       title: 'Wallet',
-      description: 'Fund your wallet with Starter Credits ($5) or add $5 / $10 / $25 at a time. Optional auto top-up keeps renders moving.',
+      description: 'Fund your wallet with Starter Credits ($10) or add $10 / $25 / $50 at a time. Optional auto top-up keeps renders moving.',
       points: [
-        'Starter Credits ($5) to get rolling instantly.',
-        'Add funds in $5, $10, or $25 increments when you need them.',
+        'Starter Credits ($10) to get rolling instantly.',
+        'Add funds in $10, $25, or $50 increments when you need them.',
         'Optional auto top-up with alerts when balance drops below your threshold.',
       ],
       balanceLabel: 'Wallet balance',
-      balanceHelper: 'Starter Credits begin at $5. Shared wallets sync automatically.',
+      balanceHelper: 'Starter Credits begin at $10. Shared wallets sync automatically.',
       autoTopUpLabel: 'Auto top-up when balance dips below $10',
       autoTopUpHint: 'Daily status emails keep finance in the loop.',
       addLabel: 'Add ${amount}',
@@ -541,7 +541,7 @@ const en: Dictionary = {
       entries: [
         {
           question: 'How do credits work?',
-          answer: 'Starter Credits load $5 into your wallet. Spend them like cash and top up whenever you need more runs.',
+          answer: 'Starter Credits load $10 into your wallet. Spend them like cash and top up whenever you need more runs.',
         },
         {
           question: 'Do they expire?',
@@ -798,7 +798,7 @@ const en: Dictionary = {
         title: 'Price system',
         items: [
           'Use the estimator to preview costs per engine. Chips display duration, resolution, and discounts.',
-          'Starter Credits ($5) and rolling Member status (Member / Plus / Pro) update daily.',
+          'Starter Credits ($10) and rolling Member status (Member / Plus / Pro) update daily.',
         ],
       },
       {

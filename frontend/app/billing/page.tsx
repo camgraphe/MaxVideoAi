@@ -227,7 +227,7 @@ export default function BillingPage() {
           {/* Pricing Hero */}
           <section className="mb-6 rounded-card border border-border bg-white p-4 shadow-card">
             <h2 className="text-xl font-semibold text-text-primary">Price before you generate.</h2>
-            <p className="mt-1 text-sm text-text-secondary">Pay only for what you run. Start with Starter Credits ($5). No subscription. No lock‑in.</p>
+            <p className="mt-1 text-sm text-text-secondary">Pay only for what you run. Start with Starter Credits ($10). No subscription. No lock‑in.</p>
             {stripeMode !== 'disabled' && (
               <div className="mt-2">
                 <span className={`rounded-full px-2 py-1 text-xs ${stripeMode==='test' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
@@ -240,12 +240,12 @@ export default function BillingPage() {
           <section className="mb-6 grid gap-4 md:grid-cols-2">
             <div className="rounded-card border border-border bg-white p-4 shadow-card">
               <h2 className="mb-2 text-lg font-semibold text-text-primary">Wallet</h2>
-              <p className="text-sm text-text-secondary">Starter Credits ($5). Top up once, then pay per render to the cent. Any unused balance stays yours.</p>
+              <p className="text-sm text-text-secondary">Starter Credits ($10). Top up once, then pay per render to the cent. Any unused balance stays yours.</p>
               <p className="mt-1 text-2xl font-semibold text-text-primary">${(wallet?.balance ?? 0).toFixed(2)}</p>
               <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-                <button onClick={() => handleTopUp(500)} className="rounded-input border border-border px-3 py-2 hover:bg-bg">Add funds $5</button>
-                <button onClick={() => handleTopUp(1000)} className="rounded-input border border-border px-3 py-2 hover:bg-bg">$10</button>
+                <button onClick={() => handleTopUp(1000)} className="rounded-input border border-border px-3 py-2 hover:bg-bg">Add funds $10</button>
                 <button onClick={() => handleTopUp(2500)} className="rounded-input border border-border px-3 py-2 hover:bg-bg">$25</button>
+                <button onClick={() => handleTopUp(5000)} className="rounded-input border border-border px-3 py-2 hover:bg-bg">$50</button>
                 <Link href="/settings" className="ml-auto rounded-input border border-border px-3 py-2 hover:bg-bg">Enable auto top‑up (optional)</Link>
               </div>
               {(wallet?.balance ?? 0) < 2 && (

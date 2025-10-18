@@ -310,8 +310,8 @@ export function PriceEstimator({ showWalletActions = true, variant = 'full' }: P
   const walletBalanceLabel =
     dictionary.pricing.wallet.balanceLabel ?? t('pricing.wallet.balanceLabel', 'Wallet balance') ?? 'Wallet balance';
   const walletHelper =
-    dictionary.pricing.wallet.balanceHelper ?? t('pricing.wallet.balanceHelper', 'Starter Credits begin at $5. Shared wallets sync automatically.') ??
-    'Starter Credits begin at $5. Shared wallets sync automatically.';
+    dictionary.pricing.wallet.balanceHelper ?? t('pricing.wallet.balanceHelper', 'Starter Credits begin at $10. Shared wallets sync automatically.') ??
+    'Starter Credits begin at $10. Shared wallets sync automatically.';
   const walletAutoLabel =
     dictionary.pricing.wallet.autoTopUpLabel ?? t('pricing.wallet.autoTopUpLabel', 'Auto top-up when balance dips below $10') ??
     'Auto top-up when balance dips below $10';

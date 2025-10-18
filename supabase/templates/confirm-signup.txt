@@ -1,0 +1,9 @@
+Bonjour {{ .Email }},
+
+Merci de rejoindre MaxVideo AI. Confirme ton adresse pour activer ton workspace et lancer tes premiers rendus :
+{{ .ConfirmationURL }}
+
+Ce lien est valide 24 heures. Si tu n’es pas à l’origine de cette demande, ignore simplement ce message.
+
+À très vite,
+L’équipe MaxVideo AI
