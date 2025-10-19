@@ -1,0 +1,9 @@
+Bonjour {{ .Email }},
+
+Ton lien sécurisé MaxVideoAI est prêt :
+{{ .ActionLink }}
+
+Ce lien expire dans 24 heures et ne peut être utilisé qu’une seule fois. Si tu n’es pas à l’origine de cette demande, ignore simplement ce message.
+
+À très vite,
+L’équipe MaxVideo AI

@@ -1,4 +1,6 @@
 import { isDatabaseConfigured, query } from '@/lib/db';
+import { getLowBalanceThresholdCents, sendWalletLowBalanceEmail, shouldThrottleLowBalance } from '@/lib/email';
+import { getUserIdentity } from '@/server/supabase-admin';
 
 type MockWalletStore = Map<string, number>;
 type MockReceiptStore = Set<string>;
@@ -106,12 +108,16 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
     if (!result.ok) {
       return { ok: false as const, balanceCents: result.balanceCents };
     }
-    return {
+    const success = {
       ok: true as const,
       receiptId: `mock-receipt-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
       balanceCents: result.balanceCents,
       remainingCents: result.remainingCents,
     };
+    void triggerLowBalanceAlert(params.userId, success.remainingCents, params.currency).catch((error) => {
+      console.warn('[wallet] mock low balance alert failed', error);
+    });
+    return success;
   };
 
   if (!isDatabaseConfigured()) {
@@ -204,9 +210,29 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
       return { ok: false, balanceCents };
     }
 
-    return { ok: true, receiptId, balanceCents, remainingCents };
+    const outcome: ReserveWalletChargeSuccess = { ok: true, receiptId, balanceCents, remainingCents };
+    void triggerLowBalanceAlert(params.userId, remainingCents, params.currency).catch((error) => {
+      console.warn('[wallet] low balance alert failed', error instanceof Error ? error.message : error);
+    });
+    return outcome;
   } catch (error) {
     console.warn('[wallet] reserve failed, using mock ledger', error);
     return fallbackToMock();
   }
+}
+
+async function triggerLowBalanceAlert(userId: string, remainingCents: number, currency: string) {
+  const threshold = getLowBalanceThresholdCents();
+  if (remainingCents >= threshold) return;
+  if (shouldThrottleLowBalance(userId)) return;
+
+  const identity = await getUserIdentity(userId);
+  if (!identity?.email) return;
+  await sendWalletLowBalanceEmail({
+    to: identity.email,
+    balanceCents: remainingCents,
+    currency,
+    thresholdCents: threshold,
+    recipientName: identity.fullName,
+  });
 }

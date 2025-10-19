@@ -2,6 +2,8 @@ import { query } from '@/lib/db';
 import { normalizeMediaUrl } from '@/lib/media';
 import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
+import { sendRenderCompletedEmail } from '@/lib/email';
+import { getUserIdentity } from '@/server/supabase-admin';
 
 type FalWebhookPayload = {
   request_id?: string;
@@ -15,7 +17,10 @@ type FalWebhookPayload = {
 
 type AppJobRow = {
   job_id: string;
+  user_id: string | null;
   engine_id: string;
+  engine_label: string | null;
+  duration_sec: number | null;
   status: string;
   progress: number;
   video_url: string | null;
@@ -129,7 +134,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   }
 
   const jobRows = await query<AppJobRow>(
-    `SELECT job_id, engine_id, status, progress, video_url, thumb_url, message
+    `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, message
      FROM app_jobs
      WHERE provider_job_id = $1
      LIMIT 1`,
@@ -186,4 +191,28 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       nextMessage ?? job.message,
     ]
   );
+
+  const wasCompleted = job.status === 'completed';
+  const isCompleted = statusInfo.status === 'completed';
+  if (isCompleted && !wasCompleted && job.user_id) {
+    const finalVideoUrl = nextVideoUrl ?? job.video_url;
+    const finalThumbUrl = nextThumbUrl ?? job.thumb_url;
+    void notifyRenderCompletion(job, finalVideoUrl, finalThumbUrl).catch((error) => {
+      console.error('[fal-webhook] Failed to send completion email', error);
+    });
+  }
+}
+
+async function notifyRenderCompletion(job: AppJobRow, videoUrl: string | null, thumbUrl: string | null) {
+  const identity = await getUserIdentity(job.user_id!);
+  if (!identity?.email) return;
+  await sendRenderCompletedEmail({
+    to: identity.email,
+    jobId: job.job_id,
+    engineLabel: job.engine_label ?? undefined,
+    durationSec: job.duration_sec ?? undefined,
+    videoUrl: videoUrl ?? undefined,
+    thumbnailUrl: thumbUrl ?? undefined,
+    recipientName: identity.fullName,
+  });
 }
