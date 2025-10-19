@@ -24,6 +24,21 @@ export async function ensureBillingSchema(): Promise<void> {
         );
       `);
 
+    await query(`
+        INSERT INTO app_pricing_rules (
+          id,
+          margin_percent,
+          margin_flat_cents,
+          surcharge_audio_percent,
+          surcharge_upscale_percent,
+          currency,
+          effective_from,
+          created_at
+        )
+        VALUES ('default', 0.2, 0, 0.2, 0.5, 'USD', NOW(), NOW())
+        ON CONFLICT (id) DO NOTHING;
+      `);
+
       await query(`
         CREATE TABLE IF NOT EXISTS app_jobs (
           id BIGSERIAL PRIMARY KEY,

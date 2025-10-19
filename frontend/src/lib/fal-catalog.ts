@@ -406,6 +406,10 @@ export function getDefaultModelMap(): Record<string, string> {
   return { ...DEFAULT_MODEL_MAP };
 }
 
+export function invalidateFalCatalogCache(): void {
+  catalogCache = null;
+}
+
 export async function resolveFalModelId(engineId: string): Promise<string | undefined> {
   const envKey = `FAL_MODEL_${engineId.replace(/[^A-Za-z0-9]/g, '_').toUpperCase()}`;
   const override = process.env[envKey];
