@@ -101,6 +101,12 @@ export default function AdminUsersPage() {
         />
       </div>
 
+      {statsUnavailable ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+          Supabase service role key is missing. Add <code className="font-mono">SUPABASE_SERVICE_ROLE_KEY</code> to your environment to display user metrics.
+        </div>
+      ) : null}
+
       {stats && !statsUnavailable ? (
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
