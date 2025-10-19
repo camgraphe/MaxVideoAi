@@ -206,9 +206,11 @@ async function recordTopup({
       }
     }
 
-    await query(
+    const rows = await query<{ id: number }>(
       `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, metadata, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct)
-       VALUES ($1, 'topup', $2, $3, $4, $5, $6, $7, $8, $9)`,
+       VALUES ($1, 'topup', $2, $3, $4, $5, $6, $7, $8, $9)
+       ON CONFLICT DO NOTHING
+       RETURNING id`,
       [
         userId,
         normalizedAmount,
@@ -221,6 +223,17 @@ async function recordTopup({
         destinationAcct ?? null,
       ]
     );
+
+    if (rows.length === 0) {
+      console.log('[stripe-webhook] Skipped duplicate wallet top-up', {
+        userId,
+        amountCents: normalizedAmount,
+        currency: normalizedCurrency,
+        paymentIntentId,
+        chargeId,
+      });
+      return;
+    }
 
     console.log('[stripe-webhook] Recorded wallet top-up', {
       userId,

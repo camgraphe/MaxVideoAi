@@ -35,14 +35,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           const amount = session.amount_total ?? 0; // in cents
           const currency = session.currency ?? 'usd';
           const insert = async () => {
-            await pool!.query(
+            const result = await pool!.query<{ id: number }>(
               `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, metadata)
-               VALUES ($1,'topup',$2,$3,$4,$5)`,
+               VALUES ($1,'topup',$2,$3,$4,$5)
+               ON CONFLICT DO NOTHING
+               RETURNING id`,
               [userId, amount, currency.toUpperCase(), 'Wallet top-up', JSON.stringify({ session_id: session.id })]
             );
+            return result.rowCount > 0;
           };
           try {
-            await insert();
+            const inserted = await insert();
+            if (!inserted) {
+              console.log('[stripe-webhook] Skipped duplicate wallet top-up (pages handler)', {
+                userId,
+                amount,
+                currency,
+                sessionId: session.id,
+              });
+              break;
+            }
           } catch (error) {
             // Auto-create receipts table on first run in dev
             if (error && typeof error === 'object' && 'code' in error && (error as { code?: string }).code === '42P01') {
@@ -65,7 +77,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   created_at timestamptz not null default now()
                 )`
               );
-              await insert();
+              const inserted = await insert();
+              if (!inserted) {
+                console.log('[stripe-webhook] Skipped duplicate wallet top-up after ensure schema (pages handler)', {
+                  userId,
+                  amount,
+                  currency,
+                  sessionId: session.id,
+                });
+                break;
+              }
             } else {
               throw error;
             }

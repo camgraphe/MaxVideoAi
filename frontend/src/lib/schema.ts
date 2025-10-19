@@ -157,6 +157,38 @@ export async function ensureBillingSchema(): Promise<void> {
       `);
 
       await query(`
+        WITH ranked AS (
+          SELECT id, ROW_NUMBER() OVER (PARTITION BY stripe_payment_intent_id, type ORDER BY id) AS row_num
+          FROM app_receipts
+          WHERE stripe_payment_intent_id IS NOT NULL
+        )
+        UPDATE app_receipts
+        SET stripe_payment_intent_id = NULL
+        WHERE id IN (SELECT id FROM ranked WHERE row_num > 1);
+      `);
+
+      await query(`
+        WITH ranked AS (
+          SELECT id, ROW_NUMBER() OVER (PARTITION BY stripe_charge_id, type ORDER BY id) AS row_num
+          FROM app_receipts
+          WHERE stripe_charge_id IS NOT NULL
+        )
+        UPDATE app_receipts
+        SET stripe_charge_id = NULL
+        WHERE id IN (SELECT id FROM ranked WHERE row_num > 1);
+      `);
+
+      await query(`
+        CREATE UNIQUE INDEX IF NOT EXISTS app_receipts_unique_pi ON app_receipts (stripe_payment_intent_id)
+        WHERE stripe_payment_intent_id IS NOT NULL;
+      `);
+
+      await query(`
+        CREATE UNIQUE INDEX IF NOT EXISTS app_receipts_unique_charge ON app_receipts (stripe_charge_id)
+        WHERE stripe_charge_id IS NOT NULL;
+      `);
+
+      await query(`
         ALTER TABLE app_receipts
         ADD COLUMN IF NOT EXISTS platform_revenue_cents BIGINT,
         ADD COLUMN IF NOT EXISTS destination_acct TEXT,
