@@ -62,51 +62,51 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-white">Members</h2>
-          <p className="text-sm text-slate-400">Search for a member by email or Supabase user ID.</p>
+          <h2 className="text-xl font-semibold text-text-primary">Members</h2>
+          <p className="text-sm text-text-secondary">Search for a member by email or Supabase user ID.</p>
         </div>
         <button
           type="button"
-          className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-slate-200 transition hover:bg-slate-800"
+          className="rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-text-secondary transition hover:bg-bg"
           onClick={() => mutate()}
         >
           Refresh
         </button>
       </div>
 
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search by email or user id"
-          className="w-full rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 focus:border-emerald-400 focus:outline-none"
+          className="w-full rounded-lg border border-hairline bg-bg px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
         />
       </div>
 
       {unauthorized ? (
-        <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600">
           Access denied. Sign in with an admin account.
         </div>
       ) : serviceRoleMissing ? (
-        <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-100">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
           Supabase service role key is missing. Add <code className="font-mono">SUPABASE_SERVICE_ROLE_KEY</code> to your environment to enable admin user management.
         </div>
       ) : isLoading ? (
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-sm text-slate-300">
+        <div className="rounded-xl border border-hairline bg-white p-6 text-sm text-text-secondary shadow-card">
           Loading…
         </div>
       ) : error ? (
-        <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600">
           {error.message || 'Failed to load users.'}
         </div>
       ) : fetchError ? (
-        <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600">
           {fetchError}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/40">
-          <table className="min-w-full divide-y divide-slate-800 text-sm">
-            <thead className="bg-slate-900/80 text-slate-300">
+        <div className="overflow-hidden rounded-2xl border border-hairline bg-white shadow-card">
+          <table className="min-w-full divide-y divide-hairline text-sm">
+            <thead className="bg-neutral-50 text-text-secondary">
               <tr>
                 <th className="px-4 py-3 text-left font-medium">Email</th>
                 <th className="px-4 py-3 text-left font-medium">User ID</th>
@@ -115,20 +115,20 @@ export default function AdminUsersPage() {
                 <th className="px-4 py-3 text-right font-medium">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-hairline">
               {data?.users?.map((user) => (
-                <tr key={user.id} className="hover:bg-slate-900/70">
-                  <td className="px-4 py-3 text-slate-100">{user.email ?? '—'}</td>
-                  <td className="px-4 py-3 text-xs text-slate-400">{user.id}</td>
-                  <td className="px-4 py-3 text-slate-300">
+                <tr key={user.id} className="hover:bg-bg">
+                  <td className="px-4 py-3 text-text-primary">{user.email ?? '—'}</td>
+                  <td className="px-4 py-3 text-xs text-text-tertiary">{user.id}</td>
+                  <td className="px-4 py-3 text-text-secondary">
                     {user.createdAt ? new Date(user.createdAt).toLocaleString() : '—'}
                   </td>
-                  <td className="px-4 py-3 text-slate-300">
+                  <td className="px-4 py-3 text-text-secondary">
                     {user.lastSignInAt ? new Date(user.lastSignInAt).toLocaleString() : '—'}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link
-                      className="rounded-lg border border-emerald-500/40 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300 transition hover:bg-emerald-500/10"
+                      className="rounded-lg border border-accent/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-accent transition hover:bg-accent/10"
                       href={`/admin/users/${user.id}`}
                     >
                       View
@@ -138,7 +138,7 @@ export default function AdminUsersPage() {
               ))}
               {data?.users?.length === 0 ? (
                 <tr>
-                  <td className="px-4 py-12 text-center text-slate-400" colSpan={5}>
+                  <td className="px-4 py-12 text-center text-text-tertiary" colSpan={5}>
                     No users found.
                   </td>
                 </tr>
@@ -156,7 +156,7 @@ export default function AdminUsersPage() {
           <div className="flex gap-2">
             <button
               type="button"
-              className="rounded border border-slate-700 px-2 py-1 text-slate-200 disabled:opacity-40"
+              className="rounded border border-hairline px-2 py-1 text-text-secondary disabled:opacity-40"
               disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
@@ -164,7 +164,7 @@ export default function AdminUsersPage() {
             </button>
             <button
               type="button"
-              className="rounded border border-slate-700 px-2 py-1 text-slate-200 disabled:opacity-40"
+              className="rounded border border-hairline px-2 py-1 text-text-secondary disabled:opacity-40"
               disabled={!data.pagination || !data.pagination.nextPage}
               onClick={() =>
                 setPage((p) => (data.pagination && data.pagination.nextPage ? data.pagination.nextPage : p))

@@ -105,7 +105,7 @@ export default function UserDetailClient({ userId }: { userId: string }) {
 
   if (userError) {
     return (
-      <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">
+      <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
         {userError.message || 'Failed to load user details.'}
       </div>
     );
@@ -113,7 +113,7 @@ export default function UserDetailClient({ userId }: { userId: string }) {
 
   if (!userData) {
     return (
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-sm text-slate-300">
+      <div className="rounded-xl border border-hairline bg-white p-6 text-sm text-text-secondary shadow-card">
         Loading…
       </div>
     );
@@ -122,7 +122,7 @@ export default function UserDetailClient({ userId }: { userId: string }) {
   if (userData.ok === false) {
     const message = userData.message ?? userData.error ?? 'Admin service role key is missing.';
     return (
-      <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-100">
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
         {message}
       </div>
     );
@@ -132,64 +132,64 @@ export default function UserDetailClient({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-8">
-      <Link href="/admin/users" className="text-sm text-slate-400 transition hover:text-slate-200">
+      <Link href="/admin/users" className="text-sm text-text-secondary transition hover:text-text-primary">
         ← Back to users
       </Link>
 
       <section className="grid gap-6 md:grid-cols-2">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-lg">
-          <h2 className="text-lg font-semibold text-white">Identity</h2>
-          <dl className="mt-4 space-y-2 text-sm text-slate-300">
+        <div className="rounded-2xl border border-hairline bg-white p-6 shadow-card">
+          <h2 className="text-lg font-semibold text-text-primary">Identity</h2>
+          <dl className="mt-4 space-y-2 text-sm text-text-secondary">
             <div>
-              <dt className="text-slate-500">Email</dt>
-              <dd className="font-medium text-slate-100">{user.email ?? '—'}</dd>
+              <dt className="text-text-tertiary">Email</dt>
+              <dd className="font-medium text-text-primary">{user.email ?? '—'}</dd>
             </div>
             <div>
-              <dt className="text-slate-500">User ID</dt>
-              <dd className="font-mono text-xs text-slate-300">{user.id}</dd>
+              <dt className="text-text-tertiary">User ID</dt>
+              <dd className="font-mono text-xs text-text-tertiary">{user.id}</dd>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <dt className="text-slate-500">Created</dt>
+                <dt className="text-text-tertiary">Created</dt>
                 <dd>{user.createdAt ? new Date(user.createdAt).toLocaleString() : '—'}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">Last sign-in</dt>
+                <dt className="text-text-tertiary">Last sign-in</dt>
                 <dd>{user.lastSignInAt ? new Date(user.lastSignInAt).toLocaleString() : '—'}</dd>
               </div>
             </div>
             <div>
-              <dt className="text-slate-500">Admin</dt>
+              <dt className="text-text-tertiary">Admin</dt>
               <dd>{user.isAdmin ? 'Yes' : 'No'}</dd>
             </div>
           </dl>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-lg">
-          <h2 className="text-lg font-semibold text-white">Wallet</h2>
+        <div className="rounded-2xl border border-hairline bg-white p-6 shadow-card">
+          <h2 className="text-lg font-semibold text-text-primary">Wallet</h2>
           {walletData ? (
-            <div className="mt-4 space-y-3 text-sm text-slate-300">
-              <p className="text-2xl font-semibold text-emerald-300">
+            <div className="mt-4 space-y-3 text-sm text-text-secondary">
+              <p className="text-2xl font-semibold text-accent">
                 {formatCurrency(walletData.balanceCents, walletData.currency)}
               </p>
-              <p className="text-xs text-slate-500">{walletData.mock ? 'Mock balance' : 'Live ledger'}</p>
+              <p className="text-xs text-text-tertiary">{walletData.mock ? 'Mock balance' : 'Live ledger'}</p>
               {walletData.stats ? (
                 <div className="grid grid-cols-3 gap-2 text-xs">
-                  <div className="rounded-lg border border-slate-800 bg-slate-950/40 p-2">
-                    <p className="text-slate-500">Top-ups</p>
-                    <p className="font-medium text-slate-200">
+                  <div className="rounded-lg border border-hairline bg-bg p-2">
+                    <p className="text-text-tertiary">Top-ups</p>
+                    <p className="font-medium text-text-primary">
                       {formatCurrency(walletData.stats.topup ?? 0, walletData.currency)}
                     </p>
                   </div>
-                  <div className="rounded-lg border border-slate-800 bg-slate-950/40 p-2">
-                    <p className="text-slate-500">Charges</p>
-                    <p className="font-medium text-slate-200">
+                  <div className="rounded-lg border border-hairline bg-bg p-2">
+                    <p className="text-text-tertiary">Charges</p>
+                    <p className="font-medium text-text-primary">
                       {formatCurrency(walletData.stats.charge ?? 0, walletData.currency)}
                     </p>
                   </div>
-                  <div className="rounded-lg border border-slate-800 bg-slate-950/40 p-2">
-                    <p className="text-slate-500">Refunds</p>
-                    <p className="font-medium text-slate-200">
+                  <div className="rounded-lg border border-hairline bg-bg p-2">
+                    <p className="text-text-tertiary">Refunds</p>
+                    <p className="font-medium text-text-primary">
                       {formatCurrency(walletData.stats.refund ?? 0, walletData.currency)}
                     </p>
                   </div>
@@ -197,24 +197,24 @@ export default function UserDetailClient({ userId }: { userId: string }) {
               ) : null}
             </div>
           ) : (
-            <p className="mt-4 text-sm text-slate-400">Loading…</p>
+            <p className="mt-4 text-sm text-text-secondary">Loading…</p>
           )}
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 shadow-lg">
+      <section className="rounded-2xl border border-hairline bg-white p-6 shadow-card">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-white">Recent jobs</h3>
-          <p className="text-xs text-slate-500">Latest renders submitted by this user.</p>
+          <h3 className="text-lg font-semibold text-text-primary">Recent jobs</h3>
+          <p className="text-xs text-text-tertiary">Latest renders submitted by this user.</p>
         </div>
         {jobsError ? (
-          <div className="mt-3 rounded-lg border border-rose-500/40 bg-rose-500/10 p-3 text-xs text-rose-200">
+          <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
             {jobsError}
           </div>
         ) : null}
         <div className="mt-4 overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-800 text-sm">
-            <thead className="bg-slate-900/80 text-slate-300">
+          <table className="min-w-full divide-y divide-hairline text-sm">
+            <thead className="bg-neutral-50 text-text-secondary">
               <tr>
                 <th className="px-3 py-2 text-left font-medium">Job</th>
                 <th className="px-3 py-2 text-left font-medium">Engine</th>
@@ -223,14 +223,14 @@ export default function UserDetailClient({ userId }: { userId: string }) {
                 <th className="px-3 py-2 text-right font-medium">Total</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-hairline">
               {jobEntries.map((job) => (
-                <tr key={job.id} className="hover:bg-slate-900/60">
-                  <td className="px-3 py-2 text-xs text-slate-400">{job.job_id}</td>
-                  <td className="px-3 py-2 text-slate-100">{job.engine_label}</td>
-                  <td className="px-3 py-2 text-slate-300">{job.status}</td>
-                  <td className="px-3 py-2 text-slate-300">{new Date(job.created_at).toLocaleString()}</td>
-                  <td className="px-3 py-2 text-right text-slate-200">
+                <tr key={job.id} className="hover:bg-bg">
+                  <td className="px-3 py-2 text-xs text-text-tertiary">{job.job_id}</td>
+                  <td className="px-3 py-2 text-text-primary">{job.engine_label}</td>
+                  <td className="px-3 py-2 text-text-secondary">{job.status}</td>
+                  <td className="px-3 py-2 text-text-secondary">{new Date(job.created_at).toLocaleString()}</td>
+                  <td className="px-3 py-2 text-right text-text-primary">
                     {job.final_price_cents != null
                       ? formatCurrency(job.final_price_cents, 'USD')
                       : '—'}
@@ -239,7 +239,7 @@ export default function UserDetailClient({ userId }: { userId: string }) {
               ))}
               {jobsError ? null : jobEntries.length === 0 ? (
                 <tr>
-                  <td className="px-3 py-6 text-center text-slate-400" colSpan={5}>
+                  <td className="px-3 py-6 text-center text-text-tertiary" colSpan={5}>
                     No jobs recorded yet.
                   </td>
                 </tr>
@@ -249,19 +249,19 @@ export default function UserDetailClient({ userId }: { userId: string }) {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 shadow-lg">
+      <section className="rounded-2xl border border-hairline bg-white p-6 shadow-card">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-white">Transactions</h3>
-          <p className="text-xs text-slate-500">Latest wallet activity.</p>
+          <h3 className="text-lg font-semibold text-text-primary">Transactions</h3>
+          <p className="text-xs text-text-tertiary">Latest wallet activity.</p>
         </div>
         {receiptsError ? (
-          <div className="mt-3 rounded-lg border border-rose-500/40 bg-rose-500/10 p-3 text-xs text-rose-200">
+          <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
             {receiptsError}
           </div>
         ) : null}
         <div className="mt-4 overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-800 text-sm">
-            <thead className="bg-slate-900/80 text-slate-300">
+          <table className="min-w-full divide-y divide-hairline text-sm">
+            <thead className="bg-neutral-50 text-text-secondary">
               <tr>
                 <th className="px-3 py-2 text-left font-medium">Type</th>
                 <th className="px-3 py-2 text-left font-medium">Description</th>
@@ -269,20 +269,20 @@ export default function UserDetailClient({ userId }: { userId: string }) {
                 <th className="px-3 py-2 text-right font-medium">Amount</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-hairline">
               {receiptEntries.map((receipt) => (
-                    <tr key={receipt.id} className="hover:bg-slate-900/60">
-                      <td className="px-3 py-2 text-slate-300">{receipt.type}</td>
-                      <td className="px-3 py-2 text-slate-400">{receipt.description ?? '—'}</td>
-                      <td className="px-3 py-2 text-slate-300">{new Date(receipt.created_at).toLocaleString()}</td>
-                      <td className="px-3 py-2 text-right text-slate-100">
-                        {formatCurrency(receipt.amount_cents, receipt.currency)}
-                      </td>
-                    </tr>
-                  ))}
+                <tr key={receipt.id} className="hover:bg-bg">
+                  <td className="px-3 py-2 text-text-secondary">{receipt.type}</td>
+                  <td className="px-3 py-2 text-text-tertiary">{receipt.description ?? '—'}</td>
+                  <td className="px-3 py-2 text-text-secondary">{new Date(receipt.created_at).toLocaleString()}</td>
+                  <td className="px-3 py-2 text-right text-text-primary">
+                    {formatCurrency(receipt.amount_cents, receipt.currency)}
+                  </td>
+                </tr>
+              ))}
               {receiptsError ? null : receiptEntries.length === 0 ? (
                 <tr>
-                  <td className="px-3 py-6 text-center text-slate-400" colSpan={4}>
+                  <td className="px-3 py-6 text-center text-text-tertiary" colSpan={4}>
                     No transactions yet.
                   </td>
                 </tr>
