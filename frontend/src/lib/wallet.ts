@@ -236,3 +236,31 @@ async function triggerLowBalanceAlert(userId: string, remainingCents: number, cu
     recipientName: identity.fullName,
   });
 }
+
+export async function getWalletBalanceCents(userId: string): Promise<{ balanceCents: number; mock: boolean }> {
+  if (!userId) return { balanceCents: 0, mock: true };
+  if (!isDatabaseConfigured()) {
+    return { balanceCents: getMockWalletBalance(userId), mock: true };
+  }
+
+  try {
+    const rows = await query<{ type: string; amount_cents: number }>(
+      `SELECT type, amount_cents FROM app_receipts WHERE user_id = $1`,
+      [userId]
+    );
+
+    let topups = 0;
+    let charges = 0;
+    let refunds = 0;
+    for (const row of rows) {
+      if (row.type === 'topup') topups += row.amount_cents;
+      if (row.type === 'charge') charges += row.amount_cents;
+      if (row.type === 'refund') refunds += row.amount_cents;
+    }
+    const balanceCents = Math.max(0, topups + refunds - charges);
+    return { balanceCents, mock: false };
+  } catch (error) {
+    console.warn('[wallet] failed to compute balance for admin view', error);
+    return { balanceCents: getMockWalletBalance(userId), mock: true };
+  }
+}

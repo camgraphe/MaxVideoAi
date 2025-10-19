@@ -270,7 +270,7 @@ const MODEL_PRIORITY_ENTRIES = getModelRoster().map(
 const MODEL_PRIORITY = new Map<string, number>(MODEL_PRIORITY_ENTRIES);
 const DEFAULT_PRIORITY = MODEL_PRIORITY_ENTRIES.length;
 
-const ENGINES: EngineCaps[] = RAW_ENGINES.map((entry) => sanitizeEngine(entry)).filter(
+const ENGINES_BASE: EngineCaps[] = RAW_ENGINES.map((entry) => sanitizeEngine(entry)).filter(
   (engine): engine is EngineCaps =>
     engine !== null && !ENGINE_BLOCKLIST.has(engine.id.trim().toLowerCase())
 ).sort((a, b) => {
@@ -282,9 +282,60 @@ const ENGINES: EngineCaps[] = RAW_ENGINES.map((entry) => sanitizeEngine(entry)).
   return a.label.localeCompare(b.label);
 });
 
+function cloneEngine(engine: EngineCaps): EngineCaps {
+  return {
+    ...engine,
+    params: { ...engine.params },
+    inputLimits: { ...engine.inputLimits },
+    providerMeta: engine.providerMeta ? { ...engine.providerMeta } : undefined,
+    pricing: engine.pricing ? { ...engine.pricing } : undefined,
+    pricingDetails: engine.pricingDetails ? { ...engine.pricingDetails } : undefined,
+  };
+}
+
+function normalizeStatus(value: string | null | undefined, fallback: EngineStatus): EngineStatus {
+  if (!value) return fallback;
+  const normalized = value.toLowerCase();
+  return ENGINE_STATUS.includes(normalized as EngineStatus) ? (normalized as EngineStatus) : fallback;
+}
+
+function normalizeAvailability(value: string | null | undefined, fallback: EngineAvailability): EngineAvailability {
+  if (!value) return fallback;
+  const normalized = value.toLowerCase();
+  return AVAILABILITY.includes(normalized as EngineAvailability) ? (normalized as EngineAvailability) : fallback;
+}
+
+function normalizeLatency(value: string | null | undefined, fallback: LatencyTier): LatencyTier {
+  if (!value) return fallback;
+  const normalized = value.toLowerCase();
+  return LATENCY.includes(normalized as LatencyTier) ? (normalized as LatencyTier) : fallback;
+}
+
+async function getEnginesWithOverrides(options?: { includeDisabled?: boolean }) {
+  const base = ENGINES_BASE.map(cloneEngine);
+  if (!process.env.DATABASE_URL) {
+    return base.map((engine) => ({ engine, disabled: false }));
+  }
+
+  const overridesMod = await import('@/lib/engine-overrides');
+  const overridesMap = await overridesMod.fetchEngineOverrides();
+
+  return base
+    .map((engine) => {
+      const override = overridesMap.get(engine.id);
+      if (!override) return { engine, disabled: false, override: null as const };
+      const disabled = override.active === false;
+      engine.availability = normalizeAvailability(override.availability, engine.availability);
+      engine.status = normalizeStatus(override.status, engine.status);
+      engine.latencyTier = normalizeLatency(override.latency_tier, engine.latencyTier);
+      return { engine, disabled, override };
+    })
+    .filter((item) => options?.includeDisabled || !item.disabled);
+}
+
 function ensureEngine(engineId: string): EngineCaps | undefined {
   const normalisedId = engineId.trim().toLowerCase();
-  return ENGINES.find((engine) => engine.id.toLowerCase() === normalisedId);
+  return ENGINES_BASE.find((engine) => engine.id.toLowerCase() === normalisedId);
 }
 
 function toItemization(snapshot: PricingSnapshot, memberTier?: string): PreflightResponse['itemization'] {
@@ -331,11 +382,19 @@ function toItemization(snapshot: PricingSnapshot, memberTier?: string): Prefligh
 }
 
 export async function enginesResponse(): Promise<{ ok: true; engines: EngineCaps[] }> {
-  return { ok: true, engines: ENGINES };
+  const collection = await getEnginesWithOverrides();
+  return { ok: true, engines: collection.map((entry) => entry.engine) };
 }
 
 export async function listEngines(): Promise<EngineCaps[]> {
-  return ENGINES;
+  const collection = await getEnginesWithOverrides();
+  return collection.map((entry) => entry.engine);
+}
+
+export type AdminEngineEntry = Awaited<ReturnType<typeof getEnginesWithOverrides>>[number];
+
+export async function listEnginesForAdmin(): Promise<AdminEngineEntry[]> {
+  return getEnginesWithOverrides({ includeDisabled: true });
 }
 
 export async function getEngineById(engineId: string): Promise<EngineCaps | undefined> {
