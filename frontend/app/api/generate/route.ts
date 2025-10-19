@@ -2,10 +2,10 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured, query } from '@/lib/db';
-import { getEngineById } from '@/lib/engines';
 import { randomUUID } from 'crypto';
 import { generateVideo } from '@/lib/fal';
 import { computePricingSnapshot, getPlatformFeeCents } from '@/lib/pricing';
+import { getConfiguredEngine } from '@/server/engines';
 import Stripe from 'stripe';
 import { ENV } from '@/lib/env';
 import { getUserIdFromRequest } from '@/lib/user';
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ ok: false, error: 'Invalid JSON' }, { status: 400 });
 
-  const engine = await getEngineById(String(body.engineId || ''));
+  const engine = await getConfiguredEngine(String(body.engineId || ''));
   if (!engine) return NextResponse.json({ ok: false, error: 'Unknown engine' }, { status: 400 });
 
   if (!isDatabaseConfigured()) {

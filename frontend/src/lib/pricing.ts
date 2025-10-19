@@ -216,18 +216,30 @@ export type PricingContext = {
 
 export async function computePricingSnapshot(context: PricingContext): Promise<PricingSnapshot> {
   const { engine, durationSec, resolution } = context;
-  const kernel = getPricingKernel();
-  const pricingDetails: EnginePricingDetails | undefined = engine.pricingDetails ?? (await getPricingDetails(engine.id));
+  const pricingDetails: EnginePricingDetails | undefined =
+    engine.pricingDetails ?? (await getPricingDetails(engine.id));
   const rules = await loadRules();
   const rule = selectRule(rules, engine.id, resolution);
   const vendorAccountId = rule.vendorAccountId ?? engine.vendorAccountId;
 
-  let definition = kernel.getDefinition(engine.id);
-  if (!definition) {
+  let definition: PricingEngineDefinition | null = null;
+  if (pricingDetails || engine.pricing) {
     definition = buildDefinitionFromEngine(engine, pricingDetails);
   }
 
-  if (!definition.resolutionMultipliers[resolution] && pricingDetails?.perSecondCents?.byResolution?.[resolution]) {
+  if (!definition) {
+    const kernel = getPricingKernel();
+    const fallback = kernel.getDefinition(engine.id);
+    if (!fallback) {
+      throw new Error(`Pricing definition not found for engine ${engine.id}`);
+    }
+    definition = fallback;
+  }
+
+  if (
+    !definition.resolutionMultipliers[resolution] &&
+    pricingDetails?.perSecondCents?.byResolution?.[resolution]
+  ) {
     const perSecond = pricingDetails.perSecondCents.byResolution[resolution];
     if (typeof perSecond === 'number' && definition.baseUnitPriceCents > 0) {
       definition = {

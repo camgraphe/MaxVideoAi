@@ -3,11 +3,11 @@ import { query } from '@/lib/db';
 import { getUserIdFromRequest } from '@/lib/user';
 import Stripe from 'stripe';
 import { ENV } from '@/lib/env';
-import { getEngineById } from '@/lib/engines';
 import { computePricingSnapshot, getPlatformFeeCents, getVendorShareCents } from '@/lib/pricing';
 import { randomUUID } from 'crypto';
 import { ensureBillingSchema } from '@/lib/schema';
 import { applyMockWalletTopUp, getMockWalletBalance } from '@/lib/wallet';
+import { getConfiguredEngine } from '@/server/engines';
 
 export async function GET(req: NextRequest) {
   const userId = await getUserIdFromRequest(req);
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
 
   if (body.mode === 'direct') {
     const engineId = String(body.engineId || '');
-    const engine = await getEngineById(engineId);
+    const engine = await getConfiguredEngine(engineId);
     if (!engine) {
       return NextResponse.json({ error: 'Unknown engine' }, { status: 400 });
     }

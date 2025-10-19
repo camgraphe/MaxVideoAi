@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getPublicEngines } from '@/server/engine-overrides';
-import { getBaseEngines } from '@/lib/engines';
+import { getConfiguredEngines } from '@/server/engines';
 
 export async function GET() {
-  const engines = process.env.DATABASE_URL ? await getPublicEngines() : getBaseEngines();
+  const engines = await getConfiguredEngines();
   return NextResponse.json({ ok: true, engines });
 }

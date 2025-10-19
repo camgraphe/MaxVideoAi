@@ -32,9 +32,6 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             <Link className="text-text-secondary transition hover:text-text-primary" href="/admin/engines">
               Engines
             </Link>
-            <Link className="text-text-secondary transition hover:text-text-primary" href="/admin/pricing">
-              Pricing
-            </Link>
           </nav>
         </div>
       </header>

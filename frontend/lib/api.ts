@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
-import { computePreflight, enginesResponse } from '@/lib/engines';
 import { supabase } from '@/lib/supabaseClient';
 import type { EnginesResponse, PreflightRequest, PreflightResponse } from '@/types/engines';
 import type { JobsPage } from '@/types/jobs';
@@ -131,8 +130,9 @@ export function useEngines() {
   return useSWR<EnginesResponse>(
     'static-engines',
     async () => {
-      const { engines } = await enginesResponse();
-      return { engines };
+      const response = await fetch('/api/engines', { credentials: 'include' });
+      const data = (await response.json().catch(() => null)) as { engines?: EnginesResponse['engines'] } | null;
+      return { engines: data?.engines ?? [] };
     },
     {
       revalidateOnFocus: false,
@@ -313,7 +313,24 @@ export function useInfiniteJobs(pageSize = 12) {
 }
 
 export async function runPreflight(payload: PreflightRequest): Promise<PreflightResponse> {
-  return computePreflight(payload);
+  const response = await fetch('/api/preflight', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  const data = (await response.json().catch(() => null)) as PreflightResponse | null;
+  if (!data) {
+    return {
+      ok: false,
+      messages: ['Unable to compute pricing'],
+      error: {
+        code: 'PRICING_ERROR',
+        message: 'Failed to compute pricing',
+      },
+    };
+  }
+  return data;
 }
 
 export async function runGenerate(

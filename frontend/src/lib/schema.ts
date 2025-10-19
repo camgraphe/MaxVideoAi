@@ -8,7 +8,7 @@ export async function ensureBillingSchema(): Promise<void> {
   if (ensurePromise) return ensurePromise;
 
   const ensure = async () => {
-    await query(`
+      await query(`
         CREATE TABLE IF NOT EXISTS app_pricing_rules (
           id TEXT PRIMARY KEY,
           engine_id TEXT,
@@ -23,6 +23,34 @@ export async function ensureBillingSchema(): Promise<void> {
           created_at TIMESTAMPTZ DEFAULT NOW()
         );
       `);
+
+    try {
+      await query(`
+        CREATE TABLE IF NOT EXISTS engine_settings (
+          engine_id TEXT PRIMARY KEY,
+          options JSONB,
+          pricing JSONB,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_by UUID
+        );
+      `);
+    } catch (error) {
+      const code = typeof error === 'object' && error && 'code' in error ? (error as { code?: string }).code : undefined;
+      if (code !== '42P07' && code !== '23505') {
+        throw error;
+      }
+    }
+
+    try {
+      await query(`
+        CREATE INDEX IF NOT EXISTS engine_settings_updated_idx ON engine_settings (updated_at DESC);
+      `);
+    } catch (error) {
+      const code = typeof error === 'object' && error && 'code' in error ? (error as { code?: string }).code : undefined;
+      if (code !== '42P07' && code !== '23505') {
+        throw error;
+      }
+    }
 
     await query(`
         INSERT INTO app_pricing_rules (

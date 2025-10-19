@@ -73,7 +73,7 @@ export async function upsertEngineOverride(
 export async function getAdminEngineEntries(): Promise<
   Array<{ engine: EngineCaps; disabled: boolean; override: EngineOverride | null }>
 > {
-  const engines = getBaseEngines();
+  const engines = process.env.DATABASE_URL ? await (await import('@/server/engines')).getConfiguredEngines(true) : getBaseEngines();
   if (!process.env.DATABASE_URL) {
     return engines.map((engine) => ({ engine, disabled: false, override: null }));
   }
@@ -81,13 +81,12 @@ export async function getAdminEngineEntries(): Promise<
   const overridesMap = await fetchEngineOverrides();
   return engines.map((engine) => {
     const override = overridesMap.get(engine.id) ?? null;
-    if (!override) {
-      return { engine, disabled: false, override: null };
+    const disabled = override?.active === false || false;
+    if (override) {
+      engine.availability = normalizeAvailability(override.availability, engine.availability);
+      engine.status = normalizeStatus(override.status, engine.status);
+      engine.latencyTier = normalizeLatency(override.latency_tier, engine.latencyTier);
     }
-    engine.availability = normalizeAvailability(override.availability, engine.availability);
-    engine.status = normalizeStatus(override.status, engine.status);
-    engine.latencyTier = normalizeLatency(override.latency_tier, engine.latencyTier);
-    const disabled = override.active === false;
     return { engine, disabled, override };
   });
 }

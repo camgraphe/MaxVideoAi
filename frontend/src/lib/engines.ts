@@ -37,7 +37,7 @@ function includesValue<T extends string>(values: readonly T[], value: string): v
   return values.includes(value as T);
 }
 
-function normalizeMemberTier(value?: string | null): MemberTier {
+export function normalizeMemberTier(value?: string | null): MemberTier {
   const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
   if (raw === 'plus' || raw === 'pro') {
     return raw as MemberTier;
@@ -282,7 +282,7 @@ const ENGINES_BASE: EngineCaps[] = RAW_ENGINES.map((entry) => sanitizeEngine(ent
   return a.label.localeCompare(b.label);
 });
 
-function cloneEngine(engine: EngineCaps): EngineCaps {
+export function cloneEngine(engine: EngineCaps): EngineCaps {
   return {
     ...engine,
     params: { ...engine.params },
@@ -298,7 +298,7 @@ function ensureEngine(engineId: string): EngineCaps | undefined {
   return ENGINES_BASE.find((engine) => engine.id.toLowerCase() === normalisedId);
 }
 
-function toItemization(snapshot: PricingSnapshot, memberTier?: string): PreflightResponse['itemization'] {
+export function toItemization(snapshot: PricingSnapshot, memberTier?: string): PreflightResponse['itemization'] {
   const base: ItemizationLine = {
     unit: snapshot.base.unit,
     rate: snapshot.base.rate,

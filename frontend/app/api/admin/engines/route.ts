@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/admin';
-import { getAdminEngineEntries } from '@/server/engine-overrides';
+import { getConfiguredEngines } from '@/server/engines';
+import { ensureEngineSettingsSeed, fetchEngineSettings } from '@/server/engine-settings';
+import { fetchEngineOverrides } from '@/server/engine-overrides';
 
 export const runtime = 'nodejs';
 
@@ -12,28 +14,44 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.DATABASE_URL) {
-    return NextResponse.json({ error: 'Admin features not configured' }, { status: 501 });
+  if (!process.env.DATABASE_URL) {
+    const engines = await getConfiguredEngines(true);
+    return NextResponse.json({
+      ok: true,
+      engines: engines.map((engine) => ({
+        engine,
+        disabled: false,
+        override: null,
+        settings: null,
+      })),
+    });
   }
 
-  const entries = await getAdminEngineEntries();
-  const payload = entries.map(({ engine, disabled, override }) => ({
-    id: engine.id,
-    label: engine.label,
-    provider: engine.provider,
-    status: engine.status,
-    availability: engine.availability,
-    latencyTier: engine.latencyTier,
-    disabled,
-    override: override
-      ? {
-          active: override.active,
-          availability: override.availability,
-          status: override.status,
-          latencyTier: override.latency_tier,
-        }
-      : null,
-  }));
+  await ensureEngineSettingsSeed();
+  const [engines, settingsMap, overrideMap] = await Promise.all([
+    getConfiguredEngines(true),
+    fetchEngineSettings(),
+    fetchEngineOverrides(),
+  ]);
+
+  const payload = engines.map((engine) => {
+    const override = overrideMap.get(engine.id) ?? null;
+    const disabled = override?.active === false || false;
+    const settings = settingsMap.get(engine.id) ?? null;
+    return {
+      engine,
+      disabled,
+      override: override
+        ? {
+            active: override.active,
+            availability: override.availability,
+            status: override.status,
+            latencyTier: override.latency_tier,
+          }
+        : null,
+      settings,
+    };
+  });
 
   return NextResponse.json({ ok: true, engines: payload });
 }
