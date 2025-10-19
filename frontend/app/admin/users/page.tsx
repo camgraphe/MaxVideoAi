@@ -165,8 +165,10 @@ export default function AdminUsersPage() {
             <button
               type="button"
               className="rounded border border-slate-700 px-2 py-1 text-slate-200 disabled:opacity-40"
-              disabled={!data.pagination.nextPage}
-              onClick={() => setPage((p) => (data.pagination.nextPage ? data.pagination.nextPage : p))}
+              disabled={!data.pagination || !data.pagination.nextPage}
+              onClick={() =>
+                setPage((p) => (data.pagination && data.pagination.nextPage ? data.pagination.nextPage : p))
+              }
             >
               Next
             </button>
