@@ -5,7 +5,7 @@
     { "src": "frontend/package.json", "use": "@vercel/next" }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "/frontend/$1" }
+    { "src": "/(.*)", "dest": "frontend/$1" }
   ],
   "crons": [
     { "path": "/api/stripe/batch-transfers", "schedule": "0 3 * * *" }
