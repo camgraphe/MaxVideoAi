@@ -22,13 +22,25 @@ type UsersResponse = {
   error?: string;
 };
 
-const fetcher = async (url: string) => {
+type UserStatsResponse =
+  | {
+      ok: true;
+      stats: {
+        total: number;
+        today: number;
+        last7: number;
+        last30: number;
+      };
+    }
+  | { ok: false; error?: string; message?: string };
+
+const fetchJson = async <T,>(url: string): Promise<T> => {
   const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || res.statusText);
   }
-  return (await res.json()) as UsersResponse;
+  return (await res.json()) as T;
 };
 
 export default function AdminUsersPage() {
@@ -52,11 +64,17 @@ export default function AdminUsersPage() {
     return searchParams.toString();
   }, [page, debounced]);
 
-  const { data, error, isLoading, mutate } = useSWR<UsersResponse>(`/api/admin/users?${params}`, fetcher);
+  const { data, error, isLoading, mutate } = useSWR<UsersResponse>(`/api/admin/users?${params}`, fetchJson);
+  const { data: statsData } = useSWR<UserStatsResponse>('/api/admin/stats/users', fetchJson);
 
   const unauthorized = error?.message?.includes('Unauthorized') || error?.message?.includes('Forbidden');
   const serviceRoleMissing = data && data.ok === false && data.error === 'SERVICE_ROLE_NOT_CONFIGURED';
   const fetchError = data && data.ok === false && !serviceRoleMissing ? data.error ?? data.message ?? 'Failed to load users.' : null;
+  const statsUnavailable =
+    statsData && statsData.ok === false && statsData.error === 'SERVICE_ROLE_NOT_CONFIGURED' ? true : false;
+  const stats = statsData && statsData.ok ? statsData.stats : null;
+  const formatNumber = (value: number | null | undefined) =>
+    value == null ? '—' : new Intl.NumberFormat('en-US').format(value);
 
   return (
     <div className="space-y-6">
@@ -82,6 +100,27 @@ export default function AdminUsersPage() {
           className="w-full rounded-lg border border-hairline bg-bg px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
         />
       </div>
+
+      {stats && !statsUnavailable ? (
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
+            <p className="text-xs uppercase tracking-[0.18em] text-text-tertiary">All time</p>
+            <p className="mt-2 text-2xl font-semibold text-text-primary">{formatNumber(stats.total)}</p>
+          </div>
+          <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
+            <p className="text-xs uppercase tracking-[0.18em] text-text-tertiary">Today</p>
+            <p className="mt-2 text-2xl font-semibold text-text-primary">{formatNumber(stats.today)}</p>
+          </div>
+          <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
+            <p className="text-xs uppercase tracking-[0.18em] text-text-tertiary">Last 7 days</p>
+            <p className="mt-2 text-2xl font-semibold text-text-primary">{formatNumber(stats.last7)}</p>
+          </div>
+          <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
+            <p className="text-xs uppercase tracking-[0.18em] text-text-tertiary">Last 30 days</p>
+            <p className="mt-2 text-2xl font-semibold text-text-primary">{formatNumber(stats.last30)}</p>
+          </div>
+        </section>
+      ) : null}
 
       {unauthorized ? (
         <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600">
