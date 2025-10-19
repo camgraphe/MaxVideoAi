@@ -1,11 +1,12 @@
 {
-  "installCommand": "cd frontend && npm install --omit=dev",
+  "version": 2,
+  "installCommand": "npm install --omit=dev --prefix frontend",
   "buildCommand": "NPM_CONFIG_WORKSPACES=false npm run vercel-build",
   "builds": [
     { "src": "frontend/package.json", "use": "@vercel/next" }
   ],
-  "routes": [
-    { "src": "/(.*)", "dest": "frontend/$1" }
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/frontend/$1" }
   ],
   "crons": [
     { "path": "/api/stripe/batch-transfers", "schedule": "0 3 * * *" }
