@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/admin';
-import { listEnginesForAdmin } from '@/lib/engines';
+import { getAdminEngineEntries } from '@/server/engine-overrides';
 
 export const runtime = 'nodejs';
 
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Admin features not configured' }, { status: 501 });
   }
 
-  const entries = await listEnginesForAdmin();
+  const entries = await getAdminEngineEntries();
   const payload = entries.map(({ engine, disabled, override }) => ({
     id: engine.id,
     label: engine.label,

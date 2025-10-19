@@ -1,4 +1,6 @@
 import { query } from '@/lib/db';
+import { getBaseEngines } from '@/lib/engines';
+import type { EngineCaps, EngineAvailability, EngineStatus, LatencyTier } from '@/types/engines';
 
 export type EngineOverride = {
   engine_id: string;
@@ -7,6 +9,28 @@ export type EngineOverride = {
   status: string | null;
   latency_tier: string | null;
 };
+
+function normalizeStatus(value: string | null | undefined, fallback: EngineStatus): EngineStatus {
+  if (!value) return fallback;
+  const normalized = value.toLowerCase();
+  return ['live', 'busy', 'degraded', 'maintenance', 'early_access'].includes(normalized)
+    ? (normalized as EngineStatus)
+    : fallback;
+}
+
+function normalizeAvailability(value: string | null | undefined, fallback: EngineAvailability): EngineAvailability {
+  if (!value) return fallback;
+  const normalized = value.toLowerCase();
+  return ['available', 'limited', 'waitlist', 'paused'].includes(normalized)
+    ? (normalized as EngineAvailability)
+    : fallback;
+}
+
+function normalizeLatency(value: string | null | undefined, fallback: LatencyTier): LatencyTier {
+  if (!value) return fallback;
+  const normalized = value.toLowerCase();
+  return ['fast', 'standard'].includes(normalized) ? (normalized as LatencyTier) : fallback;
+}
 
 export async function fetchEngineOverrides(): Promise<Map<string, EngineOverride>> {
   if (!process.env.DATABASE_URL) return new Map();
@@ -44,4 +68,31 @@ export async function upsertEngineOverride(
       updatedBy ?? null,
     ]
   );
+}
+
+export async function getAdminEngineEntries(): Promise<
+  Array<{ engine: EngineCaps; disabled: boolean; override: EngineOverride | null }>
+> {
+  const engines = getBaseEngines();
+  if (!process.env.DATABASE_URL) {
+    return engines.map((engine) => ({ engine, disabled: false, override: null }));
+  }
+
+  const overridesMap = await fetchEngineOverrides();
+  return engines.map((engine) => {
+    const override = overridesMap.get(engine.id) ?? null;
+    if (!override) {
+      return { engine, disabled: false, override: null };
+    }
+    engine.availability = normalizeAvailability(override.availability, engine.availability);
+    engine.status = normalizeStatus(override.status, engine.status);
+    engine.latencyTier = normalizeLatency(override.latency_tier, engine.latencyTier);
+    const disabled = override.active === false;
+    return { engine, disabled, override };
+  });
+}
+
+export async function getPublicEngines(): Promise<EngineCaps[]> {
+  const entries = await getAdminEngineEntries();
+  return entries.filter((entry) => !entry.disabled).map((entry) => entry.engine);
 }

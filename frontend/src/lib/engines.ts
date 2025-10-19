@@ -293,46 +293,6 @@ function cloneEngine(engine: EngineCaps): EngineCaps {
   };
 }
 
-function normalizeStatus(value: string | null | undefined, fallback: EngineStatus): EngineStatus {
-  if (!value) return fallback;
-  const normalized = value.toLowerCase();
-  return ENGINE_STATUS.includes(normalized as EngineStatus) ? (normalized as EngineStatus) : fallback;
-}
-
-function normalizeAvailability(value: string | null | undefined, fallback: EngineAvailability): EngineAvailability {
-  if (!value) return fallback;
-  const normalized = value.toLowerCase();
-  return AVAILABILITY.includes(normalized as EngineAvailability) ? (normalized as EngineAvailability) : fallback;
-}
-
-function normalizeLatency(value: string | null | undefined, fallback: LatencyTier): LatencyTier {
-  if (!value) return fallback;
-  const normalized = value.toLowerCase();
-  return LATENCY.includes(normalized as LatencyTier) ? (normalized as LatencyTier) : fallback;
-}
-
-async function getEnginesWithOverrides(options?: { includeDisabled?: boolean }) {
-  const base = ENGINES_BASE.map(cloneEngine);
-  if (!process.env.DATABASE_URL || typeof window !== 'undefined') {
-    return base.map((engine) => ({ engine, disabled: false, override: null as const }));
-  }
-
-  const { fetchEngineOverrides } = await import('@/server/engine-overrides');
-  const overridesMap = await fetchEngineOverrides();
-
-  return base
-    .map((engine) => {
-      const override = overridesMap.get(engine.id);
-      if (!override) return { engine, disabled: false, override: null as const };
-      const disabled = override.active === false;
-      engine.availability = normalizeAvailability(override.availability, engine.availability);
-      engine.status = normalizeStatus(override.status, engine.status);
-      engine.latencyTier = normalizeLatency(override.latency_tier, engine.latencyTier);
-      return { engine, disabled, override };
-    })
-    .filter((item) => options?.includeDisabled || !item.disabled);
-}
-
 function ensureEngine(engineId: string): EngineCaps | undefined {
   const normalisedId = engineId.trim().toLowerCase();
   return ENGINES_BASE.find((engine) => engine.id.toLowerCase() === normalisedId);
@@ -381,25 +341,22 @@ function toItemization(snapshot: PricingSnapshot, memberTier?: string): Prefligh
   };
 }
 
+export function getBaseEngines(): EngineCaps[] {
+  return ENGINES_BASE.map(cloneEngine);
+}
+
 export async function enginesResponse(): Promise<{ ok: true; engines: EngineCaps[] }> {
-  const collection = await getEnginesWithOverrides();
-  return { ok: true, engines: collection.map((entry) => entry.engine) };
+  return { ok: true, engines: getBaseEngines() };
 }
 
 export async function listEngines(): Promise<EngineCaps[]> {
-  const collection = await getEnginesWithOverrides();
-  return collection.map((entry) => entry.engine);
-}
-
-export type AdminEngineEntry = Awaited<ReturnType<typeof getEnginesWithOverrides>>[number];
-
-export async function listEnginesForAdmin(): Promise<AdminEngineEntry[]> {
-  return getEnginesWithOverrides({ includeDisabled: true });
+  return getBaseEngines();
 }
 
 export async function getEngineById(engineId: string): Promise<EngineCaps | undefined> {
   if (!engineId) return undefined;
-  return ensureEngine(engineId);
+  const engine = ensureEngine(engineId);
+  return engine ? cloneEngine(engine) : undefined;
 }
 
 export async function computePreflight(request: PreflightRequest): Promise<PreflightResponse> {
