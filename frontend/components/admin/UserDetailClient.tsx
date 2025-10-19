@@ -100,6 +100,8 @@ export default function UserDetailClient({ userId }: { userId: string }) {
     receiptsData && receiptsData.ok === false
       ? receiptsData.error ?? receiptsData.message ?? 'Failed to load receipts.'
       : null;
+  const jobEntries = jobsData && jobsData.ok ? jobsData.jobs : [];
+  const receiptEntries = receiptsData && receiptsData.ok ? receiptsData.receipts : [];
 
   if (userError) {
     return (
@@ -222,7 +224,7 @@ export default function UserDetailClient({ userId }: { userId: string }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
-              {jobsData?.jobs?.map((job) => (
+              {jobEntries.map((job) => (
                 <tr key={job.id} className="hover:bg-slate-900/60">
                   <td className="px-3 py-2 text-xs text-slate-400">{job.job_id}</td>
                   <td className="px-3 py-2 text-slate-100">{job.engine_label}</td>
@@ -235,7 +237,7 @@ export default function UserDetailClient({ userId }: { userId: string }) {
                   </td>
                 </tr>
               ))}
-              {jobsData?.jobs?.length === 0 ? (
+              {jobsError ? null : jobEntries.length === 0 ? (
                 <tr>
                   <td className="px-3 py-6 text-center text-slate-400" colSpan={5}>
                     No jobs recorded yet.
@@ -268,8 +270,7 @@ export default function UserDetailClient({ userId }: { userId: string }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
-              {receiptsData && receiptsData.ok
-                ? receiptsData.receipts.map((receipt) => (
+              {receiptEntries.map((receipt) => (
                     <tr key={receipt.id} className="hover:bg-slate-900/60">
                       <td className="px-3 py-2 text-slate-300">{receipt.type}</td>
                       <td className="px-3 py-2 text-slate-400">{receipt.description ?? '—'}</td>
@@ -278,9 +279,8 @@ export default function UserDetailClient({ userId }: { userId: string }) {
                         {formatCurrency(receipt.amount_cents, receipt.currency)}
                       </td>
                     </tr>
-                  ))
-                : null}
-              {receiptsData && receiptsData.ok && receiptsData.receipts.length === 0 ? (
+                  ))}
+              {receiptsError ? null : receiptEntries.length === 0 ? (
                 <tr>
                   <td className="px-3 py-6 text-center text-slate-400" colSpan={4}>
                     No transactions yet.
