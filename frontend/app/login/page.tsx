@@ -66,7 +66,7 @@ export default function LoginPage() {
       setStatus(null);
       return;
     }
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { emailRedirectTo: redirectTo },
@@ -76,8 +76,15 @@ export default function LoginPage() {
       setStatus(null);
       return;
     }
-    setStatusTone('success');
-    setStatus('Check your inbox to confirm your email.');
+    if (data.session) {
+      setStatusTone('success');
+      setStatus('Account created. Redirecting…');
+      syncSupabaseCookies(data.session);
+      router.replace('/generate');
+    } else {
+      setStatusTone('success');
+      setStatus('Check your inbox to confirm your email.');
+    }
   }
 
   async function sendReset(e: React.FormEvent) {
