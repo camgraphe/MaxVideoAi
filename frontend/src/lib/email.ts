@@ -2,7 +2,7 @@ import { render } from '@react-email/render';
 import { createElement, type ReactElement } from 'react';
 import nodemailer, { type SendMailOptions, type Transporter } from 'nodemailer';
 import { Resend } from 'resend';
-import type { CreateEmailOptions } from 'resend/build/src/emails/interfaces';
+import type { CreateEmailOptions } from 'resend';
 import RenderCompletedEmail, { type RenderCompletedEmailProps } from '@/emails/RenderCompletedEmail';
 import WalletLowBalanceEmail, { type WalletLowBalanceEmailProps } from '@/emails/WalletLowBalanceEmail';
 import { ENV } from '@/lib/env';
@@ -128,9 +128,9 @@ async function wait(ms: number): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function renderEmailContent(reactTemplate: ReactElement, explicitText?: string): { html: string; text: string } {
-  const html = render(reactTemplate, { pretty: true });
-  const text = explicitText ?? render(reactTemplate, { plainText: true });
+async function renderEmailContent(reactTemplate: ReactElement, explicitText?: string): Promise<{ html: string; text: string }> {
+  const html = await render(reactTemplate, { pretty: true });
+  const text = explicitText ?? (await render(reactTemplate, { plainText: true }));
   return { html, text };
 }
 
@@ -142,7 +142,7 @@ async function deliverViaResend(options: TransactionalEmailOptions, html: string
     subject: options.subject,
     html,
     text,
-    reply_to: SUPPORT_EMAIL,
+    replyTo: SUPPORT_EMAIL,
     headers: options.headers,
   };
   if (options.category) {
@@ -207,7 +207,7 @@ export async function sendTransactionalEmail(options: TransactionalEmailOptions)
     throw new Error('Transactional email requires at least one recipient');
   }
 
-  const { html, text } = renderEmailContent(options.react, options.textFallback);
+  const { html, text } = await renderEmailContent(options.react, options.textFallback);
   const providers = providerOrder();
 
   for (const provider of providers) {
