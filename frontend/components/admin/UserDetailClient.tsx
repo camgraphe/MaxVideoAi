@@ -23,42 +23,56 @@ type WalletResponse = {
   stats: Record<string, number> | null;
 };
 
-type ReceiptsResponse = {
-  ok: boolean;
-  receipts: Array<{
-    id: number;
-    type: string;
-    amount_cents: number;
-    currency: string;
-    description: string | null;
-    created_at: string;
-    job_id: string | null;
-  }>;
-};
+type ReceiptsResponse =
+  | {
+      ok: true;
+      receipts: Array<{
+        id: number;
+        type: string;
+        amount_cents: number;
+        currency: string;
+        description: string | null;
+        created_at: string;
+        job_id: string | null;
+      }>;
+    }
+  | { ok: false; error?: string; message?: string };
 
-type JobsResponse = {
-  ok: boolean;
-  jobs: Array<{
-    id: number;
-    job_id: string;
-    engine_id: string;
-    engine_label: string;
-    status: string;
-    progress: number;
-    duration_sec: number;
-    created_at: string;
-    updated_at: string;
-    final_price_cents: number | null;
-  }>;
-};
+type JobsResponse =
+  | {
+      ok: true;
+      jobs: Array<{
+        id: number;
+        job_id: string;
+        engine_id: string;
+        engine_label: string;
+        status: string;
+        progress: number;
+        duration_sec: number;
+        created_at: string;
+        updated_at: string;
+        final_price_cents: number | null;
+      }>;
+    }
+  | { ok: false; error?: string; message?: string };
 
 const fetcher = async <T,>(url: string): Promise<T> => {
   const res = await fetch(url, { cache: 'no-store' });
+  const json = (await res.json().catch(() => null)) as T | null;
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || res.statusText);
+    let message: string | null = null;
+    if (json && typeof json === 'object' && 'error' in json) {
+      const candidate = (json as Record<string, unknown>).error;
+      if (typeof candidate === 'string' && candidate.trim()) {
+        message = candidate;
+      }
+    }
+    throw new Error(message ?? res.statusText);
   }
-  return (await res.json()) as T;
+  if (json === null) {
+    throw new Error('Invalid response from server');
+  }
+  return json;
 };
 
 function formatCurrency(amountCents: number, currency: string) {
@@ -68,19 +82,29 @@ function formatCurrency(amountCents: number, currency: string) {
   }).format(amountCents / 100);
 }
 
+type UserResponse =
+  | {
+      ok: true;
+      user: AdminUser;
+    }
+  | { ok: false; error?: string; message?: string };
+
 export default function UserDetailClient({ userId }: { userId: string }) {
-  const { data: userData, error: userError } = useSWR<{ ok: boolean; user: AdminUser }>(
-    `/api/admin/users/${userId}`,
-    fetcher
-  );
+  const { data: userData, error: userError } = useSWR<UserResponse>(`/api/admin/users/${userId}`, fetcher);
   const { data: walletData } = useSWR<WalletResponse>(`/api/admin/users/${userId}/wallet`, fetcher);
   const { data: receiptsData } = useSWR<ReceiptsResponse>(`/api/admin/users/${userId}/receipts?limit=25`, fetcher);
   const { data: jobsData } = useSWR<JobsResponse>(`/api/admin/users/${userId}/jobs?limit=20`, fetcher);
 
+  const jobsError = jobsData && jobsData.ok === false ? jobsData.error ?? jobsData.message ?? 'Failed to load jobs.' : null;
+  const receiptsError =
+    receiptsData && receiptsData.ok === false
+      ? receiptsData.error ?? receiptsData.message ?? 'Failed to load receipts.'
+      : null;
+
   if (userError) {
     return (
       <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">
-        {userError.message || 'Impossible de charger les informations user.'}
+        {userError.message || 'Failed to load user details.'}
       </div>
     );
   }
@@ -88,7 +112,16 @@ export default function UserDetailClient({ userId }: { userId: string }) {
   if (!userData) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-sm text-slate-300">
-        Chargement…
+        Loading…
+      </div>
+    );
+  }
+
+  if (userData.ok === false) {
+    const message = userData.message ?? userData.error ?? 'Admin service role key is missing.';
+    return (
+      <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-100">
+        {message}
       </div>
     );
   }
@@ -162,7 +195,7 @@ export default function UserDetailClient({ userId }: { userId: string }) {
               ) : null}
             </div>
           ) : (
-            <p className="mt-4 text-sm text-slate-400">Chargement…</p>
+            <p className="mt-4 text-sm text-slate-400">Loading…</p>
           )}
         </div>
       </section>
@@ -170,8 +203,13 @@ export default function UserDetailClient({ userId }: { userId: string }) {
       <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 shadow-lg">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-white">Recent jobs</h3>
-          <p className="text-xs text-slate-500">Derniers rendus enregistrés</p>
+          <p className="text-xs text-slate-500">Latest renders submitted by this user.</p>
         </div>
+        {jobsError ? (
+          <div className="mt-3 rounded-lg border border-rose-500/40 bg-rose-500/10 p-3 text-xs text-rose-200">
+            {jobsError}
+          </div>
+        ) : null}
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full divide-y divide-slate-800 text-sm">
             <thead className="bg-slate-900/80 text-slate-300">
@@ -200,7 +238,7 @@ export default function UserDetailClient({ userId }: { userId: string }) {
               {jobsData?.jobs?.length === 0 ? (
                 <tr>
                   <td className="px-3 py-6 text-center text-slate-400" colSpan={5}>
-                    Aucun job enregistré.
+                    No jobs recorded yet.
                   </td>
                 </tr>
               ) : null}
@@ -212,8 +250,13 @@ export default function UserDetailClient({ userId }: { userId: string }) {
       <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 shadow-lg">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-white">Transactions</h3>
-          <p className="text-xs text-slate-500">Derniers mouvements wallet</p>
+          <p className="text-xs text-slate-500">Latest wallet activity.</p>
         </div>
+        {receiptsError ? (
+          <div className="mt-3 rounded-lg border border-rose-500/40 bg-rose-500/10 p-3 text-xs text-rose-200">
+            {receiptsError}
+          </div>
+        ) : null}
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full divide-y divide-slate-800 text-sm">
             <thead className="bg-slate-900/80 text-slate-300">
@@ -221,24 +264,26 @@ export default function UserDetailClient({ userId }: { userId: string }) {
                 <th className="px-3 py-2 text-left font-medium">Type</th>
                 <th className="px-3 py-2 text-left font-medium">Description</th>
                 <th className="px-3 py-2 text-left font-medium">Date</th>
-                <th className="px-3 py-2 text-right font-medium">Montant</th>
+                <th className="px-3 py-2 text-right font-medium">Amount</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
-              {receiptsData?.receipts?.map((receipt) => (
-                <tr key={receipt.id} className="hover:bg-slate-900/60">
-                  <td className="px-3 py-2 text-slate-300">{receipt.type}</td>
-                  <td className="px-3 py-2 text-slate-400">{receipt.description ?? '—'}</td>
-                  <td className="px-3 py-2 text-slate-300">{new Date(receipt.created_at).toLocaleString()}</td>
-                  <td className="px-3 py-2 text-right text-slate-100">
-                    {formatCurrency(receipt.amount_cents, receipt.currency)}
-                  </td>
-                </tr>
-              ))}
-              {receiptsData?.receipts?.length === 0 ? (
+              {receiptsData && receiptsData.ok
+                ? receiptsData.receipts.map((receipt) => (
+                    <tr key={receipt.id} className="hover:bg-slate-900/60">
+                      <td className="px-3 py-2 text-slate-300">{receipt.type}</td>
+                      <td className="px-3 py-2 text-slate-400">{receipt.description ?? '—'}</td>
+                      <td className="px-3 py-2 text-slate-300">{new Date(receipt.created_at).toLocaleString()}</td>
+                      <td className="px-3 py-2 text-right text-slate-100">
+                        {formatCurrency(receipt.amount_cents, receipt.currency)}
+                      </td>
+                    </tr>
+                  ))
+                : null}
+              {receiptsData && receiptsData.ok && receiptsData.receipts.length === 0 ? (
                 <tr>
                   <td className="px-3 py-6 text-center text-slate-400" colSpan={4}>
-                    Aucune transaction.
+                    No transactions yet.
                   </td>
                 </tr>
               ) : null}

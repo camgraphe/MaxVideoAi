@@ -59,20 +59,20 @@ export default function AdminEnginesPage() {
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold text-white">Engines</h2>
-        <p className="text-sm text-slate-400">Active ou désactive les moteurs exposés dans l’interface.</p>
+        <p className="text-sm text-slate-400">Toggle which engines are displayed in the workspace.</p>
       </div>
 
       {unauthorized ? (
         <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">
-          Accès refusé. Connexion admin requise.
+          Access denied. Admin sign-in required.
         </div>
       ) : isLoading ? (
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-sm text-slate-300">
-          Chargement…
+          Loading…
         </div>
       ) : error ? (
         <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">
-          {error.message || 'Erreur lors du chargement des moteurs'}
+          {error.message || 'Failed to load engines.'}
         </div>
       ) : (
         <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/50">

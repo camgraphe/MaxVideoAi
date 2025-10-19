@@ -16,8 +16,10 @@ type AdminUser = {
 
 type UsersResponse = {
   ok: boolean;
-  users: AdminUser[];
-  pagination: { page: number; perPage: number; nextPage: number | null };
+  users?: AdminUser[];
+  pagination?: { page: number; perPage: number; nextPage: number | null };
+  message?: string;
+  error?: string;
 };
 
 const fetcher = async (url: string) => {
@@ -53,13 +55,15 @@ export default function AdminUsersPage() {
   const { data, error, isLoading, mutate } = useSWR<UsersResponse>(`/api/admin/users?${params}`, fetcher);
 
   const unauthorized = error?.message?.includes('Unauthorized') || error?.message?.includes('Forbidden');
+  const serviceRoleMissing = data && data.ok === false && data.error === 'SERVICE_ROLE_NOT_CONFIGURED';
+  const fetchError = data && data.ok === false && !serviceRoleMissing ? data.error ?? data.message ?? 'Failed to load users.' : null;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-semibold text-white">Members</h2>
-          <p className="text-sm text-slate-400">Recherche par email ou ID Supabase.</p>
+          <p className="text-sm text-slate-400">Search for a member by email or Supabase user ID.</p>
         </div>
         <button
           type="button"
@@ -81,15 +85,23 @@ export default function AdminUsersPage() {
 
       {unauthorized ? (
         <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">
-          Accès refusé. Connecte-toi avec un compte admin.
+          Access denied. Sign in with an admin account.
+        </div>
+      ) : serviceRoleMissing ? (
+        <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-100">
+          Supabase service role key is missing. Add <code className="font-mono">SUPABASE_SERVICE_ROLE_KEY</code> to your environment to enable admin user management.
         </div>
       ) : isLoading ? (
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-sm text-slate-300">
-          Chargement…
+          Loading…
         </div>
       ) : error ? (
         <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">
-          {error.message || 'Erreur lors du chargement des utilisateurs'}
+          {error.message || 'Failed to load users.'}
+        </div>
+      ) : fetchError ? (
+        <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">
+          {fetchError}
         </div>
       ) : (
         <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/40">
@@ -127,7 +139,7 @@ export default function AdminUsersPage() {
               {data?.users?.length === 0 ? (
                 <tr>
                   <td className="px-4 py-12 text-center text-slate-400" colSpan={5}>
-                    Aucun utilisateur trouvé.
+                    No users found.
                   </td>
                 </tr>
               ) : null}
@@ -136,10 +148,10 @@ export default function AdminUsersPage() {
         </div>
       )}
 
-      {data?.pagination ? (
+      {data?.pagination && data?.users ? (
         <div className="flex items-center justify-between text-xs text-slate-400">
           <span>
-            Page {data.pagination.page} · {data.pagination.perPage} lignes
+            Page {data.pagination.page} · {data.pagination.perPage} rows
           </span>
           <div className="flex gap-2">
             <button

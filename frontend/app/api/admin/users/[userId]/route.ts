@@ -13,7 +13,14 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
   }
 
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return NextResponse.json({ error: 'Service role not configured' }, { status: 501 });
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'SERVICE_ROLE_NOT_CONFIGURED',
+        message: 'Supabase service role key is not set. Add SUPABASE_SERVICE_ROLE_KEY to enable admin user detail.',
+      },
+      { status: 200 }
+    );
   }
 
   const userId = params.userId;
@@ -24,7 +31,7 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
   const admin = getSupabaseAdmin();
   const { data, error } = await admin.auth.admin.getUserById(userId);
   if (error || !data?.user) {
-    return NextResponse.json({ error: error?.message ?? 'User not found' }, { status: 404 });
+    return NextResponse.json({ ok: false, error: error?.message ?? 'User not found' }, { status: 404 });
   }
 
   const user = data.user;
