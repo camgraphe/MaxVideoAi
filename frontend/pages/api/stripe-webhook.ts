@@ -42,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                RETURNING id`,
               [userId, amount, currency.toUpperCase(), 'Wallet top-up', JSON.stringify({ session_id: session.id })]
             );
-            return result.rowCount > 0;
+            return result.rows.length > 0;
           };
           try {
             const inserted = await insert();
