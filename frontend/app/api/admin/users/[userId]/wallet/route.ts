@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/admin';
+import { requireAdmin } from '@/server/admin';
 import { getWalletBalanceCents } from '@/lib/wallet';
 import { query } from '@/lib/db';
 

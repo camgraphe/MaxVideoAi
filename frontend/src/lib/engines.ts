@@ -313,12 +313,12 @@ function normalizeLatency(value: string | null | undefined, fallback: LatencyTie
 
 async function getEnginesWithOverrides(options?: { includeDisabled?: boolean }) {
   const base = ENGINES_BASE.map(cloneEngine);
-  if (!process.env.DATABASE_URL) {
-    return base.map((engine) => ({ engine, disabled: false }));
+  if (!process.env.DATABASE_URL || typeof window !== 'undefined') {
+    return base.map((engine) => ({ engine, disabled: false, override: null as const }));
   }
 
-  const overridesMod = await import('@/lib/engine-overrides');
-  const overridesMap = await overridesMod.fetchEngineOverrides();
+  const { fetchEngineOverrides } = await import('@/server/engine-overrides');
+  const overridesMap = await fetchEngineOverrides();
 
   return base
     .map((engine) => {

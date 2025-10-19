@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/admin';
-import { upsertEngineOverride } from '@/lib/engine-overrides';
+import { requireAdmin } from '@/server/admin';
+import { upsertEngineOverride } from '@/server/engine-overrides';
 import { ensureBillingSchema } from '@/lib/schema';
 import { getEngineById } from '@/lib/engines';
 
