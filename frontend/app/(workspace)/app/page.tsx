@@ -305,12 +305,6 @@ function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | n
     return fpsOptions[0];
   })();
 
-  const audioSupported = capability?.audioToggle === true && mode === 't2v';
-  const addons = {
-    audio: audioSupported ? Boolean(previous?.addons.audio) : false,
-    upscale4k: engine.upscale4k ? Boolean(previous?.addons.upscale4k) : false,
-  };
-
   const iterations = previous?.iterations ? Math.max(1, Math.min(4, previous.iterations)) : 1;
 
   return {
@@ -323,7 +317,6 @@ function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | n
     aspectRatio,
     fps,
     iterations,
-    addons,
     seedLocked: previous?.seedLocked ?? false,
     openaiApiKey: previous?.openaiApiKey,
   };
@@ -360,10 +353,6 @@ interface FormState {
   aspectRatio: string;
   fps: number;
   iterations: number;
-  addons: {
-    audio: boolean;
-    upscale4k: boolean;
-  };
   seedLocked?: boolean;
   openaiApiKey?: string;
 }
@@ -392,7 +381,6 @@ function parseStoredForm(value: string): FormState | null {
       aspectRatio,
       fps,
       iterations,
-      addons,
       seedLocked,
       openaiApiKey,
     } = raw;
@@ -407,14 +395,6 @@ function parseStoredForm(value: string): FormState | null {
     ) {
       return null;
     }
-
-    const safeAddons =
-      addons && typeof addons === 'object'
-        ? {
-            audio: Boolean((addons as FormState['addons']).audio),
-            upscale4k: Boolean((addons as FormState['addons']).upscale4k),
-          }
-        : { audio: false, upscale4k: false };
 
     return {
       engineId,
@@ -432,7 +412,6 @@ function parseStoredForm(value: string): FormState | null {
       aspectRatio,
       fps,
       iterations: typeof iterations === 'number' && iterations > 0 ? iterations : 1,
-      addons: safeAddons,
       seedLocked: typeof seedLocked === 'boolean' ? seedLocked : undefined,
       openaiApiKey: typeof openaiApiKey === 'string' ? openaiApiKey : undefined,
     };
@@ -1395,7 +1374,6 @@ export default function Page() {
 
   const durationRef = useRef<HTMLElement | null>(null);
   const resolutionRef = useRef<HTMLDivElement>(null);
-  const addonsRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
   const noticeTimeoutRef = useRef<number | null>(null);
 const [inputAssets, setInputAssets] = useState<Record<string, (ReferenceAsset | null)[]>>({});
@@ -1943,20 +1921,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     });
   }, []);
 
-  const handleAddonToggle = useCallback((key: 'audio' | 'upscale4k', value: boolean) => {
-    setForm((current) => {
-      if (!current) return current;
-      if (current.addons[key] === value) return current;
-      return {
-        ...current,
-        addons: {
-          ...current.addons,
-          [key]: value,
-        },
-      };
-    });
-  }, []);
-
   const inputSchemaSummary = useMemo(() => {
     const schema = selectedEngine?.inputSchema;
     if (!schema) {
@@ -2410,7 +2374,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           resolution: form.resolution,
           fps: form.fps,
           mode: form.mode,
-          addons: form.addons,
           membershipTier: memberTier,
           payment: { mode: paymentMode },
           ...(shouldSendAspectRatio ? { aspectRatio: form.aspectRatio } : {}),
@@ -2663,8 +2626,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           candidate.aspectRatio !== nextState.aspectRatio ||
           candidate.fps !== nextState.fps ||
           candidate.iterations !== nextState.iterations ||
-          candidate.addons.audio !== nextState.addons.audio ||
-          candidate.addons.upscale4k !== nextState.addons.upscale4k ||
           candidate.seedLocked !== nextState.seedLocked ||
           candidate.openaiApiKey !== nextState.openaiApiKey;
         return hasChanged ? nextState : candidate;
@@ -2684,7 +2645,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       resolution: form.resolution as PreflightRequest['resolution'],
       aspectRatio: form.aspectRatio as PreflightRequest['aspectRatio'],
       fps: form.fps,
-      addons: form.addons,
       seedLocked: Boolean(form.seedLocked),
       user: { memberTier },
     };
@@ -3016,8 +2976,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                       onAspectRatioChange={handleAspectRatioChange}
                       fps={form.fps}
                       onFpsChange={handleFpsChange}
-                      addons={form.addons}
-                      onAddonToggle={handleAddonToggle}
                       mode={form.mode}
                       iterations={form.iterations}
                       onIterationsChange={(iterations) =>
@@ -3057,7 +3015,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                       focusRefs={{
                         duration: durationRef,
                         resolution: resolutionRef,
-                        addons: addonsRef,
                       }}
                     />
                     {selectedEngine && (

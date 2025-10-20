@@ -123,10 +123,6 @@ export interface PreflightRequest {
   resolution: Resolution;
   aspectRatio: AspectRatio;
   fps: number;
-  addons: {
-    upscale4k?: boolean;
-    audio?: boolean;
-  };
   seedLocked?: boolean;
   user?: {
     memberTier?: string;

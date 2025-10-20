@@ -184,10 +184,6 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
   }
 
   const durationSec = Number.isFinite(request.durationSec) ? Math.max(1, Math.round(request.durationSec)) : 4;
-  const addons = {
-    audio: Boolean(request.addons?.audio),
-    upscale4k: Boolean(request.addons?.upscale4k),
-  };
   const memberTier = normalizeMemberTier(request.user?.memberTier);
 
   let snapshot: PricingSnapshot;
@@ -196,7 +192,6 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
       engine,
       durationSec,
       resolution: effectiveResolution,
-      addons,
       membershipTier: memberTier,
     });
   } catch (error) {

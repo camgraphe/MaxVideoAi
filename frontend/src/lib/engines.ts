@@ -402,10 +402,6 @@ export async function computePreflight(request: PreflightRequest): Promise<Prefl
   }
 
   const durationSec = Number.isFinite(request.durationSec) ? Math.max(1, Math.round(request.durationSec)) : 4;
-  const addons = {
-    audio: Boolean(request.addons?.audio),
-    upscale4k: Boolean(request.addons?.upscale4k),
-  };
   const memberTier = normalizeMemberTier(request.user?.memberTier);
 
   let snapshot: PricingSnapshot;
@@ -414,7 +410,6 @@ export async function computePreflight(request: PreflightRequest): Promise<Prefl
       engineId: engine.id,
       durationSec,
       resolution: effectiveResolution,
-      addons,
       memberTier,
     });
     snapshot = quote.snapshot;

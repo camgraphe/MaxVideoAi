@@ -22,8 +22,6 @@ interface Props {
   onAspectRatioChange: (value: string) => void;
   fps: number;
   onFpsChange: (value: number) => void;
-  addons: { audio: boolean; upscale4k: boolean };
-  onAddonToggle: (key: 'audio' | 'upscale4k', value: boolean) => void;
   mode: Mode;
   iterations?: number;
   onIterationsChange?: (value: number) => void;
@@ -37,7 +35,6 @@ interface Props {
   focusRefs?: {
     duration?: Ref<HTMLElement>;
     resolution?: Ref<HTMLDivElement>;
-    addons?: Ref<HTMLDivElement>;
   };
 }
 
@@ -55,8 +52,6 @@ export function SettingsControls({
   onAspectRatioChange,
   fps,
   onFpsChange,
-  addons,
-  onAddonToggle,
   mode,
   iterations,
   onIterationsChange,
@@ -131,9 +126,6 @@ export function SettingsControls({
     }
   }, [focusRefs?.duration, frameOptions, enumeratedDurationOptions, durationRange]);
 
-
-  const audioSupported = caps?.audioToggle === true;
-
   const resolutionOptions = useMemo(() => {
     if (caps?.resolution && caps.resolution.length) return caps.resolution;
     return engine.resolutions;
@@ -149,15 +141,6 @@ export function SettingsControls({
 
   const showResolutionControl = resolutionOptions.length > 0;
   const showAspectControl = aspectOptions.length > 0;
-
-  useEffect(() => {
-    if ((!audioSupported || mode !== 't2v') && addons.audio) {
-      onAddonToggle('audio', false);
-    }
-    if (!engine.upscale4k && addons.upscale4k) {
-      onAddonToggle('upscale4k', false);
-    }
-  }, [audioSupported, mode, engine.upscale4k, addons.audio, addons.upscale4k, onAddonToggle]);
 
   return (
     <Card className="space-y-4 p-4">
@@ -370,19 +353,6 @@ export function SettingsControls({
           })}
         </div>
       )}
-
-      {audioSupported && (
-        <div className="flex items-center justify-between rounded-input border border-border bg-white p-3 text-sm text-text-secondary">
-          <span className="text-[12px] uppercase tracking-micro text-text-muted">Audio</span>
-          <TogglePill
-            label="Generate audio"
-            disabled={mode !== 't2v'}
-            active={addons.audio && mode === 't2v'}
-            onClick={() => mode === 't2v' && onAddonToggle('audio', !addons.audio)}
-          />
-        </div>
-      )}
-
       <div className="rounded-input border border-border bg-white">
         <button
           type="button"
@@ -576,26 +546,6 @@ function FieldGroup({ label, options, value, onChange, focusRef, labelFor, iconF
         ))}
       </div>
     </div>
-  );
-}
-
-function TogglePill({ label, active, onClick, disabled }: { label: string; active: boolean; onClick: () => void; disabled?: boolean }) {
-  return (
-    <button
-      type="button"
-      onClick={disabled ? undefined : onClick}
-      disabled={disabled}
-      className={clsx(
-        'rounded-input border px-3 py-1.5 text-[13px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-        disabled
-          ? 'cursor-not-allowed border-hairline bg-white text-text-muted/60'
-          : active
-            ? 'border-accent bg-accent text-white'
-            : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
-      )}
-    >
-      {label}
-    </button>
   );
 }
 

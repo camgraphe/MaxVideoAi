@@ -210,7 +210,6 @@ export type PricingContext = {
   engine: EngineCaps;
   durationSec: number;
   resolution: string;
-  addons?: { audio?: boolean; upscale4k?: boolean };
   membershipTier?: string | null;
   currency?: string;
 };
@@ -277,27 +276,12 @@ export async function computePricingSnapshot(context: PricingContext): Promise<P
     },
   };
 
-  const addons = { ...(augmentedDefinition.addons ?? {}) };
-  if (context.addons?.audio && engine.audio && !addons.audio && rule.surchargeAudioPercent > 0) {
-    const perSecond = Math.round(augmentedDefinition.baseUnitPriceCents * rule.surchargeAudioPercent);
-    addons.audio = perSecond > 0 ? { perSecondCents: perSecond } : undefined;
-  }
-  if (context.addons?.upscale4k && engine.upscale4k && !addons.upscale4k && rule.surchargeUpscalePercent > 0) {
-    const perSecond = Math.round(augmentedDefinition.baseUnitPriceCents * rule.surchargeUpscalePercent);
-    addons.upscale4k = perSecond > 0 ? { perSecondCents: perSecond } : undefined;
-  }
-  augmentedDefinition.addons = addons;
-
   const memberTier = (context.membershipTier ?? 'member').toLowerCase() as 'member' | 'plus' | 'pro';
   const kernelInput = {
     engineId: engine.id,
     durationSec,
     resolution,
     memberTier,
-    addons: {
-      audio: Boolean(context.addons?.audio && engine.audio),
-      upscale4k: Boolean(context.addons?.upscale4k && engine.upscale4k),
-    },
   } as const;
 
   const { quote } = computeKernelSnapshot(augmentedDefinition, kernelInput);
