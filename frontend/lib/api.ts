@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 import type { EnginesResponse, PreflightRequest, PreflightResponse } from '@/types/engines';
 import type { JobsPage } from '@/types/jobs';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
+import type { SoraRequest } from '@/lib/sora';
 import type { GenerateAttachment } from '@/lib/fal';
 import type { VideoAsset } from '@/types/render';
 
@@ -34,6 +35,7 @@ type GeneratePayload = {
   message?: string | null;
   etaSeconds?: number | null;
   etaLabel?: string | null;
+  soraRequest?: SoraRequest;
 };
 
 type GenerateOptions = {

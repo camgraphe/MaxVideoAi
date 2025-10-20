@@ -129,11 +129,25 @@ function buildPricingState(entry: EngineEntry): PricingState {
     perResolution[key] = toDollarString(cents);
   });
 
-  return {
+  const state: PricingState = {
     currency: pricing?.currency ?? entry.engine.pricing?.currency ?? 'USD',
     defaultPerSecond: toDollarString(pricing?.perSecondCents?.default ?? null),
     perResolution,
   };
+
+  if (entry.engine.id === 'sora-2') {
+    state.defaultPerSecond = state.defaultPerSecond || '0.1';
+  }
+
+  if (entry.engine.id === 'sora-2-pro') {
+    state.perResolution['720p'] = state.perResolution['720p'] || '0.30';
+    state.perResolution['1080p'] = state.perResolution['1080p'] || '0.50';
+    if (!state.defaultPerSecond) {
+      state.defaultPerSecond = '';
+    }
+  }
+
+  return state;
 }
 
 type EngineEditorProps = {
@@ -558,6 +572,9 @@ function EngineEditor({ entry, mutate }: EngineEditorProps) {
                 ))}
               </div>
             </div>
+            <p className="text-[11px] text-text-muted">
+              Si un API key OpenAI est fourni côté client, la facturation s’effectuera directement chez OpenAI.
+            </p>
           </div>
           {pricingError ? (
             <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">{pricingError}</div>

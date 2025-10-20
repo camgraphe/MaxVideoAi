@@ -215,6 +215,11 @@ export function SettingsControls({
                 );
               })}
             </div>
+            {engine.id.startsWith('sora-2') && (
+              <p className="text-[11px] text-text-tertiary">
+                L’API Fal expose 4/8/12&nbsp;s (l’app Sora peut afficher 15/25&nbsp;s Pro).
+              </p>
+            )}
           </div>
         ) : durationRange ? (
           <label className="flex flex-col gap-2 text-sm text-text-secondary">

@@ -23,6 +23,9 @@ const MODE_LABELS: Record<Mode, string> = {
   i2v: 'Image → Video',
 };
 
+const SORA_ENGINE_IDS = ['sora-2', 'sora-2-pro'] as const;
+const SORA_ENGINE_SET = new Set<string>(SORA_ENGINE_IDS);
+
 type EngineGuideEntry = {
   description: string;
   badges: string[];
@@ -150,6 +153,12 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
   const selectedRosterEntry = useMemo(() => (selectedEngine ? getModelByEngineId(selectedEngine.id) : undefined), [selectedEngine]);
 
   const visibleEngines = availableEngines;
+
+  const soraVariantEngines = useMemo(
+    () => availableEngines.filter((entry) => SORA_ENGINE_SET.has(entry.id)),
+    [availableEngines]
+  );
+  const isSoraSelection = SORA_ENGINE_SET.has(selectedEngine.id);
 
   const formatEngineShort = useCallback((engine: EngineCaps | null | undefined) => {
     if (!engine) return '';
@@ -360,6 +369,32 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
               <path d="m6 8 4 4 4-4" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
+
+          {isSoraSelection && soraVariantEngines.length > 1 && (
+            <div className="space-y-2">
+              <span className="text-[11px] uppercase tracking-micro text-text-muted">Variant</span>
+              <div className="flex flex-wrap gap-2">
+                {soraVariantEngines.map((entry) => {
+                  const active = entry.id === selectedEngine.id;
+                  return (
+                    <button
+                      key={entry.id}
+                      type="button"
+                      onClick={() => onEngineChange(entry.id)}
+                      className={clsx(
+                        'rounded-pill border px-3 py-1 text-[12px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white',
+                        active
+                          ? 'border-accent bg-accent text-white'
+                          : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
+                      )}
+                    >
+                      {getModelByEngineId(entry.id)?.marketingName ?? entry.label ?? entry.id}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {selectedRosterEntry?.billingNote && (
             <p className="text-[11px] text-text-muted">{selectedRosterEntry.billingNote}</p>

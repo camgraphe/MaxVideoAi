@@ -17,6 +17,7 @@ import type { Mode } from '@/types/engines';
 import { validateRequest } from './_lib/validate';
 import { uploadImageToStorage, isAllowedAssetHost, probeImageUrl, recordUserAsset } from '@/server/storage';
 import { getEngineCaps } from '@/fixtures/engineCaps';
+import { getSoraVariantForEngine, isSoraEngineId, parseSoraRequest, type SoraRequest } from '@/lib/sora';
 
 type PaymentMode = 'wallet' | 'direct' | 'platform';
 
@@ -47,7 +48,7 @@ export async function POST(req: NextRequest) {
       : engine.modes[0];
 
   const prompt = String(body.prompt || '');
-  const durationSec = Number(body.durationSec || 4);
+  let durationSec = Number(body.durationSec || 4);
   const capability = getEngineCaps(engine.id, mode);
   const supportsAspectRatio = capability ? Boolean(capability.aspectRatio && capability.aspectRatio.length) : true;
   const rawAspectRatio =
@@ -57,7 +58,7 @@ export async function POST(req: NextRequest) {
   const fallbackAspectRatio = supportsAspectRatio
     ? engine.aspectRatios?.find((value) => value !== 'auto') ?? engine.aspectRatios?.[0] ?? '16:9'
     : null;
-  const aspectRatio =
+  let aspectRatio =
     rawAspectRatio && fallbackAspectRatio
       ? rawAspectRatio === 'auto'
         ? fallbackAspectRatio
@@ -87,15 +88,15 @@ export async function POST(req: NextRequest) {
       : null;
   const etaLabel = typeof body.etaLabel === 'string' && body.etaLabel.trim().length ? body.etaLabel.trim() : null;
 
-  const requestedResolution =
+  let requestedResolution =
     typeof body.resolution === 'string' && body.resolution.trim().length
       ? body.resolution.trim()
       : engine.resolutions?.[0] ?? '1080p';
-  const pricingResolution =
+  let pricingResolution =
     requestedResolution === 'auto'
       ? engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '1080p'
       : requestedResolution;
-  const effectiveResolution = requestedResolution === 'auto' ? pricingResolution : requestedResolution;
+  let effectiveResolution = requestedResolution === 'auto' ? pricingResolution : requestedResolution;
 
   const rawNumFrames =
     typeof body.numFrames === 'number'
@@ -105,6 +106,61 @@ export async function POST(req: NextRequest) {
         : null;
   const numFrames =
     rawNumFrames != null && Number.isFinite(rawNumFrames) && rawNumFrames > 0 ? Math.round(rawNumFrames) : null;
+
+  let soraRequest: SoraRequest | null = null;
+  if (isSoraEngineId(engine.id)) {
+    const variant = getSoraVariantForEngine(engine.id);
+    const candidate: Record<string, unknown> = {
+      variant,
+      mode,
+      prompt,
+      resolution: requestedResolution,
+      aspect_ratio: rawAspectRatio ?? 'auto',
+      duration: durationSec,
+      api_key: typeof body.apiKey === 'string' && body.apiKey.trim().length ? body.apiKey.trim() : undefined,
+    };
+
+    if (mode === 'i2v') {
+      const imageUrl =
+        typeof body.imageUrl === 'string' && body.imageUrl.trim().length
+          ? body.imageUrl.trim()
+          : typeof body.image_url === 'string' && body.image_url.trim().length
+            ? body.image_url.trim()
+            : undefined;
+      if (!imageUrl) {
+        return NextResponse.json({ ok: false, error: 'Image URL is required for Sora image-to-video' }, { status: 400 });
+      }
+      candidate.image_url = imageUrl;
+    }
+
+    try {
+      soraRequest = parseSoraRequest(candidate);
+    } catch (error) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'Invalid Sora payload',
+          details: error instanceof Error ? error.message : undefined,
+        },
+        { status: 400 }
+      );
+    }
+
+    durationSec = soraRequest.duration;
+    requestedResolution = soraRequest.resolution;
+    const fallbackResolution =
+      engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '720p';
+    pricingResolution = soraRequest.resolution === 'auto' ? fallbackResolution : soraRequest.resolution;
+    effectiveResolution = soraRequest.resolution === 'auto' ? fallbackResolution : soraRequest.resolution;
+    const fallbackAspect =
+      engine.aspectRatios?.find((value) => value !== 'auto') ?? engine.aspectRatios?.[0] ?? '16:9';
+    aspectRatio =
+      soraRequest.mode === 'i2v' && soraRequest.aspect_ratio === 'auto'
+        ? fallbackAspect
+        : soraRequest.aspect_ratio === 'auto'
+          ? fallbackAspect
+          : soraRequest.aspect_ratio;
+  }
 
   const pricing = await computePricingSnapshot({
     engine,
@@ -119,10 +175,10 @@ export async function POST(req: NextRequest) {
       engineLabel: engine.label,
       mode,
       durationSec,
+      variant: soraRequest?.variant,
       aspectRatio: aspectRatio ?? 'source',
       resolution: effectiveResolution,
       effectiveResolution: pricingResolution,
-      fps: typeof body.fps === 'number' ? body.fps : engine.fps?.[0],
     },
   };
   const pricingSnapshotJson = JSON.stringify(pricing);
@@ -416,6 +472,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const initialImageUrl =
+    soraRequest?.mode === 'i2v'
+      ? soraRequest.image_url
+      : typeof body.imageUrl === 'string' && body.imageUrl.trim().length
+        ? body.imageUrl.trim()
+        : undefined;
+
   try {
     generationResult = await generateVideo({
       engineId: engine.id,
@@ -423,10 +486,9 @@ export async function POST(req: NextRequest) {
       durationSec,
       numFrames,
       resolution: effectiveResolution,
-      fps: body.fps,
       mode,
       apiKey,
-      imageUrl: typeof body.imageUrl === 'string' ? body.imageUrl.trim() : undefined,
+      imageUrl: initialImageUrl,
       referenceImages: Array.isArray(body.referenceImages)
         ? body.referenceImages
             .map((candidate: unknown) => (typeof candidate === 'string' ? candidate.trim() : null))
@@ -435,6 +497,7 @@ export async function POST(req: NextRequest) {
       inputs: processedAttachments,
       ...(aspectRatio ? { aspectRatio } : {}),
       idempotencyKey: body.idempotencyKey && typeof body.idempotencyKey === 'string' ? body.idempotencyKey : undefined,
+      soraRequest: soraRequest ?? undefined,
     });
   } catch (error) {
     if (walletChargeReserved && pendingReceipt) {
@@ -487,8 +550,7 @@ export async function POST(req: NextRequest) {
           ok: false,
           error: 'FAL_UNPROCESSABLE_ENTITY',
           detail: detail ?? providerMessage,
-          userMessage:
-            'The provider rejected this reference image because it conflicts with their safety policies. Please upload a different image.',
+          userMessage: 'Valeur non supportée (voir options listées).',
           providerMessage,
         },
         { status: 422 }

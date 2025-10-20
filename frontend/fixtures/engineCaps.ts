@@ -52,6 +52,7 @@ export const ENGINE_CAPS: Record<string, EngineCaps> = {
     duration: { options: [4, 8, 12], default: 4 },
     resolution: ['auto', '720p'],
     aspectRatio: ['auto', '9:16', '16:9'],
+    acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif'],
     audioToggle: false,
     notes: 'Supports optional api_key to bill OpenAI directly.',
   },
@@ -68,6 +69,15 @@ export const ENGINE_CAPS: Record<string, EngineCaps> = {
     duration: { options: [4, 8, 12], default: 4 },
     resolution: ['720p', '1080p'],
     aspectRatio: ['9:16', '16:9'],
+    audioToggle: false,
+    notes: 'Supports optional api_key to bill OpenAI directly.',
+  },
+  'fal-ai/sora-2/image-to-video/pro': {
+    modes: ['i2v'],
+    duration: { options: [4, 8, 12], default: 4 },
+    resolution: ['auto', '720p', '1080p'],
+    aspectRatio: ['auto', '9:16', '16:9'],
+    acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif'],
     audioToggle: false,
     notes: 'Supports optional api_key to bill OpenAI directly.',
   },
@@ -253,6 +263,7 @@ export const ENGINE_CAP_INDEX: Record<string, ModeCapsMap> = {
   },
   'sora-2-pro': {
     t2v: 'fal-ai/sora-2/text-to-video/pro',
+    i2v: 'fal-ai/sora-2/image-to-video/pro',
   },
   veo3: {
     t2v: 'fal-ai/veo3',

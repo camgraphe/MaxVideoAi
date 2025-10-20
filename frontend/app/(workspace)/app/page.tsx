@@ -2239,6 +2239,11 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     const primaryImageUrl = referenceImageUrls[0];
 
     const runIteration = async (iterationIndex: number) => {
+      if (selectedEngine.id.startsWith('sora-2') && form.mode === 'i2v' && !primaryImageUrl) {
+        showNotice('Ajoutez une image (URL ou fichier) pour lancer Image → Video avec Sora.');
+        return;
+      }
+
       const localKey = `local_${batchId}_${iterationIndex + 1}`;
       const id = localKey;
       const ar = form.aspectRatio;
@@ -2376,6 +2381,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           mode: form.mode,
           membershipTier: memberTier,
           payment: { mode: paymentMode },
+          ...(selectedEngine.id.startsWith('sora-2')
+            ? { variant: selectedEngine.id === 'sora-2-pro' ? 'sora2pro' : 'sora2' }
+            : {}),
           ...(shouldSendAspectRatio ? { aspectRatio: form.aspectRatio } : {}),
           ...(supportsNegativePrompt && trimmedNegativePrompt ? { negativePrompt: trimmedNegativePrompt } : {}),
           ...(inputsPayload ? { inputs: inputsPayload } : {}),

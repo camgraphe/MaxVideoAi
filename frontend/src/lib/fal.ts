@@ -5,6 +5,7 @@ import type { ResultProviderMode } from '@/types/providers';
 import type { VideoAsset } from '@/types/render';
 import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
+import { buildSoraFalInput, type SoraRequest } from '@/lib/sora';
 
 const BLOCKED_VIDEO_HOSTS = new Set([
   'upload.wikimedia.org',
@@ -79,6 +80,7 @@ export type GeneratePayload = {
   imageUrl?: string;
   referenceImages?: string[];
   inputs?: GenerateAttachment[];
+  soraRequest?: SoraRequest;
 };
 
 export type GenerateResult = {
@@ -228,15 +230,15 @@ export async function generateVideo(payload: GeneratePayload): Promise<GenerateR
     throw new Error('FAL_API_KEY is missing');
   }
   const resolvedFallback = await resolveFalModelId(payload.engineId);
-  const model = resolveModelSlug(payload, resolvedFallback);
-  if (!model) {
+  const resolvedModelSlug = resolveModelSlug(payload, resolvedFallback);
+  if (!resolvedModelSlug && !payload.soraRequest) {
     throw new Error('Unable to resolve FAL model for requested engine');
   }
 
-  return generateViaFal(payload, provider, model);
+  return generateViaFal(payload, provider, resolvedModelSlug ?? '');
 }
 
-async function generateViaFal(payload: GeneratePayload, provider: ResultProviderMode, model: string): Promise<GenerateResult> {
+async function generateViaFal(payload: GeneratePayload, provider: ResultProviderMode, defaultModel: string): Promise<GenerateResult> {
   const fallbackThumb = getThumbForAspectRatio(payload.aspectRatio);
   const falClient = getFalClient();
 
@@ -245,24 +247,36 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
     apiKey = payload.apiKey.trim();
   }
 
-  const requestBody: Record<string, unknown> = {
-    prompt: payload.prompt,
-    resolution: payload.resolution,
-    fps: payload.fps,
-    mode: payload.mode,
-  };
-  if (payload.aspectRatio) {
-    requestBody.aspect_ratio = payload.aspectRatio;
-  }
+  const soraFal = payload.soraRequest ? buildSoraFalInput(payload.soraRequest) : null;
+  let model = defaultModel;
+  let requestBody: Record<string, unknown> = {};
 
-  if (typeof payload.numFrames === 'number' && Number.isFinite(payload.numFrames) && payload.numFrames > 0) {
-    requestBody.num_frames = Math.round(payload.numFrames);
+  if (soraFal) {
+    model = soraFal.model;
+    requestBody = { ...soraFal.input };
+    if (apiKey && !requestBody.api_key) {
+      requestBody.api_key = apiKey;
+    }
   } else {
-    requestBody.duration = payload.durationSec;
-  }
+    requestBody = {
+      prompt: payload.prompt,
+      resolution: payload.resolution,
+      fps: payload.fps,
+      mode: payload.mode,
+    };
+    if (payload.aspectRatio) {
+      requestBody.aspect_ratio = payload.aspectRatio;
+    }
 
-  if (apiKey) {
-    requestBody.api_key = apiKey;
+    if (typeof payload.numFrames === 'number' && Number.isFinite(payload.numFrames) && payload.numFrames > 0) {
+      requestBody.num_frames = Math.round(payload.numFrames);
+    } else {
+      requestBody.duration = payload.durationSec;
+    }
+
+    if (apiKey) {
+      requestBody.api_key = apiKey;
+    }
   }
 
   const arrayCollectors = new Map<string, Set<string>>();

@@ -83,8 +83,53 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unknown engine' }, { status: 400 });
     }
 
-    const durationSec = Number(body.durationSec ?? engine.maxDurationSec ?? 4);
-    const resolution = String(body.resolution || engine.resolutions?.[0] || '1080p');
+    let durationSec = Number(body.durationSec ?? engine.maxDurationSec ?? 4);
+    let resolution = String(body.resolution || engine.resolutions?.[0] || '1080p');
+    const rawMode = typeof body.mode === 'string' ? body.mode.trim().toLowerCase() : 't2v';
+    const mode: 't2v' | 'i2v' = rawMode === 'i2v' ? 'i2v' : 't2v';
+    let soraRequest: SoraRequest | null = null;
+
+    if (isSoraEngineId(engine.id)) {
+      const variant = getSoraVariantForEngine(engine.id);
+      const candidate: Record<string, unknown> = {
+        variant,
+        mode,
+        prompt: typeof body.prompt === 'string' && body.prompt.trim().length ? body.prompt : '',
+        resolution,
+        aspect_ratio: typeof body.aspectRatio === 'string' && body.aspectRatio.trim().length ? body.aspectRatio.trim() : 'auto',
+        duration: durationSec,
+        api_key: typeof body.apiKey === 'string' && body.apiKey.trim().length ? body.apiKey.trim() : undefined,
+      };
+      if (mode === 'i2v') {
+        const imageUrl =
+          typeof body.imageUrl === 'string' && body.imageUrl.trim().length
+            ? body.imageUrl.trim()
+            : typeof body.image_url === 'string' && body.image_url.trim().length
+              ? body.image_url.trim()
+              : undefined;
+        if (!imageUrl) {
+          return NextResponse.json({ error: 'Image URL is required for Sora image-to-video' }, { status: 400 });
+        }
+        candidate.image_url = imageUrl;
+      }
+
+      try {
+        soraRequest = parseSoraRequest(candidate);
+      } catch (error) {
+        return NextResponse.json(
+          {
+            error: 'Invalid Sora payload',
+            details: error instanceof Error ? error.message : undefined,
+          },
+          { status: 400 }
+        );
+      }
+
+      durationSec = soraRequest.duration;
+      const fallbackResolution = engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '720p';
+      resolution = soraRequest.resolution === 'auto' ? fallbackResolution : soraRequest.resolution;
+    }
+
     const pricing = await computePricingSnapshot({
       engine,
       durationSec,
@@ -117,6 +162,11 @@ export async function POST(req: NextRequest) {
       pricing_vendor_share_cents: String(vendorShareCents),
       pricing_currency: pricing.currency,
     };
+
+    if (soraRequest) {
+      metadata.variant = soraRequest.variant;
+      metadata.mode = soraRequest.mode;
+    }
 
     if (pricing.meta?.ruleId) {
       metadata.rule_id = String(pricing.meta.ruleId);
