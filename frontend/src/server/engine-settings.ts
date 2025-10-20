@@ -51,18 +51,6 @@ function extractPricing(engine: EngineCaps): EnginePricingDetails | null {
       : engine.pricing.base != null
         ? { default: Math.round(engine.pricing.base * 100) }
         : undefined,
-    addons: engine.pricing.addons
-      ? Object.fromEntries(
-          Object.entries(engine.pricing.addons).map(([key, value]) => [
-            key,
-            {
-              perSecondCents:
-                value?.perSecond != null ? Math.round(Number(value.perSecond) * 100) : undefined,
-              flatCents: value?.flat != null ? Math.round(Number(value.flat) * 100) : undefined,
-            },
-          ])
-        )
-      : undefined,
     maxDurationSec: engine.maxDurationSec,
   };
   return pricingDetails;

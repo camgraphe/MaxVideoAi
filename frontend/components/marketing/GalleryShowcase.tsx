@@ -87,7 +87,6 @@ export function GalleryShowcase() {
             durationSec: pricingScenario.durationSec,
             resolution: pricingScenario.resolution,
             memberTier: (pricingScenario.memberTier ?? 'member').toString().toLowerCase() as PricingMemberTier,
-            addons: pricingScenario.addons,
           });
           const rosterEntry = getModelBySlug(item.meta.slug);
           const localizedMeta = dictionary.models.meta?.[item.meta.slug];

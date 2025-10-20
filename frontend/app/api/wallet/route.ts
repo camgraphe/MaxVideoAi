@@ -89,7 +89,6 @@ export async function POST(req: NextRequest) {
       engine,
       durationSec,
       resolution,
-      addons: body.addons,
       membershipTier: body.membershipTier,
     });
 
@@ -105,10 +104,6 @@ export async function POST(req: NextRequest) {
     const applicationFeeCents = getPlatformFeeCents(pricing);
     const vendorShareCents = getVendorShareCents(pricing);
     const jobId = typeof body.jobId === 'string' && body.jobId.trim() ? String(body.jobId).trim() : `job_${randomUUID()}`;
-    const addons = typeof body.addons === 'object' && body.addons
-      ? { audio: body.addons.audio, upscale4k: body.addons.upscale4k }
-      : { audio: false, upscale4k: false };
-
     const metadata: Record<string, string> = {
       kind: 'run',
       user_id: userId,
@@ -117,8 +112,6 @@ export async function POST(req: NextRequest) {
       engine_label: engine.label,
       duration_sec: String(durationSec),
       resolution,
-      addons_audio: addons.audio ? '1' : '0',
-      addons_upscale: addons.upscale4k ? '1' : '0',
       pricing_total_cents: String(pricing.totalCents),
       pricing_platform_fee_cents: String(applicationFeeCents),
       pricing_vendor_share_cents: String(vendorShareCents),

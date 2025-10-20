@@ -138,29 +138,6 @@ function sanitizePricing(payload: Record<string, unknown>): EnginePricingDetails
       }
     : undefined;
 
-  const addonsPayload = isPlainObject(payload.addons) ? payload.addons : undefined;
-  const addons = addonsPayload
-    ? Object.fromEntries(
-        Object.entries(addonsPayload).reduce<Array<[string, { perSecondCents?: number; flatCents?: number }]>>(
-          (acc, [key, value]) => {
-            if (!isPlainObject(value)) return acc;
-            const addon: { perSecondCents?: number; flatCents?: number } = {};
-            if (value.perSecondCents != null && Number.isFinite(Number(value.perSecondCents))) {
-              addon.perSecondCents = Math.max(0, Math.round(Number(value.perSecondCents)));
-            }
-            if (value.flatCents != null && Number.isFinite(Number(value.flatCents))) {
-              addon.flatCents = Math.max(0, Math.round(Number(value.flatCents)));
-            }
-            if (addon.perSecondCents != null || addon.flatCents != null) {
-              acc.push([key, addon]);
-            }
-            return acc;
-          },
-          []
-        )
-      )
-    : undefined;
-
   const maxDurationSec =
     payload.maxDurationSec != null && Number.isFinite(Number(payload.maxDurationSec))
       ? Math.max(1, Math.round(Number(payload.maxDurationSec)))
@@ -170,7 +147,6 @@ function sanitizePricing(payload: Record<string, unknown>): EnginePricingDetails
     currency,
     perSecondCents: perSecond,
     flatCents,
-    addons,
     maxDurationSec,
   };
 

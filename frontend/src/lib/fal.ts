@@ -74,7 +74,6 @@ export type GeneratePayload = {
   resolution?: string;
   fps?: number;
   mode?: string;
-  addons?: { audio?: boolean; upscale4k?: boolean };
   apiKey?: string;
   idempotencyKey?: string;
   imageUrl?: string;
@@ -251,8 +250,6 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
     resolution: payload.resolution,
     fps: payload.fps,
     mode: payload.mode,
-    audio: Boolean(payload.addons?.audio),
-    upscale: Boolean(payload.addons?.upscale4k),
   };
   if (payload.aspectRatio) {
     requestBody.aspect_ratio = payload.aspectRatio;

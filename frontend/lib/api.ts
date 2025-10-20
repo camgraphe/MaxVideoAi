@@ -18,11 +18,6 @@ type GeneratePayload = {
   resolution: string;
   fps: number;
   mode: string;
-  addons?: {
-    audio?: boolean;
-    upscale4k?: boolean;
-    [key: string]: unknown;
-  };
   membershipTier?: string;
   payment?: { mode?: string | null; paymentIntentId?: string | null } | null;
   negativePrompt?: string;

@@ -257,7 +257,6 @@ export function PriceEstimator({ showWalletActions = true, variant = 'full' }: P
         durationSec: duration,
         resolution: selectedResolution,
         memberTier: pricingMemberTier,
-        addons: {},
       });
     } catch {
       return null;

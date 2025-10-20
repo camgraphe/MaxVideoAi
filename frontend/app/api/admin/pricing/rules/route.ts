@@ -50,8 +50,6 @@ export async function POST(req: NextRequest) {
       resolution: typeof payload.resolution === 'string' ? payload.resolution : undefined,
       marginPercent: toNumber(payload.marginPercent),
       marginFlatCents: Math.round(toNumber(payload.marginFlatCents)),
-      surchargeAudioPercent: toNumber(payload.surchargeAudioPercent),
-      surchargeUpscalePercent: toNumber(payload.surchargeUpscalePercent),
       currency: typeof payload.currency === 'string' ? payload.currency : undefined,
       vendorAccountId: typeof payload.vendorAccountId === 'string' ? payload.vendorAccountId : undefined,
     });

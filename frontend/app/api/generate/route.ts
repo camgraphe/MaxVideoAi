@@ -110,24 +110,19 @@ export async function POST(req: NextRequest) {
     engine,
     durationSec,
     resolution: pricingResolution,
-    addons: body.addons,
     membershipTier: body.membershipTier,
   });
   pricing.meta = {
     ...(pricing.meta ?? {}),
-      request: {
-        engineId: engine.id,
-        engineLabel: engine.label,
-        mode,
-        durationSec,
-        aspectRatio: aspectRatio ?? 'source',
-        resolution: effectiveResolution,
-        effectiveResolution: pricingResolution,
-        fps: typeof body.fps === 'number' ? body.fps : engine.fps?.[0],
-        addons: {
-        audio: Boolean(body.addons?.audio),
-        upscale4k: Boolean(body.addons?.upscale4k),
-      },
+    request: {
+      engineId: engine.id,
+      engineLabel: engine.label,
+      mode,
+      durationSec,
+      aspectRatio: aspectRatio ?? 'source',
+      resolution: effectiveResolution,
+      effectiveResolution: pricingResolution,
+      fps: typeof body.fps === 'number' ? body.fps : engine.fps?.[0],
     },
   };
   const pricingSnapshotJson = JSON.stringify(pricing);
@@ -404,11 +399,6 @@ export async function POST(req: NextRequest) {
     validationPayload.duration = durationSec;
   }
 
-  if (mode === 't2v' && body.addons?.audio === true) {
-    validationPayload.generate_audio = true;
-    validationPayload.audio = true;
-  }
-
   if (maxUploadedBytes > 0) {
     validationPayload._uploadedFileMB = maxUploadedBytes / (1024 * 1024);
   }
@@ -435,7 +425,6 @@ export async function POST(req: NextRequest) {
       resolution: effectiveResolution,
       fps: body.fps,
       mode,
-      addons: body.addons,
       apiKey,
       imageUrl: typeof body.imageUrl === 'string' ? body.imageUrl.trim() : undefined,
       referenceImages: Array.isArray(body.referenceImages)
@@ -576,7 +565,7 @@ export async function POST(req: NextRequest) {
         prompt,
         thumb,
         aspectRatio,
-        Boolean(body.addons?.audio),
+        false,
         Boolean(engine.upscale4k),
         thumb,
         batchId,
@@ -671,7 +660,6 @@ export async function POST(req: NextRequest) {
             durationSec,
             aspectRatio,
             resolution: effectiveResolution,
-            addons: body.addons,
           },
           pricing: {
             totalCents: pricing.totalCents,

@@ -22,10 +22,6 @@ type HeroTileConfig = {
   fallbackPriceLabel: string;
   minPriceCents?: number;
   minPriceCurrency?: string;
-  addons?: {
-    audio?: boolean;
-    upscale4k?: boolean;
-  };
   showAudioIcon?: boolean;
   alt: string;
 };
@@ -41,7 +37,6 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     resolution: '1080p',
     fallbackPriceLabel: 'from $0.43',
     minPriceCents: 43,
-    addons: { audio: true },
     showAudioIcon: true,
     alt: 'Sora 2 — example clip',
   },
@@ -69,7 +64,6 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     fallbackPriceLabel: 'from $0.40',
     minPriceCents: 40,
     alt: 'Luma Dream Machine — example clip',
-    addons: { audio: true },
   },
   {
     id: 'pika-22',
@@ -105,7 +99,6 @@ async function resolveHeroTilePrices() {
           engineId: tile.engineId,
           durationSec: tile.durationSec,
           resolution: tile.resolution,
-          addons: tile.addons,
           memberTier: 'member',
         });
         let cents = snapshot.totalCents;

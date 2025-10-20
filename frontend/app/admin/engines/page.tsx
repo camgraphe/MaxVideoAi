@@ -85,10 +85,6 @@ type PricingState = {
   currency: string;
   defaultPerSecond: string;
   perResolution: Record<string, string>;
-  audioPerSecond: string;
-  audioFlat: string;
-  upscalePerSecond: string;
-  upscaleFlat: string;
 };
 
 function buildOptionsState(entry: EngineEntry): OptionsState {
@@ -137,10 +133,6 @@ function buildPricingState(entry: EngineEntry): PricingState {
     currency: pricing?.currency ?? entry.engine.pricing?.currency ?? 'USD',
     defaultPerSecond: toDollarString(pricing?.perSecondCents?.default ?? null),
     perResolution,
-    audioPerSecond: toDollarString(pricing?.addons?.audio?.perSecondCents ?? null),
-    audioFlat: toDollarString(pricing?.addons?.audio?.flatCents ?? null),
-    upscalePerSecond: toDollarString(pricing?.addons?.upscale4k?.perSecondCents ?? null),
-    upscaleFlat: toDollarString(pricing?.addons?.upscale4k?.flatCents ?? null),
   };
 }
 
@@ -273,29 +265,7 @@ function EngineEditor({ entry, mutate }: EngineEditorProps) {
                 byResolution: Object.keys(perResolution).length ? perResolution : undefined,
               }
             : undefined,
-        addons: undefined,
       };
-
-      const audioPerSecond = toCents(pricingState.audioPerSecond);
-      const audioFlat = toCents(pricingState.audioFlat);
-      const upscalePerSecond = toCents(pricingState.upscalePerSecond);
-      const upscaleFlat = toCents(pricingState.upscaleFlat);
-      const addons: EnginePricingDetails['addons'] = {};
-      if (audioPerSecond != null || audioFlat != null) {
-        addons.audio = {
-          perSecondCents: audioPerSecond ?? undefined,
-          flatCents: audioFlat ?? undefined,
-        };
-      }
-      if (upscalePerSecond != null || upscaleFlat != null) {
-        addons.upscale4k = {
-          perSecondCents: upscalePerSecond ?? undefined,
-          flatCents: upscaleFlat ?? undefined,
-        };
-      }
-      if (Object.keys(addons).length > 0) {
-        pricing.addons = addons;
-      }
 
       const res = await fetch(`/api/admin/engines/${entry.engine.id}`, {
         method: 'PATCH',
@@ -587,62 +557,6 @@ function EngineEditor({ entry, mutate }: EngineEditorProps) {
                   </label>
                 ))}
               </div>
-            </div>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <label className="text-xs text-text-tertiary">
-                Audio addon (USD/sec)
-                <input
-                  type="number"
-                  step="0.001"
-                  min="0"
-                  value={pricingState.audioPerSecond}
-                  onChange={(event) =>
-                    setPricingState((prev) => ({ ...prev, audioPerSecond: event.target.value }))
-                  }
-                  className="mt-1 w-full rounded-lg border border-hairline px-3 py-2 text-sm text-text-primary"
-                />
-              </label>
-              <label className="text-xs text-text-tertiary">
-                Audio addon flat (USD)
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={pricingState.audioFlat}
-                  onChange={(event) =>
-                    setPricingState((prev) => ({ ...prev, audioFlat: event.target.value }))
-                  }
-                  className="mt-1 w-full rounded-lg border border-hairline px-3 py-2 text-sm text-text-primary"
-                />
-              </label>
-            </div>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <label className="text-xs text-text-tertiary">
-                Upscale addon (USD/sec)
-                <input
-                  type="number"
-                  step="0.001"
-                  min="0"
-                  value={pricingState.upscalePerSecond}
-                  onChange={(event) =>
-                    setPricingState((prev) => ({ ...prev, upscalePerSecond: event.target.value }))
-                  }
-                  className="mt-1 w-full rounded-lg border border-hairline px-3 py-2 text-sm text-text-primary"
-                />
-              </label>
-              <label className="text-xs text-text-tertiary">
-                Upscale addon flat (USD)
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={pricingState.upscaleFlat}
-                  onChange={(event) =>
-                    setPricingState((prev) => ({ ...prev, upscaleFlat: event.target.value }))
-                  }
-                  className="mt-1 w-full rounded-lg border border-hairline px-3 py-2 text-sm text-text-primary"
-                />
-              </label>
             </div>
           </div>
           {pricingError ? (

@@ -63,7 +63,6 @@ export default function BillingPage() {
           resolution,
           aspectRatio,
           fps: selected.fps[0],
-          addons: {},
           user: { memberTier: 'Plus' },
         });
         if (!canceled) setEstimate({ total: res.total, currency: res.currency, messages: res.messages });

@@ -5,10 +5,6 @@ export interface PricingScenario {
   durationSec: number;
   resolution: string;
   memberTier?: MemberTier | string;
-  addons?: {
-    audio?: boolean;
-    upscale4k?: boolean;
-  };
 }
 
 export const DEFAULT_MARKETING_SCENARIO: PricingScenario = {
@@ -35,6 +31,5 @@ export function scenarioToPricingInput(scenario: PricingScenario): PricingInput 
     durationSec: scenario.durationSec,
     resolution: scenario.resolution,
     memberTier: normalizeMemberTier(scenario.memberTier),
-    addons: scenario.addons,
   };
 }

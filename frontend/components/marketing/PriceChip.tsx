@@ -12,10 +12,6 @@ interface PriceChipProps {
   durationSec: number;
   resolution: string;
   memberTier?: MemberTier | string;
-  addons?: {
-    audio?: boolean;
-    upscale4k?: boolean;
-  };
   suffix?: string;
 }
 
@@ -32,7 +28,7 @@ function formatPercentage(value: number | undefined) {
   return `${Math.round(value * 100)}%`;
 }
 
-export function PriceChip({ engineId, durationSec, resolution, memberTier = 'member', addons, suffix }: PriceChipProps) {
+export function PriceChip({ engineId, durationSec, resolution, memberTier = 'member', suffix }: PriceChipProps) {
   const { dictionary, t } = useI18n();
   const kernel = getPricingKernel();
   const [isOpen, setIsOpen] = useState(false);
@@ -43,10 +39,9 @@ export function PriceChip({ engineId, durationSec, resolution, memberTier = 'mem
       durationSec,
       resolution,
       memberTier: (memberTier ?? 'member').toString().toLowerCase() as MemberTier,
-      addons,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [engineId, durationSec, resolution, memberTier?.toString(), addons?.audio, addons?.upscale4k]);
+  }, [engineId, durationSec, resolution, memberTier?.toString()]);
 
   const snapshot = quote.snapshot;
   const definition = quote.definition;

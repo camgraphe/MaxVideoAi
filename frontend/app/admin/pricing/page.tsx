@@ -9,8 +9,6 @@ type PricingRule = {
   resolution?: string;
   marginPercent: number;
   marginFlatCents: number;
-  surchargeAudioPercent: number;
-  surchargeUpscalePercent: number;
   currency: string;
   vendorAccountId?: string;
 };
@@ -55,8 +53,6 @@ const DEFAULT_RULE_TEMPLATE: PricingRule = {
   id: 'new',
   marginPercent: 0.2,
   marginFlatCents: 0,
-  surchargeAudioPercent: 0.2,
-  surchargeUpscalePercent: 0.5,
   currency: 'USD',
 };
 
@@ -249,7 +245,7 @@ export default function PricingAdminPage() {
           <div>
             <h2 className="text-lg font-semibold text-text-primary">Pricing rules</h2>
             <p className="text-xs text-text-tertiary">
-              Override margin and add-on surcharges per engine or resolution. Values apply to future quotes and charges.
+              Override per-engine margins. Values apply to future quotes and charges.
             </p>
           </div>
         </div>
@@ -409,18 +405,6 @@ function PricingRuleCard({ rule, onRefresh }: RuleCardProps) {
           onChange={(value) => handleChange('marginFlatUsd', value)}
         />
         <Field
-          label="Audio surcharge (%)"
-          value={form.surchargeAudioPercent}
-          disabled={!editing}
-          onChange={(value) => handleChange('surchargeAudioPercent', value)}
-        />
-        <Field
-          label="Upscale surcharge (%)"
-          value={form.surchargeUpscalePercent}
-          disabled={!editing}
-          onChange={(value) => handleChange('surchargeUpscalePercent', value)}
-        />
-        <Field
           label="Currency"
           value={form.currency}
           disabled={!editing}
@@ -460,8 +444,6 @@ type RuleForm = {
   resolution: string;
   marginPercent: string;
   marginFlatUsd: string;
-  surchargeAudioPercent: string;
-  surchargeUpscalePercent: string;
   currency: string;
   vendorAccountId: string;
 };
@@ -472,8 +454,6 @@ function convertRuleToForm(rule: PricingRule): RuleForm {
     resolution: rule.resolution ?? '',
     marginPercent: (rule.marginPercent * 100).toString(),
     marginFlatUsd: (rule.marginFlatCents / 100).toString(),
-    surchargeAudioPercent: (rule.surchargeAudioPercent * 100).toString(),
-    surchargeUpscalePercent: (rule.surchargeUpscalePercent * 100).toString(),
     currency: rule.currency,
     vendorAccountId: rule.vendorAccountId ?? '',
   };
@@ -493,8 +473,6 @@ function convertFormToPayload(form: RuleForm) {
     resolution: form.resolution.trim() || null,
     marginPercent: toDecimal(form.marginPercent),
     marginFlatCents: toUsdCents(form.marginFlatUsd),
-    surchargeAudioPercent: toDecimal(form.surchargeAudioPercent),
-    surchargeUpscalePercent: toDecimal(form.surchargeUpscalePercent),
     currency: form.currency.trim() || 'USD',
     vendorAccountId: form.vendorAccountId.trim() || null,
   };
@@ -606,16 +584,6 @@ function NewPricingRuleCard({ onCreated }: NewRuleProps) {
         <Field label="Resolution" value={form.resolution} onChange={(value) => handleChange('resolution', value)} placeholder="Optional" />
         <Field label="Margin (%)" value={form.marginPercent} onChange={(value) => handleChange('marginPercent', value)} />
         <Field label="Flat margin (USD)" value={form.marginFlatUsd} onChange={(value) => handleChange('marginFlatUsd', value)} />
-        <Field
-          label="Audio surcharge (%)"
-          value={form.surchargeAudioPercent}
-          onChange={(value) => handleChange('surchargeAudioPercent', value)}
-        />
-        <Field
-          label="Upscale surcharge (%)"
-          value={form.surchargeUpscalePercent}
-          onChange={(value) => handleChange('surchargeUpscalePercent', value)}
-        />
         <Field label="Currency" value={form.currency} onChange={(value) => handleChange('currency', value)} />
         <Field
           label="Vendor account"

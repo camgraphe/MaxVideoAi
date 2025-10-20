@@ -24,17 +24,6 @@ function applyPricingDetails(engine: EngineCaps, pricing: EnginePricingDetails |
       Object.entries(byResolution).map(([key, cents]) => [key, cents / 100])
     );
   }
-  if (pricing.addons) {
-    pricingData.addons = Object.fromEntries(
-      Object.entries(pricing.addons).map(([key, value]) => [
-        key,
-        {
-          perSecond: value?.perSecondCents != null ? value.perSecondCents / 100 : undefined,
-          flat: value?.flatCents != null ? value.flatCents / 100 : undefined,
-        },
-      ])
-    );
-  }
   engine.pricing = pricingData;
 }
 
