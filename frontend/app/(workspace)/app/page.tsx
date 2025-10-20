@@ -677,7 +677,7 @@ export default function Page() {
     amountLabel?: string;
     shortfallCents?: number;
   } | null>(null);
-  const [topUpAmount, setTopUpAmount] = useState<number>(500);
+  const [topUpAmount, setTopUpAmount] = useState<number>(1000);
   const [isTopUpLoading, setIsTopUpLoading] = useState(false);
   const [topUpError, setTopUpError] = useState<string | null>(null);
 
@@ -850,7 +850,7 @@ export default function Page() {
     setTopUpError(null);
     setIsTopUpLoading(false);
     setMemberTier('Member');
-    setTopUpAmount(500);
+    setTopUpAmount(1000);
     writeStorage(STORAGE_KEYS.pendingRenders, null);
     persistedRendersRef.current = null;
     if (typeof window !== 'undefined' && pendingPollRef.current !== null) {
@@ -1469,7 +1469,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const closeTopUpModal = useCallback(() => {
     setTopUpModal(null);
-    setTopUpAmount(500);
+    setTopUpAmount(1000);
     setTopUpError(null);
   }, []);
 
@@ -1691,15 +1691,15 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   const handleCustomAmountChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(event.target.value);
     if (Number.isNaN(value)) {
-      setTopUpAmount(500);
+      setTopUpAmount(1000);
       return;
     }
-    setTopUpAmount(Math.max(500, Math.round(value * 100)));
+    setTopUpAmount(Math.max(1000, Math.round(value * 100)));
   }, []);
 
   const handleConfirmTopUp = useCallback(async () => {
     if (!topUpModal) return;
-    const amountCents = Math.max(500, topUpAmount);
+    const amountCents = Math.max(1000, topUpAmount);
     setIsTopUpLoading(true);
     setTopUpError(null);
     try {
@@ -3162,7 +3162,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 <div className="mt-4">
                   <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Add credits</p>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {[500, 1000, 2500].map((value) => {
+                    {[1000, 2500, 5000].map((value) => {
                       const formatted = (() => {
                         try {
                           return new Intl.NumberFormat(CURRENCY_LOCALE, { style: 'currency', currency }).format(value / 100);
@@ -3200,14 +3200,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                         <input
                           id="custom-topup"
                           type="number"
-                          min={5}
+                          min={10}
                           step={1}
-                          value={Math.max(5, Math.round(topUpAmount / 100))}
+                          value={Math.max(10, Math.round(topUpAmount / 100))}
                           onChange={handleCustomAmountChange}
                           className="h-10 w-full rounded-input border border-border bg-white pl-6 pr-3 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         />
                       </div>
-                      <span className="text-xs text-text-muted">Min $5</span>
+                      <span className="text-xs text-text-muted">Min $10</span>
                     </div>
                   </div>
                   {topUpError && <p className="mt-2 text-sm text-state-warning">{topUpError}</p>}

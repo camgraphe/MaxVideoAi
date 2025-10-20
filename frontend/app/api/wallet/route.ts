@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const amountCents = Math.max(100, Number(body.amountCents ?? 0));
+  const amountCents = Math.max(1000, Number(body.amountCents ?? 0));
 
   if (useMock || !ENV.STRIPE_SECRET_KEY || !process.env.DATABASE_URL) {
     const balanceCents = applyMockWalletTopUp(userId, amountCents);

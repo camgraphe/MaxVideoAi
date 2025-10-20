@@ -470,7 +470,7 @@ export default function BillingPage() {
             <h2 className="mb-2 text-lg font-semibold text-text-primary">Micro‑FAQ</h2>
             <div className="grid gap-2 text-sm text-text-secondary">
               <p><span className="font-medium text-text-primary">Do I need a subscription?</span> No. Pay as you go.</p>
-              <p><span className="font-medium text-text-primary">Can I buy just one small render?</span> Yes — funds are debited per run from your $5 Starter balance.</p>
+              <p><span className="font-medium text-text-primary">Can I buy just one small render?</span> Yes — funds are debited per run from your $10 Starter balance.</p>
               <p><span className="font-medium text-text-primary">Will my credits expire?</span> Credits don’t expire while your account remains active.</p>
               <p><span className="font-medium text-text-primary">How do discounts work?</span> Member status applies automatically based on your last 30 days of spend.</p>
             </div>
