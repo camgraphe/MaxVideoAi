@@ -6,6 +6,7 @@ import { computePricingSnapshot as computeKernelSnapshot } from '@maxvideoai/pri
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { getPricingDetails } from '@/lib/fal-catalog';
 import { ensureBillingSchema } from '@/lib/schema';
+import { getMembershipDiscountMap } from '@/lib/membership';
 
 const DECIMAL_PLACES = 6;
 
@@ -252,11 +253,23 @@ export async function computePricingSnapshot(context: PricingContext): Promise<P
     }
   }
 
+  const membershipDiscounts = await getMembershipDiscountMap();
+  const memberTierDiscounts: PricingEngineDefinition['memberTierDiscounts'] = {
+    ...definition.memberTierDiscounts,
+  };
+  (Object.keys(memberTierDiscounts) as Array<keyof PricingEngineDefinition['memberTierDiscounts']>).forEach((key) => {
+    const override = membershipDiscounts[key];
+    if (typeof override === 'number' && Number.isFinite(override)) {
+      memberTierDiscounts[key] = Math.max(0, override);
+    }
+  });
+
   const augmentedDefinition: PricingEngineDefinition = {
     ...definition,
     currency: context.currency ?? definition.currency,
     platformFeePct: rule.marginPercent,
     platformFeeFlatCents: rule.marginFlatCents,
+    memberTierDiscounts,
     metadata: {
       ...(definition.metadata ?? {}),
       ruleId: rule.id,
@@ -301,6 +314,7 @@ export async function computePricingSnapshot(context: PricingContext): Promise<P
     engineLabel: engine.label,
     engineVersion: engine.version,
     ruleCurrency: rule.currency,
+    membershipDiscounts: memberTierDiscounts,
   };
   return snapshot;
 }
@@ -451,6 +465,9 @@ export async function deletePricingRule(id: string): Promise<void> {
   const ruleId = sanitiseText(id);
   if (!ruleId) {
     throw new Error('Missing pricing rule id');
+  }
+  if (ruleId === 'default') {
+    throw new Error('Cannot delete default pricing rule');
   }
   await ensureBillingSchema();
   await query(`DELETE FROM app_pricing_rules WHERE id = $1`, [ruleId]);

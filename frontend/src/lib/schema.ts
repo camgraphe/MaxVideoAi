@@ -52,7 +52,7 @@ export async function ensureBillingSchema(): Promise<void> {
       }
     }
 
-    await query(`
+      await query(`
         INSERT INTO app_pricing_rules (
           id,
           margin_percent,
@@ -65,6 +65,25 @@ export async function ensureBillingSchema(): Promise<void> {
         )
         VALUES ('default', 0.2, 0, 0.2, 0.5, 'USD', NOW(), NOW())
         ON CONFLICT (id) DO NOTHING;
+      `);
+
+      await query(`
+        CREATE TABLE IF NOT EXISTS app_membership_tiers (
+          tier TEXT PRIMARY KEY,
+          spend_threshold_cents BIGINT NOT NULL DEFAULT 0,
+          discount_percent NUMERIC NOT NULL DEFAULT 0,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_by TEXT
+        );
+      `);
+
+      await query(`
+        INSERT INTO app_membership_tiers (tier, spend_threshold_cents, discount_percent)
+        VALUES
+          ('member', 0, 0),
+          ('plus', 5000, 0.05),
+          ('pro', 20000, 0.1)
+        ON CONFLICT (tier) DO NOTHING;
       `);
 
       await query(`
