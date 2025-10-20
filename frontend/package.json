@@ -32,7 +32,8 @@
     "remark-html": "^16.0.1",
     "resend": "^6.2.0",
     "stripe": "^14.24.0",
-    "swr": "^2.3.0"
+    "swr": "^2.3.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^20.12.7",

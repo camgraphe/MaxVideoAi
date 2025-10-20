@@ -8,6 +8,7 @@ import { randomUUID } from 'crypto';
 import { ensureBillingSchema } from '@/lib/schema';
 import { applyMockWalletTopUp, getMockWalletBalance } from '@/lib/wallet';
 import { getConfiguredEngine } from '@/server/engines';
+import { getSoraVariantForEngine, isSoraEngineId, parseSoraRequest, type SoraRequest } from '@/lib/sora';
 
 export async function GET(req: NextRequest) {
   const userId = await getUserIdFromRequest(req);
