@@ -35,6 +35,11 @@ const SECTION_GROUPS: Array<{
         href: '/admin/users',
       },
       {
+        title: 'Transactions',
+        description: 'Inspect charges and refunds, issue manual wallet credits.',
+        href: '/admin/transactions',
+      },
+      {
         title: 'Engines',
         description: 'Tune routing, pricing, and availability for model integrations.',
         href: '/admin/engines',

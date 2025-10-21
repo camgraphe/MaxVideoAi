@@ -26,6 +26,7 @@ const NAV_SECTIONS: Array<{ title: string; items: Array<{ label: string; href: s
       { label: 'Engines', href: '/admin/engines' },
       { label: 'Pricing', href: '/admin/pricing' },
       { label: 'Payouts', href: '/admin/payouts' },
+      { label: 'Transactions', href: '/admin/transactions' },
     ],
   },
 ];
