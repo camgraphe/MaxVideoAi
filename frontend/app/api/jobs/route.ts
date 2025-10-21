@@ -4,6 +4,7 @@ import type { PricingSnapshot } from '@/types/engines';
 import { normalizeMediaUrl } from '@/lib/media';
 import { ensureBillingSchema } from '@/lib/schema';
 import { getUserIdFromRequest } from '@/lib/user';
+import { listPlaylistVideos } from '@/server/videos';
 
 export async function GET(req: NextRequest) {
   if (!isDatabaseConfigured()) {
@@ -76,8 +77,10 @@ export async function GET(req: NextRequest) {
       message: string | null;
       eta_seconds: number | null;
       eta_label: string | null;
+      visibility: string | null;
+      indexable: boolean | null;
     }>(
-    `SELECT id, job_id, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label
+    `SELECT id, job_id, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable
        FROM app_jobs
        ${where}
        ORDER BY id DESC
@@ -85,7 +88,34 @@ export async function GET(req: NextRequest) {
       params
     );
 
-    if (!rows.length) {
+    if (!rows.length && !cursor) {
+      const playlistSlug = process.env.STARTER_PLAYLIST_SLUG ?? 'starter';
+      try {
+        const curatedVideos = await listPlaylistVideos(playlistSlug, limit);
+        if (curatedVideos.length) {
+          const curatedJobs = curatedVideos.map((video) => ({
+            jobId: video.id,
+            engineLabel: video.engineLabel,
+            durationSec: video.durationSec,
+            prompt: video.prompt,
+            thumbUrl: video.thumbUrl ?? undefined,
+            videoUrl: video.videoUrl ?? undefined,
+            createdAt: video.createdAt,
+            engineId: video.engineId,
+            aspectRatio: video.aspectRatio ?? undefined,
+            hasAudio: Boolean(video.hasAudio),
+            canUpscale: Boolean(video.canUpscale),
+            visibility: video.visibility,
+            indexable: video.indexable,
+            status: 'completed' as const,
+            progress: 100,
+            curated: true,
+          }));
+          return NextResponse.json({ ok: true, jobs: curatedJobs, nextCursor: null });
+        }
+      } catch (error) {
+        console.warn('[api/jobs] failed to load curated starter playlist', error);
+      }
       return NextResponse.json({ ok: true, jobs: [], nextCursor: null });
     }
 
@@ -128,6 +158,8 @@ export async function GET(req: NextRequest) {
       message: r.message ?? undefined,
       etaSeconds: r.eta_seconds ?? undefined,
       etaLabel: r.eta_label ?? undefined,
+      visibility: r.visibility ?? 'public',
+      indexable: r.indexable ?? true,
     }));
 
     return NextResponse.json({ ok: true, jobs: mapped, nextCursor });

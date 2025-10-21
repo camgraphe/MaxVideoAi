@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { resolveLocale } from '@/lib/i18n/server';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/react';
@@ -13,18 +13,17 @@ export const metadata: Metadata = {
   },
   description: 'Generate cinematic AI videos via Sora 2, Veo 3, Pika & more. Pay-as-you-go, no watermarks.',
   keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
-  themeColor: '#4F5D75',
   manifest: '/site.webmanifest',
   alternates: {
-    canonical: 'https://maxvideoai.com/',
+    canonical: 'https://maxvideoai.com',
     languages: {
-      en: 'https://maxvideoai.com/',
+      en: 'https://maxvideoai.com',
       fr: 'https://maxvideoai.com/?lang=fr',
     },
   },
   openGraph: {
     type: 'website',
-    url: 'https://maxvideoai.com/',
+    url: 'https://maxvideoai.com',
     siteName: 'MaxVideoAI',
     title: 'MaxVideoAI — AI Video Generator Hub',
     description: 'Generate cinematic AI videos via Sora 2, Veo 3, Pika & more. Pay-as-you-go, no watermarks.',
@@ -49,6 +48,10 @@ export const metadata: Metadata = {
     title: 'MaxVideo AI',
     statusBarStyle: 'default',
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#4F5D75',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

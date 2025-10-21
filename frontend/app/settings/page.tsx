@@ -1,19 +1,61 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 
 type Tab = 'account' | 'team' | 'keys' | 'privacy' | 'notifications';
 
 export default function SettingsPage() {
   const [tab, setTab] = useState<Tab>('account');
   const { loading: authLoading, session } = useRequireAuth();
+  const {
+    data: preferences,
+    isLoading: prefsLoading,
+    error: preferencesError,
+    mutate: mutatePreferences,
+  } = useUserPreferences(!authLoading && Boolean(session));
+  const [prefSaving, setPrefSaving] = useState(false);
+  const [prefError, setPrefError] = useState<string | null>(null);
+
+  const handleDefaultIndexChange = useCallback(
+    async (next: boolean) => {
+      if (prefSaving) return;
+      setPrefSaving(true);
+      setPrefError(null);
+      try {
+        const res = await fetch('/api/user/preferences', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ defaultAllowIndex: next }),
+        });
+        const json = await res.json().catch(() => null);
+        if (!res.ok || !json?.ok) {
+          throw new Error(json?.error ?? 'Failed to update preference');
+        }
+        await mutatePreferences(
+          (current) => (current ? { ...current, defaultAllowIndex: next } : current),
+          false
+        );
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to update preference';
+        setPrefError(message);
+        console.error('[settings] default index update failed', error);
+      } finally {
+        setPrefSaving(false);
+      }
+    },
+    [prefSaving, mutatePreferences]
+  );
 
   if (authLoading || !session) {
     return null;
   }
+
+  const preferencesLoadError = preferencesError instanceof Error ? preferencesError.message : null;
 
   return (
     <div className="flex min-h-screen flex-col bg-bg">
@@ -34,7 +76,18 @@ export default function SettingsPage() {
           {tab === 'account' && <AccountTab />}
           {tab === 'team' && <TeamTab />}
           {tab === 'keys' && <KeysTab />}
-          {tab === 'privacy' && <PrivacyTab />}
+          {tab === 'privacy' && (
+            <PrivacyTab
+              defaultAllowIndex={preferences?.defaultAllowIndex}
+              loading={prefsLoading}
+              saving={prefSaving}
+              loadError={preferencesLoadError}
+              error={prefError}
+              onToggleIndexing={(value) => {
+                void handleDefaultIndexChange(value);
+              }}
+            />
+          )}
           {tab === 'notifications' && <NotificationsTab />}
         </main>
       </div>
@@ -125,30 +178,51 @@ function KeysTab() {
   );
 }
 
-function PrivacyTab() {
+function PrivacyTab({
+  defaultAllowIndex,
+  loading,
+  saving,
+  loadError,
+  error,
+  onToggleIndexing,
+}: {
+  defaultAllowIndex?: boolean | null;
+  loading: boolean;
+  saving: boolean;
+  loadError?: string | null;
+  error: string | null;
+  onToggleIndexing: (next: boolean) => void;
+}) {
+  const allowIndex = defaultAllowIndex ?? true;
+  const isDisabled = loading || saving || Boolean(loadError);
+
   return (
     <section className="rounded-card border border-border bg-white p-4 shadow-card">
       <h2 className="mb-3 text-lg font-semibold text-text-primary">Privacy & Safety</h2>
-      <div className="space-y-3 text-sm text-text-secondary">
-        <label className="flex items-center gap-2">
-          <input type="checkbox" className="h-4 w-4" />
-          Feature this render (off by default)
-        </label>
-        <label className="block">
-          <span className="mb-1 block">Safety level</span>
-          <select className="w-full rounded-input border border-border bg-bg px-3 py-2">
-            <option>Standard</option>
-            <option>High</option>
-          </select>
-        </label>
-        <label className="block">
-          <span className="mb-1 block">Data retention</span>
-          <select className="w-full rounded-input border border-border bg-bg px-3 py-2">
-            <option>30 days</option>
-            <option>90 days</option>
-            <option>180 days</option>
-          </select>
-        </label>
+      <div className="space-y-4 text-sm text-text-secondary">
+        <div className="rounded-card border border-hairline bg-bg px-4 py-3">
+          <label className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              className="mt-1 h-4 w-4 rounded border border-border accent-accent"
+              checked={allowIndex}
+              onChange={(event) => onToggleIndexing(event.target.checked)}
+              disabled={isDisabled}
+            />
+            <span>
+              <span className="block font-medium text-text-primary">Allow indexing by default</span>
+              <span className="mt-1 block text-xs text-text-muted">
+                New videos can appear in the gallery, sitemap, and search previews. You can still uncheck individual renders from their detail view.
+              </span>
+            </span>
+          </label>
+          {saving ? <p className="mt-2 text-xs text-text-muted">Saving preference…</p> : null}
+          {loadError ? <p className="mt-2 text-xs text-state-warning">{loadError}</p> : null}
+          {error ? <p className="mt-2 text-xs text-state-warning">{error}</p> : null}
+        </div>
+        <p className="text-xs text-text-muted">
+          Disable this toggle if you prefer every render to stay private by default. Published videos will keep their current visibility until you change them individually.
+        </p>
       </div>
     </section>
   );

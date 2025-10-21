@@ -20,10 +20,10 @@ export const metadata: Metadata = {
     ],
   },
   alternates: {
-    canonical: 'https://www.maxvideo.ai/docs',
+    canonical: 'https://maxvideoai.com/docs',
     languages: {
-      en: 'https://www.maxvideo.ai/docs',
-      fr: 'https://www.maxvideo.ai/docs?lang=fr',
+      en: 'https://maxvideoai.com/docs',
+      fr: 'https://maxvideoai.com/docs?lang=fr',
     },
   },
 };

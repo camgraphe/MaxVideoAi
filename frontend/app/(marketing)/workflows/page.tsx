@@ -23,10 +23,10 @@ export const metadata: Metadata = {
     ],
   },
   alternates: {
-    canonical: 'https://www.maxvideo.ai/workflows',
+    canonical: 'https://maxvideoai.com/workflows',
     languages: {
-      en: 'https://www.maxvideo.ai/workflows',
-      fr: 'https://www.maxvideo.ai/workflows?lang=fr',
+      en: 'https://maxvideoai.com/workflows',
+      fr: 'https://maxvideoai.com/workflows?lang=fr',
     },
   },
 };

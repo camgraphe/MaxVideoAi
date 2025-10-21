@@ -103,7 +103,7 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
     title,
     description,
     alternates: {
-      canonical: `https://www.maxvideo.ai/models/${slug}`,
+      canonical: `https://maxvideoai.com/models/${slug}`,
     },
   };
 }
@@ -189,7 +189,7 @@ export default function ModelDetailPage({ params }: PageParams) {
         provider: {
           '@type': 'Organization',
           name: 'MaxVideo AI',
-          url: 'https://www.maxvideo.ai',
+          url: 'https://maxvideoai.com',
         },
         description: meta.description,
         isAccessibleForFree: false,

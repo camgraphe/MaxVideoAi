@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       title: 'Post not found — MaxVideo AI',
     };
   }
-  const canonical = `https://www.maxvideo.ai/blog/${post.slug}`;
+  const canonical = `https://maxvideoai.com/blog/${post.slug}`;
   return {
     title: `${post.title} — MaxVideo AI`,
     description: post.description,
@@ -72,7 +72,7 @@ export default async function BlogPostPage({ params }: { params: Params }) {
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://www.maxvideo.ai/blog/${post.slug}`,
+      '@id': `https://maxvideoai.com/blog/${post.slug}`,
     },
   };
 

@@ -6,6 +6,7 @@ import type { FormEvent } from 'react';
 import { useEngines, useInfiniteJobs, runPreflight, runGenerate, getJobStatus } from '@/lib/api';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import type { EngineCaps, EngineInputField, Mode, PreflightRequest, PreflightResponse } from '@/types/engines';
 import { getEngineCaps, type EngineCaps as EngineCapabilityCaps } from '@/fixtures/engineCaps';
 import { HeaderBar } from '@/components/HeaderBar';
@@ -22,11 +23,12 @@ import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getRenderEta } from '@/lib/render-eta';
 import { ENV as CLIENT_ENV } from '@/lib/env';
 import { adaptGroupSummaries, adaptGroupSummary } from '@/lib/video-group-adapter';
-import type { VideoGroup } from '@/types/video-groups';
+import type { VideoGroup, VideoItem, ResultProvider } from '@/types/video-groups';
 import { useResultProvider } from '@/hooks/useResultProvider';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import type { Job } from '@/types/jobs';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 
 function resolveRenderThumb(render: { thumbUrl?: string | null; aspectRatio?: string | null }): string {
   if (render.thumbUrl) return render.thumbUrl;
@@ -38,6 +40,62 @@ function resolveRenderThumb(render: { thumbUrl?: string | null; aspectRatio?: st
     default:
       return '/assets/frames/thumb-16x9.svg';
   }
+}
+
+type SharedVideoPayload = {
+  id: string;
+  engineId: string;
+  engineLabel: string;
+  durationSec: number;
+  prompt: string;
+  promptExcerpt?: string;
+  thumbUrl?: string;
+  videoUrl?: string;
+  aspectRatio?: string;
+  createdAt: string;
+};
+
+function toVideoAspect(value?: string | null): VideoItem['aspect'] {
+  switch (value) {
+    case '9:16':
+      return '9:16';
+    case '1:1':
+      return '1:1';
+    default:
+      return '16:9';
+  }
+}
+
+function mapSharedVideoToGroup(video: SharedVideoPayload, provider: ResultProvider): VideoGroup {
+  const aspect = toVideoAspect(video.aspectRatio);
+  const url = video.videoUrl ?? video.thumbUrl ?? '';
+  const item: VideoItem = {
+    id: video.id,
+    url,
+    aspect,
+    thumb: video.thumbUrl ?? undefined,
+    jobId: video.id,
+    durationSec: video.durationSec,
+    engineId: video.engineId,
+    meta: {
+      mediaType: video.videoUrl ? 'video' : 'image',
+      prompt: video.prompt,
+      engineLabel: video.engineLabel,
+    },
+  };
+
+  return {
+    id: `shared-${video.id}`,
+    items: [item],
+    layout: 'x1',
+    createdAt: video.createdAt,
+    provider,
+    status: 'ready',
+    heroItemId: item.id,
+    meta: {
+      source: 'gallery',
+    },
+  };
 }
 
 type ReferenceAsset = {
@@ -140,7 +198,13 @@ function AssetLibraryModal({ fieldLabel, assets, isLoading, error, onClose, onSe
                 return (
                   <div key={asset.id} className="overflow-hidden rounded-card border border-border/60 bg-white">
                     <div className="relative" style={{ aspectRatio: '16 / 9' }}>
-                      <img src={asset.url} alt="Reference" className="h-full w-full object-cover" />
+                      <Image
+                        src={asset.url}
+                        alt="Reference"
+                        fill
+                        className="object-cover"
+                        sizes="(min-width: 1024px) 400px, (min-width: 640px) 300px, 100vw"
+                      />
                     </div>
                     <div className="flex items-center justify-between gap-3 border-t border-border bg-white px-3 py-2 text-[12px] text-text-secondary">
                       <div className="flex flex-col gap-1">
@@ -663,6 +727,8 @@ export default function Page() {
   const searchParams = useSearchParams();
   const [userId, setUserId] = useState<string | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
+  const { data: userPreferences } = useUserPreferences(Boolean(userId));
+  const defaultAllowIndex = userPreferences?.defaultAllowIndex ?? true;
 
   const [form, setForm] = useState<FormState | null>(null);
   const [prompt, setPrompt] = useState<string>(DEFAULT_PROMPT);
@@ -728,7 +794,10 @@ export default function Page() {
     const search = searchParams?.toString();
     return search ? `${base}?${search}` : base;
   }, [pathname, searchParams]);
+  const fromVideoId = useMemo(() => searchParams?.get('from') ?? null, [searchParams]);
+  const searchString = useMemo(() => searchParams?.toString() ?? '', [searchParams]);
   const [renders, setRenders] = useState<LocalRender[]>([]);
+  const [sharedPrompt, setSharedPrompt] = useState<string | null>(null);
   const [selectedPreview, setSelectedPreview] = useState<{
     localKey?: string;
     batchId?: string;
@@ -1290,6 +1359,7 @@ export default function Page() {
     if (renderGroups.has(activeGroupId)) {
       setCompositeOverride(null);
       setCompositeOverrideSummary(null);
+      setSharedPrompt(null);
     }
   }, [activeGroupId, renderGroups]);
   const buildQuadTileFromRender = useCallback(
@@ -1761,6 +1831,87 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       mounted = false;
     };
   }, [authChecked]);
+
+  useEffect(() => {
+    if (!authChecked) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        const token = data.session?.access_token;
+        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch('/api/user/exports/summary', { headers });
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!json?.ok) return;
+        if (cancelled) return;
+        if ((json.total ?? 0) === 0 && json.onboardingDone !== true) {
+          const params: Record<string, string> = { tab: 'starter', first: '1' };
+          const search = new URLSearchParams(params).toString();
+          router.replace(`/gallery?${search}`);
+          await fetch('/api/user/preferences', {
+            method: 'PATCH',
+            headers: {
+              ...headers,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ onboardingDone: true }),
+          }).catch(() => undefined);
+        }
+      } catch (error) {
+        console.warn('[app] onboarding redirect failed', error);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [authChecked, router]);
+
+  useEffect(() => {
+    if (!fromVideoId) return undefined;
+    let cancelled = false;
+    (async () => {
+      let shouldStripParam = false;
+      try {
+        const res = await fetch(`/api/videos/${encodeURIComponent(fromVideoId)}`, { cache: 'no-store' });
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!json?.ok || !json.video || cancelled) return;
+        const video = json.video as SharedVideoPayload;
+        const overrideGroup = mapSharedVideoToGroup(video, provider);
+        setCompositeOverride(overrideGroup);
+        setCompositeOverrideSummary(null);
+        setSharedPrompt(video.prompt ?? video.promptExcerpt ?? null);
+        setSelectedPreview({
+          id: video.id,
+          videoUrl: video.videoUrl ?? undefined,
+          thumbUrl: video.thumbUrl ?? undefined,
+          aspectRatio: video.aspectRatio ?? undefined,
+          prompt: video.prompt ?? video.promptExcerpt ?? undefined,
+        });
+        shouldStripParam = true;
+      } catch (error) {
+        console.warn('[app] failed to load shared video', error);
+      } finally {
+        if (cancelled) return;
+        if (shouldStripParam && searchString.includes('from=')) {
+          const params = new URLSearchParams(searchString);
+          params.delete('from');
+          const next = params.toString();
+          router.replace(next ? `/app?${next}` : '/app');
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [fromVideoId, provider, router, searchString]);
+
+  useEffect(() => {
+    if (!compositeOverride) {
+      setSharedPrompt(null);
+    }
+  }, [compositeOverride]);
 
   useEffect(() => {
     if (!topUpModal) return undefined;
@@ -2744,6 +2895,22 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     [focusComposer, setForm, setPrompt, showNotice]
   );
 
+  const handleCopySharedPrompt = useCallback(() => {
+    const promptValue = sharedPrompt ?? selectedPreview?.prompt ?? null;
+    if (!promptValue) {
+      showNotice('No prompt available to copy.');
+      return;
+    }
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      void navigator.clipboard.writeText(promptValue).then(
+        () => showNotice('Prompt copied to clipboard'),
+        () => showNotice('Unable to copy prompt, please copy manually.')
+      );
+    } else {
+      showNotice('Clipboard not available in this context.');
+    }
+  }, [sharedPrompt, selectedPreview, showNotice]);
+
   const fallbackEngineId = selectedEngine?.id ?? 'unknown-engine';
 
   const handleGalleryGroupAction = useCallback(
@@ -2771,6 +2938,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           handleQuadTileAction('open', tile);
           setCompositeOverride(null);
           setCompositeOverrideSummary(null);
+          setSharedPrompt(null);
           return;
         }
         if (action === 'continue') {
@@ -3087,6 +3255,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                   <CompositePreviewDock
                     group={compositeGroup}
                     isLoading={isGenerationLoading && !compositeGroup}
+                    copyPrompt={sharedPrompt}
+                    onCopyPrompt={sharedPrompt ? handleCopySharedPrompt : undefined}
                     onOpenModal={(group) => {
                       if (!group) return;
                       if (renderGroups.has(group.id)) {
@@ -3141,6 +3311,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           group={viewerGroup}
           onClose={() => setViewerTarget(null)}
           onRefreshJob={handleRefreshJob}
+          defaultAllowIndex={defaultAllowIndex}
         />
       ) : null}
       {topUpModal && (

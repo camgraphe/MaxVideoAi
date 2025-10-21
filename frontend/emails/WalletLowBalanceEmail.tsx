@@ -44,7 +44,7 @@ export function WalletLowBalanceEmail({ recipientName, balanceCents, currency, t
       <Body style={styles.body}>
         <Container style={styles.container}>
           <Section style={styles.logoRow}>
-            <Img src="https://www.maxvideo.ai/apple-touch-icon.png" width={34} height={34} alt="MaxVideoAI" style={styles.logo} />
+            <Img src="https://maxvideoai.com/apple-touch-icon.png" width={34} height={34} alt="MaxVideoAI" style={styles.logo} />
             <Text style={styles.brandLabel}>MAXVIDEOAI</Text>
           </Section>
           <Text style={styles.greeting}>{friendlyName}, ton wallet approche du seuil bas.</Text>

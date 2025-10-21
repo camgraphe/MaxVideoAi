@@ -33,6 +33,9 @@ export interface Job {
   paymentStatus?: string;
   stripePaymentIntentId?: string;
   stripeChargeId?: string;
+  visibility?: 'public' | 'private';
+  indexable?: boolean;
+  curated?: boolean;
 }
 
 export interface JobsPage {

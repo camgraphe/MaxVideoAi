@@ -42,6 +42,7 @@ export function GalleryRail({
   const { data: enginesData } = useEngines();
   const engineList = useMemo(() => enginesData?.engines ?? [], [enginesData?.engines]);
   const jobs = useMemo(() => data?.flatMap((page) => page.jobs) ?? [], [data]);
+  const hasCuratedJobs = useMemo(() => jobs.some((job) => job.curated), [jobs]);
   const { groups: groupedJobSummariesFromApi } = useMemo(
     () => groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true }),
     [jobs]
@@ -88,6 +89,10 @@ export function GalleryRail({
   const [snackbar, setSnackbar] = useState<SnackbarState | null>(null);
   const handleRemoveJob = useCallback(
     async (job: Job) => {
+      if (job.curated) {
+        setSnackbar({ message: 'Sample clips cannot be removed.', duration: 2400 });
+        return;
+      }
       try {
         await hideJob(job.jobId);
         setSnackbar({ message: 'Removed from gallery.', duration: 2400 });
@@ -114,6 +119,10 @@ export function GalleryRail({
       if (group.source === 'active' || group.count > 1) return;
       const job = group.hero.job;
       if (!job) return;
+      if (job.curated) {
+        setSnackbar({ message: 'Sample clips cannot be removed.', duration: 2400 });
+        return;
+      }
       void handleRemoveJob(job);
     },
     [handleRemoveJob]
@@ -153,6 +162,8 @@ export function GalleryRail({
   const allowCardRemoval = useCallback(
     (group: GroupSummary) => {
       const original = summaryIndex.get(group.id) ?? group;
+      const job = original.hero.job;
+      if (job?.curated) return false;
       return original.source !== 'active' && original.count <= 1;
     },
     [summaryIndex]
@@ -208,6 +219,12 @@ export function GalleryRail({
           View all
         </Link>
       </header>
+
+      {hasCuratedJobs ? (
+        <div className="mt-3 rounded-[10px] border border-hairline bg-white/80 px-3 py-2 text-[12px] text-text-secondary">
+          Starter samples curated by the MaxVideo team are shown until you generate your own videos.
+        </div>
+      ) : null}
 
       {error && (
         <div className="mt-4 flex items-center justify-between gap-3 rounded-[10px] border border-[#FACC15]/60 bg-[#FEF3C7] px-3 py-2 text-[12px] text-[#92400E]">

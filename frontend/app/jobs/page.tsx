@@ -11,17 +11,21 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { adaptGroupSummary } from '@/lib/video-group-adapter';
 import { useResultProvider } from '@/hooks/useResultProvider';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
-import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
+import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 
 export default function JobsPage() {
   const { data: enginesData } = useEngines();
   const { data, error, isLoading, size, setSize, isValidating, mutate } = useInfiniteJobs(24);
-  const { loading: authLoading } = useRequireAuth();
+  const { loading: authLoading, session } = useRequireAuth();
+  const { data: preferences } = useUserPreferences(!authLoading && Boolean(session));
+  const defaultAllowIndex = preferences?.defaultAllowIndex ?? true;
 
   const pages = data ?? [];
   const jobs = pages.flatMap((p) => p.jobs);
   const hasMore = pages.length === 0 ? false : pages[pages.length - 1].nextCursor !== null;
+  const hasCuratedJobs = useMemo(() => jobs.some((job) => job.curated), [jobs]);
 
   const { groups: apiGroups } = useMemo(
     () => groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true }),
@@ -86,6 +90,9 @@ export default function JobsPage() {
       if (!original) return;
       const heroJob = original.hero.job;
       if (!heroJob) return;
+      if (heroJob.curated) {
+        return;
+      }
       try {
         await hideJob(heroJob.jobId);
         setActiveGroupId((current) => (current === group.id ? null : current));
@@ -110,6 +117,7 @@ export default function JobsPage() {
     (group: GroupSummary) => {
       const summary = summaryMap.get(group.id);
       if (!summary) return false;
+       if (summary.hero.job?.curated) return false;
       return summary.source !== 'active' && summary.count <= 1;
     },
     [summaryMap]
@@ -155,6 +163,12 @@ export default function JobsPage() {
           <div className="mb-4 flex items-center justify-between">
             <h1 className="text-xl font-semibold text-text-primary">Jobs</h1>
           </div>
+
+          {hasCuratedJobs ? (
+            <div className="mb-4 rounded-card border border-hairline bg-white p-4 text-sm text-text-secondary">
+              Starter renders curated by the MaxVideo team appear here until you generate your own clips.
+            </div>
+          ) : null}
 
           {error ? (
             <div className="rounded-card border border-border bg-white p-4 text-state-warning">
@@ -226,6 +240,7 @@ export default function JobsPage() {
           group={viewerGroup}
           onClose={() => setActiveGroupId(null)}
           onRefreshJob={handleRefreshJob}
+          defaultAllowIndex={defaultAllowIndex}
         />
       ) : null}
     </div>

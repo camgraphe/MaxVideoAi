@@ -73,6 +73,20 @@ function toVideoItem(member: GroupMemberSummary): VideoItem {
   if (member.jobId) {
     meta.jobId = member.jobId;
   }
+  if (typeof member.job?.indexable === 'boolean') {
+    meta.indexable = member.job.indexable;
+  }
+  if (member.job?.visibility) {
+    meta.visibility = member.job.visibility;
+  }
+
+  const visibility = member.job?.visibility === 'public' ? 'public' : member.job?.visibility === 'private' ? 'private' : undefined;
+  const indexable =
+    typeof member.job?.indexable === 'boolean'
+      ? member.job.indexable
+      : typeof member.job?.visibility === 'string' && member.job.visibility === 'private'
+        ? false
+        : undefined;
 
   return {
     id: member.id,
@@ -84,6 +98,8 @@ function toVideoItem(member: GroupMemberSummary): VideoItem {
     engineId: member.engineId,
     costCents: typeof member.priceCents === 'number' ? member.priceCents : undefined,
     meta: Object.keys(meta).length ? meta : undefined,
+    indexable,
+    visibility,
   };
 }
 

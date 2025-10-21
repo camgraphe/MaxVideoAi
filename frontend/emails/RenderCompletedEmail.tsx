@@ -59,7 +59,7 @@ export function RenderCompletedEmail({
       <Body style={styles.body}>
         <Container style={styles.container}>
           <Section style={styles.logoRow}>
-            <Img src="https://www.maxvideo.ai/apple-touch-icon.png" width={36} height={36} alt="MaxVideoAI" style={styles.logo} />
+            <Img src="https://maxvideoai.com/apple-touch-icon.png" width={36} height={36} alt="MaxVideoAI" style={styles.logo} />
             <Text style={styles.brandLabel}>MAXVIDEOAI</Text>
           </Section>
           <Text style={styles.greeting}>{friendlyName}, ton rendu est prêt.</Text>

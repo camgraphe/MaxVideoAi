@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
       engineLabel: 'Fal 2.0',
       durationSec: 8,
       videoUrl: `${siteUrl}/app?job=test-email`,
-      thumbnailUrl: 'https://www.maxvideo.ai/social/share.png',
+      thumbnailUrl: 'https://maxvideoai.com/social/share.png',
       recipientName: 'MaxVideoAI Team',
     });
     return NextResponse.json({ ok: true, template: 'render', provider: response.provider, id: response.id });

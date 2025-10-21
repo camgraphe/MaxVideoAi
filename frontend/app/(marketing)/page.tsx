@@ -10,6 +10,7 @@ import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
 import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { CURRENCY_LOCALE } from '@/lib/intl';
+import { getHomepageSlots, HERO_SLOT_KEYS, GALLERY_SLOT_KEYS } from '@/server/homepage';
 
 type HeroTileConfig = {
   id: string;
@@ -81,24 +82,41 @@ const HERO_TILES: readonly HeroTileConfig[] = [
 
 const WORKS_WITH_BRANDS = ['Sora 2', 'Veo 3', 'Luma Dream Machine', 'Luma Ray 2 Flash', 'Pika 2.2', 'MiniMax Video 1', 'Hunyuan Video'] as const;
 
-async function resolveHeroTilePrices() {
+type HeroTilePricingInput = {
+  id: string;
+  engineId?: string;
+  durationSec?: number;
+  resolution?: string;
+  fallbackPriceLabel: string;
+  minPriceCents?: number | null;
+  minPriceCurrency?: string | null;
+};
+
+async function resolveHeroTilePrices(tiles: HeroTilePricingInput[]) {
   const kernel = getPricingKernel();
+  const formatPriceLabel = (cents: number, currency: string) =>
+    `from ${new Intl.NumberFormat(CURRENCY_LOCALE, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 2,
+    }).format(cents / 100)}`;
+
   const entries = await Promise.all(
-    HERO_TILES.map(async (tile) => {
-      const formatPriceLabel = (cents: number, currency: string) =>
-        `from ${new Intl.NumberFormat(CURRENCY_LOCALE, {
-          style: 'currency',
-          currency,
-          minimumFractionDigits: 2,
-        }).format(cents / 100)}`;
+    tiles.map(async (tile) => {
       const minPriceCents = tile.minPriceCents ?? null;
       const minPriceCurrency = tile.minPriceCurrency ?? 'USD';
-      const fallbackLabel = minPriceCents != null ? formatPriceLabel(minPriceCents, minPriceCurrency) : tile.fallbackPriceLabel;
+      const fallbackLabel =
+        minPriceCents != null ? formatPriceLabel(minPriceCents, minPriceCurrency) : tile.fallbackPriceLabel;
+
+      if (!tile.engineId || !tile.durationSec) {
+        return [tile.id, fallbackLabel] as const;
+      }
+
       try {
         const { snapshot } = kernel.quote({
           engineId: tile.engineId,
           durationSec: tile.durationSec,
-          resolution: tile.resolution,
+          resolution: tile.resolution ?? '1080p',
           memberTier: 'member',
         });
         let cents = snapshot.totalCents;
@@ -109,10 +127,11 @@ async function resolveHeroTilePrices() {
         }
         return [tile.id, formatPriceLabel(cents, currency)] as const;
       } catch {
-        return [tile.id, fallbackLabel ?? tile.fallbackPriceLabel] as const;
+        return [tile.id, fallbackLabel] as const;
       }
     })
   );
+
   return Object.fromEntries(entries);
 }
 
@@ -133,10 +152,10 @@ export const metadata: Metadata = {
     ],
   },
   alternates: {
-    canonical: 'https://www.maxvideo.ai/',
+    canonical: 'https://maxvideoai.com',
     languages: {
-      en: 'https://www.maxvideo.ai/',
-      fr: 'https://www.maxvideo.ai/?lang=fr',
+      en: 'https://maxvideoai.com',
+      fr: 'https://maxvideoai.com/?lang=fr',
     },
   },
 };
@@ -153,7 +172,97 @@ export default async function HomePage() {
   const pricing = home.pricing;
   const trust = home.trust;
   const waysSection = home.waysSection;
-  const heroPriceMap = await resolveHeroTilePrices();
+  const homepageSlots = await getHomepageSlots();
+  const fallbackGalleryItems = Array.isArray(home.gallery?.items) ? home.gallery.items : [];
+  const galleryPricingKernel = getPricingKernel();
+
+  const heroTileConfigs = HERO_SLOT_KEYS.map((key, index) => {
+    const slot = homepageSlots.hero.find((entry) => entry.key === key);
+    const fallback = HERO_TILES[index] ?? HERO_TILES[0];
+    const video = slot?.video ?? null;
+    const label = slot?.title || video?.engineLabel || fallback.label;
+    const videoSrc = video?.videoUrl ?? fallback.videoSrc;
+    const posterSrc = video?.thumbUrl ?? fallback.posterSrc;
+    const alt = slot?.subtitle || video?.promptExcerpt || fallback.alt;
+    const engineId = video?.engineId ?? fallback.engineId;
+    const durationSec = video?.durationSec ?? fallback.durationSec;
+    const resolution = fallback.resolution;
+
+    return {
+      id: key,
+      label,
+      videoSrc,
+      posterSrc,
+      alt,
+      showAudioIcon: fallback.showAudioIcon ?? false,
+      engineId,
+      durationSec,
+      resolution,
+      fallbackPriceLabel: fallback.fallbackPriceLabel,
+      minPriceCents: fallback.minPriceCents ?? null,
+      minPriceCurrency: fallback.minPriceCurrency ?? 'USD',
+    };
+  });
+
+  const heroPriceMap = await resolveHeroTilePrices(
+    heroTileConfigs.map((tile) => ({
+      id: tile.id,
+      engineId: tile.engineId,
+      durationSec: tile.durationSec,
+      resolution: tile.resolution,
+      fallbackPriceLabel: tile.fallbackPriceLabel,
+      minPriceCents: tile.minPriceCents,
+      minPriceCurrency: tile.minPriceCurrency,
+    }))
+  );
+
+  const galleryFeaturedItems = GALLERY_SLOT_KEYS.map((key, index) => {
+    const slot = homepageSlots.gallery.find((entry) => entry.key === key);
+    const video = slot?.video ?? null;
+    const fallbackItem = fallbackGalleryItems[index];
+
+    const title = slot?.title || fallbackItem?.label || `Gallery pick ${index + 1}`;
+    const description = slot?.subtitle || fallbackItem?.description || '';
+    const alt = description || video?.promptExcerpt || fallbackItem?.alt || title;
+
+    let meta = '';
+    if (video) {
+      const parts: string[] = [];
+      if (video.engineLabel) parts.push(video.engineLabel);
+      if (typeof video.durationSec === 'number') parts.push(`${video.durationSec}s`);
+      if (video.engineId && typeof video.durationSec === 'number') {
+        try {
+          const { snapshot } = galleryPricingKernel.quote({
+            engineId: video.engineId,
+            durationSec: video.durationSec,
+            resolution: '1080p',
+            memberTier: 'member',
+          });
+          parts.push(new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: snapshot.currency,
+            minimumFractionDigits: 2,
+          }).format(snapshot.totalCents / 100));
+        } catch {
+          // ignore pricing failures
+        }
+      }
+      meta = parts.length ? parts.join(' • ') : '';
+    }
+
+    return {
+      id: key,
+      title,
+      description,
+      videoUrl: video?.videoUrl,
+      posterUrl: video?.thumbUrl,
+      alt,
+      meta,
+    };
+  });
+  const galleryItemsOverride = galleryFeaturedItems.some((item) => item.videoUrl || item.posterUrl)
+    ? galleryFeaturedItems
+    : undefined;
   const softwareSchema = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -172,7 +281,26 @@ export default async function HomePage() {
       ratingCount: '3200',
     },
     description: metadata.description,
-    url: 'https://www.maxvideo.ai/',
+    url: 'https://maxvideoai.com',
+  };
+  const videoJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'VideoObject',
+    name: 'MaxVideoAI — Generate cinematic AI video',
+    description: 'Create watermark-free AI videos with Sora 2, Veo 3, Luma, Pika, and more.',
+    thumbnailUrl: ['https://maxvideoai.com/og/price-before.png'],
+    uploadDate: '2025-10-01T12:00:00+00:00',
+    duration: 'PT45S',
+    contentUrl: 'https://maxvideoai.com/hero/sora2.mp4',
+    embedUrl: 'https://maxvideoai.com/',
+    publisher: {
+      '@type': 'Organization',
+      name: 'MaxVideoAI',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://maxvideoai.com/favicon-512.png',
+      },
+    },
   };
   return (
     <div className="pb-24">
@@ -207,7 +335,7 @@ export default async function HomePage() {
           </Link>
         </div>
         <div className="grid w-full gap-4 sm:grid-cols-2">
-          {HERO_TILES.map((tile, index) => (
+          {heroTileConfigs.map((tile, index) => (
             <HeroMediaTile
               key={tile.id}
               label={tile.label}
@@ -301,7 +429,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <GalleryShowcase />
+      <GalleryShowcase featuredItems={galleryItemsOverride} />
 
       <section className="mx-auto mt-20 max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
@@ -339,6 +467,9 @@ export default async function HomePage() {
       </section>
       <Script id="software-jsonld" type="application/ld+json">
         {JSON.stringify(softwareSchema)}
+      </Script>
+      <Script id="home-video-jsonld" type="application/ld+json">
+        {JSON.stringify(videoJsonLd)}
       </Script>
     </div>
   );

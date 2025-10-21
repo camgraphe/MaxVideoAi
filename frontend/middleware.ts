@@ -3,8 +3,21 @@ import { NextResponse } from 'next/server';
 import { getUserIdFromSupabase } from '@/lib/supabase';
 
 const LOGIN_PATH = '/login';
+const PROTECTED_PREFIXES = ['/app', '/dashboard', '/jobs', '/billing', '/settings'];
 
 export async function middleware(req: NextRequest) {
+  const host = req.headers.get('host') ?? '';
+  if (host.startsWith('www.')) {
+    const url = new URL(req.url);
+    url.host = host.replace(/^www\./, '');
+    return NextResponse.redirect(url, 308);
+  }
+
+  const isProtectedRoute = PROTECTED_PREFIXES.some((prefix) => req.nextUrl.pathname.startsWith(prefix));
+  if (!isProtectedRoute) {
+    return NextResponse.next();
+  }
+
   try {
     const userId = await getUserIdFromSupabase(req);
     if (userId) {
@@ -28,5 +41,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/app/:path*', '/dashboard/:path*', '/jobs/:path*', '/billing/:path*', '/settings/:path*'],
+  matcher: '/:path*',
 };

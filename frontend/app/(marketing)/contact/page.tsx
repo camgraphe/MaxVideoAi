@@ -18,10 +18,10 @@ export const metadata: Metadata = {
     ],
   },
   alternates: {
-    canonical: 'https://www.maxvideo.ai/contact',
+    canonical: 'https://maxvideoai.com/contact',
     languages: {
-      en: 'https://www.maxvideo.ai/contact',
-      fr: 'https://www.maxvideo.ai/contact?lang=fr',
+      en: 'https://maxvideoai.com/contact',
+      fr: 'https://maxvideoai.com/contact?lang=fr',
     },
   },
 };

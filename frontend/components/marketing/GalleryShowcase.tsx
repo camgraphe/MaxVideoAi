@@ -25,7 +25,21 @@ function formatCurrency(currency: string, cents: number) {
   }).format(cents / 100);
 }
 
-export function GalleryShowcase() {
+type FeaturedItemOverride = {
+  id: string;
+  title: string;
+  description?: string;
+  videoUrl?: string;
+  posterUrl?: string;
+  alt?: string;
+  meta?: string;
+};
+
+type GalleryShowcaseProps = {
+  featuredItems?: FeaturedItemOverride[];
+};
+
+export function GalleryShowcase({ featuredItems }: GalleryShowcaseProps) {
   const { t, dictionary } = useI18n();
   const gallery = t('home.gallery', {
     title: 'Gallery',
@@ -68,6 +82,52 @@ export function GalleryShowcase() {
     return () => mediaQuery.removeEventListener('change', update);
   }, []);
 
+  type RenderItem = {
+    id: string;
+    label: string;
+    description: string;
+    videoSrc?: string;
+    posterSrc?: string;
+    alt: string;
+    meta: string;
+  };
+
+  const renderItems: RenderItem[] = featuredItems && featuredItems.length
+    ? featuredItems.map((item) => ({
+        id: item.id,
+        label: item.title,
+        description: item.description ?? '',
+        videoSrc: item.videoUrl,
+        posterSrc: item.posterUrl,
+        alt: item.alt ?? item.title,
+        meta: item.meta ?? '',
+      }))
+    : gallery.items.map((item) => {
+        const pricingScenario = item.meta.pricing;
+        const quote = kernel.quote({
+          engineId: pricingScenario.engineId,
+          durationSec: pricingScenario.durationSec,
+          resolution: pricingScenario.resolution,
+          memberTier: (pricingScenario.memberTier ?? 'member').toString().toLowerCase() as PricingMemberTier,
+        });
+        const rosterEntry = getModelBySlug(item.meta.slug);
+        const localizedMeta = dictionary.models.meta?.[item.meta.slug];
+        const displayName = localizedMeta?.displayName ?? rosterEntry?.marketingName ?? item.label;
+        const versionLabel = localizedMeta?.versionLabel ?? rosterEntry?.versionLabel;
+        const costLabel = formatCurrency(quote.snapshot.currency, quote.snapshot.totalCents);
+        const durationLabel = `${pricingScenario.durationSec} s`;
+
+        return {
+          id: item.id,
+          label: item.label,
+          description: item.description,
+          videoSrc: item.media?.videoSrc,
+          posterSrc: item.media?.posterSrc,
+          alt: item.alt,
+          meta: `Model: ${displayName}${versionLabel ? ` · ${versionLabel}` : ''} | Duration: ${durationLabel} | Cost: ${costLabel}`,
+        } satisfies RenderItem;
+      });
+
   return (
     <section className="mx-auto mt-20 max-w-6xl px-4 sm:px-6 lg:px-8">
       <div className="mb-6 flex items-center justify-between gap-4">
@@ -80,72 +140,53 @@ export function GalleryShowcase() {
         </span>
       </div>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {gallery.items.map((item, index) => {
-          const pricingScenario = item.meta.pricing;
-          const quote = kernel.quote({
-            engineId: pricingScenario.engineId,
-            durationSec: pricingScenario.durationSec,
-            resolution: pricingScenario.resolution,
-            memberTier: (pricingScenario.memberTier ?? 'member').toString().toLowerCase() as PricingMemberTier,
-          });
-          const rosterEntry = getModelBySlug(item.meta.slug);
-          const localizedMeta = dictionary.models.meta?.[item.meta.slug];
-          const displayName = localizedMeta?.displayName ?? rosterEntry?.marketingName ?? item.label;
-          const versionLabel = localizedMeta?.versionLabel ?? rosterEntry?.versionLabel;
-          const costLabel = formatCurrency(quote.snapshot.currency, quote.snapshot.totalCents);
-          const durationLabel = `${pricingScenario.durationSec} s`;
-
-          return (
-            <figure
-              key={item.id}
-              className="group relative overflow-hidden rounded-card border border-border bg-white shadow-card"
-              aria-labelledby={`${item.id}-label`}
-            >
-              <div className="relative aspect-video w-full overflow-hidden bg-black">
-                {item.media?.videoSrc ? (
-                  prefersReducedMotion && item.media.posterSrc ? (
-                    <Image
-                      src={item.media.posterSrc}
-                      alt={item.alt}
-                      fill
-                      className="object-cover"
-                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                    />
-                  ) : (
-                    <video
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                      preload="metadata"
-                      poster={item.media?.posterSrc}
-                      aria-label={item.alt}
-                    >
-                      <source src={item.media.videoSrc} type="video/mp4" />
-                    </video>
-                  )
+        {renderItems.map((item, index) => (
+          <figure
+            key={item.id}
+            className="group relative overflow-hidden rounded-card border border-border bg-white shadow-card"
+            aria-labelledby={`${item.id}-label`}
+          >
+            <div className="relative aspect-video w-full overflow-hidden bg-black">
+              {item.videoSrc ? (
+                prefersReducedMotion && item.posterSrc ? (
+                  <Image
+                    src={item.posterSrc}
+                    alt={item.alt}
+                    fill
+                    className="object-cover"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                  />
                 ) : (
-                  <div className={`h-full w-full bg-gradient-to-br ${GRADIENTS[index % GRADIENTS.length]}`} aria-hidden />
-                )}
-              </div>
-              <div className="flex flex-col gap-1 border-t border-hairline p-4">
-                <span id={`${item.id}-label`} className="text-sm font-semibold text-text-primary">
-                  {item.label}
-                </span>
-                <p className="text-xs text-text-muted">{item.description}</p>
-                <p className="text-[11px] font-medium text-text-secondary">
-                  Model: {displayName}
-                  {versionLabel ? ` · ${versionLabel}` : ''} | Duration: {durationLabel} | Cost: {costLabel}
-                </p>
-                <span className="sr-only">{item.alt}</span>
-              </div>
-              <div className="pointer-events-none absolute inset-0 hidden items-center justify-center bg-black/70 text-white opacity-0 transition duration-200 group-hover:flex group-hover:opacity-100">
-                <span className="rounded-pill border border-white/50 px-3 py-1 text-sm">{gallery.hoverLabel}</span>
-              </div>
-            </figure>
-          );
-        })}
+                  <video
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    poster={item.posterSrc}
+                    aria-label={item.alt}
+                  >
+                    <source src={item.videoSrc} type="video/mp4" />
+                  </video>
+                )
+              ) : (
+                <div className={`h-full w-full bg-gradient-to-br ${GRADIENTS[index % GRADIENTS.length]}`} aria-hidden />
+              )}
+            </div>
+            <div className="flex flex-col gap-1 border-t border-hairline p-4">
+              <span id={`${item.id}-label`} className="text-sm font-semibold text-text-primary">
+                {item.label}
+              </span>
+              {item.description ? <p className="text-xs text-text-muted">{item.description}</p> : null}
+              {item.meta ? <p className="text-[11px] font-medium text-text-secondary">{item.meta}</p> : null}
+              <span className="sr-only">{item.alt}</span>
+            </div>
+            <div className="pointer-events-none absolute inset-0 hidden items-center justify-center bg-black/70 text-white opacity-0 transition duration-200 group-hover:flex group-hover:opacity-100">
+              <span className="rounded-pill border border-white/50 px-3 py-1 text-sm">{gallery.hoverLabel}</span>
+            </div>
+          </figure>
+        ))}
       </div>
     </section>
   );

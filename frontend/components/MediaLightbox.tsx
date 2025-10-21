@@ -17,6 +17,8 @@ export interface MediaLightboxEntry {
   engineLabel?: string | null;
   durationSec?: number | null;
   createdAt?: string | null;
+  indexable?: boolean;
+  visibility?: 'public' | 'private';
 }
 
 export interface MediaLightboxProps {
@@ -27,6 +29,8 @@ export interface MediaLightboxProps {
   entries: MediaLightboxEntry[];
   onClose: () => void;
   onRefreshEntry?: (entry: MediaLightboxEntry) => Promise<void> | void;
+  allowIndexingControls?: boolean;
+  onToggleIndexable?: (entry: MediaLightboxEntry, nextIndexable: boolean) => Promise<void>;
 }
 
 function aspectRatioClass(aspectRatio?: string | null): string {
@@ -45,10 +49,23 @@ function aspectRatioClass(aspectRatio?: string | null): string {
   return 'aspect-[16/9]';
 }
 
-export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries, onClose, onRefreshEntry }: MediaLightboxProps) {
+export function MediaLightbox({
+  title,
+  subtitle,
+  prompt,
+  metadata = [],
+  entries,
+  onClose,
+  onRefreshEntry,
+  allowIndexingControls = false,
+  onToggleIndexable,
+}: MediaLightboxProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [refreshStates, setRefreshStates] = useState<Record<string, { loading: boolean; error: string | null }>>({});
   const [downloadStates, setDownloadStates] = useState<Record<string, { loading: boolean; error: string | null }>>({});
+  const [indexingStates, setIndexingStates] = useState<
+    Record<string, { loading: boolean; value?: boolean; error: string | null }>
+  >({});
 
   const handleCopyLink = useCallback(
     async (entryId: string, url?: string | null) => {
@@ -154,6 +171,29 @@ export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries,
     });
   }, [entries]);
 
+  useEffect(() => {
+    setIndexingStates((prev) => {
+      const activeIds = new Set(entries.map((entry) => entry.id));
+      let mutated = false;
+      const next = { ...prev };
+      Object.keys(next).forEach((key) => {
+        if (!activeIds.has(key)) {
+          delete next[key];
+          mutated = true;
+        }
+      });
+      entries.forEach((entry) => {
+        const state = next[entry.id];
+        if (!state) return;
+        if (!state.loading && state.error === null && typeof entry.indexable === 'boolean' && state.value === entry.indexable) {
+          delete next[entry.id];
+          mutated = true;
+        }
+      });
+      return mutated ? next : prev;
+    });
+  }, [entries]);
+
   const handleRefreshEntry = useCallback(
     async (entry: MediaLightboxEntry) => {
       if (!onRefreshEntry) return;
@@ -177,6 +217,32 @@ export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries,
       }
     },
     [onRefreshEntry]
+  );
+
+  const handleIndexingToggle = useCallback(
+    (entry: MediaLightboxEntry, currentValue: boolean) => {
+      if (!onToggleIndexable) return;
+      const nextValue = !currentValue;
+      setIndexingStates((prev) => ({
+        ...prev,
+        [entry.id]: { loading: true, value: nextValue, error: null },
+      }));
+      onToggleIndexable(entry, nextValue)
+        .then(() => {
+          setIndexingStates((prev) => ({
+            ...prev,
+            [entry.id]: { loading: false, value: nextValue, error: null },
+          }));
+        })
+        .catch((error) => {
+          const message = error instanceof Error ? error.message : 'Failed to update indexing';
+          setIndexingStates((prev) => ({
+            ...prev,
+            [entry.id]: { loading: false, value: currentValue, error: message },
+          }));
+        });
+    },
+    [onToggleIndexable]
   );
 
   const hasAtLeastOneVideo = useMemo(() => entries.some((entry) => Boolean(entry.videoUrl)), [entries]);
@@ -246,6 +312,15 @@ export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries,
             const downloadState = downloadStates[entry.id];
             const isDownloading = Boolean(downloadState?.loading);
             const downloadError = downloadState?.error ?? null;
+            const indexingState = indexingStates[entry.id];
+            const displayIndexable =
+              typeof indexingState?.value === 'boolean'
+                ? indexingState.value
+                : typeof entry.indexable === 'boolean'
+                  ? entry.indexable
+                  : undefined;
+            const isIndexingLoading = Boolean(indexingState?.loading);
+            const indexingError = indexingState?.error ?? null;
 
             return (
               <article
@@ -376,6 +451,25 @@ export function MediaLightbox({ title, subtitle, prompt, metadata = [], entries,
                   ) : null}
                   {refreshError ? (
                     <p className="mt-2 text-xs text-state-warning">{refreshError}</p>
+                  ) : null}
+                  {allowIndexingControls && onToggleIndexable && entry.jobId && typeof displayIndexable === 'boolean' ? (
+                    <div className="mt-3 flex flex-col gap-1 text-sm text-text-secondary">
+                      <label className="inline-flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 rounded border border-border accent-accent"
+                          checked={displayIndexable}
+                          onChange={() => handleIndexingToggle(entry, displayIndexable)}
+                          disabled={isIndexingLoading}
+                        />
+                        <span>{displayIndexable ? 'Included in indexing' : 'Excluded from indexing'}</span>
+                      </label>
+                      <p className="text-xs text-text-muted">
+                        Uncheck to keep this video out of public galleries and SEO feeds.
+                      </p>
+                      {isIndexingLoading ? <span className="text-xs text-text-muted">Saving…</span> : null}
+                      {indexingError ? <span className="text-xs text-state-warning">{indexingError}</span> : null}
+                    </div>
                   ) : null}
                 </div>
               </article>

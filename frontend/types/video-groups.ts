@@ -12,6 +12,8 @@ export interface VideoItem {
   engineId?: string;
   costCents?: number;
   meta?: Record<string, unknown>;
+  indexable?: boolean;
+  visibility?: 'public' | 'private';
 }
 
 export type VideoGroupLayout = 'x1' | 'x2' | 'x3' | 'x4';

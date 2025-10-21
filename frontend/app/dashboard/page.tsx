@@ -35,6 +35,7 @@ export default function DashboardPage() {
 
 
   const jobs = useMemo(() => jobsPages?.[0]?.jobs ?? [], [jobsPages]);
+  const hasCuratedJobs = useMemo(() => jobs.some((job) => job.curated), [jobs]);
   const { groups: apiGroups } = useMemo(
     () => groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true }),
     [jobs]
@@ -277,6 +278,11 @@ export default function DashboardPage() {
                 })}
               </div>
             )}
+            {hasCuratedJobs ? (
+              <p className="mt-2 text-sm text-text-secondary">
+                Starter renders curated by the MaxVideo team appear here until you create your own.
+              </p>
+            ) : null}
             {showEmptyLatest ? (
               <p className="mt-2 text-sm text-text-secondary">
                 Start a generation to populate your latest renders.

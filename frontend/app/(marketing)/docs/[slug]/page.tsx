@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       title: 'Doc not found — MaxVideo AI',
     };
   }
-  const canonical = `https://www.maxvideo.ai/docs/${doc.slug}`;
+  const canonical = `https://maxvideoai.com/docs/${doc.slug}`;
   return {
     title: `${doc.title} — MaxVideo AI Docs`,
     description: doc.description,

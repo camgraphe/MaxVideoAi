@@ -24,10 +24,10 @@ export const metadata: Metadata = {
     ],
   },
   alternates: {
-    canonical: 'https://www.maxvideo.ai/pricing',
+    canonical: 'https://maxvideoai.com/pricing',
     languages: {
-      en: 'https://www.maxvideo.ai/pricing',
-      fr: 'https://www.maxvideo.ai/pricing?lang=fr',
+      en: 'https://maxvideoai.com/pricing',
+      fr: 'https://maxvideoai.com/pricing?lang=fr',
     },
   },
 };
@@ -40,7 +40,7 @@ export default function PricingPage() {
   const member = content.member;
   const refunds = content.refunds;
   const faq = content.faq;
-  const canonical = 'https://www.maxvideo.ai/pricing';
+  const canonical = 'https://maxvideoai.com/pricing';
   const kernel = getPricingKernel();
   const starterQuote = kernel.quote(scenarioToPricingInput(DEFAULT_MARKETING_SCENARIO));
   const starterPrice = (starterQuote.snapshot.totalCents / 100).toFixed(2);

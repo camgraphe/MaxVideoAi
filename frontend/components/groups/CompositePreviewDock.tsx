@@ -10,6 +10,8 @@ interface CompositePreviewDockProps {
   group: VideoGroup | null;
   isLoading?: boolean;
   onOpenModal?: (group: VideoGroup) => void;
+  copyPrompt?: string | null;
+  onCopyPrompt?: () => void;
 }
 
 const LAYOUT_SLOT_COUNT: Record<VideoGroup['layout'], number> = {
@@ -34,7 +36,7 @@ function isVideo(item: VideoItem): boolean {
   return url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.mov');
 }
 
-export function CompositePreviewDock({ group, isLoading = false, onOpenModal }: CompositePreviewDockProps) {
+export function CompositePreviewDock({ group, isLoading = false, onOpenModal, copyPrompt, onCopyPrompt }: CompositePreviewDockProps) {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [isLooping, setIsLooping] = useState(true);
@@ -182,6 +184,15 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal }: 
           >
             Open modal
           </button>
+          {copyPrompt && onCopyPrompt ? (
+            <button
+              type="button"
+              onClick={onCopyPrompt}
+              className="rounded-full border border-border bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-accent transition hover:bg-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Copy prompt
+            </button>
+          ) : null}
         </div>
       </header>
 

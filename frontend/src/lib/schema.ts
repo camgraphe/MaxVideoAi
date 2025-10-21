@@ -1,5 +1,15 @@
 import { query } from '@/lib/db';
 
+const FEATURE_LAUNCH_TIMESTAMP: string = (() => {
+  const fromEnv =
+    process.env.FEATURE_LAUNCH_TIMESTAMP ??
+    process.env.NEXT_PUBLIC_FEATURE_LAUNCH_TIMESTAMP;
+  if (fromEnv && fromEnv.trim().length) {
+    return fromEnv.trim();
+  }
+  return '2025-01-01T00:00:00Z';
+})();
+
 let ensurePromise: Promise<void> | null = null;
 let ensureAssetsPromise: Promise<void> | null = null;
 let ensureEmailPromise: Promise<void> | null = null;
@@ -8,6 +18,7 @@ export async function ensureBillingSchema(): Promise<void> {
   if (ensurePromise) return ensurePromise;
 
   const ensure = async () => {
+      await query(`CREATE EXTENSION IF NOT EXISTS "pgcrypto";`);
       await query(`
         CREATE TABLE IF NOT EXISTS app_pricing_rules (
           id TEXT PRIMARY KEY,
@@ -123,7 +134,12 @@ export async function ensureBillingSchema(): Promise<void> {
           stripe_charge_id TEXT,
           created_at TIMESTAMPTZ DEFAULT NOW(),
           updated_at TIMESTAMPTZ DEFAULT NOW(),
-          hidden BOOLEAN DEFAULT FALSE
+          hidden BOOLEAN DEFAULT FALSE,
+          visibility TEXT DEFAULT 'public',
+          indexable BOOLEAN DEFAULT TRUE,
+          featured BOOLEAN DEFAULT FALSE,
+          featured_order INTEGER DEFAULT 0,
+          legacy_migrated BOOLEAN DEFAULT FALSE
         );
       `);
 
@@ -143,7 +159,16 @@ export async function ensureBillingSchema(): Promise<void> {
         ADD COLUMN IF NOT EXISTS local_key TEXT,
         ADD COLUMN IF NOT EXISTS message TEXT,
         ADD COLUMN IF NOT EXISTS eta_seconds INTEGER,
-        ADD COLUMN IF NOT EXISTS eta_label TEXT;
+        ADD COLUMN IF NOT EXISTS eta_label TEXT,
+        ADD COLUMN IF NOT EXISTS visibility TEXT DEFAULT 'public',
+        ADD COLUMN IF NOT EXISTS indexable BOOLEAN DEFAULT TRUE,
+        ADD COLUMN IF NOT EXISTS featured BOOLEAN DEFAULT FALSE,
+        ADD COLUMN IF NOT EXISTS featured_order INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS legacy_migrated BOOLEAN DEFAULT FALSE;
+      `);
+
+      await query(`
+        CREATE INDEX IF NOT EXISTS app_jobs_visibility_idx ON app_jobs (visibility, indexable);
       `);
 
       await query(`
@@ -213,6 +238,106 @@ export async function ensureBillingSchema(): Promise<void> {
         ADD COLUMN IF NOT EXISTS destination_acct TEXT,
         ADD COLUMN IF NOT EXISTS currency TEXT DEFAULT 'USD';
       `);
+
+      try {
+        await query(`CREATE TYPE user_role AS ENUM ('admin', 'user');`);
+      } catch (error) {
+        const code = typeof error === 'object' && error && 'code' in error ? (error as { code?: string }).code : undefined;
+        if (code !== '42710') {
+          throw error;
+        }
+      }
+
+      await query(`
+        CREATE TABLE IF NOT EXISTS user_roles (
+          user_id UUID PRIMARY KEY,
+          role user_role NOT NULL DEFAULT 'user',
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+      `);
+
+      await query(`
+        CREATE TABLE IF NOT EXISTS user_preferences (
+          user_id UUID PRIMARY KEY,
+          default_share_public BOOLEAN NOT NULL DEFAULT TRUE,
+          default_allow_index BOOLEAN NOT NULL DEFAULT TRUE,
+          onboarding_done BOOLEAN NOT NULL DEFAULT FALSE,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+      `);
+
+      await query(`
+        CREATE TABLE IF NOT EXISTS playlists (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          slug TEXT UNIQUE NOT NULL,
+          name TEXT NOT NULL,
+          description TEXT,
+          is_public BOOLEAN NOT NULL DEFAULT TRUE,
+          created_by UUID,
+          updated_by UUID,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+      `);
+
+      await query(`
+        CREATE TABLE IF NOT EXISTS playlist_items (
+          playlist_id UUID NOT NULL,
+          video_id TEXT NOT NULL,
+          order_index INTEGER NOT NULL DEFAULT 0,
+          pinned BOOLEAN NOT NULL DEFAULT FALSE,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          PRIMARY KEY (playlist_id, video_id)
+        );
+      `);
+
+      await query(`
+        CREATE INDEX IF NOT EXISTS playlist_items_playlist_idx ON playlist_items (playlist_id, order_index);
+      `);
+
+      await query(`
+        ALTER TABLE playlist_items
+        ALTER COLUMN video_id TYPE TEXT USING video_id::text;
+      `);
+
+      await query(`
+        CREATE TABLE IF NOT EXISTS homepage_sections (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          key TEXT NOT NULL,
+          type TEXT NOT NULL,
+          title TEXT,
+          subtitle TEXT,
+          video_id TEXT,
+          playlist_id UUID,
+          order_index INTEGER NOT NULL DEFAULT 0,
+          enabled BOOLEAN NOT NULL DEFAULT TRUE,
+          start_at TIMESTAMPTZ,
+          end_at TIMESTAMPTZ,
+          updated_by UUID,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+      `);
+
+      await query(`
+        CREATE INDEX IF NOT EXISTS homepage_sections_active_idx ON homepage_sections (enabled, order_index);
+      `);
+
+      await query(`
+        ALTER TABLE homepage_sections
+        ALTER COLUMN video_id TYPE TEXT USING video_id::text;
+      `);
+
+      await query(
+        `
+          UPDATE app_jobs
+          SET visibility = 'private',
+              indexable = FALSE,
+              legacy_migrated = TRUE
+          WHERE legacy_migrated IS NOT TRUE
+            AND created_at < $1::timestamptz;
+        `,
+        [FEATURE_LAUNCH_TIMESTAMP]
+      );
 
       await query(`
         CREATE TABLE IF NOT EXISTS vendor_balances (

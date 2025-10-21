@@ -18,6 +18,7 @@ import { validateRequest } from './_lib/validate';
 import { uploadImageToStorage, isAllowedAssetHost, probeImageUrl, recordUserAsset } from '@/server/storage';
 import { getEngineCaps } from '@/fixtures/engineCaps';
 import { getSoraVariantForEngine, isSoraEngineId, parseSoraRequest, type SoraRequest } from '@/lib/sora';
+import { ensureUserPreferences } from '@/server/preferences';
 
 type PaymentMode = 'wallet' | 'direct' | 'platform';
 
@@ -187,11 +188,33 @@ export async function POST(req: NextRequest) {
     typeof body.payment === 'object' && body.payment
       ? { mode: body.payment.mode, paymentIntentId: body.payment.paymentIntentId }
       : {};
+  const explicitUserId = typeof body.userId === 'string' && body.userId.trim().length ? body.userId.trim() : null;
   const authenticatedUserId = await getUserIdFromRequest(req);
-  const userId = body.userId ?? authenticatedUserId ?? null;
+  const userId = explicitUserId ?? authenticatedUserId ?? null;
   const paymentMode: PaymentMode = payment.mode ?? (userId ? 'wallet' : 'platform');
   const vendorAccountId = pricing.vendorAccountId ?? engine.vendorAccountId ?? null;
   const applicationFeeCents = getPlatformFeeCents(pricing);
+  let defaultAllowIndex = true;
+  if (userId) {
+    try {
+      const prefs = await ensureUserPreferences(String(userId));
+      defaultAllowIndex = prefs.defaultAllowIndex;
+    } catch (error) {
+      console.warn('[api/generate] unable to read user preferences for indexing', error);
+    }
+  }
+  const requestedVisibility =
+    typeof body.visibility === 'string' && body.visibility.trim().length
+      ? body.visibility.trim().toLowerCase()
+      : null;
+  const visibility: 'public' | 'private' = requestedVisibility === 'public' ? 'public' : 'private';
+  const requestedIndexable =
+    typeof body.indexable === 'boolean'
+      ? body.indexable
+      : typeof body.allowIndex === 'boolean'
+        ? body.allowIndex
+        : undefined;
+  const indexable = requestedIndexable ?? defaultAllowIndex;
 
   type PendingReceipt = {
     userId: string;
@@ -613,10 +636,12 @@ export async function POST(req: NextRequest) {
          vendor_account_id,
          payment_status,
          stripe_payment_intent_id,
-         stripe_charge_id
+         stripe_charge_id,
+         visibility,
+         indexable
        )
        VALUES (
-         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27::jsonb,$28,$29,$30,$31,$32
+         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27::jsonb,$28,$29,$30,$31,$32,$33,$34
        )`,
       [
         jobId,
@@ -651,6 +676,8 @@ export async function POST(req: NextRequest) {
         paymentStatus,
         stripePaymentIntentId,
         stripeChargeId,
+        visibility,
+        indexable,
       ]
     );
   } catch (error) {

@@ -3,6 +3,7 @@ const isPreviewDeployment = process.env.VERCEL_ENV === 'preview';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  trailingSlash: false,
   transpilePackages: ['@maxvideoai/pricing'],
   images: {
     remotePatterns: [

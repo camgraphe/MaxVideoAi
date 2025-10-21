@@ -115,6 +115,7 @@ export function GroupedJobCard({ group, engine, onOpen, onAction, actionMenu = t
   }, [previewCount]);
 
   const showMenu = Boolean(onAction) && actionMenu;
+  const isCurated = Boolean(hero.job?.curated);
 
   const handleAction = (action: GroupedJobAction) => {
     setMenuOpen(false);
@@ -195,7 +196,16 @@ export function GroupedJobCard({ group, engine, onOpen, onAction, actionMenu = t
           <EngineIcon engine={engine ?? undefined} label={hero.engineLabel} size={28} className="shrink-0" />
           <span className="text-[11px] uppercase tracking-micro text-text-muted">{splitModeLabel} • {splitLabel}</span>
         </div>
-        {formattedPrice && <span className="flex-shrink-0 text-[12px] font-semibold text-text-primary">{formattedPrice}</span>}
+        <div className="flex items-center gap-2">
+          {isCurated ? (
+            <span className="rounded-pill border border-hairline bg-bg px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
+              Sample
+            </span>
+          ) : null}
+          {formattedPrice ? (
+            <span className="flex-shrink-0 text-[12px] font-semibold text-text-primary">{formattedPrice}</span>
+          ) : null}
+        </div>
       </div>
 
       {showMenu && menuOpen && (

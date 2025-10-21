@@ -21,10 +21,10 @@ export const metadata: Metadata = {
     ],
   },
   alternates: {
-    canonical: 'https://www.maxvideo.ai/blog',
+    canonical: 'https://maxvideoai.com/blog',
     languages: {
-      en: 'https://www.maxvideo.ai/blog',
-      fr: 'https://www.maxvideo.ai/blog?lang=fr',
+      en: 'https://maxvideoai.com/blog',
+      fr: 'https://maxvideoai.com/blog?lang=fr',
     },
   },
 };
@@ -33,7 +33,7 @@ export default async function BlogIndexPage() {
   const { dictionary } = resolveDictionary();
   const content = dictionary.blog;
   const posts = await getContentEntries('content/blog');
-  const canonical = 'https://www.maxvideo.ai/blog';
+  const canonical = 'https://maxvideoai.com/blog';
 
   const articleListSchema = {
     '@context': 'https://schema.org',
