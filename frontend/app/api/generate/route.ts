@@ -217,18 +217,101 @@ export async function POST(req: NextRequest) {
         : undefined;
   const indexable = requestedIndexable ?? defaultAllowIndex;
 
-  type PendingReceipt = {
-    userId: string;
-    amountCents: number;
-    currency: string;
-    description: string;
-    jobId: string;
-    snapshot: PricingSnapshot;
-    applicationFeeCents: number;
-    vendorAccountId: string | null;
-    stripePaymentIntentId?: string | null;
-    stripeChargeId?: string | null;
-  };
+type PendingReceipt = {
+  userId: string;
+  amountCents: number;
+  currency: string;
+  description: string;
+  jobId: string;
+  snapshot: PricingSnapshot;
+  applicationFeeCents: number;
+  vendorAccountId: string | null;
+  stripePaymentIntentId?: string | null;
+  stripeChargeId?: string | null;
+};
+
+async function recordRefundReceipt(
+  receipt: PendingReceipt,
+  description: string,
+  stripeRefundId: string | null
+): Promise<void> {
+  if (!receipt.jobId) return;
+  try {
+    const existing = await query<{ id: string }>(
+      `SELECT id FROM app_receipts WHERE job_id = $1 AND type = 'refund' LIMIT 1`,
+      [receipt.jobId]
+    );
+    if (existing.length) return;
+  } catch (error) {
+    console.warn('[receipts] failed to check existing refund', error);
+    return;
+  }
+
+  try {
+    await query(
+      `INSERT INTO app_receipts (
+         user_id,
+         type,
+         amount_cents,
+         currency,
+         description,
+         job_id,
+         pricing_snapshot,
+         application_fee_cents,
+         vendor_account_id,
+         stripe_payment_intent_id,
+         stripe_charge_id,
+         stripe_refund_id,
+         platform_revenue_cents,
+         destination_acct
+       )
+       VALUES (
+         $1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12,$13
+       )`,
+      [
+        receipt.userId,
+        receipt.amountCents,
+        receipt.currency,
+        description,
+        receipt.jobId,
+        JSON.stringify(receipt.snapshot),
+        0,
+        receipt.vendorAccountId,
+        receipt.stripePaymentIntentId ?? null,
+        receipt.stripeChargeId ?? null,
+        stripeRefundId ?? null,
+        0,
+        receipt.vendorAccountId,
+      ]
+    );
+  } catch (error) {
+    console.warn('[receipts] failed to record refund', error);
+  }
+}
+
+async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null> {
+  const refundReference = receipt.stripePaymentIntentId ?? receipt.stripeChargeId;
+  if (!refundReference) return null;
+  if (!ENV.STRIPE_SECRET_KEY) {
+    console.warn('[stripe] unable to refund: STRIPE_SECRET_KEY missing');
+    return null;
+  }
+  try {
+    const stripe = new Stripe(ENV.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' });
+    const params = receipt.stripePaymentIntentId
+      ? { payment_intent: receipt.stripePaymentIntentId }
+      : { charge: receipt.stripeChargeId! };
+    const idempotencyKey = receipt.jobId ? `job-refund-${receipt.jobId}` : undefined;
+    const refund = await stripe.refunds.create(
+      params,
+      idempotencyKey ? { idempotencyKey } : undefined
+    );
+    return refund?.id ?? null;
+  } catch (error) {
+    console.warn('[stripe] refund failed', error);
+    return null;
+  }
+}
 
   let pendingReceipt: PendingReceipt | null = null;
   let paymentStatus: string = 'platform';
@@ -524,28 +607,13 @@ export async function POST(req: NextRequest) {
       soraRequest: soraRequest ?? undefined,
     });
   } catch (error) {
-    if (walletChargeReserved && pendingReceipt) {
-      try {
-        await query(
-          `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct)
-           VALUES ($1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12)`,
-          [
-            pendingReceipt.userId,
-            pendingReceipt.amountCents,
-            pendingReceipt.currency,
-            `Refund ${engine.label} • ${durationSec}s`,
-            pendingReceipt.jobId,
-            JSON.stringify(pendingReceipt.snapshot),
-            0,
-            pendingReceipt.vendorAccountId,
-            pendingReceipt.stripePaymentIntentId ?? null,
-            pendingReceipt.stripeChargeId ?? null,
-            0,
-            pendingReceipt.vendorAccountId,
-          ]
-        );
-      } catch (refundError) {
-        console.warn('[wallet] failed to roll back reservation after generation error', refundError);
+    if (pendingReceipt) {
+      const refundDescription = `Refund ${engine.label} • ${durationSec}s`;
+      if (walletChargeReserved) {
+        await recordRefundReceipt(pendingReceipt, refundDescription, null);
+      } else {
+        const refundId = await issueStripeRefund(pendingReceipt);
+        await recordRefundReceipt(pendingReceipt, refundDescription, refundId);
       }
     }
 
