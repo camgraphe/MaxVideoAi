@@ -147,13 +147,10 @@ export async function fetchAdminTransactions(limit = 100): Promise<AdminTransact
     const currency = normalizeCurrency(row.currency);
     const type = row.type as AdminTransactionRecord['type'];
     const isLatestCharge = type === 'charge' && row.latest_charge_id === row.receipt_id;
+    const refundableStatus =
+      typeof row.job_payment_status === 'string' && REFUNDABLE_PAYMENT_STATUSES.has(row.job_payment_status);
     const canRefund =
-      type === 'charge' &&
-      isLatestCharge &&
-      !row.has_refund &&
-      row.job_id &&
-      row.job_payment_status &&
-      REFUNDABLE_PAYMENT_STATUSES.has(row.job_payment_status);
+      type === 'charge' && isLatestCharge && !row.has_refund && Boolean(row.job_id) && refundableStatus;
 
     return {
       receiptId: row.receipt_id,
