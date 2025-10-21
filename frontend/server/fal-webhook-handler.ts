@@ -355,7 +355,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     }
   }
 
-  let job = jobRows[0] ?? null;
+  let job: AppJobRow | null = jobRows.at(0) ?? null;
 
   if (!job) {
     job = await createProvisionalJobFromWebhook({ requestId, payload, identifiers });
