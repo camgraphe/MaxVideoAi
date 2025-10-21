@@ -35,6 +35,7 @@ import {
   isLumaRay2AspectRatio,
   toLumaRay2DurationLabel,
   LUMA_RAY2_ERROR_UNSUPPORTED,
+  type LumaRay2DurationLabel,
 } from '@/lib/luma-ray2';
 
 function resolveRenderThumb(render: { thumbUrl?: string | null; aspectRatio?: string | null }): string {
@@ -2701,9 +2702,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       try {
         const shouldSendAspectRatio = !capability || (capability.aspectRatio?.length ?? 0) > 0;
         const resolvedDurationSeconds = isLumaRay2 && lumaDuration ? lumaDuration.seconds : form.durationSec;
-        const resolvedDurationLabel = isLumaRay2 && lumaDuration
-          ? lumaDuration.label
-          : toLumaRay2DurationLabel(form.durationSec, typeof form.durationOption === 'string' ? (form.durationOption as string) : undefined) ?? form.durationOption ?? form.durationSec;
+        const durationOptionLabel: LumaRay2DurationLabel | undefined =
+          typeof form.durationOption === 'string'
+            ? (['5s', '9s'].includes(form.durationOption) ? (form.durationOption as LumaRay2DurationLabel) : undefined)
+            : undefined;
+        const resolvedDurationLabel =
+          isLumaRay2 && lumaDuration
+            ? lumaDuration.label
+            : toLumaRay2DurationLabel(form.durationSec, durationOptionLabel) ?? durationOptionLabel ?? form.durationSec;
         const resolvedResolution = isLumaRay2 && lumaResolution ? lumaResolution.value : form.resolution;
 
         const generatePayload = {

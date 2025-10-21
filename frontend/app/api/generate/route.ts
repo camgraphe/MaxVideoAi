@@ -27,6 +27,7 @@ import {
   normaliseLumaRay2Loop,
   toLumaRay2DurationLabel,
   LUMA_RAY2_ERROR_UNSUPPORTED,
+  type LumaRay2DurationLabel,
 } from '@/lib/luma-ray2';
 
 type PaymentMode = 'wallet' | 'direct' | 'platform';
@@ -318,7 +319,12 @@ export async function POST(req: NextRequest) {
     loop: isLumaRay2 ? loop : undefined,
     durationOption: lumaDurationInfo?.label ?? rawDurationOption ?? null,
   });
-  const durationLabel = lumaDurationInfo?.label ?? toLumaRay2DurationLabel(durationSec, typeof rawDurationOption === 'string' ? rawDurationOption : undefined) ?? undefined;
+  const rawDurationLabel: LumaRay2DurationLabel | undefined =
+    typeof rawDurationOption === 'string' && ['5s', '9s'].includes(rawDurationOption)
+      ? (rawDurationOption as LumaRay2DurationLabel)
+      : undefined;
+  const durationLabel =
+    lumaDurationInfo?.label ?? toLumaRay2DurationLabel(durationSec, rawDurationLabel) ?? undefined;
   const requestMeta: Record<string, unknown> = {
     engineId: engine.id,
     engineLabel: engine.label,
@@ -578,7 +584,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     return NextResponse.json({ ok: false, error: 'Unsupported payment mode' }, { status: 400 });
   }
 
-  let generationResult: Awaited<ReturnType<typeof generateVideo>>;
+  let generationResult: Awaited<ReturnType<typeof generateVideo>> | null = null;
   type NormalizedAttachment = {
     name: string;
     type: string;
@@ -756,6 +762,57 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
       : aspectRatio === '1:1'
         ? '/assets/frames/thumb-1x1.svg'
         : '/assets/frames/thumb-16x9.svg';
+
+  const referenceImagesInput = Array.isArray(body.referenceImages)
+    ? body.referenceImages
+    : Array.isArray(body.reference_images)
+      ? body.reference_images
+      : null;
+  const normalizedReferenceImages = Array.isArray(referenceImagesInput)
+    ? referenceImagesInput
+        .map((value: unknown) => (typeof value === 'string' ? value.trim() : ''))
+        .filter((value): value is string => value.length > 0)
+    : undefined;
+
+  const falInputs =
+    processedAttachments.length > 0
+      ? processedAttachments.map((attachment) => ({
+          name: attachment.name,
+          type: attachment.type,
+          size: attachment.size,
+          kind: attachment.kind,
+          slotId: attachment.slotId,
+          label: attachment.label,
+          url: attachment.url,
+          width: attachment.width ?? undefined,
+          height: attachment.height ?? undefined,
+          assetId: attachment.assetId,
+        }))
+      : undefined;
+
+  const falDurationOption = lumaDurationInfo?.label ?? rawDurationLabel ?? rawDurationOption ?? null;
+  const falPayload: Parameters<typeof generateVideo>[0] = {
+    engineId: engine.id,
+    prompt,
+    durationSec,
+    durationOption: falDurationOption,
+    numFrames,
+    aspectRatio: aspectRatio ?? undefined,
+    resolution: effectiveResolution,
+    mode,
+    apiKey: typeof body.apiKey === 'string' ? body.apiKey : undefined,
+    idempotencyKey: jobId,
+    imageUrl: initialImageUrl,
+    referenceImages: normalizedReferenceImages,
+    inputs: falInputs,
+    soraRequest: soraRequest ?? undefined,
+    jobId,
+    localKey,
+    loop: isLumaRay2 ? loop : undefined,
+  };
+  if (typeof body.fps === 'number' && Number.isFinite(body.fps) && body.fps > 0) {
+    falPayload.fps = body.fps;
+  }
 
   try {
     await query(
@@ -1002,6 +1059,10 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     );
   }
 
+  if (!generationResult) {
+    throw new Error('Fal generation did not return a result.');
+  }
+
   let thumb =
     normalizeMediaUrl(generationResult.thumbUrl) ??
       (typeof generationResult.thumbUrl === 'string' && generationResult.thumbUrl.trim().length
@@ -1011,6 +1072,10 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
   let previewFrame = thumb;
   const video = normalizeMediaUrl(generationResult.videoUrl) ?? generationResult.videoUrl ?? null;
   const videoAsset = generationResult.video ?? null;
+  const providerMode = generationResult.provider;
+  const status = generationResult.status ?? (video ? 'completed' : 'queued');
+  const progress = typeof generationResult.progress === 'number' ? generationResult.progress : video ? 100 : 0;
+  const providerJobId = generationResult.providerJobId ?? null;
   if (isLumaRay2) {
     console.info('[fal] lumaRay2 generation', {
       jobId,
@@ -1019,10 +1084,6 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
       videoUrl: video,
     });
   }
-  const providerMode = generationResult.provider;
-  const status = generationResult.status ?? (video ? 'completed' : 'queued');
-  const progress = typeof generationResult.progress === 'number' ? generationResult.progress : video ? 100 : 0;
-  const providerJobId = generationResult.providerJobId ?? null;
 
   const sourceVideoUrl =
     (typeof generationResult.video?.url === 'string' && generationResult.video.url.length
