@@ -16,6 +16,7 @@ import { normalizeMediaUrl } from '@/lib/media';
 import type { Mode } from '@/types/engines';
 import { validateRequest } from './_lib/validate';
 import { uploadImageToStorage, isAllowedAssetHost, probeImageUrl, recordUserAsset } from '@/server/storage';
+import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { getEngineCaps } from '@/fixtures/engineCaps';
 import { getSoraVariantForEngine, isSoraEngineId, parseSoraRequest, type SoraRequest } from '@/lib/sora';
 import { ensureUserPreferences } from '@/server/preferences';
@@ -589,18 +590,43 @@ export async function POST(req: NextRequest) {
       : aspectRatio === '1:1'
         ? '/assets/frames/thumb-1x1.svg'
         : '/assets/frames/thumb-16x9.svg';
-  const thumb =
+  let thumb =
     normalizeMediaUrl(generationResult.thumbUrl) ??
       (typeof generationResult.thumbUrl === 'string' && generationResult.thumbUrl.trim().length
         ? generationResult.thumbUrl
         : null) ??
     placeholderThumb;
+  let previewFrame = thumb;
   const video = normalizeMediaUrl(generationResult.videoUrl) ?? generationResult.videoUrl ?? null;
   const videoAsset = generationResult.video ?? null;
   const providerMode = generationResult.provider;
   const status = generationResult.status ?? (video ? 'completed' : 'queued');
   const progress = typeof generationResult.progress === 'number' ? generationResult.progress : video ? 100 : 0;
   const providerJobId = generationResult.providerJobId ?? null;
+
+  const sourceVideoUrl =
+    (typeof generationResult.video?.url === 'string' && generationResult.video.url.length
+      ? generationResult.video.url
+      : typeof generationResult.videoUrl === 'string' && generationResult.videoUrl.length
+        ? generationResult.videoUrl
+        : null) ?? null;
+  const isSourceAbsolute = Boolean(sourceVideoUrl && /^https?:\/\//i.test(sourceVideoUrl));
+  if (sourceVideoUrl && isSourceAbsolute && isPlaceholderThumbnail(thumb)) {
+    const generatedThumb = await ensureJobThumbnail({
+      jobId,
+      userId,
+      videoUrl: sourceVideoUrl,
+      aspectRatio: aspectRatio ?? undefined,
+      existingThumbUrl: thumb,
+    });
+    if (generatedThumb) {
+      thumb = generatedThumb;
+      previewFrame = generatedThumb;
+      if (videoAsset) {
+        videoAsset.thumbnailUrl = generatedThumb;
+      }
+    }
+  }
 
   try {
     await query(
@@ -650,11 +676,11 @@ export async function POST(req: NextRequest) {
         engine.label,
         durationSec,
         prompt,
-        thumb,
+        previewFrame,
         aspectRatio,
         false,
         Boolean(engine.upscale4k),
-        thumb,
+        previewFrame,
         batchId,
         groupId,
         iterationIndex,

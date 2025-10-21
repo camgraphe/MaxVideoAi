@@ -1,20 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured, query } from '@/lib/db';
 import { shouldUseFalApis } from '@/lib/result-provider';
-import { getPosterFrame } from '@/lib/fal';
 import type { PricingSnapshot } from '@/types/engines';
 import { ensureBillingSchema } from '@/lib/schema';
 import { buildFalProxyUrl } from '@/lib/fal-proxy';
 import { normalizeMediaUrl } from '@/lib/media';
+import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 
 type DbJobRow = {
   id: number;
   job_id: string;
+  user_id: string | null;
   status: string;
   progress: number;
   provider_job_id: string | null;
   video_url: string | null;
-  thumb_url: string;
+  thumb_url: string | null;
   engine_label: string;
   duration_sec: number;
   prompt: string;
@@ -36,6 +37,7 @@ type DbJobRow = {
   message: string | null;
   eta_seconds: number | null;
   eta_label: string | null;
+  aspect_ratio: string | null;
 };
 
 export async function GET(_req: NextRequest, { params }: { params: { jobId: string } }) {
@@ -55,7 +57,7 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
   let rows: DbJobRow[];
   try {
     rows = await query<DbJobRow>(
-      `SELECT id, job_id, status, progress, provider_job_id, video_url, thumb_url, engine_label, duration_sec, prompt, created_at, final_price_cents, pricing_snapshot, currency, payment_status, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label
+      `SELECT id, job_id, user_id, status, progress, provider_job_id, video_url, thumb_url, engine_label, duration_sec, prompt, created_at, final_price_cents, pricing_snapshot, currency, payment_status, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, aspect_ratio
        FROM app_jobs
        WHERE job_id = $1
        LIMIT 1`,
@@ -92,14 +94,26 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
         let status = job.status;
         let progress = job.progress;
         let videoUrl = normalizedVideoUrl;
-        let thumbUrl = normalizedThumbUrl;
+        let thumbUrl = normalizedThumbUrl ?? null;
         if (vUrl) {
           status = 'completed';
           progress = 100;
           videoUrl = normalizeMediaUrl(vUrl) ?? vUrl;
-          const poster = await getPosterFrame(vUrl).catch(() => null);
-          if (poster) {
-            thumbUrl = normalizeMediaUrl(poster) ?? poster;
+          if (/^https?:\/\//i.test(vUrl) && isPlaceholderThumbnail(thumbUrl)) {
+            const generatedThumb = await ensureJobThumbnail({
+              jobId,
+              userId: job.user_id ?? undefined,
+              videoUrl: vUrl,
+              aspectRatio: job.aspect_ratio ?? undefined,
+              existingThumbUrl: thumbUrl ?? undefined,
+              force: true,
+            });
+            if (generatedThumb) {
+              thumbUrl = generatedThumb;
+            }
+          }
+          if (!thumbUrl) {
+            thumbUrl = normalizedThumbUrl ?? null;
           }
         } else if (st === 'failed') {
           status = 'failed';

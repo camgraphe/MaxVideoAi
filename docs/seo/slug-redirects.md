@@ -2,8 +2,8 @@
 
 | Ancienne URL | Nouvelle URL | Motif |
 | --- | --- | --- |
-| http://maxvideoai.com/:path* | https://maxvideoai.com/:path* | Force HTTPS |
-| https://www.maxvideoai.com/:path* | https://maxvideoai.com/:path* | Canonical non-www |
+| http → https (`maxvideoai.com/:path*`) | https://maxvideoai.com/:path* | Force HTTPS |
+| https://maxvideoai.com/:path* | https://maxvideoai.com/:path* | Canonical non-www |
 | /:path*/ | /:path* | Remove trailing slash |
 | /calculator | /pricing-calculator | Keyword-rich pricing calculator slug |
 | /docs/getting-started | /docs/get-started | Shorten onboarding slug |

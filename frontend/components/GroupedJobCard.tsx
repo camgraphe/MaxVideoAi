@@ -145,8 +145,9 @@ export function GroupedJobCard({ group, engine, onOpen, onAction, actionMenu = t
               const member = preview ? group.members.find((entry) => entry.id === preview.id) : undefined;
               const memberStatus = member?.status ?? 'completed';
               const isCompleted = memberStatus === 'completed';
+              const previewKey = preview?.id ? `${preview.id}-${index}` : `preview-${index}`;
               return (
-                <div key={preview?.id ?? index} className="relative flex items-center justify-center overflow-hidden rounded-[10px] bg-[var(--surface-2)]">
+                <div key={previewKey} className="relative flex items-center justify-center overflow-hidden rounded-[10px] bg-[var(--surface-2)]">
                   <div className="absolute inset-0">
                     {isCompleted ? (
                       <GroupPreviewMedia preview={preview} />

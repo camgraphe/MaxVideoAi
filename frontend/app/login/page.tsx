@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { syncSupabaseCookies, clearSupabaseCookies } from '@/lib/supabase-cookies';
@@ -22,8 +22,17 @@ export default function LoginPage() {
   const [status, setStatus] = useState<string | null>(null);
   const [statusTone, setStatusTone] = useState<'info' | 'success'>('info');
   const [error, setError] = useState<string | null>(null);
+  const emailRef = useRef<HTMLInputElement | null>(null);
+  const passwordRef = useRef<HTMLInputElement | null>(null);
   const nextQuery = useMemo(() => (nextPath && nextPath !== '/' ? `?next=${encodeURIComponent(nextPath)}` : ''), [nextPath]);
   const redirectTo = useMemo(() => (siteUrl ? `${siteUrl}${nextQuery}` : undefined), [siteUrl, nextQuery]);
+
+  const syncInputState = useCallback(() => {
+    const nextEmail = emailRef.current?.value ?? '';
+    const nextPassword = passwordRef.current?.value ?? '';
+    setEmail((prev) => (prev === nextEmail ? prev : nextEmail));
+    setPassword((prev) => (prev === nextPassword ? prev : nextPassword));
+  }, [setEmail, setPassword]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -33,6 +42,26 @@ export default function LoginPage() {
       setNextPath(value);
     }
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    syncInputState();
+    const timers = [window.setTimeout(syncInputState, 100), window.setTimeout(syncInputState, 500)];
+    const handle = () => syncInputState();
+    const emailEl = emailRef.current;
+    const passwordEl = passwordRef.current;
+    emailEl?.addEventListener('input', handle);
+    emailEl?.addEventListener('change', handle);
+    passwordEl?.addEventListener('input', handle);
+    passwordEl?.addEventListener('change', handle);
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+      emailEl?.removeEventListener('input', handle);
+      emailEl?.removeEventListener('change', handle);
+      passwordEl?.removeEventListener('input', handle);
+      passwordEl?.removeEventListener('change', handle);
+    };
+  }, [syncInputState, mode]);
 
   async function signInWithPassword(e: React.FormEvent) {
     e.preventDefault();
@@ -231,8 +260,11 @@ export default function LoginPage() {
                 <input
                   type="email"
                   required
+                  ref={emailRef}
+                  name="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onFocus={syncInputState}
                   className="w-full rounded-input border border-border bg-bg px-3 py-2"
                   placeholder="you@domain.com"
                   autoComplete="email"
@@ -243,8 +275,11 @@ export default function LoginPage() {
                 <input
                   type="password"
                   required
+                  ref={passwordRef}
+                  name="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onFocus={syncInputState}
                   className="w-full rounded-input border border-border bg-bg px-3 py-2"
                   placeholder={mode === 'signup' ? 'At least 6 characters' : '••••••••'}
                   autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
@@ -308,8 +343,11 @@ export default function LoginPage() {
               <input
                 type="email"
                 required
+                ref={emailRef}
+                name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onFocus={syncInputState}
                 className="w-full rounded-input border border-border bg-bg px-3 py-2"
                 placeholder="you@domain.com"
                 autoComplete="email"

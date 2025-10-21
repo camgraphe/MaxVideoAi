@@ -134,6 +134,20 @@ type AssetLibraryModalProps = {
   onRefresh: () => void;
 };
 
+function normalizeEngineToken(value?: string | null): string {
+  if (typeof value !== 'string' || value.length === 0) return '';
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+function matchesEngineToken(engine: EngineCaps, token: string): boolean {
+  if (!token) return false;
+  if (normalizeEngineToken(engine.id) === token) return true;
+  if (normalizeEngineToken(engine.label) === token) return true;
+  const slug = normalizeEngineToken(engine.providerMeta?.modelSlug);
+  if (slug && slug === token) return true;
+  return false;
+}
+
 function AssetLibraryModal({ fieldLabel, assets, isLoading, error, onClose, onSelect, onRefresh }: AssetLibraryModalProps) {
   const formatSize = (bytes?: number | null) => {
     if (!bytes || bytes <= 0) return null;
@@ -789,13 +803,27 @@ export default function Page() {
     },
     [storageKey, storageScope]
   );
-  const nextPath = useMemo(() => {
-    const base = pathname || '/app';
-    const search = searchParams?.toString();
-    return search ? `${base}?${search}` : base;
-  }, [pathname, searchParams]);
-  const fromVideoId = useMemo(() => searchParams?.get('from') ?? null, [searchParams]);
-  const searchString = useMemo(() => searchParams?.toString() ?? '', [searchParams]);
+const nextPath = useMemo(() => {
+  const base = pathname || '/app';
+  const search = searchParams?.toString();
+  return search ? `${base}?${search}` : base;
+}, [pathname, searchParams]);
+const fromVideoId = useMemo(() => searchParams?.get('from') ?? null, [searchParams]);
+const requestedEngineId = useMemo(() => {
+  const value = searchParams?.get('engine');
+  if (!value) return null;
+  const trimmed = value.trim();
+  return trimmed.length ? trimmed : null;
+}, [searchParams]);
+const requestedEngineToken = useMemo(() => normalizeEngineToken(requestedEngineId), [requestedEngineId]);
+if (typeof window !== 'undefined') {
+  console.log('[generate] requested engine params', {
+    raw: requestedEngineId,
+    token: requestedEngineToken,
+    search: searchParams?.toString() ?? '',
+  });
+}
+const searchString = useMemo(() => searchParams?.toString() ?? '', [searchParams]);
   const [renders, setRenders] = useState<LocalRender[]>([]);
   const [sharedPrompt, setSharedPrompt] = useState<string | null>(null);
   const [selectedPreview, setSelectedPreview] = useState<{
@@ -986,7 +1014,39 @@ export default function Page() {
       setNegativePrompt(negativeValue ?? '');
 
       const formValue = readStorage(STORAGE_KEYS.form);
-      setForm(formValue ? parseStoredForm(formValue) : null);
+      const storedForm = formValue ? parseStoredForm(formValue) : null;
+      let nextForm: FormState | null = storedForm;
+      if (requestedEngineId) {
+        if (!storedForm || storedForm.engineId !== requestedEngineId) {
+          const base = storedForm ?? {
+            engineId: requestedEngineId,
+            mode: 't2v' as Mode,
+            durationSec: 4,
+            durationOption: 4,
+            numFrames: undefined,
+            resolution: '720p',
+            aspectRatio: '16:9',
+            fps: 24,
+            iterations: 1,
+            seedLocked: false,
+          } satisfies FormState;
+          nextForm = { ...base, engineId: requestedEngineId };
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('[generate] engine override from storage hydrate', {
+              from: storedForm?.engineId,
+              to: nextForm.engineId,
+            });
+          }
+          queueMicrotask(() => {
+            try {
+              writeStorage(STORAGE_KEYS.form, JSON.stringify(nextForm));
+            } catch {
+              // noop
+            }
+          });
+        }
+      }
+      setForm(nextForm);
 
       const storedTier = readStorage(STORAGE_KEYS.memberTier);
       if (storedTier === 'Member' || storedTier === 'Plus' || storedTier === 'Pro') {
@@ -1018,7 +1078,7 @@ export default function Page() {
       setActiveBatchId(null);
       setActiveGroupId(null);
     }
-  }, [readStorage, setMemberTier, storageScope]);
+  }, [readStorage, writeStorage, setMemberTier, storageScope, requestedEngineId]);
 
   useEffect(() => {
     rendersRef.current = renders;
@@ -1953,13 +2013,22 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     composerRef.current.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
   }, []);
 
+  const engineOverride = useMemo<EngineCaps | null>(() => {
+    if (!requestedEngineToken) return null;
+    if (!engines.length) return null;
+    return (
+      engines.find((engine) => matchesEngineToken(engine, requestedEngineToken)) ?? null
+    );
+  }, [engines, requestedEngineToken]);
+
   const selectedEngine = useMemo<EngineCaps | null>(() => {
     if (!engines.length) return null;
+    if (engineOverride) return engineOverride;
     if (form && engines.some((engine) => engine.id === form.engineId)) {
       return engines.find((engine) => engine.id === form.engineId) ?? engines[0];
     }
     return engines[0];
-  }, [engines, form]);
+  }, [engines, form, engineOverride]);
   const engineMap = useMemo(() => {
     const map = new Map<string, EngineCaps>();
     engines.forEach((entry) => {
@@ -1988,6 +2057,42 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     },
     [engines]
   );
+
+  useEffect(() => {
+    if (!engineOverride) return;
+    setForm((current) => {
+      const candidate = current ?? null;
+      if (candidate?.engineId === engineOverride.id) return candidate;
+      const preferredMode = candidate && engineOverride.modes.includes(candidate.mode) ? candidate.mode : engineOverride.modes[0];
+      const normalizedPrevious = candidate ? { ...candidate, engineId: engineOverride.id, mode: preferredMode } : null;
+      const nextState = coerceFormState(engineOverride, preferredMode, normalizedPrevious);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[generate] engine override applied', {
+          previous: candidate?.engineId,
+          next: nextState.engineId,
+        });
+      }
+      queueMicrotask(() => {
+        try {
+          writeStorage(STORAGE_KEYS.form, JSON.stringify(nextState));
+        } catch {
+          // noop
+        }
+      });
+      return nextState;
+    });
+  }, [engineOverride, writeStorage]);
+
+  useEffect(() => {
+    if (!requestedEngineToken) return;
+    if (!selectedEngine) return;
+    if (!matchesEngineToken(selectedEngine, requestedEngineToken)) return;
+    if (!searchString.includes('engine=')) return;
+    const params = new URLSearchParams(searchString);
+    params.delete('engine');
+    const next = params.toString();
+    router.replace(next ? `/app?${next}` : '/app');
+  }, [requestedEngineToken, selectedEngine, searchString, router]);
 
   const handleModeChange = useCallback(
     (mode: Mode) => {
@@ -2389,6 +2494,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
     const primaryImageUrl = referenceImageUrls[0];
 
+    const allowIndex = defaultAllowIndex ?? true;
+    const visibilityPreference: 'public' | 'private' = allowIndex ? 'public' : 'private';
+
     const runIteration = async (iterationIndex: number) => {
       if (selectedEngine.id.startsWith('sora-2') && form.mode === 'i2v' && !primaryImageUrl) {
         showNotice('Ajoutez une image (URL ou fichier) pour lancer Image → Video avec Sora.');
@@ -2550,6 +2658,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           message: friendlyMessage,
           etaSeconds,
           etaLabel,
+          visibility: visibilityPreference,
+          allowIndex,
+          indexable: allowIndex,
         };
         const res = await runGenerate(generatePayload, token ? { token } : undefined);
 
@@ -3222,12 +3333,12 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                       </div>
                     ) : (
                       <div className="grid gap-4 sm:grid-cols-2">
-                        {normalizedPendingGroups.map((group) => {
+                        {normalizedPendingGroups.map((group, index) => {
                           const engineId = group.hero.engineId;
                           const engine = engineId ? engineMap.get(engineId) ?? null : null;
                           return (
                             <GroupedJobCard
-                              key={group.id}
+                              key={`${group.id}-${index}`}
                               group={group}
                               engine={engine ?? undefined}
                               onOpen={handleActiveGroupOpen}

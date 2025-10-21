@@ -240,12 +240,12 @@ export function GalleryRail({
       )}
 
       <div ref={scrollContainerRef} className="mt-4 flex-1 space-y-4 overflow-y-auto pr-1">
-        {combinedGroups.map((group) => {
+        {combinedGroups.map((group, index) => {
           const engineId = group.hero.engineId;
           const engineEntry = engineId ? engineMap.get(engineId) ?? null : null;
           return (
             <GroupedJobCard
-              key={group.id}
+              key={`${group.id}-${index}`}
               group={group}
               engine={engineEntry ?? undefined}
               onOpen={handleCardOpen}

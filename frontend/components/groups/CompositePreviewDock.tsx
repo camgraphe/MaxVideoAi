@@ -219,6 +219,7 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
 
                 const video = isVideo(item);
                 const itemStatusRaw = typeof item.meta?.status === 'string' ? String(item.meta.status).toLowerCase() : null;
+                const itemKey = item.id ? `${item.id}-${index}` : `dock-item-${index}`;
                 const itemStatus: 'completed' | 'pending' | 'error' = (() => {
                   if (itemStatusRaw === 'completed' || itemStatusRaw === 'ready') return 'completed';
                   if (itemStatusRaw === 'failed' || itemStatusRaw === 'error') return 'error';
@@ -232,11 +233,11 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
                 const itemMessage = typeof item.meta?.message === 'string' ? (item.meta.message as string) : undefined;
 
                 return (
-                  <figure key={item.id ?? index} className="group relative flex items-center justify-center overflow-hidden rounded-[12px] bg-[var(--surface-2)]">
+                  <figure key={itemKey} className="group relative flex items-center justify-center overflow-hidden rounded-[12px] bg-[var(--surface-2)]">
                     <div className="absolute inset-0">
                       {itemStatus === 'completed' && video ? (
                         <video
-                          ref={registerVideo(item.id)}
+                          ref={registerVideo(itemKey)}
                           src={item.url}
                           poster={item.thumb}
                           className="h-full w-full object-contain"

@@ -1,0 +1,4 @@
+ignoredBuiltDependencies:
+  - '@ffmpeg-installer/darwin-arm64'
+  - '@vercel/speed-insights'
+  - unrs-resolver

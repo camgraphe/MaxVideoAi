@@ -1,6 +1,6 @@
 canonical_domain: https://maxvideoai.com
 redirect_domains:
-  - https://www.maxvideoai.com
+  - https://maxvideoai.com
 trailing_slash: false
 slug_collision_strategy: disallow-duplicate
 collections:

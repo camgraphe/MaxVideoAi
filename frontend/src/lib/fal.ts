@@ -361,8 +361,7 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
   const immediateAsset = extractVideoAsset(json);
   if (immediateAsset) {
     const asset = ensureAssetShape(immediateAsset);
-    const poster = asset.thumbnailUrl ?? (await getPosterFrame(asset.url).catch(() => null));
-    const thumbUrl = poster ?? fallbackThumb;
+    const thumbUrl = asset.thumbnailUrl ?? fallbackThumb;
     return {
       provider,
       thumbUrl,
@@ -555,11 +554,6 @@ function getDurationSeconds(candidate: { duration?: number; duration_seconds?: n
   if (typeof candidate.duration === 'number') return candidate.duration;
   if (typeof candidate.metadata?.duration_seconds === 'number') return candidate.metadata.duration_seconds;
   if (typeof candidate.metadata?.duration === 'number') return candidate.metadata.duration;
-  return null;
-}
-
-export async function getPosterFrame(url: string): Promise<string | null> {
-  void url;
   return null;
 }
 

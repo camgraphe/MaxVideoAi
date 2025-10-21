@@ -4,6 +4,7 @@ import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { sendRenderCompletedEmail } from '@/lib/email';
 import { getUserIdentity } from '@/server/supabase-admin';
+import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 
 type FalWebhookPayload = {
   request_id?: string;
@@ -25,6 +26,8 @@ type AppJobRow = {
   progress: number;
   video_url: string | null;
   thumb_url: string | null;
+  aspect_ratio: string | null;
+  preview_frame: string | null;
   message: string | null;
 };
 
@@ -134,7 +137,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   }
 
   const jobRows = await query<AppJobRow>(
-    `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, message
+    `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message
      FROM app_jobs
      WHERE provider_job_id = $1
      LIMIT 1`,
@@ -173,21 +176,47 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
         ? payload.error
         : null;
 
+  const rawVideoSource = media.videoUrl ?? job.video_url;
+  let resolvedThumbUrl = nextThumbUrl ?? job.thumb_url;
+  if (
+    rawVideoSource &&
+    typeof rawVideoSource === 'string' &&
+    /^https?:\/\//i.test(rawVideoSource) &&
+    isPlaceholderThumbnail(resolvedThumbUrl)
+  ) {
+    const generatedThumb = await ensureJobThumbnail({
+      jobId: job.job_id,
+      userId: job.user_id ?? undefined,
+      videoUrl: rawVideoSource,
+      aspectRatio: job.aspect_ratio ?? undefined,
+      existingThumbUrl: resolvedThumbUrl ?? undefined,
+    });
+    if (generatedThumb) {
+      resolvedThumbUrl = generatedThumb;
+    }
+  }
+
+  const finalVideoUrl = nextVideoUrl ?? job.video_url;
+  const finalThumbUrl = resolvedThumbUrl ?? job.thumb_url;
+  const finalPreviewFrame = finalThumbUrl ?? job.preview_frame;
+
   await query(
     `UPDATE app_jobs
      SET status = $2,
          progress = $3,
          video_url = COALESCE($4, video_url),
          thumb_url = COALESCE($5, thumb_url),
-         message = COALESCE($6, message),
+         preview_frame = COALESCE($6, preview_frame),
+         message = COALESCE($7, message),
          updated_at = NOW()
      WHERE job_id = $1`,
     [
       job.job_id,
       statusInfo.status,
       statusInfo.progress,
-      nextVideoUrl ?? job.video_url,
-      nextThumbUrl ?? job.thumb_url,
+      finalVideoUrl ?? job.video_url,
+      finalThumbUrl ?? job.thumb_url,
+      finalPreviewFrame ?? job.preview_frame,
       nextMessage ?? job.message,
     ]
   );
@@ -195,8 +224,6 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   const wasCompleted = job.status === 'completed';
   const isCompleted = statusInfo.status === 'completed';
   if (isCompleted && !wasCompleted && job.user_id) {
-    const finalVideoUrl = nextVideoUrl ?? job.video_url;
-    const finalThumbUrl = nextThumbUrl ?? job.thumb_url;
     void notifyRenderCompletion(job, finalVideoUrl, finalThumbUrl).catch((error) => {
       console.error('[fal-webhook] Failed to send completion email', error);
     });

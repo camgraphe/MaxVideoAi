@@ -102,8 +102,8 @@ export default async function VideoPage({ params }: VideoPageProps) {
   return (
     <main className="mx-auto max-w-5xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
       <div className="mb-6 text-xs uppercase tracking-micro text-text-muted">
-        <Link href="/gallery" className="hover:text-text-secondary">
-          ← Back to gallery
+        <Link href="/examples" className="hover:text-text-secondary">
+          ← Back to examples
         </Link>
       </div>
       <article className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">

@@ -36,6 +36,9 @@ type GeneratePayload = {
   etaSeconds?: number | null;
   etaLabel?: string | null;
   soraRequest?: SoraRequest;
+  visibility?: 'public' | 'private';
+  allowIndex?: boolean;
+  indexable?: boolean;
 };
 
 type GenerateOptions = {
