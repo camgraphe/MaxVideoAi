@@ -37,7 +37,7 @@ function collectContentSlugs(section) {
 
 module.exports = {
   siteUrl: 'https://maxvideoai.com',
-  generateRobotsTxt: true,
+  generateRobotsTxt: false,
   sitemapSize: 7000,
   exclude: ['/api/*', '/_next/*'],
   changefreq: 'weekly',
