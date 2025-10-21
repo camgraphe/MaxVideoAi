@@ -2,7 +2,7 @@ import process from 'node:process';
 import path from 'node:path';
 
 import { config as loadEnv } from 'dotenv';
-import 'tsconfig-paths/register';
+import 'tsconfig-paths/register.js';
 
 loadEnv({ path: path.resolve(process.cwd(), '.env.local'), override: true });
 loadEnv({ path: path.resolve(process.cwd(), '.env'), override: false });
