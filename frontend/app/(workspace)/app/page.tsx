@@ -892,7 +892,13 @@ const searchString = useMemo(() => searchParams?.toString() ?? '', [searchParams
       const parsedCreated = Number.isFinite(Date.parse(createdAt)) ? Date.parse(createdAt) : Date.now();
       const priceCents = typeof job.finalPriceCents === 'number' ? job.finalPriceCents : job.pricingSnapshot?.totalCents;
       const currency = job.currency ?? job.pricingSnapshot?.currency ?? undefined;
-      const message = job.message ?? (normalizedStatus === 'completed' ? 'Render completed.' : normalizedStatus === 'failed' ? 'Render failed.' : 'Render pending.');
+      const message =
+        job.message ??
+        (normalizedStatus === 'completed'
+          ? 'Render completed.'
+          : normalizedStatus === 'failed'
+            ? 'Fal reported a failure without details.'
+            : 'Render pending.');
       const engineId = job.engineId ?? (job.engineLabel ? engineIdByLabel.get(job.engineLabel.toLowerCase()) ?? undefined : undefined) ?? 'unknown-engine';
       const thumbUrl = job.thumbUrl ?? job.previewFrame ?? resolveRenderThumb({ thumbUrl: job.thumbUrl, aspectRatio: job.aspectRatio ?? null });
 

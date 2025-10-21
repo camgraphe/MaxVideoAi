@@ -251,6 +251,15 @@ export function QuadPreviewPanel({
                 const slotKey = preview?.localKey ?? `slot-${index}`;
                 const statusInfo = preview?.localKey ? mosaicStatusMap.get(preview.localKey) : undefined;
                 const cellAspect = getAspectClass(preview?.aspectRatio ?? primaryAspect);
+                const tileStatus = statusInfo?.status ?? preview?.status ?? 'pending';
+                const failureMessageRaw = statusInfo?.message ?? preview?.message ?? null;
+                const failureMessage =
+                  failureMessageRaw && typeof failureMessageRaw === 'string'
+                    ? failureMessageRaw.replace(/\s+/g, ' ').trim()
+                    : null;
+                const showPendingOverlay = tileStatus !== 'completed' && tileStatus !== 'failed';
+                const showFailedOverlay = tileStatus === 'failed';
+
                 return (
                   <div
                     key={slotKey}
@@ -258,7 +267,7 @@ export function QuadPreviewPanel({
                     className="relative flex items-center justify-center overflow-hidden rounded-[10px] bg-white/70"
                   >
                     <div className={clsx('relative h-full w-full', cellAspect)}>
-                      {preview?.videoUrl ? (
+                      {tileStatus !== 'failed' && preview?.videoUrl ? (
                         <video
                           data-quad-video
                           data-quad-fallback
@@ -270,7 +279,7 @@ export function QuadPreviewPanel({
                           loop
                           poster={preview?.thumbUrl}
                         />
-                      ) : preview?.thumbUrl ? (
+                      ) : tileStatus !== 'failed' && preview?.thumbUrl ? (
                         <Image
                           data-quad-fallback
                           src={preview.thumbUrl}
@@ -284,12 +293,24 @@ export function QuadPreviewPanel({
                       )}
                     </div>
                     <div className="absolute inset-0 z-10" data-quad-player-root={slotKey} />
-                    {statusInfo && statusInfo.status !== 'completed' && (
+                    {showPendingOverlay && (
                       <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/45 px-2 text-center text-[10px] text-white backdrop-blur-sm">
                         <span className="uppercase tracking-micro">Processing</span>
-                        {statusInfo.message && <span className="mt-1 max-w-[120px] text-[10px] text-white/80">{statusInfo.message}</span>}
-                        <span className="mt-1 text-[10px] font-semibold">{statusInfo.progress}%</span>
-                        {statusInfo.etaLabel && <span className="mt-1 text-[9px] text-white/70">{statusInfo.etaLabel}</span>}
+                        {(statusInfo?.message || preview?.message) && (
+                          <span className="mt-1 max-w-[140px] text-[10px] text-white/80">
+                            {statusInfo?.message ?? preview?.message}
+                          </span>
+                        )}
+                        {typeof statusInfo?.progress === 'number' && (
+                          <span className="mt-1 text-[10px] font-semibold">{statusInfo.progress}%</span>
+                        )}
+                        {statusInfo?.etaLabel && <span className="mt-1 text-[9px] text-white/70">{statusInfo.etaLabel}</span>}
+                      </div>
+                    )}
+                    {showFailedOverlay && (
+                      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-1 rounded-[10px] bg-red-50 px-3 text-center text-[10px] text-red-700">
+                        <span className="font-semibold uppercase tracking-micro text-red-600">Failed</span>
+                        {failureMessage && <span className="line-clamp-4 text-[10px] leading-tight text-red-700">{`Fal error: ${failureMessage}`}</span>}
                       </div>
                     )}
                   </div>
@@ -320,23 +341,37 @@ export function QuadPreviewPanel({
             }
 
             const engineCaps = engineMap.get(tile.engineId);
-            const statusLabel = tile.status === 'completed' ? 'Final' : 'Processing';
+            const statusLabel =
+              tile.status === 'completed' ? 'Final' : tile.status === 'failed' ? 'Failed' : 'Processing';
             const formattedPrice = formatCurrency(tile.priceCents, tile.currency ?? currency);
             const versionLabel = `V${tile.iterationIndex + 1}`;
             const branchLabel = `Branch ${String.fromCharCode(65 + tile.iterationIndex)}`;
             const isHero = heroKey === tile.localKey;
             const tileAspectClass = getAspectClass(tile.aspectRatio);
-            
+            const isFailed = tile.status === 'failed';
+            const failureMessage =
+              tile.message && typeof tile.message === 'string' ? tile.message.replace(/\s+/g, ' ').trim() : null;
 
             return (
               <div
                 key={tile.localKey}
                 className={clsx(
                   'flex flex-col overflow-hidden rounded-card border',
-                  isHero ? 'border-accent shadow-lg' : 'border-border bg-white/85 shadow-card'
+                  isFailed
+                    ? 'border-red-200 bg-red-50/60 shadow-card'
+                    : isHero
+                      ? 'border-accent shadow-lg'
+                      : 'border-border bg-white/85 shadow-card'
                 )}
               >
-                <div className="flex items-center justify-between gap-2 border-b border-hairline bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+                <div
+                  className={clsx(
+                    'flex items-center justify-between gap-2 border-b px-3 py-2 text-[11px] font-semibold uppercase tracking-micro',
+                    isFailed
+                      ? 'border-red-200 bg-red-50 text-red-700'
+                      : 'border-hairline bg-white text-text-muted'
+                  )}
+                >
                   <span className="inline-flex items-center gap-2">
                     <span className={clsx('rounded-full px-2 py-0.5', isHero ? 'bg-accent/10 text-accent' : 'bg-black/5 text-text-secondary')}>
                       {versionLabel}
@@ -359,7 +394,7 @@ export function QuadPreviewPanel({
 
                 <div className={clsx('relative bg-[#E7ECF7]', tileAspectClass)} data-quad-tile={tile.localKey}>
                   <div className="relative h-full w-full">
-                    {tile.videoUrl ? (
+                    {tile.status !== 'failed' && tile.videoUrl ? (
                       <video
                         data-quad-video
                         data-quad-tile-fallback
@@ -372,7 +407,7 @@ export function QuadPreviewPanel({
                         loop
                         poster={tile.thumbUrl}
                       />
-                    ) : tile.thumbUrl ? (
+                    ) : tile.status !== 'failed' && tile.thumbUrl ? (
                       <Image
                         src={tile.thumbUrl}
                         alt=""
@@ -386,16 +421,31 @@ export function QuadPreviewPanel({
                     )}
                   </div>
                   <div className="absolute inset-0 z-10" data-quad-tile-root={tile.localKey} />
-                  {tile.status !== 'completed' && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 text-center text-[12px] text-white backdrop-blur-sm">
+                  {tile.status === 'failed' ? (
+                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 bg-red-50/95 px-4 text-center text-[12px] text-red-700 backdrop-blur-sm">
+                      <span className="font-semibold uppercase tracking-micro text-red-600">Generation failed</span>
+                      <span className="text-[11px] leading-snug text-red-700">
+                        {failureMessage ? `Fal error: ${failureMessage}` : 'Fal reported a failure without details.'}
+                      </span>
+                    </div>
+                  ) : tile.status !== 'completed' ? (
+                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/40 px-4 text-center text-[12px] text-white backdrop-blur-sm">
                       <span className="uppercase tracking-micro">Processing</span>
-                      <span className="mt-1 text-[11px] text-white/80">{tile.message}</span>
+                      {tile.message && <span className="mt-1 text-[11px] text-white/80">{tile.message}</span>}
                       <span className="mt-2 text-[11px] font-semibold text-white/90">{tile.progress}%</span>
                     </div>
-                  )}
+                  ) : null}
                 </div>
 
                 <div className="flex flex-col gap-2 border-t border-hairline bg-white px-3 py-2 text-[12px] text-text-secondary">
+                  {isFailed && (
+                    <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-left">
+                      <p className="text-[10px] font-semibold uppercase tracking-micro text-red-600">Fal error</p>
+                      <p className="mt-1 text-[11px] leading-snug text-red-700">
+                        {failureMessage ?? 'Fal reported a failure without details.'}
+                      </p>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between gap-2">
                     <span className="inline-flex items-center gap-2 font-medium text-text-primary">
                       <EngineIcon engine={engineCaps ?? undefined} label={tile.engineLabel} size={28} className="shrink-0" />
@@ -405,7 +455,10 @@ export function QuadPreviewPanel({
                   </div>
                   <div className="flex items-center justify-between text-[11px] text-text-muted">
                     <span>{tile.durationSec}s</span>
-                    <span>{tile.etaLabel ?? (tile.status === 'completed' ? 'Ready' : 'Estimating…')}</span>
+                    <span>
+                      {tile.etaLabel ??
+                        (tile.status === 'completed' ? 'Ready' : tile.status === 'failed' ? 'Failed' : 'Estimating…')}
+                    </span>
                   </div>
                 </div>
 

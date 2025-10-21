@@ -53,6 +53,88 @@ function withFalTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   }) as Promise<T>;
 }
 
+const FAL_ERROR_FIELDS = [
+  'error_message',
+  'errorMessage',
+  'message',
+  'detail',
+  'error',
+  'reason',
+  'status_message',
+  'statusMessage',
+  'status_reason',
+  'statusReason',
+  'status_detail',
+  'statusDetail',
+  'status_description',
+  'statusDescription',
+  'description',
+  'failure',
+  'failureReason',
+  'cause',
+];
+
+function normalizeFalErrorValue(value: unknown): string | null {
+  if (value == null) return null;
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed.length) return null;
+    if (/^(error|failed|null|undefined)$/i.test(trimmed)) return null;
+    return trimmed;
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  if (value instanceof Error) {
+    return normalizeFalErrorValue(value.message);
+  }
+  return null;
+}
+
+function extractFalProviderMessage(payload: unknown): string | null {
+  if (!payload || (typeof payload !== 'object' && typeof payload !== 'string')) {
+    return normalizeFalErrorValue(payload);
+  }
+
+  const visited = new Set<unknown>();
+  const stack: unknown[] = [payload];
+
+  while (stack.length) {
+    const current = stack.pop();
+    const directText = normalizeFalErrorValue(current);
+    if (directText) return directText;
+    if (!current || typeof current !== 'object') continue;
+    if (visited.has(current)) continue;
+    visited.add(current);
+
+    const record = current as Record<string, unknown>;
+    for (const key of FAL_ERROR_FIELDS) {
+      if (key in record) {
+        const candidate = normalizeFalErrorValue(record[key]);
+        if (candidate) return candidate;
+      }
+    }
+
+    for (const value of Object.values(record)) {
+      if (value && typeof value === 'object') {
+        stack.push(value);
+      } else {
+        const candidate = normalizeFalErrorValue(value);
+        if (candidate) return candidate;
+      }
+    }
+  }
+
+  return null;
+}
+
+function condenseFalErrorMessage(message: string | null | undefined): string | null {
+  if (!message) return null;
+  const condensed = message.replace(/\s+/g, ' ').trim();
+  if (!condensed.length) return null;
+  return condensed.length > 400 ? `${condensed.slice(0, 400)}…` : condensed;
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ ok: false, error: 'Invalid JSON' }, { status: 400 });
@@ -820,14 +902,17 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     const status = rawStatus ?? metadataStatus;
     const detail =
       error && typeof error === 'object' && 'body' in error ? (error as { body?: unknown }).body ?? null : null;
-    const providerMessage =
-      typeof detail === 'string'
-        ? detail
-        : detail && typeof detail === 'object' && 'detail' in (detail as Record<string, unknown>)
-          ? String((detail as Record<string, unknown>).detail)
-          : error instanceof Error
-            ? error.message
-            : 'Fal request failed';
+    const providerMessageRaw =
+      extractFalProviderMessage(detail) ??
+      (error instanceof FalGenerationError && error.body ? extractFalProviderMessage(error.body) : null) ??
+      (error && typeof error === 'object' && 'response' in error
+        ? extractFalProviderMessage((error as { response?: unknown }).response)
+        : null) ??
+      extractFalProviderMessage(error) ??
+      (error instanceof Error ? error.message : null);
+    const providerMessage = condenseFalErrorMessage(providerMessageRaw);
+    const effectiveProviderMessage =
+      providerMessage && providerMessage.toLowerCase() === 'fal request failed' ? null : providerMessage;
     const isTimeoutError = error instanceof FalTimeoutError;
     const isQuotaError =
       status === 429 ||
@@ -838,8 +923,8 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
         ? 'This engine is temporarily unavailable. Please try again later or pick another engine.'
         : 'Fal request failed';
     const failureMessage =
-      typeof providerMessage === 'string' && providerMessage.length && !isTimeoutError && !isQuotaError
-        ? providerMessage
+      typeof effectiveProviderMessage === 'string' && effectiveProviderMessage.length && !isTimeoutError && !isQuotaError
+        ? effectiveProviderMessage
         : fallbackMessage;
     const providerJobId =
       error instanceof FalGenerationError && error.providerJobId
@@ -853,6 +938,22 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
         : pendingReceipt && paymentMode !== 'wallet'
           ? 'refunded'
           : null;
+    const baseRefundDescription = `Refund ${engine.label} • ${durationSec}s`;
+    const refundNote = effectiveProviderMessage ? `Fal error: ${effectiveProviderMessage}` : null;
+    const refundDescription = refundNote ? `${baseRefundDescription} — ${refundNote}` : baseRefundDescription;
+
+    console.error(
+      '[api/generate] Fal generation failed',
+      {
+        jobId,
+        engineId: engine.id,
+        status,
+        providerJobId,
+        providerMessage: effectiveProviderMessage ?? providerMessage ?? null,
+        detail: detail ?? null,
+      },
+      error
+    );
 
     try {
       await query(
@@ -872,7 +973,6 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     }
 
     if (pendingReceipt) {
-      const refundDescription = `Refund ${engine.label} • ${durationSec}s`;
       if (walletChargeReserved) {
         await recordRefundReceipt(pendingReceipt, refundDescription, null);
       } else {
@@ -882,7 +982,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     }
 
     if (status === 422) {
-      console.error('[generate] fal returned 422', providerMessage);
+      console.error('[generate] fal returned 422', providerMessage ?? '<no-provider-message>');
       const userMessage = isLumaRay2 ? LUMA_RAY2_ERROR_UNSUPPORTED : 'Valeur non supportée (voir options listées).';
       return NextResponse.json(
         {

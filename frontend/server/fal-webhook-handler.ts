@@ -191,6 +191,109 @@ function extractMediaUrls(payload: unknown): { videoUrl?: string | null; thumbUr
   return { videoUrl, thumbUrl };
 }
 
+const ERROR_MESSAGE_KEYS = [
+  'error_message',
+  'errorMessage',
+  'message',
+  'detail',
+  'error',
+  'reason',
+  'status_message',
+  'statusMessage',
+  'status_reason',
+  'statusReason',
+  'status_detail',
+  'statusDetail',
+  'status_description',
+  'statusDescription',
+  'description',
+  'failure',
+  'failureReason',
+  'cause',
+];
+
+function normalizeErrorText(value: unknown): string | null {
+  if (value == null) return null;
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed.length) return null;
+    if (/^(error|failed|null|undefined)$/i.test(trimmed)) return null;
+    return trimmed;
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  if (value instanceof Error) {
+    return normalizeErrorText(value.message);
+  }
+  return null;
+}
+
+function findFirstErrorMessage(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object') {
+    return normalizeErrorText(payload);
+  }
+
+  const visited = new Set<unknown>();
+  const stack: unknown[] = [payload];
+
+  while (stack.length) {
+    const current = stack.pop();
+    if (!current || typeof current !== 'object') {
+      const text = normalizeErrorText(current);
+      if (text) return text;
+      continue;
+    }
+    if (visited.has(current)) continue;
+    visited.add(current);
+
+    const record = current as Record<string, unknown>;
+    for (const key of ERROR_MESSAGE_KEYS) {
+      if (key in record) {
+        const candidate = normalizeErrorText(record[key]);
+        if (candidate) return candidate;
+      }
+    }
+
+    for (const value of Object.values(record)) {
+      if (value && typeof value === 'object') {
+        stack.push(value);
+      } else {
+        const text = normalizeErrorText(value);
+        if (text) return text;
+      }
+    }
+  }
+
+  return null;
+}
+
+function extractFalErrorMessage(payload: FalWebhookPayload, additionalContext?: unknown): string | null {
+  const direct = normalizeErrorText(payload.error);
+  if (direct) return direct;
+
+  const nestedSources: unknown[] = [];
+  if (payload.error && typeof payload.error === 'object') {
+    nestedSources.push(payload.error);
+  }
+  if (payload.result) nestedSources.push(payload.result);
+  if (payload.response) nestedSources.push(payload.response);
+  if (payload.data) nestedSources.push(payload.data);
+  if (additionalContext && typeof additionalContext === 'object') {
+    nestedSources.push(additionalContext);
+  }
+
+  for (const source of nestedSources) {
+    const candidate = findFirstErrorMessage(source);
+    if (candidate) return candidate;
+  }
+
+  const fallback = findFirstErrorMessage(payload);
+  if (fallback) return fallback;
+
+  return null;
+}
+
 function normalizeStatus(
   status: string | undefined,
   previousStatus: string,
@@ -385,12 +488,9 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   const media = extractMediaUrls(finalPayload);
   const nextVideoUrl = media.videoUrl ? normalizeMediaUrl(media.videoUrl) : null;
   const nextThumbUrl = media.thumbUrl ? normalizeMediaUrl(media.thumbUrl) : null;
+  const extractedErrorMessage = extractFalErrorMessage(payload, statusInfo.status === 'failed' ? finalPayload : null);
   const nextMessage =
-    typeof payload.error === 'string'
-      ? payload.error
-      : statusInfo.status === 'failed'
-        ? payload.error
-        : null;
+    extractedErrorMessage ?? (statusInfo.status === 'failed' ? 'Fal reported a failure without details.' : null);
 
   const rawVideoSource = media.videoUrl ?? job.video_url;
   let resolvedThumbUrl = nextThumbUrl ?? job.thumb_url;
@@ -415,15 +515,34 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   const finalVideoUrl = nextVideoUrl ?? job.video_url;
   const finalThumbUrl = resolvedThumbUrl ?? job.thumb_url;
   const finalPreviewFrame = finalThumbUrl ?? job.preview_frame;
+  const shouldClearVideo = statusInfo.status === 'failed' && !nextVideoUrl;
+  const shouldClearThumb =
+    statusInfo.status === 'failed' &&
+    (!nextThumbUrl || !resolvedThumbUrl || (resolvedThumbUrl && isPlaceholderThumbnail(resolvedThumbUrl)));
+  const messageToPersist =
+    statusInfo.status === 'failed'
+      ? nextMessage ?? job.message ?? 'Fal reported a failure without details.'
+      : nextMessage ?? null;
+  const normalizedMessage = messageToPersist ? messageToPersist.replace(/\s+/g, ' ').trim() : null;
+
+  if (statusInfo.status === 'failed') {
+    console.error('[fal-webhook] job failed', {
+      jobId: job.job_id,
+      requestId,
+      engineId: job.engine_id,
+      message: normalizedMessage,
+      payload: payload.error ?? payload,
+    });
+  }
 
   await query(
     `UPDATE app_jobs
      SET status = $2,
          progress = $3,
-         video_url = COALESCE($4, video_url),
-         thumb_url = COALESCE($5, thumb_url),
-         preview_frame = COALESCE($6, preview_frame),
-         message = COALESCE($7, message),
+         video_url = CASE WHEN $9 THEN NULL ELSE COALESCE($4, video_url) END,
+         thumb_url = CASE WHEN $10 THEN NULL ELSE COALESCE($5, thumb_url) END,
+         preview_frame = CASE WHEN $10 THEN NULL ELSE COALESCE($6, preview_frame) END,
+         message = CASE WHEN $7 IS NOT NULL THEN $7 ELSE message END,
          provider_job_id = $8,
          provisional = FALSE,
          updated_at = NOW()
@@ -432,11 +551,13 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       job.job_id,
       statusInfo.status,
       statusInfo.progress,
-      finalVideoUrl ?? job.video_url,
-      finalThumbUrl ?? job.thumb_url,
-      finalPreviewFrame ?? job.preview_frame,
-      nextMessage ?? job.message,
+      finalVideoUrl ?? null,
+      finalThumbUrl ?? null,
+      finalPreviewFrame ?? null,
+      normalizedMessage,
       requestId,
+      shouldClearVideo,
+      shouldClearThumb,
     ]
   );
 
