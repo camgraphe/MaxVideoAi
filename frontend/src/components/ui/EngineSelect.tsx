@@ -60,11 +60,6 @@ const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
       'Fast queue Veo for previsualisation while keeping the Veo look and audio toggle.',
     badges: ['⚡ Fast queue', '💰 Optimized', '🔄 Previz'],
   },
-  kling25_turbo_pro: {
-    description:
-      'Stylised animation with guided camera moves—use it for motion boards and concept passes.',
-    badges: ['🎯 Camera', '🎞️ Animatic', '🧪 Turbo'],
-  },
   lumaDM: {
     description:
       'Luma Dream Machine v1.5 handles photoreal product loops and lifestyle scenes with balanced detail.',

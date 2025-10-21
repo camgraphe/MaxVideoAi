@@ -28,9 +28,6 @@ collections:
         veo-3-fast:
           aliases:
             - google-veo-3-fast
-        kling-2-5-turbo-pro:
-          aliases:
-            - kling-25-turbo-pro
         luma-dream-machine: {}
         luma-ray-2: {}
         luma-ray-2-flash: {}

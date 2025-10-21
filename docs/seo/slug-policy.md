@@ -13,7 +13,7 @@
 - Prefer stable, evergreen nouns; do not include volatile values such as dates or campaign names.
 
 ## Versioning & Product Names
-- Encode versions with numeric groups separated by hyphens (`veo-3`, `sora-2-pro`, `kling-2-5-turbo-pro`).
+- Encode versions with numeric groups separated by hyphens (`veo-3`, `sora-2-pro`, `hailuo-2-pro`).
 - Preserve vendor names only when essential for disambiguation (e.g. `luma-dream-machine`, `hunyuan-video`).
 - Maintain the same slug once published; any rename requires a permanent (301) redirect and sitemap update.
 

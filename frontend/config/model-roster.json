@@ -40,15 +40,6 @@
     "logoPolicy": "textOnly"
   },
   {
-    "engineId": "kling25_turbo_pro",
-    "marketingName": "Kling 2.5 Turbo Pro",
-    "brandId": "kling",
-    "modelSlug": "kling-2-5-turbo-pro",
-    "versionLabel": "2.5 Turbo Pro",
-    "availability": "available",
-    "logoPolicy": "textOnly"
-  },
-  {
     "engineId": "lumaDM",
     "marketingName": "Luma Dream Machine v1.5",
     "brandId": "luma",

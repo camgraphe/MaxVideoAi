@@ -57,11 +57,6 @@ const nextConfig = {
         permanent: true,
       },
       {
-        source: '/models/kling-25-turbo-pro',
-        destination: '/models/kling-2-5-turbo-pro',
-        permanent: true,
-      },
-      {
         source: '/models/minimax-video-01',
         destination: '/models/minimax-video-1',
         permanent: true,

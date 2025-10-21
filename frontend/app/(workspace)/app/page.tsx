@@ -3313,18 +3313,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                           return next;
                         })
                       }
-                      viewMode={viewMode}
-                      onViewModeChange={(mode) => {
-                        setViewMode(mode);
-                        emitClientMetric('quad_view_toggled', {
-                          enabled: mode === 'quad',
-                          iterations: form.iterations,
-                          engine: selectedEngine.id,
-                        });
-                        if (mode === 'quad' && effectiveBatchId) {
-                          setActiveBatchId(effectiveBatchId);
-                        }
-                      }}
                       seedLocked={form.seedLocked}
                       onSeedLockedChange={(seedLocked) =>
                         setForm((current) => (current ? { ...current, seedLocked } : current))

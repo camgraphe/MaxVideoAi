@@ -116,18 +116,6 @@ export const ENGINE_CAPS: Record<string, EngineCaps> = {
     maxUploadMB: 8,
   },
 
-  // --- KLING 2.5 TURBO PRO ---
-  'fal-ai/kling-video/v2.5-turbo/pro/text-to-video': {
-    modes: ['t2v'],
-    duration: { options: [5], default: 5 },
-    audioToggle: false,
-  },
-  'fal-ai/kling-video/v2.5-turbo/pro/image-to-video': {
-    modes: ['i2v'],
-    duration: { options: [5], default: 5 },
-    audioToggle: false,
-  },
-
 // --- LUMA DREAM MACHINE (v1.5) & LUMA RAY 2 family ---
 'fal-ai/luma-dream-machine/image-to-video': {
   modes: ['i2v'],
@@ -272,10 +260,6 @@ export const ENGINE_CAP_INDEX: Record<string, ModeCapsMap> = {
   veo3fast: {
     t2v: 'fal-ai/veo3/fast',
     i2v: 'fal-ai/veo3/fast/image-to-video',
-  },
-  kling25_turbo_pro: {
-    t2v: 'fal-ai/kling-video/v2.5-turbo/pro/text-to-video',
-    i2v: 'fal-ai/kling-video/v2.5-turbo/pro/image-to-video',
   },
   lumaDM: {
     t2v: 'fal-ai/luma-dream-machine',

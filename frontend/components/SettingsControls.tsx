@@ -25,8 +25,6 @@ interface Props {
   mode: Mode;
   iterations?: number;
   onIterationsChange?: (value: number) => void;
-  viewMode?: 'single' | 'quad';
-  onViewModeChange?: (mode: 'single' | 'quad') => void;
   seedLocked?: boolean;
   onSeedLockedChange?: (value: boolean) => void;
   apiKey?: string;
@@ -55,8 +53,6 @@ export function SettingsControls({
   mode,
   iterations,
   onIterationsChange,
-  viewMode,
-  onViewModeChange,
   seedLocked,
   onSeedLockedChange,
   apiKey,
@@ -327,35 +323,6 @@ export function SettingsControls({
               X{n}
             </button>
           ))}
-        </div>
-      )}
-      {onViewModeChange && (
-        <div className="-mt-1 flex items-center gap-2 px-1">
-          <span className="text-[11px] uppercase tracking-micro text-text-muted">View</span>
-          {(['single', 'quad'] as const).map((modeOption) => {
-            const isActive = viewMode === modeOption;
-            const iterationsCount = Math.max(1, iterations ?? 1);
-            const disabled = modeOption === 'quad' && iterationsCount <= 1;
-            return (
-              <button
-                key={modeOption}
-                type="button"
-                disabled={disabled}
-                onClick={() => !disabled && onViewModeChange(modeOption)}
-                className={clsx(
-                  'rounded-input border px-2.5 py-1 text-[12px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  disabled
-                    ? 'cursor-not-allowed border-hairline bg-white text-text-muted/60'
-                    : isActive
-                      ? 'border-accent bg-accent text-white'
-                      : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
-                )}
-                aria-pressed={isActive}
-              >
-                {modeOption === 'single' ? 'Single' : 'Quad'}
-              </button>
-            );
-          })}
         </div>
       )}
       <div className="rounded-input border border-border bg-white">

@@ -352,7 +352,7 @@ const en: Dictionary = {
       },
       {
         title: 'All your engines in one place.',
-        body: 'Switch between Sora, Veo, Luma, Pika, MiniMax, Kling, and Hunyuan without juggling dashboards or API keys.',
+        body: 'Switch between Sora, Veo, Luma, Pika, MiniMax, and Hunyuan without juggling dashboards or API keys.',
       },
     ],
     ways: [
@@ -635,12 +635,6 @@ const en: Dictionary = {
         priceBefore: '$0.10/s audio off or $0.15/s audio on in the chip.',
         versionLabel: 'Veo 3 Fast',
       },
-      'kling-2-5-turbo-pro': {
-        displayName: 'Kling 2.5 Turbo Pro',
-        description: 'Stylised animation drafts with improved camera control.',
-        priceBefore: 'Fal turbo queue rate surfaced before you spend budget.',
-        versionLabel: '2.5 Turbo Pro',
-      },
       'luma-dream-machine': {
         displayName: 'Luma Dream Machine v1.5',
         description: 'Photoreal hero loops, tabletop explainers, and depth-aware motion.',
@@ -718,20 +712,6 @@ const en: Dictionary = {
         },
         media: {
           videoSrc: 'https://storage.googleapis.com/falserverless/example_outputs/veo3-i2v-output.mp4',
-          aspectRatio: '16:9',
-        },
-      },
-      {
-        title: 'Kling 2.5 Turbo Pro narrative',
-        engine: 'Kling 2.5 Turbo Pro · Text-to-video · 16:9',
-        description: 'Narrative beat showcasing Kling’s motion fidelity and detail.',
-        alt: 'Kling 2.5 Turbo Pro example clip.',
-        meta: {
-          slug: 'kling-2-5-turbo-pro',
-          pricing: { engineId: 'kling25_turbo_pro', durationSec: 10, resolution: '1080p', memberTier: 'member' },
-        },
-        media: {
-          videoSrc: 'https://storage.googleapis.com/falserverless/model_tests/kling/kling-v2.5-turbo-pro-text-to-video-output.mp4',
           aspectRatio: '16:9',
         },
       },

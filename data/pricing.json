@@ -8,7 +8,13 @@
     "stale": false,
     "checksum": "",
     "prices": [
-      { "raw": { "currency": "USD", "unit": "second", "amount": 0.10 } }
+      {
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.1
+        }
+      }
     ]
   },
   {
@@ -20,8 +26,28 @@
     "stale": false,
     "checksum": "",
     "prices": [
-      { "variant": { "mode": "pro", "resolution": "720p" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.30 } },
-      { "variant": { "mode": "pro", "resolution": "1080p" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.50 } }
+      {
+        "variant": {
+          "mode": "pro",
+          "resolution": "720p"
+        },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.3
+        }
+      },
+      {
+        "variant": {
+          "mode": "pro",
+          "resolution": "1080p"
+        },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.5
+        }
+      }
     ]
   },
   {
@@ -33,8 +59,26 @@
     "stale": false,
     "checksum": "",
     "prices": [
-      { "variant": { "audio": "off" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.20 } },
-      { "variant": { "audio": "on" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.40 } }
+      {
+        "variant": {
+          "audio": "off"
+        },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.2
+        }
+      },
+      {
+        "variant": {
+          "audio": "on"
+        },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.4
+        }
+      }
     ]
   },
   {
@@ -46,20 +90,26 @@
     "stale": false,
     "checksum": "",
     "prices": [
-      { "variant": { "audio": "off" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.10 } },
-      { "variant": { "audio": "on" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.15 } }
-    ]
-  },
-  {
-    "engine": "Kling 2.5 Turbo Pro",
-    "catalogSlug": "kling-2-5-turbo-pro",
-    "falSlug": "fal-ai/kling-video/v2.5-turbo/pro",
-    "source_url": "https://fal.ai/models/fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
-    "last_checked_at": "",
-    "stale": false,
-    "checksum": "",
-    "prices": [
-      { "variant": { "mode": "pro" }, "raw": { "currency": "USD", "unit": "second", "base_seconds": 5, "base_amount": 0.35, "extra_per_second": 0.07 } }
+      {
+        "variant": {
+          "audio": "off"
+        },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.1
+        }
+      },
+      {
+        "variant": {
+          "audio": "on"
+        },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.15
+        }
+      }
     ]
   },
   {
@@ -71,7 +121,13 @@
     "stale": false,
     "checksum": "",
     "prices": [
-      { "raw": { "currency": "USD", "unit": "video", "amount": 0.50 } }
+      {
+        "raw": {
+          "currency": "USD",
+          "unit": "video",
+          "amount": 0.5
+        }
+      }
     ]
   },
   {
@@ -83,7 +139,16 @@
     "stale": false,
     "checksum": "",
     "prices": [
-      { "variant": { "mode": "ray-2" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.10 } }
+      {
+        "variant": {
+          "mode": "ray-2"
+        },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.1
+        }
+      }
     ]
   },
   {
@@ -95,7 +160,16 @@
     "stale": false,
     "checksum": "",
     "prices": [
-      { "variant": { "mode": "flash" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.05 } }
+      {
+        "variant": {
+          "mode": "flash"
+        },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.05
+        }
+      }
     ]
   },
   {
@@ -107,7 +181,16 @@
     "stale": false,
     "checksum": "",
     "prices": [
-      { "variant": { "mode": "modify" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.35 } }
+      {
+        "variant": {
+          "mode": "modify"
+        },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.35
+        }
+      }
     ]
   },
   {
@@ -119,7 +202,16 @@
     "stale": false,
     "checksum": "",
     "prices": [
-      { "variant": { "mode": "reframe" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.20 } }
+      {
+        "variant": {
+          "mode": "reframe"
+        },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.2
+        }
+      }
     ]
   },
   {
@@ -131,7 +223,16 @@
     "stale": false,
     "checksum": "",
     "prices": [
-      { "variant": { "mode": "flash-reframe" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.06 } }
+      {
+        "variant": {
+          "mode": "flash-reframe"
+        },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.06
+        }
+      }
     ]
   },
   {
@@ -143,8 +244,26 @@
     "stale": false,
     "checksum": "",
     "prices": [
-      { "variant": { "resolution": "720p" }, "raw": { "currency": "USD", "unit": "5s", "amount": 0.20 } },
-      { "variant": { "resolution": "1080p" }, "raw": { "currency": "USD", "unit": "5s", "amount": 0.45 } }
+      {
+        "variant": {
+          "resolution": "720p"
+        },
+        "raw": {
+          "currency": "USD",
+          "unit": "5s",
+          "amount": 0.2
+        }
+      },
+      {
+        "variant": {
+          "resolution": "1080p"
+        },
+        "raw": {
+          "currency": "USD",
+          "unit": "5s",
+          "amount": 0.45
+        }
+      }
     ]
   },
   {
@@ -156,7 +275,13 @@
     "stale": false,
     "checksum": "",
     "prices": [
-      { "raw": { "currency": "USD", "unit": "video", "amount": 0.50 } }
+      {
+        "raw": {
+          "currency": "USD",
+          "unit": "video",
+          "amount": 0.5
+        }
+      }
     ]
   },
   {
@@ -168,7 +293,17 @@
     "stale": false,
     "checksum": "",
     "prices": [
-      { "variant": { "mode": "pro", "resolution": "1080p" }, "raw": { "currency": "USD", "unit": "second", "amount": 0.08 } }
+      {
+        "variant": {
+          "mode": "pro",
+          "resolution": "1080p"
+        },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.08
+        }
+      }
     ]
   },
   {
@@ -180,7 +315,13 @@
     "stale": false,
     "checksum": "",
     "prices": [
-      { "raw": { "currency": "USD", "unit": "video", "amount": 0.40 } }
+      {
+        "raw": {
+          "currency": "USD",
+          "unit": "video",
+          "amount": 0.4
+        }
+      }
     ]
   }
 ]

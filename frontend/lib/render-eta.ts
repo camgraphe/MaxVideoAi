@@ -5,7 +5,6 @@ const ENGINE_RENDER_ETAS: Record<string, number> = {
   sora2pro: 55,
   veo3: 40,
   veo3fast: 24,
-  kling25turbopro: 26,
   lumadm: 20,
   lumaray2: 22,
   lumaray2flash: 16,

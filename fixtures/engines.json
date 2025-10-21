@@ -9,10 +9,10 @@
       "latencyTier": "standard",
       "queueDepth": 0,
       "region": "global",
-    "modes": [
-    "t2v",
-    "i2v"
-  ],
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
       "maxDurationSec": 12,
       "resolutions": [
         "720p"
@@ -415,100 +415,6 @@
       "updatedAt": "2025-10-14T00:00:00Z",
       "ttlSec": 600,
       "brandId": "google-veo"
-    },
-    {
-      "id": "kling25_turbo_pro",
-      "label": "Kling 2.5 Turbo Pro",
-      "provider": "Kuaishou / Kling",
-      "version": "2.5 Turbo Pro",
-      "status": "live",
-      "latencyTier": "fast",
-      "queueDepth": 0,
-      "region": "global",
-      "modes": [
-        "t2v",
-        "i2v"
-      ],
-      "maxDurationSec": 12,
-      "resolutions": [
-        "1080p"
-      ],
-      "aspectRatios": [
-        "16:9",
-        "9:16",
-        "1:1"
-      ],
-      "fps": [
-        24
-      ],
-      "audio": false,
-      "upscale4k": false,
-      "extend": false,
-      "motionControls": true,
-      "keyframes": false,
-      "params": {},
-      "inputLimits": {
-        "imageMaxMB": 50
-      },
-      "inputSchema": {
-        "required": [
-          {
-            "id": "prompt",
-            "type": "text",
-            "label": "Prompt"
-          }
-        ],
-        "optional": [
-          {
-            "id": "duration_seconds",
-            "type": "number",
-            "label": "Duration (seconds)",
-            "min": 4,
-            "max": 12,
-            "step": 4
-          },
-          {
-            "id": "seed",
-            "type": "number",
-            "label": "Seed"
-          },
-          {
-            "id": "image",
-            "type": "image",
-            "label": "Reference image",
-            "modes": [
-              "i2v"
-            ],
-            "minCount": 0,
-            "maxCount": 1,
-            "source": "either",
-            "engineParam": "image"
-          }
-        ],
-        "constraints": {
-          "supportedFormats": [
-            "png",
-            "jpeg",
-            "jpg",
-            "webp"
-          ]
-        }
-      },
-      "pricing": {
-        "unit": "USD/s",
-        "base": 0.35,
-        "currency": "USD",
-        "notes": "Tarif indicatif Fal.ai pour Kling 2.5 Turbo Pro."
-      },
-      "pricingDetails": {
-        "currency": "USD",
-        "perSecondCents": {
-          "default": 35
-        }
-      },
-      "updatedAt": "2025-10-14T00:00:00Z",
-      "ttlSec": 600,
-      "brandId": "kling"
     },
     {
       "id": "lumaDM",

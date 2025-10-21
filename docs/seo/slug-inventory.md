@@ -10,7 +10,6 @@ This table covers current public routes (and near-term additions), the recommend
 | /models/openai-sora-2-pro | /models/sora-2-pro | /models/sora-pro | /models/sora-2-plus | Comparison of Sora 2 pro tier pricing and specs. |
 | /models/google-veo-3 | /models/veo-3 | /models/google-veo-3 | /models/veo-text-to-video | Google Veo 3 feature and pricing breakdown. |
 | /models/google-veo-3-fast | /models/veo-3-fast | /models/veo-3-stream | /models/veo-fast | Fast Veo 3 render option for quick generation. |
-| /models/kling-25-turbo-pro | /models/kling-2-5-turbo-pro | /models/kling-2-5 | /models/kling-video-model | Kling 2.5 turbo pro model specs. |
 | /models/luma-dream-machine | /models/luma-dream-machine | /models/luma-dream | /models/dream-machine | Luma Dream Machine overview. |
 | /models/luma-ray-2 | /models/luma-ray-2 | /models/ray-2 | /models/luma-ray | Luma Ray 2 product info. |
 | /models/luma-ray-2-flash | /models/luma-ray-2-flash | /models/ray-2-flash | /models/luma-flash | Flash variation of Luma Ray 2 with performance details. |

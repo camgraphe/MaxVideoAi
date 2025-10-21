@@ -44,7 +44,6 @@ const ENGINE_PICTOGRAMS: Record<string, EnginePictogram> = {
   kling25: BRAND_PICTOGRAMS.kling,
   'kling-2-5': BRAND_PICTOGRAMS.kling,
   kling25_turbo: BRAND_PICTOGRAMS.kling,
-  kling25_turbo_pro: BRAND_PICTOGRAMS.kling,
   haiper_video: BRAND_PICTOGRAMS.haiper,
   'haiper-video': BRAND_PICTOGRAMS.haiper,
   svd_xt: BRAND_PICTOGRAMS.stability,

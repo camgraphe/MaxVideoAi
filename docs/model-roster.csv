@@ -3,7 +3,6 @@ sora-2,Sora 2,openai,openai-sora-2,2,available,textOnly
 sora-2-pro,Sora 2 Pro,openai,openai-sora-2-pro,2 Pro,available,textOnly
 veo3,Google Veo 3,google-veo,google-veo-3,3.0,available,textOnly
 veo3fast,Google Veo 3 Fast,google-veo,google-veo-3-fast,3.0 Fast,available,textOnly
-kling25_turbo_pro,Kling 2.5 Turbo Pro,kling,kling-25-turbo-pro,2.5 Turbo Pro,available,textOnly
 lumaDM,Luma Dream Machine v1.5,luma,luma-dream-machine,1.5,available,logoAllowed
 lumaRay2,Luma Ray 2,luma,luma-ray-2,Ray 2,available,logoAllowed
 lumaRay2_flash,Luma Ray 2 Flash,luma,luma-ray-2-flash,Ray 2 Flash,available,logoAllowed

@@ -11,7 +11,6 @@
 | /models/openai-sora-2-pro | /models/sora-2-pro | Standardize Sora Pro slug |
 | /models/google-veo-3 | /models/veo-3 | Drop brand prefix for Veo |
 | /models/google-veo-3-fast | /models/veo-3-fast | Drop brand prefix for Veo fast |
-| /models/kling-25-turbo-pro | /models/kling-2-5-turbo-pro | Normalize Kling version notation |
 | /models/minimax-video-01 | /models/minimax-video-1 | Simplify MiniMax version |
 | /models/minimax-hailuo-02-pro | /models/hailuo-2-pro | Shorten Hailuo slug |
 | /blog/veo-v2-arrives | /blog/veo-3-updates | Align Veo launch post with version 3 |
