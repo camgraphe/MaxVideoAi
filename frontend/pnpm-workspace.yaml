@@ -1,3 +1,5 @@
+packages:
+  - '.'
 ignoredBuiltDependencies:
   - '@ffmpeg-installer/darwin-arm64'
   - '@vercel/speed-insights'

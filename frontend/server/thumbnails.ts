@@ -1,14 +1,43 @@
-import { randomUUID } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
-import ffmpeg from '@ffmpeg-installer/ffmpeg';
 import { uploadImageToStorage, type UploadResult } from '@/server/storage';
 import { normalizeMediaUrl } from '@/lib/media';
 
 const PLACEHOLDER_PREFIX = '/assets/frames/';
+const requireForRuntime = createRequire(import.meta.url);
+let ffmpegPathResolved = false;
+let resolvedFfmpegPath: string | null = null;
+
+function getFfmpegPath(): string | null {
+  if (ffmpegPathResolved) {
+    return resolvedFfmpegPath;
+  }
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const ffmpeg = requireForRuntime('@ffmpeg-installer/ffmpeg');
+    const candidate =
+      typeof ffmpeg === 'string'
+        ? ffmpeg
+        : typeof ffmpeg?.path === 'string'
+          ? ffmpeg.path
+          : null;
+    resolvedFfmpegPath = candidate;
+    ffmpegPathResolved = true;
+    return resolvedFfmpegPath;
+  } catch (error) {
+    console.warn('[thumbnails] unable to resolve ffmpeg binary', error);
+    resolvedFfmpegPath = null;
+    ffmpegPathResolved = true;
+    return resolvedFfmpegPath;
+  }
+}
+
+const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build';
+const isThumbnailCaptureDisabled = process.env.DISABLE_THUMBNAIL_CAPTURE === '1';
 
 type EnsureThumbnailOptions = {
   jobId: string;
@@ -35,6 +64,7 @@ export function isPlaceholderThumbnail(url?: string | null): boolean {
 export async function ensureJobThumbnail(options: EnsureThumbnailOptions): Promise<string | null> {
   const { jobId, userId, videoUrl, aspectRatio, existingThumbUrl, force = false } = options;
   if (!videoUrl || !jobId) return null;
+  if (isBuildPhase || isThumbnailCaptureDisabled) return null;
 
   const normalizedExisting = existingThumbUrl ? normalizeMediaUrl(existingThumbUrl) ?? existingThumbUrl : null;
   if (!force && normalizedExisting && !isPlaceholderThumbnail(normalizedExisting)) {
@@ -62,7 +92,11 @@ async function captureThumbnailFromVideo(params: {
   videoUrl: string;
   aspectRatio?: string;
 }): Promise<UploadResult | null> {
-  const ffmpegPath = (ffmpeg as unknown as { path?: string }).path ?? (ffmpeg as unknown as string);
+  if (isBuildPhase || isThumbnailCaptureDisabled) {
+    return null;
+  }
+
+  const ffmpegPath = getFfmpegPath();
   if (!ffmpegPath) {
     console.warn('[thumbnails] ffmpeg binary path not resolved');
     return null;
