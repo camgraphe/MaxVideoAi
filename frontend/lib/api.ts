@@ -39,6 +39,7 @@ type GeneratePayload = {
   visibility?: 'public' | 'private';
   allowIndex?: boolean;
   indexable?: boolean;
+  loop?: boolean;
 };
 
 type GenerateOptions = {

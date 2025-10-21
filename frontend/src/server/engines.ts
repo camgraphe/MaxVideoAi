@@ -6,6 +6,12 @@ import type { EngineOverride } from '@/server/engine-overrides';
 import { ensureEngineSettingsSeed, fetchEngineSettings, EngineSettingsRecord } from '@/server/engine-settings';
 import type { PreflightRequest, PreflightResponse } from '@/types/engines';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
+import {
+  getLumaRay2DurationInfo,
+  isLumaRay2AspectRatio,
+  normaliseLumaRay2Loop,
+  LUMA_RAY2_ERROR_UNSUPPORTED,
+} from '@/lib/luma-ray2';
 
 function applyPricingDetails(engine: EngineCaps, pricing: EnginePricingDetails | null): void {
   if (!pricing) return;
@@ -160,10 +166,24 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
     };
   }
 
+  const isLumaRay2 = engine.id === 'lumaRay2';
   const requestedResolution = request.resolution;
   const availableResolutions: string[] = engine.resolutions.map((value) => value);
   let effectiveResolution = requestedResolution;
-  if (requestedResolution === 'auto') {
+  if (isLumaRay2) {
+    if (requestedResolution === 'auto') {
+      effectiveResolution = '540p' as typeof requestedResolution;
+    } else if (!availableResolutions.includes(requestedResolution)) {
+      return {
+        ok: false,
+        messages: [LUMA_RAY2_ERROR_UNSUPPORTED],
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          message: LUMA_RAY2_ERROR_UNSUPPORTED,
+        },
+      };
+    }
+  } else if (requestedResolution === 'auto') {
     effectiveResolution =
       (engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '1080p') as typeof requestedResolution;
   } else if (!availableResolutions.includes(requestedResolution)) {
@@ -172,8 +192,33 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
     effectiveResolution = (fallback ?? '1080p') as typeof requestedResolution;
   }
 
-  const durationSec = Number.isFinite(request.durationSec) ? Math.max(1, Math.round(request.durationSec)) : 4;
+  const durationInfo = isLumaRay2 ? getLumaRay2DurationInfo(request.durationSec) : null;
+  if (isLumaRay2 && !durationInfo) {
+    return {
+      ok: false,
+      messages: [LUMA_RAY2_ERROR_UNSUPPORTED],
+      error: {
+        code: 'ENGINE_CONSTRAINT',
+        message: LUMA_RAY2_ERROR_UNSUPPORTED,
+      },
+    };
+  }
+
+  if (isLumaRay2 && request.aspectRatio && !isLumaRay2AspectRatio(request.aspectRatio)) {
+    return {
+      ok: false,
+      messages: [LUMA_RAY2_ERROR_UNSUPPORTED],
+      error: {
+        code: 'ENGINE_CONSTRAINT',
+        message: LUMA_RAY2_ERROR_UNSUPPORTED,
+      },
+    };
+  }
+
+  const durationSecRaw = Number.isFinite(request.durationSec) ? Math.max(1, Math.round(request.durationSec)) : 4;
+  const durationSec = durationInfo ? durationInfo.seconds : durationSecRaw;
   const memberTier = normalizeMemberTier(request.user?.memberTier);
+  const loop = isLumaRay2 ? normaliseLumaRay2Loop(request.loop) : undefined;
 
   let snapshot: PricingSnapshot;
   try {
@@ -182,6 +227,8 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
       durationSec,
       resolution: effectiveResolution,
       membershipTier: memberTier,
+      loop,
+      durationOption: durationInfo?.label,
     });
   } catch (error) {
     return {

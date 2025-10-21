@@ -20,8 +20,38 @@ import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails'
 import { getEngineCaps } from '@/fixtures/engineCaps';
 import { getSoraVariantForEngine, isSoraEngineId, parseSoraRequest, type SoraRequest } from '@/lib/sora';
 import { ensureUserPreferences } from '@/server/preferences';
+import {
+  getLumaRay2DurationInfo,
+  getLumaRay2ResolutionInfo,
+  isLumaRay2AspectRatio,
+  normaliseLumaRay2Loop,
+  toLumaRay2DurationLabel,
+  LUMA_RAY2_ERROR_UNSUPPORTED,
+} from '@/lib/luma-ray2';
 
 type PaymentMode = 'wallet' | 'direct' | 'platform';
+
+const LUMA_RAY2_TIMEOUT_MS = 180_000;
+
+class FalTimeoutError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'FalTimeoutError';
+  }
+}
+
+function withFalTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  const timeoutPromise = new Promise<T>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new FalTimeoutError(`Fal request timed out after ${timeoutMs}ms`)), timeoutMs);
+  });
+
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }) as Promise<T>;
+}
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
@@ -50,7 +80,17 @@ export async function POST(req: NextRequest) {
       : engine.modes[0];
 
   const prompt = String(body.prompt || '');
+  const isLumaRay2 = engine.id === 'lumaRay2';
+  const rawDurationOption =
+    typeof body.durationOption === 'number' || typeof body.durationOption === 'string' ? body.durationOption : null;
   let durationSec = Number(body.durationSec || 4);
+  const lumaDurationInfo = isLumaRay2 ? getLumaRay2DurationInfo(rawDurationOption ?? durationSec) : null;
+  if (isLumaRay2 && !lumaDurationInfo) {
+    return NextResponse.json({ ok: false, error: LUMA_RAY2_ERROR_UNSUPPORTED }, { status: 400 });
+  }
+  if (lumaDurationInfo) {
+    durationSec = lumaDurationInfo.seconds;
+  }
   const capability = getEngineCaps(engine.id, mode);
   const supportsAspectRatio = capability ? Boolean(capability.aspectRatio && capability.aspectRatio.length) : true;
   const rawAspectRatio =
@@ -66,6 +106,14 @@ export async function POST(req: NextRequest) {
         ? fallbackAspectRatio
         : rawAspectRatio
       : rawAspectRatio ?? fallbackAspectRatio ?? null;
+  if (isLumaRay2) {
+    if (aspectRatio && !isLumaRay2AspectRatio(aspectRatio)) {
+      return NextResponse.json({ ok: false, error: LUMA_RAY2_ERROR_UNSUPPORTED }, { status: 400 });
+    }
+    if (!aspectRatio) {
+      aspectRatio = '16:9';
+    }
+  }
   const batchId = typeof body.batchId === 'string' && body.batchId.trim().length ? body.batchId.trim() : null;
   const groupId = typeof body.groupId === 'string' && body.groupId.trim().length ? body.groupId.trim() : null;
   const iterationIndex =
@@ -99,6 +147,19 @@ export async function POST(req: NextRequest) {
       ? engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '1080p'
       : requestedResolution;
   let effectiveResolution = requestedResolution === 'auto' ? pricingResolution : requestedResolution;
+  let lumaResolutionInfo = isLumaRay2 ? getLumaRay2ResolutionInfo(requestedResolution) : null;
+  if (isLumaRay2) {
+    if (requestedResolution === 'auto') {
+      requestedResolution = '540p';
+      lumaResolutionInfo = getLumaRay2ResolutionInfo(requestedResolution);
+    }
+    if (!lumaResolutionInfo) {
+      return NextResponse.json({ ok: false, error: LUMA_RAY2_ERROR_UNSUPPORTED }, { status: 400 });
+    }
+    pricingResolution = lumaResolutionInfo.value;
+    effectiveResolution = lumaResolutionInfo.value;
+    requestedResolution = lumaResolutionInfo.value;
+  }
 
   const rawNumFrames =
     typeof body.numFrames === 'number'
@@ -108,6 +169,9 @@ export async function POST(req: NextRequest) {
         : null;
   const numFrames =
     rawNumFrames != null && Number.isFinite(rawNumFrames) && rawNumFrames > 0 ? Math.round(rawNumFrames) : null;
+
+  const loopValue = isLumaRay2 ? normaliseLumaRay2Loop(body.loop) : undefined;
+  const loop = isLumaRay2 ? loopValue === true : false;
 
   let soraRequest: SoraRequest | null = null;
   if (isSoraEngineId(engine.id)) {
@@ -169,21 +233,34 @@ export async function POST(req: NextRequest) {
     durationSec,
     resolution: pricingResolution,
     membershipTier: body.membershipTier,
+    loop: isLumaRay2 ? loop : undefined,
+    durationOption: lumaDurationInfo?.label ?? rawDurationOption ?? null,
   });
+  const durationLabel = lumaDurationInfo?.label ?? toLumaRay2DurationLabel(durationSec, typeof rawDurationOption === 'string' ? rawDurationOption : undefined) ?? undefined;
+  const requestMeta: Record<string, unknown> = {
+    engineId: engine.id,
+    engineLabel: engine.label,
+    mode,
+    durationSec,
+    variant: soraRequest?.variant,
+    aspectRatio: aspectRatio ?? 'source',
+    resolution: effectiveResolution,
+    effectiveResolution: pricingResolution,
+  };
+  if (durationLabel) {
+    requestMeta.durationLabel = durationLabel;
+  }
+  if (isLumaRay2) {
+    requestMeta.loop = loop;
+  }
+
   pricing.meta = {
     ...(pricing.meta ?? {}),
-    request: {
-      engineId: engine.id,
-      engineLabel: engine.label,
-      mode,
-      durationSec,
-      variant: soraRequest?.variant,
-      aspectRatio: aspectRatio ?? 'source',
-      resolution: effectiveResolution,
-      effectiveResolution: pricingResolution,
-    },
+    request: requestMeta,
   };
+  const costBreakdownUsd = (pricing.meta?.cost_breakdown_usd as Record<string, unknown> | undefined) ?? null;
   const pricingSnapshotJson = JSON.stringify(pricing);
+  const costBreakdownJson = costBreakdownUsd ? JSON.stringify(costBreakdownUsd) : null;
 
   const payment: { mode?: PaymentMode; paymentIntentId?: string | null } =
     typeof body.payment === 'object' && body.payment
@@ -420,9 +497,6 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
   }
 
   let generationResult: Awaited<ReturnType<typeof generateVideo>>;
-  const apiKey =
-    typeof body.apiKey === 'string' && body.apiKey.trim().length > 0 ? body.apiKey.trim() : undefined;
-
   type NormalizedAttachment = {
     name: string;
     type: string;
@@ -549,6 +623,12 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
 
   const maxUploadedBytes =
     processedAttachments.reduce((max, attachment) => Math.max(max, attachment.size ?? 0), 0) ?? 0;
+  const initialImageUrl =
+    soraRequest?.mode === 'i2v'
+      ? soraRequest.image_url
+      : typeof body.imageUrl === 'string' && body.imageUrl.trim().length
+        ? body.imageUrl.trim()
+        : undefined;
   const validationPayload: Record<string, unknown> = {
     resolution: effectiveResolution,
   };
@@ -558,12 +638,21 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
 
   if (numFrames != null) {
     validationPayload.num_frames = numFrames;
+  } else if (lumaDurationInfo) {
+    validationPayload.duration = lumaDurationInfo.label;
   } else if (Number.isFinite(durationSec)) {
     validationPayload.duration = durationSec;
   }
 
   if (maxUploadedBytes > 0) {
     validationPayload._uploadedFileMB = maxUploadedBytes / (1024 * 1024);
+  }
+
+  if (isLumaRay2 && mode === 'i2v') {
+    if (!initialImageUrl) {
+      return NextResponse.json({ ok: false, error: 'Image URL is required for Luma Ray 2 image-to-video' }, { status: 400 });
+    }
+    validationPayload.image_url = initialImageUrl;
   }
 
   const validationResult = validateRequest(engine.id, mode, validationPayload);
@@ -579,13 +668,6 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     );
   }
 
-  const initialImageUrl =
-    soraRequest?.mode === 'i2v'
-      ? soraRequest.image_url
-      : typeof body.imageUrl === 'string' && body.imageUrl.trim().length
-        ? body.imageUrl.trim()
-        : undefined;
-
   const placeholderThumb =
     aspectRatio === '9:16'
       ? '/assets/frames/thumb-9x16.svg'
@@ -595,7 +677,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
 
   try {
     await query(
-      `INSERT INTO app_jobs (
+        `INSERT INTO app_jobs (
          job_id,
          user_id,
          engine_id,
@@ -623,6 +705,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
          provider_job_id,
          final_price_cents,
          pricing_snapshot,
+         cost_breakdown_usd,
          currency,
          vendor_account_id,
          payment_status,
@@ -633,7 +716,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
          provisional
        )
        VALUES (
-         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27::jsonb,$28,$29,$30,$31,$32,$33,$34,$35
+         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27::jsonb,$28::jsonb,$29,$30,$31,$32,$33,$34,$35,$36
        )`,
       [
         jobId,
@@ -663,6 +746,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
         null,
         pricing.totalCents,
         pricingSnapshotJson,
+        costBreakdownJson,
         pricing.currency,
         vendorAccountId,
         paymentStatus,
@@ -703,27 +787,29 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
   }
 
   try {
-    generationResult = await generateVideo({
-      engineId: engine.id,
-      prompt,
-      durationSec,
-      numFrames,
-      resolution: effectiveResolution,
-      mode,
-      apiKey,
-      imageUrl: initialImageUrl,
-      referenceImages: Array.isArray(body.referenceImages)
-        ? body.referenceImages
-            .map((candidate: unknown) => (typeof candidate === 'string' ? candidate.trim() : null))
-            .filter((value: string | null): value is string => typeof value === 'string' && value.length > 0)
-        : undefined,
-      inputs: processedAttachments,
-      ...(aspectRatio ? { aspectRatio } : {}),
-      idempotencyKey: body.idempotencyKey && typeof body.idempotencyKey === 'string' ? body.idempotencyKey : undefined,
-      jobId,
-      localKey: localKey ?? undefined,
-      soraRequest: soraRequest ?? undefined,
-    });
+    const maxAttempts = isLumaRay2 ? 2 : 1;
+    let attempt = 0;
+    let lastError: unknown;
+    while (attempt < maxAttempts) {
+      attempt += 1;
+      try {
+        const promise = generateVideo({ ...falPayload });
+        generationResult = isLumaRay2
+          ? await withFalTimeout(promise, LUMA_RAY2_TIMEOUT_MS)
+          : await promise;
+        break;
+      } catch (error) {
+        if (isLumaRay2 && error instanceof FalTimeoutError && attempt < maxAttempts) {
+          console.warn('[fal] lumaRay2 timeout', { jobId, attempt });
+          lastError = error;
+          continue;
+        }
+        throw error;
+      }
+    }
+    if (!generationResult) {
+      throw lastError ?? new Error('Fal generation failed');
+    }
   } catch (error) {
     const rawStatus =
       error && typeof error === 'object' && 'status' in error ? (error as { status?: number }).status : undefined;
@@ -742,7 +828,19 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
           : error instanceof Error
             ? error.message
             : 'Fal request failed';
-    const failureMessage = typeof providerMessage === 'string' && providerMessage.length ? providerMessage : 'Fal request failed';
+    const isTimeoutError = error instanceof FalTimeoutError;
+    const isQuotaError =
+      status === 429 ||
+      (typeof providerMessage === 'string' && providerMessage.toLowerCase().includes('quota'));
+    const fallbackMessage = isTimeoutError
+      ? 'The generation took too long and was stopped. Please try again or lower resolution.'
+      : isQuotaError
+        ? 'This engine is temporarily unavailable. Please try again later or pick another engine.'
+        : 'Fal request failed';
+    const failureMessage =
+      typeof providerMessage === 'string' && providerMessage.length && !isTimeoutError && !isQuotaError
+        ? providerMessage
+        : fallbackMessage;
     const providerJobId =
       error instanceof FalGenerationError && error.providerJobId
         ? error.providerJobId
@@ -785,12 +883,13 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
 
     if (status === 422) {
       console.error('[generate] fal returned 422', providerMessage);
+      const userMessage = isLumaRay2 ? LUMA_RAY2_ERROR_UNSUPPORTED : 'Valeur non supportée (voir options listées).';
       return NextResponse.json(
         {
           ok: false,
           error: 'FAL_UNPROCESSABLE_ENTITY',
           detail: detail ?? providerMessage,
-          userMessage: 'Valeur non supportée (voir options listées).',
+          userMessage,
           providerMessage,
         },
         { status: 422 }
@@ -798,8 +897,8 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     }
 
     return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : 'Generation failed' },
-      { status: 500 }
+      { ok: false, error: failureMessage },
+      { status: isTimeoutError ? 504 : isQuotaError ? 429 : status ?? 500 }
     );
   }
 
@@ -812,6 +911,14 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
   let previewFrame = thumb;
   const video = normalizeMediaUrl(generationResult.videoUrl) ?? generationResult.videoUrl ?? null;
   const videoAsset = generationResult.video ?? null;
+  if (isLumaRay2) {
+    console.info('[fal] lumaRay2 generation', {
+      jobId,
+      providerJobId,
+      status,
+      videoUrl: video,
+    });
+  }
   const providerMode = generationResult.provider;
   const status = generationResult.status ?? (video ? 'completed' : 'queued');
   const progress = typeof generationResult.progress === 'number' ? generationResult.progress : video ? 100 : 0;
@@ -855,14 +962,15 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
            provider_job_id = COALESCE($10, provider_job_id),
            final_price_cents = $11,
            pricing_snapshot = $12::jsonb,
-           currency = $13,
-           vendor_account_id = $14,
-           payment_status = $15,
-           stripe_payment_intent_id = $16,
-           stripe_charge_id = $17,
-           visibility = $18,
-           indexable = $19,
-           message = $20,
+           cost_breakdown_usd = $13::jsonb,
+           currency = $14,
+           vendor_account_id = $15,
+           payment_status = $16,
+           stripe_payment_intent_id = $17,
+           stripe_charge_id = $18,
+           visibility = $19,
+           indexable = $20,
+           message = $21,
            provisional = FALSE,
            updated_at = NOW()
        WHERE job_id = $1`,
@@ -879,6 +987,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
         providerJobId,
         pricing.totalCents,
         pricingSnapshotJson,
+        costBreakdownJson,
         pricing.currency,
         vendorAccountId,
         paymentStatus,
@@ -956,12 +1065,15 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
         JSON.stringify({
           request: {
             durationSec,
+            durationLabel,
             aspectRatio,
             resolution: effectiveResolution,
+            loop: isLumaRay2 ? loop : undefined,
           },
           pricing: {
             totalCents: pricing.totalCents,
             currency: pricing.currency,
+            cost_breakdown_usd: costBreakdownUsd,
           },
         }),
       ]

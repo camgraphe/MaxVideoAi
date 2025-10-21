@@ -30,6 +30,9 @@ interface Props {
   apiKey?: string;
   onApiKeyChange?: (value: string) => void;
   showApiKeyField?: boolean;
+  showLoopControl?: boolean;
+  loopEnabled?: boolean;
+  onLoopChange?: (value: boolean) => void;
   focusRefs?: {
     duration?: Ref<HTMLElement>;
     resolution?: Ref<HTMLDivElement>;
@@ -58,6 +61,9 @@ export function SettingsControls({
   apiKey,
   onApiKeyChange,
   showApiKeyField = false,
+  showLoopControl = false,
+  loopEnabled,
+  onLoopChange,
   focusRefs,
 }: Props) {
   const [seed, setSeed] = useState<string>('');
@@ -323,6 +329,24 @@ export function SettingsControls({
               X{n}
             </button>
           ))}
+        </div>
+      )}
+      {showLoopControl && typeof loopEnabled === 'boolean' && onLoopChange && (
+        <div className="-mt-1 flex items-center justify-between px-1">
+          <span className="text-[11px] uppercase tracking-micro text-text-muted">Loop</span>
+          <button
+            type="button"
+            onClick={() => onLoopChange(!loopEnabled)}
+            className={clsx(
+              'rounded-input border px-2.5 py-1 text-[12px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              loopEnabled
+                ? 'border-accent bg-accent text-white'
+                : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
+            )}
+            aria-pressed={loopEnabled}
+          >
+            {loopEnabled ? 'On' : 'Off'}
+          </button>
         </div>
       )}
       <div className="rounded-input border border-border bg-white">

@@ -518,13 +518,19 @@
         "t2v",
         "i2v"
       ],
-      "maxDurationSec": 8,
+      "maxDurationSec": 9,
       "resolutions": [
-        "720p"
+        "540p",
+        "720p",
+        "1080p"
       ],
       "aspectRatios": [
         "16:9",
-        "9:16"
+        "9:16",
+        "4:3",
+        "3:4",
+        "21:9",
+        "9:21"
       ],
       "fps": [
         24
@@ -548,24 +554,29 @@
         ],
         "optional": [
           {
-            "id": "duration_seconds",
-            "type": "number",
-            "label": "Duration (seconds)",
-            "min": 4,
-            "max": 8,
-            "step": 1
-          },
-          {
-            "id": "image",
+            "id": "image_url",
             "type": "image",
             "label": "Reference image",
             "modes": [
               "i2v"
             ],
-            "minCount": 0,
+            "minCount": 1,
             "maxCount": 1,
             "source": "either",
-            "engineParam": "image"
+            "engineParam": "image_url",
+            "requiredInModes": [
+              "i2v"
+            ]
+          },
+          {
+            "id": "loop",
+            "type": "enum",
+            "label": "Loop animation",
+            "values": [
+              "true",
+              "false"
+            ],
+            "default": "false"
           }
         ],
         "constraints": {
@@ -578,16 +589,10 @@
         }
       },
       "pricing": {
-        "unit": "USD/s",
-        "base": 0.1,
+        "unit": "USD/video",
+        "base": 0.5,
         "currency": "USD",
-        "notes": "Fal.ai Ray-2 • $0.50 per 5s block (≈$0.10/s)."
-      },
-      "pricingDetails": {
-        "currency": "USD",
-        "perSecondCents": {
-          "default": 10
-        }
+        "notes": "Pricing derived from configurable base via Luma Ray 2 policy."
       },
       "updatedAt": "2025-10-14T00:00:00Z",
       "ttlSec": 600,

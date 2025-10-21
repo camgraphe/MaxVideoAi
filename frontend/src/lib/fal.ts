@@ -6,6 +6,7 @@ import type { VideoAsset } from '@/types/render';
 import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { buildSoraFalInput, type SoraRequest } from '@/lib/sora';
+import { getLumaRay2DurationInfo, toLumaRay2DurationLabel } from '@/lib/luma-ray2';
 
 const BLOCKED_VIDEO_HOSTS = new Set([
   'upload.wikimedia.org',
@@ -70,6 +71,7 @@ export type GeneratePayload = {
   engineId: string;
   prompt: string;
   durationSec: number;
+  durationOption?: number | string | null;
   numFrames?: number | null;
   aspectRatio?: string;
   resolution?: string;
@@ -83,6 +85,7 @@ export type GeneratePayload = {
   soraRequest?: SoraRequest;
   jobId?: string;
   localKey?: string | null;
+  loop?: boolean;
 };
 
 export type GenerateResult = {
@@ -292,12 +295,24 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
 
     if (typeof payload.numFrames === 'number' && Number.isFinite(payload.numFrames) && payload.numFrames > 0) {
       requestBody.num_frames = Math.round(payload.numFrames);
-    } else {
+    } else if (payload.engineId !== 'lumaRay2') {
       requestBody.duration = payload.durationSec;
     }
 
     if (apiKey) {
       requestBody.api_key = apiKey;
+    }
+  }
+
+  if (payload.engineId === 'lumaRay2') {
+    const durationInfo = getLumaRay2DurationInfo(payload.durationOption ?? payload.durationSec);
+    const durationLabel = durationInfo?.label ?? toLumaRay2DurationLabel(payload.durationSec) ?? '5s';
+    requestBody.duration = durationLabel;
+    if (payload.resolution) {
+      requestBody.resolution = payload.resolution;
+    }
+    if (typeof payload.loop === 'boolean') {
+      requestBody.loop = payload.loop;
     }
   }
 

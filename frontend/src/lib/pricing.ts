@@ -7,6 +7,14 @@ import { getPricingKernel } from '@/lib/pricing-kernel';
 import { getPricingDetails } from '@/lib/fal-catalog';
 import { ensureBillingSchema } from '@/lib/schema';
 import { getMembershipDiscountMap } from '@/lib/membership';
+import { ENV } from '@/lib/env';
+import { calculateLumaRay2Price } from '@/lib/luma-ray2-pricing';
+import {
+  getLumaRay2DurationInfo,
+  getLumaRay2ResolutionInfo,
+  normaliseLumaRay2Loop,
+  LUMA_RAY2_ERROR_UNSUPPORTED,
+} from '@/lib/luma-ray2';
 
 const DECIMAL_PLACES = 6;
 
@@ -108,6 +116,78 @@ function selectRule(rules: PricingRule[], engineId: string, resolution: string):
 
   candidate = rules.find((rule) => !rule.engineId && !rule.resolution);
   return candidate ?? DEFAULT_RULE;
+}
+
+function buildLumaRay2Snapshot(params: {
+  baseUsd: number;
+  duration: number | string | null | undefined;
+  resolution: string;
+  loop?: boolean;
+  rule: PricingRule;
+  memberTier: 'member' | 'plus' | 'pro';
+  memberTierDiscounts: PricingEngineDefinition['memberTierDiscounts'];
+  currency: string;
+  vendorAccountId?: string | null;
+}): PricingSnapshot {
+  const { baseSubtotalUsd, breakdown } = calculateLumaRay2Price({
+    baseUsd: params.baseUsd,
+    duration: params.duration,
+    resolution: params.resolution,
+    loop: params.loop,
+  });
+
+  const baseSubtotalCents = Math.max(0, Math.round(baseSubtotalUsd * 100));
+  const marginPercent = params.rule.marginPercent;
+  const marginFlatCents = params.rule.marginFlatCents;
+  const marginAmount = Math.max(0, Math.round(baseSubtotalCents * marginPercent) + marginFlatCents);
+  const subtotalBeforeDiscountCents = baseSubtotalCents + marginAmount;
+
+  const discountPercent = params.memberTierDiscounts[params.memberTier] ?? 0;
+  const discountAmount = discountPercent > 0 ? Math.round(subtotalBeforeDiscountCents * discountPercent) : 0;
+  const totalCents = Math.max(0, subtotalBeforeDiscountCents - discountAmount);
+  const discountAppliedToMargin = Math.min(marginAmount, discountAmount);
+  const platformFeeCents = Math.max(0, marginAmount - discountAppliedToMargin);
+  const vendorShareCents = Math.max(0, totalCents - platformFeeCents);
+
+  const seconds = breakdown.duration === '9s' ? 9 : 5;
+  const rateUsd = seconds > 0 ? Number((breakdown.computed_total_usd / seconds).toFixed(4)) : Number(breakdown.computed_total_usd.toFixed(4));
+
+  return {
+    currency: params.currency,
+    totalCents,
+    subtotalBeforeDiscountCents,
+    base: {
+      seconds,
+      rate: rateUsd,
+      unit: 'sec',
+      amountCents: baseSubtotalCents,
+    },
+    addons: [],
+    margin: {
+      amountCents: marginAmount,
+      percentApplied: marginPercent,
+      flatCents: marginFlatCents,
+    },
+    discount: discountAmount
+      ? {
+          amountCents: discountAmount,
+          percentApplied: discountPercent,
+          tier: params.memberTier,
+        }
+      : undefined,
+    membershipTier: params.memberTier,
+    platformFeeCents,
+    vendorShareCents,
+    vendorAccountId: params.vendorAccountId ?? undefined,
+    meta: {
+      cost_breakdown_usd: breakdown,
+      duration_label: breakdown.duration,
+      resolution: breakdown.resolution,
+      duration_factor: breakdown.duration_factor,
+      resolution_factor: breakdown.resolution_factor,
+      loop: typeof breakdown.loop === 'boolean' ? breakdown.loop : undefined,
+    },
+  };
 }
 
 function buildDefinitionFromEngine(engine: EngineCaps, pricingDetails?: EnginePricingDetails): PricingEngineDefinition {
@@ -212,6 +292,8 @@ export type PricingContext = {
   resolution: string;
   membershipTier?: string | null;
   currency?: string;
+  loop?: boolean;
+  durationOption?: number | string | null;
 };
 
 export async function computePricingSnapshot(context: PricingContext): Promise<PricingSnapshot> {
@@ -263,37 +345,78 @@ export async function computePricingSnapshot(context: PricingContext): Promise<P
     }
   });
 
-  const augmentedDefinition: PricingEngineDefinition = {
-    ...definition,
-    currency: context.currency ?? definition.currency,
-    platformFeePct: rule.marginPercent,
-    platformFeeFlatCents: rule.marginFlatCents,
-    memberTierDiscounts,
-    metadata: {
-      ...(definition.metadata ?? {}),
-      ruleId: rule.id,
-      vendorAccountId,
-    },
-  };
-
   const memberTier = (context.membershipTier ?? 'member').toLowerCase() as 'member' | 'plus' | 'pro';
-  const kernelInput = {
-    engineId: engine.id,
-    durationSec,
-    resolution,
-    memberTier,
-  } as const;
 
-  const { quote } = computeKernelSnapshot(augmentedDefinition, kernelInput);
-  const snapshot = quote.snapshot;
+  let snapshot: PricingSnapshot;
+
+  if (engine.id === 'lumaRay2') {
+    const baseRaw = ENV.LUMARAY2_BASE_5S_540P_USD;
+    if (!baseRaw) {
+      throw new Error('LUMARAY2_BASE_5S_540P_USD is not configured');
+    }
+    const baseUsd = Number(baseRaw);
+    if (!Number.isFinite(baseUsd) || baseUsd <= 0) {
+      throw new Error('LUMARAY2_BASE_5S_540P_USD must be a positive number');
+    }
+
+    const durationInfo = getLumaRay2DurationInfo(context.durationOption ?? durationSec);
+    if (!durationInfo) {
+      throw new Error(LUMA_RAY2_ERROR_UNSUPPORTED);
+    }
+    const resolutionInfo = getLumaRay2ResolutionInfo(resolution);
+    if (!resolutionInfo) {
+      throw new Error(LUMA_RAY2_ERROR_UNSUPPORTED);
+    }
+
+    const loop = normaliseLumaRay2Loop(context.loop);
+    const currency = (context.currency ?? rule.currency ?? definition.currency ?? 'USD').toUpperCase();
+
+    snapshot = buildLumaRay2Snapshot({
+      baseUsd,
+      duration: durationInfo.label,
+      resolution: resolutionInfo.value,
+      loop,
+      rule,
+      memberTier,
+      memberTierDiscounts,
+      currency,
+      vendorAccountId,
+    });
+    snapshot.base.seconds = durationInfo.seconds;
+  } else {
+    const augmentedDefinition: PricingEngineDefinition = {
+      ...definition,
+      currency: context.currency ?? definition.currency,
+      platformFeePct: rule.marginPercent,
+      platformFeeFlatCents: rule.marginFlatCents,
+      memberTierDiscounts,
+      metadata: {
+        ...(definition.metadata ?? {}),
+        ruleId: rule.id,
+        vendorAccountId,
+      },
+    };
+
+    const kernelInput = {
+      engineId: engine.id,
+      durationSec,
+      resolution,
+      memberTier,
+    } as const;
+
+    const { quote } = computeKernelSnapshot(augmentedDefinition, kernelInput);
+    snapshot = quote.snapshot;
+  }
+
   snapshot.margin = {
     ...snapshot.margin,
     ruleId: rule.id,
   };
   snapshot.membershipTier = memberTier;
   snapshot.vendorAccountId = vendorAccountId;
+  const existingMeta = snapshot.meta ?? {};
   snapshot.meta = {
-    ...(snapshot.meta ?? {}),
+    ...existingMeta,
     ruleId: rule.id,
     engineLabel: engine.label,
     engineVersion: engine.version,

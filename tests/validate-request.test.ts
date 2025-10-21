@@ -102,3 +102,28 @@ test('Hunyuan validates frame selections', () => {
   });
   assert.deepEqual(valid, OK);
 });
+
+test('Luma Ray 2 enforces duration and resolution options', () => {
+  const valid = validateRequest('lumaRay2', 't2v', {
+    duration: '5s',
+    resolution: '540p',
+    aspect_ratio: '16:9',
+  });
+  assert.deepEqual(valid, OK);
+
+  const invalidDuration = validateRequest('lumaRay2', 't2v', {
+    duration: '7s',
+    resolution: '540p',
+    aspect_ratio: '16:9',
+  });
+  assert.equal(invalidDuration.ok, false);
+  assert.equal(invalidDuration.error?.field, 'duration');
+
+  const invalidResolution = validateRequest('lumaRay2', 't2v', {
+    duration: '5s',
+    resolution: '4k',
+    aspect_ratio: '16:9',
+  });
+  assert.equal(invalidResolution.ok, false);
+  assert.equal(invalidResolution.error?.field, 'resolution');
+});

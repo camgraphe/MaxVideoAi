@@ -29,6 +29,13 @@ import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCa
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import type { Job } from '@/types/jobs';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
+import {
+  getLumaRay2DurationInfo,
+  getLumaRay2ResolutionInfo,
+  isLumaRay2AspectRatio,
+  toLumaRay2DurationLabel,
+  LUMA_RAY2_ERROR_UNSUPPORTED,
+} from '@/lib/luma-ray2';
 
 function resolveRenderThumb(render: { thumbUrl?: string | null; aspectRatio?: string | null }): string {
   if (render.thumbUrl) return render.thumbUrl;
@@ -297,6 +304,7 @@ function framesToSeconds(frames: number): number {
 
 function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | null | undefined): FormState {
   const capability = getEngineCaps(engine.id, mode) as EngineCapabilityCaps | undefined;
+  const isLumaRay2Engine = engine.id === 'lumaRay2';
 
   const durationResult = (() => {
     const prevOption = previous?.durationOption ?? null;
@@ -384,6 +392,7 @@ function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | n
   })();
 
   const iterations = previous?.iterations ? Math.max(1, Math.min(4, previous.iterations)) : 1;
+  const loop = isLumaRay2Engine ? Boolean(previous?.loop) : undefined;
 
   return {
     engineId: engine.id,
@@ -397,6 +406,7 @@ function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | n
     iterations,
     seedLocked: previous?.seedLocked ?? false,
     openaiApiKey: previous?.openaiApiKey,
+    loop,
   };
 }
 
@@ -433,6 +443,7 @@ interface FormState {
   iterations: number;
   seedLocked?: boolean;
   openaiApiKey?: string;
+  loop?: boolean;
 }
 
 const DEFAULT_PROMPT = 'A quiet cinematic shot of neon-lit Tokyo streets in the rain';
@@ -461,6 +472,7 @@ function parseStoredForm(value: string): FormState | null {
       iterations,
       seedLocked,
       openaiApiKey,
+      loop,
     } = raw;
 
     if (
@@ -492,6 +504,7 @@ function parseStoredForm(value: string): FormState | null {
       iterations: typeof iterations === 'number' && iterations > 0 ? iterations : 1,
       seedLocked: typeof seedLocked === 'boolean' ? seedLocked : undefined,
       openaiApiKey: typeof openaiApiKey === 'string' ? openaiApiKey : undefined,
+      loop: typeof loop === 'boolean' ? loop : undefined,
     };
   } catch {
     return null;
@@ -2345,6 +2358,12 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     const trimmedPrompt = prompt.trim();
     const trimmedNegativePrompt = negativePrompt.trim();
     const supportsNegativePrompt = Boolean(inputSchemaSummary.negativePromptField);
+    const isLumaRay2 = selectedEngine.id === 'lumaRay2';
+    const lumaDuration = isLumaRay2
+      ? getLumaRay2DurationInfo(form.durationOption ?? form.durationSec)
+      : null;
+    const lumaResolution = isLumaRay2 ? getLumaRay2ResolutionInfo(form.resolution) : null;
+    const lumaAspectOk = !isLumaRay2 || isLumaRay2AspectRatio(form.aspectRatio);
 
     if (inputSchemaSummary.promptRequired && !trimmedPrompt) {
       showNotice('A prompt is required for this engine and mode.');
@@ -2370,6 +2389,12 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
     if (missingAssetField) {
       showNotice(`${missingAssetField.field.label} is required before generating.`);
+      return;
+    }
+
+    if (isLumaRay2 && (!lumaDuration || !lumaResolution || !lumaAspectOk)) {
+      showNotice(LUMA_RAY2_ERROR_UNSUPPORTED);
+      setPreflightError(LUMA_RAY2_ERROR_UNSUPPORTED);
       return;
     }
 
@@ -2669,12 +2694,19 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
       try {
         const shouldSendAspectRatio = !capability || (capability.aspectRatio?.length ?? 0) > 0;
+        const resolvedDurationSeconds = isLumaRay2 && lumaDuration ? lumaDuration.seconds : form.durationSec;
+        const resolvedDurationLabel = isLumaRay2 && lumaDuration
+          ? lumaDuration.label
+          : toLumaRay2DurationLabel(form.durationSec, typeof form.durationOption === 'string' ? (form.durationOption as string) : undefined) ?? form.durationOption ?? form.durationSec;
+        const resolvedResolution = isLumaRay2 && lumaResolution ? lumaResolution.value : form.resolution;
+
         const generatePayload = {
           engineId: selectedEngine.id,
           prompt: trimmedPrompt,
-          durationSec: form.durationSec,
+          durationSec: resolvedDurationSeconds,
+          durationOption: resolvedDurationLabel,
           numFrames: form.numFrames ?? undefined,
-          resolution: form.resolution,
+          resolution: resolvedResolution,
           fps: form.fps,
           mode: form.mode,
           membershipTier: memberTier,
@@ -2700,6 +2732,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           visibility: visibilityPreference,
           allowIndex,
           indexable: allowIndex,
+          ...(isLumaRay2 ? { loop: Boolean(form.loop) } : {}),
         };
         const res = await runGenerate(generatePayload, token ? { token } : undefined);
 
@@ -2936,7 +2969,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           candidate.fps !== nextState.fps ||
           candidate.iterations !== nextState.iterations ||
           candidate.seedLocked !== nextState.seedLocked ||
-          candidate.openaiApiKey !== nextState.openaiApiKey;
+          candidate.openaiApiKey !== nextState.openaiApiKey ||
+          candidate.loop !== nextState.loop;
         return hasChanged ? nextState : candidate;
       }
       return nextState;
@@ -2955,6 +2989,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       aspectRatio: form.aspectRatio as PreflightRequest['aspectRatio'],
       fps: form.fps,
       seedLocked: Boolean(form.seedLocked),
+      loop: form.loop,
       user: { memberTier },
     };
 
@@ -3312,6 +3347,11 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                           }
                           return next;
                         })
+                      }
+                      showLoopControl={selectedEngine.id === 'lumaRay2'}
+                      loopEnabled={selectedEngine.id === 'lumaRay2' ? Boolean(form.loop) : undefined}
+                      onLoopChange={(next) =>
+                        setForm((current) => (current ? { ...current, loop: next } : current))
                       }
                       seedLocked={form.seedLocked}
                       onSeedLockedChange={(seedLocked) =>

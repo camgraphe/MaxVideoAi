@@ -124,6 +124,7 @@ export interface PreflightRequest {
   aspectRatio: AspectRatio;
   fps: number;
   seedLocked?: boolean;
+  loop?: boolean;
   user?: {
     memberTier?: string;
   };
