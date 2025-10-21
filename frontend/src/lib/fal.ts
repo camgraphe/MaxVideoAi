@@ -81,6 +81,8 @@ export type GeneratePayload = {
   referenceImages?: string[];
   inputs?: GenerateAttachment[];
   soraRequest?: SoraRequest;
+  jobId?: string;
+  localKey?: string | null;
 };
 
 export type GenerateResult = {
@@ -92,6 +94,26 @@ export type GenerateResult = {
   status?: 'queued' | 'running' | 'completed' | 'failed';
   progress?: number;
 };
+
+export class FalGenerationError extends Error {
+  status?: number;
+  body?: unknown;
+  providerJobId?: string;
+
+  constructor(
+    message: string,
+    options: { status?: number; body?: unknown; providerJobId?: string; cause?: unknown } = {}
+  ) {
+    super(message);
+    this.name = 'FalGenerationError';
+    this.status = options.status;
+    this.body = options.body;
+    this.providerJobId = options.providerJobId;
+    if (options.cause) {
+      (this as Error & { cause?: unknown }).cause = options.cause;
+    }
+  }
+}
 
 export function getFalWebhookUrl(): string | null {
   const candidates: Array<{ value: string | undefined | null; normalize?: (raw: string) => string }> = [
@@ -333,22 +355,76 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
     requestBody.input_image = primaryImageUrl;
   }
 
+  const metadataPayload: Record<string, unknown> = {};
+  if (payload.jobId) {
+    metadataPayload.app_job_id = payload.jobId;
+  }
+  if (payload.localKey) {
+    metadataPayload.app_local_key = payload.localKey;
+  }
+  if (Object.keys(metadataPayload).length) {
+    const existing =
+      requestBody.metadata && typeof requestBody.metadata === 'object' && !Array.isArray(requestBody.metadata)
+        ? (requestBody.metadata as Record<string, unknown>)
+        : {};
+    requestBody.metadata = { ...existing, ...metadataPayload };
+  }
+
   let latestQueueStatus: QueueStatus | null = null;
   const webhookUrl = getFalWebhookUrl() ?? undefined;
   let enqueuedRequestId: string | undefined;
-  const result = await falClient.subscribe(model, {
-    input: requestBody,
-    webhookUrl,
-    mode: 'polling',
-    onEnqueue(requestId) {
-      if (typeof requestId === 'string') {
-        enqueuedRequestId = requestId;
-      }
-    },
-    onQueueUpdate(update) {
-      latestQueueStatus = update;
-    },
-  });
+  let result: Awaited<ReturnType<typeof falClient.subscribe>>;
+  try {
+    result = await falClient.subscribe(model, {
+      input: requestBody,
+      webhookUrl,
+      mode: 'polling',
+      onEnqueue(requestId) {
+        if (typeof requestId === 'string') {
+          enqueuedRequestId = requestId;
+        }
+      },
+      onQueueUpdate(update) {
+        latestQueueStatus = update;
+      },
+    });
+  } catch (error) {
+    const metadataStatus =
+      typeof (error as { $metadata?: { httpStatusCode?: number } } | undefined)?.$metadata?.httpStatusCode === 'number'
+        ? (error as { $metadata?: { httpStatusCode?: number } }).$metadata!.httpStatusCode
+        : undefined;
+    const statusCandidate =
+      typeof (error as { status?: number } | undefined)?.status === 'number'
+        ? (error as { status?: number }).status
+        : metadataStatus;
+    const queueRequestId = (latestQueueStatus as { request_id?: string } | null)?.request_id;
+    const fallbackProviderJobId =
+      enqueuedRequestId ??
+      queueRequestId ??
+      (error as { providerJobId?: string } | undefined)?.providerJobId ??
+      (error as { requestId?: string } | undefined)?.requestId ??
+      (error as { request_id?: string } | undefined)?.request_id ??
+      (error as { response?: { request_id?: string; id?: string } } | undefined)?.response?.request_id ??
+      (error as { response?: { request_id?: string; id?: string } } | undefined)?.response?.id ??
+      undefined;
+    const bodyCandidate =
+      (error as { body?: unknown } | undefined)?.body ??
+      (error as { response?: unknown } | undefined)?.response ??
+      (error as { data?: unknown } | undefined)?.data ??
+      null;
+    const message = error instanceof Error ? error.message : 'Fal request failed';
+    const falError = new FalGenerationError(message, {
+      status: statusCandidate,
+      body: bodyCandidate,
+      providerJobId: fallbackProviderJobId,
+      cause: error,
+    });
+    if ((error as { $metadata?: unknown } | undefined)?.$metadata) {
+      (falError as { $metadata?: unknown }).$metadata = (error as { $metadata?: unknown }).$metadata;
+    }
+    (falError as { originalError?: unknown }).originalError = error;
+    throw falError;
+  }
 
   const json = unwrapFalResponse(result.data);
   const queueRequestId = (latestQueueStatus as { request_id?: string } | null)?.request_id;

@@ -3,7 +3,7 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured, query } from '@/lib/db';
 import { randomUUID } from 'crypto';
-import { generateVideo } from '@/lib/fal';
+import { generateVideo, FalGenerationError } from '@/lib/fal';
 import { computePricingSnapshot, getPlatformFeeCents } from '@/lib/pricing';
 import { getConfiguredEngine } from '@/server/engines';
 import Stripe from 'stripe';
@@ -586,6 +586,122 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
         ? body.imageUrl.trim()
         : undefined;
 
+  const placeholderThumb =
+    aspectRatio === '9:16'
+      ? '/assets/frames/thumb-9x16.svg'
+      : aspectRatio === '1:1'
+        ? '/assets/frames/thumb-1x1.svg'
+        : '/assets/frames/thumb-16x9.svg';
+
+  try {
+    await query(
+      `INSERT INTO app_jobs (
+         job_id,
+         user_id,
+         engine_id,
+         engine_label,
+         duration_sec,
+         prompt,
+         thumb_url,
+         aspect_ratio,
+         has_audio,
+         can_upscale,
+         preview_frame,
+         batch_id,
+         group_id,
+         iteration_index,
+         iteration_count,
+         render_ids,
+         hero_render_id,
+         local_key,
+         message,
+         eta_seconds,
+         eta_label,
+         video_url,
+         status,
+         progress,
+         provider_job_id,
+         final_price_cents,
+         pricing_snapshot,
+         currency,
+         vendor_account_id,
+         payment_status,
+         stripe_payment_intent_id,
+         stripe_charge_id,
+         visibility,
+         indexable,
+         provisional
+       )
+       VALUES (
+         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27::jsonb,$28,$29,$30,$31,$32,$33,$34,$35
+       )`,
+      [
+        jobId,
+        userId,
+        engine.id,
+        engine.label,
+        durationSec,
+        prompt,
+        placeholderThumb,
+        aspectRatio,
+        false,
+        Boolean(engine.upscale4k),
+        placeholderThumb,
+        batchId,
+        groupId,
+        iterationIndex,
+        iterationCount,
+        renderIds ? JSON.stringify(renderIds) : null,
+        heroRenderId,
+        localKey,
+        message,
+        etaSeconds,
+        etaLabel,
+        null,
+        'pending',
+        0,
+        null,
+        pricing.totalCents,
+        pricingSnapshotJson,
+        pricing.currency,
+        vendorAccountId,
+        paymentStatus,
+        stripePaymentIntentId,
+        stripeChargeId,
+        visibility,
+        indexable,
+        true,
+      ]
+    );
+  } catch (error) {
+    console.error('[api/generate] failed to persist provisional job record', error);
+    if (walletChargeReserved && pendingReceipt) {
+      try {
+        await query(
+          `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct)
+           VALUES ($1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12)`,
+          [
+            pendingReceipt.userId,
+            pendingReceipt.amountCents,
+            pendingReceipt.currency,
+            `Refund ${engine.label} • ${durationSec}s`,
+            pendingReceipt.jobId,
+            JSON.stringify(pendingReceipt.snapshot),
+            0,
+            pendingReceipt.vendorAccountId,
+            pendingReceipt.stripePaymentIntentId ?? null,
+            pendingReceipt.stripeChargeId ?? null,
+            0,
+            pendingReceipt.vendorAccountId,
+          ]
+        );
+      } catch (refundError) {
+        console.warn('[wallet] failed to record refund after provisional persistence error', refundError);
+      }
+    }
+    return NextResponse.json({ ok: false, error: 'Failed to persist job record' }, { status: 500 });
+  }
+
   try {
     generationResult = await generateVideo({
       engineId: engine.id,
@@ -604,9 +720,59 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
       inputs: processedAttachments,
       ...(aspectRatio ? { aspectRatio } : {}),
       idempotencyKey: body.idempotencyKey && typeof body.idempotencyKey === 'string' ? body.idempotencyKey : undefined,
+      jobId,
+      localKey: localKey ?? undefined,
       soraRequest: soraRequest ?? undefined,
     });
   } catch (error) {
+    const rawStatus =
+      error && typeof error === 'object' && 'status' in error ? (error as { status?: number }).status : undefined;
+    const metadataStatus =
+      error && typeof error === 'object' && '$metadata' in error
+        ? ((error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode)
+        : undefined;
+    const status = rawStatus ?? metadataStatus;
+    const detail =
+      error && typeof error === 'object' && 'body' in error ? (error as { body?: unknown }).body ?? null : null;
+    const providerMessage =
+      typeof detail === 'string'
+        ? detail
+        : detail && typeof detail === 'object' && 'detail' in (detail as Record<string, unknown>)
+          ? String((detail as Record<string, unknown>).detail)
+          : error instanceof Error
+            ? error.message
+            : 'Fal request failed';
+    const failureMessage = typeof providerMessage === 'string' && providerMessage.length ? providerMessage : 'Fal request failed';
+    const providerJobId =
+      error instanceof FalGenerationError && error.providerJobId
+        ? error.providerJobId
+        : typeof (error as { providerJobId?: string } | undefined)?.providerJobId === 'string'
+          ? (error as { providerJobId?: string }).providerJobId!
+          : null;
+    const paymentStatusOverride =
+      pendingReceipt && paymentMode === 'wallet'
+        ? 'refunded_wallet'
+        : pendingReceipt && paymentMode !== 'wallet'
+          ? 'refunded'
+          : null;
+
+    try {
+      await query(
+        `UPDATE app_jobs
+         SET status = 'failed',
+             progress = 0,
+             message = $2,
+             provisional = FALSE,
+             provider_job_id = COALESCE($3, provider_job_id),
+             payment_status = CASE WHEN $4::text IS NOT NULL THEN $4 ELSE payment_status END,
+             updated_at = NOW()
+         WHERE job_id = $1`,
+        [jobId, failureMessage, providerJobId, paymentStatusOverride]
+      );
+    } catch (updateError) {
+      console.error('[api/generate] failed to update provisional job after Fal error', updateError);
+    }
+
     if (pendingReceipt) {
       const refundDescription = `Refund ${engine.label} • ${durationSec}s`;
       if (walletChargeReserved) {
@@ -617,25 +783,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
       }
     }
 
-    const rawStatus = (error && typeof error === 'object' && 'status' in error) ? (error as { status?: number }).status : undefined;
-    const metadataStatus = (error && typeof error === 'object' && '$metadata' in error)
-      ? ((error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode)
-      : undefined;
-    const status = rawStatus ?? metadataStatus;
-
     if (status === 422) {
-      const detail =
-        error && typeof error === 'object' && 'body' in error
-          ? (error as { body?: unknown }).body ?? null
-          : null;
-      const providerMessage =
-        typeof detail === 'string'
-          ? detail
-          : detail && typeof detail === 'object' && 'detail' in (detail as Record<string, unknown>)
-            ? String((detail as Record<string, unknown>).detail)
-            : error instanceof Error
-              ? error.message
-              : 'Fal returned status 422';
       console.error('[generate] fal returned 422', providerMessage);
       return NextResponse.json(
         {
@@ -649,15 +797,12 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
       );
     }
 
-    return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : 'Generation failed' }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: error instanceof Error ? error.message : 'Generation failed' },
+      { status: 500 }
+    );
   }
 
-  const placeholderThumb =
-    aspectRatio === '9:16'
-      ? '/assets/frames/thumb-9x16.svg'
-      : aspectRatio === '1:1'
-        ? '/assets/frames/thumb-1x1.svg'
-        : '/assets/frames/thumb-16x9.svg';
   let thumb =
     normalizeMediaUrl(generationResult.thumbUrl) ??
       (typeof generationResult.thumbUrl === 'string' && generationResult.thumbUrl.trim().length
@@ -698,65 +843,34 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
 
   try {
     await query(
-      `INSERT INTO app_jobs (
-         job_id,
-         user_id,
-         engine_id,
-         engine_label,
-         duration_sec,
-         prompt,
-         thumb_url,
-         aspect_ratio,
-         has_audio,
-         can_upscale,
-         preview_frame,
-         batch_id,
-         group_id,
-         iteration_index,
-         iteration_count,
-         render_ids,
-         hero_render_id,
-         local_key,
-         message,
-         eta_seconds,
-         eta_label,
-         video_url,
-         status,
-         progress,
-         provider_job_id,
-         final_price_cents,
-         pricing_snapshot,
-         currency,
-         vendor_account_id,
-         payment_status,
-         stripe_payment_intent_id,
-         stripe_charge_id,
-         visibility,
-         indexable
-       )
-       VALUES (
-         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27::jsonb,$28,$29,$30,$31,$32,$33,$34
-       )`,
+      `UPDATE app_jobs
+       SET thumb_url = $2,
+           aspect_ratio = $3,
+           preview_frame = $4,
+           eta_seconds = $5,
+           eta_label = $6,
+           video_url = $7,
+           status = $8,
+           progress = $9,
+           provider_job_id = COALESCE($10, provider_job_id),
+           final_price_cents = $11,
+           pricing_snapshot = $12::jsonb,
+           currency = $13,
+           vendor_account_id = $14,
+           payment_status = $15,
+           stripe_payment_intent_id = $16,
+           stripe_charge_id = $17,
+           visibility = $18,
+           indexable = $19,
+           message = $20,
+           provisional = FALSE,
+           updated_at = NOW()
+       WHERE job_id = $1`,
       [
         jobId,
-        userId,
-        engine.id,
-        engine.label,
-        durationSec,
-        prompt,
-        previewFrame,
+        thumb,
         aspectRatio,
-        false,
-        Boolean(engine.upscale4k),
         previewFrame,
-        batchId,
-        groupId,
-        iterationIndex,
-        iterationCount,
-        renderIds ? JSON.stringify(renderIds) : null,
-        heroRenderId,
-        localKey,
-        message,
         etaSeconds,
         etaLabel,
         video,
@@ -772,10 +886,11 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
         stripeChargeId,
         visibility,
         indexable,
+        message,
       ]
     );
   } catch (error) {
-    console.error('[api/generate] failed to persist job record', error);
+    console.error('[api/generate] failed to update job record', error);
     if (walletChargeReserved && pendingReceipt) {
       try {
         await query(
@@ -800,7 +915,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
         console.warn('[wallet] failed to record refund after persistence error', refundError);
       }
     }
-    return NextResponse.json({ ok: false, error: 'Failed to persist job record' }, { status: 500 });
+    return NextResponse.json({ ok: false, error: 'Failed to update job record' }, { status: 500 });
   }
 
   if (pendingReceipt && !walletChargeReserved) {

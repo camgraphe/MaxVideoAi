@@ -36,6 +36,95 @@ const FAILED_STATUSES = new Set(['FAILED', 'ERROR', 'CANCELLED', 'CANCELED', 'AB
 const RUNNING_STATUSES = new Set(['RUNNING', 'IN_PROGRESS', 'PROCESSING']);
 const QUEUED_STATUSES = new Set(['QUEUED', 'IN_QUEUE', 'PENDING']);
 
+type WebhookIdentifiers = {
+  jobId?: string | null;
+  localKey?: string | null;
+};
+
+function extractStringField(record: Record<string, unknown>, keys: string[]): string | null {
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (trimmed.length) return trimmed;
+    }
+  }
+  return null;
+}
+
+function extractIdentifiersFromPayload(payload: unknown): WebhookIdentifiers {
+  const identifiers: WebhookIdentifiers = {};
+  const visited = new Set<unknown>();
+  const stack: unknown[] = [payload];
+
+  while (stack.length && (!identifiers.jobId || !identifiers.localKey)) {
+    const current = stack.pop();
+    if (!current || typeof current !== 'object') continue;
+    if (visited.has(current)) continue;
+    visited.add(current);
+
+    const record = current as Record<string, unknown>;
+    if (!identifiers.jobId) {
+      const candidate = extractStringField(record, ['app_job_id', 'job_id', 'jobId', 'id']);
+      if (candidate && candidate.startsWith('job_')) {
+        identifiers.jobId = candidate;
+      } else if (!identifiers.jobId && record === current) {
+        const requestIdCandidate = extractStringField(record, ['request_id']);
+        if (requestIdCandidate && requestIdCandidate.startsWith('job_')) {
+          identifiers.jobId = requestIdCandidate;
+        }
+      }
+    }
+    if (!identifiers.localKey) {
+      const candidate = extractStringField(record, ['app_local_key', 'local_key', 'localKey']);
+      if (candidate) {
+        identifiers.localKey = candidate;
+      }
+    }
+
+    const metadata = record.metadata;
+    if (metadata && typeof metadata === 'object') {
+      stack.push(metadata);
+    }
+    for (const value of Object.values(record)) {
+      if (value && typeof value === 'object') {
+        stack.push(value);
+      }
+    }
+  }
+
+  return identifiers;
+}
+
+function findFirstString(payload: unknown, keys: string[]): string | null {
+  const visited = new Set<unknown>();
+  const stack: unknown[] = [payload];
+
+  while (stack.length) {
+    const current = stack.pop();
+    if (!current || typeof current !== 'object') continue;
+    if (visited.has(current)) continue;
+    visited.add(current);
+
+    const record = current as Record<string, unknown>;
+    const candidate = extractStringField(record, keys);
+    if (candidate) return candidate;
+
+    const metadata = record.metadata;
+    if (metadata && typeof metadata === 'object') {
+      stack.push(metadata);
+    }
+
+    for (const value of Object.values(record)) {
+      if (value && typeof value === 'object') {
+        stack.push(value);
+      }
+    }
+  }
+
+  return null;
+}
+
 function extractMediaUrls(payload: unknown): { videoUrl?: string | null; thumbUrl?: string | null } {
   if (!payload || typeof payload !== 'object') return {};
 
@@ -129,6 +218,85 @@ function normalizeStatus(
   return { status: previousStatus, progress: previousProgress };
 }
 
+async function createProvisionalJobFromWebhook(params: {
+  requestId: string;
+  payload: FalWebhookPayload;
+  identifiers: WebhookIdentifiers;
+}): Promise<AppJobRow | null> {
+  const placeholderThumb = '/assets/frames/thumb-16x9.svg';
+  const jobId =
+    (params.identifiers.jobId && params.identifiers.jobId.trim().length
+      ? params.identifiers.jobId.trim()
+      : null) ??
+    (params.requestId.startsWith('job_') ? params.requestId : `job_${params.requestId}`);
+
+  const engineId = findFirstString(params.payload, ['engine_id', 'engineId', 'model']) ?? 'fal-unknown';
+  const engineLabel = findFirstString(params.payload, ['engine_label', 'engineLabel']) ?? engineId;
+  const prompt =
+    findFirstString(params.payload, ['prompt', 'description', 'text']) ?? '[webhook recovery]';
+  const aspectRatio = findFirstString(params.payload, ['aspect_ratio', 'aspectRatio']) ?? null;
+  const durationString = findFirstString(params.payload, ['duration', 'duration_seconds', 'durationSec']);
+  const parsedDuration = durationString ? Number.parseInt(durationString, 10) : 0;
+  const normalizedDuration = Number.isFinite(parsedDuration) && parsedDuration > 0 ? parsedDuration : 0;
+  const media = extractMediaUrls(params.payload.result ?? params.payload.response ?? params.payload.data ?? null);
+  const normalizedVideoUrl = media.videoUrl ? normalizeMediaUrl(media.videoUrl) : null;
+  const normalizedThumbUrl = media.thumbUrl ? normalizeMediaUrl(media.thumbUrl) : null;
+  const statusInfo = normalizeStatus(params.payload.status, 'queued', 0);
+
+  const inserted = await query<AppJobRow>(
+    `INSERT INTO app_jobs (
+       job_id,
+       user_id,
+      engine_id,
+      engine_label,
+      duration_sec,
+       prompt,
+       thumb_url,
+       aspect_ratio,
+       preview_frame,
+       provider_job_id,
+       status,
+       progress,
+       visibility,
+       indexable,
+       provisional,
+       video_url
+     )
+     VALUES (
+       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16
+     )
+     ON CONFLICT (job_id) DO UPDATE
+       SET provider_job_id = COALESCE(EXCLUDED.provider_job_id, app_jobs.provider_job_id),
+           thumb_url = COALESCE(EXCLUDED.thumb_url, app_jobs.thumb_url),
+           preview_frame = COALESCE(EXCLUDED.preview_frame, app_jobs.preview_frame),
+           video_url = COALESCE(EXCLUDED.video_url, app_jobs.video_url),
+           status = EXCLUDED.status,
+           progress = EXCLUDED.progress,
+           updated_at = NOW()
+     RETURNING job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message`,
+    [
+      jobId,
+      null,
+      engineId,
+      engineLabel || engineId,
+      normalizedDuration,
+      prompt,
+      normalizedThumbUrl ?? placeholderThumb,
+      aspectRatio,
+      normalizedThumbUrl ?? placeholderThumb,
+      params.requestId,
+      statusInfo.status,
+      statusInfo.progress,
+      'private',
+      false,
+      true,
+      normalizedVideoUrl,
+    ]
+  );
+
+  return inserted[0] ?? null;
+}
+
 export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void> {
   const payload = (rawPayload ?? {}) as FalWebhookPayload;
   const requestId = payload.request_id ?? payload.requestId;
@@ -136,7 +304,9 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     throw new Error('Missing request_id in webhook payload');
   }
 
-  const jobRows = await query<AppJobRow>(
+  const identifiers = extractIdentifiersFromPayload(payload);
+
+  let jobRows = await query<AppJobRow>(
     `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message
      FROM app_jobs
      WHERE provider_job_id = $1
@@ -144,16 +314,62 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     [requestId]
   );
 
-  if (!jobRows.length) {
-    throw new Error(`No job found for provider_job_id=${requestId}`);
+  if (!jobRows.length && identifiers.jobId) {
+    jobRows = await query<AppJobRow>(
+      `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message
+       FROM app_jobs
+       WHERE job_id = $1
+       LIMIT 1`,
+      [identifiers.jobId]
+    );
   }
 
-  const job = jobRows[0];
+  if (!jobRows.length && identifiers.localKey) {
+    jobRows = await query<AppJobRow>(
+      `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message
+       FROM app_jobs
+       WHERE local_key = $1
+       ORDER BY updated_at DESC
+       LIMIT 1`,
+      [identifiers.localKey]
+    );
+  }
+
+  if (!jobRows.length) {
+    const logRows = await query<{ job_id: string }>(
+      `SELECT job_id
+       FROM fal_queue_log
+       WHERE provider_job_id = $1
+       ORDER BY created_at DESC
+       LIMIT 1`,
+      [requestId]
+    );
+    if (logRows.length) {
+      jobRows = await query<AppJobRow>(
+        `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message
+         FROM app_jobs
+         WHERE job_id = $1
+         LIMIT 1`,
+        [logRows[0].job_id]
+      );
+    }
+  }
+
+  let job = jobRows[0] ?? null;
+
+  if (!job) {
+    job = await createProvisionalJobFromWebhook({ requestId, payload, identifiers });
+  }
+
+  if (!job) {
+    console.warn('[fal-webhook] Unable to resolve job for provider_job_id', requestId);
+    return;
+  }
 
   let finalPayload = payload.result ?? payload.response ?? payload.data ?? null;
   const statusInfo = normalizeStatus(payload.status, job.status, job.progress);
 
-  if (!finalPayload || statusInfo.status === 'completed') {
+  if ((!finalPayload || statusInfo.status === 'completed') && job.engine_id && job.engine_id !== 'fal-unknown') {
     try {
       const falModel = (await resolveFalModelId(job.engine_id)) ?? job.engine_id;
       const falClient = getFalClient();
@@ -208,6 +424,8 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
          thumb_url = COALESCE($5, thumb_url),
          preview_frame = COALESCE($6, preview_frame),
          message = COALESCE($7, message),
+         provider_job_id = $8,
+         provisional = FALSE,
          updated_at = NOW()
      WHERE job_id = $1`,
     [
@@ -218,6 +436,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       finalThumbUrl ?? job.thumb_url,
       finalPreviewFrame ?? job.preview_frame,
       nextMessage ?? job.message,
+      requestId,
     ]
   );
 

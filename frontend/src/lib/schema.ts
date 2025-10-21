@@ -139,7 +139,8 @@ export async function ensureBillingSchema(): Promise<void> {
           indexable BOOLEAN DEFAULT TRUE,
           featured BOOLEAN DEFAULT FALSE,
           featured_order INTEGER DEFAULT 0,
-          legacy_migrated BOOLEAN DEFAULT FALSE
+          legacy_migrated BOOLEAN DEFAULT FALSE,
+          provisional BOOLEAN DEFAULT FALSE
         );
       `);
 
@@ -164,7 +165,8 @@ export async function ensureBillingSchema(): Promise<void> {
         ADD COLUMN IF NOT EXISTS indexable BOOLEAN DEFAULT TRUE,
         ADD COLUMN IF NOT EXISTS featured BOOLEAN DEFAULT FALSE,
         ADD COLUMN IF NOT EXISTS featured_order INTEGER DEFAULT 0,
-        ADD COLUMN IF NOT EXISTS legacy_migrated BOOLEAN DEFAULT FALSE;
+        ADD COLUMN IF NOT EXISTS legacy_migrated BOOLEAN DEFAULT FALSE,
+        ADD COLUMN IF NOT EXISTS provisional BOOLEAN DEFAULT FALSE;
       `);
 
       await query(`
