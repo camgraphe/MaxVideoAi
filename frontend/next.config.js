@@ -14,6 +14,7 @@ const nextConfig = {
     ],
   },
   experimental: {
+    serverComponentsExternalPackages: ['@ffmpeg-installer/ffmpeg'],
     outputFileTracingExcludes: {
       '*': ['.next/cache/**/*', 'tsconfig.tsbuildinfo'],
     },
