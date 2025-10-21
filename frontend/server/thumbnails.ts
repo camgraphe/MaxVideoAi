@@ -38,7 +38,14 @@ function getFfmpegPath(): string | null {
 
 const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build';
 const isThumbnailCaptureDisabled = process.env.DISABLE_THUMBNAIL_CAPTURE === '1';
-const isOmittedForSSR = process.env.NEXT_PUBLIC_ENABLE_THUMBNAILS !== 'true';
+
+function isCaptureEnabled(): boolean {
+  if (isBuildPhase || isThumbnailCaptureDisabled) return false;
+  const flag = process.env.NEXT_PUBLIC_ENABLE_THUMBNAILS;
+  if (!flag) return false;
+  const normalized = flag.trim().toLowerCase();
+  return normalized === 'true' || normalized === '1' || normalized === 'yes' || normalized === 'enabled';
+}
 
 type EnsureThumbnailOptions = {
   jobId: string;
@@ -65,7 +72,7 @@ export function isPlaceholderThumbnail(url?: string | null): boolean {
 export async function ensureJobThumbnail(options: EnsureThumbnailOptions): Promise<string | null> {
   const { jobId, userId, videoUrl, aspectRatio, existingThumbUrl, force = false } = options;
   if (!videoUrl || !jobId) return null;
-  if (isBuildPhase || isThumbnailCaptureDisabled || isOmittedForSSR) return null;
+  if (!isCaptureEnabled()) return null;
 
   const normalizedExisting = existingThumbUrl ? normalizeMediaUrl(existingThumbUrl) ?? existingThumbUrl : null;
   if (!force && normalizedExisting && !isPlaceholderThumbnail(normalizedExisting)) {
@@ -93,7 +100,7 @@ async function captureThumbnailFromVideo(params: {
   videoUrl: string;
   aspectRatio?: string;
 }): Promise<UploadResult | null> {
-  if (isBuildPhase || isThumbnailCaptureDisabled || isOmittedForSSR) {
+  if (!isCaptureEnabled()) {
     return null;
   }
 
