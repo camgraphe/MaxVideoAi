@@ -1175,41 +1175,80 @@ const searchString = useMemo(() => searchParams?.toString() ?? '', [searchParams
 
   useEffect(() => {
     if (!recentJobs.length) return;
-    const additions: LocalRender[] = [];
+    const heroCandidates: Array<{ batchId: string | null; localKey: string }> = [];
+
     setRenders((previous) => {
-      const seen = new Set<string>();
-      previous.forEach((render) => {
-        const key = render.jobId ?? render.id;
-        if (key) {
-          seen.add(key);
+      if (!recentJobs.length) return previous;
+
+      const next = [...previous];
+      const byLocalKey = new Map<string, number>();
+      const byJobId = new Map<string, number>();
+      previous.forEach((render, index) => {
+        if (render.localKey) {
+          byLocalKey.set(render.localKey, index);
+        }
+        if (render.jobId) {
+          byJobId.set(render.jobId, index);
         }
       });
 
+      let changed = false;
+
       recentJobs.forEach((job) => {
-        if (!job.jobId || seen.has(job.jobId)) return;
+        if (!job.jobId) return;
         const converted = convertJobToLocalRender(job);
-        additions.push(converted);
-        seen.add(job.jobId);
+        const jobIdIndex = converted.jobId ? byJobId.get(converted.jobId) : undefined;
+        const localKeyIndex = byLocalKey.get(converted.localKey);
+        const targetIndex = jobIdIndex ?? localKeyIndex;
+
+        if (targetIndex !== undefined) {
+          const existing = next[targetIndex];
+          const merged: LocalRender = {
+            ...converted,
+            localKey: existing.localKey ?? converted.localKey,
+            batchId: existing.batchId ?? converted.batchId,
+          };
+          next[targetIndex] = merged;
+          if (merged.localKey) {
+            byLocalKey.set(merged.localKey, targetIndex);
+          }
+          if (merged.jobId) {
+            byJobId.set(merged.jobId, targetIndex);
+          }
+          heroCandidates.push({ batchId: merged.batchId ?? null, localKey: merged.localKey });
+          changed = true;
+        } else {
+          const merged: LocalRender = converted;
+          next.push(merged);
+          if (merged.localKey) {
+            byLocalKey.set(merged.localKey, next.length - 1);
+          }
+          if (merged.jobId) {
+            byJobId.set(merged.jobId, next.length - 1);
+          }
+          heroCandidates.push({ batchId: merged.batchId ?? null, localKey: merged.localKey });
+          changed = true;
+        }
       });
 
-      if (!additions.length) return previous;
+      if (!changed) return previous;
 
-      const merged = [...previous, ...additions];
-      merged.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
-      return merged;
+      next.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+      return next;
     });
 
-    if (additions.length) {
+    if (heroCandidates.length) {
       setBatchHeroes((previous) => {
         const next = { ...previous };
-        let changed = false;
-        additions.forEach((render) => {
-          if (render.batchId && render.localKey && !next[render.batchId]) {
-            next[render.batchId] = render.localKey;
-            changed = true;
+        let modified = false;
+        heroCandidates.forEach(({ batchId, localKey }) => {
+          if (!batchId || !localKey) return;
+          if (!next[batchId]) {
+            next[batchId] = localKey;
+            modified = true;
           }
         });
-        return changed ? next : previous;
+        return modified ? next : previous;
       });
     }
   }, [convertJobToLocalRender, recentJobs]);
