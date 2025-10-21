@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY ?? '';
-const STRIPE_API_VERSION = '2024-06-20';
+const STRIPE_API_VERSION: Stripe.StripeConfig['apiVersion'] = '2023-10-16';
 
 const stripe =
   STRIPE_SECRET_KEY.trim().length > 0
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
     const tokenResource =
       (stripe as unknown as {
         accountTokens?: {
-          create?: (params: Stripe.AccountTokenCreateParams, options?: Stripe.RequestOptions) => Promise<Stripe.AccountToken>;
+          create?: (params: Record<string, unknown>, options?: Stripe.RequestOptions) => Promise<{ id?: string }>;
         };
       }).accountTokens ?? null;
     const supportsAccountTokens = useAccountTokens && typeof tokenResource?.create === 'function';
@@ -69,12 +69,6 @@ export async function GET(req: NextRequest) {
           name: 'MaxVideoAI Ops',
           url: 'https://maxvideoai.com',
         },
-        controller: {
-          requirement_collection: 'application',
-          stripe_dashboard: { type: 'none' },
-          fees: { payer: 'application' },
-          losses: { payments: 'application' },
-        },
         capabilities: {
           card_payments: { requested: true },
           transfers: { requested: true },
@@ -102,12 +96,6 @@ export async function GET(req: NextRequest) {
 
       try {
         await stripe.accounts.update(account.id, {
-          controller: {
-            requirement_collection: 'application',
-            stripe_dashboard: { type: 'none' },
-            fees: { payer: 'application' },
-            losses: { payments: 'application' },
-          },
           tos_acceptance: {
             date: Math.floor(Date.now() / 1000),
             ip: clientIp,

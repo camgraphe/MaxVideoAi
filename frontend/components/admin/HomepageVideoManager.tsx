@@ -62,7 +62,7 @@ async function fetchVideoPreview(videoId: string): Promise<SlotVideo | null> {
   if (!json?.ok || !json.video) return null;
   const video = json.video as Record<string, unknown>;
   return {
-    id: typeof video.id === 'string' ? video.id : video.videoId ?? videoId,
+    id: typeof video.id === 'string' ? video.id : typeof video.videoId === 'string' ? video.videoId : videoId,
     engineLabel: typeof video.engineLabel === 'string' ? video.engineLabel : undefined,
     durationSec: typeof video.durationSec === 'number' ? video.durationSec : undefined,
     thumbUrl: typeof video.thumbUrl === 'string' ? video.thumbUrl : undefined,
