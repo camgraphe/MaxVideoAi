@@ -186,15 +186,9 @@ export function Composer({
               onChange={(event) => onPromptChange(event.currentTarget.value)}
               placeholder="Describe the shot..."
               rows={6}
-              className="w-full rounded-input border border-border bg-white px-4 py-3 pr-28 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full rounded-input border border-border bg-white px-4 py-3 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               ref={textareaRef}
             />
-            <button
-              type="button"
-              className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-input border border-hairline bg-white px-3 py-1.5 text-[12px] font-medium uppercase tracking-micro text-text-secondary transition hover:border-accentSoft/50 hover:bg-accentSoft/10 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              Enhance prompt
-            </button>
           </div>
         </div>
 
