@@ -471,15 +471,17 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
 
   let finalPayload = payload.result ?? payload.response ?? payload.data ?? null;
   const statusInfo = normalizeStatus(payload.status, job.status, job.progress);
+  let nextStatus = statusInfo.status;
+  let nextProgress = statusInfo.progress;
 
-  if ((!finalPayload || statusInfo.status === 'completed') && job.engine_id && job.engine_id !== 'fal-unknown') {
+  if ((!finalPayload || nextStatus === 'completed') && job.engine_id && job.engine_id !== 'fal-unknown') {
     try {
       const falModel = (await resolveFalModelId(job.engine_id)) ?? job.engine_id;
       const falClient = getFalClient();
       const queueResult = await falClient.queue.result(falModel, { requestId });
       finalPayload = queueResult?.data ?? finalPayload ?? queueResult ?? null;
     } catch (error) {
-      if (statusInfo.status === 'completed') {
+      if (nextStatus === 'completed') {
         console.warn('[fal-webhook] Failed to fetch final result', error);
       }
     }
@@ -488,9 +490,8 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   const media = extractMediaUrls(finalPayload);
   const nextVideoUrl = media.videoUrl ? normalizeMediaUrl(media.videoUrl) : null;
   const nextThumbUrl = media.thumbUrl ? normalizeMediaUrl(media.thumbUrl) : null;
-  const extractedErrorMessage = extractFalErrorMessage(payload, statusInfo.status === 'failed' ? finalPayload : null);
-  const nextMessage =
-    extractedErrorMessage ?? (statusInfo.status === 'failed' ? 'Fal reported a failure without details.' : null);
+  const extractedErrorMessage = extractFalErrorMessage(payload, nextStatus === 'failed' ? finalPayload : null);
+  const nextMessage = extractedErrorMessage ?? (nextStatus === 'failed' ? 'Fal reported a failure without details.' : null);
 
   const rawVideoSource = media.videoUrl ?? job.video_url;
   let resolvedThumbUrl = nextThumbUrl ?? job.thumb_url;
@@ -515,17 +516,23 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   const finalVideoUrl = nextVideoUrl ?? job.video_url;
   const finalThumbUrl = resolvedThumbUrl ?? job.thumb_url;
   const finalPreviewFrame = finalThumbUrl ?? job.preview_frame;
-  const shouldClearVideo = statusInfo.status === 'failed' && !nextVideoUrl;
+
+  if (finalVideoUrl && nextStatus !== 'failed') {
+    nextStatus = 'completed';
+    nextProgress = 100;
+  }
+
+  const shouldClearVideo = nextStatus === 'failed' && !nextVideoUrl;
   const shouldClearThumb =
-    statusInfo.status === 'failed' &&
+    nextStatus === 'failed' &&
     (!nextThumbUrl || !resolvedThumbUrl || (resolvedThumbUrl && isPlaceholderThumbnail(resolvedThumbUrl)));
   const messageToPersist =
-    statusInfo.status === 'failed'
+    nextStatus === 'failed'
       ? nextMessage ?? job.message ?? 'Fal reported a failure without details.'
       : nextMessage ?? null;
   const normalizedMessage = messageToPersist ? messageToPersist.replace(/\s+/g, ' ').trim() : null;
 
-  if (statusInfo.status === 'failed') {
+  if (nextStatus === 'failed') {
     console.error('[fal-webhook] job failed', {
       jobId: job.job_id,
       requestId,
@@ -549,8 +556,8 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
      WHERE job_id = $1`,
     [
       job.job_id,
-      statusInfo.status,
-      statusInfo.progress,
+      nextStatus,
+      nextProgress,
       finalVideoUrl ?? null,
       finalThumbUrl ?? null,
       finalPreviewFrame ?? null,
@@ -566,9 +573,9 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     jobId: job.job_id,
     providerJobId: requestId,
     previousStatus: job.status,
-    nextStatus: statusInfo.status,
+    nextStatus,
     previousProgress: job.progress,
-    nextProgress: statusInfo.progress,
+    nextProgress,
     videoUrl: finalVideoUrl ?? null,
     thumbUrl: finalThumbUrl ?? null,
     message: normalizedMessage ?? null,
@@ -580,7 +587,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   });
 
   const wasCompleted = job.status === 'completed';
-  const isCompleted = statusInfo.status === 'completed';
+  const isCompleted = nextStatus === 'completed';
   if (isCompleted && !wasCompleted && job.user_id) {
     void notifyRenderCompletion(job, finalVideoUrl, finalThumbUrl).catch((error) => {
       console.error('[fal-webhook] Failed to send completion email', error);

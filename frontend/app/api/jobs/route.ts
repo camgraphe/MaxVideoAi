@@ -327,8 +327,32 @@ export async function GET(req: NextRequest) {
     }
 
     const hasMore = rows.length > limit;
-    const items = hasMore ? rows.slice(0, -1) : rows;
-    const nextCursor = hasMore ? formatCursorValue(items[items.length - 1]) : null;
+    let items = hasMore ? rows.slice(0, -1) : rows;
+
+    if (items.length) {
+      const seenProviderIds = new Set<string>();
+      const deduped: typeof items = [];
+      items.forEach((row) => {
+        const providerId = typeof row.provider_job_id === 'string' ? row.provider_job_id.trim() : '';
+        if (providerId && seenProviderIds.has(providerId)) {
+          return;
+        }
+        if (providerId) {
+          seenProviderIds.add(providerId);
+        }
+        deduped.push(row);
+      });
+      if (deduped.length !== items.length) {
+        console.info('[api/jobs] deduplicated provider job ids', {
+          at: new Date().toISOString(),
+          userId,
+          removed: items.length - deduped.length,
+        });
+      }
+      items = deduped;
+    }
+
+    const nextCursor = hasMore && items.length ? formatCursorValue(items[items.length - 1]) : null;
 
     type Row = (typeof rows)[number];
     const mapped = items.map((r: Row) => ({
