@@ -181,7 +181,7 @@ function sortVideosByPreference(videos: GalleryVideo[], sort: ExampleSort): Gall
 }
 
 export async function listExamples(sort: ExampleSort, limit = 60): Promise<GalleryVideo[]> {
-  const playlistSlug = process.env.EXAMPLES_PLAYLIST_SLUG ?? 'marketing-examples';
+  const playlistSlug = process.env.EXAMPLES_PLAYLIST_SLUG ?? 'examples';
   let base: GalleryVideo[] = [];
 
   try {
@@ -194,40 +194,14 @@ export async function listExamples(sort: ExampleSort, limit = 60): Promise<Galle
   }
 
   if (!base.length) {
-    const orderClause = (() => {
-      switch (sort) {
-        case 'date-asc':
-          return 'created_at ASC';
-        case 'duration-asc':
-          return 'duration_sec ASC';
-        case 'duration-desc':
-          return 'duration_sec DESC';
-        case 'engine-asc':
-          return 'engine_label ASC, created_at DESC';
-        case 'date-desc':
-        default:
-          return 'created_at DESC';
-      }
-    })();
-
-    const rows = await query<VideoRow>(
-      `
-        ${BASE_SELECT}
-        WHERE visibility = 'public'
-          AND COALESCE(indexable, TRUE)
-        ORDER BY ${orderClause}
-        LIMIT $1
-      `,
-      [limit]
-    );
-    return rows.map(mapRow);
+    return [];
   }
 
   return sortVideosByPreference(base, sort).slice(0, limit);
 }
 
 export async function getPlaylistExamples(limit = 60): Promise<GalleryVideo[]> {
-  const playlistSlug = process.env.EXAMPLES_PLAYLIST_SLUG ?? 'marketing-examples';
+  const playlistSlug = process.env.EXAMPLES_PLAYLIST_SLUG ?? 'examples';
   return listPlaylistVideos(playlistSlug, limit);
 }
 

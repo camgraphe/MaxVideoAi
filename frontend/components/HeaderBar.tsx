@@ -101,7 +101,6 @@ export function HeaderBar() {
         <nav className="hidden items-center gap-5 text-sm font-medium text-text-muted md:flex">
           {[
             { label: 'Models', href: '/models' },
-            { label: 'Gallery', href: '/gallery' },
             { label: 'Examples', href: '/examples' },
             { label: 'Pricing', href: '/pricing' },
             { label: 'Workflows', href: '/workflows' },
