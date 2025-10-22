@@ -11,11 +11,17 @@ type FalPendingJob = {
   engine_id: string;
   provider_job_id: string;
   status: string;
+  updated_at: string;
+  created_at: string;
 };
+
+const POLL_BASE_DELAYS_MS = [5_000, 15_000, 30_000, 60_000];
+const POLL_INITIAL_DELAY_MS = 5_000;
+const POLL_MAX_DURATION_MS = 3 * 60_000;
 
 export async function POST() {
   const rows = await query<FalPendingJob>(
-    `SELECT job_id, engine_id, provider_job_id, status
+    `SELECT job_id, engine_id, provider_job_id, status, updated_at, created_at
      FROM app_jobs
      WHERE provider_job_id IS NOT NULL
        AND status IN ('queued', 'running')
@@ -41,6 +47,27 @@ export async function POST() {
         providerJobId: job.provider_job_id,
         reason,
       });
+      if (job.provider_job_id) {
+        try {
+          await query(
+            `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
+             VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
+            [
+              job.job_id,
+              'fal',
+              job.provider_job_id,
+              job.engine_id ?? 'fal-unknown',
+              'poll:failed',
+              JSON.stringify({
+                at: new Date().toISOString(),
+                reason,
+              }),
+            ]
+          );
+        } catch (logError) {
+          console.warn('[fal-poll] failed to record failure log', job.job_id, logError);
+        }
+      }
       try {
         await updateJobFromFalWebhook({
           request_id: job.provider_job_id,
@@ -63,6 +90,36 @@ export async function POST() {
     };
 
     try {
+      const now = Date.now();
+      const updatedAtMs = Date.parse(job.updated_at);
+      if (Number.isFinite(updatedAtMs) && now - updatedAtMs < POLL_INITIAL_DELAY_MS) {
+        continue;
+      }
+
+      const createdAtMs = Date.parse(job.created_at);
+      if (Number.isFinite(createdAtMs) && now - createdAtMs > POLL_MAX_DURATION_MS) {
+        await markJobFailed('Fal polling exceeded expected window.');
+        continue;
+      }
+
+      const pollHistory = await query<{ attempts: number; last_attempt_at: string | null }>(
+        `SELECT COUNT(*)::int AS attempts, MAX(created_at) AS last_attempt_at
+         FROM fal_queue_log
+         WHERE provider_job_id = $1
+           AND status LIKE 'poll:%'`,
+        [job.provider_job_id]
+      );
+      const previousAttempts = pollHistory[0]?.attempts ?? 0;
+      const pollAttempt = previousAttempts + 1;
+      const lastAttemptAtMs = pollHistory[0]?.last_attempt_at ? Date.parse(pollHistory[0].last_attempt_at) : null;
+      const backoffMs =
+        POLL_BASE_DELAYS_MS[Math.min(previousAttempts, POLL_BASE_DELAYS_MS.length - 1)] ??
+        POLL_BASE_DELAYS_MS[POLL_BASE_DELAYS_MS.length - 1];
+
+      if (lastAttemptAtMs && now - lastAttemptAtMs < backoffMs) {
+        continue;
+      }
+
       let engineIdForLookup = job.engine_id;
       if (!engineIdForLookup || engineIdForLookup === 'fal-unknown') {
         const logRows = await query<{ engine_id: string | null }>(
@@ -104,6 +161,26 @@ export async function POST() {
           console.warn('[fal-poll] fal status fetch failed', job.job_id, error);
           return null;
         })) as Record<string, unknown> | null;
+      try {
+        await query(
+          `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
+           VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
+          [
+            job.job_id,
+            'fal',
+            job.provider_job_id,
+            engineIdForLookup,
+            'poll:status',
+            JSON.stringify({
+              attempt: pollAttempt,
+              at: new Date().toISOString(),
+              status: statusInfo?.status ?? null,
+            }),
+          ]
+        );
+      } catch (logError) {
+        console.warn('[fal-poll] failed to record status poll log', job.job_id, logError);
+      }
 
       if (!statusInfo) {
         await markJobFailed('Fal job status unavailable (possibly expired).');
@@ -142,6 +219,27 @@ export async function POST() {
       if (!result) {
         await markJobFailed(providerError ?? 'Fal returned no result for this job.');
         continue;
+      }
+      try {
+        await query(
+          `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
+           VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
+          [
+            job.job_id,
+            'fal',
+            job.provider_job_id,
+            engineIdForLookup,
+            'poll:result',
+            JSON.stringify({
+              attempt: pollAttempt,
+              at: new Date().toISOString(),
+              status: result && typeof result === 'object' && 'status' in result ? (result as { status?: string }).status ?? null : null,
+              hasResult: true,
+            }),
+          ]
+        );
+      } catch (logError) {
+        console.warn('[fal-poll] failed to record result log', job.job_id, logError);
       }
       const queueStatus =
         result && typeof result === 'object' && 'status' in result

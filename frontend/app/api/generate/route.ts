@@ -34,6 +34,24 @@ import {
 type PaymentMode = 'wallet' | 'direct' | 'platform';
 
 const LUMA_RAY2_TIMEOUT_MS = 180_000;
+const FAL_RETRY_DELAYS_MS = [5_000, 15_000, 30_000];
+const FAL_PROGRESS_FLOOR = 10;
+
+const TRANSIENT_FAL_STATUS_CODES = new Set([404, 408, 409, 410, 412, 425, 500, 502, 503, 504, 522, 524, 598]);
+const CONSTRAINT_ERROR_CODES = new Set([
+  'engine_constraint',
+  'invalid_input',
+  'input_invalid',
+  'validation_error',
+  'unsupported',
+  'payload_invalid',
+  'flagged_content',
+  'content_flagged',
+  'policy_violation',
+  'policy_denied',
+  'safety_violation',
+  'safety',
+]);
 
 class FalTimeoutError extends Error {
   constructor(message: string) {
@@ -53,6 +71,10 @@ function withFalTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
       clearTimeout(timeoutId);
     }
   }) as Promise<T>;
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 const FAL_ERROR_FIELDS = [
@@ -135,6 +157,190 @@ function condenseFalErrorMessage(message: string | null | undefined): string | n
   const condensed = message.replace(/\s+/g, ' ').trim();
   if (!condensed.length) return null;
   return condensed.length > 400 ? `${condensed.slice(0, 400)}...` : condensed;
+}
+
+function isConstraintDetail(detail: unknown): boolean {
+  if (!detail || typeof detail !== 'object') return false;
+  const record = detail as Record<string, unknown>;
+  const codes: Array<unknown> = [
+    record.code,
+    record.error_code,
+    record.errorCode,
+    record.status_code,
+    record.statusCode,
+  ];
+  for (const candidate of codes) {
+    if (typeof candidate !== 'string') continue;
+    const normalized = candidate.trim().toLowerCase();
+    if (CONSTRAINT_ERROR_CODES.has(normalized)) {
+      return true;
+    }
+  }
+  if (Array.isArray(record.errors) && record.errors.length) return true;
+  if ('field' in record || 'allowed' in record || 'allowed_values' in record) return true;
+  return false;
+}
+
+function isSafetyMessage(message: string | null | undefined): boolean {
+  if (!message) return false;
+  const normalized = message.trim().toLowerCase();
+  if (!normalized) return false;
+  return (
+    normalized.includes('content could not be processed') ||
+    normalized.includes('flagged by a content checker') ||
+    normalized.includes('policy violation') ||
+    normalized.includes('safety system') ||
+    normalized.includes('not allowed') ||
+    normalized.includes('violates') ||
+    normalized.includes('prohibited')
+  );
+}
+
+type FalErrorMetadata = {
+  error: unknown;
+  status?: number | null;
+  detail?: unknown;
+  providerMessage?: string | null;
+  providerJobId?: string | null;
+  attempt?: number;
+  maxAttempts?: number;
+};
+
+function shouldRetryFalError(meta: FalErrorMetadata): boolean {
+  const attempt = meta.attempt ?? 1;
+  const maxAttempts = meta.maxAttempts ?? 1;
+  if (attempt >= maxAttempts) return false;
+
+  if (meta.error instanceof FalTimeoutError) {
+    return true;
+  }
+
+  if (!(meta.error instanceof FalGenerationError)) {
+    return false;
+  }
+
+  const providerJobId = meta.providerJobId ?? meta.error.providerJobId ?? null;
+  if (!providerJobId) return false;
+
+  const status = typeof meta.status === 'number' ? meta.status : meta.error.status;
+  if (status === 429 || status === 401 || status === 403) {
+    return false;
+  }
+
+  if (status === 422 && isConstraintDetail(meta.detail)) {
+    return false;
+  }
+
+  const fallbackProviderMessage =
+    meta.providerMessage ?? (meta.error instanceof Error ? meta.error.message : null);
+  const message = condenseFalErrorMessage(normalizeFalErrorValue(fallbackProviderMessage));
+  if (isSafetyMessage(message)) {
+    return false;
+  }
+
+  if (typeof status === 'number' && (TRANSIENT_FAL_STATUS_CODES.has(status) || status === 422 || status === 404)) {
+    return true;
+  }
+
+  if (message) {
+    return /timeout|timed out|try again|queued|in progress|pending|not ready|still processing|rate limited/i.test(
+      message
+    );
+  }
+
+  return false;
+}
+
+function shouldDeferFalError(meta: FalErrorMetadata): boolean {
+  if (!(meta.error instanceof FalGenerationError)) {
+    return false;
+  }
+
+  const providerJobId = meta.providerJobId ?? meta.error.providerJobId ?? null;
+  if (!providerJobId) return false;
+
+  const status = typeof meta.status === 'number' ? meta.status : meta.error.status;
+  if (status === 429 || status === 401 || status === 403) {
+    return false;
+  }
+
+  if (status === 422 && isConstraintDetail(meta.detail)) {
+    return false;
+  }
+
+  const fallbackProviderMessage =
+    meta.providerMessage ?? (meta.error instanceof Error ? meta.error.message : null);
+  const message = condenseFalErrorMessage(normalizeFalErrorValue(fallbackProviderMessage));
+  if (isSafetyMessage(message)) {
+    return false;
+  }
+
+  if (typeof status === 'number' && (TRANSIENT_FAL_STATUS_CODES.has(status) || status === 422 || status === 404)) {
+    return true;
+  }
+
+  if (message) {
+    return /timeout|timed out|try again|queued|in progress|pending|not ready|still processing|rate limited/i.test(
+      message
+    );
+  }
+
+  return false;
+}
+
+async function markJobAwaitingFal(params: {
+  jobId: string;
+  engineId: string;
+  providerJobId: string | null;
+  message: string | null;
+  statusLabel: string;
+  attempt: number;
+  context?: Record<string, unknown>;
+  progressFloor?: number;
+}): Promise<void> {
+  const progressFloor = params.progressFloor ?? FAL_PROGRESS_FLOOR;
+  const message = params.message ? condenseFalErrorMessage(params.message) : null;
+  try {
+    await query(
+      `UPDATE app_jobs
+       SET status = 'running',
+           progress = GREATEST(progress, $2),
+           message = CASE WHEN $3 IS NOT NULL THEN $3::text ELSE message END,
+           provider_job_id = COALESCE($4, provider_job_id),
+           provisional = FALSE,
+           updated_at = NOW()
+       WHERE job_id = $1`,
+      [params.jobId, progressFloor, message, params.providerJobId]
+    );
+  } catch (error) {
+    console.warn('[api/generate] failed to mark job awaiting Fal', { jobId: params.jobId }, error);
+  }
+
+  if (!params.providerJobId) {
+    return;
+  }
+
+  try {
+    await query(
+      `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
+       VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
+      [
+        params.jobId,
+        'fal',
+        params.providerJobId,
+        params.engineId,
+        params.statusLabel,
+        JSON.stringify({
+          attempt: params.attempt,
+          at: new Date().toISOString(),
+          message,
+          context: params.context ?? null,
+        }),
+      ]
+    );
+  } catch (error) {
+    console.warn('[queue-log] failed to record transient Fal event', error);
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -929,24 +1135,93 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     return NextResponse.json({ ok: false, error: 'Failed to persist job record' }, { status: 500 });
   }
 
+  let lastProviderJobId: string | null = null;
+
   try {
-    const maxAttempts = isLumaRay2 ? 2 : 1;
+    const maxAttempts = isLumaRay2 ? 4 : 3;
     let attempt = 0;
     let lastError: unknown;
     while (attempt < maxAttempts) {
       attempt += 1;
       try {
         const promise = generateVideo({ ...falPayload });
-        generationResult = isLumaRay2
-          ? await withFalTimeout(promise, LUMA_RAY2_TIMEOUT_MS)
-          : await promise;
+        generationResult = isLumaRay2 ? await withFalTimeout(promise, LUMA_RAY2_TIMEOUT_MS) : await promise;
         break;
       } catch (error) {
-        if (isLumaRay2 && error instanceof FalTimeoutError && attempt < maxAttempts) {
-          console.warn('[fal] lumaRay2 timeout', { jobId, attempt });
-          lastError = error;
+        lastError = error;
+        const falError = error instanceof FalGenerationError ? error : null;
+        const rawStatus =
+          error && typeof error === 'object' && 'status' in error ? (error as { status?: number }).status : undefined;
+        const metadataStatus =
+          error && typeof error === 'object' && '$metadata' in error
+            ? ((error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode)
+            : undefined;
+        const status = rawStatus ?? metadataStatus ?? falError?.status ?? null;
+        const detail =
+          (falError && falError.body != null ? falError.body : null) ??
+          ((error && typeof error === 'object' && 'body' in error ? (error as { body?: unknown }).body : null) ?? null);
+        const providerMessageRaw =
+          extractFalProviderMessage(detail) ??
+          (falError?.body ? extractFalProviderMessage(falError.body) : null) ??
+          (error && typeof error === 'object' && 'response' in error
+            ? extractFalProviderMessage((error as { response?: unknown }).response)
+            : null) ??
+          extractFalProviderMessage(error) ??
+          (error instanceof Error ? error.message : null);
+        const providerMessage = condenseFalErrorMessage(providerMessageRaw);
+        const providerJobId: string | null =
+          falError?.providerJobId ??
+          (typeof (error as { providerJobId?: string } | undefined)?.providerJobId === 'string'
+            ? (error as { providerJobId?: string }).providerJobId
+            : null) ??
+          lastProviderJobId ??
+          batchId ??
+          null;
+
+        const retryable = shouldRetryFalError({
+          error,
+          status,
+          detail,
+          providerMessage,
+          providerJobId,
+          attempt,
+          maxAttempts,
+        });
+
+        if (retryable) {
+          lastProviderJobId = providerJobId;
+          if (isLumaRay2 && error instanceof FalTimeoutError) {
+            console.warn('[fal] lumaRay2 timeout', { jobId, attempt });
+          }
+
+          const waitMsRaw = FAL_RETRY_DELAYS_MS[Math.min(attempt - 1, FAL_RETRY_DELAYS_MS.length - 1)] ?? 5_000;
+          const waitMs = Number.isFinite(waitMsRaw) ? waitMsRaw : 5_000;
+          const progressFloor = Math.min(95, FAL_PROGRESS_FLOOR + attempt * 5);
+          const retryMessage =
+            providerMessage && providerMessage.toLowerCase() !== 'fal request failed'
+              ? `Fal reported "${providerMessage}". Nouvelle tentative en cours.`
+              : 'Fal a signalé une erreur temporaire. Nouvelle tentative en cours.';
+
+          await markJobAwaitingFal({
+            jobId,
+            engineId: engine.id,
+            providerJobId,
+            message: retryMessage,
+            statusLabel: 'retry-scheduled',
+            attempt,
+            context: {
+              status,
+              waitMs,
+            },
+            progressFloor,
+          });
+
+          if (waitMs > 0) {
+            await delay(waitMs);
+          }
           continue;
         }
+
         throw error;
       }
     }
@@ -995,12 +1270,12 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     });
     const failureMessage = translation.message;
     const errorCode = translation.code;
-    const providerJobId =
+    const providerJobId: string | null =
       error instanceof FalGenerationError && error.providerJobId
         ? error.providerJobId
         : typeof (error as { providerJobId?: string } | undefined)?.providerJobId === 'string'
           ? (error as { providerJobId?: string }).providerJobId!
-          : batchId ?? null;
+          : lastProviderJobId ?? batchId ?? null;
     const paymentStatusOverride =
       pendingReceipt && paymentMode === 'wallet'
         ? 'refunded_wallet'
@@ -1028,6 +1303,51 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
       },
       error
     );
+
+    const deferable =
+      !isQuotaError &&
+      shouldDeferFalError({
+        error,
+        status,
+        detail,
+        providerMessage: effectiveProviderMessage ?? providerMessage ?? fallbackMessage,
+        providerJobId,
+      });
+
+    if (deferable && providerJobId) {
+      const progressFloor = Math.min(95, FAL_PROGRESS_FLOOR + FAL_RETRY_DELAYS_MS.length * 5);
+      const waitingMessage =
+        effectiveProviderMessage && effectiveProviderMessage !== fallbackMessage
+          ? `Fal en cours de traitement: ${effectiveProviderMessage}`
+          : 'Fal continue le rendu, nouvelle mise à jour imminente.';
+
+      await markJobAwaitingFal({
+        jobId,
+        engineId: engine.id,
+        providerJobId,
+        message: waitingMessage,
+        statusLabel: 'deferred',
+        attempt: FAL_RETRY_DELAYS_MS.length + 1,
+        context: {
+          status,
+          deferred: true,
+        },
+        progressFloor,
+      });
+
+      return NextResponse.json(
+        {
+          ok: true,
+          jobId,
+          status: 'running',
+          progress: progressFloor,
+          providerJobId,
+          deferred: true,
+          message: waitingMessage,
+        },
+        { status: 202 }
+      );
+    }
 
     try {
       await query(
