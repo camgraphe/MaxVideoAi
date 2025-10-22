@@ -49,7 +49,7 @@ const TYPE_CLASS: Record<AdminTransactionRecord['type'], string> = {
 export function AdminTransactionTable({ initialTransactions }: AdminTransactionTableProps) {
   const [rows, setRows] = useState<AdminTransactionRecord[]>(initialTransactions);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [pendingJobId, setPendingJobId] = useState<string | null>(null);
+  const [pendingReceiptId, setPendingReceiptId] = useState<number | null>(null);
   const [status, setStatus] = useState<{ message: string; variant: StatusVariant } | null>(null);
 
   const sortedRows = useMemo(
@@ -79,16 +79,16 @@ export function AdminTransactionTable({ initialTransactions }: AdminTransactionT
   }, []);
 
   const handleRefund = useCallback(
-    async (jobId: string) => {
-      const confirm = window.confirm('Issue a manual wallet refund for this job? This action cannot be undone.');
+    async (record: AdminTransactionRecord) => {
+      const confirm = window.confirm('Issue a manual wallet refund for this charge? This action cannot be undone.');
       if (!confirm) return;
-      const noteInput = window.prompt('Optional note (appears in job message and metadata):') ?? undefined;
-      setPendingJobId(jobId);
+      const noteInput = window.prompt('Optional note (appears in metadata):') ?? undefined;
+      setPendingReceiptId(record.receiptId);
       try {
         const response = await fetch('/api/admin/transactions/refund', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ jobId, note: noteInput }),
+          body: JSON.stringify({ jobId: record.jobId, receiptId: record.receiptId, note: noteInput }),
         });
         const payload = await response.json().catch(() => null);
         if (!response.ok || !payload?.ok) {
@@ -100,7 +100,7 @@ export function AdminTransactionTable({ initialTransactions }: AdminTransactionT
         const message = error instanceof Error ? error.message : 'Refund failed.';
         setStatus({ message, variant: 'error' });
       } finally {
-        setPendingJobId(null);
+        setPendingReceiptId(null);
       }
     },
     [refresh]
@@ -177,7 +177,8 @@ export function AdminTransactionTable({ initialTransactions }: AdminTransactionT
                       Video
                     </a>
                   ) : null;
-                const isPending = pendingJobId === row.jobId;
+                const isPending = pendingReceiptId === row.receiptId;
+                const jobMissing = Boolean(row.jobId && !row.jobStatus && !row.jobPaymentStatus && !row.jobEngineLabel);
 
                 return (
                   <tr key={`${row.receiptId}-${row.createdAt}`}>
@@ -218,6 +219,7 @@ export function AdminTransactionTable({ initialTransactions }: AdminTransactionT
                         <span className="uppercase tracking-wide text-text-muted">
                           {row.jobPaymentStatus ?? '—'}
                         </span>
+                        {jobMissing ? <span className="text-amber-700">Job record missing</span> : null}
                         {row.hasRefund ? <span className="text-green-700">Refunded</span> : null}
                       </div>
                     </td>
@@ -228,7 +230,7 @@ export function AdminTransactionTable({ initialTransactions }: AdminTransactionT
                       {row.canRefund ? (
                         <button
                           type="button"
-                          onClick={() => handleRefund(row.jobId!)}
+                          onClick={() => handleRefund(row)}
                           disabled={isPending}
                           className={clsx(
                             'inline-flex items-center rounded-md border border-destructive px-3 py-1.5 text-sm font-medium text-destructive transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive',
