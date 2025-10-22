@@ -1,5 +1,4 @@
 import { normalizeMediaUrl } from '@/lib/media';
-import { getPlaceholderMedia } from '@/lib/placeholderMedia';
 import type { Job } from '@/types/jobs';
 import type { GroupSummary, GroupMemberSummary } from '@/types/groups';
 
@@ -30,15 +29,21 @@ function shouldGroup(job: Job, iterationCountHint: number): boolean {
 }
 
 function buildMember(job: Job): GroupMemberSummary {
-  const placeholder = getPlaceholderMedia(job.jobId);
-  const thumbUrl = normalizeMediaUrl(job.thumbUrl) ?? placeholder.posterUrl;
-  const videoUrl = normalizeMediaUrl(job.videoUrl) ?? placeholder.videoUrl;
-  const aspectRatio = job.aspectRatio ?? placeholder.aspectRatio;
+  const thumbUrl = normalizeMediaUrl(job.thumbUrl) ?? null;
+  const videoUrl = normalizeMediaUrl(job.videoUrl) ?? null;
+  const aspectRatio = job.aspectRatio ?? '16:9';
   const priceCents = job.finalPriceCents ?? job.pricingSnapshot?.totalCents ?? null;
   const currency = job.currency ?? job.pricingSnapshot?.currency ?? null;
   const iterationCount = job.iterationCount ?? (Array.isArray(job.renderIds) ? job.renderIds.length : null) ?? null;
   const statusRaw = (job.status ?? '').toLowerCase();
+  const isCompletionStatus =
+    statusRaw === 'completed' ||
+    statusRaw === 'success' ||
+    statusRaw === 'succeeded' ||
+    statusRaw === 'finished';
   let status: GroupMemberSummary['status'] = 'completed';
+  const hasVideo = Boolean(videoUrl);
+
   if (statusRaw === 'failed') {
     status = 'failed';
   } else if (
@@ -46,11 +51,17 @@ function buildMember(job: Job): GroupMemberSummary {
     statusRaw === 'queued' ||
     statusRaw === 'running' ||
     statusRaw === 'processing' ||
-    (!videoUrl && statusRaw !== 'completed')
+    statusRaw === 'in_progress' ||
+    (!hasVideo && !isCompletionStatus)
   ) {
     status = 'pending';
-  } else if (!videoUrl) {
-    status = 'pending';
+  } else {
+    status = 'completed';
+  }
+
+  let message = job.message ?? null;
+  if (!hasVideo && !message && status !== 'completed') {
+    message = status === 'failed' ? 'Media unavailable. Try re-running this job.' : 'Processing…';
   }
 
   return {
@@ -75,10 +86,10 @@ function buildMember(job: Job): GroupMemberSummary {
         ? job.progress
         : status === 'completed'
           ? 100
-          : job.videoUrl
-            ? 100
+          : hasVideo
+            ? 75
             : 0,
-    message: job.message ?? null,
+    message,
     etaLabel: job.etaLabel ?? null,
     etaSeconds: job.etaSeconds ?? null,
     createdAt: job.createdAt,
@@ -111,10 +122,9 @@ function pickHero(bucket: GroupBucket, members: GroupMemberSummary[]): GroupMemb
 
 function buildSingleGroup(job: Job): GroupSummary {
   const member = buildMember(job);
-  const placeholder = getPlaceholderMedia(job.jobId);
-  const thumb = member.thumbUrl ?? placeholder.posterUrl;
-  const video = member.videoUrl ?? placeholder.videoUrl;
-  const aspect = member.aspectRatio ?? placeholder.aspectRatio;
+  const thumb = member.thumbUrl ?? null;
+  const video = member.videoUrl ?? null;
+  const aspect = member.aspectRatio ?? job.aspectRatio ?? '16:9';
   const priceCents = typeof member.priceCents === 'number' ? member.priceCents : null;
   const currency = member.currency ?? null;
   const createdAt = member.createdAt ?? job.createdAt;
@@ -241,16 +251,10 @@ export function groupJobsIntoSummaries(
     const count = Math.max(1, Math.min(4, observedCount));
     const splitMode = count > 1 ? 'quad' : 'single';
 
-    const previews = members.slice(0, count).map((member, index) => {
-      let thumb = member.thumbUrl;
-      let video = member.videoUrl;
-      let aspect = member.aspectRatio;
-      if (!thumb || !video || !aspect) {
-        const placeholder = getPlaceholderMedia(`${member.id}-${index}`);
-        if (!thumb) thumb = placeholder.posterUrl;
-        if (!video) video = placeholder.videoUrl;
-        if (!aspect) aspect = placeholder.aspectRatio;
-      }
+    const previews = members.slice(0, count).map((member) => {
+      const thumb = member.thumbUrl ?? null;
+      const video = member.videoUrl ?? null;
+      const aspect = member.aspectRatio ?? '16:9';
       return {
         id: member.id,
         thumbUrl: thumb,

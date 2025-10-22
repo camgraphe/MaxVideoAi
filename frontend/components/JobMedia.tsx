@@ -6,7 +6,6 @@ import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Job } from '@/types/jobs';
 import { normalizeMediaUrl } from '@/lib/media';
-import { getPlaceholderMedia } from '@/lib/placeholderMedia';
 
 export function JobMedia({
   job,
@@ -18,9 +17,8 @@ export function JobMedia({
   objectFit?: 'cover' | 'contain';
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const placeholder = useMemo(() => getPlaceholderMedia(job.jobId), [job.jobId]);
-  const videoUrl = normalizeMediaUrl(job.videoUrl) ?? placeholder.videoUrl;
-  const poster = normalizeMediaUrl(job.thumbUrl) ?? placeholder.posterUrl;
+  const videoUrl = useMemo(() => normalizeMediaUrl(job.videoUrl) ?? undefined, [job.videoUrl]);
+  const poster = useMemo(() => normalizeMediaUrl(job.thumbUrl) ?? undefined, [job.thumbUrl]);
   const [isHovered, setHovered] = useState(false);
   const [allowMotion, setAllowMotion] = useState(true);
 
@@ -114,7 +112,7 @@ export function JobMedia({
     };
   }, [allowMotion, isHovered, videoUrl]);
 
-  const effectiveAspect = job.aspectRatio ?? placeholder.aspectRatio;
+  const effectiveAspect = job.aspectRatio ?? '16:9';
 
   const aspectClass = useMemo(() => {
     if (effectiveAspect === '9:16') return 'aspect-[9/16]';
@@ -125,7 +123,13 @@ export function JobMedia({
   const objectFitClass = objectFit === 'contain' ? 'object-contain' : 'object-cover';
 
   if (!videoUrl) {
-    if (!poster) return null;
+    if (!poster) {
+      return (
+        <div className={clsx('absolute inset-0 flex items-center justify-center bg-[var(--surface-2)] px-4 text-center text-xs font-medium text-text-muted', className)}>
+          Media unavailable
+        </div>
+      );
+    }
     if (poster.startsWith('data:')) {
       return <img src={poster} alt={job.prompt || ''} className={clsx('absolute inset-0 h-full w-full', objectFitClass, className)} />;
     }
