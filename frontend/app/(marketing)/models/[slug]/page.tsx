@@ -211,7 +211,7 @@ export default function ModelDetailPage({ params }: PageParams) {
             <h2 className="text-lg font-semibold text-text-primary">Sora 2 pricing & routing</h2>
             <p className="mt-2 text-sm text-text-secondary">
               Base runs bill via FAL credits when you leave the OpenAI API key blank. Add your own key inside the workspace to move billing to OpenAI-our UI keeps
-              showing the indicative rate and surfaces a "Billed by OpenAI" badge for finance.
+              showing the indicative rate and surfaces a &quot;Billed by OpenAI&quot; badge for finance.
             </p>
             <ul className="mt-4 space-y-3 text-sm text-text-secondary">
               {soraEndpoints.map((item) => (

@@ -84,9 +84,9 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
     );
   };
 
-  const removeVideo = (id: string) => {
+  const removeVideo = useCallback((id: string) => {
     setItems((current) => current.filter((item) => item.id !== id));
-  };
+  }, [setItems]);
 
   const updateVisibility = (video: ModerationVideo, visibility: 'public' | 'private', indexable: boolean) => {
     startTransition(async () => {

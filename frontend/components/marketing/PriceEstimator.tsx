@@ -156,10 +156,9 @@ export function PriceEstimator({ showWalletActions = true, variant = 'full' }: P
   const descriptions = dictionary.pricing.estimator.descriptions;
   const availabilityLabels = dictionary.models.availabilityLabels;
 
-  const apiEngines = data?.engines ?? [];
-
   const engineOptions = useMemo(() => {
-    const runtimeMap = new Map<string, EngineCaps>(apiEngines.map((engine) => [engine.id, engine]));
+    const payload = data?.engines ?? [];
+    const runtimeMap = new Map<string, EngineCaps>(payload.map((engine) => [engine.id, engine]));
     const options = FAL_ENGINE_REGISTRY.map((entry) => {
       const runtimeCaps = runtimeMap.get(entry.id) ?? entry.engine;
       return buildEngineOption(entry, runtimeCaps, kernel, descriptions);
@@ -178,7 +177,7 @@ export function PriceEstimator({ showWalletActions = true, variant = 'full' }: P
       const orderB = FAL_ENGINE_ORDER.get(b.id) ?? Number.MAX_SAFE_INTEGER;
       return orderA - orderB;
     });
-  }, [apiEngines, descriptions, kernel]);
+  }, [data?.engines, descriptions, kernel]);
 
   const [selectedEngineId, setSelectedEngineId] = useState(() => engineOptions[0]?.id ?? '');
   const selectedEngine = useMemo(() => engineOptions.find((option) => option.id === selectedEngineId) ?? engineOptions[0], [engineOptions, selectedEngineId]);

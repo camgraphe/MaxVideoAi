@@ -4,7 +4,6 @@ import { getPricingKernel } from '@/lib/pricing-kernel';
 import type {
   EngineCaps,
   ItemizationLine,
-  Mode,
   PreflightRequest,
   PreflightResponse,
   Resolution,

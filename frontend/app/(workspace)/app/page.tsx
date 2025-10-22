@@ -2968,7 +2968,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     for (let iterationIndex = 0; iterationIndex < iterationCount; iterationIndex += 1) {
       void runIteration(iterationIndex);
     }
-  }, [form, prompt, negativePrompt, selectedEngine, preflight, memberTier, showNotice, inputSchemaSummary, inputAssets, authChecked, setActiveGroupId, capability]);
+  }, [form, prompt, negativePrompt, selectedEngine, preflight, memberTier, showNotice, inputSchemaSummary, inputAssets, authChecked, setActiveGroupId, capability, defaultAllowIndex]);
 
   useEffect(() => {
     if (!selectedEngine || !authChecked) return;
