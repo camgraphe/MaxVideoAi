@@ -108,16 +108,81 @@ export async function GET(req: NextRequest) {
     if (staleJobs.length) {
       const falClient = getFalClient();
       const refreshedIds: string[] = [];
+      const FAILURE_STATES = new Set(['FAILED', 'FAIL', 'ERROR', 'ERRORED', 'CANCELLED', 'CANCELED', 'NOT_FOUND', 'MISSING', 'UNKNOWN']);
+      const COMPLETED_STATES = new Set(['COMPLETED', 'FINISHED', 'SUCCESS', 'SUCCEEDED']);
       for (const jobRow of staleJobs) {
+        const markJobFailed = async (reason: string) => {
+          try {
+            await updateJobFromFalWebhook({
+              request_id: jobRow.provider_job_id ?? undefined,
+              status: 'failed',
+              response: { error: reason, status: 'failed' },
+              result: { error: reason, status: 'failed' },
+            });
+          } catch (updateError) {
+            console.warn('[api/jobs] failed to mark job as failed via webhook handler', jobRow.job_id, updateError);
+            try {
+              await query(
+                `UPDATE app_jobs SET status = 'failed', progress = LEAST(progress, 1), message = $1 WHERE job_id = $2`,
+                [reason, jobRow.job_id]
+              );
+            } catch (writeError) {
+              console.warn('[api/jobs] database update fallback for failed job also failed', jobRow.job_id, writeError);
+            }
+          }
+          refreshedIds.push(jobRow.job_id);
+        };
+
         try {
           const falModel = (await resolveFalModelId(jobRow.engine_id)) ?? jobRow.engine_id;
+          const statusInfo = (await falClient.queue
+            .status(falModel, { requestId: jobRow.provider_job_id! })
+            .catch((error: unknown) => {
+              console.warn('[api/jobs] fal status fetch failed', jobRow.job_id, error);
+              return null;
+            })) as Record<string, unknown> | null;
+
+          if (!statusInfo) {
+            await markJobFailed('Fal job status unavailable (possibly expired).');
+            continue;
+          }
+
+          const statusRecord = statusInfo as Record<string, unknown>;
+          const rawState =
+            (typeof statusRecord.status === 'string' && (statusRecord.status as string)) ||
+            (typeof statusRecord.state === 'string' && (statusRecord.state as string)) ||
+            undefined;
+          const state = rawState ? rawState.toUpperCase() : undefined;
+          const providerError =
+            (typeof statusRecord.error === 'string' && (statusRecord.error as string)) ||
+            (typeof statusRecord.error_message === 'string' && (statusRecord.error_message as string)) ||
+            undefined;
+
+          if (state && FAILURE_STATES.has(state)) {
+            await markJobFailed(providerError ?? 'Fal reported this job as failed.');
+            continue;
+          }
+
+          if (!state && !jobRow.video_url) {
+            await markJobFailed(providerError ?? 'Fal could not locate this job.');
+            continue;
+          }
+
+          if (state && !COMPLETED_STATES.has(state)) {
+            // Job is still in progress according to Fal; skip for now.
+            continue;
+          }
+
           const queueResult = await falClient.queue.result(falModel, { requestId: jobRow.provider_job_id! });
-          if (!queueResult) continue;
+          if (!queueResult) {
+            await markJobFailed(providerError ?? 'Fal returned no result for this job.');
+            continue;
+          }
           const previousStatus = (jobRow.status ?? '').toLowerCase();
           const queueStatus =
             queueResult && typeof queueResult === 'object' && 'status' in queueResult
               ? (queueResult as { status?: string | null }).status ?? undefined
-              : undefined;
+              : state ?? undefined;
           const shouldPreserveStatus =
             previousStatus === 'completed' || previousStatus === 'success' || previousStatus === 'succeeded';
           const nextStatus = shouldPreserveStatus && queueStatus ? jobRow.status ?? undefined : queueStatus ?? jobRow.status ?? undefined;
@@ -129,6 +194,9 @@ export async function GET(req: NextRequest) {
           refreshedIds.push(jobRow.job_id);
         } catch (error) {
           console.warn('[api/jobs] failed to refresh job from Fal', jobRow.job_id, error);
+          await markJobFailed(
+            error instanceof Error ? error.message : 'Fal job could not be refreshed and was marked as failed.'
+          );
         }
       }
 
