@@ -4,7 +4,9 @@ import type { PricingSnapshot } from '@/types/engines';
 import { normalizeMediaUrl } from '@/lib/media';
 import { ensureBillingSchema } from '@/lib/schema';
 import { getUserIdFromRequest } from '@/lib/user';
-import { listPlaylistVideos } from '@/server/videos';
+import { resolveFalModelId } from '@/lib/fal-catalog';
+import { getFalClient } from '@/lib/fal-client';
+import { updateJobFromFalWebhook } from '@/server/fal-webhook-handler';
 
 export async function GET(req: NextRequest) {
   if (!isDatabaseConfigured()) {
@@ -46,7 +48,7 @@ export async function GET(req: NextRequest) {
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
     const limitParamIndex = params.length;
 
-    const rows = await query<{
+    type JobRow = {
       id: number;
       job_id: string;
       engine_id: string;
@@ -79,8 +81,13 @@ export async function GET(req: NextRequest) {
       eta_label: string | null;
       visibility: string | null;
       indexable: boolean | null;
-    }>(
-    `SELECT id, job_id, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable
+      status: string | null;
+      progress: number | null;
+      provider_job_id: string | null;
+    };
+
+    let rows = await query<JobRow>(
+    `SELECT id, job_id, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider_job_id
        FROM app_jobs
        ${where}
        ORDER BY id DESC
@@ -88,35 +95,47 @@ export async function GET(req: NextRequest) {
       params
     );
 
-    if (!rows.length && !cursor) {
-      const playlistSlug = process.env.STARTER_PLAYLIST_SLUG ?? 'starter';
-      try {
-        const curatedVideos = await listPlaylistVideos(playlistSlug, limit);
-        if (curatedVideos.length) {
-          const curatedJobs = curatedVideos.map((video) => ({
-            jobId: video.id,
-            engineLabel: video.engineLabel,
-            durationSec: video.durationSec,
-            prompt: video.prompt,
-            thumbUrl: video.thumbUrl ?? undefined,
-            videoUrl: video.videoUrl ?? undefined,
-            createdAt: video.createdAt,
-            engineId: video.engineId,
-            aspectRatio: video.aspectRatio ?? undefined,
-            hasAudio: Boolean(video.hasAudio),
-            canUpscale: Boolean(video.canUpscale),
-            visibility: video.visibility,
-            indexable: video.indexable,
-            status: 'completed' as const,
-            progress: 100,
-            curated: true,
-          }));
-          return NextResponse.json({ ok: true, jobs: curatedJobs, nextCursor: null });
+    const staleJobs = rows.filter(
+      (row) =>
+        row.provider_job_id &&
+        (!row.video_url || !row.thumb_url) &&
+        row.status !== 'failed' &&
+        row.status !== 'cancelled'
+    );
+
+    if (staleJobs.length) {
+      const falClient = getFalClient();
+      const refreshedIds: string[] = [];
+      for (const jobRow of staleJobs) {
+        try {
+          const falModel = (await resolveFalModelId(jobRow.engine_id)) ?? jobRow.engine_id;
+          const queueResult = await falClient.queue.result(falModel, { requestId: jobRow.provider_job_id! });
+          if (!queueResult) continue;
+          const queueStatus =
+            queueResult && typeof queueResult === 'object' && 'status' in queueResult
+              ? (queueResult as { status?: string | null }).status ?? undefined
+              : undefined;
+          await updateJobFromFalWebhook({
+            request_id: jobRow.provider_job_id ?? undefined,
+            status: queueStatus ?? jobRow.status ?? undefined,
+            result: queueResult,
+          });
+          refreshedIds.push(jobRow.job_id);
+        } catch (error) {
+          console.warn('[api/jobs] failed to refresh job from Fal', jobRow.job_id, error);
         }
-      } catch (error) {
-        console.warn('[api/jobs] failed to load curated starter playlist', error);
       }
-      return NextResponse.json({ ok: true, jobs: [], nextCursor: null });
+
+      if (refreshedIds.length) {
+        const refreshedRows = await query<JobRow>(
+          `SELECT id, job_id, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider_job_id
+             FROM app_jobs
+             WHERE job_id = ANY($1::text[])`,
+          [refreshedIds]
+        );
+        const refreshedMap = new Map(refreshedRows.map((row) => [row.job_id, row]));
+        rows = rows.map((row) => refreshedMap.get(row.job_id) ?? row);
+      }
     }
 
     const hasMore = rows.length > limit;
@@ -153,6 +172,8 @@ export async function GET(req: NextRequest) {
             (entry): entry is string => Boolean(entry)
           )
         : undefined,
+      status: r.status ?? undefined,
+      progress: typeof r.progress === 'number' ? r.progress : undefined,
       heroRenderId: r.hero_render_id ?? undefined,
       localKey: r.local_key ?? undefined,
       message: r.message ?? undefined,
