@@ -95,13 +95,15 @@ export async function GET(req: NextRequest) {
       params
     );
 
-    const staleJobs = rows.filter(
-      (row) =>
-        row.provider_job_id &&
-        (!row.video_url || !row.thumb_url) &&
-        row.status !== 'failed' &&
-        row.status !== 'cancelled'
-    );
+    const staleJobs = rows.filter((row) => {
+      if (!row.provider_job_id) return false;
+      const status = (row.status ?? '').toLowerCase();
+      if (status === 'failed' || status === 'cancelled') return false;
+      const missingVideo = !row.video_url;
+      const missingThumb = !row.thumb_url;
+      if (!missingVideo && status === 'completed') return false;
+      return missingVideo || missingThumb;
+    });
 
     if (staleJobs.length) {
       const falClient = getFalClient();
@@ -111,13 +113,17 @@ export async function GET(req: NextRequest) {
           const falModel = (await resolveFalModelId(jobRow.engine_id)) ?? jobRow.engine_id;
           const queueResult = await falClient.queue.result(falModel, { requestId: jobRow.provider_job_id! });
           if (!queueResult) continue;
+          const previousStatus = (jobRow.status ?? '').toLowerCase();
           const queueStatus =
             queueResult && typeof queueResult === 'object' && 'status' in queueResult
               ? (queueResult as { status?: string | null }).status ?? undefined
               : undefined;
+          const shouldPreserveStatus =
+            previousStatus === 'completed' || previousStatus === 'success' || previousStatus === 'succeeded';
+          const nextStatus = shouldPreserveStatus && queueStatus ? jobRow.status ?? undefined : queueStatus ?? jobRow.status ?? undefined;
           await updateJobFromFalWebhook({
             request_id: jobRow.provider_job_id ?? undefined,
-            status: queueStatus ?? jobRow.status ?? undefined,
+            status: nextStatus,
             result: queueResult,
           });
           refreshedIds.push(jobRow.job_id);
