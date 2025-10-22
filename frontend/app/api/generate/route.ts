@@ -20,6 +20,7 @@ import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails'
 import { getEngineCaps } from '@/fixtures/engineCaps';
 import { getSoraVariantForEngine, isSoraEngineId, parseSoraRequest, type SoraRequest } from '@/lib/sora';
 import { ensureUserPreferences } from '@/server/preferences';
+import { translateError } from '@/lib/error-messages';
 import {
   getLumaRay2DurationInfo,
   getLumaRay2ResolutionInfo,
@@ -133,7 +134,7 @@ function condenseFalErrorMessage(message: string | null | undefined): string | n
   if (!message) return null;
   const condensed = message.replace(/\s+/g, ' ').trim();
   if (!condensed.length) return null;
-  return condensed.length > 400 ? `${condensed.slice(0, 400)}…` : condensed;
+  return condensed.length > 400 ? `${condensed.slice(0, 400)}...` : condensed;
 }
 
 export async function POST(req: NextRequest) {
@@ -258,13 +259,14 @@ export async function POST(req: NextRequest) {
 
   let soraRequest: SoraRequest | null = null;
   if (isSoraEngineId(engine.id)) {
-    const variant = getSoraVariantForEngine(engine.id);
+    const variant = getSoraVariantForEngine();
+    const fallbackAspect = mode === 'i2v' ? 'auto' : '16:9';
     const candidate: Record<string, unknown> = {
       variant,
       mode,
       prompt,
-      resolution: requestedResolution,
-      aspect_ratio: rawAspectRatio ?? 'auto',
+      resolution: requestedResolution === 'auto' && mode === 't2v' ? engine.resolutions[0] ?? '720p' : requestedResolution,
+      aspect_ratio: rawAspectRatio ?? fallbackAspect,
       duration: durationSec,
       api_key: typeof body.apiKey === 'string' && body.apiKey.trim().length ? body.apiKey.trim() : undefined,
     };
@@ -494,7 +496,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
       userId: walletUserId,
       amountCents: pricing.totalCents,
       currency: pricing.currency,
-      description: `Run ${engine.label} • ${durationSec}s`,
+      description: `Run ${engine.label} - ${durationSec}s`,
       jobId,
       pricingSnapshotJson,
       applicationFeeCents,
@@ -522,7 +524,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
       userId: walletUserId,
       amountCents: pricing.totalCents,
       currency: pricing.currency,
-      description: `Run ${engine.label} • ${durationSec}s`,
+      description: `Run ${engine.label} - ${durationSec}s`,
       jobId,
       snapshot: pricing,
       applicationFeeCents,
@@ -569,7 +571,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
       userId: String(userId),
       amountCents: intent.amount_received ?? intent.amount,
       currency: intentCurrency,
-      description: `Run ${engine.label} • ${durationSec}s`,
+      description: `Run ${engine.label} - ${durationSec}s`,
       jobId,
       snapshot: pricing,
       applicationFeeCents: intent.application_fee_amount ?? applicationFeeCents,
@@ -748,9 +750,11 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     return NextResponse.json(
       {
         ok: false,
-        code: validationResult.error.code,
+        error: validationResult.error.code ?? 'ENGINE_CONSTRAINT',
+        message: validationResult.error.message,
         field: validationResult.error.field,
-        error: validationResult.error.message,
+        allowed: validationResult.error.allowed,
+        value: validationResult.error.value,
       },
       { status: 400 }
     );
@@ -907,7 +911,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
             pendingReceipt.userId,
             pendingReceipt.amountCents,
             pendingReceipt.currency,
-            `Refund ${engine.label} • ${durationSec}s`,
+            `Refund ${engine.label} - ${durationSec}s`,
             pendingReceipt.jobId,
             JSON.stringify(pendingReceipt.snapshot),
             0,
@@ -975,14 +979,22 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
       status === 429 ||
       (typeof providerMessage === 'string' && providerMessage.toLowerCase().includes('quota'));
     const fallbackMessage = isTimeoutError
-      ? 'The generation took too long and was stopped. Please try again or lower resolution.'
+      ? 'Generation timed out'
       : isQuotaError
-        ? 'This engine is temporarily unavailable. Please try again later or pick another engine.'
+        ? 'Provider is rate limiting'
         : 'Fal request failed';
-    const failureMessage =
-      typeof effectiveProviderMessage === 'string' && effectiveProviderMessage.length && !isTimeoutError && !isQuotaError
-        ? effectiveProviderMessage
-        : fallbackMessage;
+    const rawErrorCode =
+      typeof (error as { code?: string } | undefined)?.code === 'string'
+        ? (error as { code?: string }).code
+        : null;
+    const translation = translateError({
+      code: isTimeoutError ? 'PROVIDER_BUSY' : isQuotaError ? 'RATE_LIMITED' : rawErrorCode,
+      status,
+      message: effectiveProviderMessage ?? providerMessage ?? fallbackMessage,
+      providerMessage: effectiveProviderMessage ?? providerMessage ?? null,
+    });
+    const failureMessage = translation.message;
+    const errorCode = translation.code;
     const providerJobId =
       error instanceof FalGenerationError && error.providerJobId
         ? error.providerJobId
@@ -995,9 +1007,14 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
         : pendingReceipt && paymentMode !== 'wallet'
           ? 'refunded'
           : null;
-    const baseRefundDescription = `Refund ${engine.label} • ${durationSec}s`;
+    const baseRefundDescription = `Refund ${engine.label} - ${durationSec}s`;
     const refundNote = effectiveProviderMessage ? `Fal error: ${effectiveProviderMessage}` : null;
-    const refundDescription = refundNote ? `${baseRefundDescription} — ${refundNote}` : baseRefundDescription;
+    const refundDescription = refundNote ? `${baseRefundDescription} - ${refundNote}` : baseRefundDescription;
+
+    if (error instanceof FalGenerationError) {
+      (error as { code?: string }).code = errorCode;
+      (error as { userMessage?: string }).userMessage = failureMessage;
+    }
 
     console.error(
       '[api/generate] Fal generation failed',
@@ -1040,21 +1057,37 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
 
     if (status === 422) {
       console.error('[generate] fal returned 422', providerMessage ?? '<no-provider-message>');
-      const userMessage = isLumaRay2 ? LUMA_RAY2_ERROR_UNSUPPORTED : 'Valeur non supportée (voir options listées).';
+      const constraintTranslation = translateError({
+        code: (detail && typeof detail === 'object' && 'code' in (detail as Record<string, unknown>))
+          ? String((detail as Record<string, unknown>).code)
+          : 'ENGINE_CONSTRAINT',
+        status,
+        message: effectiveProviderMessage ?? providerMessage ?? null,
+        providerMessage: effectiveProviderMessage ?? providerMessage ?? null,
+      });
+      const userMessage = isLumaRay2
+        ? LUMA_RAY2_ERROR_UNSUPPORTED
+        : constraintTranslation.message ?? 'Valeur non supportee pour ce moteur.';
       return NextResponse.json(
         {
           ok: false,
-          error: 'FAL_UNPROCESSABLE_ENTITY',
+          error: constraintTranslation.code ?? 'FAL_UNPROCESSABLE_ENTITY',
+          message: userMessage,
+          providerMessage: effectiveProviderMessage ?? providerMessage ?? null,
           detail: detail ?? providerMessage,
-          userMessage,
-          providerMessage,
         },
         { status: 422 }
       );
     }
 
     return NextResponse.json(
-      { ok: false, error: failureMessage },
+      {
+        ok: false,
+        error: errorCode,
+        message: failureMessage,
+        providerMessage: effectiveProviderMessage ?? providerMessage ?? null,
+        detail,
+      },
       { status: isTimeoutError ? 504 : isQuotaError ? 429 : status ?? 500 }
     );
   }
@@ -1170,7 +1203,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
             pendingReceipt.userId,
             pendingReceipt.amountCents,
             pendingReceipt.currency,
-            `Refund ${engine.label} • ${durationSec}s`,
+            `Refund ${engine.label} - ${durationSec}s`,
             pendingReceipt.jobId,
             JSON.stringify(pendingReceipt.snapshot),
             0,
@@ -1252,7 +1285,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
           pendingReceipt.userId,
           pendingReceipt.amountCents,
           pendingReceipt.currency,
-          `Refund ${engine.label} • ${durationSec}s`,
+          `Refund ${engine.label} - ${durationSec}s`,
           pendingReceipt.jobId,
           JSON.stringify(pendingReceipt.snapshot),
           0,

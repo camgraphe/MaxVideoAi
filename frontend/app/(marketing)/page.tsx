@@ -11,6 +11,7 @@ import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getHomepageSlots, HERO_SLOT_KEYS, GALLERY_SLOT_KEYS } from '@/server/homepage';
+import { normalizeEngineId } from '@/lib/engine-alias';
 
 type HeroTileConfig = {
   id: string;
@@ -39,36 +40,37 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     fallbackPriceLabel: 'from $0.43',
     minPriceCents: 43,
     showAudioIcon: true,
-    alt: 'Sora 2 — example clip',
+    alt: 'Sora 2  -  example clip',
   },
   {
-    id: 'veo-3',
-    engineId: 'veo3',
-    label: 'Veo 3',
+    id: 'veo-3-1',
+    engineId: 'veo-3-1',
+    label: 'Veo 3.1',
     videoSrc: '/hero/veo3.mp4',
     posterSrc: '/hero/veo3.jpg',
-    durationSec: 12,
-    resolution: '1080p',
-    fallbackPriceLabel: 'from $0.43',
-    minPriceCents: 43,
-    showAudioIcon: true,
-    alt: 'Veo 3 — example clip',
-  },
-  {
-    id: 'luma-ray-flash',
-    engineId: 'lumaRay2_flash',
-    label: 'Luma Ray 2 Flash',
-    videoSrc: '/hero/luma-ray2-flash.mp4',
-    posterSrc: '/hero/luma-ray2-flash.jpg',
     durationSec: 8,
     resolution: '1080p',
     fallbackPriceLabel: 'from $0.40',
     minPriceCents: 40,
-    alt: 'Luma Dream Machine — example clip',
+    showAudioIcon: true,
+    alt: 'Veo 3.1  -  example clip',
+  },
+  {
+    id: 'veo-3-fast',
+    engineId: 'veo-3-fast',
+    label: 'Veo 3 Fast',
+    videoSrc: '/hero/luma-ray2-flash.mp4',
+    posterSrc: '/hero/luma-ray2-flash.jpg',
+    durationSec: 8,
+    resolution: '720p',
+    fallbackPriceLabel: 'from $0.32',
+    minPriceCents: 32,
+    showAudioIcon: true,
+    alt: 'Veo 3 Fast  -  example clip',
   },
   {
     id: 'pika-22',
-    engineId: 'pika22',
+    engineId: 'pika-text-to-video',
     label: 'Pika 2.2',
     videoSrc: '/hero/pika-22.mp4',
     posterSrc: '/hero/pika-22.jpg',
@@ -76,11 +78,11 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     resolution: '1080p',
     fallbackPriceLabel: 'from $0.24',
     minPriceCents: 24,
-    alt: 'Pika 2.2 — example clip',
+    alt: 'Pika 2.2  -  example clip',
   },
 ] as const;
 
-const WORKS_WITH_BRANDS = ['Sora 2', 'Veo 3', 'Luma Dream Machine', 'Luma Ray 2 Flash', 'Pika 2.2', 'MiniMax Video 1', 'Hunyuan Video'] as const;
+const WORKS_WITH_BRANDS = ['Sora 2', 'Veo 3.1', 'Veo 3 Fast', 'Pika 2.2', 'MiniMax Hailuo 02', 'Hunyuan Image'] as const;
 
 type HeroTilePricingInput = {
   id: string;
@@ -103,18 +105,19 @@ async function resolveHeroTilePrices(tiles: HeroTilePricingInput[]) {
 
   const entries = await Promise.all(
     tiles.map(async (tile) => {
+      const canonicalId = normalizeEngineId(tile.engineId);
       const minPriceCents = tile.minPriceCents ?? null;
       const minPriceCurrency = tile.minPriceCurrency ?? 'USD';
       const fallbackLabel =
         minPriceCents != null ? formatPriceLabel(minPriceCents, minPriceCurrency) : tile.fallbackPriceLabel;
 
-      if (!tile.engineId || !tile.durationSec) {
+      if (!canonicalId || !tile.durationSec) {
         return [tile.id, fallbackLabel] as const;
       }
 
       try {
         const { snapshot } = kernel.quote({
-          engineId: tile.engineId,
+          engineId: canonicalId,
           durationSec: tile.durationSec,
           resolution: tile.resolution ?? '1080p',
           memberTier: 'member',
@@ -136,11 +139,11 @@ async function resolveHeroTilePrices(tiles: HeroTilePricingInput[]) {
 }
 
 export const metadata: Metadata = {
-  title: 'MaxVideo AI — The right engine for every shot',
+  title: 'MaxVideo AI  -  The right engine for every shot',
   description: 'Professional AI video, minus the hassle. Price before you generate. One hub for your work.',
   keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
   openGraph: {
-    title: 'MaxVideo AI — The right engine for every shot',
+    title: 'MaxVideo AI  -  The right engine for every shot',
     description: 'Pay-as-you-go AI video workflows with current models, pricing transparency, and branded outputs.',
     images: [
       {
@@ -184,7 +187,7 @@ export default async function HomePage() {
     const videoSrc = video?.videoUrl ?? fallback.videoSrc;
     const posterSrc = video?.thumbUrl ?? fallback.posterSrc;
     const alt = slot?.subtitle || video?.promptExcerpt || fallback.alt;
-    const engineId = video?.engineId ?? fallback.engineId;
+    const engineId = normalizeEngineId(video?.engineId ?? fallback.engineId) ?? fallback.engineId;
     const durationSec = video?.durationSec ?? fallback.durationSec;
     const resolution = fallback.resolution;
 
@@ -232,8 +235,12 @@ export default async function HomePage() {
       if (typeof video.durationSec === 'number') parts.push(`${video.durationSec}s`);
       if (video.engineId && typeof video.durationSec === 'number') {
         try {
+          const canonicalId = normalizeEngineId(video.engineId);
+          if (!canonicalId) {
+            throw new Error('Unsupported engine');
+          }
           const { snapshot } = galleryPricingKernel.quote({
-            engineId: video.engineId,
+            engineId: canonicalId,
             durationSec: video.durationSec,
             resolution: '1080p',
             memberTier: 'member',
@@ -286,8 +293,8 @@ export default async function HomePage() {
   const videoJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'VideoObject',
-    name: 'MaxVideoAI — Generate cinematic AI video',
-    description: 'Create watermark-free AI videos with Sora 2, Veo 3, Luma, Pika, and more.',
+    name: 'MaxVideoAI - Generate cinematic AI video',
+    description: 'Create watermark-free AI videos with Sora 2, Veo 3.1, Veo 3 Fast, Pika 2.2, MiniMax Hailuo 02, and Hunyuan Image.',
     thumbnailUrl: ['https://maxvideoai.com/og/price-before.png'],
     uploadDate: '2025-10-01T12:00:00+00:00',
     duration: 'PT45S',

@@ -2,19 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { resolveDictionary } from '@/lib/i18n/server';
-import { ENGINE_CAP_INDEX } from '@/fixtures/engineCaps';
 import { listExamples, type ExampleSort } from '@/server/videos';
-
-const ADDITIONAL_ENGINE_ALIASES: Record<string, string> = {
-  'pika-22': 'pika22',
-  'fal-ai/pika/v2.2/text-to-video': 'pika22',
-  'fal-ai/pika/v2.2/image-to-video': 'pika22',
-  'fal-ai/luma-dream-machine': 'lumaDM',
-  'fal-ai/luma-dream-machine/image-to-video': 'lumaDM',
-  'fal-ai/luma-dream-machine/modify': 'lumaDM',
-  'fal-ai/minimax/hailuo-02/pro': 'minimax_hailuo_02_pro',
-  'fal-ai/hunyuan-video/image-to-video': 'hunyuan_video',
-};
+import { listFalEngines } from '@/config/falEngines';
 
 const ENGINE_LINK_ALIASES = (() => {
   const map = new Map<string, string>();
@@ -25,12 +14,12 @@ const ENGINE_LINK_ALIASES = (() => {
     map.set(normalized, alias);
   };
 
-  Object.entries(ENGINE_CAP_INDEX).forEach(([alias, modeMap]) => {
-    register(alias, alias);
-    Object.values(modeMap ?? {}).forEach((engineId) => register(engineId ?? null, alias));
+  listFalEngines().forEach((entry) => {
+    register(entry.id, entry.id);
+    register(entry.modelSlug, entry.id);
+    register(entry.defaultFalModelId, entry.id);
+    entry.modes.forEach((mode) => register(mode.falModelId, entry.id));
   });
-
-  Object.entries(ADDITIONAL_ENGINE_ALIASES).forEach(([key, value]) => register(key, value));
 
   return map;
 })();
@@ -43,11 +32,11 @@ function resolveEngineLinkId(engineId: string | null | undefined): string | null
 }
 
 export const metadata: Metadata = {
-  title: 'Examples — MaxVideo AI',
+  title: 'Examples - MaxVideo AI',
   description: 'Explore real outputs from routed models across use cases and aspect ratios.',
   keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
   openGraph: {
-    title: 'Examples — MaxVideo AI',
+    title: 'Examples - MaxVideo AI',
     description: 'Real AI video outputs with hover loops and engine routing annotations.',
     images: [
       {
@@ -76,7 +65,7 @@ const SORT_OPTIONS: Array<{ id: ExampleSort; label: string }> = [
   { id: 'date-asc', label: 'Oldest' },
   { id: 'duration-desc', label: 'Longest' },
   { id: 'duration-asc', label: 'Shortest' },
-  { id: 'engine-asc', label: 'Engine A→Z' },
+  { id: 'engine-asc', label: 'Engine A->Z' },
 ];
 
 function getSort(value: string | undefined): ExampleSort {
@@ -163,7 +152,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                 <div className="space-y-2 border-t border-hairline p-4">
                   <h2 className="text-lg font-semibold text-text-primary">{video.engineLabel}</h2>
                   <p className="text-xs font-medium uppercase tracking-micro text-text-muted">
-                    Duration {video.durationSec}s · Ratio {video.aspectRatio ?? 'Auto'}
+                    Duration {video.durationSec}s / Ratio {video.aspectRatio ?? 'Auto'}
                   </p>
                   <p className="text-sm text-text-secondary">{video.promptExcerpt}</p>
                   <span className="inline-flex items-center rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary">

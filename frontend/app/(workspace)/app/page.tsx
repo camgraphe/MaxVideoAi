@@ -413,14 +413,22 @@ function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | n
 
 type GenerateClientError = Error & {
   code?: string;
+  originalMessage?: string | null;
+  providerMessage?: string | null;
+  field?: string;
+  allowed?: Array<string | number>;
+  value?: unknown;
   details?: {
     requiredCents?: number;
     balanceCents?: number;
+    [key: string]: unknown;
   };
 };
 
 function isInsufficientFundsError(error: unknown): error is GenerateClientError & { code: 'INSUFFICIENT_WALLET_FUNDS' } {
-  return error instanceof Error && (error as GenerateClientError).code === 'INSUFFICIENT_WALLET_FUNDS';
+  if (!(error instanceof Error)) return false;
+  const code = (error as GenerateClientError).code;
+  return code === 'INSUFFICIENT_WALLET_FUNDS' || code === 'INSUFFICIENT_FUNDS';
 }
 
 function emitClientMetric(event: string, payload?: Record<string, unknown>) {
@@ -2723,9 +2731,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           mode: form.mode,
           membershipTier: memberTier,
           payment: { mode: paymentMode },
-          ...(selectedEngine.id.startsWith('sora-2')
-            ? { variant: selectedEngine.id === 'sora-2-pro' ? 'sora2pro' : 'sora2' }
-            : {}),
+          ...(selectedEngine.id === 'sora-2' ? { variant: 'sora2' } : {}),
           ...(shouldSendAspectRatio ? { aspectRatio: form.aspectRatio } : {}),
           ...(supportsNegativePrompt && trimmedNegativePrompt ? { negativePrompt: trimmedNegativePrompt } : {}),
           ...(inputsPayload ? { inputs: inputsPayload } : {}),
@@ -2953,7 +2959,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           setPreflightError(composed);
           return;
         }
-        setPreflightError(error instanceof Error ? error.message : 'Generate failed');
+        const fallbackMessage = error instanceof Error ? error.message : 'Generate failed';
+        showNotice(fallbackMessage);
+        setPreflightError(fallbackMessage);
       }
     };
 

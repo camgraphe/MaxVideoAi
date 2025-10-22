@@ -1,16 +1,11 @@
 {
+  "pika-text-to-video": "pika-text-to-video",
+  "pika-image-to-video": "pika-image-to-video",
+  "veo-3-1": "veo-3-1",
+  "veo-3-fast": "veo-3-fast",
+  "veo-3-1-fast": "veo-3-1-fast",
   "sora-2": "sora-2",
-  "sora-2-pro": "sora-2-pro",
-  "veo3": "veo-3",
-  "veo3fast": "veo-3-fast",
-  "lumaDM": "luma-dream-machine",
-  "lumaRay2": "luma-ray-2",
-  "lumaRay2_flash": "luma-ray-2-flash",
-  "lumaRay2_modify": "luma-ray-2-modify",
-  "lumaRay2_reframe": "luma-ray-2-reframe",
-  "lumaRay2_flash_reframe": "luma-ray-2-flash-reframe",
-  "pika22": "pika-2-2",
-  "minimax_video_01": "minimax-video-1",
-  "minimax_hailuo_02_pro": "hailuo-2-pro",
-  "hunyuan_video": "hunyuan-video"
+  "minimax-hailuo-02-text": "minimax-hailuo-02-text",
+  "minimax-hailuo-02-image": "minimax-hailuo-02-image",
+  "hunyuan-image": "hunyuan-image"
 }

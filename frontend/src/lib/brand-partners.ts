@@ -1,6 +1,6 @@
 import type { BrandAssetPolicy, EngineAvailability } from '@/types/engines';
 
-export type PartnerBrandId = 'runway' | 'luma' | 'google-veo' | 'pika' | 'kling' | 'openai';
+export type PartnerBrandId = 'runway' | 'luma' | 'google-veo' | 'pika' | 'kling' | 'openai' | 'minimax' | 'tencent';
 
 type PartnerBrandAsset = {
   svg: string;
@@ -133,7 +133,7 @@ export const PARTNER_BRANDS: PartnerBrand[] = [
       light: 'Google Veo wordmark',
       dark: 'Google Veo wordmark (inverse)',
     },
-    engineIds: ['veo-3', 'veo3', 'veo3fast', 'veo-3-fast'],
+    engineIds: ['veo-3-1', 'veo-3-fast', 'veo-3-1-fast'],
   },
   {
     id: 'pika',
@@ -155,7 +155,7 @@ export const PARTNER_BRANDS: PartnerBrand[] = [
       light: 'Pika Labs wordmark',
       dark: 'Pika Labs wordmark (inverse)',
     },
-    engineIds: ['pika-22', 'pika22'],
+    engineIds: ['pika-text-to-video', 'pika-image-to-video'],
   },
   {
     id: 'kling',

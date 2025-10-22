@@ -6,17 +6,15 @@ This table covers current public routes (and near-term additions), the recommend
 | --- | --- | --- | --- | --- |
 | / | / | /home | /ai-video-platform | Brand + product overview for AI video platform. |
 | /models | /models | /ai-video-models | /video-model-catalog | Browse catalog of available AI video generation models. |
+| /models/pika-text-to-video | /models/pika-text-to-video | /models/pika-2-2 | /models/pika-text-video | Deep dive on Pika 2.2 text-to-video pipeline. |
+| /models/pika-image-to-video | /models/pika-image-to-video | /models/pika-image-video | /models/pika-2-2-image | Walkthrough for Pika 2.2 image-to-video upgrades. |
 | /models/openai-sora-2 | /models/sora-2 | /models/openai-sora-2 | /models/sora-text-to-video | Learn about OpenAI Sora 2 capabilities and pricing. |
-| /models/openai-sora-2-pro | /models/sora-2-pro | /models/sora-pro | /models/sora-2-plus | Comparison of Sora 2 pro tier pricing and specs. |
-| /models/google-veo-3 | /models/veo-3 | /models/google-veo-3 | /models/veo-text-to-video | Google Veo 3 feature and pricing breakdown. |
-| /models/google-veo-3-fast | /models/veo-3-fast | /models/veo-3-stream | /models/veo-fast | Fast Veo 3 render option for quick generation. |
-| /models/luma-dream-machine | /models/luma-dream-machine | /models/luma-dream | /models/dream-machine | Luma Dream Machine overview. |
-| /models/luma-ray-2 | /models/luma-ray-2 | /models/ray-2 | /models/luma-ray | Luma Ray 2 product info. |
-| /models/luma-ray-2-flash | /models/luma-ray-2-flash | /models/ray-2-flash | /models/luma-flash | Flash variation of Luma Ray 2 with performance details. |
-| /models/pika-2-2 | /models/pika-2-2 | /models/pika-22 | /models/pika-video | Pika 2.2 roadmap and pricing. |
-| /models/minimax-video-01 | /models/minimax-video-1 | /models/minimax-video | /models/video-1 | MiniMax Video 1 capabilities. |
-| /models/minimax-hailuo-02-pro | /models/hailuo-2-pro | /models/minimax-hailuo-2 | /models/hailuo-video | Hailuo 2 Pro specs for MiniMax pipeline. |
-| /models/hunyuan-video | /models/hunyuan-video | /models/hunyuan | /models/tencent-hunyuan | Hunyuan video model info. |
+| /models/google-veo-3-1 | /models/veo-3-1 | /models/google-veo-3-1 | /models/veo-3-1-overview | Google Veo 3.1 feature and pricing breakdown. |
+| /models/google-veo-3-fast | /models/veo-3-fast | /models/google-veo-3-fast | /models/veo-fast | Fast Veo 3 render option for quick generation. |
+| /models/google-veo-3-1-fast | /models/veo-3-1-fast | /models/google-veo-3-1-fast | /models/veo-3-fastest | Coverage for Veo 3.1 Fast tier. |
+| /models/minimax-hailuo-02-text | /models/minimax-hailuo-02-text | /models/hailuo-02-text | /models/minimax-hailuo-text | MiniMax Hailuo 02 Standard text-to-video specs. |
+| /models/minimax-hailuo-02-image | /models/minimax-hailuo-02-image | /models/hailuo-02-image | /models/minimax-hailuo-image | MiniMax Hailuo 02 Standard image-to-video specs. |
+| /models/hunyuan-image | /models/hunyuan-image | /models/tencent-hunyuan-image | /models/hunyuan-image-model | Hunyuan image model info and pricing. |
 | /examples | /examples | /ai-video-examples | /video-examples | Gallery of AI video outputs and use cases. |
 | /workflows | /workflows | /video-workflows | /ai-video-workflows | Workflow templates for AI video generation. |
 | (planned) /workflows/prompt-director | /workflows/prompt-director | /workflows/prompt-engine | /workflows/prompt-production | Guide to using Prompt Director workflow. |

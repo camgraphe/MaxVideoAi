@@ -1,11 +1,15 @@
 # Model Roster QA Report
 
-Generated on 2025-10-08T17:17:18.440Z
+Manual snapshot updated during engine cleanup — regenerate once the new registry is live (2025-02-14).
 
 ## Summary
 
 - Roster entries: 9
 - Marketing slugs referenced: 9
+
+## Notes
+
+- Legacy Luma and Sora Pro tiers removed from the roster pending archival.
 
 ## Checks
 

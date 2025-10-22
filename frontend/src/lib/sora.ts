@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const SORA_VARIANTS = ['sora2', 'sora2pro'] as const;
+export const SORA_VARIANTS = ['sora2'] as const;
 export type SoraVariant = (typeof SORA_VARIANTS)[number];
 export type SoraMode = 't2v' | 'i2v';
 
@@ -55,37 +55,16 @@ const Sora2I2V = z
   })
   .strict();
 
-const Sora2ProT2V = z
-  .object({
-    variant: z.literal('sora2pro'),
-    mode: z.literal('t2v'),
-    resolution: z.enum(['720p', '1080p']),
-    aspect_ratio: z.enum(['16:9', '9:16']),
-    ...baseShape,
-  })
-  .strict();
-
-const Sora2ProI2V = z
-  .object({
-    variant: z.literal('sora2pro'),
-    mode: z.literal('i2v'),
-    resolution: z.enum(['auto', '720p', '1080p']),
-    aspect_ratio: z.enum(['auto', '16:9', '9:16']),
-    image_url: imageUrlSchema,
-    ...baseShape,
-  })
-  .strict();
-
-export const SORA_REQUEST_SCHEMA = z.union([Sora2T2V, Sora2I2V, Sora2ProT2V, Sora2ProI2V]);
+export const SORA_REQUEST_SCHEMA = z.union([Sora2T2V, Sora2I2V]);
 
 export type SoraRequest = z.infer<typeof SORA_REQUEST_SCHEMA>;
 
-export function isSoraEngineId(engineId: string): engineId is 'sora-2' | 'sora-2-pro' {
-  return engineId === 'sora-2' || engineId === 'sora-2-pro';
+export function isSoraEngineId(engineId: string): engineId is 'sora-2' {
+  return engineId === 'sora-2';
 }
 
-export function getSoraVariantForEngine(engineId: string): SoraVariant {
-  return engineId === 'sora-2-pro' ? 'sora2pro' : 'sora2';
+export function getSoraVariantForEngine(): SoraVariant {
+  return 'sora2';
 }
 
 export function parseSoraRequest(input: unknown): SoraRequest {
@@ -101,10 +80,6 @@ const MODEL_MAP: Record<SoraVariant, Record<SoraMode, string>> = {
   sora2: {
     t2v: 'fal-ai/sora-2/text-to-video',
     i2v: 'fal-ai/sora-2/image-to-video',
-  },
-  sora2pro: {
-    t2v: 'fal-ai/sora-2/text-to-video/pro',
-    i2v: 'fal-ai/sora-2/image-to-video/pro',
   },
 };
 

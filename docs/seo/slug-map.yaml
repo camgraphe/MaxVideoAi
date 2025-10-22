@@ -16,29 +16,36 @@ collections:
       pattern: /models/{slug}
       status: live
       slugs:
+        pika-text-to-video:
+          aliases:
+            - pika-2-2
+        pika-image-to-video:
+          aliases:
+            - pika-image-video
         sora-2:
           aliases:
             - openai-sora-2
-        sora-2-pro:
+        veo-3-1:
           aliases:
-            - openai-sora-2-pro
-        veo-3:
-          aliases:
-            - google-veo-3
+            - google-veo-3-1
+            - veo-3
         veo-3-fast:
           aliases:
             - google-veo-3-fast
-        luma-dream-machine: {}
-        luma-ray-2: {}
-        luma-ray-2-flash: {}
-        pika-2-2: {}
-        minimax-video-1:
+        veo-3-1-fast:
           aliases:
+            - google-veo-3-1-fast
+        minimax-hailuo-02-text:
+          aliases:
+            - minimax-video-1
             - minimax-video-01
-        hailuo-2-pro:
-          aliases:
             - minimax-hailuo-02-pro
-        hunyuan-video: {}
+        minimax-hailuo-02-image:
+          aliases:
+            - minimax-hailuo-02
+        hunyuan-image:
+          aliases:
+            - hunyuan-video
     - id: examples
       path: /examples
       status: live

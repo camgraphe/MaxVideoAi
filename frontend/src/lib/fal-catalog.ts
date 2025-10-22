@@ -3,53 +3,29 @@ import path from 'node:path';
 import type { EngineCaps, EnginePricingDetails } from '@/types/engines';
 import { ENV } from '@/lib/env';
 import { buildFalProxyUrl } from '@/lib/fal-proxy';
+import { listFalEngines } from '@/config/falEngines';
 
 const CATALOG_TTL_MS = 5 * 60 * 1000;
 
-const ENGINE_ID_OVERRIDES: Record<string, string> = {
-  'fal-ai/pika/v2.2/text-to-video': 'pika22',
-  'fal-ai/pika/v2.2/image-to-video': 'pika22',
-  'fal-ai/luma-dream-machine': 'lumaDM',
-  'fal-ai/luma-dream-machine/image-to-video': 'lumaDM',
-  'fal-ai/luma-dream-machine/modify': 'lumaDM',
-  'fal-ai/luma-dream-machine/ray-2': 'lumaRay2',
-  'fal-ai/luma-dream-machine/ray-2/image-to-video': 'lumaRay2',
-  'fal-ai/luma-dream-machine/ray-2/modify': 'lumaRay2_modify',
-  'fal-ai/luma-dream-machine/ray-2/reframe': 'lumaRay2_reframe',
-  'fal-ai/luma-dream-machine/ray-2-flash': 'lumaRay2_flash',
-  'fal-ai/luma-dream-machine/ray-2-flash/image-to-video': 'lumaRay2_flash',
-  'fal-ai/luma-dream-machine/ray-2-flash/reframe': 'lumaRay2_flash_reframe',
-  'fal-ai/veo3': 'veo3',
-  'fal-ai/veo3/image-to-video': 'veo3',
-  'fal-ai/veo3/fast': 'veo3fast',
-  'fal-ai/minimax/video-01': 'minimax_video_01',
-  'fal-ai/minimax/hailuo-02/pro': 'minimax_hailuo_02_pro',
-  'fal-ai/hunyuan-video': 'hunyuan_video',
-  'fal-ai/sora-2/text-to-video': 'sora-2',
-  'fal-ai/sora-2/text-to-video/pro': 'sora-2-pro',
-  'fal-ai/sora-2/image-to-video': 'sora-2',
-  'fal-ai/sora-2/image-to-video/pro': 'sora-2-pro'
-};
+const ENGINE_REGISTRY = listFalEngines();
 
-const DEFAULT_MODEL_MAP: Record<string, string> = {
-  'sora-2': 'fal-ai/sora-2/text-to-video',
-  'sora2': 'fal-ai/sora-2/text-to-video',
-  'sora-2-pro': 'fal-ai/sora-2/text-to-video/pro',
-  'sora2pro': 'fal-ai/sora-2/text-to-video/pro',
-  'veo3': 'fal-ai/veo3',
-  'veo3fast': 'fal-ai/veo3/fast',
-  'lumaDM': 'fal-ai/luma-dream-machine',
-  'lumaRay2': 'fal-ai/luma-dream-machine/ray-2',
-  'lumaRay2_flash': 'fal-ai/luma-dream-machine/ray-2-flash',
-  'lumaRay2_modify': 'fal-ai/luma-dream-machine/ray-2/modify',
-  'lumaRay2_reframe': 'fal-ai/luma-dream-machine/ray-2/reframe',
-  'lumaRay2_flash_reframe': 'fal-ai/luma-dream-machine/ray-2-flash/reframe',
-  'pika-22': 'fal-ai/pika/v2.2/text-to-video',
-  'pika22': 'fal-ai/pika/v2.2/text-to-video',
-  'minimax_video_01': 'fal-ai/minimax/video-01',
-  'minimax_hailuo_02_pro': 'fal-ai/minimax/hailuo-02/pro',
-  'hunyuan_video': 'fal-ai/hunyuan-video'
-};
+const ENGINE_ID_OVERRIDES: Record<string, string> = ENGINE_REGISTRY.reduce<Record<string, string>>(
+  (acc, engine) => {
+    engine.modes.forEach((mode) => {
+      acc[mode.falModelId] = engine.id;
+    });
+    return acc;
+  },
+  {}
+);
+
+const DEFAULT_MODEL_MAP: Record<string, string> = ENGINE_REGISTRY.reduce<Record<string, string>>(
+  (acc, engine) => {
+    acc[engine.id] = engine.defaultFalModelId;
+    return acc;
+  },
+  {}
+);
 
 type EngineCatalog = {
   engines: EngineCaps[];

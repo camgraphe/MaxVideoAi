@@ -4,7 +4,7 @@ This document tracks the new asset pipeline introduced in October 2025.
 
 ## Overview
 
-Video engines (Sora, Veo, Luma, Pika, Minimax, Kling, etc.) now receive public image URLs instead of inline base64 payloads. Images are uploaded to our S3 bucket, and `/api/generate` forwards validated URLs to Fal.
+Video engines (Sora 2, Veo 3.1, Veo 3 Fast, Pika 2.2, MiniMax Hailuo 02, Kling, etc.) now receive public image URLs instead of inline base64 payloads. Images are uploaded to our S3 bucket, and `/api/generate` forwards validated URLs to Fal.
 
 ```
 Client Dropzone → `/api/uploads/image` → S3 bucket → public URL

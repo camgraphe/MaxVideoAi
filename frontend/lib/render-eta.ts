@@ -1,17 +1,15 @@
 import type { EngineCaps } from '@/types/engines';
 
 const ENGINE_RENDER_ETAS: Record<string, number> = {
-  sora2: 45,
-  sora2pro: 55,
-  veo3: 40,
+  sora2: 42,
+  veo31: 38,
   veo3fast: 24,
-  lumadm: 20,
-  lumaray2: 22,
-  lumaray2flash: 16,
-  pika22: 12,
-  minimaxvideo01: 18,
-  minimaxhailuo02pro: 20,
-  hunyuanvideo: 28
+  veo31fast: 22,
+  pikatexttovideo: 18,
+  pikaimagetovideo: 20,
+  minimaxhailuo02text: 24,
+  minimaxhailuo02image: 26,
+  hunyuanimage: 16
 };
 
 const MIN_RENDER_SECONDS = 15;

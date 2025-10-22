@@ -1,6 +1,6 @@
-import roster from '../../config/model-roster.json' assert { type: 'json' };
+import { listFalEngines, type EngineLogoPolicy } from '@/config/falEngines';
 
-export type LogoPolicy = 'logoAllowed' | 'textOnly';
+export type LogoPolicy = EngineLogoPolicy;
 export type ModelAvailability = 'available' | 'limited' | 'waitlist' | 'paused';
 
 export interface ModelRosterEntry {
@@ -15,7 +15,17 @@ export interface ModelRosterEntry {
   billingNote?: string;
 }
 
-const rosterEntries = roster as ModelRosterEntry[];
+const rosterEntries: ModelRosterEntry[] = listFalEngines().map((engine) => ({
+  engineId: engine.id,
+  marketingName: engine.marketingName,
+  brandId: engine.brandId,
+  modelSlug: engine.modelSlug,
+  family: engine.family,
+  versionLabel: engine.versionLabel ?? '',
+  availability: engine.availability,
+  logoPolicy: engine.logoPolicy,
+  billingNote: engine.billingNote,
+}));
 
 const rosterBySlug = new Map<string, ModelRosterEntry>();
 const rosterByEngine = new Map<string, ModelRosterEntry>();

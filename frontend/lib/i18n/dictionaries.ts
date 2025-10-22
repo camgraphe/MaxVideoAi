@@ -295,7 +295,7 @@ const en: Dictionary = {
       { label: 'Support', href: '/contact' },
     ],
     brandNote:
-      'Independent hub for professional AI video — price before you generate, stay on the latest engines, one workspace for every shot. Works with Sora, Veo, Luma, Pika, MiniMax, Hunyuan, and more. Trademarks belong to their owners.',
+      'Independent hub for professional AI video - price before you generate, stay on the latest engines, one workspace for every shot. Works with Sora 2, Veo 3.1, Pika 2.2, MiniMax Hailuo 02, Hunyuan Image, and more. Trademarks belong to their owners.',
     languageLabel: 'Language',
     languages: [
       { locale: 'en', label: 'English' },
@@ -312,7 +312,7 @@ const en: Dictionary = {
     },
     worksWith: {
       label: 'Works with',
-      brands: ['Veo', 'Sora', 'Luma', 'Pika', 'MiniMax'],
+      brands: ['Sora 2', 'Veo 3.1', 'Veo 3 Fast', 'Pika 2.2', 'MiniMax Hailuo 02'],
       caption: 'Independent hub. Trademarks belong to their owners.',
       availabilityNotice: 'Availability may vary by provider; pricing chips refresh automatically.',
     },
@@ -352,7 +352,7 @@ const en: Dictionary = {
       },
       {
         title: 'All your engines in one place.',
-        body: 'Switch between Sora, Veo, Luma, Pika, MiniMax, and Hunyuan without juggling dashboards or API keys.',
+        body: 'Switch between Sora, Veo, Pika, MiniMax, and Hunyuan without juggling dashboards or API keys.',
       },
     ],
     ways: [
@@ -391,8 +391,8 @@ const en: Dictionary = {
           description: 'Narrative lighting with audio on for the campaign reveal.',
           alt: 'Google Veo 3 cinematic teaser.',
           meta: {
-            slug: 'veo-3',
-            pricing: { engineId: 'veo3', durationSec: 12, resolution: '1080p', memberTier: 'member' },
+            slug: 'veo-3-1',
+            pricing: { engineId: 'veo-3-1', durationSec: 8, resolution: '1080p', memberTier: 'member' },
           },
           media: {
             videoSrc: '/assets/gallery/robot-look.mp4',
@@ -400,13 +400,13 @@ const en: Dictionary = {
           },
         },
         {
-          id: 'luma-ray2',
-          label: 'Luma Ray 2 Flash · Product hero',
-          description: 'Depth-aware turntable routed through Ray 2 Flash for quick approvals.',
-          alt: 'Luma Ray 2 Flash product hero loop.',
+          id: 'veo31-fast-demo',
+          label: 'Veo 3.1 Fast · Frame bridge',
+          description: '8s bridge between a first and last frame using Veo 3.1 Fast.',
+          alt: 'Veo 3.1 Fast transition example.',
           meta: {
-            slug: 'luma-ray-2-flash',
-            pricing: { engineId: 'lumaRay2_flash', durationSec: 8, resolution: '720p', memberTier: 'member' },
+            slug: 'veo-3-1-fast',
+            pricing: { engineId: 'veo-3-1-fast', durationSec: 8, resolution: '720p', memberTier: 'member' },
           },
           media: {
             videoSrc: '/assets/gallery/robot-eyes.mp4',
@@ -414,13 +414,13 @@ const en: Dictionary = {
           },
         },
         {
-          id: 'minimax-concept',
-          label: 'MiniMax · Concept draft',
-          description: 'Camera-tag animation for director boards before the hero pass.',
-          alt: 'MiniMax Video 01 concept animation.',
+          id: 'minimax-hailuo',
+          label: 'MiniMax Hailuo 02 · Concept draft',
+          description: 'Prompt optimiser enabled to block out a storyboard cut before the hero render.',
+          alt: 'MiniMax Hailuo Standard concept animation.',
           meta: {
-            slug: 'minimax-video-1',
-            pricing: { engineId: 'minimax_video_01', durationSec: 6, resolution: '720p', memberTier: 'member' },
+            slug: 'minimax-hailuo-02-text',
+            pricing: { engineId: 'minimax-hailuo-02-text', durationSec: 6, resolution: '768P', memberTier: 'member' },
           },
           media: {
             videoSrc: '/assets/gallery/aerial-road.mp4',
@@ -470,11 +470,11 @@ const en: Dictionary = {
         memberChipPrefix: 'Member price — You save',
       },
       descriptions: {
-        'sora-2': 'Text/image/video remix with native audio.',
-        veo3: 'Filmic control for narratives and longer edits.',
-        lumaDM: 'Photoreal product shots and tabletop detail.',
-        pika22: 'Quick social loops with captions and remix-friendly settings.',
-        minimax_video_01: 'Camera-tag animation drafts for concept boards.',
+        'sora-2': 'Text/image remix with native audio.',
+        'veo-3-1': 'Reference-to-video with multi-image control.',
+        'veo-3-fast': 'Fast queue Veo with optional audio.',
+        'pika-text-to-video': 'Quick social loops with captions and remix-friendly settings.',
+        'minimax-hailuo-02-text': 'Prompt-optimised drafts before the hero render.',
       },
       engineRateLabel: 'Engine rate',
       durationLabel: 'Duration',
@@ -602,7 +602,7 @@ const en: Dictionary = {
     hero: {
       title: 'Fal.ai engines without the vendor lock-in.',
       subtitle:
-        'Fal.ai ships new video endpoints weekly. We sync their catalog so your Price Before chip stays accurate across Sora, Veo, Luma, Pika, MiniMax, and Hunyuan.',
+        'Fal.ai ships new video endpoints weekly. We sync their catalog so your Price Before chip stays accurate across Sora, Veo, Pika, MiniMax, and Hunyuan.',
     },
     availabilityLabels: {
       available: 'Available',
@@ -613,69 +613,57 @@ const en: Dictionary = {
     meta: {
       'sora-2': {
         displayName: 'OpenAI Sora 2',
-        description: 'Base Sora endpoints for text-to-video, remix, and audio-on renders via Fal routing.',
-        priceBefore: '$0.10/s via Fal, with a badge when you bring your own OpenAI key.',
+        description: 'Text-to-video and remix with native audio via Fal routing.',
+        priceBefore: '$0.10/s via Fal, or bring your own OpenAI key to bill direct.',
         versionLabel: 'v2',
       },
-      'sora-2-pro': {
-        displayName: 'OpenAI Sora 2 Pro',
-        description: 'Unlocks 1080p output and higher throughput while keeping native audio.',
-        priceBefore: '$0.30/s (720p) and $0.50/s (1080p) surfaced before you queue.',
-        versionLabel: 'v2 Pro',
-      },
-      'veo-3': {
-        displayName: 'Google Veo 3',
-        description: 'Cinematic realism with lip-sync and Dolby Vision previews.',
-        priceBefore: '$0.20/s audio off or $0.40/s audio on highlighted ahead of launch.',
-        versionLabel: 'Veo 3',
+      'veo-3-1': {
+        displayName: 'Google Veo 3.1',
+        description: 'Reference-to-video control with multi-image subject guidance.',
+        priceBefore: '$0.20/s audio off or $0.40/s audio on highlighted before you queue.',
+        versionLabel: 'Veo 3.1',
       },
       'veo-3-fast': {
         displayName: 'Google Veo 3 Fast',
         description: 'Faster queue for previz while keeping the Veo look and audio toggle.',
-        priceBefore: '$0.10/s audio off or $0.15/s audio on in the chip.',
+        priceBefore: '$0.25/s audio off or $0.40/s audio on in the chip.',
         versionLabel: 'Veo 3 Fast',
       },
-      'luma-dream-machine': {
-        displayName: 'Luma Dream Machine v1.5',
-        description: 'Photoreal hero loops, tabletop explainers, and depth-aware motion.',
-        priceBefore: '$0.50/video (I2V) chip shown before you route.',
-        versionLabel: 'Dream Machine 1.5',
+      'veo-3-1-fast': {
+        displayName: 'Google Veo 3.1 Fast',
+        description: 'Bridge a first and last frame in 8 seconds with optional audio.',
+        priceBefore: '$0.10/s audio off or $0.15/s audio on surfaced upfront.',
+        versionLabel: 'Veo 3.1 Fast',
       },
-      'luma-ray-2': {
-        displayName: 'Luma Ray 2',
-        description: 'Higher-fidelity Luma Ray family for flagship hero shots.',
-        priceBefore: 'Standard Ray 2 queue cost surfaced pre-run.',
-        versionLabel: 'Ray 2',
-      },
-      'luma-ray-2-flash': {
-        displayName: 'Luma Ray 2 Flash',
-        description: 'Fast Ray 2 queue for storyboards and look-dev passes.',
-        priceBefore: '$0.35/video Flash rate highlighted before submission.',
-        versionLabel: 'Ray 2 Flash',
-      },
-      'pika-2-2': {
-        displayName: 'Pika 2.2',
-        description: 'Social loops with caption overlays and Pikascenes motion controls.',
-        priceBefore: 'Chip compares 720p vs 1080p cost before you remix.',
+      'pika-text-to-video': {
+        displayName: 'Pika 2.2 · Text to Video',
+        description: 'Social-first loops with caption overlays and fast iteration.',
+        priceBefore: '$0.20 per 5s clip at 720p, $0.45 per 5s at 1080p.',
         versionLabel: '2.2',
       },
-      'minimax-video-1': {
-        displayName: 'MiniMax Video 01',
-        description: 'Camera-tag driven I2V/T2V for concept boards and Live2D-style motion.',
-        priceBefore: '$0.50/video surfaced before you lock the prompt.',
-        versionLabel: 'Video 01',
+      'pika-image-to-video': {
+        displayName: 'Pika 2.2 · Image to Video',
+        description: 'Animate a still frame with stylised motion and camera moves.',
+        priceBefore: '$0.20 per 5s clip at 720p, $0.45 per 5s at 1080p.',
+        versionLabel: '2.2',
       },
-      'hailuo-2-pro': {
-        displayName: 'MiniMax Hailuo 02 Pro',
-        description: '1080p image-to-video with higher fidelity output for hero shots.',
-        priceBefore: '$0.08/s (6 s = $0.48) shown ahead of launch.',
-        versionLabel: 'Hailuo 02 Pro',
+      'minimax-hailuo-02-text': {
+        displayName: 'MiniMax Hailuo 02 Standard · Text to Video',
+        description: 'Prompt optimiser-enabled drafts before the hero render.',
+        priceBefore: '$0.045/s with live chip updates.',
+        versionLabel: 'Standard',
       },
-      'hunyuan-video': {
-        displayName: 'Hunyuan Video',
-        description: 'Tencent’s open model with Pro mode for longer and cleaner runs.',
-        priceBefore: '$0.40/video with a Pro multiplier badge in the chip.',
-        versionLabel: 'Hunyuan',
+      'minimax-hailuo-02-image': {
+        displayName: 'MiniMax Hailuo 02 Standard · Image to Video',
+        description: 'Reference image to motion with optional end frame.',
+        priceBefore: '$0.045/s with live chip updates.',
+        versionLabel: 'Standard',
+      },
+      'hunyuan-image': {
+        displayName: 'Hunyuan Image v3',
+        description: 'High-detail text-to-image for boards, thumbnails, and story beats.',
+        priceBefore: '$0.10 per megapixel equivalent, shown before you run.',
+        versionLabel: 'v3',
       },
     },
     note:
@@ -703,12 +691,12 @@ const en: Dictionary = {
       },
       {
         title: 'Veo 3 branded flythrough',
-        engine: 'Veo 3 · Image-to-video · 16:9',
+        engine: 'Veo 3.1 · Image-to-video · 16:9',
         description: 'Depth-rich branded flythrough emphasising camera control.',
         alt: 'Veo 3 example clip.',
         meta: {
-          slug: 'veo-3',
-          pricing: { engineId: 'veo3', durationSec: 12, resolution: '1080p', memberTier: 'member' },
+          slug: 'veo-3-1',
+          pricing: { engineId: 'veo-3-1', durationSec: 8, resolution: '1080p', memberTier: 'member' },
         },
         media: {
           videoSrc: 'https://storage.googleapis.com/falserverless/example_outputs/veo3-i2v-output.mp4',
@@ -716,13 +704,13 @@ const en: Dictionary = {
         },
       },
       {
-        title: 'Luma Dream Machine showcase',
-        engine: 'Luma Dream Machine · Image-to-video · 16:9',
-        description: 'Texture-rich environment render with fluid camera moves.',
-        alt: 'Luma Dream Machine example clip.',
+        title: 'Veo 3 Fast storyboard pass',
+        engine: 'Veo 3 Fast · Text-to-video · 16:9',
+        description: 'Fast queue render to preview motion before the final hero clip.',
+        alt: 'Veo 3 Fast example clip.',
         meta: {
-          slug: 'luma-dream-machine',
-          pricing: { engineId: 'lumaDM', durationSec: 10, resolution: '1080p', memberTier: 'member' },
+          slug: 'veo-3-fast',
+          pricing: { engineId: 'veo-3-fast', durationSec: 8, resolution: '720p', memberTier: 'member' },
         },
         media: {
           videoSrc: 'https://v3.fal.media/files/lion/L9nkXSW1MCj2oDimeJ4w5_output.mp4',
@@ -731,12 +719,12 @@ const en: Dictionary = {
       },
       {
         title: 'Pika 2.2 social loop',
-        engine: 'Pika 2.2 · Image-to-video · 16:9',
+        engine: 'Pika 2.2 · Text-to-video · 16:9',
         description: 'Fast-paced social loop with stylised motion accents.',
         alt: 'Pika 2.2 example clip.',
         meta: {
-          slug: 'pika-2-2',
-          pricing: { engineId: 'pika22', durationSec: 8, resolution: '1080p', memberTier: 'member' },
+          slug: 'pika-text-to-video',
+          pricing: { engineId: 'pika-text-to-video', durationSec: 8, resolution: '1080p', memberTier: 'member' },
         },
         media: {
           videoSrc: 'https://storage.googleapis.com/falserverless/web-examples/pika/pika%202.2/pika22_output.mp4',
@@ -744,13 +732,13 @@ const en: Dictionary = {
         },
       },
       {
-        title: 'MiniMax concept pass',
-        engine: 'MiniMax Video 01 · Image-to-video · 16:9',
+        title: 'MiniMax Hailuo concept pass',
+        engine: 'MiniMax Hailuo 02 · Image-to-video · 16:9',
         description: 'Animated concept art pass with dynamic framing.',
-        alt: 'MiniMax Video 01 example clip.',
+        alt: 'MiniMax Hailuo Standard example clip.',
         meta: {
-          slug: 'minimax-video-1',
-          pricing: { engineId: 'minimax_video_01', durationSec: 10, resolution: '1080p', memberTier: 'member' },
+          slug: 'minimax-hailuo-02-image',
+          pricing: { engineId: 'minimax-hailuo-02-image', durationSec: 10, resolution: '768P', memberTier: 'member' },
         },
         media: {
           videoSrc: 'https://fal.media/files/monkey/bkT4T4uLOXr0jDsIMlNd5_output.mp4',
@@ -833,7 +821,7 @@ const en: Dictionary = {
     },
     paragraphs: [
       'We believe professional teams deserve clarity before they hit render. That means price transparency, reliable routing, and shared context between creatives, producers, and stakeholders.',
-      'Independence matters: we stay neutral across engines, integrate with Sora, Veo, Luma, Pika, MiniMax, Hunyuan, and rotating betas, and list trademarks only to describe compatibility.',
+      'Independence matters: we stay neutral across engines, integrate with Sora 2, Veo 3.1, Veo 3 Fast, Pika 2.2, MiniMax Hailuo 02, Hunyuan Image, and rotating betas, and list trademarks only to describe compatibility.',
       'The product is engineered for teams that need precision without noise. Quiet UI, premium defaults, precise controls, and price-before chips that keep finance in the loop.',
     ],
     note:

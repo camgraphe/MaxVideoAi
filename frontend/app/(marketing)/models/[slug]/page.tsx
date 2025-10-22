@@ -4,10 +4,10 @@ import clsx from 'clsx';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { resolveDictionary } from '@/lib/i18n/server';
-import { getModelRoster, getModelBySlug } from '@/lib/model-roster';
 import { AVAILABILITY_BADGE_CLASS } from '@/lib/availability';
 import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
 import FaqJsonLd from '@/components/FaqJsonLd';
+import { listFalEngines, getFalEngineBySlug, type FalEnginePricingHint } from '@/config/falEngines';
 
 type PageParams = {
   params: {
@@ -15,116 +15,65 @@ type PageParams = {
   };
 };
 
-const SORA_FAQ = [
-  {
-    q: 'Can I access Sora 2 from Europe?',
-    a: 'Yes. MaxVideoAI brokers Sora 2 access through vetted partners so European teams can render without waiting on an OpenAI invite.',
-  },
-  {
-    q: 'Do Sora 2 renders include a watermark?',
-    a: 'No. Sora 2 outputs produced via MaxVideoAI are delivered clean, ready for editing and distribution.',
-  },
-] as const satisfies readonly { q: string; a: string }[];
-
-const VEO_FAQ = [
-  {
-    q: 'Does Veo 3 ship with the latest motion tuning?',
-    a: 'Yes. MaxVideoAI keeps Veo 3 routing synced with Google DeepMind updates, so motion tuning and camera controls stay current without manual work.',
-  },
-  {
-    q: 'Can I brief Veo 3 with reference images?',
-    a: 'Upload stills when drafting your Veo 3 prompt in the MaxVideoAI workspace. The render queue keeps the references attached end-to-end.',
-  },
-] as const satisfies readonly { q: string; a: string }[];
-
-const PIKA_FAQ = [
-  {
-    q: 'Can I create both 9:16 and 16:9 clips with Pika 2.2?',
-    a: 'Yes. Pick your aspect ratio inside the MaxVideoAI editor and the job will render in the requested format without extra tooling.',
-  },
-  {
-    q: 'Does Pika 2.2 include audio?',
-    a: 'The base model renders silent clips. You can layer audio in MaxVideoAI with one click using the built-in soundtrack add-on.',
-  },
-] as const satisfies readonly { q: string; a: string }[];
-
-const DREAM_MACHINE_FAQ = [
-  {
-    q: 'How long do Luma Dream Machine renders take?',
-    a: 'Most Dream Machine videos complete in about 90–120 seconds. MaxVideoAI shows live progress and pings you when the run is done.',
-  },
-  {
-    q: 'Can I upscale Dream Machine outputs to 4K?',
-    a: 'Yes. Enable the 4K upscale toggle in MaxVideoAI and the clip will be reprocessed for higher resolution delivery.',
-  },
-] as const satisfies readonly { q: string; a: string }[];
-
-const RAY_FLASH_FAQ = [
-  {
-    q: "What's the advantage of Ray 2 Flash?",
-    a: 'Flash prioritises real-time previews so you can iterate quickly. MaxVideoAI surfaces full-quality files in the asset library once they finish.',
-  },
-  {
-    q: 'Is Ray 2 Flash covered by the queue SLA?',
-    a: 'Yes. Flash jobs still benefit from MaxVideoAI queue monitoring, with automatic retries if an upstream error occurs.',
-  },
-] as const satisfies readonly { q: string; a: string }[];
-
-const MODEL_FAQ_ENTRIES: Record<string, { q: string; a: string }[]> = {
-  'sora-2': [...SORA_FAQ],
-  'sora-2-pro': [...SORA_FAQ],
-  'veo-3': [...VEO_FAQ],
-  'veo-3-fast': [...VEO_FAQ],
-  'pika-2-2': [...PIKA_FAQ],
-  'luma-dream-machine': [...DREAM_MACHINE_FAQ],
-  'luma-ray-2': [...DREAM_MACHINE_FAQ],
-  'luma-ray-2-flash': [...RAY_FLASH_FAQ],
-};
+function formatPricingHint(hint: FalEnginePricingHint): string {
+  const amount = (hint.amountCents / 100).toLocaleString('en-US', {
+    style: 'currency',
+    currency: hint.currency,
+    minimumFractionDigits: 2,
+  });
+  if (hint.label) {
+    return `${amount} ${hint.label}`;
+  }
+  const descriptors: string[] = [];
+  if (typeof hint.durationSeconds === 'number') {
+    descriptors.push(`${hint.durationSeconds}s`);
+  }
+  if (hint.resolution) {
+    descriptors.push(hint.resolution);
+  }
+  return descriptors.length ? `${amount} (${descriptors.join(' / ')})` : amount;
+}
 
 export function generateStaticParams() {
-  return getModelRoster().map((entry) => ({ slug: entry.modelSlug }));
+  return listFalEngines().map((entry) => ({ slug: entry.modelSlug }));
 }
 
 export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
   const { slug } = params;
-  const rosterEntry = getModelBySlug(slug);
+  const engine = getFalEngineBySlug(slug);
   const { dictionary } = resolveDictionary();
-  const meta = dictionary.models.meta?.[slug];
-  if (!rosterEntry || !meta) {
+  if (!engine) {
     return {
-      title: 'Model not found — MaxVideo AI',
+      title: 'Model not found - MaxVideo AI',
     };
   }
 
-  const title = `${meta.displayName} — MaxVideo AI`;
-  const description = meta.description ?? dictionary.models.hero.subtitle;
+  const title = engine.seo.title;
+  const description = engine.seo.description ?? dictionary.models.hero.subtitle;
 
   return {
     title,
     description,
     alternates: {
-      canonical: `https://maxvideoai.com/models/${slug}`,
+      canonical: `https://maxvideoai.com${engine.seo.canonicalPath}`,
     },
   };
 }
 
 export default function ModelDetailPage({ params }: PageParams) {
   const { slug } = params;
-  const rosterEntry = getModelBySlug(slug);
+  const engine = getFalEngineBySlug(slug);
   const { dictionary } = resolveDictionary();
-  if (!rosterEntry) {
+  if (!engine) {
     notFound();
   }
 
-  const meta = dictionary.models.meta?.[slug];
-  if (!meta) {
-    notFound();
-  }
-
-  const availabilityLabel = dictionary.models.availabilityLabels[rosterEntry.availability] ?? rosterEntry.availability;
-  const brand = PARTNER_BRAND_MAP.get(rosterEntry.brandId);
-  const showSoraSeo = rosterEntry.modelSlug === 'sora-2';
-  const faqEntries = MODEL_FAQ_ENTRIES[slug];
+  const availabilityLabel = dictionary.models.availabilityLabels[engine.availability] ?? engine.availability;
+  const brand = PARTNER_BRAND_MAP.get(engine.brandId);
+  const showSoraSeo = engine.modelSlug === 'sora-2';
+  const faqEntries = engine.faqs ?? [];
+  const faqJsonLd = faqEntries.map(({ question, answer }) => ({ q: question, a: answer }));
+  const pricingHint = engine.pricingHint ? formatPricingHint(engine.pricingHint) : null;
 
   const soraFaqSchema = showSoraSeo
     ? {
@@ -137,7 +86,7 @@ export default function ModelDetailPage({ params }: PageParams) {
             acceptedAnswer: {
               '@type': 'Answer',
               text:
-                'MaxVideo AI routes Sora 2 runs through FAL by default at $0.10 per second in 720p. Drop your own OpenAI API key in the app to bill usage directly through OpenAI—the interface keeps showing the rate as guidance and adds a “Billed by OpenAI” badge so finance teams stay aligned.',
+                'MaxVideo AI routes Sora 2 runs through FAL by default at $0.10 per second in 720p. Drop your own OpenAI API key in the app to bill usage directly through OpenAI-the interface keeps showing the rate as guidance and adds a "Billed by OpenAI" badge so finance teams stay aligned.',
             },
           },
         ],
@@ -165,7 +114,7 @@ export default function ModelDetailPage({ params }: PageParams) {
           },
           {
             '@type': 'Offer',
-            description: 'Pro tier — 720p with OpenAI API key or FAL passthrough.',
+            description: 'Pro tier - 720p with OpenAI API key or FAL passthrough.',
             priceCurrency: 'USD',
             priceSpecification: {
               '@type': 'UnitPriceSpecification',
@@ -176,7 +125,7 @@ export default function ModelDetailPage({ params }: PageParams) {
           },
           {
             '@type': 'Offer',
-            description: 'Pro tier — 1080p with OpenAI API key support.',
+            description: 'Pro tier - 1080p with OpenAI API key support.',
             priceCurrency: 'USD',
             priceSpecification: {
               '@type': 'UnitPriceSpecification',
@@ -191,7 +140,7 @@ export default function ModelDetailPage({ params }: PageParams) {
           name: 'MaxVideo AI',
           url: 'https://maxvideoai.com',
         },
-        description: meta.description,
+        description: engine.seo.description,
         isAccessibleForFree: false,
       }
     : null;
@@ -199,24 +148,24 @@ export default function ModelDetailPage({ params }: PageParams) {
   const soraEndpoints = showSoraSeo
     ? [
         {
-          title: 'Text → Video (Base)',
+          title: 'Text -> Video (Base)',
           endpoint: 'fal-ai/sora-2/text-to-video',
-          price: '$0.10/s · 720p · Audio on by default',
+          price: '$0.10/s / 720p / Audio on by default',
         },
         {
-          title: 'Image → Video (Base)',
+          title: 'Image -> Video (Base)',
           endpoint: 'fal-ai/sora-2/image-to-video',
-          price: '$0.10/s · Auto resolution defaults with reference frame upload',
+          price: '$0.10/s / Auto resolution defaults with reference frame upload',
         },
         {
-          title: 'Text → Video (Pro)',
+          title: 'Text -> Video (Pro)',
           endpoint: 'fal-ai/sora-2/text-to-video/pro',
-          price: '$0.30/s · 720p · $0.50/s · 1080p',
+          price: '$0.30/s / 720p / $0.50/s / 1080p',
         },
         {
-          title: 'Image → Video (Pro)',
+          title: 'Image -> Video (Pro)',
           endpoint: 'fal-ai/sora-2/image-to-video/pro',
-          price: '$0.30/s · 720p · $0.50/s · 1080p',
+          price: '$0.30/s / 720p / $0.50/s / 1080p',
         },
       ]
     : [];
@@ -230,30 +179,30 @@ export default function ModelDetailPage({ params }: PageParams) {
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(soraSoftwareSchema) }} />
       )}
       <Link href="/models" className="text-sm font-semibold text-accent hover:text-accentSoft">
-        ← {dictionary.models.hero.title}
+        {'<-'} {dictionary.models.hero.title}
       </Link>
       <header className="mt-6 space-y-3">
         <div className="flex flex-wrap items-center gap-4">
-          {brand && rosterEntry.logoPolicy === 'logoAllowed' ? (
+          {brand && engine.logoPolicy === 'logoAllowed' ? (
             <span className="flex items-center">
-              <Image src={brand.assets.light.svg} alt={`${meta.displayName} logo`} width={140} height={32} className="h-9 w-auto dark:hidden" />
-              <Image src={brand.assets.dark.svg} alt={`${meta.displayName} logo`} width={140} height={32} className="hidden h-9 w-auto dark:inline-flex" />
+              <Image src={brand.assets.light.svg} alt={`${engine.marketingName} logo`} width={140} height={32} className="h-9 w-auto dark:hidden" />
+              <Image src={brand.assets.dark.svg} alt={`${engine.marketingName} logo`} width={140} height={32} className="hidden h-9 w-auto dark:inline-flex" />
             </span>
           ) : null}
           <div>
-            <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{meta.displayName}</h1>
-            <p className="text-sm uppercase tracking-micro text-text-muted">{meta.versionLabel ?? rosterEntry.versionLabel}</p>
+            <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{engine.marketingName}</h1>
+            <p className="text-sm uppercase tracking-micro text-text-muted">{engine.versionLabel}</p>
           </div>
           <span
             className={clsx(
               'rounded-pill border px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary',
-              AVAILABILITY_BADGE_CLASS[rosterEntry.availability]
+              AVAILABILITY_BADGE_CLASS[engine.availability]
             )}
           >
             {availabilityLabel}
           </span>
         </div>
-      {meta.description ? <p className="text-sm text-text-secondary">{meta.description}</p> : null}
+      {engine.seo.description ? <p className="text-sm text-text-secondary">{engine.seo.description}</p> : null}
       </header>
 
       {showSoraSeo && soraEndpoints.length > 0 && (
@@ -261,8 +210,8 @@ export default function ModelDetailPage({ params }: PageParams) {
           <div className="rounded-card border border-accent/40 bg-accent/5 p-6 shadow-card">
             <h2 className="text-lg font-semibold text-text-primary">Sora 2 pricing & routing</h2>
             <p className="mt-2 text-sm text-text-secondary">
-              Base runs bill via FAL credits when you leave the OpenAI API key blank. Add your own key inside the workspace to move billing to OpenAI—our UI keeps
-              showing the indicative rate and surfaces a “Billed by OpenAI” badge for finance.
+              Base runs bill via FAL credits when you leave the OpenAI API key blank. Add your own key inside the workspace to move billing to OpenAI-our UI keeps
+              showing the indicative rate and surfaces a "Billed by OpenAI" badge for finance.
             </p>
             <ul className="mt-4 space-y-3 text-sm text-text-secondary">
               {soraEndpoints.map((item) => (
@@ -283,28 +232,57 @@ export default function ModelDetailPage({ params }: PageParams) {
           <dl className="mt-4 grid gap-3 text-sm text-text-secondary sm:grid-cols-2">
             <div>
               <dt className="text-xs uppercase tracking-micro text-text-muted">Brand</dt>
-              <dd>{brand ? brand.label : rosterEntry.brandId}</dd>
+              <dd>{brand ? brand.label : engine.brandId}</dd>
             </div>
             <div>
               <dt className="text-xs uppercase tracking-micro text-text-muted">Engine ID</dt>
-              <dd>{rosterEntry.engineId}</dd>
+              <dd>{engine.id}</dd>
             </div>
             <div>
               <dt className="text-xs uppercase tracking-micro text-text-muted">Slug</dt>
-              <dd>/models/{rosterEntry.modelSlug}</dd>
+              <dd>/models/{engine.modelSlug}</dd>
             </div>
             <div>
               <dt className="text-xs uppercase tracking-micro text-text-muted">Logo policy</dt>
-              <dd>{rosterEntry.logoPolicy === 'logoAllowed' ? 'Logo usage permitted' : 'Text-only (wordmark)'}</dd>
+              <dd>{engine.logoPolicy === 'logoAllowed' ? 'Logo usage permitted' : 'Text-only (wordmark)'}</dd>
             </div>
           </dl>
         </div>
-        {meta.priceBefore ? (
+        {pricingHint ? (
           <div className="rounded-card border border-dashed border-hairline bg-white p-6 text-sm text-text-muted shadow-card">
-            {meta.priceBefore}
+            {pricingHint}
           </div>
         ) : null}
       </section>
+
+      {engine.prompts.length > 0 && (
+        <section className="mt-10 space-y-4">
+          <h2 className="text-lg font-semibold text-text-primary">Prompt ideas</h2>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {engine.prompts.map((entry) => (
+              <article key={entry.title} className="rounded-card border border-hairline bg-white p-4 text-sm text-text-secondary shadow-card">
+                <h3 className="text-sm font-semibold text-text-primary">{entry.title}</h3>
+                <p className="mt-1 text-sm text-text-secondary">{entry.prompt}</p>
+                {entry.notes ? <p className="mt-2 text-xs text-text-muted">{entry.notes}</p> : null}
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {faqEntries.length > 0 && (
+        <section className="mt-10 space-y-4">
+          <h2 className="text-lg font-semibold text-text-primary">FAQ</h2>
+          <div className="space-y-3 text-sm text-text-secondary">
+            {faqEntries.map(({ question, answer }) => (
+              <article key={question} className="rounded-card border border-hairline bg-white p-4 shadow-card">
+                <h3 className="text-sm font-semibold text-text-primary">{question}</h3>
+                <p className="mt-1 text-sm text-text-secondary">{answer}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       <footer className="mt-10 flex flex-wrap gap-3">
         <Link
@@ -320,7 +298,7 @@ export default function ModelDetailPage({ params }: PageParams) {
           Launch workspace
         </Link>
       </footer>
-      {faqEntries ? <FaqJsonLd qa={faqEntries} /> : null}
+      {faqEntries.length > 0 ? <FaqJsonLd qa={faqJsonLd} /> : null}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import type { MemberTier, PricingInput } from '@maxvideoai/pricing';
+import { normalizeEngineId } from '@/lib/engine-alias';
 
 export interface PricingScenario {
   engineId: string;
@@ -8,7 +9,7 @@ export interface PricingScenario {
 }
 
 export const DEFAULT_MARKETING_SCENARIO: PricingScenario = {
-  engineId: 'veo3',
+  engineId: 'veo-3-fast',
   durationSec: 12,
   resolution: '1080p',
   memberTier: 'member',
@@ -26,8 +27,9 @@ function normalizeMemberTier(tier?: PricingScenario['memberTier']): MemberTier |
 }
 
 export function scenarioToPricingInput(scenario: PricingScenario): PricingInput {
+  const canonicalId = normalizeEngineId(scenario.engineId) ?? scenario.engineId;
   return {
-    engineId: scenario.engineId,
+    engineId: canonicalId,
     durationSec: scenario.durationSec,
     resolution: scenario.resolution,
     memberTier: normalizeMemberTier(scenario.memberTier),

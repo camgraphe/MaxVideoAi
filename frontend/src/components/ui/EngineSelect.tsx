@@ -16,14 +16,18 @@ import type { EngineAvailability, EngineCaps, Mode, Resolution } from '@/types/e
 import { Card } from './Card';
 import { Chip } from './Chip';
 import { EngineIcon } from '@/components/ui/EngineIcon';
-import { getModelByEngineId } from '@/lib/model-roster';
+import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 
 const MODE_LABELS: Record<Mode, string> = {
-  t2v: 'Text → Video',
-  i2v: 'Image → Video',
+  t2v: 'Text -> Video',
+  i2v: 'Image -> Video',
 };
 
-const SORA_ENGINE_IDS = ['sora-2', 'sora-2-pro'] as const;
+const ENGINE_REGISTRY: FalEngineEntry[] = listFalEngines();
+const ENGINE_ORDER = new Map<string, number>(ENGINE_REGISTRY.map((entry, index) => [entry.id, index]));
+const ENGINE_META = new Map<string, FalEngineEntry>(ENGINE_REGISTRY.map((entry) => [entry.id, entry]));
+
+const SORA_ENGINE_IDS = ['sora-2'] as const;
 const SORA_ENGINE_SET = new Set<string>(SORA_ENGINE_IDS);
 
 type EngineGuideEntry = {
@@ -40,75 +44,50 @@ interface EngineSelectProps {
 }
 
 const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
+  'pika-text-to-video': {
+    description:
+      'Pika 2.2 Text to Video delivers stylized motion graphics fast - perfect for social teasers and product explainers.',
+    badges: ['Fast queue', 'Social ready', 'Prompt friendly'],
+  },
+  'pika-image-to-video': {
+    description:
+      'Start from a still frame and let Pika animate it with smooth camera moves.',
+    badges: ['Image input', 'Camera moves', 'Loop ready'],
+  },
   'sora-2': {
     description:
-      'Baseline Sora endpoints for text, image, or video remix with native audio. Reliable when you need cinematic motion with predictable pricing.',
-    badges: ['🔊 Native audio', '🎬 Cinematic', '🧠 AI remix'],
+      'OpenAI Sora 2 handles cinematic narratives with lip-sync and audio - ideal for hero renders.',
+    badges: ['Audio native', 'Cinematic', 'Remix'],
   },
-  'sora-2-pro': {
+  'veo-3-1': {
     description:
-      'Pro tier unlocks 1080p output and higher throughput—ideal for hero shots or longer edits.',
-    badges: ['🖥️ 1080p', '⚡ Pro throughput', '🏆 Hero'],
+      'Veo 3.1 reference-to-video keeps subject fidelity across shots thanks to multi-image conditioning.',
+    badges: ['Multi reference', 'Audio option', 'High fidelity'],
   },
-  veo3: {
+  'veo-3-fast': {
     description:
-      'Google Veo 3 delivers cinematic realism with lip-sync and robust camera control.',
-    badges: ['🎥 Realism', '🔊 Audio', '🌆 Narrative'],
+      'Fast Veo 3 is tuned for quick iterations while keeping the Google Veo look.',
+    badges: ['Fast queue', 'Storyboard', 'Audio option'],
   },
-  veo3fast: {
+  'veo-3-1-fast': {
     description:
-      'Fast queue Veo for previsualisation while keeping the Veo look and audio toggle.',
-    badges: ['⚡ Fast queue', '💰 Optimized', '🔄 Previz'],
+      'Bridge a starting and ending frame in eight seconds - great for transitions or product hero sweeps.',
+    badges: ['First/last frame', 'Eight seconds', 'Audio option'],
   },
-  lumaDM: {
+  'minimax-hailuo-02-text': {
     description:
-      'Luma Dream Machine v1.5 handles photoreal product loops and lifestyle scenes with balanced detail.',
-    badges: ['🧵 Photorealism', '🍽️ Tabletop', '🌍 Lifestyle'],
+      'Hailuo 02 Standard (T2V) shines on stylized storytelling with prompt optimizer support.',
+    badges: ['Prompt optimizer', 'Six to ten seconds', 'Stylized'],
   },
-  lumaRay2: {
+  'minimax-hailuo-02-image': {
     description:
-      'Ray 2 pushes fidelity for flagship footage when you need premium detail from scratch.',
-    badges: ['✨ High fidelity', '🏆 Flagship', '🪄 Ray'],
+      'Use MiniMax Hailuo 02 with reference images for sharp motion control at 768P.',
+    badges: ['Image input', 'End frame', '768P'],
   },
-  lumaRay2_flash: {
+  'hunyuan-image': {
     description:
-      'Flash mode keeps the Ray aesthetic with faster turnaround—perfect for look-dev.',
-    badges: ['⚡ Flash', '🗒️ Storyboard', '💡 Look-dev'],
-  },
-  lumaRay2_modify: {
-    description:
-      'Upload an existing shot and restyle it with Ray 2 Modify—ideal for brand-safe alternates.',
-    badges: ['🎬 Restyle', '🖌️ Texture swap', '🧵 Continuity'],
-  },
-  lumaRay2_reframe: {
-    description:
-      'Convert hero cuts between aspect ratios with AI-aware reframing and inpainting.',
-    badges: ['↔️ Aspect', '🧠 Smart fill', '📲 Social crops'],
-  },
-  lumaRay2_flash_reframe: {
-    description:
-      'Flash Reframe brings rapid aspect swaps at a lower price for quick turnarounds.',
-    badges: ['⚡ Fast', '↔️ Aspect', '💰 Budget'],
-  },
-  pika22: {
-    description:
-      'Fast social-first clips with caption overlays and Pikascenes motion controls.',
-    badges: ['📱 Social', '🔤 Captions', '🎞️ Fast motion'],
-  },
-  minimax_video_01: {
-    description:
-      'MiniMax Video 01 uses camera tags to produce concept animations and Live2D-style motion.',
-    badges: ['🎯 Camera tags', '🧪 Concepts', '🎨 Live2D'],
-  },
-  minimax_hailuo_02_pro: {
-    description:
-      'Hailuo 02 Pro handles 1080p image-to-video hero renders when you have a strong reference.',
-    badges: ['🖼️ I2V', '🖥️ 1080p', '🏅 Quality'],
-  },
-  hunyuan_video: {
-    description:
-      'Tencent’s Hunyuan Video offers research-grade realism with a Pro mode switch.',
-    badges: ['🔬 Research', '🌌 Realism', '⚙️ Pro mode'],
+      'Hunyuan Image v3 produces high-detail keyframes to prep storyboards or thumbnails.',
+    badges: ['Images', 'High fidelity', 'MP based'],
   },
 };
 
@@ -134,9 +113,14 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
   const triggerId = useId();
 
   const availableEngines = useMemo(() => {
-    return engines.filter((entry) => {
-      const rosterEntry = getModelByEngineId(entry.id);
-      return rosterEntry && rosterEntry.availability !== 'paused';
+    const sorted = engines.slice().sort((a, b) => {
+      const orderA = ENGINE_ORDER.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+      const orderB = ENGINE_ORDER.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+      return orderA - orderB;
+    });
+    return sorted.filter((entry) => {
+      const meta = ENGINE_META.get(entry.id);
+      return meta && meta.availability !== 'paused';
     });
   }, [engines]);
 
@@ -145,7 +129,7 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
     return candidate ?? availableEngines[0] ?? engines[0];
   }, [availableEngines, engineId, engines]);
 
-  const selectedRosterEntry = useMemo(() => (selectedEngine ? getModelByEngineId(selectedEngine.id) : undefined), [selectedEngine]);
+  const selectedMeta = useMemo(() => (selectedEngine ? ENGINE_META.get(selectedEngine.id) : undefined), [selectedEngine]);
 
   const visibleEngines = availableEngines;
 
@@ -248,14 +232,14 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
         return;
       }
 
-      if (!engines.length) {
+      if (!visibleEngines.length) {
         return;
       }
 
       if (event.key === 'ArrowDown') {
         event.preventDefault();
         setHighlightedIndex((previous) => {
-          const next = previous + 1 >= engines.length ? 0 : previous + 1;
+          const next = previous + 1 >= visibleEngines.length ? 0 : previous + 1;
           return next;
         });
       }
@@ -263,15 +247,15 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
       if (event.key === 'ArrowUp') {
         event.preventDefault();
         setHighlightedIndex((previous) => {
-          const next = previous - 1 < 0 ? engines.length - 1 : previous - 1;
+          const next = previous - 1 < 0 ? visibleEngines.length - 1 : previous - 1;
           return next;
         });
       }
 
       if (event.key === 'Enter' || event.key === ' ') {
-        if (highlightedIndex >= 0 && highlightedIndex < engines.length) {
+        if (highlightedIndex >= 0 && highlightedIndex < visibleEngines.length) {
           event.preventDefault();
-          onEngineChange(engines[highlightedIndex].id);
+          onEngineChange(visibleEngines[highlightedIndex].id);
           setOpen(false);
           setHighlightedIndex(-1);
           triggerRef.current?.focus();
@@ -287,7 +271,7 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
       document.removeEventListener('touchstart', handlePointer);
       document.removeEventListener('keydown', handleKey);
     };
-  }, [open, engines, highlightedIndex, onEngineChange]);
+  }, [open, engines, highlightedIndex, onEngineChange, visibleEngines]);
 
   useEffect(() => {
     if (!open) return;
@@ -351,8 +335,11 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
             <div className="flex min-w-0 items-center gap-3">
               <EngineIcon engine={selectedEngine} size={32} className="shrink-0" />
               <div className="min-w-0">
-                <p className="truncate font-medium">{formatEngineShort(selectedEngine)}</p>
-                <p className="truncate text-[11px] text-text-muted">{selectedEngine.provider}</p>
+                <p className="truncate font-medium">{selectedMeta?.marketingName ?? formatEngineShort(selectedEngine)}</p>
+                <p className="truncate text-[11px] text-text-muted">
+                  {selectedEngine.provider}
+                  {selectedMeta?.versionLabel || selectedEngine.version ? ` - ${selectedMeta?.versionLabel ?? selectedEngine.version ?? ''}` : ''}
+                </p>
               </div>
             </div>
             <svg
@@ -383,7 +370,7 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
                           : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
                       )}
                     >
-                      {getModelByEngineId(entry.id)?.marketingName ?? entry.label ?? entry.id}
+                      {ENGINE_META.get(entry.id)?.marketingName ?? entry.label ?? entry.id}
                     </button>
                   );
                 })}
@@ -391,8 +378,8 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
             </div>
           )}
 
-          {selectedRosterEntry?.billingNote && (
-            <p className="text-[11px] text-text-muted">{selectedRosterEntry.billingNote}</p>
+          {selectedMeta?.billingNote && (
+            <p className="text-[11px] text-text-muted">{selectedMeta.billingNote}</p>
           )}
 
           {open && portalElement && position &&
@@ -414,7 +401,7 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
                       }}
                       className="rounded-input border border-transparent px-2 py-1 text-[11px] font-medium text-accent transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      Browse engines…
+                      Browse engines...
                     </button>
                   </div>
                   <ul
@@ -426,8 +413,8 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
                     {visibleEngines.map((engine, index) => {
                       const active = engine.id === selectedEngine.id;
                       const highlighted = index === highlightedIndex;
-                      const rosterEntry = getModelByEngineId(engine.id);
-                      const availability: EngineAvailability = rosterEntry?.availability ?? engine.availability ?? 'available';
+                      const meta = ENGINE_META.get(engine.id);
+                      const availability: EngineAvailability = meta?.availability ?? engine.availability ?? 'available';
                       const disabled = availability === 'paused';
                       return (
                         <li key={engine.id}>
@@ -462,9 +449,9 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
                             <EngineIcon engine={engine} size={32} className="mt-0.5 shrink-0" />
                             <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
                               <div className="min-w-0 space-y-1">
-                                <p className="truncate text-sm font-medium text-text-primary">{rosterEntry?.marketingName ?? formatEngineShort(engine)}</p>
+                                <p className="truncate text-sm font-medium text-text-primary">{meta?.marketingName ?? formatEngineShort(engine)}</p>
                                 <p className="truncate text-[12px] text-text-muted">
-                                  {engine.provider} • {rosterEntry?.versionLabel ?? engine.version ?? '—'}
+                                  {engine.provider} - {meta?.versionLabel ?? engine.version ?? '-'}
                                 </p>
                                 <div className="flex flex-wrap gap-1.5 text-[11px]">
                                   {engine.modes.map((engineMode) => (
@@ -496,7 +483,7 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
             onClick={() => setBrowseOpen(true)}
             className="w-full rounded-input border border-hairline bg-white px-4 py-2 text-sm font-medium text-accent transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            Browse engines…
+            Browse engines...
           </button>
         </div>
 
@@ -598,7 +585,7 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
   const searchValue = searchTerm.trim().toLowerCase();
 
   const filteredEngines = useMemo(() => {
-    const priorityOrder = ['sora-2', 'sora-2-pro', 'veo3', 'veo3fast'];
+    const priorityOrder = ['sora-2', 'veo-3-1', 'veo-3-fast', 'pika-text-to-video'];
     const priorityIndex = new Map(priorityOrder.map((id, index) => [id, index]));
     const ranked = engines
       .slice()
@@ -606,14 +593,16 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
         if (modeFilter !== 'all' && !engine.modes.includes(modeFilter)) return false;
         if (resolutionFilter !== 'all' && !engine.resolutions.includes(resolutionFilter)) return false;
 
+        const meta = ENGINE_META.get(engine.id);
         if (!searchValue) return true;
         const guide = ENGINE_GUIDE[engine.id];
         const haystack = [
-          engine.label,
+          meta?.marketingName ?? engine.label ?? engine.id,
           engine.provider,
           engine.version ?? '',
           guide?.description ?? '',
           ...(guide?.badges ?? []),
+          meta?.seo.description ?? '',
         ]
           .join(' ')
           .toLowerCase();
@@ -626,7 +615,9 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
           return aPriority - bPriority;
         }
         if (a.isLab === b.isLab) {
-          return a.label.localeCompare(b.label);
+          const aName = ENGINE_META.get(a.id)?.marketingName ?? a.label ?? a.id;
+          const bName = ENGINE_META.get(b.id)?.marketingName ?? b.label ?? b.id;
+          return aName.localeCompare(bName);
         }
         return a.isLab ? 1 : -1;
       });
@@ -687,9 +678,9 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
         <header className="border-b border-hairline bg-bg/70 px-6 pb-5 pt-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="max-w-xl space-y-2">
-              <h2 className="text-xl font-semibold text-text-primary">🟦 Choose the right engine for your shot</h2>
+              <h2 className="text-xl font-semibold text-text-primary">Choose the right engine for your shot</h2>
               <p className="text-sm text-text-secondary">
-                Each model has its own strengths — some are fast, others cinematic or experimental. See what fits your project, then generate with confidence.
+                Each model has its own strengths - some are fast, others cinematic or experimental. See what fits your project, then generate with confidence.
               </p>
             </div>
             <div className="flex flex-col items-end gap-2">
@@ -705,28 +696,27 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
           </div>
           <div className="mt-6 space-y-3">
             <div className="relative">
-              <span className="absolute inset-y-0 left-3 flex items-center text-text-muted">🔍</span>
               <input
                 type="search"
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Search by engine, provider, or capability"
-                className="w-full rounded-input border border-border bg-white py-3 pl-11 pr-4 text-sm text-text-primary shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full rounded-input border border-border bg-white px-3 py-3 text-sm text-text-primary shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
             </div>
             <div className="flex flex-wrap gap-2">
               <FilterChip active={modeFilter === 'all'} onClick={() => setModeFilter('all')}>
-                Mode · All
+                Mode: All
               </FilterChip>
               {(['t2v', 'i2v'] as Mode[]).map((candidate) => (
                 <FilterChip key={candidate} active={modeFilter === candidate} onClick={() => setModeFilter(candidate)}>
-                  Mode · {candidate.toUpperCase()}
+                  Mode: {candidate.toUpperCase()}
                 </FilterChip>
               ))}
             </div>
             <div className="flex flex-wrap gap-2">
               <FilterChip active={resolutionFilter === 'all'} onClick={() => setResolutionFilter('all')}>
-                Resolution · All
+                Resolution: All
               </FilterChip>
               {resolutions.map((resolution) => (
                 <FilterChip
@@ -746,8 +736,13 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
               const guide = ENGINE_GUIDE[engine.id];
               const isSelected = engine.id === selectedEngineId;
               const badges = guide?.badges ?? [];
-              const labsBadgeNeeded = engine.isLab && !badges.some((badge) => badge.includes('🧪'));
-              const combinedBadges = labsBadgeNeeded ? [...badges, '🧪 Labs'] : badges;
+              const labsBadgeNeeded = engine.isLab && !badges.some((badge) => badge === 'Labs');
+              const combinedBadges = labsBadgeNeeded ? [...badges, 'Labs'] : badges;
+              const meta = ENGINE_META.get(engine.id);
+              const name = meta?.marketingName ?? engine.label ?? engine.id;
+              const versionLabel = meta?.versionLabel ?? engine.version ?? '-';
+              const description = guide?.description ?? meta?.seo.description ??
+                'Versatile engine ready for price-before-you-generate workflows. Review specs and run with confidence.';
 
               return (
                 <Card
@@ -762,9 +757,9 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
                     <EngineIcon engine={engine} size={44} className="shrink-0" />
                     <div className="flex flex-1 items-start justify-between gap-3">
                       <div className="space-y-1">
-                        <h3 className="text-base font-semibold text-text-primary">{engine.label}</h3>
+                        <h3 className="text-base font-semibold text-text-primary">{name}</h3>
                         <p className="text-xs uppercase tracking-micro text-text-muted">
-                          {engine.provider} • {engine.version ?? '—'}
+                          {engine.provider} - {versionLabel}
                         </p>
                       </div>
                       <div className="flex flex-col items-end gap-1 text-[11px] text-text-muted">
@@ -774,8 +769,7 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
                     </div>
                   </div>
                   <p className="text-sm leading-6 text-text-secondary">
-                    {guide?.description ??
-                      'Versatile engine ready for price-before-you-generate workflows. Review specs and run with confidence.'}
+                    {description}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {combinedBadges.map((badge) => (
@@ -789,10 +783,10 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
                   </div>
                   <div className="flex flex-wrap items-center gap-3 text-xs text-text-muted">
                     <span>
-                      Modes: {engine.modes.map((entry) => entry.toUpperCase()).join(' · ')}
+                      Modes: {engine.modes.map((entry) => entry.toUpperCase()).join(' / ')}
                     </span>
                     <span>
-                      Max {engine.maxDurationSec}s · Res {engine.resolutions.join(' / ')}
+                      Max {engine.maxDurationSec}s / Res {engine.resolutions.join(' / ')}
                     </span>
                   </div>
                 </Card>

@@ -1,45 +1,10 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore - JSON import outside the package root is supported within the monorepo workspace.
-import enginesFixture from '../../../fixtures/engines.json';
+// @ts-ignore - cross-package import for shared registry data.
+import { listFalEngines } from '../../../frontend/src/config/falEngines';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore - shared engine types live in the frontend workspace.
+import type { EngineCaps } from '../../../frontend/types/engines';
 import type { PricingAddonRule, PricingEngineDefinition } from './types';
-
-type FixtureEngine = {
-  id: string;
-  label?: string;
-  version?: string;
-  availability?: string;
-  maxDurationSec?: number;
-  inputSchema?: {
-    optional?: Array<{
-      id?: string;
-      min?: number;
-      max?: number;
-      step?: number;
-      default?: number;
-    }>;
-  };
-  pricingDetails?: {
-    currency?: string;
-    perSecondCents?: {
-      default?: number;
-      byResolution?: Record<string, number>;
-    };
-    flatCents?: {
-      default?: number;
-      byResolution?: Record<string, number>;
-    };
-    addons?: Record<string, PricingAddonRule>;
-    maxDurationSec?: number;
-  };
-  pricing?: {
-    unit?: string;
-    base?: number;
-    byResolution?: Record<string, number>;
-    currency?: string;
-  };
-  metadata?: Record<string, unknown>;
-  platform_fee_pct?: number;
-};
 
 const DEFAULT_MEMBER_DISCOUNTS = {
   member: 0,
@@ -47,8 +12,10 @@ const DEFAULT_MEMBER_DISCOUNTS = {
   pro: 0.1,
 } as const;
 
-function resolveDurationSteps(engine: FixtureEngine) {
-  const durationField = engine.inputSchema?.optional?.find((field) => field.id === 'duration_seconds');
+function resolveDurationSteps(engine: EngineCaps) {
+  const durationField =
+    engine.inputSchema?.optional?.find((field) => field.id === 'duration_seconds') ??
+    engine.inputSchema?.optional?.find((field) => field.id === 'duration');
   const min = Math.max(1, Math.floor(durationField?.min ?? 1));
   const max = Math.max(min, Math.floor(durationField?.max ?? engine.pricingDetails?.maxDurationSec ?? engine.maxDurationSec ?? 30));
   const step = Math.max(1, Math.floor(durationField?.step ?? 1));
@@ -81,7 +48,7 @@ function normaliseResolutionMultipliers(
   return multipliers;
 }
 
-function resolveBaseUnitPriceCents(engine: FixtureEngine): { baseUnitPriceCents: number; currency: string; byResolution: Record<string, number> | undefined } | null {
+function resolveBaseUnitPriceCents(engine: EngineCaps): { baseUnitPriceCents: number; currency: string; byResolution: Record<string, number> | undefined } | null {
   const currency =
     engine.pricingDetails?.currency ??
     engine.pricing?.currency ??
@@ -130,10 +97,11 @@ function resolveBaseUnitPriceCents(engine: FixtureEngine): { baseUnitPriceCents:
 }
 
 export function buildPricingDefinitionsFromFixtures(): PricingEngineDefinition[] {
-  const engines: FixtureEngine[] = Array.isArray(enginesFixture.engines) ? (enginesFixture.engines as FixtureEngine[]) : [];
+  const engines = listFalEngines();
   const definitions: PricingEngineDefinition[] = [];
 
-  for (const engine of engines) {
+  for (const entry of engines) {
+    const engine = entry.engine as EngineCaps | undefined;
     if (!engine?.id) {
       continue;
     }
@@ -166,11 +134,11 @@ export function buildPricingDefinitionsFromFixtures(): PricingEngineDefinition[]
       rounding: { mode: 'nearest', incrementCents: 1 },
       taxPolicyHint: 'standard',
       addons: engine.pricingDetails?.addons ?? undefined,
-      platformFeePct: engine.platform_fee_pct ?? 0.2,
+      platformFeePct: 0.2,
       platformFeeFlatCents: 0,
       availability: engine.availability,
       metadata: {
-        source: 'fixtures',
+        source: 'falEngines.ts',
       },
     });
   }

@@ -1,41 +1,15 @@
-import enginesFixture from '../../fixtures/engines.json';
-import { getPricingKernel } from '@/lib/pricing-kernel';
+import { listFalEngines } from '@/config/falEngines';
 import { getModelRoster } from '@/lib/model-roster';
+import { getPricingKernel } from '@/lib/pricing-kernel';
 import type {
-  AspectRatio,
-  EngineAvailability,
   EngineCaps,
-  EngineInputLimits,
-  EngineInputSchema,
-  EngineParam,
-  EnginePricing,
-  EnginePricingDetails,
-  EngineStatus,
   ItemizationLine,
-  LatencyTier,
   Mode,
   PreflightRequest,
   PreflightResponse,
   Resolution,
 } from '@/types/engines';
 import type { MemberTier, PricingSnapshot } from '@maxvideoai/pricing';
-
-type EnginesFixture = {
-  engines?: unknown;
-};
-
-type RawEngine = Record<string, unknown>;
-
-const ENGINE_STATUS: EngineStatus[] = ['live', 'busy', 'degraded', 'maintenance', 'early_access'];
-const LATENCY: LatencyTier[] = ['fast', 'standard'];
-const AVAILABILITY: EngineAvailability[] = ['available', 'limited', 'waitlist', 'paused'];
-const MODES: Mode[] = ['t2v', 'i2v'];
-const RESOLUTIONS: Resolution[] = ['720p', '1080p', '4k', '512P', '768P', 'auto'];
-const ASPECT_RATIOS: AspectRatio[] = ['16:9', '9:16', '1:1', '4:5', 'custom', 'source', 'auto'];
-
-function includesValue<T extends string>(values: readonly T[], value: string): value is T {
-  return values.includes(value as T);
-}
 
 export function normalizeMemberTier(value?: string | null): MemberTier {
   const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
@@ -45,242 +19,26 @@ export function normalizeMemberTier(value?: string | null): MemberTier {
   return 'member';
 }
 
-function sanitizeString(value: unknown, fallback = ''): string {
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
-  return fallback;
-}
-
-function sanitizeNumber(value: unknown, fallback = 0): number {
-  const num = typeof value === 'number' ? value : Number(value);
-  return Number.isFinite(num) ? num : fallback;
-}
-
-function sanitizeBoolean(value: unknown, fallback = false): boolean {
-  if (typeof value === 'boolean') return value;
-  if (typeof value === 'string') {
-    if (value.toLowerCase() === 'true') return true;
-    if (value.toLowerCase() === 'false') return false;
-  }
-  if (typeof value === 'number') return value !== 0;
-  return fallback;
-}
-
-function sanitizeModeArray(value: unknown): Mode[] {
-  const result: Mode[] = [];
-  if (Array.isArray(value)) {
-    value.forEach((entry) => {
-      const mode = sanitizeString(entry).toLowerCase();
-      if (includesValue(MODES, mode)) {
-        result.push(mode);
-      }
-    });
-  }
-  return result.length ? result : ['t2v'];
-}
-
-function sanitizeResolutionArray(value: unknown): Resolution[] {
-  const result: Resolution[] = [];
-  if (Array.isArray(value)) {
-    value.forEach((entry) => {
-      const resolution = sanitizeString(entry);
-      if (includesValue(RESOLUTIONS, resolution)) {
-        result.push(resolution);
-      }
-    });
-  }
-  return result.length ? result : ['1080p'];
-}
-
-function sanitizeAspectRatioArray(value: unknown): AspectRatio[] {
-  const result: AspectRatio[] = [];
-  if (Array.isArray(value)) {
-    value.forEach((entry) => {
-      const aspect = sanitizeString(entry);
-      if (includesValue(ASPECT_RATIOS, aspect)) {
-        result.push(aspect);
-      }
-    });
-  }
-  return result.length ? result : ['16:9'];
-}
-
-function sanitizeNumberArray(value: unknown, fallback: number[] = [24]): number[] {
-  if (Array.isArray(value)) {
-    const list = value
-      .map((entry) => sanitizeNumber(entry))
-      .filter((entry) => Number.isFinite(entry) && entry > 0);
-    return list.length ? list : fallback;
-  }
-  return fallback;
-}
-
-function sanitizeParams(value: unknown): Record<string, EngineParam> {
-  if (!value || typeof value !== 'object') return {};
-  const result: Record<string, EngineParam> = {};
-  Object.entries(value as Record<string, unknown>).forEach(([key, raw]) => {
-    if (!raw || typeof raw !== 'object') return;
-    const param = raw as Record<string, unknown>;
-    const min = sanitizeNumber(param.min, 0);
-    const max = sanitizeNumber(param.max, min);
-    const defaultValue = sanitizeNumber(param.default, min);
-    const stepRaw = param.step;
-    const step = typeof stepRaw === 'number' && Number.isFinite(stepRaw) ? stepRaw : undefined;
-    result[key] = {
-      min,
-      max,
-      default: defaultValue,
-      step,
-    };
-  });
-  return result;
-}
-
-function sanitizeInputLimits(value: unknown): EngineInputLimits {
-  if (!value || typeof value !== 'object') {
-    return {};
-  }
-  const limits = value as Record<string, unknown>;
-  return {
-    imageMaxMB: limits.imageMaxMB != null ? sanitizeNumber(limits.imageMaxMB, 10) : undefined,
-    videoMaxMB: limits.videoMaxMB != null ? sanitizeNumber(limits.videoMaxMB, 0) : undefined,
-    videoMaxDurationSec:
-      limits.videoMaxDurationSec != null ? sanitizeNumber(limits.videoMaxDurationSec, 0) : undefined,
-    videoCodecs: Array.isArray(limits.videoCodecs)
-      ? (limits.videoCodecs as unknown[]).map((codec) => sanitizeString(codec)).filter(Boolean)
-      : undefined,
-  };
-}
-
-function sanitizeInputSchema(value: unknown): EngineInputSchema | undefined {
-  if (!value || typeof value !== 'object') return undefined;
-  return value as EngineInputSchema;
-}
-
-function sanitizePricing(value: unknown): EnginePricing | undefined {
-  if (!value || typeof value !== 'object') return undefined;
-  return value as EnginePricing;
-}
-
-function sanitizePricingDetails(value: unknown): EnginePricingDetails | undefined {
-  if (!value || typeof value !== 'object') return undefined;
-  return value as EnginePricingDetails;
-}
-
-function sanitizeEngine(raw: RawEngine): EngineCaps | null {
-  const id = sanitizeString(raw.id);
-  if (!id) return null;
-
-  const label = sanitizeString(raw.label, id);
-  const provider = sanitizeString(raw.provider, 'unknown');
-  const statusRaw = sanitizeString(raw.status, 'live').toLowerCase();
-  const status = includesValue(ENGINE_STATUS, statusRaw) ? statusRaw : 'live';
-  const latencyRaw = sanitizeString(raw.latencyTier, 'standard').toLowerCase();
-  const latencyTier = includesValue(LATENCY, latencyRaw) ? latencyRaw : 'standard';
-  const availabilityRaw = sanitizeString(raw.availability, 'available').toLowerCase();
-  const availability = includesValue(AVAILABILITY, availabilityRaw) ? availabilityRaw : 'available';
-
-  const params = sanitizeParams(raw.params);
-  const inputLimits = sanitizeInputLimits(raw.inputLimits);
-  const inputSchema = sanitizeInputSchema(raw.inputSchema);
-  const pricing = sanitizePricing(raw.pricing);
-  const pricingDetails = sanitizePricingDetails(raw.pricingDetails);
-
-  const updatedAt = sanitizeString(raw.updatedAt, new Date().toISOString());
-  const ttlSec = sanitizeNumber(raw.ttlSec, 600);
-
-  const iconUrlValue = raw.icon_url ?? raw.iconUrl;
-  const iconUrl = iconUrlValue == null ? null : sanitizeString(iconUrlValue);
-  const fallbackIconValue = raw.fallback_icon ?? raw.fallbackIcon;
-  const fallbackIcon = fallbackIconValue == null ? null : sanitizeString(fallbackIconValue);
-
-  const brandPolicyRaw = raw.brandAssetPolicy;
-  const brandAssetPolicy =
-    brandPolicyRaw && typeof brandPolicyRaw === 'object'
-      ? (() => {
-          const policy = brandPolicyRaw as Record<string, unknown>;
-          const linkRaw = policy.linkToGuidelines;
-          const usageRaw = policy.usageNotes;
-          const link =
-            typeof linkRaw === 'string' && linkRaw.trim().length > 0 ? linkRaw.trim() : undefined;
-          const usage =
-            typeof usageRaw === 'string' && usageRaw.trim().length > 0 ? usageRaw.trim() : undefined;
-          return {
-            logoAllowed: sanitizeBoolean(policy.logoAllowed, false),
-            textOnly: sanitizeBoolean(policy.textOnly, false),
-            linkToGuidelines: link,
-            usageNotes: usage,
-          };
-        })()
-      : undefined;
-
-  const providerMetaRaw = raw.providerMeta ?? raw.provider_meta;
-  const providerMeta =
-    providerMetaRaw && typeof providerMetaRaw === 'object'
-      ? (providerMetaRaw as { provider?: string; modelSlug?: string })
-      : undefined;
-
-  return {
-    id,
-    label,
-    provider,
-    version: raw.version ? sanitizeString(raw.version) : undefined,
-    variant: raw.variant ? sanitizeString(raw.variant) : undefined,
-    isLab: sanitizeBoolean(raw.isLab, false),
-    status,
-    latencyTier,
-    queueDepth: raw.queueDepth != null ? sanitizeNumber(raw.queueDepth, 0) : undefined,
-    region: raw.region ? sanitizeString(raw.region) : undefined,
-    vendorAccountId: raw.vendorAccountId ? sanitizeString(raw.vendorAccountId) : undefined,
-    modes: sanitizeModeArray(raw.modes),
-    maxDurationSec: sanitizeNumber(raw.maxDurationSec, 10),
-    resolutions: sanitizeResolutionArray(raw.resolutions),
-    aspectRatios: sanitizeAspectRatioArray(raw.aspectRatios),
-    fps: sanitizeNumberArray(raw.fps),
-    audio: sanitizeBoolean(raw.audio, false),
-    upscale4k: sanitizeBoolean(raw.upscale4k, false),
-    extend: sanitizeBoolean(raw.extend, false),
-    motionControls: sanitizeBoolean(raw.motionControls, false),
-    keyframes: sanitizeBoolean(raw.keyframes, false),
-    params,
-    inputLimits,
-    inputSchema,
-    pricing,
-    apiAvailability: raw.apiAvailability ? sanitizeString(raw.apiAvailability) : undefined,
-    updatedAt,
-    ttlSec,
-    providerMeta,
-    pricingDetails,
-    iconUrl,
-    fallbackIcon,
-    availability,
-    brandId: raw.brandId ? sanitizeString(raw.brandId) : undefined,
-    brandAssetPolicy,
-  };
-}
-
-const RAW_ENGINES = Array.isArray((enginesFixture as EnginesFixture).engines)
-  ? ((enginesFixture as EnginesFixture).engines as RawEngine[])
-  : [];
-
 const ENGINE_BLOCKLIST = new Set(['dev-sim', 'developer', 'developer-simulator']);
+
 const MODEL_PRIORITY_ENTRIES = getModelRoster().map(
   (entry, index) => [String(entry.engineId).toLowerCase(), index] as [string, number]
 );
 const MODEL_PRIORITY = new Map<string, number>(MODEL_PRIORITY_ENTRIES);
 const DEFAULT_PRIORITY = MODEL_PRIORITY_ENTRIES.length;
 
-const ENGINES_BASE: EngineCaps[] = RAW_ENGINES.map((entry) => sanitizeEngine(entry)).filter(
-  (engine): engine is EngineCaps =>
-    engine !== null && !ENGINE_BLOCKLIST.has(engine.id.trim().toLowerCase())
-).sort((a, b) => {
-  const aPriority = MODEL_PRIORITY.get(a.id.toLowerCase()) ?? DEFAULT_PRIORITY;
-  const bPriority = MODEL_PRIORITY.get(b.id.toLowerCase()) ?? DEFAULT_PRIORITY;
-  if (aPriority !== bPriority) {
-    return aPriority - bPriority;
-  }
-  return a.label.localeCompare(b.label);
-});
+const REGISTRY_ENGINES = listFalEngines();
+
+const ENGINES_BASE: EngineCaps[] = REGISTRY_ENGINES.map((entry) => cloneEngine(entry.engine))
+  .filter((engine) => !ENGINE_BLOCKLIST.has(engine.id.trim().toLowerCase()))
+  .sort((a, b) => {
+    const aPriority = MODEL_PRIORITY.get(a.id.toLowerCase()) ?? DEFAULT_PRIORITY;
+    const bPriority = MODEL_PRIORITY.get(b.id.toLowerCase()) ?? DEFAULT_PRIORITY;
+    if (aPriority !== bPriority) {
+      return aPriority - bPriority;
+    }
+    return a.label.localeCompare(b.label);
+  });
 
 export function cloneEngine(engine: EngineCaps): EngineCaps {
   return {
@@ -291,11 +49,6 @@ export function cloneEngine(engine: EngineCaps): EngineCaps {
     pricing: engine.pricing ? { ...engine.pricing } : undefined,
     pricingDetails: engine.pricingDetails ? { ...engine.pricingDetails } : undefined,
   };
-}
-
-function ensureEngine(engineId: string): EngineCaps | undefined {
-  const normalisedId = engineId.trim().toLowerCase();
-  return ENGINES_BASE.find((engine) => engine.id.toLowerCase() === normalisedId);
 }
 
 export function toItemization(snapshot: PricingSnapshot, memberTier?: string): PreflightResponse['itemization'] {
@@ -355,12 +108,14 @@ export async function listEngines(): Promise<EngineCaps[]> {
 
 export async function getEngineById(engineId: string): Promise<EngineCaps | undefined> {
   if (!engineId) return undefined;
-  const engine = ensureEngine(engineId);
+  const normalized = engineId.trim().toLowerCase();
+  const engine = ENGINES_BASE.find((entry) => entry.id.toLowerCase() === normalized);
   return engine ? cloneEngine(engine) : undefined;
 }
 
 export async function computePreflight(request: PreflightRequest): Promise<PreflightResponse> {
-  const engine = request.engine ? ensureEngine(request.engine) : undefined;
+  const engineId = typeof request.engine === 'string' ? request.engine : '';
+  const engine = await getEngineById(engineId);
   if (!engine) {
     return {
       ok: false,

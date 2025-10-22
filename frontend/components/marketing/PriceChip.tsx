@@ -6,6 +6,7 @@ import { getPricingKernel } from '@/lib/pricing-kernel';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getModelByEngineId } from '@/lib/model-roster';
+import { normalizeEngineId } from '@/lib/engine-alias';
 
 interface PriceChipProps {
   engineId: string;
@@ -32,10 +33,11 @@ export function PriceChip({ engineId, durationSec, resolution, memberTier = 'mem
   const { dictionary, t } = useI18n();
   const kernel = getPricingKernel();
   const [isOpen, setIsOpen] = useState(false);
+  const canonicalId = normalizeEngineId(engineId);
 
   const quote = useMemo(() => {
     return kernel.quote({
-      engineId,
+      engineId: canonicalId,
       durationSec,
       resolution,
       memberTier: (memberTier ?? 'member').toString().toLowerCase() as MemberTier,
@@ -45,10 +47,10 @@ export function PriceChip({ engineId, durationSec, resolution, memberTier = 'mem
 
   const snapshot = quote.snapshot;
   const definition = quote.definition;
-  const rosterEntry = getModelByEngineId(engineId);
+  const rosterEntry = getModelByEngineId(canonicalId);
   const slug = rosterEntry?.modelSlug;
   const localizedMeta = slug ? dictionary.models.meta?.[slug] : undefined;
-  const engineLabel = localizedMeta?.displayName ?? rosterEntry?.marketingName ?? definition.label ?? engineId;
+  const engineLabel = localizedMeta?.displayName ?? rosterEntry?.marketingName ?? definition.label ?? canonicalId;
   const engineVersion = localizedMeta?.versionLabel ?? rosterEntry?.versionLabel ?? (definition.version ? `v${definition.version}` : undefined);
   const formattedTotal = formatCurrency(snapshot.currency, snapshot.totalCents);
   const formattedDiscount = snapshot.discount

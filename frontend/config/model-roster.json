@@ -1,104 +1,92 @@
 [
   {
+    "engineId": "pika-text-to-video",
+    "marketingName": "Pika 2.2 Text to Video",
+    "brandId": "pika",
+    "modelSlug": "pika-text-to-video",
+    "family": "pika",
+    "versionLabel": "2.2",
+    "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "pika-image-to-video",
+    "marketingName": "Pika 2.2 Image to Video",
+    "brandId": "pika",
+    "modelSlug": "pika-image-to-video",
+    "family": "pika",
+    "versionLabel": "2.2",
+    "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "veo-3-1",
+    "marketingName": "Google Veo 3.1",
+    "brandId": "google-veo",
+    "modelSlug": "veo-3-1",
+    "family": "veo",
+    "versionLabel": "3.1",
+    "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "veo-3-fast",
+    "marketingName": "Google Veo 3 Fast",
+    "brandId": "google-veo",
+    "modelSlug": "veo-3-fast",
+    "family": "veo",
+    "versionLabel": "3 Fast",
+    "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "veo-3-1-fast",
+    "marketingName": "Google Veo 3.1 Fast",
+    "brandId": "google-veo",
+    "modelSlug": "veo-3-1-fast",
+    "family": "veo",
+    "versionLabel": "3.1 Fast",
+    "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
     "engineId": "sora-2",
-    "marketingName": "Sora 2",
+    "marketingName": "OpenAI Sora 2",
     "brandId": "openai",
     "modelSlug": "sora-2",
     "family": "sora",
     "versionLabel": "2",
     "availability": "available",
     "logoPolicy": "textOnly",
-    "billingNote": "If you supply your own OpenAI key, billing goes through OpenAI; otherwise Fal credits MaxVideoAI."
+    "billingNote": "Si une clé OpenAI est fournie, la facturation passe directement chez OpenAI ; sinon Fal crédite MaxVideoAI."
   },
   {
-    "engineId": "sora-2-pro",
-    "marketingName": "Sora 2 Pro",
-    "brandId": "openai",
-    "modelSlug": "sora-2-pro",
-    "family": "sora",
-    "versionLabel": "2 Pro",
-    "availability": "available",
-    "logoPolicy": "textOnly",
-    "billingNote": "If you supply your own OpenAI key, billing goes through OpenAI; otherwise Fal credits MaxVideoAI."
-  },
-  {
-    "engineId": "veo3",
-    "marketingName": "Google Veo 3",
-    "brandId": "google-veo",
-    "modelSlug": "veo-3",
-    "versionLabel": "3.0",
-    "availability": "available",
-    "logoPolicy": "textOnly"
-  },
-  {
-    "engineId": "veo3fast",
-    "marketingName": "Google Veo 3 Fast",
-    "brandId": "google-veo",
-    "modelSlug": "veo-3-fast",
-    "versionLabel": "3.0 Fast",
-    "availability": "available",
-    "logoPolicy": "textOnly"
-  },
-  {
-    "engineId": "lumaDM",
-    "marketingName": "Luma Dream Machine v1.5",
-    "brandId": "luma",
-    "modelSlug": "luma-dream-machine",
-    "versionLabel": "1.5",
-    "availability": "available",
-    "logoPolicy": "logoAllowed"
-  },
-  {
-    "engineId": "lumaRay2",
-    "marketingName": "Luma Ray 2",
-    "brandId": "luma",
-    "modelSlug": "luma-ray-2",
-    "versionLabel": "Ray 2",
-    "availability": "available",
-    "logoPolicy": "logoAllowed"
-  },
-  {
-    "engineId": "lumaRay2_flash",
-    "marketingName": "Luma Ray 2 Flash",
-    "brandId": "luma",
-    "modelSlug": "luma-ray-2-flash",
-    "versionLabel": "Ray 2 Flash",
-    "availability": "available",
-    "logoPolicy": "logoAllowed"
-  },
-  {
-    "engineId": "pika22",
-    "marketingName": "Pika 2.2",
-    "brandId": "pika",
-    "modelSlug": "pika-2-2",
-    "versionLabel": "2.2",
-    "availability": "available",
-    "logoPolicy": "textOnly"
-  },
-  {
-    "engineId": "minimax_video_01",
-    "marketingName": "MiniMax Video 01",
+    "engineId": "minimax-hailuo-02-text",
+    "marketingName": "MiniMax Hailuo 02 Standard (Text to Video)",
     "brandId": "minimax",
-    "modelSlug": "minimax-video-1",
-    "versionLabel": "Video 01",
+    "modelSlug": "minimax-hailuo-02-text",
+    "family": "hailuo",
+    "versionLabel": "Standard",
     "availability": "available",
     "logoPolicy": "textOnly"
   },
   {
-    "engineId": "minimax_hailuo_02_pro",
-    "marketingName": "MiniMax Hailuo 02 Pro",
+    "engineId": "minimax-hailuo-02-image",
+    "marketingName": "MiniMax Hailuo 02 Standard (Image to Video)",
     "brandId": "minimax",
-    "modelSlug": "hailuo-2-pro",
-    "versionLabel": "Hailuo 02 Pro",
+    "modelSlug": "minimax-hailuo-02-image",
+    "family": "hailuo",
+    "versionLabel": "Standard",
     "availability": "available",
     "logoPolicy": "textOnly"
   },
   {
-    "engineId": "hunyuan_video",
-    "marketingName": "Hunyuan Video",
+    "engineId": "hunyuan-image",
+    "marketingName": "Hunyuan Image v3",
     "brandId": "tencent",
-    "modelSlug": "hunyuan-video",
-    "versionLabel": "Hunyuan Video",
+    "modelSlug": "hunyuan-image",
+    "family": "hunyuan",
+    "versionLabel": "3",
     "availability": "available",
     "logoPolicy": "textOnly"
   }

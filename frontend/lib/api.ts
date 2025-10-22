@@ -8,6 +8,7 @@ import type { PricingSnapshot } from '@maxvideoai/pricing';
 import type { SoraRequest } from '@/lib/sora';
 import type { GenerateAttachment } from '@/lib/fal';
 import type { VideoAsset } from '@/types/render';
+import { translateError } from '@/lib/error-messages';
 
 type GeneratePayload = {
   engineId: string;
@@ -350,14 +351,38 @@ export async function runGenerate(
     body: JSON.stringify(payload),
   });
 
-  const body = (await response.json().catch(() => null)) as (GenerateResult & { error?: string }) | null;
+  const body = (await response.json().catch(() => null)) as unknown;
 
   if (!response.ok) {
-    const message = body?.error ?? `Generation failed (${response.status})`;
-    const error = new Error(message);
-    if (body && typeof body === 'object') {
-      Object.assign(error, body);
+    const payload = body && typeof body === 'object' ? (body as Record<string, unknown>) : null;
+    const translation = translateError({
+      code: typeof payload?.error === 'string' ? (payload.error as string) : undefined,
+      status: response.status,
+      message: typeof payload?.message === 'string' ? (payload.message as string) : undefined,
+      providerMessage:
+        typeof payload?.providerMessage === 'string' ? (payload.providerMessage as string) : undefined,
+      field: typeof payload?.field === 'string' ? (payload.field as string) : undefined,
+      value: payload?.value,
+      allowed: Array.isArray(payload?.allowed)
+        ? (payload.allowed as Array<string | number>)
+        : undefined,
+    });
+    const error = new Error(translation.message);
+    if (payload) {
+      Object.assign(error, payload);
     }
+    Object.assign(error, {
+      code: translation.code,
+      message: translation.message,
+      originalMessage: translation.originalMessage ?? (typeof payload?.message === 'string' ? payload.message : undefined),
+      providerMessage:
+        typeof payload?.providerMessage === 'string' ? (payload.providerMessage as string) : undefined,
+      field: typeof payload?.field === 'string' ? (payload.field as string) : undefined,
+      allowed: Array.isArray(payload?.allowed) ? payload.allowed : undefined,
+      value: payload?.value,
+      details: payload,
+      status: response.status,
+    });
     throw error;
   }
 
@@ -365,7 +390,7 @@ export async function runGenerate(
     throw new Error('Generation response malformed');
   }
 
-  return body;
+  return body as GenerateResult;
 }
 
 export async function getJobStatus(jobId: string): Promise<JobStatusResult> {

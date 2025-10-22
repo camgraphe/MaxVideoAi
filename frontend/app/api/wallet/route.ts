@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
     let soraRequest: SoraRequest | null = null;
 
     if (isSoraEngineId(engine.id)) {
-      const variant = getSoraVariantForEngine(engine.id);
+      const variant = getSoraVariantForEngine();
       const candidate: Record<string, unknown> = {
         variant,
         mode,

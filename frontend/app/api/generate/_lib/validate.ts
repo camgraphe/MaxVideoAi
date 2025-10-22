@@ -1,10 +1,12 @@
-import type { Mode } from '../../../../fixtures/engineCaps';
-import { ENGINE_CAPS, resolveEngineCapsKey, type EngineCapsKey } from '../../../../fixtures/engineCaps';
+import type { Mode } from '../../../../fixtures/engineCaps.ts';
+import { ENGINE_CAPS, resolveEngineCapsKey, type EngineCapsKey } from '../../../../fixtures/engineCaps.ts';
 
 type ValidationError = {
   code: string;
   message: string;
   field?: string;
+  allowed?: Array<string | number>;
+  value?: unknown;
 };
 
 type ValidationResult =
@@ -47,6 +49,8 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
           code: 'ENGINE_CONSTRAINT',
           field: 'num_frames',
           message: `Frames must be one of ${caps.frames.join(', ')}`,
+          allowed: caps.frames,
+          value: frames,
         },
       };
     }
@@ -69,6 +73,7 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
           code: 'ENGINE_CONSTRAINT',
           field: 'duration',
           message: 'Duration is required for this engine',
+          value: duration,
         },
       };
     }
@@ -99,6 +104,8 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
             code: 'ENGINE_CONSTRAINT',
             field: 'duration',
             message: `Duration must be one of ${allowed.join(', ')}`,
+            allowed: allowed,
+            value: duration,
           },
         };
       }
@@ -110,6 +117,8 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
             code: 'ENGINE_CONSTRAINT',
             field: 'duration',
             message: `Duration must be ≥ ${caps.duration.min}s`,
+            allowed: [`>= ${caps.duration.min}`],
+            value: duration,
           },
         };
       }
@@ -120,6 +129,8 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
             code: 'ENGINE_CONSTRAINT',
             field: 'duration',
             message: `Duration must be ≥ ${caps.duration.min}s`,
+            allowed: [`>= ${caps.duration.min}`],
+            value: duration,
           },
         };
       }
@@ -131,6 +142,7 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
         code: 'ENGINE_CONSTRAINT',
         field: 'duration',
         message: 'Duration not supported by this engine',
+        value: payload['duration'] ?? payload['duration_seconds'],
       },
     };
   }
@@ -144,6 +156,8 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
           code: 'ENGINE_CONSTRAINT',
           field: 'resolution',
           message: `Resolution must be one of ${caps.resolution.join(', ')}`,
+          allowed: caps.resolution,
+          value: resolution,
         },
       };
     }
@@ -154,6 +168,7 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
         code: 'ENGINE_CONSTRAINT',
         field: 'resolution',
         message: 'Resolution not supported by this engine',
+        value: payload['resolution'],
       },
     };
   }
@@ -167,6 +182,8 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
           code: 'ENGINE_CONSTRAINT',
           field: 'aspect_ratio',
           message: `Aspect ratio must be one of ${caps.aspectRatio.join(', ')}`,
+          allowed: caps.aspectRatio,
+          value: aspect,
         },
       };
     }
@@ -177,6 +194,7 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
         code: 'ENGINE_CONSTRAINT',
         field: 'aspect_ratio',
         message: 'Aspect ratio not supported by this engine',
+        value: payload['aspect_ratio'],
       },
     };
   }
@@ -189,6 +207,7 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
         code: 'ENGINE_CONSTRAINT',
         field: 'generate_audio',
         message: 'Audio toggle not supported by this engine',
+        value: audioFlag,
       },
     };
   }
@@ -202,6 +221,8 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
           code: 'ENGINE_CONSTRAINT',
           field: 'image_url',
           message: `Max upload is ${caps.maxUploadMB}MB`,
+          allowed: [caps.maxUploadMB],
+          value: uploadedMb,
         },
       };
     }

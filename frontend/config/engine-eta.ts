@@ -1,9 +1,13 @@
 const ENGINE_ETA_SECONDS: Record<string, number> = {
+  'pika-text-to-video': 24,
+  'pika-image-to-video': 26,
+  'veo-3-1': 44,
+  'veo-3-fast': 28,
+  'veo-3-1-fast': 26,
   'sora-2': 38,
-  'sora-1': 32,
-  'runway-gen3-alpha': 26,
-  'pika-1.5': 24,
-  'luma-dream-machine': 28,
+  'minimax-hailuo-02-text': 30,
+  'minimax-hailuo-02-image': 32,
+  'hunyuan-image': 18,
 };
 
 function clampSeconds(value: number, min: number, max: number): number {

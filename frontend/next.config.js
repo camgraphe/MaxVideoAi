@@ -43,12 +43,22 @@ const nextConfig = {
       },
       {
         source: '/models/openai-sora-2-pro',
-        destination: '/models/sora-2-pro',
+        destination: '/models/sora-2',
         permanent: true,
       },
       {
         source: '/models/google-veo-3',
         destination: '/models/veo-3',
+        permanent: true,
+      },
+      {
+        source: '/models/veo-3',
+        destination: '/models/veo-3-1',
+        permanent: true,
+      },
+      {
+        source: '/models/pika-2-2',
+        destination: '/models/pika-text-to-video',
         permanent: true,
       },
       {
@@ -58,12 +68,12 @@ const nextConfig = {
       },
       {
         source: '/models/minimax-video-01',
-        destination: '/models/minimax-video-1',
+        destination: '/models/minimax-hailuo-02-text',
         permanent: true,
       },
       {
         source: '/models/minimax-hailuo-02-pro',
-        destination: '/models/hailuo-2-pro',
+        destination: '/models/minimax-hailuo-02-text',
         permanent: true,
       },
       {

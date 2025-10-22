@@ -139,14 +139,6 @@ function buildPricingState(entry: EngineEntry): PricingState {
     state.defaultPerSecond = state.defaultPerSecond || '0.1';
   }
 
-  if (entry.engine.id === 'sora-2-pro') {
-    state.perResolution['720p'] = state.perResolution['720p'] || '0.30';
-    state.perResolution['1080p'] = state.perResolution['1080p'] || '0.50';
-    if (!state.defaultPerSecond) {
-      state.defaultPerSecond = '';
-    }
-  }
-
   return state;
 }
 

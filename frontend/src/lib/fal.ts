@@ -195,12 +195,10 @@ function isBlockedUrl(url: string): boolean {
 
 function resolveModelSlug(payload: GeneratePayload, fallback?: string): string | undefined {
   const baseSlug = fallback;
-  const tier = payload.engineId === 'sora-2-pro' ? 'pro' : 'base';
   const mode = payload.mode === 'i2v' ? 'image-to-video' : 'text-to-video';
 
-  if (payload.engineId === 'sora-2' || payload.engineId === 'sora-2-pro') {
-    const suffix = tier === 'pro' ? '/pro' : '';
-    return `fal-ai/sora-2/${mode}${suffix}`;
+  if (payload.engineId === 'sora-2') {
+    return `fal-ai/sora-2/${mode}`;
   }
 
   if (!baseSlug) {
@@ -295,7 +293,7 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
 
     if (typeof payload.numFrames === 'number' && Number.isFinite(payload.numFrames) && payload.numFrames > 0) {
       requestBody.num_frames = Math.round(payload.numFrames);
-    } else if (payload.engineId !== 'lumaRay2') {
+    } else if (payload.engineId !== 'lumaRay2' && payload.engineId !== 'hunyuan-image' && payload.durationSec != null) {
       requestBody.duration = payload.durationSec;
     }
 
@@ -545,10 +543,19 @@ function extractVideoAsset(response: FalRunResponse | null | undefined): VideoAs
   const candidates: FalVideoCandidate[] = [];
   if (response.response?.video) candidates.push(response.response.video);
   if (Array.isArray(response.response?.videos)) candidates.push(...response.response.videos);
+  if (Array.isArray((response.response as { images?: FalVideoCandidate[] } | undefined)?.images)) {
+    candidates.push(...(response.response as { images?: FalVideoCandidate[] }).images!);
+  }
   if (response.output?.video) candidates.push(response.output.video);
   if (Array.isArray(response.output?.videos)) candidates.push(...response.output.videos);
+  if (Array.isArray((response.output as { images?: FalVideoCandidate[] } | undefined)?.images)) {
+    candidates.push(...(response.output as { images?: FalVideoCandidate[] }).images!);
+  }
   if (response.video_url) candidates.push(response.video_url);
   if (Array.isArray(response.videos)) candidates.push(...response.videos);
+  if (Array.isArray((response as { images?: FalVideoCandidate[] }).images)) {
+    candidates.push(...(response as { images?: FalVideoCandidate[] }).images!);
+  }
   if (Array.isArray(response.assets)) candidates.push(...response.assets);
 
   for (const candidate of candidates) {
