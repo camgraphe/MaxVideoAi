@@ -421,47 +421,6 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
     [getPlaylistName, scheduleStatusClear, updateStatusMessage]
   );
 
-  const handleDeleteVideo = useCallback(
-    async (video: ModerationVideo) => {
-      const confirmFirst = window.confirm('Remove this video from the site? This will hide it everywhere.');
-      if (!confirmFirst) return;
-      const confirmSecond = window.confirm('Final confirmation: permanently remove this video from galleries and playlists?');
-      if (!confirmSecond) return;
-      setDeletingId(video.id);
-      setError(null);
-      try {
-        const res = await fetch(`/api/admin/videos/${video.id}`, {
-          method: 'DELETE',
-          credentials: 'include',
-        });
-        const json = await res.json().catch(() => ({ ok: false }));
-        if (!res.ok || !json?.ok) {
-          throw new Error(json?.error ?? 'Failed to delete video');
-        }
-        setPlaylistAssignments((prev) => {
-          if (!prev[video.id]) return prev;
-          const next = { ...prev };
-          delete next[video.id];
-          playlistAssignmentsRef.current = next;
-          return next;
-        });
-        setPlaylistStatus((prev) => {
-          if (!prev[video.id]) return prev;
-          const next = { ...prev };
-          delete next[video.id];
-          return next;
-        });
-        removeVideo(video.id);
-      } catch (deleteError) {
-        console.error('[moderation] delete failed', deleteError);
-        setError(deleteError instanceof Error ? deleteError.message : 'Failed to delete video');
-      } finally {
-        setDeletingId(null);
-      }
-    },
-    [removeVideo]
-  );
-
   return (
     <div className="space-y-6">
       <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

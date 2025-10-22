@@ -303,13 +303,13 @@ export async function POST(req: NextRequest) {
       engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '720p';
     pricingResolution = soraRequest.resolution === 'auto' ? fallbackResolution : soraRequest.resolution;
     effectiveResolution = soraRequest.resolution === 'auto' ? fallbackResolution : soraRequest.resolution;
-    const fallbackAspect =
+    const fallbackAspectNormalized =
       engine.aspectRatios?.find((value) => value !== 'auto') ?? engine.aspectRatios?.[0] ?? '16:9';
     aspectRatio =
       soraRequest.mode === 'i2v' && soraRequest.aspect_ratio === 'auto'
-        ? fallbackAspect
+        ? fallbackAspectNormalized
         : soraRequest.aspect_ratio === 'auto'
-          ? fallbackAspect
+          ? fallbackAspectNormalized
           : soraRequest.aspect_ratio;
   }
 
