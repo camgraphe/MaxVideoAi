@@ -160,7 +160,16 @@ function condenseFalErrorMessage(message: string | null | undefined): string | n
 }
 
 function isConstraintDetail(detail: unknown): boolean {
-  if (!detail || typeof detail !== 'object') return false;
+  if (!detail) return false;
+  if (typeof detail === 'string') {
+    const normalized = detail.trim().toLowerCase();
+    if (!normalized.length) return false;
+    return /support|only|must|should|allowed|invalid|exceed|limit|policy|prohibit|safety|flagged|duration/.test(normalized);
+  }
+  if (Array.isArray(detail)) {
+    return (detail as unknown[]).some((entry) => isConstraintDetail(entry));
+  }
+  if (typeof detail !== 'object') return false;
   const record = detail as Record<string, unknown>;
   const codes: Array<unknown> = [
     record.code,
@@ -196,6 +205,25 @@ function isSafetyMessage(message: string | null | undefined): boolean {
   );
 }
 
+function isConstraintMessage(message: string | null | undefined): boolean {
+  if (!message) return false;
+  const normalized = message.trim().toLowerCase();
+  if (!normalized.length) return false;
+  return (
+    normalized.includes('not supported') ||
+    normalized.includes('unsupported') ||
+    normalized.includes('only supported') ||
+    normalized.includes('only support') ||
+    normalized.includes('must be') ||
+    normalized.includes('should be') ||
+    normalized.includes('must provide') ||
+    normalized.includes('allowed values') ||
+    normalized.includes('invalid value') ||
+    normalized.includes('duration') ||
+    normalized.includes('exceeds')
+  );
+}
+
 type FalErrorMetadata = {
   error: unknown;
   status?: number | null;
@@ -227,14 +255,20 @@ function shouldRetryFalError(meta: FalErrorMetadata): boolean {
     return false;
   }
 
-  if (status === 422 && isConstraintDetail(meta.detail)) {
-    return false;
-  }
-
   const fallbackProviderMessage =
     meta.providerMessage ?? (meta.error instanceof Error ? meta.error.message : null);
   const message = condenseFalErrorMessage(normalizeFalErrorValue(fallbackProviderMessage));
   if (isSafetyMessage(message)) {
+    return false;
+  }
+
+  if (status === 422) {
+    if (isConstraintDetail(meta.detail) || isConstraintMessage(message)) {
+      return false;
+    }
+    if (message && /timeout|timed out|try again|queued|in progress|pending|not ready|still processing|rate limited/i.test(message)) {
+      return true;
+    }
     return false;
   }
 
@@ -264,14 +298,20 @@ function shouldDeferFalError(meta: FalErrorMetadata): boolean {
     return false;
   }
 
-  if (status === 422 && isConstraintDetail(meta.detail)) {
-    return false;
-  }
-
   const fallbackProviderMessage =
     meta.providerMessage ?? (meta.error instanceof Error ? meta.error.message : null);
   const message = condenseFalErrorMessage(normalizeFalErrorValue(fallbackProviderMessage));
   if (isSafetyMessage(message)) {
+    return false;
+  }
+
+  if (status === 422) {
+    if (isConstraintDetail(meta.detail) || isConstraintMessage(message)) {
+      return false;
+    }
+    if (message && /timeout|timed out|try again|queued|in progress|pending|not ready|still processing|rate limited/i.test(message)) {
+      return true;
+    }
     return false;
   }
 
