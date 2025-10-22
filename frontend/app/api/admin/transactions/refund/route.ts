@@ -4,6 +4,7 @@ import { adminErrorToResponse, requireAdmin } from '@/server/admin';
 import { getUserIdentity } from '@/server/supabase-admin';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   let adminUserId: string;

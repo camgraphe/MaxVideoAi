@@ -35,6 +35,11 @@ const SECTION_GROUPS: Array<{
         href: '/admin/users',
       },
       {
+        title: 'Job audit',
+        description: 'Verify recent runs for media availability, charges, and Fal sync.',
+        href: '/admin/jobs',
+      },
+      {
         title: 'Transactions',
         description: 'Inspect charges and refunds, issue manual wallet credits.',
         href: '/admin/transactions',

@@ -3,6 +3,7 @@ import { fetchAdminTransactions } from '@/server/admin-transactions';
 import { adminErrorToResponse, requireAdmin } from '@/server/admin';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
