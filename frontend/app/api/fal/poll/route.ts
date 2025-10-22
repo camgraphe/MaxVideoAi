@@ -35,6 +35,12 @@ export async function POST() {
 
   for (const job of rows) {
     const markJobFailed = async (reason: string) => {
+      console.warn('[fal-poll] marking job as failed', {
+        at: new Date().toISOString(),
+        jobId: job.job_id,
+        providerJobId: job.provider_job_id,
+        reason,
+      });
       try {
         await updateJobFromFalWebhook({
           request_id: job.provider_job_id,
@@ -137,10 +143,20 @@ export async function POST() {
         await markJobFailed(providerError ?? 'Fal returned no result for this job.');
         continue;
       }
+      const queueStatus =
+        result && typeof result === 'object' && 'status' in result
+          ? ((result as { status?: string | null }).status ?? null)
+          : state ?? null;
       await updateJobFromFalWebhook({
         request_id: job.provider_job_id,
         status: 'completed',
         result: result as unknown,
+      });
+      console.info('[fal-poll] job completed', {
+        at: new Date().toISOString(),
+        jobId: job.job_id,
+        providerJobId: job.provider_job_id,
+        status: queueStatus ?? null,
       });
       updates += 1;
     } catch (error) {

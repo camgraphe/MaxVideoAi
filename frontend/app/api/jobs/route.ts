@@ -8,6 +8,43 @@ import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { updateJobFromFalWebhook } from '@/server/fal-webhook-handler';
 
+function parseCursorParam(value: string | null): { createdAt: Date | null; id: number | null } {
+  if (!value) {
+    return { createdAt: null, id: null };
+  }
+  if (value.includes('|')) {
+    const [timestampPart, idPart] = value.split('|', 2);
+    let createdAt: Date | null = null;
+    if (timestampPart) {
+      const parsed = new Date(timestampPart);
+      if (!Number.isNaN(parsed.getTime())) {
+        createdAt = parsed;
+      }
+    }
+    let id: number | null = null;
+    if (idPart) {
+      const parsed = Number.parseInt(idPart, 10);
+      if (Number.isFinite(parsed)) {
+        id = parsed;
+      }
+    }
+    return { createdAt, id };
+  }
+  const parsed = Number.parseInt(value, 10);
+  if (Number.isFinite(parsed)) {
+    return { createdAt: null, id: parsed };
+  }
+  return { createdAt: null, id: null };
+}
+
+function formatCursorValue(row: { created_at: string; id: number }): string {
+  const createdAt = new Date(row.created_at);
+  if (Number.isNaN(createdAt.getTime())) {
+    return String(row.id);
+  }
+  return `${createdAt.toISOString()}|${row.id}`;
+}
+
 export async function GET(req: NextRequest) {
   if (!isDatabaseConfigured()) {
     return NextResponse.json(
@@ -36,11 +73,18 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const params: Array<string | number> = [userId];
+    const params: Array<string | number | Date> = [userId];
     const conditions: string[] = ['user_id = $1', 'hidden IS NOT TRUE'];
 
-    if (cursor) {
-      params.push(Number(cursor));
+    const cursorInfo = parseCursorParam(cursor);
+    if (cursorInfo.createdAt) {
+      params.push(cursorInfo.createdAt);
+      const createdAtIndex = params.length;
+      params.push(cursorInfo.id ?? Number.MAX_SAFE_INTEGER);
+      const idIndex = params.length;
+      conditions.push(`(created_at, id) < ($${createdAtIndex}, $${idIndex})`);
+    } else if (typeof cursorInfo.id === 'number' && Number.isFinite(cursorInfo.id)) {
+      params.push(cursorInfo.id);
       conditions.push(`id < $${params.length}`);
     }
     params.push(limit + 1);
@@ -90,7 +134,7 @@ export async function GET(req: NextRequest) {
     `SELECT id, job_id, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider_job_id
        FROM app_jobs
        ${where}
-       ORDER BY id DESC
+       ORDER BY created_at DESC, id DESC
        LIMIT $${limitParamIndex}`,
       params
     );
@@ -98,7 +142,7 @@ export async function GET(req: NextRequest) {
     const staleJobs = rows.filter((row) => {
       if (!row.provider_job_id) return false;
       const status = (row.status ?? '').toLowerCase();
-      if (status === 'failed' || status === 'cancelled') return false;
+      if (status === 'failed' || status === 'cancelled' || status === 'canceled' || status === 'error') return false;
       const missingVideo = !row.video_url;
       const missingThumb = !row.thumb_url;
       if (!missingVideo && status === 'completed') return false;
@@ -106,12 +150,31 @@ export async function GET(req: NextRequest) {
     });
 
     if (staleJobs.length) {
+      console.info('[api/jobs] refreshing stale Fal jobs', {
+        at: new Date().toISOString(),
+        userId,
+        count: staleJobs.length,
+        samples: staleJobs.slice(0, 5).map((job) => ({
+          jobId: job.job_id,
+          providerJobId: job.provider_job_id,
+          status: job.status,
+          createdAt: job.created_at,
+          videoUrl: job.video_url,
+          thumbUrl: job.thumb_url,
+        })),
+      });
       const falClient = getFalClient();
       const refreshedIds: string[] = [];
       const FAILURE_STATES = new Set(['FAILED', 'FAIL', 'ERROR', 'ERRORED', 'CANCELLED', 'CANCELED', 'NOT_FOUND', 'MISSING', 'UNKNOWN']);
       const COMPLETED_STATES = new Set(['COMPLETED', 'FINISHED', 'SUCCESS', 'SUCCEEDED']);
       for (const jobRow of staleJobs) {
         const markJobFailed = async (reason: string) => {
+          console.warn('[api/jobs] marking job as failed after stale refresh', {
+            at: new Date().toISOString(),
+            jobId: jobRow.job_id,
+            providerJobId: jobRow.provider_job_id,
+            reason,
+          });
           try {
             await updateJobFromFalWebhook({
               request_id: jobRow.provider_job_id ?? undefined,
@@ -227,6 +290,16 @@ export async function GET(req: NextRequest) {
             status: nextStatus,
             result: queueResult,
           });
+          console.info('[api/jobs] refreshed Fal job payload', {
+            at: new Date().toISOString(),
+            jobId: jobRow.job_id,
+            providerJobId: jobRow.provider_job_id,
+            falState: state ?? queueStatus ?? null,
+            previousStatus: jobRow.status,
+            nextStatus,
+            hasVideo: Boolean(jobRow.video_url),
+            providerError,
+          });
           refreshedIds.push(jobRow.job_id);
         } catch (error) {
           console.warn('[api/jobs] failed to refresh job from Fal', jobRow.job_id, error);
@@ -245,12 +318,17 @@ export async function GET(req: NextRequest) {
         );
         const refreshedMap = new Map(refreshedRows.map((row) => [row.job_id, row]));
         rows = rows.map((row) => refreshedMap.get(row.job_id) ?? row);
+        console.info('[api/jobs] applied refreshed Fal rows', {
+          at: new Date().toISOString(),
+          userId,
+          refreshedCount: refreshedIds.length,
+        });
       }
     }
 
     const hasMore = rows.length > limit;
     const items = hasMore ? rows.slice(0, -1) : rows;
-    const nextCursor = hasMore ? String(items[items.length - 1].id) : null;
+    const nextCursor = hasMore ? formatCursorValue(items[items.length - 1]) : null;
 
     type Row = (typeof rows)[number];
     const mapped = items.map((r: Row) => ({

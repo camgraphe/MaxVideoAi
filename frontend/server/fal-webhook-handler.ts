@@ -561,6 +561,24 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     ]
   );
 
+  console.info('[fal-webhook] lifecycle update', {
+    at: new Date().toISOString(),
+    jobId: job.job_id,
+    providerJobId: requestId,
+    previousStatus: job.status,
+    nextStatus: statusInfo.status,
+    previousProgress: job.progress,
+    nextProgress: statusInfo.progress,
+    videoUrl: finalVideoUrl ?? null,
+    thumbUrl: finalThumbUrl ?? null,
+    message: normalizedMessage ?? null,
+    falStatus: payload.status ?? null,
+    falError: extractedErrorMessage ?? null,
+    hasResult: Boolean(payload.result),
+    hasResponse: Boolean(payload.response),
+    hasData: Boolean(payload.data),
+  });
+
   const wasCompleted = job.status === 'completed';
   const isCompleted = statusInfo.status === 'completed';
   if (isCompleted && !wasCompleted && job.user_id) {

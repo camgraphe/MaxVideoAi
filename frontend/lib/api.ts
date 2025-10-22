@@ -1,14 +1,15 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import { supabase } from '@/lib/supabaseClient';
 import type { EnginesResponse, PreflightRequest, PreflightResponse } from '@/types/engines';
-import type { JobsPage } from '@/types/jobs';
+import type { Job, JobsPage } from '@/types/jobs';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
 import type { SoraRequest } from '@/lib/sora';
 import type { GenerateAttachment } from '@/lib/fal';
 import type { VideoAsset } from '@/types/render';
 import { translateError } from '@/lib/error-messages';
+import { normalizeJobMessage, normalizeJobProgress, normalizeJobStatus } from '@/lib/job-status';
 
 type PrimitiveValue = string | number | boolean | null | undefined;
 
@@ -123,6 +124,25 @@ type StatusRetryMeta = {
   timer: number | null;
 };
 
+function normalizeJobFromApi(job: Job): Job {
+  const hasMedia = Boolean(job.videoUrl);
+  const normalizedStatus = normalizeJobStatus(job.status ?? null, hasMedia);
+  const status: Job['status'] =
+    normalizedStatus ?? (hasMedia ? 'completed' : 'pending');
+  const progress = normalizeJobProgress(job.progress, status as 'pending' | 'completed' | 'failed', hasMedia);
+  const messageFromApi = normalizeJobMessage(job.message);
+  const message =
+    messageFromApi ??
+    (status === 'failed' ? 'Fal reported a failure without details.' : undefined);
+
+  return {
+    ...job,
+    status,
+    progress,
+    message,
+  };
+}
+
 const STATUS_RETRY_TIMERS = new Map<string, StatusRetryMeta>();
 const STATUS_RETRY_BASE_DELAY_MS = 60_000;
 const STATUS_RETRY_MAX_DELAY_MS = 30 * 60 * 1000;
@@ -195,31 +215,49 @@ async function fetchJobsPage(limit: number, cursor?: string | null): Promise<Job
     throw new Error('Jobs payload malformed');
   }
 
+  const jobs = payload.jobs.map((job) => normalizeJobFromApi(job));
+
   return {
     ok: payload.ok !== false,
-    jobs: payload.jobs,
+    jobs,
     nextCursor: payload.nextCursor ?? null,
   };
 }
 
+type JobsSWRKey = ['jobs', string, number, string | null];
+
 export function useInfiniteJobs(pageSize = 12) {
-  const swr = useSWRInfinite<JobsPage>(
+  const [cacheKey, setCacheKey] = useState<string | null>(() => (typeof window === 'undefined' ? 'server' : null));
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    let cancelled = false;
+    void supabase.auth.getSession().then(({ data }) => {
+      if (!cancelled) {
+        setCacheKey(data.session?.user?.id ?? 'anonymous');
+      }
+    });
+    const subscription = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!cancelled) {
+        setCacheKey(session?.user?.id ?? 'anonymous');
+      }
+    });
+    return () => {
+      cancelled = true;
+      subscription.data?.subscription?.unsubscribe();
+    };
+  }, []);
+
+  const swr = useSWRInfinite<JobsPage, Error, JobsSWRKey>(
     (index, previousPage) => {
+      if (!cacheKey) return null;
       if (previousPage && !previousPage.nextCursor) {
         return null;
       }
-      const params = new URLSearchParams({ limit: String(pageSize) });
-      if (index > 0) {
-        const cursor = previousPage?.nextCursor;
-        if (!cursor) return null;
-        params.set('cursor', cursor);
-      }
-      return `/api/jobs?${params.toString()}`;
+      const cursor = index === 0 ? null : previousPage?.nextCursor ?? null;
+      return ['jobs', cacheKey, pageSize, cursor];
     },
-    async (key) => {
-      const url = new URL(key, 'http://localhost');
-      const limit = Number(url.searchParams.get('limit') ?? pageSize);
-      const cursor = url.searchParams.get('cursor');
+    async ([, , limit, cursor]) => {
       return fetchJobsPage(limit, cursor);
     },
     { revalidateOnFocus: false }
@@ -255,10 +293,17 @@ export function useInfiniteJobs(pageSize = 12) {
               }
               jobFound = true;
               pageModified = true;
+              const progressFromDetail =
+                typeof detail.progress === 'number' && Number.isFinite(detail.progress)
+                  ? Math.max(0, Math.min(100, detail.progress))
+                  : undefined;
               const next = {
                 ...job,
                 status: detail.status ?? job.status,
-                progress: detail.progress ?? job.progress,
+                progress:
+                  typeof progressFromDetail === 'number' && progressFromDetail > 0
+                    ? progressFromDetail
+                    : job.progress,
                 videoUrl: detail.videoUrl ?? job.videoUrl,
                 thumbUrl: detail.thumbUrl ?? job.thumbUrl,
                 finalPriceCents: detail.finalPriceCents ?? job.finalPriceCents,
@@ -318,10 +363,11 @@ export function useInfiniteJobs(pageSize = 12) {
       const jobId = job?.jobId;
       if (!jobId) return;
       seen.add(jobId);
-      const status = typeof job.status === 'string' ? job.status.toLowerCase() : '';
-      if (status === 'completed' || status === 'failed') {
+      const normalizedStatus =
+        normalizeJobStatus(job.status ?? null, Boolean(job.videoUrl)) ?? (job.videoUrl ? 'completed' : 'pending');
+      if (normalizedStatus === 'completed' || normalizedStatus === 'failed') {
         clearStatusRetry(jobId);
-      } else if (status === 'pending' || status === 'running' || (!job.videoUrl && status !== 'completed')) {
+      } else if (normalizedStatus === 'pending') {
         const meta = STATUS_RETRY_TIMERS.get(jobId);
         if (!meta || meta.timer === null) {
           scheduleStatusRetry(jobId, meta?.attempt ?? 0);
@@ -457,21 +503,13 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResult> {
     throw new Error('Status payload missing');
   }
 
-  const normalizedStatus: JobStatusResult['status'] =
-    payload.status === 'completed'
-      ? 'completed'
-      : payload.status === 'failed'
-        ? 'failed'
-        : payload.videoUrl
-          ? 'completed'
-          : 'pending';
-
-  const progress =
-    typeof payload.progress === 'number'
-      ? payload.progress
-      : payload.videoUrl
-        ? 100
-        : 0;
+  const statusFromPayload = normalizeJobStatus(payload.status ?? null, Boolean(payload.videoUrl));
+  const normalizedStatus = (statusFromPayload ?? (payload.videoUrl ? 'completed' : 'pending')) as JobStatusResult['status'];
+  const progressValue = normalizeJobProgress(payload.progress, normalizedStatus, Boolean(payload.videoUrl));
+  const progress = progressValue ?? (normalizedStatus === 'completed' ? 100 : 0);
+  const normalizedMessage =
+    normalizeJobMessage(payload.message) ??
+    (normalizedStatus === 'failed' ? 'Fal reported a failure without details.' : undefined);
 
   const renderIds =
     Array.isArray(payload.renderIds) && payload.renderIds.length
@@ -498,7 +536,7 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResult> {
     renderIds: renderIds ?? null,
     heroRenderId: payload.heroRenderId ?? null,
     localKey: payload.localKey ?? null,
-    message: payload.message ?? null,
+    message: normalizedMessage ?? null,
     etaSeconds: payload.etaSeconds ?? null,
     etaLabel: payload.etaLabel ?? null,
   };

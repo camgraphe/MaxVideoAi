@@ -1,4 +1,5 @@
 import { normalizeMediaUrl } from '@/lib/media';
+import { normalizeJobMessage, normalizeJobProgress, normalizeJobStatus } from '@/lib/job-status';
 import type { Job } from '@/types/jobs';
 import type { GroupSummary, GroupMemberSummary } from '@/types/groups';
 
@@ -35,34 +36,21 @@ function buildMember(job: Job): GroupMemberSummary {
   const priceCents = job.finalPriceCents ?? job.pricingSnapshot?.totalCents ?? null;
   const currency = job.currency ?? job.pricingSnapshot?.currency ?? null;
   const iterationCount = job.iterationCount ?? (Array.isArray(job.renderIds) ? job.renderIds.length : null) ?? null;
-  const statusRaw = (job.status ?? '').toLowerCase();
-  const isCompletionStatus =
-    statusRaw === 'completed' ||
-    statusRaw === 'success' ||
-    statusRaw === 'succeeded' ||
-    statusRaw === 'finished';
-  let status: GroupMemberSummary['status'] = 'completed';
   const hasVideo = Boolean(videoUrl);
-
-  if (statusRaw === 'failed') {
-    status = 'failed';
-  } else if (
-    statusRaw === 'pending' ||
-    statusRaw === 'queued' ||
-    statusRaw === 'running' ||
-    statusRaw === 'processing' ||
-    statusRaw === 'in_progress' ||
-    (!hasVideo && !isCompletionStatus)
-  ) {
-    status = 'pending';
-  } else {
-    status = 'completed';
+  const normalizedStatus = normalizeJobStatus(job.status ?? null, hasVideo);
+  const status: GroupMemberSummary['status'] =
+    normalizedStatus ?? (hasVideo ? 'completed' : 'pending');
+  const messageFromJob = normalizeJobMessage(job.message);
+  let message = messageFromJob ?? null;
+  if (!message) {
+    if (status === 'failed') {
+      message = 'Fal reported a failure without details.';
+    } else if (status === 'pending') {
+      message = 'Processing…';
+    }
   }
-
-  let message = job.message ?? null;
-  if (!hasVideo && !message && status !== 'completed') {
-    message = status === 'failed' ? 'Media unavailable. Try re-running this job.' : 'Processing…';
-  }
+  const progressValue = normalizeJobProgress(job.progress, status, hasVideo);
+  const progress = typeof progressValue === 'number' ? progressValue : null;
 
   return {
     id: job.jobId,
@@ -81,14 +69,7 @@ function buildMember(job: Job): GroupMemberSummary {
     aspectRatio,
     prompt: job.prompt,
     status,
-    progress:
-      typeof job.progress === 'number'
-        ? job.progress
-        : status === 'completed'
-          ? 100
-          : hasVideo
-            ? 75
-            : 0,
+    progress,
     message,
     etaLabel: job.etaLabel ?? null,
     etaSeconds: job.etaSeconds ?? null,
