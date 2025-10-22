@@ -224,7 +224,7 @@ async function fetchJobsPage(limit: number, cursor?: string | null): Promise<Job
   };
 }
 
-type JobsSWRKey = ['jobs', string, number, string | null];
+type JobsKey = readonly ['jobs', string, number, string | null];
 
 export function useInfiniteJobs(pageSize = 12) {
   const [cacheKey, setCacheKey] = useState<string | null>(() => (typeof window === 'undefined' ? 'server' : null));
@@ -248,14 +248,14 @@ export function useInfiniteJobs(pageSize = 12) {
     };
   }, []);
 
-  const swr = useSWRInfinite<JobsPage, Error, JobsSWRKey>(
-    (index, previousPage) => {
+  const swr = useSWRInfinite<JobsPage, Error>(
+    (index, previousPage): JobsKey | null => {
       if (!cacheKey) return null;
       if (previousPage && !previousPage.nextCursor) {
         return null;
       }
       const cursor = index === 0 ? null : previousPage?.nextCursor ?? null;
-      return ['jobs', cacheKey, pageSize, cursor];
+      return ['jobs', cacheKey, pageSize, cursor] as JobsKey;
     },
     async ([, , limit, cursor]) => {
       return fetchJobsPage(limit, cursor);
