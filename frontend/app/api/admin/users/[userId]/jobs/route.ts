@@ -12,9 +12,9 @@ type JobRow = {
   duration_sec: number;
   created_at: string;
   updated_at: string;
+  final_price_cents: number | null;
   video_url: string | null;
   thumb_url: string | null;
-  final_price_cents: number | null;
 };
 
 export const runtime = 'nodejs';

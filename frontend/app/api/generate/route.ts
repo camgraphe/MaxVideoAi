@@ -1000,7 +1000,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
         ? error.providerJobId
         : typeof (error as { providerJobId?: string } | undefined)?.providerJobId === 'string'
           ? (error as { providerJobId?: string }).providerJobId!
-          : null;
+          : batchId ?? null;
     const paymentStatusOverride =
       pendingReceipt && paymentMode === 'wallet'
         ? 'refunded_wallet'
@@ -1108,7 +1108,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
   const providerMode = generationResult.provider;
   const status = generationResult.status ?? (video ? 'completed' : 'queued');
   const progress = typeof generationResult.progress === 'number' ? generationResult.progress : video ? 100 : 0;
-  const providerJobId = generationResult.providerJobId ?? null;
+  const providerJobId = generationResult.providerJobId ?? batchId ?? null;
   if (isLumaRay2) {
     console.info('[fal] lumaRay2 generation', {
       jobId,

@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import Link from 'next/link';
 import useSWR from 'swr';
 
@@ -52,6 +53,8 @@ type JobsResponse =
         created_at: string;
         updated_at: string;
         final_price_cents: number | null;
+        video_url: string | null;
+        thumb_url: string | null;
       }>;
     }
   | { ok: false; error?: string; message?: string };
@@ -100,7 +103,14 @@ export default function UserDetailClient({ userId }: { userId: string }) {
     receiptsData && receiptsData.ok === false
       ? receiptsData.error ?? receiptsData.message ?? 'Failed to load receipts.'
       : null;
-  const jobEntries = jobsData && jobsData.ok ? jobsData.jobs : [];
+  const jobEntries = useMemo(
+    () => (jobsData && jobsData.ok ? jobsData.jobs : []),
+    [jobsData]
+  );
+  const videoEntries = useMemo(
+    () => jobEntries.filter((job) => typeof job.video_url === 'string' && job.video_url.trim().length),
+    [jobEntries]
+  );
   const receiptEntries = receiptsData && receiptsData.ok ? receiptsData.receipts : [];
 
   if (userError) {
@@ -247,6 +257,53 @@ export default function UserDetailClient({ userId }: { userId: string }) {
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section className="rounded-2xl border border-hairline bg-white p-6 shadow-card">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-text-primary">Video previews</h3>
+          <p className="text-xs text-text-tertiary">Validate that media assets remain accessible.</p>
+        </div>
+        {videoEntries.length === 0 ? (
+          <div className="mt-6 rounded-xl border border-hairline bg-bg p-6 text-center text-sm text-text-secondary">
+            No video assets available yet.
+          </div>
+        ) : (
+          <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {videoEntries.map((job) => (
+              <article key={job.id} className="flex flex-col gap-3 rounded-xl border border-hairline bg-bg p-4">
+                <div className="relative aspect-video overflow-hidden rounded-lg border border-hairline bg-black">
+                  <video
+                    src={job.video_url ?? undefined}
+                    poster={job.thumb_url ?? undefined}
+                    controls
+                    preload="metadata"
+                    className="absolute inset-0 h-full w-full object-cover"
+                  >
+                    <track kind="captions" />
+                  </video>
+                </div>
+                <div className="space-y-1 text-xs text-text-secondary">
+                  <p className="font-semibold text-text-primary">{job.engine_label}</p>
+                  <p className="font-mono text-[11px] text-text-tertiary break-all">Job: {job.job_id}</p>
+                  <p>Status: {job.status} · Progress: {job.progress}%</p>
+                  <p>Created: {new Date(job.created_at).toLocaleString()}</p>
+                  <div className="flex items-center justify-between text-[11px] text-text-muted">
+                    <span>{job.duration_sec ?? 0}s</span>
+                    <a
+                      href={job.video_url ?? undefined}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-semibold text-primary underline-offset-2 hover:underline"
+                    >
+                      Open externally
+                    </a>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="rounded-2xl border border-hairline bg-white p-6 shadow-card">
