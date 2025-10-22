@@ -134,7 +134,43 @@ export async function GET(req: NextRequest) {
         };
 
         try {
-          const falModel = (await resolveFalModelId(jobRow.engine_id)) ?? jobRow.engine_id;
+          let engineIdForLookup = jobRow.engine_id;
+          if (!engineIdForLookup || engineIdForLookup === 'fal-unknown') {
+            const logRows = await query<{ engine_id: string | null }>(
+              `SELECT engine_id
+                 FROM fal_queue_log
+                WHERE provider_job_id = $1
+                ORDER BY created_at DESC
+                LIMIT 1`,
+              [jobRow.provider_job_id]
+            );
+            if (logRows[0]?.engine_id) {
+              engineIdForLookup = logRows[0].engine_id;
+            } else {
+              const altRows = await query<{ engine_id: string | null }>(
+                `SELECT engine_id
+                   FROM app_jobs
+                  WHERE provider_job_id = $1
+                    AND engine_id IS NOT NULL
+                    AND engine_id <> 'fal-unknown'
+                  ORDER BY updated_at DESC
+                  LIMIT 1`,
+                [jobRow.provider_job_id]
+              );
+              if (altRows[0]?.engine_id) {
+                engineIdForLookup = altRows[0].engine_id;
+              }
+            }
+          }
+
+          if (!engineIdForLookup || engineIdForLookup === 'fal-unknown') {
+            await markJobFailed('Unable to determine Fal engine for this job.');
+            continue;
+          }
+
+          const falModel =
+            (await resolveFalModelId(engineIdForLookup)) ??
+            engineIdForLookup;
           const statusInfo = (await falClient.queue
             .status(falModel, { requestId: jobRow.provider_job_id! })
             .catch((error: unknown) => {
