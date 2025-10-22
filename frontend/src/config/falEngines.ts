@@ -1,4 +1,4 @@
-import type { EngineCaps, EngineAvailability, Mode } from '../types/engines.ts';
+import type { EngineCaps, EngineAvailability, Mode } from '../../types/engines';
 
 export type EngineLogoPolicy = 'logoAllowed' | 'textOnly';
 

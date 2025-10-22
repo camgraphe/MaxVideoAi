@@ -68,7 +68,9 @@ export default function ModelDetailPage({ params }: PageParams) {
     notFound();
   }
 
-  const availabilityLabel = dictionary.models.availabilityLabels[engine.availability] ?? engine.availability;
+  const availabilityLabels = dictionary.models.availabilityLabels;
+  const availabilityKey = engine.availability as keyof typeof availabilityLabels;
+  const availabilityLabel = availabilityLabels[availabilityKey] ?? engine.availability;
   const brand = PARTNER_BRAND_MAP.get(engine.brandId);
   const showSoraSeo = engine.modelSlug === 'sora-2';
   const faqEntries = engine.faqs ?? [];
@@ -196,7 +198,7 @@ export default function ModelDetailPage({ params }: PageParams) {
           <span
             className={clsx(
               'rounded-pill border px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary',
-              AVAILABILITY_BADGE_CLASS[engine.availability]
+              AVAILABILITY_BADGE_CLASS[availabilityKey]
             )}
           >
             {availabilityLabel}

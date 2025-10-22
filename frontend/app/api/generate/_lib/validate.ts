@@ -1,5 +1,5 @@
-import type { Mode } from '../../../../fixtures/engineCaps.ts';
-import { ENGINE_CAPS, resolveEngineCapsKey, type EngineCapsKey } from '../../../../fixtures/engineCaps.ts';
+import type { Mode } from '../../../../fixtures/engineCaps';
+import { ENGINE_CAPS, resolveEngineCapsKey, type EngineCapsKey } from '../../../../fixtures/engineCaps';
 
 type ValidationError = {
   code: string;

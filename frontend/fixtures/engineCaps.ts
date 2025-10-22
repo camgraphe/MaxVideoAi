@@ -1,5 +1,5 @@
-import { listFalEngines, type EngineUiCaps, type FalEngineModeConfig } from '../src/config/falEngines.ts';
-import type { Mode as EngineMode } from '../types/engines.ts';
+import { listFalEngines, type EngineUiCaps, type FalEngineModeConfig } from '../src/config/falEngines';
+import type { Mode as EngineMode } from '../types/engines';
 
 export type Mode = EngineMode;
 
@@ -24,7 +24,9 @@ export const ENGINE_CAP_INDEX: Record<string, ModeCapsMap> = registry.reduce<Rec
   (acc, engine) => {
     const map: ModeCapsMap = {};
     engine.modes.forEach((modeConfig: FalEngineModeConfig) => {
-      map[modeConfig.mode] = modeConfig.falModelId;
+      const modeKey = modeConfig.mode as Mode;
+      const falModelKey = modeConfig.falModelId as EngineCapsKey;
+      map[modeKey] = falModelKey;
     });
     acc[engine.id] = map;
     return acc;

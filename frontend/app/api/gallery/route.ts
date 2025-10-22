@@ -3,6 +3,8 @@ import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { listGalleryVideos, type GalleryTab } from '@/server/videos';
 
+export const dynamic = 'force-dynamic';
+
 function parseTab(value: string | null): GalleryTab {
   if (value === 'starter' || value === 'trending') return value;
   return 'latest';

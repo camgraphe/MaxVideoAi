@@ -33,7 +33,7 @@ export function PriceChip({ engineId, durationSec, resolution, memberTier = 'mem
   const { dictionary, t } = useI18n();
   const kernel = getPricingKernel();
   const [isOpen, setIsOpen] = useState(false);
-  const canonicalId = normalizeEngineId(engineId);
+  const canonicalId = normalizeEngineId(engineId) ?? engineId;
 
   const quote = useMemo(() => {
     return kernel.quote({

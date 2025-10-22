@@ -1,4 +1,5 @@
 import type { PricingScenario } from '@/lib/pricing-scenarios';
+import type { EngineAvailability } from '@/types/engines';
 
 export type Locale = 'en' | 'fr';
 
@@ -166,7 +167,7 @@ type Dictionary = {
       title: string;
       subtitle: string;
     };
-    availabilityLabels: Record<'available' | 'limited' | 'waitlist' | 'paused', string>;
+    availabilityLabels: Record<EngineAvailability, string>;
     meta: Record<string, { displayName: string; description: string; priceBefore: string; versionLabel?: string }>;
     note: string;
   };

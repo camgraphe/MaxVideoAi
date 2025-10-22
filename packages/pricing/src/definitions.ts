@@ -19,7 +19,16 @@ function resolveDurationSteps(engine: EngineCaps) {
   const min = Math.max(1, Math.floor(durationField?.min ?? 1));
   const max = Math.max(min, Math.floor(durationField?.max ?? engine.pricingDetails?.maxDurationSec ?? engine.maxDurationSec ?? 30));
   const step = Math.max(1, Math.floor(durationField?.step ?? 1));
-  const defaultValue = durationField?.default ?? undefined;
+  const rawDefault = durationField?.default;
+  let defaultValue: number | undefined;
+  if (typeof rawDefault === 'number' && Number.isFinite(rawDefault)) {
+    defaultValue = Math.round(rawDefault);
+  } else if (typeof rawDefault === 'string') {
+    const numeric = Number(rawDefault.replace(/[^\d.]/g, ''));
+    if (Number.isFinite(numeric) && numeric > 0) {
+      defaultValue = Math.round(numeric);
+    }
+  }
   return { min, max, step, default: defaultValue };
 }
 

@@ -3,6 +3,8 @@ import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { listExamples, type ExampleSort } from '@/server/videos';
 
+export const dynamic = 'force-dynamic';
+
 function parseSort(raw: string | null): ExampleSort {
   switch (raw) {
     case 'date-asc':

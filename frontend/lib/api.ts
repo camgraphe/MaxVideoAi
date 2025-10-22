@@ -10,6 +10,30 @@ import type { GenerateAttachment } from '@/lib/fal';
 import type { VideoAsset } from '@/types/render';
 import { translateError } from '@/lib/error-messages';
 
+type PrimitiveValue = string | number | boolean | null | undefined;
+
+function toPrimitive(value: unknown): PrimitiveValue {
+  if (value == null) return value as null | undefined;
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    return value;
+  }
+  return undefined;
+}
+
+function toPrimitiveArray(value: unknown): PrimitiveValue[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  return value.reduce<PrimitiveValue[]>((acc, entry) => {
+    if (entry === null || entry === undefined) {
+      acc.push(entry);
+      return acc;
+    }
+    if (typeof entry === 'string' || typeof entry === 'number' || typeof entry === 'boolean') {
+      acc.push(entry);
+    }
+    return acc;
+  }, []);
+}
+
 type GeneratePayload = {
   engineId: string;
   prompt: string;
@@ -355,6 +379,8 @@ export async function runGenerate(
 
   if (!response.ok) {
     const payload = body && typeof body === 'object' ? (body as Record<string, unknown>) : null;
+    const primitiveValue = toPrimitive(payload?.value);
+    const allowedValues = toPrimitiveArray(payload?.allowed);
     const translation = translateError({
       code: typeof payload?.error === 'string' ? (payload.error as string) : undefined,
       status: response.status,
@@ -362,10 +388,8 @@ export async function runGenerate(
       providerMessage:
         typeof payload?.providerMessage === 'string' ? (payload.providerMessage as string) : undefined,
       field: typeof payload?.field === 'string' ? (payload.field as string) : undefined,
-      value: payload?.value,
-      allowed: Array.isArray(payload?.allowed)
-        ? (payload.allowed as Array<string | number>)
-        : undefined,
+      value: primitiveValue,
+      allowed: allowedValues,
     });
     const error = new Error(translation.message);
     if (payload) {
@@ -378,8 +402,8 @@ export async function runGenerate(
       providerMessage:
         typeof payload?.providerMessage === 'string' ? (payload.providerMessage as string) : undefined,
       field: typeof payload?.field === 'string' ? (payload.field as string) : undefined,
-      allowed: Array.isArray(payload?.allowed) ? payload.allowed : undefined,
-      value: payload?.value,
+      allowed: allowedValues,
+      value: primitiveValue,
       details: payload,
       status: response.status,
     });
