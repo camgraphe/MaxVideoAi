@@ -1,10 +1,11 @@
 import { query } from '@/lib/db';
 import { normalizeMediaUrl } from '@/lib/media';
-import { resolveFalModelId } from '@/lib/fal-catalog';
+import { resolveFalModelId, resolveEngineIdFromModelSlug } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { sendRenderCompletedEmail } from '@/lib/email';
 import { getUserIdentity } from '@/server/supabase-admin';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
+import { getFalEngineById } from '@/config/falEngines';
 
 type FalWebhookPayload = {
   request_id?: string;
@@ -35,6 +36,21 @@ const COMPLETED_STATUSES = new Set(['COMPLETED', 'FINISHED', 'SUCCESS']);
 const FAILED_STATUSES = new Set(['FAILED', 'ERROR', 'CANCELLED', 'CANCELED', 'ABORTED']);
 const RUNNING_STATUSES = new Set(['RUNNING', 'IN_PROGRESS', 'PROCESSING']);
 const QUEUED_STATUSES = new Set(['QUEUED', 'IN_QUEUE', 'PENDING']);
+
+const PROVIDER_ENGINE_MAP: Record<string, string> = {
+  openai: 'sora-2',
+  'openai-sora': 'sora-2',
+  'sora-2': 'sora-2',
+  sora: 'sora-2',
+  pika: 'pika-text-to-video',
+  'pika-labs': 'pika-text-to-video',
+  'pika-2.2': 'pika-text-to-video',
+  'google-veo': 'veo-3-fast',
+  google: 'veo-3-fast',
+  veo: 'veo-3-fast',
+  luma: 'luma-dream-machine',
+  'luma-dream-machine': 'luma-dream-machine',
+};
 
 type WebhookIdentifiers = {
   jobId?: string | null;
@@ -94,6 +110,41 @@ function extractIdentifiersFromPayload(payload: unknown): WebhookIdentifiers {
   }
 
   return identifiers;
+}
+
+async function inferEngineFromPayload(
+  payload: FalWebhookPayload
+): Promise<{ engineId: string; engineLabel: string | null }> {
+  const modelSlug =
+    findFirstString(payload, ['model', 'model_slug', 'modelId', 'model_id', 'fal_model_id', 'falModelId', 'endpoint']) ??
+    null;
+  if (modelSlug) {
+    const engineId = (await resolveEngineIdFromModelSlug(modelSlug)) ?? null;
+    if (engineId) {
+      const engine = getFalEngineById(engineId);
+      return { engineId, engineLabel: engine?.marketingName ?? engine?.label ?? engineId };
+    }
+  }
+
+  const provider = findFirstString(payload, ['provider', 'vendor', 'source'])?.toLowerCase() ?? null;
+  if (provider && PROVIDER_ENGINE_MAP[provider]) {
+    const engineId = PROVIDER_ENGINE_MAP[provider];
+    const engine = getFalEngineById(engineId);
+    return { engineId, engineLabel: engine?.marketingName ?? engine?.label ?? engineId };
+  }
+
+  const requestEngine = findFirstString(payload, ['engine_id', 'engineId', 'engine']) ?? null;
+  if (requestEngine && requestEngine !== 'fal-unknown') {
+    const normalized = requestEngine.trim();
+    const engineId =
+      PROVIDER_ENGINE_MAP[normalized.toLowerCase()] ??
+      (await resolveEngineIdFromModelSlug(normalized)) ??
+      normalized;
+    const engine = getFalEngineById(engineId);
+    return { engineId, engineLabel: engine?.marketingName ?? engine?.label ?? engineId };
+  }
+
+  return { engineId: 'fal-unknown', engineLabel: null };
 }
 
 function findFirstString(payload: unknown, keys: string[]): string | null {
@@ -333,8 +384,22 @@ async function createProvisionalJobFromWebhook(params: {
       : null) ??
     (params.requestId.startsWith('job_') ? params.requestId : `job_${params.requestId}`);
 
-  const engineId = findFirstString(params.payload, ['engine_id', 'engineId', 'model']) ?? 'fal-unknown';
-  const engineLabel = findFirstString(params.payload, ['engine_label', 'engineLabel']) ?? engineId;
+  let engineId = findFirstString(params.payload, ['engine_id', 'engineId', 'model']) ?? 'fal-unknown';
+  let engineLabel = findFirstString(params.payload, ['engine_label', 'engineLabel']) ?? engineId;
+  if (!engineId || engineId === 'fal-unknown') {
+    const inferred = await inferEngineFromPayload(params.payload);
+    engineId = inferred.engineId;
+    if (!engineLabel || engineLabel === 'fal-unknown' || engineLabel === engineId) {
+      engineLabel = inferred.engineLabel ?? engineId;
+    }
+  }
+  if (!engineId || engineId === 'fal-unknown') {
+    console.warn('[fal-webhook] provisional job has unknown engine', {
+      requestId: params.requestId,
+      fallbackModel: findFirstString(params.payload, ['model', 'model_slug', 'modelId', 'model_id']),
+      provider: findFirstString(params.payload, ['provider']),
+    });
+  }
   const prompt =
     findFirstString(params.payload, ['prompt', 'description', 'text']) ?? '[webhook recovery]';
   const aspectRatio = findFirstString(params.payload, ['aspect_ratio', 'aspectRatio']) ?? null;
@@ -469,14 +534,37 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     return;
   }
 
+  const originalEngineId = job.engine_id;
+  const originalEngineLabel = job.engine_label;
+  let effectiveEngineId = job.engine_id;
+  let effectiveEngineLabel = job.engine_label;
+  if (!effectiveEngineId || effectiveEngineId === 'fal-unknown') {
+    const inferred = await inferEngineFromPayload(payload);
+    if (inferred.engineId !== 'fal-unknown') {
+      effectiveEngineId = inferred.engineId;
+      effectiveEngineLabel = inferred.engineLabel ?? effectiveEngineLabel ?? inferred.engineId;
+      job.engine_id = effectiveEngineId;
+      job.engine_label = effectiveEngineLabel;
+    }
+  }
+  if (originalEngineId !== effectiveEngineId && effectiveEngineId && effectiveEngineId !== 'fal-unknown') {
+    console.info('[fal-webhook] inferred engine mapping', {
+      requestId,
+      engineId: effectiveEngineId,
+      engineLabel: effectiveEngineLabel,
+      originalEngineId,
+      originalEngineLabel,
+    });
+  }
+
   let finalPayload = payload.result ?? payload.response ?? payload.data ?? null;
   const statusInfo = normalizeStatus(payload.status, job.status, job.progress);
   let nextStatus = statusInfo.status;
   let nextProgress = statusInfo.progress;
 
-  if ((!finalPayload || nextStatus === 'completed') && job.engine_id && job.engine_id !== 'fal-unknown') {
+  if ((!finalPayload || nextStatus === 'completed') && effectiveEngineId && effectiveEngineId !== 'fal-unknown') {
     try {
-      const falModel = (await resolveFalModelId(job.engine_id)) ?? job.engine_id;
+      const falModel = (await resolveFalModelId(effectiveEngineId)) ?? effectiveEngineId;
       const falClient = getFalClient();
       const queueResult = await falClient.queue.result(falModel, { requestId });
       finalPayload = queueResult?.data ?? finalPayload ?? queueResult ?? null;
@@ -531,6 +619,10 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       ? nextMessage ?? job.message ?? 'Fal reported a failure without details.'
       : nextMessage ?? null;
   const normalizedMessage = messageToPersist ? messageToPersist.replace(/\s+/g, ' ').trim() : null;
+  const engineIdForUpdate =
+    effectiveEngineId && effectiveEngineId !== 'fal-unknown' ? effectiveEngineId : null;
+  const engineLabelForUpdate =
+    effectiveEngineLabel && effectiveEngineLabel !== 'fal-unknown' ? effectiveEngineLabel : null;
 
   if (nextStatus === 'failed') {
     console.error('[fal-webhook] job failed', {
@@ -552,6 +644,8 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
          message = CASE WHEN $7 IS NOT NULL THEN $7 ELSE message END,
          provider_job_id = $8,
          provisional = FALSE,
+         engine_id = COALESCE($11, engine_id),
+         engine_label = COALESCE($12, engine_label),
          updated_at = NOW()
      WHERE job_id = $1`,
     [
@@ -565,6 +659,8 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       requestId,
       shouldClearVideo,
       shouldClearThumb,
+      engineIdForUpdate,
+      engineLabelForUpdate,
     ]
   );
 

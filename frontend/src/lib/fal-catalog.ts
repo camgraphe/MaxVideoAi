@@ -400,6 +400,35 @@ export async function resolveFalModelId(engineId: string): Promise<string | unde
   return `fal-ai/video/${normalized}`;
 }
 
+export async function resolveEngineIdFromModelSlug(modelSlug: string): Promise<string | undefined> {
+  if (!modelSlug) return undefined;
+  const normalized = modelSlug.trim();
+  if (!normalized) return undefined;
+  if (ENGINE_ID_OVERRIDES[normalized]) {
+    return ENGINE_ID_OVERRIDES[normalized];
+  }
+  for (const [engineId, mappedSlug] of Object.entries(DEFAULT_MODEL_MAP)) {
+    if (mappedSlug === normalized) {
+      return engineId;
+    }
+  }
+  const catalog = await getFalCatalog();
+  if (catalog) {
+    for (const [engineId, slug] of Object.entries(catalog.modelMap ?? {})) {
+      if (slug === normalized) {
+        return engineId;
+      }
+    }
+    const engines = catalog.engines ?? [];
+    for (const engine of engines) {
+      if ((engine.providerMeta as { modelSlug?: string } | undefined)?.modelSlug === normalized) {
+        return engine.id;
+      }
+    }
+  }
+  return undefined;
+}
+
 export async function getPricingDetails(engineId: string): Promise<EnginePricingDetails | undefined> {
   const catalog = await getFalCatalog();
   if (catalog?.pricing?.[engineId]) {
