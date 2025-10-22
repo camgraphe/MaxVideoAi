@@ -60,6 +60,7 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
   const [playlistFetchError, setPlaylistFetchError] = useState<string | null>(null);
   const [playlistAssignments, setPlaylistAssignments] = useState<Record<string, PlaylistTag[]>>({});
   const [playlistStatus, setPlaylistStatus] = useState<Record<string, { loading: boolean; message: string | null; error: string | null }>>({});
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const playlistAssignmentsRef = useRef<Record<string, PlaylistTag[]>>({});
 
   const hasVideos = items.length > 0;
@@ -337,6 +338,47 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
     [getPlaylistName, scheduleStatusClear, updateStatusMessage]
   );
 
+  const handleDeleteVideo = useCallback(
+    async (video: ModerationVideo) => {
+      const confirmFirst = window.confirm('Remove this video from the site? This will hide it everywhere.');
+      if (!confirmFirst) return;
+      const confirmSecond = window.confirm('Final confirmation: permanently remove this video from galleries and playlists?');
+      if (!confirmSecond) return;
+      setDeletingId(video.id);
+      setError(null);
+      try {
+        const res = await fetch(`/api/admin/videos/${video.id}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
+        const json = await res.json().catch(() => ({ ok: false }));
+        if (!res.ok || !json?.ok) {
+          throw new Error(json?.error ?? 'Failed to delete video');
+        }
+        setPlaylistAssignments((prev) => {
+          if (!prev[video.id]) return prev;
+          const next = { ...prev };
+          delete next[video.id];
+          playlistAssignmentsRef.current = next;
+          return next;
+        });
+        setPlaylistStatus((prev) => {
+          if (!prev[video.id]) return prev;
+          const next = { ...prev };
+          delete next[video.id];
+          return next;
+        });
+        removeVideo(video.id);
+      } catch (deleteError) {
+        console.error('[moderation] delete failed', deleteError);
+        setError(deleteError instanceof Error ? deleteError.message : 'Failed to delete video');
+      } finally {
+        setDeletingId(null);
+      }
+    },
+    [removeVideo]
+  );
+
   const handleRemoveFromPlaylist = useCallback(
     async (video: ModerationVideo, playlistId: string) => {
       const playlistName = getPlaylistName(playlistId);
@@ -377,6 +419,47 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
       }
     },
     [getPlaylistName, scheduleStatusClear, updateStatusMessage]
+  );
+
+  const handleDeleteVideo = useCallback(
+    async (video: ModerationVideo) => {
+      const confirmFirst = window.confirm('Remove this video from the site? This will hide it everywhere.');
+      if (!confirmFirst) return;
+      const confirmSecond = window.confirm('Final confirmation: permanently remove this video from galleries and playlists?');
+      if (!confirmSecond) return;
+      setDeletingId(video.id);
+      setError(null);
+      try {
+        const res = await fetch(`/api/admin/videos/${video.id}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
+        const json = await res.json().catch(() => ({ ok: false }));
+        if (!res.ok || !json?.ok) {
+          throw new Error(json?.error ?? 'Failed to delete video');
+        }
+        setPlaylistAssignments((prev) => {
+          if (!prev[video.id]) return prev;
+          const next = { ...prev };
+          delete next[video.id];
+          playlistAssignmentsRef.current = next;
+          return next;
+        });
+        setPlaylistStatus((prev) => {
+          if (!prev[video.id]) return prev;
+          const next = { ...prev };
+          delete next[video.id];
+          return next;
+        });
+        removeVideo(video.id);
+      } catch (deleteError) {
+        console.error('[moderation] delete failed', deleteError);
+        setError(deleteError instanceof Error ? deleteError.message : 'Failed to delete video');
+      } finally {
+        setDeletingId(null);
+      }
+    },
+    [removeVideo]
   );
 
   return (
@@ -534,6 +617,14 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
                             disabled={isPending}
                           >
                             Keep private
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded-input border border-rose-300 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-rose-600 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
+                            onClick={() => handleDeleteVideo(video)}
+                            disabled={deletingId === video.id}
+                          >
+                            {deletingId === video.id ? 'Deleting…' : 'Delete video'}
                           </button>
                         </>
                       )}
