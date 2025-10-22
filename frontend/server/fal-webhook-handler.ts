@@ -122,7 +122,11 @@ async function inferEngineFromPayload(
     const engineId = (await resolveEngineIdFromModelSlug(modelSlug)) ?? null;
     if (engineId) {
       const engine = getFalEngineById(engineId);
-      return { engineId, engineLabel: engine?.marketingName ?? engine?.label ?? engineId };
+      const engineLabel =
+        engine?.marketingName ??
+        (typeof (engine as { label?: string } | undefined)?.label === 'string' ? (engine as { label?: string }).label : null) ??
+        engineId;
+      return { engineId, engineLabel };
     }
   }
 
@@ -130,7 +134,11 @@ async function inferEngineFromPayload(
   if (provider && PROVIDER_ENGINE_MAP[provider]) {
     const engineId = PROVIDER_ENGINE_MAP[provider];
     const engine = getFalEngineById(engineId);
-    return { engineId, engineLabel: engine?.marketingName ?? engine?.label ?? engineId };
+    const engineLabel =
+      engine?.marketingName ??
+      (typeof (engine as { label?: string } | undefined)?.label === 'string' ? (engine as { label?: string }).label : null) ??
+      engineId;
+    return { engineId, engineLabel };
   }
 
   const requestEngine = findFirstString(payload, ['engine_id', 'engineId', 'engine']) ?? null;
@@ -141,7 +149,11 @@ async function inferEngineFromPayload(
       (await resolveEngineIdFromModelSlug(normalized)) ??
       normalized;
     const engine = getFalEngineById(engineId);
-    return { engineId, engineLabel: engine?.marketingName ?? engine?.label ?? engineId };
+    const engineLabel =
+      engine?.marketingName ??
+      (typeof (engine as { label?: string } | undefined)?.label === 'string' ? (engine as { label?: string }).label : null) ??
+      engineId;
+    return { engineId, engineLabel };
   }
 
   return { engineId: 'fal-unknown', engineLabel: null };
