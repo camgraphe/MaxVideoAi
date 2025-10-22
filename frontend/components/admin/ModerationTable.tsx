@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import clsx from 'clsx';
 import Image from 'next/image';
+import { isPlaceholderMediaUrl, normalizeMediaUrl } from '@/lib/media';
 
 export type ModerationVideo = {
   id: string;
@@ -470,6 +471,11 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
                 const isAssigningPlaylist = Boolean(playlistState?.loading);
                 const playlistMessage = playlistState?.message ?? null;
                 const playlistErrorMessage = playlistState?.error ?? null;
+                const normalizedVideoUrl = video.videoUrl ? normalizeMediaUrl(video.videoUrl) ?? video.videoUrl : undefined;
+                const normalizedThumbUrl = video.thumbUrl ? normalizeMediaUrl(video.thumbUrl) ?? video.thumbUrl : undefined;
+                const hasThumbPreview = Boolean(normalizedThumbUrl && !isPlaceholderMediaUrl(normalizedThumbUrl));
+                const hasVideoPreview = Boolean(normalizedVideoUrl);
+                const posterUrl = hasThumbPreview ? normalizedThumbUrl : undefined;
                 return (
                   <tr key={video.id} className={clsx(isPending && 'opacity-90')}>
                   <td className="px-4 py-4">
@@ -484,19 +490,20 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
                       >
                         {video.indexable ? 'Indexable' : 'No index'}
                       </span>
-                      {video.videoUrl ? (
+                      {hasVideoPreview ? (
                         <video
-                          src={video.videoUrl}
-                          poster={video.thumbUrl ?? undefined}
+                          src={normalizedVideoUrl}
+                          poster={posterUrl}
                           className="absolute inset-0 h-full w-full object-cover"
                           muted
                           loop
                           playsInline
                           autoPlay
+                          preload="metadata"
                         />
-                      ) : video.thumbUrl ? (
+                      ) : hasThumbPreview && normalizedThumbUrl ? (
                         <Image
-                          src={video.thumbUrl}
+                          src={normalizedThumbUrl}
                           alt="Thumbnail"
                           fill
                           className="object-cover"

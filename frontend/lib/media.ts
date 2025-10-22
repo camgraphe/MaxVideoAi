@@ -14,3 +14,15 @@ export function normalizeMediaUrl(value?: string | null): string | null {
   }
   return trimmed;
 }
+
+export function isPlaceholderMediaUrl(value?: string | null): boolean {
+  if (typeof value !== 'string') return false;
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return false;
+  if (normalized.startsWith('data:') || normalized.startsWith('blob:')) return false;
+  return (
+    normalized.startsWith('/assets/') ||
+    normalized.includes('/assets/frames/') ||
+    normalized.includes('/assets/gallery/')
+  );
+}

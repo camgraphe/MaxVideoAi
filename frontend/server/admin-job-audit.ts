@@ -1,5 +1,5 @@
 import { query } from '@/lib/db';
-import { normalizeMediaUrl } from '@/lib/media';
+import { normalizeMediaUrl, isPlaceholderMediaUrl } from '@/lib/media';
 
 type RawJobAuditRow = {
   job_id: string;
@@ -90,19 +90,6 @@ function normalizeReceipts(
     currency: normalizeCurrency(entry.currency),
     createdAt: entry.createdAt,
   }));
-}
-
-function isPlaceholderAsset(url: string | null | undefined): boolean {
-  if (!url) return false;
-  const normalized = url.toLowerCase();
-  return (
-    normalized.includes('/assets/gallery/') ||
-    normalized.includes('/assets/frames/') ||
-    normalized.endsWith('.svg') ||
-    normalized.endsWith('.jpg') ||
-    normalized.endsWith('.jpeg') ||
-    normalized.endsWith('.png')
-  );
 }
 
 export async function fetchRecentJobAudits(limit = 30): Promise<AdminJobAuditRecord[]> {
@@ -196,7 +183,7 @@ export async function fetchRecentJobAudits(limit = 30): Promise<AdminJobAuditRec
 
     const videoUrl = row.video_url ? normalizeMediaUrl(row.video_url) ?? row.video_url : null;
     const thumbUrl = row.thumb_url ? normalizeMediaUrl(row.thumb_url) ?? row.thumb_url : null;
-    const placeholderVideo = isPlaceholderAsset(videoUrl);
+    const placeholderVideo = isPlaceholderMediaUrl(videoUrl);
     const displayOk = Boolean(videoUrl) && !placeholderVideo;
 
     return {
