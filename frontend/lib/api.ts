@@ -248,18 +248,23 @@ export function useInfiniteJobs(pageSize = 12) {
     };
   }, []);
 
+  const getJobsKey = (index: number, previousPage: JobsPage | null | undefined): JobsKey | null => {
+    if (!cacheKey) return null;
+    if (previousPage && !previousPage.nextCursor) {
+      return null;
+    }
+    const cursor = index === 0 ? null : previousPage?.nextCursor ?? null;
+    return ['jobs', cacheKey, pageSize, cursor];
+  };
+
+  const fetchJobs = async (key: JobsKey) => {
+    const [, , limit, cursor] = key;
+    return fetchJobsPage(limit, cursor);
+  };
+
   const swr = useSWRInfinite<JobsPage, Error>(
-    (index, previousPage): JobsKey | null => {
-      if (!cacheKey) return null;
-      if (previousPage && !previousPage.nextCursor) {
-        return null;
-      }
-      const cursor = index === 0 ? null : previousPage?.nextCursor ?? null;
-      return ['jobs', cacheKey, pageSize, cursor] as JobsKey;
-    },
-    async ([, , limit, cursor]) => {
-      return fetchJobsPage(limit, cursor);
-    },
+    getJobsKey,
+    fetchJobs,
     { revalidateOnFocus: false }
   );
 
