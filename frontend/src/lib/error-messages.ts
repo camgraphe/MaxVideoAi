@@ -18,7 +18,8 @@ export type TranslatedError = {
   providerMessage?: string | null;
 };
 
-const FALLBACK_MESSAGE = 'Impossible de finaliser la generation. Reessayez dans quelques instants.';
+const FALLBACK_MESSAGE =
+  'Unable to complete generation. Please try again in a few moments. If this keeps happening, contact support with your request ID.';
 
 function normalizeCode(rawCode?: string | null): string | null {
   if (!rawCode) return null;
@@ -26,10 +27,10 @@ function normalizeCode(rawCode?: string | null): string | null {
 }
 
 function formatConstraintMessage(context: ErrorTranslationInput): string {
-  const field = context.field ?? 'cette option';
+  const field = context.field ?? 'this option';
   const value =
     context.value == null || context.value === ''
-      ? 'valeur fournie'
+      ? 'value provided'
       : typeof context.value === 'string'
         ? context.value
         : String(context.value);
@@ -40,23 +41,25 @@ function formatConstraintMessage(context: ErrorTranslationInput): string {
             if (entry == null) return null;
             if (typeof entry === 'string') return entry;
             if (typeof entry === 'number') return String(entry);
-            if (typeof entry === 'boolean') return entry ? 'oui' : 'non';
+            if (typeof entry === 'boolean') return entry ? 'yes' : 'no';
             return null;
           })
           .filter((entry): entry is string => Boolean(entry))
       : null;
   if (allowedList && allowedList.length) {
-    return `Cet engine ne supporte pas ${field}=${value}. Options: ${allowedList.join(', ')}.`;
+    return `This engine does not support ${field}=${value}. Options: ${allowedList.join(
+      ', '
+    )}. Use one of the supported values and resubmit.`;
   }
-  return `Cet engine ne supporte pas ${field}=${value}.`;
+  return `This engine does not support ${field}=${value}. Use one of the supported values and resubmit.`;
 }
 
 function formatQueueMessage(context: ErrorTranslationInput): string {
   if (typeof context.etaSeconds === 'number' && Number.isFinite(context.etaSeconds)) {
     const rounded = Math.max(1, Math.round(context.etaSeconds));
-    return `La file est temporairement chargee. Reessayez dans ${rounded} s.`;
+    return `The queue is temporarily busy. Please try again in ${rounded} s. Wait a moment and retry.`;
   }
-  return 'La file est temporairement chargee. Reessayez dans quelques secondes.';
+  return 'The queue is temporarily busy. Please try again in a few seconds. Traffic is high; a short wait usually helps.';
 }
 
 export function translateError(context: ErrorTranslationInput): TranslatedError {
@@ -73,30 +76,51 @@ export function translateError(context: ErrorTranslationInput): TranslatedError 
   });
 
   const mapByCode: Record<string, () => TranslatedError> = {
-    ENGINE_NOT_FOUND: () => resolve('ENGINE_NOT_FOUND', 'Moteur inconnu ou non disponible.'),
-    UNKNOWN_ENGINE: () => resolve('ENGINE_NOT_FOUND', 'Moteur inconnu ou non disponible.'),
+    ENGINE_NOT_FOUND: () =>
+      resolve('ENGINE_NOT_FOUND', 'Unknown or unavailable engine. Select a valid engine ID and try again.'),
+    UNKNOWN_ENGINE: () =>
+      resolve('ENGINE_NOT_FOUND', 'Unknown or unavailable engine. Select a valid engine ID and try again.'),
     ENGINE_CONSTRAINT: () => resolve('ENGINE_CONSTRAINT', formatConstraintMessage(context)),
     INSUFFICIENT_WALLET_FUNDS: () =>
-      resolve('INSUFFICIENT_WALLET_FUNDS', 'Solde insuffisant. Ajoutez des fonds pour continuer.'),
+      resolve(
+        'INSUFFICIENT_WALLET_FUNDS',
+        'Insufficient balance. Please add funds to continue. Top up your wallet or update your payment method, then try again.'
+      ),
     INSUFFICIENT_FUNDS: () =>
-      resolve('INSUFFICIENT_FUNDS', 'Solde insuffisant. Ajoutez des fonds pour continuer.'),
+      resolve(
+        'INSUFFICIENT_FUNDS',
+        'Insufficient balance. Please add funds to continue. Top up your wallet or update your payment method, then try again.'
+      ),
     PROVIDER_BUSY: () => resolve('PROVIDER_BUSY', formatQueueMessage(context)),
     IN_PROGRESS: () => resolve('PROVIDER_BUSY', formatQueueMessage(context)),
     RATE_LIMITED: () => resolve('RATE_LIMITED', formatQueueMessage(context)),
     POLICY_VIOLATION: () =>
-      resolve('POLICY_VIOLATION', 'Le prompt enfreint les regles. Modifiez votre description.'),
-    SAFETY: () => resolve('SAFETY', 'Le prompt enfreint les regles. Modifiez votre description.'),
+      resolve(
+        'POLICY_VIOLATION',
+        'The prompt violates our usage rules. Please modify your description. Remove prohibited content and try again.'
+      ),
+    SAFETY: () =>
+      resolve(
+        'SAFETY',
+        'The prompt violates our usage rules. Please modify your description. Remove prohibited content and try again.'
+      ),
     FAL_UNPROCESSABLE_ENTITY: () =>
       resolve(
         'FAL_UNPROCESSABLE_ENTITY',
         originalMessage ??
           providerMessage ??
-          'Le fournisseur a rejete la requete. Verifiez vos references et reessayez.'
+          'The request was rejected. Please verify your credentials and try again. Check your API key or account setup, then retry.'
       ),
     IMAGE_UNREACHABLE: () =>
-      resolve('IMAGE_UNREACHABLE', "Impossible d'acceder a l'image fournie. Verifiez le lien."),
+      resolve(
+        'IMAGE_UNREACHABLE',
+        "Unable to access the provided image. Please check the link. Ensure the image URL is correct and publicly reachable, then retry."
+      ),
     IMAGE_UPLOAD_FAILED: () =>
-      resolve('IMAGE_UPLOAD_FAILED', "Echec de l'upload de l'image. Reessayez avec un autre fichier."),
+      resolve(
+        'IMAGE_UPLOAD_FAILED',
+        'Image upload failed. Please try with a different file. Try re-uploading, use a smaller file, or a common format (PNG/JPG).'
+      ),
   };
 
   if (normalizedCode && mapByCode[normalizedCode]) {
@@ -104,10 +128,13 @@ export function translateError(context: ErrorTranslationInput): TranslatedError 
   }
 
   if (status === 402) {
-    return resolve('INSUFFICIENT_FUNDS', 'Solde insuffisant. Ajoutez des fonds pour continuer.');
+    return resolve(
+      'INSUFFICIENT_FUNDS',
+      'Insufficient balance. Please add funds to continue. Top up your wallet or update your payment method, then try again.'
+    );
   }
   if (status === 404) {
-    return resolve('ENGINE_NOT_FOUND', 'Moteur inconnu ou non disponible.');
+    return resolve('ENGINE_NOT_FOUND', 'Unknown or unavailable engine. Select a valid engine ID and try again.');
   }
   if (status === 429) {
     return resolve('RATE_LIMITED', formatQueueMessage(context));

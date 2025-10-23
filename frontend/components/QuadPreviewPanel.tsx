@@ -425,7 +425,9 @@ export function QuadPreviewPanel({
                     <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 bg-red-50/95 px-4 text-center text-[12px] text-red-700 backdrop-blur-sm">
                       <span className="font-semibold uppercase tracking-micro text-red-600">Generation failed</span>
                       <span className="text-[11px] leading-snug text-red-700">
-                        {failureMessage ? `Fal error: ${failureMessage}` : 'Fal reported a failure without details.'}
+                        {failureMessage
+                          ? `Fal error: ${failureMessage}`
+                          : 'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'}
                       </span>
                     </div>
                   ) : tile.status !== 'completed' ? (
@@ -442,7 +444,8 @@ export function QuadPreviewPanel({
                     <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-left">
                       <p className="text-[10px] font-semibold uppercase tracking-micro text-red-600">Fal error</p>
                       <p className="mt-1 text-[11px] leading-snug text-red-700">
-                        {failureMessage ?? 'Fal reported a failure without details.'}
+                        {failureMessage ??
+                          'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'}
                       </p>
                     </div>
                   )}

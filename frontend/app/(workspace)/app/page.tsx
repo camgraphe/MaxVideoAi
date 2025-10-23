@@ -945,7 +945,7 @@ const searchString = useMemo(() => searchParams?.toString() ?? '', [searchParams
         (normalizedStatus === 'completed'
           ? 'Render completed.'
           : normalizedStatus === 'failed'
-            ? 'Fal reported a failure without details.'
+            ? 'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'
             : 'Render pending.');
       const engineId = job.engineId ?? (job.engineLabel ? engineIdByLabel.get(job.engineLabel.toLowerCase()) ?? undefined : undefined) ?? 'unknown-engine';
       const thumbUrl = job.thumbUrl ?? job.previewFrame ?? resolveRenderThumb({ thumbUrl: job.thumbUrl, aspectRatio: job.aspectRatio ?? null });

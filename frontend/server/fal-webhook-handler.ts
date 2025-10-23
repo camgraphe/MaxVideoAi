@@ -594,7 +594,11 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   const nextVideoUrl = media.videoUrl ? normalizeMediaUrl(media.videoUrl) : null;
   const nextThumbUrl = media.thumbUrl ? normalizeMediaUrl(media.thumbUrl) : null;
   const extractedErrorMessage = extractFalErrorMessage(payload, nextStatus === 'failed' ? finalPayload : null);
-  const nextMessage = extractedErrorMessage ?? (nextStatus === 'failed' ? 'Fal reported a failure without details.' : null);
+  const nextMessage =
+    extractedErrorMessage ??
+    (nextStatus === 'failed'
+      ? 'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'
+      : null);
 
   const rawVideoSource = media.videoUrl ?? job.video_url;
   let resolvedThumbUrl = nextThumbUrl ?? job.thumb_url;
@@ -631,7 +635,9 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     (!nextThumbUrl || !resolvedThumbUrl || (resolvedThumbUrl && isPlaceholderThumbnail(resolvedThumbUrl)));
   const messageToPersist =
     nextStatus === 'failed'
-      ? nextMessage ?? job.message ?? 'Fal reported a failure without details.'
+      ? nextMessage ??
+        job.message ??
+        'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'
       : nextMessage ?? null;
   const normalizedMessage = messageToPersist ? messageToPersist.replace(/\s+/g, ' ').trim() : null;
   const engineIdForUpdate =

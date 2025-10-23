@@ -44,7 +44,8 @@ function buildMember(job: Job): GroupMemberSummary {
   let message = messageFromJob ?? null;
   if (!message) {
     if (status === 'failed') {
-      message = 'Fal reported a failure without details.';
+      message =
+        'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.';
     } else if (status === 'pending') {
       message = 'Processing…';
     }

@@ -1241,8 +1241,8 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
           const progressFloor = Math.min(95, FAL_PROGRESS_FLOOR + attempt * 5);
           const retryMessage =
             providerMessage && providerMessage.toLowerCase() !== 'fal request failed'
-              ? `Fal reported "${providerMessage}". Nouvelle tentative en cours.`
-              : 'Fal a signalé une erreur temporaire. Nouvelle tentative en cours.';
+              ? `The service reported "${providerMessage}". Retrying...`
+              : 'A temporary error occurred. Retrying...';
 
           await markJobAwaitingFal({
             jobId,
@@ -1360,8 +1360,8 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
       const progressFloor = Math.min(95, FAL_PROGRESS_FLOOR + FAL_RETRY_DELAYS_MS.length * 5);
       const waitingMessage =
         effectiveProviderMessage && effectiveProviderMessage !== fallbackMessage
-          ? `Fal en cours de traitement: ${effectiveProviderMessage}`
-          : 'Fal continue le rendu, nouvelle mise à jour imminente.';
+          ? `Still processing: ${effectiveProviderMessage}. Your request is in progress; we will update you shortly.`
+          : 'Rendering in progress; next update imminent. No action needed while we wait for the next status update.';
 
       await markJobAwaitingFal({
         jobId,

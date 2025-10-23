@@ -133,7 +133,9 @@ function normalizeJobFromApi(job: Job): Job {
   const messageFromApi = normalizeJobMessage(job.message);
   const message =
     messageFromApi ??
-    (status === 'failed' ? 'Fal reported a failure without details.' : undefined);
+    (status === 'failed'
+      ? 'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'
+      : undefined);
 
   return {
     ...job,
@@ -514,7 +516,9 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResult> {
   const progress = progressValue ?? (normalizedStatus === 'completed' ? 100 : 0);
   const normalizedMessage =
     normalizeJobMessage(payload.message) ??
-    (normalizedStatus === 'failed' ? 'Fal reported a failure without details.' : undefined);
+    (normalizedStatus === 'failed'
+      ? 'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'
+      : undefined);
 
   const renderIds =
     Array.isArray(payload.renderIds) && payload.renderIds.length
