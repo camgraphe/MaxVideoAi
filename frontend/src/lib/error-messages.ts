@@ -27,10 +27,18 @@ function normalizeCode(rawCode?: string | null): string | null {
 }
 
 function formatConstraintMessage(context: ErrorTranslationInput): string {
-  const field = context.field ?? 'this option';
+  const rawField = context.field ?? 'this option';
+  const normalizedField =
+    rawField === 'this option'
+      ? 'this option'
+      : rawField
+          .replace(/([a-z])([A-Z])/g, '$1 $2')
+          .replace(/[_-]+/g, ' ')
+          .replace(/\b([a-z])/g, (match) => match.toUpperCase())
+          .trim();
   const value =
     context.value == null || context.value === ''
-      ? 'value provided'
+      ? 'the selected value'
       : typeof context.value === 'string'
         ? context.value
         : String(context.value);
@@ -47,11 +55,11 @@ function formatConstraintMessage(context: ErrorTranslationInput): string {
           .filter((entry): entry is string => Boolean(entry))
       : null;
   if (allowedList && allowedList.length) {
-    return `This engine does not support ${field}=${value}. Options: ${allowedList.join(
+    return `This engine does not support ${value} for ${normalizedField}. Supported values: ${allowedList.join(
       ', '
-    )}. Use one of the supported values and resubmit.`;
+    )}. Please choose one of them and try again.`;
   }
-  return `This engine does not support ${field}=${value}. Use one of the supported values and resubmit.`;
+  return `This engine does not support ${value} for ${normalizedField}. Please pick a different option and try again.`;
 }
 
 function formatQueueMessage(context: ErrorTranslationInput): string {
