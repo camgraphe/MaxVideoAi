@@ -505,13 +505,15 @@ export async function POST(req: NextRequest) {
 
   let soraRequest: SoraRequest | null = null;
   if (isSoraEngineId(engine.id)) {
-    const variant = getSoraVariantForEngine();
+    const variant = getSoraVariantForEngine(engine.id);
     const fallbackAspect = mode === 'i2v' ? 'auto' : '16:9';
+    const soraDefaultResolution =
+      engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '720p';
     const candidate: Record<string, unknown> = {
       variant,
       mode,
       prompt,
-      resolution: requestedResolution === 'auto' && mode === 't2v' ? engine.resolutions[0] ?? '720p' : requestedResolution,
+      resolution: requestedResolution === 'auto' && mode === 't2v' ? soraDefaultResolution : requestedResolution,
       aspect_ratio: rawAspectRatio ?? fallbackAspect,
       duration: durationSec,
       api_key: typeof body.apiKey === 'string' && body.apiKey.trim().length ? body.apiKey.trim() : undefined,

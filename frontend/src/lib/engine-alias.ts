@@ -28,6 +28,9 @@ const ENGINE_ID_ALIASES = (() => {
     'lumadreammachine': 'minimax-hailuo-02-text',
     'runway-gen2': 'sora-2',
     'runwaygen-2': 'sora-2',
+    'sora2pro': 'sora-2-pro',
+    'sora-pro': 'sora-2-pro',
+    'openai-sora-2-pro': 'sora-2-pro',
   };
 
   Object.entries(manualAliases).forEach(([alias, target]) => register(alias, target));

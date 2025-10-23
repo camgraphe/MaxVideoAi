@@ -25,6 +25,10 @@ collections:
         sora-2:
           aliases:
             - openai-sora-2
+        sora-2-pro:
+          aliases:
+            - openai-sora-2-pro
+            - sora-pro
         veo-3-1:
           aliases:
             - google-veo-3-1
@@ -43,9 +47,6 @@ collections:
         minimax-hailuo-02-image:
           aliases:
             - minimax-hailuo-02
-        hunyuan-image:
-          aliases:
-            - hunyuan-video
     - id: examples
       path: /examples
       status: live

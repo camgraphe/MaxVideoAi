@@ -2731,7 +2731,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           mode: form.mode,
           membershipTier: memberTier,
           payment: { mode: paymentMode },
-          ...(selectedEngine.id === 'sora-2' ? { variant: 'sora2' } : {}),
+          ...(selectedEngine.id.startsWith('sora-2')
+            ? { variant: selectedEngine.id === 'sora-2-pro' ? 'sora2pro' : 'sora2' }
+            : {}),
           ...(shouldSendAspectRatio ? { aspectRatio: form.aspectRatio } : {}),
           ...(supportsNegativePrompt && trimmedNegativePrompt ? { negativePrompt: trimmedNegativePrompt } : {}),
           ...(inputsPayload ? { inputs: inputsPayload } : {}),

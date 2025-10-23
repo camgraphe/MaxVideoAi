@@ -137,6 +137,8 @@ function buildPricingState(entry: EngineEntry): PricingState {
 
   if (entry.engine.id === 'sora-2') {
     state.defaultPerSecond = state.defaultPerSecond || '0.1';
+  } else if (entry.engine.id === 'sora-2-pro') {
+    state.defaultPerSecond = state.defaultPerSecond || '0.3';
   }
 
   return state;

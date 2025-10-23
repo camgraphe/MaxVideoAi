@@ -1,6 +1,6 @@
 import type { BrandAssetPolicy, EngineAvailability } from '@/types/engines';
 
-export type PartnerBrandId = 'runway' | 'luma' | 'google-veo' | 'pika' | 'kling' | 'openai' | 'minimax' | 'tencent';
+export type PartnerBrandId = 'runway' | 'luma' | 'google-veo' | 'pika' | 'kling' | 'openai' | 'minimax';
 
 type PartnerBrandAsset = {
   svg: string;

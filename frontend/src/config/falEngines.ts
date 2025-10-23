@@ -671,6 +671,107 @@ const SORA_2_ENGINE: EngineCaps = {
   brandId: 'openai',
 };
 
+const SORA_2_PRO_ENGINE: EngineCaps = {
+  id: 'sora-2-pro',
+  label: 'OpenAI Sora 2 Pro',
+  provider: 'OpenAI',
+  version: 'Pro',
+  status: 'early_access',
+  latencyTier: 'standard',
+  queueDepth: 0,
+  region: 'global',
+  modes: ['t2v', 'i2v'],
+  maxDurationSec: 12,
+  resolutions: ['720p', '1080p', 'auto'],
+  aspectRatios: ['16:9', '9:16', 'auto'],
+  fps: [24],
+  audio: true,
+  upscale4k: false,
+  extend: false,
+  motionControls: false,
+  keyframes: false,
+  params: {},
+  inputLimits: {
+    imageMaxMB: 75,
+  },
+  inputSchema: {
+    required: [
+      {
+        id: 'prompt',
+        type: 'text',
+        label: 'Prompt',
+      },
+    ],
+    optional: [
+      {
+        id: 'duration',
+        type: 'enum',
+        label: 'Duration',
+        values: ['4', '8', '12'],
+        default: '4',
+      },
+      {
+        id: 'aspect_ratio',
+        type: 'enum',
+        label: 'Aspect ratio',
+        values: ['16:9', '9:16', 'auto'],
+        default: '16:9',
+      },
+      {
+        id: 'resolution',
+        type: 'enum',
+        label: 'Resolution',
+        values: ['720p', '1080p', 'auto'],
+        default: '1080p',
+      },
+      {
+        id: 'api_key',
+        type: 'text',
+        label: 'OpenAI API key',
+        description: 'Bring your own OpenAI key for direct billing.',
+      },
+      {
+        id: 'image_url',
+        type: 'image',
+        label: 'Image input',
+        modes: ['i2v'],
+        requiredInModes: ['i2v'],
+        minCount: 1,
+        maxCount: 1,
+        source: 'either',
+      },
+    ],
+    constraints: {
+      supportedFormats: ['png', 'jpeg', 'jpg', 'webp', 'gif', 'avif'],
+    },
+  },
+  pricingDetails: {
+    currency: 'USD',
+    perSecondCents: {
+      default: 30,
+      byResolution: {
+        '720p': 30,
+        '1080p': 50,
+        auto: 30,
+      },
+    },
+  },
+  pricing: {
+    unit: 'USD/s',
+    base: 0.3,
+    currency: 'USD',
+    notes: '$0.30/s at 720p, $0.50/s at 1080p',
+  },
+  updatedAt: '2025-02-14T00:00:00Z',
+  ttlSec: 600,
+  providerMeta: {
+    provider: 'openai',
+    modelSlug: 'fal-ai/sora-2/text-to-video/pro',
+  },
+  availability: 'waitlist',
+  brandId: 'openai',
+};
+
 const HAILUO_TEXT_ENGINE: EngineCaps = {
   id: 'minimax-hailuo-02-text',
   label: 'MiniMax Hailuo 02 Standard (Text to Video)',
@@ -844,97 +945,6 @@ const HAILUO_IMAGE_ENGINE: EngineCaps = {
   },
   availability: 'available',
   brandId: 'minimax',
-};
-
-const HUNYUAN_IMAGE_ENGINE: EngineCaps = {
-  id: 'hunyuan-image',
-  label: 'Hunyuan Image v3',
-  provider: 'Tencent',
-  version: '3',
-  status: 'live',
-  latencyTier: 'standard',
-  queueDepth: 0,
-  region: 'global',
-  modes: ['t2v'],
-  maxDurationSec: 0,
-  resolutions: ['square_hd', 'landscape_hd', 'portrait_hd'],
-  aspectRatios: ['16:9', '9:16', '1:1'],
-  fps: [24],
-  audio: false,
-  upscale4k: false,
-  extend: false,
-  motionControls: false,
-  keyframes: false,
-  params: {},
-  inputLimits: {},
-  inputSchema: {
-    required: [
-      {
-        id: 'prompt',
-        type: 'text',
-        label: 'Prompt',
-      },
-    ],
-    optional: [
-      {
-        id: 'negative_prompt',
-        type: 'text',
-        label: 'Negative prompt',
-      },
-      {
-        id: 'image_size',
-        type: 'enum',
-        label: 'Image size',
-        values: ['square_hd', 'landscape_hd', 'portrait_hd'],
-        default: 'square_hd',
-      },
-      {
-        id: 'num_images',
-        type: 'number',
-        label: 'Number of images',
-        min: 1,
-        max: 4,
-        default: 1,
-      },
-      {
-        id: 'guidance_scale',
-        type: 'number',
-        label: 'Guidance scale',
-        min: 1,
-        max: 20,
-        step: 0.5,
-        default: 7.5,
-      },
-      {
-        id: 'num_inference_steps',
-        type: 'number',
-        label: 'Inference steps',
-        min: 1,
-        max: 50,
-        default: 28,
-      },
-    ],
-  },
-  pricingDetails: {
-    currency: 'USD',
-    flatCents: {
-      default: 10,
-    },
-  },
-  pricing: {
-    unit: 'USD/image',
-    base: 0.1,
-    currency: 'USD',
-    notes: '$0.10 per HD image equivalent',
-  },
-  updatedAt: '2025-02-14T00:00:00Z',
-  ttlSec: 600,
-  providerMeta: {
-    provider: 'tencent',
-    modelSlug: 'fal-ai/hunyuan-image/v3/text-to-image',
-  },
-  availability: 'available',
-  brandId: 'tencent',
 };
 
 export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
@@ -1295,6 +1305,89 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     },
   },
   {
+    id: 'sora-2-pro',
+    modelSlug: 'sora-2-pro',
+    marketingName: 'OpenAI Sora 2 Pro',
+    provider: 'OpenAI',
+    brandId: 'openai',
+    family: 'sora',
+    versionLabel: 'Pro',
+    availability: 'waitlist',
+    logoPolicy: 'textOnly',
+    billingNote:
+      'Requires Sora Pro allocation. Provide an OpenAI API key to bill directly with OpenAI or use Fal routing credits.',
+    engine: SORA_2_PRO_ENGINE,
+    modes: [
+      {
+        mode: 't2v',
+        falModelId: 'fal-ai/sora-2/text-to-video/pro',
+        ui: {
+          modes: ['t2v'],
+          duration: { options: [4, 8, 12], default: 4 },
+          resolution: ['720p', '1080p'],
+          aspectRatio: ['16:9', '9:16'],
+          audioToggle: true,
+          notes: 'Audio is enabled by default for lip-sync and ambience. Disable it if you only need silent motion.',
+        },
+      },
+      {
+        mode: 'i2v',
+        falModelId: 'fal-ai/sora-2/image-to-video/pro',
+        ui: {
+          modes: ['i2v'],
+          duration: { options: [4, 8, 12], default: 4 },
+          resolution: ['auto', '720p', '1080p'],
+          aspectRatio: ['auto', '16:9', '9:16'],
+          acceptsImageFormats: ['png', 'jpeg', 'jpg', 'webp', 'gif', 'avif'],
+          maxUploadMB: 75,
+          audioToggle: true,
+          notes: 'Upload a detailed still to preserve subject fidelity. Pro keeps dialogue in sync from the reference frame.',
+        },
+      },
+    ],
+    defaultFalModelId: 'fal-ai/sora-2/text-to-video/pro',
+    seo: {
+      title: 'OpenAI Sora 2 Pro - MaxVideo AI',
+      description: 'Cinematic video with synced dialogue, higher resolutions, and image-to-video control for premium teams.',
+      canonicalPath: '/models/sora-2-pro',
+    },
+    prompts: [
+      {
+        title: 'Cinematic dialogue break-up',
+        prompt:
+          'A dramatic Hollywood breakup scene at dusk on a quiet suburban street. A man and a woman in their 30s face each other, speaking softly but emotionally, lips syncing to breakup dialogue. Cinematic lighting, warm sunset tones, shallow depth of field, gentle breeze moving autumn leaves, realistic natural sound, no background music',
+        mode: 't2v',
+        notes: 'Render at 1080p for close-up facial fidelity.',
+      },
+      {
+        title: 'Skydiving POV testimonial',
+        prompt:
+          "Front-facing 'invisible' action-cam on a skydiver in freefall above bright clouds; camera locked on his face. He speaks over the wind with clear lipsync: 'This is insanely fun! You've got to try it—book a tandem and go!' Natural wind roar, voice close-mic'd and slightly compressed so it's intelligible. Midday sun, goggles and jumpsuit flutter, altimeter visible, parachute rig on shoulders. Energetic but stable framing with subtle shake; brief horizon roll. End on first tug of canopy and wind noise dropping.",
+        mode: 'i2v',
+        notes: 'Start from a 1080p still to let Sora Pro maintain crisp details through the motion.',
+      },
+    ],
+    faqs: [
+      {
+        question: 'Can I use my own OpenAI key with Sora 2 Pro?',
+        answer:
+          'Yes. Enter your OpenAI API key before you render and billing is handled on your OpenAI account while MaxVideo routes the job.',
+      },
+      {
+        question: 'Does Sora 2 Pro always output audio?',
+        answer:
+          'Audio is on by default for lip-sync and sound design, but you can toggle it off in the composer if you only need visuals.',
+      },
+    ],
+    pricingHint: {
+      currency: 'USD',
+      amountCents: 400,
+      durationSeconds: 8,
+      resolution: '1080p',
+      label: 'Pro tier',
+    },
+  },
+  {
     id: 'minimax-hailuo-02-text',
     modelSlug: 'minimax-hailuo-02-text',
     marketingName: 'MiniMax Hailuo 02 Standard (Text to Video)',
@@ -1405,57 +1498,6 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
       amountCents: 27,
       durationSeconds: 6,
       resolution: '768P',
-    },
-  },
-  {
-    id: 'hunyuan-image',
-    modelSlug: 'hunyuan-image',
-    marketingName: 'Hunyuan Image v3',
-    provider: 'Tencent',
-    brandId: 'tencent',
-    family: 'hunyuan',
-    versionLabel: '3',
-    availability: 'available',
-    logoPolicy: 'textOnly',
-    engine: HUNYUAN_IMAGE_ENGINE,
-    modes: [
-      {
-        mode: 't2v',
-        falModelId: 'fal-ai/hunyuan-image/v3/text-to-image',
-        ui: {
-          modes: ['t2v'],
-          audioToggle: false,
-          notes: 'Outputs still images only; duration controls are hidden.',
-        },
-      },
-    ],
-    defaultFalModelId: 'fal-ai/hunyuan-image/v3/text-to-image',
-    seo: {
-      title: 'Hunyuan Image v3 - MaxVideo AI',
-      description: 'High-detail text-to-image for boards, thumbnails, and story beats.',
-      canonicalPath: '/models/hunyuan-image',
-    },
-    prompts: [
-      {
-        title: 'Keyframe concept',
-        prompt: 'High detail concept art of a sci-fi command center with holographic displays and rim lighting',
-        mode: 't2v',
-      },
-    ],
-    faqs: [
-      {
-        question: 'How are Hunyuan Image runs billed?',
-        answer: 'Pricing is $0.10 per megapixel equivalent. The estimator shows the total before you press Generate.',
-      },
-      {
-        question: 'Can I disable the safety checker?',
-        answer: 'Yes. Toggle the safety checker in the composer when you need to run internal concept art.',
-      },
-    ],
-    pricingHint: {
-      currency: 'USD',
-      amountCents: 10,
-      label: 'per HD image',
     },
   },
 ];

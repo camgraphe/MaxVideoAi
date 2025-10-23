@@ -27,7 +27,7 @@ const ENGINE_REGISTRY: FalEngineEntry[] = listFalEngines();
 const ENGINE_ORDER = new Map<string, number>(ENGINE_REGISTRY.map((entry, index) => [entry.id, index]));
 const ENGINE_META = new Map<string, FalEngineEntry>(ENGINE_REGISTRY.map((entry) => [entry.id, entry]));
 
-const SORA_ENGINE_IDS = ['sora-2'] as const;
+const SORA_ENGINE_IDS = ['sora-2', 'sora-2-pro'] as const;
 const SORA_ENGINE_SET = new Set<string>(SORA_ENGINE_IDS);
 
 type EngineGuideEntry = {
@@ -59,6 +59,11 @@ const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
       'OpenAI Sora 2 handles cinematic narratives with lip-sync and audio - ideal for hero renders.',
     badges: ['Audio native', 'Cinematic', 'Remix'],
   },
+  'sora-2-pro': {
+    description:
+      'Sora 2 Pro unlocks higher resolutions, synced dialogue, and image-to-video control for top-tier productions.',
+    badges: ['1080p', 'Audio native', 'Lip-sync'],
+  },
   'veo-3-1': {
     description:
       'Veo 3.1 reference-to-video keeps subject fidelity across shots thanks to multi-image conditioning.',
@@ -83,11 +88,6 @@ const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
     description:
       'Use MiniMax Hailuo 02 with reference images for sharp motion control at 768P.',
     badges: ['Image input', 'End frame', '768P'],
-  },
-  'hunyuan-image': {
-    description:
-      'Hunyuan Image v3 produces high-detail keyframes to prep storyboards or thumbnails.',
-    badges: ['Images', 'High fidelity', 'MP based'],
   },
 };
 
@@ -585,7 +585,7 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
   const searchValue = searchTerm.trim().toLowerCase();
 
   const filteredEngines = useMemo(() => {
-    const priorityOrder = ['sora-2', 'veo-3-1', 'veo-3-fast', 'pika-text-to-video'];
+    const priorityOrder = ['sora-2', 'sora-2-pro', 'veo-3-1', 'veo-3-fast', 'pika-text-to-video'];
     const priorityIndex = new Map(priorityOrder.map((id, index) => [id, index]));
     const ranked = engines
       .slice()

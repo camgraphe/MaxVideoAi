@@ -17,7 +17,6 @@ const BRAND_PICTOGRAMS: Record<string, EnginePictogram> = {
   openai: { code: 'So', backgroundColor: '#E4D7FF', textColor: DEFAULT_TEXT_COLOR },
   pika: { code: 'Pi', backgroundColor: '#FADCE6', textColor: DEFAULT_TEXT_COLOR },
   minimax: { code: 'Mi', backgroundColor: '#FFE7F0', textColor: DEFAULT_TEXT_COLOR },
-  tencent: { code: 'Hy', backgroundColor: '#E1E8FF', textColor: DEFAULT_TEXT_COLOR },
 };
 
 const ENGINE_PICTOGRAMS: Record<string, EnginePictogram> = {
@@ -25,11 +24,11 @@ const ENGINE_PICTOGRAMS: Record<string, EnginePictogram> = {
   'veo-3-fast': BRAND_PICTOGRAMS['google-veo'],
   'veo-3-1-fast': BRAND_PICTOGRAMS['google-veo'],
   'sora-2': BRAND_PICTOGRAMS.openai,
+  'sora-2-pro': BRAND_PICTOGRAMS.openai,
   'pika-text-to-video': BRAND_PICTOGRAMS.pika,
   'pika-image-to-video': BRAND_PICTOGRAMS.pika,
   'minimax-hailuo-02-text': BRAND_PICTOGRAMS.minimax,
   'minimax-hailuo-02-image': BRAND_PICTOGRAMS.minimax,
-  'hunyuan-image': BRAND_PICTOGRAMS.tencent,
 };
 
 const FALLBACK_COLORS = ['#E8EDFF', '#FFE6F1', '#E6F5EB', '#FFF2DC', '#F2E9FF', '#E2F7F4', '#FFECE1', '#E9EEF5'];

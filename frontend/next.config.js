@@ -43,7 +43,7 @@ const nextConfig = {
       },
       {
         source: '/models/openai-sora-2-pro',
-        destination: '/models/sora-2',
+        destination: '/models/sora-2-pro',
         permanent: true,
       },
       {

@@ -18,6 +18,37 @@
     ]
   },
   {
+    "engine": "Sora 2 Pro",
+    "catalogSlug": "sora-2-pro",
+    "falSlug": "fal-ai/sora-2/text-to-video/pro",
+    "source_url": "https://fal.ai/models/fal-ai/sora-2/text-to-video/pro",
+    "last_checked_at": "2025-02-14T00:00:00",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      {
+        "variant": {
+          "resolution": "720p"
+        },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.3
+        }
+      },
+      {
+        "variant": {
+          "resolution": "1080p"
+        },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.5
+        }
+      }
+    ]
+  },
+  {
     "engine": "Google Veo 3.1",
     "catalogSlug": "veo-3-1",
     "falSlug": "fal-ai/veo3.1/reference-to-video",
@@ -210,24 +241,6 @@
           "currency": "USD",
           "unit": "second",
           "amount": 0.045
-        }
-      }
-    ]
-  },
-  {
-    "engine": "Hunyuan Image v3",
-    "catalogSlug": "hunyuan-image",
-    "falSlug": "fal-ai/hunyuan-image/v3/text-to-image",
-    "source_url": "https://fal.ai/models/fal-ai/hunyuan-image/v3/text-to-image",
-    "last_checked_at": "2025-02-14T00:00:00",
-    "stale": false,
-    "checksum": "",
-    "prices": [
-      {
-        "raw": {
-          "currency": "USD",
-          "unit": "image",
-          "amount": 0.1
         }
       }
     ]

@@ -2,14 +2,14 @@ import type { EngineCaps } from '@/types/engines';
 
 const ENGINE_RENDER_ETAS: Record<string, number> = {
   sora2: 42,
+  sora2pro: 48,
   veo31: 38,
   veo3fast: 24,
   veo31fast: 22,
   pikatexttovideo: 18,
   pikaimagetovideo: 20,
   minimaxhailuo02text: 24,
-  minimaxhailuo02image: 26,
-  hunyuanimage: 16
+  minimaxhailuo02image: 26
 };
 
 const MIN_RENDER_SECONDS = 15;

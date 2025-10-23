@@ -603,7 +603,7 @@ const en: Dictionary = {
     hero: {
       title: 'Fal.ai engines without the vendor lock-in.',
       subtitle:
-        'Fal.ai ships new video endpoints weekly. We sync their catalog so your Price Before chip stays accurate across Sora, Veo, Pika, MiniMax, and Hunyuan.',
+        'Fal.ai ships new video endpoints weekly. We sync their catalog so your Price Before chip stays accurate across Sora, Veo, Pika, and MiniMax tiers.',
     },
     availabilityLabels: {
       available: 'Available',
@@ -617,6 +617,12 @@ const en: Dictionary = {
         description: 'Text-to-video and remix with native audio via Fal routing.',
         priceBefore: '$0.10/s via Fal, or bring your own OpenAI key to bill direct.',
         versionLabel: 'v2',
+      },
+      'sora-2-pro': {
+        displayName: 'OpenAI Sora 2 Pro',
+        description: 'Cinematic lip-sync with 1080p output and image-to-video control for premium teams.',
+        priceBefore: '$0.30/s at 720p or $0.50/s at 1080p before fees.',
+        versionLabel: 'Pro',
       },
       'veo-3-1': {
         displayName: 'Google Veo 3.1',
@@ -659,12 +665,6 @@ const en: Dictionary = {
         description: 'Reference image to motion with optional end frame.',
         priceBefore: '$0.045/s with live chip updates.',
         versionLabel: 'Standard',
-      },
-      'hunyuan-image': {
-        displayName: 'Hunyuan Image v3',
-        description: 'High-detail text-to-image for boards, thumbnails, and story beats.',
-        priceBefore: '$0.10 per megapixel equivalent, shown before you run.',
-        versionLabel: 'v3',
       },
     },
     note:

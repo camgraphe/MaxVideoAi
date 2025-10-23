@@ -53,7 +53,7 @@ export default function ModelDetailPage({ params }: PageParams) {
   const availabilityKey = engine.availability as keyof typeof availabilityLabels;
   const availabilityLabel = availabilityLabels[availabilityKey] ?? engine.availability;
   const brand = PARTNER_BRAND_MAP.get(engine.brandId);
-  const showSoraSeo = engine.modelSlug === 'sora-2';
+  const showSoraSeo = engine.modelSlug.startsWith('sora-2');
   const faqEntries = engine.faqs ?? [];
   const faqJsonLd = faqEntries.map(({ question, answer }) => ({ q: question, a: answer }));
 

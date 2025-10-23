@@ -14,7 +14,7 @@
 
 ## Versioning & Product Names
 - Encode versions with numeric groups separated by hyphens (`veo-3-1`, `sora-2`, `hailuo-02-text`).
-- Preserve vendor names only when essential for disambiguation (e.g. `pika-text-to-video`, `hunyuan-image`).
+- Preserve vendor names only when essential for disambiguation (e.g. `pika-text-to-video`).
 - Maintain the same slug once published; any rename requires a permanent (301) redirect and sitemap update.
 
 ## Collection Conventions

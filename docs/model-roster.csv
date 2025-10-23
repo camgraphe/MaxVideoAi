@@ -5,6 +5,6 @@ veo-3-1,Google Veo 3.1,google-veo,veo-3-1,3.1,available,textOnly
 veo-3-fast,Google Veo 3 Fast,google-veo,veo-3-fast,3 Fast,available,textOnly
 veo-3-1-fast,Google Veo 3.1 Fast,google-veo,veo-3-1-fast,3.1 Fast,available,textOnly
 sora-2,OpenAI Sora 2,openai,sora-2,2,available,textOnly
+sora-2-pro,OpenAI Sora 2 Pro,openai,sora-2-pro,Pro,waitlist,textOnly
 minimax-hailuo-02-text,MiniMax Hailuo 02 Standard (Text to Video),minimax,minimax-hailuo-02-text,Standard,available,textOnly
 minimax-hailuo-02-image,MiniMax Hailuo 02 Standard (Image to Video),minimax,minimax-hailuo-02-image,Standard,available,textOnly
-hunyuan-image,Hunyuan Image v3,tencent,hunyuan-image,3,available,textOnly

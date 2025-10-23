@@ -41,6 +41,31 @@ test('Sora image-to-video only allows 4/8/12 seconds', () => {
   assert.deepEqual(valid, OK);
 });
 
+test('Sora 2 Pro enforces Pro duration and resolution options', () => {
+  const invalidDuration = validateRequest('sora-2-pro', 't2v', {
+    duration: 6,
+    resolution: '1080p',
+    aspect_ratio: '16:9',
+  });
+  assert.equal(invalidDuration.ok, false);
+  assert.equal(invalidDuration.error?.field, 'duration');
+
+  const invalidResolution = validateRequest('sora-2-pro', 't2v', {
+    duration: 8,
+    resolution: '1440p',
+    aspect_ratio: '16:9',
+  });
+  assert.equal(invalidResolution.ok, false);
+  assert.equal(invalidResolution.error?.field, 'resolution');
+
+  const valid = validateRequest('sora-2-pro', 't2v', {
+    duration: 8,
+    resolution: '1080p',
+    aspect_ratio: '16:9',
+  });
+  assert.deepEqual(valid, OK);
+});
+
 test('Veo 3 T2V accepts string durations and audio toggle', () => {
   const valid = validateRequest('veo-3-fast', 't2v', {
     duration: '6s',
@@ -82,20 +107,6 @@ test('Hailuo-02 Std enforces duration and resolution', () => {
     duration: 10,
     resolution: '768P',
     _uploadedFileMB: 10,
-  });
-  assert.deepEqual(valid, OK);
-});
-
-test('Hunyuan Image ignores duration and enforces prompt only', () => {
-  const invalid = validateRequest('hunyuan-image', 't2v', {
-    duration: 10,
-  });
-  assert.equal(invalid.ok, false);
-  assert.equal(invalid.error?.field, 'duration');
-
-  const valid = validateRequest('hunyuan-image', 't2v', {
-    prompt: 'high detail portrait',
-    image_size: 'square_hd',
   });
   assert.deepEqual(valid, OK);
 });

@@ -201,6 +201,10 @@ function resolveModelSlug(payload: GeneratePayload, fallback?: string): string |
     return `fal-ai/sora-2/${mode}`;
   }
 
+  if (payload.engineId === 'sora-2-pro') {
+    return `fal-ai/sora-2/${mode}/pro`;
+  }
+
   if (!baseSlug) {
     return undefined;
   }
@@ -293,7 +297,7 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
 
     if (typeof payload.numFrames === 'number' && Number.isFinite(payload.numFrames) && payload.numFrames > 0) {
       requestBody.num_frames = Math.round(payload.numFrames);
-    } else if (payload.engineId !== 'lumaRay2' && payload.engineId !== 'hunyuan-image' && payload.durationSec != null) {
+    } else if (payload.engineId !== 'lumaRay2' && payload.durationSec != null) {
       requestBody.duration = payload.durationSec;
     }
 

@@ -91,13 +91,16 @@ export async function POST(req: NextRequest) {
     let soraRequest: SoraRequest | null = null;
 
     if (isSoraEngineId(engine.id)) {
-      const variant = getSoraVariantForEngine();
+      const variant = getSoraVariantForEngine(engine.id);
+      const defaultResolution =
+        engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '720p';
       const candidate: Record<string, unknown> = {
         variant,
         mode,
         prompt: typeof body.prompt === 'string' && body.prompt.trim().length ? body.prompt : '',
-        resolution,
-        aspect_ratio: typeof body.aspectRatio === 'string' && body.aspectRatio.trim().length ? body.aspectRatio.trim() : 'auto',
+        resolution: resolution === 'auto' && mode === 't2v' ? defaultResolution : resolution,
+        aspect_ratio:
+          typeof body.aspectRatio === 'string' && body.aspectRatio.trim().length ? body.aspectRatio.trim() : 'auto',
         duration: durationSec,
         api_key: typeof body.apiKey === 'string' && body.apiKey.trim().length ? body.apiKey.trim() : undefined,
       };
@@ -127,8 +130,7 @@ export async function POST(req: NextRequest) {
       }
 
       durationSec = soraRequest.duration;
-      const fallbackResolution = engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '720p';
-      resolution = soraRequest.resolution === 'auto' ? fallbackResolution : soraRequest.resolution;
+      resolution = soraRequest.resolution === 'auto' ? defaultResolution : soraRequest.resolution;
     }
 
     const pricing = await computePricingSnapshot({

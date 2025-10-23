@@ -61,6 +61,17 @@
     "billingNote": "Si une clé OpenAI est fournie, la facturation passe directement chez OpenAI ; sinon Fal crédite MaxVideoAI."
   },
   {
+    "engineId": "sora-2-pro",
+    "marketingName": "OpenAI Sora 2 Pro",
+    "brandId": "openai",
+    "modelSlug": "sora-2-pro",
+    "family": "sora",
+    "versionLabel": "Pro",
+    "availability": "waitlist",
+    "logoPolicy": "textOnly",
+    "billingNote": "Sora 2 Pro nécessite un accès Sora Pro. Fournissez votre clé OpenAI pour être facturé directement ou utilisez vos crédits Fal."
+  },
+  {
     "engineId": "minimax-hailuo-02-text",
     "marketingName": "MiniMax Hailuo 02 Standard (Text to Video)",
     "brandId": "minimax",
@@ -77,16 +88,6 @@
     "modelSlug": "minimax-hailuo-02-image",
     "family": "hailuo",
     "versionLabel": "Standard",
-    "availability": "available",
-    "logoPolicy": "textOnly"
-  },
-  {
-    "engineId": "hunyuan-image",
-    "marketingName": "Hunyuan Image v3",
-    "brandId": "tencent",
-    "modelSlug": "hunyuan-image",
-    "family": "hunyuan",
-    "versionLabel": "3",
     "availability": "available",
     "logoPolicy": "textOnly"
   }
