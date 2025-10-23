@@ -1009,6 +1009,7 @@ console.log(result.requestId);
 
 > Text-to-video endpoint for Sora 2, OpenAI's state-of-the-art video model capable of creating richly detailed, dynamic clips with audio from natural language or images.
 
+> **Integration note (MaxVideoAi):** the production app expects Fal callbacks to hit `/api/fal/webhook` with the `token` query parameter. Keep `FAL_WEBHOOK_TOKEN` in sync with the webhook URL we register on Fal to avoid missing status updates.
 
 ## Overview
 
@@ -1409,6 +1410,7 @@ console.log(result.requestId);
 
 > Text-to-video endpoint for Sora 2 Pro, OpenAI's state-of-the-art video model capable of creating richly detailed, dynamic clips with audio from natural language or images.
 
+> **Integration note (MaxVideoAi):** Ensure Fal callbacks include the `token` query parameter when `FAL_WEBHOOK_TOKEN` is set; otherwise `/api/fal/webhook` will return 401 and jobs remain in `running`.
 
 ## Overview
 
@@ -1604,6 +1606,7 @@ console.log(result.requestId);
 
 > Image-to-video endpoint for Sora 2 Pro, OpenAI's state-of-the-art video model capable of creating richly detailed, dynamic clips with audio from natural language or images.
 
+> **Integration note (MaxVideoAi):** Fal webhooks must include the `token` query parameter when `FAL_WEBHOOK_TOKEN` is configured, otherwise callbacks are rejected and renders stay stuck in `running`.
 
 ## Overview
 

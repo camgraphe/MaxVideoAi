@@ -119,6 +119,7 @@ export class FalGenerationError extends Error {
 }
 
 export function getFalWebhookUrl(): string | null {
+  const token = process.env.FAL_WEBHOOK_TOKEN?.trim();
   const candidates: Array<{ value: string | undefined | null; normalize?: (raw: string) => string }> = [
     { value: process.env.NEXT_PUBLIC_APP_URL },
     { value: process.env.APP_URL },
@@ -139,7 +140,12 @@ export function getFalWebhookUrl(): string | null {
     if (!raw) continue;
     const normalized = candidate.normalize ? candidate.normalize(raw) : raw;
     if (!/^https?:\/\//i.test(normalized)) continue;
-    return `${normalized.replace(/\/+$/, '')}/api/fal/webhook`;
+    const base = normalized.replace(/\/+$/, '') + '/';
+    const webhookUrl = new URL('api/fal/webhook', base);
+    if (token) {
+      webhookUrl.searchParams.set('token', token);
+    }
+    return webhookUrl.toString();
   }
 
   return null;
