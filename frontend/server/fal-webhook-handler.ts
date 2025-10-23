@@ -653,7 +653,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
          video_url = CASE WHEN $9 THEN NULL ELSE COALESCE($4, video_url) END,
          thumb_url = CASE WHEN $10 THEN NULL ELSE COALESCE($5, thumb_url) END,
          preview_frame = CASE WHEN $10 THEN NULL ELSE COALESCE($6, preview_frame) END,
-         message = CASE WHEN $7 IS NOT NULL THEN $7::text ELSE message END,
+         message = $7::text,
          provider_job_id = COALESCE($8::text, provider_job_id),
          provisional = FALSE,
          engine_id = COALESCE($11, engine_id),
