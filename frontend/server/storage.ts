@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
 import { ensureAssetSchema } from '@/lib/schema';
 import { query } from '@/lib/db';
@@ -208,6 +208,79 @@ function buildHostAllowList(): Set<string> {
       .forEach((host) => hosts.add(host));
   }
   return hosts;
+}
+
+function extractObjectKeyFromUrl(assetUrl: string): string | null {
+  if (!assetUrl) return null;
+  try {
+    const parsed = new URL(assetUrl);
+    const pathname = parsed.pathname || '';
+    const normalizedPath = pathname.replace(/^\/+/, '');
+
+    if (S3_PUBLIC_BASE_URL) {
+      try {
+        const base = new URL(S3_PUBLIC_BASE_URL);
+        if (parsed.host !== base.host) {
+          return null;
+        }
+        const basePath = base.pathname.replace(/\/+$/, '');
+        if (basePath && !parsed.pathname.startsWith(basePath)) {
+          return null;
+        }
+        const relativePath = basePath
+          ? parsed.pathname.slice(basePath.length).replace(/^\/+/, '')
+          : normalizedPath;
+        return relativePath.length > 0 ? relativePath : null;
+      } catch {
+        // fall back to default extraction when base URL is invalid
+      }
+    }
+
+    if (!S3_BUCKET) return null;
+    const defaultHost = S3_REGION ? `${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com` : `${S3_BUCKET}.s3.amazonaws.com`;
+    if (parsed.host !== defaultHost) {
+      return null;
+    }
+    return normalizedPath.length > 0 ? normalizedPath : null;
+  } catch {
+    return null;
+  }
+}
+
+async function deleteObjectFromStorage(key: string): Promise<void> {
+  if (!S3_BUCKET) return;
+  const client = getS3Client();
+  const command = new DeleteObjectCommand({
+    Bucket: S3_BUCKET,
+    Key: key,
+  });
+  await client.send(command);
+}
+
+export async function deleteUserAsset(params: { assetId: string; userId: string }): Promise<'deleted' | 'not_found'> {
+  const { assetId, userId } = params;
+  if (!assetId || !userId) return 'not_found';
+  await ensureAssetSchema();
+  const rows = await query<{ url: string }>(
+    `DELETE FROM user_assets WHERE asset_id = $1 AND user_id = $2 RETURNING url`,
+    [assetId, userId]
+  );
+
+  if (!rows.length) {
+    return 'not_found';
+  }
+
+  const [record] = rows;
+  const key = extractObjectKeyFromUrl(record.url);
+  if (key) {
+    try {
+      await deleteObjectFromStorage(key);
+    } catch (error) {
+      console.error('[storage] failed to delete object', key, error);
+    }
+  }
+
+  return 'deleted';
 }
 
 const ALLOWED_HOSTS = buildHostAllowList();

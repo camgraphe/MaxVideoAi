@@ -140,6 +140,8 @@ type AssetLibraryModalProps = {
   onClose: () => void;
   onSelect: (asset: UserAsset) => void;
   onRefresh: () => void;
+  onDelete: (asset: UserAsset) => Promise<void> | void;
+  deletingAssetId: string | null;
 };
 
 function normalizeEngineToken(value?: string | null): string {
@@ -156,7 +158,17 @@ function matchesEngineToken(engine: EngineCaps, token: string): boolean {
   return false;
 }
 
-function AssetLibraryModal({ fieldLabel, assets, isLoading, error, onClose, onSelect, onRefresh }: AssetLibraryModalProps) {
+function AssetLibraryModal({
+  fieldLabel,
+  assets,
+  isLoading,
+  error,
+  onClose,
+  onSelect,
+  onRefresh,
+  onDelete,
+  deletingAssetId,
+}: AssetLibraryModalProps) {
   const formatSize = (bytes?: number | null) => {
     if (!bytes || bytes <= 0) return null;
     if (bytes >= 1024 * 1024) {
@@ -217,6 +229,7 @@ function AssetLibraryModal({ fieldLabel, assets, isLoading, error, onClose, onSe
               {assets.map((asset) => {
                 const dimensions = asset.width && asset.height ? `${asset.width}×${asset.height}` : null;
                 const sizeLabel = formatSize(asset.size);
+                const isDeleting = deletingAssetId === asset.id;
                 return (
                   <div key={asset.id} className="overflow-hidden rounded-card border border-border/60 bg-white">
                     <div className="relative" style={{ aspectRatio: '16 / 9' }}>
@@ -233,13 +246,39 @@ function AssetLibraryModal({ fieldLabel, assets, isLoading, error, onClose, onSe
                         {dimensions && <span>{dimensions}</span>}
                         {sizeLabel && <span>{sizeLabel}</span>}
                       </div>
-                      <button
-                        type="button"
-                        className="rounded-input border border-accent bg-accent/10 px-3 py-1 text-[12px] font-semibold uppercase tracking-micro text-accent transition hover:bg-accent/20"
-                        onClick={() => onSelect(asset)}
-                      >
-                        Use
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          className={clsx(
+                            'rounded-input border px-3 py-1 text-[12px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300',
+                            isDeleting
+                              ? 'border-rose-200 bg-rose-100 text-rose-500 opacity-70'
+                              : 'border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100'
+                          )}
+                          onClick={() => {
+                            const result = onDelete(asset);
+                            if (result && typeof result.then === 'function') {
+                              void result.catch(() => {
+                                // errors handled upstream
+                              });
+                            }
+                          }}
+                          disabled={isDeleting}
+                        >
+                          {isDeleting ? 'Deleting…' : 'Delete'}
+                        </button>
+                        <button
+                          type="button"
+                          className={clsx(
+                            'rounded-input border border-accent bg-accent/10 px-3 py-1 text-[12px] font-semibold uppercase tracking-micro text-accent transition',
+                            isDeleting ? 'opacity-60' : 'hover:bg-accent/20'
+                          )}
+                          onClick={() => onSelect(asset)}
+                          disabled={isDeleting}
+                        >
+                          Use
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -1573,14 +1612,15 @@ const searchString = useMemo(() => searchParams?.toString() ?? '', [searchParams
   const resolutionRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
   const noticeTimeoutRef = useRef<number | null>(null);
-const [inputAssets, setInputAssets] = useState<Record<string, (ReferenceAsset | null)[]>>({});
-const [assetPickerTarget, setAssetPickerTarget] = useState<{ field: EngineInputField; slotIndex?: number } | null>(null);
-const [assetLibrary, setAssetLibrary] = useState<UserAsset[]>([]);
-const [isAssetLibraryLoading, setIsAssetLibraryLoading] = useState(false);
-const [assetLibraryError, setAssetLibraryError] = useState<string | null>(null);
-const [assetLibraryLoaded, setAssetLibraryLoaded] = useState(false);
+  const [inputAssets, setInputAssets] = useState<Record<string, (ReferenceAsset | null)[]>>({});
+  const [assetPickerTarget, setAssetPickerTarget] = useState<{ field: EngineInputField; slotIndex?: number } | null>(null);
+  const [assetLibrary, setAssetLibrary] = useState<UserAsset[]>([]);
+  const [isAssetLibraryLoading, setIsAssetLibraryLoading] = useState(false);
+  const [assetLibraryError, setAssetLibraryError] = useState<string | null>(null);
+  const [assetLibraryLoaded, setAssetLibraryLoaded] = useState(false);
+  const [assetDeletePendingId, setAssetDeletePendingId] = useState<string | null>(null);
 
-const assetsRef = useRef<Record<string, (ReferenceAsset | null)[]>>({});
+  const assetsRef = useRef<Record<string, (ReferenceAsset | null)[]>>({});
 
 const revokeAssetPreview = (asset: ReferenceAsset | null | undefined) => {
   if (!asset) return;
@@ -1649,6 +1689,57 @@ const showNotice = useCallback((message: string) => {
       setIsAssetLibraryLoading(false);
     }
   }, []);
+
+  const handleDeleteLibraryAsset = useCallback(
+    async (asset: UserAsset) => {
+      if (!asset?.id) return;
+      setAssetDeletePendingId(asset.id);
+      try {
+        const response = await fetch('/api/user-assets', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ id: asset.id }),
+        });
+        const payload = await response.json().catch(() => null);
+        const success = response.ok && Boolean(payload?.ok);
+        const notFound = response.status === 404 || payload?.error === 'NOT_FOUND';
+        if (!success && !notFound) {
+          const message = typeof payload?.error === 'string' ? payload.error : 'Failed to delete image';
+          throw new Error(message);
+        }
+
+        setAssetLibrary((previous) => previous.filter((entry) => entry.id !== asset.id));
+        setInputAssets((previous) => {
+          let changed = false;
+          const next: typeof previous = {};
+          for (const [fieldId, entries] of Object.entries(previous)) {
+            let fieldChanged = false;
+            const updated = entries.map((entry) => {
+              if (entry && entry.assetId === asset.id) {
+                fieldChanged = true;
+                changed = true;
+                if (entry.previewUrl.startsWith('blob:')) {
+                  URL.revokeObjectURL(entry.previewUrl);
+                }
+                return null;
+              }
+              return entry;
+            });
+            next[fieldId] = fieldChanged ? updated : entries;
+          }
+          return changed ? next : previous;
+        });
+      } catch (error) {
+        console.error('[assets] failed to delete asset', error);
+        showNotice(error instanceof Error ? error.message : 'Failed to delete image');
+        throw error;
+      } finally {
+        setAssetDeletePendingId(null);
+      }
+    },
+    [showNotice]
+  );
 
 const handleRefreshJob = useCallback(async (jobId: string) => {
     try {
@@ -3624,6 +3715,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           onClose={() => setAssetPickerTarget(null)}
           onRefresh={fetchAssetLibrary}
           onSelect={(asset) => handleSelectLibraryAsset(assetPickerTarget.field, asset, assetPickerTarget.slotIndex)}
+          onDelete={handleDeleteLibraryAsset}
+          deletingAssetId={assetDeletePendingId}
         />
       )}
     </div>
