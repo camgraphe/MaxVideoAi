@@ -166,7 +166,17 @@ export function PriceEstimator({ showWalletActions = true, variant = 'full' }: P
       .filter((option): option is EngineOption => Boolean(option))
       .filter((option) => option.availability !== 'paused');
 
-    const preferredOrder = ['veo-3-1', 'veo-3-fast', 'sora-2', 'sora-2-pro', 'pika-text-to-video', 'minimax-hailuo-02-text'];
+    const preferredOrder = [
+      'sora-2',
+      'sora-2-pro',
+      'veo-3-1',
+      'veo-3-fast',
+      'veo-3-1-fast',
+      'pika-text-to-video',
+      'pika-image-to-video',
+      'minimax-hailuo-02-text',
+      'minimax-hailuo-02-image',
+    ];
     const preferredIndex = new Map<string, number>(preferredOrder.map((id, index) => [id, index]));
 
     return options.sort((a, b) => {

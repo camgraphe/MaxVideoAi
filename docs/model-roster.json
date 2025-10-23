@@ -1,22 +1,23 @@
 [
   {
-    "engineId": "pika-text-to-video",
-    "marketingName": "Pika 2.2 Text to Video",
-    "brandId": "pika",
-    "modelSlug": "pika-text-to-video",
-    "family": "pika",
-    "versionLabel": "2.2",
+    "engineId": "sora-2",
+    "marketingName": "OpenAI Sora 2",
+    "brandId": "openai",
+    "modelSlug": "sora-2",
+    "family": "sora",
+    "versionLabel": "2",
     "availability": "available",
-    "logoPolicy": "textOnly"
+    "logoPolicy": "textOnly",
+    "billingNote": "Si une clé OpenAI est fournie, la facturation passe directement chez OpenAI ; sinon Fal crédite MaxVideoAI."
   },
   {
-    "engineId": "pika-image-to-video",
-    "marketingName": "Pika 2.2 Image to Video",
-    "brandId": "pika",
-    "modelSlug": "pika-image-to-video",
-    "family": "pika",
-    "versionLabel": "2.2",
-    "availability": "available",
+    "engineId": "sora-2-pro",
+    "marketingName": "OpenAI Sora 2 Pro",
+    "brandId": "openai",
+    "modelSlug": "sora-2-pro",
+    "family": "sora",
+    "versionLabel": "Pro",
+    "availability": "waitlist",
     "logoPolicy": "textOnly"
   },
   {
@@ -50,24 +51,23 @@
     "logoPolicy": "textOnly"
   },
   {
-    "engineId": "sora-2",
-    "marketingName": "OpenAI Sora 2",
-    "brandId": "openai",
-    "modelSlug": "sora-2",
-    "family": "sora",
-    "versionLabel": "2",
+    "engineId": "pika-text-to-video",
+    "marketingName": "Pika 2.2 Text to Video",
+    "brandId": "pika",
+    "modelSlug": "pika-text-to-video",
+    "family": "pika",
+    "versionLabel": "2.2",
     "availability": "available",
-    "logoPolicy": "textOnly",
-    "billingNote": "Si une clé OpenAI est fournie, la facturation passe directement chez OpenAI ; sinon Fal crédite MaxVideoAI."
+    "logoPolicy": "textOnly"
   },
   {
-    "engineId": "sora-2-pro",
-    "marketingName": "OpenAI Sora 2 Pro",
-    "brandId": "openai",
-    "modelSlug": "sora-2-pro",
-    "family": "sora",
-    "versionLabel": "Pro",
-    "availability": "waitlist",
+    "engineId": "pika-image-to-video",
+    "marketingName": "Pika 2.2 Image to Video",
+    "brandId": "pika",
+    "modelSlug": "pika-image-to-video",
+    "family": "pika",
+    "versionLabel": "2.2",
+    "availability": "available",
     "logoPolicy": "textOnly"
   },
   {

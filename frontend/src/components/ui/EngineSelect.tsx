@@ -585,7 +585,17 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
   const searchValue = searchTerm.trim().toLowerCase();
 
   const filteredEngines = useMemo(() => {
-    const priorityOrder = ['sora-2', 'sora-2-pro', 'veo-3-1', 'veo-3-fast', 'pika-text-to-video'];
+    const priorityOrder = [
+      'sora-2',
+      'sora-2-pro',
+      'veo-3-1',
+      'veo-3-fast',
+      'veo-3-1-fast',
+      'pika-text-to-video',
+      'pika-image-to-video',
+      'minimax-hailuo-02-text',
+      'minimax-hailuo-02-image',
+    ];
     const priorityIndex = new Map(priorityOrder.map((id, index) => [id, index]));
     const ranked = engines
       .slice()

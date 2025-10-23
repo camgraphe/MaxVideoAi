@@ -8,6 +8,7 @@ import { AVAILABILITY_BADGE_CLASS } from '@/lib/availability';
 import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
 import FaqJsonLd from '@/components/FaqJsonLd';
 import { listFalEngines, getFalEngineBySlug } from '@/config/falEngines';
+import { CURRENCY_LOCALE } from '@/lib/intl';
 
 type PageParams = {
   params: {
@@ -56,6 +57,27 @@ export default function ModelDetailPage({ params }: PageParams) {
   const showSoraSeo = engine.modelSlug.startsWith('sora-2');
   const faqEntries = engine.faqs ?? [];
   const faqJsonLd = faqEntries.map(({ question, answer }) => ({ q: question, a: answer }));
+  const pricingHint = engine.pricingHint;
+
+  const platformPriceInfo = (() => {
+    if (!pricingHint || typeof pricingHint.amountCents !== 'number') return null;
+    const currency = pricingHint.currency ?? 'USD';
+    const platformCents = Math.round(pricingHint.amountCents * 1.3);
+    const priceFormatter = new Intl.NumberFormat(CURRENCY_LOCALE, { style: 'currency', currency });
+    const descriptorParts: string[] = [];
+    if (pricingHint.label) descriptorParts.push(pricingHint.label);
+    const durationLabel =
+      typeof pricingHint.durationSeconds === 'number' && pricingHint.durationSeconds > 0
+        ? `${pricingHint.durationSeconds}s`
+        : null;
+    if (durationLabel) descriptorParts.push(durationLabel);
+    if (pricingHint.resolution) descriptorParts.push(pricingHint.resolution);
+    const descriptor = descriptorParts.length ? descriptorParts.join(' · ') : null;
+    return {
+      amount: priceFormatter.format(platformCents / 100),
+      descriptor,
+    };
+  })();
 
   const soraFaqSchema = showSoraSeo
     ? {
@@ -147,6 +169,15 @@ export default function ModelDetailPage({ params }: PageParams) {
               <dt className="text-xs uppercase tracking-micro text-text-muted">Logo policy</dt>
               <dd>{engine.logoPolicy === 'logoAllowed' ? 'Logo usage permitted' : 'Text-only (wordmark)'}</dd>
             </div>
+            {platformPriceInfo ? (
+              <div className="sm:col-span-2">
+                <dt className="text-xs uppercase tracking-micro text-text-muted">Platform price (incl. 30% fee)</dt>
+                <dd>
+                  {platformPriceInfo.amount}
+                  {platformPriceInfo.descriptor ? <span className="text-xs text-text-muted"> · {platformPriceInfo.descriptor}</span> : null}
+                </dd>
+              </div>
+            ) : null}
           </dl>
         </div>
       </section>

@@ -44,9 +44,27 @@ export default function ModelsPage() {
     waitlist: 2,
     paused: 3,
   };
+  const priorityOrder = [
+    'sora-2',
+    'sora-2-pro',
+    'veo-3-1',
+    'veo-3-fast',
+    'veo-3-1-fast',
+    'pika-text-to-video',
+    'pika-image-to-video',
+    'minimax-hailuo-02-text',
+    'minimax-hailuo-02-image',
+  ];
+  const priorityIndex = new Map<string, number>(priorityOrder.map((id, index) => [id, index]));
+
   const models = roster
     .slice()
     .sort((a: ModelRosterEntry, b: ModelRosterEntry) => {
+      const aPriority = priorityIndex.get(a.engineId) ?? Number.MAX_SAFE_INTEGER;
+      const bPriority = priorityIndex.get(b.engineId) ?? Number.MAX_SAFE_INTEGER;
+      if (aPriority !== bPriority) {
+        return aPriority - bPriority;
+      }
       if (availabilityOrder[a.availability] !== availabilityOrder[b.availability]) {
         return availabilityOrder[a.availability] - availabilityOrder[b.availability];
       }
