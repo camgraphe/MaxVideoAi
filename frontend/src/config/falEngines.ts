@@ -90,7 +90,7 @@ const PIKA_TEXT_TO_VIDEO_ENGINE: EngineCaps = {
   queueDepth: 0,
   region: 'global',
   modes: ['t2v'],
-  maxDurationSec: 10,
+  maxDurationSec: 8,
   resolutions: ['720p', '1080p'],
   aspectRatios: ['16:9', '9:16', '1:1', '4:5', '5:4', '3:2', '2:3'],
   fps: [24],
@@ -114,12 +114,10 @@ const PIKA_TEXT_TO_VIDEO_ENGINE: EngineCaps = {
     optional: [
       {
         id: 'duration_seconds',
-        type: 'number',
+        type: 'enum',
         label: 'Duration (seconds)',
-        min: 5,
-        max: 10,
-        step: 1,
-        default: 5,
+        values: ['5', '8'],
+        default: '5',
       },
       {
         id: 'aspect_ratio',
@@ -187,7 +185,7 @@ const PIKA_IMAGE_TO_VIDEO_ENGINE: EngineCaps = {
   queueDepth: 0,
   region: 'global',
   modes: ['i2v'],
-  maxDurationSec: 10,
+  maxDurationSec: 8,
   resolutions: ['720p', '1080p'],
   aspectRatios: ['16:9', '9:16', '1:1', '4:5', '5:4', '3:2', '2:3'],
   fps: [24],
@@ -219,12 +217,10 @@ const PIKA_IMAGE_TO_VIDEO_ENGINE: EngineCaps = {
     optional: [
       {
         id: 'duration_seconds',
-        type: 'number',
+        type: 'enum',
         label: 'Duration (seconds)',
-        min: 5,
-        max: 10,
-        step: 1,
-        default: 5,
+        values: ['5', '8'],
+        default: '5',
       },
       {
         id: 'aspect_ratio',
@@ -959,7 +955,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
         falModelId: 'fal-ai/pika/v2.2/text-to-video',
         ui: {
           modes: ['t2v'],
-          duration: { min: 5, default: 5 },
+          duration: { options: [5, 8], default: 5 },
           resolution: ['720p', '1080p'],
           aspectRatio: ['16:9', '9:16', '1:1', '4:5', '5:4', '3:2', '2:3'],
           audioToggle: false,
@@ -1018,7 +1014,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
         falModelId: 'fal-ai/pika/v2.2/image-to-video',
         ui: {
           modes: ['i2v'],
-          duration: { min: 5, default: 5 },
+          duration: { options: [5, 8], default: 5 },
           resolution: ['720p', '1080p'],
           aspectRatio: ['16:9', '9:16', '1:1', '4:5', '5:4', '3:2', '2:3'],
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif'],
