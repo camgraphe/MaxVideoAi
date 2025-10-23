@@ -32,14 +32,17 @@ export async function POST(req: NextRequest) {
       [jobId]
     );
 
-    await query(
-      `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
-       SELECT job_id, 'admin', provider_job_id, engine_id, 'admin:reactivated', jsonb_build_object('at', NOW())
-       FROM app_jobs
-       WHERE job_id = $1
-       ON CONFLICT DO NOTHING`,
-      [jobId]
-    );
+    try {
+      await query(
+        `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
+         SELECT job_id, 'admin', provider_job_id, engine_id, 'admin:reactivated', jsonb_build_object('at', NOW())
+         FROM app_jobs
+         WHERE job_id = $1`,
+        [jobId]
+      );
+    } catch (logError) {
+      console.warn('[admin/jobs/restore] failed to log reactivation', jobId, logError);
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {

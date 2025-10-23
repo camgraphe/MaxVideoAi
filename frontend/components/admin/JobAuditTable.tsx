@@ -413,6 +413,21 @@ export function AdminJobAuditTable({ initialJobs, initialCursor }: JobAuditTable
       {isLoadingMore ? (
         <div className="text-center text-xs text-text-muted">Loading more jobs…</div>
       ) : null}
+      {nextCursor ? (
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={() => void loadMore()}
+            disabled={isLoadingMore}
+            className={clsx(
+              'inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              isLoadingMore ? 'cursor-not-allowed opacity-60' : 'hover:border-accentSoft/60 hover:bg-accentSoft/10'
+            )}
+          >
+            {isLoadingMore ? 'Loading…' : 'Load more jobs'}
+          </button>
+        </div>
+      ) : null}
       {!nextCursor && !isLoadingMore ? (
         <div className="text-center text-xs text-text-muted">End of results</div>
       ) : null}

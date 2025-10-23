@@ -7,6 +7,9 @@ import { normalizeMediaUrl } from '@/lib/media';
 type PendingVideoRow = {
   job_id: string;
   user_id: string | null;
+  status: string | null;
+  message: string | null;
+  updated_at: string;
   engine_id: string;
   engine_label: string;
   duration_sec: number;
@@ -19,6 +22,9 @@ type PendingVideoRow = {
   indexable: boolean | null;
   featured: boolean | null;
 };
+
+const FAILURE_STATES = new Set(['failed', 'error', 'errored', 'cancelled', 'canceled']);
+const ARCHIVE_THRESHOLD_MS = 30 * 60 * 1000;
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
@@ -59,7 +65,7 @@ export async function GET(req: NextRequest) {
 
     const rows = await query<PendingVideoRow>(
       `
-        SELECT job_id, user_id, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url,
+        SELECT job_id, user_id, status, message, updated_at, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url,
                aspect_ratio, created_at, visibility, indexable, featured
         FROM app_jobs
         ${whereClause}
@@ -71,9 +77,25 @@ export async function GET(req: NextRequest) {
 
     const hasMore = rows.length > limit;
     const slice = hasMore ? rows.slice(0, limit) : rows;
-    const videos = slice.map((row) => ({
+    const videos = slice.map((row) => {
+      const status = row.status ?? null;
+      const updatedAt = row.updated_at;
+      let archived = false;
+      if (status) {
+        const normalized = status.toLowerCase();
+        if (FAILURE_STATES.has(normalized)) {
+          const updatedTime = new Date(updatedAt).getTime();
+          if (!Number.isNaN(updatedTime) && Date.now() - updatedTime >= ARCHIVE_THRESHOLD_MS) {
+            archived = true;
+          }
+        }
+      }
+      return {
       id: row.job_id,
       userId: row.user_id ?? null,
+      status,
+      message: row.message ?? undefined,
+      updatedAt,
       engineId: row.engine_id,
       engineLabel: row.engine_label,
       durationSec: row.duration_sec,
@@ -85,7 +107,8 @@ export async function GET(req: NextRequest) {
       visibility: row.visibility ?? 'public',
       indexable: row.indexable ?? true,
       featured: row.featured ?? false,
-    }));
+      archived,
+    }; });
     const nextCursor = hasMore
       ? (() => {
           const last = slice[slice.length - 1];

@@ -8,6 +8,10 @@ import { isPlaceholderMediaUrl, normalizeMediaUrl } from '@/lib/media';
 export type ModerationVideo = {
   id: string;
   userId: string | null;
+  status?: string | null;
+  message?: string;
+  updatedAt?: string;
+  archived?: boolean;
   engineId: string;
   engineLabel: string;
   durationSec: number;
@@ -62,15 +66,22 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
   const [playlistAssignments, setPlaylistAssignments] = useState<Record<string, PlaylistTag[]>>({});
   const [playlistStatus, setPlaylistStatus] = useState<Record<string, { loading: boolean; message: string | null; error: string | null }>>({});
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
   const playlistAssignmentsRef = useRef<Record<string, PlaylistTag[]>>({});
 
-  const hasVideos = items.length > 0;
+  const displayItems = useMemo(() => {
+    if (showArchived) return items;
+    return items.filter((item) => !item.archived);
+  }, [items, showArchived]);
+
+  const hasVideos = displayItems.length > 0;
 
   const stats = useMemo(() => {
-    const total = items.length;
-    const nonIndexable = items.filter((item) => !item.indexable).length;
-    return { total, nonIndexable };
-  }, [items]);
+    const total = displayItems.length;
+    const nonIndexable = displayItems.filter((item) => !item.indexable).length;
+    const archivedCount = items.filter((item) => item.archived).length;
+    return { total, nonIndexable, archivedCount };
+  }, [displayItems, items]);
 
   const mutateVideo = (id: string, updates: Partial<ModerationVideo>) => {
     setItems((current) =>
@@ -92,7 +103,7 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
   const updateVisibility = (video: ModerationVideo, visibility: 'public' | 'private', indexable: boolean) => {
     startTransition(async () => {
       setError(null);
-      mutateVideo(video.id, { visibility, indexable });
+      mutateVideo(video.id, { visibility, indexable, archived: false });
       try {
         const res = await fetch(`/api/admin/videos/${video.id}/visibility`, {
           method: 'POST',
@@ -431,9 +442,23 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
             Review gallery clips, adjust indexing, or hide them from the public experience.
           </p>
         </div>
-        <div className="flex flex-col gap-1 text-xs text-text-muted sm:items-end">
-          <span>Total monitored: {stats.total}</span>
-          <span>Indexing disabled: {stats.nonIndexable}</span>
+        <div className="flex flex-col gap-2 text-xs text-text-muted sm:items-end">
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setShowArchived((prev) => !prev)}
+              className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-medium transition hover:border-accentSoft/60 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {showArchived ? 'Hide archived' : 'Show archived'}
+            </button>
+          </div>
+          <div className="flex flex-col gap-1 text-right">
+            <span>
+              Visible: {stats.total}
+            </span>
+            <span>Indexing disabled: {stats.nonIndexable}</span>
+            <span>Auto-archived (30m): {stats.archivedCount}</span>
+          </div>
         </div>
       </header>
 
@@ -465,7 +490,7 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {items.map((video) => {
+            {displayItems.map((video) => {
                 const assignedPlaylists = playlistAssignments[video.id] ?? [];
                 const playlistState = playlistStatus[video.id];
                 const isAssigningPlaylist = Boolean(playlistState?.loading);
@@ -490,6 +515,11 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
                       >
                         {video.indexable ? 'Indexable' : 'No index'}
                       </span>
+                      {video.archived ? (
+                        <span className="absolute right-2 top-2 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-amber-700 ring-1 ring-amber-200">
+                          Archived
+                        </span>
+                      ) : null}
                       {hasVideoPreview ? (
                         <video
                           src={normalizedVideoUrl}
@@ -516,17 +546,22 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-4">
-                    <div className="flex flex-col gap-1 text-xs text-text-secondary">
-                      <span className="font-semibold text-text-primary">{video.engineLabel}</span>
-                      <span>Duration: {video.durationSec}s</span>
-                      <span>Aspect: {video.aspectRatio ?? 'auto'}</span>
-                      <span>Created: {formatDate(video.createdAt)}</span>
-                      <span>User: {video.userId ?? '—'}</span>
-                      <span>Visibility: {video.visibility}</span>
-                      <span>Indexable: {video.indexable ? 'Yes' : 'No'}</span>
-                    </div>
-                  </td>
+                    <td className="px-4 py-4">
+                      <div className="flex flex-col gap-1 text-xs text-text-secondary">
+                        <span className="font-semibold text-text-primary">{video.engineLabel}</span>
+                        <span>Duration: {video.durationSec}s</span>
+                        <span>Aspect: {video.aspectRatio ?? 'auto'}</span>
+                        <span>Created: {formatDate(video.createdAt)}</span>
+                        {video.updatedAt ? <span>Updated: {formatDate(video.updatedAt)}</span> : null}
+                        <span>User: {video.userId ?? '—'}</span>
+                        <span>Visibility: {video.visibility}</span>
+                        <span>Indexable: {video.indexable ? 'Yes' : 'No'}</span>
+                        {video.status ? <span>Status: {video.status}</span> : null}
+                        {video.message ? (
+                          <span className="text-amber-700">Fal message: {video.message}</span>
+                        ) : null}
+                      </div>
+                    </td>
                   <td className="px-4 py-4 align-top text-xs text-text-secondary">
                     <p className="max-w-xs whitespace-pre-line">
                       {video.prompt}
