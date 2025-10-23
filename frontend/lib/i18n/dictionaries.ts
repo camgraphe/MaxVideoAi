@@ -296,7 +296,7 @@ const en: Dictionary = {
       { label: 'Support', href: '/contact' },
     ],
     brandNote:
-      'Independent hub for professional AI video - price before you generate, stay on the latest engines, one workspace for every shot. Works with Sora 2, Veo 3.1, Pika 2.2, MiniMax Hailuo 02, Hunyuan Image, and more. Trademarks belong to their owners.',
+      'Independent hub for professional AI video - price before you generate, stay on the latest engines, one workspace for every shot. Works with Sora 2, Veo 3.1, Pika 2.2, MiniMax Hailuo 02, and more. Trademarks belong to their owners.',
     languageLabel: 'Language',
     languages: [
       { locale: 'en', label: 'English' },
@@ -313,7 +313,7 @@ const en: Dictionary = {
     },
     worksWith: {
       label: 'Works with',
-      brands: ['Sora 2', 'Veo 3.1', 'Veo 3 Fast', 'Pika 2.2', 'MiniMax Hailuo 02'],
+      brands: ['Sora 2', 'Veo 3.1', 'Pika 2.2', 'MiniMax Hailuo 02'],
       caption: 'Independent hub. Trademarks belong to their owners.',
       availabilityNotice: 'Availability may vary by provider; pricing chips refresh automatically.',
     },

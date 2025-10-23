@@ -56,19 +56,6 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     alt: 'Veo 3.1  -  example clip',
   },
   {
-    id: 'veo-3-fast',
-    engineId: 'veo-3-fast',
-    label: 'Veo 3 Fast',
-    videoSrc: '/hero/luma-ray2-flash.mp4',
-    posterSrc: '/hero/luma-ray2-flash.jpg',
-    durationSec: 8,
-    resolution: '720p',
-    fallbackPriceLabel: 'from $0.32',
-    minPriceCents: 32,
-    showAudioIcon: true,
-    alt: 'Veo 3 Fast  -  example clip',
-  },
-  {
     id: 'pika-22',
     engineId: 'pika-text-to-video',
     label: 'Pika 2.2',
@@ -80,9 +67,21 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     minPriceCents: 24,
     alt: 'Pika 2.2  -  example clip',
   },
+  {
+    id: 'minimax-hailuo-02',
+    engineId: 'minimax-hailuo-02-text',
+    label: 'MiniMax Hailuo 02',
+    videoSrc: '/assets/gallery/aerial-road.mp4',
+    posterSrc: '/hero/minimax-video01.jpg',
+    durationSec: 6,
+    resolution: '768P',
+    fallbackPriceLabel: 'from $0.27',
+    minPriceCents: 27,
+    alt: 'MiniMax Hailuo 02  -  example clip',
+  },
 ] as const;
 
-const WORKS_WITH_BRANDS = ['Sora 2', 'Veo 3.1', 'Veo 3 Fast', 'Pika 2.2', 'MiniMax Hailuo 02', 'Hunyuan Image'] as const;
+const WORKS_WITH_BRANDS = ['Sora 2', 'Veo 3.1', 'Pika 2.2', 'MiniMax Hailuo 02'] as const;
 
 type HeroTilePricingInput = {
   id: string;
