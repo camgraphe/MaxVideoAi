@@ -67,6 +67,17 @@ function mapRow(row: VideoRow): GalleryVideo {
 
 export type GalleryTab = 'starter' | 'latest' | 'trending';
 
+function getStarterPlaylistSlug(): string {
+  const slug = process.env.STARTER_PLAYLIST_SLUG;
+  if (typeof slug === 'string') {
+    const trimmed = slug.trim();
+    if (trimmed.length) {
+      return trimmed;
+    }
+  }
+  return 'starter';
+}
+
 const BASE_SELECT = `
   SELECT job_id, user_id, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url,
          aspect_ratio, has_audio, can_upscale, created_at, visibility, indexable, featured, featured_order
@@ -148,7 +159,7 @@ async function listTrending(limit: number): Promise<GalleryVideo[]> {
 
 export async function listGalleryVideos(tab: GalleryTab, limit = 24): Promise<GalleryVideo[]> {
   if (tab === 'starter') {
-    const playlist = await listPlaylistVideos('starter', limit);
+    const playlist = await listPlaylistVideos(getStarterPlaylistSlug(), limit);
     if (playlist.length) {
       return playlist;
     }
