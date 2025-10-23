@@ -19,10 +19,11 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const limitParam = Number(url.searchParams.get('limit') ?? '30');
   const limit = Number.isFinite(limitParam) ? limitParam : 30;
+  const cursor = url.searchParams.get('cursor');
 
   try {
-    const jobs = await fetchRecentJobAudits(limit);
-    return NextResponse.json({ ok: true, jobs });
+    const { jobs, nextCursor } = await fetchRecentJobAudits({ limit, cursor });
+    return NextResponse.json({ ok: true, jobs, nextCursor });
   } catch (error) {
     console.error('[admin/jobs/audit] failed to load jobs', error);
     return NextResponse.json({ ok: false, error: 'Failed to load jobs', jobs: [] }, { status: 500 });

@@ -1,4 +1,5 @@
 import { query } from '@/lib/db';
+import { removeUserVideosFromIndexablePlaylists } from '@/server/indexing';
 
 type PreferencesRow = {
   user_id: string;
@@ -87,6 +88,7 @@ export async function applyIndexOptOut(userId: string): Promise<number> {
     `,
     [userId]
   );
+  await removeUserVideosFromIndexablePlaylists(userId);
   return Number(rows[0]?.count ?? '0');
 }
 

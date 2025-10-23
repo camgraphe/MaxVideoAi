@@ -2,9 +2,11 @@ import { query } from '@/lib/db';
 import { normalizeMediaUrl, isPlaceholderMediaUrl } from '@/lib/media';
 
 type RawJobAuditRow = {
+  id: number;
   job_id: string;
   user_id: string | null;
   created_at: string;
+  updated_at: string;
   status: string | null;
   progress: number | null;
   message: string | null;
@@ -32,9 +34,11 @@ type RawJobAuditRow = {
 };
 
 export type AdminJobAuditRecord = {
+  id: number;
   jobId: string;
   userId: string | null;
   createdAt: string;
+  updatedAt: string;
   status: string | null;
   progress: number | null;
   message: string | null;
@@ -64,6 +68,7 @@ export type AdminJobAuditRecord = {
   netChargeCents: number;
   paymentOk: boolean;
   falOk: boolean;
+  archived: boolean;
 };
 
 function coerceNumber(value: number | string | null | undefined): number {
@@ -92,21 +97,90 @@ function normalizeReceipts(
   }));
 }
 
-export async function fetchRecentJobAudits(limit = 30): Promise<AdminJobAuditRecord[]> {
-  if (!process.env.DATABASE_URL) return [];
+const ARCHIVE_THRESHOLD_MS = 30 * 60 * 1000;
+
+function parseCursorParam(value: string | null): { createdAt: Date | null; id: number | null } {
+  if (!value) {
+    return { createdAt: null, id: null };
+  }
+  if (value.includes('|')) {
+    const [timestampPart, idPart] = value.split('|', 2);
+    let createdAt: Date | null = null;
+    if (timestampPart) {
+      const parsed = new Date(timestampPart);
+      if (!Number.isNaN(parsed.getTime())) {
+        createdAt = parsed;
+      }
+    }
+    let id: number | null = null;
+    if (idPart) {
+      const parsed = Number.parseInt(idPart, 10);
+      if (Number.isFinite(parsed)) {
+        id = parsed;
+      }
+    }
+    return { createdAt, id };
+  }
+  const parsed = Number.parseInt(value, 10);
+  if (Number.isFinite(parsed)) {
+    return { createdAt: null, id: parsed };
+  }
+  return { createdAt: null, id: null };
+}
+
+function formatCursorValue(row: { created_at: string; id: number }): string {
+  const createdAt = new Date(row.created_at);
+  if (Number.isNaN(createdAt.getTime())) {
+    return String(row.id);
+  }
+  return `${createdAt.toISOString()}|${row.id}`;
+}
+
+type FetchJobAuditParams = {
+  limit?: number;
+  cursor?: string | null;
+};
+
+type FetchJobAuditResult = {
+  jobs: AdminJobAuditRecord[];
+  nextCursor: string | null;
+};
+
+export async function fetchRecentJobAudits({
+  limit = 30,
+  cursor = null,
+}: FetchJobAuditParams = {}): Promise<FetchJobAuditResult> {
+  if (!process.env.DATABASE_URL) return { jobs: [], nextCursor: null };
 
   const normalizedLimit = Math.min(200, Math.max(1, limit));
 
+  const cursorInfo = parseCursorParam(cursor);
+  const params: Array<string | number | Date> = [];
+  const conditions: string[] = [];
+
+  if (cursorInfo.createdAt) {
+    params.push(cursorInfo.createdAt);
+    const createdAtIndex = params.length;
+    params.push(cursorInfo.id ?? Number.MAX_SAFE_INTEGER);
+    const idIndex = params.length;
+    conditions.push(`(j.created_at, j.id) < ($${createdAtIndex}, $${idIndex})`);
+  } else if (typeof cursorInfo.id === 'number' && Number.isFinite(cursorInfo.id)) {
+    params.push(cursorInfo.id);
+    const idIndex = params.length;
+    conditions.push(`j.id < $${idIndex}`);
+  }
+
+  params.push(normalizedLimit + 1);
+  const limitIndex = params.length;
+
+  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
   const rows = await query<RawJobAuditRow>(
     `
-      WITH recent_jobs AS (
-        SELECT *
-        FROM app_jobs
-        ORDER BY created_at DESC
-        LIMIT $1
-      )
       SELECT
+        j.id,
         j.job_id,
+        j.updated_at,
         j.user_id,
         j.created_at,
         j.status,
@@ -127,7 +201,7 @@ export async function fetchRecentJobAudits(limit = 30): Promise<AdminJobAuditRec
         receipts.receipts,
         fal.status AS fal_status,
         fal.created_at AS fal_created_at
-      FROM recent_jobs j
+      FROM app_jobs j
       LEFT JOIN LATERAL (
         SELECT
           SUM(amount_cents)::bigint AS total_charge_cents,
@@ -162,12 +236,18 @@ export async function fetchRecentJobAudits(limit = 30): Promise<AdminJobAuditRec
         ORDER BY created_at DESC
         LIMIT 1
       ) fal ON TRUE
-      ORDER BY j.created_at DESC
+      ${whereClause}
+      ORDER BY j.created_at DESC, j.id DESC
+      LIMIT $${limitIndex}
     `,
-    [normalizedLimit]
+    params
   );
 
-  return rows.map((row) => {
+  const hasMore = rows.length > normalizedLimit;
+  const items = hasMore ? rows.slice(0, -1) : rows;
+  const nextCursor = hasMore && items.length ? formatCursorValue(items[items.length - 1]) : null;
+
+  const jobs = items.map((row) => {
     const finalPrice = coerceNumber(row.final_price_cents);
     const totalCharge = coerceNumber(row.total_charge_cents);
     const totalRefund = coerceNumber(row.total_refund_cents);
@@ -181,15 +261,24 @@ export async function fetchRecentJobAudits(limit = 30): Promise<AdminJobAuditRec
     const falStatus = row.fal_status;
     const falOk = !falStatus || falStatus.toUpperCase() === 'COMPLETED';
 
+    const statusNormalized = (row.status ?? '').toLowerCase();
+    const updatedAtDate = new Date(row.updated_at);
+    const archived =
+      ['failed', 'error', 'errored', 'cancelled', 'canceled'].includes(statusNormalized) &&
+      !Number.isNaN(updatedAtDate.getTime()) &&
+      Date.now() - updatedAtDate.getTime() >= ARCHIVE_THRESHOLD_MS;
+
     const videoUrl = row.video_url ? normalizeMediaUrl(row.video_url) ?? row.video_url : null;
     const thumbUrl = row.thumb_url ? normalizeMediaUrl(row.thumb_url) ?? row.thumb_url : null;
     const placeholderVideo = isPlaceholderMediaUrl(videoUrl);
     const displayOk = Boolean(videoUrl) && !placeholderVideo;
 
     return {
+      id: row.id,
       jobId: row.job_id,
       userId: row.user_id,
       createdAt: row.created_at,
+      updatedAt: row.updated_at,
       status: row.status,
       progress: row.progress,
       message: row.message,
@@ -213,6 +302,9 @@ export async function fetchRecentJobAudits(limit = 30): Promise<AdminJobAuditRec
       netChargeCents: netCharge,
       paymentOk,
       falOk,
+      archived,
     };
   });
+
+  return { jobs, nextCursor };
 }

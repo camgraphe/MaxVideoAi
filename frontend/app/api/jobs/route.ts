@@ -74,7 +74,11 @@ export async function GET(req: NextRequest) {
 
   try {
     const params: Array<string | number | Date> = [userId];
-    const conditions: string[] = ['user_id = $1', 'hidden IS NOT TRUE'];
+    const conditions: string[] = [
+      'user_id = $1',
+      'hidden IS NOT TRUE',
+      "NOT (LOWER(status) IN ('failed','error','errored','cancelled','canceled') AND updated_at < NOW() - INTERVAL '30 minutes')"
+    ];
 
     const cursorInfo = parseCursorParam(cursor);
     if (cursorInfo.createdAt) {
@@ -92,9 +96,10 @@ export async function GET(req: NextRequest) {
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
     const limitParamIndex = params.length;
 
-    type JobRow = {
+type JobRow = {
       id: number;
       job_id: string;
+      updated_at: string;
       engine_id: string;
       engine_label: string;
       duration_sec: number;
@@ -131,11 +136,11 @@ export async function GET(req: NextRequest) {
     };
 
     let rows = await query<JobRow>(
-    `SELECT id, job_id, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider_job_id
-       FROM app_jobs
-       ${where}
-       ORDER BY created_at DESC, id DESC
-       LIMIT $${limitParamIndex}`,
+    `SELECT id, job_id, updated_at, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider_job_id
+      FROM app_jobs
+      ${where}
+      ORDER BY created_at DESC, id DESC
+      LIMIT $${limitParamIndex}`,
       params
     );
 
@@ -311,7 +316,7 @@ export async function GET(req: NextRequest) {
 
       if (refreshedIds.length) {
         const refreshedRows = await query<JobRow>(
-          `SELECT id, job_id, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider_job_id
+          `SELECT id, job_id, updated_at, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider_job_id
              FROM app_jobs
              WHERE job_id = ANY($1::text[])`,
           [refreshedIds]

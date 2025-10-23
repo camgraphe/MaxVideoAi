@@ -17,7 +17,7 @@ export default async function AdminJobsAuditPage() {
     );
   }
 
-  const jobs = await fetchRecentJobAudits(30);
+  const { jobs, nextCursor } = await fetchRecentJobAudits({ limit: 30 });
 
   return (
     <div className="space-y-6">
@@ -27,7 +27,7 @@ export default async function AdminJobsAuditPage() {
           Last 30 generation attempts with display, debit, and Fal status checks. Use this view to spot placeholder fallbacks and billing mismatches quickly.
         </p>
       </header>
-      <AdminJobAuditTable initialJobs={jobs} />
+      <AdminJobAuditTable initialJobs={jobs} initialCursor={nextCursor} />
     </div>
   );
 }

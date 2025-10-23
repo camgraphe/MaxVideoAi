@@ -1,5 +1,6 @@
 import { query } from '@/lib/db';
 import { normalizeMediaUrl } from '@/lib/media';
+import { getIndexablePlaylistSlugs, removeVideosFromIndexablePlaylists } from '@/server/indexing';
 
 type VideoRow = {
   job_id: string;
@@ -181,28 +182,49 @@ function sortVideosByPreference(videos: GalleryVideo[], sort: ExampleSort): Gall
 }
 
 export async function listExamples(sort: ExampleSort, limit = 60): Promise<GalleryVideo[]> {
-  const playlistSlug = process.env.EXAMPLES_PLAYLIST_SLUG ?? 'examples';
-  let base: GalleryVideo[] = [];
-
-  try {
-    const curated = await listPlaylistVideos(playlistSlug, limit);
-    if (curated.length) {
-      base = curated;
-    }
-  } catch (error) {
-    console.warn('[examples] failed to load curated playlist', error);
-  }
-
-  if (!base.length) {
+  const slugs = getIndexablePlaylistSlugs();
+  if (!slugs.length) {
     return [];
   }
 
-  return sortVideosByPreference(base, sort).slice(0, limit);
+  const playlistResults = await Promise.all(
+    slugs.map(async (slug) => {
+      try {
+        const videos = await listPlaylistVideos(slug, limit);
+        return videos;
+      } catch (error) {
+        console.warn(`[examples] failed to load playlist "${slug}"`, error);
+        return [] as GalleryVideo[];
+      }
+    })
+  );
+
+  const seen = new Set<string>();
+  const aggregated: GalleryVideo[] = [];
+  playlistResults.forEach((videos) => {
+    videos.forEach((video) => {
+      if (seen.has(video.id)) {
+        return;
+      }
+      seen.add(video.id);
+      aggregated.push(video);
+    });
+  });
+
+  if (!aggregated.length) {
+    return [];
+  }
+
+  return sortVideosByPreference(aggregated, sort).slice(0, limit);
 }
 
 export async function getPlaylistExamples(limit = 60): Promise<GalleryVideo[]> {
-  const playlistSlug = process.env.EXAMPLES_PLAYLIST_SLUG ?? 'examples';
-  return listPlaylistVideos(playlistSlug, limit);
+  const slugs = getIndexablePlaylistSlugs();
+  const firstSlug = slugs[0];
+  if (!firstSlug) {
+    return [];
+  }
+  return listPlaylistVideos(firstSlug, limit);
 }
 
 export async function updateVideoIndexableForUser(
@@ -210,14 +232,21 @@ export async function updateVideoIndexableForUser(
   userId: string,
   indexable: boolean
 ): Promise<boolean> {
-  const rows = await query<{ job_id: string }>(
+  const rows = await query<{ job_id: string; indexable: boolean | null }>(
     `UPDATE app_jobs
        SET indexable = $1,
            updated_at = NOW()
      WHERE job_id = $2
        AND user_id = $3
-     RETURNING job_id`,
+     RETURNING job_id, indexable`,
     [indexable, videoId, userId]
   );
-  return rows.length > 0;
+  const updated = rows[0];
+  if (!updated) {
+    return false;
+  }
+  if (updated.indexable === false) {
+    await removeVideosFromIndexablePlaylists([updated.job_id]);
+  }
+  return true;
 }

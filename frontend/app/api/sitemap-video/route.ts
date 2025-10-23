@@ -1,17 +1,7 @@
 import { NextResponse } from 'next/server';
-import { isDatabaseConfigured, query } from '@/lib/db';
+import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
-
-type SitemapRow = {
-  job_id: string;
-  thumb_url: string | null;
-  video_url: string | null;
-  engine_label: string;
-  aspect_ratio: string | null;
-  duration_sec: number;
-  prompt: string;
-  created_at: string;
-};
+import { listExamples } from '@/server/videos';
 
 function escapeXml(value: string): string {
   return value
@@ -29,26 +19,18 @@ export async function GET() {
 
   try {
     await ensureBillingSchema();
-    const rows = await query<SitemapRow>(
-      `
-        SELECT job_id, thumb_url, video_url, engine_label, aspect_ratio, duration_sec, prompt, created_at
-        FROM app_jobs
-        WHERE visibility = 'public'
-          AND indexable IS TRUE
-        ORDER BY created_at DESC
-        LIMIT 5000
-      `
-    );
+    const videos = await listExamples('date-desc', 5000);
 
-    const urls = rows
-      .map((row) => {
-        const loc = `https://maxvideoai.com/v/${encodeURIComponent(row.job_id)}`;
-        const summary = row.prompt.replace(/\s+/g, ' ').trim();
+    const urls = videos
+      .filter((video) => Boolean(video.videoUrl))
+      .map((video) => {
+        const loc = `https://maxvideoai.com/v/${encodeURIComponent(video.id)}`;
+        const summary = video.prompt.replace(/\s+/g, ' ').trim();
         const description = summary.length > 280 ? `${summary.slice(0, 279)}…` : summary;
-        const duration = Math.max(0, Math.floor(row.duration_sec));
-        const publicationDate = new Date(row.created_at).toISOString();
-        const thumbUrl = row.thumb_url ?? row.video_url ?? loc;
-        const keywords = [row.engine_label, row.aspect_ratio ?? 'auto', 'MaxVideoAI']
+        const duration = Math.max(0, Math.floor(video.durationSec ?? 0));
+        const publicationDate = new Date(video.createdAt).toISOString();
+        const thumbUrl = video.thumbUrl ?? video.videoUrl ?? loc;
+        const keywords = [video.engineLabel, video.aspectRatio ?? 'auto', 'MaxVideoAI']
           .map((keyword) => `<video:tag>${escapeXml(keyword)}</video:tag>`)
           .join('');
 
@@ -57,9 +39,9 @@ export async function GET() {
           `<loc>${loc}</loc>`,
           '<video:video>',
           `<video:thumbnail_loc>${escapeXml(thumbUrl)}</video:thumbnail_loc>`,
-          `<video:title>${escapeXml(`${row.engine_label} · ${duration}s`)}</video:title>`,
+          `<video:title>${escapeXml(`${video.engineLabel} · ${duration}s`)}</video:title>`,
           `<video:description>${escapeXml(description)}</video:description>`,
-          `<video:content_loc>${escapeXml(row.video_url ?? loc)}</video:content_loc>`,
+          `<video:content_loc>${escapeXml(video.videoUrl ?? loc)}</video:content_loc>`,
           `<video:publication_date>${escapeXml(publicationDate)}</video:publication_date>`,
           `<video:duration>${duration}</video:duration>`,
           keywords,
