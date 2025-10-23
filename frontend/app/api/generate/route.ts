@@ -20,7 +20,7 @@ import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails'
 import { getEngineCaps } from '@/fixtures/engineCaps';
 import { getSoraVariantForEngine, isSoraEngineId, parseSoraRequest, type SoraRequest } from '@/lib/sora';
 import { ensureUserPreferences } from '@/server/preferences';
-import { translateError } from '@/lib/error-messages';
+import { translateError, type ErrorTranslationInput } from '@/lib/error-messages';
 import {
   getLumaRay2DurationInfo,
   getLumaRay2ResolutionInfo,
@@ -1419,23 +1419,57 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
 
     if (status === 422) {
       console.error('[generate] fal returned 422', providerMessage ?? '<no-provider-message>');
-      const constraintTranslation = translateError({
-        code: (detail && typeof detail === 'object' && 'code' in (detail as Record<string, unknown>))
-          ? String((detail as Record<string, unknown>).code)
-          : 'ENGINE_CONSTRAINT',
-        status,
-        message: effectiveProviderMessage ?? providerMessage ?? null,
-        providerMessage: effectiveProviderMessage ?? providerMessage ?? null,
-      });
+
+      let translatedErrorCode: string | null = null;
+      let translatedMessage: string | null = null;
+      let translatedProviderMessage: string | null = null;
+
+      const resolveTranslation = (input: ErrorTranslationInput) => {
+        const translation = translateError(input);
+        translatedErrorCode = translation.code;
+        translatedMessage = translation.message;
+        translatedProviderMessage = translation.providerMessage ?? translation.originalMessage ?? null;
+      };
+
+      if (detail && Array.isArray(detail) && detail.length) {
+        const firstDetail = detail[0] as Record<string, unknown>;
+        const detailCode = typeof firstDetail.type === 'string' ? firstDetail.type : undefined;
+        const detailMessage = typeof firstDetail.msg === 'string' ? firstDetail.msg : undefined;
+        resolveTranslation({
+          code: detailCode ?? 'FAL_UNPROCESSABLE_ENTITY',
+          status,
+          message: detailMessage ?? effectiveProviderMessage ?? providerMessage ?? null,
+          providerMessage: detailMessage ?? effectiveProviderMessage ?? providerMessage ?? null,
+        });
+      } else if (detail && typeof detail === 'object' && detail !== null) {
+        const detailRecord = detail as Record<string, unknown>;
+        const detailCode = typeof detailRecord.code === 'string' ? detailRecord.code : undefined;
+        const detailMessage = typeof detailRecord.message === 'string' ? detailRecord.message : undefined;
+        resolveTranslation({
+          code: detailCode ?? 'FAL_UNPROCESSABLE_ENTITY',
+          status,
+          message: detailMessage ?? effectiveProviderMessage ?? providerMessage ?? null,
+          providerMessage: detailMessage ?? effectiveProviderMessage ?? providerMessage ?? null,
+        });
+      } else {
+        resolveTranslation({
+          code: 'FAL_UNPROCESSABLE_ENTITY',
+          status,
+          message: effectiveProviderMessage ?? providerMessage ?? null,
+          providerMessage: effectiveProviderMessage ?? providerMessage ?? null,
+        });
+      }
+
       const userMessage = isLumaRay2
         ? LUMA_RAY2_ERROR_UNSUPPORTED
-        : constraintTranslation.message ?? 'Valeur non supportee pour ce moteur.';
+        : translatedMessage ?? 'This request cannot be processed for this engine. Please adjust your inputs and try again.';
+
       return NextResponse.json(
         {
           ok: false,
-          error: constraintTranslation.code ?? 'FAL_UNPROCESSABLE_ENTITY',
+          error: translatedErrorCode ?? 'FAL_UNPROCESSABLE_ENTITY',
           message: userMessage,
-          providerMessage: effectiveProviderMessage ?? providerMessage ?? null,
+          providerMessage: translatedProviderMessage ?? effectiveProviderMessage ?? providerMessage ?? null,
           detail: detail ?? providerMessage,
         },
         { status: 422 }

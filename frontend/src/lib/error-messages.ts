@@ -112,6 +112,21 @@ export function translateError(context: ErrorTranslationInput): TranslatedError 
         'SAFETY',
         'The prompt violates our usage rules. Please modify your description. Remove prohibited content and try again.'
       ),
+    CONTENT_POLICY_VIOLATION: () =>
+      resolve(
+        'CONTENT_POLICY_VIOLATION',
+        'The content could not be processed because it was flagged by a content checker. Remove prohibited content and try again.'
+      ),
+    CONTENT_FLAGGED: () =>
+      resolve(
+        'CONTENT_POLICY_VIOLATION',
+        'The content could not be processed because it was flagged by a content checker. Remove prohibited content and try again.'
+      ),
+    FLAGGED_CONTENT: () =>
+      resolve(
+        'CONTENT_POLICY_VIOLATION',
+        'The content could not be processed because it was flagged by a content checker. Remove prohibited content and try again.'
+      ),
     FAL_UNPROCESSABLE_ENTITY: () =>
       resolve(
         'FAL_UNPROCESSABLE_ENTITY',
