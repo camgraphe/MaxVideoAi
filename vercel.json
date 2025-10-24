@@ -9,6 +9,7 @@
     { "source": "/(.*)", "destination": "/frontend/$1" }
   ],
   "crons": [
-    { "path": "/api/stripe/batch-transfers", "schedule": "0 3 * * *" }
+    { "path": "/api/stripe/batch-transfers", "schedule": "0 3 * * *" },
+    { "path": "/api/fal/poll", "schedule": "* * * * *" }
   ]
 }
