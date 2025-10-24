@@ -704,8 +704,8 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   });
 
   const normalizedLogStatus = (() => {
-    if (!nextStatus) return statusInfo.rawFalStatus ?? payload.status ?? 'running';
-    const lower = nextStatus.toLowerCase();
+    const baseStatus = nextStatus ?? statusInfo.status ?? payload.status ?? 'running';
+    const lower = baseStatus.toString().toLowerCase();
     if (lower === 'completed') return 'completed';
     if (['failed', 'error', 'errored', 'canceled', 'cancelled', 'aborted'].includes(lower)) {
       return 'failed';
