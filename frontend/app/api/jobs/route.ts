@@ -7,6 +7,7 @@ import { getUserIdFromRequest } from '@/lib/user';
 import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { updateJobFromFalWebhook } from '@/server/fal-webhook-handler';
+import { listStarterPlaylistVideos } from '@/server/videos';
 
 function parseCursorParam(value: string | null): { createdAt: Date | null; id: number | null } {
   if (!value) {
@@ -360,7 +361,7 @@ type JobRow = {
     const nextCursor = hasMore && items.length ? formatCursorValue(items[items.length - 1]) : null;
 
     type Row = (typeof rows)[number];
-    const mapped = items.map((r: Row) => ({
+    let mapped = items.map((r: Row) => ({
       jobId: r.job_id,
       engineLabel: r.engine_label,
       durationSec: r.duration_sec,
@@ -399,6 +400,33 @@ type JobRow = {
       visibility: r.visibility ?? 'public',
       indexable: r.indexable ?? true,
     }));
+
+    if (!mapped.length && !cursor) {
+      const starterVideos = await listStarterPlaylistVideos(limit);
+      if (starterVideos.length) {
+        mapped = starterVideos.map((video) => ({
+          jobId: video.id,
+          engineLabel: video.engineLabel,
+          durationSec: video.durationSec,
+          prompt: video.prompt,
+          thumbUrl: video.thumbUrl ?? undefined,
+          videoUrl: video.videoUrl ?? undefined,
+          createdAt: video.createdAt,
+          engineId: video.engineId,
+          aspectRatio: video.aspectRatio,
+          hasAudio: video.hasAudio,
+          canUpscale: video.canUpscale,
+          finalPriceCents: video.finalPriceCents ?? undefined,
+          currency: video.currency ?? undefined,
+          status: 'completed',
+          progress: 100,
+          visibility: video.visibility,
+          indexable: video.indexable,
+          curated: true,
+        }));
+        return NextResponse.json({ ok: true, jobs: mapped, nextCursor: null });
+      }
+    }
 
     return NextResponse.json({ ok: true, jobs: mapped, nextCursor });
   } catch (error) {

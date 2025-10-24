@@ -703,6 +703,41 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     hasData: Boolean(payload.data),
   });
 
+  const normalizedLogStatus = (() => {
+    if (!nextStatus) return statusInfo.rawFalStatus ?? payload.status ?? 'running';
+    const lower = nextStatus.toLowerCase();
+    if (lower === 'completed') return 'completed';
+    if (['failed', 'error', 'errored', 'canceled', 'cancelled', 'aborted'].includes(lower)) {
+      return 'failed';
+    }
+    if (['queued', 'running', 'in_progress', 'processing', 'pending'].includes(lower)) {
+      return 'running';
+    }
+    return lower;
+  })();
+
+  try {
+    await query(
+      `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
+       VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
+      [
+        job.job_id,
+        'fal',
+        requestId,
+        effectiveEngineId ?? job.engine_id ?? 'fal-unknown',
+        normalizedLogStatus,
+        JSON.stringify({
+          at: new Date().toISOString(),
+          falStatus: statusInfo.rawFalStatus ?? payload.status ?? null,
+          appStatus: nextStatus,
+          message: normalizedMessage ?? null,
+        }),
+      ]
+    );
+  } catch (logError) {
+    console.warn('[fal-webhook] failed to record Fal lifecycle log', { jobId: job.job_id, providerJobId: requestId }, logError);
+  }
+
   const wasCompleted = job.status === 'completed';
   const isCompleted = nextStatus === 'completed';
   if (isCompleted && !wasCompleted && job.user_id) {

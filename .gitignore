@@ -10,6 +10,7 @@ coverage/
 .env.*
 !.env.example
 !frontend/.env.local.example
+frontend/.neon
 
 # OS / IDE
 .DS_Store

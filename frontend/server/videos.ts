@@ -178,6 +178,10 @@ export async function listGalleryVideos(tab: GalleryTab, limit = 24): Promise<Ga
   return listLatest(limit);
 }
 
+export async function listStarterPlaylistVideos(limit: number): Promise<GalleryVideo[]> {
+  return listPlaylistVideos(getStarterPlaylistSlug(), limit);
+}
+
 export type ExampleSort = 'date-desc' | 'date-asc' | 'duration-desc' | 'duration-asc' | 'engine-asc';
 
 function sortVideosByPreference(videos: GalleryVideo[], sort: ExampleSort): GalleryVideo[] {
