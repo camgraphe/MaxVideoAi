@@ -19,6 +19,8 @@ type VideoRow = {
   indexable: boolean | null;
   featured: boolean | null;
   featured_order: number | null;
+  final_price_cents: number | null;
+  currency: string | null;
 };
 
 export type GalleryVideo = {
@@ -37,6 +39,8 @@ export type GalleryVideo = {
   indexable: boolean;
   hasAudio: boolean;
   canUpscale: boolean;
+  finalPriceCents?: number | null;
+  currency?: string | null;
 };
 
 function formatPromptExcerpt(prompt: string, maxLength = 160): string {
@@ -62,6 +66,8 @@ function mapRow(row: VideoRow): GalleryVideo {
     indexable: Boolean(row.indexable ?? true),
     hasAudio: Boolean(row.has_audio ?? false),
     canUpscale: Boolean(row.can_upscale ?? false),
+    finalPriceCents: row.final_price_cents ?? undefined,
+    currency: row.currency ?? undefined,
   };
 }
 
@@ -80,7 +86,8 @@ function getStarterPlaylistSlug(): string {
 
 const BASE_SELECT = `
   SELECT job_id, user_id, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url,
-         aspect_ratio, has_audio, can_upscale, created_at, visibility, indexable, featured, featured_order
+         aspect_ratio, has_audio, can_upscale, created_at, visibility, indexable, featured, featured_order,
+         final_price_cents, currency
   FROM app_jobs
 `;
 
@@ -113,7 +120,7 @@ export async function listPlaylistVideos(slug: string, limit: number): Promise<G
     `
       SELECT aj.job_id, aj.user_id, aj.engine_id, aj.engine_label, aj.duration_sec, aj.prompt, aj.thumb_url,
              aj.video_url, aj.aspect_ratio, aj.has_audio, aj.can_upscale, aj.created_at, aj.visibility,
-             aj.indexable, aj.featured, aj.featured_order, pi.order_index
+             aj.indexable, aj.featured, aj.featured_order, aj.final_price_cents, aj.currency, pi.order_index
       FROM playlists p
       JOIN playlist_items pi ON pi.playlist_id = p.id
       JOIN app_jobs aj ON aj.job_id = pi.video_id
