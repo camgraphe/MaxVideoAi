@@ -583,16 +583,29 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       const falClient = getFalClient();
       const queueResult = await falClient.queue.result(falModel, { requestId });
       finalPayload = queueResult?.data ?? finalPayload ?? queueResult ?? null;
+      if (!media.videoUrl && queueResult && typeof queueResult === 'object') {
+        const fallbackMedia = extractMediaUrls(queueResult);
+        if (!media.videoUrl && fallbackMedia.videoUrl) {
+          media.videoUrl = fallbackMedia.videoUrl;
+        }
+        if (!media.thumbUrl && fallbackMedia.thumbUrl) {
+          media.thumbUrl = fallbackMedia.thumbUrl;
+        }
+      }
     } catch (error) {
       if (nextStatus === 'completed') {
         console.warn('[fal-webhook] Failed to fetch final result', error);
       }
     }
   }
-
-  const media = extractMediaUrls(finalPayload);
+  if (!media.videoUrl || !media.thumbUrl) {
+    const refreshed = extractMediaUrls(finalPayload);
+    if (!media.videoUrl && refreshed.videoUrl) media.videoUrl = refreshed.videoUrl;
+    if (!media.thumbUrl && refreshed.thumbUrl) media.thumbUrl = refreshed.thumbUrl;
+  }
   const nextVideoUrl = media.videoUrl ? normalizeMediaUrl(media.videoUrl) : null;
   const nextThumbUrl = media.thumbUrl ? normalizeMediaUrl(media.thumbUrl) : null;
+
   const extractedErrorMessage = extractFalErrorMessage(payload, nextStatus === 'failed' ? finalPayload : null);
   let nextMessage =
     extractedErrorMessage ??
@@ -642,6 +655,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   const shouldClearThumb =
     nextStatus === 'failed' &&
     (!nextThumbUrl || !resolvedThumbUrl || (resolvedThumbUrl && isPlaceholderThumbnail(resolvedThumbUrl)));
+
   const messageToPersist =
     nextStatus === 'failed'
       ? nextMessage ??

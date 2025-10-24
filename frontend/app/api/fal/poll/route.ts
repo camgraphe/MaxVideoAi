@@ -267,5 +267,51 @@ async function pollFalJobs() {
     }
   }
 
-  return NextResponse.json({ ok: true, checked: rows.length, updates });
+  let provisionalFailures = 0;
+  const staleProvisionals = await query<{ job_id: string; created_at: string }>(
+    `SELECT job_id, created_at
+       FROM app_jobs
+      WHERE provider_job_id IS NULL
+        AND status = 'pending'
+        AND created_at < NOW() - INTERVAL '5 minutes'
+      ORDER BY created_at ASC
+      LIMIT 20`
+  );
+
+  for (const stale of staleProvisionals) {
+    try {
+      await query(
+        `UPDATE app_jobs
+            SET status = 'failed',
+                progress = 0,
+                message = 'The render could not start. Please retry.',
+                provisional = FALSE,
+                updated_at = NOW()
+          WHERE job_id = $1
+            AND status = 'pending'
+            AND provider_job_id IS NULL`,
+        [stale.job_id]
+      );
+      await query(
+        `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
+         VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
+        [
+          stale.job_id,
+          'fal',
+          null,
+          'fal-unknown',
+          'poll:not-started',
+          JSON.stringify({
+            at: new Date().toISOString(),
+            note: 'Job never started at Fal; marked as failed.',
+          }),
+        ]
+      );
+      provisionalFailures += 1;
+    } catch (error) {
+      console.warn('[fal-poll] failed to mark provisional job as failed', stale.job_id, error);
+    }
+  }
+
+  return NextResponse.json({ ok: true, checked: rows.length, updates, provisionalFailures });
 }
