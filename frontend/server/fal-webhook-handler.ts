@@ -594,7 +594,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   const nextVideoUrl = media.videoUrl ? normalizeMediaUrl(media.videoUrl) : null;
   const nextThumbUrl = media.thumbUrl ? normalizeMediaUrl(media.thumbUrl) : null;
   const extractedErrorMessage = extractFalErrorMessage(payload, nextStatus === 'failed' ? finalPayload : null);
-  const nextMessage =
+  let nextMessage =
     extractedErrorMessage ??
     (nextStatus === 'failed'
       ? 'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'
@@ -623,13 +623,22 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   const finalVideoUrl = nextVideoUrl ?? job.video_url;
   const finalThumbUrl = resolvedThumbUrl ?? job.thumb_url;
   const finalPreviewFrame = finalThumbUrl ?? job.preview_frame;
+  const isMediaMissing = !finalVideoUrl;
 
+  let forcedNoMediaFailure = false;
   if (finalVideoUrl && nextStatus !== 'failed') {
     nextStatus = 'completed';
     nextProgress = 100;
+  } else if (nextStatus === 'completed' && isMediaMissing) {
+    forcedNoMediaFailure = true;
+    nextStatus = 'failed';
+    nextProgress = Math.min(nextProgress, 1);
+    if (!nextMessage) {
+      nextMessage = 'The provider finished this render but returned no video. Please retry or contact support if it persists.';
+    }
   }
 
-  const shouldClearVideo = nextStatus === 'failed' && !nextVideoUrl;
+  const shouldClearVideo = (nextStatus === 'failed' && !nextVideoUrl) || forcedNoMediaFailure;
   const shouldClearThumb =
     nextStatus === 'failed' &&
     (!nextThumbUrl || !resolvedThumbUrl || (resolvedThumbUrl && isPlaceholderThumbnail(resolvedThumbUrl)));
@@ -731,11 +740,38 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
           falStatus: payload.status ?? null,
           appStatus: nextStatus ?? statusInfo.status ?? null,
           message: normalizedMessage ?? null,
+          missingMedia: forcedNoMediaFailure || undefined,
         }),
       ]
     );
   } catch (logError) {
     console.warn('[fal-webhook] failed to record Fal lifecycle log', { jobId: job.job_id, providerJobId: requestId }, logError);
+  }
+
+  if (forcedNoMediaFailure) {
+    console.warn('[fal-webhook] Fal reported completion without media', {
+      jobId: job.job_id,
+      providerJobId: requestId,
+    });
+    try {
+      await query(
+        `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
+         VALUES ($1,$2,$3,$4,$5,$6::jsonb)`
+        , [
+          job.job_id,
+          'fal',
+          requestId,
+          effectiveEngineId ?? job.engine_id ?? 'fal-unknown',
+          'manual:no-media',
+          JSON.stringify({
+            at: new Date().toISOString(),
+            note: 'Fal reported completion without returning media.',
+          }),
+        ]
+      );
+    } catch (noMediaLogError) {
+      console.warn('[fal-webhook] failed to record no-media log', { jobId: job.job_id, providerJobId: requestId }, noMediaLogError);
+    }
   }
 
   const wasCompleted = job.status === 'completed';
