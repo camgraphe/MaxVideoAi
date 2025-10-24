@@ -728,8 +728,8 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
         normalizedLogStatus,
         JSON.stringify({
           at: new Date().toISOString(),
-          falStatus: statusInfo.rawFalStatus ?? payload.status ?? null,
-          appStatus: nextStatus,
+          falStatus: payload.status ?? null,
+          appStatus: nextStatus ?? statusInfo.status ?? null,
           message: normalizedMessage ?? null,
         }),
       ]
