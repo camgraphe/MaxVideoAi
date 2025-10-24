@@ -577,6 +577,8 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   let nextStatus = statusInfo.status;
   let nextProgress = statusInfo.progress;
 
+  let media = extractMediaUrls(finalPayload);
+
   if ((!finalPayload || nextStatus === 'completed') && effectiveEngineId && effectiveEngineId !== 'fal-unknown') {
     try {
       const falModel = (await resolveFalModelId(effectiveEngineId)) ?? effectiveEngineId;
