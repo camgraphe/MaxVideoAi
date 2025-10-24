@@ -23,10 +23,6 @@ export async function POST() {
   return pollFalJobs();
 }
 
-export async function GET() {
-  return pollFalJobs();
-}
-
 async function pollFalJobs() {
   const rows = await query<FalPendingJob>(
     `SELECT job_id, engine_id, provider_job_id, status, updated_at, created_at
@@ -272,8 +268,4 @@ async function pollFalJobs() {
   }
 
   return NextResponse.json({ ok: true, checked: rows.length, updates });
-}
-
-export async function GET() {
-  return POST();
 }
