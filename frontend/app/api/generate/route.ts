@@ -627,6 +627,7 @@ export async function POST(req: NextRequest) {
     ...(pricing.meta ?? {}),
     request: requestMeta,
   };
+  const priceOnlyReceipts = receiptsPriceOnlyEnabled();
   const costBreakdownUsd = (pricing.meta?.cost_breakdown_usd as Record<string, unknown> | undefined) ?? null;
   const receiptSnapshot = priceOnlyReceipts ? buildReceiptSnapshot(pricing) : pricing;
   const pricingSnapshotJson = JSON.stringify(receiptSnapshot);
@@ -643,7 +644,6 @@ export async function POST(req: NextRequest) {
   const connectMode = isConnectPayments();
   const vendorAccountId = connectMode ? pricing.vendorAccountId ?? engine.vendorAccountId ?? null : null;
   const applicationFeeCents = getPlatformFeeCents(pricing);
-  const priceOnlyReceipts = receiptsPriceOnlyEnabled();
   let defaultAllowIndex = true;
   if (userId) {
     try {
