@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
 export function MarketingFooter() {
@@ -31,7 +30,6 @@ export function MarketingFooter() {
         </div>
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <p className="max-w-3xl text-sm leading-relaxed text-text-muted">{brandNote}</p>
-          <LanguageToggle />
         </div>
       </div>
     </footer>
