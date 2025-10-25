@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { adminErrorToResponse, requireAdmin } from '@/server/admin';
-import { appendPlaylistItem, removePlaylistItem } from '@/server/playlists';
+import {
+  appendPlaylistItem,
+  removePlaylistItem,
+  reorderPlaylistItems,
+} from '@/server/playlists';
 
-interface RouteParams {
+type RouteParams = {
   params: {
     playlistId: string;
   };
+};
+
+function parseJson<T>(value: unknown): T | null {
+  if (!value || typeof value !== 'object') return null;
+  return value as T;
 }
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
@@ -14,9 +23,8 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }
 
-  let adminId: string;
   try {
-    adminId = await requireAdmin(req);
+    await requireAdmin(req);
   } catch (error) {
     return adminErrorToResponse(error);
   }
@@ -32,15 +40,15 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   } catch {
     body = undefined;
   }
-
-  const videoId = typeof (body as { videoId?: unknown })?.videoId === 'string' ? (body as { videoId: string }).videoId.trim() : '';
+  const payload = parseJson<{ videoId?: string }>(body);
+  const videoId = payload?.videoId?.trim();
   if (!videoId) {
-    return NextResponse.json({ ok: false, error: 'Missing video id' }, { status: 400 });
+    return NextResponse.json({ ok: false, error: 'Missing videoId' }, { status: 400 });
   }
 
   try {
     await appendPlaylistItem(playlistId, videoId);
-    return NextResponse.json({ ok: true, playlistId, videoId, updatedBy: adminId });
+    return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('[admin/playlists/:id/items] failed to append', error);
     return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });
@@ -63,17 +71,71 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ ok: false, error: 'Missing playlist id' }, { status: 400 });
   }
 
-  const url = new URL(req.url);
-  const videoId = url.searchParams.get('videoId');
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    body = undefined;
+  }
+  const payload = parseJson<{ videoId?: string }>(body);
+  const videoId = payload?.videoId?.trim();
   if (!videoId) {
-    return NextResponse.json({ ok: false, error: 'Missing video id' }, { status: 400 });
+    return NextResponse.json({ ok: false, error: 'Missing videoId' }, { status: 400 });
   }
 
   try {
     await removePlaylistItem(playlistId, videoId);
-    return NextResponse.json({ ok: true, playlistId, videoId });
+    return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('[admin/playlists/:id/items] failed to remove', error);
+    return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });
+  }
+}
+
+export async function PUT(req: NextRequest, { params }: RouteParams) {
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
+  }
+
+  try {
+    await requireAdmin(req);
+  } catch (error) {
+    return adminErrorToResponse(error);
+  }
+
+  const playlistId = params.playlistId;
+  if (!playlistId) {
+    return NextResponse.json({ ok: false, error: 'Missing playlist id' }, { status: 400 });
+  }
+
+  let order: unknown;
+  try {
+    order = await req.json();
+  } catch {
+    order = undefined;
+  }
+  if (!Array.isArray(order)) {
+    return NextResponse.json({ ok: false, error: 'Invalid payload' }, { status: 400 });
+  }
+
+  const normalized = order
+    .map((entry) => (typeof entry === 'object' && entry ? entry : null))
+    .filter(Boolean)
+    .map((entry) => ({
+      videoId: typeof (entry as { videoId?: string }).videoId === 'string' ? (entry as { videoId: string }).videoId : '',
+      pinned: Boolean((entry as { pinned?: boolean }).pinned),
+    }))
+    .filter((entry) => entry.videoId.trim().length);
+
+  if (!normalized.length) {
+    return NextResponse.json({ ok: false, error: 'No valid items provided' }, { status: 400 });
+  }
+
+  try {
+    await reorderPlaylistItems(playlistId, normalized);
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error('[admin/playlists/:id/items] failed to reorder', error);
     return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });
   }
 }
