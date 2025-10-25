@@ -55,6 +55,13 @@ function extractThumbUrl(payload: unknown): string | null {
   return null;
 }
 
+function fallbackThumbnail(aspectRatio?: string | null): string {
+  const normalized = aspectRatio?.trim().toLowerCase();
+  if (normalized === '9:16') return '/assets/frames/thumb-9x16.svg';
+  if (normalized === '1:1') return '/assets/frames/thumb-1x1.svg';
+  return '/assets/frames/thumb-16x9.svg';
+}
+
 export async function fetchFalJobMedia(options: FetchOptions): Promise<FetchResult> {
   const engineId = options.engineId ?? 'fal-unknown';
   const falModelId = (await resolveFalModelId(engineId)) ?? engineId;
@@ -101,6 +108,15 @@ export async function fetchFalJobMedia(options: FetchOptions): Promise<FetchResu
       normalized.thumbnail = thumbUrl;
       normalized.thumb_url = thumbUrl;
     }
+  }
+
+  if (!thumbUrl) {
+    thumbUrl = fallbackThumbnail(options.aspectRatio);
+    normalized.data = normalized.data ?? {};
+    (normalized.data as Record<string, unknown>).thumbnail = thumbUrl;
+    (normalized.data as Record<string, unknown>).thumb_url = thumbUrl;
+    normalized.thumbnail = thumbUrl;
+    normalized.thumb_url = thumbUrl;
   }
 
   return { normalizedResult: normalized, videoUrl: videoUrl ?? null, thumbUrl: thumbUrl ?? null };

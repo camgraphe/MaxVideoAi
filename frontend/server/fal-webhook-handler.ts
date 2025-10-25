@@ -6,6 +6,13 @@ import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails'
 import { getFalEngineById } from '@/config/falEngines';
 import { fetchFalJobMedia } from '@/server/fal-job-sync';
 
+function fallbackThumbnail(aspectRatio?: string | null): string {
+  const normalized = aspectRatio?.trim().toLowerCase();
+  if (normalized === '9:16') return '/assets/frames/thumb-9x16.svg';
+  if (normalized === '1:1') return '/assets/frames/thumb-1x1.svg';
+  return '/assets/frames/thumb-16x9.svg';
+}
+
 type FalWebhookPayload = {
   request_id?: string;
   requestId?: string;
@@ -650,6 +657,9 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
 
   const rawVideoSource = nextVideoUrl ?? media.videoUrl ?? job.video_url;
   let resolvedThumbUrl = nextThumbUrl ?? job.thumb_url;
+  if (!resolvedThumbUrl) {
+    resolvedThumbUrl = fallbackThumbnail(job.aspect_ratio);
+  }
   if (
     rawVideoSource &&
     typeof rawVideoSource === 'string' &&
@@ -669,7 +679,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   }
 
   const finalVideoUrl = nextVideoUrl ?? job.video_url;
-  const finalThumbUrl = resolvedThumbUrl ?? job.thumb_url;
+  const finalThumbUrl = resolvedThumbUrl ?? fallbackThumbnail(job.aspect_ratio);
   const finalPreviewFrame = finalThumbUrl ?? job.preview_frame;
   const isMediaMissing = !finalVideoUrl;
 
