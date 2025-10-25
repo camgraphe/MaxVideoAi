@@ -2,8 +2,6 @@ import { query } from '@/lib/db';
 import { normalizeMediaUrl } from '@/lib/media';
 import { resolveFalModelId, resolveEngineIdFromModelSlug } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
-import { sendRenderCompletedEmail } from '@/lib/email';
-import { getUserIdentity } from '@/server/supabase-admin';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { getFalEngineById } from '@/config/falEngines';
 
@@ -790,25 +788,4 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     }
   }
 
-  const wasCompleted = job.status === 'completed';
-  const isCompleted = nextStatus === 'completed';
-  if (isCompleted && !wasCompleted && job.user_id) {
-    void notifyRenderCompletion(job, finalVideoUrl, finalThumbUrl).catch((error) => {
-      console.error('[fal-webhook] Failed to send completion email', error);
-    });
-  }
-}
-
-async function notifyRenderCompletion(job: AppJobRow, videoUrl: string | null, thumbUrl: string | null) {
-  const identity = await getUserIdentity(job.user_id!);
-  if (!identity?.email) return;
-  await sendRenderCompletedEmail({
-    to: identity.email,
-    jobId: job.job_id,
-    engineLabel: job.engine_label ?? undefined,
-    durationSec: job.duration_sec ?? undefined,
-    videoUrl: videoUrl ?? undefined,
-    thumbnailUrl: thumbUrl ?? undefined,
-    recipientName: identity.fullName,
-  });
 }

@@ -40,6 +40,12 @@ type Dictionary = {
     whyCards: Array<{ title: string; body: string }>;
     ways: Array<{ title: string; description: string; bullets: string[] }>;
     waysSection: { title: string; subtitle: string };
+    examplesCallout?: {
+      eyebrow?: string;
+      title: string;
+      subtitle?: string;
+      cta: string;
+    };
     gallery: {
       title: string;
       subtitle: string;
@@ -379,6 +385,12 @@ const en: Dictionary = {
     waysSection: {
       title: 'Everything lives in the workspace.',
       subtitle: 'Composer, wallet, job history, and gallery stay side-by-side so your team stays aligned.',
+    },
+    examplesCallout: {
+      eyebrow: 'Live gallery',
+      title: 'See how every engine routes the same brief.',
+      subtitle: 'Watch real renders orbit the CTA and jump straight into the Examples page to clone settings for your own project.',
+      cta: 'Browse live examples',
     },
     gallery: {
       title: 'Gallery',

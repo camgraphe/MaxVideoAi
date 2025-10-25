@@ -3,15 +3,18 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Script from 'next/script';
 import { ProofTabs } from '@/components/marketing/ProofTabs';
-import { GalleryShowcase } from '@/components/marketing/GalleryShowcase';
 import { PriceChip } from '@/components/marketing/PriceChip';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
 import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
+import { MosaicBackdrop } from '@/components/marketing/MosaicBackdrop';
+import { ExamplesOrbitCallout } from '@/components/marketing/ExamplesOrbitCallout';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { CURRENCY_LOCALE } from '@/lib/intl';
-import { getHomepageSlots, HERO_SLOT_KEYS, GALLERY_SLOT_KEYS } from '@/server/homepage';
+import { getHomepageSlots, HERO_SLOT_KEYS } from '@/server/homepage';
 import { normalizeEngineId } from '@/lib/engine-alias';
+import { listExamples } from '@/server/videos';
+import { listFalEngines } from '@/config/falEngines';
 
 type HeroTileConfig = {
   id: string;
@@ -175,8 +178,14 @@ export default async function HomePage() {
   const trust = home.trust;
   const waysSection = home.waysSection;
   const homepageSlots = await getHomepageSlots();
-  const fallbackGalleryItems = Array.isArray(home.gallery?.items) ? home.gallery.items : [];
-  const galleryPricingKernel = getPricingKernel();
+  const falEngines = listFalEngines();
+  const proofBackgroundMedia = (await listExamples('date-desc', 20))
+    .map((video) => {
+      const videoUrl = video.videoUrl ?? null;
+      const posterUrl = video.thumbUrl ?? null;
+      return { videoUrl, posterUrl };
+    })
+    .filter((item): item is { videoUrl: string | null; posterUrl: string | null } => Boolean(item.videoUrl || item.posterUrl));
 
   const heroTileConfigs = HERO_SLOT_KEYS.map((key, index) => {
     const slot = homepageSlots.hero.find((entry) => entry.key === key);
@@ -218,57 +227,36 @@ export default async function HomePage() {
     }))
   );
 
-  const galleryFeaturedItems = GALLERY_SLOT_KEYS.map((key, index) => {
-    const slot = homepageSlots.gallery.find((entry) => entry.key === key);
-    const video = slot?.video ?? null;
-    const fallbackItem = fallbackGalleryItems[index];
+  const examplesCalloutCopy = home.examplesCallout ?? {
+    eyebrow: 'Live gallery',
+    title: 'See how every engine routes the same brief.',
+    subtitle: 'Watch real renders orbit the CTA and jump straight into the Examples page to clone settings for your own project.',
+    cta: 'Browse live examples',
+  };
 
-    const title = slot?.title || fallbackItem?.label || `Gallery pick ${index + 1}`;
-    const description = slot?.subtitle || fallbackItem?.description || '';
-    const alt = description || video?.promptExcerpt || fallbackItem?.alt || title;
-
-    let meta = '';
-    if (video) {
-      const parts: string[] = [];
-      if (video.engineLabel) parts.push(video.engineLabel);
-      if (typeof video.durationSec === 'number') parts.push(`${video.durationSec}s`);
-      if (video.engineId && typeof video.durationSec === 'number') {
-        try {
-          const canonicalId = normalizeEngineId(video.engineId);
-          if (!canonicalId) {
-            throw new Error('Unsupported engine');
-          }
-          const { snapshot } = galleryPricingKernel.quote({
-            engineId: canonicalId,
-            durationSec: video.durationSec,
-            resolution: '1080p',
-            memberTier: 'member',
-          });
-          parts.push(new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: snapshot.currency,
-            minimumFractionDigits: 2,
-          }).format(snapshot.totalCents / 100));
-        } catch {
-          // ignore pricing failures
-        }
-      }
-      meta = parts.length ? parts.join(' • ') : '';
-    }
-
-    return {
-      id: key,
-      title,
-      description,
-      videoUrl: video?.videoUrl,
-      posterUrl: video?.thumbUrl,
-      alt,
-      meta,
-    };
+  const orbitEngineMap = new Map<string, { id: string; label: string; brandId?: string }>();
+  heroTileConfigs.forEach((tile) => {
+    const engineConfig = falEngines.find((entry) => {
+      const normalized = normalizeEngineId(entry.id) ?? entry.id;
+      return entry.id === tile.engineId || normalized === tile.engineId;
+    });
+    orbitEngineMap.set(tile.engineId, {
+      id: tile.engineId,
+      label: engineConfig?.engine.label ?? tile.label,
+      brandId: engineConfig?.engine.brandId ?? engineConfig?.brandId,
+    });
   });
-  const galleryItemsOverride = galleryFeaturedItems.some((item) => item.videoUrl || item.posterUrl)
-    ? galleryFeaturedItems
-    : undefined;
+  falEngines.forEach((entry) => {
+    if (!orbitEngineMap.has(entry.id)) {
+      orbitEngineMap.set(entry.id, {
+        id: entry.id,
+        label: entry.engine.label,
+        brandId: entry.engine.brandId ?? entry.brandId,
+      });
+    }
+  });
+  const orbitEngines = Array.from(orbitEngineMap.values()).slice(0, 6);
+
   const softwareSchema = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -392,85 +380,92 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
-      <div id="how-it-works">
-        <ProofTabs />
-      </div>
-
-      <section className="mx-auto mt-20 max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-6 lg:grid-cols-3">
-          {whyCards.map((item) => (
-            <article key={item.title} className="rounded-card border border-hairline bg-white p-6 shadow-card">
-              <h3 className="text-lg font-semibold text-text-primary">{item.title}</h3>
-              <p className="mt-3 text-sm text-text-secondary">{item.body}</p>
-            </article>
-          ))}
+      <MosaicBackdrop media={proofBackgroundMedia}>
+        <div id="how-it-works" className="pt-16 sm:pt-20 scroll-mt-32">
+          <ProofTabs />
         </div>
-      </section>
 
-      <section className="mx-auto mt-20 max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{waysSection.title}</h2>
-            <p className="text-sm text-text-secondary sm:text-base">{waysSection.subtitle}</p>
+        <section className="mx-auto mt-20 max-w-6xl px-4 pb-20 sm:px-6 lg:px-8">
+          <div className="grid gap-6 lg:grid-cols-3">
+            {whyCards.map((item) => (
+              <article key={item.title} className="rounded-card border border-hairline bg-white p-6 shadow-card">
+                <h3 className="text-lg font-semibold text-text-primary">{item.title}</h3>
+                <p className="mt-3 text-sm text-text-secondary">{item.body}</p>
+              </article>
+            ))}
           </div>
-        </div>
-        <div className="grid gap-6 lg:grid-cols-2">
-          {ways.map((item) => (
-            <article key={item.title} className="flex flex-col gap-4 rounded-card border border-hairline bg-white p-6 shadow-card">
-              <div>
-                <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">{item.title}</span>
+        </section>
+
+        <ExamplesOrbitCallout
+          engines={orbitEngines}
+          heading={examplesCalloutCopy.title}
+          description={examplesCalloutCopy.subtitle ?? ''}
+          ctaLabel={examplesCalloutCopy.cta}
+          eyebrow={examplesCalloutCopy.eyebrow}
+        />
+
+        <section className="mx-auto mt-20 max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-6 flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{waysSection.title}</h2>
+              <p className="text-sm text-text-secondary sm:text-base">{waysSection.subtitle}</p>
+            </div>
+          </div>
+          <div className="grid gap-6 lg:grid-cols-2">
+            {ways.map((item) => (
+              <article key={item.title} className="flex flex-col gap-4 rounded-card border border-hairline bg-white p-6 shadow-card">
+                <div>
+                  <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">{item.title}</span>
+                </div>
+                <h3 className="text-xl font-semibold text-text-primary">{item.description}</h3>
+                <ul className="space-y-2 text-sm text-text-secondary">
+                  {item.bullets.map((bullet) => (
+                    <li key={bullet} className="flex items-start gap-2">
+                      <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-accent" />
+                      <span>{bullet}</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="mx-auto mt-20 max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+            <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
+              <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
+                {pricing.badge}
+              </span>
+              <h3 className="mt-4 text-xl font-semibold text-text-primary">{pricing.title}</h3>
+              <p className="mt-3 text-sm text-text-secondary">{pricing.body}</p>
+              <div className="mt-5">
+                <PriceChip {...DEFAULT_MARKETING_SCENARIO} suffix={home.priceChipSuffix} />
               </div>
-              <h3 className="text-xl font-semibold text-text-primary">{item.description}</h3>
-              <ul className="space-y-2 text-sm text-text-secondary">
-                {item.bullets.map((bullet) => (
-                  <li key={bullet} className="flex items-start gap-2">
+              <Link
+                href="/pricing"
+                className="mt-6 inline-flex items-center text-sm font-semibold text-accent hover:text-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                aria-label="Explore MaxVideoAI pricing"
+              >
+                {pricing.link}
+              </Link>
+            </article>
+            <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
+              <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
+                {trust.badge}
+              </span>
+              <ul className="mt-4 space-y-3 text-sm text-text-secondary">
+                {trust.points.map((point) => (
+                  <li key={point} className="flex items-start gap-2">
                     <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-accent" />
-                    <span>{bullet}</span>
+                    <span>{point}</span>
                   </li>
                 ))}
               </ul>
             </article>
-          ))}
-        </div>
-      </section>
-
-      <GalleryShowcase featuredItems={galleryItemsOverride} />
-
-      <section className="mx-auto mt-20 max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
-          <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
-            <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
-              {pricing.badge}
-            </span>
-            <h3 className="mt-4 text-xl font-semibold text-text-primary">{pricing.title}</h3>
-            <p className="mt-3 text-sm text-text-secondary">{pricing.body}</p>
-            <div className="mt-5">
-              <PriceChip {...DEFAULT_MARKETING_SCENARIO} suffix={home.priceChipSuffix} />
-            </div>
-            <Link
-              href="/pricing"
-              className="mt-6 inline-flex items-center text-sm font-semibold text-accent hover:text-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-              aria-label="Explore MaxVideoAI pricing"
-            >
-              {pricing.link}
-            </Link>
-          </article>
-          <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
-            <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
-              {trust.badge}
-            </span>
-            <ul className="mt-4 space-y-3 text-sm text-text-secondary">
-              {trust.points.map((point) => (
-                <li key={point} className="flex items-start gap-2">
-                  <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-accent" />
-                  <span>{point}</span>
-                </li>
-              ))}
-            </ul>
-          </article>
-        </div>
-      </section>
+          </div>
+        </section>
+      </MosaicBackdrop>
       <Script id="software-jsonld" type="application/ld+json">
         {JSON.stringify(softwareSchema)}
       </Script>

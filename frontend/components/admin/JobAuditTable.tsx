@@ -48,6 +48,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor }: JobAuditTable
   const [statusVariant, setStatusVariant] = useState<'info' | 'success' | 'error'>('info');
   const [showArchived, setShowArchived] = useState(false);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const [syncingJobId, setSyncingJobId] = useState<string | null>(null);
 
   const sortedJobs = useMemo(() => {
     const base = [...jobs].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -122,6 +123,38 @@ export function AdminJobAuditTable({ initialJobs, initialCursor }: JobAuditTable
         const message = error instanceof Error ? error.message : 'Unable to bring this job back online.';
         setStatusVariant('error');
         setStatusMessage(message);
+      }
+    },
+    [refresh]
+  );
+
+  const handleRelink = useCallback(
+    async (jobId: string) => {
+      const confirmLink = window.confirm(
+        'Re-synchroniser ce job avec Fal ? Cela mettra à jour les URL vidéo et miniature.'
+      );
+      if (!confirmLink) return;
+      setSyncingJobId(jobId);
+      try {
+        const response = await fetch('/api/admin/jobs/link', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jobId }),
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.ok) {
+          throw new Error(payload?.error ?? 'Impossible de synchroniser ce job avec Fal.');
+        }
+        setStatusVariant('success');
+        setStatusMessage('Job synchronisé avec Fal.');
+        await refresh();
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'Impossible de synchroniser ce job avec Fal.';
+        setStatusVariant('error');
+        setStatusMessage(message);
+      } finally {
+        setSyncingJobId(null);
       }
     },
     [refresh]
@@ -286,7 +319,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor }: JobAuditTable
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-col gap-2">
                         <span className="font-mono text-xs text-text-primary break-all">{job.jobId}</span>
                         {job.providerJobId ? (
                           <span className="font-mono text-[11px] text-text-muted break-all">
@@ -295,6 +328,21 @@ export function AdminJobAuditTable({ initialJobs, initialCursor }: JobAuditTable
                         ) : null}
                         {job.message ? (
                           <span className="text-xs text-text-secondary">{job.message}</span>
+                        ) : null}
+                        {job.providerJobId && (!job.videoUrl || job.status !== 'completed') ? (
+                          <button
+                            type="button"
+                            onClick={() => void handleRelink(job.jobId)}
+                            disabled={syncingJobId === job.jobId}
+                            className={clsx(
+                              'inline-flex items-center justify-center rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-text-primary transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                              syncingJobId === job.jobId
+                                ? 'cursor-not-allowed opacity-60'
+                                : 'hover:border-accentSoft/60 hover:bg-accentSoft/10'
+                            )}
+                          >
+                            {syncingJobId === job.jobId ? 'Sync en cours…' : 'Reprendre sur Fal'}
+                          </button>
                         ) : null}
                       </div>
                     </td>

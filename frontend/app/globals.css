@@ -48,6 +48,39 @@ main {
   @apply ring-2 ring-offset-2 ring-offset-white ring-ring;
 }
 
+@keyframes mosaicDrift {
+  0% {
+    transform: translate3d(0%, 0%, 0) scale(1.05);
+  }
+  50% {
+    transform: translate3d(-4%, -3%, 0) scale(1.05);
+  }
+  100% {
+    transform: translate3d(0%, 0%, 0) scale(1.05);
+  }
+}
+
+@keyframes orbitSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbitPulse {
+  0%,
+  100% {
+    box-shadow: 0 35px 80px -40px rgba(54, 88, 255, 0.85);
+    background-color: theme('colors.accent');
+  }
+  50% {
+    box-shadow: 0 38px 90px -35px rgba(54, 88, 255, 0.95);
+    background-color: theme('colors.accentSoft');
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
