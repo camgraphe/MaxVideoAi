@@ -4,6 +4,7 @@ import { resolveFalModelId, resolveEngineIdFromModelSlug } from '@/lib/fal-catal
 import { getFalClient } from '@/lib/fal-client';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { getFalEngineById } from '@/config/falEngines';
+import { fetchFalJobMedia } from '@/server/fal-job-sync';
 
 type FalWebhookPayload = {
   request_id?: string;
@@ -603,8 +604,42 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     if (!media.videoUrl && refreshed.videoUrl) media.videoUrl = refreshed.videoUrl;
     if (!media.thumbUrl && refreshed.thumbUrl) media.thumbUrl = refreshed.thumbUrl;
   }
-  const nextVideoUrl = media.videoUrl ? normalizeMediaUrl(media.videoUrl) : null;
-  const nextThumbUrl = media.thumbUrl ? normalizeMediaUrl(media.thumbUrl) : null;
+  let nextVideoUrl = media.videoUrl ? normalizeMediaUrl(media.videoUrl) : null;
+  let nextThumbUrl = media.thumbUrl ? normalizeMediaUrl(media.thumbUrl) : null;
+
+  if (
+    nextStatus === 'completed' &&
+    (!nextVideoUrl || !nextThumbUrl) &&
+    requestId &&
+    effectiveEngineId &&
+    effectiveEngineId !== 'fal-unknown'
+  ) {
+    try {
+      const fallback = await fetchFalJobMedia({
+        jobId: job.job_id,
+        engineId: effectiveEngineId,
+        providerJobId: requestId,
+        userId: job.user_id,
+        aspectRatio: job.aspect_ratio,
+        existingThumbUrl: job.thumb_url,
+      });
+      if (fallback.normalizedResult) {
+        finalPayload = fallback.normalizedResult;
+      }
+      if (!nextVideoUrl && fallback.videoUrl) {
+        nextVideoUrl = normalizeMediaUrl(fallback.videoUrl) ?? fallback.videoUrl;
+      }
+      if (!nextThumbUrl && fallback.thumbUrl) {
+        nextThumbUrl = normalizeMediaUrl(fallback.thumbUrl) ?? fallback.thumbUrl;
+      }
+    } catch (error) {
+      console.warn('[fal-webhook] Fal media recovery failed', {
+        jobId: job.job_id,
+        providerJobId: requestId,
+        error,
+      });
+    }
+  }
 
   const extractedErrorMessage = extractFalErrorMessage(payload, nextStatus === 'failed' ? finalPayload : null);
   let nextMessage =
@@ -613,7 +648,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       ? 'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'
       : null);
 
-  const rawVideoSource = media.videoUrl ?? job.video_url;
+  const rawVideoSource = nextVideoUrl ?? media.videoUrl ?? job.video_url;
   let resolvedThumbUrl = nextThumbUrl ?? job.thumb_url;
   if (
     rawVideoSource &&

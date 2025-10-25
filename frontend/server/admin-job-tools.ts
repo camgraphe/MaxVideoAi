@@ -1,8 +1,6 @@
 import { query } from '@/lib/db';
-import { resolveFalModelId } from '@/lib/fal-catalog';
-import { getFalClient } from '@/lib/fal-client';
 import { updateJobFromFalWebhook } from '@/server/fal-webhook-handler';
-import { ensureJobThumbnail } from '@/server/thumbnails';
+import { fetchFalJobMedia } from '@/server/fal-job-sync';
 
 type LinkableJobRow = {
   job_id: string;
@@ -20,10 +18,6 @@ type LinkFalJobResult = {
   videoUrl: string | null;
   thumbUrl: string | null;
 };
-
-function cloneResult<T>(result: T): T {
-  return result && typeof result === 'object' ? JSON.parse(JSON.stringify(result)) : (result as T);
-}
 
 export async function linkFalJob(options: {
   jobId: string;
@@ -54,72 +48,31 @@ export async function linkFalJob(options: {
     throw new Error(`Job ${jobId} has no provider_job_id.`);
   }
 
-  const engineId = job.engine_id ?? 'fal-unknown';
-  const falModelId = (await resolveFalModelId(engineId)) ?? engineId;
-  const falClient = getFalClient();
+  const { normalizedResult, videoUrl, thumbUrl } = await fetchFalJobMedia({
+    jobId: job.job_id,
+    engineId: job.engine_id,
+    providerJobId,
+    userId: job.user_id,
+    aspectRatio: job.aspect_ratio,
+    existingThumbUrl: job.thumb_url,
+  });
 
-  const result = await falClient.queue
-    .result(falModelId, { requestId: providerJobId })
-    .catch((error: unknown) => {
-      throw new Error(`Fal result lookup failed: ${(error as Error)?.message ?? error}`);
-    });
-
-  if (!result) {
-    throw new Error(`Fal returned no result for ${providerJobId}.`);
-  }
-
-  const normalized = cloneResult(result) as Record<string, any>;
-  if (!normalized.data && normalized.video) {
-    normalized.data = { video: normalized.video };
-  }
-
-  const videoUrl: string | undefined =
-    normalized?.data?.video?.url ??
-    normalized?.data?.video_url ??
-    normalized?.video?.url ??
-    normalized?.video_url ??
-    undefined;
-
-  const hasThumb =
-    Boolean(normalized?.data?.thumbnail) ||
-    Boolean(normalized?.data?.thumb_url) ||
-    Boolean(normalized?.thumbnail) ||
-    Boolean(normalized?.thumb_url);
-
-  if (!hasThumb && videoUrl) {
-    const generatedThumb = await ensureJobThumbnail({
-      jobId: job.job_id,
-      userId: job.user_id ?? undefined,
-      videoUrl,
-      aspectRatio: job.aspect_ratio ?? undefined,
-      existingThumbUrl: job.thumb_url ?? undefined,
-    });
-    if (generatedThumb) {
-      normalized.data = normalized.data ?? {};
-      normalized.data.thumbnail = generatedThumb;
-      normalized.data.thumb_url = generatedThumb;
-      normalized.thumbnail = generatedThumb;
-      normalized.thumb_url = generatedThumb;
-    }
+  if (!normalizedResult || !videoUrl) {
+    throw new Error('Fal result did not include a playable video.');
   }
 
   await updateJobFromFalWebhook({
     request_id: providerJobId,
     status: 'completed',
     job_id: job.job_id,
-    result: normalized as unknown,
+    result: normalizedResult as unknown,
   });
 
   return {
     jobId: job.job_id,
     providerJobId,
     engineId: job.engine_id,
-    videoUrl: videoUrl ?? null,
-    thumbUrl:
-      (normalized?.data?.thumbnail as string | undefined) ??
-      (normalized?.data?.thumb_url as string | undefined) ??
-      (normalized?.thumbnail as string | undefined) ??
-      (normalized?.thumb_url as string | undefined) ??
-      null,
+    videoUrl,
+    thumbUrl,
   };
 }
