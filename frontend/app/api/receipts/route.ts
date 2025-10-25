@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured, query } from '@/lib/db';
 import { getUserIdFromRequest } from '@/lib/user';
-import type { PricingSnapshot } from '@/types/engines';
 import { ensureBillingSchema } from '@/lib/schema';
 
 export async function GET(req: NextRequest) {
@@ -34,25 +33,21 @@ export async function GET(req: NextRequest) {
   params.push(limit + 1);
   type ReceiptRow = {
     id: number;
-    type: string;
+    kind: string;
     amount_cents: number;
     currency: string;
     description: string | null;
     created_at: string;
     job_id: string | null;
-    pricing_snapshot: PricingSnapshot | null;
-    application_fee_cents: number | null;
-    vendor_account_id: string | null;
-    stripe_payment_intent_id: string | null;
-    stripe_charge_id: string | null;
-    stripe_refund_id: string | null;
+    tax_amount_cents: number | null;
+    discount_amount_cents: number | null;
   };
 
   let rows: ReceiptRow[];
   try {
     rows = await query<ReceiptRow>(
-      `SELECT id, type, amount_cents, currency, description, created_at, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, stripe_refund_id
-       FROM app_receipts
+      `SELECT id, kind, amount_cents, currency, description, created_at, job_id, tax_amount_cents, discount_amount_cents
+       FROM app_receipts_public
        ${where}
        ORDER BY id DESC
        LIMIT $${params.length}`,
@@ -67,5 +62,17 @@ export async function GET(req: NextRequest) {
   const items = hasMore ? rows.slice(0, -1) : rows;
   const nextCursor = hasMore ? String(items[items.length - 1].id) : null;
 
-  return NextResponse.json({ ok: true, receipts: items, nextCursor });
+  const sanitized = items.map((row) => ({
+    id: row.id,
+    type: row.kind,
+    amount_cents: row.amount_cents,
+    currency: row.currency,
+    description: row.description,
+    created_at: row.created_at,
+    job_id: row.job_id,
+    tax_amount_cents: row.tax_amount_cents ?? null,
+    discount_amount_cents: row.discount_amount_cents ?? null,
+  }));
+
+  return NextResponse.json({ ok: true, receipts: sanitized, nextCursor });
 }

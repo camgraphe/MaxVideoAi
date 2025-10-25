@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { query } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
+import { isConnectPayments } from '@/lib/env';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,6 +32,15 @@ function formatError(error: unknown): string {
 }
 
 export async function POST(req: Request) {
+  if (!isConnectPayments()) {
+    return NextResponse.json({
+      ok: true,
+      results: [],
+      status: 'disabled',
+      mode: 'platform_only',
+    });
+  }
+
   if (!stripe) {
     return NextResponse.json({ error: 'Stripe not configured' }, { status: 501 });
   }

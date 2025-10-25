@@ -9,6 +9,7 @@ import type { EngineCaps as CapabilityCaps } from '@/fixtures/engineCaps';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { CURRENCY_LOCALE } from '@/lib/intl';
+import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 
 export type ComposerAttachment = {
   kind: 'image' | 'video';
@@ -448,13 +449,16 @@ function AssetDropzone({ engine, caps, field, required, assets, onSelect, onRemo
                   className="sr-only"
                   onChange={(event) => onInputChange(event, index)}
                 />
-                {asset ? (
-                  <>
-                    {asset.kind === 'image' ? (
-                      <img src={asset.previewUrl} alt={asset.name} className="absolute inset-0 h-full w-full object-cover" />
-                    ) : (
-                      <video src={asset.previewUrl} controls className="absolute inset-0 h-full w-full bg-black object-cover" />
-                    )}
+                    {asset ? (
+                      <>
+                        {asset.kind === 'image' ? (
+                          <img src={asset.previewUrl} alt={asset.name} className="absolute inset-0 h-full w-full object-cover" />
+                        ) : (
+                          <>
+                            <video src={asset.previewUrl} controls className="absolute inset-0 h-full w-full bg-black object-cover" />
+                            <AudioEqualizerBadge tone="light" size="sm" label="Video includes audio" />
+                          </>
+                        )}
                     <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-2 bg-black/50 px-2 py-1 text-[11px] text-white">
                       <span className="truncate" title={asset.name}>
                         {asset.name}

@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { buffer } from 'micro';
 import Stripe from 'stripe';
 import { Pool } from 'pg';
+import { isConnectPayments } from '@/lib/env';
 
 export const config = {
   api: {
@@ -10,6 +11,9 @@ export const config = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (!isConnectPayments()) {
+    return res.status(410).json({ error: 'Stripe webhook disabled' });
+  }
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method Not Allowed' });

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { runPreflight, useEngines } from '@/lib/api';
-import type { EngineCaps, Mode, Resolution, AspectRatio, PricingSnapshot } from '@/types/engines';
+import type { EngineCaps, Mode, Resolution, AspectRatio } from '@/types/engines';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 
@@ -17,12 +17,8 @@ type ReceiptItem = {
   description: string | null;
   created_at: string;
   job_id: string | null;
-  pricing_snapshot: PricingSnapshot | null;
-  application_fee_cents: number | null;
-  vendor_account_id: string | null;
-  stripe_payment_intent_id?: string | null;
-  stripe_charge_id?: string | null;
-  stripe_refund_id?: string | null;
+  tax_amount_cents: number | null;
+  discount_amount_cents: number | null;
 };
 
 export const dynamic = 'force-dynamic';
@@ -169,11 +165,13 @@ export default function BillingPage() {
   }
 
   async function exportCSV() {
-    const rows: string[] = ['id,type,amount,currency,description,created_at,job_id,application_fee_cents'];
+    const rows: string[] = ['id,type,amount,currency,description,created_at,job_id,tax_amount_cents,discount_amount_cents'];
     const toSign = (type: string, cents: number) => (type === 'charge' ? -cents : cents);
     receipts.items.forEach((r) => {
       const amt = (toSign(r.type, r.amount_cents) / 100).toFixed(2);
-      rows.push(`${r.id},${r.type},${amt},${r.currency},"${(r.description ?? '').replaceAll('"', '""')}",${r.created_at},${r.job_id ?? ''},${r.application_fee_cents ?? 0}`);
+      rows.push(
+        `${r.id},${r.type},${amt},${r.currency},"${(r.description ?? '').replaceAll('"', '""')}",${r.created_at},${r.job_id ?? ''},${r.tax_amount_cents ?? ''},${r.discount_amount_cents ?? ''}`
+      );
     });
     const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -353,18 +351,6 @@ export default function BillingPage() {
               {receipts.items.map((r) => {
                 const signedCents = r.type === 'charge' ? -r.amount_cents : r.amount_cents;
                 const amountDisplay = formatMoney(signedCents, r.currency);
-                const pricing = r.pricing_snapshot ?? undefined;
-                const platformFeeCents =
-                  typeof r.application_fee_cents === 'number'
-                    ? r.application_fee_cents
-                    : pricing?.platformFeeCents ?? 0;
-                const vendorShareCents =
-                  pricing?.vendorShareCents ??
-                  (r.type === 'charge' ? Math.max(0, r.amount_cents - platformFeeCents) : undefined);
-                const discountLabel =
-                  pricing?.discount && pricing.discount.amountCents > 0
-                    ? `Member price — You save ${Math.round((pricing.discount.percentApplied ?? 0) * 100)}%`
-                    : null;
                 const typeLabel = r.type === 'charge' ? 'Charge' : r.type === 'refund' ? 'Refund' : 'Top-up';
                 const typeClass =
                   r.type === 'charge'
@@ -373,7 +359,8 @@ export default function BillingPage() {
                       ? 'bg-sky-100 text-sky-700'
                       : 'bg-emerald-100 text-emerald-700';
                 const amountClass = signedCents < 0 ? 'text-text-primary' : 'text-emerald-600';
-                const baseCurrency = pricing?.currency ?? r.currency;
+                const taxCents = Number(r.tax_amount_cents ?? 0);
+                const discountCents = Number(r.discount_amount_cents ?? 0);
                 return (
                   <article key={r.id} className="space-y-3 rounded-card border border-border bg-bg p-4 text-sm text-text-secondary">
                     <header className="flex flex-wrap items-center justify-between gap-3">
@@ -391,53 +378,24 @@ export default function BillingPage() {
                       </div>
                     </header>
                     {r.description && <p className="text-xs text-text-muted">{r.description}</p>}
-                    {discountLabel && (
-                      <span className="inline-flex items-center rounded-full bg-accent/10 px-2 py-1 text-[11px] font-semibold text-accent">
-                        {discountLabel}
-                      </span>
-                    )}
-                    {pricing && (
-                      <dl className="grid gap-1 text-xs sm:text-sm">
-                        <div className="flex justify-between">
-                          <dt>Base</dt>
-                          <dd>{formatMoney(pricing.base.amountCents, baseCurrency)}</dd>
+                    <dl className="grid gap-1 text-xs sm:text-sm">
+                      <div className="flex justify-between font-semibold text-text-primary">
+                        <dt>Total</dt>
+                        <dd>{formatMoney(r.amount_cents, r.currency)}</dd>
+                      </div>
+                      {taxCents > 0 && (
+                        <div className="flex justify-between text-text-muted">
+                          <dt>Tax</dt>
+                          <dd>{formatMoney(taxCents, r.currency)}</dd>
                         </div>
-                        {pricing.addons.map((addon, index) => (
-                          <div key={addon.type ?? index} className="flex justify-between">
-                            <dt>Add-on {addon.type}</dt>
-                            <dd>{formatMoney(addon.amountCents, baseCurrency)}</dd>
-                          </div>
-                        ))}
-                        {pricing.margin.amountCents > 0 && (
-                          <div className="flex justify-between">
-                            <dt>Margin</dt>
-                            <dd>{formatMoney(pricing.margin.amountCents, baseCurrency)}</dd>
-                          </div>
-                        )}
-                        {pricing.discount && pricing.discount.amountCents > 0 && (
-                          <div className="flex justify-between text-text-muted">
-                            <dt>Discount</dt>
-                            <dd>{formatMoney(-pricing.discount.amountCents, baseCurrency)}</dd>
-                          </div>
-                        )}
-                        <div className="flex justify-between font-semibold text-text-primary">
-                          <dt>Total</dt>
-                          <dd>{formatMoney(pricing.totalCents, baseCurrency)}</dd>
+                      )}
+                      {discountCents > 0 && (
+                        <div className="flex justify-between text-text-muted">
+                          <dt>Discount</dt>
+                          <dd>{formatMoney(-discountCents, r.currency)}</dd>
                         </div>
-                        {platformFeeCents !== undefined && (
-                          <div className="flex justify-between text-text-muted">
-                            <dt>Platform fee</dt>
-                            <dd>{formatMoney(platformFeeCents, baseCurrency)}</dd>
-                          </div>
-                        )}
-                        {typeof vendorShareCents === 'number' && r.type === 'charge' && (
-                          <div className="flex justify-between text-text-muted">
-                            <dt>Vendor share</dt>
-                            <dd>{formatMoney(vendorShareCents, baseCurrency)}</dd>
-                          </div>
-                        )}
-                      </dl>
-                    )}
+                      )}
+                    </dl>
                   </article>
                 );
               })}

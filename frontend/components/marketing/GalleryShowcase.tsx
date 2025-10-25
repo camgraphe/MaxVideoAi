@@ -7,6 +7,7 @@ import { getPricingKernel } from '@/lib/pricing-kernel';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import type { PricingScenario } from '@/lib/pricing-scenarios';
 import { getModelBySlug } from '@/lib/model-roster';
+import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 
 const GRADIENTS = [
   'from-blue-100 via-blue-50 to-white',
@@ -33,6 +34,7 @@ type FeaturedItemOverride = {
   posterUrl?: string;
   alt?: string;
   meta?: string;
+  hasAudio?: boolean;
 };
 
 type GalleryShowcaseProps = {
@@ -61,6 +63,7 @@ export function GalleryShowcase({ featuredItems }: GalleryShowcaseProps) {
       media?: {
         videoSrc: string;
         posterSrc?: string;
+        hasAudio?: boolean;
       };
     }>;
   };
@@ -90,6 +93,7 @@ export function GalleryShowcase({ featuredItems }: GalleryShowcaseProps) {
     posterSrc?: string;
     alt: string;
     meta: string;
+    hasAudio: boolean;
   };
 
   const renderItems: RenderItem[] = featuredItems && featuredItems.length
@@ -101,6 +105,7 @@ export function GalleryShowcase({ featuredItems }: GalleryShowcaseProps) {
         posterSrc: item.posterUrl,
         alt: item.alt ?? item.title,
         meta: item.meta ?? '',
+        hasAudio: Boolean(item.hasAudio),
       }))
     : gallery.items.map((item) => {
         const pricingScenario = item.meta.pricing;
@@ -125,6 +130,7 @@ export function GalleryShowcase({ featuredItems }: GalleryShowcaseProps) {
           posterSrc: item.media?.posterSrc,
           alt: item.alt,
           meta: `Model: ${displayName}${versionLabel ? ` · ${versionLabel}` : ''} | Duration: ${durationLabel} | Cost: ${costLabel}`,
+          hasAudio: Boolean(item.media?.hasAudio),
         } satisfies RenderItem;
       });
 
@@ -173,6 +179,7 @@ export function GalleryShowcase({ featuredItems }: GalleryShowcaseProps) {
               ) : (
                 <div className={`h-full w-full bg-gradient-to-br ${GRADIENTS[index % GRADIENTS.length]}`} aria-hidden />
               )}
+              {item.videoSrc && item.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available" /> : null}
             </div>
             <div className="flex flex-col gap-1 border-t border-hairline p-4">
               <span id={`${item.id}-label`} className="text-sm font-semibold text-text-primary">

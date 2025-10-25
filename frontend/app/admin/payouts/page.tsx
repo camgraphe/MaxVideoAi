@@ -39,6 +39,19 @@ function formatDate(value: string | null) {
 }
 
 export default async function PayoutDashboard() {
+  if ((process.env.PAYMENT_MODE ?? 'platform_only') !== 'connect') {
+    return (
+      <main className="mx-auto flex max-w-4xl flex-col gap-8 px-6 py-12">
+        <section>
+          <h1 className="text-2xl font-semibold">Batch Transfers</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Vendor payouts are disabled while payments run in platform-only mode.
+          </p>
+        </section>
+      </main>
+    );
+  }
+
   if (!process.env.DATABASE_URL) {
     return (
       <main className="mx-auto flex max-w-4xl flex-col gap-8 px-6 py-12">

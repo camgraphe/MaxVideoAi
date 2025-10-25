@@ -60,12 +60,18 @@ main {
   }
 }
 
+@property --orbit-spin {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 0deg;
+}
+
 @keyframes orbitSpin {
   0% {
-    transform: rotate(0deg);
+    --orbit-spin: 0deg;
   }
   100% {
-    transform: rotate(360deg);
+    --orbit-spin: 360deg;
   }
 }
 
@@ -78,6 +84,261 @@ main {
   50% {
     box-shadow: 0 38px 90px -35px rgba(54, 88, 255, 0.95);
     background-color: theme('colors.accentSoft');
+  }
+}
+
+@keyframes orbitDrift {
+  0%,
+  100% {
+    transform: translate(calc(-50% + var(--orbit-x, 0px)), calc(-50% + var(--orbit-y, 0px))) rotate(calc(-1 * var(--orbit-spin)));
+  }
+  50% {
+    transform: translate(
+        calc(-50% + var(--orbit-x, 0px) + var(--orbit-jitter-x, 0px)),
+        calc(-50% + var(--orbit-y, 0px) + var(--orbit-jitter-y, 0px))
+      )
+      rotate(calc(-1 * var(--orbit-spin)));
+  }
+  75% {
+    transform: translate(
+        calc(-50% + var(--orbit-x, 0px) + var(--orbit-jitter-return-x, 0px)),
+        calc(-50% + var(--orbit-y, 0px) + var(--orbit-jitter-return-y, 0px))
+      )
+      rotate(calc(-1 * var(--orbit-spin)));
+  }
+}
+
+@keyframes orbitLineDrift {
+  0%,
+  100% {
+    height: var(--orbit-line-length);
+  }
+  50% {
+    height: calc(var(--orbit-line-length) + var(--orbit-line-jitter, 0px));
+  }
+  75% {
+    height: calc(var(--orbit-line-length) + var(--orbit-line-return, 0px));
+  }
+}
+
+@keyframes portalBreath {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    box-shadow: 0 30px 110px -58px rgba(13, 17, 28, 0.7);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.06);
+    box-shadow: 0 46px 150px -60px rgba(18, 22, 36, 0.85);
+  }
+}
+
+@keyframes portalRipple {
+  0%,
+  100% {
+    transform: scale(0.82);
+    opacity: 0.26;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.52;
+  }
+}
+
+@keyframes portalWave {
+  0%,
+  100% {
+    transform: rotate(0deg) scale(0.95);
+    opacity: 0.4;
+  }
+  50% {
+    transform: rotate(180deg) scale(1.05);
+    opacity: 0.6;
+  }
+}
+
+@keyframes equalizerPulse {
+  0%,
+  100% {
+    transform: scaleY(var(--equalizer-min, 0.45));
+  }
+  50% {
+    transform: scaleY(var(--equalizer-max, 1));
+  }
+}
+
+@layer components {
+  .orbit-field {
+    --orbit-spin: 0deg;
+    animation: orbitSpin 36s linear infinite;
+    transform: rotate(var(--orbit-spin));
+    will-change: transform;
+  }
+
+  .orbit-icon {
+    --orbit-x: 0px;
+    --orbit-y: 0px;
+    --orbit-jitter-x: 0px;
+    --orbit-jitter-y: 0px;
+    --orbit-jitter-return-x: 0px;
+    --orbit-jitter-return-y: 0px;
+    transform: translate(calc(-50% + var(--orbit-x)), calc(-50% + var(--orbit-y))) rotate(calc(-1 * var(--orbit-spin)));
+    animation-name: orbitDrift;
+    animation-duration: var(--orbit-drift-duration, 6.2s);
+    animation-timing-function: cubic-bezier(0.45, 0.04, 0.25, 1);
+    animation-iteration-count: infinite;
+    animation-delay: var(--orbit-delay, 0s);
+  }
+
+  .orbit-line {
+    --orbit-line-length: 0px;
+    --orbit-line-jitter: 0px;
+    --orbit-line-return: 0px;
+    height: var(--orbit-line-length);
+    transform: translate(-50%, -50%) rotate(var(--orbit-angle));
+    animation-name: orbitLineDrift;
+    animation-duration: var(--orbit-drift-duration, 6.2s);
+    animation-timing-function: cubic-bezier(0.42, 0.08, 0.19, 1);
+    animation-iteration-count: infinite;
+    animation-delay: var(--orbit-delay, 0s);
+  }
+
+  .portal-button {
+    transform: translate(-50%, -50%);
+    border: 1px solid rgba(255, 255, 255, 0.48);
+    background:
+      radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.42), rgba(226, 232, 240, 0.12) 55%, rgba(99, 107, 131, 0.14)),
+      radial-gradient(circle at 70% 70%, rgba(45, 50, 65, 0.95), rgba(18, 22, 35, 0.92) 65%, rgba(12, 15, 24, 0.92));
+    box-shadow: 0 28px 100px -60px rgba(18, 21, 30, 0.7);
+    overflow: hidden;
+    transition: transform 240ms ease, box-shadow 240ms ease;
+    animation: portalBreath 7s ease-in-out infinite;
+  }
+
+  .portal-button::before,
+  .portal-button::after {
+    content: '';
+    position: absolute;
+    border-radius: 9999px;
+  }
+
+  .portal-button::before {
+    inset: -18%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.32), transparent 65%);
+    opacity: 0.42;
+    animation: portalRipple 8s ease-in-out infinite;
+  }
+
+  .portal-button::after {
+    inset: -6%;
+    border-radius: 9999px;
+    background: conic-gradient(
+      from 45deg,
+      rgba(255, 255, 255, 0.16),
+      rgba(136, 142, 168, 0.32),
+      rgba(255, 255, 255, 0.12),
+      rgba(102, 109, 135, 0.28),
+      rgba(255, 255, 255, 0.16)
+    );
+    filter: blur(4px);
+    opacity: 0.46;
+    animation: portalWave 12s linear infinite;
+    mix-blend-mode: screen;
+    transition: opacity 220ms ease;
+  }
+
+  .portal-button:hover {
+    animation: none;
+    transform: translate(-50%, -50%) scale(1.12);
+    box-shadow: 0 44px 150px -60px rgba(20, 24, 38, 0.85);
+  }
+
+  .portal-button:hover::before {
+    opacity: 0.55;
+  }
+
+  .portal-button:hover::after {
+    opacity: 0.62;
+  }
+
+  .audio-badge {
+    pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 0;
+    color: rgba(255, 255, 255, 0.96);
+    filter: drop-shadow(0 1px 3px rgba(5, 7, 16, 0.45));
+    transition: opacity 180ms ease;
+    z-index: 30;
+  }
+
+  .audio-badge--dark {
+    color: rgba(255, 255, 255, 0.96);
+  }
+
+  .audio-badge--light {
+    color: rgba(255, 255, 255, 0.96);
+  }
+
+  .audio-badge--sm,
+  .audio-badge--md {
+    width: auto;
+    height: auto;
+  }
+
+  .audio-badge__icon {
+    display: inline-flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 2px;
+    width: 18px;
+    height: 16px;
+  }
+
+  .audio-badge__bar {
+    width: 2px;
+    border-radius: 9999px;
+    background: currentColor;
+    transform-origin: center bottom;
+    animation: equalizerPulse 1400ms ease-in-out infinite;
+    opacity: 0.9;
+  }
+
+  .audio-badge__bar--a {
+    height: 8px;
+    --equalizer-min: 0.42;
+    --equalizer-max: 1.08;
+    animation-delay: 40ms;
+  }
+
+  .audio-badge__bar--b {
+    height: 13px;
+    --equalizer-min: 0.32;
+    --equalizer-max: 1.2;
+    animation-delay: 180ms;
+  }
+
+  .audio-badge__bar--c {
+    height: 6px;
+    --equalizer-min: 0.38;
+    --equalizer-max: 1.06;
+    animation-delay: 320ms;
+  }
+
+  .audio-badge__bar--d {
+    height: 10px;
+    --equalizer-min: 0.36;
+    --equalizer-max: 1.14;
+    animation-delay: 460ms;
+  }
+
+  .audio-badge__bar--e {
+    height: 7px;
+    --equalizer-min: 0.4;
+    --equalizer-max: 1.04;
+    animation-delay: 600ms;
   }
 }
 

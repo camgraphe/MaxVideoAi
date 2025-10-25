@@ -3,6 +3,7 @@
 import clsx from 'clsx';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 
 export interface MediaLightboxEntry {
   id: string;
@@ -19,6 +20,7 @@ export interface MediaLightboxEntry {
   createdAt?: string | null;
   indexable?: boolean;
   visibility?: 'public' | 'private';
+  hasAudio?: boolean;
 }
 
 export interface MediaLightboxProps {
@@ -341,12 +343,13 @@ export function MediaLightbox({
                     />
                   ) : thumbUrl ? (
                     <Image src={thumbUrl} alt="" fill className="object-cover" />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#dfe7ff] via-white to-[#f1f4ff] text-[12px] font-medium uppercase tracking-micro text-text-muted">
-                      Preview unavailable
-                    </div>
-                  )}
-                  {isProcessing && (
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#dfe7ff] via-white to-[#f1f4ff] text-[12px] font-medium uppercase tracking-micro text-text-muted">
+                    Preview unavailable
+                  </div>
+                )}
+                {entry.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available" /> : null}
+                {isProcessing && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/45 px-3 text-center text-[11px] text-white backdrop-blur-sm">
                       <span className="uppercase tracking-micro">Processing…</span>
                       {entry.message ? <span className="mt-1 line-clamp-2 text-white/80">{entry.message}</span> : null}

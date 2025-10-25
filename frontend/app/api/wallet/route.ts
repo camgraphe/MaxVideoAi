@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { getUserIdFromRequest } from '@/lib/user';
 import Stripe from 'stripe';
-import { ENV } from '@/lib/env';
+import { ENV, isConnectPayments } from '@/lib/env';
 import { computePricingSnapshot, getPlatformFeeCents, getVendorShareCents } from '@/lib/pricing';
 import { randomUUID } from 'crypto';
 import { ensureBillingSchema } from '@/lib/schema';
@@ -140,12 +140,11 @@ export async function POST(req: NextRequest) {
       membershipTier: body.membershipTier,
     });
 
-    const destinationAccountId =
-      pricing.vendorAccountId ??
-      ENV.COGS_VAULT_ACCOUNT_ID ??
-      process.env.COGS_VAULT_ACCOUNT_ID;
+    const destinationAccountId = isConnectPayments()
+      ? pricing.vendorAccountId ?? ENV.COGS_VAULT_ACCOUNT_ID ?? process.env.COGS_VAULT_ACCOUNT_ID
+      : null;
 
-    if (!destinationAccountId) {
+    if (isConnectPayments() && !destinationAccountId) {
       return NextResponse.json({ error: 'No destination account configured' }, { status: 503 });
     }
 
@@ -161,8 +160,6 @@ export async function POST(req: NextRequest) {
       duration_sec: String(durationSec),
       resolution,
       pricing_total_cents: String(pricing.totalCents),
-      pricing_platform_fee_cents: String(applicationFeeCents),
-      pricing_vendor_share_cents: String(vendorShareCents),
       pricing_currency: pricing.currency,
     };
 
@@ -178,22 +175,37 @@ export async function POST(req: NextRequest) {
     if (pricingSnapshotJson.length <= 450) {
       metadata.pricing_snapshot = pricingSnapshotJson;
     }
-    metadata.destination_account_id = destinationAccountId;
-    metadata.vendor_share_cents = String(vendorShareCents);
-    if (pricing.vendorAccountId) {
+    if (isConnectPayments() && destinationAccountId) {
+      metadata.destination_account_id = destinationAccountId;
+      metadata.pricing_platform_fee_cents = String(applicationFeeCents);
+      metadata.pricing_vendor_share_cents = String(vendorShareCents);
+      metadata.vendor_share_cents = String(vendorShareCents);
+    }
+    if (isConnectPayments() && pricing.vendorAccountId) {
       metadata.vendor_account_id = pricing.vendorAccountId;
     }
 
     try {
-      const intent = await stripe.paymentIntents.create({
+      const params: Stripe.PaymentIntentCreateParams = {
         amount: pricing.totalCents,
         currency: pricing.currency.toLowerCase(),
         automatic_payment_methods: { enabled: true },
-        application_fee_amount: applicationFeeCents,
-        transfer_data: {
-          destination: destinationAccountId,
-        },
         metadata,
+      };
+
+      if (isConnectPayments() && destinationAccountId) {
+        params.application_fee_amount = applicationFeeCents;
+        params.transfer_data = { destination: destinationAccountId };
+      }
+
+      const intent = await stripe.paymentIntents.create(params);
+
+      console.info('[payments] payment_intent created', {
+        paymentIntentId: intent.id,
+        jobId,
+        amountCents: pricing.totalCents,
+        currency: pricing.currency,
+        mode: isConnectPayments() ? 'connect' : 'platform',
       });
 
       return NextResponse.json({
@@ -202,9 +214,6 @@ export async function POST(req: NextRequest) {
         clientSecret: intent.client_secret,
         amountCents: pricing.totalCents,
         currency: pricing.currency,
-        applicationFeeCents,
-        vendorShareCents,
-        vendorAccountId: pricing.vendorAccountId,
         jobId,
         pricing,
       });
@@ -218,22 +227,28 @@ export async function POST(req: NextRequest) {
   try {
     // Create a one-off Checkout Session for top-up
     const origin = req.headers.get('origin') ?? process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
-    const destinationAccountId = ENV.COGS_VAULT_ACCOUNT_ID ?? process.env.COGS_VAULT_ACCOUNT_ID;
+    const destinationAccountId =
+      isConnectPayments() ? ENV.COGS_VAULT_ACCOUNT_ID ?? process.env.COGS_VAULT_ACCOUNT_ID : null;
 
-    if (!destinationAccountId) {
+    if (isConnectPayments() && !destinationAccountId) {
       return NextResponse.json({ error: 'COGS vault account not configured' }, { status: 503 });
     }
 
-    const platformFeeCents = Math.round(amountCents * 0.3);
-    const vendorShareCents = Math.max(0, amountCents - platformFeeCents);
-    const sessionMetadata = {
+    const sessionMetadata: Record<string, string> = {
       kind: 'topup',
       user_id: userId,
-      destination_account_id: destinationAccountId,
-      platform_fee_cents: String(platformFeeCents),
-      vendor_share_cents: String(vendorShareCents),
     };
-    const session = await stripe.checkout.sessions.create({
+    let platformFeeCents = 0;
+    let vendorShareCents = 0;
+    if (isConnectPayments() && destinationAccountId) {
+      platformFeeCents = Math.round(amountCents * 0.3);
+      vendorShareCents = Math.max(0, amountCents - platformFeeCents);
+      sessionMetadata.destination_account_id = destinationAccountId;
+      sessionMetadata.platform_fee_cents = String(platformFeeCents);
+      sessionMetadata.vendor_share_cents = String(vendorShareCents);
+    }
+
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'payment',
       payment_method_types: ['card'],
       success_url: `${origin}/billing?status=success`,
@@ -248,14 +263,31 @@ export async function POST(req: NextRequest) {
           quantity: 1,
         },
       ],
-      payment_intent_data: {
+      metadata: sessionMetadata,
+    };
+
+    if (isConnectPayments() && destinationAccountId) {
+      sessionParams.payment_intent_data = {
         application_fee_amount: platformFeeCents,
         transfer_data: {
           destination: destinationAccountId,
         },
-        metadata: sessionMetadata,
-      },
-      metadata: sessionMetadata,
+        metadata: {
+          ...sessionMetadata,
+          platform_fee_cents: String(platformFeeCents),
+          vendor_share_cents: String(vendorShareCents),
+        },
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
+
+    console.info('[payments] checkout session created', {
+      sessionId: session.id,
+      amountCents,
+      currency: 'usd',
+      userId,
+      mode: isConnectPayments() ? 'connect' : 'platform',
     });
 
     return NextResponse.json({ id: session.id, url: session.url });

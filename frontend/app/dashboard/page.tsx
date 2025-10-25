@@ -382,6 +382,7 @@ function buildEntriesFromJob(job: Job): MediaLightboxEntry[] {
       engineLabel: job.engineLabel,
       durationSec: job.durationSec,
       createdAt: job.createdAt,
+      hasAudio: Boolean(job.hasAudio),
     },
   ];
 }
@@ -403,6 +404,7 @@ function buildEntriesFromGroup(group: GroupSummary): MediaLightboxEntry[] {
     engineLabel: member.engineLabel,
     durationSec: member.durationSec,
     createdAt: member.createdAt,
+    hasAudio: Boolean(member.job?.hasAudio),
   }));
 }
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { isConnectPayments } from '@/lib/env';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY ?? '';
 const STRIPE_API_VERSION: Stripe.StripeConfig['apiVersion'] = '2023-10-16';
@@ -10,6 +11,9 @@ const stripe =
     : null;
 
 export async function GET(req: NextRequest) {
+  if (!isConnectPayments()) {
+    return NextResponse.json({ error: 'feature disabled' }, { status: 410 });
+  }
   if (!stripe) {
     return NextResponse.json({ error: 'Stripe credentials are not configured.' }, { status: 500 });
   }
@@ -206,5 +210,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  if (!isConnectPayments()) {
+    return NextResponse.json({ error: 'feature disabled' }, { status: 410 });
+  }
   return GET(req);
 }

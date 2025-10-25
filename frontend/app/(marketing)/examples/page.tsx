@@ -6,6 +6,7 @@ import { resolveDictionary } from '@/lib/i18n/server';
 import { listExamples, type ExampleSort } from '@/server/videos';
 import { listFalEngines } from '@/config/falEngines';
 import { EngineIcon } from '@/components/ui/EngineIcon';
+import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 
 const ENGINE_LINK_ALIASES = (() => {
   const map = new Map<string, string>();
@@ -237,6 +238,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                         Preview unavailable
                       </div>
                     )}
+                    {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available on playback" /> : null}
                     <div className="pointer-events-none absolute inset-0 flex flex-col justify-between bg-gradient-to-b from-black/20 via-black/60 to-black/85 opacity-0 transition duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
                       <div className="space-y-2.5 p-5 text-white">
                         <div className="flex items-center gap-2 text-white">

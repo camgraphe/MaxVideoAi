@@ -14,6 +14,7 @@ export interface VideoItem {
   meta?: Record<string, unknown>;
   indexable?: boolean;
   visibility?: 'public' | 'private';
+  hasAudio?: boolean;
 }
 
 export type VideoGroupLayout = 'x1' | 'x2' | 'x3' | 'x4';

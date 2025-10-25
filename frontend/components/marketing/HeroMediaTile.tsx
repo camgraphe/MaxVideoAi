@@ -3,16 +3,8 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { supabase } from '@/lib/supabaseClient';
-
-function SpeakerIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="h-5 w-5">
-      <path d="M10 9H7v6h3l4 4V5l-4 4Z" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M18 9.5c.64.64 1 1.52 1 2.5s-.36 1.86-1 2.5" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
 
 interface HeroMediaTileProps {
   label: string;
@@ -88,10 +80,7 @@ export function HeroMediaTile({
     <figure className="group relative overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-card">
       <div className="relative aspect-[16/9] w-full">
         {showAudioIcon ? (
-          <span className="absolute right-3 top-3 z-10 inline-flex items-center justify-center rounded-full bg-black/65 p-2 text-white shadow-card">
-            <SpeakerIcon />
-            <span className="sr-only">Audio on by default</span>
-          </span>
+          <AudioEqualizerBadge tone="light" size="sm" label="Audio enabled" />
         ) : null}
         {prefersReducedMotion ? (
           <Image src={posterSrc} alt={alt} fill priority={priority} sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover" />

@@ -7,7 +7,7 @@ import { generateVideo, FalGenerationError } from '@/lib/fal';
 import { computePricingSnapshot, getPlatformFeeCents } from '@/lib/pricing';
 import { getConfiguredEngine } from '@/server/engines';
 import Stripe from 'stripe';
-import { ENV } from '@/lib/env';
+import { ENV, isConnectPayments, receiptsPriceOnlyEnabled } from '@/lib/env';
 import { getUserIdFromRequest } from '@/lib/user';
 import type { PricingSnapshot } from '@/types/engines';
 import { ensureBillingSchema } from '@/lib/schema';
@@ -150,6 +150,37 @@ function extractFalProviderMessage(payload: unknown): string | null {
   }
 
   return null;
+}
+
+function buildReceiptSnapshot(pricing: PricingSnapshot): Record<string, unknown> {
+  const snapshot: Record<string, unknown> = {
+    totalCents: pricing.totalCents,
+    currency: pricing.currency,
+  };
+
+  const discountCandidate = (pricing as unknown as { discount?: { amountCents?: number; percentApplied?: number; label?: string } }).discount;
+  if (discountCandidate && typeof discountCandidate.amountCents === 'number' && discountCandidate.amountCents > 0) {
+    snapshot.discount = {
+      amountCents: discountCandidate.amountCents,
+      percentApplied: discountCandidate.percentApplied ?? null,
+      label: discountCandidate.label ?? null,
+    };
+  }
+
+  const taxesCandidate = (pricing as unknown as { taxes?: Array<{ amountCents?: number; label?: string }> }).taxes;
+  if (Array.isArray(taxesCandidate)) {
+    const taxes = taxesCandidate
+      .filter((tax) => tax && typeof tax.amountCents === 'number' && tax.amountCents > 0)
+      .map((tax) => ({
+        amountCents: tax.amountCents!,
+        label: tax.label ?? null,
+      }));
+    if (taxes.length) {
+      snapshot.taxes = taxes;
+    }
+  }
+
+  return snapshot;
 }
 
 function condenseFalErrorMessage(message: string | null | undefined): string | null {
@@ -597,8 +628,9 @@ export async function POST(req: NextRequest) {
     request: requestMeta,
   };
   const costBreakdownUsd = (pricing.meta?.cost_breakdown_usd as Record<string, unknown> | undefined) ?? null;
-  const pricingSnapshotJson = JSON.stringify(pricing);
-  const costBreakdownJson = costBreakdownUsd ? JSON.stringify(costBreakdownUsd) : null;
+  const receiptSnapshot = priceOnlyReceipts ? buildReceiptSnapshot(pricing) : pricing;
+  const pricingSnapshotJson = JSON.stringify(receiptSnapshot);
+  const costBreakdownJson = !priceOnlyReceipts && costBreakdownUsd ? JSON.stringify(costBreakdownUsd) : null;
 
   const payment: { mode?: PaymentMode; paymentIntentId?: string | null } =
     typeof body.payment === 'object' && body.payment
@@ -608,8 +640,10 @@ export async function POST(req: NextRequest) {
   const authenticatedUserId = await getUserIdFromRequest(req);
   const userId = explicitUserId ?? authenticatedUserId ?? null;
   const paymentMode: PaymentMode = payment.mode ?? (userId ? 'wallet' : 'platform');
-  const vendorAccountId = pricing.vendorAccountId ?? engine.vendorAccountId ?? null;
+  const connectMode = isConnectPayments();
+  const vendorAccountId = connectMode ? pricing.vendorAccountId ?? engine.vendorAccountId ?? null : null;
   const applicationFeeCents = getPlatformFeeCents(pricing);
+  const priceOnlyReceipts = receiptsPriceOnlyEnabled();
   let defaultAllowIndex = true;
   if (userId) {
     try {
@@ -638,8 +672,8 @@ type PendingReceipt = {
   currency: string;
   description: string;
   jobId: string;
-  snapshot: PricingSnapshot;
-  applicationFeeCents: number;
+  snapshot: unknown;
+  applicationFeeCents: number | null;
   vendorAccountId: string | null;
   stripePaymentIntentId?: string | null;
   stripeChargeId?: string | null;
@@ -650,6 +684,7 @@ async function recordRefundReceipt(
   description: string,
   stripeRefundId: string | null
 ): Promise<void> {
+  const priceOnly = receiptsPriceOnlyEnabled();
   if (!receipt.jobId) return;
   try {
     const existing = await query<{ id: string }>(
@@ -690,13 +725,13 @@ async function recordRefundReceipt(
         description,
         receipt.jobId,
         JSON.stringify(receipt.snapshot),
-        0,
-        receipt.vendorAccountId,
+        priceOnly ? null : 0,
+        priceOnly ? null : receipt.vendorAccountId,
         receipt.stripePaymentIntentId ?? null,
         receipt.stripeChargeId ?? null,
         stripeRefundId ?? null,
-        0,
-        receipt.vendorAccountId,
+        priceOnly ? null : 0,
+        priceOnly ? null : receipt.vendorAccountId,
       ]
     );
   } catch (error) {
@@ -747,7 +782,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
       description: `Run ${engine.label} - ${durationSec}s`,
       jobId,
       pricingSnapshotJson,
-      applicationFeeCents,
+      applicationFeeCents: priceOnlyReceipts ? null : applicationFeeCents,
       vendorAccountId,
       stripePaymentIntentId: null,
       stripeChargeId: null,
@@ -774,8 +809,8 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
       currency: pricing.currency,
       description: `Run ${engine.label} - ${durationSec}s`,
       jobId,
-      snapshot: pricing,
-      applicationFeeCents,
+      snapshot: receiptSnapshot,
+      applicationFeeCents: priceOnlyReceipts ? null : applicationFeeCents,
       vendorAccountId,
     };
     paymentStatus = 'paid_wallet';
@@ -789,7 +824,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     if (!payment.paymentIntentId) {
       return NextResponse.json({ ok: false, error: 'PaymentIntent required for direct mode' }, { status: 400 });
     }
-    if (!vendorAccountId) {
+    if (connectMode && !vendorAccountId) {
       return NextResponse.json({ ok: false, error: 'Vendor account missing for this engine' }, { status: 400 });
     }
 
@@ -803,7 +838,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     if (intentCurrency !== pricing.currency.toUpperCase()) {
       return NextResponse.json({ ok: false, error: 'Payment currency mismatch' }, { status: 409 });
     }
-    if (intent.transfer_data?.destination && intent.transfer_data.destination !== vendorAccountId) {
+    if (connectMode && intent.transfer_data?.destination && intent.transfer_data.destination !== vendorAccountId) {
       return NextResponse.json({ ok: false, error: 'Payment vendor mismatch' }, { status: 409 });
     }
 
@@ -821,8 +856,12 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
       currency: intentCurrency,
       description: `Run ${engine.label} - ${durationSec}s`,
       jobId,
-      snapshot: pricing,
-      applicationFeeCents: intent.application_fee_amount ?? applicationFeeCents,
+      snapshot: receiptSnapshot,
+      applicationFeeCents: priceOnlyReceipts
+        ? null
+        : connectMode
+            ? intent.application_fee_amount ?? applicationFeeCents
+            : null,
       vendorAccountId,
       stripePaymentIntentId,
       stripeChargeId,
@@ -1162,12 +1201,12 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
             `Refund ${engine.label} - ${durationSec}s`,
             pendingReceipt.jobId,
             JSON.stringify(pendingReceipt.snapshot),
-            0,
-            pendingReceipt.vendorAccountId,
+            priceOnlyReceipts ? null : 0,
+            priceOnlyReceipts ? null : pendingReceipt.vendorAccountId,
             pendingReceipt.stripePaymentIntentId ?? null,
             pendingReceipt.stripeChargeId ?? null,
-            0,
-            pendingReceipt.vendorAccountId,
+            priceOnlyReceipts ? null : 0,
+            priceOnlyReceipts ? null : pendingReceipt.vendorAccountId,
           ]
         );
       } catch (refundError) {
@@ -1602,12 +1641,12 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
             `Refund ${engine.label} - ${durationSec}s`,
             pendingReceipt.jobId,
             JSON.stringify(pendingReceipt.snapshot),
-            0,
-            pendingReceipt.vendorAccountId,
+            priceOnlyReceipts ? null : 0,
+            priceOnlyReceipts ? null : pendingReceipt.vendorAccountId,
             pendingReceipt.stripePaymentIntentId ?? null,
             pendingReceipt.stripeChargeId ?? null,
-            0,
-            pendingReceipt.vendorAccountId,
+            priceOnlyReceipts ? null : 0,
+            priceOnlyReceipts ? null : pendingReceipt.vendorAccountId,
           ]
         );
       } catch (refundError) {
@@ -1629,11 +1668,11 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
           pendingReceipt.description,
           pendingReceipt.jobId,
           JSON.stringify(pendingReceipt.snapshot),
-          pendingReceipt.applicationFeeCents,
+          pendingReceipt.applicationFeeCents ?? null,
           pendingReceipt.vendorAccountId,
           pendingReceipt.stripePaymentIntentId ?? null,
           pendingReceipt.stripeChargeId ?? null,
-          pendingReceipt.applicationFeeCents,
+          pendingReceipt.applicationFeeCents ?? null,
           pendingReceipt.vendorAccountId,
         ]
       );
@@ -1684,12 +1723,12 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
           `Refund ${engine.label} - ${durationSec}s`,
           pendingReceipt.jobId,
           JSON.stringify(pendingReceipt.snapshot),
-          0,
-          pendingReceipt.vendorAccountId,
+          priceOnlyReceipts ? null : 0,
+          priceOnlyReceipts ? null : pendingReceipt.vendorAccountId,
           pendingReceipt.stripePaymentIntentId ?? null,
           pendingReceipt.stripeChargeId ?? null,
-          0,
-          pendingReceipt.vendorAccountId,
+          priceOnlyReceipts ? null : 0,
+          priceOnlyReceipts ? null : pendingReceipt.vendorAccountId,
         ]
       );
       await query(`UPDATE app_jobs SET payment_status = 'refunded_wallet' WHERE job_id = $1`, [jobId]);

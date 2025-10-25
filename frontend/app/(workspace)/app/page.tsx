@@ -578,6 +578,7 @@ type LocalRender = {
   videoUrl?: string;
   readyVideoUrl?: string;
   thumbUrl?: string;
+  hasAudio?: boolean;
   priceCents?: number;
   currency?: string;
   pricingSnapshot?: PreflightResponse['pricing'];
@@ -624,6 +625,7 @@ type PersistedRender = {
   videoUrl?: string | null;
   readyVideoUrl?: string | null;
   thumbUrl?: string | null;
+  hasAudio?: boolean;
   priceCents?: number | null;
   currency?: string | null;
   paymentStatus?: string | null;
@@ -683,6 +685,7 @@ function coercePersistedRender(entry: PersistedRender): LocalRender | null {
     readyVideoUrl:
       typeof entry.readyVideoUrl === 'string' && entry.readyVideoUrl.length ? entry.readyVideoUrl : undefined,
     thumbUrl: typeof entry.thumbUrl === 'string' && entry.thumbUrl.length ? entry.thumbUrl : undefined,
+    hasAudio: typeof entry.hasAudio === 'boolean' ? entry.hasAudio : undefined,
     priceCents: typeof entry.priceCents === 'number' ? entry.priceCents : undefined,
     currency: typeof entry.currency === 'string' && entry.currency.length ? entry.currency : undefined,
     pricingSnapshot: undefined,
@@ -750,6 +753,7 @@ function serializePendingRenders(renders: LocalRender[]): string | null {
       videoUrl: render.videoUrl,
       readyVideoUrl: render.readyVideoUrl,
       thumbUrl: render.thumbUrl,
+      hasAudio: render.hasAudio,
       priceCents: render.priceCents,
       currency: render.currency,
       paymentStatus: render.paymentStatus,
@@ -973,11 +977,12 @@ const searchString = useMemo(() => searchParams?.toString() ?? '', [searchParams
         prompt: job.prompt ?? '',
         progress: normalizedProgress,
         message,
-        status: normalizedStatus,
-        videoUrl: job.videoUrl ?? undefined,
-        readyVideoUrl: job.videoUrl ?? undefined,
-        thumbUrl,
-        priceCents: priceCents ?? undefined,
+      status: normalizedStatus,
+      videoUrl: job.videoUrl ?? undefined,
+      readyVideoUrl: job.videoUrl ?? undefined,
+      thumbUrl,
+      hasAudio: typeof job.hasAudio === 'boolean' ? job.hasAudio : undefined,
+      priceCents: priceCents ?? undefined,
         currency,
         pricingSnapshot: job.pricingSnapshot,
         paymentStatus: job.paymentStatus ?? 'platform',
@@ -1565,6 +1570,7 @@ const searchString = useMemo(() => searchParams?.toString() ?? '', [searchParams
         etaLabel: render.etaLabel,
         prompt: render.prompt,
         status,
+        hasAudio: typeof render.hasAudio === 'boolean' ? render.hasAudio : undefined,
       };
     },
     [preflight?.currency]
@@ -3273,6 +3279,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         etaLabel: member.etaLabel ?? undefined,
         prompt: member.prompt ?? '',
         status: member.status ?? 'completed',
+        hasAudio: typeof member.job?.hasAudio === 'boolean' ? member.job.hasAudio : undefined,
       });
 
       if (action === 'compare') {

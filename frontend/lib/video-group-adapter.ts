@@ -79,6 +79,9 @@ function toVideoItem(member: GroupMemberSummary): VideoItem {
   if (member.job?.visibility) {
     meta.visibility = member.job.visibility;
   }
+  if (typeof member.job?.hasAudio === 'boolean') {
+    meta.hasAudio = member.job.hasAudio;
+  }
 
   const visibility = member.job?.visibility === 'public' ? 'public' : member.job?.visibility === 'private' ? 'private' : undefined;
   const indexable =
@@ -100,6 +103,7 @@ function toVideoItem(member: GroupMemberSummary): VideoItem {
     meta: Object.keys(meta).length ? meta : undefined,
     indexable,
     visibility,
+    hasAudio: typeof member.job?.hasAudio === 'boolean' ? member.job.hasAudio : undefined,
   };
 }
 

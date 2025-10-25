@@ -7,6 +7,7 @@ import type { EngineCaps } from '@/types/engines';
 import type { VideoGroup, VideoItem } from '@/types/video-groups';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { CURRENCY_LOCALE } from '@/lib/intl';
+import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 
 export type GroupCardAction = 'open' | 'continue' | 'refine' | 'branch' | 'compare' | 'remove';
 
@@ -152,6 +153,13 @@ export function GroupCard({
   );
 
   const providerLabel = group.provider === 'fal' ? 'Live' : 'Test';
+  const heroItem = useMemo(() => group.items.find((item) => item.id === group.heroItemId) ?? group.items[0], [group.heroItemId, group.items]);
+  const heroHasAudio = Boolean(
+    heroItem?.hasAudio ??
+      (heroItem?.meta && typeof heroItem.meta === 'object' && 'hasAudio' in heroItem.meta
+        ? Boolean((heroItem.meta as Record<string, unknown>).hasAudio)
+        : false)
+  );
 
   const handleAction = (action: GroupCardAction) => {
     setMenuOpen(false);
@@ -223,6 +231,7 @@ export function GroupCard({
             })}
           </div>
         </div>
+        {heroHasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available in clip" /> : null}
         <div className="absolute left-3 top-3 inline-flex items-center rounded-full bg-black/65 px-2.5 py-0.5 text-[11px] font-semibold text-white shadow">
           {splitLabel}
         </div>

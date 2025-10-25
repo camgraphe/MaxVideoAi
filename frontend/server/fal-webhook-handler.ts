@@ -5,6 +5,7 @@ import { getFalClient } from '@/lib/fal-client';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { getFalEngineById } from '@/config/falEngines';
 import { fetchFalJobMedia } from '@/server/fal-job-sync';
+import { detectHasAudioStream } from '@/server/media/detect-has-audio';
 
 function fallbackThumbnail(aspectRatio?: string | null): string {
   const normalized = aspectRatio?.trim().toLowerCase();
@@ -36,6 +37,7 @@ type AppJobRow = {
   aspect_ratio: string | null;
   preview_frame: string | null;
   message: string | null;
+  has_audio: boolean | null;
 };
 
 const COMPLETED_STATUSES = new Set(['COMPLETED', 'FINISHED', 'SUCCESS']);
@@ -436,9 +438,9 @@ async function createProvisionalJobFromWebhook(params: {
     `INSERT INTO app_jobs (
        job_id,
        user_id,
-      engine_id,
-      engine_label,
-      duration_sec,
+       engine_id,
+       engine_label,
+       duration_sec,
        prompt,
        thumb_url,
        aspect_ratio,
@@ -449,10 +451,11 @@ async function createProvisionalJobFromWebhook(params: {
        visibility,
        indexable,
        provisional,
+       has_audio,
        video_url
      )
      VALUES (
-       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16
+       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17
      )
      ON CONFLICT (job_id) DO UPDATE
        SET provider_job_id = COALESCE(EXCLUDED.provider_job_id, app_jobs.provider_job_id),
@@ -462,7 +465,7 @@ async function createProvisionalJobFromWebhook(params: {
            status = EXCLUDED.status,
            progress = EXCLUDED.progress,
            updated_at = NOW()
-     RETURNING job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message`,
+     RETURNING job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio`,
     [
       jobId,
       null,
@@ -479,6 +482,7 @@ async function createProvisionalJobFromWebhook(params: {
       'private',
       false,
       true,
+      false,
       normalizedVideoUrl,
     ]
   );
@@ -496,7 +500,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   const identifiers = extractIdentifiersFromPayload(payload);
 
   let jobRows = await query<AppJobRow>(
-    `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message
+    `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio
      FROM app_jobs
      WHERE provider_job_id = $1
      LIMIT 1`,
@@ -505,7 +509,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
 
   if (!jobRows.length && identifiers.jobId) {
     jobRows = await query<AppJobRow>(
-      `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message
+      `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio
        FROM app_jobs
        WHERE job_id = $1
        LIMIT 1`,
@@ -515,7 +519,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
 
   if (!jobRows.length && identifiers.localKey) {
     jobRows = await query<AppJobRow>(
-      `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message
+      `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio
        FROM app_jobs
        WHERE local_key = $1
        ORDER BY updated_at DESC
@@ -535,9 +539,9 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     );
     if (logRows.length) {
       jobRows = await query<AppJobRow>(
-        `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message
-         FROM app_jobs
-         WHERE job_id = $1
+      `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio
+       FROM app_jobs
+       WHERE job_id = $1
          LIMIT 1`,
         [logRows[0].job_id]
       );
@@ -701,6 +705,13 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     nextStatus === 'failed' &&
     (!nextThumbUrl || !resolvedThumbUrl || (resolvedThumbUrl && isPlaceholderThumbnail(resolvedThumbUrl)));
 
+  let detectedHasAudio: boolean | null = null;
+  if (shouldClearVideo) {
+    detectedHasAudio = false;
+  } else if (finalVideoUrl && (!job.has_audio || finalVideoUrl !== job.video_url)) {
+    detectedHasAudio = await detectHasAudioStream(finalVideoUrl);
+  }
+
   const messageToPersist =
     nextStatus === 'failed'
       ? nextMessage ??
@@ -733,6 +744,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
          message = $7::text,
          provider_job_id = COALESCE($8::text, provider_job_id),
          provisional = FALSE,
+         has_audio = CASE WHEN $9 THEN FALSE ELSE COALESCE($13, has_audio) END,
          engine_id = COALESCE($11, engine_id),
          engine_label = COALESCE($12, engine_label),
          updated_at = NOW()
@@ -750,6 +762,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       shouldClearThumb,
       engineIdForUpdate,
       engineLabelForUpdate,
+      detectedHasAudio,
     ]
   );
 

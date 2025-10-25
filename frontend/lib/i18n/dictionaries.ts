@@ -410,6 +410,7 @@ const en: Dictionary = {
           media: {
             videoSrc: '/assets/gallery/robot-look.mp4',
             posterSrc: '/hero/veo3.jpg',
+            hasAudio: true,
           },
         },
         {
@@ -424,6 +425,7 @@ const en: Dictionary = {
           media: {
             videoSrc: '/assets/gallery/robot-eyes.mp4',
             posterSrc: '/hero/luma-ray2-flash.jpg',
+            hasAudio: true,
           },
         },
         {
@@ -438,6 +440,7 @@ const en: Dictionary = {
           media: {
             videoSrc: '/assets/gallery/aerial-road.mp4',
             posterSrc: '/hero/minimax-video01.jpg',
+            hasAudio: true,
           },
         },
       ],

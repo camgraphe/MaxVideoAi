@@ -7,6 +7,7 @@ import { PriceFactorsBar, type PriceFactorKind } from '@/components/PriceFactors
 import { Card } from '@/components/ui/Card';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { MediaLightbox, type MediaLightboxEntry } from '@/components/MediaLightbox';
+import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import type { EngineCaps, PreflightResponse } from '@/types/engines';
 
 export type QuadTileAction = 'continue' | 'refine' | 'branch' | 'copy' | 'open';
@@ -31,6 +32,7 @@ export interface QuadPreviewTile {
   etaLabel?: string;
   prompt: string;
   status: 'pending' | 'completed' | 'failed';
+  hasAudio?: boolean;
 }
 
 interface QuadPreviewPanelProps {
@@ -208,6 +210,7 @@ export function QuadPreviewPanel({
         engineLabel: tile.engineLabel,
         durationSec: tile.durationSec,
         createdAt: undefined,
+        hasAudio: Boolean(tile.hasAudio),
       })),
     [sortedTiles]
   );
@@ -291,6 +294,9 @@ export function QuadPreviewPanel({
                       ) : (
                         <div className="absolute inset-0 bg-gradient-to-br from-[#dfe7ff] via-white to-[#f1f4ff]" />
                       )}
+                      {Boolean(preview?.hasAudio) && tileStatus !== 'failed' ? (
+                        <AudioEqualizerBadge tone="light" size="sm" label="Audio available" />
+                      ) : null}
                     </div>
                     <div className="absolute inset-0 z-10" data-quad-player-root={slotKey} />
                     {showPendingOverlay && (
@@ -419,6 +425,9 @@ export function QuadPreviewPanel({
                     ) : (
                       <div className="absolute inset-0 bg-gradient-to-br from-[#dfe7ff] via-white to-[#f1f4ff]" />
                     )}
+                    {tile.status !== 'failed' && tile.videoUrl && tile.hasAudio ? (
+                      <AudioEqualizerBadge tone="light" size="sm" label="Audio available" />
+                    ) : null}
                   </div>
                   <div className="absolute inset-0 z-10" data-quad-tile-root={tile.localKey} />
                   {tile.status === 'failed' ? (

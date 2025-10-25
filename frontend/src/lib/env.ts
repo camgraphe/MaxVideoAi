@@ -21,6 +21,13 @@ const falKey =
   getOptionalEnv('NEXT_PUBLIC_FAL_API_KEY') ??
   getOptionalEnv('NEXT_PUBLIC_FAL_KEY');
 
+const rawPaymentMode = (getOptionalEnv('PAYMENT_MODE') ?? 'platform_only').toLowerCase();
+const PAYMENT_MODE: 'platform_only' | 'connect' =
+  rawPaymentMode === 'connect' ? 'connect' : 'platform_only';
+
+const RECEIPTS_PRICE_ONLY =
+  (getOptionalEnv('RECEIPTS_PRICE_ONLY', 'true') ?? 'true').toLowerCase() === 'true';
+
 export const ENV = {
   NEXT_PUBLIC_API_BASE: getOptionalEnv('NEXT_PUBLIC_API_BASE', '/api'),
   NEXT_PUBLIC_SUPABASE_URL: getOptionalEnv('NEXT_PUBLIC_SUPABASE_URL'),
@@ -60,4 +67,18 @@ export const ENV = {
   WORKSPACE_CENTER_GALLERY: getOptionalEnv('NEXT_PUBLIC_WORKSPACE_CENTER_GALLERY'),
   FAL_USE_UPLOAD:
     (getOptionalEnv('FAL_USE_UPLOAD') ?? 'false').toLowerCase() === 'true',
+  PAYMENT_MODE,
+  RECEIPTS_PRICE_ONLY,
 };
+
+export function isPlatformOnlyPayments(): boolean {
+  return ENV.PAYMENT_MODE === 'platform_only';
+}
+
+export function isConnectPayments(): boolean {
+  return ENV.PAYMENT_MODE === 'connect';
+}
+
+export function receiptsPriceOnlyEnabled(): boolean {
+  return ENV.RECEIPTS_PRICE_ONLY;
+}

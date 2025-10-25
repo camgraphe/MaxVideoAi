@@ -1,5 +1,6 @@
 import { isDatabaseConfigured, query } from '@/lib/db';
 import { getLowBalanceThresholdCents, sendWalletLowBalanceEmail, shouldThrottleLowBalance } from '@/lib/email';
+import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import { getUserIdentity } from '@/server/supabase-admin';
 
 type MockWalletStore = Map<string, number>;
@@ -82,7 +83,7 @@ type ReserveWalletChargeParams = {
   description: string;
   jobId: string;
   pricingSnapshotJson: string;
-  applicationFeeCents: number;
+  applicationFeeCents: number | null;
   vendorAccountId: string | null;
   stripePaymentIntentId?: string | null;
   stripeChargeId?: string | null;
@@ -125,6 +126,10 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
   }
 
   try {
+    const priceOnly = receiptsPriceOnlyEnabled();
+    const applicationFeeParam = priceOnly ? null : params.applicationFeeCents;
+    const vendorAccountParam = priceOnly ? null : params.vendorAccountId;
+
     const rows = await query<{
       balance_cents: string | number | null;
       remaining_cents: string | number | null;
@@ -190,8 +195,8 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
         params.description,
         params.jobId,
         params.pricingSnapshotJson,
-        params.applicationFeeCents,
-        params.vendorAccountId,
+        applicationFeeParam,
+        vendorAccountParam,
         params.stripePaymentIntentId ?? null,
         params.stripeChargeId ?? null,
       ]

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Job } from '@/types/jobs';
 import { normalizeMediaUrl } from '@/lib/media';
+import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 
 export function JobMedia({
   job,
@@ -152,17 +153,20 @@ export function JobMedia({
       onFocus={() => allowMotion && setHovered(true)}
       onBlur={() => setHovered(false)}
     >
-      <video
-        ref={videoRef}
-        src={videoUrl}
-        poster={poster}
-        className={clsx('h-full w-full', objectFitClass)}
-        preload="metadata"
-        playsInline
-        muted
-        controls={false}
-        crossOrigin="anonymous"
-      />
+      <div className="relative h-full w-full">
+        <video
+          ref={videoRef}
+          src={videoUrl}
+          poster={poster}
+          className={clsx('h-full w-full', objectFitClass)}
+          preload="metadata"
+          playsInline
+          muted
+          controls={false}
+          crossOrigin="anonymous"
+        />
+        {job.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available" /> : null}
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { ENV } from '@/lib/env';
+import { ENV, isConnectPayments, receiptsPriceOnlyEnabled } from '@/lib/env';
 import { ensureBillingSchema } from '@/lib/schema';
 import { query } from '@/lib/db';
 import { recordMockWalletTopUp } from '@/lib/wallet';
@@ -13,6 +13,8 @@ const stripe = stripeSecret
   : null;
 
 export const runtime = 'nodejs';
+const connectMode = isConnectPayments();
+const receiptsPriceOnly = receiptsPriceOnlyEnabled();
 
 export async function POST(request: NextRequest) {
   if (!stripe || !webhookSecret) {
@@ -71,8 +73,9 @@ async function handleCheckoutSession(session: Stripe.Checkout.Session) {
         ? session.payment_intent.latest_charge
         : session.payment_intent.latest_charge?.id ?? null)
     : null;
-  const platformRevenueCents = session.metadata.platform_fee_cents ? Number(session.metadata.platform_fee_cents) : undefined;
-  const destinationAcct = session.metadata.destination_account_id ?? undefined;
+  const platformRevenueCents =
+    !receiptsPriceOnly && session.metadata.platform_fee_cents ? Number(session.metadata.platform_fee_cents) : undefined;
+  const destinationAcct = connectMode ? session.metadata.destination_account_id ?? undefined : undefined;
 
   if (!amountCents || amountCents <= 0) return;
 
@@ -93,9 +96,11 @@ async function handlePaymentIntent(intent: Stripe.PaymentIntent) {
 
   const kind = intent.metadata.kind ?? null;
   const destinationAcct =
-    intent.metadata.destination_account_id ??
-    intent.metadata.vendor_account_id ??
-    null;
+    connectMode
+      ? intent.metadata.destination_account_id ??
+        intent.metadata.vendor_account_id ??
+        null
+      : null;
 
   if (kind === 'topup') {
     const userId = intent.metadata.user_id;
@@ -104,11 +109,11 @@ async function handlePaymentIntent(intent: Stripe.PaymentIntent) {
     const amountCents = intent.amount_received ?? intent.amount ?? null;
     const currency = intent.currency ?? 'usd';
     const chargeId = typeof intent.latest_charge === 'string' ? intent.latest_charge : intent.latest_charge?.id ?? null;
-    const platformRevenueCents = intent.application_fee_amount ?? undefined;
+    const platformRevenueCents = receiptsPriceOnly ? undefined : intent.application_fee_amount ?? undefined;
     const vendorShareCents =
       amountCents !== null && platformRevenueCents !== undefined ? amountCents - platformRevenueCents : null;
 
-    if (destinationAcct && vendorShareCents && vendorShareCents !== 0) {
+    if (connectMode && destinationAcct && vendorShareCents && vendorShareCents !== 0) {
       await upsertVendorBalance({
         destinationAcct,
         currency: currency ?? 'usd',
@@ -125,10 +130,10 @@ async function handlePaymentIntent(intent: Stripe.PaymentIntent) {
       paymentIntentId: intent.id,
       chargeId,
       platformRevenueCents,
-      destinationAcct: destinationAcct ?? undefined,
+      destinationAcct: connectMode ? destinationAcct ?? undefined : undefined,
       metadata: { source: 'payment_intent.succeeded' },
     });
-  } else if (destinationAcct) {
+  } else if (connectMode && destinationAcct) {
     const totalCents = intent.amount_received ?? intent.amount ?? 0;
     const appFee = intent.application_fee_amount ?? 0;
     const vendorShare = totalCents - appFee;
@@ -219,8 +224,8 @@ async function recordTopup({
         metadata ?? null,
         paymentIntentId ?? null,
         chargeId ?? null,
-        platformRevenueCents ?? null,
-        destinationAcct ?? null,
+        receiptsPriceOnly ? null : platformRevenueCents ?? null,
+        connectMode ? destinationAcct ?? null : null,
       ]
     );
 
@@ -259,6 +264,14 @@ async function upsertVendorBalance({
   currency: string;
   deltaCents: number;
 }) {
+  if (!connectMode) {
+    console.log('[stripe-webhook] Skipping vendor balance update (platform-only mode)', {
+      destinationAcct,
+      currency,
+      deltaCents,
+    });
+    return;
+  }
   if (!destinationAcct || !Number.isFinite(deltaCents) || deltaCents === 0) {
     return;
   }

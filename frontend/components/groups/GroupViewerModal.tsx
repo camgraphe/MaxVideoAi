@@ -73,6 +73,12 @@ export function GroupViewerModal({ group, onClose, onRefreshJob, defaultAllowInd
         createdAt: group.createdAt,
         indexable,
         visibility: item.visibility ?? (typeof item.meta?.visibility === 'string' ? (item.meta.visibility as 'public' | 'private') : undefined),
+        hasAudio:
+          typeof item.hasAudio === 'boolean'
+            ? item.hasAudio
+            : item.meta && typeof item.meta === 'object' && 'hasAudio' in item.meta
+              ? Boolean((item.meta as Record<string, unknown>).hasAudio)
+              : false,
       };
     });
   }, [group, indexingOverrides]);

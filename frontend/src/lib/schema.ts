@@ -237,10 +237,27 @@ export async function ensureBillingSchema(): Promise<void> {
       `);
 
       await query(`
+        -- legacy columns retained for Connect margin reporting; left NULL when RECEIPTS_PRICE_ONLY is enabled.
         ALTER TABLE app_receipts
         ADD COLUMN IF NOT EXISTS platform_revenue_cents BIGINT,
         ADD COLUMN IF NOT EXISTS destination_acct TEXT,
         ADD COLUMN IF NOT EXISTS currency TEXT DEFAULT 'USD';
+      `);
+
+      await query(`
+        CREATE OR REPLACE VIEW app_receipts_public AS
+        SELECT
+          id,
+          user_id,
+          type AS kind,
+          amount_cents,
+          currency,
+          description,
+          created_at,
+          job_id,
+          NULL::bigint AS tax_amount_cents,
+          NULL::bigint AS discount_amount_cents
+        FROM app_receipts;
       `);
 
       try {

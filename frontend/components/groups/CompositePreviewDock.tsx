@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { VideoGroup, VideoItem } from '@/types/video-groups';
 import { ProcessingOverlay } from '@/components/groups/ProcessingOverlay';
+import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 
 interface CompositePreviewDockProps {
   group: VideoGroup | null;
@@ -232,6 +233,16 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
                     : undefined;
                 const itemMessage = typeof item.meta?.message === 'string' ? (item.meta.message as string) : undefined;
 
+                const hasAudio =
+                  typeof item?.hasAudio === 'boolean'
+                    ? item.hasAudio
+                    : Boolean(
+                        item?.meta &&
+                          typeof item.meta === 'object' &&
+                          'hasAudio' in item.meta &&
+                          (item.meta as Record<string, unknown>).hasAudio
+                      );
+
                 return (
                   <figure key={itemKey} className="group relative flex items-center justify-center overflow-hidden rounded-[12px] bg-[var(--surface-2)]">
                     <div className="absolute inset-0">
@@ -255,6 +266,14 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
                         </div>
                       )}
                     </div>
+                    {hasAudio && itemStatus === 'completed' && video ? (
+                      <AudioEqualizerBadge
+                        tone="light"
+                        size="sm"
+                        label="Audio available"
+                        className="absolute bottom-2 right-2"
+                      />
+                    ) : null}
                     <div className="pointer-events-none block" style={{ width: '100%', aspectRatio: '16 / 9' }} aria-hidden />
                     <div className="pointer-events-none absolute inset-0 rounded-[12px] border border-white/10 transition group-hover:border-white/30" />
                     {itemStatus !== 'completed' && !showGroupError ? (
@@ -268,11 +287,11 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
                         tileCount={tileCount || slots.length}
                       />
                     ) : null}
-                    <div className="absolute bottom-2 right-2 flex items-center gap-2">
+                    <div className="absolute bottom-2 left-2">
                       <button
                         type="button"
                         onClick={() => handleDownload(item)}
-                        className="pointer-events-auto rounded-full border border-border bg-white/90 px-2 py-1 text-[11px] font-medium text-text-secondary shadow transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="pointer-events-auto rounded-full border border-border bg-white/90 px-2 py-0.5 text-[10px] font-medium text-text-secondary shadow transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         aria-label="Download this take"
                       >
                         Download
