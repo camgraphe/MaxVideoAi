@@ -1,5 +1,6 @@
 "use client";
 
+import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import clsx from 'clsx';
 type PlaylistSummary = {
@@ -19,6 +20,10 @@ type PlaylistItemRecord = {
   orderIndex: number;
   pinned: boolean;
   createdAt: string;
+  thumbUrl?: string | null;
+  videoUrl?: string | null;
+  engineLabel?: string | null;
+  aspectRatio?: string | null;
 };
 
 type PlaylistsManagerProps = {
@@ -500,11 +505,13 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                     <div className="h-16 w-28 overflow-hidden rounded border border-border bg-neutral-100">
-                      <img
+                      <Image
                         src={item.thumbUrl || getPlaceholderThumb(item.aspectRatio)}
                         alt={`Thumbnail for ${item.videoId}`}
+                        width={112}
+                        height={64}
                         className="h-full w-full object-cover"
-                        loading="lazy"
+                        unoptimized
                       />
                     </div>
                     <div className="min-w-0 space-y-1">
