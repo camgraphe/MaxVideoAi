@@ -63,6 +63,7 @@ type Dictionary = {
         media?: {
           videoSrc: string;
           posterSrc?: string;
+          hasAudio?: boolean;
         };
       }>;
     };
