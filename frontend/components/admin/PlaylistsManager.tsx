@@ -29,6 +29,17 @@ type PlaylistsManagerProps = {
 
 type EditablePlaylist = PlaylistSummary & { dirty?: boolean; loading?: boolean };
 
+const PLACEHOLDER_MAP: Record<string, string> = {
+  '9:16': '/assets/frames/thumb-9x16.svg',
+  '16:9': '/assets/frames/thumb-16x9.svg',
+  '1:1': '/assets/frames/thumb-1x1.svg',
+};
+
+function getPlaceholderThumb(aspectRatio?: string | null): string {
+  const key = (aspectRatio ?? '').trim();
+  return PLACEHOLDER_MAP[key] ?? '/assets/frames/thumb-16x9.svg';
+}
+
 export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialItems }: PlaylistsManagerProps) {
   const [playlists, setPlaylists] = useState<EditablePlaylist[]>(initialPlaylists);
   const [selectedId, setSelectedId] = useState<string | null>(initialPlaylistId);
@@ -217,35 +228,24 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
       startTransition(async () => {
         try {
           setError(null);
-        const res = await fetch(`/api/admin/playlists/${selectedId}/items`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ videoId }),
-          credentials: 'include',
-        });
+          const res = await fetch(`/api/admin/playlists/${selectedId}/items`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ videoId }),
+            credentials: 'include',
+          });
           if (!res.ok) throw new Error(`Failed to add video (${res.status})`);
           const json = await res.json().catch(() => ({ ok: false }));
           if (!json?.ok) throw new Error(json?.error ?? 'Add failed');
-          setItems((current) => [
-            ...current,
-            { playlistId: selectedId, videoId, orderIndex: current.length, pinned: false, createdAt: new Date().toISOString() },
-          ]);
-          setItemsDirty(true);
-          setPlaylists((current) =>
-            current.map((playlist) =>
-              playlist.id === selectedId
-                ? { ...playlist, itemCount: (playlist.itemCount ?? 0) + 1 }
-                : playlist
-            )
-          );
-          setFeedback('Video added');
+          refreshPlaylistItems(selectedId);
+          setFeedback('Video added to playlist');
         } catch (err) {
           console.error('[PlaylistsManager] add video failed', err);
           setError(err instanceof Error ? err.message : 'Failed to add video');
         }
       });
     },
-    [selectedId]
+    [refreshPlaylistItems, selectedId]
   );
 
   const handleRemoveVideo = useCallback(
@@ -254,31 +254,24 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
       startTransition(async () => {
         try {
           setError(null);
-        const res = await fetch(`/api/admin/playlists/${selectedId}/items`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ videoId }),
-          credentials: 'include',
-        });
+          const res = await fetch(`/api/admin/playlists/${selectedId}/items`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ videoId }),
+            credentials: 'include',
+          });
           if (!res.ok) throw new Error(`Failed to remove video (${res.status})`);
           const json = await res.json().catch(() => ({ ok: false }));
           if (!json?.ok) throw new Error(json?.error ?? 'Remove failed');
-          setItems((current) => current.filter((item) => item.videoId !== videoId));
-          setItemsDirty(true);
-          setPlaylists((current) =>
-            current.map((playlist) =>
-              playlist.id === selectedId
-                ? { ...playlist, itemCount: Math.max(0, (playlist.itemCount ?? 1) - 1) }
-                : playlist
-            )
-          );
+          refreshPlaylistItems(selectedId);
+          setFeedback('Video removed from playlist');
         } catch (err) {
           console.error('[PlaylistsManager] remove video failed', err);
           setError(err instanceof Error ? err.message : 'Failed to remove video');
         }
       });
     },
-    [selectedId]
+    [refreshPlaylistItems, selectedId]
   );
 
   const moveItem = useCallback(
@@ -495,18 +488,35 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                 <table className="min-w-full divide-y divide-border text-sm">
                   <thead className="bg-bg text-xs uppercase tracking-micro text-text-muted">
                     <tr>
-                      <th className="px-4 py-3 text-left">Order</th>
-                      <th className="px-4 py-3 text-left">Video ID</th>
-                      <th className="px-4 py-3" aria-label="Actions" />
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {items.map((item, index) => (
-                      <tr key={item.videoId} className={clsx(isPending && 'opacity-90')}>
-                        <td className="px-4 py-3 text-xs text-text-secondary">{index + 1}</td>
-                        <td className="px-4 py-3 text-sm text-text-primary">{item.videoId}</td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="flex justify-end gap-2 text-xs">
+              <th className="px-4 py-3 text-left">Order</th>
+              <th className="px-4 py-3 text-left">Video</th>
+              <th className="px-4 py-3" aria-label="Actions" />
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {items.map((item, index) => (
+              <tr key={item.videoId} className={clsx(isPending && 'opacity-90')}>
+                <td className="px-4 py-3 text-xs text-text-secondary">{index + 1}</td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-16 w-28 overflow-hidden rounded border border-border bg-neutral-100">
+                      <img
+                        src={item.thumbUrl || getPlaceholderThumb(item.aspectRatio)}
+                        alt={`Thumbnail for ${item.videoId}`}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="min-w-0 space-y-1">
+                      <div className="truncate font-mono text-xs text-text-primary">{item.videoId}</div>
+                      {item.engineLabel ? (
+                        <div className="truncate text-xs text-text-muted">{item.engineLabel}</div>
+                      ) : null}
+                    </div>
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <div className="flex justify-end gap-2 text-xs">
                             <button
                               type="button"
                               className="rounded-input border border-hairline px-2 py-1 text-text-secondary hover:border-accent hover:text-accent"

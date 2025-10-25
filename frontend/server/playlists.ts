@@ -1,5 +1,6 @@
 import { query } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
+import { normalizeMediaUrl } from '@/lib/media';
 
 export type PlaylistRecord = {
   id: string;
@@ -18,6 +19,10 @@ export type PlaylistItemRecord = {
   orderIndex: number;
   pinned: boolean;
   createdAt: string;
+  thumbUrl?: string | null;
+  videoUrl?: string | null;
+  engineLabel?: string | null;
+  aspectRatio?: string | null;
 };
 
 export async function listPlaylists(): Promise<PlaylistRecord[]> {
@@ -63,9 +68,15 @@ export async function getPlaylistItems(playlistId: string): Promise<PlaylistItem
     order_index: number;
     pinned: boolean;
     created_at: string;
+    thumb_url: string | null;
+    video_url: string | null;
+    engine_label: string | null;
+    aspect_ratio: string | null;
   }>(
-    `SELECT playlist_id, video_id, order_index, pinned, created_at
-       FROM playlist_items
+    `SELECT pi.playlist_id, pi.video_id, pi.order_index, pi.pinned, pi.created_at,
+            j.thumb_url, j.video_url, j.engine_label, j.aspect_ratio
+       FROM playlist_items pi
+       LEFT JOIN app_jobs j ON j.job_id = pi.video_id
        WHERE playlist_id = $1
        ORDER BY order_index ASC, created_at ASC`,
     [playlistId]
@@ -77,6 +88,10 @@ export async function getPlaylistItems(playlistId: string): Promise<PlaylistItem
     orderIndex: row.order_index,
     pinned: row.pinned,
     createdAt: row.created_at,
+    thumbUrl: normalizeMediaUrl(row.thumb_url) ?? row.thumb_url ?? null,
+    videoUrl: normalizeMediaUrl(row.video_url) ?? row.video_url ?? null,
+    engineLabel: row.engine_label ?? null,
+    aspectRatio: row.aspect_ratio ?? null,
   }));
 }
 

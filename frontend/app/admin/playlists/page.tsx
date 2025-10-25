@@ -34,6 +34,10 @@ export default async function AdminPlaylistsPage() {
     orderIndex: item.orderIndex,
     pinned: item.pinned,
     createdAt: item.createdAt,
+    thumbUrl: item.thumbUrl ?? null,
+    videoUrl: item.videoUrl ?? null,
+    engineLabel: item.engineLabel ?? null,
+    aspectRatio: item.aspectRatio ?? null,
   }));
 
   return (
