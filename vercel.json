@@ -5,6 +5,9 @@
   "builds": [
     { "src": "frontend/next.config.js", "use": "@vercel/next" }
   ],
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/frontend/$1" }
+  ],
   "crons": [
     { "path": "/api/stripe/batch-transfers", "schedule": "0 3 * * *" },
     { "path": "/api/fal/poll", "schedule": "* * * * *" }
