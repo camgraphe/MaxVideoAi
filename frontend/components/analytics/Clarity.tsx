@@ -2,30 +2,53 @@
 
 import { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
+import {
+  flushPendingClarityCommands,
+  getClarityDebugState,
+  isClarityDebugEnabled,
+  isClarityEnabledForRuntime,
+  markClarityReady,
+  onClarityReady,
+  queueClarityCommand,
+} from '@/lib/clarity-client';
 
-type ClarityFunction = ((...args: unknown[]) => void) & { q?: unknown[][] };
+let scriptAppended = false;
 
 function loadClarity(id: string) {
-  if (typeof window === 'undefined') return;
-  const clarityWindow = window as typeof window & { clarity?: ClarityFunction };
-  if (clarityWindow.clarity) return;
+  if (typeof document === 'undefined') return;
+  if (scriptAppended) return;
+  scriptAppended = true;
 
-  const clarityFn: ClarityFunction = (...args: unknown[]) => {
-    (clarityFn.q = clarityFn.q || []).push(args);
-  };
-  clarityFn.q = clarityFn.q || [];
-
-  clarityWindow.clarity = clarityFn;
+  flushPendingClarityCommands();
 
   const script = document.createElement('script');
   script.async = true;
   script.src = `https://www.clarity.ms/tag/${id}`;
+  script.dataset.analytics = 'clarity';
+  script.addEventListener('load', () => {
+    markClarityReady();
+  });
+  script.addEventListener('error', (error) => {
+    scriptAppended = false;
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[clarity] failed to load script', error);
+    }
+  });
+
   const firstScript = document.getElementsByTagName('script')[0];
   if (firstScript?.parentNode) {
     firstScript.parentNode.insertBefore(script, firstScript);
+  } else if (document.head) {
+    document.head.appendChild(script);
   } else {
-    document.head?.appendChild(script);
+    document.documentElement.appendChild(script);
   }
+}
+
+function logDebug(message: string) {
+  if (!isClarityDebugEnabled()) return;
+  const state = getClarityDebugState();
+  console.info(`[clarity] ${message}`, state);
 }
 
 export function Clarity() {
@@ -33,32 +56,28 @@ export function Clarity() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const clarityEnabled = process.env.NEXT_PUBLIC_ENABLE_CLARITY === 'true';
-    const isProd = process.env.NODE_ENV === 'production';
     const clarityId = process.env.NEXT_PUBLIC_CLARITY_ID;
-    if (!clarityEnabled) return;
-    if (!isProd) return;
     if (!clarityId) return;
+    if (!isClarityEnabledForRuntime()) return;
+
     loadClarity(clarityId);
+    logDebug('loader initialized');
   }, []);
 
   useEffect(() => {
-    const clarityEnabled = process.env.NEXT_PUBLIC_ENABLE_CLARITY === 'true';
-    const isProd = process.env.NODE_ENV === 'production';
-    if (!clarityEnabled) return;
-    if (!isProd) return;
-    if (typeof window === 'undefined') return;
-    const clarityWindow = window as typeof window & { clarity?: ClarityFunction };
-    const clarityFn = clarityWindow.clarity;
-    if (!clarityFn) return;
+    if (!isClarityEnabledForRuntime()) return;
     const qs = searchParams?.toString();
     const url = qs ? `${pathname}?${qs}` : pathname || '/';
-    try {
-      clarityFn('set', 'page', url);
-    } catch {
-      // ignore clarity errors
-    }
+    queueClarityCommand('set', 'page', url);
+    logDebug(`page set → ${url}`);
   }, [pathname, searchParams]);
+
+  useEffect(() => {
+    if (!isClarityDebugEnabled()) return;
+    return onClarityReady(() => {
+      logDebug('script ready');
+    });
+  }, []);
 
   return null;
 }

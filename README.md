@@ -157,6 +157,13 @@ The script calls the Fal proxy, so no direct DNS access to `api.fal.ai` is requi
 - No automated tests yet (awaiting backend contract confirmation).
 - Preview/gallery content is placeholder; real media wiring is pending asset APIs.
 
+## 7. Analytics & Session Replay
+
+- Microsoft Clarity loads through `frontend/components/analytics/Clarity.tsx`, which is mounted from the root layout once analytics consent (`mv-consent` cookie) is granted. The loader enforces production-only execution, honours `NEXT_PUBLIC_CLARITY_ALLOWED_HOSTS`, and registers SPA route changes via `clarity('set','page', ...)`.
+- Consent is persisted by the client CMP banner (`frontend/components/legal/CookieBanner.tsx`) and broadcast with a `consent:updated` custom event so analytics scripts remain gated behind `ConsentScriptGate`.
+- Authenticated sessions call `clarity('identify', ...)` and tag metadata from `frontend/src/hooks/useRequireAuth.ts`. Only hashed/non-PII identifiers are sent (Supabase user UUID, plan/role/currency flags), and internal staff accounts (`@maxvideoai.com` / `@maxvideoai.ai`) are tagged for filtering.
+- Enable/disable Clarity via `NEXT_PUBLIC_ENABLE_CLARITY`, `NEXT_PUBLIC_CLARITY_ID`, and `NEXT_PUBLIC_CLARITY_ALLOWED_HOSTS`. Optional dev logging is available with `NEXT_PUBLIC_CLARITY_DEBUG=true` (shows `_clck`/`_clsk` in the console).
+
 ## Deployment Overview
 
 - **Application** → this repository → Vercel project `maxvideoai-app` (or alternative infrastructure).  

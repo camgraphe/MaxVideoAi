@@ -4,6 +4,7 @@ import type { Session } from '@supabase/supabase-js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
+import { isClarityEnabledForRuntime, queueClarityCommand } from '@/lib/clarity-client';
 import { clearSupabaseCookies, syncSupabaseCookies } from '@/lib/supabase-cookies';
 
 type RequireAuthResult = {
@@ -19,6 +20,8 @@ export function useRequireAuth(): RequireAuthResult {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const redirectingRef = useRef(false);
+  const identifiedRef = useRef<string | null>(null);
+  const tagsSignatureRef = useRef<string | null>(null);
 
   const nextPath = useMemo(() => {
     const base = pathname ?? '/app';
@@ -80,6 +83,77 @@ export function useRequireAuth(): RequireAuthResult {
       subscription?.subscription.unsubscribe();
     };
   }, [redirectToLogin]);
+
+  useEffect(() => {
+    const userId = session?.user?.id ?? null;
+    if (!userId) {
+      identifiedRef.current = null;
+      tagsSignatureRef.current = null;
+      return;
+    }
+    if (!isClarityEnabledForRuntime()) return;
+
+    const supaUser = session?.user ?? null;
+    if (!supaUser) return;
+
+    const appMeta = (supaUser.app_metadata ?? {}) as Record<string, unknown>;
+    const userMeta = (supaUser.user_metadata ?? {}) as Record<string, unknown>;
+
+    const role =
+      typeof appMeta.role === 'string'
+        ? appMeta.role
+        : Array.isArray(appMeta.roles) && typeof appMeta.roles[0] === 'string'
+          ? appMeta.roles[0]
+          : undefined;
+
+    const planCandidate =
+      typeof appMeta.plan === 'string'
+        ? appMeta.plan
+        : typeof userMeta.plan === 'string'
+          ? userMeta.plan
+          : typeof userMeta.subscription === 'string'
+            ? userMeta.subscription
+            : undefined;
+
+    const plan =
+      typeof planCandidate === 'string' && planCandidate.trim().length > 0
+        ? planCandidate
+        : undefined;
+
+    const currencyCandidate =
+      typeof userMeta.preferred_currency === 'string'
+        ? userMeta.preferred_currency
+        : typeof userMeta.currency === 'string'
+          ? userMeta.currency
+          : undefined;
+
+    const currency =
+      typeof currencyCandidate === 'string' && currencyCandidate.trim().length > 0
+        ? currencyCandidate
+        : undefined;
+
+    const email = typeof supaUser.email === 'string' ? supaUser.email : undefined;
+    const isInternal = Boolean(email && /@maxvideoai\.(com|ai)$/i.test(email));
+
+    if (identifiedRef.current !== userId) {
+      identifiedRef.current = userId;
+      queueClarityCommand('identify', userId);
+    }
+
+    const tags: Record<string, string> = {};
+    if (role) tags.role = role.toLowerCase();
+    if (plan) tags.plan = plan.toLowerCase();
+    if (currency) tags.currency = currency.toLowerCase();
+    if (isInternal) tags.internal = 'true';
+
+    const serialized = JSON.stringify(tags);
+    if (tagsSignatureRef.current !== serialized) {
+      tagsSignatureRef.current = serialized;
+      Object.entries(tags).forEach(([key, value]) => {
+        queueClarityCommand('set', key, value);
+      });
+    }
+  }, [session]);
 
   return {
     userId: session?.user?.id ?? null,
