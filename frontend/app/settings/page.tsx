@@ -174,13 +174,6 @@ function AccountTab({ session }: AccountTabProps) {
   }, [currencyData]);
 
   const currentBalanceCents = currentCurrency ? balancesByCurrency.get(currentCurrency) ?? 0 : 0;
-  const blockingBalance = useMemo(() => {
-    if (!pendingCurrency) return null;
-    return currencyData?.balances?.find(
-      (entry) => entry.currency && entry.currency !== pendingCurrency && entry.balanceCents > 0
-    ) ?? null;
-  }, [currencyData, pendingCurrency]);
-
   const hasPendingChange = Boolean(pendingCurrency && currentCurrency && pendingCurrency !== currentCurrency);
   const disableUpdate =
     !pendingCurrency || savingCurrency || currencyLoading || Boolean(currencyFetchError) || !hasPendingChange;
@@ -326,15 +319,7 @@ function AccountTab({ session }: AccountTabProps) {
           {currencySuccess && <p className="mt-2 text-xs text-green-600">{currencySuccess}</p>}
           {typeof currentBalanceCents === 'number' && currentCurrency && (
             <p className="mt-2 text-xs text-text-secondary">
-              Available balance:&nbsp;{formatCurrencyValue(currentBalanceCents, currentCurrency)}
-            </p>
-          )}
-          {blockingBalance?.currency && (
-            <p className="mt-1 text-xs text-amber-600">
-              Clear your {blockingBalance.currency} balance ({formatCurrencyValue(
-                blockingBalance.balanceCents,
-                blockingBalance.currency
-              )}) before changing currency.
+              USD wallet balance:&nbsp;{formatCurrencyValue(currentBalanceCents, currentCurrency)} (always settled in USD)
             </p>
           )}
         </div>
