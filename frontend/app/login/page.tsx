@@ -16,9 +16,24 @@ type AuthMode = 'signin' | 'signup' | 'reset';
 const MIN_AGE_ENV = Number.parseInt(process.env.NEXT_PUBLIC_LEGAL_MIN_AGE ?? '15', 10);
 const LEGAL_MIN_AGE = Number.isNaN(MIN_AGE_ENV) ? 15 : MIN_AGE_ENV;
 
+const DEFAULT_NEXT_PATH = '/app';
+const NEXT_PATH_PREFIXES = ['/app', '/generate', '/dashboard', '/jobs', '/billing', '/settings', '/admin', '/connect'];
+
+function sanitizeNextPath(candidate: string | null | undefined): string {
+  if (typeof candidate !== 'string') return DEFAULT_NEXT_PATH;
+  const trimmed = candidate.trim();
+  if (!trimmed.startsWith('/')) return DEFAULT_NEXT_PATH;
+  if (trimmed === '/' || trimmed.startsWith('/login') || trimmed.startsWith('/api') || trimmed.startsWith('/_next')) {
+    return DEFAULT_NEXT_PATH;
+  }
+  const pathname = trimmed.split(/[?#]/)[0] ?? trimmed;
+  const isAllowed = NEXT_PATH_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+  return isAllowed ? trimmed : DEFAULT_NEXT_PATH;
+}
+
 export default function LoginPage() {
   const router = useRouter();
-  const [nextPath, setNextPath] = useState<string>('/app');
+  const [nextPath, setNextPath] = useState<string>(DEFAULT_NEXT_PATH);
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')) as string;
   const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
@@ -52,14 +67,21 @@ export default function LoginPage() {
     const params = new URLSearchParams(window.location.search);
     const value = params.get('next');
     if (value && value.startsWith('/')) {
-      setNextPath(value);
+      const safeNext = sanitizeNextPath(value);
+      setNextPath(safeNext);
       if (typeof window !== 'undefined') {
-        window.sessionStorage.setItem(LOGIN_NEXT_STORAGE_KEY, value);
+        window.sessionStorage.setItem(LOGIN_NEXT_STORAGE_KEY, safeNext);
       }
     } else if (typeof window !== 'undefined') {
       const stored = window.sessionStorage.getItem(LOGIN_NEXT_STORAGE_KEY);
-      if (stored && stored.startsWith('/')) {
-        setNextPath(stored);
+      if (stored) {
+        const safeStored = sanitizeNextPath(stored);
+        setNextPath(safeStored);
+        if (safeStored !== stored) {
+          window.sessionStorage.setItem(LOGIN_NEXT_STORAGE_KEY, safeStored);
+        }
+      } else {
+        window.sessionStorage.setItem(LOGIN_NEXT_STORAGE_KEY, DEFAULT_NEXT_PATH);
       }
     }
   }, []);
@@ -300,7 +322,8 @@ export default function LoginPage() {
     }
     if (data?.url) {
       if (typeof window !== 'undefined') {
-        window.sessionStorage.setItem(LOGIN_NEXT_STORAGE_KEY, nextPath ?? '/app');
+        const safeNext = sanitizeNextPath(nextPath);
+        window.sessionStorage.setItem(LOGIN_NEXT_STORAGE_KEY, safeNext);
       }
       window.location.href = data.url;
     }
