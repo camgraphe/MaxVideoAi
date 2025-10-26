@@ -80,6 +80,32 @@ export default function LoginPage() {
     }
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function redirectIfAuthenticated() {
+      const { data } = await supabase.auth.getSession();
+      if (cancelled) return;
+      if (data.session?.user && nextPath) {
+        router.replace(nextPath);
+        router.refresh();
+      }
+    }
+
+    void redirectIfAuthenticated();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (cancelled || !session?.user) return;
+      router.replace(nextPath);
+      router.refresh();
+    });
+
+    return () => {
+      cancelled = true;
+      authListener?.subscription.unsubscribe();
+    };
+  }, [nextPath, router]);
+
   async function signInWithPassword(e: React.FormEvent) {
     e.preventDefault();
     setStatusTone('info');
@@ -95,6 +121,7 @@ export default function LoginPage() {
     setStatusTone('info');
     syncSupabaseCookies(data.session ?? null);
     router.replace(nextPath);
+    router.refresh();
   }
 
   async function submitSignupConsents(userId: string) {
