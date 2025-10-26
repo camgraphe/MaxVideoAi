@@ -223,7 +223,7 @@ async function recordTopup({
     await ensureBillingSchema();
   } catch (error) {
     console.warn('[stripe-webhook] ensureBillingSchema failed, using mock ledger', error);
-    recordMockWalletTopUp(userId, normalizedAmount, paymentIntentId, chargeId);
+    recordMockWalletTopUp(userId, normalizedWalletAmount, paymentIntentId, chargeId);
     return;
   }
 
