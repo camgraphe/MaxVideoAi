@@ -14,8 +14,6 @@ type AuthMode = 'signin' | 'signup' | 'reset';
 const MIN_AGE_ENV = Number.parseInt(process.env.NEXT_PUBLIC_LEGAL_MIN_AGE ?? '15', 10);
 const LEGAL_MIN_AGE = Number.isNaN(MIN_AGE_ENV) ? 15 : MIN_AGE_ENV;
 
-const NEXT_STORAGE_KEY = 'mv-login-next';
-
 export default function LoginPage() {
   const router = useRouter();
   const [nextPath, setNextPath] = useState<string>('/app');
@@ -47,37 +45,12 @@ export default function LoginPage() {
     setPassword((prev) => (prev === nextPassword ? prev : nextPassword));
   }, [setEmail, setPassword]);
 
-  const navigateTo = useCallback(
-    (target: string) => {
-      router.replace(target);
-      if (typeof window !== 'undefined') {
-        window.sessionStorage.removeItem(NEXT_STORAGE_KEY);
-        window.setTimeout(() => {
-          const current = window.location.pathname + window.location.search;
-          if (current !== target) {
-            window.location.assign(target);
-          }
-        }, 400);
-      }
-    },
-    [router]
-  );
-
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
-    let value = params.get('next');
-    if (!value || !value.startsWith('/')) {
-      const stored = window.sessionStorage.getItem(NEXT_STORAGE_KEY);
-      if (stored && stored.startsWith('/')) {
-        value = stored;
-      }
-    }
+    const value = params.get('next');
     if (value && value.startsWith('/')) {
       setNextPath(value);
-      window.sessionStorage.setItem(NEXT_STORAGE_KEY, value);
-    } else {
-      window.sessionStorage.removeItem(NEXT_STORAGE_KEY);
     }
   }, []);
 
@@ -114,30 +87,22 @@ export default function LoginPage() {
       const { data } = await supabase.auth.getSession();
       if (cancelled) return;
       if (data.session?.user && nextPath) {
-        syncSupabaseCookies(data.session);
-        navigateTo(nextPath);
-      } else {
-        clearSupabaseCookies();
+        router.replace(nextPath);
       }
     }
 
     void redirectIfAuthenticated();
 
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (cancelled) return;
-      if (!session?.user) {
-        clearSupabaseCookies();
-        return;
-      }
-      syncSupabaseCookies(session);
-      navigateTo(nextPath);
+      if (cancelled || !session?.user) return;
+      router.replace(nextPath);
     });
 
     return () => {
       cancelled = true;
       authListener?.subscription.unsubscribe();
     };
-  }, [navigateTo, nextPath]);
+  }, [nextPath, router]);
 
   async function signInWithPassword(e: React.FormEvent) {
     e.preventDefault();
@@ -155,7 +120,7 @@ export default function LoginPage() {
 
     const session = data.session ?? (await supabase.auth.getSession().then(({ data: sessionData }) => sessionData.session ?? null));
     syncSupabaseCookies(session);
-    navigateTo(nextPath);
+    router.replace(nextPath);
   }
 
   async function submitSignupConsents(userId: string) {
@@ -234,7 +199,7 @@ export default function LoginPage() {
       setStatusTone('success');
       setStatus('Account created. Redirecting…');
       syncSupabaseCookies(data.session);
-      navigateTo('/generate');
+      router.replace('/generate');
     } else {
       setStatusTone('success');
       setStatus('Check your inbox to confirm your email.');
@@ -282,12 +247,26 @@ export default function LoginPage() {
       return;
     }
     if (data?.url) {
-      if (typeof window !== 'undefined' && nextPath) {
-        window.sessionStorage.setItem(NEXT_STORAGE_KEY, nextPath);
-      }
       window.location.href = data.url;
     }
   }
+
+  useEffect(() => {
+    let cancelled = false;
+    supabase.auth.getSession().then(({ data }) => {
+      const session = data.session ?? null;
+      if (cancelled) return;
+      if (session?.access_token) {
+        syncSupabaseCookies(session);
+        router.replace(nextPath);
+      } else {
+        clearSupabaseCookies();
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [router, nextPath]);
 
   const effectiveMode: AuthMode = mode === 'reset' ? 'signin' : mode;
 
