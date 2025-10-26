@@ -31,9 +31,12 @@ export default function LoginPage() {
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [locale, setLocale] = useState<string | null>(null);
-  const [pendingRedirect, setPendingRedirect] = useState<string | null>(null);
   const nextQuery = useMemo(() => (nextPath && nextPath !== '/' ? `?next=${encodeURIComponent(nextPath)}` : ''), [nextPath]);
-  const redirectTo = useMemo(() => (siteUrl ? `${siteUrl}${nextQuery}` : undefined), [siteUrl, nextQuery]);
+  const redirectTo = useMemo(() => {
+    if (!siteUrl) return undefined;
+    const base = siteUrl.endsWith('/') ? siteUrl.slice(0, -1) : siteUrl;
+    return `${base}/login${nextQuery}`;
+  }, [siteUrl, nextQuery]);
 
   const syncInputState = useCallback(() => {
     const nextEmail = emailRef.current?.value ?? '';
@@ -48,7 +51,6 @@ export default function LoginPage() {
     const value = params.get('next');
     if (value && value.startsWith('/')) {
       setNextPath(value);
-      setPendingRedirect(value);
     }
   }, []);
 
@@ -207,20 +209,10 @@ export default function LoginPage() {
       options: {
         redirectTo,
         skipBrowserRedirect: true,
-        ...(pendingRedirect
-          ? {
-              queryParams: {
-                access_type: 'offline',
-                prompt: 'consent',
-                next: pendingRedirect,
-              },
-            }
-          : {
-              queryParams: {
-                access_type: 'offline',
-                prompt: 'consent',
-              },
-            }),
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
       },
     });
     if (error) {
