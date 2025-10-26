@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AuthApiError } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { syncSupabaseCookies, clearSupabaseCookies } from '@/lib/supabase-cookies';
@@ -32,6 +33,7 @@ export default function LoginPage() {
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [locale, setLocale] = useState<string | null>(null);
+  const [signupSuggestion, setSignupSuggestion] = useState<{ email: string; password: string } | null>(null);
   const redirectTo = useMemo(() => {
     if (!siteUrl) return undefined;
     const base = siteUrl.endsWith('/') ? siteUrl.slice(0, -1) : siteUrl;
@@ -89,6 +91,12 @@ export default function LoginPage() {
   }, []);
 
   useEffect(() => {
+    if (mode !== 'signin' && signupSuggestion) {
+      setSignupSuggestion(null);
+    }
+  }, [mode, signupSuggestion]);
+
+  useEffect(() => {
     let cancelled = false;
 
     async function redirectIfAuthenticated() {
@@ -126,10 +134,20 @@ export default function LoginPage() {
     setStatusTone('info');
     setStatus('Signing in…');
     setError(null);
+    setSignupSuggestion(null);
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      setError(error.message);
-      setStatus(null);
+      if (error instanceof AuthApiError && error.status === 400) {
+        setSignupSuggestion({ email, password });
+        setStatusTone('info');
+        setStatus(
+          "We couldn't sign you in with those details. If you're new, create your account without retyping anything."
+        );
+        setError(null);
+      } else {
+        setError(error.message);
+        setStatus(null);
+      }
       return;
     }
     setStatusTone('info');
@@ -142,6 +160,17 @@ export default function LoginPage() {
     }
     router.replace(nextPath);
   }
+
+  const handleAcceptSignupSuggestion = useCallback(() => {
+    if (!signupSuggestion) return;
+    setMode('signup');
+    if (signupSuggestion.password) {
+      setConfirm((prev) => (prev ? prev : signupSuggestion.password));
+    }
+    setStatusTone('info');
+    setStatus("Great, let's create your account.");
+    setSignupSuggestion(null);
+  }, [signupSuggestion, setMode, setConfirm, setStatusTone, setStatus]);
 
   async function submitSignupConsents(userId: string) {
     try {
@@ -315,9 +344,9 @@ export default function LoginPage() {
             </h1>
             <p className="text-sm text-text-secondary">
               {mode === 'signup'
-                ? 'Get instant access to the MaxVideoAI workspace. We’ll confirm your email before your first render.'
+                ? "Get instant access to the MaxVideoAI workspace. We'll confirm your email before your first render."
                 : mode === 'reset'
-                  ? 'We’ll send a secure link to reset your password.'
+                  ? "We'll send a secure link to reset your password."
                   : 'Sign in with Google or email to jump back into the workspace.'}
             </p>
           </div>
@@ -539,6 +568,31 @@ export default function LoginPage() {
             )}
           >
             {status}
+          </div>
+        )}
+        {mode === 'signin' && signupSuggestion && (
+          <div className="rounded-card border border-dashed border-border bg-white/75 px-3 py-3 text-xs text-text-secondary">
+            <p className="text-sm font-semibold text-text-primary">New here?</p>
+            <p className="mt-1">
+              Create an account with <span className="font-medium text-text-primary">{signupSuggestion.email}</span> without
+              re-entering your details.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={handleAcceptSignupSuggestion}
+                className="rounded-pill bg-accent px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-accentSoft"
+              >
+                Create this account
+              </button>
+              <button
+                type="button"
+                onClick={() => setSignupSuggestion(null)}
+                className="rounded-pill border border-border px-3 py-1.5 text-sm font-semibold text-text-secondary transition hover:bg-bg"
+              >
+                I'll try again
+              </button>
+            </div>
           </div>
         )}
         {error && <p className="text-xs text-state-warning">{error}</p>}
