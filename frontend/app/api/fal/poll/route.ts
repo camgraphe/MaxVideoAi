@@ -17,7 +17,7 @@ type FalPendingJob = {
 
 const POLL_BASE_DELAYS_MS = [5_000, 15_000, 30_000, 60_000, 120_000];
 const POLL_INITIAL_DELAY_MS = 5_000;
-const POLL_MAX_DURATION_MS = 10 * 60_000;
+const POLL_MAX_DURATION_MS = 12 * 60_000;
 
 export async function POST() {
   return pollFalJobs();
