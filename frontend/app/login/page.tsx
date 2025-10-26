@@ -102,14 +102,22 @@ export default function LoginPage() {
       const { data } = await supabase.auth.getSession();
       if (cancelled) return;
       if (data.session?.user && nextPath) {
+        syncSupabaseCookies(data.session);
         navigateTo(nextPath);
+      } else {
+        clearSupabaseCookies();
       }
     }
 
     void redirectIfAuthenticated();
 
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (cancelled || !session?.user) return;
+      if (cancelled) return;
+      if (!session?.user) {
+        clearSupabaseCookies();
+        return;
+      }
+      syncSupabaseCookies(session);
       navigateTo(nextPath);
     });
 
@@ -265,23 +273,6 @@ export default function LoginPage() {
       window.location.href = data.url;
     }
   }
-
-  useEffect(() => {
-    let cancelled = false;
-    supabase.auth.getSession().then(({ data }) => {
-      const session = data.session ?? null;
-      if (cancelled) return;
-      if (session?.access_token) {
-        syncSupabaseCookies(session);
-        router.replace(nextPath);
-      } else {
-        clearSupabaseCookies();
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [router, nextPath]);
 
   const effectiveMode: AuthMode = mode === 'reset' ? 'signin' : mode;
 
