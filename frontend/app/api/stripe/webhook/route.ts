@@ -285,7 +285,7 @@ async function recordTopup({
       return;
     }
 
-    const resolvedCurrency = normalizeCurrencyCode(normalizedCurrency);
+    const resolvedCurrency = normalizeCurrencyCode(walletCurrencyUpper.toLowerCase());
     if (resolvedCurrency) {
       await ensureUserPreferredCurrency(userId, resolvedCurrency);
     }
