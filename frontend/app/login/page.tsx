@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { syncSupabaseCookies, clearSupabaseCookies } from '@/lib/supabase-cookies';
+import { LOGIN_NEXT_STORAGE_KEY } from '@/lib/auth-storage';
 import clsx from 'clsx';
 import Link from 'next/link';
 
@@ -31,7 +32,10 @@ export default function LoginPage() {
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [locale, setLocale] = useState<string | null>(null);
-  const nextQuery = useMemo(() => (nextPath && nextPath !== '/' ? `?next=${encodeURIComponent(nextPath)}` : ''), [nextPath]);
+  const nextQuery = useMemo(
+    () => (nextPath && nextPath !== '/' ? `?next=${encodeURIComponent(nextPath)}` : ''),
+    [nextPath]
+  );
   const redirectTo = useMemo(() => {
     if (!siteUrl) return undefined;
     const base = siteUrl.endsWith('/') ? siteUrl.slice(0, -1) : siteUrl;
@@ -51,6 +55,14 @@ export default function LoginPage() {
     const value = params.get('next');
     if (value && value.startsWith('/')) {
       setNextPath(value);
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem(LOGIN_NEXT_STORAGE_KEY, value);
+      }
+    } else if (typeof window !== 'undefined') {
+      const stored = window.sessionStorage.getItem(LOGIN_NEXT_STORAGE_KEY);
+      if (stored && stored.startsWith('/')) {
+        setNextPath(stored);
+      }
     }
   }, []);
 
@@ -129,6 +141,9 @@ export default function LoginPage() {
 
     const session = data.session ?? (await supabase.auth.getSession().then(({ data: sessionData }) => sessionData.session ?? null));
     syncSupabaseCookies(session);
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.removeItem(LOGIN_NEXT_STORAGE_KEY);
+    }
     router.replace(nextPath);
   }
 
@@ -208,6 +223,9 @@ export default function LoginPage() {
       setStatusTone('success');
       setStatus('Account created. Redirecting…');
       syncSupabaseCookies(data.session);
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.removeItem(LOGIN_NEXT_STORAGE_KEY);
+      }
       router.replace('/generate');
     } else {
       setStatusTone('success');
@@ -256,6 +274,9 @@ export default function LoginPage() {
       return;
     }
     if (data?.url) {
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem(LOGIN_NEXT_STORAGE_KEY, nextPath ?? '/app');
+      }
       window.location.href = data.url;
     }
   }

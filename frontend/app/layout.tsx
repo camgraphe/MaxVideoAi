@@ -6,6 +6,7 @@ import { Clarity } from '@/components/analytics/Clarity';
 import { JsonLd } from '@/components/SeoJsonLd';
 import { ConsentScriptGate } from '@/components/legal/ConsentScriptGate';
 import { CookieBanner } from '@/components/legal/CookieBanner';
+import { AuthCallbackHandler } from '@/components/AuthCallbackHandler';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -98,6 +99,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ) : null}
       </head>
       <body>
+        <AuthCallbackHandler />
         {children}
         <ConsentScriptGate categories="analytics">
           <Clarity />
