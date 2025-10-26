@@ -3,50 +3,21 @@
 import { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import {
-  flushPendingClarityCommands,
-  getClarityDebugState,
-  isClarityDebugEnabled,
-  isClarityEnabledForRuntime,
-  markClarityReady,
-  onClarityReady,
-  queueClarityCommand,
+  dumpClarity,
   ensureClarityVisitorId,
   getCachedVisitorId,
+  getClarityDebugState,
+  hasAnalyticsConsentCookie,
+  injectClarityScript,
+  isClarityDebugEnabled,
+  isClarityEnabledForRuntime,
+  onClarityReady,
+  queueClarityCommand,
+  setAnalyticsConsentCookie,
+  setClarityConsent,
 } from '@/lib/clarity-client';
 
-let scriptAppended = false;
 let identifiedVisitorId: string | null = null;
-
-function loadClarity(id: string) {
-  if (typeof document === 'undefined') return;
-  if (scriptAppended) return;
-  scriptAppended = true;
-
-  flushPendingClarityCommands();
-
-  const script = document.createElement('script');
-  script.async = true;
-  script.src = `https://www.clarity.ms/tag/${id}`;
-  script.dataset.analytics = 'clarity';
-  script.addEventListener('load', () => {
-    markClarityReady();
-  });
-  script.addEventListener('error', (error) => {
-    scriptAppended = false;
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn('[clarity] failed to load script', error);
-    }
-  });
-
-  const firstScript = document.getElementsByTagName('script')[0];
-  if (firstScript?.parentNode) {
-    firstScript.parentNode.insertBefore(script, firstScript);
-  } else if (document.head) {
-    document.head.appendChild(script);
-  } else {
-    document.documentElement.appendChild(script);
-  }
-}
 
 function logDebug(message: string) {
   if (!isClarityDebugEnabled()) return;
@@ -63,7 +34,9 @@ export function Clarity() {
     if (!clarityId) return;
     if (!isClarityEnabledForRuntime()) return;
 
-    loadClarity(clarityId);
+    setAnalyticsConsentCookie(true);
+    setClarityConsent(true);
+    injectClarityScript(clarityId);
     logDebug('loader initialized');
 
     const visitorId = ensureClarityVisitorId();
@@ -76,6 +49,7 @@ export function Clarity() {
 
   useEffect(() => {
     if (!isClarityEnabledForRuntime()) return;
+    if (!hasAnalyticsConsentCookie()) return;
     const qs = searchParams?.toString();
     const url = qs ? `${pathname}?${qs}` : pathname || '/';
     queueClarityCommand('set', 'page', url);
@@ -87,6 +61,7 @@ export function Clarity() {
     return onClarityReady(() => {
       const visitorId = getCachedVisitorId();
       logDebug(`script ready (visitor=${visitorId ?? 'unknown'})`);
+      dumpClarity();
     });
   }, []);
 

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { CONSENT_COOKIE_NAME, createDefaultConsent, mergeConsent, parseConsent, serializeConsent, type ConsentCategory, type ConsentRecord } from '@/lib/consent';
+import { setAnalyticsConsentCookie, setClarityConsent } from '@/lib/clarity-client';
 
 type BannerState =
   | { ready: false }
@@ -112,6 +113,8 @@ export function CookieBanner() {
       if (stored && stored.version === json.version) {
         setState({ ready: true, version: json.version, consent: stored });
         broadcastConsent(stored);
+        setAnalyticsConsentCookie(Boolean(stored.categories.analytics));
+        setClarityConsent(Boolean(stored.categories.analytics));
         updateGoogleConsent(stored.categories);
       } else {
         setState({ ready: true, version: json.version, consent: null });
@@ -123,6 +126,8 @@ export function CookieBanner() {
       if (stored && stored.version === fallbackVersion) {
         setState({ ready: true, version: fallbackVersion, consent: stored });
         broadcastConsent(stored);
+        setAnalyticsConsentCookie(Boolean(stored.categories.analytics));
+        setClarityConsent(Boolean(stored.categories.analytics));
         updateGoogleConsent(stored.categories);
       } else {
         setState({ ready: true, version: fallbackVersion, consent: null });
@@ -156,6 +161,8 @@ export function CookieBanner() {
         writeCookie(next);
         setState({ ready: true, version, consent: next });
         broadcastConsent(next);
+        setAnalyticsConsentCookie(Boolean(next.categories.analytics));
+        setClarityConsent(Boolean(next.categories.analytics));
         updateGoogleConsent(next.categories);
         await persistToServer(next.categories);
         setShowPreferences(false);

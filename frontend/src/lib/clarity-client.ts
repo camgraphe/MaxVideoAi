@@ -11,11 +11,13 @@ const ALLOWED_HOSTS = (process.env.NEXT_PUBLIC_CLARITY_ALLOWED_HOSTS ?? '')
   .map((entry) => entry.trim().toLowerCase())
   .filter((entry) => entry.length > 0);
 const VISITOR_COOKIE = 'mv-clarity-id';
+const CMP_ANALYTICS_COOKIE = 'cmp_analytics';
 
 let pendingCommands: unknown[][] = [];
 let clarityReady = false;
 const readyListeners = new Set<ClarityListener>();
 let cachedVisitorId: string | null = null;
+let clarityInjected = false;
 
 function getClarityWindow(): (Window & { clarity?: ClarityFn }) | null {
   if (typeof window === 'undefined') return null;
@@ -121,6 +123,12 @@ export function getClarityDebugState(): { visitorId: string | null; sessionId: s
   };
 }
 
+function logDebug(...args: unknown[]): void {
+  if (!DEBUG_FLAG) return;
+  // eslint-disable-next-line no-console
+  console.log('[clarity]', ...args);
+}
+
 function generateVisitorId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
@@ -174,4 +182,94 @@ export function ensureClarityVisitorId(): string | null {
 
 export function getCachedVisitorId(): string | null {
   return cachedVisitorId;
+}
+
+export function hasAnalyticsConsentCookie(): boolean {
+  const value = getCookie(CMP_ANALYTICS_COOKIE);
+  return value === 'granted';
+}
+
+export function setAnalyticsConsentCookie(granted: boolean): void {
+  if (typeof document === 'undefined') return;
+  if (!granted) {
+    document.cookie = `${CMP_ANALYTICS_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`;
+    return;
+  }
+  writeCookie(CMP_ANALYTICS_COOKIE, 'granted', 60 * 60 * 24 * 400);
+}
+
+export function setClarityConsent(granted: boolean): void {
+  queueClarityCommand('consent', granted);
+  queueClarityCommand('consentv2', {
+    ad_Storage: granted ? 'granted' : 'denied',
+    analytics_Storage: granted ? 'granted' : 'denied',
+  });
+  logDebug(`consent -> ${granted ? 'granted' : 'denied'}`);
+}
+
+export function injectClarityScript(id: string): void {
+  if (clarityInjected) {
+    logDebug('inject skip: already injected');
+    return;
+  }
+  const clarityWindow = getClarityWindow();
+  if (clarityWindow?.clarity && clarityWindow.clarity.q && clarityWindow.clarity.q?.length >= 0) {
+    clarityInjected = true;
+    logDebug('inject skip: window.clarity present');
+    return;
+  }
+  if (typeof document === 'undefined') return;
+
+  clarityInjected = true;
+  flushPendingClarityCommands();
+
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = `https://www.clarity.ms/tag/${id}`;
+  script.dataset.analytics = 'clarity';
+  script.addEventListener('load', () => {
+    markClarityReady();
+    logDebug('script loaded');
+  });
+  script.addEventListener('error', (error) => {
+    clarityInjected = false;
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[clarity] failed to load script', error);
+    }
+  });
+
+  const firstScript = document.getElementsByTagName('script')[0];
+  if (firstScript?.parentNode) {
+    firstScript.parentNode.insertBefore(script, firstScript);
+  } else if (document.head) {
+    document.head.appendChild(script);
+  } else {
+    document.documentElement.appendChild(script);
+  }
+  logDebug('script injected', script.src);
+}
+
+export function dumpClarity(): void {
+  if (typeof document === 'undefined') {
+    // eslint-disable-next-line no-console
+    console.log('[clarity dump] document unavailable');
+    return;
+  }
+  const cookies = document.cookie ? document.cookie.split(';').map((entry) => entry.trim()) : [];
+  const clck = cookies.find((entry) => entry.startsWith('_clck=')) ?? '(none)';
+  const clsk = cookies.find((entry) => entry.startsWith('_clsk=')) ?? '(none)';
+  const scripts = Array.from(document.querySelectorAll<HTMLScriptElement>('script[src*="clarity.ms/tag/"]')).map((script) => script.src);
+  const clarityWindow = getClarityWindow();
+  // eslint-disable-next-line no-console
+  console.log('[clarity dump]', {
+    _clck: clck,
+    _clsk: clsk,
+    hasClarity: Boolean(clarityWindow?.clarity),
+    pending: pendingCommands.length,
+    scripts,
+  });
+}
+
+if (typeof window !== 'undefined' && DEBUG_FLAG) {
+  (window as typeof window & { dumpClarity?: () => void }).dumpClarity = dumpClarity;
 }
