@@ -32,6 +32,10 @@ import {
 } from '@/lib/luma-ray2';
 import { ensureUserPreferredCurrency, getUserPreferredCurrency, resolveCurrency } from '@/lib/currency';
 import type { Currency } from '@/lib/currency';
+import { convertCents } from '@/lib/exchange';
+
+const DISPLAY_CURRENCY = 'USD';
+const DISPLAY_CURRENCY_LOWER = 'usd';
 
 type PaymentMode = 'wallet' | 'direct' | 'platform';
 
@@ -619,8 +623,13 @@ export async function POST(req: NextRequest) {
     membershipTier: body.membershipTier,
     loop: isLumaRay2 ? loop : undefined,
     durationOption: lumaDurationInfo?.label ?? rawDurationOption ?? null,
-    currency: resolvedCurrencyUpper,
+    currency: 'USD',
   });
+  const { cents: settlementAmountCents, rate: settlementFxRate, source: settlementFxSource } = convertCents(
+    pricing.totalCents,
+    DISPLAY_CURRENCY_LOWER,
+    resolvedCurrencyLower
+  );
   const rawDurationLabel: LumaRay2DurationLabel | undefined =
     typeof rawDurationOption === 'string' && ['5s', '9s'].includes(rawDurationOption)
       ? (rawDurationOption as LumaRay2DurationLabel)
@@ -649,6 +658,11 @@ export async function POST(req: NextRequest) {
     request: requestMeta,
     currency_source: currencyResolution.source,
     currency_country: currencyResolution.country ?? null,
+    display_currency: DISPLAY_CURRENCY,
+    settlement_currency: resolvedCurrencyUpper,
+    settlement_amount_cents: settlementAmountCents,
+    settlement_fx_rate: settlementFxRate,
+    settlement_fx_source: settlementFxSource,
   };
   const priceOnlyReceipts = receiptsPriceOnlyEnabled();
   const costBreakdownUsd = (pricing.meta?.cost_breakdown_usd as Record<string, unknown> | undefined) ?? null;
@@ -792,7 +806,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     const reserveResult = await reserveWalletCharge({
       userId: walletUserId,
       amountCents: pricing.totalCents,
-      currency: resolvedCurrencyUpper,
+      currency: DISPLAY_CURRENCY,
       description: `Run ${engine.label} - ${durationSec}s`,
       jobId,
       pricingSnapshotJson,
@@ -813,7 +827,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
         return NextResponse.json(
           {
             ok: false,
-            error: `Votre portefeuille est en ${lockedCurrency}. Contactez le support pour changer de devise.`,
+            error: `Wallet currency locked to ${lockedCurrency}. Contact support to request a change.`,
           },
           { status: 409 }
         );
@@ -840,7 +854,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     pendingReceipt = {
       userId: walletUserId,
       amountCents: pricing.totalCents,
-      currency: resolvedCurrencyUpper,
+      currency: DISPLAY_CURRENCY,
       description: `Run ${engine.label} - ${durationSec}s`,
       jobId,
       snapshot: receiptSnapshot,
@@ -865,7 +879,14 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     const stripe = new Stripe(ENV.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' });
     const intent = await stripe.paymentIntents.retrieve(payment.paymentIntentId, { expand: ['latest_charge'] });
 
-    if (intent.status !== 'succeeded' || (intent.amount_received ?? intent.amount) < pricing.totalCents) {
+    const receivedSettlementCents = intent.amount_received ?? intent.amount ?? 0;
+    const metadataSettlementCents = intent.metadata?.settlement_amount_cents
+      ? Number(intent.metadata.settlement_amount_cents)
+      : null;
+    const expectedSettlementCents = metadataSettlementCents && metadataSettlementCents > 0
+      ? metadataSettlementCents
+      : convertCents(pricing.totalCents, DISPLAY_CURRENCY_LOWER, resolvedCurrencyLower).cents;
+    if (intent.status !== 'succeeded' || receivedSettlementCents < expectedSettlementCents) {
       return NextResponse.json({ ok: false, error: 'Payment not captured yet' }, { status: 402 });
     }
     const intentCurrency = intent.currency?.toUpperCase() ?? resolvedCurrencyUpper;
@@ -879,7 +900,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
       return NextResponse.json(
         {
           ok: false,
-          error: `Votre portefeuille est en ${resolvedCurrencyUpper}. Contactez le support pour changer de devise.`,
+          error: `Wallet currency locked to ${resolvedCurrencyUpper}. Contact support to request a change.`,
         },
         { status: 409 }
       );
@@ -901,17 +922,21 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
       return NextResponse.json({ ok: false, error: 'Payment job mismatch' }, { status: 409 });
     }
 
+    const metadataWalletAmountCents = intent.metadata?.wallet_amount_cents
+      ? Number(intent.metadata.wallet_amount_cents)
+      : pricing.totalCents;
+
     pendingReceipt = {
       userId: String(userId),
-      amountCents: intent.amount_received ?? intent.amount,
-      currency: resolvedCurrencyUpper,
+      amountCents: metadataWalletAmountCents,
+      currency: DISPLAY_CURRENCY,
       description: `Run ${engine.label} - ${durationSec}s`,
       jobId,
       snapshot: receiptSnapshot,
       applicationFeeCents: priceOnlyReceipts
         ? null
         : connectMode
-            ? intent.application_fee_amount ?? applicationFeeCents
+            ? Number(intent.metadata?.platform_fee_cents_usd ?? applicationFeeCents)
             : null,
       vendorAccountId,
       stripePaymentIntentId,

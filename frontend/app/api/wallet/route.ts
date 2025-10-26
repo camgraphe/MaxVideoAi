@@ -10,7 +10,11 @@ import { applyMockWalletTopUp, getMockWalletBalance } from '@/lib/wallet';
 import { getConfiguredEngine } from '@/server/engines';
 import { getSoraVariantForEngine, isSoraEngineId, parseSoraRequest, type SoraRequest } from '@/lib/sora';
 import { getUserPreferredCurrency, normalizeCurrencyCode, resolveCurrency } from '@/lib/currency';
+import { convertCents } from '@/lib/exchange';
 import type { Currency } from '@/lib/currency';
+
+const WALLET_DISPLAY_CURRENCY = 'USD';
+const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
 
 export async function GET(req: NextRequest) {
   const userId = await getUserIdFromRequest(req);
@@ -35,7 +39,8 @@ export async function GET(req: NextRequest) {
     const balanceCents = getMockWalletBalance(userId);
     return NextResponse.json({
       balance: balanceCents / 100,
-      currency: fallbackResolution.currency.toUpperCase(),
+      currency: WALLET_DISPLAY_CURRENCY,
+      settlementCurrency: fallbackResolution.currency.toUpperCase(),
       mock: true,
     });
   }
@@ -60,7 +65,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    walletCurrency = walletCurrency ?? fallbackResolution.currency;
+    walletCurrency = WALLET_DISPLAY_CURRENCY_LOWER as Currency;
 
     if (mismatchedCurrencies.size) {
       console.warn('[wallet] detected receipts with mismatched currency', {
@@ -70,7 +75,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const walletCurrencyUpper = walletCurrency.toUpperCase();
+    const walletCurrencyUpper = WALLET_DISPLAY_CURRENCY;
     let topups = 0;
     let charges = 0;
     let refunds = 0;
@@ -90,13 +95,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       balance: balanceCents / 100,
       currency: walletCurrencyUpper,
+      settlementCurrency: fallbackResolution.currency.toUpperCase(),
     });
   } catch (error) {
     console.warn('[wallet] query failed, using mock ledger', error);
     const balanceCents = getMockWalletBalance(userId);
     return NextResponse.json({
       balance: balanceCents / 100,
-      currency: fallbackResolution.currency.toUpperCase(),
+      currency: WALLET_DISPLAY_CURRENCY,
+      settlementCurrency: fallbackResolution.currency.toUpperCase(),
       mock: true,
     });
   }
@@ -135,7 +142,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       ok: true,
       balanceCents,
-      currency: resolvedCurrencyUpper,
+      currency: WALLET_DISPLAY_CURRENCY,
+      settlementCurrency: resolvedCurrencyUpper,
       mock: true,
     });
   }
@@ -203,7 +211,6 @@ export async function POST(req: NextRequest) {
       durationSec,
       resolution,
       membershipTier: body.membershipTier,
-      currency: resolvedCurrencyUpper,
     });
 
     const destinationAccountId = isConnectPayments()
@@ -216,6 +223,19 @@ export async function POST(req: NextRequest) {
 
     const applicationFeeCents = getPlatformFeeCents(pricing);
     const vendorShareCents = getVendorShareCents(pricing);
+    const settlementCurrencyUpper = resolvedCurrencyUpper;
+    const { cents: settlementAmountCents, rate: fxRate, source: fxSource } = convertCents(
+      pricing.totalCents,
+      WALLET_DISPLAY_CURRENCY_LOWER,
+      resolvedCurrencyLower
+    );
+    const totalUsd = Math.max(1, pricing.totalCents);
+    let applicationFeeSettlementCents = 0;
+    let vendorShareSettlementCents = 0;
+    if (isConnectPayments() && destinationAccountId) {
+      applicationFeeSettlementCents = totalUsd > 0 ? Math.round((settlementAmountCents * applicationFeeCents) / totalUsd) : 0;
+      vendorShareSettlementCents = Math.max(0, settlementAmountCents - applicationFeeSettlementCents);
+    }
     const jobId = typeof body.jobId === 'string' && body.jobId.trim() ? String(body.jobId).trim() : `job_${randomUUID()}`;
     const metadata: Record<string, string> = {
       kind: 'run',
@@ -227,7 +247,14 @@ export async function POST(req: NextRequest) {
       resolution,
       pricing_total_cents: String(pricing.totalCents),
       pricing_currency: pricing.currency,
-      currency: resolvedCurrencyUpper,
+      display_currency: WALLET_DISPLAY_CURRENCY,
+      wallet_currency: WALLET_DISPLAY_CURRENCY,
+      wallet_amount_cents: String(pricing.totalCents),
+      settlement_currency: settlementCurrencyUpper,
+      settlement_amount_cents: String(settlementAmountCents),
+      fx_rate: fxRate.toString(),
+      fx_source: fxSource,
+      currency: settlementCurrencyUpper,
       currency_source: currencyResolution.source,
       currency_country: currencyResolution.country ?? '',
     };
@@ -249,6 +276,8 @@ export async function POST(req: NextRequest) {
       metadata.pricing_platform_fee_cents = String(applicationFeeCents);
       metadata.pricing_vendor_share_cents = String(vendorShareCents);
       metadata.vendor_share_cents = String(vendorShareCents);
+      metadata.platform_fee_cents_settlement = String(applicationFeeSettlementCents);
+      metadata.vendor_share_cents_settlement = String(vendorShareSettlementCents);
     }
     if (isConnectPayments() && pricing.vendorAccountId) {
       metadata.vendor_account_id = pricing.vendorAccountId;
@@ -256,14 +285,14 @@ export async function POST(req: NextRequest) {
 
     try {
       const params: Stripe.PaymentIntentCreateParams = {
-        amount: pricing.totalCents,
+        amount: settlementAmountCents,
         currency: resolvedCurrencyLower,
         automatic_payment_methods: { enabled: true },
         metadata,
       };
 
       if (isConnectPayments() && destinationAccountId) {
-        params.application_fee_amount = applicationFeeCents;
+        params.application_fee_amount = applicationFeeSettlementCents;
         params.transfer_data = { destination: destinationAccountId };
       }
 
@@ -273,7 +302,11 @@ export async function POST(req: NextRequest) {
         paymentIntentId: intent.id,
         jobId,
         amountCents: pricing.totalCents,
-        currency: resolvedCurrencyUpper,
+        settlementAmountCents,
+        settlementCurrency: settlementCurrencyUpper,
+        currency: WALLET_DISPLAY_CURRENCY,
+        fxRate,
+        fxSource,
         currencySource: currencyResolution.source,
         currencyCountry: currencyResolution.country ?? null,
         mode: isConnectPayments() ? 'connect' : 'platform',
@@ -284,7 +317,11 @@ export async function POST(req: NextRequest) {
         paymentIntentId: intent.id,
         clientSecret: intent.client_secret,
         amountCents: pricing.totalCents,
-        currency: resolvedCurrencyUpper,
+        currency: WALLET_DISPLAY_CURRENCY,
+        settlementCurrency: settlementCurrencyUpper,
+        settlementAmountCents,
+        fxRate,
+        fxSource,
         jobId,
         pricing,
       });
@@ -308,20 +345,40 @@ export async function POST(req: NextRequest) {
     const sessionMetadata: Record<string, string> = {
       kind: 'topup',
       user_id: userId,
+      wallet_currency: WALLET_DISPLAY_CURRENCY,
+      wallet_amount_cents: String(amountCents),
+      settlement_currency: resolvedCurrencyUpper,
       currency: resolvedCurrencyUpper,
       currency_source: currencyResolution.source,
     };
     if (currencyResolution.country) {
       sessionMetadata.currency_country = currencyResolution.country;
     }
-    let platformFeeCents = 0;
-    let vendorShareCents = 0;
+    const { cents: settlementAmountCents, rate: fxRate, source: fxSource } = convertCents(
+      amountCents,
+      WALLET_DISPLAY_CURRENCY_LOWER,
+      resolvedCurrencyLower
+    );
+    sessionMetadata.settlement_amount_cents = String(settlementAmountCents);
+    sessionMetadata.fx_rate = fxRate.toString();
+    sessionMetadata.fx_source = fxSource;
+
+    let platformFeeCentsUsd = 0;
+    let vendorShareCentsUsd = 0;
+    let platformFeeCentsSettlement = 0;
+    let vendorShareCentsSettlement = 0;
     if (isConnectPayments() && destinationAccountId) {
-      platformFeeCents = Math.round(amountCents * 0.3);
-      vendorShareCents = Math.max(0, amountCents - platformFeeCents);
+      platformFeeCentsUsd = Math.round(amountCents * 0.3);
+      vendorShareCentsUsd = Math.max(0, amountCents - platformFeeCentsUsd);
+      platformFeeCentsSettlement = amountCents > 0
+        ? Math.round((settlementAmountCents * platformFeeCentsUsd) / amountCents)
+        : 0;
+      vendorShareCentsSettlement = Math.max(0, settlementAmountCents - platformFeeCentsSettlement);
       sessionMetadata.destination_account_id = destinationAccountId;
-      sessionMetadata.platform_fee_cents = String(platformFeeCents);
-      sessionMetadata.vendor_share_cents = String(vendorShareCents);
+      sessionMetadata.platform_fee_cents = String(platformFeeCentsSettlement);
+      sessionMetadata.vendor_share_cents = String(vendorShareCentsSettlement);
+      sessionMetadata.platform_fee_cents_usd = String(platformFeeCentsUsd);
+      sessionMetadata.vendor_share_cents_usd = String(vendorShareCentsUsd);
     }
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
@@ -334,7 +391,7 @@ export async function POST(req: NextRequest) {
           price_data: {
             currency: resolvedCurrencyLower,
             product_data: { name: 'Wallet top-up' },
-            unit_amount: amountCents,
+            unit_amount: settlementAmountCents,
           },
           quantity: 1,
         },
@@ -347,10 +404,8 @@ export async function POST(req: NextRequest) {
     };
 
     if (isConnectPayments() && destinationAccountId) {
-      paymentIntentMetadata.platform_fee_cents = String(platformFeeCents);
-      paymentIntentMetadata.vendor_share_cents = String(vendorShareCents);
       sessionParams.payment_intent_data = {
-        application_fee_amount: platformFeeCents,
+        application_fee_amount: platformFeeCentsSettlement,
         transfer_data: {
           destination: destinationAccountId,
         },
@@ -367,7 +422,11 @@ export async function POST(req: NextRequest) {
     console.info('[payments] checkout session created', {
       sessionId: session.id,
       amountCents,
-      currency: resolvedCurrencyUpper,
+      settlementAmountCents,
+      settlementCurrency: resolvedCurrencyUpper,
+      currency: WALLET_DISPLAY_CURRENCY,
+      fxRate,
+      fxSource,
       currencySource: currencyResolution.source,
       currencyCountry: currencyResolution.country ?? null,
       userId,

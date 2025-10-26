@@ -173,7 +173,7 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
 
   try {
     const preferredCurrency = await getUserPreferredCurrency(params.userId);
-    if (preferredCurrency && preferredCurrency !== normalizedCurrencyLower) {
+    if (preferredCurrency && preferredCurrency !== normalizedCurrencyLower && normalizedCurrencyLower !== 'usd') {
       return {
         ok: false,
         balanceCents: 0,

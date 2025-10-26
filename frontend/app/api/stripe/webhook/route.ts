@@ -68,27 +68,43 @@ async function handleCheckoutSession(session: Stripe.Checkout.Session) {
 
   const amountCents = session.amount_total ?? null;
   const currency = session.currency ?? 'usd';
+  const walletAmountCents = session.metadata?.wallet_amount_cents ? Number(session.metadata.wallet_amount_cents) : amountCents;
+  const walletCurrency = session.metadata?.wallet_currency ?? 'USD';
+  const settlementAmountCents = amountCents;
+  const settlementCurrency = currency;
   const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id ?? null;
   const chargeId = typeof session.payment_intent === 'object' && session.payment_intent && !Array.isArray(session.payment_intent)
     ? (typeof session.payment_intent.latest_charge === 'string'
         ? session.payment_intent.latest_charge
         : session.payment_intent.latest_charge?.id ?? null)
     : null;
-  const platformRevenueCents =
-    !receiptsPriceOnly && session.metadata.platform_fee_cents ? Number(session.metadata.platform_fee_cents) : undefined;
+  const platformRevenueCents = !receiptsPriceOnly
+    ? session.metadata.platform_fee_cents_usd
+      ? Number(session.metadata.platform_fee_cents_usd)
+      : session.metadata.platform_fee_cents
+        ? Number(session.metadata.platform_fee_cents)
+        : undefined
+    : undefined;
   const destinationAcct = connectMode ? session.metadata.destination_account_id ?? undefined : undefined;
 
   if (!amountCents || amountCents <= 0) return;
 
   await recordTopup({
     userId,
-    amountCents,
-    currency,
+    walletAmountCents: walletAmountCents ?? amountCents,
+    walletCurrency,
+    settlementAmountCents: settlementAmountCents ?? amountCents,
+    settlementCurrency,
     paymentIntentId,
     chargeId,
     platformRevenueCents,
     destinationAcct,
-    metadata: { sessionId: session.id, source: 'checkout.session.completed' },
+    metadata: {
+      sessionId: session.id,
+      source: 'checkout.session.completed',
+      fx_rate: session.metadata.fx_rate ?? null,
+      fx_source: session.metadata.fx_source ?? null,
+    },
   });
 }
 
@@ -109,8 +125,16 @@ async function handlePaymentIntent(intent: Stripe.PaymentIntent) {
 
     const amountCents = intent.amount_received ?? intent.amount ?? null;
     const currency = intent.currency ?? 'usd';
+    const walletAmountCents = intent.metadata?.wallet_amount_cents ? Number(intent.metadata.wallet_amount_cents) : amountCents;
+    const walletCurrency = intent.metadata?.wallet_currency ?? 'USD';
+    const settlementAmountCents = amountCents;
+    const settlementCurrency = currency;
     const chargeId = typeof intent.latest_charge === 'string' ? intent.latest_charge : intent.latest_charge?.id ?? null;
-    const platformRevenueCents = receiptsPriceOnly ? undefined : intent.application_fee_amount ?? undefined;
+    const platformRevenueCents = receiptsPriceOnly
+      ? undefined
+      : intent.metadata?.platform_fee_cents_usd
+        ? Number(intent.metadata.platform_fee_cents_usd)
+        : intent.application_fee_amount ?? undefined;
     const vendorShareCents =
       amountCents !== null && platformRevenueCents !== undefined ? amountCents - platformRevenueCents : null;
 
@@ -126,13 +150,19 @@ async function handlePaymentIntent(intent: Stripe.PaymentIntent) {
 
     await recordTopup({
       userId,
-      amountCents,
-      currency,
+      walletAmountCents: walletAmountCents ?? amountCents,
+      walletCurrency,
+      settlementAmountCents: settlementAmountCents ?? amountCents,
+      settlementCurrency,
       paymentIntentId: intent.id,
       chargeId,
       platformRevenueCents,
       destinationAcct: connectMode ? destinationAcct ?? undefined : undefined,
-      metadata: { source: 'payment_intent.succeeded' },
+      metadata: {
+        source: 'payment_intent.succeeded',
+        fx_rate: intent.metadata?.fx_rate ?? null,
+        fx_source: intent.metadata?.fx_source ?? null,
+      },
     });
   } else if (connectMode && destinationAcct) {
     const totalCents = intent.amount_received ?? intent.amount ?? 0;
@@ -150,8 +180,10 @@ async function handlePaymentIntent(intent: Stripe.PaymentIntent) {
 
 async function recordTopup({
   userId,
-  amountCents,
-  currency,
+  walletAmountCents,
+  walletCurrency,
+  settlementAmountCents,
+  settlementCurrency,
   paymentIntentId,
   chargeId,
   platformRevenueCents,
@@ -159,24 +191,28 @@ async function recordTopup({
   metadata,
 }: {
   userId: string;
-  amountCents: number;
-  currency: string;
+  walletAmountCents: number;
+  walletCurrency: string;
+  settlementAmountCents: number | null;
+  settlementCurrency: string | null;
   paymentIntentId?: string | null;
   chargeId?: string | null;
   platformRevenueCents?: number | null | undefined;
   destinationAcct?: string | null | undefined;
   metadata?: Record<string, unknown>;
 }) {
-  const normalizedCurrency = currency ? currency.toUpperCase() : 'USD';
-  const normalizedAmount = Math.max(0, Math.round(amountCents));
-  if (normalizedAmount <= 0) return;
+  const walletCurrencyUpper = walletCurrency ? walletCurrency.toUpperCase() : 'USD';
+  const normalizedWalletAmount = Math.max(0, Math.round(walletAmountCents));
+  const settlementCurrencyUpper = settlementCurrency ? settlementCurrency.toUpperCase() : walletCurrencyUpper;
+  const normalizedSettlementAmount = settlementAmountCents != null ? Math.max(0, Math.round(settlementAmountCents)) : null;
+  if (normalizedWalletAmount <= 0) return;
 
   if (!process.env.DATABASE_URL) {
-    recordMockWalletTopUp(userId, normalizedAmount, paymentIntentId, chargeId);
+    recordMockWalletTopUp(userId, normalizedWalletAmount, paymentIntentId, chargeId);
     console.log('[stripe-webhook] Recorded wallet top-up (mock)', {
       userId,
-      amountCents: normalizedAmount,
-      currency: normalizedCurrency,
+      amountCents: normalizedWalletAmount,
+      currency: walletCurrencyUpper,
       paymentIntentId,
       chargeId,
     });
@@ -212,6 +248,14 @@ async function recordTopup({
       }
     }
 
+    const combinedMetadata = {
+      ...(metadata ?? {}),
+      wallet_amount_cents: normalizedWalletAmount,
+      wallet_currency: walletCurrencyUpper,
+      settlement_amount_cents: normalizedSettlementAmount,
+      settlement_currency: settlementCurrencyUpper,
+    };
+
     const rows = await query<{ id: number }>(
       `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, metadata, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct)
        VALUES ($1, 'topup', $2, $3, $4, $5, $6, $7, $8, $9)
@@ -219,10 +263,10 @@ async function recordTopup({
        RETURNING id`,
       [
         userId,
-        normalizedAmount,
-        normalizedCurrency,
+        normalizedWalletAmount,
+        walletCurrencyUpper,
         'Wallet top-up',
-        metadata ?? null,
+        combinedMetadata,
         paymentIntentId ?? null,
         chargeId ?? null,
         receiptsPriceOnly ? null : platformRevenueCents ?? null,
@@ -248,8 +292,10 @@ async function recordTopup({
 
     console.log('[stripe-webhook] Recorded wallet top-up', {
       userId,
-      amountCents: normalizedAmount,
-      currency: normalizedCurrency,
+      amountCents: normalizedWalletAmount,
+      currency: walletCurrencyUpper,
+      settlementAmountCents: normalizedSettlementAmount,
+      settlementCurrency: settlementCurrencyUpper,
       paymentIntentId,
       chargeId,
       platformRevenueCents,

@@ -205,7 +205,7 @@ function AccountTab({ session }: AccountTabProps) {
       return;
     }
     const confirmed = window.confirm(
-      `Confirmer le passage de la devise wallet en ${pendingCurrency}. Cette action s'applique à toutes les prochaines opérations.`
+      `Confirm switching the wallet currency to ${pendingCurrency}? This applies to all future top-ups and direct payments.`
     );
     if (!confirmed) return;
 
@@ -225,7 +225,7 @@ function AccountTab({ session }: AccountTabProps) {
         const message = json?.error ?? 'Failed to update currency';
         throw new Error(message);
       }
-      setCurrencySuccess('Devise mise à jour.');
+      setCurrencySuccess('Currency updated.');
       setHasTouchedCurrency(false);
       await mutateCurrency();
     } catch (error) {
@@ -288,7 +288,7 @@ function AccountTab({ session }: AccountTabProps) {
             <div>
               <p className="text-sm font-medium text-text-primary">Wallet currency</p>
               <p className="text-xs text-text-secondary">
-                La devise fixe les prochaines recharges et paiements direct Stripe.
+                Wallet balance stays in USD; this only changes the Stripe charge currency.
               </p>
             </div>
             <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-text-secondary">
@@ -314,10 +314,10 @@ function AccountTab({ session }: AccountTabProps) {
               onClick={handleCurrencySave}
               disabled={disableUpdate}
             >
-              {savingCurrency ? 'Enregistrement…' : 'Mettre à jour la devise'}
+              {savingCurrency ? 'Saving…' : 'Update currency'}
             </button>
           </div>
-          {currencyLoading && <p className="mt-2 text-xs text-text-secondary">Chargement de la devise…</p>}
+          {currencyLoading && <p className="mt-2 text-xs text-text-secondary">Loading currency…</p>}
           {currencyFetchErrorMessage && (
             <p className="mt-2 text-xs text-red-500">{currencyFetchErrorMessage}</p>
           )}
@@ -325,15 +325,15 @@ function AccountTab({ session }: AccountTabProps) {
           {currencySuccess && <p className="mt-2 text-xs text-green-600">{currencySuccess}</p>}
           {typeof currentBalanceCents === 'number' && currentCurrency && (
             <p className="mt-2 text-xs text-text-secondary">
-              Solde disponible&nbsp;: {formatCurrencyValue(currentBalanceCents, currentCurrency)}
+              Available balance:&nbsp;{formatCurrencyValue(currentBalanceCents, currentCurrency)}
             </p>
           )}
           {blockingBalance?.currency && (
             <p className="mt-1 text-xs text-amber-600">
-              Videz d&apos;abord votre solde {blockingBalance.currency} ({formatCurrencyValue(
+              Clear your {blockingBalance.currency} balance ({formatCurrencyValue(
                 blockingBalance.balanceCents,
                 blockingBalance.currency
-              )}) pour changer de devise.
+              )}) before changing currency.
             </p>
           )}
         </div>
