@@ -161,7 +161,7 @@ The script calls the Fal proxy, so no direct DNS access to `api.fal.ai` is requi
 
 - Microsoft Clarity loads through `frontend/components/analytics/Clarity.tsx`, which is mounted from the root layout once analytics consent (`mv-consent` cookie) is granted. The loader enforces production-only execution, honours `NEXT_PUBLIC_CLARITY_ALLOWED_HOSTS`, and registers SPA route changes via `clarity('set','page', ...)`.
 - Consent is persisted by the client CMP banner (`frontend/components/legal/CookieBanner.tsx`) and broadcast with a `consent:updated` custom event so analytics scripts remain gated behind `ConsentScriptGate`.
-- Authenticated sessions call `clarity('identify', ...)` and tag metadata from `frontend/src/hooks/useRequireAuth.ts`. Only hashed/non-PII identifiers are sent (Supabase user UUID, plan/role/currency flags), and internal staff accounts (`@maxvideoai.com` / `@maxvideoai.ai`) are tagged for filtering.
+- A first-party visitor cookie (`mv-clarity-id`) keeps sessions stitched across SPA navigation. Authenticated sessions tag additional context from `frontend/src/hooks/useRequireAuth.ts` (Supabase UUID, plan/role/currency flags) while internal staff accounts (`@maxvideoai.com` / `@maxvideoai.ai`) are labelled for exclusion.
 - Enable/disable Clarity via `NEXT_PUBLIC_ENABLE_CLARITY`, `NEXT_PUBLIC_CLARITY_ID`, and `NEXT_PUBLIC_CLARITY_ALLOWED_HOSTS`. Optional dev logging is available with `NEXT_PUBLIC_CLARITY_DEBUG=true` (shows `_clck`/`_clsk` in the console).
 
 ## Deployment Overview

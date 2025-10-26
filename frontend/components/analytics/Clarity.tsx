@@ -10,9 +10,12 @@ import {
   markClarityReady,
   onClarityReady,
   queueClarityCommand,
+  ensureClarityVisitorId,
+  getCachedVisitorId,
 } from '@/lib/clarity-client';
 
 let scriptAppended = false;
+let identifiedVisitorId: string | null = null;
 
 function loadClarity(id: string) {
   if (typeof document === 'undefined') return;
@@ -62,6 +65,13 @@ export function Clarity() {
 
     loadClarity(clarityId);
     logDebug('loader initialized');
+
+    const visitorId = ensureClarityVisitorId();
+    if (visitorId && identifiedVisitorId !== visitorId) {
+      identifiedVisitorId = visitorId;
+      queueClarityCommand('identify', visitorId);
+      logDebug(`identify → ${visitorId}`);
+    }
   }, []);
 
   useEffect(() => {
@@ -75,7 +85,8 @@ export function Clarity() {
   useEffect(() => {
     if (!isClarityDebugEnabled()) return;
     return onClarityReady(() => {
-      logDebug('script ready');
+      const visitorId = getCachedVisitorId();
+      logDebug(`script ready (visitor=${visitorId ?? 'unknown'})`);
     });
   }, []);
 

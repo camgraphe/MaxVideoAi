@@ -4,7 +4,7 @@ import type { Session } from '@supabase/supabase-js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
-import { isClarityEnabledForRuntime, queueClarityCommand } from '@/lib/clarity-client';
+import { ensureClarityVisitorId, isClarityEnabledForRuntime, queueClarityCommand } from '@/lib/clarity-client';
 import { clearSupabaseCookies, syncSupabaseCookies } from '@/lib/supabase-cookies';
 
 type RequireAuthResult = {
@@ -20,7 +20,6 @@ export function useRequireAuth(): RequireAuthResult {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const redirectingRef = useRef(false);
-  const identifiedRef = useRef<string | null>(null);
   const tagsSignatureRef = useRef<string | null>(null);
 
   const nextPath = useMemo(() => {
@@ -87,7 +86,6 @@ export function useRequireAuth(): RequireAuthResult {
   useEffect(() => {
     const userId = session?.user?.id ?? null;
     if (!userId) {
-      identifiedRef.current = null;
       tagsSignatureRef.current = null;
       return;
     }
@@ -135,16 +133,18 @@ export function useRequireAuth(): RequireAuthResult {
     const email = typeof supaUser.email === 'string' ? supaUser.email : undefined;
     const isInternal = Boolean(email && /@maxvideoai\.(com|ai)$/i.test(email));
 
-    if (identifiedRef.current !== userId) {
-      identifiedRef.current = userId;
-      queueClarityCommand('identify', userId);
-    }
-
     const tags: Record<string, string> = {};
+    tags.auth_state = 'signed_in';
+    tags.user_uuid = userId;
     if (role) tags.role = role.toLowerCase();
     if (plan) tags.plan = plan.toLowerCase();
     if (currency) tags.currency = currency.toLowerCase();
     if (isInternal) tags.internal = 'true';
+
+    const visitor = ensureClarityVisitorId();
+    if (visitor) {
+      tags.visitor = visitor;
+    }
 
     const serialized = JSON.stringify(tags);
     if (tagsSignatureRef.current !== serialized) {

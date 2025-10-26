@@ -10,10 +10,12 @@ const ALLOWED_HOSTS = (process.env.NEXT_PUBLIC_CLARITY_ALLOWED_HOSTS ?? '')
   .split(',')
   .map((entry) => entry.trim().toLowerCase())
   .filter((entry) => entry.length > 0);
+const VISITOR_COOKIE = 'mv-clarity-id';
 
 let pendingCommands: unknown[][] = [];
 let clarityReady = false;
 const readyListeners = new Set<ClarityListener>();
+let cachedVisitorId: string | null = null;
 
 function getClarityWindow(): (Window & { clarity?: ClarityFn }) | null {
   if (typeof window === 'undefined') return null;
@@ -117,4 +119,59 @@ export function getClarityDebugState(): { visitorId: string | null; sessionId: s
     visitorId: readClarityCookie('_clck'),
     sessionId: readClarityCookie('_clsk'),
   };
+}
+
+function generateVisitorId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `${Date.now().toString(16)}-${Math.random().toString(16).slice(2, 10)}`;
+}
+
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const cookies = document.cookie ? document.cookie.split(';') : [];
+  for (const entry of cookies) {
+    const [key, ...rest] = entry.trim().split('=');
+    if (key === name) {
+      return decodeURIComponent(rest.join('='));
+    }
+  }
+  return null;
+}
+
+function writeCookie(name: string, value: string, maxAgeSeconds: number): void {
+  if (typeof document === 'undefined') return;
+  const encoded = encodeURIComponent(value);
+  const parts = [`${name}=${encoded}`, 'Path=/', `Max-Age=${maxAgeSeconds}`, 'SameSite=Lax'];
+  if (window.location.protocol === 'https:') {
+    parts.push('Secure');
+  }
+  const hostname = window.location.hostname.toLowerCase();
+  if (hostname.includes('.')) {
+    const domainParts = hostname.split('.');
+    if (domainParts.length >= 2) {
+      const baseDomain = domainParts.slice(-2).join('.');
+      parts.push(`Domain=.${baseDomain}`);
+    }
+  }
+  document.cookie = parts.join('; ');
+}
+
+export function ensureClarityVisitorId(): string | null {
+  if (cachedVisitorId) return cachedVisitorId;
+  if (typeof window === 'undefined') return null;
+  const existing = getCookie(VISITOR_COOKIE);
+  if (existing && existing.length >= 10) {
+    cachedVisitorId = existing;
+    return cachedVisitorId;
+  }
+  const generated = generateVisitorId();
+  writeCookie(VISITOR_COOKIE, generated, 60 * 60 * 24 * 400);
+  cachedVisitorId = generated;
+  return cachedVisitorId;
+}
+
+export function getCachedVisitorId(): string | null {
+  return cachedVisitorId;
 }
