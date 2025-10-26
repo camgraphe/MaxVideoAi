@@ -3,28 +3,29 @@
 import { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
-declare global {
-  interface Window {
-    clarity?: (...args: unknown[]) => void;
-  }
-}
+type ClarityFunction = ((...args: unknown[]) => void) & { q?: unknown[][] };
 
 function loadClarity(id: string) {
   if (typeof window === 'undefined') return;
-  if (window.clarity) return;
+  const clarityWindow = window as typeof window & { clarity?: ClarityFunction };
+  if (clarityWindow.clarity) return;
 
-  (function (c, l, a, r, i, t, y) {
-    c[a] =
-      c[a] ||
-      function (...args: unknown[]) {
-        (c[a].q = c[a].q || []).push(args);
-      };
-    t = l.createElement(r);
-    t.async = 1;
-    t.src = `https://www.clarity.ms/tag/${i}`;
-    y = l.getElementsByTagName(r)[0];
-    y.parentNode?.insertBefore(t, y);
-  })(window, document, 'clarity', 'script', id);
+  const clarityFn: ClarityFunction = (...args: unknown[]) => {
+    (clarityFn.q = clarityFn.q || []).push(args);
+  };
+  clarityFn.q = clarityFn.q || [];
+
+  clarityWindow.clarity = clarityFn;
+
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = `https://www.clarity.ms/tag/${id}`;
+  const firstScript = document.getElementsByTagName('script')[0];
+  if (firstScript?.parentNode) {
+    firstScript.parentNode.insertBefore(script, firstScript);
+  } else {
+    document.head?.appendChild(script);
+  }
 }
 
 export function Clarity() {
@@ -46,11 +47,14 @@ export function Clarity() {
     const isProd = process.env.NODE_ENV === 'production';
     if (!clarityEnabled) return;
     if (!isProd) return;
-    if (typeof window === 'undefined' || !window.clarity) return;
+    if (typeof window === 'undefined') return;
+    const clarityWindow = window as typeof window & { clarity?: ClarityFunction };
+    const clarityFn = clarityWindow.clarity;
+    if (!clarityFn) return;
     const qs = searchParams?.toString();
     const url = qs ? `${pathname}?${qs}` : pathname || '/';
     try {
-      window.clarity('set', 'page', url);
+      clarityFn('set', 'page', url);
     } catch {
       // ignore clarity errors
     }
