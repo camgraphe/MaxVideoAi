@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { recordUserConsents, resolveCurrentLegalVersions, type ConsentSource } from '@/server/legal-consents';
+import { recordUserConsents, resolveCurrentLegalVersions, type ConsentSource, type ConsentEntry } from '@/server/legal-consents';
 import { getSupabaseAdmin } from '@/server/supabase-admin';
 
 export const runtime = 'nodejs';
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     const minAge = Number.parseInt(process.env.LEGAL_MIN_AGE ?? '15', 10);
     const ageVersion = Number.isNaN(minAge) ? 'age_gate' : `min_age:${minAge}`;
 
-    const entries = [
+    const entries: ConsentEntry[] = [
       { docKey: 'terms' as const, docVersion: versions.terms ?? '2025-10-26', accepted: true, source: body.source ?? 'signup' },
       { docKey: 'privacy' as const, docVersion: versions.privacy ?? '2025-10-26', accepted: true, source: body.source ?? 'signup' },
       {
