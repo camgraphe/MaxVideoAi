@@ -4,7 +4,7 @@ import { getLegalDocumentUncached, type LegalDocumentKey } from '@/lib/legal';
 export type ConsentSource = 'signup' | 'settings' | 'cookie_banner' | 'reconsent';
 
 export type ConsentEntry = {
-  docKey: LegalDocumentKey | 'marketing' | 'age_attestation';
+  docKey: LegalDocumentKey | 'marketing' | 'age_attestation' | 'cookies.analytics' | 'cookies.ads';
   docVersion: string;
   accepted: boolean;
   source?: ConsentSource | string;
