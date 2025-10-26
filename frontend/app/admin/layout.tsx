@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { AdminAuthError, requireAdmin } from '@/server/admin';
+import { AdminNavigation } from '@/components/admin/AdminNavigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,30 +61,7 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
           <Link href="/admin" className="text-lg font-semibold text-text-primary">
             Admin · MaxVideoAI
           </Link>
-          <nav className="flex items-center gap-4 text-sm text-text-secondary">
-            {NAV_SECTIONS.map((section) => (
-              <details key={section.title} className="relative">
-                <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-micro text-text-muted transition hover:text-text-primary [&::-webkit-details-marker]:hidden">
-                  {section.title}
-                </summary>
-                <div className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-card border border-border bg-white shadow-card">
-                  <ul className="divide-y divide-border">
-                    {section.items.map((item) => (
-                      <li key={item.href}>
-                        <Link
-                          href={item.href}
-                          className="flex items-center justify-between px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/10 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        >
-                          <span>{item.label}</span>
-                          <span aria-hidden className="text-xs text-text-muted">→</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </details>
-            ))}
-          </nav>
+          <AdminNavigation sections={NAV_SECTIONS} />
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-6 py-10">{children}</main>
