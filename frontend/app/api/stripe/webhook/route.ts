@@ -303,7 +303,7 @@ async function recordTopup({
     });
   } catch (error) {
     console.error('[stripe-webhook] Failed to persist top-up, using mock ledger', error);
-    recordMockWalletTopUp(userId, normalizedAmount, paymentIntentId, chargeId);
+    recordMockWalletTopUp(userId, normalizedWalletAmount, paymentIntentId, chargeId);
   }
 }
 
