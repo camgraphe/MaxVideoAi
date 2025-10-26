@@ -126,6 +126,7 @@ additional_redirect_urls = [
   "https://maxvideoai.com/*",
   "https://maxvideoai.com/app",
   "https://maxvideoai.com/app/*",
+  "https://maxvideoai.com/login",
   "https://maxvideoai.com/app/login",
   "https://maxvideoai.com/app/reset-password",
   "http://localhost:3000/*"

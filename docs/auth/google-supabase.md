@@ -5,7 +5,8 @@ This app now surfaces a **Continue with Google** option in the `/login` screen. 
 1. Open the Supabase dashboard for this project and navigate to **Authentication → Providers**.
 2. Enable **Google** and paste the Client ID/Secret from your Google Cloud OAuth app.
 3. Set the *Redirect URL* to `https://maxvideoai.com` (or your preview domain). Supabase will append the `?next=...` query automatically.
-4. If you run the workspace locally, add the same domain to the **Additional Redirect URLs** list (e.g. `http://localhost:3000`).
+4. Add `/login` explicitly to **Additional Redirect URLs** (e.g. `https://maxvideoai.com/login` plus any preview domains). Supabase only accepts exact paths, so without this the Google flow drops back to the homepage.
+5. If you run the workspace locally, add the same domain to the **Additional Redirect URLs** list (e.g. `http://localhost:3000`).
 
 For email delivery with your own domain:
 

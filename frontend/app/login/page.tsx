@@ -32,15 +32,11 @@ export default function LoginPage() {
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [locale, setLocale] = useState<string | null>(null);
-  const nextQuery = useMemo(
-    () => (nextPath && nextPath !== '/' ? `?next=${encodeURIComponent(nextPath)}` : ''),
-    [nextPath]
-  );
   const redirectTo = useMemo(() => {
     if (!siteUrl) return undefined;
     const base = siteUrl.endsWith('/') ? siteUrl.slice(0, -1) : siteUrl;
-    return `${base}/login${nextQuery}`;
-  }, [siteUrl, nextQuery]);
+    return `${base}/login`;
+  }, [siteUrl]);
 
   const syncInputState = useCallback(() => {
     const nextEmail = emailRef.current?.value ?? '';
