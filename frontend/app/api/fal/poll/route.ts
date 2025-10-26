@@ -315,3 +315,4 @@ async function pollFalJobs() {
 
   return NextResponse.json({ ok: true, checked: rows.length, updates, provisionalFailures });
 }
+export const runtime = 'nodejs';
