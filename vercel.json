@@ -1,12 +1,9 @@
 {
   "version": 2,
-  "installCommand": "npm install --omit=dev --prefix frontend",
-  "buildCommand": "NPM_CONFIG_WORKSPACES=false npm run vercel-build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm --filter frontend... build",
   "builds": [
-    { "src": "frontend/package.json", "use": "@vercel/next" }
-  ],
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/frontend/$1" }
+    { "src": "frontend/next.config.js", "use": "@vercel/next" }
   ],
   "crons": [
     { "path": "/api/stripe/batch-transfers", "schedule": "0 3 * * *" },
