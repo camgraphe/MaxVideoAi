@@ -288,6 +288,22 @@ export async function ensureBillingSchema(): Promise<void> {
       `);
 
       await query(`
+        ALTER TABLE IF EXISTS profiles
+        ADD COLUMN IF NOT EXISTS preferred_currency TEXT CHECK (preferred_currency IN ('eur','usd'));
+      `);
+
+      try {
+        await query(`
+          CREATE INDEX IF NOT EXISTS profiles_preferred_currency_idx ON profiles (preferred_currency);
+        `);
+      } catch (error) {
+        const code = typeof error === 'object' && error && 'code' in error ? (error as { code?: string }).code : undefined;
+        if (code !== '42P01') {
+          throw error;
+        }
+      }
+
+      await query(`
         CREATE TABLE IF NOT EXISTS playlists (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
           slug TEXT UNIQUE NOT NULL,

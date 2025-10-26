@@ -2,6 +2,13 @@ import { isDatabaseConfigured, query } from '@/lib/db';
 import { getLowBalanceThresholdCents, sendWalletLowBalanceEmail, shouldThrottleLowBalance } from '@/lib/email';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import { getUserIdentity } from '@/server/supabase-admin';
+import { getUserPreferredCurrency, normalizeCurrencyCode } from '@/lib/currency';
+import type { Currency } from '@/lib/currency';
+
+export type WalletBalanceByCurrency = {
+  currency: Currency | null;
+  balanceCents: number;
+};
 
 type MockWalletStore = Map<string, number>;
 type MockReceiptStore = Set<string>;
@@ -76,6 +83,41 @@ function consumeMockWalletBalance(
   return { ok: true, balanceCents: current, remainingCents: remaining };
 }
 
+export async function getWalletBalancesByCurrency(userId: string): Promise<WalletBalanceByCurrency[]> {
+  if (!isDatabaseConfigured()) return [];
+  try {
+    const rows = await query<{ currency: string | null; balance_cents: string | number | null }>(
+      `
+        SELECT
+          CASE
+            WHEN currency IS NULL OR TRIM(currency) = '' THEN NULL
+            ELSE UPPER(currency)
+          END AS currency,
+          COALESCE(SUM(
+            CASE
+              WHEN type = 'topup' THEN amount_cents
+              WHEN type = 'refund' THEN amount_cents
+              WHEN type = 'charge' THEN -amount_cents
+              ELSE 0
+            END
+          )::bigint, 0::bigint) AS balance_cents
+        FROM app_receipts
+        WHERE user_id = $1
+        GROUP BY 1
+      `,
+      [userId]
+    );
+
+    return rows.map((row) => ({
+      currency: normalizeCurrencyCode(row.currency) ?? null,
+      balanceCents: Number(row.balance_cents ?? 0),
+    }));
+  } catch (error) {
+    console.warn('[wallet] failed to load balances', error instanceof Error ? error.message : error);
+    return [];
+  }
+}
+
 type ReserveWalletChargeParams = {
   userId: string;
   amountCents: number;
@@ -99,11 +141,15 @@ type ReserveWalletChargeSuccess = {
 type ReserveWalletChargeFailure = {
   ok: false;
   balanceCents: number;
+  errorCode?: 'currency_mismatch';
+  preferredCurrency?: Currency | null;
 };
 
 export type ReserveWalletChargeResult = ReserveWalletChargeSuccess | ReserveWalletChargeFailure;
 
 export async function reserveWalletCharge(params: ReserveWalletChargeParams): Promise<ReserveWalletChargeResult> {
+  const normalizedCurrencyLower = normalizeCurrencyCode(params.currency) ?? 'usd';
+  const normalizedCurrencyUpper = normalizedCurrencyLower.toUpperCase();
   const fallbackToMock = () => {
     const result = consumeMockWalletBalance(params.userId, params.amountCents);
     if (!result.ok) {
@@ -115,7 +161,7 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
       balanceCents: result.balanceCents,
       remainingCents: result.remainingCents,
     };
-    void triggerLowBalanceAlert(params.userId, success.remainingCents, params.currency).catch((error) => {
+    void triggerLowBalanceAlert(params.userId, success.remainingCents, normalizedCurrencyUpper).catch((error) => {
       console.warn('[wallet] mock low balance alert failed', error);
     });
     return success;
@@ -126,6 +172,16 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
   }
 
   try {
+    const preferredCurrency = await getUserPreferredCurrency(params.userId);
+    if (preferredCurrency && preferredCurrency !== normalizedCurrencyLower) {
+      return {
+        ok: false,
+        balanceCents: 0,
+        errorCode: 'currency_mismatch',
+        preferredCurrency,
+      };
+    }
+
     const priceOnly = receiptsPriceOnlyEnabled();
     const applicationFeeParam = priceOnly ? null : params.applicationFeeCents;
     const vendorAccountParam = priceOnly ? null : params.vendorAccountId;
@@ -134,19 +190,49 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
       balance_cents: string | number | null;
       remaining_cents: string | number | null;
       receipt_id: string | null;
+      has_mismatch: number | null;
     }>(
       `
-        WITH balance AS (
-          SELECT COALESCE(SUM(
+        WITH receipts AS (
+          SELECT
+            type,
+            amount_cents,
             CASE
-              WHEN type = 'topup' THEN amount_cents
-              WHEN type = 'refund' THEN amount_cents
-              WHEN type = 'charge' THEN -amount_cents
-              ELSE 0
-            END
-          )::bigint, 0::bigint) AS balance_cents
+              WHEN currency IS NULL OR TRIM(currency) = '' THEN NULL
+              ELSE UPPER(currency)
+            END AS currency
           FROM app_receipts
           WHERE user_id = $1
+        ),
+        balances AS (
+          SELECT
+            currency,
+            COALESCE(SUM(
+              CASE
+                WHEN type = 'topup' THEN amount_cents
+                WHEN type = 'refund' THEN amount_cents
+                WHEN type = 'charge' THEN -amount_cents
+                ELSE 0
+              END
+            )::bigint, 0::bigint) AS net_cents
+          FROM receipts
+          GROUP BY currency
+        ),
+        balance AS (
+          SELECT
+            COALESCE(SUM(
+              CASE
+                WHEN currency IS NULL OR currency = $3 THEN net_cents
+                ELSE 0
+              END
+            ), 0::bigint) AS balance_cents,
+            COALESCE(MAX(
+              CASE
+                WHEN currency IS NOT NULL AND currency <> $3 AND net_cents > 0 THEN 1
+                ELSE 0
+              END
+            ), 0) AS has_mismatch
+          FROM balances
         ),
         ins AS (
           INSERT INTO app_receipts (
@@ -180,18 +266,20 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
             $8
           FROM balance
           WHERE balance.balance_cents >= $2::bigint
+            AND COALESCE(balance.has_mismatch, 0) = 0
           RETURNING id
         )
         SELECT
           balance.balance_cents,
           balance.balance_cents - $2::bigint AS remaining_cents,
-          (SELECT id FROM ins) AS receipt_id
+          (SELECT id FROM ins) AS receipt_id,
+          balance.has_mismatch
         FROM balance
       `,
       [
         params.userId,
         params.amountCents,
-        params.currency,
+        normalizedCurrencyUpper,
         params.description,
         params.jobId,
         params.pricingSnapshotJson,
@@ -210,13 +298,24 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
     const balanceCents = Number(row.balance_cents ?? 0);
     const remainingCents = Number(row.remaining_cents ?? 0);
     const receiptId = row.receipt_id;
+    const hasMismatch = Number(row.has_mismatch ?? 0) > 0;
+
+    if (hasMismatch) {
+      const walletCurrency = preferredCurrency ?? (await fetchExistingWalletCurrency(params.userId));
+      return {
+        ok: false,
+        balanceCents,
+        errorCode: 'currency_mismatch',
+        preferredCurrency: walletCurrency ?? null,
+      };
+    }
 
     if (!receiptId) {
       return { ok: false, balanceCents };
     }
 
     const outcome: ReserveWalletChargeSuccess = { ok: true, receiptId, balanceCents, remainingCents };
-    void triggerLowBalanceAlert(params.userId, remainingCents, params.currency).catch((error) => {
+    void triggerLowBalanceAlert(params.userId, remainingCents, normalizedCurrencyUpper).catch((error) => {
       console.warn('[wallet] low balance alert failed', error instanceof Error ? error.message : error);
     });
     return outcome;
@@ -224,6 +323,16 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
     console.warn('[wallet] reserve failed, using mock ledger', error);
     return fallbackToMock();
   }
+}
+
+async function fetchExistingWalletCurrency(userId: string): Promise<Currency | null> {
+  const balances = await getWalletBalancesByCurrency(userId);
+  const positive = balances.find((entry) => entry.currency && entry.balanceCents > 0);
+  if (positive?.currency) {
+    return positive.currency;
+  }
+  const firstCurrency = balances.find((entry) => entry.currency)?.currency ?? null;
+  return firstCurrency;
 }
 
 async function triggerLowBalanceAlert(userId: string, remainingCents: number, currency: string) {

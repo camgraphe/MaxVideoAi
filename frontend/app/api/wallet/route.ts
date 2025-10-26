@@ -9,12 +9,15 @@ import { ensureBillingSchema } from '@/lib/schema';
 import { applyMockWalletTopUp, getMockWalletBalance } from '@/lib/wallet';
 import { getConfiguredEngine } from '@/server/engines';
 import { getSoraVariantForEngine, isSoraEngineId, parseSoraRequest, type SoraRequest } from '@/lib/sora';
+import { getUserPreferredCurrency, normalizeCurrencyCode, resolveCurrency } from '@/lib/currency';
+import type { Currency } from '@/lib/currency';
 
 export async function GET(req: NextRequest) {
   const userId = await getUserIdFromRequest(req);
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   let useMock = false;
+  const databaseConfigured = Boolean(process.env.DATABASE_URL);
   try {
     await ensureBillingSchema();
   } catch (error) {
@@ -22,32 +25,80 @@ export async function GET(req: NextRequest) {
     useMock = true;
   }
 
-  if (useMock || !process.env.DATABASE_URL) {
+  let preferredCurrency: Currency | null = null;
+  if (!useMock && databaseConfigured) {
+    preferredCurrency = await getUserPreferredCurrency(userId);
+  }
+  const fallbackResolution = resolveCurrency(req, preferredCurrency ? { preferred_currency: preferredCurrency } : undefined);
+
+  if (useMock || !databaseConfigured) {
     const balanceCents = getMockWalletBalance(userId);
-    return NextResponse.json({ balance: balanceCents / 100, currency: 'USD', mock: true });
+    return NextResponse.json({
+      balance: balanceCents / 100,
+      currency: fallbackResolution.currency.toUpperCase(),
+      mock: true,
+    });
   }
 
   try {
-    const rows = await query<{ type: string; amount_cents: number }>(
-      `SELECT type, amount_cents FROM app_receipts WHERE user_id = $1`,
+    const rows = await query<{ type: string; amount_cents: number | string | null; currency: string | null }>(
+      `SELECT type, amount_cents, currency FROM app_receipts WHERE user_id = $1`,
       [userId]
     );
 
+    let walletCurrency: Currency | null = preferredCurrency ?? null;
+    const mismatchedCurrencies = new Set<string>();
+
+    for (const row of rows) {
+      const normalized = normalizeCurrencyCode(row.currency);
+      if (!walletCurrency && normalized) {
+        walletCurrency = normalized;
+        continue;
+      }
+      if (walletCurrency && normalized && normalized !== walletCurrency) {
+        mismatchedCurrencies.add(normalized);
+      }
+    }
+
+    walletCurrency = walletCurrency ?? fallbackResolution.currency;
+
+    if (mismatchedCurrencies.size) {
+      console.warn('[wallet] detected receipts with mismatched currency', {
+        userId,
+        walletCurrency,
+        mismatched: Array.from(mismatchedCurrencies),
+      });
+    }
+
+    const walletCurrencyUpper = walletCurrency.toUpperCase();
     let topups = 0;
     let charges = 0;
     let refunds = 0;
     for (const r of rows) {
-      if (r.type === 'topup') topups += r.amount_cents;
-      if (r.type === 'charge') charges += r.amount_cents;
-      if (r.type === 'refund') refunds += r.amount_cents;
+      const normalized = normalizeCurrencyCode(r.currency);
+      if (normalized && normalized.toUpperCase() !== walletCurrencyUpper) {
+        continue;
+      }
+      const amount = Number(r.amount_cents ?? 0);
+      if (!Number.isFinite(amount)) continue;
+      if (r.type === 'topup') topups += amount;
+      if (r.type === 'charge') charges += amount;
+      if (r.type === 'refund') refunds += amount;
     }
 
     const balanceCents = Math.max(0, topups + refunds - charges);
-    return NextResponse.json({ balance: balanceCents / 100, currency: 'USD' });
+    return NextResponse.json({
+      balance: balanceCents / 100,
+      currency: walletCurrencyUpper,
+    });
   } catch (error) {
     console.warn('[wallet] query failed, using mock ledger', error);
     const balanceCents = getMockWalletBalance(userId);
-    return NextResponse.json({ balance: balanceCents / 100, currency: 'USD', mock: true });
+    return NextResponse.json({
+      balance: balanceCents / 100,
+      currency: fallbackResolution.currency.toUpperCase(),
+      mock: true,
+    });
   }
 }
 
@@ -56,6 +107,7 @@ export async function POST(req: NextRequest) {
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   let useMock = false;
+  const databaseConfigured = Boolean(process.env.DATABASE_URL);
   try {
     await ensureBillingSchema();
   } catch (error) {
@@ -70,9 +122,22 @@ export async function POST(req: NextRequest) {
 
   const amountCents = Math.max(1000, Number(body.amountCents ?? 0));
 
-  if (useMock || !ENV.STRIPE_SECRET_KEY || !process.env.DATABASE_URL) {
+  let preferredCurrency: Currency | null = null;
+  if (!useMock && databaseConfigured) {
+    preferredCurrency = await getUserPreferredCurrency(userId);
+  }
+  const currencyResolution = resolveCurrency(req, preferredCurrency ? { preferred_currency: preferredCurrency } : undefined);
+  const resolvedCurrencyLower = currencyResolution.currency;
+  const resolvedCurrencyUpper = resolvedCurrencyLower.toUpperCase();
+
+  if (useMock || !ENV.STRIPE_SECRET_KEY || !databaseConfigured) {
     const balanceCents = applyMockWalletTopUp(userId, amountCents);
-    return NextResponse.json({ ok: true, balanceCents, currency: 'USD', mock: true });
+    return NextResponse.json({
+      ok: true,
+      balanceCents,
+      currency: resolvedCurrencyUpper,
+      mock: true,
+    });
   }
 
   const stripe = new Stripe(ENV.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' });
@@ -138,6 +203,7 @@ export async function POST(req: NextRequest) {
       durationSec,
       resolution,
       membershipTier: body.membershipTier,
+      currency: resolvedCurrencyUpper,
     });
 
     const destinationAccountId = isConnectPayments()
@@ -161,6 +227,9 @@ export async function POST(req: NextRequest) {
       resolution,
       pricing_total_cents: String(pricing.totalCents),
       pricing_currency: pricing.currency,
+      currency: resolvedCurrencyUpper,
+      currency_source: currencyResolution.source,
+      currency_country: currencyResolution.country ?? '',
     };
 
     if (soraRequest) {
@@ -188,7 +257,7 @@ export async function POST(req: NextRequest) {
     try {
       const params: Stripe.PaymentIntentCreateParams = {
         amount: pricing.totalCents,
-        currency: pricing.currency.toLowerCase(),
+        currency: resolvedCurrencyLower,
         automatic_payment_methods: { enabled: true },
         metadata,
       };
@@ -204,7 +273,9 @@ export async function POST(req: NextRequest) {
         paymentIntentId: intent.id,
         jobId,
         amountCents: pricing.totalCents,
-        currency: pricing.currency,
+        currency: resolvedCurrencyUpper,
+        currencySource: currencyResolution.source,
+        currencyCountry: currencyResolution.country ?? null,
         mode: isConnectPayments() ? 'connect' : 'platform',
       });
 
@@ -213,7 +284,7 @@ export async function POST(req: NextRequest) {
         paymentIntentId: intent.id,
         clientSecret: intent.client_secret,
         amountCents: pricing.totalCents,
-        currency: pricing.currency,
+        currency: resolvedCurrencyUpper,
         jobId,
         pricing,
       });
@@ -237,7 +308,12 @@ export async function POST(req: NextRequest) {
     const sessionMetadata: Record<string, string> = {
       kind: 'topup',
       user_id: userId,
+      currency: resolvedCurrencyUpper,
+      currency_source: currencyResolution.source,
     };
+    if (currencyResolution.country) {
+      sessionMetadata.currency_country = currencyResolution.country;
+    }
     let platformFeeCents = 0;
     let vendorShareCents = 0;
     if (isConnectPayments() && destinationAccountId) {
@@ -256,7 +332,7 @@ export async function POST(req: NextRequest) {
       line_items: [
         {
           price_data: {
-            currency: 'usd',
+            currency: resolvedCurrencyLower,
             product_data: { name: 'Wallet top-up' },
             unit_amount: amountCents,
           },
@@ -266,17 +342,23 @@ export async function POST(req: NextRequest) {
       metadata: sessionMetadata,
     };
 
+    const paymentIntentMetadata: Record<string, string> = {
+      ...sessionMetadata,
+    };
+
     if (isConnectPayments() && destinationAccountId) {
+      paymentIntentMetadata.platform_fee_cents = String(platformFeeCents);
+      paymentIntentMetadata.vendor_share_cents = String(vendorShareCents);
       sessionParams.payment_intent_data = {
         application_fee_amount: platformFeeCents,
         transfer_data: {
           destination: destinationAccountId,
         },
-        metadata: {
-          ...sessionMetadata,
-          platform_fee_cents: String(platformFeeCents),
-          vendor_share_cents: String(vendorShareCents),
-        },
+        metadata: paymentIntentMetadata,
+      };
+    } else {
+      sessionParams.payment_intent_data = {
+        metadata: paymentIntentMetadata,
       };
     }
 
@@ -285,7 +367,9 @@ export async function POST(req: NextRequest) {
     console.info('[payments] checkout session created', {
       sessionId: session.id,
       amountCents,
-      currency: 'usd',
+      currency: resolvedCurrencyUpper,
+      currencySource: currencyResolution.source,
+      currencyCountry: currencyResolution.country ?? null,
       userId,
       mode: isConnectPayments() ? 'connect' : 'platform',
     });

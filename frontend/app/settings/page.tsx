@@ -1,10 +1,12 @@
 "use client";
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
+import useSWR from 'swr';
+import type { Session } from '@supabase/supabase-js';
 
 type Tab = 'account' | 'team' | 'keys' | 'privacy' | 'notifications';
 
@@ -73,7 +75,7 @@ export default function SettingsPage() {
             <TabLink id="notifications" label="Notifications" active={tab === 'notifications'} onClick={() => setTab('notifications')} />
           </nav>
 
-          {tab === 'account' && <AccountTab />}
+          {tab === 'account' && <AccountTab session={session} />}
           {tab === 'team' && <TeamTab />}
           {tab === 'keys' && <KeysTab />}
           {tab === 'privacy' && (
@@ -109,22 +111,165 @@ function TabLink({ id, label, active, onClick }: { id: string; label: string; ac
   );
 }
 
-function AccountTab() {
+type CurrencySummary = {
+  ok: boolean;
+  currency?: string | null;
+  defaultCurrency?: string;
+  enabled?: string[];
+  balances?: Array<{ currency: string | null; balanceCents: number }>;
+  locked?: boolean;
+  error?: string;
+};
+
+const currencyFetcher = async (url: string): Promise<CurrencySummary> => {
+  const res = await fetch(url, { credentials: 'include' });
+  const json = await res.json().catch(() => null);
+  if (!res.ok || !json) {
+    const message = json?.error ?? 'Unable to load currency preferences';
+    throw new Error(message);
+  }
+  return json as CurrencySummary;
+};
+
+type AccountTabProps = {
+  session: Session | null;
+};
+
+function AccountTab({ session }: AccountTabProps) {
+  const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null);
+  const [hasTouchedCurrency, setHasTouchedCurrency] = useState(false);
+  const [savingCurrency, setSavingCurrency] = useState(false);
+  const [currencySaveError, setCurrencySaveError] = useState<string | null>(null);
+  const [currencySuccess, setCurrencySuccess] = useState<string | null>(null);
+
+  const shouldFetchCurrency = Boolean(session);
+  const {
+    data: currencyData,
+    error: currencyFetchError,
+    isLoading: currencyLoading,
+    mutate: mutateCurrency,
+  } = useSWR<CurrencySummary>(shouldFetchCurrency ? '/api/me/currency' : null, currencyFetcher, {
+    revalidateOnFocus: false,
+  });
+
+  useEffect(() => {
+    if (!currencyData || hasTouchedCurrency) return;
+    const next = currencyData.currency ?? currencyData.defaultCurrency ?? null;
+    setSelectedCurrency(next);
+  }, [currencyData, hasTouchedCurrency]);
+
+  const currencyOptions = useMemo(() => currencyData?.enabled ?? ['EUR', 'USD'], [currencyData]);
+  const currentCurrency = currencyData?.currency ?? currencyData?.defaultCurrency ?? null;
+  const pendingCurrency = selectedCurrency ?? currentCurrency;
+
+  const balancesByCurrency = useMemo(() => {
+    const map = new Map<string, number>();
+    currencyData?.balances?.forEach((entry) => {
+      if (entry.currency) {
+        map.set(entry.currency, entry.balanceCents);
+      }
+    });
+    return map;
+  }, [currencyData]);
+
+  const currentBalanceCents = currentCurrency ? balancesByCurrency.get(currentCurrency) ?? 0 : 0;
+  const blockingBalance = useMemo(() => {
+    if (!pendingCurrency) return null;
+    return currencyData?.balances?.find(
+      (entry) => entry.currency && entry.currency !== pendingCurrency && entry.balanceCents > 0
+    ) ?? null;
+  }, [currencyData, pendingCurrency]);
+
+  const hasPendingChange = Boolean(pendingCurrency && currentCurrency && pendingCurrency !== currentCurrency);
+  const disableUpdate =
+    !pendingCurrency || savingCurrency || currencyLoading || Boolean(currencyFetchError) || !hasPendingChange;
+
+  const formatCurrencyValue = useCallback((cents: number, currency: string) => {
+    try {
+      return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(cents / 100);
+    } catch {
+      return `${(cents / 100).toFixed(2)} ${currency}`;
+    }
+  }, []);
+
+  const handleCurrencyChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value || null;
+    setSelectedCurrency(value);
+    setHasTouchedCurrency(true);
+    setCurrencySaveError(null);
+    setCurrencySuccess(null);
+  }, []);
+
+  const handleCurrencySave = useCallback(async () => {
+    if (!pendingCurrency || pendingCurrency === currentCurrency) {
+      return;
+    }
+    const confirmed = window.confirm(
+      `Confirmer le passage de la devise wallet en ${pendingCurrency}. Cette action s'applique à toutes les prochaines opérations.`
+    );
+    if (!confirmed) return;
+
+    setSavingCurrency(true);
+    setCurrencySaveError(null);
+    setCurrencySuccess(null);
+
+    try {
+      const res = await fetch('/api/me/currency', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ currency: pendingCurrency.toLowerCase(), confirm: true }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) {
+        const message = json?.error ?? 'Failed to update currency';
+        throw new Error(message);
+      }
+      setCurrencySuccess('Devise mise à jour.');
+      setHasTouchedCurrency(false);
+      await mutateCurrency();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to update currency';
+      setCurrencySaveError(message);
+    } finally {
+      setSavingCurrency(false);
+    }
+  }, [pendingCurrency, currentCurrency, mutateCurrency]);
+
+  const nameDefault =
+    typeof session?.user?.user_metadata?.full_name === 'string'
+      ? session?.user?.user_metadata?.full_name
+      : session?.user?.user_metadata?.name ?? '';
+  const emailDefault = session?.user?.email ?? '';
+
+  const currencyFetchErrorMessage = currencyFetchError instanceof Error ? currencyFetchError.message : null;
+
   return (
     <section className="rounded-card border border-border bg-white p-4 shadow-card">
       <h2 className="mb-3 text-lg font-semibold text-text-primary">Account</h2>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="text-sm">
           <span className="mb-1 block text-text-secondary">Name</span>
-          <input className="w-full rounded-input border border-border bg-bg px-3 py-2" placeholder="Your name" />
+          <input
+            className="w-full rounded-input border border-border bg-bg px-3 py-2"
+            placeholder="Your name"
+            defaultValue={nameDefault}
+            readOnly={!nameDefault}
+          />
         </label>
         <label className="text-sm">
           <span className="mb-1 block text-text-secondary">Email</span>
-          <input type="email" className="w-full rounded-input border border-border bg-bg px-3 py-2" placeholder="you@domain.com" />
+          <input
+            type="email"
+            className="w-full rounded-input border border-border bg-bg px-3 py-2"
+            placeholder="you@domain.com"
+            defaultValue={emailDefault}
+            readOnly
+          />
         </label>
         <label className="text-sm">
           <span className="mb-1 block text-text-secondary">Locale</span>
-          <select className="w-full rounded-input border border-border bg-bg px-3 py-2">
+          <select className="w-full rounded-input border border-border bg-bg px-3 py-2" defaultValue="EN" disabled>
             <option>EN</option>
             <option>FR</option>
             <option>ES</option>
@@ -132,17 +277,65 @@ function AccountTab() {
         </label>
         <label className="text-sm">
           <span className="mb-1 block text-text-secondary">Theme</span>
-          <select className="w-full rounded-input border border-border bg-bg px-3 py-2">
+          <select className="w-full rounded-input border border-border bg-bg px-3 py-2" defaultValue="System" disabled>
             <option>System</option>
             <option>Light</option>
             <option>Dark</option>
           </select>
         </label>
-        <div className="col-span-full">
-          <label className="inline-flex items-center gap-2 text-sm text-text-secondary">
-            <input type="checkbox" className="h-4 w-4" defaultChecked />
-            Collapsed sidebar by default
-          </label>
+        <div className="col-span-full rounded-input border border-border bg-bg px-3 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium text-text-primary">Wallet currency</p>
+              <p className="text-xs text-text-secondary">
+                La devise fixe les prochaines recharges et paiements direct Stripe.
+              </p>
+            </div>
+            <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-text-secondary">
+              {currentCurrency ?? '—'}
+            </span>
+          </div>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <select
+              className="w-full rounded-input border border-border bg-white px-3 py-2 sm:max-w-[200px]"
+              value={pendingCurrency ?? ''}
+              onChange={handleCurrencyChange}
+              disabled={currencyLoading || savingCurrency || Boolean(currencyFetchError)}
+            >
+              {currencyOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              className="rounded-input border border-border px-3 py-2 text-sm font-medium text-text-primary hover:bg-bg disabled:cursor-not-allowed disabled:opacity-60"
+              onClick={handleCurrencySave}
+              disabled={disableUpdate}
+            >
+              {savingCurrency ? 'Enregistrement…' : 'Mettre à jour la devise'}
+            </button>
+          </div>
+          {currencyLoading && <p className="mt-2 text-xs text-text-secondary">Chargement de la devise…</p>}
+          {currencyFetchErrorMessage && (
+            <p className="mt-2 text-xs text-red-500">{currencyFetchErrorMessage}</p>
+          )}
+          {currencySaveError && <p className="mt-2 text-xs text-red-500">{currencySaveError}</p>}
+          {currencySuccess && <p className="mt-2 text-xs text-green-600">{currencySuccess}</p>}
+          {typeof currentBalanceCents === 'number' && currentCurrency && (
+            <p className="mt-2 text-xs text-text-secondary">
+              Solde disponible&nbsp;: {formatCurrencyValue(currentBalanceCents, currentCurrency)}
+            </p>
+          )}
+          {blockingBalance?.currency && (
+            <p className="mt-1 text-xs text-amber-600">
+              Videz d&apos;abord votre solde {blockingBalance.currency} ({formatCurrencyValue(
+                blockingBalance.balanceCents,
+                blockingBalance.currency
+              )}) pour changer de devise.
+            </p>
+          )}
         </div>
       </div>
     </section>

@@ -4,6 +4,7 @@ import { ENV, isConnectPayments, receiptsPriceOnlyEnabled } from '@/lib/env';
 import { ensureBillingSchema } from '@/lib/schema';
 import { query } from '@/lib/db';
 import { recordMockWalletTopUp } from '@/lib/wallet';
+import { ensureUserPreferredCurrency, normalizeCurrencyCode } from '@/lib/currency';
 
 const stripeSecret = ENV.STRIPE_SECRET_KEY;
 const webhookSecret = ENV.STRIPE_WEBHOOK_SECRET;
@@ -238,6 +239,11 @@ async function recordTopup({
         chargeId,
       });
       return;
+    }
+
+    const resolvedCurrency = normalizeCurrencyCode(normalizedCurrency);
+    if (resolvedCurrency) {
+      await ensureUserPreferredCurrency(userId, resolvedCurrency);
     }
 
     console.log('[stripe-webhook] Recorded wallet top-up', {

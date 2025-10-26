@@ -67,6 +67,8 @@ export const ENV = {
   WORKSPACE_CENTER_GALLERY: getOptionalEnv('NEXT_PUBLIC_WORKSPACE_CENTER_GALLERY'),
   FAL_USE_UPLOAD:
     (getOptionalEnv('FAL_USE_UPLOAD') ?? 'false').toLowerCase() === 'true',
+  DEFAULT_CURRENCY: getOptionalEnv('DEFAULT_CURRENCY'),
+  ENABLED_CURRENCIES: getOptionalEnv('ENABLED_CURRENCIES'),
   PAYMENT_MODE,
   RECEIPTS_PRICE_ONLY,
 };

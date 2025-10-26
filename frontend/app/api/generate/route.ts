@@ -30,6 +30,8 @@ import {
   LUMA_RAY2_ERROR_UNSUPPORTED,
   type LumaRay2DurationLabel,
 } from '@/lib/luma-ray2';
+import { ensureUserPreferredCurrency, getUserPreferredCurrency, resolveCurrency } from '@/lib/currency';
+import type { Currency } from '@/lib/currency';
 
 type PaymentMode = 'wallet' | 'direct' | 'platform';
 
@@ -592,6 +594,24 @@ export async function POST(req: NextRequest) {
           : soraRequest.aspect_ratio;
   }
 
+  const payment: { mode?: PaymentMode; paymentIntentId?: string | null } =
+    typeof body.payment === 'object' && body.payment
+      ? { mode: body.payment.mode, paymentIntentId: body.payment.paymentIntentId }
+      : {};
+  const explicitUserId = typeof body.userId === 'string' && body.userId.trim().length ? body.userId.trim() : null;
+  const authenticatedUserId = await getUserIdFromRequest(req);
+  const userId = explicitUserId ?? authenticatedUserId ?? null;
+  const paymentMode: PaymentMode = payment.mode ?? (userId ? 'wallet' : 'platform');
+  const connectMode = isConnectPayments();
+
+  let preferredCurrency: Currency | null = null;
+  if (userId) {
+    preferredCurrency = await getUserPreferredCurrency(String(userId));
+  }
+  const currencyResolution = resolveCurrency(req, preferredCurrency ? { preferred_currency: preferredCurrency } : undefined);
+  const resolvedCurrencyLower = currencyResolution.currency;
+  const resolvedCurrencyUpper = resolvedCurrencyLower.toUpperCase();
+
   const pricing = await computePricingSnapshot({
     engine,
     durationSec,
@@ -599,6 +619,7 @@ export async function POST(req: NextRequest) {
     membershipTier: body.membershipTier,
     loop: isLumaRay2 ? loop : undefined,
     durationOption: lumaDurationInfo?.label ?? rawDurationOption ?? null,
+    currency: resolvedCurrencyUpper,
   });
   const rawDurationLabel: LumaRay2DurationLabel | undefined =
     typeof rawDurationOption === 'string' && ['5s', '9s'].includes(rawDurationOption)
@@ -626,6 +647,8 @@ export async function POST(req: NextRequest) {
   pricing.meta = {
     ...(pricing.meta ?? {}),
     request: requestMeta,
+    currency_source: currencyResolution.source,
+    currency_country: currencyResolution.country ?? null,
   };
   const priceOnlyReceipts = receiptsPriceOnlyEnabled();
   const costBreakdownUsd = (pricing.meta?.cost_breakdown_usd as Record<string, unknown> | undefined) ?? null;
@@ -633,15 +656,6 @@ export async function POST(req: NextRequest) {
   const pricingSnapshotJson = JSON.stringify(receiptSnapshot);
   const costBreakdownJson = !priceOnlyReceipts && costBreakdownUsd ? JSON.stringify(costBreakdownUsd) : null;
 
-  const payment: { mode?: PaymentMode; paymentIntentId?: string | null } =
-    typeof body.payment === 'object' && body.payment
-      ? { mode: body.payment.mode, paymentIntentId: body.payment.paymentIntentId }
-      : {};
-  const explicitUserId = typeof body.userId === 'string' && body.userId.trim().length ? body.userId.trim() : null;
-  const authenticatedUserId = await getUserIdFromRequest(req);
-  const userId = explicitUserId ?? authenticatedUserId ?? null;
-  const paymentMode: PaymentMode = payment.mode ?? (userId ? 'wallet' : 'platform');
-  const connectMode = isConnectPayments();
   const vendorAccountId = connectMode ? pricing.vendorAccountId ?? engine.vendorAccountId ?? null : null;
   const applicationFeeCents = getPlatformFeeCents(pricing);
   let defaultAllowIndex = true;
@@ -778,7 +792,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     const reserveResult = await reserveWalletCharge({
       userId: walletUserId,
       amountCents: pricing.totalCents,
-      currency: pricing.currency,
+      currency: resolvedCurrencyUpper,
       description: `Run ${engine.label} - ${durationSec}s`,
       jobId,
       pricingSnapshotJson,
@@ -789,6 +803,21 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     });
 
     if (!reserveResult.ok) {
+      if (reserveResult.errorCode === 'currency_mismatch') {
+        const lockedCurrency = (reserveResult.preferredCurrency ?? resolvedCurrencyLower).toUpperCase();
+        console.warn('[wallet] currency mismatch during reserve', {
+          userId: walletUserId,
+          expected: lockedCurrency,
+          requested: resolvedCurrencyUpper,
+        });
+        return NextResponse.json(
+          {
+            ok: false,
+            error: `Votre portefeuille est en ${lockedCurrency}. Contactez le support pour changer de devise.`,
+          },
+          { status: 409 }
+        );
+      }
       const balanceCents = reserveResult.balanceCents;
       return NextResponse.json(
         {
@@ -803,10 +832,15 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
 
     walletChargeReserved = true;
 
+    if (!preferredCurrency) {
+      await ensureUserPreferredCurrency(walletUserId, resolvedCurrencyLower);
+      preferredCurrency = resolvedCurrencyLower;
+    }
+
     pendingReceipt = {
       userId: walletUserId,
       amountCents: pricing.totalCents,
-      currency: pricing.currency,
+      currency: resolvedCurrencyUpper,
       description: `Run ${engine.label} - ${durationSec}s`,
       jobId,
       snapshot: receiptSnapshot,
@@ -834,12 +868,29 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     if (intent.status !== 'succeeded' || (intent.amount_received ?? intent.amount) < pricing.totalCents) {
       return NextResponse.json({ ok: false, error: 'Payment not captured yet' }, { status: 402 });
     }
-    const intentCurrency = intent.currency?.toUpperCase() ?? pricing.currency;
-    if (intentCurrency !== pricing.currency.toUpperCase()) {
-      return NextResponse.json({ ok: false, error: 'Payment currency mismatch' }, { status: 409 });
+    const intentCurrency = intent.currency?.toUpperCase() ?? resolvedCurrencyUpper;
+    if (intentCurrency !== resolvedCurrencyUpper) {
+      console.warn('[payments] payment intent currency mismatch', {
+        expected: resolvedCurrencyUpper,
+        received: intentCurrency,
+        userId,
+        paymentIntentId: intent.id,
+      });
+      return NextResponse.json(
+        {
+          ok: false,
+          error: `Votre portefeuille est en ${resolvedCurrencyUpper}. Contactez le support pour changer de devise.`,
+        },
+        { status: 409 }
+      );
     }
     if (connectMode && intent.transfer_data?.destination && intent.transfer_data.destination !== vendorAccountId) {
       return NextResponse.json({ ok: false, error: 'Payment vendor mismatch' }, { status: 409 });
+    }
+
+    if (!preferredCurrency) {
+      await ensureUserPreferredCurrency(String(userId), resolvedCurrencyLower);
+      preferredCurrency = resolvedCurrencyLower;
     }
 
     stripePaymentIntentId = intent.id;
@@ -853,7 +904,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     pendingReceipt = {
       userId: String(userId),
       amountCents: intent.amount_received ?? intent.amount,
-      currency: intentCurrency,
+      currency: resolvedCurrencyUpper,
       description: `Run ${engine.label} - ${durationSec}s`,
       jobId,
       snapshot: receiptSnapshot,
