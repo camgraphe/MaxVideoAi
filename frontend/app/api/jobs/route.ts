@@ -78,7 +78,7 @@ export async function GET(req: NextRequest) {
     const conditions: string[] = [
       'user_id = $1',
       'hidden IS NOT TRUE',
-      "NOT (LOWER(status) IN ('failed','error','errored','cancelled','canceled') AND updated_at < NOW() - INTERVAL '30 minutes')"
+      "NOT (LOWER(status) IN ('failed','error','errored','cancelled','canceled') AND updated_at < NOW() - INTERVAL '150 seconds')"
     ];
 
     const cursorInfo = parseCursorParam(cursor);
