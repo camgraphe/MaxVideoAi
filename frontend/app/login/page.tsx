@@ -45,6 +45,21 @@ export default function LoginPage() {
     setPassword((prev) => (prev === nextPassword ? prev : nextPassword));
   }, [setEmail, setPassword]);
 
+  const navigateTo = useCallback(
+    (target: string) => {
+      router.replace(target);
+      if (typeof window !== 'undefined') {
+        window.setTimeout(() => {
+          const current = window.location.pathname + window.location.search;
+          if (current !== target) {
+            window.location.assign(target);
+          }
+        }, 400);
+      }
+    },
+    [router]
+  );
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
@@ -87,7 +102,7 @@ export default function LoginPage() {
       const { data } = await supabase.auth.getSession();
       if (cancelled) return;
       if (data.session?.user && nextPath) {
-        router.replace(nextPath);
+        navigateTo(nextPath);
       }
     }
 
@@ -95,14 +110,14 @@ export default function LoginPage() {
 
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (cancelled || !session?.user) return;
-      router.replace(nextPath);
+      navigateTo(nextPath);
     });
 
     return () => {
       cancelled = true;
       authListener?.subscription.unsubscribe();
     };
-  }, [nextPath, router]);
+  }, [navigateTo, nextPath]);
 
   async function signInWithPassword(e: React.FormEvent) {
     e.preventDefault();
@@ -120,7 +135,7 @@ export default function LoginPage() {
 
     const session = data.session ?? (await supabase.auth.getSession().then(({ data: sessionData }) => sessionData.session ?? null));
     syncSupabaseCookies(session);
-    router.replace(nextPath);
+    navigateTo(nextPath);
   }
 
   async function submitSignupConsents(userId: string) {
@@ -199,7 +214,7 @@ export default function LoginPage() {
       setStatusTone('success');
       setStatus('Account created. Redirecting…');
       syncSupabaseCookies(data.session);
-      router.replace('/generate');
+      navigateTo('/generate');
     } else {
       setStatusTone('success');
       setStatus('Check your inbox to confirm your email.');
