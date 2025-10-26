@@ -88,7 +88,6 @@ export default function LoginPage() {
       if (cancelled) return;
       if (data.session?.user && nextPath) {
         router.replace(nextPath);
-        router.refresh();
       }
     }
 
@@ -97,7 +96,6 @@ export default function LoginPage() {
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (cancelled || !session?.user) return;
       router.replace(nextPath);
-      router.refresh();
     });
 
     return () => {
@@ -123,7 +121,6 @@ export default function LoginPage() {
     const session = data.session ?? (await supabase.auth.getSession().then(({ data: sessionData }) => sessionData.session ?? null));
     syncSupabaseCookies(session);
     router.replace(nextPath);
-    router.refresh();
   }
 
   async function submitSignupConsents(userId: string) {
