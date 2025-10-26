@@ -4,6 +4,7 @@ import { getUserIdFromRequest } from '@/lib/user';
 import { getLegalDocumentUncached, type LegalDocumentKey } from '@/lib/legal';
 import { recordUserConsents, type ConsentSource } from '@/server/legal-consents';
 import { getProfileSnapshot } from '@/server/profile';
+import { query } from '@/lib/db';
 
 export const runtime = 'nodejs';
 
@@ -46,6 +47,31 @@ async function fetchDocuments(keys: LegalDocumentKey[]): Promise<Array<{ key: Le
   return docs;
 }
 
+async function fetchLatestConsents(userId: string): Promise<Record<LegalDocumentKey, string | null>> {
+  const latest: Record<LegalDocumentKey, string | null> = {
+    terms: null,
+    privacy: null,
+    cookies: null,
+  };
+  try {
+    const rows = await query<{ doc_key: string; doc_version: string }>(
+      `select doc_key, doc_version
+       from user_consents
+       where user_id = $1
+       order by accepted_at desc`,
+      [userId]
+    );
+    for (const row of rows) {
+      if ((row.doc_key === 'terms' || row.doc_key === 'privacy' || row.doc_key === 'cookies') && !latest[row.doc_key]) {
+        latest[row.doc_key] = row.doc_version;
+      }
+    }
+  } catch (error) {
+    console.warn('[legal-reconsent] failed to load consent history', error);
+  }
+  return latest;
+}
+
 type RawStatus = {
   needsReconsent: boolean;
   shouldBlock: boolean;
@@ -57,9 +83,10 @@ type RawStatus = {
 async function computeReconsentStatus(userId: string): Promise<RawStatus> {
   const mode = resolveMode();
   const graceDays = resolveGraceDays();
-  const [profile, documents] = await Promise.all([
+  const [profile, documents, latestConsents] = await Promise.all([
     getProfileSnapshot(userId),
     fetchDocuments(['terms', 'privacy', 'cookies']),
+    fetchLatestConsents(userId),
   ]);
 
   const mismatches: DocumentStatus[] = [];
@@ -67,11 +94,11 @@ async function computeReconsentStatus(userId: string): Promise<RawStatus> {
     if (!doc.version) continue;
     let acceptedVersion: string | null = null;
     if (doc.key === 'terms') {
-      acceptedVersion = profile?.tosVersion ?? null;
+      acceptedVersion = profile?.tosVersion ?? latestConsents.terms;
     } else if (doc.key === 'privacy') {
-      acceptedVersion = profile?.privacyVersion ?? null;
+      acceptedVersion = profile?.privacyVersion ?? latestConsents.privacy;
     } else if (doc.key === 'cookies') {
-      acceptedVersion = profile?.cookiesVersion ?? null;
+      acceptedVersion = profile?.cookiesVersion ?? latestConsents.cookies;
     }
     if (acceptedVersion !== doc.version) {
       mismatches.push({
