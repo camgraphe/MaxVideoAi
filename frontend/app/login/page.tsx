@@ -590,7 +590,7 @@ export default function LoginPage() {
                 onClick={() => setSignupSuggestion(null)}
                 className="rounded-pill border border-border px-3 py-1.5 text-sm font-semibold text-text-secondary transition hover:bg-bg"
               >
-                I'll try again
+                I&apos;ll try again
               </button>
             </div>
           </div>
