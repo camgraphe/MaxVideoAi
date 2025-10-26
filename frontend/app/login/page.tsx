@@ -117,9 +117,11 @@ export default function LoginPage() {
       setStatus(null);
       return;
     }
-    setStatus('Signed in. Redirecting…');
     setStatusTone('info');
-    syncSupabaseCookies(data.session ?? null);
+    setStatus('Signed in. Redirecting…');
+
+    const session = data.session ?? (await supabase.auth.getSession().then(({ data: sessionData }) => sessionData.session ?? null));
+    syncSupabaseCookies(session);
     router.replace(nextPath);
     router.refresh();
   }
