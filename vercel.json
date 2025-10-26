@@ -8,6 +8,9 @@
   "rewrites": [
     { "source": "/(.*)", "destination": "/frontend/$1" }
   ],
+  "redirects": [
+    { "source": "/gallery", "destination": "/examples", "permanent": true }
+  ],
   "crons": [
     { "path": "/api/stripe/batch-transfers", "schedule": "0 3 * * *" },
     { "path": "/api/fal/poll", "schedule": "* * * * *" }
