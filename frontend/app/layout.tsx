@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { resolveLocale } from '@/lib/i18n/server';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/react';
+import { Clarity } from '@/components/analytics/Clarity';
 import { JsonLd } from '@/components/SeoJsonLd';
 import { ConsentScriptGate } from '@/components/legal/ConsentScriptGate';
 import { CookieBanner } from '@/components/legal/CookieBanner';
@@ -99,6 +100,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {children}
         <ConsentScriptGate categories="analytics">
+          <Clarity />
           <SpeedInsights />
           <Analytics />
         </ConsentScriptGate>
