@@ -7,6 +7,7 @@ import { NAV_ITEMS } from '@/components/AppSidebar';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 
 export function HeaderBar() {
   const [email, setEmail] = useState<string | null>(null);
@@ -90,12 +91,13 @@ export function HeaderBar() {
   }, [email]);
 
   return (
-    <header
-      className={clsx(
-        'sticky top-0 z-40 flex h-[var(--header-height)] items-center justify-between px-6 lg:px-8',
-        'border-b border-border bg-white/80 backdrop-blur-xl'
-      )}
-    >
+    <>
+      <header
+        className={clsx(
+          'sticky top-0 z-40 flex h-[var(--header-height)] items-center justify-between px-6 lg:px-8',
+          'border-b border-border bg-white/80 backdrop-blur-xl'
+        )}
+      >
       <div className="flex items-center gap-8">
         <LogoMark />
         <nav className="hidden items-center gap-5 text-sm font-medium text-text-muted md:flex">
@@ -187,7 +189,9 @@ export function HeaderBar() {
           </Link>
         )}
       </div>
-    </header>
+      </header>
+      <ReconsentPrompt />
+    </>
   );
 }
 

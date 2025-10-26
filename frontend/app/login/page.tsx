@@ -11,6 +11,9 @@ export const dynamic = 'force-dynamic';
 
 type AuthMode = 'signin' | 'signup' | 'reset';
 
+const MIN_AGE_ENV = Number.parseInt(process.env.NEXT_PUBLIC_LEGAL_MIN_AGE ?? '15', 10);
+const LEGAL_MIN_AGE = Number.isNaN(MIN_AGE_ENV) ? 15 : MIN_AGE_ENV;
+
 export default function LoginPage() {
   const router = useRouter();
   const [nextPath, setNextPath] = useState<string>('/app');
@@ -24,6 +27,10 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const emailRef = useRef<HTMLInputElement | null>(null);
   const passwordRef = useRef<HTMLInputElement | null>(null);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [locale, setLocale] = useState<string | null>(null);
   const nextQuery = useMemo(() => (nextPath && nextPath !== '/' ? `?next=${encodeURIComponent(nextPath)}` : ''), [nextPath]);
   const redirectTo = useMemo(() => (siteUrl ? `${siteUrl}${nextQuery}` : undefined), [siteUrl, nextQuery]);
 
@@ -63,6 +70,12 @@ export default function LoginPage() {
     };
   }, [syncInputState, mode]);
 
+  useEffect(() => {
+    if (typeof navigator !== 'undefined') {
+      setLocale(navigator.language ?? null);
+    }
+  }, []);
+
   async function signInWithPassword(e: React.FormEvent) {
     e.preventDefault();
     setStatusTone('info');
@@ -80,6 +93,29 @@ export default function LoginPage() {
     router.replace(nextPath);
   }
 
+  async function submitSignupConsents(userId: string) {
+    try {
+      const res = await fetch('/api/legal/consents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          userId,
+          marketingOptIn,
+          ageConfirmed: true,
+          locale,
+          source: 'signup',
+        }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) {
+        throw new Error(json?.error ?? 'Failed to record legal consents');
+      }
+    } catch (error) {
+      throw error instanceof Error ? error : new Error('Failed to record legal consents');
+    }
+  }
+
   async function signUpWithPassword(e: React.FormEvent) {
     e.preventDefault();
     setStatusTone('info');
@@ -95,6 +131,16 @@ export default function LoginPage() {
       setStatus(null);
       return;
     }
+    if (!acceptTerms) {
+      setError('You must accept the Terms of Service and Privacy Policy to continue.');
+      setStatus(null);
+      return;
+    }
+    if (!ageConfirmed) {
+      setError(`You must confirm you are at least ${LEGAL_MIN_AGE} years old to create an account.`);
+      setStatus(null);
+      return;
+    }
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -105,6 +151,20 @@ export default function LoginPage() {
       setStatus(null);
       return;
     }
+
+    if (data.user?.id) {
+      try {
+        await submitSignupConsents(data.user.id);
+      } catch (consentError) {
+        setError(consentError instanceof Error ? consentError.message : 'Failed to record legal consents.');
+        setStatus(null);
+        if (data.session) {
+          await supabase.auth.signOut().catch(() => undefined);
+        }
+        return;
+      }
+    }
+
     if (data.session) {
       setStatusTone('success');
       setStatus('Account created. Redirecting…');
@@ -298,6 +358,51 @@ export default function LoginPage() {
                     autoComplete="new-password"
                   />
                 </label>
+              )}
+              {mode === 'signup' && (
+                <div className="space-y-3 rounded-card bg-bg p-3 text-sm text-text-secondary">
+                  <label className="flex items-start gap-2">
+                    <input
+                      type="checkbox"
+                      checked={acceptTerms}
+                      onChange={(event) => setAcceptTerms(event.target.checked)}
+                      className="mt-1 h-4 w-4 rounded border-border text-accent focus:ring-accent"
+                      required
+                    />
+                    <span>
+                      I have read and agree to the{' '}
+                      <a href="/legal/terms" target="_blank" rel="noopener noreferrer" className="text-accent underline">
+                        Terms of Service
+                      </a>{' '}
+                      and the{' '}
+                      <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-accent underline">
+                        Privacy Policy
+                      </a>
+                      .
+                    </span>
+                  </label>
+                  <label className="flex items-start gap-2">
+                    <input
+                      type="checkbox"
+                      checked={ageConfirmed}
+                      onChange={(event) => setAgeConfirmed(event.target.checked)}
+                      className="mt-1 h-4 w-4 rounded border-border text-accent focus:ring-accent"
+                      required
+                    />
+                    <span>I confirm I am at least {LEGAL_MIN_AGE} years old.</span>
+                  </label>
+                  <label className="flex items-start gap-2">
+                    <input
+                      type="checkbox"
+                      checked={marketingOptIn}
+                      onChange={(event) => setMarketingOptIn(event.target.checked)}
+                      className="mt-1 h-4 w-4 rounded border-border text-accent focus:ring-accent"
+                    />
+                    <span>
+                      Yes, send me occasional product emails. I can unsubscribe anytime.
+                    </span>
+                  </label>
+                </div>
               )}
 
               <button

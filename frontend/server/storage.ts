@@ -1,7 +1,8 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
 import { ensureAssetSchema } from '@/lib/schema';
 import { query } from '@/lib/db';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 export type UploadResult = {
   url: string;
@@ -346,4 +347,57 @@ export async function recordUserAsset(params: {
     ]
   );
   return assetId;
+}
+
+export function isStorageConfigured(): boolean {
+  return Boolean(S3_BUCKET && S3_REGION && S3_ACCESS_KEY_ID && S3_SECRET_ACCESS_KEY);
+}
+
+export async function uploadFileBuffer(params: {
+  data: Buffer;
+  mime: string;
+  userId?: string | null;
+  fileName?: string | null;
+  prefix?: string;
+  cacheControl?: string;
+  acl?: string | null;
+}): Promise<{ key: string; url: string }> {
+  const client = getS3Client();
+  const extension = inferExtension(params.mime || 'application/octet-stream', 'bin');
+  const slug = randomUUID();
+  const baseName =
+    params.fileName?.replace(/\s+/g, '-')?.replace(/[^a-zA-Z0-9._-]/g, '') || `${slug}.${extension}`;
+  const key = buildObjectKey({
+    prefix: params.prefix ?? 'files',
+    userId: params.userId ?? 'anonymous',
+    fileName: `${slug}-${baseName}`,
+  });
+
+  const command = new PutObjectCommand({
+    Bucket: S3_BUCKET,
+    Key: key,
+    Body: params.data,
+    ContentType: params.mime || 'application/octet-stream',
+    CacheControl: params.cacheControl ?? S3_CACHE_CONTROL,
+  });
+
+  const acl = params.acl ?? S3_UPLOAD_ACL;
+  if (acl) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - ACL accepts specific string literals; keep runtime flexible via env
+    command.input.ACL = acl;
+  }
+
+  await client.send(command);
+
+  return { key, url: buildPublicUrl(key) };
+}
+
+export async function createSignedDownloadUrl(key: string, { expiresInSeconds }: { expiresInSeconds: number }): Promise<string> {
+  const client = getS3Client();
+  const command = new GetObjectCommand({
+    Bucket: S3_BUCKET,
+    Key: key,
+  });
+  return getSignedUrl(client, command, { expiresIn: expiresInSeconds });
 }

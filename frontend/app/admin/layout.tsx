@@ -30,6 +30,10 @@ const NAV_SECTIONS: Array<{ title: string; items: Array<{ label: string; href: s
       { label: 'Transactions', href: '/admin/transactions' },
     ],
   },
+  {
+    title: 'Compliance',
+    items: [{ label: 'Legal', href: '/admin/legal' }],
+  },
 ];
 
 export default async function AdminLayout({ children }: AdminLayoutProps) {

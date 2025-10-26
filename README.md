@@ -104,6 +104,14 @@ The application expects the following environment variables (scoped per Vercel e
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public | Supabase anon key (RLS must stay enabled). |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server (optional) | Service role key for backend operations. |
 | `DATABASE_URL` | Server | Neon Postgres connection string for API routes. |
+| `LEGAL_MIN_AGE` | Server | Minimum age (integer) required during signup consent. Defaults to 15 if unset. |
+| `NEXT_PUBLIC_LEGAL_MIN_AGE` | Public | Mirrors `LEGAL_MIN_AGE` so the UI can display the current requirement. |
+| `LEGAL_RECONSENT_MODE` | Server | `soft` (default) or `hard`, controls re-consent enforcement. |
+| `LEGAL_RECONSENT_GRACE_DAYS` | Server | Grace period in days when `LEGAL_RECONSENT_MODE=soft`. |
+| `CONSENT_MODE` | Server | Consent UI mode (`cmp`/`basic`) to toggle CMP experience. |
+| `GOOGLE_CONSENT_MODE` | Server | `true`/`false`/`auto` toggle for emitting Google Consent Mode v2 signals. |
+| `NEXT_PUBLIC_GOOGLE_CONSENT_MODE` | Public | Mirrors `GOOGLE_CONSENT_MODE` so the CMP can emit signals client-side. |
+| `MARKETING_DOUBLE_OPT_IN` | Server | Enables double opt-in flow for marketing emails when set to `true`. |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Public | Stripe publishable key. |
 | `STRIPE_SECRET_KEY` | Server | Stripe secret key for server-side operations. |
 | `STRIPE_WEBHOOK_SECRET` | Server (optional) | Stripe webhook signing secret. |
@@ -116,9 +124,23 @@ Additional read-only endpoints help verify deployment wiring (Preview/Production
 - `GET /api/health/env` — Edge runtime. Returns a JSON map of required env vars → boolean.
 - `GET /api/health/fal` — Edge runtime. Performs an `OPTIONS` call through the Fal proxy.
 - `GET /api/health/db` — Node runtime. Executes `SELECT 1` against the Neon database.
+- `GET /api/health/legal` — Node runtime. Verifies Neon connectivity and confirms legal document versions are seeded.
 - `GET /api/health/stripe` — Node runtime. Calls `stripe.prices.list(limit: 1)` to ensure the secret key is valid.
 
 All endpoints respond with `{ ok: true }` on success (or include an `error` string on failure). Share Preview/Production URLs during verification.
+
+### Neon Migrations
+
+Neon (the primary application database) is managed via simple SQL migrations stored in [`neon/migrations`](neon/migrations).  
+Run them in order against the pooled connection string (`DATABASE_URL`, includes `-pooler` and `sslmode=require`), for example:
+
+```bash
+for file in neon/migrations/*.sql; do
+  psql "$DATABASE_URL" -f "$file"
+done
+```
+
+The scripts are idempotent and will seed the current legal document versions required by the consent system.
 
 ### Fal Fixtures Utility
 

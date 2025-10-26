@@ -5,6 +5,7 @@ import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { useMarketingPreference } from '@/hooks/useMarketingPreference';
 import useSWR from 'swr';
 import type { Session } from '@supabase/supabase-js';
 
@@ -422,14 +423,84 @@ function PrivacyTab({
 }
 
 function NotificationsTab() {
+  const { data: marketingPref, isLoading, mutate } = useMarketingPreference(true);
+  const [saving, setSaving] = useState(false);
+  const [prefError, setPrefError] = useState<string | null>(null);
+
+  const handleMarketingToggle = async () => {
+    if (saving) return;
+    setSaving(true);
+    setPrefError(null);
+    try {
+      const res = await fetch('/api/account/marketing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ optIn: !(marketingPref?.optIn ?? false) }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) {
+        throw new Error(json?.error ?? 'Failed to update preference');
+      }
+      await mutate(
+        () => ({
+          optIn: json.optIn as boolean,
+          updatedAt: (json.updatedAt as string | null) ?? null,
+          requiresDoubleOptIn: json.requiresDoubleOptIn as boolean | undefined,
+        }),
+        false
+      );
+    } catch (error) {
+      setPrefError(error instanceof Error ? error.message : 'Failed to update preference');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const marketingEnabled = marketingPref?.optIn ?? false;
+  const doubleOptInPending = Boolean(marketingPref?.requiresDoubleOptIn);
+  const lastUpdatedLabel = marketingPref?.updatedAt
+    ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(marketingPref.updatedAt))
+    : null;
+
   return (
     <section className="rounded-card border border-border bg-white p-4 shadow-card">
       <h2 className="mb-3 text-lg font-semibold text-text-primary">Notifications</h2>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <ToggleRow label="Job done" />
-        <ToggleRow label="Job failed" />
-        <ToggleRow label="Low wallet" />
-        <ToggleRow label="Weekly summary" />
+      <div className="space-y-4">
+        <div className="flex flex-col gap-3 rounded-input border border-border bg-bg px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-text-primary">Marketing emails</p>
+            <p className="text-xs text-text-secondary">
+              Receive occasional updates, launch announcements, and workflow tips. You can unsubscribe anytime.
+            </p>
+            {lastUpdatedLabel ? (
+              <p className="mt-1 text-xs text-text-muted">Last updated: {lastUpdatedLabel}</p>
+            ) : null}
+            {doubleOptInPending ? (
+              <p className="mt-1 text-xs text-accent">
+                Confirmation required — check your inbox to finish subscribing.
+              </p>
+            ) : null}
+          </div>
+          <button
+            type="button"
+            onClick={handleMarketingToggle}
+            disabled={isLoading || saving}
+            className={`flex h-7 w-12 items-center rounded-full border transition ${marketingEnabled ? 'border-accent bg-accent' : 'border-border bg-white'}`}
+            aria-pressed={marketingEnabled}
+          >
+            <span
+              className={`ml-1 block h-5 w-5 rounded-full bg-white shadow transition ${marketingEnabled ? 'translate-x-5' : ''}`}
+            />
+          </button>
+        </div>
+        {prefError ? <p className="text-xs text-state-warning">{prefError}</p> : null}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <ToggleRow label="Job done" />
+          <ToggleRow label="Job failed" />
+          <ToggleRow label="Low wallet" />
+          <ToggleRow label="Weekly summary" />
+        </div>
       </div>
     </section>
   );
