@@ -277,8 +277,8 @@ async function recordTopup({
     if (rows.length === 0) {
       console.log('[stripe-webhook] Skipped duplicate wallet top-up', {
         userId,
-        amountCents: normalizedAmount,
-        currency: normalizedCurrency,
+        amountCents: normalizedWalletAmount,
+        currency: walletCurrencyUpper,
         paymentIntentId,
         chargeId,
       });
