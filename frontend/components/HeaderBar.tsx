@@ -172,6 +172,7 @@ export function HeaderBar() {
                   onClick={async () => {
                     setAccountMenuOpen(false);
                     await supabase.auth.signOut();
+                    window.location.href = '/';
                   }}
                 >
                   Sign out
