@@ -16,16 +16,6 @@ const LEGAL_MIN_AGE = Number.isNaN(MIN_AGE_ENV) ? 15 : MIN_AGE_ENV;
 
 const NEXT_STORAGE_KEY = 'mv-login-next';
 
-function normalizeNextPath(value: string | null | undefined): string | null {
-  if (!value || !value.startsWith('/')) return null;
-  if (!value.toLowerCase().startsWith('/generate')) {
-    return value;
-  }
-  const queryIndex = value.indexOf('?');
-  const query = queryIndex >= 0 ? value.slice(queryIndex + 1) : '';
-  return query ? `/app?${query}` : '/app';
-}
-
 export default function LoginPage() {
   const router = useRouter();
   const [nextPath, setNextPath] = useState<string>('/app');
@@ -76,14 +66,14 @@ export default function LoginPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
-    let value = normalizeNextPath(params.get('next'));
-    if (!value) {
+    let value = params.get('next');
+    if (!value || !value.startsWith('/')) {
       const stored = window.sessionStorage.getItem(NEXT_STORAGE_KEY);
-      if (stored) {
-        value = normalizeNextPath(stored);
+      if (stored && stored.startsWith('/')) {
+        value = stored;
       }
     }
-    if (value) {
+    if (value && value.startsWith('/')) {
       setNextPath(value);
       window.sessionStorage.setItem(NEXT_STORAGE_KEY, value);
     } else {
