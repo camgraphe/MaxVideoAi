@@ -98,6 +98,11 @@ export type GenerateResult = {
   progress?: number;
 };
 
+type GenerateHooks = {
+  onRequestId?: (requestId: string) => void | Promise<void>;
+  onQueueUpdate?: (status: QueueStatus) => void | Promise<void>;
+};
+
 export class FalGenerationError extends Error {
   status?: number;
   body?: unknown;
@@ -152,6 +157,7 @@ export function getFalWebhookUrl(): string | null {
 }
 
 const FAL_FILES_BASE_URL = (process.env.FAL_FILES_BASE_URL || process.env.NEXT_PUBLIC_FAL_FILES_BASE_URL || 'https://fal.media/files').replace(/\/+$/, '');
+let warnedMissingWebhookUrl = false;
 
 function normalizeVideoUrl(rawUrl: string): string {
   const trimmed = rawUrl.trim();
@@ -257,7 +263,7 @@ function resolveModelSlug(payload: GeneratePayload, fallback?: string): string |
   return baseSlug;
 }
 
-export async function generateVideo(payload: GeneratePayload): Promise<GenerateResult> {
+export async function generateVideo(payload: GeneratePayload, hooks?: GenerateHooks): Promise<GenerateResult> {
   const provider = getResultProviderMode();
   if (!ENV.FAL_API_KEY) {
     throw new Error('FAL_API_KEY is missing');
@@ -268,10 +274,15 @@ export async function generateVideo(payload: GeneratePayload): Promise<GenerateR
     throw new Error('Unable to resolve FAL model for requested engine');
   }
 
-  return generateViaFal(payload, provider, resolvedModelSlug ?? '');
+  return generateViaFal(payload, provider, resolvedModelSlug ?? '', hooks);
 }
 
-async function generateViaFal(payload: GeneratePayload, provider: ResultProviderMode, defaultModel: string): Promise<GenerateResult> {
+async function generateViaFal(
+  payload: GeneratePayload,
+  provider: ResultProviderMode,
+  defaultModel: string,
+  hooks?: GenerateHooks
+): Promise<GenerateResult> {
   const fallbackThumb = getThumbForAspectRatio(payload.aspectRatio);
   const falClient = getFalClient();
 
@@ -395,6 +406,10 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
 
   let latestQueueStatus: QueueStatus | null = null;
   const webhookUrl = getFalWebhookUrl() ?? undefined;
+  if (!webhookUrl && !warnedMissingWebhookUrl) {
+    warnedMissingWebhookUrl = true;
+    console.warn('[fal] No webhook URL configured; relying on polling only.');
+  }
   let enqueuedRequestId: string | undefined;
   let result: Awaited<ReturnType<typeof falClient.subscribe>>;
   try {
@@ -405,10 +420,20 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
       onEnqueue(requestId) {
         if (typeof requestId === 'string') {
           enqueuedRequestId = requestId;
+          if (hooks?.onRequestId) {
+            Promise.resolve(hooks.onRequestId(requestId)).catch((error) => {
+              console.warn('[fal] onRequestId hook failed', error);
+            });
+          }
         }
       },
       onQueueUpdate(update) {
         latestQueueStatus = update;
+        if (hooks?.onQueueUpdate) {
+          Promise.resolve(hooks.onQueueUpdate(update)).catch((error) => {
+            console.warn('[fal] onQueueUpdate hook failed', error);
+          });
+        }
       },
     });
   } catch (error) {
@@ -446,6 +471,11 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
       (falError as { $metadata?: unknown }).$metadata = (error as { $metadata?: unknown }).$metadata;
     }
     (falError as { originalError?: unknown }).originalError = error;
+    if (fallbackProviderJobId && hooks?.onRequestId) {
+      Promise.resolve(hooks.onRequestId(fallbackProviderJobId)).catch((hookError) => {
+        console.warn('[fal] onRequestId hook failed after error', hookError);
+      });
+    }
     throw falError;
   }
 
@@ -461,6 +491,11 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
   if (immediateAsset) {
     const asset = ensureAssetShape(immediateAsset);
     const thumbUrl = asset.thumbnailUrl ?? fallbackThumb;
+    if (providerJobId && hooks?.onRequestId) {
+      Promise.resolve(hooks.onRequestId(providerJobId)).catch((error) => {
+        console.warn('[fal] onRequestId hook failed after immediate result', error);
+      });
+    }
     return {
       provider,
       thumbUrl,
@@ -479,10 +514,16 @@ async function generateViaFal(payload: GeneratePayload, provider: ResultProvider
     throw new Error('FAL response did not contain a video asset');
   }
 
+  const resolvedProviderJobId = providerJobId ?? fallbackStatus.providerJobIdFallback ?? undefined;
+  if (resolvedProviderJobId && hooks?.onRequestId) {
+    Promise.resolve(hooks.onRequestId(resolvedProviderJobId)).catch((error) => {
+      console.warn('[fal] onRequestId hook failed after pending result', error);
+    });
+  }
   return {
     provider,
     thumbUrl: fallbackThumb,
-    providerJobId: providerJobId ?? fallbackStatus.providerJobIdFallback ?? undefined,
+    providerJobId: resolvedProviderJobId,
     status: fallbackStatus.status,
     progress: fallbackProgress,
   };

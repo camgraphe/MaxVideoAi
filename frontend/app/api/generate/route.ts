@@ -1105,6 +1105,43 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     falPayload.fps = body.fps;
   }
 
+  let lastProviderJobId: string | null = null;
+  const persistProviderJobId = async (requestId: string) => {
+    if (!requestId || lastProviderJobId === requestId) return;
+    lastProviderJobId = requestId;
+    try {
+      await query(
+        `UPDATE app_jobs
+         SET provider_job_id = $2, updated_at = NOW()
+         WHERE job_id = $1
+           AND (provider_job_id IS NULL OR provider_job_id <> $2)`,
+        [jobId, requestId]
+      );
+    } catch (error) {
+      console.warn('[api/generate] failed to persist provider_job_id', { jobId, requestId }, error);
+    }
+    try {
+      await query(
+        `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
+         VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
+        [
+          jobId,
+          'fal',
+          requestId,
+          engine.id,
+          'enqueue',
+          JSON.stringify({
+            at: new Date().toISOString(),
+            engineId: engine.id,
+            promptLength: prompt.length,
+          }),
+        ]
+      );
+    } catch (error) {
+      console.warn('[queue-log] failed to record enqueue event', { jobId, requestId }, error);
+    }
+  };
+
   try {
     await query(
         `INSERT INTO app_jobs (
@@ -1216,8 +1253,6 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     return NextResponse.json({ ok: false, error: 'Failed to persist job record' }, { status: 500 });
   }
 
-  let lastProviderJobId: string | null = null;
-
   try {
     const maxAttempts = isLumaRay2 ? 4 : 3;
     let attempt = 0;
@@ -1225,7 +1260,20 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     while (attempt < maxAttempts) {
       attempt += 1;
       try {
-        const promise = generateVideo({ ...falPayload });
+        const promise = generateVideo(
+          { ...falPayload },
+          {
+            onRequestId: persistProviderJobId,
+            onQueueUpdate: (status) => {
+              if (!status) return;
+              const requestId =
+                (status as { request_id?: string }).request_id ?? lastProviderJobId ?? null;
+              if (requestId) {
+                lastProviderJobId = requestId;
+              }
+            },
+          }
+        );
         generationResult = isLumaRay2 ? await withFalTimeout(promise, LUMA_RAY2_TIMEOUT_MS) : await promise;
         break;
       } catch (error) {
