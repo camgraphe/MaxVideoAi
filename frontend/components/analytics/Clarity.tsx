@@ -9,10 +9,6 @@ declare global {
   }
 }
 
-const clarityId = process.env.NEXT_PUBLIC_CLARITY_ID;
-const clarityEnabled = process.env.NEXT_PUBLIC_ENABLE_CLARITY === 'true';
-const isProd = process.env.NODE_ENV === 'production';
-
 function loadClarity(id: string) {
   if (typeof window === 'undefined') return;
   if (window.clarity) return;
@@ -20,8 +16,8 @@ function loadClarity(id: string) {
   (function (c, l, a, r, i, t, y) {
     c[a] =
       c[a] ||
-      function () {
-        (c[a].q = c[a].q || []).push(arguments);
+      function (...args: unknown[]) {
+        (c[a].q = c[a].q || []).push(args);
       };
     t = l.createElement(r);
     t.async = 1;
@@ -36,13 +32,18 @@ export function Clarity() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    const clarityEnabled = process.env.NEXT_PUBLIC_ENABLE_CLARITY === 'true';
+    const isProd = process.env.NODE_ENV === 'production';
+    const clarityId = process.env.NEXT_PUBLIC_CLARITY_ID;
     if (!clarityEnabled) return;
     if (!isProd) return;
     if (!clarityId) return;
     loadClarity(clarityId);
-  }, [clarityEnabled, clarityId]);
+  }, []);
 
   useEffect(() => {
+    const clarityEnabled = process.env.NEXT_PUBLIC_ENABLE_CLARITY === 'true';
+    const isProd = process.env.NODE_ENV === 'production';
     if (!clarityEnabled) return;
     if (!isProd) return;
     if (typeof window === 'undefined' || !window.clarity) return;
