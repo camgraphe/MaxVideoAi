@@ -9,14 +9,17 @@ type AdminLayoutProps = {
   children: ReactNode;
 };
 
-const NAV_SECTIONS: Array<{ title: string; items: Array<{ label: string; href: string }> }> = [
+const NAV_SECTIONS: Array<{
+  title: string;
+  items: Array<{ label: string; href: string }>;
+}> = [
   {
     title: 'Curation',
     items: [
       { label: 'Overview', href: '/admin' },
-      { label: 'Moderation', href: '/admin/moderation' },
+      { label: 'Moderation queue', href: '/admin/moderation' },
       { label: 'Playlists', href: '/admin/playlists' },
-      { label: 'Homepage', href: '/admin/home' },
+      { label: 'Homepage programming', href: '/admin/home' },
     ],
   },
   {
@@ -24,15 +27,18 @@ const NAV_SECTIONS: Array<{ title: string; items: Array<{ label: string; href: s
     items: [
       { label: 'Users', href: '/admin/users' },
       { label: 'Engines', href: '/admin/engines' },
-      { label: 'Pricing', href: '/admin/pricing' },
-      { label: 'Payouts', href: '/admin/payouts' },
+      { label: 'Pricing rules', href: '/admin/pricing' },
       { label: 'Job audit', href: '/admin/jobs' },
       { label: 'Transactions', href: '/admin/transactions' },
+      { label: 'Payouts', href: '/admin/payouts' },
     ],
   },
   {
     title: 'Compliance',
-    items: [{ label: 'Legal', href: '/admin/legal' }],
+    items: [
+      { label: 'Legal center', href: '/admin/legal' },
+      { label: 'Consent exports (CSV)', href: '/admin/consents.csv' },
+    ],
   },
 ];
 
@@ -54,24 +60,28 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
           <Link href="/admin" className="text-lg font-semibold text-text-primary">
             Admin · MaxVideoAI
           </Link>
-          <nav className="flex items-center gap-6 text-sm text-text-secondary">
+          <nav className="flex items-center gap-4 text-sm text-text-secondary">
             {NAV_SECTIONS.map((section) => (
-              <div key={section.title} className="flex items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">
+              <details key={section.title} className="relative">
+                <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-micro text-text-muted transition hover:text-text-primary [&::-webkit-details-marker]:hidden">
                   {section.title}
-                </span>
-                <div className="flex items-center gap-2">
-                  {section.items.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="rounded-pill px-3 py-1 font-medium transition hover:bg-accentSoft/10 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
+                </summary>
+                <div className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-card border border-border bg-white shadow-card">
+                  <ul className="divide-y divide-border">
+                    {section.items.map((item) => (
+                      <li key={item.href}>
+                        <Link
+                          href={item.href}
+                          className="flex items-center justify-between px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/10 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          <span>{item.label}</span>
+                          <span aria-hidden className="text-xs text-text-muted">→</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              </div>
+              </details>
             ))}
           </nav>
         </div>

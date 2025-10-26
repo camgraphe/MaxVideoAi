@@ -10,8 +10,13 @@ const SECTION_GROUPS: Array<{
     title: 'Curation',
     items: [
       {
+        title: 'Admin overview',
+        description: 'Snapshots of recent activity and quick links to high-signal queues.',
+        href: '/admin',
+      },
+      {
         title: 'Moderation queue',
-        description: 'Review pending uploads and decide visibility/indexation.',
+        description: 'Review pending uploads, visibility flags, and indexation decisions.',
         href: '/admin/moderation',
       },
       {
@@ -21,7 +26,7 @@ const SECTION_GROUPS: Array<{
       },
       {
         title: 'Homepage programming',
-        description: 'Pick hero highlight and featured rails for the marketing homepage.',
+        description: 'Schedule hero creatives and featured rails for the marketing homepage.',
         href: '/admin/home',
       },
     ],
@@ -31,18 +36,8 @@ const SECTION_GROUPS: Array<{
     items: [
       {
         title: 'Users',
-        description: 'Search, audit, and manage workspace members.',
+        description: 'Search, audit, and manage workspace members and permissions.',
         href: '/admin/users',
-      },
-      {
-        title: 'Job audit',
-        description: 'Verify recent runs for media availability, charges, and Fal sync.',
-        href: '/admin/jobs',
-      },
-      {
-        title: 'Transactions',
-        description: 'Inspect charges and refunds, issue manual wallet credits.',
-        href: '/admin/transactions',
       },
       {
         title: 'Engines',
@@ -51,13 +46,38 @@ const SECTION_GROUPS: Array<{
       },
       {
         title: 'Pricing rules',
-        description: 'Configure margins, discounts, and membership tiers.',
+        description: 'Manage margins, discounts, FX overrides, and membership tiers.',
         href: '/admin/pricing',
       },
       {
+        title: 'Job audit',
+        description: 'Verify recent renders for media availability, costs, and Fal sync.',
+        href: '/admin/jobs',
+      },
+      {
+        title: 'Transactions',
+        description: 'Inspect charges and refunds, issue manual wallet credits.',
+        href: '/admin/transactions',
+      },
+      {
         title: 'Payouts',
-        description: 'Monitor vendor balances and manual payouts.',
+        description: 'Monitor vendor balances, view pending transfers, and trigger payouts.',
         href: '/admin/payouts',
+      },
+    ],
+  },
+  {
+    title: 'Compliance',
+    items: [
+      {
+        title: 'Legal center',
+        description: 'Update terms, privacy, and cookie policies and trigger re-consent.',
+        href: '/admin/legal',
+      },
+      {
+        title: 'Consent exports',
+        description: 'Download CSV proofs of user consents for regulatory reporting.',
+        href: '/admin/consents.csv',
       },
     ],
   },
@@ -69,7 +89,7 @@ export default function AdminIndexPage() {
       <header>
         <h1 className="text-3xl font-semibold text-text-primary">Admin dashboard</h1>
         <p className="mt-2 text-sm text-text-secondary">
-          Quick access to curation tools, operational controls, and configuration panels.
+          Quick access to curation tools, operational controls, finance workflows, and compliance resources.
         </p>
       </header>
       {SECTION_GROUPS.map((group) => (
