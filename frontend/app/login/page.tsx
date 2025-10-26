@@ -14,6 +14,8 @@ type AuthMode = 'signin' | 'signup' | 'reset';
 const MIN_AGE_ENV = Number.parseInt(process.env.NEXT_PUBLIC_LEGAL_MIN_AGE ?? '15', 10);
 const LEGAL_MIN_AGE = Number.isNaN(MIN_AGE_ENV) ? 15 : MIN_AGE_ENV;
 
+const NEXT_STORAGE_KEY = 'mv-login-next';
+
 export default function LoginPage() {
   const router = useRouter();
   const [nextPath, setNextPath] = useState<string>('/app');
@@ -49,6 +51,7 @@ export default function LoginPage() {
     (target: string) => {
       router.replace(target);
       if (typeof window !== 'undefined') {
+        window.sessionStorage.removeItem(NEXT_STORAGE_KEY);
         window.setTimeout(() => {
           const current = window.location.pathname + window.location.search;
           if (current !== target) {
@@ -63,9 +66,18 @@ export default function LoginPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
-    const value = params.get('next');
+    let value = params.get('next');
+    if (!value || !value.startsWith('/')) {
+      const stored = window.sessionStorage.getItem(NEXT_STORAGE_KEY);
+      if (stored && stored.startsWith('/')) {
+        value = stored;
+      }
+    }
     if (value && value.startsWith('/')) {
       setNextPath(value);
+      window.sessionStorage.setItem(NEXT_STORAGE_KEY, value);
+    } else {
+      window.sessionStorage.removeItem(NEXT_STORAGE_KEY);
     }
   }, []);
 
@@ -270,6 +282,9 @@ export default function LoginPage() {
       return;
     }
     if (data?.url) {
+      if (typeof window !== 'undefined' && nextPath) {
+        window.sessionStorage.setItem(NEXT_STORAGE_KEY, nextPath);
+      }
       window.location.href = data.url;
     }
   }
