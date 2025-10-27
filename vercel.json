@@ -13,12 +13,6 @@
   ],
   "crons": [
     { "path": "/api/stripe/batch-transfers", "schedule": "0 3 * * *" },
-    {
-      "path": "/api/fal/poll",
-      "schedule": "* * * * *",
-      "headers": {
-        "X-Fal-Poll-Token": "@FAL_POLL_TOKEN"
-      }
-    }
+    { "path": "/api/cron/fal-poll", "schedule": "* * * * *" }
   ]
 }

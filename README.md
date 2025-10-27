@@ -153,8 +153,8 @@ The script calls the Fal proxy, so no direct DNS access to `api.fal.ai` is requi
 
 ## 6. Scheduled Jobs
 
-- Cron definitions live in `vercel.json`. Vercel reads this file on deploy, so any change (schedule, headers) requires a redeploy to propagate. 【vercel.json†L14-L22】
-- `/api/fal/poll` is now protected by the `FAL_POLL_TOKEN` header; the job ships the token via `X-Fal-Poll-Token`. Keep the env var in sync across Vercel environments before deploying.
+- Cron definitions live in `vercel.json`. Vercel reads this file on deploy, so any change requires a redeploy to propagate. 【vercel.json†L14-L19】
+- `/api/cron/fal-poll` is the scheduled entry-point. It proxies the call to `/api/fal/poll`, injects `X-Fal-Poll-Token` from `FAL_POLL_TOKEN`, and only accepts requests from the Vercel Cron runtime (deployment header check).
 - Pour vérifier manuellement :
   ```bash
   curl -H "X-Fal-Poll-Token: $FAL_POLL_TOKEN" https://<ton-domaine>/api/fal/poll
