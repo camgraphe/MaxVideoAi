@@ -16,7 +16,7 @@ type AuthMode = 'signin' | 'signup' | 'reset';
 const MIN_AGE_ENV = Number.parseInt(process.env.NEXT_PUBLIC_LEGAL_MIN_AGE ?? '15', 10);
 const LEGAL_MIN_AGE = Number.isNaN(MIN_AGE_ENV) ? 15 : MIN_AGE_ENV;
 
-const DEFAULT_NEXT_PATH = '/app';
+const DEFAULT_NEXT_PATH = '/generate';
 const NEXT_PATH_PREFIXES = ['/app', '/generate', '/dashboard', '/jobs', '/billing', '/settings', '/admin', '/connect'];
 
 function sanitizeNextPath(candidate: string | null | undefined): string {
@@ -67,6 +67,7 @@ export default function LoginPage() {
     window.localStorage.setItem(LOGIN_LAST_TARGET_KEY, safe);
     if (
       safe.startsWith('/generate') ||
+      safe.startsWith('/app') ||
       safe.includes('from=') ||
       safe.includes('engine=')
     ) {

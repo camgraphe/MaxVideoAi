@@ -912,6 +912,7 @@ useEffect(() => {
     const normalized = lastTarget.trim();
     const shouldSkip =
       normalized.startsWith('/generate') ||
+      normalized.startsWith('/app') ||
       normalized.includes('from=') ||
       normalized.includes('engine=');
     if (shouldSkip) {
