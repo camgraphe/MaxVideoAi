@@ -5,7 +5,7 @@ import { AuthApiError } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { syncSupabaseCookies, clearSupabaseCookies } from '@/lib/supabase-cookies';
-import { LOGIN_NEXT_STORAGE_KEY, LOGIN_LAST_TARGET_KEY } from '@/lib/auth-storage';
+import { LOGIN_NEXT_STORAGE_KEY, LOGIN_LAST_TARGET_KEY, LOGIN_SKIP_ONBOARDING_KEY } from '@/lib/auth-storage';
 import clsx from 'clsx';
 import Link from 'next/link';
 
@@ -63,6 +63,15 @@ export default function LoginPage() {
     }
     window.sessionStorage.setItem(LOGIN_NEXT_STORAGE_KEY, safe);
     window.sessionStorage.setItem(LOGIN_LAST_TARGET_KEY, safe);
+    if (
+      safe.startsWith('/generate') ||
+      safe.includes('from=') ||
+      safe.includes('engine=')
+    ) {
+      window.sessionStorage.setItem(LOGIN_SKIP_ONBOARDING_KEY, 'true');
+    } else if (!safe.startsWith('/gallery')) {
+      window.sessionStorage.removeItem(LOGIN_SKIP_ONBOARDING_KEY);
+    }
   }, []);
   const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
@@ -116,6 +125,16 @@ export default function LoginPage() {
     setNextPathReady(true);
     if (process.env.NODE_ENV !== 'production') {
       console.log('[login] resolved next path', { value, resolved, source });
+      console.log('[login] cookie snapshot', {
+        nextCookie: document?.cookie
+          ?.split('; ')
+          ?.find((entry) => entry.startsWith('sb-access-token='))
+          ?.slice('sb-access-token='.length, 'sb-access-token='.length + 12),
+        storageSnapshot: {
+          next: window.sessionStorage.getItem(LOGIN_NEXT_STORAGE_KEY),
+          last: window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY),
+        },
+      });
     }
   }, [persistNextTarget]);
 

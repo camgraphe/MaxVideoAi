@@ -9,7 +9,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import type { EngineCaps, EngineInputField, Mode, PreflightRequest, PreflightResponse } from '@/types/engines';
 import { getEngineCaps, type EngineCaps as EngineCapabilityCaps } from '@/fixtures/engineCaps';
-import { LOGIN_LAST_TARGET_KEY } from '@/lib/auth-storage';
+import { LOGIN_LAST_TARGET_KEY, LOGIN_SKIP_ONBOARDING_KEY } from '@/lib/auth-storage';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { EngineSelect } from '@/components/ui/EngineSelect';
@@ -894,6 +894,13 @@ const skipOnboardingRef = useRef<boolean>(false);
 
 useEffect(() => {
   if (typeof window === 'undefined') return;
+  if (window.sessionStorage.getItem(LOGIN_SKIP_ONBOARDING_KEY) === 'true') {
+    skipOnboardingRef.current = true;
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[app] skip onboarding via flag');
+    }
+    window.sessionStorage.removeItem(LOGIN_SKIP_ONBOARDING_KEY);
+  }
   const lastTarget = window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY);
   if (lastTarget) {
     const normalized = lastTarget.trim();
