@@ -683,8 +683,7 @@ const en: Dictionary = {
         versionLabel: 'Standard',
       },
     },
-    note:
-      'Pricing and availability pulled from Fal.ai model pages (Oct 2025). Trademarks belong to their owners.',
+    note: '',
   },
   examples: {
     hero: {

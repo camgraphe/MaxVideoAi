@@ -60,10 +60,17 @@ export interface FalEngineFaqEntry {
   answer: string;
 }
 
+export interface FalEngineMedia {
+  videoUrl: string;
+  imagePath: string;
+  altText: string;
+}
+
 export interface FalEngineEntry {
   id: string;
   modelSlug: string;
   marketingName: string;
+  cardTitle?: string;
   provider: string;
   brandId: string;
   family?: string;
@@ -75,9 +82,14 @@ export interface FalEngineEntry {
   modes: FalEngineModeConfig[];
   defaultFalModelId: string;
   seo: FalEngineSeoMeta;
+  type?: string;
+  seoText?: string;
+  demoUrl?: string;
+  media?: FalEngineMedia;
   prompts: FalEnginePromptHint[];
   faqs?: FalEngineFaqEntry[];
   pricingHint?: FalEnginePricingHint;
+  promptExample?: string;
 }
 
 const PIKA_TEXT_TO_VIDEO_ENGINE: EngineCaps = {
@@ -952,6 +964,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     id: 'sora-2',
     modelSlug: 'sora-2',
     marketingName: 'OpenAI Sora 2',
+    cardTitle: 'Sora 2',
     provider: 'OpenAI',
     brandId: 'openai',
     family: 'sora',
@@ -988,14 +1001,25 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     ],
     defaultFalModelId: 'fal-ai/sora-2/text-to-video',
     seo: {
-      title: 'OpenAI Sora 2 - MaxVideo AI',
-      description: 'Text-to-video and remix with native audio via Fal routing.',
+      title: 'Sora 2 – Generate AI Videos from Text or Image with Sound',
+      description:
+        'Create rich AI-generated videos from text or image prompts using Sora 2. Native voice-over, ambient effects, and motion sync via MaxVideoAI.',
       canonicalPath: '/models/sora-2',
+    },
+    type: 'Text + Image',
+    seoText:
+      'Generate videos from text or images using Sora 2 — now with voice-over, ambient sound, and smooth animation. Animate reference stills or craft full prompts with synced audio.',
+    demoUrl: 'https://storage.googleapis.com/falserverless/example_outputs/sora_t2v_output.mp4',
+    media: {
+      videoUrl: 'https://storage.googleapis.com/falserverless/example_outputs/sora_t2v_output.mp4',
+      imagePath: '/hero/sora2.jpg',
+      altText: 'Sora 2 demo: Text-to-video with ambient audio',
     },
     prompts: [
       {
-        title: 'Cinematic story beat',
-        prompt: 'Aerial establishing shot of a coastal town at sunrise, soft golden light, gentle ocean haze, cinematic camera move',
+        title: 'Storm-lit knowledge vault',
+        prompt:
+          "A glowing library in the middle of a stormy ocean, books flying above crashing waves, camera pans upward to reveal lightning streaks, soft orchestral music with a warm voice-over narrating, 'Knowledge survives everything.'",
         mode: 't2v',
       },
       {
@@ -1016,15 +1040,19 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     ],
     pricingHint: {
       currency: 'USD',
-      amountCents: 40,
+      amountCents: 208,
       durationSeconds: 4,
       resolution: '720p',
+      label: 'Audio on',
     },
+    promptExample:
+      "A glowing tree in the middle of the desert, soft piano in background, camera slowly zooms out, cinematic lighting, voice-over: 'This is where hope begins.'",
   },
   {
     id: 'sora-2-pro',
     modelSlug: 'sora-2-pro',
     marketingName: 'OpenAI Sora 2 Pro',
+    cardTitle: 'Sora 2 Pro',
     provider: 'OpenAI',
     brandId: 'openai',
     family: 'sora',
@@ -1064,24 +1092,34 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     ],
     defaultFalModelId: 'fal-ai/sora-2/text-to-video/pro',
     seo: {
-      title: 'OpenAI Sora 2 Pro - MaxVideo AI',
-      description: 'Cinematic video with synced dialogue, higher resolutions, and image-to-video control for premium teams.',
+      title: 'Sora 2 Pro – Longer AI Videos with Audio & Enhanced Prompt Control',
+      description:
+        'Create longer, more immersive AI videos from text or images using Sora 2 Pro. Native voice, ambient sound, prompt chaining, and advanced control via MaxVideoAI.',
       canonicalPath: '/models/sora-2-pro',
+    },
+    type: 'Text + Image',
+    seoText:
+      'Generate longer AI videos with sound and scene control using Sora 2 Pro. Perfect for storytelling, explainers, and branded motion design—starting from image or text prompts.',
+    demoUrl: 'https://storage.googleapis.com/falserverless/example_outputs/sora_2_i2v_output.mp4',
+    media: {
+      videoUrl: 'https://storage.googleapis.com/falserverless/example_outputs/sora_2_i2v_output.mp4',
+      imagePath: '/hero/sora2.jpg',
+      altText: 'Sora 2 Pro multi-scene demo with audio',
     },
     prompts: [
       {
-        title: 'Cinematic dialogue break-up',
+        title: 'Multi-scene legend opener',
         prompt:
-          'A dramatic Hollywood breakup scene at dusk on a quiet suburban street. A man and a woman in their 30s face each other, speaking softly but emotionally, lips syncing to breakup dialogue. Cinematic lighting, warm sunset tones, shallow depth of field, gentle breeze moving autumn leaves, realistic natural sound, no background music',
+          "Scene 1 → A medieval city under the stars, camera slowly pans above rooftops, lute music plays, voice-over: 'Peace reigned for a century.' → Scene 2 → A rider gallops across the plains at sunrise, orchestral swell, zoom-in to sword hilt glowing.",
         mode: 't2v',
-        notes: 'Render at 1080p for close-up facial fidelity.',
+        notes: 'Use multi-prompt chaining to stitch scenes together in a single render.',
       },
       {
-        title: 'Skydiving POV testimonial',
+        title: 'Torchlit discovery',
         prompt:
-          "Front-facing 'invisible' action-cam on a skydiver in freefall above bright clouds; camera locked on his face. He speaks over the wind with clear lipsync: 'This is insanely fun! You've got to try it—book a tandem and go!' Natural wind roar, voice close-mic'd and slightly compressed so it's intelligible. Midday sun, goggles and jumpsuit flutter, altimeter visible, parachute rig on shoulders. Energetic but stable framing with subtle shake; brief horizon roll. End on first tug of canopy and wind noise dropping.",
+          "Scene 1 → Interior of a jungle temple at dusk, drums echo in the background, voice-over: 'Legends speak of a guardian.' → Scene 2 → Torchlit hallway, camera glides toward ancient glyphs as the music builds.",
         mode: 'i2v',
-        notes: 'Start from a 1080p still to let Sora Pro maintain crisp details through the motion.',
+        notes: 'Start from a detailed concept still to keep glyphs and lighting consistent.',
       },
     ],
     faqs: [
@@ -1098,16 +1136,19 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     ],
     pricingHint: {
       currency: 'USD',
-      amountCents: 400,
+      amountCents: 480,
       durationSeconds: 8,
       resolution: '1080p',
-      label: 'Pro tier',
+      label: 'Audio on',
     },
+    promptExample:
+      "Scene 1 → A jungle temple at dusk, drums in the background, voice-over: 'Legends speak of a guardian.' → Scene 2 → A torchlit hallway, camera zooms into mysterious glyphs.",
   },
   {
     id: 'veo-3-1',
     modelSlug: 'veo-3-1',
     marketingName: 'Google Veo 3.1',
+    cardTitle: 'Veo 3.1',
     provider: 'Google',
     brandId: 'google-veo',
     family: 'veo',
@@ -1136,6 +1177,13 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
       description:
         'Generate cinematic 8-second videos with native audio using Veo 3.1 by Google DeepMind on MaxVideoAI. Reference-to-video guidance, multi-image fidelity, pay-as-you-go pricing from $0.52/s.',
       canonicalPath: '/models/veo-3-1',
+    },
+    type: 'Image only',
+    demoUrl: 'https://v3b.fal.media/files/b/kangaroo/oUCiZjQwEy6bIQdPUSLDF_output.mp4',
+    media: {
+      videoUrl: 'https://storage.googleapis.com/falserverless/example_outputs/veo3-i2v-output.mp4',
+      imagePath: '/hero/veo3.jpg',
+      altText: 'Demo video generated with Veo 3.1',
     },
     prompts: [
       {
@@ -1166,6 +1214,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     id: 'veo-3-fast',
     modelSlug: 'veo-3-fast',
     marketingName: 'Google Veo 3 Fast',
+    cardTitle: 'Veo 3 Fast',
     provider: 'Google',
     brandId: 'google-veo',
     family: 'veo',
@@ -1188,14 +1237,24 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     ],
     defaultFalModelId: 'fal-ai/veo3/fast',
     seo: {
-      title: 'Google Veo 3 Fast - MaxVideo AI',
-      description: 'Faster queue for previz while keeping the Veo look and audio toggle.',
+      title: 'Veo 3 Fast – Quick Cinematic Video Generation (No Audio)',
+      description:
+        'Generate cinematic-style AI videos in seconds using Veo 3 Fast. Optimized for speed, silent playback, and low-cost prototyping via MaxVideoAI.',
       canonicalPath: '/models/veo-3-fast',
+    },
+    type: 'Text only · Silent',
+    seoText:
+      'Test cinematic prompts quickly with Veo 3 Fast. No audio, up to 8s, ultra-fast generation for storyboarding and social loops.',
+    demoUrl: 'https://v3b.fal.media/files/b/kangaroo/veo3fast_output.mp4',
+    media: {
+      videoUrl: 'https://v3.fal.media/files/lion/L9nkXSW1MCj2oDimeJ4w5_output.mp4',
+      imagePath: '/hero/veo3.jpg',
+      altText: 'Short clip generated with Veo 3 Fast',
     },
     prompts: [
       {
-        title: 'Storyboard draft',
-        prompt: 'Fast previsualization of a drone reveal above a stadium, wide aerial, dusk lighting, dramatic clouds, cinematic grading',
+        title: 'Frozen lake cinematic test',
+        prompt: 'A lone astronaut walking across a frozen lake at sunset, cinematic wide shot with reflective ice, slow pan left, no audio mentioned.',
         mode: 't2v',
       },
     ],
@@ -1211,15 +1270,19 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     ],
     pricingHint: {
       currency: 'USD',
-      amountCents: 320,
+      amountCents: 80,
       durationSeconds: 8,
       resolution: '720p',
+      label: 'Silent clip',
     },
+    promptExample:
+      'A futuristic corridor with flickering neon lights, camera slowly tracks forward, shadows moving on the walls',
   },
   {
     id: 'veo-3-1-fast',
     modelSlug: 'veo-3-1-fast',
     marketingName: 'Google Veo 3.1 Fast',
+    cardTitle: 'Veo 3.1 Fast',
     provider: 'Google',
     brandId: 'google-veo',
     family: 'veo',
@@ -1244,16 +1307,26 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     ],
     defaultFalModelId: 'fal-ai/veo3.1/fast/first-last-frame-to-video',
     seo: {
-      title: 'Google Veo 3.1 Fast - MaxVideo AI',
-      description: 'Bridge a first and last frame in 8 seconds with optional audio.',
+      title: 'Veo 3.1 Fast – High-Speed AI Video Generation (with or without Audio)',
+      description:
+        'Use Veo 3.1 Fast for affordable, fast AI video generation. Up to 8-second clips with optional native audio—ideal for social formats and iterative testing.',
       canonicalPath: '/models/veo-3-1-fast',
+    },
+    type: 'Text only',
+    seoText:
+      'Veo 3.1 Fast helps you test cinematic prompts with optional audio. Use it for short loops, mobile formats, or quick experiments with DeepMind fidelity at a lower cost.',
+    demoUrl: 'https://v3b.fal.media/files/b/kangaroo/fast_output.mp4',
+    media: {
+      videoUrl: 'https://v3b.fal.media/files/b/kangaroo/fast_output.mp4',
+      imagePath: '/hero/veo3.jpg',
+      altText: 'Fast rendering sample with Veo 3.1 Fast',
     },
     prompts: [
       {
-        title: 'Hero transition',
-        prompt: 'Blend the uploaded start and end frames into a smooth eight second arc shot, keep product sharp, add subtle camera parallax',
+        title: 'Misty forest zoom',
+        prompt: 'A misty forest at dawn, camera slowly zooms in on a mossy rock, sun rays piercing through trees, optional ambient birdsong.',
         mode: 'i2v',
-        notes: 'Use First frame and Last frame slots for the bookend stills.',
+        notes: 'Enable audio for subtle ambience or leave it off for silent loops.',
       },
     ],
     faqs: [
@@ -1271,12 +1344,16 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
       amountCents: 120,
       durationSeconds: 8,
       resolution: '1080p',
+      label: 'Audio on',
     },
+    promptExample:
+      'A person walking alone on a bridge at night, city lights in the background, camera tracks from behind, ambient street noise',
   },
   {
     id: 'pika-text-to-video',
     modelSlug: 'pika-text-to-video',
     marketingName: 'Pika 2.2 Text to Video',
+    cardTitle: 'Pika 2.2',
     provider: 'Pika',
     brandId: 'pika',
     family: 'pika',
@@ -1299,19 +1376,29 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     ],
     defaultFalModelId: 'fal-ai/pika/v2.2/text-to-video',
     seo: {
-      title: 'Pika 2.2 Text to Video - MaxVideo AI',
-      description: 'Social-first loops with caption overlays and fast iteration.',
+      title: 'Pika Text-to-Video – Stylized AI Video from Prompts',
+      description:
+        'Generate creative, animated AI videos from text prompts using Pika. Perfect for short-form, stylized visuals without audio via MaxVideoAI.',
       canonicalPath: '/models/pika-text-to-video',
+    },
+    type: 'Text only · Stylized',
+    seoText:
+      'Create fast, fun, stylized AI videos with Pika. Ideal for 3–5 second animations in vertical or square formats—no audio, fast rendering, high visual impact.',
+    demoUrl: 'https://v3.fal.media/files/b/kangaroo/pika_text2video_sample.mp4',
+    media: {
+      videoUrl: 'https://storage.googleapis.com/falserverless/web-examples/pika/pika%202.2/pika22_output.mp4',
+      imagePath: '/hero/pika-22.jpg',
+      altText: 'Stylized short clip made with Pika (text-to-video)',
     },
     prompts: [
       {
-        title: 'Product loop',
-        prompt: 'Macro studio shot of a perfume bottle rotating on a reflective surface, volumetric lighting, high contrast cinematic style',
+        title: 'Pixel cat portal hop',
+        prompt: 'A pixel-art cat jumping through portals, retro arcade backdrop, rainbow glitch trails, snappy 2D animation',
         mode: 't2v',
       },
       {
-        title: 'Motion graphic',
-        prompt: 'Neon cyberpunk city skyline with animated typography revealing "Launch Day", moody purple and teal lighting',
+        title: 'Comic pop intro',
+        prompt: 'Comic-book style splash screen with bold text bursts, camera punch-in, bright halftone textures',
         mode: 't2v',
       },
     ],
@@ -1327,15 +1414,19 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     ],
     pricingHint: {
       currency: 'USD',
-      amountCents: 20,
+      amountCents: 30,
       durationSeconds: 5,
       resolution: '720p',
+      label: 'Silent clip',
     },
+    promptExample:
+      'A cartoon astronaut floating through candy space, bubble gum planets, comic-book animation style',
   },
   {
     id: 'pika-image-to-video',
     modelSlug: 'pika-image-to-video',
     marketingName: 'Pika 2.2 Image to Video',
+    cardTitle: 'Pika 2.2',
     provider: 'Pika',
     brandId: 'pika',
     family: 'pika',
@@ -1360,14 +1451,24 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     ],
     defaultFalModelId: 'fal-ai/pika/v2.2/image-to-video',
     seo: {
-      title: 'Pika 2.2 Image to Video - MaxVideo AI',
-      description: 'Animate a still frame with stylised motion and camera moves.',
+      title: 'Pika Image-to-Video – Animate Any Still Frame with AI',
+      description:
+        'Turn a static image into a dynamic video using Pika. Add motion, zooms, and stylized transitions—silent clips perfect for loops and product shots.',
       canonicalPath: '/models/pika-image-to-video',
+    },
+    type: 'Image only · Stylized',
+    seoText:
+      'Turn still images into motion-rich video clips with Pika. Add zooms, pans or animation styles to any visual—fast and soundless for short loops and cutaways.',
+    demoUrl: 'https://v3.fal.media/files/b/kangaroo/pika_img2video_sample.mp4',
+    media: {
+      videoUrl: 'https://v3.fal.media/files/b/kangaroo/pika_img2video_sample.mp4',
+      imagePath: '/hero/pika-15.jpg',
+      altText: 'Animated loop generated from still using Pika',
     },
     prompts: [
       {
-        title: 'Storyboard still animation',
-        prompt: 'Slow dolly-in on the provided illustration, gentle camera sway, cinematic depth of field',
+        title: 'Fantasy castle drift',
+        prompt: 'Zoom slowly into a fantasy castle on a cliff at sunset, birds glide by, anime art style with drifting clouds',
         mode: 'i2v',
       },
     ],
@@ -1383,15 +1484,19 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     ],
     pricingHint: {
       currency: 'USD',
-      amountCents: 20,
+      amountCents: 30,
       durationSeconds: 5,
       resolution: '720p',
+      label: 'Silent clip',
     },
+    promptExample:
+      'Slow pan across a futuristic skyline at night, with fog and neon reflections, low poly style',
   },
   {
     id: 'minimax-hailuo-02-text',
     modelSlug: 'minimax-hailuo-02-text',
     marketingName: 'MiniMax Hailuo 02 Standard (Text to Video)',
+    cardTitle: 'MiniMax Hailuo 02',
     provider: 'MiniMax',
     brandId: 'minimax',
     family: 'hailuo',
@@ -1415,14 +1520,24 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     ],
     defaultFalModelId: 'fal-ai/minimax/hailuo-02/standard/text-to-video',
     seo: {
-      title: 'MiniMax Hailuo 02 Standard - MaxVideo AI',
-      description: 'Prompt optimiser-enabled drafts before the hero render.',
+      title: 'MiniMax Hailuo 02 (Text-to-Video) – Fast, Stylized AI Generation',
+      description:
+        'Generate fast, stylized video from text prompts with MiniMax Hailuo 02. Ideal for testing motion concepts and short clips—silent and budget-friendly via MaxVideoAI.',
       canonicalPath: '/models/minimax-hailuo-02-text',
+    },
+    type: 'Text only · Stylized',
+    seoText:
+      'Generate stylized short video clips from text using MiniMax Hailuo 02. Fast, silent, and ideal for quick loops, visual tests, or motion studies.',
+    demoUrl: 'https://v3.fal.media/files/b/kangaroo/minimax_t2v.mp4',
+    media: {
+      videoUrl: 'https://v3.fal.media/files/b/kangaroo/minimax_t2v.mp4',
+      imagePath: '/hero/minimax-video01.jpg',
+      altText: 'Fast stylized motion demo from text prompt',
     },
     prompts: [
       {
-        title: 'Stylised narrative',
-        prompt: 'Animated brush stroke style telling a product origin story, dynamic camera pans, warm palette, add subtle film grain',
+        title: 'Cinematic fox run',
+        prompt: 'A stylized fox running through a windy forest, camera follows from behind, swirling leaves, cinematic depth of field',
         mode: 't2v',
       },
     ],
@@ -1438,15 +1553,19 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     ],
     pricingHint: {
       currency: 'USD',
-      amountCents: 27,
+      amountCents: 30,
       durationSeconds: 6,
       resolution: '768P',
+      label: 'Silent clip',
     },
+    promptExample:
+      'A glowing butterfly flying across a dark cave, dust particles in the air, camera slowly zooms out',
   },
   {
     id: 'minimax-hailuo-02-image',
     modelSlug: 'minimax-hailuo-02-image',
     marketingName: 'MiniMax Hailuo 02 Standard (Image to Video)',
+    cardTitle: 'MiniMax Hailuo 02',
     provider: 'MiniMax',
     brandId: 'minimax',
     family: 'hailuo',
@@ -1472,16 +1591,25 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     ],
     defaultFalModelId: 'fal-ai/minimax/hailuo-02/standard/image-to-video',
     seo: {
-      title: 'MiniMax Hailuo 02 Standard Image to Video - MaxVideo AI',
-      description: 'Reference image to motion with optional end frame.',
+      title: 'MiniMax Hailuo 02 (Image-to-Video) – Animate Any Visual in Seconds',
+      description:
+        'Transform static images into animated motion with MiniMax Hailuo 02. Add subtle movement, zooms, or stylization—silent loops ready for creative workflows.',
       canonicalPath: '/models/minimax-hailuo-02-image',
+    },
+    type: 'Image only · Stylized',
+    seoText:
+      'Bring static visuals to life with MiniMax Hailuo 02’s image-to-video engine. Add motion, zoom, or stylized animation to renders and artwork—no sound, fast turnaround.',
+    demoUrl: 'https://v3.fal.media/files/b/kangaroo/minimax_i2v.mp4',
+    media: {
+      videoUrl: 'https://fal.media/files/monkey/bkT4T4uLOXr0jDsIMlNd5_output.mp4',
+      imagePath: '/hero/minimax-video01.jpg',
+      altText: 'Animation sample from image with MiniMax',
     },
     prompts: [
       {
-        title: 'End frame handoff',
-        prompt: 'Turn the uploaded key visual into a looping hero shot, maintain typography, integrate optional end frame for reveal',
+        title: 'Control room drift',
+        prompt: 'Zoom slowly across a sci-fi spaceship control room, blinking lights and flickering screens, low-poly animation style',
         mode: 'i2v',
-        notes: 'Upload the optional End frame to control the final pose.',
       },
     ],
     faqs: [
@@ -1496,10 +1624,13 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     ],
     pricingHint: {
       currency: 'USD',
-      amountCents: 27,
+      amountCents: 30,
       durationSeconds: 6,
       resolution: '768P',
+      label: 'Silent clip',
     },
+    promptExample:
+      'Zoom into a desert landscape at twilight, blowing sand and glowing horizon, cinematic style',
   },
 ];
 
