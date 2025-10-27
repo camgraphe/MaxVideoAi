@@ -37,8 +37,14 @@ export default function LoginPage() {
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')) as string;
   const persistNextTarget = useCallback((value: string) => {
     if (typeof window === 'undefined') return;
-    window.sessionStorage.setItem(LOGIN_NEXT_STORAGE_KEY, value);
-    window.sessionStorage.setItem(LOGIN_LAST_TARGET_KEY, value);
+    const safe = sanitizeNextPath(value);
+    const prev = window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY);
+    if (prev === safe) return;
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[login] persistNextTarget', { safe });
+    }
+    window.sessionStorage.setItem(LOGIN_NEXT_STORAGE_KEY, safe);
+    window.sessionStorage.setItem(LOGIN_LAST_TARGET_KEY, safe);
   }, []);
   const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
@@ -75,14 +81,31 @@ export default function LoginPage() {
       const safeNext = sanitizeNextPath(value);
       setNextPath(safeNext);
       persistNextTarget(safeNext);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[login] init from query', { value, safeNext });
+      }
     } else {
       const stored = window.sessionStorage.getItem(LOGIN_NEXT_STORAGE_KEY);
+      const lastTarget = window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY);
       if (stored) {
         const safeStored = sanitizeNextPath(stored);
         setNextPath(safeStored);
         persistNextTarget(safeStored);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[login] init from stored next', { stored, safeStored });
+        }
+      } else if (lastTarget) {
+        const safeLast = sanitizeNextPath(lastTarget);
+        setNextPath(safeLast);
+        persistNextTarget(safeLast);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[login] init from last target', { lastTarget, safeLast });
+        }
       } else {
         persistNextTarget(DEFAULT_NEXT_PATH);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[login] init fallback default');
+        }
       }
     }
   }, [persistNextTarget]);

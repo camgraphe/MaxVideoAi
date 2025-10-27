@@ -904,6 +904,9 @@ useEffect(() => {
     if (shouldSkip) {
       skipOnboardingRef.current = true;
     }
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[app] read last target', { lastTarget, shouldSkip });
+    }
     window.sessionStorage.removeItem(LOGIN_LAST_TARGET_KEY);
   }
 }, []);
@@ -911,6 +914,9 @@ useEffect(() => {
 useEffect(() => {
   if (fromVideoId) {
     skipOnboardingRef.current = true;
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[app] skip onboarding due to fromVideoId', { fromVideoId });
+    }
   }
 }, [fromVideoId]);
   const [renders, setRenders] = useState<LocalRender[]>([]);
@@ -2082,6 +2088,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   useEffect(() => {
     if (!authChecked || skipOnboardingRef.current) return undefined;
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[app] onboarding check running', { skip: skipOnboardingRef.current });
+    }
     let cancelled = false;
     (async () => {
       try {
