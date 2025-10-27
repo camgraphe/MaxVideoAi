@@ -100,28 +100,26 @@ export default function PricingPage() {
         <p className="text-base text-text-secondary">{content.hero.subtitle}</p>
       </header>
 
-      <section className="mt-12 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
-          <h2 className="text-xl font-semibold text-text-primary">{content.estimator.title}</h2>
-          <p className="mt-2 text-sm text-text-secondary">{content.estimator.subtitle}</p>
-          <div className="mt-6">
-            <PriceEstimator />
-          </div>
-          <p className="mt-6 text-xs text-text-muted">
-            {content.estimator.walletLink}{' '}
-            <Link href="/pricing-calculator" className="font-semibold text-accent hover:text-accentSoft">
-              {content.estimator.walletLinkCta}
-            </Link>
-            .
-          </p>
-        </article>
+      <section className="mt-12">
+        <div className="mx-auto max-w-4xl">
+          <PriceEstimator />
+        </div>
+        <div className="mx-auto mt-6 max-w-3xl text-center text-xs text-text-muted">
+          {content.estimator.walletLink}{' '}
+          <Link href="/pricing-calculator" className="font-semibold text-accent hover:text-accentSoft">
+            {content.estimator.walletLinkCta}
+          </Link>
+          .
+        </div>
+      </section>
 
-        <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
-          <h2 className="text-xl font-semibold text-text-primary">{wallet.title}</h2>
-          <p className="mt-2 text-sm text-text-secondary">{wallet.description}</p>
-          <ul className="mt-4 space-y-3 text-sm text-text-secondary">
+      <section className="mt-12">
+        <article className="mx-auto max-w-4xl rounded-card border border-hairline bg-white/95 p-6 shadow-card sm:p-8">
+          <h2 className="text-xl font-semibold text-text-primary sm:text-2xl">{wallet.title}</h2>
+          <p className="mt-3 text-sm text-text-secondary sm:text-base">{wallet.description}</p>
+          <ul className="mt-5 space-y-3 text-sm text-text-secondary sm:text-base">
             {wallet.points.map((point) => (
-              <li key={point} className="flex items-start gap-2">
+              <li key={point} className="flex items-start gap-3">
                 <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-accent" />
                 <span>{point}</span>
               </li>

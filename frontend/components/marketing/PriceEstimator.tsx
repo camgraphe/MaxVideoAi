@@ -7,7 +7,6 @@ import type { EngineAvailability, EngineCaps, EngineInputField } from '@/types/e
 import type { MemberTier as PricingMemberTier } from '@maxvideoai/pricing';
 import type { PricingKernel } from '@maxvideoai/pricing';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { PriceChip } from '@/components/marketing/PriceChip';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { AVAILABILITY_BADGE_CLASS } from '@/lib/availability';
 import { getPartnerByEngineId } from '@/lib/brand-partners';
@@ -21,6 +20,8 @@ interface EngineOption {
   description: string;
   minDuration: number;
   maxDuration: number;
+  durationOptions: Array<{ value: number; label: string }>;
+  defaultDuration: number;
   resolutions: Array<{ value: string; label: string; rate: number }>;
   currency: string;
   availability: EngineAvailability;
@@ -44,6 +45,76 @@ function centsToDollars(cents?: number | null) {
 function getDurationField(engine: EngineCaps): EngineInputField | undefined {
   const optional = engine.inputSchema?.optional ?? [];
   return optional.find((field) => field.id === 'duration_seconds' || field.id === 'duration');
+}
+
+function parseDurationValue(raw: number | string | null | undefined) {
+  if (raw == null) return null;
+  if (typeof raw === 'number' && Number.isFinite(raw) && raw > 0) {
+    const seconds = Math.round(raw);
+    return { value: seconds, label: `${seconds}s` };
+  }
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    if (!trimmed) return null;
+    const numeric = Number(trimmed.replace(/[^0-9.]/g, ''));
+    if (!Number.isFinite(numeric) || numeric <= 0) return null;
+    const seconds = Math.round(numeric);
+    const hasUnit = /[a-z]/i.test(trimmed);
+    return { value: seconds, label: hasUnit ? trimmed : `${seconds}s` };
+  }
+  return null;
+}
+
+function collectDurationOptions(
+  entry: FalEngineEntry,
+  engineCaps: EngineCaps,
+  durationField: EngineInputField | undefined,
+  definition: ReturnType<PricingKernel['getDefinition']> | null
+) {
+  const map = new Map<number, string>();
+  const add = (raw: number | string | null | undefined) => {
+    const parsed = parseDurationValue(raw);
+    if (!parsed) return;
+    if (!map.has(parsed.value)) {
+      map.set(parsed.value, parsed.label);
+    }
+  };
+
+  entry.modes.forEach((mode) => {
+    const durationCaps = mode.ui?.duration as
+      | { options?: Array<number | string>; default?: number | string; min?: number | string; max?: number | string }
+      | undefined;
+    if (!durationCaps) return;
+    if (Array.isArray(durationCaps.options)) {
+      durationCaps.options.forEach((value) => add(value));
+    }
+    add(durationCaps.default);
+    add(durationCaps.min);
+    add(durationCaps.max);
+  });
+
+  if (Array.isArray(durationField?.values)) {
+    durationField?.values.forEach((value) => add(value));
+  }
+  add(durationField?.default);
+
+  const durationSteps = definition?.durationSteps;
+  if (durationSteps) {
+    if (Array.isArray(durationSteps.options)) {
+      durationSteps.options.forEach((value: number | string) => add(value));
+    }
+    add(durationSteps.default as number | string | undefined);
+    add(durationSteps.min as number | string | undefined);
+    add(durationSteps.max as number | string | undefined);
+  }
+
+  if (engineCaps.maxDurationSec) {
+    add(engineCaps.maxDurationSec);
+  }
+
+  return Array.from(map.entries())
+    .map(([value, label]) => ({ value, label }))
+    .sort((a, b) => a.value - b.value);
 }
 
 function buildEngineOption(
@@ -105,6 +176,16 @@ function buildEngineOption(
     maxDuration = minDuration;
   }
 
+  const durationOptions = collectDurationOptions(entry, engineCaps, durationField, definition).filter(
+    (option) => option.value >= minDuration && option.value <= maxDuration
+  );
+
+  const defaultDuration =
+    parseDurationValue(definition?.durationSteps?.default as number | string | undefined)?.value ??
+    parseDurationValue(durationField?.default)?.value ??
+    durationOptions[Math.floor(durationOptions.length / 2)]?.value ??
+    Math.round((minDuration + maxDuration) / 2);
+
   const brand = getPartnerByEngineId(entry.id);
   const availabilityLink =
     entry.availability !== 'available' ? brand?.availabilityLink ?? engineCaps.apiAvailability ?? null : null;
@@ -116,6 +197,8 @@ function buildEngineOption(
     description,
     minDuration,
     maxDuration,
+    durationOptions,
+    defaultDuration,
     resolutions: rates,
     currency: definition?.currency ?? engineCaps.pricingDetails?.currency ?? 'USD',
     availability: entry.availability,
@@ -210,12 +293,21 @@ export function PriceEstimator({ showWalletActions = true, variant = 'full' }: P
 
   const [duration, setDuration] = useState(() => {
     if (!selectedEngine) return 12;
+    if (selectedEngine.durationOptions.length) {
+      return selectedEngine.defaultDuration;
+    }
     const midpoint = Math.round((selectedEngine.minDuration + selectedEngine.maxDuration) / 2);
     return Math.min(Math.max(midpoint, selectedEngine.minDuration), selectedEngine.maxDuration);
   });
 
   useEffect(() => {
     if (!selectedEngine) return;
+    if (selectedEngine.durationOptions.length) {
+      if (!selectedEngine.durationOptions.some((option) => option.value === duration)) {
+        setDuration(selectedEngine.defaultDuration);
+      }
+      return;
+    }
     if (duration < selectedEngine.minDuration) {
       setDuration(selectedEngine.minDuration);
     } else if (duration > selectedEngine.maxDuration) {
@@ -305,195 +397,305 @@ export function PriceEstimator({ showWalletActions = true, variant = 'full' }: P
   const memberTooltipLabel = tooltip ?? 'Status updates daily on your last 30 days of spend.';
   const priceChipSuffix = t('pricing.priceChipSuffix', dictionary.pricing.priceChipSuffix);
 
+  const isLite = variant === 'lite';
+  const activeDurationOption = selectedEngine?.durationOptions.find((option) => option.value === duration) ?? null;
+  const durationDisplay = activeDurationOption?.label ?? `${duration}s`;
+  const discountPercent = Math.round(pricing.discountRate * 100);
+  const memberBenefitCopy = memberBenefits.get(memberTier);
+
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label htmlFor={engineId} className="flex flex-col gap-2 text-sm font-medium text-text-secondary">
-          {fields.engine}
-          <select
-            id={engineId}
-            value={selectedEngine?.id ?? ''}
-            onChange={(event) => setSelectedEngineId(event.target.value)}
-            className="rounded-input border border-hairline bg-bg px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-          >
-            {engineOptions.map((option) => (
-              <option key={option.id} value={option.id} disabled={option.availability === 'paused'}>
-            {option.availability ? `${option.label} - ${availabilityLabels[option.availability] ?? option.availability}` : option.label}
-              </option>
-            ))}
-          </select>
-          {selectedEngine?.description ? <span className="text-xs text-text-muted">{selectedEngine.description}</span> : null}
-          {selectedEngine && selectedEngine.availability !== 'available' && (
-            <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
-              <span
-                className={clsx(
-                  'inline-flex items-center rounded-pill border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro',
-                  AVAILABILITY_BADGE_CLASS[selectedEngine.availability]
-                )}
-              >
-                {availabilityLabels[selectedEngine.availability] ?? selectedEngine.availability}
-              </span>
-              {selectedEngine.availability === 'waitlist' && selectedEngine.availabilityLink && (
-                <a
-                  href={selectedEngine.availabilityLink}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-[11px] font-medium text-text-muted underline underline-offset-4 transition hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-                >
-                  Join waitlist
-                </a>
-              )}
-              {selectedEngine.availability === 'limited' && selectedEngine.availabilityLink && (
-                <a
-                  href={selectedEngine.availabilityLink}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-[11px] font-medium text-text-muted underline underline-offset-4 transition hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-                >
-                  Request access
-                </a>
-              )}
-              {selectedEngine.availability === 'paused' && <span>Temporarily unavailable.</span>}
-            </div>
-          )}
-        </label>
-
-        <label htmlFor={resolutionId} className="flex flex-col gap-2 text-sm font-medium text-text-secondary">
-          {fields.resolution}
-          <select
-            id={resolutionId}
-            value={selectedResolution}
-            onChange={(event) => setSelectedResolution(event.target.value)}
-            className="rounded-input border border-hairline bg-bg px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-          >
-            {selectedEngine?.resolutions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          {activeResolution ? (
-            <span className="text-xs text-text-muted">
-              {`${activeResolution.label} / ${formatCurrency(activeResolution.rate, currency)}/s`}
-            </span>
-          ) : null}
-        </label>
-
-        {selectedEngine ? (
-          <div className="flex flex-col gap-2 text-sm font-medium text-text-secondary">
-            <label htmlFor={durationId}>{fields.duration}</label>
-            <input
-              id={durationId}
-              type="range"
-              min={selectedEngine.minDuration}
-              max={selectedEngine.maxDuration}
-              step={1}
-              value={duration}
-              onChange={(event) => setDuration(Number(event.target.value))}
-              className="range-input"
-              aria-valuemin={selectedEngine.minDuration}
-              aria-valuemax={selectedEngine.maxDuration}
-              aria-valuenow={duration}
-            />
-            <div className="flex items-center justify-between text-xs text-text-muted">
-              <span>{selectedEngine.minDuration}s</span>
-              <span>{duration}s</span>
-              <span>{selectedEngine.maxDuration}s</span>
-            </div>
-          </div>
-        ) : null}
-
-        <fieldset className="flex flex-col gap-3 rounded-card border border-hairline bg-white px-3 py-3">
-          <legend className="flex items-center gap-2 px-1 text-sm font-medium text-text-secondary">
-            <span>{fields.memberStatus}</span>
-            <span className="text-xs text-text-muted" title={memberTooltipLabel} aria-label={memberTooltipLabel}>
-              i
-            </span>
-          </legend>
-          <div className="flex flex-wrap gap-2">
-            {MEMBER_ORDER.map((tier) => {
-              const selected = tier === memberTier;
-              return (
-                <button
-                  key={tier}
-                  type="button"
-                  onClick={() => setMemberTier(tier)}
-                  className={clsx(
-                    'rounded-pill border px-3 py-1 text-xs font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white',
-                    selected ? 'border-accent bg-accent text-white' : 'border-hairline text-text-secondary hover:text-text-primary'
-                  )}
-                  aria-pressed={selected}
-                >
-                  {memberNames.get(tier) ?? tier}
-                </button>
-              );
-            })}
-          </div>
-            <p className="text-xs text-text-muted">{memberBenefits.get(memberTier)}</p>
-        </fieldset>
-      </div>
-
-      <div className="space-y-3 rounded-card border border-hairline bg-white p-4 shadow-card">
-        {selectedEngine && pricingSnapshot && (
-          <PriceChip
-            engineId={selectedEngine.id}
-            durationSec={duration}
-            resolution={selectedResolution}
-            memberTier={pricingMemberTier}
-            suffix={priceChipSuffix}
-          />
+    <div className="space-y-8">
+      <div
+        className={clsx(
+          'relative overflow-hidden rounded-[32px] border p-6 shadow-[0_20px_60px_-25px_rgba(17,24,39,0.35)] sm:p-8 lg:p-10',
+          isLite
+            ? 'border-hairline bg-white/95'
+            : 'border-white/40 bg-gradient-to-br from-white via-white/95 to-[#f3f6ff]'
         )}
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1">
-            <p className="text-sm font-semibold text-text-primary">{estimateLabels.heading}</p>
-            <p className="text-2xl font-semibold text-text-primary">{formatCurrency(pricing.total, currency)}</p>
-            <p className="text-xs text-text-muted">
-              {estimateLabels.base} {formatCurrency(pricing.base, currency)} / {estimateLabels.discount} {formatCurrency(pricing.discountValue, currency)} ({Math.round(pricing.discountRate * 100)}%)
-            </p>
-            <p className="text-xs text-text-secondary">{chargedNote}</p>
+      >
+        {!isLite && (
+          <div className="pointer-events-none absolute inset-0 -z-10">
+            <div className="absolute -left-28 top-[-96px] h-72 w-72 rounded-full bg-accent/16 blur-[140px]" />
+            <div className="absolute -right-24 bottom-[-120px] h-80 w-80 rounded-full bg-[#7c4dff]/12 blur-[160px]" />
           </div>
-          <div className="space-y-2 text-xs text-text-secondary">
-            <p>
-              {t('pricing.estimator.engineRateLabel', 'Engine rate')} {formatCurrency(rate, currency)}/s / {t('pricing.estimator.durationLabel', 'Duration')} {duration}s / {t('pricing.estimator.resolutionLabel', 'Resolution')} {activeResolution?.label ?? ''}.
-            </p>
-            <p>
-              {estimateLabels.memberChipPrefix}{' '}
-              <span className="font-semibold text-accent">{memberTier === 'Member' ? memberNames.get('Member') ?? 'Member' : `${Math.round(pricing.discountRate * 100)}%`}</span>
-            </p>
+        )}
+        <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="space-y-8">
+            <div className="space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
+                {t('pricing.estimator.configureLabel', 'Configure')}
+              </p>
+              <h3 className="text-2xl font-semibold text-text-primary sm:text-3xl">
+                {dictionary.pricing.estimator.title}
+              </h3>
+              <p className="text-sm text-text-secondary sm:text-base">{dictionary.pricing.estimator.subtitle}</p>
+            </div>
+
+            <div className="grid gap-6">
+              <div className="rounded-[24px] border border-white/60 bg-white/85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">{fields.engine}</span>
+                  {selectedEngine && (
+                    <span
+                      className={clsx(
+                        'inline-flex items-center rounded-pill border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-micro',
+                        AVAILABILITY_BADGE_CLASS[selectedEngine.availability]
+                      )}
+                    >
+                      {availabilityLabels[selectedEngine.availability] ?? selectedEngine.availability}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-3">
+                  <select
+                    id={engineId}
+                    value={selectedEngine?.id ?? ''}
+                    onChange={(event) => setSelectedEngineId(event.target.value)}
+                    className="w-full rounded-[16px] border border-transparent bg-white px-4 py-3 text-sm font-semibold text-text-primary shadow-[0_1px_3px_rgba(15,23,42,0.1)] transition focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                  >
+                    {engineOptions.map((option) => (
+                      <option key={option.id} value={option.id} disabled={option.availability === 'paused'}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedEngine?.description ? (
+                    <p className="mt-3 text-xs text-text-muted">{selectedEngine.description}</p>
+                  ) : null}
+                  {selectedEngine && selectedEngine.availability !== 'available' && selectedEngine.availabilityLink ? (
+                    <a
+                      href={selectedEngine.availabilityLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 inline-flex text-[11px] font-medium text-text-muted underline underline-offset-4 transition hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                    >
+                      {selectedEngine.availability === 'waitlist'
+                        ? t('pricing.estimator.joinWaitlist', 'Join waitlist')
+                        : t('pricing.estimator.requestAccess', 'Request access')}
+                    </a>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="grid gap-6 sm:grid-cols-2">
+                <div className="rounded-[24px] border border-white/60 bg-white/85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
+                  <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">{fields.resolution}</span>
+                  <select
+                    id={resolutionId}
+                    value={selectedResolution}
+                    onChange={(event) => setSelectedResolution(event.target.value)}
+                    className="mt-3 w-full rounded-[16px] border border-transparent bg-white px-4 py-3 text-sm font-semibold text-text-primary shadow-[0_1px_3px_rgba(15,23,42,0.1)] transition focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                  >
+                    {selectedEngine?.resolutions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  {activeResolution ? (
+                    <p className="mt-3 text-xs text-text-muted">
+                      {t('pricing.estimator.engineRateLabel', 'Engine rate')} {formatCurrency(rate, currency)}/s
+                    </p>
+                  ) : null}
+                </div>
+
+                {selectedEngine ? (
+                  <div className="rounded-[24px] border border-white/60 bg-white/85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
+                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">{fields.duration}</span>
+                    {selectedEngine.durationOptions.length ? (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {selectedEngine.durationOptions.map((option) => {
+                          const selected = option.value === duration;
+                          return (
+                            <button
+                              key={option.value}
+                              type="button"
+                              onClick={() => setDuration(option.value)}
+                              className={clsx(
+                                'rounded-full px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white',
+                                selected
+                                  ? 'bg-accent text-white shadow-[0_10px_30px_-12px_rgba(0,109,255,0.7)]'
+                                  : 'bg-white/70 text-text-secondary hover:bg-white'
+                              )}
+                              aria-pressed={selected}
+                            >
+                              {option.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="mt-4 space-y-3">
+                        <input
+                          id={durationId}
+                          type="range"
+                          min={selectedEngine.minDuration}
+                          max={selectedEngine.maxDuration}
+                          step={1}
+                          value={duration}
+                          onChange={(event) => setDuration(Number(event.target.value))}
+                          className="range-input"
+                          aria-valuemin={selectedEngine.minDuration}
+                          aria-valuemax={selectedEngine.maxDuration}
+                          aria-valuenow={duration}
+                        />
+                        <div className="flex items-center justify-between text-xs text-text-muted">
+                          <span>{selectedEngine.minDuration}s</span>
+                          <span>{durationDisplay}</span>
+                          <span>{selectedEngine.maxDuration}s</span>
+                        </div>
+                      </div>
+                    )}
+                    {selectedEngine.durationOptions.length ? (
+                      <p className="mt-3 text-xs text-text-muted">
+                        {t('pricing.estimator.durationRangeLabel', 'Available')} •{' '}
+                        {selectedEngine.durationOptions.map((option) => option.label).join(' · ')}
+                      </p>
+                    ) : (
+                      <p className="mt-3 text-xs text-text-muted">
+                        {t('pricing.estimator.durationRangeLabel', 'Range')} {selectedEngine.minDuration}s – {selectedEngine.maxDuration}s
+                      </p>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            <fieldset className="rounded-[24px] border border-white/60 bg-white/85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
+              <legend className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
+                {fields.memberStatus}
+              </legend>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {MEMBER_ORDER.map((tier) => {
+                  const selected = tier === memberTier;
+                  return (
+                    <button
+                      key={tier}
+                      type="button"
+                      onClick={() => setMemberTier(tier)}
+                      className={clsx(
+                        'rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white',
+                        selected
+                          ? 'bg-neutral-900 text-white shadow-[0_10px_25px_-12px_rgba(17,24,39,0.6)]'
+                          : 'bg-white/70 text-text-secondary hover:bg-white'
+                      )}
+                      aria-pressed={selected}
+                    >
+                      {memberNames.get(tier) ?? tier}
+                    </button>
+                  );
+                })}
+              </div>
+              {memberBenefitCopy ? <p className="mt-3 text-xs text-text-muted">{memberBenefitCopy}</p> : null}
+              <p className="mt-2 text-[11px] text-text-muted" aria-label={memberTooltipLabel} title={memberTooltipLabel}>
+                {memberTooltipLabel}
+              </p>
+            </fieldset>
           </div>
+
+          <aside className="flex flex-col gap-5">
+            <div className="rounded-[28px] border border-white/70 bg-white/95 p-6 text-sm text-text-secondary shadow-[0_28px_60px_-24px_rgba(15,23,42,0.3)] sm:p-7">
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
+                    {estimateLabels.heading}
+                  </span>
+                  <p className="text-5xl font-semibold tracking-tight text-text-primary">
+                    {formatCurrency(pricing.total, currency)}
+                  </p>
+                  <p className="text-xs uppercase tracking-[0.3em] text-text-muted">
+                    {priceChipSuffix ?? t('pricing.priceChipSuffix', 'Price before you generate.')}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
+                    {t('pricing.estimator.engineLabel', 'Engine')}
+                  </span>
+                  <p className="text-base font-semibold text-text-primary">{selectedEngine?.label ?? '—'}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
+                      {t('pricing.estimator.durationLabel', 'Duration')}
+                    </span>
+                    <p className="text-base font-semibold text-text-primary">{durationDisplay}</p>
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
+                      {t('pricing.estimator.resolutionLabel', 'Resolution')}
+                    </span>
+                    <p className="text-base font-semibold text-text-primary">
+                      {activeResolution?.label ?? selectedResolution?.toUpperCase()}
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
+                    {estimateLabels.memberChipPrefix}
+                  </span>
+                  <p className="text-base font-semibold text-text-primary">
+                    {memberTier === 'Member' ? memberNames.get('Member') ?? 'Member' : `${discountPercent}%`}
+                  </p>
+                  {memberBenefitCopy ? <p className="mt-1 text-xs text-text-muted">{memberBenefitCopy}</p> : null}
+                </div>
+                <div className="space-y-1 text-xs text-text-muted">
+                  <p>
+                    {estimateLabels.base} {formatCurrency(pricing.base, currency)} · {estimateLabels.discount}{' '}
+                    {formatCurrency(pricing.discountValue, currency)} ({discountPercent}%)
+                  </p>
+                  <p>{chargedNote}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-[24px] border border-white/70 bg-white/90 p-5 text-sm text-text-secondary shadow-[0_14px_30px_-22px_rgba(15,23,42,0.35)]">
+              <p className="font-semibold text-text-primary">
+                {t('pricing.estimator.memberReminder', 'Need invoice routing or team wallets?')}
+              </p>
+              <p className="mt-2 text-xs text-text-muted">
+                {t('pricing.estimator.memberReminderBody', 'Enable shared wallets and member tiers in Settings → Billing to automatically apply discounts.')}
+              </p>
+            </div>
+          </aside>
         </div>
       </div>
 
       {showWalletActions && variant === 'full' && (
-        <div className="grid gap-4 rounded-card border border-hairline bg-white p-4 shadow-card sm:grid-cols-2">
-          <div className="space-y-2">
-            <p className="text-sm font-semibold text-text-primary">{walletBalanceLabel}</p>
-            <p className="text-2xl font-semibold text-text-primary">{formatCurrency(walletBalance, currency)}</p>
-            <p className="text-xs text-text-muted">{walletHelper}</p>
-          </div>
-          <div className="space-y-3">
-            <div className="flex flex-wrap gap-2 text-xs">
-              {[5, 10, 25].map((amount) => (
-                <button
-                  key={amount}
-                  type="button"
-                  onClick={() => handleTopUp(amount)}
-                  className="rounded-pill border border-hairline px-3 py-1 font-semibold text-text-secondary transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-                >
-                  {addLabelTemplate.replace('{amount}', amount.toString()).replace('${amount}', `$${amount}`)}
-                </button>
-              ))}
+        <div className="rounded-[28px] border border-white/70 bg-gradient-to-br from-white via-white/95 to-[#f2f5ff] p-6 shadow-[0_20px_52px_-24px_rgba(15,23,42,0.28)] sm:p-8">
+          <div className="flex flex-wrap items-start justify-between gap-6">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
+                {walletBalanceLabel}
+              </p>
+              <p className="mt-2 text-3xl font-semibold text-text-primary">{formatCurrency(walletBalance, currency)}</p>
+              <p className="mt-2 max-w-sm text-sm text-text-secondary">{walletHelper}</p>
             </div>
-            <label className="inline-flex items-center gap-2 text-xs text-text-secondary">
-              <input
-                type="checkbox"
-                checked={autoTopUp}
-                onChange={(event) => setAutoTopUp(event.target.checked)}
-                className="h-4 w-4 rounded border-hairline text-accent focus:ring-2 focus:ring-ring"
-              />
-              {walletAutoLabel}
-            </label>
-            <p className="text-xs text-text-muted">{dictionary.pricing.wallet.autoTopUpHint ?? t('pricing.wallet.autoTopUpHint', 'Daily status emails keep finance in the loop.')}</p>
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                {[5, 10, 25].map((amount) => (
+                  <button
+                    key={amount}
+                    type="button"
+                    onClick={() => handleTopUp(amount)}
+                    className="rounded-full border border-transparent bg-text-primary/90 px-3 py-1.5 text-xs font-semibold uppercase tracking-micro text-white shadow-[0_12px_30px_-16px_rgba(15,23,42,0.5)] transition hover:bg-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                  >
+                    {addLabelTemplate.replace('{amount}', amount.toString()).replace('${amount}', `$${amount}`)}
+                  </button>
+                ))}
+              </div>
+              <label className="inline-flex items-center gap-2 text-xs text-text-secondary">
+                <input
+                  type="checkbox"
+                  checked={autoTopUp}
+                  onChange={(event) => setAutoTopUp(event.target.checked)}
+                  className="h-4 w-4 rounded border-hairline text-accent focus:ring-2 focus:ring-ring"
+                />
+                {walletAutoLabel}
+              </label>
+              <p className="text-xs text-text-muted">
+                {dictionary.pricing.wallet.autoTopUpHint ?? t('pricing.wallet.autoTopUpHint', 'Daily status emails keep finance in the loop.')}
+              </p>
+            </div>
           </div>
         </div>
       )}
