@@ -55,22 +55,26 @@ export default function LoginPage() {
   const persistNextTarget = useCallback((value: string) => {
     if (typeof window === 'undefined') return;
     const safe = sanitizeNextPath(value);
-    const prev = window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY);
-    const current = window.sessionStorage.getItem(LOGIN_NEXT_STORAGE_KEY);
-    if (prev === safe && current === safe) return;
+    const prevSession = window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY);
+    const prevLocal = window.localStorage.getItem(LOGIN_LAST_TARGET_KEY);
+    if (prevSession === safe && prevLocal === safe) return;
     if (process.env.NODE_ENV !== 'production') {
       console.log('[login] persistNextTarget', { safe });
     }
     window.sessionStorage.setItem(LOGIN_NEXT_STORAGE_KEY, safe);
     window.sessionStorage.setItem(LOGIN_LAST_TARGET_KEY, safe);
+    window.localStorage.setItem(LOGIN_NEXT_STORAGE_KEY, safe);
+    window.localStorage.setItem(LOGIN_LAST_TARGET_KEY, safe);
     if (
       safe.startsWith('/generate') ||
       safe.includes('from=') ||
       safe.includes('engine=')
     ) {
       window.sessionStorage.setItem(LOGIN_SKIP_ONBOARDING_KEY, 'true');
+      window.localStorage.setItem(LOGIN_SKIP_ONBOARDING_KEY, 'true');
     } else if (!safe.startsWith('/gallery')) {
       window.sessionStorage.removeItem(LOGIN_SKIP_ONBOARDING_KEY);
+      window.localStorage.removeItem(LOGIN_SKIP_ONBOARDING_KEY);
     }
   }, []);
   const [mode, setMode] = useState<AuthMode>('signin');
@@ -110,8 +114,12 @@ export default function LoginPage() {
       resolved = sanitizeNextPath(value);
       source = 'query';
     } else {
-      const stored = window.sessionStorage.getItem(LOGIN_NEXT_STORAGE_KEY);
-      const lastTarget = window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY);
+      const stored =
+        window.sessionStorage.getItem(LOGIN_NEXT_STORAGE_KEY) ??
+        window.localStorage.getItem(LOGIN_NEXT_STORAGE_KEY);
+      const lastTarget =
+        window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY) ??
+        window.localStorage.getItem(LOGIN_LAST_TARGET_KEY);
       if (stored) {
         resolved = sanitizeNextPath(stored);
         source = 'stored';
@@ -133,6 +141,10 @@ export default function LoginPage() {
         storageSnapshot: {
           next: window.sessionStorage.getItem(LOGIN_NEXT_STORAGE_KEY),
           last: window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY),
+          nextLocal: window.localStorage.getItem(LOGIN_NEXT_STORAGE_KEY),
+          lastLocal: window.localStorage.getItem(LOGIN_LAST_TARGET_KEY),
+          skip: window.sessionStorage.getItem(LOGIN_SKIP_ONBOARDING_KEY),
+          skipLocal: window.localStorage.getItem(LOGIN_SKIP_ONBOARDING_KEY),
         },
       });
     }

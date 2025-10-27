@@ -894,14 +894,20 @@ const skipOnboardingRef = useRef<boolean>(false);
 
 useEffect(() => {
   if (typeof window === 'undefined') return;
-  if (window.sessionStorage.getItem(LOGIN_SKIP_ONBOARDING_KEY) === 'true') {
+  const skipFlag =
+    window.sessionStorage.getItem(LOGIN_SKIP_ONBOARDING_KEY) ??
+    window.localStorage.getItem(LOGIN_SKIP_ONBOARDING_KEY);
+  if (skipFlag === 'true') {
     skipOnboardingRef.current = true;
     if (process.env.NODE_ENV !== 'production') {
       console.log('[app] skip onboarding via flag');
     }
     window.sessionStorage.removeItem(LOGIN_SKIP_ONBOARDING_KEY);
+    window.localStorage.removeItem(LOGIN_SKIP_ONBOARDING_KEY);
   }
-  const lastTarget = window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY);
+  const lastTarget =
+    window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY) ??
+    window.localStorage.getItem(LOGIN_LAST_TARGET_KEY);
   if (lastTarget) {
     const normalized = lastTarget.trim();
     const shouldSkip =
@@ -915,6 +921,7 @@ useEffect(() => {
       console.log('[app] read last target', { lastTarget, shouldSkip });
     }
     window.sessionStorage.removeItem(LOGIN_LAST_TARGET_KEY);
+    window.localStorage.removeItem(LOGIN_LAST_TARGET_KEY);
   }
 }, []);
 
