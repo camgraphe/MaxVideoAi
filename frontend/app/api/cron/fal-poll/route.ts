@@ -63,6 +63,7 @@ async function triggerPoll(req: NextRequest) {
       method: 'POST',
       headers: {
         'X-Fal-Poll-Token': POLL_TOKEN,
+        Authorization: `Bearer ${POLL_TOKEN}`,
       },
       cache: 'no-store',
     });

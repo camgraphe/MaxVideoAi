@@ -10,15 +10,18 @@ const POLL_TOKEN = (process.env.FAL_POLL_TOKEN ?? '').trim();
 
 function authorize(req: NextRequest): NextResponse | null {
   if (!POLL_TOKEN) return null;
-  const header = req.headers.get('x-fal-poll-token') ?? req.headers.get('authorization') ?? '';
-  const token = header.startsWith('Bearer ') ? header.slice('Bearer '.length).trim() : header.trim();
+  const rawHeader = req.headers.get('x-fal-poll-token') ?? req.headers.get('authorization') ?? '';
+  const token = rawHeader.startsWith('Bearer ') ? rawHeader.slice('Bearer '.length).trim() : rawHeader.trim();
   if (token && token === POLL_TOKEN) {
     return null;
   }
+  const sanitized = token ? `${token.slice(0, 4)}…${token.slice(-4)}` : null;
   console.warn('[fal-poll] unauthorized request', {
-    hasHeader: Boolean(header),
+    hasHeader: Boolean(rawHeader),
     tokenLength: token.length,
     matches: token === POLL_TOKEN,
+    sanitizedToken: sanitized,
+    envTokenLength: POLL_TOKEN.length,
   });
   return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
 }
