@@ -15,6 +15,11 @@ function authorize(req: NextRequest): NextResponse | null {
   if (token && token === POLL_TOKEN) {
     return null;
   }
+  console.warn('[fal-poll] unauthorized request', {
+    hasHeader: Boolean(header),
+    tokenLength: token.length,
+    matches: token === POLL_TOKEN,
+  });
   return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
 }
 

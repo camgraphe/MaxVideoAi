@@ -43,6 +43,15 @@ async function triggerPoll(req: NextRequest) {
     }
   }
 
+  console.log('[cron-fal-poll] triggering Fal poll', {
+    env: process.env.VERCEL === '1' ? 'vercel' : 'local',
+    hasCronHeader: Boolean(req.headers.get('x-vercel-cron')),
+    ua: req.headers.get('user-agent') ?? null,
+    deployment: req.headers.get('x-vercel-deployment-id') ?? null,
+    source: req.headers.get('x-vercel-source') ?? null,
+    tokenLength: POLL_TOKEN.length,
+  });
+
   if (!POLL_TOKEN) {
     return NextResponse.json({ ok: false, error: 'FAL_POLL_TOKEN is not configured' }, { status: 500 });
   }
