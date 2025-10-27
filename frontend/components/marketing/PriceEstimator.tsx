@@ -100,12 +100,18 @@ function collectDurationOptions(
 
   const durationSteps = definition?.durationSteps;
   if (durationSteps) {
-    if (Array.isArray(durationSteps.options)) {
-      durationSteps.options.forEach((value: number | string) => add(value));
+    const { options: stepOptions, default: stepDefault, min: stepMin, max: stepMax } = durationSteps as {
+      options?: Array<number | string>;
+      default?: number | string;
+      min?: number | string;
+      max?: number | string;
+    };
+    if (Array.isArray(stepOptions)) {
+      stepOptions.forEach((value) => add(value));
     }
-    add(durationSteps.default as number | string | undefined);
-    add(durationSteps.min as number | string | undefined);
-    add(durationSteps.max as number | string | undefined);
+    add(stepDefault);
+    add(stepMin);
+    add(stepMax);
   }
 
   if (engineCaps.maxDurationSec) {
