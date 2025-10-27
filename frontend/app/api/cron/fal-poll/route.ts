@@ -9,7 +9,10 @@ async function triggerPoll(req: NextRequest) {
     const cronHeader = req.headers.get('x-vercel-cron');
     const deploymentId = (process.env.VERCEL_DEPLOYMENT_ID ?? '').trim();
     const incomingDeploymentId = (req.headers.get('x-vercel-deployment-id') ?? '').trim();
-    if (!cronHeader || (deploymentId && deploymentId !== incomingDeploymentId)) {
+    if (!cronHeader) {
+      return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
+    }
+    if (deploymentId && incomingDeploymentId && deploymentId !== incomingDeploymentId) {
       return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
     }
   } else {
