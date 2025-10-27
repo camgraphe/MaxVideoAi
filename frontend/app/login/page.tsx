@@ -5,7 +5,7 @@ import { AuthApiError } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { syncSupabaseCookies, clearSupabaseCookies } from '@/lib/supabase-cookies';
-import { LOGIN_NEXT_STORAGE_KEY } from '@/lib/auth-storage';
+import { LOGIN_NEXT_STORAGE_KEY, LOGIN_LAST_TARGET_KEY } from '@/lib/auth-storage';
 import clsx from 'clsx';
 import Link from 'next/link';
 
@@ -35,6 +35,11 @@ export default function LoginPage() {
   const router = useRouter();
   const [nextPath, setNextPath] = useState<string>(DEFAULT_NEXT_PATH);
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')) as string;
+  const persistNextTarget = useCallback((value: string) => {
+    if (typeof window === 'undefined') return;
+    window.sessionStorage.setItem(LOGIN_NEXT_STORAGE_KEY, value);
+    window.sessionStorage.setItem(LOGIN_LAST_TARGET_KEY, value);
+  }, []);
   const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -69,22 +74,18 @@ export default function LoginPage() {
     if (value && value.startsWith('/')) {
       const safeNext = sanitizeNextPath(value);
       setNextPath(safeNext);
-      if (typeof window !== 'undefined') {
-        window.sessionStorage.setItem(LOGIN_NEXT_STORAGE_KEY, safeNext);
-      }
-    } else if (typeof window !== 'undefined') {
+      persistNextTarget(safeNext);
+    } else {
       const stored = window.sessionStorage.getItem(LOGIN_NEXT_STORAGE_KEY);
       if (stored) {
         const safeStored = sanitizeNextPath(stored);
         setNextPath(safeStored);
-        if (safeStored !== stored) {
-          window.sessionStorage.setItem(LOGIN_NEXT_STORAGE_KEY, safeStored);
-        }
+        persistNextTarget(safeStored);
       } else {
-        window.sessionStorage.setItem(LOGIN_NEXT_STORAGE_KEY, DEFAULT_NEXT_PATH);
+        persistNextTarget(DEFAULT_NEXT_PATH);
       }
     }
-  }, []);
+  }, [persistNextTarget]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -127,7 +128,9 @@ export default function LoginPage() {
       const session = data.session ?? null;
       if (session?.user && nextPath) {
         syncSupabaseCookies(session);
-        router.replace(nextPath);
+        const safeTarget = sanitizeNextPath(nextPath);
+        persistNextTarget(safeTarget);
+        router.replace(safeTarget);
       } else if (!session?.user) {
         clearSupabaseCookies();
       }
@@ -139,7 +142,9 @@ export default function LoginPage() {
       if (cancelled) return;
       if (session?.user && nextPath) {
         syncSupabaseCookies(session);
-        router.replace(nextPath);
+        const safeTarget = sanitizeNextPath(nextPath);
+        persistNextTarget(safeTarget);
+        router.replace(safeTarget);
       } else if (!session?.user) {
         clearSupabaseCookies();
       }
@@ -149,7 +154,7 @@ export default function LoginPage() {
       cancelled = true;
       authListener?.subscription.unsubscribe();
     };
-  }, [nextPath, router]);
+  }, [nextPath, persistNextTarget, router]);
 
   async function signInWithPassword(e: React.FormEvent) {
     e.preventDefault();
@@ -177,10 +182,12 @@ export default function LoginPage() {
 
     const session = data.session ?? (await supabase.auth.getSession().then(({ data: sessionData }) => sessionData.session ?? null));
     syncSupabaseCookies(session);
+    const safeTarget = sanitizeNextPath(nextPath);
     if (typeof window !== 'undefined') {
+      persistNextTarget(safeTarget);
       window.sessionStorage.removeItem(LOGIN_NEXT_STORAGE_KEY);
     }
-    router.replace(nextPath);
+    router.replace(safeTarget);
   }
 
   const handleAcceptSignupSuggestion = useCallback(() => {
@@ -270,10 +277,12 @@ export default function LoginPage() {
       setStatusTone('success');
       setStatus('Account created. Redirecting…');
       syncSupabaseCookies(data.session);
+      const target = sanitizeNextPath('/generate');
       if (typeof window !== 'undefined') {
+        persistNextTarget(target);
         window.sessionStorage.removeItem(LOGIN_NEXT_STORAGE_KEY);
       }
-      router.replace('/generate');
+      router.replace(target);
     } else {
       setStatusTone('success');
       setStatus('Check your inbox to confirm your email.');
@@ -323,7 +332,7 @@ export default function LoginPage() {
     if (data?.url) {
       if (typeof window !== 'undefined') {
         const safeNext = sanitizeNextPath(nextPath);
-        window.sessionStorage.setItem(LOGIN_NEXT_STORAGE_KEY, safeNext);
+        persistNextTarget(safeNext);
       }
       window.location.href = data.url;
     }
@@ -336,7 +345,9 @@ export default function LoginPage() {
       if (cancelled) return;
       if (session?.access_token) {
         syncSupabaseCookies(session);
-        router.replace(nextPath);
+        const safeTarget = sanitizeNextPath(nextPath);
+        persistNextTarget(safeTarget);
+        router.replace(safeTarget);
       } else {
         clearSupabaseCookies();
       }
@@ -344,7 +355,7 @@ export default function LoginPage() {
     return () => {
       cancelled = true;
     };
-  }, [router, nextPath]);
+  }, [router, nextPath, persistNextTarget]);
 
   const effectiveMode: AuthMode = mode === 'reset' ? 'signin' : mode;
 

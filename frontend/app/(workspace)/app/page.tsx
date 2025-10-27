@@ -9,6 +9,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import type { EngineCaps, EngineInputField, Mode, PreflightRequest, PreflightResponse } from '@/types/engines';
 import { getEngineCaps, type EngineCaps as EngineCapabilityCaps } from '@/fixtures/engineCaps';
+import { LOGIN_LAST_TARGET_KEY } from '@/lib/auth-storage';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { EngineSelect } from '@/components/ui/EngineSelect';
@@ -889,6 +890,29 @@ if (typeof window !== 'undefined') {
   });
 }
 const searchString = useMemo(() => searchParams?.toString() ?? '', [searchParams]);
+const skipOnboardingRef = useRef<boolean>(false);
+
+useEffect(() => {
+  if (typeof window === 'undefined') return;
+  const lastTarget = window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY);
+  if (lastTarget) {
+    const normalized = lastTarget.trim();
+    const shouldSkip =
+      normalized.startsWith('/generate') ||
+      normalized.includes('from=') ||
+      normalized.includes('engine=');
+    if (shouldSkip) {
+      skipOnboardingRef.current = true;
+    }
+    window.sessionStorage.removeItem(LOGIN_LAST_TARGET_KEY);
+  }
+}, []);
+
+useEffect(() => {
+  if (fromVideoId) {
+    skipOnboardingRef.current = true;
+  }
+}, [fromVideoId]);
   const [renders, setRenders] = useState<LocalRender[]>([]);
   const [sharedPrompt, setSharedPrompt] = useState<string | null>(null);
   const [selectedPreview, setSelectedPreview] = useState<{
@@ -2057,7 +2081,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   }, [authChecked]);
 
   useEffect(() => {
-    if (!authChecked) return undefined;
+    if (!authChecked || skipOnboardingRef.current) return undefined;
     let cancelled = false;
     (async () => {
       try {
