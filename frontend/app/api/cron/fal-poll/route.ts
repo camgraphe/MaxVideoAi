@@ -53,18 +53,21 @@ async function triggerPoll(req: NextRequest) {
   });
 
   if (!POLL_TOKEN) {
-    return NextResponse.json({ ok: false, error: 'FAL_POLL_TOKEN is not configured' }, { status: 500 });
+    console.warn('[cron-fal-poll] proceeding without FAL_POLL_TOKEN; downstream route must accept anonymous access');
   }
 
   const pollUrl = new URL('/api/fal/poll', req.nextUrl.origin);
+  const headers: Record<string, string> = {};
+
+  if (POLL_TOKEN) {
+    headers['X-Fal-Poll-Token'] = POLL_TOKEN;
+    headers.Authorization = `Bearer ${POLL_TOKEN}`;
+  }
 
   try {
     const res = await fetch(pollUrl.toString(), {
       method: 'POST',
-      headers: {
-        'X-Fal-Poll-Token': POLL_TOKEN,
-        Authorization: `Bearer ${POLL_TOKEN}`,
-      },
+      headers,
       cache: 'no-store',
     });
 
