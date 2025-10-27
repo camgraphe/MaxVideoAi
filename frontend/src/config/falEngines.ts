@@ -1132,8 +1132,9 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     ],
     defaultFalModelId: 'fal-ai/veo3.1/reference-to-video',
     seo: {
-      title: 'Google Veo 3.1 - MaxVideo AI',
-      description: 'Reference-to-video control with multi-image subject guidance.',
+      title: 'Veo\u202f3.1 \u2013 Advanced Text\u2011to\u2011Video Engine with Extended Duration & Native Audio',
+      description:
+        'Veo\u202f3.1 by Google DeepMind on MaxVideoAI: generate longer cinematic videos with native audio, multi\u2011scene prompts, advanced lighting & camera control. Ideal for creators and brands.',
       canonicalPath: '/models/veo-3-1',
     },
     prompts: [
