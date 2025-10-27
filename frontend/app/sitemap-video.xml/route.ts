@@ -55,7 +55,6 @@ export async function GET(): Promise<Response> {
         const description = truncate(video.promptExcerpt || 'AI-generated video created with MaxVideoAI.', 197);
         const publicationDate = new Date(video.createdAt).toISOString();
         const duration = Number.isFinite(video.durationSec) ? Math.max(0, Math.round(video.durationSec)) : null;
-        const hasAudio = video.hasAudio ? 'yes' : 'no';
 
         const fragments = [
           '  <url>',
@@ -70,7 +69,6 @@ export async function GET(): Promise<Response> {
           `      <video:family_friendly>yes</video:family_friendly>`,
           `      <video:live>no</video:live>`,
           `      <video:requires_subscription>no</video:requires_subscription>`,
-          `      <video:has_audio>${hasAudio}</video:has_audio>`,
           video.engineLabel ? `      <video:tag>${escapeXml(video.engineLabel)}</video:tag>` : null,
           '    </video:video>',
           '  </url>',
