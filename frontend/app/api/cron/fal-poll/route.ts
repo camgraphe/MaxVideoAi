@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { runFalPoll } from '@/server/fal-poll';
 
 export const runtime = 'nodejs';
 
@@ -53,34 +54,14 @@ async function triggerPoll(req: NextRequest) {
   });
 
   if (!POLL_TOKEN) {
-    console.warn('[cron-fal-poll] proceeding without FAL_POLL_TOKEN; downstream route must accept anonymous access');
-  }
-
-  const pollUrl = new URL('/api/fal/poll', req.nextUrl.origin);
-  const headers: Record<string, string> = {};
-
-  if (POLL_TOKEN) {
-    headers['X-Fal-Poll-Token'] = POLL_TOKEN;
-    headers.Authorization = `Bearer ${POLL_TOKEN}`;
+    console.warn('[cron-fal-poll] proceeding without FAL_POLL_TOKEN; invoking poll directly');
   }
 
   try {
-    const res = await fetch(pollUrl.toString(), {
-      method: 'POST',
-      headers,
-      cache: 'no-store',
-    });
-
-    const contentType = res.headers.get('content-type') ?? 'application/json';
-    const bodyText = await res.text();
-
-    return new NextResponse(bodyText, {
-      status: res.status,
-      headers: { 'content-type': contentType },
-    });
+    return await runFalPoll();
   } catch (error) {
-    console.error('[cron-fal-poll] failed to trigger poll', error);
-    return NextResponse.json({ ok: false, error: 'Failed to trigger Fal poll' }, { status: 500 });
+    console.error('[cron-fal-poll] failed to run poll', error);
+    return NextResponse.json({ ok: false, error: 'Failed to run Fal poll' }, { status: 500 });
   }
 }
 
