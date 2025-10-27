@@ -4,23 +4,42 @@ export const runtime = 'nodejs';
 
 const POLL_TOKEN = (process.env.FAL_POLL_TOKEN ?? '').trim();
 
+function unauthorized(reason: string, req: NextRequest) {
+  const info = {
+    reason,
+    headers: {
+      cron: req.headers.get('x-vercel-cron') || null,
+      ua: req.headers.get('user-agent') || null,
+      deployment: req.headers.get('x-vercel-deployment-id') || null,
+      source: req.headers.get('x-vercel-source') || null,
+    },
+  };
+  console.warn('[cron-fal-poll] unauthorized', info);
+  return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
+}
+
 async function triggerPoll(req: NextRequest) {
+  const overrideToken =
+    req.headers.get('x-fal-poll-token') ??
+    (req.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ?? '');
+
   if (process.env.VERCEL === '1') {
     const cronHeader = req.headers.get('x-vercel-cron');
+    const userAgent = req.headers.get('user-agent') ?? '';
     const deploymentId = (process.env.VERCEL_DEPLOYMENT_ID ?? '').trim();
     const incomingDeploymentId = (req.headers.get('x-vercel-deployment-id') ?? '').trim();
-    if (!cronHeader) {
-      return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
+
+    const looksLikeCron = Boolean(cronHeader || userAgent.toLowerCase().includes('vercel'));
+
+    if (!looksLikeCron && overrideToken !== POLL_TOKEN) {
+      return unauthorized('missing-vercel-markers', req);
     }
     if (deploymentId && incomingDeploymentId && deploymentId !== incomingDeploymentId) {
-      return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
+      return unauthorized('deployment-mismatch', req);
     }
   } else {
-    const overrideToken =
-      req.headers.get('x-fal-poll-token') ??
-      (req.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ?? '');
     if (overrideToken !== POLL_TOKEN) {
-      return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
+      return unauthorized('missing-token', req);
     }
   }
 
