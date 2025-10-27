@@ -70,16 +70,28 @@ export default function LoginPage() {
     if (typeof window === 'undefined') return;
     const safe = sanitizeNextPath(value);
     const prevSession = window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY);
-    if (prevSession === safe) return;
-    const previousLocal = window.localStorage.getItem(LOGIN_LAST_TARGET_KEY);
-    if (previousLocal) {
-      window.localStorage.removeItem(LOGIN_LAST_TARGET_KEY);
+    if (prevSession === safe) {
+      window.localStorage.setItem(LOGIN_LAST_TARGET_KEY, safe);
+      window.localStorage.setItem(LOGIN_NEXT_STORAGE_KEY, safe);
+      if (
+        safe.startsWith('/generate') ||
+        safe.startsWith('/app') ||
+        safe.includes('from=') ||
+        safe.includes('engine=')
+      ) {
+        window.localStorage.setItem(LOGIN_SKIP_ONBOARDING_KEY, 'true');
+      } else if (!safe.startsWith('/gallery')) {
+        window.localStorage.removeItem(LOGIN_SKIP_ONBOARDING_KEY);
+      }
+      return;
     }
     if (process.env.NODE_ENV !== 'production') {
       console.log('[login] persistNextTarget', { safe });
     }
     window.sessionStorage.setItem(LOGIN_NEXT_STORAGE_KEY, safe);
     window.sessionStorage.setItem(LOGIN_LAST_TARGET_KEY, safe);
+    window.localStorage.setItem(LOGIN_NEXT_STORAGE_KEY, safe);
+    window.localStorage.setItem(LOGIN_LAST_TARGET_KEY, safe);
     if (
       safe.startsWith('/generate') ||
       safe.startsWith('/app') ||
@@ -87,11 +99,12 @@ export default function LoginPage() {
       safe.includes('engine=')
     ) {
       window.sessionStorage.setItem(LOGIN_SKIP_ONBOARDING_KEY, 'true');
+      window.localStorage.setItem(LOGIN_SKIP_ONBOARDING_KEY, 'true');
     } else if (!safe.startsWith('/gallery')) {
       window.sessionStorage.removeItem(LOGIN_SKIP_ONBOARDING_KEY);
+      window.localStorage.removeItem(LOGIN_SKIP_ONBOARDING_KEY);
     }
-    window.localStorage.removeItem(LOGIN_NEXT_STORAGE_KEY);
-    window.localStorage.removeItem(LOGIN_SKIP_ONBOARDING_KEY);
+  }, []);
   }, []);
   const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
