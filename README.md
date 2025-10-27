@@ -151,13 +151,23 @@ Run `npx tsx scripts/dump-fal-models.ts` (server running) to regenerate:
 
 The script calls the Fal proxy, so no direct DNS access to `api.fal.ai` is required.
 
-## 6. Known Limitations
+## 6. Scheduled Jobs
+
+- Cron definitions live in `vercel.json`. Vercel reads this file on deploy, so any change (schedule, headers) requires a redeploy to propagate. 【vercel.json†L14-L22】
+- `/api/fal/poll` is now protected by the `FAL_POLL_TOKEN` header; the job ships the token via `X-Fal-Poll-Token`. Keep the env var in sync across Vercel environments before deploying.
+- Pour vérifier manuellement :
+  ```bash
+  curl -H "X-Fal-Poll-Token: $FAL_POLL_TOKEN" https://<ton-domaine>/api/fal/poll
+  ```
+  Sans l’en-tête ou avec une valeur invalide, la route renvoie `401`. Avec le jeton correct, la réponse contient `{ ok: true, ... }`.
+
+## 7. Known Limitations
 
 - The mock API runs in-memory; persistence/job streaming left to the real backend.
 - No automated tests yet (awaiting backend contract confirmation).
 - Preview/gallery content is placeholder; real media wiring is pending asset APIs.
 
-## 7. Analytics & Session Replay
+## 8. Analytics & Session Replay
 
 - Microsoft Clarity loads through `frontend/components/analytics/Clarity.tsx`, which is mounted from the root layout once analytics consent (`mv-consent` cookie) is granted. The loader enforces production-only execution, honours `NEXT_PUBLIC_CLARITY_ALLOWED_HOSTS`, and registers SPA route changes via `clarity('set','page', ...)`.
 - Consent is persisted by the client CMP banner (`frontend/components/legal/CookieBanner.tsx`) and broadcast with a `consent:updated` custom event so analytics scripts remain gated behind `ConsentScriptGate`.

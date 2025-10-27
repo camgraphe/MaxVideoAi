@@ -7,6 +7,7 @@ _Date: 2024-05-26_
 ### Current definitions
 - `.env.local.example` documents the core client/server keys (Supabase, Stripe, FAL, Slack, database, etc.). 【F:frontend/.env.local.example†L1-L37】
 - Runtime access is centralized in `frontend/src/lib/env.ts`, which exposes a typed accessor with required/optional helpers and memoizes common keys. 【F:frontend/src/lib/env.ts†L1-L36】
+- Fal polling now requires a dedicated bearer: set `FAL_POLL_TOKEN` across environments so the scheduled job can authenticate. The cron definition injects the header automatically from the env var. 【F:frontend/.env.local.example†L38-L44】【F:vercel.json†L14-L22】
 
 ### Gaps & risks
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` is required by the `/api/health/env` endpoint but is missing from `.env.local.example`, risking false alarms in health checks or misconfiguration in Vercel. 【F:frontend/app/api/health/env/route.ts†L4-L19】【F:frontend/.env.local.example†L1-L37】
