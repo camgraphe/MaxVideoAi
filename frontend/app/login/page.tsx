@@ -105,7 +105,6 @@ export default function LoginPage() {
       window.localStorage.removeItem(LOGIN_SKIP_ONBOARDING_KEY);
     }
   }, []);
-  }, []);
   const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
