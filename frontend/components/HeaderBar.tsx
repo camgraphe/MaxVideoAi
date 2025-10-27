@@ -182,12 +182,20 @@ export function HeaderBar() {
             )}
           </div>
         ) : (
-          <Link
-            href="/login"
-            className="flex h-10 items-center justify-center rounded-input border border-hairline bg-white/80 px-3 text-sm font-medium text-text-primary transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            Sign in
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/login"
+              className="flex h-10 items-center justify-center rounded-input bg-accent px-3 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Create account
+            </Link>
+            <Link
+              href="/login?mode=signin"
+              className="flex h-10 items-center justify-center rounded-input border border-hairline bg-white/80 px-3 text-sm font-medium text-text-primary transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Sign in
+            </Link>
+          </div>
         )}
       </div>
       </header>

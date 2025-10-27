@@ -105,7 +105,7 @@ export default function LoginPage() {
       window.localStorage.removeItem(LOGIN_SKIP_ONBOARDING_KEY);
     }
   }, []);
-  const [mode, setMode] = useState<AuthMode>('signin');
+  const [mode, setMode] = useState<AuthMode>('signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -187,7 +187,6 @@ export default function LoginPage() {
       });
     }
   }, [persistNextTarget]);
-
   useEffect(() => {
     if (typeof window === 'undefined') return;
     syncInputState();
@@ -207,6 +206,15 @@ export default function LoginPage() {
       passwordEl?.removeEventListener('change', handle);
     };
   }, [syncInputState, mode]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const paramMode = params.get('mode');
+    if (paramMode === 'signin' || paramMode === 'signup' || paramMode === 'reset') {
+      setMode(paramMode);
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof navigator !== 'undefined') {
