@@ -33,13 +33,31 @@ function sanitizeNextPath(candidate: string | null | undefined): string {
 
 export default function LoginPage() {
   const router = useRouter();
-  const [nextPath, setNextPath] = useState<string>(DEFAULT_NEXT_PATH);
+  const [nextPath, setNextPath] = useState<string>(() => {
+    if (typeof window === 'undefined') return DEFAULT_NEXT_PATH;
+    const params = new URLSearchParams(window.location.search);
+    const queryValue = params.get('next');
+    if (queryValue && queryValue.startsWith('/')) {
+      return sanitizeNextPath(queryValue);
+    }
+    const stored = window.sessionStorage.getItem(LOGIN_NEXT_STORAGE_KEY);
+    if (stored) {
+      return sanitizeNextPath(stored);
+    }
+    const lastTarget = window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY);
+    if (lastTarget) {
+      return sanitizeNextPath(lastTarget);
+    }
+    return DEFAULT_NEXT_PATH;
+  });
+  const [nextPathReady, setNextPathReady] = useState(false);
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')) as string;
   const persistNextTarget = useCallback((value: string) => {
     if (typeof window === 'undefined') return;
     const safe = sanitizeNextPath(value);
     const prev = window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY);
-    if (prev === safe) return;
+    const current = window.sessionStorage.getItem(LOGIN_NEXT_STORAGE_KEY);
+    if (prev === safe && current === safe) return;
     if (process.env.NODE_ENV !== 'production') {
       console.log('[login] persistNextTarget', { safe });
     }
@@ -77,36 +95,27 @@ export default function LoginPage() {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
     const value = params.get('next');
+    let resolved = DEFAULT_NEXT_PATH;
+    let source: 'query' | 'stored' | 'last' | 'default' = 'default';
     if (value && value.startsWith('/')) {
-      const safeNext = sanitizeNextPath(value);
-      setNextPath(safeNext);
-      persistNextTarget(safeNext);
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('[login] init from query', { value, safeNext });
-      }
+      resolved = sanitizeNextPath(value);
+      source = 'query';
     } else {
       const stored = window.sessionStorage.getItem(LOGIN_NEXT_STORAGE_KEY);
       const lastTarget = window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY);
       if (stored) {
-        const safeStored = sanitizeNextPath(stored);
-        setNextPath(safeStored);
-        persistNextTarget(safeStored);
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('[login] init from stored next', { stored, safeStored });
-        }
+        resolved = sanitizeNextPath(stored);
+        source = 'stored';
       } else if (lastTarget) {
-        const safeLast = sanitizeNextPath(lastTarget);
-        setNextPath(safeLast);
-        persistNextTarget(safeLast);
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('[login] init from last target', { lastTarget, safeLast });
-        }
-      } else {
-        persistNextTarget(DEFAULT_NEXT_PATH);
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('[login] init fallback default');
-        }
+        resolved = sanitizeNextPath(lastTarget);
+        source = 'last';
       }
+    }
+    setNextPath(resolved);
+    persistNextTarget(resolved);
+    setNextPathReady(true);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[login] resolved next path', { value, resolved, source });
     }
   }, [persistNextTarget]);
 
@@ -143,6 +152,7 @@ export default function LoginPage() {
   }, [mode, signupSuggestion]);
 
   useEffect(() => {
+    if (!nextPathReady) return;
     let cancelled = false;
 
     async function redirectIfAuthenticated() {
@@ -177,7 +187,7 @@ export default function LoginPage() {
       cancelled = true;
       authListener?.subscription.unsubscribe();
     };
-  }, [nextPath, persistNextTarget, router]);
+  }, [nextPath, nextPathReady, persistNextTarget, router]);
 
   async function signInWithPassword(e: React.FormEvent) {
     e.preventDefault();
@@ -362,6 +372,7 @@ export default function LoginPage() {
   }
 
   useEffect(() => {
+    if (!nextPathReady) return;
     let cancelled = false;
     supabase.auth.getSession().then(({ data }) => {
       const session = data.session ?? null;
@@ -378,7 +389,7 @@ export default function LoginPage() {
     return () => {
       cancelled = true;
     };
-  }, [router, nextPath, persistNextTarget]);
+  }, [router, nextPath, persistNextTarget, nextPathReady]);
 
   const effectiveMode: AuthMode = mode === 'reset' ? 'signin' : mode;
 
