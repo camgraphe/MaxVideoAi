@@ -124,7 +124,7 @@ export default function Veo31ModelPage() {
                 <strong>Identity lock:</strong> Multi-image guidance keeps wardrobe, lighting & likeness consistent
               </div>
               <div>
-                <strong>Pricing:</strong> Pay-as-you-go via MaxVideoAI — audio-on renders from $0.40/s (platform rate incl. margin)
+                <strong>Pricing:</strong> Pay-as-you-go via MaxVideoAI — audio-on renders from $0.52/s (~$4.16 per 8-second clip)
               </div>
             </div>
           </div>

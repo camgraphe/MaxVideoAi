@@ -1134,7 +1134,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     seo: {
       title: 'Veo 3.1 – Advanced Text-to-Video & Native Audio Engine',
       description:
-        'Generate cinematic 8-second videos with native audio using Veo 3.1 by Google DeepMind on MaxVideoAI. Reference-to-video guidance, multi-image fidelity, pay-as-you-go pricing.',
+        'Generate cinematic 8-second videos with native audio using Veo 3.1 by Google DeepMind on MaxVideoAI. Reference-to-video guidance, multi-image fidelity, pay-as-you-go pricing from $0.52/s.',
       canonicalPath: '/models/veo-3-1',
     },
     prompts: [
