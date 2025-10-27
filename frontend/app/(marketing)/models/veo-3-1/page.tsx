@@ -3,9 +3,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { resolveDictionary } from '@/lib/i18n/server';
 
-const PAGE_TITLE = 'Veo\u202f3.1 \u2013 Advanced Text\u2011to\u2011Video Engine with Extended Duration & Native Audio';
+const PAGE_TITLE = 'Veo\u202f3.1 \u2013 Advanced Text\u2011to\u2011Video & Native Audio Engine';
 const PAGE_DESCRIPTION =
-  'Veo\u202f3.1 by Google DeepMind on MaxVideoAI: generate longer cinematic videos with native audio, multi\u2011scene prompts, advanced lighting & camera control. Ideal for creators and brands.';
+  'Generate cinematic 8-second videos with native audio using Veo\u202f3.1 by Google\u202fDeepMind on MaxVideoAI. Reference-to-video guidance, multi-image fidelity, pay-as-you-go.';
 const CANONICAL_URL = 'https://maxvideoai.com/models/veo-3-1';
 
 export const metadata: Metadata = {
@@ -34,7 +34,7 @@ const softwareSchema = {
   operatingSystem: 'Web',
   applicationCategory: 'CreativeTool',
   description:
-    'Veo\u202f3.1 by Google DeepMind \u2013 generate extended cinematic videos with native audio, multi\u2011scene prompts and advanced visual controls, available via MaxVideoAI.',
+    'Veo\u202f3.1 by Google\u202fDeepMind \u2013 generate cinematic 8-second videos with native audio and reference-to-video control, available via MaxVideoAI.',
   url: CANONICAL_URL,
   softwareVersion: '3.1',
   provider: {
@@ -62,10 +62,10 @@ export default function Veo31ModelPage() {
       <div className="mt-6 rounded-card border border-hairline bg-white p-8 shadow-card">
         <header className="text-center">
           <h1 className="text-4xl font-semibold text-text-primary">
-            Veo\u202f3.1 \u2013 Advanced Text\u2011to\u2011Video Engine with Native Audio & Extended Duration
+            Veo\u202f3.1 \u2013 Advanced Text\u2011to\u2011Video & Native Audio Engine
           </h1>
           <p className="mt-5 text-lg text-text-secondary">
-            Veo\u202f3.1 is the latest video\u2011generation engine from Google\u202fDeepMind, now available on MaxVideoAI. With extended duration, full native audio, multi\u2011scene prompt support and cinematic controls, you can turn your ideas into high\u2011fidelity video stories. Whether you\u2019re creating brand campaigns, short films, social loops or concept visuals \u2014 Veo\u202f3.1 unlocks new creative possibilities.
+            Veo\u202f3.1 is the latest video\u2011generation engine from Google\u202fDeepMind, routed through MaxVideoAI for premium reference\u2011to\u2011video runs. We focus on **high\u2011fidelity 8\u2011second sequences with native sound design**\u2014voice\u2011over, ambient layers, synced motion. Use up to four reference stills to lock identity and deliver polished concept shots, hero visuals, and product moments without leaving your workspace.
           </p>
         </header>
 
@@ -73,10 +73,10 @@ export default function Veo31ModelPage() {
           <div>
             <h2 className="text-2xl font-semibold text-text-primary">Best Use Cases</h2>
             <ul className="mt-4 list-disc space-y-2 pl-5 text-base text-text-secondary">
-              <li>Brand trailers & product launches with narrative scenes</li>
-              <li>Social content in vertical (9:16) and 16:9 formats, up to ~60s duration</li>
-              <li>Concept visuals, mood\u2011boards & rapid prototyping for filmmakers</li>
-              <li>Multi\u2011scene stories: build linked shots with consistent characters & settings</li>
+              <li>Brand hero shots & product reveals that need cinematic polish</li>
+              <li>Social content: vertical (9:16), horizontal (16:9) or square (1:1) short loops</li>
+              <li>Concept visuals, mood\u2011boards & film prototypes with coherent subject identity</li>
+              <li>Shot extensions: stitch multiple 8\u2011second clips to build longer narratives</li>
             </ul>
           </div>
 
@@ -84,21 +84,21 @@ export default function Veo31ModelPage() {
             <h2 className="text-2xl font-semibold text-text-primary">Technical Overview</h2>
             <div className="mt-4 grid grid-cols-1 gap-4 text-base text-text-secondary md:grid-cols-2">
               <div>
-                <strong>Max Duration:</strong> Up to ~60 seconds (in preview){' '}
+                <strong>Max duration:</strong> 8 seconds per render (current MaxVideoAI plan limit)
+              </div>
+              <div>
+                <strong>Resolution:</strong> Full HD 1080p in 16:9, 9:16, or 1:1 aspect ratios{' '}
                 <a
                   className="text-sm font-semibold text-accent hover:text-accentSoft"
-                  href="https://www.techradar.com/ai-platforms-assistants/veo-3-1-is-coming-soon-and-googles-clearly-aiming-it-right-at-sora-2-with-longer-video-support?utm_source=chatgpt.com"
+                  href="https://fliki.ai/blog/google-veo-3-and-imagen-4?utm_source=chatgpt.com"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  TechRadar
+                  Fliki
                 </a>
               </div>
               <div>
-                <strong>Resolution:</strong> 1080p full HD, vertical (9:16) and 16:9 supported
-              </div>
-              <div>
-                <strong>Audio:</strong> Native dialogue, ambient sound and effects{' '}
+                <strong>Audio:</strong> Native voice\u2011over, ambient sound, synced FX & lip\u2011sync{' '}
                 <a
                   className="text-sm font-semibold text-accent hover:text-accentSoft"
                   href="https://techcrunch.com/2025/05/20/googles-veo-3-can-generate-videos-and-soundtracks-to-go-along-with-them/?utm_source=chatgpt.com"
@@ -109,29 +109,21 @@ export default function Veo31ModelPage() {
                 </a>
               </div>
               <div>
-                <strong>Multi\u2011prompt support:</strong> Combine multiple prompts or scenes into one video{' '}
+                <strong>Inputs:</strong> Reference images (1\u20134) + prompt to animate subjects{' '}
                 <a
                   className="text-sm font-semibold text-accent hover:text-accentSoft"
-                  href="https://www.techradar.com/ai-platforms-assistants/veo-3-1-is-coming-soon-and-googles-clearly-aiming-it-right-at-sora-2-with-longer-video-support?utm_source=chatgpt.com"
+                  href="https://deepmind.google/models/veo/?utm_source=chatgpt.com"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  TechRadar
+                  Google DeepMind
                 </a>
               </div>
               <div>
-                <strong>Camera & lighting controls:</strong> Built\u2011in presets for cinematic look{' '}
-                <a
-                  className="text-sm font-semibold text-accent hover:text-accentSoft"
-                  href="https://www.androidcentral.com/apps-software/ai/google-veo-steps-up-its-creativity-in-3-1-version-update-for-realism?utm_source=chatgpt.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Android Central
-                </a>
+                <strong>Identity lock:</strong> Multi-image guidance keeps wardrobe, lighting & likeness consistent
               </div>
               <div>
-                <strong>Access:</strong> Available via API (Gemini or Vertex) and via MaxVideoAI pay-as-you-go
+                <strong>Access model:</strong> Pay-as-you-go via MaxVideoAI; audio-on pricing from $0.40/s
               </div>
             </div>
           </div>
@@ -139,33 +131,28 @@ export default function Veo31ModelPage() {
           <div>
             <h2 className="text-2xl font-semibold text-text-primary">Prompt Structure</h2>
             <blockquote className="mt-4 rounded-card bg-accentSoft/10 p-4 text-sm text-text-secondary shadow-inner">
-              \u201cIn a deserted futuristic train station at golden hour, one lone figure in a flowing red coat walks down the platform, camera tracks sideways, slow dolly zoom, cinematic 24mm lens, soft film grain \u2192 ambient synth soundtrack & whispered voice\u2011over: \u2018The journey begins.\u2019\u201d
+              \u201cA sleek electric car glides through neon city streets at dusk; drone crane shot, slow zoom out as city lights reflect in puddles; ambient synthwave soundtrack + voice-over: \u2018The future is silent power.\u2019 Reference stills: front three-quarter, interior cockpit, rear lights. Vertical 9:16 format.\u201d
             </blockquote>
             <p className="mt-4 text-base text-text-secondary">
-              Veo\u202f3.1 delivers best results when you give it a structured, layered prompt:
+              Structure each run for clarity and fidelity:
             </p>
             <ul className="mt-4 list-disc space-y-2 pl-5 text-base text-text-secondary">
-              <li>Scene description (location + mood + character)</li>
-              <li>Camera/lens/movement (e.g. \u201cdolly zoom\u201d, \u201chandheld 50mm\u201d, \u201cslow crane up\u201d)</li>
-              <li>Audio cues (e.g. \u201cvoice\u2011over\u201d, \u201cambient rain\u201d, \u201cheartbeat sound\u201d)</li>
-              <li>Style or film aesthetic (e.g. \u201cneo\u2011noir\u201d, \u201c8mm grain\u201d, \u201cWes Anderson palette\u201d)</li>
-            </ul>
-            <ul className="mt-4 list-disc space-y-2 pl-5 text-base text-text-secondary">
-              <li>Start with the story: what happens in the scene?</li>
-              <li>Use camera/tone cues to shape the visual flow.</li>
-              <li>Specify audio or voice elements explicitly.</li>
-              <li>For multi\u2011scene output: list prompts separated by \u201c\u2192\u201d or \u201cthen\u201d.</li>
+              <li>Define the scene & mood (subject, environment, emotion)</li>
+              <li>Add camera / lens / movement cues (e.g. \u201cdrone crane\u201d, \u201c24mm handheld\u201d, \u201cslow dolly\u201d)</li>
+              <li>Specify audio elements (voice-over, ambient texture, Foley moments)</li>
+              <li>Call out reference usage: \u201cAnimate from stills\u201d, \u201ckeep wardrobe & lighting consistent\u201d</li>
+              <li>State duration & output: \u201c8-second loop\u201d, \u201c1080p vertical\u201d, \u201cseamless loop\u201d</li>
             </ul>
           </div>
 
           <div>
             <h2 className="text-2xl font-semibold text-text-primary">Tips & Tricks</h2>
             <ul className="mt-4 list-disc space-y-2 pl-5 text-base text-text-secondary">
-              <li>\ud83c\udf9c\ufe0f Frame like a filmmaker: visualise each shot before describing it.</li>
-              <li>\ud83d\udd0a Always mention audio cues to unlock native sound generation.</li>
-              <li>\u23f1\ufe0f Try vertical 9:16 format for social reels \u2014 great with longer duration support.</li>
-              <li>\ud83e\uddea Use quick test versions, then refine prompt for high\u2011fidelity output.</li>
-              <li>\ud83d\udd17 Link scenes together: \u201cScene\u202f1 \u2192 Scene\u202f2 \u2192 Scene\u202f3\u201d for narrative flow.</li>
+              <li>\ud83c\udf9c\ufe0f Think like a director: pre-visualise the 8-second arc before writing.</li>
+              <li>\ud83d\udd0a Sound sells realism: call out music, Foley, or VO to maximise audio synthesis.</li>
+              <li>\ud83d\udcf1 For social-first shots, lean on 9:16 prompts and mention \u201caudio loudness: high\u201d for mobile.</li>
+              <li>\ud83d\uddbc\ufe0f Use 3\u20134 complementary stills to keep characters, lighting and wardrobe locked.</li>
+              <li>\ud83d\udd04 Chain renders: iterate quickly, then stitch multiple clips for longer edits.</li>
             </ul>
           </div>
         </section>
@@ -173,7 +160,7 @@ export default function Veo31ModelPage() {
         <div className="my-12">
           <Image
             src="/hero/veo3.jpg"
-            alt="Veo 3.1 cinematic AI video example showing a futuristic station scene"
+            alt="Veo 3.1 cinematic AI video example of an electric car in a neon city"
             width={960}
             height={540}
             className="mx-auto rounded-lg shadow-card"
