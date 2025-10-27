@@ -1,10 +1,22 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { updateJobFromFalWebhook } from '@/server/fal-webhook-handler';
 
 export const dynamic = 'force-dynamic';
+
+const POLL_TOKEN = (process.env.FAL_POLL_TOKEN ?? '').trim();
+
+function authorize(req: NextRequest): NextResponse | null {
+  if (!POLL_TOKEN) return null;
+  const header = req.headers.get('x-fal-poll-token') ?? req.headers.get('authorization') ?? '';
+  const token = header.startsWith('Bearer ') ? header.slice('Bearer '.length).trim() : header.trim();
+  if (token && token === POLL_TOKEN) {
+    return null;
+  }
+  return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
+}
 
 type FalPendingJob = {
   job_id: string;
@@ -19,11 +31,15 @@ const POLL_BASE_DELAYS_MS = [5_000, 15_000, 30_000, 60_000, 120_000];
 const POLL_INITIAL_DELAY_MS = 5_000;
 const POLL_MAX_DURATION_MS = 12 * 60_000;
 
-export async function POST() {
+export async function POST(req: NextRequest) {
+  const auth = authorize(req);
+  if (auth) return auth;
   return pollFalJobs();
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = authorize(req);
+  if (auth) return auth;
   return pollFalJobs();
 }
 

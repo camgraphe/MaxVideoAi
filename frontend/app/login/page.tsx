@@ -40,11 +40,25 @@ export default function LoginPage() {
     if (queryValue && queryValue.startsWith('/')) {
       return sanitizeNextPath(queryValue);
     }
-    const stored = window.sessionStorage.getItem(LOGIN_NEXT_STORAGE_KEY);
+    let stored = window.sessionStorage.getItem(LOGIN_NEXT_STORAGE_KEY);
+    if (!stored) {
+      const legacyStored = window.localStorage.getItem(LOGIN_NEXT_STORAGE_KEY);
+      if (legacyStored) {
+        window.localStorage.removeItem(LOGIN_NEXT_STORAGE_KEY);
+        stored = legacyStored;
+      }
+    }
     if (stored) {
       return sanitizeNextPath(stored);
     }
-    const lastTarget = window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY);
+    let lastTarget = window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY);
+    if (!lastTarget) {
+      const legacyLast = window.localStorage.getItem(LOGIN_LAST_TARGET_KEY);
+      if (legacyLast) {
+        window.localStorage.removeItem(LOGIN_LAST_TARGET_KEY);
+        lastTarget = legacyLast;
+      }
+    }
     if (lastTarget) {
       return sanitizeNextPath(lastTarget);
     }
@@ -56,15 +70,16 @@ export default function LoginPage() {
     if (typeof window === 'undefined') return;
     const safe = sanitizeNextPath(value);
     const prevSession = window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY);
-    const prevLocal = window.localStorage.getItem(LOGIN_LAST_TARGET_KEY);
-    if (prevSession === safe && prevLocal === safe) return;
+    if (prevSession === safe) return;
+    const previousLocal = window.localStorage.getItem(LOGIN_LAST_TARGET_KEY);
+    if (previousLocal) {
+      window.localStorage.removeItem(LOGIN_LAST_TARGET_KEY);
+    }
     if (process.env.NODE_ENV !== 'production') {
       console.log('[login] persistNextTarget', { safe });
     }
     window.sessionStorage.setItem(LOGIN_NEXT_STORAGE_KEY, safe);
     window.sessionStorage.setItem(LOGIN_LAST_TARGET_KEY, safe);
-    window.localStorage.setItem(LOGIN_NEXT_STORAGE_KEY, safe);
-    window.localStorage.setItem(LOGIN_LAST_TARGET_KEY, safe);
     if (
       safe.startsWith('/generate') ||
       safe.startsWith('/app') ||
@@ -72,11 +87,11 @@ export default function LoginPage() {
       safe.includes('engine=')
     ) {
       window.sessionStorage.setItem(LOGIN_SKIP_ONBOARDING_KEY, 'true');
-      window.localStorage.setItem(LOGIN_SKIP_ONBOARDING_KEY, 'true');
     } else if (!safe.startsWith('/gallery')) {
       window.sessionStorage.removeItem(LOGIN_SKIP_ONBOARDING_KEY);
-      window.localStorage.removeItem(LOGIN_SKIP_ONBOARDING_KEY);
     }
+    window.localStorage.removeItem(LOGIN_NEXT_STORAGE_KEY);
+    window.localStorage.removeItem(LOGIN_SKIP_ONBOARDING_KEY);
   }, []);
   const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
@@ -115,12 +130,22 @@ export default function LoginPage() {
       resolved = sanitizeNextPath(value);
       source = 'query';
     } else {
-      const stored =
-        window.sessionStorage.getItem(LOGIN_NEXT_STORAGE_KEY) ??
-        window.localStorage.getItem(LOGIN_NEXT_STORAGE_KEY);
-      const lastTarget =
-        window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY) ??
-        window.localStorage.getItem(LOGIN_LAST_TARGET_KEY);
+      let stored = window.sessionStorage.getItem(LOGIN_NEXT_STORAGE_KEY);
+      if (!stored) {
+        stored = window.localStorage.getItem(LOGIN_NEXT_STORAGE_KEY) ?? null;
+        if (stored) {
+          window.localStorage.removeItem(LOGIN_NEXT_STORAGE_KEY);
+          window.sessionStorage.setItem(LOGIN_NEXT_STORAGE_KEY, stored);
+        }
+      }
+      let lastTarget = window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY);
+      if (!lastTarget) {
+        lastTarget = window.localStorage.getItem(LOGIN_LAST_TARGET_KEY) ?? null;
+        if (lastTarget) {
+          window.localStorage.removeItem(LOGIN_LAST_TARGET_KEY);
+          window.sessionStorage.setItem(LOGIN_LAST_TARGET_KEY, lastTarget);
+        }
+      }
       if (stored) {
         resolved = sanitizeNextPath(stored);
         source = 'stored';

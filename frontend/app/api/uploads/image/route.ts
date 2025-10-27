@@ -35,6 +35,9 @@ export async function POST(req: NextRequest) {
   }
 
   const userId = await getUserIdFromRequest(req);
+  if (!userId) {
+    return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
+  }
 
   let uploadResult;
   try {

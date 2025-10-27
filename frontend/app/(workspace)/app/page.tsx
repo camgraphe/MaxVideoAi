@@ -894,9 +894,14 @@ const skipOnboardingRef = useRef<boolean>(false);
 
 useEffect(() => {
   if (typeof window === 'undefined') return;
-  const skipFlag =
-    window.sessionStorage.getItem(LOGIN_SKIP_ONBOARDING_KEY) ??
-    window.localStorage.getItem(LOGIN_SKIP_ONBOARDING_KEY);
+  let skipFlag = window.sessionStorage.getItem(LOGIN_SKIP_ONBOARDING_KEY);
+  if (!skipFlag) {
+    skipFlag = window.localStorage.getItem(LOGIN_SKIP_ONBOARDING_KEY);
+    if (skipFlag) {
+      window.localStorage.removeItem(LOGIN_SKIP_ONBOARDING_KEY);
+      window.sessionStorage.setItem(LOGIN_SKIP_ONBOARDING_KEY, skipFlag);
+    }
+  }
   if (skipFlag === 'true') {
     skipOnboardingRef.current = true;
     if (process.env.NODE_ENV !== 'production') {
@@ -905,9 +910,16 @@ useEffect(() => {
     window.sessionStorage.removeItem(LOGIN_SKIP_ONBOARDING_KEY);
     window.localStorage.removeItem(LOGIN_SKIP_ONBOARDING_KEY);
   }
-  const lastTarget =
+  let lastTarget =
     window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY) ??
-    window.localStorage.getItem(LOGIN_LAST_TARGET_KEY);
+    null;
+  if (!lastTarget) {
+    lastTarget = window.localStorage.getItem(LOGIN_LAST_TARGET_KEY);
+    if (lastTarget) {
+      window.localStorage.removeItem(LOGIN_LAST_TARGET_KEY);
+      window.sessionStorage.setItem(LOGIN_LAST_TARGET_KEY, lastTarget);
+    }
+  }
   if (lastTarget) {
     const normalized = lastTarget.trim();
     const shouldSkip =
