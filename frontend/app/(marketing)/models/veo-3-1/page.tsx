@@ -3,9 +3,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { resolveDictionary } from '@/lib/i18n/server';
 
-const PAGE_TITLE = 'Veo\u202f3.1 \u2013 Advanced Text\u2011to\u2011Video & Native Audio Engine';
+const PAGE_TITLE = 'Veo 3.1 – Advanced Text-to-Video & Native Audio Engine';
 const PAGE_DESCRIPTION =
-  'Generate cinematic 8-second videos with native audio using Veo\u202f3.1 by Google\u202fDeepMind on MaxVideoAI. Reference-to-video guidance, multi-image fidelity, pay-as-you-go.';
+  'Generate cinematic 8-second videos with native audio using Veo 3.1 by Google DeepMind on MaxVideoAI. Reference-to-video guidance, multi-image fidelity, pay-as-you-go pricing.';
 const CANONICAL_URL = 'https://maxvideoai.com/models/veo-3-1';
 
 export const metadata: Metadata = {
@@ -34,7 +34,7 @@ const softwareSchema = {
   operatingSystem: 'Web',
   applicationCategory: 'CreativeTool',
   description:
-    'Veo\u202f3.1 by Google\u202fDeepMind \u2013 generate cinematic 8-second videos with native audio and reference-to-video control, available via MaxVideoAI.',
+    'Veo 3.1 by Google DeepMind – generate cinematic 8-second videos with native audio and reference-to-video control, available via MaxVideoAI.',
   url: CANONICAL_URL,
   softwareVersion: '3.1',
   provider: {
@@ -56,16 +56,17 @@ export default function Veo31ModelPage() {
     <div className="mx-auto max-w-4xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }} />
       <Link href="/models" className="text-sm font-semibold text-accent hover:text-accentSoft">
-        {'\u2190'} {dictionary.models.hero.title}
+        {'←'} {dictionary.models.hero.title}
       </Link>
 
       <div className="mt-6 rounded-card border border-hairline bg-white p-8 shadow-card">
         <header className="text-center">
-          <h1 className="text-4xl font-semibold text-text-primary">
-            Veo\u202f3.1 \u2013 Advanced Text\u2011to\u2011Video & Native Audio Engine
-          </h1>
+          <h1 className="text-4xl font-semibold text-text-primary">Veo 3.1 – Advanced Text-to-Video & Native Audio Engine</h1>
           <p className="mt-5 text-lg text-text-secondary">
-            Veo\u202f3.1 is the latest video\u2011generation engine from Google\u202fDeepMind, routed through MaxVideoAI for premium reference\u2011to\u2011video runs. We focus on **high\u2011fidelity 8\u2011second sequences with native sound design**\u2014voice\u2011over, ambient layers, synced motion. Use up to four reference stills to lock identity and deliver polished concept shots, hero visuals, and product moments without leaving your workspace.
+            Veo 3.1 is the latest video-generation engine from Google DeepMind, routed through MaxVideoAI for premium
+            reference-to-video runs. We focus on high-fidelity 8-second sequences with native sound design—voice-over, ambient
+            layers, synced motion. Use up to four reference stills to lock identity and deliver polished concept shots, hero visuals,
+            and product moments without leaving your workspace.
           </p>
         </header>
 
@@ -75,8 +76,8 @@ export default function Veo31ModelPage() {
             <ul className="mt-4 list-disc space-y-2 pl-5 text-base text-text-secondary">
               <li>Brand hero shots & product reveals that need cinematic polish</li>
               <li>Social content: vertical (9:16), horizontal (16:9) or square (1:1) short loops</li>
-              <li>Concept visuals, mood\u2011boards & film prototypes with coherent subject identity</li>
-              <li>Shot extensions: stitch multiple 8\u2011second clips to build longer narratives</li>
+              <li>Concept visuals, mood-boards & film prototypes with coherent subject identity</li>
+              <li>Shot extensions: stitch multiple 8-second clips to build longer narratives</li>
             </ul>
           </div>
 
@@ -84,7 +85,7 @@ export default function Veo31ModelPage() {
             <h2 className="text-2xl font-semibold text-text-primary">Technical Overview</h2>
             <div className="mt-4 grid grid-cols-1 gap-4 text-base text-text-secondary md:grid-cols-2">
               <div>
-                <strong>Max duration:</strong> 8 seconds per render (current MaxVideoAI plan limit)
+                <strong>Duration:</strong> 8-second renders (stack clips or loop for longer edits)
               </div>
               <div>
                 <strong>Resolution:</strong> Full HD 1080p in 16:9, 9:16, or 1:1 aspect ratios{' '}
@@ -98,7 +99,7 @@ export default function Veo31ModelPage() {
                 </a>
               </div>
               <div>
-                <strong>Audio:</strong> Native voice\u2011over, ambient sound, synced FX & lip\u2011sync{' '}
+                <strong>Audio:</strong> Native voice-over, ambient sound, synced FX & lip-sync{' '}
                 <a
                   className="text-sm font-semibold text-accent hover:text-accentSoft"
                   href="https://techcrunch.com/2025/05/20/googles-veo-3-can-generate-videos-and-soundtracks-to-go-along-with-them/?utm_source=chatgpt.com"
@@ -109,7 +110,7 @@ export default function Veo31ModelPage() {
                 </a>
               </div>
               <div>
-                <strong>Inputs:</strong> Reference images (1\u20134) + prompt to animate subjects{' '}
+                <strong>Inputs:</strong> Reference images (1–4) + prompt to animate subjects{' '}
                 <a
                   className="text-sm font-semibold text-accent hover:text-accentSoft"
                   href="https://deepmind.google/models/veo/?utm_source=chatgpt.com"
@@ -123,7 +124,7 @@ export default function Veo31ModelPage() {
                 <strong>Identity lock:</strong> Multi-image guidance keeps wardrobe, lighting & likeness consistent
               </div>
               <div>
-                <strong>Access model:</strong> Pay-as-you-go via MaxVideoAI; audio-on pricing from $0.40/s
+                <strong>Pricing:</strong> Pay-as-you-go via MaxVideoAI — audio-on renders from $0.40/s (platform rate incl. margin)
               </div>
             </div>
           </div>
@@ -131,28 +132,30 @@ export default function Veo31ModelPage() {
           <div>
             <h2 className="text-2xl font-semibold text-text-primary">Prompt Structure</h2>
             <blockquote className="mt-4 rounded-card bg-accentSoft/10 p-4 text-sm text-text-secondary shadow-inner">
-              \u201cA sleek electric car glides through neon city streets at dusk; drone crane shot, slow zoom out as city lights reflect in puddles; ambient synthwave soundtrack + voice-over: \u2018The future is silent power.\u2019 Reference stills: front three-quarter, interior cockpit, rear lights. Vertical 9:16 format.\u201d
+              “A sleek electric car glides through neon city streets at dusk; drone crane shot, slow zoom out as city lights reflect
+              in puddles; ambient synthwave soundtrack + voice-over: ‘The future is silent power.’ Reference stills: front
+              three-quarter, interior cockpit, rear lights. Vertical 9:16 format.”
             </blockquote>
             <p className="mt-4 text-base text-text-secondary">
               Structure each run for clarity and fidelity:
             </p>
             <ul className="mt-4 list-disc space-y-2 pl-5 text-base text-text-secondary">
               <li>Define the scene & mood (subject, environment, emotion)</li>
-              <li>Add camera / lens / movement cues (e.g. \u201cdrone crane\u201d, \u201c24mm handheld\u201d, \u201cslow dolly\u201d)</li>
+              <li>Add camera / lens / movement cues (e.g. “drone crane”, “24mm handheld”, “slow dolly”)</li>
               <li>Specify audio elements (voice-over, ambient texture, Foley moments)</li>
-              <li>Call out reference usage: \u201cAnimate from stills\u201d, \u201ckeep wardrobe & lighting consistent\u201d</li>
-              <li>State duration & output: \u201c8-second loop\u201d, \u201c1080p vertical\u201d, \u201cseamless loop\u201d</li>
+              <li>Call out reference usage: “Animate from stills”, “keep wardrobe & lighting consistent”</li>
+              <li>State duration & output: “8-second loop”, “1080p vertical”, “seamless loop”</li>
             </ul>
           </div>
 
           <div>
             <h2 className="text-2xl font-semibold text-text-primary">Tips & Tricks</h2>
             <ul className="mt-4 list-disc space-y-2 pl-5 text-base text-text-secondary">
-              <li>\ud83c\udf9c\ufe0f Think like a director: pre-visualise the 8-second arc before writing.</li>
-              <li>\ud83d\udd0a Sound sells realism: call out music, Foley, or VO to maximise audio synthesis.</li>
-              <li>\ud83d\udcf1 For social-first shots, lean on 9:16 prompts and mention \u201caudio loudness: high\u201d for mobile.</li>
-              <li>\ud83d\uddbc\ufe0f Use 3\u20134 complementary stills to keep characters, lighting and wardrobe locked.</li>
-              <li>\ud83d\udd04 Chain renders: iterate quickly, then stitch multiple clips for longer edits.</li>
+              <li>🎬 Think like a director: pre-visualise the 8-second arc before writing.</li>
+              <li>🔊 Sound sells realism: call out music, Foley, or VO to maximise audio synthesis.</li>
+              <li>📱 For social-first shots, lean on 9:16 prompts and mention “audio loudness: high” for mobile.</li>
+              <li>🖼️ Use 3–4 complementary stills to keep characters, lighting and wardrobe locked.</li>
+              <li>🔄 Chain renders: iterate quickly, then stitch multiple clips for longer edits.</li>
             </ul>
           </div>
         </section>
@@ -173,7 +176,7 @@ export default function Veo31ModelPage() {
             className="inline-flex items-center justify-center rounded-pill bg-accent px-6 py-3 text-base font-semibold text-white shadow-card transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             data-analytics-event="cta-generate-veo-3-1"
           >
-            🚀 Generate with\u202fVeo\u202f3.1
+            🚀 Generate with Veo 3.1
           </Link>
           <p className="mt-4 text-sm text-text-secondary">
             <Link href="/models" className="font-semibold text-accent hover:text-accentSoft">
