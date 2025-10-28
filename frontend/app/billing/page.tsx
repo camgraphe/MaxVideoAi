@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -22,6 +22,11 @@ type ReceiptItem = {
 };
 
 export const dynamic = 'force-dynamic';
+
+const GOOGLE_ADS_CONVERSION_TARGET = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID ?? 'AW-992154028/7oDUCMuC9rQbEKyjjNkD';
+const GOOGLE_ADS_CONVERSION_CURRENCY = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_CURRENCY ?? 'EUR';
+const GOOGLE_ADS_CONVERSION_VALUE_ENV = Number(process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_VALUE ?? 1);
+const GOOGLE_ADS_CONVERSION_VALUE_FALLBACK = Number.isFinite(GOOGLE_ADS_CONVERSION_VALUE_ENV) ? GOOGLE_ADS_CONVERSION_VALUE_ENV : 1;
 
 export default function BillingPage() {
   const { data, error } = useEngines();
@@ -84,6 +89,33 @@ export default function BillingPage() {
     loading: boolean;
     error?: string | null;
   }>({ items: [], nextCursor: null, loading: false });
+  const conversionSentRef = useRef(false);
+
+  const triggerGoogleAdsConversion = (value?: number, currency?: string) => {
+    if (typeof window === 'undefined') return;
+    if (!GOOGLE_ADS_CONVERSION_TARGET) return;
+    if (conversionSentRef.current) return;
+    conversionSentRef.current = true;
+
+    const normalizedValue = typeof value === 'number' && Number.isFinite(value) ? value : GOOGLE_ADS_CONVERSION_VALUE_FALLBACK;
+    const payload = {
+      send_to: GOOGLE_ADS_CONVERSION_TARGET,
+      value: normalizedValue,
+      currency: currency ?? GOOGLE_ADS_CONVERSION_CURRENCY,
+    };
+
+    const dispatch = (attempt: number) => {
+      const gtag = (window as typeof window & { gtag?: (...args: unknown[]) => void }).gtag;
+      if (typeof gtag === 'function') {
+        gtag('event', 'conversion', payload);
+        return;
+      }
+      if (attempt >= 20) return;
+      window.setTimeout(() => dispatch(attempt + 1), 200);
+    };
+
+    dispatch(0);
+  };
 
   useEffect(() => {
     if (authLoading || !session) return;
@@ -129,13 +161,28 @@ export default function BillingPage() {
   // Show toast on return from Checkout
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
-    const status = new URLSearchParams(window.location.search).get('status');
+    const url = new URL(window.location.href);
+    const status = url.searchParams.get('status');
+    const amountParam = url.searchParams.get('amount');
+    const currencyParam = url.searchParams.get('currency');
     if (!status) return undefined;
     const message = status === 'success' ? 'Payment successful. Funds added to your wallet.' : status === 'cancelled' ? 'Payment cancelled. No charges applied.' : null;
-    if (!message) return undefined;
-    setToast(message);
-    const timeout = window.setTimeout(() => setToast(null), 4000);
-    return () => window.clearTimeout(timeout);
+    if (message) {
+      setToast(message);
+      const timeout = window.setTimeout(() => setToast(null), 4000);
+      if (status === 'success') {
+        const value = amountParam ? Number(amountParam) : undefined;
+        triggerGoogleAdsConversion(value, currencyParam ?? undefined);
+      }
+      if (status) {
+        url.searchParams.delete('status');
+        if (amountParam) url.searchParams.delete('amount');
+        if (currencyParam) url.searchParams.delete('currency');
+        window.history.replaceState({}, '', url.toString());
+      }
+      return () => window.clearTimeout(timeout);
+    }
+    return undefined;
   }, []);
 
   async function handleTopUp(amountCents: number) {
