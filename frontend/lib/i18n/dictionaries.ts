@@ -299,8 +299,8 @@ const en: Dictionary = {
     links: [
       { label: 'Terms', href: '/legal/terms' },
       { label: 'Privacy', href: '/legal/privacy' },
-      { label: 'Docs', href: '/docs' },
-      { label: 'Support', href: '/contact' },
+      { label: 'Acceptable Use', href: '/legal/acceptable-use' },
+      { label: 'Notice & Takedown', href: '/legal/takedown' },
     ],
     brandNote:
       'Independent hub for professional AI video - price before you generate, stay on the latest engines, one workspace for every shot. Works with Sora 2, Veo 3.1, Pika 2.2, MiniMax Hailuo 02, and more. Trademarks belong to their owners.',

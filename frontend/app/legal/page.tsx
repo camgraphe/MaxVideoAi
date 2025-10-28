@@ -11,6 +11,8 @@ const LINKS: Array<{ href: string; label: string; docKey?: 'terms' | 'privacy' |
   { href: '/legal/terms', label: 'Terms of Service', docKey: 'terms' },
   { href: '/legal/privacy', label: 'Privacy Policy', docKey: 'privacy' },
   { href: '/legal/cookies', label: 'Cookie Policy', docKey: 'cookies' },
+  { href: '/legal/acceptable-use', label: 'Acceptable Use Policy' },
+  { href: '/legal/takedown', label: 'Notice & Takedown' },
   { href: '/legal/mentions', label: 'Mentions légales' },
   { href: '/legal/subprocessors', label: 'Sub-processors' },
 ];

@@ -66,11 +66,24 @@ function updateGoogleConsent(categories: ConsentRecord['categories']) {
     analytics_storage: categories.analytics ? 'granted' : 'denied',
   };
 
-  const gtag = (window as typeof window & { gtag?: (...args: unknown[]) => void }).gtag;
-  if (typeof gtag === 'function') {
-    gtag('consent', 'update', consentUpdate);
-  } else if (Array.isArray((window as typeof window & { dataLayer?: unknown[] }).dataLayer)) {
-    (window as typeof window & { dataLayer: Array<Record<string, unknown>> }).dataLayer.push({
+  const helpers = window as typeof window & {
+    gtag?: (...args: unknown[]) => void;
+    gtagConsentUpdate?: (payload: Record<string, string>) => void;
+    dataLayer?: Array<Record<string, unknown>>;
+  };
+
+  if (typeof helpers.gtagConsentUpdate === 'function') {
+    helpers.gtagConsentUpdate(consentUpdate);
+    return;
+  }
+
+  if (typeof helpers.gtag === 'function') {
+    helpers.gtag('consent', 'update', consentUpdate);
+    return;
+  }
+
+  if (Array.isArray(helpers.dataLayer)) {
+    helpers.dataLayer.push({
       event: 'consent_update',
       ...consentUpdate,
     });
