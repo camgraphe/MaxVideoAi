@@ -659,6 +659,10 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       ? 'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'
       : null);
 
+  if (nextMessage && /^video_[A-Za-z0-9_-]+$/i.test(nextMessage)) {
+    nextMessage = null;
+  }
+
   const rawVideoSource = nextVideoUrl ?? media.videoUrl ?? job.video_url;
   let resolvedThumbUrl = nextThumbUrl ?? job.thumb_url;
   if (!resolvedThumbUrl) {
@@ -710,6 +714,23 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     detectedHasAudio = false;
   } else if (finalVideoUrl && (!job.has_audio || finalVideoUrl !== job.video_url)) {
     detectedHasAudio = await detectHasAudioStream(finalVideoUrl);
+  }
+
+  if (finalVideoUrl && nextStatus === 'failed') {
+    const providerStatus = typeof payload.status === 'string' ? payload.status.toUpperCase() : null;
+    const isProviderSuccess =
+      providerStatus && (COMPLETED_STATUSES.has(providerStatus) || providerStatus === 'OK');
+    if (isProviderSuccess || !nextMessage) {
+      console.warn('[fal-webhook] overriding failed status because media is present', {
+        jobId: job.job_id,
+        requestId,
+        providerStatus,
+        previousMessage: nextMessage,
+      });
+      nextStatus = 'completed';
+      nextProgress = 100;
+      nextMessage = null;
+    }
   }
 
   const messageToPersist =

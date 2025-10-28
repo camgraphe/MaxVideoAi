@@ -115,6 +115,7 @@ export default function LoginPage() {
   const emailRef = useRef<HTMLInputElement | null>(null);
   const passwordRef = useRef<HTMLInputElement | null>(null);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [termsError, setTermsError] = useState(false);
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [locale, setLocale] = useState<string | null>(null);
@@ -215,6 +216,12 @@ export default function LoginPage() {
       setMode(paramMode);
     }
   }, []);
+
+  useEffect(() => {
+    if (mode !== 'signup' && termsError) {
+      setTermsError(false);
+    }
+  }, [mode, termsError]);
 
   useEffect(() => {
     if (typeof navigator !== 'undefined') {
@@ -350,6 +357,7 @@ export default function LoginPage() {
       return;
     }
     if (!acceptTerms) {
+      setTermsError(true);
       setError('You must accept the Terms of Service and Privacy Policy to continue.');
       setStatus(null);
       return;
@@ -599,11 +607,23 @@ export default function LoginPage() {
                     <input
                       type="checkbox"
                       checked={acceptTerms}
-                      onChange={(event) => setAcceptTerms(event.target.checked)}
-                      className="mt-1 h-4 w-4 rounded border-border text-accent focus:ring-accent"
+                      onChange={(event) => {
+                        const checked = event.target.checked;
+                        setAcceptTerms(checked);
+                        if (checked) {
+                          setTermsError(false);
+                          setError((prev) =>
+                            prev === 'You must accept the Terms of Service and Privacy Policy to continue.' ? null : prev
+                          );
+                        }
+                      }}
+                      className={clsx(
+                        'mt-1 h-4 w-4 rounded border-border text-accent focus:ring-accent',
+                        termsError && 'border-state-warning text-state-warning focus:ring-state-warning'
+                      )}
                       required
                     />
-                    <span>
+                    <span className={clsx(termsError && 'text-state-warning')}>
                       I have read and agree to the{' '}
                       <a href="/legal/terms" target="_blank" rel="noopener noreferrer" className="text-accent underline">
                         Terms of Service
@@ -615,6 +635,9 @@ export default function LoginPage() {
                       .
                     </span>
                   </label>
+                  {termsError ? (
+                    <p className="pl-6 text-xs text-state-warning">You must accept the Terms of Service and Privacy Policy.</p>
+                  ) : null}
                   <label className="flex items-start gap-2">
                     <input
                       type="checkbox"
