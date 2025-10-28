@@ -1,7 +1,5 @@
 import { isDatabaseConfigured, query } from '@/lib/db';
-import { getLowBalanceThresholdCents, sendWalletLowBalanceEmail, shouldThrottleLowBalance } from '@/lib/email';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';
-import { getUserIdentity } from '@/server/supabase-admin';
 import { getUserPreferredCurrency, normalizeCurrencyCode } from '@/lib/currency';
 import type { Currency } from '@/lib/currency';
 
@@ -161,9 +159,6 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
       balanceCents: result.balanceCents,
       remainingCents: result.remainingCents,
     };
-    void triggerLowBalanceAlert(params.userId, success.remainingCents, normalizedCurrencyUpper).catch((error) => {
-      console.warn('[wallet] mock low balance alert failed', error);
-    });
     return success;
   };
 
@@ -315,9 +310,6 @@ export async function reserveWalletCharge(params: ReserveWalletChargeParams): Pr
     }
 
     const outcome: ReserveWalletChargeSuccess = { ok: true, receiptId, balanceCents, remainingCents };
-    void triggerLowBalanceAlert(params.userId, remainingCents, normalizedCurrencyUpper).catch((error) => {
-      console.warn('[wallet] low balance alert failed', error instanceof Error ? error.message : error);
-    });
     return outcome;
   } catch (error) {
     console.warn('[wallet] reserve failed, using mock ledger', error);
@@ -333,22 +325,6 @@ async function fetchExistingWalletCurrency(userId: string): Promise<Currency | n
   }
   const firstCurrency = balances.find((entry) => entry.currency)?.currency ?? null;
   return firstCurrency;
-}
-
-async function triggerLowBalanceAlert(userId: string, remainingCents: number, currency: string) {
-  const threshold = getLowBalanceThresholdCents();
-  if (remainingCents >= threshold) return;
-  if (shouldThrottleLowBalance(userId)) return;
-
-  const identity = await getUserIdentity(userId);
-  if (!identity?.email) return;
-  await sendWalletLowBalanceEmail({
-    to: identity.email,
-    balanceCents: remainingCents,
-    currency,
-    thresholdCents: threshold,
-    recipientName: identity.fullName,
-  });
 }
 
 export async function getWalletBalanceCents(userId: string): Promise<{ balanceCents: number; mock: boolean }> {

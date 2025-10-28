@@ -3,9 +3,9 @@
 ## Providers & périmètre
 
 - **Supabase Auth** : Postmark (SMTP Transactional) via `no-reply@maxvideoai.com`.
-- **Emails applicatifs Next.js** : Resend (API) avec React Email.
-- **Staging / previews** : Mailtrap (capture sandbox).
+- **Stripe Billing** : envoie les e-mails de facturation/reçus.
 - **Support** : Boîte `support@maxvideoai.com` (Google Workspace) utilisée comme `Reply-To`.
+- ✅ Il n'y a plus d'e-mails applicatifs envoyés par Next.js pour le moment.
 
 ## DNS & délivrabilité
 
@@ -22,8 +22,7 @@
 
 ### Production (Vercel)
 
-- `POSTMARK_SERVER_TOKEN` – jeton serveur prod.
-- `RESEND_API_KEY` – clé API prod.
+- `POSTMARK_SERVER_TOKEN` – jeton serveur prod (pour Supabase).
 - `EMAIL_FROM` – `no-reply@maxvideoai.com`.
 - `EMAIL_FROM_NAME` – `MaxVideoAI`.
 - `SUPABASE_SITE_URL` – `https://maxvideoai.com`.
@@ -31,9 +30,7 @@
 
 ### Preview / Development
 
-- `POSTMARK_SERVER_TOKEN` – token Postmark sandbox si besoin (sinon Mailtrap uniquement).
-- `RESEND_API_KEY` – clé Resend test/sandbox (`re_...`).
-- `MAILTRAP_HOST`, `MAILTRAP_PORT`, `MAILTRAP_USER`, `MAILTRAP_PASS` – credentials inbox Mailtrap.
+- `POSTMARK_SERVER_TOKEN` – token Postmark sandbox si besoin.
 - `EMAIL_FROM` – alias sandbox (ex. `no-reply@mailtrap.maxvideoai.com`).
 - `EMAIL_FROM_NAME` – `MaxVideoAI`.
 - `SUPABASE_SITE_URL` – URL preview Vercel.
@@ -59,16 +56,13 @@
 
 ## Application Next.js
 
-- Lib d'envoi dans `frontend/src/lib/email.ts` (choix runtime en fonction de l'environnement).
-- Provider:
-  - **Prod** : Resend API.
-  - **Preview/Dev** : SMTP Mailtrap (fallback Resend test si Mailtrap injoignable).
-- Templates React Email dans `frontend/emails/RenderCompletedEmail.tsx` et `frontend/emails/WalletLowBalanceEmail.tsx`.
-- Endpoint interne `POST /api/test-email` pour smoke test (ajouter `x-admin-key: $CRON_SECRET`).
+- Aucun e-mail n'est déclenché par l'application aujourd'hui.
+- Les composants React Email et la route `/api/test-email` ont été retirés.
+- Garder la logique Stripe/Supabase active suffit pour les notifications actuelles.
 
 ## Observabilité & Webhooks
 
-- Route `POST /api/email/webhooks` (runtime Node.js) reçoit événements Postmark/Resend (bounces, complaints).
+- Route `POST /api/email/webhooks` (runtime Node.js) conservée pour stocker les événements entrants (bounces/complaints) si nécessaire.
 - Stockage dans table `email_events` (`supabase/migrations/...`).
 - Erreurs prod → notification Slack (webhook Vercel existant via `SLACK_WEBHOOK_URL`).
 - Pas de journalisation des secrets (masking appliqué dans les logs).
@@ -77,12 +71,10 @@
 
 1. **Auth** : inscription Supabase → email “Confirm your MaxVideoAI account” reçu (Gmail + Outlook). Vérifier `From`, SPF/DKIM pass, liens `https://maxvideoai.com/...`.
 2. **Reset password** : flux complet depuis Supabase.
-3. **Applicatif** : `POST /api/test-email` sur preview → message capturé dans Mailtrap (HTML + texte).
-4. **Bounces** : simuler un bounce Postmark → entrée `email_events`, log Slack.
-5. **Branding** : header/logo/preheader/CTA conformes, footer minimal (raison sociale + support).
+3. **Bounces** : simuler un bounce Postmark → entrée `email_events`, log Slack.
+4. **Branding** : vérifier que les templates Supabase conservent le bon footer/support.
 
 ## Post-déploiement
 
-- Ajouter un smoke-test automatisé : hook Vercel post-déploiement qui déclenche `/api/test-email` sur previews.
 - Suivre le score de délivrabilité (Postmark dashboard). Ajuster DMARC en `p=quarantine` → `p=reject` après monitoring.
-- Planifier rotation semestrielle des API keys (Postmark & Resend).
+- Planifier rotation semestrielle des API keys (Postmark).
