@@ -35,7 +35,6 @@ export const metadata: Metadata = {
 export default function PricingPage() {
   const { dictionary } = resolveDictionary();
   const content = dictionary.pricing;
-  const wallet = content.wallet;
   const teams = content.teams;
   const member = content.member;
   const refunds = content.refunds;
@@ -111,21 +110,6 @@ export default function PricingPage() {
           </Link>
           .
         </div>
-      </section>
-
-      <section className="mt-12">
-        <article className="mx-auto max-w-4xl rounded-card border border-hairline bg-white/95 p-6 shadow-card sm:p-8">
-          <h2 className="text-xl font-semibold text-text-primary sm:text-2xl">{wallet.title}</h2>
-          <p className="mt-3 text-sm text-text-secondary sm:text-base">{wallet.description}</p>
-          <ul className="mt-5 space-y-3 text-sm text-text-secondary sm:text-base">
-            {wallet.points.map((point) => (
-              <li key={point} className="flex items-start gap-3">
-                <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-accent" />
-                <span>{point}</span>
-              </li>
-            ))}
-          </ul>
-        </article>
       </section>
 
       <section className="mt-12 rounded-card border border-hairline bg-white p-6 shadow-card">
