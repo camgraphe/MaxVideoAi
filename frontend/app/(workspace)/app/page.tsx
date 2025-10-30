@@ -1232,10 +1232,15 @@ useEffect(() => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const pendingJobs = renders.filter(
-      (render) => render.status === 'pending' && typeof render.jobId === 'string' && render.jobId.length > 0
-    );
-    if (!pendingJobs.length) {
+    const jobsNeedingRefresh = renders.filter((render) => {
+      if (typeof render.jobId !== 'string' || render.jobId.length === 0) return false;
+      if (render.status === 'failed') return false;
+      const hasVideo = Boolean(render.videoUrl);
+      const hasThumb = Boolean(render.thumbUrl);
+      if ((render.status ?? 'pending') !== 'completed') return true;
+      return !hasVideo || !hasThumb;
+    });
+    if (!jobsNeedingRefresh.length) {
       if (pendingPollRef.current !== null) {
         window.clearInterval(pendingPollRef.current);
         pendingPollRef.current = null;
@@ -1246,7 +1251,7 @@ useEffect(() => {
 
     const poll = async () => {
       await Promise.all(
-        pendingJobs.map(async (render) => {
+        jobsNeedingRefresh.map(async (render) => {
           if (!render.jobId) return;
           try {
             const status = await getJobStatus(render.jobId);
@@ -3034,6 +3039,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
               window.setTimeout(poll, Math.max(500, minReadyAtCurrent - now));
               return;
             }
+            const hasVideo = Boolean(status.videoUrl);
+            const hasThumb = Boolean(status.thumbUrl);
             setRenders((prev) =>
               prev.map((r) =>
                 r.id === jobId
@@ -3069,10 +3076,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                   }
                 : cur
             );
-            if (status.status !== 'completed' && status.status !== 'failed') {
-              window.setTimeout(poll, 2000);
+            const shouldKeepPolling =
+              status.status !== 'failed' &&
+              (status.status !== 'completed' || !hasVideo || !hasThumb);
+            if (shouldKeepPolling) {
+              const delay = status.status === 'completed' && !hasVideo ? 4000 : 2000;
+              window.setTimeout(poll, delay);
             }
-            if (status.status === 'completed' || status.status === 'failed' || status.videoUrl) {
+            if (status.status === 'failed' || (status.status === 'completed' && hasVideo && hasThumb)) {
               stopProgressTracking();
             }
           } catch {
