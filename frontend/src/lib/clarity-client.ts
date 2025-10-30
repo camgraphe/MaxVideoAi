@@ -12,6 +12,8 @@ const ALLOWED_HOSTS = (process.env.NEXT_PUBLIC_CLARITY_ALLOWED_HOSTS ?? '')
   .filter((entry) => entry.length > 0);
 const VISITOR_COOKIE = 'mv-clarity-id';
 const CMP_ANALYTICS_COOKIE = 'cmp_analytics';
+const OPT_OUT_STORAGE_KEY = 'mv-clarity-opt-out';
+const OPT_OUT_COOKIE = 'mv-clarity-opt-out';
 
 let pendingCommands: unknown[][] = [];
 let clarityReady = false;
@@ -95,6 +97,7 @@ export function isClarityDebugEnabled(): boolean {
 
 export function isClarityEnabledForRuntime(): boolean {
   if (!ENABLE_FLAG) return false;
+  if (isClarityOptedOut()) return false;
   if (process.env.NODE_ENV !== 'production') return false;
   if (typeof window === 'undefined') return false;
   if (ALLOWED_HOSTS.length === 0) {
@@ -166,6 +169,23 @@ function writeCookie(name: string, value: string, maxAgeSeconds: number): void {
   document.cookie = parts.join('; ');
 }
 
+function deleteCookie(name: string): void {
+  if (typeof document === 'undefined' || typeof window === 'undefined') return;
+  const parts = [`${name}=`, 'Path=/', 'Max-Age=0', 'Expires=Thu, 01 Jan 1970 00:00:00 GMT', 'SameSite=Lax'];
+  if (window.location.protocol === 'https:') {
+    parts.push('Secure');
+  }
+  const hostname = window.location.hostname.toLowerCase();
+  if (hostname.includes('.')) {
+    const domainParts = hostname.split('.');
+    if (domainParts.length >= 2) {
+      const baseDomain = domainParts.slice(-2).join('.');
+      parts.push(`Domain=.${baseDomain}`);
+    }
+  }
+  document.cookie = parts.join('; ');
+}
+
 export function ensureClarityVisitorId(): string | null {
   if (cachedVisitorId) return cachedVisitorId;
   if (typeof window === 'undefined') return null;
@@ -196,6 +216,73 @@ export function setAnalyticsConsentCookie(granted: boolean): void {
     return;
   }
   writeCookie(CMP_ANALYTICS_COOKIE, 'granted', 60 * 60 * 24 * 400);
+}
+
+function readOptOutFlag(): boolean {
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = window.localStorage?.getItem(OPT_OUT_STORAGE_KEY);
+      if (stored === 'true' || stored === '1') {
+        return true;
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }
+  const cookie = getCookie(OPT_OUT_COOKIE);
+  return cookie === 'true' || cookie === '1';
+}
+
+function persistOptOutFlag(enabled: boolean): void {
+  if (typeof window !== 'undefined') {
+    try {
+      if (enabled) {
+        window.localStorage?.setItem(OPT_OUT_STORAGE_KEY, '1');
+      } else {
+        window.localStorage?.removeItem(OPT_OUT_STORAGE_KEY);
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }
+  if (enabled) {
+    writeCookie(OPT_OUT_COOKIE, '1', 60 * 60 * 24 * 400);
+  } else {
+    deleteCookie(OPT_OUT_COOKIE);
+  }
+}
+
+function clearClarityArtifacts(): void {
+  if (typeof document !== 'undefined') {
+    const scripts = document.querySelectorAll<HTMLScriptElement>('script[src*="clarity.ms/tag/"]');
+    scripts.forEach((script) => {
+      script.parentNode?.removeChild(script);
+    });
+  }
+  const clarityWindow = getClarityWindow();
+  if (clarityWindow) {
+    clarityWindow.clarity = undefined;
+  }
+  pendingCommands = [];
+  clarityInjected = false;
+  clarityReady = false;
+}
+
+export function isClarityOptedOut(): boolean {
+  return readOptOutFlag();
+}
+
+export function disableClarityForVisitor(): void {
+  if (isClarityOptedOut()) return;
+  persistOptOutFlag(true);
+  setAnalyticsConsentCookie(false);
+  setClarityConsent(false);
+  clearClarityArtifacts();
+}
+
+export function enableClarityForVisitor(): void {
+  if (!isClarityOptedOut()) return;
+  persistOptOutFlag(false);
 }
 
 export function setClarityConsent(granted: boolean): void {

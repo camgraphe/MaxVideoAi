@@ -4,7 +4,13 @@ import type { Session } from '@supabase/supabase-js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
-import { ensureClarityVisitorId, isClarityEnabledForRuntime, queueClarityCommand } from '@/lib/clarity-client';
+import {
+  disableClarityForVisitor,
+  enableClarityForVisitor,
+  ensureClarityVisitorId,
+  isClarityEnabledForRuntime,
+  queueClarityCommand,
+} from '@/lib/clarity-client';
 import { clearSupabaseCookies, syncSupabaseCookies } from '@/lib/supabase-cookies';
 
 type RequireAuthResult = {
@@ -22,6 +28,7 @@ export function useRequireAuth(): RequireAuthResult {
   const redirectingRef = useRef(false);
   const identifiedRef = useRef<string | null>(null);
   const tagsSignatureRef = useRef<string | null>(null);
+  const forcedClarityOptOutRef = useRef(false);
 
   const nextPath = useMemo(() => {
     const base = pathname ?? '/app';
@@ -91,8 +98,6 @@ export function useRequireAuth(): RequireAuthResult {
       tagsSignatureRef.current = null;
       return;
     }
-    if (!isClarityEnabledForRuntime()) return;
-
     const supaUser = session?.user ?? null;
     if (!supaUser) return;
 
@@ -133,7 +138,23 @@ export function useRequireAuth(): RequireAuthResult {
         : undefined;
 
     const email = typeof supaUser.email === 'string' ? supaUser.email : undefined;
+    const normalizedRole = role ? role.toLowerCase() : undefined;
     const isInternal = Boolean(email && /@maxvideoai\.(com|ai)$/i.test(email));
+    const isAdminRole = normalizedRole === 'admin';
+    const shouldSkipClarity = isInternal || isAdminRole;
+
+    if (shouldSkipClarity) {
+      if (!forcedClarityOptOutRef.current) {
+        disableClarityForVisitor();
+        forcedClarityOptOutRef.current = true;
+      }
+    } else if (forcedClarityOptOutRef.current) {
+      enableClarityForVisitor();
+      forcedClarityOptOutRef.current = false;
+    }
+
+    if (!isClarityEnabledForRuntime()) return;
+    if (shouldSkipClarity) return;
 
     if (identifiedRef.current !== userId) {
       identifiedRef.current = userId;
