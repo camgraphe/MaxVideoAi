@@ -20,6 +20,71 @@ export function generateStaticParams() {
   return listFalEngines().map((entry) => ({ slug: entry.modelSlug }));
 }
 
+const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://maxvideoai.com';
+
+const MODEL_META: Record<
+  string,
+  {
+    title: string;
+    description: string;
+    og: string;
+  }
+> = {
+  'sora-2': {
+    title: 'Sora 2 — cinematic text-to-video',
+    description: 'Cinematic, photoreal motion with audio. See presets, limits, and pricing.',
+    og: '/hero/sora2.jpg',
+  },
+  'sora-2-pro': {
+    title: 'Sora 2 Pro — studio-grade Sora presets',
+    description: 'Studio-grade Sora workflows and constraints. Presets, tips, and costs.',
+    og: '/hero/sora2.jpg',
+  },
+  'veo-3-1': {
+    title: 'Veo 3.1 — ads & b-roll workhorse',
+    description: 'Great for ads and b-roll. Longer clips, audio support, reliable motion.',
+    og: '/hero/veo3.jpg',
+  },
+  'veo-3-fast': {
+    title: 'Veo 3 Fast — quick iterations',
+    description: 'Faster Veo iterations for explorations and bridges. Specs & pricing.',
+    og: '/hero/veo3.jpg',
+  },
+  'veo-3-1-fast': {
+    title: 'Veo 3.1 Fast — frame-to-frame bridges',
+    description: 'Bridge first-to-last frames with Veo 3.1 Fast. Presets and best practices.',
+    og: '/hero/veo3.jpg',
+  },
+  'pika-text-to-video': {
+    title: 'Pika 2.2 — text-to-video',
+    description: 'Fast prompts, multiple aspect ratios, and audio support. Cheap explorations.',
+    og: '/hero/pika-22.jpg',
+  },
+  'pika-image-to-video': {
+    title: 'Pika 2.2 — image-to-video',
+    description: 'Animate images with stylized motion. Tips, limits, and costs.',
+    og: '/hero/pika-22.jpg',
+  },
+  'minimax-hailuo-02-text': {
+    title: 'MiniMax Hailuo 02 — text-to-video',
+    description: 'Stylised motion at low cost. Presets and pricing.',
+    og: '/hero/minimax-video01.jpg',
+  },
+  'minimax-hailuo-02-image': {
+    title: 'MiniMax Hailuo 02 — image-to-video',
+    description: 'Image-to-video loops and stylised motion. Presets and tips.',
+    og: '/hero/minimax-video01.jpg',
+  },
+};
+
+function toAbsoluteUrl(url?: string | null): string {
+  if (!url) return `${SITE}/og/price-before.png`;
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('//')) return `https:${url}`;
+  if (url.startsWith('/')) return `${SITE}${url}`;
+  return `${SITE}/${url}`;
+}
+
 export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
   const { slug } = params;
   const engine = getFalEngineBySlug(slug);
@@ -27,17 +92,51 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
   if (!engine) {
     return {
       title: 'Model not found - MaxVideo AI',
+      robots: { index: false, follow: false },
     };
   }
 
-  const title = engine.seo.title;
-  const description = engine.seo.description ?? dictionary.models.hero.subtitle;
+  const defaultMeta = {
+    title: `${engine.marketingName} — MaxVideo AI`,
+    description: engine.seo.description ?? dictionary.models.hero.subtitle,
+    og: engine.media?.imagePath ?? '/og/price-before.png',
+  };
+  const resolvedMeta = MODEL_META[slug] ?? defaultMeta;
+  const canonicalUrl = `${SITE}${engine.seo.canonicalPath}`;
+  const ogImage = toAbsoluteUrl(resolvedMeta.og ?? defaultMeta.og);
+  const title = `${resolvedMeta.title} — MaxVideo AI`;
+  const description = resolvedMeta.description ?? defaultMeta.description;
 
   return {
     title,
     description,
     alternates: {
-      canonical: `https://maxvideoai.com${engine.seo.canonicalPath}`,
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      type: 'article',
+      url: canonicalUrl,
+      siteName: 'MaxVideo AI',
+      title,
+      description,
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: resolvedMeta.title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogImage],
+    },
+    robots: {
+      index: true,
+      follow: true,
     },
   };
 }
@@ -58,6 +157,31 @@ export default function ModelDetailPage({ params }: PageParams) {
   const faqEntries = engine.faqs ?? [];
   const faqJsonLd = faqEntries.map(({ question, answer }) => ({ q: question, a: answer }));
   const pricingHint = engine.pricingHint;
+  const canonicalUrl = `${SITE}${engine.seo.canonicalPath}`;
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: `${SITE}/`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Models',
+        item: `${SITE}/models`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: (MODEL_META[slug]?.title ?? engine.marketingName ?? slug).replace(/ —.*$/, ''),
+        item: canonicalUrl,
+      },
+    ],
+  };
 
   const platformPriceInfo = (() => {
     if (!pricingHint || typeof pricingHint.amountCents !== 'number') return null;
@@ -226,6 +350,11 @@ export default function ModelDetailPage({ params }: PageParams) {
         </Link>
       </footer>
       {faqEntries.length > 0 ? <FaqJsonLd qa={faqJsonLd} /> : null}
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
     </div>
   );
 }

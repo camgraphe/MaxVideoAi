@@ -61,30 +61,62 @@ const ENGINE_META = (() => {
   return map;
 })();
 
-export const metadata: Metadata = {
-  title: 'Examples - MaxVideo AI',
-  description: 'Explore real outputs from routed models across use cases and aspect ratios.',
-  keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
-  openGraph: {
-    title: 'Examples - MaxVideo AI',
-    description: 'Real AI video outputs with hover loops and engine routing annotations.',
-    images: [
-      {
-        url: '/og/price-before.png',
-        width: 1200,
-        height: 630,
-        alt: 'Examples grid preview.',
+const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://maxvideoai.com';
+
+function toAbsoluteUrl(url?: string | null): string | null {
+  if (!url) return null;
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('//')) return `https:${url}`;
+  if (url.startsWith('/')) return `${SITE}${url}`;
+  return `${SITE}/${url}`;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const title = 'Engine showcases — MaxVideo AI';
+  const description =
+    'A curated gallery of AI video renders across Sora, Veo, Pika, and MiniMax. Hover to loop, click to expand, and clone settings.';
+
+  const latest = await listExamples('date-desc', 20);
+  const firstWithThumb = latest.find((video) => Boolean(video.thumbUrl));
+  const ogImage = toAbsoluteUrl(firstWithThumb?.thumbUrl) ?? `${SITE}/og/price-before.png`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${SITE}/examples`,
+      languages: {
+        en: `${SITE}/examples`,
+        fr: `${SITE}/examples?lang=fr`,
       },
-    ],
-  },
-  alternates: {
-    canonical: 'https://maxvideoai.com/examples',
-    languages: {
-      en: 'https://maxvideoai.com/examples',
-      fr: 'https://maxvideoai.com/examples?lang=fr',
     },
-  },
-};
+    openGraph: {
+      type: 'website',
+      url: `${SITE}/examples`,
+      siteName: 'MaxVideo AI',
+      title,
+      description,
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: 'MaxVideo AI — Examples gallery preview',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogImage],
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  };
+}
 
 type ExamplesPageProps = {
   searchParams: Record<string, string | string[] | undefined>;
@@ -147,12 +179,78 @@ function parseAspectRatio(value?: string | null): number | null {
   return null;
 }
 
+function toISODuration(seconds?: number) {
+  const s = Math.max(1, Math.round(Number(seconds || 0) || 6));
+  return `PT${s}S`;
+}
+
+function toISODate(input?: Date | string) {
+  const d = input ? new Date(input) : new Date();
+  return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+}
+
 export default async function ExamplesPage({ searchParams }: ExamplesPageProps) {
   const { dictionary } = resolveDictionary();
   const content = dictionary.examples;
   const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
   const sort = getSort(sortParam);
   const videos = await listExamples(sort, 60);
+  const itemListElements = videos
+    .filter((video) => Boolean(video.thumbUrl))
+    .map((video, index) => {
+      const canonicalEngineId = resolveEngineLinkId(video.engineId);
+      const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
+      const engineMeta = engineKey ? ENGINE_META.get(engineKey) : null;
+      const engineLabel = engineMeta?.label ?? video.engineLabel ?? canonicalEngineId ?? 'Engine';
+      const engineSlug = canonicalEngineId ?? video.engineId ?? 'engine';
+      const detailPath =
+        engineSlug && engineSlug.length
+          ? `/generate?from=${encodeURIComponent(video.id)}&engine=${encodeURIComponent(engineSlug)}`
+          : `/generate?from=${encodeURIComponent(video.id)}`;
+      const absoluteUrl = `https://maxvideoai.com${detailPath}`;
+      const description =
+        video.promptExcerpt || video.prompt || `AI video example generated with ${engineLabel} in MaxVideo AI.`;
+      const item: Record<string, unknown> = {
+        '@type': 'VideoObject',
+        name: video.promptExcerpt || video.prompt || `${engineLabel} example`,
+        description,
+        thumbnailUrl: video.thumbUrl!,
+        uploadDate: toISODate(video.createdAt),
+        duration: toISODuration(video.durationSec),
+        inLanguage: 'en',
+        publisher: {
+          '@type': 'Organization',
+          name: 'MaxVideo AI',
+        },
+      };
+      if (video.videoUrl) {
+        item.contentUrl = video.videoUrl;
+      }
+      return {
+        '@type': 'ListItem',
+        position: index + 1,
+        url: absoluteUrl,
+        item,
+      };
+    });
+  const itemListJson =
+    itemListElements.length > 0
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'ItemList',
+          itemListElement: itemListElements,
+        }
+      : null;
+  const jsonLdChunks = (() => {
+    if (!itemListJson) return [];
+    const raw = JSON.stringify(itemListJson);
+    const chunks: string[] = [];
+    const CHUNK_SIZE = 50_000;
+    for (let i = 0; i < raw.length; i += CHUNK_SIZE) {
+      chunks.push(raw.slice(i, i + CHUNK_SIZE));
+    }
+    return chunks;
+  })();
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
@@ -274,6 +372,15 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
           })}
         </div>
       </section>
+
+      {jsonLdChunks.map((chunk, index) => (
+        <script
+          key={`examples-jsonld-${index}`}
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: chunk }}
+        />
+      ))}
     </div>
   );
 }
