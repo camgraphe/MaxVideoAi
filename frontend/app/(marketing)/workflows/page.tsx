@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import clsx from 'clsx';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { listAvailableModels } from '@/lib/model-roster';
@@ -74,15 +75,17 @@ export default function WorkflowsPage() {
         ) : null}
       </header>
       <section className="mt-4">
-        <figure className="overflow-hidden rounded-2xl border border-hairline">
-          <img
+        <div className="overflow-hidden rounded-2xl border border-hairline">
+          <Image
             src="/og/price-before.png"
             alt="MaxVideoAI workspace with composer, live price chip and gallery rail"
+            width={1280}
+            height={720}
             className="h-auto w-full"
-            loading="lazy"
-            decoding="async"
+            priority
+            sizes="(min-width: 1024px) 960px, 100vw"
           />
-        </figure>
+        </div>
         <p className="mt-2 text-xs text-text-muted">
           Composer, live price chip, and gallery rail come together in the workflows workspace.
         </p>
