@@ -107,6 +107,24 @@ export default async function PricingPage() {
     })),
   };
 
+  const membershipTiers = await getMembershipTiers();
+  const currencyFormatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: starterCurrency,
+    maximumFractionDigits: 0,
+  });
+  const formattedTiers = membershipTiers.map((tier) => {
+    const name = tier.tier.charAt(0).toUpperCase() + tier.tier.slice(1);
+    const requirement = tier.spendThresholdCents <= 0
+      ? 'Default status — applies automatically'
+      : `Admin threshold: ${currencyFormatter.format(tier.spendThresholdCents / 100)} (rolling 30 days)`;
+    const discountPct = tier.discountPercent * 100;
+    const benefit = discountPct > 0
+      ? `Save ${discountPct % 1 === 0 ? discountPct.toFixed(0) : discountPct.toFixed(1)}% on every render`
+      : 'Baseline rate';
+    return { name, requirement, benefit };
+  });
+
   return (
     <div className="mx-auto max-w-6xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
       <header className="max-w-3xl space-y-4">
@@ -333,20 +351,3 @@ export default async function PricingPage() {
     </div>
   );
 }
-  const membershipTiers = await getMembershipTiers();
-  const currencyFormatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: starterCurrency,
-    maximumFractionDigits: 0,
-  });
-  const formattedTiers = membershipTiers.map((tier) => {
-    const name = tier.tier.charAt(0).toUpperCase() + tier.tier.slice(1);
-    const requirement = tier.spendThresholdCents <= 0
-      ? 'Default status — applies automatically'
-      : `Admin threshold: ${currencyFormatter.format(tier.spendThresholdCents / 100)} (rolling 30 days)`;
-    const discountPct = tier.discountPercent * 100;
-    const benefit = discountPct > 0
-      ? `Save ${discountPct % 1 === 0 ? discountPct.toFixed(0) : discountPct.toFixed(1)}% on every render`
-      : 'Baseline rate';
-    return { name, requirement, benefit };
-  });
