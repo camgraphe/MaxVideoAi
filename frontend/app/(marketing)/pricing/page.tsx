@@ -150,19 +150,6 @@ export default async function PricingPage() {
           </span>
         </div>
       </section>
-      {!isAuthed ? (
-        <section className="mt-10 rounded-xl border border-hairline bg-white p-4 shadow-card">
-          <h2 className="text-base font-semibold text-text-primary">Start with Starter Credits</h2>
-          <p className="mt-1 text-sm text-text-secondary">
-            Load $10, $25, or $50 once you’re in the workspace. You’ll always see the price before you generate.
-          </p>
-          <div className="mt-3">
-            <Link href="/app" className="text-sm font-semibold text-accent underline underline-offset-2 hover:text-accentSoft">
-              Open the workspace to top up
-            </Link>
-          </div>
-        </section>
-      ) : null}
       <section aria-labelledby="example-costs" className="mt-10">
         <h2 id="example-costs" className="scroll-mt-28 text-lg font-semibold text-text-primary">
           Example costs
