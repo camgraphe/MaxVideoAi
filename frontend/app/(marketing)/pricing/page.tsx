@@ -132,7 +132,7 @@ export default async function PricingPage() {
         <p className="text-base text-text-secondary">{content.hero.subtitle}</p>
       </header>
 
-      <section className="mt-12">
+      <section id="estimator" className="mt-12 scroll-mt-28">
         <div className="mx-auto max-w-4xl">
           <PriceEstimator showWalletActions={isAuthed} />
         </div>
@@ -164,7 +164,7 @@ export default async function PricingPage() {
         </section>
       ) : null}
       <section aria-labelledby="example-costs" className="mt-10">
-        <h2 id="example-costs" className="text-lg font-semibold text-text-primary">
+        <h2 id="example-costs" className="scroll-mt-28 text-lg font-semibold text-text-primary">
           Example costs
         </h2>
         <p className="mb-4 text-sm text-text-secondary">
@@ -301,7 +301,10 @@ export default async function PricingPage() {
       </section>
 
       <section className="mt-12 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
+        <article
+          id="refunds-protections"
+          className="scroll-mt-28 rounded-card border border-hairline bg-white p-6 shadow-card"
+        >
           <h2 className="text-xl font-semibold text-text-primary">
             {refunds.title}
           </h2>
