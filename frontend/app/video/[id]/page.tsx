@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import type { CSSProperties } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -39,6 +40,28 @@ function toAbsoluteUrl(value?: string | null): string | null {
     return `${SITE}${value}`;
   }
   return `${SITE}/${value.replace(/^\/+/, '')}`;
+}
+
+type AspectRatio = { width: number; height: number } | null;
+
+function parseAspectRatio(value?: string | null): AspectRatio {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (trimmed.includes(':')) {
+    const [w, h] = trimmed.split(':');
+    const width = Number.parseFloat(w);
+    const height = Number.parseFloat(h);
+    if (Number.isFinite(width) && Number.isFinite(height) && height > 0) {
+      return { width, height };
+    }
+    return null;
+  }
+  const numeric = Number.parseFloat(trimmed);
+  if (Number.isFinite(numeric) && numeric > 0) {
+    return { width: numeric, height: 1 };
+  }
+  return null;
 }
 
 async function fetchVideo(id: string) {
@@ -111,6 +134,17 @@ export default async function VideoPage({ params }: PageProps) {
   const videoUrl = toAbsoluteUrl(video.videoUrl) ?? video.videoUrl ?? canonical;
   const thumbnailUrl = toAbsoluteUrl(video.thumbUrl) ?? FALLBACK_THUMB;
   const poster = video.thumbUrl ?? FALLBACK_POSTER;
+  const aspect = parseAspectRatio(video.aspectRatio);
+  const isPortrait = aspect ? aspect.width < aspect.height : false;
+
+  const containerStyle: CSSProperties = {};
+  if (aspect) {
+    containerStyle.aspectRatio = `${aspect.width} / ${aspect.height}`;
+  }
+  if (isPortrait) {
+    containerStyle.maxWidth = '50%';
+    containerStyle.margin = '0 auto';
+  }
 
   const videoJsonLd = {
     '@context': 'https://schema.org',
@@ -145,7 +179,10 @@ export default async function VideoPage({ params }: PageProps) {
       </div>
       <article className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <section className="space-y-4">
-          <div className="relative overflow-hidden rounded-card border border-border bg-black">
+          <div
+            className="relative overflow-hidden rounded-card border border-border bg-black"
+            style={containerStyle}
+          >
             {video.videoUrl ? (
               <video
                 controls
@@ -153,7 +190,7 @@ export default async function VideoPage({ params }: PageProps) {
                 className="h-full w-full object-contain"
                 playsInline
                 preload="metadata"
-                style={{ aspectRatio: video.aspectRatio ?? undefined }}
+                style={aspect ? { aspectRatio: `${aspect.width} / ${aspect.height}` } : undefined}
               >
                 <source src={video.videoUrl} type="video/mp4" />
               </video>
@@ -163,6 +200,7 @@ export default async function VideoPage({ params }: PageProps) {
                 alt={description}
                 fill
                 className="object-contain"
+                style={aspect ? { aspectRatio: `${aspect.width} / ${aspect.height}` } : undefined}
                 sizes="(min-width: 1024px) 640px, 100vw"
               />
             )}

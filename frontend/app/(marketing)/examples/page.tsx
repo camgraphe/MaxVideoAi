@@ -371,11 +371,11 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                   <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                     <Link
                       href={`/video/${encodeURIComponent(video.id)}`}
-                      className="pointer-events-auto inline-flex h-16 w-16 items-center justify-center rounded-full bg-white/30 text-white shadow-lg ring-1 ring-white/20 backdrop-blur focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
+                      className="pointer-events-auto inline-flex h-16 w-16 items-center justify-center text-white/30 transition hover:text-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
                       aria-label="View this video"
                     >
-                      <svg width="24" height="28" viewBox="0 0 18 20" aria-hidden>
-                        <path d="M16.5 9.134c1 0.577 1 2.155 0 2.732L2.5 20.014C1.5 20.59 0 19.812 0 18.548V2.452C0 1.188 1.5 0.41 2.5 0.986l14 8.148z" fill="currentColor" fillOpacity="0.9" />
+                      <svg width="32" height="36" viewBox="0 0 18 20" fill="currentColor" aria-hidden>
+                        <path d="M16.5 9.134c1 0.577 1 2.155 0 2.732L2.5 20.014C1.5 20.59 0 19.812 0 18.548V2.452C0 1.188 1.5 0.41 2.5 0.986l14 8.148z" />
                       </svg>
                     </Link>
                   </div>
