@@ -38,28 +38,6 @@ export const metadata: Metadata = {
   },
 };
 
-const softwareSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'SoftwareApplication',
-  name: 'MiniMax Hailuo 02 – Image-to-Video',
-  operatingSystem: 'Web',
-  applicationCategory: 'CreativeTool',
-  description:
-    'MiniMax Hailuo 02 transforms still visuals into animated clips using text guidance—ideal for motion designers and editors who need quick, silent loops.',
-  url: CANONICAL_URL,
-  softwareVersion: '02',
-  provider: {
-    '@type': 'Organization',
-    name: 'MaxVideoAI',
-    url: 'https://maxvideoai.com',
-  },
-  offers: {
-    '@type': 'Offer',
-    price: 'pay-as-you-go',
-    priceCurrency: 'USD',
-  },
-};
-
 export default async function MiniMaxImageToVideoPage() {
   const { dictionary } = resolveDictionary();
   const example = await getExampleDemoForEngine('minimax-hailuo-02-image');
@@ -69,7 +47,6 @@ export default async function MiniMaxImageToVideoPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }} />
       <Link href="/models" className="text-sm font-semibold text-accent hover:text-accentSoft">
         {'←'} {dictionary.models.hero.title}
       </Link>

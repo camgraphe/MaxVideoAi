@@ -38,28 +38,6 @@ export const metadata: Metadata = {
   },
 };
 
-const softwareSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'SoftwareApplication',
-  name: 'Pika Text-to-Video',
-  operatingSystem: 'Web',
-  applicationCategory: 'CreativeTool',
-  description:
-    'Pika text-to-video lets you craft stylized 3–5 second animations from text prompts—perfect for punchy, silent clips via MaxVideoAI.',
-  url: CANONICAL_URL,
-  softwareVersion: '2.2',
-  provider: {
-    '@type': 'Organization',
-    name: 'MaxVideoAI',
-    url: 'https://maxvideoai.com',
-  },
-  offers: {
-    '@type': 'Offer',
-    price: 'pay-as-you-go',
-    priceCurrency: 'USD',
-  },
-};
-
 export default async function PikaTextToVideoPage() {
   const { dictionary } = resolveDictionary();
   const example = await getExampleDemoForEngine('pika-text-to-video');
@@ -69,7 +47,6 @@ export default async function PikaTextToVideoPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }} />
       <Link href="/models" className="text-sm font-semibold text-accent hover:text-accentSoft">
         {'←'} {dictionary.models.hero.title}
       </Link>

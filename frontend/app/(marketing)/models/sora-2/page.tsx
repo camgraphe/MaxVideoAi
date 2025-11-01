@@ -38,28 +38,6 @@ export const metadata: Metadata = {
   },
 };
 
-const softwareSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'SoftwareApplication',
-  name: 'Sora 2',
-  operatingSystem: 'Web',
-  applicationCategory: 'CreativeTool',
-  description:
-    'Sora 2 by OpenAI – generate cinematic videos from text or images with native voice-over, ambient sound, and synced motion via MaxVideoAI.',
-  url: CANONICAL_URL,
-  softwareVersion: '2',
-  provider: {
-    '@type': 'Organization',
-    name: 'MaxVideoAI',
-    url: 'https://maxvideoai.com',
-  },
-  offers: {
-    '@type': 'Offer',
-    price: 'pay-as-you-go',
-    priceCurrency: 'USD',
-  },
-};
-
 export default async function Sora2ModelPage() {
   const { dictionary } = resolveDictionary();
   const example = await getExampleDemoForEngine('sora-2');
@@ -69,7 +47,6 @@ export default async function Sora2ModelPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }} />
       <Link href="/models" className="text-sm font-semibold text-accent hover:text-accentSoft">
         {'←'} {dictionary.models.hero.title}
       </Link>
