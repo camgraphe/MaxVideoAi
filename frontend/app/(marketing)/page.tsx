@@ -328,7 +328,7 @@ export default async function HomePage() {
             {hero.secondaryCta}
           </Link>
         </div>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-center text-sm text-muted-foreground">
           <Link href="/pricing" className="underline underline-offset-2">
             Preview pricing
           </Link>
