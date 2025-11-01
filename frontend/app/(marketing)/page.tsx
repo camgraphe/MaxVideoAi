@@ -7,6 +7,7 @@ import { PriceChip } from '@/components/marketing/PriceChip';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
 import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
+import { HeroTileOverlayLink } from '@/components/marketing/HeroTileOverlayLink';
 import { MosaicBackdrop } from '@/components/marketing/MosaicBackdrop';
 import { ExamplesOrbitCallout } from '@/components/marketing/ExamplesOrbitCallout';
 import { getPricingKernel } from '@/lib/pricing-kernel';
@@ -352,7 +353,7 @@ export default async function HomePage() {
         </p>
         <div className="grid w-full gap-4 sm:grid-cols-2">
           {heroTileConfigs.map((tile, index) => (
-            <div key={tile.id} className="flex flex-col">
+            <div key={tile.id} className="relative">
               <HeroMediaTile
                 label={tile.label}
                 priceLabel={heroPriceMap[tile.id] ?? tile.fallbackPriceLabel}
@@ -365,11 +366,7 @@ export default async function HomePage() {
                 guestHref="/login?next=/generate"
               />
               {tile.examplesSlug ? (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  <Link href={`/examples?engine=${encodeURIComponent(tile.examplesSlug)}`} className="underline underline-offset-2">
-                    Clone these settings
-                  </Link>
-                </p>
+                <HeroTileOverlayLink href={`/examples?engine=${encodeURIComponent(tile.examplesSlug)}`} />
               ) : null}
             </div>
           ))}
