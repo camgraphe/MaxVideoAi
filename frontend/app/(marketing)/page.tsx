@@ -476,6 +476,9 @@ export default async function HomePage() {
               >
                 {pricing.link}
               </Link>
+              <p className="mt-3 text-sm text-muted-foreground">
+                3,000+ internal test renders · automatic refunds on failures · wallet-first billing
+              </p>
             </article>
             <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
               <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
