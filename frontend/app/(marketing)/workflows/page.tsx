@@ -5,6 +5,8 @@ import { resolveDictionary } from '@/lib/i18n/server';
 import { listAvailableModels } from '@/lib/model-roster';
 import { AVAILABILITY_BADGE_CLASS } from '@/lib/availability';
 import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
+import { FEATURES } from '@/content/feature-flags';
+import { FlagPill } from '@/components/FlagPill';
 
 export const metadata: Metadata = {
   title: 'Workflows — MaxVideo AI',
@@ -36,6 +38,36 @@ export default function WorkflowsPage() {
   const content = dictionary.workflows;
   const models = listAvailableModels(true);
   const availabilityLabels = dictionary.models.availabilityLabels;
+  const workflowFeatureGroups = [
+    {
+      key: 'brandKits',
+      title: 'Brand kits',
+      description: 'Palettes, fonts, legal copy, saved styles.',
+      live: FEATURES.workflows.brandKits,
+    },
+    {
+      key: 'approvals',
+      title: 'Approvals',
+      description: 'Assign reviewers, comment on renders, lock versions.',
+      live: FEATURES.workflows.approvals,
+    },
+    {
+      key: 'budgetControls',
+      title: 'Budget controls',
+      description: 'Multi-approver spend limits and daily summaries.',
+      live: FEATURES.workflows.budgetControls,
+    },
+  ] as const;
+  const deliveryExports = [
+    { name: 'Final Cut Pro XML (FCPXML)', live: FEATURES.workflows.deliveryExports.fcxpxml },
+    { name: 'After Effects JSON', live: FEATURES.workflows.deliveryExports.aejson },
+  ] as const;
+  const deliveryIntegrations = [
+    { name: 'Google Drive', live: FEATURES.delivery.drive },
+    { name: 'OneDrive', live: FEATURES.delivery.onedrive },
+    { name: 'Amazon S3', live: FEATURES.delivery.s3 },
+    { name: 'Dropbox', live: FEATURES.delivery.dropbox },
+  ] as const;
 
   return (
     <div className="mx-auto max-w-5xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
@@ -60,14 +92,54 @@ export default function WorkflowsPage() {
         <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
           <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">{content.workflows.badge}</span>
           <h2 className="mt-4 text-xl font-semibold text-text-primary">{content.workflows.title}</h2>
-          <ul className="mt-4 space-y-3 text-sm text-text-secondary">
-            {content.workflows.features.map((feature) => (
-              <li key={feature} className="flex items-start gap-2">
-                <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-accent" />
-                <span>{feature}</span>
-              </li>
+          <div className="mt-4 space-y-5 text-sm text-text-secondary">
+            {workflowFeatureGroups.map((feature) => (
+              <div key={feature.key}>
+                <div className="flex items-center gap-2 text-sm font-semibold text-text-primary">
+                  <span>{feature.title}</span>
+                  <FlagPill live={feature.live} />
+                  {!feature.live ? <span className="text-xs text-text-muted">(coming soon)</span> : null}
+                </div>
+                <p className="mt-1 text-sm text-text-secondary">{feature.description}</p>
+              </div>
             ))}
-          </ul>
+            <div>
+              <div className="flex items-center gap-2 text-sm font-semibold text-text-primary">
+                <span>Delivery exports</span>
+                <FlagPill
+                  live={
+                    FEATURES.workflows.deliveryExports.fcxpxml || FEATURES.workflows.deliveryExports.aejson
+                  }
+                />
+                {!(FEATURES.workflows.deliveryExports.fcxpxml || FEATURES.workflows.deliveryExports.aejson) ? (
+                  <span className="text-xs text-text-muted">(coming soon)</span>
+                ) : null}
+              </div>
+              <ul className="mt-2 space-y-1 text-sm">
+                {deliveryExports.map((item) => (
+                  <li key={item.name} className="flex items-center gap-2">
+                    <span>{item.name}</span>
+                    <FlagPill live={item.live} />
+                    {!item.live ? <span className="text-xs text-text-muted">(coming soon)</span> : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <div className="flex items-center gap-2 text-sm font-semibold text-text-primary">
+                <span>Delivery integrations</span>
+              </div>
+              <ul className="mt-2 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+                {deliveryIntegrations.map((integration) => (
+                  <li key={integration.name} className="flex items-center gap-2">
+                    <span>{integration.name}</span>
+                    <FlagPill live={integration.live} />
+                    {!integration.live ? <span className="text-xs text-text-muted">(coming soon)</span> : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </article>
       </section>
       <section className="mt-12 rounded-card border border-hairline bg-white p-6 shadow-card">
