@@ -594,6 +594,54 @@ export default async function HomePage() {
       <Script id="home-video-jsonld" type="application/ld+json">
         {JSON.stringify(videoJsonLd)}
       </Script>
+      <Script
+        id="home-organization-jsonld"
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: 'MaxVideo AI',
+            url: 'https://maxvideoai.com',
+            logo: 'https://maxvideoai.com/logo-wordmark.svg',
+            sameAs: [],
+            description:
+              'Independent hub for AI video generation. Price before you generate. Works with Sora, Veo, Pika, MiniMax.',
+          }),
+        }}
+      />
+      <Script
+        id="home-software-jsonld"
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'SoftwareApplication',
+            name: 'MaxVideo AI',
+            applicationCategory: 'VideoEditorApplication',
+            operatingSystem: 'Web',
+            url: 'https://maxvideoai.com',
+            offers: {
+              '@type': 'Offer',
+              price: '0',
+              priceCurrency: 'USD',
+              description: 'Pay-as-you-go. Load credits to render; no subscription.',
+            },
+            featureList: [
+              'Multi-engine routing (Sora, Veo, Pika, MiniMax)',
+              'Live pricing before render',
+              'Wallet-first billing with automatic refunds',
+              'Composer, gallery, and job tracking in one workspace',
+            ],
+            publisher: {
+              '@type': 'Organization',
+              name: 'MaxVideo AI',
+            },
+          }),
+        }}
+      />
     </div>
   );
 }
