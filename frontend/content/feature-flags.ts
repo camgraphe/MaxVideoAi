@@ -6,13 +6,13 @@ export const FEATURES = {
     dropbox: false,
   },
   workflows: {
-    brandKits: true,
-    approvals: true,
+    brandKits: false,
+    approvals: false,
     deliveryExports: {
       fcxpxml: false,
       aejson: false,
     },
-    budgetControls: true,
+    budgetControls: false,
   },
   pricing: {
     publicCalculator: true,
@@ -22,4 +22,3 @@ export const FEATURES = {
     memberTiers: true,
   },
 } as const;
-
