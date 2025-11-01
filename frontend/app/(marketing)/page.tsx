@@ -657,6 +657,55 @@ export default async function HomePage() {
           }),
         }}
       />
+      <Script
+        id="home-faq-jsonld"
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: [
+              {
+                '@type': 'Question',
+                name: 'Is Sora 2 available in the EU?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text:
+                    'Sora 2 availability is limited. MaxVideoAI routes your brief to supported engines today and keeps Sora-ready presets for later.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: 'Can I add audio?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text:
+                    'Yes. Engines surfaced on the homepage support audio toggles in the composer. The live price updates when you enable audio.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: 'How does pricing work?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text:
+                    'You see a live price chip before you render. Load $10 to start and top up anytime. Itemised receipts for each job.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: "What’s the refund policy?",
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text:
+                    'Failed renders auto-refund to your wallet with an itemised receipt. You always keep full control of spend.',
+                },
+              },
+            ],
+          }),
+        }}
+      />
     </div>
   );
 }
