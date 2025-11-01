@@ -23,6 +23,27 @@ type ReceiptItem = {
   discount_amount_cents: number | null;
 };
 
+type MembershipTierInfo = {
+  tier: string;
+  spendThresholdCents: number;
+  discountPercent: number;
+};
+
+type MemberStatus = {
+  tier: string;
+  savingsPct: number;
+  spent30?: number;
+  spentToday?: number;
+  mock?: boolean;
+  tiers?: MembershipTierInfo[];
+};
+
+const FALLBACK_MEMBERSHIP_TIERS: MembershipTierInfo[] = [
+  { tier: 'member', spendThresholdCents: 0, discountPercent: 0 },
+  { tier: 'plus', spendThresholdCents: 5_000, discountPercent: 0.05 },
+  { tier: 'pro', spendThresholdCents: 20_000, discountPercent: 0.1 },
+];
+
 export const dynamic = 'force-dynamic';
 
 const GOOGLE_ADS_CONVERSION_TARGET = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID ?? 'AW-992154028/7oDUCMuC9rQbEKyjjNkD';
@@ -82,7 +103,7 @@ export default function BillingPage() {
   }, [selected, mode, durationSec, resolution, aspectRatio]);
 
   const [wallet, setWallet] = useState<{ balance: number; currency: string } | null>(null);
-  const [member, setMember] = useState<{ tier: string; savingsPct: number; spent30?: number } | null>(null);
+  const [member, setMember] = useState<MemberStatus | null>(null);
   const [stripeMode, setStripeMode] = useState<'test' | 'live' | 'disabled'>('disabled');
   const [toast, setToast] = useState<string | null>(null);
   const [receipts, setReceipts] = useState<{
@@ -130,10 +151,13 @@ export default function BillingPage() {
         .then((r) => r.json())
         .then((d) => mounted && setWallet(d))
         .catch(() => mounted && setWallet({ balance: 0, currency: 'USD' }));
-      fetch('/api/member-status', { headers })
+      fetch('/api/member-status?includeTiers=1', { headers })
         .then((r) => r.json())
         .then((d) => mounted && setMember(d))
-        .catch(() => mounted && setMember({ tier: 'Member', savingsPct: 0 }));
+        .catch(() =>
+          mounted &&
+          setMember({ tier: 'Member', savingsPct: 0, tiers: FALLBACK_MEMBERSHIP_TIERS })
+        );
 
       // Load receipts first page
       setReceipts((s) => ({ ...s, loading: true, error: null }));
@@ -254,6 +278,19 @@ export default function BillingPage() {
     }
   };
 
+  const formatThreshold = (amountCents: number, currency: string) => {
+    const amount = amountCents / 100;
+    try {
+      return new Intl.NumberFormat(CURRENCY_LOCALE, {
+        style: 'currency',
+        currency,
+        maximumFractionDigits: 0,
+      }).format(amount);
+    } catch {
+      return `${currency} ${Math.round(amount)}`;
+    }
+  };
+
   if (authLoading || !session) {
     return null;
   }
@@ -308,9 +345,27 @@ export default function BillingPage() {
                 <span className="rounded-full bg-accent/10 px-2 py-1 text-xs text-accent">{`You save ${member?.savingsPct ?? 0}%`}</span>
               </div>
               <ul className="mt-3 list-disc pl-5 text-sm text-text-secondary">
-                <li>Member — standard rate on every render.</li>
-                <li>Plus (≥ $50 / 30 days) — automatic 5% discount on every render.</li>
-                <li>Pro (≥ $200 / 30 days) — automatic 10% discount plus priority incident handling.</li>
+                {(member?.tiers ?? FALLBACK_MEMBERSHIP_TIERS).map((tier) => {
+                  const tierKey = tier.tier || 'member';
+                  const tierLabel = tier.tier
+                    ? `${tier.tier.slice(0, 1).toUpperCase()}${tier.tier.slice(1)}`
+                    : 'Member';
+                  if (tier.spendThresholdCents <= 0) {
+                    return (
+                      <li key={tierKey}>{tierLabel} — standard rate on every render.</li>
+                    );
+                  }
+                  const threshold = formatThreshold(
+                    tier.spendThresholdCents,
+                    (wallet?.currency ?? 'USD').toUpperCase()
+                  );
+                  const discountPct = Math.round(tier.discountPercent * 100);
+                  return (
+                    <li key={tierKey}>
+                      {tierLabel} — spend {threshold} / 30 days to save {discountPct}% on every eligible render.
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           </section>
