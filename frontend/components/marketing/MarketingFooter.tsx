@@ -30,6 +30,10 @@ export function MarketingFooter() {
         </div>
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <p className="max-w-3xl text-sm leading-relaxed text-text-muted">{brandNote}</p>
+          <p className="max-w-3xl text-xs leading-relaxed text-text-muted">
+            MaxVideoAI allows AI crawlers (GPTBot, OAI-SearchBot, Google-Extended, and CCBot) to index public model pages and
+            documentation for educational and research visibility.
+          </p>
         </div>
       </div>
     </footer>
