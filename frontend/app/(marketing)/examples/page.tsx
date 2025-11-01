@@ -147,12 +147,78 @@ function parseAspectRatio(value?: string | null): number | null {
   return null;
 }
 
+function toISODuration(seconds?: number) {
+  const s = Math.max(1, Math.round(Number(seconds || 0) || 6));
+  return `PT${s}S`;
+}
+
+function toISODate(input?: Date | string) {
+  const d = input ? new Date(input) : new Date();
+  return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+}
+
 export default async function ExamplesPage({ searchParams }: ExamplesPageProps) {
   const { dictionary } = resolveDictionary();
   const content = dictionary.examples;
   const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
   const sort = getSort(sortParam);
   const videos = await listExamples(sort, 60);
+  const itemListElements = videos
+    .filter((video) => Boolean(video.thumbUrl))
+    .map((video, index) => {
+      const canonicalEngineId = resolveEngineLinkId(video.engineId);
+      const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
+      const engineMeta = engineKey ? ENGINE_META.get(engineKey) : null;
+      const engineLabel = engineMeta?.label ?? video.engineLabel ?? canonicalEngineId ?? 'Engine';
+      const engineSlug = canonicalEngineId ?? video.engineId ?? 'engine';
+      const detailPath =
+        engineSlug && engineSlug.length
+          ? `/generate?from=${encodeURIComponent(video.id)}&engine=${encodeURIComponent(engineSlug)}`
+          : `/generate?from=${encodeURIComponent(video.id)}`;
+      const absoluteUrl = `https://maxvideoai.com${detailPath}`;
+      const description =
+        video.promptExcerpt || video.prompt || `AI video example generated with ${engineLabel} in MaxVideo AI.`;
+      const item: Record<string, unknown> = {
+        '@type': 'VideoObject',
+        name: video.promptExcerpt || video.prompt || `${engineLabel} example`,
+        description,
+        thumbnailUrl: video.thumbUrl!,
+        uploadDate: toISODate(video.createdAt),
+        duration: toISODuration(video.durationSec),
+        inLanguage: 'en',
+        publisher: {
+          '@type': 'Organization',
+          name: 'MaxVideo AI',
+        },
+      };
+      if (video.videoUrl) {
+        item.contentUrl = video.videoUrl;
+      }
+      return {
+        '@type': 'ListItem',
+        position: index + 1,
+        url: absoluteUrl,
+        item,
+      };
+    });
+  const itemListJson =
+    itemListElements.length > 0
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'ItemList',
+          itemListElement: itemListElements,
+        }
+      : null;
+  const jsonLdChunks = (() => {
+    if (!itemListJson) return [];
+    const raw = JSON.stringify(itemListJson);
+    const chunks: string[] = [];
+    const CHUNK_SIZE = 50_000;
+    for (let i = 0; i < raw.length; i += CHUNK_SIZE) {
+      chunks.push(raw.slice(i, i + CHUNK_SIZE));
+    }
+    return chunks;
+  })();
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
@@ -274,6 +340,15 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
           })}
         </div>
       </section>
+
+      {jsonLdChunks.map((chunk, index) => (
+        <script
+          key={`examples-jsonld-${index}`}
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: chunk }}
+        />
+      ))}
     </div>
   );
 }
