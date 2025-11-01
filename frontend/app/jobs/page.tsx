@@ -14,6 +14,8 @@ import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCa
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { FEATURES } from '@/content/feature-flags';
+import { FlagPill } from '@/components/FlagPill';
 
 export default function JobsPage() {
   const { data: enginesData } = useEngines();
@@ -83,6 +85,7 @@ export default function JobsPage() {
     return map;
   }, [normalizedGroups]);
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
+  const teamsLive = FEATURES.workflows.approvals && FEATURES.workflows.budgetControls;
 
   const handleRemoveVideoGroup = useCallback(
     async (group: GroupSummary) => {
@@ -163,6 +166,27 @@ export default function JobsPage() {
           <div className="mb-4 flex items-center justify-between">
             <h1 className="text-xl font-semibold text-text-primary">Jobs</h1>
           </div>
+
+          <section aria-labelledby="teams-beta" className="mb-4 rounded-card border border-hairline bg-white p-4 shadow-card">
+            <h2 id="teams-beta" className="flex items-center gap-2 text-base font-semibold text-text-primary">
+              Teams
+              <FlagPill live={teamsLive} />
+              <span className="sr-only">{teamsLive ? 'Live' : 'Coming soon'}</span>
+            </h2>
+            {teamsLive ? (
+              <p className="mt-2 text-sm text-text-secondary">
+                Shared wallets, approvals, and budgets are enabled in your workspace.
+              </p>
+            ) : (
+              <p className="mt-2 text-sm text-text-secondary">
+                Coming soon — shared wallets, approvals, and budgets. Join the beta at{' '}
+                <a className="underline underline-offset-2" href="mailto:support@maxvideoai.com">
+                  support@maxvideoai.com
+                </a>
+                .
+              </p>
+            )}
+          </section>
 
           {hasCuratedJobs ? (
             <div className="mb-4 rounded-card border border-hairline bg-white p-4 text-sm text-text-secondary">
