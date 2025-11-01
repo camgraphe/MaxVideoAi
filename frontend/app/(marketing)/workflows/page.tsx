@@ -97,6 +97,20 @@ export default function WorkflowsPage() {
         <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
         <p className="max-w-2xl text-base text-text-secondary">{content.hero.subtitle}</p>
       </header>
+      <section className="mt-4">
+        <figure className="overflow-hidden rounded-2xl border border-hairline">
+          <img
+            src="/og/price-before.png"
+            alt="MaxVideoAI workspace with composer, live price chip and gallery rail"
+            className="h-auto w-full"
+            loading="lazy"
+            decoding="async"
+          />
+        </figure>
+        <p className="mt-2 text-xs text-text-muted">
+          Composer, live price chip, and gallery rail come together in the workflows workspace.
+        </p>
+      </section>
 
       <section className="mt-12 grid gap-6 lg:grid-cols-2">
         <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
