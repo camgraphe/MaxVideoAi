@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Script from 'next/script';
+import { cookies } from 'next/headers';
 import { PriceEstimator } from '@/components/marketing/PriceEstimator';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { getPricingKernel } from '@/lib/pricing-kernel';
@@ -45,6 +46,12 @@ export default function PricingPage() {
   const starterPrice = (starterQuote.snapshot.totalCents / 100).toFixed(2);
   const starterCurrency = starterQuote.snapshot.currency;
   const unitRate = starterQuote.snapshot.base.rate;
+  const cookieStore = cookies();
+  const isAuthed = Boolean(
+    cookieStore.get('sb-access-token')?.value ??
+      cookieStore.get('supabase-access-token')?.value ??
+      cookieStore.get('supabase-auth-token')?.value
+  );
 
   const productSchema = {
     '@context': 'https://schema.org',
@@ -101,7 +108,7 @@ export default function PricingPage() {
 
       <section className="mt-12">
         <div className="mx-auto max-w-4xl">
-          <PriceEstimator />
+          <PriceEstimator showWalletActions={isAuthed} />
         </div>
         <div className="mx-auto mt-6 max-w-3xl text-center text-xs text-text-muted">
           {content.estimator.walletLink}{' '}
@@ -111,6 +118,19 @@ export default function PricingPage() {
           .
         </div>
       </section>
+      {!isAuthed ? (
+        <section className="mt-10 rounded-xl border border-hairline bg-white p-4 shadow-card">
+          <h2 className="text-base font-semibold text-text-primary">Start with Starter Credits</h2>
+          <p className="mt-1 text-sm text-text-secondary">
+            Load $10, $25, or $50 once you’re in the workspace. You’ll always see the price before you generate.
+          </p>
+          <div className="mt-3">
+            <Link href="/app" className="text-sm font-semibold text-accent underline underline-offset-2 hover:text-accentSoft">
+              Open the workspace to top up
+            </Link>
+          </div>
+        </section>
+      ) : null}
       <section aria-labelledby="example-costs" className="mt-10">
         <h2 id="example-costs" className="text-lg font-semibold text-text-primary">
           Example costs
