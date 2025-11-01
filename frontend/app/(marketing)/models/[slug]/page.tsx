@@ -6,7 +6,6 @@ import type { Metadata } from 'next';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { AVAILABILITY_BADGE_CLASS } from '@/lib/availability';
 import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
-import FaqJsonLd from '@/components/FaqJsonLd';
 import { listFalEngines, getFalEngineBySlug } from '@/config/falEngines';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 
@@ -155,7 +154,6 @@ export default function ModelDetailPage({ params }: PageParams) {
   const brand = PARTNER_BRAND_MAP.get(engine.brandId);
   const showSoraSeo = engine.modelSlug.startsWith('sora-2');
   const faqEntries = engine.faqs ?? [];
-  const faqJsonLd = faqEntries.map(({ question, answer }) => ({ q: question, a: answer }));
   const pricingHint = engine.pricingHint;
   const canonicalUrl = `${SITE}${engine.seo.canonicalPath}`;
   const breadcrumbLd = {
@@ -203,24 +201,6 @@ export default function ModelDetailPage({ params }: PageParams) {
     };
   })();
 
-  const soraFaqSchema = showSoraSeo
-    ? {
-        '@context': 'https://schema.org',
-        '@type': 'FAQPage',
-        mainEntity: [
-          {
-            '@type': 'Question',
-            name: 'How does billing work with FAL credits or my OpenAI API key?',
-            acceptedAnswer: {
-              '@type': 'Answer',
-              text:
-                'MaxVideo AI routes Sora 2 runs through FAL by default. Drop your own OpenAI API key in the app to bill usage directly through OpenAI—the interface keeps showing an indicative rate and adds a "Billed by OpenAI" badge so finance teams stay aligned.',
-            },
-          },
-        ],
-      }
-    : null;
-
   const soraSoftwareSchema = showSoraSeo
     ? {
         '@context': 'https://schema.org',
@@ -240,9 +220,6 @@ export default function ModelDetailPage({ params }: PageParams) {
 
   return (
     <div className="mx-auto max-w-4xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
-      {showSoraSeo && soraFaqSchema && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(soraFaqSchema) }} />
-      )}
       {showSoraSeo && soraSoftwareSchema && (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(soraSoftwareSchema) }} />
       )}
@@ -349,7 +326,6 @@ export default function ModelDetailPage({ params }: PageParams) {
           Launch workspace
         </Link>
       </footer>
-      {faqEntries.length > 0 ? <FaqJsonLd qa={faqJsonLd} /> : null}
       <script
         type="application/ld+json"
         suppressHydrationWarning
