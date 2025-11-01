@@ -132,8 +132,7 @@ export default function WorkflowsPage() {
                 <li key={item.label} className="flex flex-wrap items-center gap-2">
                   <span>• {item.label}</span>
                   <FlagPill live={item.live} />
-                  <span className="sr-only">{item.live ? 'Live' : 'Coming soon'}</span>
-                  {!item.live ? <span className="text-xs text-text-muted">(coming soon)</span> : null}
+                <span className="sr-only">{item.live ? 'Live' : 'Coming soon'}</span>
                 </li>
               ))}
             </ul>
