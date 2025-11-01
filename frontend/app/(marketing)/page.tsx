@@ -316,7 +316,7 @@ export default async function HomePage() {
           <Link
             href="/app"
             className="inline-flex items-center rounded-pill bg-accent px-6 py-3 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-            aria-label="Launch the MaxVideoAI workspace"
+            aria-label="Start a render in the workspace"
           >
             {hero.primaryCta}
           </Link>

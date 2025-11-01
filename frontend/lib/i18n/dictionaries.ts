@@ -286,7 +286,7 @@ const en: Dictionary = {
       { key: 'docs', href: '/docs' },
     ],
     login: 'Log in',
-    cta: 'Create a video',
+    cta: 'Start a render',
     linkLabels: {
       models: 'Models',
       examples: 'Examples',
@@ -315,7 +315,7 @@ const en: Dictionary = {
     hero: {
       title: 'The right engine for every shot.',
       subtitle: 'Professional AI video, minus the hassle. Price before you generate. One hub for your work.',
-      primaryCta: 'Create a video',
+      primaryCta: 'Start a render',
       secondaryCta: 'See how it works',
     },
     worksWith: {
