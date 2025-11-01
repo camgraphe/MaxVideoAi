@@ -145,14 +145,15 @@ export default async function VideoPage({ params }: PageProps) {
       </div>
       <article className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <section className="space-y-4">
-          <div className="relative overflow-hidden rounded-card border border-border bg-black" style={{ aspectRatio: '16 / 9' }}>
+          <div className="relative overflow-hidden rounded-card border border-border bg-black">
             {video.videoUrl ? (
               <video
                 controls
                 poster={poster}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-contain"
                 playsInline
                 preload="metadata"
+                style={{ aspectRatio: video.aspectRatio ?? undefined }}
               >
                 <source src={video.videoUrl} type="video/mp4" />
               </video>
@@ -161,7 +162,7 @@ export default async function VideoPage({ params }: PageProps) {
                 src={poster}
                 alt={description}
                 fill
-                className="object-cover"
+                className="object-contain"
                 sizes="(min-width: 1024px) 640px, 100vw"
               />
             )}
