@@ -593,7 +593,7 @@ const en: Dictionary = {
     hero: {
       title: 'Express vs Workflows.',
       subtitle:
-        'Express handles rapid experimentation. Workflows keeps brand teams aligned with approvals, brand kits, Drive/Dropbox/OneDrive/S3 delivery, and budget controls.',
+        'Express handles rapid experimentation. Workflows ships the live “Price before you generate” chip today, with Nano Banana image exports and Drive/OneDrive/Dropbox hand-offs coming soon.',
     },
     express: {
       badge: 'Express',
@@ -608,10 +608,9 @@ const en: Dictionary = {
       badge: 'Workflows',
       title: 'Full hand-off for brand and post teams.',
       features: [
-        'Brand kits: palettes, fonts, legal copy, saved styles',
-        'Approvals: assign reviewers, comment on renders, lock versions',
-        'Delivery: Drive, Dropbox, OneDrive, S3, plus optional FCPXML or AE JSON hand-off',
-        'Budget controls: multi-approver spend limits and daily summaries',
+        'Price-before-you-generate chip on every preset',
+        'Nano Banana engine image export (coming soon)',
+        'Delivery hand-offs for Google Drive, OneDrive, Dropbox (coming soon)',
       ],
     },
   },
