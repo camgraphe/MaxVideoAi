@@ -102,6 +102,53 @@ const HERO_TILE_EXAMPLE_SLUGS: Record<string, string> = {
   'minimax-hailuo-02': 'minimax-hailuo-02',
 };
 
+function CompareEngines() {
+  const ENGINES = [
+    { key: 'sora-2', name: 'Sora 2', maxDuration: '6–8s', audio: 'Yes', bestFor: 'Cinematic shots', href: '/models/sora-2' },
+    { key: 'veo-3-1', name: 'Veo 3.1', maxDuration: '8–12s', audio: 'Yes', bestFor: 'Ads & B-roll', href: '/models/veo-3-1' },
+    { key: 'pika-2-2', name: 'Pika 2.2', maxDuration: '3–6s', audio: 'Yes', bestFor: 'Fast iterations', href: '/models/pika-2-2' },
+    { key: 'hailuo-02', name: 'MiniMax Hailuo 02', maxDuration: '6–8s', audio: 'Yes', bestFor: 'Stylised motion', href: '/models/minimax-hailuo-02' },
+  ];
+
+  return (
+    <section aria-labelledby="compare-engines" className="mx-auto mt-12 max-w-6xl rounded-2xl border border-hairline bg-white p-6 px-4 sm:px-6 lg:px-8 shadow-card">
+      <div className="mx-auto max-w-6xl">
+        <h2 id="compare-engines" className="text-xl font-semibold text-text-primary">
+          Compare engines at a glance
+        </h2>
+        <p className="mb-4 text-sm text-muted-foreground">Max duration · Audio · Best for</p>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {ENGINES.map((engine) => (
+            <Link
+              key={engine.key}
+              href={engine.href}
+              className="rounded-xl border border-hairline bg-white/80 p-4 transition hover:shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              aria-label={`See presets for ${engine.name}`}
+            >
+              <div className="font-medium text-text-primary">{engine.name}</div>
+              <dl className="mt-2 text-sm text-text-secondary">
+                <div className="flex justify-between">
+                  <dt>Max duration</dt>
+                  <dd>{engine.maxDuration}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>Audio</dt>
+                  <dd>{engine.audio}</dd>
+                </div>
+                <div className="mt-1 text-muted-foreground">
+                  <dt className="sr-only">Best for</dt>
+                  <dd>{engine.bestFor}</dd>
+                </div>
+              </dl>
+              <div className="mt-3 text-sm text-accent underline underline-offset-2">See presets</div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function MiniFAQ() {
   const items = [
     {
@@ -469,6 +516,7 @@ export default async function HomePage() {
           ctaLabel={examplesCalloutCopy.cta}
           eyebrow={examplesCalloutCopy.eyebrow}
         />
+        <CompareEngines />
 
         <section className="mx-auto mt-20 max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mb-6 flex items-center justify-between gap-4">
