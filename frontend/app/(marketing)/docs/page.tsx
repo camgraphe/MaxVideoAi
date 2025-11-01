@@ -170,6 +170,46 @@ export default async function DocsIndexPage() {
           </div>
         </div>
       </nav>
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'CollectionPage',
+            name: 'Docs — Onboarding, Brand Safety, Refunds & API Webhooks',
+            url: `${SITE}/docs`,
+            hasPart: [
+              { '@type': 'WebPage', name: 'Onboarding', url: `${SITE}/docs#onboarding` },
+              { '@type': 'WebPage', name: 'Price system', url: `${SITE}/docs#pricing` },
+              { '@type': 'WebPage', name: 'Refunds', url: `${SITE}/docs#refunds` },
+              { '@type': 'WebPage', name: 'Brand safety', url: `${SITE}/docs#safety` },
+              { '@type': 'WebPage', name: 'API references', url: `${SITE}/docs#api` },
+              { '@type': 'WebPage', name: 'Library', url: `${SITE}/docs#library` },
+            ],
+            about: ['onboarding', 'refund policy', 'brand safety', 'webhooks', 'api references'],
+            publisher: {
+              '@type': 'Organization',
+              name: 'MaxVideo AI',
+              url: SITE,
+            },
+          }),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE}/` },
+              { '@type': 'ListItem', position: 2, name: 'Docs', item: `${SITE}/docs` },
+            ],
+          }),
+        }}
+      />
     </div>
   );
 }
