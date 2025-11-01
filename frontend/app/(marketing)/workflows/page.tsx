@@ -70,16 +70,8 @@ export default function WorkflowsPage() {
       live: FEATURES.workflows.nanoBananaImage,
     },
     {
-      label: 'Google Drive delivery',
-      live: FEATURES.delivery.drive,
-    },
-    {
-      label: 'OneDrive delivery',
-      live: FEATURES.delivery.onedrive,
-    },
-    {
-      label: 'Dropbox delivery',
-      live: FEATURES.delivery.dropbox,
+      label: 'Delivery: Google Drive, OneDrive, Dropbox',
+      live: FEATURES.delivery.drive && FEATURES.delivery.onedrive && FEATURES.delivery.dropbox,
     },
   ] as const;
 
