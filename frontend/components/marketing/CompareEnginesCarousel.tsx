@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 
 export type CompareEngineCard = {
@@ -26,14 +26,28 @@ export function CompareEnginesCarousel({ engines }: CompareEnginesCarouselProps)
     if (!el) return;
     const card = el.querySelector<HTMLElement>('[data-card]');
     const width = card ? card.offsetWidth + 16 : 320;
-    el.scrollBy({ left: direction * width, behavior: 'smooth' });
+    const target = el.scrollLeft + direction * width;
+    const loopWidth = el.scrollWidth / 2;
+    let next = target;
+    if (loopWidth > 0) {
+      while (next < 0) next += loopWidth;
+      while (next >= loopWidth) next -= loopWidth;
+    }
+    el.scrollTo({ left: next, behavior: 'smooth' });
   };
+
+  const renderedEngines = useMemo(() => {
+    if (engines.length === 0) return [];
+    return [...engines, ...engines];
+  }, [engines]);
 
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
     let lastTime: number | null = null;
-    const speed = 0.05; // pixels per millisecond for gentle drift
+    const speed = 0.02; // pixels per millisecond for gentle drift
+
+    el.scrollLeft = 0;
 
     const tick = (timestamp: number) => {
       if (!el) return;
@@ -42,11 +56,16 @@ export function CompareEnginesCarousel({ engines }: CompareEnginesCarouselProps)
       }
       const delta = timestamp - lastTime;
       lastTime = timestamp;
-      el.scrollLeft += delta * speed;
-      const maxScroll = el.scrollWidth - el.clientWidth;
-      if (el.scrollLeft >= maxScroll - 1) {
-        el.scrollLeft = 0;
+      const loopWidth = el.scrollWidth / 2;
+      if (loopWidth <= 0) {
+        animationRef.current = requestAnimationFrame(tick);
+        return;
       }
+      let next = el.scrollLeft + delta * speed;
+      if (next >= loopWidth) {
+        next -= loopWidth;
+      }
+      el.scrollLeft = next;
       animationRef.current = requestAnimationFrame(tick);
     };
 
@@ -56,7 +75,7 @@ export function CompareEnginesCarousel({ engines }: CompareEnginesCarouselProps)
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [engines]);
+  }, [renderedEngines.length]);
 
   return (
     <section aria-labelledby="compare-engines" className="mx-auto mt-20 max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -93,9 +112,9 @@ export function CompareEnginesCarousel({ engines }: CompareEnginesCarouselProps)
           className="compare-engines-scroll mt-4 flex gap-4 overflow-x-auto scroll-smooth pb-2"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {engines.map((engine) => (
+          {renderedEngines.map((engine, index) => (
             <Link
-              key={engine.key}
+              key={`${engine.key}-${index}`}
               href={engine.href}
               aria-label={`See presets for ${engine.name}`}
               data-card
