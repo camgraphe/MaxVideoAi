@@ -1037,6 +1037,11 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
         question: 'Do Sora 2 renders include a watermark?',
         answer: 'No. Outputs are delivered clean, ready for editing and distribution.',
       },
+      {
+        question: 'How does billing work with FAL credits or my OpenAI API key?',
+        answer:
+          'MaxVideo AI routes Sora 2 runs through FAL by default. Drop your own OpenAI API key in the app to bill usage directly through OpenAI—the interface keeps showing an indicative rate and adds a "Billed by OpenAI" badge so finance teams stay aligned.',
+      },
     ],
     pricingHint: {
       currency: 'USD',
