@@ -1,8 +1,8 @@
 export const FEATURES = {
   delivery: {
-    drive: false,
-    onedrive: false,
-    s3: false,
+    drive: true,
+    onedrive: true,
+    s3: true,
     dropbox: false,
   },
   workflows: {
@@ -15,6 +15,9 @@ export const FEATURES = {
       aejson: false,
     },
     budgetControls: false,
+  },
+  marketing: {
+    nanoBananaImage: false,
   },
   pricing: {
     publicCalculator: true,

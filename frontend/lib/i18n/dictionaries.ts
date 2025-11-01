@@ -595,7 +595,7 @@ const en: Dictionary = {
     hero: {
       title: 'Express vs Workflows.',
       subtitle:
-        'Express handles rapid experimentation. Workflows ships the live “Price before you generate” chip today, with Nano Banana image exports and Drive/OneDrive/Dropbox hand-offs coming soon.',
+        'Express handles rapid experimentation. Workflows keeps the live “Price before you generate” chip today, with additional delivery integrations rolling out gradually.',
     },
     express: {
       badge: 'Express',
@@ -610,9 +610,9 @@ const en: Dictionary = {
       badge: 'Workflows',
       title: 'Full hand-off for brand and post teams.',
       features: [
-        'Price-before-you-generate chip on every preset',
-        'Nano Banana engine image export (coming soon)',
-        'Delivery hand-offs for Google Drive, OneDrive, Dropbox (coming soon)',
+        'Price before you generate chip (live)',
+        'Delivery via Google Drive, OneDrive, Dropbox (coming soon)',
+        'Nano Banana image (coming soon)',
       ],
     },
   },

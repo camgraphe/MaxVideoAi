@@ -60,26 +60,18 @@ export default function WorkflowsPage() {
   const content = dictionary.workflows;
   const models = listAvailableModels(true);
   const availabilityLabels = dictionary.models.availabilityLabels;
-  const workflowHighlights = [
-    {
-      label: 'Price-before-you-generate chip',
-      live: FEATURES.workflows.priceChip,
-    },
-    {
-      label: 'Nano Banana engine image export',
-      live: FEATURES.workflows.nanoBananaImage,
-    },
-    {
-      label: 'Delivery: Google Drive, OneDrive, Dropbox',
-      live: FEATURES.delivery.drive && FEATURES.delivery.onedrive && FEATURES.delivery.dropbox,
-    },
-  ] as const;
-
   return (
     <div className="mx-auto max-w-5xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
       <header className="space-y-3">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
-        <p className="max-w-2xl text-base text-text-secondary">{content.hero.subtitle}</p>
+        <p className="max-w-2xl text-sm text-text-muted">
+          Compare rapid exploration with Express and structured team hand-off with Workflows. The live “Price before you generate” chip is available today.
+        </p>
+        {!(FEATURES.delivery.drive && FEATURES.delivery.onedrive && FEATURES.delivery.s3) ? (
+          <p className="text-xs text-text-muted">
+            Additional delivery integrations are rolling out gradually.
+          </p>
+        ) : null}
       </header>
       <section className="mt-4">
         <figure className="overflow-hidden rounded-2xl border border-hairline">
@@ -97,7 +89,7 @@ export default function WorkflowsPage() {
       </section>
 
       <section aria-labelledby="express-vs-workflows" className="mt-6">
-        <h2 id="express-vs-workflows" className="sr-only">
+        <h2 id="express-vs-workflows" className="scroll-mt-28 sr-only">
           Express vs Workflows
         </h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -128,15 +120,76 @@ export default function WorkflowsPage() {
               </div>
             </div>
             <ul className="mt-3 space-y-1.5 text-sm text-text-secondary">
-              {workflowHighlights.map((item) => (
-                <li key={item.label} className="flex flex-wrap items-center gap-2">
-                  <span>• {item.label}</span>
-                  <FlagPill live={item.live} />
-                <span className="sr-only">{item.live ? 'Live' : 'Coming soon'}</span>
-                </li>
-              ))}
+              <li className="flex flex-wrap items-center gap-2">
+                <span>• Price before you generate</span>
+                <FlagPill live />
+                <span className="sr-only">Live</span>
+              </li>
+              <li className="flex flex-wrap items-center gap-2">
+                <span>• Delivery: Google Drive, OneDrive, Dropbox</span>
+                <FlagPill live={FEATURES.delivery.drive && FEATURES.delivery.onedrive && FEATURES.delivery.dropbox} />
+                <span className="sr-only">
+                  {FEATURES.delivery.drive && FEATURES.delivery.onedrive && FEATURES.delivery.dropbox ? 'Live' : 'Coming soon'}
+                </span>
+              </li>
+              <li className="flex flex-wrap items-center gap-2">
+                <span>• Nano Banana image</span>
+                <FlagPill live={FEATURES.marketing.nanoBananaImage} />
+                <span className="sr-only">{FEATURES.marketing.nanoBananaImage ? 'Live' : 'Coming soon'}</span>
+              </li>
             </ul>
           </div>
+        </div>
+      </section>
+      <section aria-labelledby="pick-a-workflow" className="mt-10">
+        <h2 id="pick-a-workflow" className="text-lg font-semibold text-text-primary">Pick a workflow</h2>
+        <p className="mb-4 text-sm text-text-secondary">Start from a common use case. You can swap engines later.</p>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <a
+            href="/examples?tag=ads"
+            className="rounded-2xl border border-hairline bg-white p-5 shadow-card transition hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            <div className="text-base font-semibold text-text-primary">Ads creative</div>
+            <p className="mt-1 text-sm text-text-secondary">
+              6–12s cuts, product hero shots, end-cards. Great with Veo 3.1.
+            </p>
+            <ul className="mt-3 space-y-1.5 text-sm text-text-secondary">
+              <li>• 16:9 / 9:16 variants</li>
+              <li>• Logo lockups &amp; simple supers</li>
+              <li>• Optional voice-over</li>
+            </ul>
+            <div className="mt-3 text-sm font-semibold text-accent underline underline-offset-2">Browse examples →</div>
+          </a>
+          <a
+            href="/examples?tag=product-broll"
+            className="rounded-2xl border border-hairline bg-white p-5 shadow-card transition hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            <div className="text-base font-semibold text-text-primary">Product B-roll</div>
+            <p className="mt-1 text-sm text-text-secondary">
+              Stylised loops and clean macro moves. Fast with Pika 2.2.
+            </p>
+            <ul className="mt-3 space-y-1.5 text-sm text-text-secondary">
+              <li>• 5–8s loops</li>
+              <li>• 1:1 / 4:5 storefront</li>
+              <li>• Image-to-video remixes</li>
+            </ul>
+            <div className="mt-3 text-sm font-semibold text-accent underline underline-offset-2">Browse examples →</div>
+          </a>
+          <a
+            href="/examples?tag=music-video"
+            className="rounded-2xl border border-hairline bg-white p-5 shadow-card transition hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            <div className="text-base font-semibold text-text-primary">Music video / Narrative</div>
+            <p className="mt-1 text-sm text-text-secondary">
+              Cinematic motion, synced audio. Strong with Sora 2.
+            </p>
+            <ul className="mt-3 space-y-1.5 text-sm text-text-secondary">
+              <li>• 8–12s shots</li>
+              <li>• 1080p delivery</li>
+              <li>• Native audio on</li>
+            </ul>
+            <div className="mt-3 text-sm font-semibold text-accent underline underline-offset-2">Browse examples →</div>
+          </a>
         </div>
       </section>
       <section className="mt-12 rounded-card border border-hairline bg-white p-6 shadow-card">
