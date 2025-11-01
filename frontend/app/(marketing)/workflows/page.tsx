@@ -8,30 +8,52 @@ import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
 import { FEATURES } from '@/content/feature-flags';
 import { FlagPill } from '@/components/FlagPill';
 
-export const metadata: Metadata = {
-  title: 'Workflows — MaxVideo AI',
-  description: 'Express templates and full workflows for team production, approvals, and delivery.',
-  keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
-  openGraph: {
-    title: 'Workflows — MaxVideo AI',
-    description: 'Choose Express for rapid runs or Workflows for brand governance and hand-offs.',
-    images: [
-      {
-        url: '/og/price-before.png',
-        width: 1200,
-        height: 630,
-        alt: 'Workflows overview.',
+const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://maxvideoai.com';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const url = `${SITE}/workflows`;
+  const title = 'Workflows — Presets and repeatable shots';
+  const description =
+    'Ready-to-run workflows for ads, product B-roll, music videos, and more. Clone presets, price before you generate, and iterate fast.';
+  const ogImage = `${SITE}/og/price-before.png`;
+
+  return {
+    title: `${title} — MaxVideo AI`,
+    description,
+    alternates: {
+      canonical: url,
+      languages: {
+        en: url,
+        fr: `${url}?lang=fr`,
       },
-    ],
-  },
-  alternates: {
-    canonical: 'https://maxvideoai.com/workflows',
-    languages: {
-      en: 'https://maxvideoai.com/workflows',
-      fr: 'https://maxvideoai.com/workflows?lang=fr',
     },
-  },
-};
+    openGraph: {
+      type: 'website',
+      url,
+      siteName: 'MaxVideo AI',
+      title: `${title} — MaxVideo AI`,
+      description,
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: 'Workflows — MaxVideo AI',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} — MaxVideo AI`,
+      description,
+      images: [ogImage],
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  };
+}
 
 export default function WorkflowsPage() {
   const { dictionary } = resolveDictionary();
