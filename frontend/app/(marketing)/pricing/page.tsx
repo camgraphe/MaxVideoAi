@@ -9,6 +9,7 @@ import { DEFAULT_MARKETING_SCENARIO, scenarioToPricingInput } from '@/lib/pricin
 import FaqJsonLd from '@/components/FaqJsonLd';
 import { FEATURES } from '@/content/feature-flags';
 import { FlagPill } from '@/components/FlagPill';
+import { getMembershipTiers } from '@/lib/membership';
 
 export const metadata: Metadata = {
   title: 'Pricing — MaxVideo AI',
@@ -35,7 +36,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function PricingPage() {
+export default async function PricingPage() {
   const { dictionary } = resolveDictionary();
   const content = dictionary.pricing;
   const teams = content.teams;
@@ -245,27 +246,33 @@ export default function PricingPage() {
       </section>
 
       <section className="mt-12 rounded-card border border-hairline bg-white p-6 shadow-card">
-        <h2 className="text-xl font-semibold text-text-primary">{teams.title}</h2>
+        <h2 className="text-xl font-semibold text-text-primary">
+          {teams.title}
+          <FlagPill live={FEATURES.pricing.teams} className="ml-3" />
+        </h2>
         <p className="mt-2 text-sm text-text-secondary">{teams.description}</p>
-        <ul className="mt-4 space-y-3 text-sm text-text-secondary">
-          {teams.points.map((point) => (
-            <li key={point} className="flex items-start gap-2">
-              <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-accent" />
-              <span>{point}</span>
-            </li>
-          ))}
-        </ul>
+        {FEATURES.pricing.teams ? (
+          <ul className="mt-4 space-y-3 text-sm text-text-secondary">
+            {teams.points.map((point) => (
+              <li key={point} className="flex items-start gap-2">
+                <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-accent" />
+                <span>{point}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-4 text-sm text-text-secondary">{teams.comingSoonNote}</p>
+        )}
       </section>
 
       <section className="mt-12 rounded-card border border-hairline bg-white p-6 shadow-card">
         <h2 className="text-xl font-semibold text-text-primary">
           {member.title}
           <FlagPill live={FEATURES.pricing.memberTiers} className="ml-3" />
-          {!FEATURES.pricing.memberTiers ? <span className="ml-1 text-xs text-text-muted">(coming soon)</span> : null}
         </h2>
         <p className="mt-2 text-sm text-text-secondary">{member.subtitle}</p>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
-          {member.tiers.map((tier) => (
+          {formattedTiers.map((tier) => (
             <div key={tier.name} className="rounded-card border border-hairline bg-bg p-4">
               <p className="text-sm font-semibold text-text-primary">{tier.name}</p>
               <p className="mt-1 text-xs uppercase tracking-micro text-text-muted">{tier.requirement}</p>
@@ -287,7 +294,6 @@ export default function PricingPage() {
                 <span className="inline-flex flex-wrap items-center gap-2">
                   {item.text}
                   <FlagPill live={item.live} />
-                  {!item.live ? <span className="text-xs text-text-muted">(coming soon)</span> : null}
                 </span>
               </li>
             ))}
@@ -327,3 +333,20 @@ export default function PricingPage() {
     </div>
   );
 }
+  const membershipTiers = await getMembershipTiers();
+  const currencyFormatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: starterCurrency,
+    maximumFractionDigits: 0,
+  });
+  const formattedTiers = membershipTiers.map((tier) => {
+    const name = tier.tier.charAt(0).toUpperCase() + tier.tier.slice(1);
+    const requirement = tier.spendThresholdCents <= 0
+      ? 'Default status — applies automatically'
+      : `Admin threshold: ${currencyFormatter.format(tier.spendThresholdCents / 100)} (rolling 30 days)`;
+    const discountPct = tier.discountPercent * 100;
+    const benefit = discountPct > 0
+      ? `Save ${discountPct % 1 === 0 ? discountPct.toFixed(0) : discountPct.toFixed(1)}% on every render`
+      : 'Baseline rate';
+    return { name, requirement, benefit };
+  });

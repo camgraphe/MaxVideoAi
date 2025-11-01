@@ -121,6 +121,7 @@ type Dictionary = {
     teams: {
       title: string;
       description: string;
+      comingSoonNote?: string;
       points: string[];
     };
     member: {
@@ -513,16 +514,17 @@ const en: Dictionary = {
     },
     teams: {
       title: 'Teams',
-      description: 'Shared wallets and roles keep finance, producers, and stakeholders aligned in one workspace.',
+      description: 'Role-based approvals, shared wallets, and delivery hand-offs roll out next. Join the beta to test team controls early.',
+      comingSoonNote: 'Teams features are in private beta. Contact support@maxvideoai.com to join the rollout.',
       points: [
-        'Shared wallets with roles for producers, finance, and reviewers.',
-        'Daily summaries call out spend, refunds, and queued renders.',
-        'Approval trails keep budgets aligned with stakeholders.',
+        'Role-based shared wallets with approvals across finance, producers, and stakeholders.',
+        'Automated daily summaries covering spend, refunds, and queue health.',
+        'Delivery hand-offs to Google Drive, OneDrive, and Dropbox.',
       ],
     },
     member: {
       title: 'Member status',
-      subtitle: 'Status updates daily based on your rolling 30-day spend. Chips read “Member price — You save 5% / 10%.” No subscription required.',
+      subtitle: 'Discounts update instantly when admins edit thresholds in Settings → Billing → Member tiers.',
       tiers: [
         {
           name: 'Member',
@@ -531,13 +533,13 @@ const en: Dictionary = {
         },
         {
           name: 'Plus',
-          requirement: '≥ $50 in rolling 30 days',
-          benefit: 'You save 5%. Unlimited Saved Styles for the workspace.',
+          requirement: 'Admin-defined threshold',
+          benefit: 'Workspace discount set in Billing.',
         },
         {
           name: 'Pro',
-          requirement: '≥ $200 in rolling 30 days',
-          benefit: 'You save 10%. Early access to new engines + light queue boost.',
+          requirement: 'Admin-defined threshold',
+          benefit: 'Workspace discount set in Billing.',
         },
       ],
       chipBase: 'Member price — You save',

@@ -22,5 +22,6 @@ export const FEATURES = {
     itemisedReceipts: true,
     multiApproverTopups: true,
     memberTiers: true,
+    teams: false,
   },
 } as const;
