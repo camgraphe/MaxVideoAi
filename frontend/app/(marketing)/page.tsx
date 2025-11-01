@@ -29,6 +29,7 @@ type HeroTileConfig = {
   minPriceCurrency?: string;
   showAudioIcon?: boolean;
   alt: string;
+  examplesSlug?: string | null;
 };
 
 const HERO_TILES: readonly HeroTileConfig[] = [
@@ -44,6 +45,7 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     minPriceCents: 43,
     showAudioIcon: true,
     alt: 'Sora 2  -  example clip',
+    examplesSlug: 'sora-2',
   },
   {
     id: 'veo-3-1',
@@ -57,6 +59,7 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     minPriceCents: 40,
     showAudioIcon: true,
     alt: 'Veo 3.1  -  example clip',
+    examplesSlug: 'veo-3-1',
   },
   {
     id: 'pika-22',
@@ -69,6 +72,7 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     fallbackPriceLabel: 'from $0.24',
     minPriceCents: 24,
     alt: 'Pika 2.2  -  example clip',
+    examplesSlug: 'pika-2-2',
   },
   {
     id: 'minimax-hailuo-02',
@@ -81,10 +85,22 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     fallbackPriceLabel: 'from $0.27',
     minPriceCents: 27,
     alt: 'MiniMax Hailuo 02  -  example clip',
+    examplesSlug: 'minimax-hailuo-02',
   },
 ] as const;
 
 const WORKS_WITH_BRANDS = ['Sora 2', 'Veo 3.1', 'Pika 2.2', 'MiniMax Hailuo 02'] as const;
+
+const HERO_TILE_EXAMPLE_SLUGS: Record<string, string> = {
+  'sora-2': 'sora-2',
+  'sora-2-pro': 'sora-2-pro',
+  'veo-3-1': 'veo-3-1',
+  'veo-3-fast': 'veo-3-fast',
+  'pika-text-to-video': 'pika-2-2',
+  'pika-2-2': 'pika-2-2',
+  'minimax-hailuo-02-text': 'minimax-hailuo-02',
+  'minimax-hailuo-02': 'minimax-hailuo-02',
+};
 
 type HeroTilePricingInput = {
   id: string;
@@ -212,6 +228,7 @@ export default async function HomePage() {
       fallbackPriceLabel: fallback.fallbackPriceLabel,
       minPriceCents: fallback.minPriceCents ?? null,
       minPriceCurrency: fallback.minPriceCurrency ?? 'USD',
+      examplesSlug: HERO_TILE_EXAMPLE_SLUGS[engineId] ?? fallback.examplesSlug ?? (engineId.includes('/') ? null : engineId),
     };
   });
 
@@ -335,18 +352,26 @@ export default async function HomePage() {
         </p>
         <div className="grid w-full gap-4 sm:grid-cols-2">
           {heroTileConfigs.map((tile, index) => (
-            <HeroMediaTile
-              key={tile.id}
-              label={tile.label}
-              priceLabel={heroPriceMap[tile.id] ?? tile.fallbackPriceLabel}
-              videoSrc={tile.videoSrc}
-              posterSrc={tile.posterSrc}
-              alt={tile.alt}
-              showAudioIcon={tile.showAudioIcon}
-              priority={index === 0}
-              authenticatedHref="/generate"
-              guestHref="/login?next=/generate"
-            />
+            <div key={tile.id} className="flex flex-col">
+              <HeroMediaTile
+                label={tile.label}
+                priceLabel={heroPriceMap[tile.id] ?? tile.fallbackPriceLabel}
+                videoSrc={tile.videoSrc}
+                posterSrc={tile.posterSrc}
+                alt={tile.alt}
+                showAudioIcon={tile.showAudioIcon}
+                priority={index === 0}
+                authenticatedHref="/generate"
+                guestHref="/login?next=/generate"
+              />
+              {tile.examplesSlug ? (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  <Link href={`/examples?engine=${encodeURIComponent(tile.examplesSlug)}`} className="underline underline-offset-2">
+                    Clone these settings
+                  </Link>
+                </p>
+              ) : null}
+            </div>
           ))}
         </div>
       </section>
