@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 
 export type CompareEngineCard = {
@@ -19,6 +19,7 @@ type CompareEnginesCarouselProps = {
 
 export function CompareEnginesCarousel({ engines }: CompareEnginesCarouselProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const animationRef = useRef<number>();
 
   const scrollByCard = (direction: number) => {
     const el = containerRef.current;
@@ -27,6 +28,35 @@ export function CompareEnginesCarousel({ engines }: CompareEnginesCarouselProps)
     const width = card ? card.offsetWidth + 16 : 320;
     el.scrollBy({ left: direction * width, behavior: 'smooth' });
   };
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    let lastTime: number | null = null;
+    const speed = 0.05; // pixels per millisecond for gentle drift
+
+    const tick = (timestamp: number) => {
+      if (!el) return;
+      if (lastTime === null) {
+        lastTime = timestamp;
+      }
+      const delta = timestamp - lastTime;
+      lastTime = timestamp;
+      el.scrollLeft += delta * speed;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (el.scrollLeft >= maxScroll - 1) {
+        el.scrollLeft = 0;
+      }
+      animationRef.current = requestAnimationFrame(tick);
+    };
+
+    animationRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [engines]);
 
   return (
     <section aria-labelledby="compare-engines" className="mx-auto mt-20 max-w-6xl px-4 sm:px-6 lg:px-8">

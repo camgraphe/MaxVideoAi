@@ -128,10 +128,10 @@ const COMPARE_ENGINE_META: Record<
   'veo-3-1': { maxDuration: '8–12s', audio: 'Yes', bestFor: 'Ads & B-roll' },
   'veo-3-fast': { maxDuration: '4–8s', audio: 'Yes', bestFor: 'Faster Veo iterations' },
   'veo-3-1-fast': { maxDuration: '4–8s', audio: 'Yes', bestFor: 'Frame-to-frame bridges' },
-  'pika-text-to-video': { maxDuration: '3–6s', audio: 'Yes', bestFor: 'Fast prompts' },
-  'pika-image-to-video': { maxDuration: '3–6s', audio: 'Yes', bestFor: 'Image animations' },
-  'minimax-hailuo-02-text': { maxDuration: '6–8s', audio: 'Yes', bestFor: 'Stylised motion' },
-  'minimax-hailuo-02-image': { maxDuration: '6–8s', audio: 'Yes', bestFor: 'Image-to-video loops' },
+  'pika-text-to-video': { maxDuration: '3–6s', audio: 'No', bestFor: 'Fast prompts' },
+  'pika-image-to-video': { maxDuration: '3–6s', audio: 'No', bestFor: 'Image animations' },
+  'minimax-hailuo-02-text': { maxDuration: '6–8s', audio: 'No', bestFor: 'Stylised motion' },
+  'minimax-hailuo-02-image': { maxDuration: '6–8s', audio: 'No', bestFor: 'Image-to-video loops' },
 };
 
 function MiniFAQ() {
