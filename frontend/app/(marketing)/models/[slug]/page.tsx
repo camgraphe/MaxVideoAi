@@ -157,6 +157,31 @@ export default function ModelDetailPage({ params }: PageParams) {
   const faqEntries = engine.faqs ?? [];
   const faqJsonLd = faqEntries.map(({ question, answer }) => ({ q: question, a: answer }));
   const pricingHint = engine.pricingHint;
+  const canonicalUrl = `${SITE}${engine.seo.canonicalPath}`;
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: `${SITE}/`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Models',
+        item: `${SITE}/models`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: (MODEL_META[slug]?.title ?? engine.marketingName ?? slug).replace(/ —.*$/, ''),
+        item: canonicalUrl,
+      },
+    ],
+  };
 
   const platformPriceInfo = (() => {
     if (!pricingHint || typeof pricingHint.amountCents !== 'number') return null;
@@ -325,6 +350,11 @@ export default function ModelDetailPage({ params }: PageParams) {
         </Link>
       </footer>
       {faqEntries.length > 0 ? <FaqJsonLd qa={faqJsonLd} /> : null}
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
     </div>
   );
 }
