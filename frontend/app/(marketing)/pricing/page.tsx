@@ -7,6 +7,8 @@ import { resolveDictionary } from '@/lib/i18n/server';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { DEFAULT_MARKETING_SCENARIO, scenarioToPricingInput } from '@/lib/pricing-scenarios';
 import FaqJsonLd from '@/components/FaqJsonLd';
+import { FEATURES } from '@/content/feature-flags';
+import { FlagPill } from '@/components/FlagPill';
 
 export const metadata: Metadata = {
   title: 'Pricing — MaxVideo AI',
@@ -52,6 +54,11 @@ export default function PricingPage() {
       cookieStore.get('supabase-access-token')?.value ??
       cookieStore.get('supabase-auth-token')?.value
   );
+  const refundFeatureItems = [
+    { text: refunds.points[0], live: FEATURES.pricing.refundsAuto },
+    { text: refunds.points[1], live: FEATURES.pricing.itemisedReceipts },
+    { text: refunds.points[2], live: FEATURES.pricing.multiApproverTopups },
+  ] as const;
 
   const productSchema = {
     '@context': 'https://schema.org',
@@ -110,12 +117,18 @@ export default function PricingPage() {
         <div className="mx-auto max-w-4xl">
           <PriceEstimator showWalletActions={isAuthed} />
         </div>
-        <div className="mx-auto mt-6 max-w-3xl text-center text-xs text-text-muted">
-          {content.estimator.walletLink}{' '}
-          <Link href="/pricing-calculator" className="font-semibold text-accent hover:text-accentSoft">
-            {content.estimator.walletLinkCta}
-          </Link>
-          .
+        <div className="mx-auto mt-6 flex max-w-3xl flex-col items-center gap-2 text-center text-xs text-text-muted sm:flex-row sm:justify-center">
+          <FlagPill live={FEATURES.pricing.publicCalculator} />
+          <span>
+            {content.estimator.walletLink}{' '}
+            <Link href="/pricing-calculator" className="font-semibold text-accent hover:text-accentSoft">
+              {content.estimator.walletLinkCta}
+            </Link>
+            .
+            {!FEATURES.pricing.publicCalculator ? (
+              <span className="ml-1 text-xs text-text-muted">(coming soon)</span>
+            ) : null}
+          </span>
         </div>
       </section>
       {!isAuthed ? (
@@ -245,7 +258,11 @@ export default function PricingPage() {
       </section>
 
       <section className="mt-12 rounded-card border border-hairline bg-white p-6 shadow-card">
-        <h2 className="text-xl font-semibold text-text-primary">{member.title}</h2>
+        <h2 className="text-xl font-semibold text-text-primary">
+          {member.title}
+          <FlagPill live={FEATURES.pricing.memberTiers} className="ml-3" />
+          {!FEATURES.pricing.memberTiers ? <span className="ml-1 text-xs text-text-muted">(coming soon)</span> : null}
+        </h2>
         <p className="mt-2 text-sm text-text-secondary">{member.subtitle}</p>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
           {member.tiers.map((tier) => (
@@ -260,12 +277,18 @@ export default function PricingPage() {
 
       <section className="mt-12 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
-          <h2 className="text-xl font-semibold text-text-primary">{refunds.title}</h2>
+          <h2 className="text-xl font-semibold text-text-primary">
+            {refunds.title}
+          </h2>
           <ul className="mt-4 space-y-3 text-sm text-text-secondary">
-            {refunds.points.map((point) => (
-              <li key={point} className="flex items-start gap-2">
+            {refundFeatureItems.map((item) => (
+              <li key={item.text} className="flex items-start gap-2">
                 <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-accent" />
-                <span>{point}</span>
+                <span className="inline-flex flex-wrap items-center gap-2">
+                  {item.text}
+                  <FlagPill live={item.live} />
+                  {!item.live ? <span className="text-xs text-text-muted">(coming soon)</span> : null}
+                </span>
               </li>
             ))}
           </ul>
