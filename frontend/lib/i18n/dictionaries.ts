@@ -775,7 +775,7 @@ const en: Dictionary = {
       {
         title: 'Brief',
         items: [
-          'Fill the brand brief once so Prompt Director, Saved Styles, and routing hints work for everyone.',
+          'Fill the brand brief once so saved defaults and routing hints work for everyone.',
           'Share tone, context, and deliverables so each teammate can render without extra back-and-forth.',
         ],
       },
