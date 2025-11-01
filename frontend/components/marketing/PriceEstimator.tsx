@@ -359,10 +359,6 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
     return { base, discountRate, discountValue, total };
   }, [pricingSnapshot]);
 
-  const handleTopUp = (amount: number) => {
-    setWalletBalance((prev) => Math.round((prev + amount) * 100) / 100);
-  };
-
   const currency = pricingSnapshot?.currency ?? selectedEngine?.currency ?? 'USD';
   const tiers = dictionary.pricing.member.tiers;
   const tooltip = dictionary.pricing.member.tooltip;
