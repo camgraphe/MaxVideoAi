@@ -9,7 +9,7 @@ import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
 import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
 import { MosaicBackdrop } from '@/components/marketing/MosaicBackdrop';
 import { ExamplesOrbitCallout } from '@/components/marketing/ExamplesOrbitCallout';
-import { CompareEnginesCarousel } from '@/components/marketing/CompareEnginesCarousel';
+import { CompareEnginesCarousel, type CompareEngineCard } from '@/components/marketing/CompareEnginesCarousel';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getHomepageSlots, HERO_SLOT_KEYS } from '@/server/homepage';
@@ -101,6 +101,37 @@ const HERO_TILE_EXAMPLE_SLUGS: Record<string, string> = {
   'pika-2-2': 'pika-2-2',
   'minimax-hailuo-02-text': 'minimax-hailuo-02',
   'minimax-hailuo-02': 'minimax-hailuo-02',
+};
+
+const COMPARE_ENGINE_PRIORITY: readonly string[] = [
+  'sora-2',
+  'sora-2-pro',
+  'veo-3-1',
+  'veo-3-fast',
+  'veo-3-1-fast',
+  'pika-text-to-video',
+  'pika-image-to-video',
+  'minimax-hailuo-02-text',
+  'minimax-hailuo-02-image',
+];
+
+const COMPARE_ENGINE_META: Record<
+  string,
+  {
+    maxDuration: string;
+    audio: string;
+    bestFor: string;
+  }
+> = {
+  'sora-2': { maxDuration: '6–8s', audio: 'Yes', bestFor: 'Cinematic shots' },
+  'sora-2-pro': { maxDuration: '6–8s', audio: 'Yes', bestFor: 'Studio-grade Sora renders' },
+  'veo-3-1': { maxDuration: '8–12s', audio: 'Yes', bestFor: 'Ads & B-roll' },
+  'veo-3-fast': { maxDuration: '4–8s', audio: 'Yes', bestFor: 'Faster Veo iterations' },
+  'veo-3-1-fast': { maxDuration: '4–8s', audio: 'Yes', bestFor: 'Frame-to-frame bridges' },
+  'pika-text-to-video': { maxDuration: '3–6s', audio: 'Yes', bestFor: 'Fast prompts' },
+  'pika-image-to-video': { maxDuration: '3–6s', audio: 'Yes', bestFor: 'Image animations' },
+  'minimax-hailuo-02-text': { maxDuration: '6–8s', audio: 'Yes', bestFor: 'Stylised motion' },
+  'minimax-hailuo-02-image': { maxDuration: '6–8s', audio: 'Yes', bestFor: 'Image-to-video loops' },
 };
 
 function MiniFAQ() {
@@ -239,6 +270,25 @@ export default async function HomePage() {
   const waysSection = home.waysSection;
   const homepageSlots = await getHomepageSlots();
   const falEngines = listFalEngines();
+  const compareEngineIndex = new Map(falEngines.map((entry) => [entry.modelSlug, entry]));
+  const compareEngines: CompareEngineCard[] = COMPARE_ENGINE_PRIORITY.map((slug) => {
+    const entry = compareEngineIndex.get(slug);
+    if (!entry) {
+      return null;
+    }
+    const meta = COMPARE_ENGINE_META[slug] ?? { maxDuration: '—', audio: '—', bestFor: '—' };
+    const name = entry.cardTitle ?? entry.marketingName ?? entry.engine.label;
+    const bg = entry.media?.imagePath ?? '/hero/veo3.jpg';
+    return {
+      key: slug,
+      name,
+      maxDuration: meta.maxDuration,
+      audio: meta.audio,
+      bestFor: meta.bestFor,
+      href: `/models/${slug}`,
+      bg,
+    };
+  }).filter((item): item is CompareEngineCard => Boolean(item));
   const proofBackgroundMedia = (await listExamples('date-desc', 20))
     .map((video) => {
       const videoUrl = video.videoUrl ?? null;
@@ -470,7 +520,7 @@ export default async function HomePage() {
           ctaLabel={examplesCalloutCopy.cta}
           eyebrow={examplesCalloutCopy.eyebrow}
         />
-        <CompareEnginesCarousel />
+        <CompareEnginesCarousel engines={compareEngines} />
 
         <section className="mx-auto mt-20 max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mb-6 flex items-center justify-between gap-4">

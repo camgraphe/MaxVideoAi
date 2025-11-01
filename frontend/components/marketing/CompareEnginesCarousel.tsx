@@ -2,10 +2,22 @@
 
 import { useRef } from 'react';
 import Link from 'next/link';
-import clsx from 'clsx';
-import { ENGINES_MINI } from '@/content/engines';
 
-export function CompareEnginesCarousel() {
+export type CompareEngineCard = {
+  key: string;
+  name: string;
+  maxDuration: string;
+  audio: string;
+  bestFor: string;
+  href: string;
+  bg: string;
+};
+
+type CompareEnginesCarouselProps = {
+  engines: CompareEngineCard[];
+};
+
+export function CompareEnginesCarousel({ engines }: CompareEnginesCarouselProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const scrollByCard = (direction: number) => {
@@ -18,7 +30,7 @@ export function CompareEnginesCarousel() {
 
   return (
     <section aria-labelledby="compare-engines" className="mx-auto mt-20 max-w-6xl px-4 sm:px-6 lg:px-8">
-      <div className="rounded-2xl border border-hairline bg-white p-6 shadow-card">
+      <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-card">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 id="compare-engines" className="text-xl font-semibold text-text-primary">
@@ -51,40 +63,41 @@ export function CompareEnginesCarousel() {
           className="compare-engines-scroll mt-4 flex gap-4 overflow-x-auto scroll-smooth pb-2"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {ENGINES_MINI.map((engine) => (
+          {engines.map((engine) => (
             <Link
               key={engine.key}
               href={engine.href}
               aria-label={`See presets for ${engine.name}`}
               data-card
-              className={clsx(
-                'relative w-[260px] shrink-0 snap-start overflow-hidden rounded-xl border border-hairline bg-white/70 sm:w-[300px]',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white'
-              )}
+              className="group relative w-[260px] shrink-0 snap-start overflow-hidden rounded-3xl border border-black/5 bg-white text-neutral-900 shadow-lg transition hover:border-black/10 hover:shadow-xl sm:w-[300px]"
             >
-              <div
-                className="h-40 w-full bg-cover bg-center bg-neutral-200"
-                style={{ backgroundImage: engine.bg ? `url(${engine.bg})` : undefined }}
-                aria-hidden="true"
-              />
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/65 via-black/30 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-4 text-white">
-                <div className="text-sm font-medium">{engine.name}</div>
-                <dl className="mt-1 text-[11px] leading-5 opacity-90">
-                  <div className="flex justify-between gap-3">
-                    <dt>Max</dt>
-                    <dd>{engine.maxDuration}</dd>
+              <div className="relative h-44 overflow-hidden">
+                <div
+                  className="absolute inset-0 bg-cover bg-center bg-neutral-200 opacity-10 transition duration-500 group-hover:opacity-25"
+                  style={{ backgroundImage: engine.bg ? `url(${engine.bg})` : undefined }}
+                  aria-hidden="true"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-white via-white/70 to-white/50 opacity-95 transition group-hover:opacity-80" />
+                <div className="relative flex h-full flex-col justify-end p-4">
+                  <div className="text-sm font-semibold">{engine.name}</div>
+                  <dl className="mt-1 text-xs text-neutral-500">
+                    <div className="flex justify-between gap-3">
+                      <dt>Max</dt>
+                      <dd>{engine.maxDuration}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <dt>Audio</dt>
+                      <dd>{engine.audio}</dd>
+                    </div>
+                    <div className="mt-1">
+                      <dt className="sr-only">Best for</dt>
+                      <dd>{engine.bestFor}</dd>
+                    </div>
+                  </dl>
+                  <div className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-neutral-900/70 transition group-hover:translate-x-1 group-hover:text-neutral-900">
+                    See presets →
                   </div>
-                  <div className="flex justify-between gap-3">
-                    <dt>Audio</dt>
-                    <dd>{engine.audio}</dd>
-                  </div>
-                  <div className="mt-1">
-                    <dt className="sr-only">Best for</dt>
-                    <dd>{engine.bestFor}</dd>
-                  </div>
-                </dl>
-                <div className="mt-2 text-xs underline underline-offset-2">See presets</div>
+                </div>
               </div>
             </Link>
           ))}
