@@ -482,14 +482,6 @@ export default function BillingPage() {
             <p className="mt-3 text-xs text-text-muted">VAT included where applicable. Refunds on failed renders. “Works with” indicates compatibility; trademarks belong to their respective owners.</p>
           </section>
 
-          <section className="rounded-card border border-border bg-white p-4 shadow-card">
-            <h2 className="mb-2 text-lg font-semibold text-text-primary">Payment methods</h2>
-            <p className="text-sm text-text-secondary">Add or remove your card.</p>
-            <div className="mt-3 flex gap-2">
-              <button className="rounded-input border border-border px-3 py-2 text-sm hover:bg-bg">Add card</button>
-              <button className="rounded-input border border-border px-3 py-2 text-sm hover:bg-bg">Remove card</button>
-            </div>
-          </section>
         </main>
       </div>
     </div>
