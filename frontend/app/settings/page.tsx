@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
+import { FlagPill } from '@/components/FlagPill';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useMarketingPreference } from '@/hooks/useMarketingPreference';
+import { FEATURES } from '@/content/feature-flags';
 import useSWR from 'swr';
 import type { Session } from '@supabase/supabase-js';
 
@@ -59,6 +61,8 @@ export default function SettingsPage() {
   }
 
   const preferencesLoadError = preferencesError instanceof Error ? preferencesError.message : null;
+  const teamsLive = FEATURES.workflows.approvals && FEATURES.workflows.budgetControls;
+  const notificationsLive = FEATURES.notifications.center;
 
   return (
     <div className="flex min-h-screen flex-col bg-bg">
@@ -70,14 +74,20 @@ export default function SettingsPage() {
 
           <nav className="mb-4 flex flex-wrap gap-2" aria-label="Settings tabs">
             <TabLink id="account" label="Account" active={tab === 'account'} onClick={() => setTab('account')} />
-            <TabLink id="team" label="Team" active={tab === 'team'} onClick={() => setTab('team')} />
+            <TabLink id="team" label="Team" active={tab === 'team'} onClick={() => setTab('team')} badgeLive={teamsLive} />
             <TabLink id="keys" label="API Keys" active={tab === 'keys'} onClick={() => setTab('keys')} />
             <TabLink id="privacy" label="Privacy & Safety" active={tab === 'privacy'} onClick={() => setTab('privacy')} />
-            <TabLink id="notifications" label="Notifications" active={tab === 'notifications'} onClick={() => setTab('notifications')} />
+            <TabLink
+              id="notifications"
+              label="Notifications"
+              active={tab === 'notifications'}
+              onClick={() => setTab('notifications')}
+              badgeLive={notificationsLive}
+            />
           </nav>
 
           {tab === 'account' && <AccountTab session={session} />}
-          {tab === 'team' && <TeamTab />}
+          {tab === 'team' && <TeamTab live={teamsLive} />}
           {tab === 'keys' && <KeysTab />}
           {tab === 'privacy' && (
             <PrivacyTab
@@ -91,14 +101,26 @@ export default function SettingsPage() {
               }}
             />
           )}
-          {tab === 'notifications' && <NotificationsTab />}
+          {tab === 'notifications' && <NotificationsTab live={notificationsLive} />}
         </main>
       </div>
     </div>
   );
 }
 
-function TabLink({ id, label, active, onClick }: { id: string; label: string; active: boolean; onClick: () => void }) {
+function TabLink({
+  id,
+  label,
+  active,
+  onClick,
+  badgeLive,
+}: {
+  id: string;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  badgeLive?: boolean;
+}) {
   return (
     <button
       type="button"
@@ -107,7 +129,15 @@ function TabLink({ id, label, active, onClick }: { id: string; label: string; ac
       className={`rounded-input border px-3 py-2 text-sm ${active ? 'border-accent bg-white text-text-primary shadow-card' : 'border-border bg-bg text-text-secondary hover:bg-white'}`}
       aria-current={active ? 'page' : undefined}
     >
-      {label}
+      <span className="flex items-center gap-2">
+        {label}
+        {badgeLive === undefined ? null : (
+          <>
+            <FlagPill live={badgeLive} />
+            <span className="sr-only">{badgeLive ? 'Live' : 'Coming soon'}</span>
+          </>
+        )}
+      </span>
     </button>
   );
 }
@@ -328,15 +358,31 @@ function AccountTab({ session }: AccountTabProps) {
   );
 }
 
-function TeamTab() {
+function TeamTab({ live }: { live: boolean }) {
   return (
     <section className="rounded-card border border-border bg-white p-4 shadow-card">
-      <h2 className="mb-3 text-lg font-semibold text-text-primary">Team</h2>
-      <p className="text-sm text-text-secondary">Manage members, roles, budgets and integrations.</p>
-      <div className="mt-3 flex gap-2">
-        <button className="rounded-input border border-border px-3 py-2 text-sm hover:bg-bg">Invite member</button>
-        <button className="rounded-input border border-border px-3 py-2 text-sm hover:bg-bg">Create project</button>
-      </div>
+      <h2 className="mb-2 flex items-center gap-2 text-lg font-semibold text-text-primary">
+        Team
+        <FlagPill live={live} />
+        <span className="sr-only">{live ? 'Live' : 'Coming soon'}</span>
+      </h2>
+      {live ? (
+        <>
+          <p className="text-sm text-text-secondary">Manage members, roles, budgets and integrations.</p>
+          <div className="mt-3 flex gap-2">
+            <button className="rounded-input border border-border px-3 py-2 text-sm hover:bg-bg">Invite member</button>
+            <button className="rounded-input border border-border px-3 py-2 text-sm hover:bg-bg">Create project</button>
+          </div>
+        </>
+      ) : (
+        <div className="mt-2 rounded-xl border border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
+          Coming soon — shared wallets, approvals, and budgets. Join the beta at{' '}
+          <a className="underline underline-offset-2" href="mailto:support@maxvideoai.com">
+            support@maxvideoai.com
+          </a>
+          .
+        </div>
+      )}
     </section>
   );
 }
@@ -407,10 +453,25 @@ function PrivacyTab({
   );
 }
 
-function NotificationsTab() {
-  const { data: marketingPref, isLoading, mutate } = useMarketingPreference(true);
+function NotificationsTab({ live }: { live: boolean }) {
+  const { data: marketingPref, isLoading, mutate } = useMarketingPreference(live);
   const [saving, setSaving] = useState(false);
   const [prefError, setPrefError] = useState<string | null>(null);
+
+  if (!live) {
+    return (
+      <section className="rounded-card border border-border bg-white p-4 shadow-card">
+        <h2 className="mb-2 flex items-center gap-2 text-lg font-semibold text-text-primary">
+          Notifications
+          <FlagPill live={false} />
+          <span className="sr-only">Coming soon</span>
+        </h2>
+        <div className="rounded-xl border border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
+          Coming soon — email digests and web push alerts for spend, queue health, and job status.
+        </div>
+      </section>
+    );
+  }
 
   const handleMarketingToggle = async () => {
     if (saving) return;

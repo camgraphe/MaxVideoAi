@@ -27,6 +27,11 @@ export const FEATURES = {
     memberTiers: true,
     teams: false,
   },
+  notifications: {
+    center: false,
+    emailDigests: false,
+    webPush: false,
+  },
   docs: {
     libraryDocs: false,
     apiPublicRefs: true,
