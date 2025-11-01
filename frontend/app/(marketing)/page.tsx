@@ -102,6 +102,49 @@ const HERO_TILE_EXAMPLE_SLUGS: Record<string, string> = {
   'minimax-hailuo-02': 'minimax-hailuo-02',
 };
 
+function MiniFAQ() {
+  const items = [
+    {
+      q: 'Is Sora 2 available in the EU?',
+      a: 'Sora 2 availability is limited. MaxVideoAI routes your brief to supported engines today and keeps Sora-ready presets for later.',
+    },
+    {
+      q: 'Can I add audio?',
+      a: 'Yes. Engines surfaced on the homepage support audio toggles in the composer. The live price updates when you enable audio.',
+    },
+    {
+      q: 'How does pricing work?',
+      a: 'You see a live price chip before you render. Load $10 to start and top up anytime. Itemised receipts for each job.',
+    },
+    {
+      q: "What’s the refund policy?",
+      a: 'Failed renders auto-refund to your wallet with an itemised receipt. You always keep full control of spend.',
+    },
+  ];
+
+  return (
+    <section aria-labelledby="mini-faq-heading" className="mx-auto mt-20 max-w-6xl px-4 sm:px-6 lg:px-8">
+      <div className="rounded-2xl border border-hairline bg-white p-6 shadow-card">
+        <h2 id="mini-faq-heading" className="text-xl font-semibold text-text-primary">
+          FAQ
+        </h2>
+        <p className="mb-4 text-sm text-muted-foreground">Short answers to the most common questions.</p>
+        <div className="space-y-3">
+          {items.map((item) => (
+            <details key={item.q} className="group rounded-lg border border-hairline bg-white/60 p-4 transition hover:border-accent/40">
+              <summary className="flex cursor-pointer select-none list-none items-center justify-between text-sm font-medium text-text-primary">
+                <span>{item.q}</span>
+                <span className="ml-3 text-muted-foreground transition-transform group-open:rotate-180">▾</span>
+              </summary>
+              <div className="mt-2 text-sm text-text-secondary">{item.a}</div>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 type HeroTilePricingInput = {
   id: string;
   engineId?: string;
@@ -492,6 +535,7 @@ export default async function HomePage() {
           </div>
         </section>
       </MosaicBackdrop>
+      <MiniFAQ />
       <Script id="software-jsonld" type="application/ld+json">
         {JSON.stringify(softwareSchema)}
       </Script>
