@@ -13,7 +13,7 @@ export function MarketingNav() {
   const brand = t('nav.brand', 'MaxVideo AI') ?? 'MaxVideo AI';
   const links = t('nav.links', []) as Array<{ key: string; href: string }>;
   const login = t('nav.login', 'Log in');
-  const cta = t('nav.cta', 'Create a video');
+  const cta = t('nav.cta', 'Start a render');
 
   return (
     <header className="sticky top-0 z-40 border-b border-hairline bg-white/90 backdrop-blur">

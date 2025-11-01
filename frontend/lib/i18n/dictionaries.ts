@@ -121,6 +121,7 @@ type Dictionary = {
     teams: {
       title: string;
       description: string;
+      comingSoonNote?: string;
       points: string[];
     };
     member: {
@@ -286,7 +287,7 @@ const en: Dictionary = {
       { key: 'docs', href: '/docs' },
     ],
     login: 'Log in',
-    cta: 'Create a video',
+    cta: 'Start a render',
     linkLabels: {
       models: 'Models',
       examples: 'Examples',
@@ -315,7 +316,7 @@ const en: Dictionary = {
     hero: {
       title: 'The right engine for every shot.',
       subtitle: 'Professional AI video, minus the hassle. Price before you generate. One hub for your work.',
-      primaryCta: 'Create a video',
+      primaryCta: 'Start a render',
       secondaryCta: 'See how it works',
     },
     worksWith: {
@@ -513,16 +514,17 @@ const en: Dictionary = {
     },
     teams: {
       title: 'Teams',
-      description: 'Shared wallets and roles keep finance, producers, and stakeholders aligned in one workspace.',
+      description: 'Role-based approvals, shared wallets, and delivery hand-offs roll out next. Join the beta to test team controls early.',
+      comingSoonNote: 'Teams features are in private beta. Contact support@maxvideoai.com to join the rollout.',
       points: [
-        'Shared wallets with roles for producers, finance, and reviewers.',
-        'Daily summaries call out spend, refunds, and queued renders.',
-        'Approval trails keep budgets aligned with stakeholders.',
+        'Role-based shared wallets with approvals across finance, producers, and stakeholders.',
+        'Automated daily summaries covering spend, refunds, and queue health.',
+        'Delivery hand-offs to Google Drive, OneDrive, and Dropbox.',
       ],
     },
     member: {
       title: 'Member status',
-      subtitle: 'Status updates daily based on your rolling 30-day spend. Chips read “Member price — You save 5% / 10%.” No subscription required.',
+      subtitle: 'Discounts update instantly when admins edit thresholds in Settings → Billing → Member tiers.',
       tiers: [
         {
           name: 'Member',
@@ -531,13 +533,13 @@ const en: Dictionary = {
         },
         {
           name: 'Plus',
-          requirement: '≥ $50 in rolling 30 days',
-          benefit: 'You save 5%. Unlimited Saved Styles for the workspace.',
+          requirement: 'Admin-defined threshold',
+          benefit: 'Workspace discount set in Billing.',
         },
         {
           name: 'Pro',
-          requirement: '≥ $200 in rolling 30 days',
-          benefit: 'You save 10%. Early access to new engines + light queue boost.',
+          requirement: 'Admin-defined threshold',
+          benefit: 'Workspace discount set in Billing.',
         },
       ],
       chipBase: 'Member price — You save',
@@ -593,7 +595,7 @@ const en: Dictionary = {
     hero: {
       title: 'Express vs Workflows.',
       subtitle:
-        'Express handles rapid experimentation. Workflows keeps brand teams aligned with approvals, brand kits, Drive/Dropbox/OneDrive/S3 delivery, and budget controls.',
+        'Express handles rapid experimentation. Workflows keeps the live “Price before you generate” chip today, with additional delivery integrations rolling out gradually.',
     },
     express: {
       badge: 'Express',
@@ -608,10 +610,9 @@ const en: Dictionary = {
       badge: 'Workflows',
       title: 'Full hand-off for brand and post teams.',
       features: [
-        'Brand kits: palettes, fonts, legal copy, saved styles',
-        'Approvals: assign reviewers, comment on renders, lock versions',
-        'Delivery: Drive, Dropbox, OneDrive, S3, plus optional FCPXML or AE JSON hand-off',
-        'Budget controls: multi-approver spend limits and daily summaries',
+        'Price before you generate chip (live)',
+        'Delivery via Google Drive, OneDrive, Dropbox (coming soon)',
+        'Nano Banana image (coming soon)',
       ],
     },
   },
@@ -774,22 +775,22 @@ const en: Dictionary = {
       {
         title: 'Brief',
         items: [
-          'Complete the brand brief to unlock Prompt Director, Saved Styles, and routing hints.',
-          'Share context, tone, and deliverable requirements so every teammate is aligned before rendering.',
+          'Fill the brand brief once so saved defaults and routing hints work for everyone.',
+          'Share tone, context, and deliverables so each teammate can render without extra back-and-forth.',
         ],
       },
       {
         title: 'Price system',
         items: [
-          'Use the estimator to preview costs per engine. Chips display duration, resolution, and discounts.',
+          'Preview the exact price before you render. The price chip updates with duration, resolution, and automatic discounts.',
           'Starter Credits ($10) and rolling Member status (Member / Plus / Pro) update daily.',
         ],
       },
       {
         title: 'Refunds',
         items: [
-          'Failed renders auto-refund in under two minutes with an incident note.',
-          'Itemised receipts include render IDs for finance hand-off.',
+          'If a render fails, your wallet is automatically refunded within minutes and the job includes a short incident note.',
+          'Itemised receipts list engine, duration, resolution, and a job ID—easy hand-off to finance.',
           {
             type: 'link',
             before: 'For legal detail, see ',
@@ -803,8 +804,8 @@ const en: Dictionary = {
       {
         title: 'Brand-safe filters',
         items: [
-          'Layered filters across prompts, media uploads, and outputs guard against policy breaches.',
-          'Sensitive terms route to human review with audit logs and escalation options.',
+          'We block risky prompts, uploads, and outputs by default—so teams stay within policy without extra babysitting.',
+          'Sensitive cases route to human review with an audit trail and simple escalation options when needed.',
           'Admins can request custom allowlists or restricted keywords per workspace.',
         ],
       },

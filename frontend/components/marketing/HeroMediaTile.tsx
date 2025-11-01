@@ -17,6 +17,8 @@ interface HeroMediaTileProps {
   priority?: boolean;
   authenticatedHref?: string;
   guestHref?: string;
+  overlayHref?: string;
+  overlayLabel?: string;
 }
 
 export function HeroMediaTile({
@@ -30,6 +32,8 @@ export function HeroMediaTile({
   priority,
   authenticatedHref,
   guestHref,
+  overlayHref,
+  overlayLabel,
 }: HeroMediaTileProps) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
     if (typeof window === 'undefined') {
@@ -114,17 +118,35 @@ export function HeroMediaTile({
     </figure>
   );
 
-  if (targetHref) {
-    return (
+  const overlay =
+    overlayHref != null ? (
       <Link
-        href={targetHref}
-        className="block rounded-[28px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-        aria-label={`Open ${label} generator`}
+        href={overlayHref}
+        onClick={(event) => {
+          event.stopPropagation();
+        }}
+        className="pointer-events-auto absolute bottom-2 left-1/2 z-10 -translate-x-1/2 text-xs font-medium text-white/90 transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
       >
-        {content}
+        {overlayLabel ?? 'Clone these settings'}
       </Link>
-    );
-  }
+    ) : null;
 
-  return content;
+  const card = targetHref ? (
+    <Link
+      href={targetHref}
+      className="block rounded-[28px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+      aria-label={`Open ${label} generator`}
+    >
+      {content}
+    </Link>
+  ) : (
+    content
+  );
+
+  return (
+    <div className="relative">
+      {card}
+      {overlay}
+    </div>
+  );
 }
