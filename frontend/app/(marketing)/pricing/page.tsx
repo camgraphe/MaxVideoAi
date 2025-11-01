@@ -111,6 +111,105 @@ export default function PricingPage() {
           .
         </div>
       </section>
+      <section aria-labelledby="example-costs" className="mt-10">
+        <h2 id="example-costs" className="text-lg font-semibold text-text-primary">
+          Example costs
+        </h2>
+        <p className="mb-4 text-sm text-text-secondary">
+          Realistic runs to help you plan. Prices update as engines evolve.
+        </p>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
+            <div className="text-sm font-medium text-text-primary">Social clip (vertical)</div>
+            <dl className="mt-2 text-sm text-text-secondary">
+              <div className="flex justify-between">
+                <dt>Engine</dt>
+                <dd>Pika 2.2</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt>Duration</dt>
+                <dd>5s</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt>Resolution</dt>
+                <dd>1080×1920</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt>Audio</dt>
+                <dd>Off</dd>
+              </div>
+            </dl>
+            <div className="mt-3 text-base font-semibold text-text-primary">≈ $0.25</div>
+            <div className="text-xs text-text-muted">Charged only if it succeeds.</div>
+          </div>
+          <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
+            <div className="text-sm font-medium text-text-primary">Cinematic test (landscape)</div>
+            <dl className="mt-2 text-sm text-text-secondary">
+              <div className="flex justify-between">
+                <dt>Engine</dt>
+                <dd>Veo 3.1</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt>Duration</dt>
+                <dd>8s</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt>Resolution</dt>
+                <dd>1920×1080</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt>Audio</dt>
+                <dd>On</dd>
+              </div>
+            </dl>
+            <div className="mt-3 text-base font-semibold text-text-primary">≈ $3.20</div>
+            <div className="text-xs text-text-muted">Price before you generate.</div>
+          </div>
+          <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
+            <div className="text-sm font-medium text-text-primary">Sora 2 narrative (voice-over)</div>
+            <dl className="mt-2 text-sm text-text-secondary">
+              <div className="flex justify-between">
+                <dt>Engine</dt>
+                <dd>Sora 2</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt>Duration</dt>
+                <dd>12s</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt>Resolution</dt>
+                <dd>1920×1080</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt>Audio</dt>
+                <dd>On</dd>
+              </div>
+            </dl>
+            <div className="mt-3 text-base font-semibold text-text-primary">≈ $6.20</div>
+            <div className="text-xs text-text-muted">Automatic refund on fail.</div>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="price-factors" className="mt-8">
+        <h2 id="price-factors" className="text-lg font-semibold text-text-primary">
+          What affects price
+        </h2>
+        <ul className="mt-2 space-y-1 text-sm text-text-secondary">
+          <li>
+            • <strong>Duration</strong> scales linearly (4s / 8s / 12s).
+          </li>
+          <li>
+            • <strong>Resolution</strong> increases cost at 1080p vs 720p.
+          </li>
+          <li>
+            • <strong>Audio</strong> adds a small premium on supported engines.
+          </li>
+          <li>
+            • <strong>Engine tier</strong> (Sora/Veo/Pika/MiniMax) sets the base rate.
+          </li>
+        </ul>
+      </section>
 
       <section className="mt-12 rounded-card border border-hairline bg-white p-6 shadow-card">
         <h2 className="text-xl font-semibold text-text-primary">{teams.title}</h2>
