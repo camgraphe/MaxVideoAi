@@ -225,6 +225,42 @@ export default async function DocsIndexPage() {
           }),
         }}
       />
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: [
+              {
+                '@type': 'Question',
+                name: 'Do Starter Credits expire?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'No. Credits roll forward month to month and sync across teammates with access.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: 'How fast are failed renders refunded?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Refunds are processed automatically within minutes; each job includes a short incident note for finance.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: 'Can we override brand-safety for specific projects?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Yes. Admins can request custom allowlists or restricted keywords per workspace; sensitive cases route to human review with an audit trail.',
+                },
+              },
+            ],
+          }),
+        }}
+      />
     </div>
   );
 }
