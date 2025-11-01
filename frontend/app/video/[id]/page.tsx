@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Script from 'next/script';
+import { CopyPromptButton } from '@/components/CopyPromptButton';
 import { getVideoById } from '@/server/videos';
 
 type PageProps = {
@@ -194,15 +195,18 @@ export default async function VideoPage({ params }: PageProps) {
         <aside className="space-y-4">
           <div className="rounded-card border border-border bg-white p-5 shadow-card">
             <h2 className="text-sm font-semibold text-text-primary">Prompt</h2>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Link
+                href={`/generate?from=${encodeURIComponent(video.id)}`}
+                className="inline-flex items-center rounded-pill border border-hairline px-4 py-2 text-xs font-semibold uppercase tracking-micro text-text-primary transition hover:border-accent hover:text-accent"
+              >
+                Remix in workspace →
+              </Link>
+              <CopyPromptButton prompt={prompt} />
+            </div>
             <p className="mt-2 whitespace-pre-line text-sm text-text-secondary">
               {prompt || 'Prompt unavailable.'}
             </p>
-            <Link
-              href={`/generate?from=${encodeURIComponent(video.id)}`}
-              className="mt-4 inline-flex items-center rounded-pill border border-hairline px-4 py-2 text-xs font-semibold uppercase tracking-micro text-text-primary transition hover:border-accent hover:text-accent"
-            >
-              Remix in workspace →
-            </Link>
           </div>
           <div className="rounded-card border border-border bg-white p-5 shadow-card text-sm text-text-secondary">
             <h3 className="text-sm font-semibold text-text-primary">Details</h3>
