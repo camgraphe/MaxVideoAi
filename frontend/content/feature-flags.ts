@@ -24,4 +24,8 @@ export const FEATURES = {
     memberTiers: true,
     teams: false,
   },
+  docs: {
+    libraryDocs: false,
+    apiPublicRefs: true,
+  },
 } as const;

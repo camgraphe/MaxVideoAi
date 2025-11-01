@@ -775,22 +775,22 @@ const en: Dictionary = {
       {
         title: 'Brief',
         items: [
-          'Complete the brand brief to unlock Prompt Director, Saved Styles, and routing hints.',
-          'Share context, tone, and deliverable requirements so every teammate is aligned before rendering.',
+          'Fill the brand brief once so Prompt Director, Saved Styles, and routing hints work for everyone.',
+          'Share tone, context, and deliverables so each teammate can render without extra back-and-forth.',
         ],
       },
       {
         title: 'Price system',
         items: [
-          'Use the estimator to preview costs per engine. Chips display duration, resolution, and discounts.',
+          'Preview the exact price before you render. The price chip updates with duration, resolution, and automatic discounts.',
           'Starter Credits ($10) and rolling Member status (Member / Plus / Pro) update daily.',
         ],
       },
       {
         title: 'Refunds',
         items: [
-          'Failed renders auto-refund in under two minutes with an incident note.',
-          'Itemised receipts include render IDs for finance hand-off.',
+          'If a render fails, your wallet is automatically refunded within minutes and the job includes a short incident note.',
+          'Itemised receipts list engine, duration, resolution, and a job ID—easy hand-off to finance.',
           {
             type: 'link',
             before: 'For legal detail, see ',
@@ -804,8 +804,8 @@ const en: Dictionary = {
       {
         title: 'Brand-safe filters',
         items: [
-          'Layered filters across prompts, media uploads, and outputs guard against policy breaches.',
-          'Sensitive terms route to human review with audit logs and escalation options.',
+          'We block risky prompts, uploads, and outputs by default—so teams stay within policy without extra babysitting.',
+          'Sensitive cases route to human review with an audit trail and simple escalation options when needed.',
           'Admins can request custom allowlists or restricted keywords per workspace.',
         ],
       },

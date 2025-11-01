@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getContentEntries } from '@/lib/content/markdown';
 import { resolveDictionary } from '@/lib/i18n/server';
+import { FEATURES } from '@/content/feature-flags';
+import { FlagPill } from '@/components/FlagPill';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://maxvideoai.com';
 
@@ -114,6 +116,11 @@ export default async function DocsIndexPage() {
                     className="rounded-card border border-hairline bg-white p-6 shadow-card"
                   >
                     <h2 className="text-lg font-semibold text-text-primary">{section.title}</h2>
+                    {sectionId === 'api' ? (
+                      <p className="mt-1 text-xs text-text-muted">
+                        {FEATURES.docs.apiPublicRefs ? 'Public summary available below.' : 'Full API docs require authentication inside the workspace.'}
+                      </p>
+                    ) : null}
                     <ul className="mt-4 space-y-3 text-sm text-text-secondary">
                       {section.items.map((item, index) => {
                         if (typeof item === 'string') {
@@ -151,10 +158,17 @@ export default async function DocsIndexPage() {
             </section>
 
             <section id="library" className="mt-12">
-              <h2 className="text-xl font-semibold text-text-primary">{content.libraryHeading ?? 'Library'}</h2>
-              {docs.length === 0 ? (
-                <p className="mt-3 text-sm text-text-muted">{content.empty}</p>
-              ) : (
+              <h2 className="flex items-center gap-2 text-xl font-semibold text-text-primary">
+                {content.libraryHeading ?? 'Library'}
+                <FlagPill live={FEATURES.docs.libraryDocs} />
+                <span className="sr-only">{FEATURES.docs.libraryDocs ? 'Live' : 'Coming soon'}</span>
+              </h2>
+              <p className="mt-2 text-sm text-text-secondary">
+                {FEATURES.docs.libraryDocs
+                  ? 'Browse reusable assets, presets, and reference prompts for your team.'
+                  : 'Documentation coming soon.'}
+              </p>
+              {FEATURES.docs.libraryDocs && docs.length > 0 ? (
                 <ul className="mt-4 space-y-3 text-sm text-text-secondary">
                   {docs.map((doc) => (
                     <li key={doc.slug}>
@@ -165,11 +179,12 @@ export default async function DocsIndexPage() {
                     </li>
                   ))}
                 </ul>
-              )}
+              ) : null}
             </section>
           </div>
         </div>
       </nav>
+      <p className="mt-8 text-xs text-text-muted">Last updated: {new Date().toISOString().slice(0, 10)}</p>
       <script
         type="application/ld+json"
         suppressHydrationWarning
