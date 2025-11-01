@@ -328,6 +328,11 @@ export default async function HomePage() {
             {hero.secondaryCta}
           </Link>
         </div>
+        <p className="mt-2 text-sm text-muted-foreground">
+          <Link href="/pricing" className="underline underline-offset-2">
+            Preview pricing
+          </Link>
+        </p>
         <div className="grid w-full gap-4 sm:grid-cols-2">
           {heroTileConfigs.map((tile, index) => (
             <HeroMediaTile
