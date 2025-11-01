@@ -306,68 +306,65 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                 className="group relative mb-[2px] break-inside-avoid overflow-hidden bg-neutral-900/5"
               >
                 <div className="relative">
-                  <Link
-                    href={href}
-                    className="relative block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
-                    aria-label={`Generate like this: ${promptDisplay}`}
-                  >
-                    <div className="relative w-full overflow-hidden" style={{ aspectRatio: displayAspect }}>
-                      {video.videoUrl ? (
-                        <video
-                          className="absolute inset-0 h-full w-full object-cover"
-                          autoPlay
-                          muted
-                          loop
-                          playsInline
-                          preload="metadata"
-                          poster={video.thumbUrl}
+                  <div className="relative w-full overflow-hidden" style={{ aspectRatio: displayAspect }}>
+                    {video.videoUrl ? (
+                      <video
+                        className="absolute inset-0 h-full w-full object-cover"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        preload="metadata"
+                        poster={video.thumbUrl}
+                      >
+                        <source src={video.videoUrl} type="video/mp4" />
+                      </video>
+                    ) : video.thumbUrl ? (
+                      <Image
+                        src={video.thumbUrl}
+                        alt={promptDisplay}
+                        fill
+                        className="object-cover"
+                        sizes="(min-width: 1280px) 320px, (min-width: 768px) 280px, 100vw"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-neutral-200 text-xs font-semibold uppercase tracking-micro text-text-muted">
+                        Preview unavailable
+                      </div>
+                    )}
+                    {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available on playback" /> : null}
+                    <div className="pointer-events-none absolute inset-0 flex flex-col justify-between bg-gradient-to-b from-black/20 via-black/60 to-black/85 opacity-0 transition duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
+                      <div className="space-y-2.5 p-5 text-white">
+                        <div className="flex items-center gap-2 text-white">
+                          <EngineIcon
+                            engine={{
+                              id: engineMeta?.id ?? video.engineId ?? '',
+                              label: engineMeta?.label ?? video.engineLabel ?? 'Engine',
+                              brandId: engineMeta?.brandId,
+                            }}
+                            size={24}
+                            rounded="full"
+                          />
+                          <h2 className="text-base font-semibold leading-tight sm:text-lg">
+                            {engineMeta?.label ?? video.engineLabel ?? 'Engine'}
+                          </h2>
+                          {priceLabel ? (
+                            <span className="ml-auto text-[11px] font-medium text-white/70 sm:text-xs">{priceLabel}</span>
+                          ) : null}
+                        </div>
+                        <p className="text-[10px] font-medium leading-snug text-white/75 sm:text-[11px]">{promptDisplay}</p>
+                      </div>
+                      <div className="flex items-center justify-between gap-3 p-5 text-[10px] text-white/70 sm:text-xs">
+                        <Link
+                          href={href}
+                          className="pointer-events-auto rounded-full bg-white/20 px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-micro text-white transition hover:bg-white/40 sm:text-[10px]"
                         >
-                          <source src={video.videoUrl} type="video/mp4" />
-                        </video>
-                      ) : video.thumbUrl ? (
-                        <Image
-                          src={video.thumbUrl}
-                          alt={promptDisplay}
-                          fill
-                          className="object-cover"
-                          sizes="(min-width: 1280px) 320px, (min-width: 768px) 280px, 100vw"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center bg-neutral-200 text-xs font-semibold uppercase tracking-micro text-text-muted">
-                          Preview unavailable
-                        </div>
-                      )}
-                      {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available on playback" /> : null}
-                      <div className="pointer-events-none absolute inset-0 flex flex-col justify-between bg-gradient-to-b from-black/20 via-black/60 to-black/85 opacity-0 transition duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
-                        <div className="space-y-2.5 p-5 text-white">
-                          <div className="flex items-center gap-2 text-white">
-                            <EngineIcon
-                              engine={{
-                                id: engineMeta?.id ?? video.engineId ?? '',
-                                label: engineMeta?.label ?? video.engineLabel ?? 'Engine',
-                                brandId: engineMeta?.brandId,
-                              }}
-                              size={24}
-                              rounded="full"
-                            />
-                            <h2 className="text-base font-semibold leading-tight sm:text-lg">
-                              {engineMeta?.label ?? video.engineLabel ?? 'Engine'}
-                            </h2>
-                            {priceLabel ? (
-                              <span className="ml-auto text-[11px] font-medium text-white/70 sm:text-xs">{priceLabel}</span>
-                            ) : null}
-                          </div>
-                          <p className="text-[10px] font-medium leading-snug text-white/75 sm:text-[11px]">{promptDisplay}</p>
-                        </div>
-                        <div className="flex items-center justify-between gap-3 p-5 text-[10px] text-white/70 sm:text-xs">
-                          <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-micro text-white sm:text-[10px]">
-                            Generate like this
-                          </span>
-                          <span className="text-white/60">{video.aspectRatio ?? 'Auto'} · {video.durationSec}s</span>
-                        </div>
+                          Generate like this
+                        </Link>
+                        <span className="text-white/60">{video.aspectRatio ?? 'Auto'} · {video.durationSec}s</span>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                   <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                     <Link
                       href={`/video/${encodeURIComponent(video.id)}`}
