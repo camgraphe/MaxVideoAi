@@ -367,6 +367,14 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                     </div>
                   </div>
                 </Link>
+                <div className="bg-white px-4 py-3 text-[11px] font-medium text-text-secondary">
+                  <Link
+                    href={`/video/${encodeURIComponent(video.id)}`}
+                    className="underline underline-offset-2 text-accent hover:text-accentSoft"
+                  >
+                    View this video →
+                  </Link>
+                </div>
               </article>
             );
           })}
