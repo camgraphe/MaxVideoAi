@@ -4,7 +4,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
+import { FlagPill } from '@/components/FlagPill';
 import { runPreflight, useEngines } from '@/lib/api';
+import { FEATURES } from '@/content/feature-flags';
 import type { EngineCaps, Mode, Resolution, AspectRatio } from '@/types/engines';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
@@ -256,6 +258,8 @@ export default function BillingPage() {
     return null;
   }
 
+  const teamsLive = FEATURES.pricing.teams;
+
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <HeaderBar />
@@ -304,22 +308,38 @@ export default function BillingPage() {
                 <span className="rounded-full bg-accent/10 px-2 py-1 text-xs text-accent">{`You save ${member?.savingsPct ?? 0}%`}</span>
               </div>
               <ul className="mt-3 list-disc pl-5 text-sm text-text-secondary">
-                <li>Member — standard pricing.</li>
-                <li>Plus (≥ $50 / 30 days) — 5% off every run + Saved Styles (unlimited).</li>
-                <li>Pro (≥ $200 / 30 days) — 10% off every run + early access to new engines + light queue boost.</li>
+                <li>Member — standard rate on every render.</li>
+                <li>Plus (≥ $50 / 30 days) — automatic 5% discount on every render.</li>
+                <li>Pro (≥ $200 / 30 days) — automatic 10% discount plus priority incident handling.</li>
               </ul>
             </div>
           </section>
 
           {/* For Teams (optional module) */}
           <section className="mb-6 rounded-card border border-border bg-white p-4 shadow-card">
-            <h2 className="mb-1 text-lg font-semibold text-text-primary">For Teams (optional)</h2>
-            <p className="text-sm text-text-secondary">Shared wallet & roles. Let your team create with one balance. Set soft/hard project budgets. Daily summary by email.</p>
-            <div className="mt-3 flex gap-2">
-              <button className="rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg">Invite teammates</button>
-              <button className="rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg">Set project budgets</button>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-text-primary">For Teams</h2>
+              <FlagPill live={teamsLive} />
+              <span className="sr-only">{teamsLive ? 'Live' : 'Coming soon'}</span>
             </div>
-            <p className="mt-2 text-xs text-text-muted">Team note: On shared wallets, status applies to all members.</p>
+            {teamsLive ? (
+              <>
+                <p className="mt-1 text-sm text-text-secondary">Shared wallet &amp; roles. Let your team create with one balance. Set soft/hard project budgets. Daily summary by email.</p>
+                <div className="mt-3 flex gap-2">
+                  <button className="rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg">Invite teammates</button>
+                  <button className="rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg">Set project budgets</button>
+                </div>
+                <p className="mt-2 text-xs text-text-muted">Team note: On shared wallets, status applies to all members.</p>
+              </>
+            ) : (
+              <div className="mt-2 rounded-input border border-border bg-bg px-4 py-3 text-sm text-text-secondary">
+                Coming soon — unified wallets, role-based approvals, and budgeting controls. Join the beta at{' '}
+                <a className="underline underline-offset-2" href="mailto:support@maxvideoai.com">
+                  support@maxvideoai.com
+                </a>
+                .
+              </div>
+            )}
           </section>
 
           <section className="mb-6 rounded-card border border-border bg-white p-4 shadow-card">
