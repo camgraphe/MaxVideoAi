@@ -3,30 +3,52 @@ import Link from 'next/link';
 import { getContentEntries } from '@/lib/content/markdown';
 import { resolveDictionary } from '@/lib/i18n/server';
 
-export const metadata: Metadata = {
-  title: 'Docs — MaxVideo AI',
-  description: 'Onboarding, works-with notices, brand-safe filters, and refund policies for MaxVideo AI.',
-  keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
-  openGraph: {
-    title: 'Docs — MaxVideo AI',
-    description: 'Documentation for onboarding, routing, brand safety, and refunds.',
-    images: [
-      {
-        url: '/og/price-before.png',
-        width: 1200,
-        height: 630,
-        alt: 'Documentation overview.',
+const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://maxvideoai.com';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const url = `${SITE}/docs`;
+  const title = 'Docs — Onboarding, Brand Safety, Refunds & API Webhooks';
+  const description =
+    'Start here for onboarding, price system and refunds. Learn about brand-safe filters and see webhook/API references. Deeper guides live in the authenticated workspace.';
+  const ogImage = `${SITE}/og/price-before.png`;
+
+  return {
+    title: `${title} — MaxVideo AI`,
+    description,
+    alternates: {
+      canonical: url,
+      languages: {
+        en: url,
+        fr: `${url}?lang=fr`,
       },
-    ],
-  },
-  alternates: {
-    canonical: 'https://maxvideoai.com/docs',
-    languages: {
-      en: 'https://maxvideoai.com/docs',
-      fr: 'https://maxvideoai.com/docs?lang=fr',
     },
-  },
-};
+    openGraph: {
+      type: 'website',
+      url,
+      siteName: 'MaxVideo AI',
+      title: `${title} — MaxVideo AI`,
+      description,
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: 'Docs — MaxVideo AI',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} — MaxVideo AI`,
+      description,
+      images: [ogImage],
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  };
+}
 
 export default async function DocsIndexPage() {
   const { dictionary } = resolveDictionary();
