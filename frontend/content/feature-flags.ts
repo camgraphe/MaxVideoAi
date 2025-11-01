@@ -1,11 +1,13 @@
 export const FEATURES = {
   delivery: {
-    drive: true,
-    onedrive: true,
-    s3: true,
+    drive: false,
+    onedrive: false,
+    s3: false,
     dropbox: false,
   },
   workflows: {
+    priceChip: true,
+    nanoBananaImage: false,
     brandKits: false,
     approvals: false,
     deliveryExports: {

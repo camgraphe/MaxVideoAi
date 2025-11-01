@@ -60,35 +60,27 @@ export default function WorkflowsPage() {
   const content = dictionary.workflows;
   const models = listAvailableModels(true);
   const availabilityLabels = dictionary.models.availabilityLabels;
-  const workflowFeatureGroups = [
+  const workflowHighlights = [
     {
-      key: 'brandKits',
-      title: 'Brand kits',
-      description: 'Palettes, fonts, legal copy, saved styles.',
-      live: FEATURES.workflows.brandKits,
+      label: 'Price-before-you-generate chip',
+      live: FEATURES.workflows.priceChip,
     },
     {
-      key: 'approvals',
-      title: 'Approvals',
-      description: 'Assign reviewers, comment on renders, lock versions.',
-      live: FEATURES.workflows.approvals,
+      label: 'Nano Banana engine image export',
+      live: FEATURES.workflows.nanoBananaImage,
     },
     {
-      key: 'budgetControls',
-      title: 'Budget controls',
-      description: 'Multi-approver spend limits and daily summaries.',
-      live: FEATURES.workflows.budgetControls,
+      label: 'Google Drive delivery',
+      live: FEATURES.delivery.drive,
     },
-  ] as const;
-  const deliveryExports = [
-    { name: 'Final Cut Pro XML (FCPXML)', live: FEATURES.workflows.deliveryExports.fcxpxml },
-    { name: 'After Effects JSON', live: FEATURES.workflows.deliveryExports.aejson },
-  ] as const;
-  const deliveryIntegrations = [
-    { name: 'Google Drive', live: FEATURES.delivery.drive },
-    { name: 'OneDrive', live: FEATURES.delivery.onedrive },
-    { name: 'Amazon S3', live: FEATURES.delivery.s3 },
-    { name: 'Dropbox', live: FEATURES.delivery.dropbox },
+    {
+      label: 'OneDrive delivery',
+      live: FEATURES.delivery.onedrive,
+    },
+    {
+      label: 'Dropbox delivery',
+      live: FEATURES.delivery.dropbox,
+    },
   ] as const;
 
   return (
@@ -144,33 +136,14 @@ export default function WorkflowsPage() {
               </div>
             </div>
             <ul className="mt-3 space-y-1.5 text-sm text-text-secondary">
-              <li className="flex flex-wrap items-center gap-2">
-                <span>• Brand kits</span>
-                <FlagPill live={FEATURES.workflows.brandKits} />
-                <span className="sr-only">{FEATURES.workflows.brandKits ? 'Live' : 'Coming soon'}</span>
-              </li>
-              <li className="flex flex-wrap items-center gap-2">
-                <span>• Approvals (reviewers, comments, version locks)</span>
-                <FlagPill live={FEATURES.workflows.approvals} />
-                <span className="sr-only">{FEATURES.workflows.approvals ? 'Live' : 'Coming soon'}</span>
-              </li>
-              <li className="flex flex-wrap items-center gap-2">
-                <span>• Budget controls (limits &amp; daily summaries)</span>
-                <FlagPill live={FEATURES.workflows.budgetControls} />
-                <span className="sr-only">{FEATURES.workflows.budgetControls ? 'Live' : 'Coming soon'}</span>
-              </li>
-              <li className="flex flex-wrap items-center gap-2">
-                <span>• Delivery: Drive, OneDrive, S3</span>
-                <FlagPill live={FEATURES.delivery.drive && FEATURES.delivery.onedrive && FEATURES.delivery.s3} />
-                <span className="sr-only">
-                  {FEATURES.delivery.drive && FEATURES.delivery.onedrive && FEATURES.delivery.s3 ? 'Live' : 'Coming soon'}
-                </span>
-              </li>
-              <li className="flex flex-wrap items-center gap-2">
-                <span>• Dropbox</span>
-                <FlagPill live={FEATURES.delivery.dropbox} />
-                <span className="sr-only">{FEATURES.delivery.dropbox ? 'Live' : 'Coming soon'}</span>
-              </li>
+              {workflowHighlights.map((item) => (
+                <li key={item.label} className="flex flex-wrap items-center gap-2">
+                  <span>• {item.label}</span>
+                  <FlagPill live={item.live} />
+                  <span className="sr-only">{item.live ? 'Live' : 'Coming soon'}</span>
+                  {!item.live ? <span className="text-xs text-text-muted">(coming soon)</span> : null}
+                </li>
+              ))}
             </ul>
           </div>
         </div>
