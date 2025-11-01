@@ -61,30 +61,62 @@ const ENGINE_META = (() => {
   return map;
 })();
 
-export const metadata: Metadata = {
-  title: 'Examples - MaxVideo AI',
-  description: 'Explore real outputs from routed models across use cases and aspect ratios.',
-  keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
-  openGraph: {
-    title: 'Examples - MaxVideo AI',
-    description: 'Real AI video outputs with hover loops and engine routing annotations.',
-    images: [
-      {
-        url: '/og/price-before.png',
-        width: 1200,
-        height: 630,
-        alt: 'Examples grid preview.',
+const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://maxvideoai.com';
+
+function toAbsoluteUrl(url?: string | null): string | null {
+  if (!url) return null;
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('//')) return `https:${url}`;
+  if (url.startsWith('/')) return `${SITE}${url}`;
+  return `${SITE}/${url}`;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const title = 'Engine showcases — MaxVideo AI';
+  const description =
+    'A curated gallery of AI video renders across Sora, Veo, Pika, and MiniMax. Hover to loop, click to expand, and clone settings.';
+
+  const latest = await listExamples('date-desc', 20);
+  const firstWithThumb = latest.find((video) => Boolean(video.thumbUrl));
+  const ogImage = toAbsoluteUrl(firstWithThumb?.thumbUrl) ?? `${SITE}/og/price-before.png`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${SITE}/examples`,
+      languages: {
+        en: `${SITE}/examples`,
+        fr: `${SITE}/examples?lang=fr`,
       },
-    ],
-  },
-  alternates: {
-    canonical: 'https://maxvideoai.com/examples',
-    languages: {
-      en: 'https://maxvideoai.com/examples',
-      fr: 'https://maxvideoai.com/examples?lang=fr',
     },
-  },
-};
+    openGraph: {
+      type: 'website',
+      url: `${SITE}/examples`,
+      siteName: 'MaxVideo AI',
+      title,
+      description,
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: 'MaxVideo AI — Examples gallery preview',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogImage],
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  };
+}
 
 type ExamplesPageProps = {
   searchParams: Record<string, string | string[] | undefined>;
