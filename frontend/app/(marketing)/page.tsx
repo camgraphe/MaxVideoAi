@@ -7,7 +7,6 @@ import { PriceChip } from '@/components/marketing/PriceChip';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
 import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
-import { HeroTileOverlayLink } from '@/components/marketing/HeroTileOverlayLink';
 import { MosaicBackdrop } from '@/components/marketing/MosaicBackdrop';
 import { ExamplesOrbitCallout } from '@/components/marketing/ExamplesOrbitCallout';
 import { getPricingKernel } from '@/lib/pricing-kernel';
@@ -353,22 +352,19 @@ export default async function HomePage() {
         </p>
         <div className="grid w-full gap-4 sm:grid-cols-2">
           {heroTileConfigs.map((tile, index) => (
-            <div key={tile.id} className="relative">
-              <HeroMediaTile
-                label={tile.label}
-                priceLabel={heroPriceMap[tile.id] ?? tile.fallbackPriceLabel}
-                videoSrc={tile.videoSrc}
-                posterSrc={tile.posterSrc}
-                alt={tile.alt}
-                showAudioIcon={tile.showAudioIcon}
-                priority={index === 0}
-                authenticatedHref="/generate"
-                guestHref="/login?next=/generate"
-              />
-              {tile.examplesSlug ? (
-                <HeroTileOverlayLink href={`/examples?engine=${encodeURIComponent(tile.examplesSlug)}`} />
-              ) : null}
-            </div>
+            <HeroMediaTile
+              key={tile.id}
+              label={tile.label}
+              priceLabel={heroPriceMap[tile.id] ?? tile.fallbackPriceLabel}
+              videoSrc={tile.videoSrc}
+              posterSrc={tile.posterSrc}
+              alt={tile.alt}
+              showAudioIcon={tile.showAudioIcon}
+              priority={index === 0}
+              authenticatedHref="/generate"
+              guestHref="/login?next=/generate"
+              overlayHref={tile.examplesSlug ? `/examples?engine=${encodeURIComponent(tile.examplesSlug)}` : undefined}
+            />
           ))}
         </div>
       </section>
