@@ -144,7 +144,7 @@ export async function GET(): Promise<Response> {
 
     const body = eligible
       .map((video) => {
-        const pageUrl = `${CANONICAL_BASE_URL}/v/${encodeURIComponent(video.id)}`;
+        const pageUrl = `${CANONICAL_BASE_URL}/video/${encodeURIComponent(video.id)}`;
         const contentUrl = toAbsoluteUrl(video.videoUrl);
         const thumbnailUrl = toAbsoluteUrl(video.thumbUrl);
         if (!contentUrl || !thumbnailUrl) {

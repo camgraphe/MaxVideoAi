@@ -97,7 +97,7 @@ export function TakedownForm() {
           required
           value={url}
           onChange={(event) => setUrl(event.target.value)}
-          placeholder="https://maxvideoai.com/v/..."
+          placeholder="https://maxvideoai.com/video/..."
           className="w-full rounded border border-border bg-input px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/40"
         />
       </div>

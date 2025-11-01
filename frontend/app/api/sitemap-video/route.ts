@@ -24,7 +24,7 @@ export async function GET() {
     const urls = videos
       .filter((video) => Boolean(video.videoUrl))
       .map((video) => {
-        const loc = `https://maxvideoai.com/v/${encodeURIComponent(video.id)}`;
+        const loc = `https://maxvideoai.com/video/${encodeURIComponent(video.id)}`;
         const summary = video.prompt.replace(/\s+/g, ' ').trim();
         const description = summary.length > 280 ? `${summary.slice(0, 279)}…` : summary;
         const duration = Math.max(0, Math.floor(video.durationSec ?? 0));
