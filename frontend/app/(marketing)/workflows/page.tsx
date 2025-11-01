@@ -112,71 +112,68 @@ export default function WorkflowsPage() {
         </p>
       </section>
 
-      <section className="mt-12 grid gap-6 lg:grid-cols-2">
-        <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
-          <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">{content.express.badge}</span>
-          <h2 className="mt-4 text-xl font-semibold text-text-primary">{content.express.title}</h2>
-          <ul className="mt-4 space-y-3 text-sm text-text-secondary">
-            {content.express.features.map((feature) => (
-              <li key={feature} className="flex items-start gap-2">
-                <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-accent" />
-                <span>{feature}</span>
-              </li>
-            ))}
-          </ul>
-        </article>
-        <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
-          <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">{content.workflows.badge}</span>
-          <h2 className="mt-4 text-xl font-semibold text-text-primary">{content.workflows.title}</h2>
-          <div className="mt-4 space-y-5 text-sm text-text-secondary">
-            {workflowFeatureGroups.map((feature) => (
-              <div key={feature.key}>
-                <div className="flex items-center gap-2 text-sm font-semibold text-text-primary">
-                  <span>{feature.title}</span>
-                  <FlagPill live={feature.live} />
-                  {!feature.live ? <span className="text-xs text-text-muted">(coming soon)</span> : null}
-                </div>
-                <p className="mt-1 text-sm text-text-secondary">{feature.description}</p>
+      <section aria-labelledby="express-vs-workflows" className="mt-6">
+        <h2 id="express-vs-workflows" className="sr-only">
+          Express vs Workflows
+        </h2>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="rounded-2xl border border-hairline bg-white p-5 shadow-card">
+            <div className="flex items-center gap-3">
+              <div aria-hidden className="flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-sm">
+                ⚡
               </div>
-            ))}
-            <div>
-              <div className="flex items-center gap-2 text-sm font-semibold text-text-primary">
-                <span>Delivery exports</span>
-                <FlagPill
-                  live={
-                    FEATURES.workflows.deliveryExports.fcxpxml || FEATURES.workflows.deliveryExports.aejson
-                  }
-                />
-                {!(FEATURES.workflows.deliveryExports.fcxpxml || FEATURES.workflows.deliveryExports.aejson) ? (
-                  <span className="text-xs text-text-muted">(coming soon)</span>
-                ) : null}
+              <div>
+                <h3 className="text-base font-semibold text-text-primary">Express</h3>
+                <p className="text-sm text-text-secondary">Spin up publish-ready clips in minutes.</p>
               </div>
-              <ul className="mt-2 space-y-1 text-sm">
-                {deliveryExports.map((item) => (
-                  <li key={item.name} className="flex items-center gap-2">
-                    <span>{item.name}</span>
-                    <FlagPill live={item.live} />
-                    {!item.live ? <span className="text-xs text-text-muted">(coming soon)</span> : null}
-                  </li>
-                ))}
-              </ul>
             </div>
-            <div>
-              <div className="flex items-center gap-2 text-sm font-semibold text-text-primary">
-                <span>Delivery integrations</span>
-              </div>
-              <ul className="mt-2 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
-                {deliveryIntegrations.map((integration) => (
-                  <li key={integration.name} className="flex items-center gap-2">
-                    <span>{integration.name}</span>
-                    <FlagPill live={integration.live} />
-                    {!integration.live ? <span className="text-xs text-text-muted">(coming soon)</span> : null}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <ul className="mt-3 space-y-1.5 text-sm text-text-secondary">
+              <li>• Template library with prompt scaffolds and guardrails</li>
+              <li>• Caption burn-in and optional voice-over generation</li>
+              <li>• Auto ratio exports for 16:9, 1:1, 9:16, 4:5</li>
+            </ul>
           </div>
-        </article>
+          <div className="rounded-2xl border border-hairline bg-white p-5 shadow-card">
+            <div className="flex items-center gap-3">
+              <div aria-hidden className="flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-sm">
+                🧩
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-text-primary">Workflows</h3>
+                <p className="text-sm text-text-secondary">Full hand-off for brand and post teams.</p>
+              </div>
+            </div>
+            <ul className="mt-3 space-y-1.5 text-sm text-text-secondary">
+              <li className="flex flex-wrap items-center gap-2">
+                <span>• Brand kits</span>
+                <FlagPill live={FEATURES.workflows.brandKits} />
+                <span className="sr-only">{FEATURES.workflows.brandKits ? 'Live' : 'Coming soon'}</span>
+              </li>
+              <li className="flex flex-wrap items-center gap-2">
+                <span>• Approvals (reviewers, comments, version locks)</span>
+                <FlagPill live={FEATURES.workflows.approvals} />
+                <span className="sr-only">{FEATURES.workflows.approvals ? 'Live' : 'Coming soon'}</span>
+              </li>
+              <li className="flex flex-wrap items-center gap-2">
+                <span>• Budget controls (limits &amp; daily summaries)</span>
+                <FlagPill live={FEATURES.workflows.budgetControls} />
+                <span className="sr-only">{FEATURES.workflows.budgetControls ? 'Live' : 'Coming soon'}</span>
+              </li>
+              <li className="flex flex-wrap items-center gap-2">
+                <span>• Delivery: Drive, OneDrive, S3</span>
+                <FlagPill live={FEATURES.delivery.drive && FEATURES.delivery.onedrive && FEATURES.delivery.s3} />
+                <span className="sr-only">
+                  {FEATURES.delivery.drive && FEATURES.delivery.onedrive && FEATURES.delivery.s3 ? 'Live' : 'Coming soon'}
+                </span>
+              </li>
+              <li className="flex flex-wrap items-center gap-2">
+                <span>• Dropbox</span>
+                <FlagPill live={FEATURES.delivery.dropbox} />
+                <span className="sr-only">{FEATURES.delivery.dropbox ? 'Live' : 'Coming soon'}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
       </section>
       <section className="mt-12 rounded-card border border-hairline bg-white p-6 shadow-card">
         <h2 className="text-xl font-semibold text-text-primary">Model roster</h2>
