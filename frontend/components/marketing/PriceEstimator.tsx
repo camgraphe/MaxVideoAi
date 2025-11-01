@@ -29,7 +29,6 @@ interface EngineOption {
 }
 
 interface PriceEstimatorProps {
-  showWalletActions?: boolean;
   variant?: 'full' | 'lite';
 }
 
@@ -220,7 +219,7 @@ function formatCurrency(value: number, currency: string) {
   }).format(value);
 }
 
-export function PriceEstimator({ showWalletActions = true, variant = 'full' }: PriceEstimatorProps) {
+export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
   const engineId = useId();
   const durationId = useId();
   const resolutionId = useId();
@@ -322,8 +321,6 @@ export function PriceEstimator({ showWalletActions = true, variant = 'full' }: P
   }, [selectedEngine, duration]);
 
   const [memberTier, setMemberTier] = useState<MemberTier>('Member');
-  const [autoTopUp, setAutoTopUp] = useState(false);
-  const [walletBalance, setWalletBalance] = useState(25);
 
   const activeResolution = selectedEngine?.resolutions.find((resolution) => resolution.value === selectedResolution) ?? selectedEngine?.resolutions[0];
   const rate = activeResolution?.rate ?? 0;
@@ -387,16 +384,6 @@ export function PriceEstimator({ showWalletActions = true, variant = 'full' }: P
     return map;
   }, [dictionary.pricing.member.tiers]);
 
-  const walletBalanceLabel =
-    dictionary.pricing.wallet.balanceLabel ?? t('pricing.wallet.balanceLabel', 'Wallet balance') ?? 'Wallet balance';
-  const walletHelper =
-    dictionary.pricing.wallet.balanceHelper ?? t('pricing.wallet.balanceHelper', 'Starter Credits begin at $10. Shared wallets sync automatically.') ??
-    'Starter Credits begin at $10. Shared wallets sync automatically.';
-  const walletAutoLabel =
-    dictionary.pricing.wallet.autoTopUpLabel ?? t('pricing.wallet.autoTopUpLabel', 'Auto top-up when balance dips below $10') ??
-    'Auto top-up when balance dips below $10';
-  const addLabelTemplate =
-    dictionary.pricing.wallet.addLabel ?? t('pricing.wallet.addLabel', 'Add ${amount}') ?? 'Add ${amount}';
   const chargedNote =
     dictionary.pricing.estimator.chargedNote ?? t('pricing.estimator.chargedNote', 'Charged only if render succeeds.') ??
     'Charged only if render succeeds.';
@@ -666,45 +653,7 @@ export function PriceEstimator({ showWalletActions = true, variant = 'full' }: P
         </div>
       </div>
 
-      {showWalletActions && variant === 'full' && (
-        <div className="rounded-[28px] border border-white/70 bg-gradient-to-br from-white via-white/95 to-[#f2f5ff] p-6 shadow-[0_20px_52px_-24px_rgba(15,23,42,0.28)] sm:p-8">
-          <div className="flex flex-wrap items-start justify-between gap-6">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
-                {walletBalanceLabel}
-              </p>
-              <p className="mt-2 text-3xl font-semibold text-text-primary">{formatCurrency(walletBalance, currency)}</p>
-              <p className="mt-2 max-w-sm text-sm text-text-secondary">{walletHelper}</p>
-            </div>
-            <div className="space-y-4">
-              <div className="flex flex-wrap gap-2">
-                {[5, 10, 25].map((amount) => (
-                  <button
-                    key={amount}
-                    type="button"
-                    onClick={() => handleTopUp(amount)}
-                    className="rounded-full border border-transparent bg-text-primary/90 px-3 py-1.5 text-xs font-semibold uppercase tracking-micro text-white shadow-[0_12px_30px_-16px_rgba(15,23,42,0.5)] transition hover:bg-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-                  >
-                    {addLabelTemplate.replace('{amount}', amount.toString()).replace('${amount}', `$${amount}`)}
-                  </button>
-                ))}
-              </div>
-              <label className="inline-flex items-center gap-2 text-xs text-text-secondary">
-                <input
-                  type="checkbox"
-                  checked={autoTopUp}
-                  onChange={(event) => setAutoTopUp(event.target.checked)}
-                  className="h-4 w-4 rounded border-hairline text-accent focus:ring-2 focus:ring-ring"
-                />
-                {walletAutoLabel}
-              </label>
-              <p className="text-xs text-text-muted">
-                {dictionary.pricing.wallet.autoTopUpHint ?? t('pricing.wallet.autoTopUpHint', 'Daily status emails keep finance in the loop.')}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Wallet actions removed for marketing surface */}
     </div>
   );
 }

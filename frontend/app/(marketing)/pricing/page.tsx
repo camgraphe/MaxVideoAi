@@ -134,7 +134,7 @@ export default async function PricingPage() {
 
       <section id="estimator" className="mt-12 scroll-mt-28">
         <div className="mx-auto max-w-4xl">
-          <PriceEstimator showWalletActions={isAuthed} />
+          <PriceEstimator />
         </div>
         <div className="mx-auto mt-6 flex max-w-3xl flex-col items-center gap-2 text-center text-xs text-text-muted sm:flex-row sm:justify-center">
           <FlagPill live={FEATURES.pricing.publicCalculator} />

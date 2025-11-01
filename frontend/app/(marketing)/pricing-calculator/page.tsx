@@ -82,7 +82,7 @@ export default function CalculatorPage() {
         <h2 className="text-xl font-semibold text-text-primary">{content.lite.title}</h2>
         <p className="mt-2 text-sm text-text-secondary">{content.lite.subtitle}</p>
         <div className="mt-6">
-          <PriceEstimator showWalletActions={false} variant="lite" />
+          <PriceEstimator variant="lite" />
         </div>
         <p className="mt-4 text-xs text-text-muted">
           {content.lite.footer.split('{link}')[0]}
