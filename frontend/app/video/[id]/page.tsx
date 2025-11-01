@@ -3,8 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Script from 'next/script';
-import { CopyPromptButton } from '@/components/CopyPromptButton';
 import { getVideoById } from '@/server/videos';
+import { VideoPromptCard } from '@/components/VideoPromptCard';
 
 type PageProps = {
   params: { id: string };
@@ -136,9 +136,8 @@ export default async function VideoPage({ params }: PageProps) {
       },
     },
   };
-
   return (
-    <main className="mx-auto max-w-5xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-5xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
       <div className="mb-6 text-xs uppercase tracking-micro text-text-muted">
         <Link href="/examples" className="transition hover:text-text-secondary">
           ← Back to examples
@@ -193,21 +192,7 @@ export default async function VideoPage({ params }: PageProps) {
           </div>
         </section>
         <aside className="space-y-4">
-          <div className="rounded-card border border-border bg-white p-5 shadow-card">
-            <h2 className="text-sm font-semibold text-text-primary">Prompt</h2>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Link
-                href={`/generate?from=${encodeURIComponent(video.id)}`}
-                className="inline-flex items-center rounded-pill border border-hairline px-4 py-2 text-xs font-semibold uppercase tracking-micro text-text-primary transition hover:border-accent hover:text-accent"
-              >
-                Remix in workspace →
-              </Link>
-              <CopyPromptButton prompt={prompt} />
-            </div>
-            <p className="mt-2 whitespace-pre-line text-sm text-text-secondary">
-              {prompt || 'Prompt unavailable.'}
-            </p>
-          </div>
+          <VideoPromptCard prompt={prompt} videoId={video.id} />
           <div className="rounded-card border border-border bg-white p-5 shadow-card text-sm text-text-secondary">
             <h3 className="text-sm font-semibold text-text-primary">Details</h3>
             <ul className="mt-3 space-y-2">
@@ -230,6 +215,6 @@ export default async function VideoPage({ params }: PageProps) {
       <Script id={`video-jsonld-${video.id}`} type="application/ld+json">
         {JSON.stringify(videoJsonLd)}
       </Script>
-    </main>
+    </div>
   );
 }
