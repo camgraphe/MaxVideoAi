@@ -17,7 +17,7 @@ export function HeroTileOverlayLink({ href, label = 'Clone these settings', clas
         event.stopPropagation();
       }}
       className={clsx(
-        'pointer-events-auto absolute bottom-2 left-1/2 z-10 -translate-x-1/2 rounded-full bg-white px-3 py-1 text-xs font-medium text-black shadow ring-1 ring-black/10 transition hover:ring-black/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black/40',
+        'pointer-events-auto absolute bottom-2 left-1/2 z-10 -translate-x-1/2 text-xs font-medium text-white/90 decoration-white/60 underline-offset-4 transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40',
         className
       )}
     >
