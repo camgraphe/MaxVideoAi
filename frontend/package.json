@@ -37,6 +37,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "remark": "^15.0.1",
+    "remark-gfm": "^4.0.1",
     "remark-html": "^16.0.1",
     "resend": "^6.2.0",
     "stripe": "^14.24.0",

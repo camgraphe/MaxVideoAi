@@ -3,6 +3,7 @@ import path from 'path';
 import matter from 'gray-matter';
 import { remark } from 'remark';
 import html from 'remark-html';
+import remarkGfm from 'remark-gfm';
 
 export interface ContentFrontMatter {
   title: string;
@@ -41,7 +42,7 @@ async function parseMarkdownFile(filePath: string): Promise<ContentEntry> {
   if (!frontMatter.slug) {
     frontMatter.slug = path.basename(filePath).replace(/\.(md|mdx)$/i, '');
   }
-  const processed = await remark().use(html).process(content);
+  const processed = await remark().use(remarkGfm).use(html).process(content);
   let htmlContent = processed.toString();
   const structuredData: string[] = [];
 
