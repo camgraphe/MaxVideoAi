@@ -1,6 +1,7 @@
 const path = require('path');
 const isPreviewDeployment = process.env.VERCEL_ENV === 'preview';
 const repoRoot = path.join(__dirname, '..');
+const CONTENT_GLOBS = ['./content/blog/**/*', './content/docs/**/*'];
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -22,10 +23,7 @@ const nextConfig = {
     },
     outputFileTracingRoot: repoRoot,
     outputFileTracingIncludes: {
-      '*': [
-        path.join(repoRoot, 'content', 'blog', '**/*'),
-        path.join(repoRoot, 'content', 'docs', '**/*'),
-      ],
+      '*': CONTENT_GLOBS,
     },
   },
   async redirects() {
