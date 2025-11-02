@@ -21,7 +21,6 @@
     "@fal-ai/server-proxy": "^1.1.1",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@maxvideoai/pricing": "file:../packages/pricing",
-    "ffprobe-static": "^3.1.0",
     "@react-email/components": "^0.5.7",
     "@react-email/render": "^1.4.0",
     "@supabase/supabase-js": "^2.45.4",
@@ -29,6 +28,7 @@
     "@vercel/speed-insights": "^1.2.0",
     "clsx": "^2.1.0",
     "dotenv": "^17.2.3",
+    "ffprobe-static": "^3.1.0",
     "gray-matter": "^4.0.3",
     "micro": "^10.0.1",
     "next": "^14.2.5",
@@ -49,6 +49,7 @@
     ]
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^20.12.7",
     "@types/nodemailer": "^7.0.2",
     "@types/pg": "^8.10.2",

@@ -168,6 +168,46 @@ main {
 }
 
 @layer components {
+  .blog-prose {
+    @apply prose prose-slate max-w-none prose-headings:font-semibold prose-headings:text-text-primary prose-h1:text-4xl prose-h1:leading-tight prose-h2:mt-12 prose-h2:text-3xl prose-h3:mt-8 prose-h3:text-2xl prose-p:leading-7 prose-a:text-accent prose-a:font-semibold prose-strong:text-text-primary prose-code:text-sm prose-code:font-medium prose-ul:list-disc prose-ol:list-decimal prose-li:marker:text-accent prose-img:rounded-[22px] prose-table:w-full prose-table:text-sm prose-hr:border-hairline;
+  }
+
+  .blog-prose pre {
+    @apply rounded-2xl bg-slate-950/95 p-5 text-sm text-slate-100 shadow-inner;
+  }
+
+  .blog-prose code:not(pre code) {
+    @apply rounded bg-slate-900/90 px-1.5 py-0.5 text-xs text-slate-100;
+  }
+
+  .blog-prose blockquote {
+    @apply border-l-4 border-accent/40 bg-accent/5 px-6 py-3 text-lg italic text-text-secondary;
+  }
+
+  .blog-prose table {
+    @apply overflow-hidden rounded-2xl border border-hairline;
+  }
+
+  .blog-prose thead {
+    @apply bg-bg font-semibold;
+  }
+
+  .blog-prose tbody tr td {
+    @apply border-t border-hairline;
+  }
+
+  .blog-prose iframe,
+  .blog-prose video {
+    @apply w-full rounded-2xl shadow-card;
+  }
+
+  @supports (aspect-ratio: 16 / 9) {
+    .blog-prose iframe,
+    .blog-prose video {
+      aspect-ratio: 16 / 9;
+    }
+  }
+
   .orbit-field {
     --orbit-spin: 0deg;
     animation: orbitSpin 36s linear infinite;

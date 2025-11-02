@@ -1,3 +1,5 @@
+import Image from 'next/image';
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Script from 'next/script';
@@ -51,6 +53,13 @@ export default async function BlogPostPage({ params }: { params: Params }) {
     notFound();
   }
 
+  const publishedDate = new Date(post.date);
+  const formattedDate = publishedDate.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+
   const articleSchema = {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -77,17 +86,57 @@ export default async function BlogPostPage({ params }: { params: Params }) {
   };
 
   return (
-    <div className="mx-auto max-w-3xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
-      <article className="space-y-6">
-        <header className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-            {new Date(post.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-          </p>
-          <h1 className="text-3xl font-semibold text-text-primary">{post.title}</h1>
-          <p className="text-base text-text-secondary">{post.description}</p>
+    <div className="mx-auto max-w-5xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
+      <Link
+        href="/blog"
+        className="inline-flex items-center text-sm font-semibold text-accent transition hover:text-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+      >
+        ← Back to blog
+      </Link>
+
+      <article className="mt-6 overflow-hidden rounded-[28px] border border-hairline bg-white/90 shadow-card backdrop-blur">
+        <header className="relative border-b border-hairline bg-gradient-to-br from-white to-bg/60">
+          {post.image ? (
+            <div className="relative h-64 w-full overflow-hidden bg-bg sm:h-80">
+              <Image
+                src={post.image}
+                alt={post.title}
+                fill
+                priority
+                sizes="(min-width: 1024px) 960px, 100vw"
+                className="object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-white via-white/90 via-60% to-white/10" />
+            </div>
+          ) : (
+            <div className="h-24 w-full bg-gradient-to-r from-accent/5 via-accent/10 to-accent/5 sm:h-28" />
+          )}
+          <div className="relative z-10 space-y-6 px-6 pb-10 pt-8 sm:px-10">
+            <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-micro text-text-muted">
+              <span className="rounded-pill border border-hairline bg-white/80 px-3 py-1 font-semibold text-text-secondary shadow-sm">
+                {formattedDate}
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {post.keywords?.map((keyword) => (
+                  <span
+                    key={keyword}
+                    className="rounded-pill bg-accent/10 px-3 py-1 font-semibold text-accent"
+                  >
+                    {keyword}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="max-w-3xl space-y-3">
+              <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">{post.title}</h1>
+              <p className="text-base text-text-secondary sm:text-lg">{post.description}</p>
+            </div>
+          </div>
         </header>
-        <div className="prose prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
+
+        <div className="blog-prose px-6 py-10 sm:px-10" dangerouslySetInnerHTML={{ __html: post.content }} />
       </article>
+
       <Script id={`article-${post.slug}-jsonld`} type="application/ld+json">
         {JSON.stringify(articleSchema)}
       </Script>
