@@ -30,6 +30,13 @@ export default function AiVideoEnginesPage() {
           MaxVideoAI keeps cinematic text-to-video engines compliant, monitored, and production-ready for European teams. Use this hub
           to understand availability, compare creative trade-offs, and launch projects with the right guardrails from day one.
         </p>
+        <p className="text-base text-text-secondary">
+          Not sure which model to pick? Read our{' '}
+          <Link href="/blog/compare-ai-video-engines" className="font-semibold text-accent hover:text-accentSoft">
+            comparison article
+          </Link>
+          .
+        </p>
       </header>
 
       <section className="mt-12 space-y-6">

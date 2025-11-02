@@ -130,6 +130,13 @@ export default async function PricingPage() {
       <header className="max-w-3xl space-y-4">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
         <p className="text-base text-text-secondary">{content.hero.subtitle}</p>
+        <p className="text-base text-text-secondary">
+          See how pricing compares across engines in our{' '}
+          <Link href="/blog/compare-ai-video-engines" className="font-semibold text-accent hover:text-accentSoft">
+            AI video comparison
+          </Link>
+          .
+        </p>
       </header>
 
       <section id="estimator" className="mt-12 scroll-mt-28">

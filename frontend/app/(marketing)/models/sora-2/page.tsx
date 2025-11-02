@@ -213,6 +213,13 @@ export default async function Sora2ModelPage() {
               View pricing
             </Link>
           </p>
+          <p className="mt-3 text-sm text-text-secondary">
+            Compare Sora with Veo and Pika in our{' '}
+            <Link href="/blog/compare-ai-video-engines" className="font-semibold text-accent hover:text-accentSoft">
+              engine guide
+            </Link>
+            .
+          </p>
         </div>
       </div>
     </div>
