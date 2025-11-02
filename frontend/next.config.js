@@ -1,3 +1,4 @@
+const path = require('path');
 const isPreviewDeployment = process.env.VERCEL_ENV === 'preview';
 
 /** @type {import('next').NextConfig} */
@@ -18,6 +19,7 @@ const nextConfig = {
     outputFileTracingExcludes: {
       '*': ['.next/cache/**/*', 'tsconfig.tsbuildinfo'],
     },
+    outputFileTracingRoot: path.join(__dirname, '..'),
   },
   async redirects() {
     return [
