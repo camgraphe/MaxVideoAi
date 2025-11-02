@@ -32,6 +32,7 @@ This table covers current public routes (and near-term additions), the recommend
 | /blog/express-case-study | /blog/express-case-study | /blog/express-ai-video-case-study | /blog/express-retail-video | Case study on Express using AI video. |
 | /blog/veo-3-updates | /blog/veo-3-updates | /blog/veo-3-release | /blog/google-veo-updates | Announcement of Veo v3 launch and features (redirect legacy `/blog/veo-v2-arrives`). |
 | /blog/sora-2-sequenced-prompts | /blog/sora-2-sequenced-prompts | /blog/sora-2-pro-sequenced | /blog/sora-audio-prompts | Sequenced prompt guide for Sora 2 and Sora 2 Pro with branding/audio tips. |
+| /blog/access-sora-2-without-invite | /blog/access-sora-2-without-invite | /blog/sora-2-access-guide | /blog/sora-2-invite | How to access Sora 2 via MaxVideoAI and Fal.ai integrations. |
 | (planned) /blog/topics/<topic> | /blog/topics/<topic> | /blog/category/<topic> | /blog/tags/<topic> | Topic taxonomy landing pages for blog content. |
 | /about | /about | /company | /about-maxvideo | Company background and team. |
 | /contact | /contact | /contact-us | /get-in-touch | Contact options for sales and support. |

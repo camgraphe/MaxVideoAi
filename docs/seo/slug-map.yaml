@@ -128,6 +128,7 @@ collections:
           aliases:
             - veo-v2-arrives
         sora-2-sequenced-prompts: {}
+        access-sora-2-without-invite: {}
   legal:
     - id: legal-hub
       path: /legal
