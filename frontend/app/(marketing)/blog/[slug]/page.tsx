@@ -137,9 +137,20 @@ export default async function BlogPostPage({ params }: { params: Params }) {
         <div className="blog-prose px-6 py-10 sm:px-10" dangerouslySetInnerHTML={{ __html: post.content }} />
       </article>
 
-      <Script id={`article-${post.slug}-jsonld`} type="application/ld+json">
-        {JSON.stringify(articleSchema)}
-      </Script>
+      <Script
+        id={`article-${post.slug}-jsonld`}
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+
+      {post.structuredData?.map((json, index) => (
+        <Script
+          key={`faq-jsonld-${post.slug}-${index}`}
+          id={`faq-jsonld-${post.slug}-${index}`}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: json }}
+        />
+      ))}
     </div>
   );
 }

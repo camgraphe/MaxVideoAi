@@ -16,6 +16,7 @@ export interface ContentFrontMatter {
 export interface ContentEntry extends ContentFrontMatter {
   content: string;
   excerpt: string;
+  structuredData?: string[];
 }
 
 function isErrnoException(error: unknown): error is NodeJS.ErrnoException {
@@ -41,7 +42,17 @@ async function parseMarkdownFile(filePath: string): Promise<ContentEntry> {
     frontMatter.slug = path.basename(filePath).replace(/\.(md|mdx)$/i, '');
   }
   const processed = await remark().use(html).process(content);
-  const htmlContent = processed.toString();
+  let htmlContent = processed.toString();
+  const structuredData: string[] = [];
+
+  const scriptRegex = /<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi;
+  htmlContent = htmlContent.replace(scriptRegex, (_match, json) => {
+    const trimmed = typeof json === 'string' ? json.trim() : '';
+    if (trimmed) {
+      structuredData.push(trimmed);
+    }
+    return '';
+  });
   const excerpt = content
     .split('\n')
     .find((line) => line.trim().length > 0 && !line.startsWith('#'))
@@ -51,6 +62,7 @@ async function parseMarkdownFile(filePath: string): Promise<ContentEntry> {
     ...frontMatter,
     content: htmlContent,
     excerpt,
+    structuredData: structuredData.length ? structuredData : undefined,
   };
 }
 
