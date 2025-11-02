@@ -285,6 +285,7 @@ const en: Dictionary = {
       { key: 'pricing', href: '/pricing' },
       { key: 'workflows', href: '/workflows' },
       { key: 'docs', href: '/docs' },
+      { key: 'blog', href: '/blog' },
     ],
     login: 'Log in',
     cta: 'Start a render',
@@ -294,10 +295,12 @@ const en: Dictionary = {
       pricing: 'Pricing',
       workflows: 'Workflows',
       docs: 'Docs',
+      blog: 'Blog',
     },
   },
   footer: {
     links: [
+      { label: 'Blog', href: '/blog' },
       { label: 'Terms', href: '/legal/terms' },
       { label: 'Privacy', href: '/legal/privacy' },
       { label: 'Acceptable Use', href: '/legal/acceptable-use' },

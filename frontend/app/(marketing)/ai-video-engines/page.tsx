@@ -124,6 +124,13 @@ export default function AiVideoEnginesPage() {
         </div>
       </section>
       <FaqJsonLd qa={FAQ_ITEMS.map(({ question, answer }) => ({ q: question, a: answer }))} />
+      <div className="mt-16 rounded-card border border-hairline bg-white p-6 text-sm leading-relaxed text-text-secondary shadow-card">
+        Looking for sequenced prompt recipes? Read the latest guides on the{' '}
+        <Link href="/blog" className="font-semibold text-accent hover:text-accentSoft">
+          MaxVideoAI blog
+        </Link>{' '}
+        for branded storytelling walkthroughs and engine updates.
+      </div>
     </div>
   );
 }

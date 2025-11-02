@@ -127,6 +127,7 @@ collections:
         veo-3-updates:
           aliases:
             - veo-v2-arrives
+        sora-2-sequenced-prompts: {}
   legal:
     - id: legal-hub
       path: /legal

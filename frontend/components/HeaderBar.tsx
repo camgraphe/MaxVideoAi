@@ -107,6 +107,7 @@ export function HeaderBar() {
             { label: 'Pricing', href: '/pricing' },
             { label: 'Workflows', href: '/workflows' },
             { label: 'Docs', href: '/docs' },
+            { label: 'Blog', href: '/blog' },
           ].map((item) => (
             <Link
               key={item.href}
