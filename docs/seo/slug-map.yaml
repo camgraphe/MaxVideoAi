@@ -123,7 +123,10 @@ collections:
       pattern: /blog/{slug}
       status: live
       slugs:
-        express-case-study: {}
+        compare-ai-video-engines:
+          aliases:
+            - express-case-study
+            - sora-2-vs-veo-3-1
         veo-3-updates:
           aliases:
             - veo-v2-arrives

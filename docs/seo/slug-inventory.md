@@ -29,7 +29,7 @@ This table covers current public routes (and near-term additions), the recommend
 | (planned) /docs/pricing-policy | /docs/pricing-policy | /docs/pricing-rules | /docs/usage-pricing | Policies around pricing and usage limits. |
 | (planned) /docs/faqs | /docs/faqs | /docs/faq | /docs/common-questions | Frequently asked questions. |
 | /blog | /blog | /ai-video-blog | /video-generation-blog | Insights and updates about AI video. |
-| /blog/express-case-study | /blog/express-case-study | /blog/express-ai-video-case-study | /blog/express-retail-video | Case study on Express using AI video. |
+| /blog/compare-ai-video-engines | /blog/compare-ai-video-engines | /blog/sora-veo-pika-comparison | /blog/compare-text-to-video-engines | Comparison guide to pick between Sora 2, Veo 3.1, and Pika 2.2. |
 | /blog/veo-3-updates | /blog/veo-3-updates | /blog/veo-3-release | /blog/google-veo-updates | Announcement of Veo v3 launch and features (redirect legacy `/blog/veo-v2-arrives`). |
 | /blog/sora-2-sequenced-prompts | /blog/sora-2-sequenced-prompts | /blog/sora-2-pro-sequenced | /blog/sora-audio-prompts | Sequenced prompt guide for Sora 2 and Sora 2 Pro with branding/audio tips. |
 | /blog/access-sora-2-without-invite | /blog/access-sora-2-without-invite | /blog/sora-2-access-guide | /blog/sora-2-invite | How to access Sora 2 via MaxVideoAI and Fal.ai integrations. |
