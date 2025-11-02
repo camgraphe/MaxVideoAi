@@ -55,8 +55,27 @@ async function parseMarkdownFile(filePath: string): Promise<ContentEntry> {
 }
 
 export async function getContentEntries(root: string): Promise<ContentEntry[]> {
-  const baseDir = path.join(process.cwd(), root);
-  const files = (await readDirectorySafe(baseDir)).filter((file) => file.endsWith('.md') || file.endsWith('.mdx'));
+  const candidateDirs = [
+    path.join(process.cwd(), root),
+    path.join(process.cwd(), '..', root),
+  ];
+
+  let baseDir: string | null = null;
+  let files: string[] = [];
+
+  for (const dir of candidateDirs) {
+    const dirFiles = (await readDirectorySafe(dir)).filter((file) => file.endsWith('.md') || file.endsWith('.mdx'));
+    if (dirFiles.length > 0) {
+      baseDir = dir;
+      files = dirFiles;
+      break;
+    }
+  }
+
+  if (!baseDir) {
+    return [];
+  }
+
   const entries = await Promise.all(files.map((file) => parseMarkdownFile(path.join(baseDir, file))));
   return entries.sort((a, b) => (a.date > b.date ? -1 : a.date < b.date ? 1 : 0));
 }
