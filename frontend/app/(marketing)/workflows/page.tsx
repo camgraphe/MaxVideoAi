@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
 import clsx from 'clsx';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { listAvailableModels } from '@/lib/model-roster';
@@ -74,23 +73,6 @@ export default function WorkflowsPage() {
           </p>
         ) : null}
       </header>
-      <section className="mt-4">
-        <div className="overflow-hidden rounded-2xl border border-hairline">
-          <Image
-            src="/og/price-before.png"
-            alt="MaxVideoAI workspace with composer, live price chip and gallery rail"
-            width={1280}
-            height={720}
-            className="h-auto w-full"
-            priority
-            sizes="(min-width: 1024px) 960px, 100vw"
-          />
-        </div>
-        <p className="mt-2 text-xs text-text-muted">
-          Composer, live price chip, and gallery rail come together in the workflows workspace.
-        </p>
-      </section>
-
       <section aria-labelledby="express-vs-workflows" className="mt-6">
         <h2 id="express-vs-workflows" className="scroll-mt-28 sr-only">
           Express vs Workflows
