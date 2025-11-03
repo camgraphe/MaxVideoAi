@@ -24,6 +24,7 @@
 | /models/luma-ray-2-flash | /models | Route Ray 2 Flash slug to models hub |
 | /models/kling-2-5-turbo-pro | /models | Consolidate retired Kling tier into main models index |
 | /models/kling-25-turbo-pro | /models | Consolidate retired Kling tier into main models index |
+| /blog/express-case-study | /blog/compare-ai-video-engines | Merge legacy case study into comparison guide |
 | /blog/veo-v2-arrives | /blog/veo-3-updates | Align Veo launch post with version 3 |
 | /privacy | /legal/privacy | Move policies under /legal hub |
 | /terms | /legal/terms | Move policies under /legal hub |
