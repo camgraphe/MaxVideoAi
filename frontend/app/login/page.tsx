@@ -138,7 +138,7 @@ export default function LoginPage() {
     const params = new URLSearchParams(window.location.search);
     const value = params.get('next');
     let resolved = DEFAULT_NEXT_PATH;
-    let source: 'query' | 'stored' | 'last' | 'default' = 'default';
+    let source: 'query' | 'stored' | 'last' | 'referrer' | 'default' = 'default';
     if (value && value.startsWith('/')) {
       resolved = sanitizeNextPath(value);
       source = 'query';
@@ -165,6 +165,21 @@ export default function LoginPage() {
       } else if (lastTarget) {
         resolved = sanitizeNextPath(lastTarget);
         source = 'last';
+      }
+    }
+
+    if (resolved === DEFAULT_NEXT_PATH) {
+      const referrer = document.referrer;
+      const origin = window.location.origin;
+      if (referrer && origin && referrer.startsWith(origin)) {
+        const pathname = referrer.slice(origin.length) || '/';
+        if (pathname.startsWith('/')) {
+          const sanitised = sanitizeNextPath(pathname);
+          if (sanitised && sanitised !== DEFAULT_NEXT_PATH) {
+            resolved = sanitised;
+            source = 'referrer';
+          }
+        }
       }
     }
     setNextPath(resolved);
