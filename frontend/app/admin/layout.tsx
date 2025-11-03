@@ -1,10 +1,18 @@
 import type { ReactNode } from 'react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { AdminAuthError, requireAdmin } from '@/server/admin';
 import { AdminNavigation } from '@/components/admin/AdminNavigation';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 type AdminLayoutProps = {
   children: ReactNode;
