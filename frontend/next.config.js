@@ -84,6 +84,41 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/models/minimax-video-1',
+        destination: '/models/minimax-hailuo-02-text',
+        permanent: true,
+      },
+      {
+        source: '/models/hailuo-2-pro',
+        destination: '/models/minimax-hailuo-02-text',
+        permanent: true,
+      },
+      {
+        source: '/models/luma-dream-machine',
+        destination: '/models',
+        permanent: true,
+      },
+      {
+        source: '/models/luma-ray-2',
+        destination: '/models',
+        permanent: true,
+      },
+      {
+        source: '/models/luma-ray-2-flash',
+        destination: '/models',
+        permanent: true,
+      },
+      {
+        source: '/models/kling-25-turbo-pro',
+        destination: '/models',
+        permanent: true,
+      },
+      {
+        source: '/models/kling-2-5-turbo-pro',
+        destination: '/models',
+        permanent: true,
+      },
+      {
         source: '/blog/veo-v2-arrives',
         destination: '/blog/veo-3-updates',
         permanent: true,

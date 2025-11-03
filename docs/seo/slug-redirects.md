@@ -15,8 +15,15 @@
 | /models/google-veo-3-fast | /models/veo-3-fast | Drop brand prefix for Veo fast |
 | /models/google-veo-3-1-fast | /models/veo-3-1-fast | Align new fast tier naming |
 | /models/minimax-video-01 | /models/minimax-hailuo-02-text | Map legacy MiniMax slug to Standard text tier |
+| /models/minimax-video-1 | /models/minimax-hailuo-02-text | Additional legacy MiniMax slug |
 | /models/minimax-hailuo-02 | /models/minimax-hailuo-02-image | Normalize Hailuo Standard image route |
 | /models/minimax-hailuo-02-pro | /models/minimax-hailuo-02-text | Sunset Pro variant |
+| /models/hailuo-2-pro | /models/minimax-hailuo-02-text | Redirect deprecated Pro slug to Standard page |
+| /models/luma-dream-machine | /models | Route removed Luma engine to models hub |
+| /models/luma-ray-2 | /models | Route legacy Luma Ray 2 slug to models hub |
+| /models/luma-ray-2-flash | /models | Route Ray 2 Flash slug to models hub |
+| /models/kling-2-5-turbo-pro | /models | Consolidate retired Kling tier into main models index |
+| /models/kling-25-turbo-pro | /models | Consolidate retired Kling tier into main models index |
 | /blog/veo-v2-arrives | /blog/veo-3-updates | Align Veo launch post with version 3 |
 | /privacy | /legal/privacy | Move policies under /legal hub |
 | /terms | /legal/terms | Move policies under /legal hub |
