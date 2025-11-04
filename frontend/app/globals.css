@@ -27,15 +27,16 @@ a[href="https://dang.ai/"] {
   overflow: hidden;
 }
 
-/* Temporarily disabled hidden styling for Wavel badge */
-/* a[href*="wavel.io"] {
+:root:not([data-show-wavel-badge]) .wavel-badge {
   position: absolute !important;
   width: 1px !important;
   height: 1px !important;
   overflow: hidden !important;
   clip: rect(1px, 1px, 1px, 1px) !important;
   white-space: nowrap !important;
-} */
+}
+
+/* Add data-show-wavel-badge attribute to <html> to surface the badge for screenshots */
 
 main {
   min-height: 100vh;
