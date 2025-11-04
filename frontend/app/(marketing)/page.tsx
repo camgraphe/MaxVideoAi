@@ -709,7 +709,7 @@ export default async function HomePage() {
       <div className="mt-12 flex justify-center">
         <a href="https://wavel.com" target="_blank" rel="noopener noreferrer" className="inline-flex items-center">
           <img
-            src="https://wavel.com/Wavel-embed-badge-with-light-bg.webp"
+            src="/assets/wavel-badge.webp"
             alt="Featured on Wavel"
             style={{
               height: '60px',
