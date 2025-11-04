@@ -242,7 +242,7 @@ export default async function Sora2ModelPage() {
           <div>
             <dt className="font-semibold text-text-primary">What is required for access?</dt>
             <dd className="mt-1">
-              A verified MaxVideoAI workspace with wallet credits. We handle Fal.ai provisioning, rate-limits, and
+              A verified MaxVideoAI workspace with wallet credits. We handle provider provisioning, rate-limits, and
               compliance reviews; no OpenAI invite is needed.
             </dd>
           </div>

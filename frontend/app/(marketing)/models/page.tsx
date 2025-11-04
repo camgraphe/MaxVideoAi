@@ -86,25 +86,36 @@ export default async function ModelsPage() {
           keep renders flowing.
         </p>
         <div className="grid gap-4 lg:grid-cols-3">
-          <div>
-            <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">When to choose Sora</h2>
-            <p className="mt-2">
-              Use Sora 2 or Sora 2 Pro when you need cinematic physics, character continuity, or audio baked directly
-              into the render. Expect a higher credit cost but premium quality.
+          <div className="rounded-2xl border border-hairline bg-gradient-to-br from-bg via-white to-bg p-5 shadow-card">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-lg">🎬</span>
+              <h3 className="text-xs font-semibold uppercase tracking-micro text-text-muted">When to choose Sora</h3>
+            </div>
+            <p className="mt-3 text-sm">
+              Reach for Sora 2 or Sora 2 Pro when you need cinematic physics, character continuity, or audio baked
+              directly into the render. These tiers cost more per second but deliver hero-quality footage.
             </p>
           </div>
-          <div>
-            <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">When to choose Veo</h2>
-            <p className="mt-2">
-              Veo 3 tiers provide consistent framing, tone presets, and fast variants for iteration. Ideal for ad cuts,
-              b-roll, and campaigns that demand controlled camera moves.
+          <div className="rounded-2xl border border-hairline bg-gradient-to-br from-bg via-white to-bg p-5 shadow-card">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-lg">🎯</span>
+              <h3 className="text-xs font-semibold uppercase tracking-micro text-text-muted">When to choose Veo</h3>
+            </div>
+            <p className="mt-3 text-sm">
+              Veo 3 tiers provide precise framing controls and tone presets, plus fast variants for iteration. They are
+              ideal for ad cuts, b-roll, and campaigns that demand consistent camera moves.
             </p>
           </div>
-          <div>
-            <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">When to choose Pika or MiniMax</h2>
-            <p className="mt-2">
+          <div className="rounded-2xl border border-hairline bg-gradient-to-br from-bg via-white to-bg p-5 shadow-card">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-lg">⚡</span>
+              <h3 className="text-xs font-semibold uppercase tracking-micro text-text-muted">
+                When to choose Pika or MiniMax
+              </h3>
+            </div>
+            <p className="mt-3 text-sm">
               Pika 2.2 excels at stylised loops and social edits, while MiniMax Hailuo 02 keeps budgets low for volume
-              runs. Both are great complements when you need fast alternates.
+              runs. Both complement Sora and Veo when you need fast alternates or lightweight briefs.
             </p>
           </div>
         </div>
