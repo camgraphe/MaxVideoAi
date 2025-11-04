@@ -707,12 +707,16 @@ export default async function HomePage() {
         }}
       />
       <div className="mt-12 flex justify-center">
-        <a href="https://www.wavel.io/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center">
+        <a href="https://wavel.com" target="_blank" rel="noopener noreferrer" className="inline-flex items-center">
           <img
-            src="https://www.wavel.io/badges/featured-light.svg"
+            src="https://wavel.com/Wavel-embed-badge-with-light-bg.webp"
             alt="Featured on Wavel"
-            width="120"
-            height="40"
+            style={{
+              height: '60px',
+              width: 'auto',
+              borderRadius: '8px',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            }}
           />
         </a>
       </div>
