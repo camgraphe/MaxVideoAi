@@ -708,15 +708,13 @@ export default async function HomePage() {
       />
       <div className="mt-12 flex justify-center">
         <a href="https://www.wavel.ai/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center">
-          <img
+          <Image
             src="/assets/wavel-badge.webp"
             alt="Featured on Wavel"
-            style={{
-              height: '60px',
-              width: 'auto',
-              borderRadius: '8px',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-            }}
+            width={200}
+            height={60}
+            className="h-[60px] w-auto rounded-lg shadow-md"
+            priority
           />
         </a>
       </div>
