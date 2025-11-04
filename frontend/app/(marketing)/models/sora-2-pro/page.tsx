@@ -218,6 +218,33 @@ export default async function Sora2ProModelPage() {
           </p>
         </div>
       </div>
+      <div className="mt-8 rounded-card border border-hairline bg-white p-6 text-sm text-text-secondary shadow-card sm:p-8">
+        <h2 className="text-lg font-semibold text-text-primary">Sora 2 Pro FAQ</h2>
+        <dl className="mt-4 space-y-4">
+          <div>
+            <dt className="font-semibold text-text-primary">When should I choose Sora 2 Pro instead of Sora 2?</dt>
+            <dd className="mt-1">
+              Pick Pro when you need longer timelines (up to 12 seconds), heavy camera moves, or direction that spans
+              multiple beats. Standard Sora is ideal for quick explorations, while Pro carries the hero versions to
+              final delivery.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">Does Pro support layered audio prompts?</dt>
+            <dd className="mt-1">
+              Yes—include voice-over, ambience, and effects in the same brief. MaxVideoAI keeps timing in sync so the
+              soundtrack aligns with your shot list.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">Can I recycle a Pro prompt in other engines?</dt>
+            <dd className="mt-1">
+              Absolutely. Duplicate the run in the queue and send it to Veo 3.1 or MiniMax for alternates, or downgrade
+              to Sora 2 for cost-saving drafts without losing the original settings.
+            </dd>
+          </div>
+        </dl>
+      </div>
     </div>
   );
 }

@@ -78,6 +78,35 @@ export default function CalculatorPage() {
         <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
         <p className="text-base text-text-secondary">{content.hero.subtitle}</p>
       </header>
+      <section className="mt-10 rounded-card border border-hairline bg-white/90 p-6 text-sm text-text-secondary shadow-card sm:p-8">
+        <h2 className="text-lg font-semibold text-text-primary">How to use this calculator</h2>
+        <ol className="mt-4 list-decimal space-y-2 pl-5">
+          <li>
+            Pick the engine you plan to use—Sora, Veo, Pika, or MiniMax. The estimator reflects the same live rates we
+            display in the workspace.
+          </li>
+          <li>
+            Adjust duration, resolution, and audio toggles. The <strong>Price Before You Generate</strong> chip updates
+            instantly so finance teams can approve spend before a render starts.
+          </li>
+          <li>
+            Export or screenshot the quote for stakeholders, then jump into the full workspace when you are ready to
+            launch the job.
+          </li>
+        </ol>
+        <p className="mt-4">
+          These estimates capture provider fees plus MaxVideoAI orchestration and refund coverage. If you run multiple
+          engines on the same prompt, re-use the calculator with the other model to see the cost difference before you
+          launch an A/B.
+        </p>
+        <p className="mt-4">
+          Need deeper forecasting? Connect your wallet and pull the spend report inside{' '}
+          <Link href="/pricing" className="font-semibold text-accent hover:text-accentSoft">
+            the pricing overview
+          </Link>{' '}
+          for tiered discounts, or contact us about enterprise credits.
+        </p>
+      </section>
       <section className="mt-12 rounded-card border border-hairline bg-white p-6 shadow-card">
         <h2 className="text-xl font-semibold text-text-primary">{content.lite.title}</h2>
         <p className="mt-2 text-sm text-text-secondary">{content.lite.subtitle}</p>

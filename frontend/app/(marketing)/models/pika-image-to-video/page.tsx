@@ -185,6 +185,32 @@ export default async function PikaImageToVideoPage() {
           </p>
         </div>
       </div>
+      <div className="mt-8 rounded-card border border-hairline bg-white p-6 text-sm text-text-secondary shadow-card sm:p-8">
+        <h2 className="text-lg font-semibold text-text-primary">Pika Image-to-Video FAQ</h2>
+        <dl className="mt-4 space-y-4">
+          <div>
+            <dt className="font-semibold text-text-primary">What assets work best?</dt>
+            <dd className="mt-1">
+              High-contrast PNGs or layered PSD exports. Keep key subjects centred and avoid complex transparent
+              effects—the engine interprets them as motion trails.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">How do I control movement?</dt>
+            <dd className="mt-1">
+              Describe the start and end state (“begin zoomed on the logo, pull back to reveal the packaging”) and note
+              any camera moves. Pika respects those cues while stylising the in-between frames.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">Can I upscale results?</dt>
+            <dd className="mt-1">
+              Yes—send the completed clip through the MaxVideoAI upscaler or rerun it in MiniMax Hailuo 02 for a higher
+              resolution pass while keeping the motion blueprint.
+            </dd>
+          </div>
+        </dl>
+      </div>
     </div>
   );
 }

@@ -29,6 +29,34 @@ export default async function LegalIndexPage() {
         </p>
       </header>
 
+      <section className="rounded-card border border-hairline bg-white/90 p-5 text-sm text-text-secondary shadow-card sm:p-6">
+        <p>
+          Every document here reflects the current production terms for MaxVideoAI. We update policies whenever routing
+          infrastructure, data retention, or partner requirements change, and the most recent version id is referenced
+          directly in the workspace. Use this hub to confirm contractual language, review subprocessors, or download
+          artefacts for your compliance team.
+        </p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-micro text-text-muted">Staying informed</h3>
+            <p className="mt-2">
+              Subscribe to the changelog for release-level updates and check the status page when you need live incident
+              context. Legal updates are timestamped and summarized at the top of each article.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-micro text-text-muted">Need agreements?</h3>
+            <p className="mt-2">
+              Enterprise customers can request signed DPAs, security questionnaires, or SOC documentation by emailing{' '}
+              <a href="mailto:legal@maxvideo.ai" className="font-semibold text-accent hover:text-accentSoft">
+                legal@maxvideo.ai
+              </a>{' '}
+              with their company details and required forms.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <ul className="space-y-4">
         {LINKS.map((entry) => {
           const meta = entry.docKey ? documents[entry.docKey] : null;

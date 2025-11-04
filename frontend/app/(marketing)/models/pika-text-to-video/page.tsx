@@ -185,6 +185,32 @@ export default async function PikaTextToVideoPage() {
           </p>
         </div>
       </div>
+      <div className="mt-8 rounded-card border border-hairline bg-white p-6 text-sm text-text-secondary shadow-card sm:p-8">
+        <h2 className="text-lg font-semibold text-text-primary">Pika Text-to-Video FAQ</h2>
+        <dl className="mt-4 space-y-4">
+          <div>
+            <dt className="font-semibold text-text-primary">What styles does Pika handle best?</dt>
+            <dd className="mt-1">
+              Pika thrives on stylised motion—anime, illustration, playful 3D, and social-first cuts. For photoreal
+              briefs we recommend pairing Pika with Sora or Veo for the hero scenes.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">How short can I go?</dt>
+            <dd className="mt-1">
+              Loops as short as two seconds work great. Combine a loop with the image-to-video mode for carousel assets
+              or ambient UI backgrounds.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">Is there audio?</dt>
+            <dd className="mt-1">
+              Pika supports audio prompts but many teams render silent clips and layer sound in post to keep costs low.
+              You can always rerun in Sora 2 Pro if you need native narration.
+            </dd>
+          </div>
+        </dl>
+      </div>
     </div>
   );
 }

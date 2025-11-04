@@ -42,6 +42,38 @@ export default function StatusPage() {
         <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
         <p className="text-base text-text-secondary">{content.hero.subtitle}</p>
       </header>
+      <section className="mt-8 rounded-card border border-hairline bg-white/90 p-6 text-sm text-text-secondary shadow-card sm:p-8">
+        <p>
+          Status checks refresh continuously from the same telemetry we use to route renders. When an engine moves from
+          “Operational” to “Degraded”, MaxVideoAI automatically shifts traffic to the fastest available region and posts
+          an incident below. If an outage requires customer action we flag it in the incident notes and reference the
+          job IDs that may need a retry or credit refund.
+        </p>
+        <p className="mt-4">
+          Before contacting support, confirm whether the engine you are using shows a disruption and review the incident
+          history. You can also subscribe to the RSS feed or email digest to receive alerts the moment we downgrade an
+          engine. For urgent escalations, include the job ID and engine name so we can trace the queue instantly.
+        </p>
+        <div className="mt-5 rounded-card border border-dashed border-hairline bg-bg/70 p-4">
+          <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">Quick references</h2>
+          <ul className="mt-3 list-disc space-y-1 pl-5">
+            <li>
+              <span className="font-semibold text-text-primary">Render queue latency</span> — typically updates every 60 seconds.
+            </li>
+            <li>
+              <span className="font-semibold text-text-primary">Incident log</span> — entries include start/end time, root cause,
+              and mitigation steps.
+            </li>
+            <li>
+              <span className="font-semibold text-text-primary">Support</span> — email{' '}
+              <a href="mailto:support@maxvideo.ai" className="font-semibold text-accent hover:text-accentSoft">
+                support@maxvideo.ai
+              </a>{' '}
+              with incident code + job ID for a priority response.
+            </li>
+          </ul>
+        </div>
+      </section>
       <section className="mt-12 space-y-4">
         {content.systems.map((system) => (
           <article key={system.name} className="flex items-start justify-between gap-4 rounded-card border border-hairline bg-white p-4 shadow-card">

@@ -184,6 +184,32 @@ export default async function MiniMaxImageToVideoPage() {
           </p>
         </div>
       </div>
+      <div className="mt-8 rounded-card border border-hairline bg-white p-6 text-sm text-text-secondary shadow-card sm:p-8">
+        <h2 className="text-lg font-semibold text-text-primary">MiniMax Image-to-Video FAQ</h2>
+        <dl className="mt-4 space-y-4">
+          <div>
+            <dt className="font-semibold text-text-primary">What image prep yields the best results?</dt>
+            <dd className="mt-1">
+              Start with 1080 × 1080 or 1080 × 1920 PNGs and keep the subject isolated on a clean background. Avoid
+              heavy gradients—MiniMax interprets them as movement trails.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">Can I match motion to a product storyboard?</dt>
+            <dd className="mt-1">
+              Yes—describe the beats (“rotate product 180°, add glint, end on CTA”) and specify timing in seconds. The
+              engine follows those cues while keeping costs low.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">How do I keep branding consistent?</dt>
+            <dd className="mt-1">
+              Upload brand fonts or logos via the workspace overlays tab, then reuse the same preset across MiniMax,
+              Pika, and Veo runs to maintain a uniform frame.
+            </dd>
+          </div>
+        </dl>
+      </div>
     </div>
   );
 }

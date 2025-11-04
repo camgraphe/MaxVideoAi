@@ -222,6 +222,32 @@ export default async function Sora2ModelPage() {
           </p>
         </div>
       </div>
+      <div className="mt-8 rounded-card border border-hairline bg-white p-6 text-sm text-text-secondary shadow-card sm:p-8">
+        <h2 className="text-lg font-semibold text-text-primary">Sora 2 FAQ</h2>
+        <dl className="mt-4 space-y-4">
+          <div>
+            <dt className="font-semibold text-text-primary">How fast do Sora 2 renders complete?</dt>
+            <dd className="mt-1">
+              Eight-second clips typically return in three to five minutes. When demand spikes, MaxVideoAI automatically
+              routes to the least busy Fal.ai region and surfaces an estimated start time in the queue.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">Can I combine Sora runs with other engines?</dt>
+            <dd className="mt-1">
+              Yes—clone the job into Veo 3.1 or Pika 2.2 straight from the queue feed to compare motion styles without
+              rewriting the prompt. Pricing for each engine appears before you confirm the rerun.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">What is required for access?</dt>
+            <dd className="mt-1">
+              A verified MaxVideoAI workspace with wallet credits. We handle Fal.ai provisioning, rate-limits, and
+              compliance reviews; no OpenAI invite is needed.
+            </dd>
+          </div>
+        </dl>
+      </div>
     </div>
   );
 }

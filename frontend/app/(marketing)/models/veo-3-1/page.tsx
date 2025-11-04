@@ -173,6 +173,32 @@ export default async function Veo31ModelPage() {
           </p>
         </div>
       </div>
+      <div className="mt-8 rounded-card border border-hairline bg-white p-6 text-sm text-text-secondary shadow-card sm:p-8">
+        <h2 className="text-lg font-semibold text-text-primary">Veo 3.1 FAQ</h2>
+        <dl className="mt-4 space-y-4">
+          <div>
+            <dt className="font-semibold text-text-primary">What makes Veo 3.1 different from Veo 3 Fast?</dt>
+            <dd className="mt-1">
+              Veo 3.1 delivers higher fidelity, smoother motion, and full Dolby Vision previews. Fast trims latency for
+              quick drafts but sacrifices some detail—use 3.1 for polished edits and final delivery.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">How do I keep framing consistent across a campaign?</dt>
+            <dd className="mt-1">
+              Use the cinematic control presets (close-up, medium, wide) and lock the tone style. Duplicate renders in
+              the queue to swap scripts without losing camera settings.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">Can I blend Veo outputs with Sora runs?</dt>
+            <dd className="mt-1">
+              Yes—many teams block scenes with Veo 3.1 for precise angles, then use Sora 2 Pro for hero shots. Upload
+              the Veo frame as a reference in Sora to maintain visual continuity.
+            </dd>
+          </div>
+        </dl>
+      </div>
     </div>
   );
 }

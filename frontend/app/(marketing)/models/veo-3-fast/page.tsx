@@ -207,6 +207,32 @@ export default async function Veo3FastModelPage() {
           </p>
         </div>
       </div>
+      <div className="mt-8 rounded-card border border-hairline bg-white p-6 text-sm text-text-secondary shadow-card sm:p-8">
+        <h2 className="text-lg font-semibold text-text-primary">Veo 3 Fast FAQ</h2>
+        <dl className="mt-4 space-y-4">
+          <div>
+            <dt className="font-semibold text-text-primary">How fast is “Fast”?</dt>
+            <dd className="mt-1">
+              Most 6–8 second renders complete in under 90 seconds. If queues spike, MaxVideoAI displays an ETA and
+              offers to re-route to Veo 3.1 for higher quality.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">What’s the best way to use Fast with other tiers?</dt>
+            <dd className="mt-1">
+              Draft storyboards in Veo 3 Fast, then promote approved cuts to Veo 3.1 or Sora 2 Pro for final polish.
+              Because prompts stay identical, you spot differences in motion and price instantly.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">Does Fast include audio?</dt>
+            <dd className="mt-1">
+              Yes, but quality is tuned for speed. For broadcast-ready mixes, rerun the prompt in Veo 3.1 or add audio
+              in post. The queue lets you download silent or full mixes per job.
+            </dd>
+          </div>
+        </dl>
+      </div>
     </div>
   );
 }

@@ -184,6 +184,32 @@ export default async function MiniMaxTextToVideoPage() {
           </p>
         </div>
       </div>
+      <div className="mt-8 rounded-card border border-hairline bg-white p-6 text-sm text-text-secondary shadow-card sm:p-8">
+        <h2 className="text-lg font-semibold text-text-primary">MiniMax Hailuo 02 Text FAQ</h2>
+        <dl className="mt-4 space-y-4">
+          <div>
+            <dt className="font-semibold text-text-primary">Why choose MiniMax over premium engines?</dt>
+            <dd className="mt-1">
+              Hailuo 02 offers a great price-to-quality ratio for volume campaigns. It is ideal for social ads, product
+              explainers, and iterative concepting where you need dozens of clips without draining credits.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">What prompt style works best?</dt>
+            <dd className="mt-1">
+              Keep prompts structured but concise—two to three sentences covering setting, motion, and tone. Hailuo
+              rewards clear direction and can introduce artifacts when overloaded with adjectives.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">How do I handle upscales?</dt>
+            <dd className="mt-1">
+              Run the resulting clip through our built-in upscaler or send the same prompt to Veo 3 Fast for a sharper
+              version. Pricing transparency helps you compare before committing additional credits.
+            </dd>
+          </div>
+        </dl>
+      </div>
     </div>
   );
 }

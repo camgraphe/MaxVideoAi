@@ -193,6 +193,32 @@ export default async function Veo31FastModelPage() {
           </p>
         </div>
       </div>
+      <div className="mt-8 rounded-card border border-hairline bg-white p-6 text-sm text-text-secondary shadow-card sm:p-8">
+        <h2 className="text-lg font-semibold text-text-primary">Veo 3.1 Fast FAQ</h2>
+        <dl className="mt-4 space-y-4">
+          <div>
+            <dt className="font-semibold text-text-primary">Where does Veo 3.1 Fast sit in the lineup?</dt>
+            <dd className="mt-1">
+              It bridges Veo 3 Fast and Veo 3.1. You get the framing controls and Dolby previews from Veo 3.1 with a
+              slightly shorter turnaround time—great for reviews that still demand quality.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">Can I reuse Veo 3.1 presets?</dt>
+            <dd className="mt-1">
+              Yes—clone any Veo 3.1 render and switch the engine to 3.1 Fast. All camera and tone presets transfer, so
+              stakeholders can compare outputs apples-to-apples.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">How does pricing compare?</dt>
+            <dd className="mt-1">
+              Veo 3.1 Fast sits between Fast and 3.1. Expect ~15% savings versus full 3.1 runs while keeping premium
+              framing. The calculator and queue display the exact rate before each render.
+            </dd>
+          </div>
+        </dl>
+      </div>
     </div>
   );
 }
