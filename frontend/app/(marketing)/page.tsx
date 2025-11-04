@@ -706,8 +706,8 @@ export default async function HomePage() {
           }),
         }}
       />
-      <div className="sr-only">
-        <a href="https://www.wavel.io/" target="_blank" rel="noopener noreferrer">
+      <div className="mt-12 flex justify-center">
+        <a href="https://www.wavel.io/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center">
           <img
             src="https://www.wavel.io/badges/featured-light.svg"
             alt="Featured on Wavel"

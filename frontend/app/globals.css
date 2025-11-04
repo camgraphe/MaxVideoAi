@@ -27,14 +27,15 @@ a[href="https://dang.ai/"] {
   overflow: hidden;
 }
 
-a[href*="wavel.io"] {
+/* Temporarily disabled hidden styling for Wavel badge */
+/* a[href*="wavel.io"] {
   position: absolute !important;
   width: 1px !important;
   height: 1px !important;
   overflow: hidden !important;
   clip: rect(1px, 1px, 1px, 1px) !important;
   white-space: nowrap !important;
-}
+} */
 
 main {
   min-height: 100vh;
