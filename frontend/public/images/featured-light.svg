@@ -1,0 +1,6 @@
+<svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="120" height="40" rx="8" fill="white" />
+  <path d="M24.5 10L20 30L33 18H27L31.5 10H24.5Z" fill="#ff0066" />
+  <text x="45" y="24" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#111827">Featured on</text>
+  <text x="45" y="32" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="700" fill="#111827">Wavel</text>
+</svg>
