@@ -1,9 +1,0 @@
-<svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="120" height="40" rx="8" fill="#FFFFFF" />
-  <g transform="translate(12,8)">
-    <rect x="0" y="0" width="24" height="24" rx="6" fill="#111827" />
-    <path d="M6.5 6L10.2 18H12.4L15 10.9L17.6 18H19.8L23.5 6H21.1L18.7 14.4L16.1 8.4H13.9L11.3 14.4L8.9 6H6.5Z" fill="#FFFFFF"/>
-  </g>
-  <text x="50" y="19" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#111827">Featured on</text>
-  <text x="50" y="29" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="700" fill="#111827">Wavel</text>
-</svg>
