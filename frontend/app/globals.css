@@ -19,6 +19,14 @@ body {
   background: linear-gradient(180deg, #F8F9FA 0%, #F3F5F7 100%);
 }
 
+a[href="https://dang.ai/"] {
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  position: absolute;
+  overflow: hidden;
+}
+
 main {
   min-height: 100vh;
 }
