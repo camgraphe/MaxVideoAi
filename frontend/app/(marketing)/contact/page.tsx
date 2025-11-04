@@ -36,6 +36,36 @@ export default function ContactPage() {
         <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
         <p className="text-base text-text-secondary">{content.hero.subtitle}</p>
       </header>
+      <section className="mt-8 rounded-card border border-hairline bg-white/90 p-6 text-sm text-text-secondary shadow-card sm:p-8">
+        <p>
+          Talk to us about anything from enterprise onboarding to editorial coverage. Messages that include context—team
+          size, target models, deadline, or compliance requirements—reach the right specialist faster. Every request
+          receives a human reply; we do not outsource support or sales.
+        </p>
+        <div className="mt-5 grid gap-4 sm:grid-cols-3">
+          <div>
+            <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">Product help</h2>
+            <p className="mt-2">
+              For issues with renders, billing, or engine routing, include the job ID and we will review the trace
+              directly in the workspace.
+            </p>
+          </div>
+          <div>
+            <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">Partnerships</h2>
+            <p className="mt-2">
+              Agencies and studios can request custom SLAs, shared wallets, or white-label docs through this form or by
+              emailing <a href="mailto:partners@maxvideo.ai" className="font-semibold text-accent hover:text-accentSoft">partners@maxvideo.ai</a>.
+            </p>
+          </div>
+          <div>
+            <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">Press</h2>
+            <p className="mt-2">
+              Journalists can ask for interview slots, product demos, or comment on frontier models. Please include your
+              publication and deadline.
+            </p>
+          </div>
+        </div>
+      </section>
       <section className="mt-12 rounded-card border border-hairline bg-white p-6 shadow-card">
         <form className="space-y-4" method="post" action="#" aria-label={content.hero.title}>
           <div>
@@ -109,6 +139,32 @@ export default function ContactPage() {
           </a>
           {content.form.alt.split('{email}')[1] ?? ''}
         </div>
+      </section>
+      <section className="mt-12 rounded-card border border-hairline bg-white/90 p-6 shadow-card sm:p-8">
+        <h2 className="text-lg font-semibold text-text-primary">Contact FAQ</h2>
+        <dl className="mt-5 space-y-5 text-sm text-text-secondary">
+          <div>
+            <dt className="font-semibold text-text-primary">How fast will someone reply?</dt>
+            <dd className="mt-2">
+              We answer during European and US business hours. Most support tickets receive a human response in under 12
+              hours, enterprise requests inside 24.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">Do you offer live demos?</dt>
+            <dd className="mt-2">
+              Yes—include your preferred time zone and the models you want to see. We run demos inside the MaxVideoAI
+              workspace so you can watch routing and pricing in real time.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">Where can I check service status?</dt>
+            <dd className="mt-2">
+              Visit the <a href="/status" className="font-semibold text-accent hover:text-accentSoft">status page</a> for current
+              engine latency and incident history before opening a ticket.
+            </dd>
+          </div>
+        </dl>
       </section>
     </div>
   );

@@ -80,6 +80,37 @@ export default async function BlogIndexPage() {
         </div>
       </header>
 
+      <section className="mt-10 space-y-6 rounded-[28px] border border-hairline bg-white/90 p-8 text-sm text-text-secondary shadow-card sm:p-10">
+        <p>
+          MaxVideoAI’s journal covers everything we learn while routing frontier video engines for real production
+          teams. We document prompt patterns, pricing changes, latency shifts, and the workflows that keep agencies on
+          schedule when models rotate. Every story is written from live usage—not a press release.
+        </p>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-micro text-text-primary">Model deep dives</h2>
+            <p className="mt-2">
+              Comparisons and capability notes for Sora 2, Veo 3, Pika 2.2, MiniMax Hailuo 02, and the engines queued
+              next in our workspace.
+            </p>
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-micro text-text-primary">Workflow tactics</h2>
+            <p className="mt-2">
+              Sequenced prompting, audio integration, and pricing guardrails that help teams ship branded stories
+              without wasting credits.
+            </p>
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-micro text-text-primary">Customer stories</h2>
+            <p className="mt-2">
+              How studios and marketers in Europe and North America deploy the same brief across multiple engines and
+              keep review cycles moving.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section className="mt-12 grid gap-8 lg:grid-cols-[minmax(0,2fr),minmax(0,1fr)]">
         <article className="group relative overflow-hidden rounded-[28px] border border-hairline bg-white/90 shadow-card transition hover:-translate-y-1 hover:shadow-float">
           <div className="relative h-64 w-full overflow-hidden sm:h-80">
@@ -175,6 +206,33 @@ export default async function BlogIndexPage() {
             </article>
           ))}
         </div>
+      </section>
+
+      <section className="mt-16 rounded-[28px] border border-hairline bg-white/90 p-8 shadow-card sm:p-10">
+        <h2 className="text-lg font-semibold text-text-primary">Blog FAQ</h2>
+        <dl className="mt-6 space-y-5 text-sm text-text-secondary">
+          <div>
+            <dt className="font-semibold text-text-primary">How often do new posts ship?</dt>
+            <dd className="mt-2">
+              We publish every one to two weeks, aligned with notable engine releases or major workflow updates that hit
+              production teams.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">Can I suggest a topic or request coverage?</dt>
+            <dd className="mt-2">
+              Yes—send topics to <a className="font-semibold text-accent hover:text-accentSoft" href="mailto:press@maxvideo.ai">press@maxvideo.ai</a>{' '}
+              and include the use case or engine you need documented.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-text-primary">Where can I find release notes?</dt>
+            <dd className="mt-2">
+              Feature-level updates live in the <Link className="font-semibold text-accent hover:text-accentSoft" href="/changelog">product changelog</Link>,
+              while the blog focuses on guidance, comparisons, and field notes.
+            </dd>
+          </div>
+        </dl>
       </section>
 
       <Script id="blog-list-jsonld" type="application/ld+json">

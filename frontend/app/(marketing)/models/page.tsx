@@ -78,6 +78,45 @@ export default async function ModelsPage() {
         <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
         <p className="max-w-2xl text-base text-text-secondary">{content.hero.subtitle}</p>
       </header>
+      <section className="mt-8 space-y-5 rounded-3xl border border-hairline bg-white/90 p-6 text-sm text-text-secondary shadow-card sm:p-8">
+        <p>
+          Each engine in this catalog is wired into the MaxVideoAI workspace with monitored latency, price tracking, and
+          fallbacks. We add models as soon as providers open real capacity—not waitlist demos—so you know what can ship
+          to production today. Pick an engine to see the prompt presets, duration limits, and current route we use to
+          keep renders flowing.
+        </p>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div>
+            <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">When to choose Sora</h2>
+            <p className="mt-2">
+              Use Sora 2 or Sora 2 Pro when you need cinematic physics, character continuity, or audio baked directly
+              into the render. Expect a higher credit cost but premium quality.
+            </p>
+          </div>
+          <div>
+            <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">When to choose Veo</h2>
+            <p className="mt-2">
+              Veo 3 tiers provide consistent framing, tone presets, and fast variants for iteration. Ideal for ad cuts,
+              b-roll, and campaigns that demand controlled camera moves.
+            </p>
+          </div>
+          <div>
+            <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">When to choose Pika or MiniMax</h2>
+            <p className="mt-2">
+              Pika 2.2 excels at stylised loops and social edits, while MiniMax Hailuo 02 keeps budgets low for volume
+              runs. Both are great complements when you need fast alternates.
+            </p>
+          </div>
+        </div>
+        <div className="rounded-3xl border border-dashed border-hairline bg-bg/70 p-4">
+          <h3 className="text-xs font-semibold uppercase tracking-micro text-text-muted">Need a side-by-side?</h3>
+          <p className="mt-2">
+            Read the <Link href="/blog/compare-ai-video-engines" className="font-semibold text-accent hover:text-accentSoft">Sora vs Veo vs Pika comparison guide</Link>{' '}
+            for detailed quality notes, price ranges, and timing benchmarks, then clone any render from the{' '}
+            <Link href="/examples" className="font-semibold text-accent hover:text-accentSoft">examples gallery</Link> to start with a proven prompt.
+          </p>
+        </div>
+      </section>
       <section className="mt-12 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
         {engines.map((engine) => {
           const media = engine.media;
