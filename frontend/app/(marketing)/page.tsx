@@ -706,6 +706,16 @@ export default async function HomePage() {
           }),
         }}
       />
+      <div className="sr-only">
+        <a href="https://www.wavel.io/" target="_blank" rel="noopener noreferrer">
+          <img
+            src="https://www.wavel.io/badges/featured-light.svg"
+            alt="Featured on Wavel"
+            width="120"
+            height="40"
+          />
+        </a>
+      </div>
     </div>
   );
 }
