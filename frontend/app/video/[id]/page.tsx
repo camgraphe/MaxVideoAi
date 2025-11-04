@@ -14,6 +14,8 @@ type PageProps = {
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://maxvideoai.com').replace(/\/$/, '');
 const FALLBACK_THUMB = `${SITE}/og/price-before.png`;
 const FALLBACK_POSTER = `${SITE}/og/price-before.png`;
+const TITLE_SUFFIX = ' — MaxVideoAI';
+const META_TITLE_LIMIT = 60;
 
 export const revalidate = 60 * 30; // 30 minutes
 
@@ -73,6 +75,23 @@ async function fetchVideo(id: string) {
   return video;
 }
 
+function truncateForMeta(title: string, limit: number) {
+  if (title.length <= limit) return title;
+  const slice = title.slice(0, Math.max(1, limit - 1));
+  const lastSpace = slice.lastIndexOf(' ');
+  if (lastSpace > Math.floor(limit * 0.6)) {
+    return `${slice.slice(0, lastSpace).trim()}…`;
+  }
+  return `${slice.trim()}…`;
+}
+
+function buildMetaTitle(primary: string) {
+  const available = Math.max(10, META_TITLE_LIMIT - TITLE_SUFFIX.length);
+  const safePrimary = primary && primary.trim().length ? primary.trim() : 'MaxVideoAI render';
+  const truncated = truncateForMeta(safePrimary, available);
+  return `${truncated}${TITLE_SUFFIX}`;
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const video = await fetchVideo(params.id);
   if (!video) {
@@ -83,24 +102,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const title =
+  const primaryTitle =
     video.promptExcerpt ||
     video.prompt ||
     `${video.engineLabel ?? 'MaxVideoAI'} example (${video.durationSec}s)`;
+  const metaTitle = buildMetaTitle(primaryTitle);
   const description = formatPrompt(video.promptExcerpt ?? video.prompt);
   const canonical = `${SITE}/video/${encodeURIComponent(video.id)}`;
   const thumbnail = toAbsoluteUrl(video.thumbUrl) ?? FALLBACK_THUMB;
   const videoUrl = toAbsoluteUrl(video.videoUrl) ?? canonical;
 
   return {
-    title: `${title} — MaxVideoAI`,
+    title: metaTitle,
     description,
     alternates: { canonical },
     openGraph: {
       type: 'video.other',
       siteName: 'MaxVideoAI',
       url: canonical,
-      title,
+      title: metaTitle,
       description,
       videos: [
         {
@@ -111,11 +131,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
           height: 720,
         },
       ],
-      images: [{ url: thumbnail, width: 1280, height: 720 }],
+      images: [{ url: thumbnail, width: 1280, height: 720, alt: metaTitle }],
     },
     twitter: {
       card: 'player',
-      title,
+      title: metaTitle,
       description,
       images: [thumbnail],
     },
