@@ -89,7 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   };
 
   return (
-    <html lang={locale}>
+    <html lang={locale} data-show-wavel-badge>
       <head>
         {process.env.NEXT_PUBLIC_BING_VERIFY ? (
           <meta name="msvalidate.01" content={process.env.NEXT_PUBLIC_BING_VERIFY} />
