@@ -32,7 +32,7 @@ export default function ConsentModeBootstrap() {
           gtag('set', 'url_passthrough', true);
         `}
       </Script>
-      <Script src={\`https://www.googletagmanager.com/gtag/js?id=\${GA_ID}\`} strategy="afterInteractive" />
+      <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
       <Script id="ga-init" strategy="afterInteractive">
         {`
           window.dataLayer = window.dataLayer || [];
