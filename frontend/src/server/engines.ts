@@ -260,6 +260,5 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
       pricing: engine.pricing,
       pricingDetails: engine.pricingDetails,
     },
-    messages: engine.pricing?.notes ? [engine.pricing.notes] : undefined,
   };
 }

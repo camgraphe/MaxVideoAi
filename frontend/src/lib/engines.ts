@@ -197,6 +197,5 @@ export async function computePreflight(request: PreflightRequest): Promise<Prefl
       pricing: engine.pricing,
       pricingDetails: engine.pricingDetails,
     },
-    messages: engine.pricing?.notes ? [engine.pricing.notes] : undefined,
   };
 }
