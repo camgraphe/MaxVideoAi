@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const modelRoster = require('./config/model-roster.json');
 
+const SITE_URL = 'https://maxvideoai.com';
+const LOCALES = ['en', 'fr', 'es'];
 const MARKETING_CORE_PATHS = [
   '/',
   '/models',
@@ -35,9 +37,19 @@ function collectContentSlugs(section) {
     .map((entry) => `/${section}/${entry.name.replace(/\.(md|mdx)$/i, '')}`);
 }
 
+function stripLocalePrefix(pathname) {
+  const cleaned = pathname.replace(/^\/(en|fr|es)(?=\/|$)/, '');
+  return cleaned || '/';
+}
+
+function buildLocaleHref(locale, cleanPath) {
+  const suffix = cleanPath === '/' ? '' : cleanPath;
+  return `${SITE_URL}/${locale}${suffix}`;
+}
+
 module.exports = {
-  siteUrl: 'https://maxvideoai.com',
-  generateRobotsTxt: false,
+  siteUrl: SITE_URL,
+  generateRobotsTxt: true,
   sitemapSize: 7000,
   exclude: ['/api/*', '/_next/*'],
   changefreq: 'weekly',
@@ -50,6 +62,23 @@ module.exports = {
         disallow: ['/_next/', '/api/'],
       },
     ],
+  },
+  transform: async (config, path) => {
+    const cleanPath = stripLocalePrefix(path);
+    const alternateRefs = [
+      { href: buildLocaleHref('en', cleanPath), hreflang: 'en' },
+      { href: buildLocaleHref('fr', cleanPath), hreflang: 'fr' },
+      { href: buildLocaleHref('es', cleanPath), hreflang: 'es' },
+      { href: buildLocaleHref('en', cleanPath), hreflang: 'x-default' },
+    ];
+
+    return {
+      loc: buildLocaleHref('en', cleanPath),
+      changefreq: config.changefreq,
+      priority: config.priority,
+      lastmod: config.autoLastmod ? new Date().toISOString() : undefined,
+      alternateRefs,
+    };
   },
   additionalPaths: async (config) => {
     const marketingPaths = new Set(MARKETING_CORE_PATHS);

@@ -1,0 +1,10 @@
+{
+  "Pay-As-You-Go": { "fr": "Paiement à l’usage", "es": "Pago por uso" },
+  "No subscription": { "fr": "Sans abonnement", "es": "Sin suscripción" },
+  "Wallet top-ups": { "fr": "Crédits rechargeables", "es": "Créditos recargables" },
+  "Multi-engine": { "fr": "Multi-moteurs", "es": "Multi-motor" },
+  "Text→Video": { "fr": "Texte→Vidéo", "es": "Texto→Vídeo" },
+  "Image→Video": { "fr": "Image→Vidéo", "es": "Imagen→Vídeo" },
+  "Upscaling": { "fr": "Upscaling 4K", "es": "Reescalado 4K" },
+  "Iterative renders": { "fr": "Rendus itératifs x1-x4", "es": "Renders iterativos x1-x4" }
+}
