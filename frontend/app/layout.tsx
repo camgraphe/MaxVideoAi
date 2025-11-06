@@ -4,6 +4,8 @@ import { JsonLd } from '@/components/SeoJsonLd';
 import { CookieBanner } from '@/components/legal/CookieBanner';
 import { AuthCallbackHandler } from '@/components/AuthCallbackHandler';
 import { AnalyticsScripts } from '@/components/analytics/AnalyticsScripts';
+import ConsentModeBootstrap from '@/components/analytics/ConsentModeBootstrap';
+import { Analytics as VercelAnalytics } from '@vercel/analytics/react';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -96,8 +98,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ) : null}
       </head>
       <body>
+        <ConsentModeBootstrap />
         <AuthCallbackHandler />
         {children}
+        {process.env.NODE_ENV === 'production' ? <VercelAnalytics /> : null}
         <AnalyticsScripts />
         <CookieBanner />
         <JsonLd json={orgSchema} />

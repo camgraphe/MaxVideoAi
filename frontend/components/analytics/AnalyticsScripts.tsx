@@ -5,7 +5,6 @@ import { ConsentScriptGate } from '@/components/legal/ConsentScriptGate';
 import { Clarity } from '@/components/analytics/Clarity';
 import { GoogleAds } from '@/components/analytics/GoogleAds';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import { Analytics } from '@vercel/analytics/react';
 
 const PRIVATE_PATH_PREFIXES = [
   '/admin',
@@ -42,7 +41,6 @@ export function AnalyticsScripts() {
       <Clarity />
       <GoogleAds />
       <SpeedInsights />
-      <Analytics />
     </ConsentScriptGate>
   );
 }
