@@ -255,8 +255,8 @@
     },
     "priceChipSuffix": "No subscription. Pay-as-you-go.",
     "meta": {
-      "title": "Générateur vidéo IA multi-moteurs – Sans abonnement | MaxVideoAI",
-      "description": "Générez des vidéos avec plusieurs moteurs IA au même endroit. Tarifs transparents, paiement à l’usage, upscaling 4K, itérations x1-x4. Démarrez en minutes."
+      "title": "Multi-engine AI video generator – Pay-as-you-go | MaxVideoAI",
+      "description": "Create AI video with Sora 2, Veo 3, Pika and more from one workspace. Transparent pricing, pay-as-you-go wallets, 4K upscaling, iterative renders x1-x4."
     }
   },
   "pricing": {
@@ -374,8 +374,8 @@
     "priceChipSuffix": "Price before you generate.",
     "priceChipPrefix": "This render",
     "meta": {
-      "title": "Tarifs — Générateur vidéo IA sans abonnement | MaxVideoAI",
-      "description": "Rechargez des crédits et payez uniquement ce que vous rendez. Tarifs par moteur clairs, aucune obligation, upscaling 4K et options audio."
+      "title": "Pricing — Pay-as-you-go AI video generator | MaxVideoAI",
+      "description": "Top up credits and pay only for renders you approve. Clear per-engine rates, no subscription, 4K upscaling and audio options."
     }
   },
   "calculator": {
@@ -480,8 +480,8 @@
         "priceBefore": "$0.045/s with live chip updates.",
         "versionLabel": "Standard"
       },
-      "title": "Moteurs vidéo IA — Comparez Sora, Veo, Pika | MaxVideoAI",
-      "description": "Choisissez le meilleur moteur pour chaque rendu. Comparez fonctionnalités, coûts et exemples réels en un seul endroit."
+      "title": "AI video engines — Compare Sora, Veo, Pika | MaxVideoAI",
+      "description": "Choose the best engine for every shot. Compare capabilities, costs and live examples in a single workspace."
     },
     "note": ""
   },
@@ -817,8 +817,8 @@
   },
   "gallery": {
     "meta": {
-      "title": "Galerie d’exemples — Prompts et rendus IA | MaxVideoAI",
-      "description": "Explorez des rendus IA réels avec prompts et paramètres. Inspirez-vous et reproduisez les résultats en quelques clics."
+      "title": "Gallery — AI video prompts and renders | MaxVideoAI",
+      "description": "Explore real AI renders with prompts and settings. Get inspired and recreate results in a few clicks."
     }
   }
 }

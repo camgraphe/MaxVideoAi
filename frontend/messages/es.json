@@ -253,7 +253,11 @@
         "Trademarks and logos belong to their owners; we route responsibly."
       ]
     },
-    "priceChipSuffix": "No subscription. Pay-as-you-go."
+    "priceChipSuffix": "No subscription. Pay-as-you-go.",
+    "meta": {
+      "title": "Generador de vídeo IA multi-motor – Sin suscripción | MaxVideoAI",
+      "description": "Genera vídeos con varios motores IA en un solo lugar. Precios transparentes, pago por uso, reescalado 4K e iteraciones x1-x4. Empieza en minutos."
+    }
   },
   "pricing": {
     "hero": {
@@ -368,7 +372,11 @@
       ]
     },
     "priceChipSuffix": "Price before you generate.",
-    "priceChipPrefix": "This render"
+    "priceChipPrefix": "This render",
+    "meta": {
+      "title": "Precios — Generador de vídeo IA sin suscripción | MaxVideoAI",
+      "description": "Recarga créditos y paga solo lo que renderizas. Precios por motor claros, sin permanencia, reescalado 4K y opciones de audio."
+    }
   },
   "calculator": {
     "hero": {
@@ -471,7 +479,9 @@
         "description": "Reference image to motion with optional end frame.",
         "priceBefore": "$0.045/s with live chip updates.",
         "versionLabel": "Standard"
-      }
+      },
+      "title": "Motores de vídeo IA — Compara Sora, Veo, Pika | MaxVideoAI",
+      "description": "Elige el mejor motor para cada render. Compara funciones, costes y ejemplos reales en un solo lugar."
     },
     "note": ""
   },
@@ -804,5 +814,11 @@
     "refundInitiated": "Your payment is being refunded. It can take 5–10 business days to appear on your statement.",
     "partialRefund": "We’ve issued a partial refund of {refundedAmount}. The remaining {remainingAmount} will stay on your statement.",
     "paymentRetried": "We’ve safely retried your payment; you will not be double-charged."
+  },
+  "gallery": {
+    "meta": {
+      "title": "Galería de ejemplos — Prompts y renders IA | MaxVideoAI",
+      "description": "Explora renders IA reales con prompts y ajustes. Inspírate y replica resultados en pocos clics."
+    }
   }
 }
