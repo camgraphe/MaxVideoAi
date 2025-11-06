@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
@@ -42,6 +42,8 @@ export function HeroMediaTile({
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   });
   const [targetHref, setTargetHref] = useState<string | null>(() => guestHref ?? authenticatedHref ?? null);
+  const [shouldRenderVideo, setShouldRenderVideo] = useState<boolean>(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!authenticatedHref && !guestHref) {
@@ -54,20 +56,48 @@ export function HeroMediaTile({
         setTargetHref(next);
       }
     };
-    supabase.auth
-      .getSession()
-      .then(({ data }) => {
-        resolveHref(Boolean(data.session));
-      })
-      .catch(() => {
-        resolveHref(false);
-      });
+    const runAuthCheck = () => {
+      supabase.auth
+        .getSession()
+        .then(({ data }) => {
+          resolveHref(Boolean(data.session));
+        })
+        .catch(() => {
+          resolveHref(false);
+        });
+    };
+
+    let cancelScheduledAuthCheck: (() => void) | null = null;
+    if (typeof window === 'undefined') {
+      runAuthCheck();
+    } else {
+      const idleWindow = window as typeof window & {
+        requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+        cancelIdleCallback?: (handle: number) => void;
+      };
+      if (typeof idleWindow.requestIdleCallback === 'function') {
+        const handle = idleWindow.requestIdleCallback(
+          () => {
+            runAuthCheck();
+          },
+          { timeout: 500 }
+        );
+        cancelScheduledAuthCheck = () => idleWindow.cancelIdleCallback?.(handle);
+      } else {
+        const rafHandle = window.requestAnimationFrame(() => {
+          runAuthCheck();
+        });
+        cancelScheduledAuthCheck = () => window.cancelAnimationFrame(rafHandle);
+      }
+    }
+
     const { data: authSubscription } = supabase.auth.onAuthStateChange((_event, session) => {
       resolveHref(Boolean(session));
     });
     return () => {
       mounted = false;
       authSubscription?.subscription.unsubscribe();
+      cancelScheduledAuthCheck?.();
     };
   }, [authenticatedHref, guestHref]);
 
@@ -80,15 +110,42 @@ export function HeroMediaTile({
     return () => mediaQuery.removeEventListener('change', update);
   }, []);
 
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setShouldRenderVideo(false);
+      return;
+    }
+    if (typeof window === 'undefined') return;
+    const mq = window.matchMedia('(min-width: 768px)');
+    if (!mq.matches) {
+      setShouldRenderVideo(false);
+      return;
+    }
+    const node = containerRef.current;
+    if (!node) {
+      setShouldRenderVideo(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setShouldRenderVideo(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [prefersReducedMotion]);
+
   const content = (
     <figure className="group relative overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-card">
       <div className="relative aspect-[16/9] w-full">
         {showAudioIcon ? (
           <AudioEqualizerBadge tone="light" size="sm" label="Audio enabled" />
         ) : null}
-        {prefersReducedMotion ? (
-          <Image src={posterSrc} alt={alt} fill priority={priority} sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover" />
-        ) : (
+        {shouldRenderVideo && !prefersReducedMotion ? (
           <video
             className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
             autoPlay
@@ -101,6 +158,8 @@ export function HeroMediaTile({
           >
             <source src={videoSrc} type="video/mp4" />
           </video>
+        ) : (
+          <Image src={posterSrc} alt={alt} fill priority={priority} sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover" />
         )}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-2 bg-gradient-to-t from-black/65 via-black/35 to-transparent p-4 text-left text-white">
           {badge ? (
@@ -144,7 +203,7 @@ export function HeroMediaTile({
   );
 
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       {card}
       {overlay}
     </div>
