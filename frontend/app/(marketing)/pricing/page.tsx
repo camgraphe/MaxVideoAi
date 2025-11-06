@@ -6,10 +6,10 @@ import { PriceEstimator } from '@/components/marketing/PriceEstimator';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { DEFAULT_MARKETING_SCENARIO, scenarioToPricingInput } from '@/lib/pricing-scenarios';
-import FaqJsonLd from '@/components/FaqJsonLd';
 import { FEATURES } from '@/content/feature-flags';
 import { FlagPill } from '@/components/FlagPill';
 import { getMembershipTiers } from '@/lib/membership';
+import FaqJsonLd from '@/components/FaqJsonLd';
 
 export const metadata: Metadata = {
   title: 'Pricing — MaxVideo AI',
@@ -46,9 +46,7 @@ export default async function PricingPage() {
   const canonical = 'https://maxvideoai.com/pricing';
   const kernel = getPricingKernel();
   const starterQuote = kernel.quote(scenarioToPricingInput(DEFAULT_MARKETING_SCENARIO));
-  const starterPrice = (starterQuote.snapshot.totalCents / 100).toFixed(2);
   const starterCurrency = starterQuote.snapshot.currency;
-  const unitRate = starterQuote.snapshot.base.rate;
   const cookieStore = cookies();
   const isAuthed = Boolean(
     cookieStore.get('sb-access-token')?.value ??
@@ -61,50 +59,27 @@ export default async function PricingPage() {
     { text: refunds.points[2], live: FEATURES.pricing.multiApproverTopups },
   ] as const;
 
-  const productSchema = {
+  const serviceSchema = {
     '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: 'MaxVideoAI Starter Credits',
-    description: content.hero.subtitle,
-    brand: {
-      '@type': 'Brand',
+    '@type': 'Service',
+    serviceType: 'AI Video Generation and Editing',
+    name: 'MaxVideoAI',
+    description:
+      'Generate high-quality AI videos using Sora 2, Veo 3, Pika, and other models. Digital credits, no shipping required.',
+    provider: {
+      '@type': 'Organization',
       name: 'MaxVideoAI',
+      url: 'https://maxvideoai.com',
+      logo: 'https://maxvideoai.com/icon.png',
     },
-    url: canonical,
+    areaServed: 'Worldwide',
     offers: {
       '@type': 'Offer',
-      price: starterPrice,
-      priceCurrency: starterCurrency,
-      url: canonical,
-      category: 'Starter credits',
-      eligibleCustomerType: 'https://schema.org/BusinessCustomer',
+      priceCurrency: 'EUR',
+      price: '10.00',
       availability: 'https://schema.org/InStock',
-      priceValidUntil: '2025-12-31',
-      priceSpecification: {
-        '@type': 'UnitPriceSpecification',
-        price: unitRate,
-        priceCurrency: starterCurrency,
-        unitCode: 'SEC',
-        referenceQuantity: {
-          '@type': 'QuantitativeValue',
-          value: 1,
-          unitCode: 'SEC',
-        },
-      },
+      url: canonical,
     },
-  };
-
-  const faqSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faq.entries.map((entry) => ({
-      '@type': 'Question',
-      name: entry.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: entry.answer,
-      },
-    })),
   };
 
   const membershipTiers = await getMembershipTiers();
@@ -124,6 +99,24 @@ export default async function PricingPage() {
       : 'Baseline rate';
     return { name, requirement, benefit };
   });
+
+  const supplementalFaq = [
+    {
+      q: 'Can I use Sora 2 in Europe?',
+      a: 'Direct access is invite-only. MaxVideoAI provides paid access to Sora 2 rendering from Europe via our hub.',
+    },
+    {
+      q: 'Do videos have watermarks?',
+      a: 'No. Renders produced through MaxVideoAI are delivered without watermarks.',
+    },
+  ] as const;
+  const faqJsonLdEntries = [
+    ...faq.entries.map((entry) => ({
+      q: entry.question,
+      a: entry.answer,
+    })),
+    ...supplementalFaq,
+  ];
 
   return (
     <div className="mx-auto max-w-6xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
@@ -328,23 +321,9 @@ export default async function PricingPage() {
       </section>
 
       <Script id="pricing-jsonld" type="application/ld+json">
-        {JSON.stringify(productSchema)}
+        {JSON.stringify(serviceSchema)}
       </Script>
-      <Script id="faq-jsonld" type="application/ld+json">
-        {JSON.stringify(faqSchema)}
-      </Script>
-      <FaqJsonLd
-        qa={[
-          {
-            q: 'Can I use Sora 2 in Europe?',
-            a: 'Direct access is invite-only. MaxVideoAI provides paid access to Sora 2 rendering from Europe via our hub.',
-          },
-          {
-            q: 'Do videos have watermarks?',
-            a: 'No. Renders produced through MaxVideoAI are delivered without watermarks.',
-          },
-        ]}
-      />
+      <FaqJsonLd qa={faqJsonLdEntries} />
     </div>
   );
 }

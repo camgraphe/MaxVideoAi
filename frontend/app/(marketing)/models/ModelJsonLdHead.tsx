@@ -1,23 +1,23 @@
-import { buildModelProductJsonLd, buildModelFaqJsonLd, serializeJsonLd } from './model-jsonld';
+import { buildModelServiceJsonLd, buildModelFaqJsonLd, serializeJsonLd } from './model-jsonld';
 
 type Props = {
   slug: string;
 };
 
 export function ModelJsonLdHead({ slug }: Props) {
-  const productJsonLd = buildModelProductJsonLd(slug);
+  const serviceJsonLd = buildModelServiceJsonLd(slug);
   const faqJsonLd = buildModelFaqJsonLd(slug);
 
-  if (!productJsonLd && !faqJsonLd) {
+  if (!serviceJsonLd && !faqJsonLd) {
     return null;
   }
 
   return (
     <>
-      {productJsonLd ? (
+      {serviceJsonLd ? (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: serializeJsonLd(productJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(serviceJsonLd) }}
         />
       ) : null}
       {faqJsonLd ? (

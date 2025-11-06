@@ -3,8 +3,6 @@ import Link from 'next/link';
 import Script from 'next/script';
 import { PriceEstimator } from '@/components/marketing/PriceEstimator';
 import { resolveDictionary } from '@/lib/i18n/server';
-import { getPricingKernel } from '@/lib/pricing-kernel';
-import { DEFAULT_MARKETING_SCENARIO, scenarioToPricingInput } from '@/lib/pricing-scenarios';
 
 export const metadata: Metadata = {
   title: 'AI Video Price Calculator — MaxVideo AI',
@@ -34,42 +32,27 @@ export const metadata: Metadata = {
 export default function CalculatorPage() {
   const { dictionary } = resolveDictionary();
   const content = dictionary.calculator;
-  const kernel = getPricingKernel();
-  const starterQuote = kernel.quote(scenarioToPricingInput(DEFAULT_MARKETING_SCENARIO));
-  const starterPrice = (starterQuote.snapshot.totalCents / 100).toFixed(2);
-  const starterCurrency = starterQuote.snapshot.currency;
-  const unitRate = starterQuote.snapshot.base.rate;
   const canonical = 'https://maxvideoai.com/pricing-calculator';
-  const productSchema = {
+  const serviceSchema = {
     '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: 'MaxVideoAI Starter Credits',
-    description: content.hero.subtitle,
-    brand: {
-      '@type': 'Brand',
+    '@type': 'Service',
+    serviceType: 'AI Video Generation and Editing',
+    name: 'MaxVideoAI',
+    description:
+      'Generate high-quality AI videos using Sora 2, Veo 3, Pika, and other models. Digital credits, no shipping required.',
+    provider: {
+      '@type': 'Organization',
       name: 'MaxVideoAI',
+      url: 'https://maxvideoai.com',
+      logo: 'https://maxvideoai.com/icon.png',
     },
-    url: canonical,
+    areaServed: 'Worldwide',
     offers: {
       '@type': 'Offer',
-      price: starterPrice,
-      priceCurrency: starterCurrency,
-      url: canonical,
-      category: 'Starter credits',
-      eligibleCustomerType: 'https://schema.org/BusinessCustomer',
+      priceCurrency: 'EUR',
+      price: '10.00',
       availability: 'https://schema.org/InStock',
-      priceValidUntil: '2025-12-31',
-      priceSpecification: {
-        '@type': 'UnitPriceSpecification',
-        price: unitRate,
-        priceCurrency: starterCurrency,
-        unitCode: 'SEC',
-        referenceQuantity: {
-          '@type': 'QuantitativeValue',
-          value: 1,
-          unitCode: 'SEC',
-        },
-      },
+      url: canonical,
     },
   };
   return (
@@ -121,8 +104,8 @@ export default function CalculatorPage() {
           {content.lite.footer.split('{link}')[1] ?? ''}
         </p>
       </section>
-      <Script id="calculator-product-jsonld" type="application/ld+json">
-        {JSON.stringify(productSchema)}
+      <Script id="calculator-service-jsonld" type="application/ld+json">
+        {JSON.stringify(serviceSchema)}
       </Script>
     </div>
   );

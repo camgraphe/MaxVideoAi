@@ -10,7 +10,7 @@ const AVAILABILITY_MAP: Record<EngineAvailability, string> = {
   paused: 'https://schema.org/Discontinued',
 };
 
-export function buildModelProductJsonLd(slug: string) {
+export function buildModelServiceJsonLd(slug: string) {
   const engine = getFalEngineBySlug(slug);
   if (!engine) {
     return null;
@@ -18,40 +18,32 @@ export function buildModelProductJsonLd(slug: string) {
 
   const url = `${SITE}${engine.seo.canonicalPath}`;
   const description =
-    engine.seo.description ??
-    `${engine.marketingName} AI video generator available on MaxVideoAI. Explore prompts, workflows, and pricing details.`;
+    engine.seo?.description ?? engine.seoText ?? 'Generate AI videos with this model on MaxVideoAI.';
+  const serviceType = `AI Video Generation with ${engine.marketingName}`;
+  const name = engine.cardTitle ?? engine.marketingName;
   const availability = AVAILABILITY_MAP[engine.availability] ?? AVAILABILITY_MAP.limited;
-  const priceCurrency = engine.pricingHint?.currency ?? 'USD';
-
-  const offers: Record<string, unknown> = {
-    '@type': 'Offer',
-    priceCurrency,
-    availability,
-    url,
-  };
-
-  if (typeof engine.pricingHint?.amountCents === 'number') {
-    offers.price = Number.isInteger(engine.pricingHint.amountCents)
-      ? (engine.pricingHint.amountCents / 100).toFixed(2)
-      : engine.pricingHint.amountCents / 100;
-  }
-
-  if (engine.pricingHint?.durationSeconds) {
-    offers.duration = `PT${engine.pricingHint.durationSeconds}S`;
-  }
-
-  if (engine.pricingHint?.label) {
-    offers.description = engine.pricingHint.label;
-  }
 
   return {
     '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: `${engine.marketingName} AI Video Generator`,
-    brand: 'MaxVideoAI',
+    '@type': 'Service',
+    serviceType,
+    name,
     description,
+    provider: {
+      '@type': 'Organization',
+      name: 'MaxVideoAI',
+      url: 'https://maxvideoai.com',
+      logo: 'https://maxvideoai.com/icon.png',
+    },
+    areaServed: 'Worldwide',
     url,
-    offers,
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: 'EUR',
+      price: '10.00',
+      availability,
+      url,
+    },
   };
 }
 
