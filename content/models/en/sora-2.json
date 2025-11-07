@@ -1,0 +1,124 @@
+{
+  "marketingName": "OpenAI Sora 2",
+  "versionLabel": "2",
+  "seo": {
+    "title": "Sora 2 – Generate AI Videos from Text or Image with Sound",
+    "description": "Create rich AI-generated videos from text or image prompts using Sora 2. Native voice-over, ambient effects, and motion sync via MaxVideoAI.",
+    "image": "/hero/sora2.jpg"
+  },
+  "hero": {
+    "title": "Sora 2 – AI Video from Text or Image with Native Sound",
+    "intro": "Sora 2 by OpenAI brings text-to-video and image-to-video generation into one engine, combining cinematic visuals with full native audio—voice-over, ambient sound, and synced motion. Animate concepts, scenes, or objects directly from words or reference images without leaving MaxVideoAI.",
+    "ctaPrimary": { "label": "Generate with Sora 2", "href": "/app?engine=sora-2" },
+    "secondaryLinks": [
+      { "label": "See all engines", "href": "/models" },
+      { "label": "Explore workflows", "href": "/workflows" },
+      { "label": "View pricing", "href": "/pricing" }
+    ]
+  },
+  "overview": "Generate videos from text or images using Sora 2 — now with voice-over, ambient sound, and smooth animation. Animate reference stills or craft full prompts with synced audio.",
+  "bestUseCases": {
+    "title": "Best Use Cases",
+    "items": [
+      "Text-to-video clips with voice-over narration",
+      "Image-to-video animations with ambient sound and motion",
+      "Social content for TikTok or Instagram in 9:16 with audio sync",
+      "Rapid storytelling, concept videos, or onboarding sequences"
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    {
+      "label": "Duration",
+      "body": "Choose 4, 8, or 12-second runs (current MaxVideoAI limit)",
+      "link": {
+        "label": "Economic Times",
+        "href": "https://m.economictimes.com/tech/artificial-intelligence/openai-allows-15-second-videos-for-all-sora-2-users-25-seconds-for-pro-users/articleshow/124594772.cms"
+      }
+    },
+    {
+      "label": "Resolution",
+      "body": "1080p delivery in 16:9 and 9:16 aspect ratios",
+      "link": {
+        "label": "Higgsfield AI",
+        "href": "https://higgsfield.ai/sora-2-ai-video-presets"
+      }
+    },
+    {
+      "label": "Audio",
+      "body": "Native voice-over, ambient layers, and effects sync",
+      "link": {
+        "label": "VentureBeat",
+        "href": "https://venturebeat.com/ai/openai-debuts-sora-2-ai-video-generator-app-with-sound-and-self-insertion"
+      }
+    },
+    {
+      "label": "Inputs",
+      "body": "Text prompts or image + text for animated remixes",
+      "link": {
+        "label": "VentureBeat",
+        "href": "https://venturebeat.com/ai/openai-debuts-sora-2-ai-video-generator-app-with-sound-and-self-insertion"
+      }
+    },
+    {
+      "label": "Modes",
+      "body": "Text-to-video & image-to-video workflows with native audio toggles"
+    },
+    {
+      "label": "Pricing",
+      "body": "Pay-as-you-go via MaxVideoAI — audio-on renders from $0.52/s (~$4.16 per 8-second clip)"
+    }
+  ],
+  "promptStructure": {
+    "title": "Prompt Structure",
+    "quote": "“A glowing library in the middle of a stormy ocean, books flying in the air, camera pans upward to reveal lightning in the sky, soft orchestral music, voice-over: 'Knowledge survives everything.'”",
+    "description": "Structure each Sora 2 run for clarity and fidelity:",
+    "steps": [
+      "Start with a vivid scene description (setting + atmosphere)",
+      "Add motion instructions: camera movement, timing, and pacing cues",
+      "Specify audio beats (voice-over tone, ambient FX, or music)",
+      "Mention continuity needs if you are remixing an image or scene"
+    ]
+  },
+  "tips": {
+    "title": "Tips & Tricks",
+    "items": [
+      "🎙️ Use voice-over to drive short-form narratives",
+      "🖼️ Combine a reference image + text prompt for precise animations",
+      "🎧 Audio boosts realism — always specify the soundscape",
+      "📱 For mobile-first edits, go 9:16 and call for punchy transitions",
+      "🧪 Prototype scenes with simple prompts before layering style instructions"
+    ]
+  },
+  "compareLink": {
+    "label": "engine guide",
+    "href": "/ai-video-engines",
+    "before": "Compare Sora with Veo and Pika in our ",
+    "after": "."
+  },
+  "prompts": [
+    {
+      "title": "Storm-lit knowledge vault",
+      "prompt": "A glowing library in the middle of a stormy ocean, books flying above crashing waves, camera pans upward to reveal lightning streaks, soft orchestral music with a warm voice-over narrating, 'Knowledge survives everything.'"
+    },
+    {
+      "title": "Remix from still",
+      "prompt": "Animate the uploaded concept art into a slow motion hero shot, dramatic particles and volumetric lighting"
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Can I access Sora 2 from Europe?",
+      "a": "Yes. MaxVideoAI brokers access so European teams can render without waiting on an OpenAI invite."
+    },
+    {
+      "q": "Do Sora 2 renders include a watermark?",
+      "a": "No. Outputs are delivered clean, ready for editing and distribution."
+    },
+    {
+      "q": "How does billing work with FAL credits or my OpenAI API key?",
+      "a": "MaxVideo AI routes Sora 2 runs through FAL by default. Drop your own OpenAI API key in the app to bill usage directly through OpenAI—the interface keeps showing an indicative rate and adds a \"Billed by OpenAI\" badge so finance teams stay aligned."
+    }
+  ],
+  "pricingNotes": "Plan for ~$2.08 per render (Audio on · 4s · 720p)."
+}

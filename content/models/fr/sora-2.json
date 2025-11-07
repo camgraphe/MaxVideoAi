@@ -1,0 +1,124 @@
+{
+  "marketingName": "OpenAI Sora 2",
+  "versionLabel": "2",
+  "seo": {
+    "title": "Sora 2 – Générer des vidéos IA à partir de texte ou d'image avec audio",
+    "description": "Créez des vidéos riches générées par IA à partir d'invites texte ou image avec Sora 2. Voix off intégrée, effets d'ambiance et synchronisation des mouvements via MaxVideoAI.",
+    "image": "/hero/sora2.jpg"
+  },
+  "hero": {
+    "title": "Sora 2 – Vidéo IA à partir de texte ou d'image avec audio natif",
+    "intro": "Sora 2 d'OpenAI réunit génération texte→vidéo et image→vidéo dans un seul moteur, avec visuels cinématographiques et audio natif complet — voix off, ambiance et mouvements synchronisés. Animez concepts, scènes ou objets à partir de mots ou d'images de référence sans quitter MaxVideoAI.",
+    "ctaPrimary": { "label": "Générer avec Sora 2", "href": "/app?engine=sora-2" },
+    "secondaryLinks": [
+      { "label": "Voir tous les moteurs", "href": "/modeles" },
+      { "label": "Explorer les workflows", "href": "/workflows" },
+      { "label": "Voir les tarifs", "href": "/tarifs" }
+    ]
+  },
+  "overview": "Générez des vidéos à partir de texte ou d'images avec Sora 2 — désormais avec voix off, son d'ambiance et animation fluide. Animez des images de référence ou créez des prompts complets avec audio synchronisé.",
+  "bestUseCases": {
+    "title": "Cas d'usage clés",
+    "items": [
+      "Clips texte→vidéo avec narration voix off",
+      "Animations image→vidéo avec ambiance sonore",
+      "Contenus sociaux TikTok/Instagram en 9:16 avec audio synchronisé",
+      "Storytelling rapide, vidéos concept ou séquences d'onboarding"
+    ]
+  },
+  "technicalOverviewTitle": "Vue technique",
+  "technicalOverview": [
+    {
+      "label": "Durée",
+      "body": "Choisissez des runs de 4, 8 ou 12 secondes (limite actuelle MaxVideoAI)",
+      "link": {
+        "label": "Economic Times",
+        "href": "https://m.economictimes.com/tech/artificial-intelligence/openai-allows-15-second-videos-for-all-sora-2-users-25-seconds-for-pro-users/articleshow/124594772.cms"
+      }
+    },
+    {
+      "label": "Résolution",
+      "body": "Livraison 1080p en formats 16:9 et 9:16",
+      "link": {
+        "label": "Higgsfield AI",
+        "href": "https://higgsfield.ai/sora-2-ai-video-presets"
+      }
+    },
+    {
+      "label": "Audio",
+      "body": "Voix off native, couches d'ambiance et effets synchronisés",
+      "link": {
+        "label": "VentureBeat",
+        "href": "https://venturebeat.com/ai/openai-debuts-sora-2-ai-video-generator-app-with-sound-and-self-insertion"
+      }
+    },
+    {
+      "label": "Entrées",
+      "body": "Prompts texte ou combo image + texte pour des remixes animés",
+      "link": {
+        "label": "VentureBeat",
+        "href": "https://venturebeat.com/ai/openai-debuts-sora-2-ai-video-generator-app-with-sound-and-self-insertion"
+      }
+    },
+    {
+      "label": "Modes",
+      "body": "Workflows texte→vidéo et image→vidéo avec bascule audio native"
+    },
+    {
+      "label": "Tarification",
+      "body": "Pay-as-you-go via MaxVideoAI — rendus audio activé dès 0,52 $/s (~4,16 $ le clip de 8 s)"
+    }
+  ],
+  "promptStructure": {
+    "title": "Structure de prompt",
+    "quote": "« Une bibliothèque lumineuse au milieu d’un océan déchaîné, des livres volant dans les airs, la caméra monte pour révéler les éclairs, musique orchestrale douce, voix off : “La connaissance survit à tout.” »",
+    "description": "Structurez chaque run Sora 2 pour garantir clarté et fidélité :",
+    "steps": [
+      "Commencez par une description vivante (décor + ambiance)",
+      "Ajoutez les consignes de mouvement : caméra, rythme et durée",
+      "Décrivez les temps forts audio (ton de la voix, FX, musique)",
+      "Mentionnez les besoins de continuité si vous remixez une image ou une scène"
+    ]
+  },
+  "tips": {
+    "title": "Astuces",
+    "items": [
+      "🎙️ Utilisez la voix off pour porter les narrations courtes",
+      "🖼️ Combinez image de référence + texte pour des animations précises",
+      "🎧 Décrivez toujours le paysage sonore pour gagner en réalisme",
+      "📱 Pour du mobile-first, passez en 9:16 avec des transitions marquées",
+      "🧪 Testez des scènes simples avant d'empiler les styles"
+    ]
+  },
+  "compareLink": {
+    "label": "guide moteurs",
+    "href": "/comparatif",
+    "before": "Comparez Sora à Veo et Pika dans notre ",
+    "after": "."
+  },
+  "prompts": [
+    {
+      "title": "Coffre du savoir éclairé par l'orage",
+      "prompt": "Une bibliothèque lumineuse au milieu d'un océan orageux, des livres volant au-dessus de vagues déferlantes, la caméra effectue un panoramique vers le haut pour révéler des éclairs zébrant le ciel, musique orchestrale douce avec une voix off chaleureuse qui narre, 'La connaissance survit à tout.'"
+    },
+    {
+      "title": "Remix à partir d'une image fixe",
+      "prompt": "Animez l'art conceptuel téléchargé en un plan héroïque en ralenti, avec des particules dramatiques et un éclairage volumétrique"
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Puis-je accéder à Sora 2 depuis l'Europe ?",
+      "a": "Oui. MaxVideoAI fournit l'accès pour que les équipes européennes puissent effectuer des rendus sans attendre une invitation de OpenAI."
+    },
+    {
+      "q": "Les rendus Sora 2 incluent-ils un filigrane ?",
+      "a": "Non. Les sorties sont livrées propres, prêtes pour le montage et la distribution."
+    },
+    {
+      "q": "Comment fonctionne la facturation avec des crédits FAL ou ma clé API OpenAI ?",
+      "a": "Par défaut, MaxVideo AI fait passer les exécutions de Sora 2 par FAL. Ajoutez votre propre clé API OpenAI dans l'application pour que la facturation soit directement gérée par OpenAI — l'interface continue d'afficher un tarif indicatif et ajoute un badge \"Billed by OpenAI\" afin que les équipes financières restent alignées."
+    }
+  ],
+  "pricingNotes": "Prévoyez environ 2,08 $ par rendu (Audio activé · 4 s · 720p)."
+}

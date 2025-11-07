@@ -1,0 +1,123 @@
+{
+  "marketingName": "OpenAI Sora 2 Pro",
+  "versionLabel": "Pro",
+  "seo": {
+    "title": "Sora 2 Pro – Vidéos IA plus longues avec audio et contrôle avancé des invites",
+    "description": "Créez des vidéos IA plus longues et plus immersives à partir de texte ou d'images avec Sora 2 Pro. Voix native, ambiance sonore, enchaînement de prompts et contrôle avancé via MaxVideoAI.",
+    "image": "/hero/sora2.jpg"
+  },
+  "hero": {
+    "title": "Sora 2 Pro – Génération vidéo étendue avec audio et contrôle de scène",
+    "intro": "Sora 2 Pro s'appuie sur le moteur Sora 2 pour débloquer des durées plus longues, l'enchaînement multi-scènes et un contrôle accru de la continuité audio/visuelle. Chaînez des scènes, dirigez les mouvements de caméra ou animez des références pour des histoires pleinement maîtrisées.",
+    "ctaPrimary": { "label": "Générer avec Sora 2 Pro", "href": "/app?engine=sora-2-pro" },
+    "secondaryLinks": [
+      { "label": "Voir tous les moteurs", "href": "/modeles" },
+      { "label": "Explorer les workflows", "href": "/workflows" },
+      { "label": "Voir les tarifs", "href": "/tarifs" }
+    ]
+  },
+  "overview": "Générez des vidéos IA plus longues avec son et contrôle des scènes grâce à Sora 2 Pro. Parfait pour la narration, les vidéos explicatives et le motion design de marque — à partir d'images ou d'invites textuelles.",
+  "bestUseCases": {
+    "title": "Cas d'usage clés",
+    "items": [
+      "Narrations multi-scènes avec personnages cohérents",
+      "Vidéos explicatives de marque nécessitant un design sonore soigné",
+      "Remasterisations image→vidéo avec continuité lumineuse",
+      "Briefs hybrides texte+image nécessitant du prompt chaining"
+    ]
+  },
+  "technicalOverviewTitle": "Vue technique",
+  "technicalOverview": [
+    {
+      "label": "Durée",
+      "body": "Séquences étendues de 8 à 12 s avec enchaînement de scènes",
+      "link": {
+        "label": "Institute for Sound",
+        "href": "https://institute-for-sound.com/openai-sora-2-pro-video-durations"
+      }
+    },
+    {
+      "label": "Résolution",
+      "body": "Livraison 1080p en 16:9, 9:16, 1:1",
+      "link": {
+        "label": "Docs MaxVideoAI",
+        "href": "https://docs.maxvideoai.com/engines/sora-2-pro"
+      }
+    },
+    {
+      "label": "Audio",
+      "body": "Voix off native + ambiance spatiale intégrée",
+      "link": {
+        "label": "Recherche audio OpenAI",
+        "href": "https://openai.com/blog/sora-2-pro-audio"
+      }
+    },
+    {
+      "label": "Entrées",
+      "body": "Prompts texte, images de référence ou storyboard",
+      "link": {
+        "label": "Tutoriel storyboard",
+        "href": "https://blog.maxvideoai.com/storyboard-sora-pro"
+      }
+    },
+    {
+      "label": "Contrôles",
+      "body": "Enchaînement de prompts, poids de scène, chemins caméra, bascule audio"
+    },
+    {
+      "label": "Tarification",
+      "body": "Audio activé dès 0,60 $/s (~4,80 $ pour 8 s)"
+    }
+  ],
+  "promptStructure": {
+    "title": "Structure de prompt",
+    "quote": "Scène 1 → Souk néon au crépuscule, travelling à travers les étals, percussion en couches → Scène 2 → Panorama de toits, la voix off poursuit la narration.",
+    "description": "Décrivez chaque étape pour garder la cohérence multi-scènes :",
+    "steps": [
+      "Séparez les prompts en Scène 1 / Scène 2",
+      "Indiquez mouvement de caméra + durée de chaque scène",
+      "Précisez les repères audio (voix, ambiance, FX)",
+      "Mentionnez ce qui doit rester constant (personnages, tenues)",
+      "Ajoutez les transitions souhaitées (match cut, fondu, whip pan)"
+    ]
+  },
+  "tips": {
+    "title": "Astuces",
+    "items": [
+      "🔗 Utilisez les poids de scène pour prioriser les plans clés",
+      "🎬 Répétez les descripteurs de personnages pour garder la continuité",
+      "🎧 Écrivez les repères audio lorsque vous chaînez les prompts",
+      "🖼️ Téléversez des images fixes de référence pour verrouiller la lumière",
+      "🚀 Clonez les jobs vers Veo/Pika pour comparer les styles de mouvement"
+    ]
+  },
+  "compareLink": {
+    "label": "guide moteurs",
+    "href": "/comparatif",
+    "before": "Comparez Sora Pro à Veo 3 et Pika dans notre ",
+    "after": "."
+  },
+  "prompts": [
+    {
+      "title": "Multi-scène : ouverture légendaire",
+      "prompt": "Scène 1 → Une cité médiévale sous les étoiles, la caméra effectue un panoramique lent au‑dessus des toits, musique de luth, voix off : 'La paix régna pendant un siècle.' → Scène 2 → Un cavalier galope à travers les plaines au lever du soleil, montée orchestrale, zoom sur la garde d'une épée qui s'illumine.",
+      "notes": "Utilisez l'enchaînement de plusieurs prompts pour assembler les scènes dans un seul rendu."
+    },
+    {
+      "title": "Découverte à la lueur des torches",
+      "prompt": "Scène 1 → Intérieur d'un temple de la jungle au crépuscule, des percussions résonnent en arrière-plan, voix off : 'Les légendes parlent d'un gardien.' → Scène 2 → Couloir éclairé à la torche, la caméra glisse vers d'anciens glyphes tandis que la musique monte en intensité.",
+      "notes": "Commencez à partir d'une image conceptuelle détaillée pour conserver la cohérence des glyphes et de l'éclairage."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Puis-je utiliser ma propre clé OpenAI avec Sora 2 Pro ?",
+      "a": "Oui. Saisissez votre clé API OpenAI avant le rendu ; la facturation est gérée sur votre compte OpenAI pendant que MaxVideo orchestre la tâche."
+    },
+    {
+      "q": "Est-ce que Sora 2 Pro génère toujours de l'audio ?",
+      "a": "L'audio est activé par défaut pour la synchronisation labiale et la conception sonore, mais vous pouvez le désactiver dans le compositeur si vous n'avez besoin que des visuels."
+    }
+  ],
+  "pricingNotes": "Prévoyez environ 4,80 $ par rendu (audio activé · 8 s · 1080p)."
+}

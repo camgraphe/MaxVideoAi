@@ -1,0 +1,99 @@
+{
+  "marketingName": "Pika 2.2 Text to Video",
+  "versionLabel": "2.2",
+  "seo": {
+    "title": "Pika Text-to-Video – Stylized AI Video from Prompts",
+    "description": "Generate creative, stylized AI videos from text prompts using Pika. Perfect for short-form loops, motion hooks, and playful visuals—silent, fast, and budget-friendly via MaxVideoAI.",
+    "image": "/hero/pika-22.jpg"
+  },
+  "hero": {
+    "title": "Pika Text-to-Video – Creative AI Video Engine (No Audio)",
+    "intro": "Pika’s text-to-video engine focuses on speed and style. Draft fun, snappy clips with bold animation looks and quick camera moves—ideal for social-first visuals produced in minutes.",
+    "ctaPrimary": { "label": "Try Pika Text-to-Video", "href": "/app?engine=pika-text-to-video" },
+    "secondaryLinks": [
+      { "label": "See all engines", "href": "/models" },
+      { "label": "Explore workflows", "href": "/workflows" },
+      { "label": "View pricing", "href": "/pricing" }
+    ]
+  },
+  "overview": "Create fast, stylized clips with Pika. Spin up 5–8 second loops, reels, or motion sketches directly from text prompts—no reference images or audio required.",
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      "Short TikTok/Reel-style videos with stylized animation",
+      "Fast previews of motion ideas or visual hooks",
+      "Looping animations or cutaway effects for editors",
+      "Playful visuals for gaming, fashion, or pop-culture beats"
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    {
+      "label": "Duration",
+      "body": "5 or 8-second clips tuned for social loops",
+      "link": { "label": "Pika Labs FAQ", "href": "https://www.pika.art/faq" }
+    },
+    {
+      "label": "Resolution",
+      "body": "720p or 1080p in 1:1, 16:9, or 9:16",
+      "link": { "label": "Pika Discord", "href": "https://discord.gg/pika" }
+    },
+    { "label": "Audio", "body": "Silent output—drop into edits or add music later" },
+    { "label": "Inputs", "body": "Text prompts only—focus on bold subjects and stylistic cues" },
+    { "label": "Modes", "body": "Text-to-video only; no reference image uploads" },
+    { "label": "Pricing", "body": "Pay-as-you-go via MaxVideoAI — silent renders from $0.06/s (~$0.30 per 5-second clip)" }
+  ],
+  "promptStructure": {
+    "title": "Prompt structure",
+    "quote": "“A pixel-art cat jumping through portals, retro arcade background, camera pans quickly, rainbow glitch effects, stylized 2D animation.”",
+    "description": "Keep prompts lively and concise:",
+    "steps": [
+      "Lead with bold subjects and vibrant motion descriptors",
+      "Call out animation styles like anime, pixel-art, comic book, cel-shaded",
+      "Add effect-driven terms: glitch, motion blur, zoom-in, smear frames",
+      "Set the backdrop or vibe—arcade, skyline, studio, outer space",
+      "Stay short and punchy for the strongest visuals"
+    ]
+  },
+  "tips": {
+    "title": "Tips & tricks",
+    "items": [
+      "⚡ Perfect for quick loops and visual punchlines",
+      "🎨 Layer in stylistic cues—anime, comic, vintage, pixel, CG",
+      "🔁 Use simple prompts to craft seamless 3–5 second loops",
+      "📱 9:16 exports pop in reels, stories, and Shorts",
+      "❌ No audio—overlay custom music or VO in the edit"
+    ]
+  },
+  "compareLink": {
+    "label": "engine guide",
+    "href": "/ai-video-engines",
+    "before": "Compare Pika with Sora, Veo, and MiniMax in our ",
+    "after": "."
+  },
+  "prompts": [
+    {
+      "title": "Pixel cat portal hop",
+      "prompt": "A pixel-art cat jumping through portals, retro arcade backdrop, rainbow glitch trails, snappy 2D animation"
+    },
+    {
+      "title": "Comic pop intro",
+      "prompt": "Comic-book style splash screen with bold text bursts, camera punch-in, bright halftone textures"
+    }
+  ],
+  "faqs": [
+    {
+      "q": "What styles does Pika handle best?",
+      "a": "Pika thrives on stylized motion—anime, illustration, playful 3D, and social-first cuts. For photoreal briefs we recommend pairing it with Veo or Sora for hero scenes."
+    },
+    {
+      "q": "How short can I go?",
+      "a": "Loops as short as two seconds land well. Chain a loop with image-to-video mode for carousel assets or ambient UI backgrounds."
+    },
+    {
+      "q": "Is there audio?",
+      "a": "Renders are silent by default to keep output lightweight. Layer your own soundtrack in MaxVideoAI or rerun the prompt in Sora 2 Pro if you need native narration."
+    }
+  ],
+  "pricingNotes": "Plan for ~$0.30 per render (Silent clip · 5s · 720p)."
+}

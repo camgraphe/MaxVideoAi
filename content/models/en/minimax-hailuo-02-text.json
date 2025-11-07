@@ -1,0 +1,95 @@
+{
+  "marketingName": "MiniMax Hailuo 02 (Text-to-Video)",
+  "versionLabel": "02",
+  "seo": {
+    "title": "MiniMax Hailuo 02 Text-to-Video – Fast, Stylized Drafts",
+    "description": "Generate stylized AI video from text-only prompts with MiniMax Hailuo 02. Perfect for quick loops, motion tests, and experimental visuals—silent and budget-friendly on MaxVideoAI.",
+    "image": "/hero/minimax-video01.jpg"
+  },
+  "hero": {
+    "title": "MiniMax Hailuo 02 – Text-to-Video Engine for Fast Visuals",
+    "intro": "MiniMax’s Hailuo 02 engine outputs short, stylized clips directly from text prompts. Use it to sketch motion, experiment with transitions, or build mood-driven loops at a fraction of premium-engine costs.",
+    "ctaPrimary": { "label": "Try MiniMax Text-to-Video", "href": "/app?engine=minimax-hailuo-02-text" },
+    "secondaryLinks": [
+      { "label": "See all engines", "href": "/models" },
+      { "label": "Explore workflows", "href": "/workflows" },
+      { "label": "View pricing", "href": "/pricing" }
+    ]
+  },
+  "overview": "Spin up stylized 6–10 second clips without reference images. Hailuo 02 is silent, fast, and ideal for storyboards, transitions, and proof-of-motion explorations.",
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      "Create stylized visual sketches straight from text",
+      "Test transitions, mood, or motion structures before polishing",
+      "Generate quick clips for editing workflows or prototyping feeds",
+      "Produce experimental visuals for reels, openers, or background loops"
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    {
+      "label": "Duration",
+      "body": "6 or 10-second clips for rapid iteration",
+      "link": { "label": "fal.ai model page", "href": "https://fal.ai/models/fal-ai/minimax-hailuo-02-text" }
+    },
+    {
+      "label": "Resolution",
+      "body": "720p or 1080p in landscape and portrait",
+      "link": { "label": "MiniMax API Docs", "href": "https://www.minimax.chat/developer/docs/video" }
+    },
+    { "label": "Audio", "body": "Silent output—built for visual exploration only" },
+    { "label": "Inputs", "body": "Text prompts only—focus on motion, lighting, and style cues" },
+    { "label": "Modes", "body": "Text-to-video drafts—no reference images or audio toggles" },
+    { "label": "Pricing", "body": "Pay-as-you-go via MaxVideoAI — $0.05/s (no audio)" }
+  ],
+  "promptStructure": {
+    "title": "Prompt structure",
+    "quote": "“Stylized fox sprinting through a windy forest, camera follows from behind, swirling leaves, cinematic depth of field.”",
+    "description": "Keep prompts short and motion-driven:",
+    "steps": [
+      "Describe a clear subject in motion with a strong verb",
+      "Layer environmental movement—wind, fog, leaves, shadows",
+      "Call out cinematic camera cues: pan, follow, tracking, zoom",
+      "Skip audio references—Hailuo 02 is visual-only",
+      "Use two to three sentences maximum for consistent output"
+    ]
+  },
+  "tips": {
+    "title": "Tips & tricks",
+    "items": [
+      "🦊 Perfect for sketching motion ideas or animated cutaways",
+      "⚡ Build short creative loops or story beats quickly",
+      "📷 Think like a DoP—mention lenses, tracking, and lighting cues",
+      "🎨 Layer stylistic texture: foggy, glowing, inked, sketch, neon",
+      "❌ Silent output—overlay your own soundtrack or VO later"
+    ]
+  },
+  "compareLink": {
+    "label": "engine guide",
+    "href": "/ai-video-engines",
+    "before": "See how MiniMax stacks up against Pika and Veo in our ",
+    "after": "."
+  },
+  "prompts": [
+    {
+      "title": "Cinematic fox run",
+      "prompt": "A stylized fox running through a windy forest, camera follows from behind, swirling leaves, cinematic depth of field"
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Why choose MiniMax over premium engines?",
+      "a": "Hailuo 02 offers a strong price-to-quality ratio for volume campaigns. It’s excellent for social ads, explainers, and iterative concepting where you need dozens of clips without draining credits."
+    },
+    {
+      "q": "What prompt style works best?",
+      "a": "Keep prompts structured but concise—two to three sentences covering setting, motion, and tone. Overly long descriptions can introduce artifacts, while focused cues stay consistent."
+    },
+    {
+      "q": "How do I handle upscales?",
+      "a": "Route the resulting clip through the MaxVideoAI upscaler or rerun the same prompt in Veo 3 Fast for a sharper pass. Pricing transparency helps you compare before committing credits."
+    }
+  ],
+  "pricingNotes": "Plan for ~$0.30 per render (Silent clip · 6s · 720p)."
+}

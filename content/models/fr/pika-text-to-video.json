@@ -1,0 +1,99 @@
+{
+  "marketingName": "Pika 2.2 Texte→Vidéo",
+  "versionLabel": "2.2",
+  "seo": {
+    "title": "Pika Texte→Vidéo – Vidéo IA stylisée à partir de prompts",
+    "description": "Générez des vidéos IA créatives et stylisées à partir de simples invites texte avec Pika. Parfait pour les loops courtes, les hooks visuels et les contenus sociaux — silencieux, rapide et économique via MaxVideoAI.",
+    "image": "/hero/pika-22.jpg"
+  },
+  "hero": {
+    "title": "Pika Texte→Vidéo – moteur créatif sans audio",
+    "intro": "Le moteur texte→vidéo de Pika mise sur la vitesse et le style. Composez des clips fun et percutants avec des looks d’animation audacieux et des mouvements expressifs — idéal pour les visuels social-first produits en quelques minutes.",
+    "ctaPrimary": { "label": "Essayer Pika Texte→Vidéo", "href": "/app?engine=pika-text-to-video" },
+    "secondaryLinks": [
+      { "label": "Voir tous les moteurs", "href": "/modeles" },
+      { "label": "Explorer les workflows", "href": "/workflows" },
+      { "label": "Voir les tarifs", "href": "/tarifs" }
+    ]
+  },
+  "overview": "Créez des clips stylisés de 5 à 8 secondes avec Pika. Produisez loops, reels ou croquis de motion directement depuis un prompt texte — sans image de référence ni audio.",
+  "bestUseCases": {
+    "title": "Cas d'usage clés",
+    "items": [
+      "Vidéos courtes façon TikTok/Reels avec animation stylisée",
+      "Prévisualisation rapide d’idées de motion ou de hooks visuels",
+      "Loops animés ou cutaways pour les monteurs",
+      "Visuels ludiques pour le jeu vidéo, la mode ou la pop culture"
+    ]
+  },
+  "technicalOverviewTitle": "Vue technique",
+  "technicalOverview": [
+    {
+      "label": "Durée",
+      "body": "Clips de 5 ou 8 secondes optimisés pour les loops sociales",
+      "link": { "label": "FAQ Pika Labs", "href": "https://www.pika.art/faq" }
+    },
+    {
+      "label": "Résolution",
+      "body": "720p ou 1080p en formats 1:1, 16:9 ou 9:16",
+      "link": { "label": "Discord Pika", "href": "https://discord.gg/pika" }
+    },
+    { "label": "Audio", "body": "Sortie muette — ajoutez musique ou VO au montage" },
+    { "label": "Entrées", "body": "Prompts texte uniquement — misez sur des sujets audacieux et des styles précis" },
+    { "label": "Modes", "body": "Texte→vidéo uniquement ; pas d’upload d’image de référence" },
+    { "label": "Tarification", "body": "Pay-as-you-go via MaxVideoAI — rendus silencieux dès 0,06 $/s (~0,30 $ le clip de 5 s)" }
+  ],
+  "promptStructure": {
+    "title": "Structure de prompt",
+    "quote": "« Un chat pixel-art saute à travers des portails, décor d’arcade rétro, la caméra panote rapidement, effets glitch arc-en-ciel, animation 2D stylisée. »",
+    "description": "Gardez des prompts vifs et concis :",
+    "steps": [
+      "Annoncez un sujet fort avec un verbe de mouvement dynamique",
+      "Précisez le style d’animation (anime, pixel-art, BD, cel-shading…)",
+      "Ajoutez des effets : glitch, motion blur, zoom, smear frames",
+      "Fixez le décor ou l’ambiance — arcade, skyline, studio, espace",
+      "Restez court et punchy pour garder le contrôle visuel"
+    ]
+  },
+  "tips": {
+    "title": "Astuces",
+    "items": [
+      "⚡ Idéal pour des loops rapides et des punchlines visuelles",
+      "🎨 Superposez les indices de style — anime, vintage, pixel, CG",
+      "🔁 Utilisez des prompts simples pour créer des loops de 3–5 s",
+      "📱 Les exports 9:16 brillent en Reels, Stories et Shorts",
+      "❌ Pas d’audio — ajoutez votre bande-son en post-prod"
+    ]
+  },
+  "compareLink": {
+    "label": "guide moteurs",
+    "href": "/comparatif",
+    "before": "Comparez Pika, Sora, Veo et MiniMax dans notre ",
+    "after": "."
+  },
+  "prompts": [
+    {
+      "title": "Chat pixelisé et portails",
+      "prompt": "Chat en pixel art sautant à travers des portails, décor d’arcade rétro, traînées glitch arc-en-ciel, animation 2D nerveuse"
+    },
+    {
+      "title": "Intro pop BD",
+      "prompt": "Splash screen style bande dessinée avec bulles de texte explosives, zoom caméra punchy, textures à demi-teintes lumineuses"
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Quels styles Pika gère-t-il le mieux ?",
+      "a": "Pika excelle sur les motions stylisés — anime, illustration, 3D ludique, formats social-first. Pour du photoréalisme, combinez-le avec Veo ou Sora sur les plans héros."
+    },
+    {
+      "q": "Peut-on descendre sous 5 secondes ?",
+      "a": "Oui, des loops de 2 secondes fonctionnent très bien. Combinez-les avec le mode image→vidéo pour créer des carrousels ou des fonds animés."
+    },
+    {
+      "q": "Y a-t-il de l’audio ?",
+      "a": "Les rendus sont muets par défaut pour rester légers. Ajoutez votre bande-son dans MaxVideoAI ou relancez le prompt dans Sora 2 Pro si vous avez besoin de narration native."
+    }
+  ],
+  "pricingNotes": "Prévoyez ~0,30 $ par rendu (clip silencieux · 5 s · 720p)."
+}

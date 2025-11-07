@@ -1,0 +1,100 @@
+{
+  "marketingName": "Google Veo 3.1 Fast",
+  "versionLabel": "3.1 Fast",
+  "seo": {
+    "title": "Veo 3.1 Fast – video IA rápido con audio opcional",
+    "description": "Usa Veo 3.1 Fast para generar clips IA de hasta 8 segundos con audio nativo opcional. Perfecto para sociales y pruebas ágiles a través de MaxVideoAI.",
+    "image": "/hero/veo3.jpg"
+  },
+  "hero": {
+    "title": "Veo 3.1 Fast – motor veloz con audio opcional",
+    "intro": "Veo 3.1 Fast acerca los controles cinemáticos de DeepMind a un precio menor. Conservas la fidelidad de prompts y presets de cámara de Veo 3.1, eliges clips de hasta 8 s y activas o no el audio nativo para iterar con agilidad.",
+    "ctaPrimary": { "label": "Probar Veo 3.1 Fast", "href": "/app?engine=veo-3-1-fast" },
+    "secondaryLinks": [
+      { "label": "Ver todos los motores", "href": "/modelos" },
+      { "label": "Explorar flujos de trabajo", "href": "/workflows" },
+      { "label": "Ver precios", "href": "/precios" }
+    ]
+  },
+  "overview": "Equilibra calidad y velocidad con Veo 3.1 Fast. Mantiene los controles de encuadre de DeepMind, reduce la latencia y permite sumar ambiente gracias al audio opcional sin esperar a un render completo de Veo 3.1.",
+  "bestUseCases": {
+    "title": "Casos de uso ideales",
+    "items": [
+      "Clips cortos (hasta 8 s) con audio nativo opcional",
+      "Loops rápidos para contenido social en 9:16 o 16:9",
+      "Probar prompts narrativos antes de ejecuciones más largas o costosas",
+      "Equilibrar calidad y velocidad para iteraciones creativas"
+    ]
+  },
+  "technicalOverviewTitle": "Resumen técnico",
+  "technicalOverview": [
+    {
+      "label": "Duración",
+      "body": "Clips de hasta 8 s para iteraciones rápidas",
+      "link": { "label": "fal.ai", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
+    },
+    {
+      "label": "Resolución",
+      "body": "Salida 1080p en formatos 16:9 y 9:16",
+      "link": { "label": "DeepMind Veo", "href": "https://deepmind.google/models/veo" }
+    },
+    {
+      "label": "Audio",
+      "body": "Audio nativo opcional: actívalo para voz y ambiente",
+      "link": { "label": "fal.ai", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
+    },
+    { "label": "Entradas", "body": "Solo prompts de texto — ideal para iteración rápida" },
+    { "label": "Modos", "body": "Texto→video con interruptor de audio; sin imágenes de referencia" },
+    { "label": "Precio", "body": "Pago por uso vía MaxVideoAI — $0.15/s con audio o $0.10/s sin (~$1.20 máximo por clip)" }
+  ],
+  "promptStructure": {
+    "title": "Estructura de prompt",
+    "quote": "“Bosque brumoso al amanecer, la cámara hace zoom lento hacia una roca cubierta de musgo, rayos de sol atraviesan los árboles, ambiente de aves, sin diálogo.”",
+    "description": "Haz prompts compactos y llenos de sensaciones:",
+    "steps": [
+      "Describe luz, textura y sujeto focal con claridad",
+      "Indica movimientos de cámara y momento del día",
+      "Agrega cues de sonido ambiental cuando el audio esté activo",
+      "Quédate bajo ~25 palabras para conservar la velocidad",
+      "Limítate a una sola escena: Fast brilla en tomas enfocadas"
+    ]
+  },
+  "tips": {
+    "title": "Consejos",
+    "items": [
+      "⚡ Ideal para salidas rápidas con diseño sonoro opcional",
+      "🎧 Activa el audio para ambiente o apágalo para prototipos silenciosos",
+      "🪶 Destaca en paisajes, ensoñaciones y cortes basados en mood",
+      "🧪 Úsalo como banco de pruebas antes de pasar a Veo 3.1 completo",
+      "📱 Exporta en 9:16 para reels o 16:9 para Shorts"
+    ]
+  },
+  "compareLink": {
+    "label": "guía de motores",
+    "href": "/comparativa",
+    "before": "Compara los niveles de Veo junto a Sora y Pika en nuestra ",
+    "after": "."
+  },
+  "prompts": [
+    {
+      "title": "Zoom bosque brumoso",
+      "prompt": "Bosque brumoso al amanecer, zoom lento hacia una roca cubierta de musgo mientras rayos atraviesan los árboles, ambiente de aves sin diálogo.",
+      "notes": "Activa el audio para una ambientación sutil o apágalo para bucles silenciosos."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "¿Dónde se ubica Veo 3.1 Fast en la gama?",
+      "a": "Hace de puente entre Veo 3 Fast y Veo 3.1. Conservas los controles de encuadre y previews Dolby de 3.1 con menos tiempo de espera—ideal para revisiones exigentes."
+    },
+    {
+      "q": "¿Puedo reutilizar presets de Veo 3.1?",
+      "a": "Sí. Clona cualquier render de Veo 3.1 y cambia el motor a 3.1 Fast. Los presets de cámara y tono se mantienen para comparar resultados fácilmente."
+    },
+    {
+      "q": "¿Cómo se compara el precio?",
+      "a": "Ahorra aproximadamente 15 % frente a ejecuciones completas de Veo 3.1 manteniendo el encuadre premium. El calculador y la cola muestran la tarifa exacta antes de cada render."
+    }
+  ],
+  "pricingNotes": "Calcula ~1,20 USD por render (Audio activado · 8 s · 1080p)."
+}

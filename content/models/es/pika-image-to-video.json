@@ -1,0 +1,95 @@
+{
+  "marketingName": "Pika 2.2 Imagen→Video",
+  "versionLabel": "2.2",
+  "seo": {
+    "title": "Pika Imagen→Video – Anima cualquier fotograma estático con IA",
+    "description": "Convierte imágenes estáticas en clips dinámicos con Pika. Añade zooms, paneos y transiciones estilizadas; renders silenciosos ideales para loops y tomas de producto.",
+    "image": "/hero/pika-15.jpg"
+  },
+  "hero": {
+    "title": "Pika Imagen→Video – anima tus imágenes con motion estilizado",
+    "intro": "Sube un visual, agrega un prompt breve y deja que Pika aporte zooms cinemáticos, movimiento o estilos de animación. Es rápido, silencioso e ideal para loops, miniaturas y reels de concepto.",
+    "ctaPrimary": { "label": "Animar con Pika Imagen→Video", "href": "/app?engine=pika-image-to-video" },
+    "secondaryLinks": [
+      { "label": "Ver todos los motores", "href": "/modelos" },
+      { "label": "Explorar flujos de trabajo", "href": "/workflows" },
+      { "label": "Ver precios", "href": "/precios" }
+    ]
+  },
+  "overview": "Da vida a tus visuales en segundos. El modo imagen→video de Pika añade movimiento a ilustraciones, renders y fotos de producto sin audio: perfecto para loops cortos y b-roll estilizado.",
+  "bestUseCases": {
+    "title": "Casos de uso ideales",
+    "items": [
+      "Animar fotos o ilustraciones para reels en loop",
+      "Aportar motion a concept art o storyboards",
+      "Generar b-roll a partir de renders de producto",
+      "Sumar micro-movimientos a miniaturas o hero images"
+    ]
+  },
+  "technicalOverviewTitle": "Resumen técnico",
+  "technicalOverview": [
+    {
+      "label": "Duración",
+      "body": "Animaciones de 5 u 8 segundos pensadas para loop",
+      "link": { "label": "Docs Pika", "href": "https://www.pika.art/docs/image-to-video" }
+    },
+    {
+      "label": "Resolución",
+      "body": "720p o 1080p en 1:1, 16:9 o 9:16",
+      "link": { "label": "Discord Pika", "href": "https://discord.gg/pika" }
+    },
+    { "label": "Audio", "body": "Clips silenciosos: ideales para overlays o sonido en post" },
+    { "label": "Entradas", "body": "Sube una imagen y añade un mini prompt para guiar el movimiento" },
+    { "label": "Modos", "body": "Solo imagen→video; imagen de referencia obligatoria" },
+    { "label": "Precio", "body": "Pago por uso vía MaxVideoAI — $0.06/s (sin audio)" }
+  ],
+  "promptStructure": {
+    "title": "Estructura de prompt",
+    "quote": "“Zoom lento hacia un castillo fantástico sobre un acantilado al atardecer, aves en vuelo, nubes desplazándose, estilo anime.”",
+    "description": "Guía la animación con indicaciones concisas:",
+    "steps": [
+      "Describe el movimiento deseado: zoom, paneo, deriva, rotación",
+      "Añade pistas de estilo o tono — cartoon, anime, pictórico, cinemático",
+      "Menciona elementos naturales a animar (nubes, agua, tela, luces)",
+      "Mantén el prompt breve: el motor potencia lo que ya está en la imagen",
+      "Proporciona archivos detallados y en alta resolución para la mejor fidelidad"
+    ]
+  },
+  "tips": {
+    "title": "Consejos",
+    "items": [
+      "🖼️ Parte de imágenes HD con sujetos claros",
+      "🌀 Solicita zooms, paneos o animación sobre elementos concretos",
+      "🎨 Combínalo con estilos “cyberpunk”, “oil painting” o “low poly”",
+      "🔁 Limita los clips a 3–5 s para loops limpios",
+      "❌ Sin audio: perfecto para b-roll silencioso o acentos de motion"
+    ]
+  },
+  "compareLink": {
+    "label": "guía de motores",
+    "href": "/comparativa",
+    "before": "Compara los workflows de imagen con MiniMax y Veo en nuestra ",
+    "after": "."
+  },
+  "prompts": [
+    {
+      "title": "Deriva castillo fantástico",
+      "prompt": "Zoom lento hacia un castillo fantástico sobre un acantilado al atardecer, aves planean, estilo anime con nubes en deriva"
+    }
+  ],
+  "faqs": [
+    {
+      "q": "¿Qué assets rinden mejor?",
+      "a": "PNGs de alto contraste o exportaciones PSD en capas. Mantén el sujeto centrado y evita transparencias complejas que podrían interpretarse como estelas."
+    },
+    {
+      "q": "¿Cómo controlo el movimiento?",
+      "a": "Describe inicio y final (“comienza en el logo, retrocede para mostrar el empaque”) y lista los movimientos de cámara; Pika respeta esas instrucciones."
+    },
+    {
+      "q": "¿Puedo escalar el resultado?",
+      "a": "Sí. Pasa el clip por el upscaler de MaxVideoAI o repítelo en MiniMax Hailuo 02 para una versión más nítida manteniendo el mismo motion."
+    }
+  ],
+  "pricingNotes": "Calcula ~$0.30 por render (clip silencioso · 5 s · 720p)."
+}

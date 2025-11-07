@@ -1,0 +1,102 @@
+{
+  "marketingName": "Google Veo 3.1",
+  "versionLabel": "3.1",
+  "seo": {
+    "title": "Veo 3.1 – Advanced Text-to-Video & Native Audio Engine",
+    "description": "Generate cinematic 8-second videos with native audio using Veo 3.1 by Google DeepMind on MaxVideoAI. Reference-to-video guidance, multi-image fidelity, pay-as-you-go pricing.",
+    "image": "/hero/veo3.jpg"
+  },
+  "hero": {
+    "title": "Veo 3.1 – Advanced Text-to-Video & Native Audio Engine",
+    "intro": "Veo 3.1 is DeepMind’s premium video-generation engine routed through MaxVideoAI for reference-to-video runs. Focus on high-fidelity 8-second sequences with native sound design—voice-over, ambient layers, synced motion—and use up to four reference stills to lock identity.",
+    "ctaPrimary": { "label": "Generate with Veo 3.1", "href": "/app?engine=veo-3-1" },
+    "secondaryLinks": [
+      { "label": "See all engines", "href": "/models" },
+      { "label": "Explore workflows", "href": "/workflows" },
+      { "label": "View pricing", "href": "/pricing" }
+    ]
+  },
+  "overview": "Route Veo 3.1 through MaxVideoAI to deliver polished hero shots with native audio. Reference-to-video fidelity keeps wardrobe and lighting locked while you stack 8-second clips for longer edits.",
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      "Brand hero shots & product reveals that need cinematic polish",
+      "Social content in 9:16, 16:9, or 1:1 short loops",
+      "Concept visuals, mood boards, and film prototypes with consistent identity",
+      "Shot extensions: stitch multiple 8-second clips to build longer narratives"
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    { "label": "Duration", "body": "8-second renders (stack clips or loop for longer edits)" },
+    {
+      "label": "Resolution",
+      "body": "Full HD 1080p in 16:9, 9:16, or 1:1 aspect ratios",
+      "link": { "label": "Fliki", "href": "https://fliki.ai/blog/google-veo-3-and-imagen-4?utm_source=chatgpt.com" }
+    },
+    {
+      "label": "Audio",
+      "body": "Native voice-over, ambient sound, synced FX & lip-sync",
+      "link": {
+        "label": "TechCrunch",
+        "href": "https://techcrunch.com/2025/05/20/googles-veo-3-can-generate-videos-and-soundtracks-to-go-along-with-them/?utm_source=chatgpt.com"
+      }
+    },
+    {
+      "label": "Inputs",
+      "body": "Reference images (1–4) plus prompts to animate subjects",
+      "link": { "label": "Google DeepMind", "href": "https://deepmind.google/models/veo/?utm_source=chatgpt.com" }
+    },
+    { "label": "Identity lock", "body": "Multi-image guidance keeps wardrobe, lighting, and likeness consistent" },
+    { "label": "Pricing", "body": "Pay-as-you-go via MaxVideoAI — audio-on renders from $0.52/s (~$4.16 per 8-second clip)" }
+  ],
+  "promptStructure": {
+    "title": "Prompt structure",
+    "quote": "“A sleek electric car glides through neon city streets at dusk; drone crane shot, slow zoom out in puddle reflections; ambient synthwave soundtrack + VO: ‘The future is silent power.’ Reference stills: front three-quarter, cockpit, rear lights. Vertical 9:16.”",
+    "description": "Structure each run for clarity and fidelity:",
+    "steps": [
+      "Define the scene and mood (subject, environment, emotion)",
+      "Add camera / lens / movement cues (drone crane, handheld, slow dolly, etc.)",
+      "Specify audio elements (voice-over, ambient texture, Foley moments)",
+      "Call out reference usage: “Animate from stills” or “keep wardrobe & lighting consistent”",
+      "State duration and output: “8-second loop”, “1080p vertical”, “seamless loop”"
+    ]
+  },
+  "tips": {
+    "title": "Tips & tricks",
+    "items": [
+      "🎬 Pre-visualize the 8-second arc before writing your brief",
+      "🔊 Sound sells realism: mention music, Foley, or VO tone",
+      "📱 For social-first shots, lean on 9:16 prompts and note audio loudness for mobile",
+      "🖼️ Use 3–4 complementary stills to lock characters, lighting, and wardrobe",
+      "🔄 Chain renders, iterate quickly, then stitch clips for longer edits"
+    ]
+  },
+  "compareLink": {
+    "label": "engine guide",
+    "href": "/ai-video-engines",
+    "before": "Compare Veo 3.1 with Sora and Pika in our ",
+    "after": "."
+  },
+  "prompts": [
+    {
+      "title": "Electric flagship hero",
+      "prompt": "A sleek electric car glides through neon city streets at dusk, drone crane shot with a slow zoom out as reflections ripple in puddles, ambient synthwave soundtrack with confident voice-over: “The future is silent power.” Attach three reference stills (front three-quarter, cockpit, rear lights)."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "What makes Veo 3.1 different from Veo 3 Fast?",
+      "a": "Veo 3.1 delivers higher fidelity, smoother motion, and Dolby Vision previews. Fast trims latency for quick drafts but sacrifices detail—use 3.1 for polished edits and final delivery."
+    },
+    {
+      "q": "How do I keep framing consistent across a campaign?",
+      "a": "Use the cinematic control presets (close-up, medium, wide) and lock tone styles. Duplicate renders in the queue to reuse camera settings while swapping scripts."
+    },
+    {
+      "q": "Can I blend Veo outputs with Sora runs?",
+      "a": "Yes. Block sequences with Veo 3.1, then rerun hero shots in Sora 2 Pro. Upload the Veo frame as a reference in Sora to maintain visual continuity."
+    }
+  ],
+  "pricingNotes": "Plan for ~$4.16 per render (Audio on · 8s · 1080p)."
+}

@@ -1,0 +1,102 @@
+{
+  "marketingName": "Google Veo 3.1",
+  "versionLabel": "3.1",
+  "seo": {
+    "title": "Veo 3.1 – motor avanzado de texto a video con audio nativo",
+    "description": "Genera videos cinemáticos de 8 segundos con audio nativo usando Veo 3.1 de Google DeepMind en MaxVideoAI. Guía referencia→video, identidad consistente y pago por uso.",
+    "image": "/hero/veo3.jpg"
+  },
+  "hero": {
+    "title": "Veo 3.1 – motor texto→video con audio nativo",
+    "intro": "Veo 3.1 es el motor premium de DeepMind, enrutado por MaxVideoAI para ejecuciones referencia→video. Produce secuencias de 8 segundos en alta fidelidad con voz en off, capas ambientales y movimiento sincronizado, usando hasta cuatro imágenes de referencia para fijar la identidad.",
+    "ctaPrimary": { "label": "Generar con Veo 3.1", "href": "/app?engine=veo-3-1" },
+    "secondaryLinks": [
+      { "label": "Ver todos los motores", "href": "/modelos" },
+      { "label": "Explorar flujos de trabajo", "href": "/workflows" },
+      { "label": "Ver precios", "href": "/precios" }
+    ]
+  },
+  "overview": "Enruta Veo 3.1 mediante MaxVideoAI para entregar tomas hero pulidas con audio nativo. La fidelidad referencia→video mantiene vestuario e iluminación mientras encadenas clips de 8 segundos para ediciones más largas.",
+  "bestUseCases": {
+    "title": "Casos de uso ideales",
+    "items": [
+      "Tomas hero de marca y lanzamientos de producto con acabado cinematográfico",
+      "Contenido social en bucles cortos 9:16, 16:9 o 1:1",
+      "Visuales conceptuales, moodboards y prototipos fílmicos con identidad consistente",
+      "Extensión de planos: une múltiples clips de 8 segundos para narrativas más largas"
+    ]
+  },
+  "technicalOverviewTitle": "Resumen técnico",
+  "technicalOverview": [
+    { "label": "Duración", "body": "Renders de 8 segundos (encadena o haz bucles para ediciones más largas)" },
+    {
+      "label": "Resolución",
+      "body": "Full HD 1080p en relaciones 16:9, 9:16 o 1:1",
+      "link": { "label": "Fliki", "href": "https://fliki.ai/blog/google-veo-3-and-imagen-4?utm_source=chatgpt.com" }
+    },
+    {
+      "label": "Audio",
+      "body": "Voz en off nativa, ambiente, FX sincronizados y lip-sync",
+      "link": {
+        "label": "TechCrunch",
+        "href": "https://techcrunch.com/2025/05/20/googles-veo-3-can-generate-videos-and-soundtracks-to-go-along-with-them/?utm_source=chatgpt.com"
+      }
+    },
+    {
+      "label": "Entradas",
+      "body": "Imágenes de referencia (1–4) más prompts para animar sujetos",
+      "link": { "label": "Google DeepMind", "href": "https://deepmind.google/models/veo/?utm_source=chatgpt.com" }
+    },
+    { "label": "Bloqueo de identidad", "body": "La guía multi-imagen mantiene vestuario, luz y parecido" },
+    { "label": "Precio", "body": "Pago por uso vía MaxVideoAI — audio activado desde $0.52/s (~$4.16 por clip de 8 s)" }
+  ],
+  "promptStructure": {
+    "title": "Estructura de prompt",
+    "quote": "“Un auto eléctrico elegante recorre calles neón al anochecer; toma con grúa drone, zoom out lento reflejado en charcos; synthwave ambiental + VO: ‘El futuro es poder silencioso.’ Stills de referencia: tres cuartos frontal, cabina, luces traseras. Formato vertical 9:16.”",
+    "description": "Estructura cada ejecución para preservar claridad y fidelidad:",
+    "steps": [
+      "Define escena y estado de ánimo (sujeto, entorno, emoción)",
+      "Añade indicaciones de cámara / lente / movimiento (grúa drone, handheld, dolly lento, etc.)",
+      "Especifica elementos de audio (voz en off, textura ambiental, Foley)",
+      "Indica cómo usar referencias: “Animar desde stills”, “mantener vestuario y luz”",
+      "Declara duración y salida: “loop de 8 s”, “1080p vertical”, “bucle continuo”"
+    ]
+  },
+  "tips": {
+    "title": "Consejos",
+    "items": [
+      "🎬 Previsualiza el arco de 8 segundos antes de redactar",
+      "🔊 El sonido vende realismo: menciona música, Foley o tono de VO",
+      "📱 Para social-first, prioriza prompts 9:16 y señala el nivel de audio en móvil",
+      "🖼️ Usa 3–4 stills complementarios para fijar personaje, luz y vestuario",
+      "🔄 Encadena renders, itera rápido y luego une clips para ediciones largas"
+    ]
+  },
+  "compareLink": {
+    "label": "guía de motores",
+    "href": "/comparativa",
+    "before": "Compara Veo 3.1 con Sora y Pika en nuestra ",
+    "after": "."
+  },
+  "prompts": [
+    {
+      "title": "Hero eléctrico insignia",
+      "prompt": "Un auto eléctrico elegante atraviesa avenidas neón al anochecer, toma con grúa drone y zoom out lento mientras los reflejos vibran en charcos, synthwave ambiental con voz en off firme: “El futuro es poder silencioso”. Adjunta tres stills (frontal tres cuartos, cabina, luces traseras)."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "¿En qué se diferencia Veo 3.1 de Veo 3 Fast?",
+      "a": "Veo 3.1 ofrece mayor fidelidad, movimiento más fluido y previews Dolby Vision. Fast reduce la latencia para borradores rápidos pero sacrifica detalle—usa 3.1 para pulir entregas finales."
+    },
+    {
+      "q": "¿Cómo mantengo el encuadre consistente en una campaña?",
+      "a": "Activa los presets cinematográficos (primer plano, medio, abierto) y bloquea el estilo de tono. Duplica los renders en la cola para reutilizar cámara y solo cambiar el guion."
+    },
+    {
+      "q": "¿Puedo mezclar Veo con Sora?",
+      "a": "Sí. Bloquea las secuencias con Veo 3.1 y vuelve a lanzar los planos hero en Sora 2 Pro. Sube el fotograma de Veo como referencia en Sora para mantener la continuidad visual."
+    }
+  ],
+  "pricingNotes": "Calcula ~4,16 USD por render (Audio activado · 8 s · 1080p)."
+}
