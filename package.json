@@ -10,6 +10,7 @@
     "stripe": "^14.24.0"
   },
   "scripts": {
+    "dev": "npm --prefix frontend run dev",
     "start": "node mock-server.js",
     "healthcheck": "ts-node scripts/healthcheck.ts",
     "sanitize:jobs": "node scripts/sanitize-jobs.js",

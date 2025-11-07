@@ -17,8 +17,64 @@ import { supabase } from '@/lib/supabaseClient';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { MediaLightbox, type MediaLightboxEntry } from '@/components/MediaLightbox';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useI18n } from '@/lib/i18n/I18nProvider';
+
+const DEFAULT_DASHBOARD_COPY = {
+  quickActions: {
+    create: 'Create a video',
+    jobs: 'View latest renders',
+    billing: 'Add funds',
+  },
+  wallet: {
+    title: 'Wallet & Member',
+    balanceLabel: 'Current balance',
+    tierLabel: 'Member tier',
+    savingsLabel: 'Rolling 30-day savings: {percent}%',
+    manageCta: 'Manage billing',
+    memberFallback: 'Member',
+  },
+  spend: {
+    title: 'Spend at a glance',
+    today: 'Today',
+    last30: 'Last 30 days',
+  },
+  latest: {
+    title: 'Latest renders',
+    viewAll: 'View all →',
+    error: 'Failed to load latest renders. Please retry.',
+    retry: 'Retry',
+    curatedHint: 'Starter renders curated by the MaxVideo team appear here until you create your own.',
+    emptyHint: 'Start a generation to populate your latest renders.',
+  },
+  engines: {
+    title: 'Engines status',
+    error: 'Failed to load engines.',
+    queueLabel: 'queue: {count}',
+  },
+  actions: {
+    retry: 'Retry',
+  },
+  lightbox: {
+    groupTitle: 'Group ×{count}',
+    jobTitle: 'Render {id}',
+    metadata: {
+      created: 'Created',
+      heroDuration: 'Hero duration',
+      engine: 'Engine',
+      duration: 'Duration',
+      status: 'Status',
+      notProvided: 'Not provided',
+    },
+    statusFallback: 'N/A',
+    versionLabel: 'Version {index}',
+  },
+} as const;
+
+type DashboardCopy = typeof DEFAULT_DASHBOARD_COPY;
 
 export default function DashboardPage() {
+  const { t } = useI18n();
+  const copy = t('workspace.dashboard', DEFAULT_DASHBOARD_COPY) as DashboardCopy;
   const { data: enginesData, error: enginesError } = useEngines();
   const { data: jobsPages, error: jobsError, isLoading, mutate: mutateJobs } = useInfiniteJobs(9);
   const { loading: authLoading } = useRequireAuth();
@@ -39,6 +95,14 @@ export default function DashboardPage() {
   const { groups: apiGroups } = useMemo(
     () => groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true }),
     [jobs]
+  );
+  const quickActions = useMemo(
+    () => [
+      { id: 'create', href: '/', icon: 'generate' },
+      { id: 'jobs', href: '/jobs', icon: 'jobs' },
+      { id: 'billing', href: '/billing', icon: 'wallet' },
+    ],
+    []
   );
 
   useEffect(() => {
@@ -181,41 +245,48 @@ export default function DashboardPage() {
         <AppSidebar />
         <main className="flex-1 overflow-y-auto p-5 lg:p-7">
           <div className="mb-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <QuickAction href="/" icon="generate" label="Create a video" />
-            <QuickAction href="/jobs" icon="jobs" label="View latest renders" />
-            <QuickAction href="/billing" icon="wallet" label="Add funds" />
+            {quickActions.map((action) => (
+              <QuickAction
+                key={action.id}
+                href={action.href}
+                icon={action.icon}
+                label={copy.quickActions[action.id as keyof DashboardCopy['quickActions']]}
+              />
+            ))}
           </div>
 
           {/* Wallet & Member and Spend first */}
           <section className="mb-7 grid gap-4 md:grid-cols-2">
             <div className="rounded-card border border-border bg-white p-4 shadow-card">
-              <h3 className="mb-2 font-semibold text-text-primary">Wallet & Member</h3>
+              <h3 className="mb-2 font-semibold text-text-primary">{copy.wallet.title}</h3>
               <div className="flex items-center justify-between text-sm text-text-secondary">
                 <div>
-                  <p>Current balance</p>
+                  <p>{copy.wallet.balanceLabel}</p>
                   <p className="text-2xl font-semibold text-text-primary">{balanceDisplay}</p>
                 </div>
                 <div className="text-right">
-                  <p>Member tier</p>
-                  <p className="text-2xl font-semibold text-text-primary">{memberSummary?.tier ?? 'Member'}</p>
+                  <p>{copy.wallet.tierLabel}</p>
+                  <p className="text-2xl font-semibold text-text-primary">{memberSummary?.tier ?? copy.wallet.memberFallback}</p>
                   <p className="text-xs text-text-muted">
-                    Rolling 30-day savings: {memberSummary?.savingsPct ?? 0}%
+                    {copy.wallet.savingsLabel.replace('{percent}', String(memberSummary?.savingsPct ?? 0))}
                   </p>
                 </div>
               </div>
               <div className="mt-3">
-                <Link href="/billing" className="rounded-input border border-border px-3 py-2 text-sm font-medium text-text-primary hover:bg-bg">Manage billing</Link>
+                <Link href="/billing" className="rounded-input border border-border px-3 py-2 text-sm font-medium text-text-primary hover:bg-bg">
+                  {copy.wallet.manageCta}
+                </Link>
               </div>
             </div>
             <div className="rounded-card border border-border bg-white p-4 shadow-card">
-              <h3 className="mb-2 font-semibold text-text-primary">Spend at a glance</h3>
+              <h3 className="mb-2 font-semibold text-text-primary">{copy.spend.title}</h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="rounded-input border border-border bg-bg p-3">
-                  <p className="text-text-muted">Today</p>
+                  <p className="text-text-muted">{copy.spend.today}</p>
                   <p className="text-xl font-semibold text-text-primary">{spendTodayDisplay}</p>
                 </div>
                 <div className="rounded-input border border-border bg-bg p-3">
-                  <p className="text-text-muted">Last 30 days</p>
+                  <p className="text-text-muted">{copy.spend.last30}</p>
                   <p className="text-xl font-semibold text-text-primary">{spend30Display}</p>
                 </div>
               </div>
@@ -225,18 +296,20 @@ export default function DashboardPage() {
           {/* Latest renders below, with smaller thumbnails */}
           <section className="mb-7">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-text-primary">Latest renders</h2>
-              <Link href="/jobs" className="text-sm font-medium text-accent hover:underline">View all →</Link>
+              <h2 className="text-lg font-semibold text-text-primary">{copy.latest.title}</h2>
+              <Link href="/jobs" className="text-sm font-medium text-accent hover:underline">
+                {copy.latest.viewAll}
+              </Link>
             </div>
             {jobsError ? (
               <div className="rounded-card border border-border bg-white p-4 text-state-warning">
-                Failed to load latest renders. Please retry.
+                {copy.latest.error}
                 <button
                   type="button"
                   onClick={() => location.reload()}
                   className="ml-3 rounded-input border border-border px-2 py-1 text-sm hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  Retry
+                  {copy.actions.retry}
                 </button>
               </div>
             ) : (
@@ -280,20 +353,20 @@ export default function DashboardPage() {
             )}
             {hasCuratedJobs ? (
               <p className="mt-2 text-sm text-text-secondary">
-                Starter renders curated by the MaxVideo team appear here until you create your own.
+                {copy.latest.curatedHint}
               </p>
             ) : null}
             {showEmptyLatest ? (
               <p className="mt-2 text-sm text-text-secondary">
-                Start a generation to populate your latest renders.
+                {copy.latest.emptyHint}
               </p>
             ) : null}
           </section>
 
           <section className="mb-5">
-            <h3 className="mb-3 font-semibold text-text-primary">Engines status</h3>
+            <h3 className="mb-3 font-semibold text-text-primary">{copy.engines.title}</h3>
             {enginesError ? (
-              <p className="text-sm text-state-warning">Failed to load engines.</p>
+              <p className="text-sm text-state-warning">{copy.engines.error}</p>
             ) : (
               <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                 {(enginesData?.engines ?? []).map((e) => (
@@ -305,7 +378,9 @@ export default function DashboardPage() {
                     <div className="text-right">
                       <span className="rounded-input border border-border bg-bg px-2 py-1 text-xs text-text-secondary">{e.status}</span>
                       {typeof e.queueDepth === 'number' && (
-                        <p className="mt-1 text-xs text-text-muted">queue: {e.queueDepth}</p>
+                        <p className="mt-1 text-xs text-text-muted">
+                          {copy.engines.queueLabel.replace('{count}', String(e.queueDepth))}
+                        </p>
                       )}
                     </div>
                   </li>
@@ -317,7 +392,11 @@ export default function DashboardPage() {
       </div>
       {lightbox && (
         <MediaLightbox
-          title={lightbox.kind === 'group' ? `Groupe ×${lightbox.group.count}` : `Rendu ${lightbox.job.jobId}`}
+          title={
+            lightbox.kind === 'group'
+              ? copy.lightbox.groupTitle.replace('{count}', String(lightbox.group.count))
+              : copy.lightbox.jobTitle.replace('{id}', lightbox.job.jobId)
+          }
           subtitle={
             lightbox.kind === 'group'
               ? lightbox.group.hero.engineLabel
@@ -327,20 +406,29 @@ export default function DashboardPage() {
           metadata={
             lightbox.kind === 'group'
               ? [
-                  { label: 'Created', value: formatDateTime(lightbox.group.createdAt) },
+                  { label: copy.lightbox.metadata.created, value: formatDateTime(lightbox.group.createdAt) },
                   {
-                    label: 'Hero duration',
-                    value: lightbox.group.hero.durationSec ? `${lightbox.group.hero.durationSec}s` : 'Not provided',
+                    label: copy.lightbox.metadata.heroDuration,
+                    value: lightbox.group.hero.durationSec
+                      ? `${lightbox.group.hero.durationSec}s`
+                      : copy.lightbox.metadata.notProvided,
                   },
-                  { label: 'Engine', value: lightbox.group.hero.engineLabel },
+                  { label: copy.lightbox.metadata.engine, value: lightbox.group.hero.engineLabel },
                 ]
               : [
-                  { label: 'Duration', value: `${lightbox.job.durationSec}s` },
-                  { label: 'Status', value: lightbox.job.paymentStatus ?? 'N/A' },
-                  { label: 'Created', value: formatDateTime(lightbox.job.createdAt) },
+                  { label: copy.lightbox.metadata.duration, value: `${lightbox.job.durationSec}s` },
+                  {
+                    label: copy.lightbox.metadata.status,
+                    value: lightbox.job.paymentStatus ?? copy.lightbox.statusFallback,
+                  },
+                  { label: copy.lightbox.metadata.created, value: formatDateTime(lightbox.job.createdAt) },
                 ]
           }
-          entries={lightbox.kind === 'group' ? buildEntriesFromGroup(lightbox.group) : buildEntriesFromJob(lightbox.job)}
+          entries={
+            lightbox.kind === 'group'
+              ? buildEntriesFromGroup(lightbox.group, copy.lightbox.versionLabel)
+              : buildEntriesFromJob(lightbox.job)
+          }
           onClose={() => setLightbox(null)}
           onRefreshEntry={(entry) => {
             const jobId = entry.jobId ?? entry.id;
@@ -387,13 +475,13 @@ function buildEntriesFromJob(job: Job): MediaLightboxEntry[] {
   ];
 }
 
-function buildEntriesFromGroup(group: GroupSummary): MediaLightboxEntry[] {
+function buildEntriesFromGroup(group: GroupSummary, versionLabel: string): MediaLightboxEntry[] {
   return group.members.map((member) => ({
     id: member.id,
     jobId: member.jobId ?? member.id,
     label:
       typeof member.iterationIndex === 'number'
-        ? `Version ${member.iterationIndex + 1}`
+        ? versionLabel.replace('{index}', String(member.iterationIndex + 1))
         : member.engineLabel ?? member.id,
     videoUrl: member.videoUrl ?? undefined,
     thumbUrl: member.thumbUrl ?? undefined,

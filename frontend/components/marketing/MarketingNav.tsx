@@ -5,12 +5,22 @@ import { Link, usePathname } from '@/i18n/navigation';
 import Image from 'next/image';
 import clsx from 'clsx';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 
 export function MarketingNav() {
   const pathname = usePathname();
   const { t } = useI18n();
   const brand = t('nav.brand', 'MaxVideo AI') ?? 'MaxVideo AI';
-  const links = t('nav.links', []) as Array<{ key: string; href: string }>;
+  const defaultLinks: Array<{ key: string; href: string }> = [
+    { key: 'models', href: '/models' },
+    { key: 'examples', href: '/examples' },
+    { key: 'pricing', href: '/pricing' },
+    { key: 'workflows', href: '/workflows' },
+    { key: 'docs', href: '/docs' },
+    { key: 'blog', href: '/blog' },
+  ];
+  const maybeLinks = t('nav.links', defaultLinks);
+  const links = Array.isArray(maybeLinks) && maybeLinks.length ? maybeLinks : defaultLinks;
   const login = t('nav.login', 'Log in');
   const cta = t('nav.cta', 'Start a render');
 
@@ -43,6 +53,9 @@ export function MarketingNav() {
           })}
         </nav>
         <div className="flex items-center gap-3">
+          <div className="hidden md:block">
+            <LanguageToggle />
+          </div>
           <Link
             href="/login?next=/app"
             className="hidden text-sm font-medium text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white md:inline-flex"

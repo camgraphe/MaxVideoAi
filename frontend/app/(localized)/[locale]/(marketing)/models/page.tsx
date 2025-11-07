@@ -10,6 +10,44 @@ import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 
 const MODELS_SLUG_MAP = buildSlugMap('models');
+const DEFAULT_INTRO = {
+  paragraphs: [
+    'Each engine in this catalog is wired into the MaxVideoAI workspace with monitored latency, price tracking, and fallbacks. We add models as soon as providers open real capacity—not waitlist demos—so you know what can ship to production today.',
+    'Pick an engine to see the prompt presets, duration limits, and current route we use to keep renders flowing, then duplicate it into your own workspace.',
+  ],
+  cards: [
+    {
+      emoji: '🎬',
+      title: 'When to choose Sora',
+      body: 'Reach for Sora 2 or Sora 2 Pro when you need cinematic physics, character continuity, or audio baked directly into the render. These tiers cost more per second but deliver hero-quality footage.',
+    },
+    {
+      emoji: '🎯',
+      title: 'When to choose Veo',
+      body: 'Veo 3 tiers provide precise framing controls and tone presets, plus fast variants for iteration. They are ideal for ad cuts, b-roll, and campaigns that demand consistent camera moves.',
+    },
+    {
+      emoji: '⚡',
+      title: 'When to choose Pika or MiniMax',
+      body: 'Pika 2.2 excels at stylised loops and social edits, while MiniMax Hailuo 02 keeps budgets low for volume runs. Both complement Sora and Veo when you need fast alternates or lightweight briefs.',
+    },
+  ],
+  cta: {
+    title: 'Need a side-by-side?',
+    before: 'Read the ',
+    comparisonLabel: 'Sora vs Veo vs Pika comparison guide',
+    middle: ' for detailed quality notes, price ranges, and timing benchmarks, then clone any render from the ',
+    examplesLabel: 'examples gallery',
+    after: ' to start with a proven prompt.',
+  },
+} as const;
+
+const DEFAULT_ENGINE_TYPE_LABELS = {
+  textImage: 'Text + Image to Video',
+  text: 'Text to Video',
+  image: 'Image to Video',
+  default: 'AI Video Engine',
+} as const;
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
@@ -47,15 +85,17 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   };
 }
 
-function getEngineType(entry: FalEngineEntry): string {
+type EngineTypeKey = 'textImage' | 'text' | 'image' | 'default';
+
+function getEngineTypeKey(entry: FalEngineEntry): EngineTypeKey {
   if (entry.type) return entry.type;
   const modes = new Set(entry.engine.modes);
   const hasText = modes.has('t2v');
   const hasImage = modes.has('i2v');
-  if (hasText && hasImage) return 'Text + Image to Video';
-  if (hasText) return 'Text to Video';
-  if (hasImage) return 'Image to Video';
-  return 'AI Video Engine';
+  if (hasText && hasImage) return 'textImage';
+  if (hasText) return 'text';
+  if (hasImage) return 'image';
+  return 'default';
 }
 
 function getEngineDisplayName(entry: FalEngineEntry): string {
@@ -70,6 +110,28 @@ function getEngineDisplayName(entry: FalEngineEntry): string {
 export default async function ModelsPage() {
   const { dictionary } = await resolveDictionary();
   const content = dictionary.models;
+  const introContent = content.intro ?? null;
+  const introParagraphs =
+    Array.isArray(introContent?.paragraphs) && introContent.paragraphs.length
+      ? introContent.paragraphs
+      : DEFAULT_INTRO.paragraphs;
+  const introCards =
+    Array.isArray(introContent?.cards) && introContent.cards.length ? introContent.cards : DEFAULT_INTRO.cards;
+  const introCta = {
+    title: introContent?.cta?.title ?? DEFAULT_INTRO.cta.title,
+    before: introContent?.cta?.before ?? DEFAULT_INTRO.cta.before,
+    comparisonLabel: introContent?.cta?.comparisonLabel ?? DEFAULT_INTRO.cta.comparisonLabel,
+    middle: introContent?.cta?.middle ?? DEFAULT_INTRO.cta.middle,
+    examplesLabel: introContent?.cta?.examplesLabel ?? DEFAULT_INTRO.cta.examplesLabel,
+    after: introContent?.cta?.after ?? DEFAULT_INTRO.cta.after,
+  };
+  const cardCtaLabel = content.cardCtaLabel ?? 'Explore →';
+  const cardAriaPrefix = content.cardAriaPrefix ?? 'Explore';
+  const engineTypeLabels = {
+    ...DEFAULT_ENGINE_TYPE_LABELS,
+    ...(content.engineTypeLabels ?? {}),
+  };
+  const engineMetaCopy = content.meta ?? {};
 
   const priorityOrder = [
     'sora-2',
@@ -96,52 +158,37 @@ export default async function ModelsPage() {
         <p className="max-w-2xl text-base text-text-secondary">{content.hero.subtitle}</p>
       </header>
       <section className="mt-8 space-y-5 rounded-3xl border border-hairline bg-white/90 p-6 text-sm text-text-secondary shadow-card sm:p-8">
-        <p>
-          Each engine in this catalog is wired into the MaxVideoAI workspace with monitored latency, price tracking, and
-          fallbacks. We add models as soon as providers open real capacity—not waitlist demos—so you know what can ship
-          to production today. Pick an engine to see the prompt presets, duration limits, and current route we use to
-          keep renders flowing.
-        </p>
+        {introParagraphs.map((paragraph) => (
+          <p key={paragraph}>{paragraph}</p>
+        ))}
         <div className="grid gap-4 lg:grid-cols-3">
-          <div className="rounded-2xl border border-hairline bg-gradient-to-br from-bg via-white to-bg p-5 shadow-card">
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-lg">🎬</span>
-              <h3 className="text-xs font-semibold uppercase tracking-micro text-text-muted">When to choose Sora</h3>
+          {introCards.map((card) => (
+            <div
+              key={card.title}
+              className="rounded-2xl border border-hairline bg-gradient-to-br from-bg via-white to-bg p-5 shadow-card"
+            >
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-lg">
+                  {card.emoji ?? '🎬'}
+                </span>
+                <h3 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{card.title}</h3>
+              </div>
+              <p className="mt-3 text-sm">{card.body}</p>
             </div>
-            <p className="mt-3 text-sm">
-              Reach for Sora 2 or Sora 2 Pro when you need cinematic physics, character continuity, or audio baked
-              directly into the render. These tiers cost more per second but deliver hero-quality footage.
-            </p>
-          </div>
-          <div className="rounded-2xl border border-hairline bg-gradient-to-br from-bg via-white to-bg p-5 shadow-card">
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-lg">🎯</span>
-              <h3 className="text-xs font-semibold uppercase tracking-micro text-text-muted">When to choose Veo</h3>
-            </div>
-            <p className="mt-3 text-sm">
-              Veo 3 tiers provide precise framing controls and tone presets, plus fast variants for iteration. They are
-              ideal for ad cuts, b-roll, and campaigns that demand consistent camera moves.
-            </p>
-          </div>
-          <div className="rounded-2xl border border-hairline bg-gradient-to-br from-bg via-white to-bg p-5 shadow-card">
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-lg">⚡</span>
-              <h3 className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-                When to choose Pika or MiniMax
-              </h3>
-            </div>
-            <p className="mt-3 text-sm">
-              Pika 2.2 excels at stylised loops and social edits, while MiniMax Hailuo 02 keeps budgets low for volume
-              runs. Both complement Sora and Veo when you need fast alternates or lightweight briefs.
-            </p>
-          </div>
+          ))}
         </div>
         <div className="rounded-3xl border border-dashed border-hairline bg-bg/70 p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-micro text-text-muted">Need a side-by-side?</h3>
+          <h3 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{introCta.title}</h3>
           <p className="mt-2">
-            Read the <Link href="/blog/compare-ai-video-engines" className="font-semibold text-accent hover:text-accentSoft">Sora vs Veo vs Pika comparison guide</Link>{' '}
-            for detailed quality notes, price ranges, and timing benchmarks, then clone any render from the{' '}
-            <Link href="/examples" className="font-semibold text-accent hover:text-accentSoft">examples gallery</Link> to start with a proven prompt.
+            {introCta.before}
+            <Link href="/blog/compare-ai-video-engines" className="font-semibold text-accent hover:text-accentSoft">
+              {introCta.comparisonLabel}
+            </Link>
+            {introCta.middle}
+            <Link href="/examples" className="font-semibold text-accent hover:text-accentSoft">
+              {introCta.examplesLabel}
+            </Link>
+            {introCta.after}
           </p>
         </div>
       </section>
@@ -151,17 +198,21 @@ export default async function ModelsPage() {
           const example = demos.get(engine.id);
           const videoUrl = example?.videoUrl ?? media?.videoUrl ?? null;
           const poster = example?.posterUrl ?? media?.imagePath ?? '/hero/veo3.jpg';
-          const altText = media?.altText ?? `${engine.marketingName} demo preview`;
-          const engineType = getEngineType(engine);
-          const versionLabel = engine.versionLabel ?? '';
-          const displayName = engine.cardTitle ?? getEngineDisplayName(engine);
+          const meta = engineMetaCopy[engine.modelSlug] ?? engineMetaCopy[engine.id] ?? null;
+          const altText = media?.altText ?? meta?.description ?? `${engine.marketingName} demo preview`;
+          const engineTypeKey = getEngineTypeKey(engine);
+          const engineType = engineTypeLabels[engineTypeKey] ?? DEFAULT_ENGINE_TYPE_LABELS[engineTypeKey];
+          const versionLabel = meta?.versionLabel ?? engine.versionLabel ?? '';
+          const displayName = meta?.displayName ?? engine.cardTitle ?? getEngineDisplayName(engine);
+          const description = meta?.description ?? engineType;
+          const priceNote = meta?.priceBefore ?? null;
 
           return (
             <Link
               key={engine.modelSlug}
-              href={`/models/${engine.modelSlug}`}
+              href={{ pathname: '/models/[slug]', params: { slug: engine.modelSlug } }}
               className="group relative overflow-hidden rounded-3xl border border-black/5 bg-white text-neutral-900 shadow-lg transition hover:border-black/10 hover:shadow-xl"
-              aria-label={`Explore ${engine.marketingName}`}
+              aria-label={`${cardAriaPrefix} ${engine.marketingName}`}
             >
               <div className="relative aspect-video overflow-hidden">
                 {videoUrl ? (
@@ -195,9 +246,10 @@ export default async function ModelsPage() {
                 </div>
                 <div>
                   <h2 className="text-2xl font-semibold text-neutral-900 transition group-hover:text-neutral-800">{displayName}</h2>
-                  <p className="mt-1 text-sm text-neutral-500">{engineType}</p>
+                  <p className="mt-1 text-sm text-neutral-500">{description}</p>
+                  {priceNote ? <p className="mt-1 text-xs text-neutral-400">{priceNote}</p> : null}
                   <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-neutral-900/70 transition group-hover:translate-x-1 group-hover:text-neutral-900">
-                    Explore →
+                    {cardCtaLabel}
                   </span>
                 </div>
               </div>
@@ -205,6 +257,11 @@ export default async function ModelsPage() {
           );
         })}
       </section>
+      {content.note ? (
+        <p className="mt-10 rounded-3xl border border-dashed border-hairline bg-bg/70 px-6 py-4 text-sm text-text-secondary">
+          {content.note}
+        </p>
+      ) : null}
     </div>
   );
 }

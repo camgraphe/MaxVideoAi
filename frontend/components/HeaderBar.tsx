@@ -8,8 +8,11 @@ import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
+import { AppLanguageToggle } from '@/components/AppLanguageToggle';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 export function HeaderBar() {
+  const { t } = useI18n();
   const [email, setEmail] = useState<string | null>(null);
   const [wallet, setWallet] = useState<{ balance: number } | null>(null);
   const [member, setMember] = useState<{ tier: string } | null>(null);
@@ -90,6 +93,15 @@ export function HeaderBar() {
     return namePart.slice(0, 2).toUpperCase();
   }, [email]);
 
+  const marketingLinks = [
+    { key: 'models', href: '/models' },
+    { key: 'examples', href: '/examples' },
+    { key: 'pricing', href: '/pricing' },
+    { key: 'workflows', href: '/workflows' },
+    { key: 'docs', href: '/docs' },
+    { key: 'blog', href: '/blog' },
+  ] as const;
+
   return (
     <>
       <header
@@ -100,33 +112,27 @@ export function HeaderBar() {
       >
       <div className="flex items-center gap-8">
         <LogoMark />
-        <nav className="hidden items-center gap-5 text-sm font-medium text-text-muted md:flex">
-          {[
-            { label: 'Models', href: '/models' },
-            { label: 'Examples', href: '/examples' },
-            { label: 'Pricing', href: '/pricing' },
-            { label: 'Workflows', href: '/workflows' },
-            { label: 'Docs', href: '/docs' },
-            { label: 'Blog', href: '/blog' },
-          ].map((item) => (
+        <nav className="hidden items-center gap-5 text-sm font-medium text-text-muted md:flex" aria-label={t('workspace.header.marketingNav', 'Marketing navigation')}>
+          {marketingLinks.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className="transition-colors hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             >
-              {item.label}
+              {t(`nav.linkLabels.${item.key}`, item.key)}
             </Link>
           ))}
         </nav>
       </div>
 
       <div className="flex items-center gap-3 text-xs text-text-muted">
+        <AppLanguageToggle />
         <div className="flex items-center gap-2 rounded-input border border-hairline bg-white/80 px-3 py-1 uppercase tracking-micro">
           <Image src="/assets/icons/wallet.svg" alt="" width={16} height={16} aria-hidden />
-          <span>Wallet</span>
+          <span>{t('workspace.header.walletLabel', 'Wallet')}</span>
           <span className="text-sm font-semibold tracking-normal text-text-primary">${(wallet?.balance ?? 0).toFixed(2)}</span>
         </div>
-        <Chip className="px-2.5 py-1 text-[12px]" variant="outline">{member?.tier ?? 'Member'}</Chip>
+        <Chip className="px-2.5 py-1 text-[12px]" variant="outline">{member?.tier ?? t('workspace.header.memberFallback', 'Member')}</Chip>
         {email ? (
           <div className="relative">
             <button
@@ -146,26 +152,32 @@ export function HeaderBar() {
                 role="menu"
               >
                 <div className="mb-3 rounded-input bg-bg px-3 py-2">
-                  <p className="text-xs uppercase tracking-micro text-text-muted">Signed in</p>
+                  <p className="text-xs uppercase tracking-micro text-text-muted">{t('workspace.header.signedIn', 'Signed in')}</p>
                   <p className="mt-1 truncate text-sm font-medium text-text-primary">{email}</p>
                 </div>
-                <nav className="mb-2 flex flex-col gap-1" aria-label="Primary navigation">
-                  {NAV_ITEMS.map((item) => (
-                    <Link
-                      key={item.id}
-                      href={item.href}
-                      role="menuitem"
-                      className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      onClick={() => setAccountMenuOpen(false)}
-                    >
-                      <span>{item.label}</span>
-                      {item.badge ? (
-                        <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-accent">
-                          {item.badge}
-                        </span>
-                      ) : null}
-                    </Link>
-                  ))}
+                <nav className="mb-2 flex flex-col gap-1" aria-label={t('workspace.header.primaryNav', 'Primary navigation')}>
+                  {NAV_ITEMS.map((item) => {
+                    const label = t(`workspace.sidebar.links.${item.id}`, item.label);
+                    const badgeLabel = item.badge
+                      ? t(`workspace.sidebar.badges.${item.badgeKey ?? item.id}`, item.badge)
+                      : null;
+                    return (
+                      <Link
+                        key={item.id}
+                        href={item.href}
+                        role="menuitem"
+                        className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        onClick={() => setAccountMenuOpen(false)}
+                      >
+                        <span>{label}</span>
+                        {badgeLabel ? (
+                          <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-accent">
+                            {badgeLabel}
+                          </span>
+                        ) : null}
+                      </Link>
+                    );
+                  })}
                 </nav>
                 <button
                   type="button"
@@ -176,7 +188,7 @@ export function HeaderBar() {
                     window.location.href = '/';
                   }}
                 >
-                  Sign out
+                  {t('workspace.header.signOut', 'Sign out')}
                   <span className="text-[11px] uppercase tracking-micro text-text-muted">⌘⇧Q</span>
                 </button>
               </div>
@@ -188,13 +200,13 @@ export function HeaderBar() {
               href="/login"
               className="flex h-10 items-center justify-center rounded-input bg-accent px-3 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              Create account
+              {t('workspace.header.createAccount', 'Create account')}
             </Link>
             <Link
               href="/login?mode=signin"
               className="flex h-10 items-center justify-center rounded-input border border-hairline bg-white/80 px-3 text-sm font-medium text-text-primary transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              Sign in
+              {t('workspace.header.signIn', 'Sign in')}
             </Link>
           </div>
         )}
@@ -206,8 +218,9 @@ export function HeaderBar() {
 }
 
 function LogoMark() {
+  const { t } = useI18n();
   return (
-    <Link href="/" className="flex items-center gap-2" aria-label="Go to marketing homepage">
+    <Link href="/" className="flex items-center gap-2" aria-label={t('workspace.header.logoAria', 'Go to marketing homepage')}>
       <Image src="/assets/branding/logo-mark.svg" alt="MaxVideoAI" width={28} height={28} priority />
       <span className="text-lg font-semibold tracking-tight text-text-primary">MaxVideo AI</span>
     </Link>

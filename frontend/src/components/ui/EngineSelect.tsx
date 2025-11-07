@@ -17,6 +17,7 @@ import { Card } from './Card';
 import { Chip } from './Chip';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 const MODE_LABELS: Record<Mode, string> = {
   t2v: 'Text -> Video',
@@ -91,6 +92,32 @@ const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
   },
 };
 
+const DEFAULT_ENGINE_SELECT_COPY = {
+  latency: 'Latency {tier}',
+  choose: 'Choose engine',
+  variant: 'Variant',
+  browse: 'Browse engines...',
+  inputMode: 'Input mode',
+  modal: {
+    close: 'Close',
+    title: 'Choose the right engine for your shot',
+    subtitle:
+      'Each model has its own strengths - some are fast, others cinematic or experimental. See what fits your project, then generate with confidence.',
+    pricingLink: 'How pricing works',
+    searchPlaceholder: 'Search by engine, provider, or capability',
+    modeAll: 'Mode: All',
+    modeValue: 'Mode: {value}',
+    resolutionAll: 'Resolution: All',
+    empty:
+      'No engines match your filters yet. Adjust the filters or clear the search to explore the full catalogue.',
+    disclaimer: 'Logos are used for descriptive purposes only. Trademarks belong to their respective owners.',
+    descriptionFallback:
+      'Versatile engine ready for price-before-you-generate workflows. Review specs and run with confidence.',
+  },
+} as const;
+
+type EngineSelectCopy = typeof DEFAULT_ENGINE_SELECT_COPY;
+
 
 interface DropdownPosition {
   top: number;
@@ -99,6 +126,8 @@ interface DropdownPosition {
 }
 
 export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeChange }: EngineSelectProps) {
+  const { t } = useI18n();
+  const copy = t('workspace.generate.engineSelect', DEFAULT_ENGINE_SELECT_COPY) as EngineSelectCopy;
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState<DropdownPosition | null>(null);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
@@ -308,7 +337,7 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
         <div className="hidden flex-col items-end gap-2 text-xs text-text-muted lg:flex">
           {selectedEngine.latencyTier && (
             <Chip variant="ghost" className="text-[11px] lowercase first-letter:uppercase">
-              Latency {selectedEngine.latencyTier}
+              {copy.latency.replace('{tier}', selectedEngine.latencyTier)}
             </Chip>
           )}
           {selectedEngine.status && (
@@ -321,7 +350,7 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
 
       <div className="flex flex-wrap gap-5">
         <div className="min-w-[240px] flex-1 space-y-2">
-          <label className="text-[12px] uppercase tracking-micro text-text-muted">Choose engine</label>
+          <label className="text-[12px] uppercase tracking-micro text-text-muted">{copy.choose}</label>
           <button
             id={triggerId}
             ref={triggerRef}
@@ -354,7 +383,7 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
 
           {isSoraSelection && soraVariantEngines.length > 1 && (
             <div className="space-y-2">
-              <span className="text-[11px] uppercase tracking-micro text-text-muted">Variant</span>
+              <span className="text-[11px] uppercase tracking-micro text-text-muted">{copy.variant}</span>
               <div className="flex flex-wrap gap-2">
                 {soraVariantEngines.map((entry) => {
                   const active = entry.id === selectedEngine.id;
@@ -401,7 +430,7 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
                       }}
                       className="rounded-input border border-transparent px-2 py-1 text-[11px] font-medium text-accent transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      Browse engines...
+                      {copy.browse}
                     </button>
                   </div>
                   <ul
@@ -465,7 +494,7 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
                                 </div>
                               </div>
                               <div className="flex flex-col items-end gap-1 text-[11px] text-text-muted">
-                                {engine.latencyTier && <span>Latency {engine.latencyTier}</span>}
+                                {engine.latencyTier && <span>{copy.latency.replace('{tier}', engine.latencyTier)}</span>}
                                 {engine.status && <span className="uppercase tracking-micro">{engine.status}</span>}
                               </div>
                             </div>
@@ -483,12 +512,12 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
             onClick={() => setBrowseOpen(true)}
             className="w-full rounded-input border border-hairline bg-white px-4 py-2 text-sm font-medium text-accent transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            Browse engines...
+            {copy.browse}
           </button>
         </div>
 
         <div className="min-w-[200px] flex-1 space-y-3">
-          <p className="text-[12px] uppercase tracking-micro text-text-muted">Input mode</p>
+          <p className="text-[12px] uppercase tracking-micro text-text-muted">{copy.inputMode}</p>
           <div className="flex flex-wrap gap-2">
             {(['t2v', 'i2v'] as Mode[]).map((candidate) => {
               const supported = selectedEngine.modes.includes(candidate);
@@ -523,6 +552,7 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
             onEngineChange(engineToSelect);
             setBrowseOpen(false);
           }}
+          copy={copy}
         />
       )}
     </Card>
@@ -534,11 +564,13 @@ interface BrowseEnginesModalProps {
   selectedEngineId: string;
   onClose: () => void;
   onSelect: (engineId: string) => void;
+  copy: EngineSelectCopy;
 }
 
 type ModeFilter = 'all' | Mode;
 
-function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: BrowseEnginesModalProps) {
+function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect, copy }: BrowseEnginesModalProps) {
+  const modalCopy = copy.modal;
   const [portalElement, setPortalElement] = useState<HTMLDivElement | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [modeFilter, setModeFilter] = useState<ModeFilter>('all');
@@ -683,14 +715,14 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
           onClick={onClose}
           className="absolute right-4 top-4 rounded-full border border-hairline bg-white/80 px-3 py-1 text-xs font-medium text-text-secondary transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          Close
+          {modalCopy.close}
         </button>
         <header className="border-b border-hairline bg-bg/70 px-6 pb-5 pt-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="max-w-xl space-y-2">
-              <h2 className="text-xl font-semibold text-text-primary">Choose the right engine for your shot</h2>
+              <h2 className="text-xl font-semibold text-text-primary">{modalCopy.title}</h2>
               <p className="text-sm text-text-secondary">
-                Each model has its own strengths - some are fast, others cinematic or experimental. See what fits your project, then generate with confidence.
+                {modalCopy.subtitle}
               </p>
             </div>
             <div className="flex flex-col items-end gap-2">
@@ -700,7 +732,7 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
                 rel="noreferrer"
                 className="text-xs font-semibold text-accent hover:underline"
               >
-                How pricing works
+                {modalCopy.pricingLink}
               </a>
             </div>
           </div>
@@ -710,23 +742,23 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
                 type="search"
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Search by engine, provider, or capability"
+                placeholder={modalCopy.searchPlaceholder}
                 className="w-full rounded-input border border-border bg-white px-3 py-3 text-sm text-text-primary shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
             </div>
             <div className="flex flex-wrap gap-2">
               <FilterChip active={modeFilter === 'all'} onClick={() => setModeFilter('all')}>
-                Mode: All
+                {modalCopy.modeAll}
               </FilterChip>
               {(['t2v', 'i2v'] as Mode[]).map((candidate) => (
                 <FilterChip key={candidate} active={modeFilter === candidate} onClick={() => setModeFilter(candidate)}>
-                  Mode: {candidate.toUpperCase()}
+                  {modalCopy.modeValue.replace('{value}', candidate.toUpperCase())}
                 </FilterChip>
               ))}
             </div>
             <div className="flex flex-wrap gap-2">
               <FilterChip active={resolutionFilter === 'all'} onClick={() => setResolutionFilter('all')}>
-                Resolution: All
+                {modalCopy.resolutionAll}
               </FilterChip>
               {resolutions.map((resolution) => (
                 <FilterChip
@@ -751,8 +783,7 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
               const meta = ENGINE_META.get(engine.id);
               const name = meta?.marketingName ?? engine.label ?? engine.id;
               const versionLabel = meta?.versionLabel ?? engine.version ?? '-';
-              const description = guide?.description ?? meta?.seo.description ??
-                'Versatile engine ready for price-before-you-generate workflows. Review specs and run with confidence.';
+              const description = guide?.description ?? meta?.seo.description ?? modalCopy.descriptionFallback;
 
               return (
                 <Card
@@ -804,12 +835,12 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect }: Br
             })}
             {!filteredEngines.length && (
               <div className="col-span-full rounded-input border border-dashed border-border bg-bg/50 px-6 py-12 text-center text-sm text-text-muted">
-                No engines match your filters yet. Adjust the filters or clear the search to explore the full catalogue.
+                {modalCopy.empty}
               </div>
             )}
           </div>
           <p className="mt-6 text-center text-[11px] text-text-muted">
-            Logos are used for descriptive purposes only. Trademarks belong to their respective owners.
+            {modalCopy.disclaimer}
           </p>
         </div>
       </div>

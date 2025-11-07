@@ -7,6 +7,7 @@ import type { MutableRefObject, Ref } from 'react';
 import type { EngineCaps, Mode } from '@/types/engines';
 import type { EngineCaps as CapabilityCaps } from '@/fixtures/engineCaps';
 import { Card } from '@/components/ui/Card';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 interface Props {
   engine: EngineCaps;
@@ -39,6 +40,77 @@ interface Props {
   };
 }
 
+const DEFAULT_CONTROLS_COPY = {
+  core: {
+    title: 'Core settings',
+    subtitle: 'Duration, Aspect, Resolution',
+  },
+  billingTip: {
+    label: 'Billing tip:',
+    body: 'Add your OpenAI API key in Advanced settings to bill runs directly through OpenAI. Leave it blank to route charges via FAL credits.',
+  },
+  frames: {
+    label: 'Frames',
+    options: 'Options: {options}',
+    unit: '{count} frames',
+    hint: 'Frames control clip length; values are forwarded without converting to seconds.',
+  },
+  duration: {
+    optionsLabel: 'Duration',
+    maxLabel: 'Max {seconds}s',
+    rangeLabel: 'Duration — seconds',
+    rangeHint: 'Min {min}s · Max {max}s',
+    managed: 'Duration is managed directly by this engine.',
+  },
+  resolution: {
+    label: 'Resolution',
+    auto: 'Auto',
+    hd: '• HD',
+    fullHd: '• Full HD',
+    ultraHd: '• Ultra HD',
+    proSuffix: '• Pro',
+  },
+  aspect: {
+    label: 'Aspect',
+    options: {
+      auto: 'Auto',
+      source: 'Source',
+      custom: 'Custom',
+    },
+  },
+  iterationsLabel: 'Iterations',
+  loop: {
+    label: 'Loop',
+    on: 'On',
+    off: 'Off',
+  },
+  advancedTitle: 'Advanced settings',
+  seed: {
+    label: 'Seed',
+    placeholder: 'Random',
+    lock: 'Lock seed',
+  },
+  jitter: {
+    label: 'Jitter',
+    unit: '%',
+  },
+  fpsSuffix: '{value} fps',
+  promptStrength: 'Prompt strength',
+  guidance: 'Guidance',
+  apiKey: {
+    label: 'OpenAI API key',
+    placeholder: 'sk-...',
+    note: 'Provide your OpenAI key to bill directly through your account. We do not store the key server-side.',
+  },
+  inputInfluence: 'Input influence',
+  extend: {
+    label: 'Extend',
+    action: 'Extend by',
+    unit: 'seconds',
+  },
+  keyframes: 'Keyframes supported (Pika 2.2)',
+} as const;
+
 export function SettingsControls({
   engine,
   caps,
@@ -66,6 +138,9 @@ export function SettingsControls({
   onLoopChange,
   focusRefs,
 }: Props) {
+  const { t } = useI18n();
+  const controlsCopy = (t('workspace.generate.controls', DEFAULT_CONTROLS_COPY) ??
+    DEFAULT_CONTROLS_COPY) as typeof DEFAULT_CONTROLS_COPY;
   const [seed, setSeed] = useState<string>('');
   const [jitter, setJitter] = useState<number>(0);
   const [guidance, setGuidance] = useState<number | null>(null);
@@ -148,15 +223,17 @@ export function SettingsControls({
     <Card className="space-y-4 p-4">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Core settings</h2>
-          <p className="text-[12px] text-text-muted">Duration, Aspect, Resolution</p>
+          <h2 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">
+            {controlsCopy.core.title}
+          </h2>
+          <p className="text-[12px] text-text-muted">{controlsCopy.core.subtitle}</p>
         </div>
       </header>
 
       {showApiKeyField && (
         <div className="rounded-input border border-dashed border-border bg-white/80 p-3 text-[12px] text-text-muted">
-          <span className="font-semibold text-text-secondary">Billing tip:</span>{' '}
-          Add your OpenAI API key in Advanced settings to bill runs directly through OpenAI. Leave it blank to route charges via FAL credits.
+          <span className="font-semibold text-text-secondary">{controlsCopy.billingTip.label}</span>{' '}
+          {controlsCopy.billingTip.body}
         </div>
       )}
 
@@ -164,8 +241,10 @@ export function SettingsControls({
         {frameOptions && frameOptions.length ? (
           <div className="flex flex-col gap-2 text-sm text-text-secondary" ref={frameOptionsContainerRef}>
             <span className="text-[12px] uppercase tracking-micro text-text-muted">
-              Frames
-              <span className="ml-2 align-middle text-[11px] text-text-muted/80">Options: {frameOptions.join(', ')}</span>
+              {controlsCopy.frames.label}
+              <span className="ml-2 align-middle text-[11px] text-text-muted/80">
+                {(controlsCopy.frames.options ?? 'Options: {options}').replace('{options}', frameOptions.join(', '))}
+              </span>
             </span>
             <div className="flex flex-wrap gap-2">
               {frameOptions.map((option) => {
@@ -180,22 +259,24 @@ export function SettingsControls({
                       'rounded-input border px-3 py-1.5 text-[13px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                       active
                         ? 'border-accent bg-accent text-white'
-                        : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10',
+                      : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10',
                       !onNumFramesChange && 'cursor-not-allowed opacity-60'
                     )}
                   >
-                    {option} frames
+                    {(controlsCopy.frames.unit ?? '{count} frames').replace('{count}', String(option))}
                   </button>
                 );
               })}
             </div>
-            <span className="text-[11px] text-text-muted">Frames control clip length; values are forwarded without converting to seconds.</span>
+            <span className="text-[11px] text-text-muted">{controlsCopy.frames.hint}</span>
           </div>
         ) : enumeratedDurationOptions && enumeratedDurationOptions.length ? (
           <div className="flex flex-col gap-2 text-sm text-text-secondary">
             <span className="text-[12px] uppercase tracking-micro text-text-muted">
-              Duration
-              <span className="ml-2 align-middle text-[11px] text-text-muted/80">Max {engine.maxDurationSec}s</span>
+              {controlsCopy.duration.optionsLabel}
+              <span className="ml-2 align-middle text-[11px] text-text-muted/80">
+                {(controlsCopy.duration.maxLabel ?? 'Max {seconds}s').replace('{seconds}', String(engine.maxDurationSec))}
+              </span>
             </span>
             <div className="flex flex-wrap gap-2" ref={durationOptionsContainerRef}>
               {enumeratedDurationOptions.map((option) => {
@@ -226,8 +307,12 @@ export function SettingsControls({
         ) : durationRange ? (
           <label className="flex flex-col gap-2 text-sm text-text-secondary">
             <span className="text-[12px] uppercase tracking-micro text-text-muted">
-              Duration — seconds
-              <span className="ml-2 align-middle text-[11px] text-text-muted/80">Min {durationRange.min}s · Max {engine.maxDurationSec}s</span>
+              {controlsCopy.duration.rangeLabel}
+              <span className="ml-2 align-middle text-[11px] text-text-muted/80">
+                {(controlsCopy.duration.rangeHint ?? 'Min {min}s · Max {max}s')
+                  .replace('{min}', String(durationRange.min))
+                  .replace('{max}', String(engine.maxDurationSec))}
+              </span>
             </span>
             <div className="flex items-center gap-3 rounded-input border border-border bg-white px-3 py-2">
               <input
@@ -251,30 +336,32 @@ export function SettingsControls({
           </label>
         ) : (
           <div className="rounded-input border border-dashed border-border bg-white/60 p-3 text-[12px] text-text-muted">
-            Duration is managed directly by this engine.
+            {controlsCopy.duration.managed}
           </div>
         )}
 
         {showResolutionControl && (
           <FieldGroup
-            label="Resolution"
+            label={controlsCopy.resolution.label}
             options={resolutionOptions}
             value={resolution}
             onChange={onResolutionChange}
             focusRef={focusRefs?.resolution}
             labelFor={(opt) => {
+              const resolutionCopy = controlsCopy.resolution;
+              const optionKey = String(opt);
               const baseMap: Record<string, string> = {
                 '512P': '512P',
                 '768P': '768P',
-                '720p': '720p • HD',
-                '1080p': '1080p • Full HD',
-                '1080P': '1080P • Full HD',
-                '4k': '4K • Ultra HD',
-                auto: 'Auto',
+                '720p': `720p ${resolutionCopy.hd}`,
+                '1080p': `1080p ${resolutionCopy.fullHd}`,
+                '1080P': `1080P ${resolutionCopy.fullHd}`,
+                '4k': `4K ${resolutionCopy.ultraHd}`,
+                auto: resolutionCopy.auto,
               };
-              let label = baseMap[String(opt)] ?? String(opt);
-              if (engine.id.includes('pro')) {
-                label = `${label} • Pro`;
+              let label = baseMap[optionKey] ?? optionKey;
+              if (engine.id.includes('pro') && resolutionCopy.proSuffix) {
+                label = `${label} ${resolutionCopy.proSuffix}`;
               }
               return label;
             }}
@@ -283,7 +370,7 @@ export function SettingsControls({
 
         {showAspectControl && (
           <FieldGroup
-            label="Aspect"
+            label={controlsCopy.aspect.label}
             options={aspectOptions}
             value={aspectRatio}
             onChange={onAspectRatioChange}
@@ -297,13 +384,9 @@ export function SettingsControls({
             }
             labelFor={(opt) => {
               const labels: Record<string, string> = {
-                '16:9': '16:9',
-                '9:16': '9:16',
-                '1:1': '1:1',
-                '4:5': '4:5',
-                auto: 'Auto',
-                source: 'Source',
-                custom: 'Custom',
+                auto: controlsCopy.aspect.options.auto,
+                source: controlsCopy.aspect.options.source,
+                custom: controlsCopy.aspect.options.custom,
               };
               return labels[String(opt)] ?? String(opt);
             }}
@@ -313,7 +396,7 @@ export function SettingsControls({
 
       {onIterationsChange && (
         <div className="-mt-2 mb-1 flex items-center gap-2 px-1">
-          <span className="text-[11px] uppercase tracking-micro text-text-muted">Iterations</span>
+          <span className="text-[11px] uppercase tracking-micro text-text-muted">{controlsCopy.iterationsLabel}</span>
           {[1, 2, 3, 4].map((n) => (
             <button
               key={n}
@@ -333,7 +416,7 @@ export function SettingsControls({
       )}
       {showLoopControl && typeof loopEnabled === 'boolean' && onLoopChange && (
         <div className="-mt-1 flex items-center justify-between px-1">
-          <span className="text-[11px] uppercase tracking-micro text-text-muted">Loop</span>
+          <span className="text-[11px] uppercase tracking-micro text-text-muted">{controlsCopy.loop.label}</span>
           <button
             type="button"
             onClick={() => onLoopChange(!loopEnabled)}
@@ -345,7 +428,7 @@ export function SettingsControls({
             )}
             aria-pressed={loopEnabled}
           >
-            {loopEnabled ? 'On' : 'Off'}
+            {loopEnabled ? controlsCopy.loop.on : controlsCopy.loop.off}
           </button>
         </div>
       )}
@@ -356,7 +439,9 @@ export function SettingsControls({
           onClick={() => setIsAdvancedOpen((prev) => !prev)}
           aria-expanded={isAdvancedOpen}
         >
-          <span className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Advanced settings</span>
+          <span className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">
+            {controlsCopy.advancedTitle}
+          </span>
           <svg
             className={clsx('h-4 w-4 text-text-muted transition-transform', isAdvancedOpen ? 'rotate-180' : 'rotate-0')}
             viewBox="0 0 20 20"
@@ -370,10 +455,10 @@ export function SettingsControls({
         {isAdvancedOpen && (
           <div className="space-y-3 border-t border-border px-3 pb-3 pt-2">
             <label className="flex flex-col gap-2 text-sm text-text-secondary">
-              <span className="text-[12px] uppercase tracking-micro text-text-muted">Seed</span>
+              <span className="text-[12px] uppercase tracking-micro text-text-muted">{controlsCopy.seed.label}</span>
               <input
                 type="number"
-                placeholder="Random"
+                placeholder={controlsCopy.seed.placeholder}
                 value={seed}
                 onChange={(e) => setSeed(e.currentTarget.value)}
                 className="rounded-input border border-border bg-white px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -386,10 +471,10 @@ export function SettingsControls({
                   checked={Boolean(seedLocked)}
                   onChange={(e) => onSeedLockedChange?.(e.currentTarget.checked)}
                 />
-                <span>Lock seed</span>
+                <span>{controlsCopy.seed.lock}</span>
               </label>
               <label className="flex items-center gap-2 text-[13px] text-text-secondary">
-                <span className="text-[12px] uppercase tracking-micro text-text-muted">Jitter</span>
+                <span className="text-[12px] uppercase tracking-micro text-text-muted">{controlsCopy.jitter.label}</span>
                 <input
                   type="number"
                   min={0}
@@ -398,25 +483,25 @@ export function SettingsControls({
                   onChange={(e) => setJitter(Number(e.currentTarget.value))}
                   className="w-20 rounded-input border border-border bg-white px-2 py-1 text-right text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
-                <span className="text-[12px] text-text-muted">%</span>
+                <span className="text-[12px] text-text-muted">{controlsCopy.jitter.unit}</span>
               </label>
             </div>
 
             {engine.fps.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {engine.fps.map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => onFpsChange(option)}
-                    className={clsx(
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => onFpsChange(option)}
+                  className={clsx(
                       'rounded-input border px-3 py-1.5 text-[13px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                       option === fps
                         ? 'border-accent bg-accent text-white'
                         : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
                     )}
                   >
-                    {option} fps
+                    {(controlsCopy.fpsSuffix ?? '{value} fps').replace('{value}', String(option))}
                   </button>
                 ))}
               </div>
@@ -424,7 +509,7 @@ export function SettingsControls({
 
             {engine.params.promptStrength && (
               <div className="space-y-2">
-                <span className="text-[12px] uppercase tracking-micro text-text-muted">Prompt strength</span>
+                <span className="text-[12px] uppercase tracking-micro text-text-muted">{controlsCopy.promptStrength}</span>
                 <RangeWithInput
                   value={promptStrength ?? engine.params.promptStrength.default ?? 0.5}
                   min={engine.params.promptStrength.min ?? 0}
@@ -437,7 +522,7 @@ export function SettingsControls({
 
             {engine.params.guidance && (
               <div className="space-y-2">
-                <span className="text-[12px] uppercase tracking-micro text-text-muted">Guidance</span>
+                <span className="text-[12px] uppercase tracking-micro text-text-muted">{controlsCopy.guidance}</span>
                 <RangeWithInput
                   value={guidance ?? engine.params.guidance.default ?? 0.5}
                   min={engine.params.guidance.min ?? 0}
@@ -450,24 +535,26 @@ export function SettingsControls({
 
             {showApiKeyField && (
               <div className="space-y-2">
-                <span className="text-[12px] uppercase tracking-micro text-text-muted">OpenAI API key</span>
+                <span className="text-[12px] uppercase tracking-micro text-text-muted">{controlsCopy.apiKey.label}</span>
                 <input
                   type="password"
-                  placeholder="sk-..."
+                  placeholder={controlsCopy.apiKey.placeholder}
                   autoComplete="off"
                   value={apiKey ?? ''}
                   onChange={(event) => onApiKeyChange?.(event.currentTarget.value)}
                   className="rounded-input border border-border bg-white px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
                 <p className="text-[11px] text-text-muted">
-                  Provide your OpenAI key to bill directly through your account. We do not store the key server-side.
+                  {controlsCopy.apiKey.note}
                 </p>
               </div>
             )}
 
             {mode === 'i2v' && engine.params.initInfluence && (
               <div className="space-y-2">
-                <h4 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Input influence</h4>
+                <h4 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">
+                  {controlsCopy.inputInfluence}
+                </h4>
                 <RangeWithInput
                   value={initInfluence ?? engine.params.initInfluence.default ?? 0.5}
                   min={engine.params.initInfluence.min ?? 0}
@@ -480,17 +567,19 @@ export function SettingsControls({
 
             {engine.extend && (
               <div className="space-y-2">
-                <h4 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Extend</h4>
+                <h4 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">
+                  {controlsCopy.extend.label}
+                </h4>
                 <div className="flex items-center gap-2 text-[13px]">
-                  <span>Extend by</span>
+                  <span>{controlsCopy.extend.action}</span>
                   <input type="number" min={1} max={30} defaultValue={5} className="w-20 rounded-input border border-border bg-white px-2 py-1 text-right focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
-                  <span>seconds</span>
+                  <span>{controlsCopy.extend.unit}</span>
                 </div>
               </div>
             )}
 
             {engine.keyframes && (
-              <div className="text-[12px] text-text-muted">Keyframes supported (Pika 2.2)</div>
+              <div className="text-[12px] text-text-muted">{controlsCopy.keyframes}</div>
             )}
           </div>
         )}

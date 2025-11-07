@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 export type ComposerAttachment = {
   kind: 'image' | 'video';
@@ -54,6 +55,41 @@ interface Props {
   onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;
 }
 
+const DEFAULT_COMPOSER_COPY = {
+  title: 'Composer',
+  subtitle: 'Enhance prompt • Non-destructive reruns',
+  badges: {
+    payg: 'Pay-as-you-go',
+    priceBefore: 'Price-before',
+    alwaysCurrent: 'Always-current',
+  },
+  priceLabel: 'This render: {amount}',
+  memberLabel: 'Member price — You save {percent}%',
+  labels: {
+    required: 'Required',
+    optional: 'Optional',
+  },
+  prompt: {
+    placeholder: 'Describe the shot...',
+  },
+  negativePrompt: {
+    placeholder: 'Elements to avoid…',
+    requiredHint: 'Required',
+  },
+  shortcuts: {
+    generate: 'Cmd+Enter • Generate',
+    price: 'G • Price-before',
+    seed: 'S • Lock seed',
+  },
+  iterationsLabel: '×{count}',
+  button: {
+    idle: 'Generate',
+    loading: 'Checking price…',
+  },
+} as const;
+
+type ComposerCopy = typeof DEFAULT_COMPOSER_COPY;
+
 export function Composer({
   engine,
   caps,
@@ -81,6 +117,8 @@ export function Composer({
   onNotice,
   onOpenLibrary,
 }: Props) {
+  const { t } = useI18n();
+  const copy = t('workspace.generate.composer', DEFAULT_COMPOSER_COPY) as ComposerCopy;
   const [isButtonAnimating, setIsButtonAnimating] = useState(false);
   const [isPulseVisible, setIsPulseVisible] = useState(false);
   const animationTimeoutRef = useRef<number | null>(null);
@@ -142,27 +180,30 @@ export function Composer({
     <Card className="space-y-5 p-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Composer</h2>
-          <p className="text-sm text-text-secondary">Enhance prompt • Non-destructive reruns</p>
+          <h2 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">{copy.title}</h2>
+          <p className="text-sm text-text-secondary">{copy.subtitle}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
           <Chip className="px-2.5 py-1" variant="outline">
-            Pay-as-you-go
+            {copy.badges.payg}
           </Chip>
           <Chip className="px-2.5 py-1" variant="outline">
-            Price-before
+            {copy.badges.priceBefore}
           </Chip>
           <Chip className="px-2.5 py-1" variant="outline">
-            Always-current
+            {copy.badges.alwaysCurrent}
           </Chip>
           {formattedPrice && (
             <Chip variant="accent" className="px-3 py-1.5">
-              This render: {formattedPrice}
+              {copy.priceLabel.replace('{amount}', formattedPrice)}
             </Chip>
           )}
           {memberDiscount && memberDiscount.amountCents > 0 && (
             <Chip className="px-3 py-1.5 text-accent" variant="outline">
-              Member price — You save {Math.round((memberDiscount.percentApplied ?? 0) * 100)}%
+              {copy.memberLabel.replace(
+                '{percent}',
+                String(Math.round((memberDiscount.percentApplied ?? 0) * 100))
+              )}
             </Chip>
           )}
         </div>
@@ -178,14 +219,14 @@ export function Composer({
               )}
             </div>
             <span className={clsx('rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-micro', promptRequired ? 'border-accent text-accent' : 'border-border text-text-muted')}>
-              {promptRequired ? 'Required' : 'Optional'}
+              {promptRequired ? copy.labels.required : copy.labels.optional}
             </span>
           </div>
           <div className="relative">
             <textarea
               value={prompt}
               onChange={(event) => onPromptChange(event.currentTarget.value)}
-              placeholder="Describe the shot..."
+              placeholder={copy.prompt.placeholder}
               rows={6}
               className="w-full rounded-input border border-border bg-white px-4 py-3 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               ref={textareaRef}
@@ -198,14 +239,14 @@ export function Composer({
             <div className="flex items-center justify-between gap-2">
               <span className="text-[12px] uppercase tracking-micro text-text-muted">{negativePromptLabel}</span>
               {negativePromptRequired && (
-                <span className="text-[11px] text-text-muted/80">Required</span>
+                <span className="text-[11px] text-text-muted/80">{copy.negativePrompt.requiredHint}</span>
               )}
             </div>
             <input
               type="text"
               value={negativePrompt ?? ''}
               onChange={(event) => onNegativePromptChange?.(event.currentTarget.value)}
-              placeholder="Elements to avoid…"
+              placeholder={negativePromptDescription ?? copy.negativePrompt.placeholder}
               className="w-full rounded-input border border-border bg-white px-4 py-2 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
             {negativePromptDescription && (
@@ -236,9 +277,9 @@ export function Composer({
 
       <footer className="flex flex-col gap-3 text-sm text-text-secondary sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap gap-3 text-xs text-text-muted">
-          <span>Cmd+Enter • Generate</span>
-          <span>G • Price-before</span>
-          <span>S • Lock seed</span>
+          <span>{copy.shortcuts.generate}</span>
+          <span>{copy.shortcuts.price}</span>
+          <span>{copy.shortcuts.seed}</span>
         </div>
         <div className="flex flex-1 flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-end">
           {error && (
@@ -247,7 +288,7 @@ export function Composer({
             </div>
           )}
           <span className="inline-flex items-center rounded-full bg-black/5 px-2.5 py-1 text-[12px] font-semibold uppercase tracking-micro text-text-secondary">
-            ×{Math.max(1, iterations)}
+            {copy.iterationsLabel.replace('{count}', String(Math.max(1, iterations)))}
           </span>
           <button
             type="button"
@@ -262,7 +303,7 @@ export function Composer({
             )}
             onClick={handleGenerateClick}
           >
-            <span className="relative z-10">{isLoading ? 'Checking price…' : 'Generate'}</span>
+            <span className="relative z-10">{isLoading ? copy.button.loading : copy.button.idle}</span>
             <span
               aria-hidden
               className={clsx(

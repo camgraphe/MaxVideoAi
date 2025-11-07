@@ -12,6 +12,7 @@ import { hideJob, useEngines, useInfiniteJobs } from '@/lib/api';
 import { groupJobsIntoSummaries } from '@/lib/job-groups';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
 import { normalizeGroupSummaries } from '@/lib/normalize-group-summary';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 interface Props {
   engine: EngineCaps;
@@ -32,12 +33,29 @@ interface SnackbarState {
   duration?: number;
 }
 
+const DEFAULT_GALLERY_COPY = {
+  title: 'Latest renders',
+  viewAll: 'View all',
+  curated: 'Starter samples curated by the MaxVideo team are shown until you generate your own videos.',
+  error: 'Failed to load latest renders. Please retry.',
+  retry: 'Retry',
+  snackbar: {
+    samples: 'Sample clips cannot be removed.',
+    removed: 'Removed from gallery.',
+    failed: 'Unable to remove from gallery.',
+  },
+} as const;
+
+type GalleryCopy = typeof DEFAULT_GALLERY_COPY;
+
 export function GalleryRail({
   engine,
   activeGroups = [],
   onOpenGroup,
   onGroupAction,
 }: Props) {
+  const { t } = useI18n();
+  const copy = t('workspace.generate.galleryRail', DEFAULT_GALLERY_COPY) as GalleryCopy;
   const { data, error, isLoading, isValidating, setSize, mutate } = useInfiniteJobs(24);
   const { data: enginesData } = useEngines();
   const engineList = useMemo(() => enginesData?.engines ?? [], [enginesData?.engines]);
@@ -90,12 +108,12 @@ export function GalleryRail({
   const handleRemoveJob = useCallback(
     async (job: Job) => {
       if (job.curated) {
-        setSnackbar({ message: 'Sample clips cannot be removed.', duration: 2400 });
+        setSnackbar({ message: copy.snackbar.samples, duration: 2400 });
         return;
       }
       try {
         await hideJob(job.jobId);
-        setSnackbar({ message: 'Removed from gallery.', duration: 2400 });
+        setSnackbar({ message: copy.snackbar.removed, duration: 2400 });
         await mutate(
           (pages) => {
             if (!pages) return pages;
@@ -108,10 +126,10 @@ export function GalleryRail({
         );
       } catch (error) {
         console.error('Failed to hide job', error);
-        setSnackbar({ message: 'Unable to remove from gallery.', duration: 2400 });
+        setSnackbar({ message: copy.snackbar.failed, duration: 2400 });
       }
     },
-    [mutate]
+    [copy.snackbar.failed, copy.snackbar.removed, copy.snackbar.samples, mutate]
   );
 
   const handleRemoveGroup = useCallback(
@@ -120,12 +138,12 @@ export function GalleryRail({
       const job = group.hero.job;
       if (!job) return;
       if (job.curated) {
-        setSnackbar({ message: 'Sample clips cannot be removed.', duration: 2400 });
+        setSnackbar({ message: copy.snackbar.samples, duration: 2400 });
         return;
       }
       void handleRemoveJob(job);
     },
-    [handleRemoveJob]
+    [copy.snackbar.samples, handleRemoveJob]
   );
 
   const engineMap = useMemo(() => {
@@ -211,30 +229,30 @@ export function GalleryRail({
   return (
     <aside className="hidden xl:flex h-[calc(125vh-var(--header-height))] w-[272px] shrink-0 flex-col border-l border-border bg-bg/80 px-4 pb-6 pt-4">
       <header className="flex items-center justify-between">
-        <h2 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Latest renders</h2>
+        <h2 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">{copy.title}</h2>
         <Link
           href="/jobs"
           className="rounded-[10px] border border-transparent px-3 py-1 text-[12px] font-medium text-text-muted transition hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          View all
+          {copy.viewAll}
         </Link>
       </header>
 
       {hasCuratedJobs ? (
         <div className="mt-3 rounded-[10px] border border-hairline bg-white/80 px-3 py-2 text-[12px] text-text-secondary">
-          Starter samples curated by the MaxVideo team are shown until you generate your own videos.
+          {copy.curated}
         </div>
       ) : null}
 
       {error && (
         <div className="mt-4 flex items-center justify-between gap-3 rounded-[10px] border border-[#FACC15]/60 bg-[#FEF3C7] px-3 py-2 text-[12px] text-[#92400E]">
-          <span role="alert">Failed to load latest renders. Please retry.</span>
+          <span role="alert">{copy.error}</span>
           <button
             type="button"
             onClick={retry}
             className="inline-flex items-center rounded-[8px] border border-[#92400E]/20 bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-[#92400E] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#92400E]/40"
           >
-            Retry
+            {copy.retry}
           </button>
         </div>
       )}

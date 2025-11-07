@@ -6,6 +6,8 @@ import ConsentModeBootstrap from '@/components/analytics/ConsentModeBootstrap';
 import { AuthCallbackHandler } from '@/components/AuthCallbackHandler';
 import { CookieBanner } from '@/components/legal/CookieBanner';
 import { JsonLd } from '@/components/SeoJsonLd';
+import { I18nProvider } from '@/lib/i18n/I18nProvider';
+import { resolveDictionary } from '@/lib/i18n/server';
 import '@/app/globals.css';
 
 export const metadata: Metadata = {
@@ -32,7 +34,9 @@ export const viewport: Viewport = {
   themeColor: '#4F5D75',
 };
 
-export default function CoreLayout({ children }: { children: ReactNode }) {
+export default async function CoreLayout({ children }: { children: ReactNode }) {
+  const { locale, dictionary, fallback } = await resolveDictionary();
+
   const orgSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
@@ -65,7 +69,7 @@ export default function CoreLayout({ children }: { children: ReactNode }) {
   };
 
   return (
-    <html lang="en" data-show-wavel-badge>
+    <html lang={locale} data-show-wavel-badge>
       <head>
         {process.env.NEXT_PUBLIC_BING_VERIFY ? (
           <meta name="msvalidate.01" content={process.env.NEXT_PUBLIC_BING_VERIFY} />
@@ -74,7 +78,9 @@ export default function CoreLayout({ children }: { children: ReactNode }) {
       <body>
         <ConsentModeBootstrap />
         <AuthCallbackHandler />
-        {children}
+        <I18nProvider locale={locale} dictionary={dictionary} fallback={fallback}>
+          {children}
+        </I18nProvider>
         {process.env.NODE_ENV === 'production' ? <VercelAnalytics /> : null}
         <AnalyticsScripts />
         <CookieBanner />

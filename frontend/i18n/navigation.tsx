@@ -1,5 +1,5 @@
 import NextLink, { type LinkProps as NextLinkProps } from 'next/link';
-import type { ReactElement } from 'react';
+import type { PropsWithChildren, ReactElement, ReactNode, ComponentType } from 'react';
 import { createNavigation } from 'next-intl/navigation';
 import { routing } from '@/i18n/routing';
 
@@ -25,11 +25,26 @@ function shouldBypassLocalization(href: NextLinkProps['href']): boolean {
   return BYPASS_PREFIXES.some((prefix) => value.startsWith(prefix));
 }
 
-export function Link(props: NextLinkProps): ReactElement {
-  if (shouldBypassLocalization(props.href)) {
-    return <NextLink {...props} />;
+type LocalizedLinkProps = PropsWithChildren<NextLinkProps & { className?: string }>;
+
+export function Link({ children, className, ...rest }: LocalizedLinkProps): ReactElement {
+  if (shouldBypassLocalization(rest.href)) {
+    return (
+      <NextLink {...rest} className={className}>
+        {children}
+      </NextLink>
+    );
   }
-  return <LocalizedLink {...props} />;
+
+  const Localized = LocalizedLink as unknown as ComponentType<
+    NextLinkProps & { children?: ReactNode; className?: string }
+  >;
+
+  return (
+    <Localized {...rest} className={className}>
+      {children}
+    </Localized>
+  );
 }
 
 export { redirect, usePathname, useRouter, getPathname };

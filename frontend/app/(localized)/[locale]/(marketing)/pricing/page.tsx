@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Link } from '@/i18n/navigation';
 import Script from 'next/script';
-import { cookies } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 import { PriceEstimator } from '@/components/marketing/PriceEstimator';
 import { resolveDictionary } from '@/lib/i18n/server';
@@ -16,6 +15,67 @@ import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 
 const PRICING_SLUG_MAP = buildSlugMap('pricing');
+
+const DEFAULT_EXAMPLE_COSTS = {
+  title: 'Example costs',
+  subtitle: 'Realistic runs to help you plan. Prices update as engines evolve.',
+  labels: {
+    engine: 'Engine',
+    duration: 'Duration',
+    resolution: 'Resolution',
+    audio: 'Audio',
+  },
+  cards: [
+    {
+      title: 'Social clip (vertical)',
+      engine: 'Pika 2.2',
+      duration: '5s',
+      resolution: '1080×1920',
+      audio: 'Off',
+      price: '≈ $0.25',
+      note: 'Charged only if it succeeds.',
+    },
+    {
+      title: 'Cinematic test (landscape)',
+      engine: 'Veo 3.1',
+      duration: '8s',
+      resolution: '1920×1080',
+      audio: 'On',
+      price: '≈ $3.20',
+      note: 'Price before you generate.',
+    },
+    {
+      title: 'Sora 2 narrative (voice-over)',
+      engine: 'Sora 2',
+      duration: '12s',
+      resolution: '1920×1080',
+      audio: 'On',
+      price: '≈ $6.20',
+      note: 'Automatic refund on fail.',
+    },
+  ],
+} as const;
+
+const DEFAULT_PRICE_FACTORS = {
+  title: 'What affects price',
+  points: [
+    'Duration scales linearly (4s / 8s / 12s).',
+    'Resolution increases cost at 1080p vs 720p.',
+    'Audio adds a small premium on supported engines.',
+    'Engine tier (Sora/Veo/Pika/MiniMax) sets the base rate.',
+  ],
+} as const;
+
+const DEFAULT_SUPPLEMENTAL_FAQ = [
+  {
+    question: 'Can I use Sora 2 in Europe?',
+    answer: 'Direct access is invite-only. MaxVideoAI provides paid access to Sora 2 rendering from Europe via our hub.',
+  },
+  {
+    question: 'Do videos have watermarks?',
+    answer: 'No. Renders produced through MaxVideoAI are delivered without watermarks.',
+  },
+];
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
@@ -60,16 +120,11 @@ export default async function PricingPage() {
   const member = content.member;
   const refunds = content.refunds;
   const faq = content.faq;
+  const heroLink = content.hero.link ?? null;
   const canonical = buildMetadataUrls(locale as AppLocale, PRICING_SLUG_MAP).canonical;
   const kernel = getPricingKernel();
   const starterQuote = kernel.quote(scenarioToPricingInput(DEFAULT_MARKETING_SCENARIO));
   const starterCurrency = starterQuote.snapshot.currency;
-  const cookieStore = cookies();
-  const isAuthed = Boolean(
-    cookieStore.get('sb-access-token')?.value ??
-      cookieStore.get('supabase-access-token')?.value ??
-      cookieStore.get('supabase-auth-token')?.value
-  );
   const refundFeatureItems = [
     { text: refunds.points[0], live: FEATURES.pricing.refundsAuto },
     { text: refunds.points[1], live: FEATURES.pricing.itemisedReceipts },
@@ -105,34 +160,52 @@ export default async function PricingPage() {
     currency: starterCurrency,
     maximumFractionDigits: 0,
   });
-  const formattedTiers = membershipTiers.map((tier) => {
-    const name = tier.tier.charAt(0).toUpperCase() + tier.tier.slice(1);
-    const requirement = tier.spendThresholdCents <= 0
-      ? 'Default status — applies automatically'
-      : `Admin threshold: ${currencyFormatter.format(tier.spendThresholdCents / 100)} (rolling 30 days)`;
+  const memberCopy = {
+    requirementDefault: member.requirementDefault ?? 'Default status — applies automatically',
+    requirementThreshold: member.requirementThreshold ?? 'Admin threshold: {amount} (rolling 30 days)',
+    benefitBase: member.benefitBase ?? 'Baseline rate',
+    benefitDiscount: member.benefitDiscount ?? 'Save {percent}% on every render',
+  };
+  const exampleCosts = content.examples ?? DEFAULT_EXAMPLE_COSTS;
+  const exampleLabels = {
+    ...DEFAULT_EXAMPLE_COSTS.labels,
+    ...(exampleCosts.labels ?? {}),
+  };
+  const exampleCards =
+    Array.isArray(exampleCosts.cards) && exampleCosts.cards.length
+      ? exampleCosts.cards
+      : DEFAULT_EXAMPLE_COSTS.cards;
+  const priceFactors = content.priceFactors ?? DEFAULT_PRICE_FACTORS;
+
+  const formattedTiers = membershipTiers.map((tier, index) => {
+    const tierCopy = Array.isArray(member.tiers) ? member.tiers[index] ?? null : null;
+    const name = tierCopy?.name ?? tier.tier.charAt(0).toUpperCase() + tier.tier.slice(1);
+    const requirement =
+      tier.spendThresholdCents <= 0
+        ? tierCopy?.requirement ?? memberCopy.requirementDefault
+        : (tierCopy?.requirementThreshold ?? memberCopy.requirementThreshold).replace(
+            '{amount}',
+            currencyFormatter.format(tier.spendThresholdCents / 100)
+          );
     const discountPct = tier.discountPercent * 100;
-    const benefit = discountPct > 0
-      ? `Save ${discountPct % 1 === 0 ? discountPct.toFixed(0) : discountPct.toFixed(1)}% on every render`
-      : 'Baseline rate';
+    const pctLabel = discountPct % 1 === 0 ? discountPct.toFixed(0) : discountPct.toFixed(1);
+    const benefit =
+      discountPct > 0
+        ? (tierCopy?.benefitDiscount ?? memberCopy.benefitDiscount).replace('{percent}', pctLabel)
+        : tierCopy?.benefit ?? memberCopy.benefitBase;
     return { name, requirement, benefit };
   });
 
-  const supplementalFaq = [
-    {
-      q: 'Can I use Sora 2 in Europe?',
-      a: 'Direct access is invite-only. MaxVideoAI provides paid access to Sora 2 rendering from Europe via our hub.',
-    },
-    {
-      q: 'Do videos have watermarks?',
-      a: 'No. Renders produced through MaxVideoAI are delivered without watermarks.',
-    },
-  ] as const;
+  const supplementalFaq =
+    Array.isArray(content.supplementalFaq) && content.supplementalFaq.length
+      ? content.supplementalFaq
+      : DEFAULT_SUPPLEMENTAL_FAQ;
   const faqJsonLdEntries = [
     ...faq.entries.map((entry) => ({
       q: entry.question,
       a: entry.answer,
     })),
-    ...supplementalFaq,
+    ...supplementalFaq.map((entry) => ({ q: entry.question, a: entry.answer })),
   ];
 
   return (
@@ -140,13 +213,15 @@ export default async function PricingPage() {
       <header className="max-w-3xl space-y-4">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
         <p className="text-base text-text-secondary">{content.hero.subtitle}</p>
-        <p className="text-base text-text-secondary">
-          See how pricing compares across engines in our{' '}
-          <Link href="/blog/compare-ai-video-engines" className="font-semibold text-accent hover:text-accentSoft">
-            AI video comparison
-          </Link>
-          .
-        </p>
+        {heroLink ? (
+          <p className="text-base text-text-secondary">
+            {heroLink.before}
+            <Link href="/blog/compare-ai-video-engines" className="font-semibold text-accent hover:text-accentSoft">
+              {heroLink.label ?? 'AI video comparison'}
+            </Link>
+            {heroLink.after}
+          </p>
+        ) : null}
       </header>
 
       <section id="estimator" className="mt-12 scroll-mt-28">
@@ -169,103 +244,51 @@ export default async function PricingPage() {
       </section>
       <section aria-labelledby="example-costs" className="mt-10">
         <h2 id="example-costs" className="scroll-mt-28 text-lg font-semibold text-text-primary">
-          Example costs
+          {exampleCosts.title ?? DEFAULT_EXAMPLE_COSTS.title}
         </h2>
         <p className="mb-4 text-sm text-text-secondary">
-          Realistic runs to help you plan. Prices update as engines evolve.
+          {exampleCosts.subtitle ?? DEFAULT_EXAMPLE_COSTS.subtitle}
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
-            <div className="text-sm font-medium text-text-primary">Social clip (vertical)</div>
-            <dl className="mt-2 text-sm text-text-secondary">
-              <div className="flex justify-between">
-                <dt>Engine</dt>
-                <dd>Pika 2.2</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt>Duration</dt>
-                <dd>5s</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt>Resolution</dt>
-                <dd>1080×1920</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt>Audio</dt>
-                <dd>Off</dd>
-              </div>
-            </dl>
-            <div className="mt-3 text-base font-semibold text-text-primary">≈ $0.25</div>
-            <div className="text-xs text-text-muted">Charged only if it succeeds.</div>
-          </div>
-          <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
-            <div className="text-sm font-medium text-text-primary">Cinematic test (landscape)</div>
-            <dl className="mt-2 text-sm text-text-secondary">
-              <div className="flex justify-between">
-                <dt>Engine</dt>
-                <dd>Veo 3.1</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt>Duration</dt>
-                <dd>8s</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt>Resolution</dt>
-                <dd>1920×1080</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt>Audio</dt>
-                <dd>On</dd>
-              </div>
-            </dl>
-            <div className="mt-3 text-base font-semibold text-text-primary">≈ $3.20</div>
-            <div className="text-xs text-text-muted">Price before you generate.</div>
-          </div>
-          <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
-            <div className="text-sm font-medium text-text-primary">Sora 2 narrative (voice-over)</div>
-            <dl className="mt-2 text-sm text-text-secondary">
-              <div className="flex justify-between">
-                <dt>Engine</dt>
-                <dd>Sora 2</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt>Duration</dt>
-                <dd>12s</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt>Resolution</dt>
-                <dd>1920×1080</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt>Audio</dt>
-                <dd>On</dd>
-              </div>
-            </dl>
-            <div className="mt-3 text-base font-semibold text-text-primary">≈ $6.20</div>
-            <div className="text-xs text-text-muted">Automatic refund on fail.</div>
-          </div>
+          {exampleCards.map((card) => (
+            <div key={card.title} className="rounded-xl border border-hairline bg-white p-4 shadow-card">
+              <div className="text-sm font-medium text-text-primary">{card.title}</div>
+              <dl className="mt-2 text-sm text-text-secondary">
+                <div className="flex justify-between">
+                  <dt>{exampleLabels.engine}</dt>
+                  <dd>{card.engine}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>{exampleLabels.duration}</dt>
+                  <dd>{card.duration}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>{exampleLabels.resolution}</dt>
+                  <dd>{card.resolution}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>{exampleLabels.audio}</dt>
+                  <dd>{card.audio}</dd>
+                </div>
+              </dl>
+              <div className="mt-3 text-base font-semibold text-text-primary">{card.price}</div>
+              {card.note ? <div className="text-xs text-text-muted">{card.note}</div> : null}
+            </div>
+          ))}
         </div>
       </section>
-
-      <section aria-labelledby="price-factors" className="mt-8">
-        <h2 id="price-factors" className="text-lg font-semibold text-text-primary">
-          What affects price
-        </h2>
-        <ul className="mt-2 space-y-1 text-sm text-text-secondary">
-          <li>
-            • <strong>Duration</strong> scales linearly (4s / 8s / 12s).
-          </li>
-          <li>
-            • <strong>Resolution</strong> increases cost at 1080p vs 720p.
-          </li>
-          <li>
-            • <strong>Audio</strong> adds a small premium on supported engines.
-          </li>
-          <li>
-            • <strong>Engine tier</strong> (Sora/Veo/Pika/MiniMax) sets the base rate.
-          </li>
-        </ul>
-      </section>
+      {priceFactors.points?.length ? (
+        <section aria-labelledby="price-factors" className="mt-8">
+          <h2 id="price-factors" className="text-lg font-semibold text-text-primary">
+            {priceFactors.title ?? DEFAULT_PRICE_FACTORS.title}
+          </h2>
+          <ul className="mt-2 space-y-1 text-sm text-text-secondary">
+            {priceFactors.points.map((point) => (
+              <li key={point}>• {point}</li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section className="mt-12 rounded-card border border-hairline bg-white p-6 shadow-card">
         <h2 className="text-xl font-semibold text-text-primary">

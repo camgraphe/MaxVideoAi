@@ -76,7 +76,8 @@
         "locale": "es",
         "label": "Spanish"
       }
-    ]
+    ],
+    "crawlerNote": "MaxVideoAI allows AI crawlers (GPTBot, OAI-SearchBot, Google-Extended, and CCBot) to index public model pages and documentation for educational and research visibility."
   },
   "home": {
     "badges": [
@@ -253,16 +254,56 @@
         "Trademarks and logos belong to their owners; we route responsibly."
       ]
     },
+    "faq": {
+      "title": "FAQ",
+      "description": "Short answers to the most common questions.",
+      "items": [
+        {
+          "q": "Is Sora 2 available in the EU?",
+          "a": "Sora 2 availability is limited. MaxVideoAI routes your brief to supported engines today and keeps Sora-ready presets for later."
+        },
+        {
+          "q": "Can I add audio?",
+          "a": "Yes. Engines surfaced on the homepage support audio toggles in the composer. The live price updates when you enable audio."
+        },
+        {
+          "q": "How does pricing work?",
+          "a": "You see a live price chip before you render. Load $10 to start and top up anytime. Itemised receipts for each job."
+        },
+        {
+          "q": "What’s the refund policy?",
+          "a": "Failed renders auto-refund to your wallet with an itemised receipt. You always keep full control of spend."
+        }
+      ]
+    },
     "priceChipSuffix": "No subscription. Pay-as-you-go.",
     "meta": {
       "title": "Multi-engine AI video generator – Pay-as-you-go | MaxVideoAI",
       "description": "Create AI video with Sora 2, Veo 3, Pika and more from one workspace. Transparent pricing, pay-as-you-go wallets, 4K upscaling, iterative renders x1-x4."
+    },
+    "compare": {
+      "title": "Compare engines at a glance",
+      "subtitle": "Max duration · Audio · Best for",
+      "ariaPrev": "Scroll to previous engine card",
+      "ariaNext": "Scroll to next engine card",
+      "ariaPrefix": "See presets for",
+      "seePresets": "See presets →",
+      "statLabels": {
+        "max": "Max",
+        "audio": "Audio",
+        "bestFor": "Best for"
+      }
     }
   },
   "pricing": {
     "hero": {
       "title": "Price before you generate. Pay only for what you run. Start with Starter Credits ($10). No subscription. No lock-in.",
-      "subtitle": "Every estimate updates live as you adjust engines, durations, and outputs. Wallet balances sync across teams with daily status checks."
+      "subtitle": "Every estimate updates live as you adjust engines, durations, and outputs. Wallet balances sync across teams with daily status checks.",
+      "link": {
+        "before": "See how pricing compares across engines in our ",
+        "label": "AI video comparison",
+        "after": "."
+      }
     },
     "estimator": {
       "title": "Cost Estimator",
@@ -307,6 +348,54 @@
       "autoTopUpHint": "Daily status emails keep finance in the loop.",
       "addLabel": "Add ${amount}"
     },
+    "examples": {
+      "title": "Example costs",
+      "subtitle": "Realistic runs to help you plan. Prices update as engines evolve.",
+      "labels": {
+        "engine": "Engine",
+        "duration": "Duration",
+        "resolution": "Resolution",
+        "audio": "Audio"
+      },
+      "cards": [
+        {
+          "title": "Social clip (vertical)",
+          "engine": "Pika 2.2",
+          "duration": "5s",
+          "resolution": "1080×1920",
+          "audio": "Off",
+          "price": "≈ $0.25",
+          "note": "Charged only if it succeeds."
+        },
+        {
+          "title": "Cinematic test (landscape)",
+          "engine": "Veo 3.1",
+          "duration": "8s",
+          "resolution": "1920×1080",
+          "audio": "On",
+          "price": "≈ $3.20",
+          "note": "Price before you generate."
+        },
+        {
+          "title": "Sora 2 narrative (voice-over)",
+          "engine": "Sora 2",
+          "duration": "12s",
+          "resolution": "1920×1080",
+          "audio": "On",
+          "price": "≈ $6.20",
+          "note": "Automatic refund on fail."
+        }
+      ]
+    },
+    "priceFactors": {
+      "title": "What affects price",
+      "points": [
+        "Duration scales linearly (4s / 8s / 12s).",
+        "Resolution increases cost at 1080p vs 720p.",
+        "Audio adds a small premium on supported engines.",
+        "Engine tier (Sora/Veo/Pika/MiniMax) sets the base rate."
+      ]
+    },
     "teams": {
       "title": "Teams",
       "description": "Role-based approvals, shared wallets, and delivery hand-offs roll out next. Join the beta to test team controls early.",
@@ -338,7 +427,11 @@
         }
       ],
       "chipBase": "Member price — You save",
-      "tooltip": "Status updates daily on your last 30 days of spend."
+      "tooltip": "Status updates daily on your last 30 days of spend.",
+      "requirementDefault": "Default status — applies automatically",
+      "requirementThreshold": "Admin threshold: {amount} (rolling 30 days)",
+      "benefitBase": "Baseline rate",
+      "benefitDiscount": "Save {percent}% on every render"
     },
     "refunds": {
       "title": "Refunds & protections",
@@ -371,6 +464,16 @@
         }
       ]
     },
+    "supplementalFaq": [
+      {
+        "question": "Can I use Sora 2 in Europe?",
+        "answer": "Direct access is invite-only. MaxVideoAI provides paid access to Sora 2 rendering from Europe via our hub."
+      },
+      {
+        "question": "Do videos have watermarks?",
+        "answer": "No. Renders produced through MaxVideoAI are delivered without watermarks."
+      }
+    ],
     "priceChipSuffix": "Price before you generate.",
     "priceChipPrefix": "This render",
     "meta": {
@@ -391,9 +494,14 @@
     }
   },
   "workflows": {
+    "meta": {
+      "title": "Workflows — Presets and repeatable shots",
+      "description": "Ready-to-run workflows for ads, product B-roll, music videos, and more. Clone presets, price before you generate, and iterate fast."
+    },
     "hero": {
       "title": "Express vs Workflows.",
-      "subtitle": "Express handles rapid experimentation. Workflows keeps the live “Price before you generate” chip today, with additional delivery integrations rolling out gradually."
+      "subtitle": "Compare rapid exploration with Express and structured team hand-off with Workflows. The live “Price before you generate” chip is available today.",
+      "notice": "Additional delivery integrations are rolling out gradually."
     },
     "express": {
       "badge": "Express",
@@ -408,16 +516,95 @@
       "badge": "Workflows",
       "title": "Full hand-off for brand and post teams.",
       "features": [
-        "Price before you generate chip (live)",
-        "Delivery via Google Drive, OneDrive, Dropbox (coming soon)",
-        "Nano Banana image (coming soon)"
+        "Price before you generate (live)",
+        "Delivery via Google Drive, OneDrive, Dropbox",
+        "Nano Banana image hand-offs"
       ]
+    },
+    "pick": {
+      "title": "Pick a workflow",
+      "subtitle": "Start from a common use case. You can swap engines later.",
+      "cards": [
+        {
+          "title": "Ads creative",
+          "description": "6–12s cuts, product hero shots, end-cards. Great with Veo 3.1.",
+          "bullets": [
+            "16:9 / 9:16 variants",
+            "Logo lockups & simple supers",
+            "Optional voice-over"
+          ],
+          "href": "/examples?tag=ads"
+        },
+        {
+          "title": "Product B-roll",
+          "description": "Stylised loops and clean macro moves. Fast with Pika 2.2.",
+          "bullets": [
+            "5–8s loops",
+            "1:1 / 4:5 storefront",
+            "Image-to-video remixes"
+          ],
+          "href": "/examples?tag=product-broll"
+        },
+        {
+          "title": "Music video / Narrative",
+          "description": "Cinematic motion, synced audio. Strong with Sora 2.",
+          "bullets": [
+            "8–12s shots",
+            "1080p delivery",
+            "Native audio on"
+          ],
+          "href": "/examples?tag=music-video"
+        }
+      ]
+    },
+    "modelRoster": {
+      "title": "Model roster",
+      "description": "Choose the model that matches your workflow stage. Availability badges stay in sync with the global roster."
     }
   },
   "models": {
     "hero": {
       "title": "Fal.ai engines without the vendor lock-in.",
       "subtitle": "Fal.ai ships new video endpoints weekly. We sync their catalog so your Price Before chip stays accurate across Sora, Veo, Pika, and MiniMax tiers."
+    },
+    "intro": {
+      "paragraphs": [
+        "Each engine in this catalog is wired into the MaxVideoAI workspace with monitored latency, price tracking, and fallbacks. We add models as soon as providers open real capacity—not waitlist demos—so you know what can ship to production today.",
+        "Pick an engine to see the prompt presets, duration limits, and current route we use to keep renders flowing, then duplicate it into your own workspace."
+      ],
+      "cards": [
+        {
+          "emoji": "🎬",
+          "title": "When to choose Sora",
+          "body": "Reach for Sora 2 or Sora 2 Pro when you need cinematic physics, character continuity, or audio baked directly into the render. These tiers cost more per second but deliver hero-quality footage."
+        },
+        {
+          "emoji": "🎯",
+          "title": "When to choose Veo",
+          "body": "Veo 3 tiers provide precise framing controls and tone presets, plus fast variants for iteration. They are ideal for ad cuts, b-roll, and campaigns that demand consistent camera moves."
+        },
+        {
+          "emoji": "⚡",
+          "title": "When to choose Pika or MiniMax",
+          "body": "Pika 2.2 excels at stylised loops and social edits, while MiniMax Hailuo 02 keeps budgets low for volume runs. Both complement Sora and Veo when you need fast alternates or lightweight briefs."
+        }
+      ],
+      "cta": {
+        "title": "Need a side-by-side?",
+        "before": "Read the ",
+        "comparisonLabel": "Sora vs Veo vs Pika comparison guide",
+        "middle": " for detailed quality notes, price ranges, and timing benchmarks, then clone any render from the ",
+        "examplesLabel": "examples gallery",
+        "after": " to start with a proven prompt."
+      }
+    },
+    "cardCtaLabel": "Explore →",
+    "cardAriaPrefix": "Explore",
+    "engineTypeLabels": {
+      "textImage": "Text + Image to Video",
+      "text": "Text to Video",
+      "image": "Image to Video",
+      "default": "AI Video Engine"
     },
     "availabilityLabels": {
       "available": "Available",
@@ -483,7 +670,32 @@
       "title": "AI video engines — Compare Sora, Veo, Pika | MaxVideoAI",
       "description": "Choose the best engine for every shot. Compare capabilities, costs and live examples in a single workspace."
     },
-    "note": ""
+    "note": "",
+    "detail": {
+      "backLabel": "← Back to models",
+      "overviewTitle": "Overview",
+      "overview": {
+        "brand": "Brand",
+        "engineId": "Engine ID",
+        "slug": "Slug",
+        "logoPolicy": "Logo policy",
+        "platformPrice": "Platform price (incl. 30% fee)"
+      },
+      "logoPolicies": {
+        "logoAllowed": "Logo usage permitted",
+        "textOnly": "Text-only (wordmark)"
+      },
+      "promptsTitle": "Prompt ideas",
+      "faqTitle": "FAQ",
+      "buttons": {
+        "pricing": "View pricing",
+        "launch": "Launch workspace"
+      },
+      "breadcrumb": {
+        "home": "Home",
+        "models": "Models"
+      }
+    }
   },
   "examples": {
     "hero": {
@@ -647,10 +859,47 @@
   "blog": {
     "hero": {
       "title": "The MaxVideo AI blog.",
-      "subtitle": "News on engines, customer stories, prompt guides, and price-before best practices. Subscribe in-app to get updates in your queue digest."
+      "subtitle": "News on engines, customer stories, prompt guides, and price-before best practices. Subscribe in-app to get updates in your queue digest.",
+      "eyebrow": "The Studio Journal",
+      "ctaLabel": "Latest Sora coverage →"
     },
     "empty": "Blog posts coming soon.",
-    "cta": "Read more"
+    "cta": "Read more",
+    "intro": {
+      "lead": "MaxVideoAI’s journal covers everything we learn while routing frontier video engines for real production teams. We document prompt patterns, pricing changes, latency shifts, and the workflows that keep agencies on schedule when models rotate. Every story is written from live usage—not a press release.",
+      "cards": [
+        {
+          "title": "Model deep dives",
+          "body": "Comparisons and capability notes for Sora 2, Veo 3, Pika 2.2, MiniMax Hailuo 02, and the engines queued next in our workspace."
+        },
+        {
+          "title": "Workflow tactics",
+          "body": "Sequenced prompting, audio integration, and pricing guardrails that help teams ship branded stories without wasting credits."
+        },
+        {
+          "title": "Customer stories",
+          "body": "How studios and marketers in Europe and North America deploy the same brief across multiple engines and keep review cycles moving."
+        }
+      ]
+    },
+    "faq": {
+      "title": "Blog FAQ",
+      "items": [
+        {
+          "question": "How often do new posts ship?",
+          "answer": "We publish every week (and sometimes twice a week) as engines shift. Subscribe in the workspace to get a digest when new coverage lands."
+        },
+        {
+          "question": "Can I suggest a topic or request coverage?",
+          "answer": "Yes—send topics to press@maxvideo.ai and include reference renders if you can. We prioritize stories that help production teams stay current."
+        },
+        {
+          "question": "Where can I find release notes?",
+          "answer": "Feature-level updates live in the product changelog, and API updates post inside the developer docs. The blog covers higher-level workflows."
+        }
+      ],
+      "footnote": "Need more detail? Email press@maxvideo.ai with your request and we’ll route it to the right producer."
+    }
   },
   "about": {
     "hero": {
@@ -819,6 +1068,454 @@
     "meta": {
       "title": "Gallery — AI video prompts and renders | MaxVideoAI",
       "description": "Explore real AI renders with prompts and settings. Get inspired and recreate results in a few clicks."
+    }
+  },
+  "workspace": {
+    "header": {
+      "marketingNav": "Marketing navigation",
+      "walletLabel": "Wallet",
+      "memberFallback": "Member",
+      "signedIn": "Signed in",
+      "primaryNav": "Primary navigation",
+      "signOut": "Sign out",
+      "createAccount": "Create account",
+      "signIn": "Sign in",
+      "logoAria": "Go to marketing homepage"
+    },
+    "sidebar": {
+      "aria": {
+        "controls": "Sidebar controls",
+        "expand": "Expand sidebar",
+        "collapse": "Collapse sidebar",
+        "pin": "Pin sidebar open",
+        "unpin": "Unpin sidebar",
+        "menu": "App menu",
+        "home": "Go to home"
+      },
+      "links": {
+        "dashboard": "Dashboard",
+        "generate": "Generate",
+        "jobs": "Jobs",
+        "billing": "Billing",
+        "settings": "Settings"
+      },
+      "badges": {
+        "live": "LIVE"
+      }
+    },
+    "languageToggle": {
+      "ariaLabel": "Change workspace language"
+    },
+    "generate": {
+      "errors": {
+        "loadEngines": "Failed to load engines",
+        "noEngines": "No engines available."
+      },
+      "gallery": {
+        "empty": "Launch a generation to populate your gallery. Variants for each run will appear here."
+      },
+      "wallet": {
+        "insufficient": "Insufficient wallet balance. Please add funds to continue generating.",
+        "insufficientWithAmount": "Insufficient wallet balance. Add at least {amount} to continue generating."
+      },
+      "topUp": {
+        "title": "Add credits",
+        "presetsLabel": "Add credits",
+        "otherAmountLabel": "Other amount",
+        "minLabel": "Min {amount}",
+        "close": "Close",
+        "maybeLater": "Maybe later",
+        "submit": "Add funds",
+        "submitting": "Starting top-up…"
+      },
+      "assetLibrary": {
+        "title": "Select reference image",
+        "refresh": "Refresh",
+        "close": "Close",
+        "fieldFallback": "Reference image",
+        "empty": "No saved images yet. Upload a reference image to see it here."
+      },
+      "controls": {
+        "core": {
+          "title": "Core settings",
+          "subtitle": "Duration, Aspect, Resolution"
+        },
+        "billingTip": {
+          "label": "Billing tip:",
+          "body": "Add your OpenAI API key in Advanced settings to bill runs directly through OpenAI. Leave it blank to route charges via FAL credits."
+        },
+        "frames": {
+          "label": "Frames",
+          "options": "Options: {options}",
+          "unit": "{count} frames",
+          "hint": "Frames control clip length; values are forwarded without converting to seconds."
+        },
+        "duration": {
+          "optionsLabel": "Duration",
+          "maxLabel": "Max {seconds}s",
+          "rangeLabel": "Duration — seconds",
+          "rangeHint": "Min {min}s · Max {max}s",
+          "managed": "Duration is managed directly by this engine."
+        },
+        "resolution": {
+          "label": "Resolution",
+          "auto": "Auto",
+          "hd": "• HD",
+          "fullHd": "• Full HD",
+          "ultraHd": "• Ultra HD",
+          "proSuffix": "• Pro"
+        },
+        "aspect": {
+          "label": "Aspect",
+          "options": {
+            "auto": "Auto",
+            "source": "Source",
+            "custom": "Custom"
+          }
+        },
+        "iterationsLabel": "Iterations",
+        "loop": {
+          "label": "Loop",
+          "on": "On",
+          "off": "Off"
+        },
+        "advancedTitle": "Advanced settings",
+        "seed": {
+          "label": "Seed",
+          "placeholder": "Random",
+          "lock": "Lock seed"
+        },
+        "jitter": {
+          "label": "Jitter",
+          "unit": "%"
+        },
+        "fpsSuffix": "{value} fps",
+        "promptStrength": "Prompt strength",
+        "guidance": "Guidance",
+        "apiKey": {
+          "label": "OpenAI API key",
+          "placeholder": "sk-...",
+          "note": "Provide your OpenAI key to bill directly through your account. We do not store the key server-side."
+        },
+        "inputInfluence": "Input influence",
+        "extend": {
+          "label": "Extend",
+          "action": "Extend by",
+          "unit": "seconds"
+        },
+        "keyframes": "Keyframes supported (Pika 2.2)"
+      },
+      "preview": {
+        "title": "Composite Preview",
+        "empty": "Select a take to preview",
+        "variants": {
+          "singular": "{count} variant",
+          "plural": "{count} variants"
+        },
+        "controls": {
+          "play": { "on": "Pause", "off": "Play", "ariaOn": "Pause all previews", "ariaOff": "Play all previews" },
+          "mute": { "on": "Unmute", "off": "Mute", "ariaOn": "Unmute all previews", "ariaOff": "Mute all previews" },
+          "loop": { "on": "Loop on", "off": "Loop off", "ariaOn": "Disable looping", "ariaOff": "Enable looping" },
+          "modal": { "label": "Open modal", "aria": "Open preview in modal" },
+          "copyPrompt": "Copy prompt"
+        },
+        "placeholder": "—"
+      },
+      "galleryRail": {
+        "title": "Latest renders",
+        "viewAll": "View all",
+        "curated": "Starter samples curated by the MaxVideo team are shown until you generate your own videos.",
+        "error": "Failed to load latest renders. Please retry.",
+        "retry": "Retry",
+        "snackbar": {
+          "samples": "Sample clips cannot be removed.",
+          "removed": "Removed from gallery.",
+          "failed": "Unable to remove from gallery."
+        }
+      },
+      "composer": {
+        "title": "Composer",
+        "subtitle": "Enhance prompt • Non-destructive reruns",
+        "badges": {
+          "payg": "Pay-as-you-go",
+          "priceBefore": "Price-before",
+          "alwaysCurrent": "Always-current"
+        },
+        "priceLabel": "This render: {amount}",
+        "memberLabel": "Member price — You save {percent}%",
+        "labels": {
+          "required": "Required",
+          "optional": "Optional"
+        },
+        "prompt": {
+          "placeholder": "Describe the shot..."
+        },
+        "negativePrompt": {
+          "placeholder": "Elements to avoid…",
+          "requiredHint": "Required"
+        },
+        "shortcuts": {
+          "generate": "Cmd+Enter • Generate",
+          "price": "G • Price-before",
+          "seed": "S • Lock seed"
+        },
+        "iterationsLabel": "×{count}",
+        "button": {
+          "idle": "Generate",
+          "loading": "Checking price…"
+        }
+      },
+      "engineSelect": {
+        "latency": "Latency {tier}",
+        "choose": "Choose engine",
+        "variant": "Variant",
+        "browse": "Browse engines...",
+        "inputMode": "Input mode",
+        "modal": {
+          "close": "Close",
+          "title": "Choose the right engine for your shot",
+          "subtitle": "Each model has its own strengths - some are fast, others cinematic or experimental. See what fits your project, then generate with confidence.",
+          "pricingLink": "How pricing works",
+          "searchPlaceholder": "Search by engine, provider, or capability",
+          "modeAll": "Mode: All",
+          "modeValue": "Mode: {value}",
+          "resolutionAll": "Resolution: All",
+          "empty": "No engines match your filters yet. Adjust the filters or clear the search to explore the full catalogue.",
+          "disclaimer": "Logos are used for descriptive purposes only. Trademarks belong to their respective owners.",
+          "descriptionFallback": "Versatile engine ready for price-before-you-generate workflows. Review specs and run with confidence."
+        }
+      }
+    },
+    "jobs": {
+      "title": "Jobs",
+      "teams": {
+        "title": "Teams",
+        "srLive": "Live",
+        "srSoon": "Coming soon",
+        "live": "Shared wallets, approvals, and budgets are enabled in your workspace.",
+        "beta": "Coming soon — shared wallets, approvals, and budgets. Join the beta at {email}.",
+        "email": "support@maxvideoai.com"
+      },
+      "curated": "Starter renders curated by the MaxVideo team appear here until you generate your own clips.",
+      "error": "Failed to load jobs.",
+      "retry": "Retry",
+      "empty": "No renders yet. Start a generation to populate your history.",
+      "loadMore": "Load more",
+      "loading": "Loading…"
+    },
+    "dashboard": {
+      "quickActions": {
+        "create": "Create a video",
+        "jobs": "View latest renders",
+        "billing": "Add funds"
+      },
+      "wallet": {
+        "title": "Wallet & Member",
+        "balanceLabel": "Current balance",
+        "tierLabel": "Member tier",
+        "savingsLabel": "Rolling 30-day savings: {percent}%",
+        "manageCta": "Manage billing",
+        "memberFallback": "Member"
+      },
+      "spend": {
+        "title": "Spend at a glance",
+        "today": "Today",
+        "last30": "Last 30 days"
+      },
+      "latest": {
+        "title": "Latest renders",
+        "viewAll": "View all →",
+        "error": "Failed to load latest renders. Please retry.",
+        "curatedHint": "Starter renders curated by the MaxVideo team appear here until you create your own.",
+        "emptyHint": "Start a generation to populate your latest renders."
+      },
+      "engines": {
+        "title": "Engines status",
+        "error": "Failed to load engines.",
+        "queueLabel": "queue: {count}"
+      },
+      "actions": {
+        "retry": "Retry"
+      },
+      "lightbox": {
+        "groupTitle": "Group ×{count}",
+        "jobTitle": "Render {id}",
+        "metadata": {
+          "created": "Created",
+          "heroDuration": "Hero duration",
+          "engine": "Engine",
+          "duration": "Duration",
+          "status": "Status",
+          "notProvided": "Not provided"
+        },
+        "statusFallback": "N/A",
+        "versionLabel": "Version {index}"
+      }
+    },
+    "billing": {
+      "title": "Billing",
+      "hero": {
+        "title": "Price before you generate.",
+        "subtitle": "Pay only for what you run. Start with Starter Credits ($10). No subscription. No lock-in.",
+        "liveMode": "Live Mode",
+        "testMode": "Test Mode"
+      },
+      "wallet": {
+        "title": "Wallet",
+        "description": "Starter Credits ($10). Top up once, then pay per render to the cent. Any unused balance stays yours.",
+        "addFunds": "Add {amount}",
+        "quickAmount": "{amount}",
+        "autoTopUp": "Enable auto top-up (optional)",
+        "lowBalance": "Your balance is low. Top up to keep creating."
+      },
+      "membership": {
+        "title": "Member Status",
+        "description": "Status is automatic — no subscription. Calculated on a rolling 30 days of spend. Status updates daily based on your last 30 days of spend.",
+        "defaultTier": "Member",
+        "savingsChip": "You save {percent}%",
+        "defaultLine": "{tier} — standard rate on every render.",
+        "thresholdLine": "{tier} — spend {amount} / 30 days to save {percent}% on every eligible render.",
+        "labels": {
+          "member": "Member",
+          "plus": "Plus",
+          "pro": "Pro"
+        }
+      },
+      "teams": {
+        "title": "For Teams",
+        "description": "Shared wallet & roles. Let your team create with one balance. Set soft/hard project budgets. Daily summary by email.",
+        "actions": {
+          "invite": "Invite teammates",
+          "budgets": "Set project budgets"
+        },
+        "note": "Team note: On shared wallets, status applies to all members.",
+        "comingSoon": "Coming soon — unified wallets, role-based approvals, and budgeting controls. Join the beta at {email}.",
+        "contactEmail": "support@maxvideoai.com",
+        "statusLive": "Live",
+        "statusSoon": "Coming soon"
+      },
+      "estimator": {
+        "title": "Cost Estimator",
+        "summary": "Select Engine · Duration · Resolution → This render: {value} (estimate)",
+        "estimateLoading": "…",
+        "estimateMissing": "—",
+        "fields": {
+          "engine": "Engine",
+          "mode": "Mode",
+          "duration": "Duration (sec)",
+          "resolution": "Resolution"
+        },
+        "note": "Note: You’ll be charged only if the render succeeds.",
+        "memberChipSavings": "Member price — You save {percent}%",
+        "memberChipBase": "Member price"
+      },
+      "receipts": {
+        "title": "Receipts",
+        "subtitle": "Itemized by engine, duration, and resolution. VAT included where applicable.",
+        "empty": "No receipts yet.",
+        "loading": "Loading…",
+        "loadMore": "Load more",
+        "exportCsv": "Export CSV",
+        "typeLabels": {
+          "charge": "Charge",
+          "refund": "Refund",
+          "topup": "Top-up"
+        },
+        "fields": {
+          "total": "Total",
+          "tax": "Tax",
+          "discount": "Discount"
+        }
+      },
+      "refunds": {
+        "title": "Refunds & Protections",
+        "points": [
+          "Failed render: automatic refund.",
+          "Budget control: set soft/hard limits per project.",
+          "No vendor lock-in: Works with leading engines; trademarks belong to their owners."
+        ]
+      },
+      "faq": {
+        "title": "Micro-FAQ",
+        "entries": [
+          { "question": "Do I need a subscription?", "answer": "No. Pay as you go." },
+          { "question": "Can I buy just one small render?", "answer": "Yes — funds are debited per run from your $10 Starter balance." },
+          { "question": "Will my credits expire?", "answer": "Credits don’t expire while your account remains active." },
+          { "question": "How do discounts work?", "answer": "Member status applies automatically based on your last 30 days of spend." }
+        ],
+        "footnote": "VAT included where applicable. Refunds on failed renders. “Works with” indicates compatibility; trademarks belong to their respective owners."
+      },
+      "toasts": {
+        "success": "Payment successful. Funds added to your wallet.",
+        "cancelled": "Payment cancelled. No charges applied."
+      },
+      "errors": {
+        "loadReceipts": "Failed to load receipts",
+        "loadMore": "Failed to load more receipts",
+        "loadEngines": "Failed to load engines.",
+        "estimator": "Estimator failed",
+        "lowBalance": "Your balance is low. Top up to keep creating."
+      }
+    }
+  },
+  "auth": {
+    "back": "Back",
+    "tabs": {
+      "signin": "Sign in",
+      "signup": "Create account"
+    },
+    "modes": {
+      "signup": {
+        "title": "Create your workspace account",
+        "description": "Get instant access to the MaxVideoAI workspace. We'll confirm your email before your first render."
+      },
+      "signin": {
+        "title": "Access your workspace",
+        "description": "Sign in with Google or email to jump back into the workspace."
+      },
+      "reset": {
+        "title": "Reset your password",
+        "description": "We'll send a secure link to reset your password."
+      }
+    },
+    "google": "Continue with Google",
+    "divider": "Email access",
+    "fields": {
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm password"
+    },
+    "placeholders": {
+      "email": "you@domain.com",
+      "passwordNew": "At least 6 characters",
+      "password": "••••••••"
+    },
+    "forgotPassword": "Forgot password?",
+    "actions": {
+      "signin": "Sign in with email",
+      "signup": "Create account",
+      "reset": "Send reset link"
+    },
+    "links": {
+      "backToSignIn": "Back to sign in",
+      "newAccount": "Create a new account instead",
+      "haveAccount": "Already have an account? Sign in"
+    },
+    "terms": {
+      "prefix": "I have read and agree to the ",
+      "termsLabel": "Terms of Service",
+      "infix": " and the ",
+      "privacyLabel": "Privacy Policy",
+      "suffix": ".",
+      "error": "You must accept the Terms of Service and Privacy Policy to continue.",
+      "age": "I confirm I am at least {age} years old.",
+      "marketing": "Yes, send me occasional product emails. I can unsubscribe anytime."
+    },
+    "signupSuggestion": {
+      "title": "New here?",
+      "body": "Create an account with {email} without re-entering your details.",
+      "accept": "Create this account",
+      "decline": "I'll try again"
     }
   }
 }

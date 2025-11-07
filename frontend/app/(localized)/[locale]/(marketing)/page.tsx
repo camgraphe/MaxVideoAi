@@ -165,33 +165,52 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   };
 }
 
-function MiniFAQ() {
-  const items = [
-    {
-      q: 'Is Sora 2 available in the EU?',
-      a: 'Sora 2 availability is limited. MaxVideoAI routes your brief to supported engines today and keeps Sora-ready presets for later.',
-    },
-    {
-      q: 'Can I add audio?',
-      a: 'Yes. Engines surfaced on the homepage support audio toggles in the composer. The live price updates when you enable audio.',
-    },
-    {
-      q: 'How does pricing work?',
-      a: 'You see a live price chip before you render. Load $10 to start and top up anytime. Itemised receipts for each job.',
-    },
-    {
-      q: "What’s the refund policy?",
-      a: 'Failed renders auto-refund to your wallet with an itemised receipt. You always keep full control of spend.',
-    },
-  ];
+type MiniFaqProps = {
+  faq?: {
+    title?: string;
+    description?: string;
+    items?: Array<{ q: string; a: string }>;
+  } | null;
+};
+
+function MiniFAQ({ faq }: MiniFaqProps) {
+  const fallback = {
+    title: 'FAQ',
+    description: 'Short answers to the most common questions.',
+    items: [
+      {
+        q: 'Is Sora 2 available in the EU?',
+        a: 'Sora 2 availability is limited. MaxVideoAI routes your brief to supported engines today and keeps Sora-ready presets for later.',
+      },
+      {
+        q: 'Can I add audio?',
+        a: 'Yes. Engines surfaced on the homepage support audio toggles in the composer. The live price updates when you enable audio.',
+      },
+      {
+        q: 'How does pricing work?',
+        a: 'You see a live price chip before you render. Load $10 to start and top up anytime. Itemised receipts for each job.',
+      },
+      {
+        q: "What’s the refund policy?",
+        a: 'Failed renders auto-refund to your wallet with an itemised receipt. You always keep full control of spend.',
+      },
+    ],
+  };
+
+  const resolvedTitle = faq?.title ?? fallback.title;
+  const resolvedDescription = faq?.description ?? fallback.description;
+  const items =
+    Array.isArray(faq?.items) && faq.items.length
+      ? faq.items
+      : fallback.items;
 
   return (
     <section aria-labelledby="mini-faq-heading" className="mx-auto mt-20 max-w-6xl px-4 sm:px-6 lg:px-8">
       <div className="rounded-2xl border border-hairline bg-white p-6 shadow-card">
         <h2 id="mini-faq-heading" className="text-xl font-semibold text-text-primary">
-          FAQ
+          {resolvedTitle}
         </h2>
-        <p className="mb-4 text-sm text-muted-foreground">Short answers to the most common questions.</p>
+        <p className="mb-4 text-sm text-muted-foreground">{resolvedDescription}</p>
         <div className="space-y-3">
           {items.map((item) => (
             <details key={item.q} className="group rounded-lg border border-hairline bg-white/60 p-4 transition hover:border-accent/40">
@@ -265,15 +284,25 @@ async function resolveHeroTilePrices(tiles: HeroTilePricingInput[]) {
 export default async function HomePage() {
   const { dictionary } = await resolveDictionary();
   const home = dictionary.home;
-  const badges = home.badges;
+  const seoDescription =
+    home.meta?.description ?? 'Generate cinematic AI videos via Sora 2, Veo 3, Pika 2.2, and more from one hub.';
+  const defaultBadges = ['PAY-AS-YOU-GO', 'PRICE-BEFORE', 'ALWAYS-CURRENT'];
+  const badges = Array.isArray(home.badges) && home.badges.length ? home.badges : defaultBadges;
   const hero = home.hero;
   const worksWith = home.worksWith;
+  const worksWithBrands = Array.isArray(worksWith.brands) && worksWith.brands.length ? worksWith.brands : WORKS_WITH_BRANDS;
   const heroScreenshot = home.heroScreenshot;
-  const whyCards = home.whyCards;
+  const defaultWhyCards = [
+    { title: 'Live product, not a roadmap.', body: 'Log in and use the same workspace we run internally today.' },
+    { title: 'Wallet-first billing.', body: 'Top up once, monitor spend, and get automatic refunds on failed renders.' },
+    { title: 'All your engines in one place.', body: 'Switch between Sora, Veo, Pika, MiniMax, and more without juggling dashboards.' },
+  ];
+  const whyCards = Array.isArray(home.whyCards) && home.whyCards.length ? home.whyCards : defaultWhyCards;
   const ways = home.ways;
   const pricing = home.pricing;
   const trust = home.trust;
   const waysSection = home.waysSection;
+  const compareCopy = home.compare ?? null;
   const homepageSlots = await getHomepageSlots();
   const falEngines = listFalEngines();
   const compareEngineIndex = new Map(falEngines.map((entry) => [entry.modelSlug, entry]));
@@ -291,7 +320,7 @@ export default async function HomePage() {
       maxDuration: meta.maxDuration,
       audio: meta.audio,
       bestFor: meta.bestFor,
-      href: `/models/${slug}`,
+      href: { pathname: '/models/[slug]', params: { slug } },
       bg,
     };
   }).filter((item): item is CompareEngineCard => Boolean(item));
@@ -391,7 +420,7 @@ export default async function HomePage() {
       ratingValue: '4.9',
       ratingCount: '3200',
     },
-    description: metadata.description,
+    description: seoDescription,
     url: 'https://maxvideoai.com',
   };
   const videoJsonLd = {
@@ -475,7 +504,7 @@ export default async function HomePage() {
             {worksWith.label}
           </span>
           <div className="flex flex-wrap items-center justify-center gap-6 text-2xl font-semibold text-text-primary sm:text-3xl">
-            {WORKS_WITH_BRANDS.map((brand) => (
+            {worksWithBrands.map((brand) => (
               <span key={brand}>{brand}</span>
             ))}
           </div>
@@ -526,7 +555,7 @@ export default async function HomePage() {
           ctaLabel={examplesCalloutCopy.cta}
           eyebrow={examplesCalloutCopy.eyebrow}
         />
-        <CompareEnginesCarousel engines={compareEngines} />
+        <CompareEnginesCarousel engines={compareEngines} copy={compareCopy ?? undefined} />
 
         <section className="mx-auto mt-20 max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mb-6 flex items-center justify-between gap-4">
@@ -593,7 +622,7 @@ export default async function HomePage() {
           </div>
         </section>
       </MosaicBackdrop>
-      <MiniFAQ />
+      <MiniFAQ faq={home.faq} />
       <Script id="software-jsonld" type="application/ld+json">
         {JSON.stringify(softwareSchema)}
       </Script>

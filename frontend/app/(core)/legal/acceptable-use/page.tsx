@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Acceptable Use Policy',
@@ -64,9 +65,9 @@ export default function AcceptableUsePage() {
           <h2 className="text-lg font-semibold text-text-primary">Report abuse</h2>
           <p>
             If you believe content generated through MaxVideoAI breaches this policy or your rights, please notify us via the{' '}
-            <a href="/legal/takedown" className="text-accent underline">
+            <Link href="/legal/takedown" className="text-accent underline">
               Notice &amp; Takedown form
-            </a>{' '}
+            </Link>{' '}
             or email{' '}
             <a href="mailto:legal@maxvideoai.com" className="text-accent underline">
               legal@maxvideoai.com

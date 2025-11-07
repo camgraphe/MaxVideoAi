@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -10,6 +10,7 @@ import { FEATURES } from '@/content/feature-flags';
 import type { EngineCaps, Mode, Resolution, AspectRatio } from '@/types/engines';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 type ReceiptItem = {
   id: number;
@@ -51,7 +52,120 @@ const GOOGLE_ADS_CONVERSION_CURRENCY = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVER
 const GOOGLE_ADS_CONVERSION_VALUE_ENV = Number(process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_VALUE ?? 1);
 const GOOGLE_ADS_CONVERSION_VALUE_FALLBACK = Number.isFinite(GOOGLE_ADS_CONVERSION_VALUE_ENV) ? GOOGLE_ADS_CONVERSION_VALUE_ENV : 1;
 
+const DEFAULT_BILLING_COPY = {
+  title: 'Billing',
+  hero: {
+    title: 'Price before you generate.',
+    subtitle: 'Pay only for what you run. Start with Starter Credits ($10). No subscription. No lock-in.',
+    liveMode: 'Live Mode',
+    testMode: 'Test Mode',
+  },
+  wallet: {
+    title: 'Wallet',
+    description: 'Starter Credits ($10). Top up once, then pay per render to the cent. Any unused balance stays yours.',
+    addFunds: 'Add {amount}',
+    quickAmount: '{amount}',
+    autoTopUp: 'Enable auto top-up (optional)',
+    lowBalance: 'Your balance is low. Top up to keep creating.',
+  },
+  membership: {
+    title: 'Member Status',
+    description:
+      'Status is automatic — no subscription. Calculated on a rolling 30 days of spend. Status updates daily based on your last 30 days of spend.',
+    defaultTier: 'Member',
+    savingsChip: 'You save {percent}%',
+    defaultLine: '{tier} — standard rate on every render.',
+    thresholdLine: '{tier} — spend {amount} / 30 days to save {percent}% on every eligible render.',
+    labels: {
+      member: 'Member',
+      plus: 'Plus',
+      pro: 'Pro',
+    },
+  },
+  teams: {
+    title: 'For Teams',
+    description: 'Shared wallet & roles. Let your team create with one balance. Set soft/hard project budgets. Daily summary by email.',
+    actions: {
+      invite: 'Invite teammates',
+      budgets: 'Set project budgets',
+    },
+    note: 'Team note: On shared wallets, status applies to all members.',
+    comingSoon:
+      'Coming soon — unified wallets, role-based approvals, and budgeting controls. Join the beta at {email}.',
+    contactEmail: 'support@maxvideoai.com',
+    statusLive: 'Live',
+    statusSoon: 'Coming soon',
+  },
+  estimator: {
+    title: 'Cost Estimator',
+    summary: 'Select Engine · Duration · Resolution → This render: {value} (estimate)',
+    estimateLoading: '…',
+    estimateMissing: '—',
+    fields: {
+      engine: 'Engine',
+      mode: 'Mode',
+      duration: 'Duration (sec)',
+      resolution: 'Resolution',
+    },
+    note: 'Note: You’ll be charged only if the render succeeds.',
+    memberChipSavings: 'Member price — You save {percent}%',
+    memberChipBase: 'Member price',
+  },
+  receipts: {
+    title: 'Receipts',
+    subtitle: 'Itemized by engine, duration, and resolution. VAT included where applicable.',
+    empty: 'No receipts yet.',
+    loading: 'Loading…',
+    loadMore: 'Load more',
+    exportCsv: 'Export CSV',
+    typeLabels: {
+      charge: 'Charge',
+      refund: 'Refund',
+      topup: 'Top-up',
+    },
+    fields: {
+      total: 'Total',
+      tax: 'Tax',
+      discount: 'Discount',
+    },
+  },
+  refunds: {
+    title: 'Refunds & Protections',
+    points: [
+      'Failed render: automatic refund.',
+      'Budget control: set soft/hard limits per project.',
+      'No vendor lock-in: Works with leading engines; trademarks belong to their owners.',
+    ],
+  },
+  faq: {
+    title: 'Micro-FAQ',
+    entries: [
+      { question: 'Do I need a subscription?', answer: 'No. Pay as you go.' },
+      { question: 'Can I buy just one small render?', answer: 'Yes — funds are debited per run from your $10 Starter balance.' },
+      { question: 'Will my credits expire?', answer: 'Credits don’t expire while your account remains active.' },
+      { question: 'How do discounts work?', answer: 'Member status applies automatically based on your last 30 days of spend.' },
+    ],
+    footnote:
+      'VAT included where applicable. Refunds on failed renders. “Works with” indicates compatibility; trademarks belong to their respective owners.',
+  },
+  toasts: {
+    success: 'Payment successful. Funds added to your wallet.',
+    cancelled: 'Payment cancelled. No charges applied.',
+  },
+  errors: {
+    loadReceipts: 'Failed to load receipts',
+    loadMore: 'Failed to load more receipts',
+    loadEngines: 'Failed to load engines.',
+    estimator: 'Estimator failed',
+    lowBalance: 'Your balance is low. Top up to keep creating.',
+  },
+};
+
+type BillingCopy = typeof DEFAULT_BILLING_COPY;
+
 export default function BillingPage() {
+  const { t } = useI18n();
+  const copy = t('workspace.billing', DEFAULT_BILLING_COPY) as BillingCopy;
   const { data, error } = useEngines();
   const engines = useMemo(() => data?.engines ?? [], [data]);
   const { session, loading: authLoading } = useRequireAuth();
@@ -91,7 +205,7 @@ export default function BillingPage() {
         });
         if (!canceled) setEstimate({ total: res.total, currency: res.currency, messages: res.messages });
       } catch {
-        if (!canceled) setEstimate({ total: undefined, currency: 'USD', messages: ['Estimator failed'] });
+        if (!canceled) setEstimate({ total: undefined, currency: 'USD', messages: [copy.errors.estimator] });
       } finally {
         if (!canceled) setEstimating(false);
       }
@@ -100,7 +214,7 @@ export default function BillingPage() {
     return () => {
       canceled = true;
     };
-  }, [selected, mode, durationSec, resolution, aspectRatio]);
+  }, [selected, mode, durationSec, resolution, aspectRatio, copy.errors.estimator]);
 
   const [wallet, setWallet] = useState<{ balance: number; currency: string } | null>(null);
   const [member, setMember] = useState<MemberStatus | null>(null);
@@ -114,7 +228,7 @@ export default function BillingPage() {
   }>({ items: [], nextCursor: null, loading: false });
   const conversionSentRef = useRef(false);
 
-  const triggerGoogleAdsConversion = (value?: number, currency?: string) => {
+  const triggerGoogleAdsConversion = useCallback((value?: number, currency?: string) => {
     if (typeof window === 'undefined') return;
     if (!GOOGLE_ADS_CONVERSION_TARGET) return;
     if (conversionSentRef.current) return;
@@ -138,7 +252,7 @@ export default function BillingPage() {
     };
 
     dispatch(0);
-  };
+  }, []);
 
   useEffect(() => {
     if (authLoading || !session) return;
@@ -156,7 +270,7 @@ export default function BillingPage() {
         .then((d) => mounted && setMember(d))
         .catch(() =>
           mounted &&
-          setMember({ tier: 'Member', savingsPct: 0, tiers: FALLBACK_MEMBERSHIP_TIERS })
+          setMember({ tier: copy.membership.defaultTier, savingsPct: 0, tiers: FALLBACK_MEMBERSHIP_TIERS })
         );
 
       // Load receipts first page
@@ -164,13 +278,13 @@ export default function BillingPage() {
       fetch('/api/receipts?limit=25', { headers })
         .then((r) => r.json())
         .then((d) => mounted && setReceipts({ items: (d.receipts ?? []) as ReceiptItem[], nextCursor: d.nextCursor ?? null, loading: false }))
-        .catch(() => mounted && setReceipts({ items: [], nextCursor: null, loading: false, error: 'Failed to load receipts' }));
+        .catch(() => mounted && setReceipts({ items: [], nextCursor: null, loading: false, error: copy.errors.loadReceipts }));
     }
     load();
     return () => {
       mounted = false;
     };
-  }, [authLoading, session]);
+  }, [authLoading, session, copy.membership.defaultTier, copy.errors.loadReceipts]);
 
   // Detect Stripe mode for badge
   useEffect(() => {
@@ -182,7 +296,7 @@ export default function BillingPage() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [copy.toasts.cancelled, copy.toasts.success]);
 
   // Show toast on return from Checkout
   useEffect(() => {
@@ -192,7 +306,12 @@ export default function BillingPage() {
     const amountParam = url.searchParams.get('amount');
     const currencyParam = url.searchParams.get('currency');
     if (!status) return undefined;
-    const message = status === 'success' ? 'Payment successful. Funds added to your wallet.' : status === 'cancelled' ? 'Payment cancelled. No charges applied.' : null;
+    const message =
+      status === 'success'
+        ? copy.toasts.success
+        : status === 'cancelled'
+          ? copy.toasts.cancelled
+          : null;
     if (message) {
       setToast(message);
       const timeout = window.setTimeout(() => setToast(null), 4000);
@@ -209,7 +328,7 @@ export default function BillingPage() {
       return () => window.clearTimeout(timeout);
     }
     return undefined;
-  }, []);
+  }, [copy.toasts.success, copy.toasts.cancelled, triggerGoogleAdsConversion]);
 
   async function handleTopUp(amountCents: number) {
     const token = session?.access_token;
@@ -231,9 +350,15 @@ export default function BillingPage() {
     try {
       const r = await fetch(url, { headers });
       const d = await r.json();
-      setReceipts((s) => ({ items: [...s.items, ...((d.receipts ?? []) as ReceiptItem[])], nextCursor: d.nextCursor ?? null, loading: false }));
+      setReceipts((s) => ({
+        ...s,
+        items: [...s.items, ...((d.receipts ?? []) as ReceiptItem[])],
+        nextCursor: d.nextCursor ?? null,
+        loading: false,
+        error: null,
+      }));
     } catch {
-      setReceipts((s) => ({ ...s, loading: false, error: 'Failed to load more receipts' }));
+      setReceipts((s) => ({ ...s, loading: false, error: copy.errors.loadMore }));
     }
   }
 
@@ -291,6 +416,15 @@ export default function BillingPage() {
     }
   };
 
+  const formatUsdAmount = (amountCents: number) => `$${(amountCents / 100).toFixed(0)}`;
+
+  const estimatorValue = estimating
+    ? copy.estimator.estimateLoading
+    : typeof estimate?.total === 'number'
+      ? `$${estimate.total.toFixed(2)}`
+      : copy.estimator.estimateMissing;
+  const estimatorSummary = copy.estimator.summary.replace('{value}', estimatorValue);
+
   if (authLoading || !session) {
     return null;
   }
@@ -308,15 +442,15 @@ export default function BillingPage() {
               {toast}
             </div>
           )}
-          <h1 className="mb-4 text-xl font-semibold text-text-primary">Billing</h1>
+          <h1 className="mb-4 text-xl font-semibold text-text-primary">{copy.title}</h1>
           {/* Pricing Hero */}
           <section className="mb-6 rounded-card border border-border bg-white p-4 shadow-card">
-            <h2 className="text-xl font-semibold text-text-primary">Price before you generate.</h2>
-            <p className="mt-1 text-sm text-text-secondary">Pay only for what you run. Start with Starter Credits ($10). No subscription. No lock‑in.</p>
+            <h2 className="text-xl font-semibold text-text-primary">{copy.hero.title}</h2>
+            <p className="mt-1 text-sm text-text-secondary">{copy.hero.subtitle}</p>
             {stripeMode !== 'disabled' && (
               <div className="mt-2">
                 <span className={`rounded-full px-2 py-1 text-xs ${stripeMode==='test' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                  {stripeMode === 'test' ? 'Test Mode' : 'Live Mode'}
+                  {stripeMode === 'test' ? copy.hero.testMode : copy.hero.liveMode}
                 </span>
               </div>
             )}
@@ -324,35 +458,46 @@ export default function BillingPage() {
 
           <section className="mb-6 grid gap-4 md:grid-cols-2">
             <div className="rounded-card border border-border bg-white p-4 shadow-card">
-              <h2 className="mb-2 text-lg font-semibold text-text-primary">Wallet</h2>
-              <p className="text-sm text-text-secondary">Starter Credits ($10). Top up once, then pay per render to the cent. Any unused balance stays yours.</p>
+              <h2 className="mb-2 text-lg font-semibold text-text-primary">{copy.wallet.title}</h2>
+              <p className="text-sm text-text-secondary">{copy.wallet.description}</p>
               <p className="mt-1 text-2xl font-semibold text-text-primary">${(wallet?.balance ?? 0).toFixed(2)}</p>
               <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-                <button onClick={() => handleTopUp(1000)} className="rounded-input border border-border px-3 py-2 hover:bg-bg">Add funds $10</button>
-                <button onClick={() => handleTopUp(2500)} className="rounded-input border border-border px-3 py-2 hover:bg-bg">$25</button>
-                <button onClick={() => handleTopUp(5000)} className="rounded-input border border-border px-3 py-2 hover:bg-bg">$50</button>
-                <Link href="/settings" className="ml-auto rounded-input border border-border px-3 py-2 hover:bg-bg">Enable auto top‑up (optional)</Link>
+                <button onClick={() => handleTopUp(1000)} className="rounded-input border border-border px-3 py-2 hover:bg-bg">
+                  {copy.wallet.addFunds.replace('{amount}', formatUsdAmount(1000))}
+                </button>
+                <button onClick={() => handleTopUp(2500)} className="rounded-input border border-border px-3 py-2 hover:bg-bg">
+                  {copy.wallet.quickAmount.replace('{amount}', formatUsdAmount(2500))}
+                </button>
+                <button onClick={() => handleTopUp(5000)} className="rounded-input border border-border px-3 py-2 hover:bg-bg">
+                  {copy.wallet.quickAmount.replace('{amount}', formatUsdAmount(5000))}
+                </button>
+                <Link href="/settings" className="ml-auto rounded-input border border-border px-3 py-2 hover:bg-bg">
+                  {copy.wallet.autoTopUp}
+                </Link>
               </div>
               {(wallet?.balance ?? 0) < 2 && (
-                <p className="mt-2 text-sm text-state-warning">Your balance is low. Top up to keep creating.</p>
+                <p className="mt-2 text-sm text-state-warning">{copy.wallet.lowBalance}</p>
               )}
             </div>
             <div className="rounded-card border border-border bg-white p-4 shadow-card">
-              <h2 className="mb-2 text-lg font-semibold text-text-primary">Member Status</h2>
-              <p className="text-sm text-text-secondary">Status is automatic — no subscription. Calculated on a rolling 30 days of spend. Status updates daily based on your last 30 days of spend.</p>
+              <h2 className="mb-2 text-lg font-semibold text-text-primary">{copy.membership.title}</h2>
+              <p className="text-sm text-text-secondary">{copy.membership.description}</p>
               <div className="mt-2 flex items-center gap-2">
-                <span className="rounded-full bg-bg px-2 py-1 text-xs text-text-secondary">{member?.tier ?? 'Member'}</span>
-                <span className="rounded-full bg-accent/10 px-2 py-1 text-xs text-accent">{`You save ${member?.savingsPct ?? 0}%`}</span>
+                <span className="rounded-full bg-bg px-2 py-1 text-xs text-text-secondary">
+                  {member?.tier ?? copy.membership.defaultTier}
+                </span>
+                <span className="rounded-full bg-accent/10 px-2 py-1 text-xs text-accent">
+                  {copy.membership.savingsChip.replace('{percent}', String(member?.savingsPct ?? 0))}
+                </span>
               </div>
               <ul className="mt-3 list-disc pl-5 text-sm text-text-secondary">
                 {(member?.tiers ?? FALLBACK_MEMBERSHIP_TIERS).map((tier) => {
                   const tierKey = tier.tier || 'member';
-                  const tierLabel = tier.tier
-                    ? `${tier.tier.slice(0, 1).toUpperCase()}${tier.tier.slice(1)}`
-                    : 'Member';
+                  const labelKey = tier.tier?.toLowerCase() ?? 'member';
+                  const tierLabel = copy.membership.labels[labelKey as keyof typeof copy.membership.labels] ?? copy.membership.defaultTier;
                   if (tier.spendThresholdCents <= 0) {
                     return (
-                      <li key={tierKey}>{tierLabel} — standard rate on every render.</li>
+                      <li key={tierKey}>{copy.membership.defaultLine.replace('{tier}', tierLabel)}</li>
                     );
                   }
                   const threshold = formatThreshold(
@@ -362,7 +507,10 @@ export default function BillingPage() {
                   const discountPct = Math.round(tier.discountPercent * 100);
                   return (
                     <li key={tierKey}>
-                      {tierLabel} — spend {threshold} / 30 days to save {discountPct}% on every eligible render.
+                      {copy.membership.thresholdLine
+                        .replace('{tier}', tierLabel)
+                        .replace('{amount}', threshold)
+                        .replace('{percent}', String(discountPct))}
                     </li>
                   );
                 })}
@@ -373,24 +521,24 @@ export default function BillingPage() {
           {/* For Teams (optional module) */}
           <section className="mb-6 rounded-card border border-border bg-white p-4 shadow-card">
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold text-text-primary">For Teams</h2>
+              <h2 className="text-lg font-semibold text-text-primary">{copy.teams.title}</h2>
               <FlagPill live={teamsLive} />
-              <span className="sr-only">{teamsLive ? 'Live' : 'Coming soon'}</span>
+              <span className="sr-only">{teamsLive ? copy.teams.statusLive : copy.teams.statusSoon}</span>
             </div>
             {teamsLive ? (
               <>
-                <p className="mt-1 text-sm text-text-secondary">Shared wallet &amp; roles. Let your team create with one balance. Set soft/hard project budgets. Daily summary by email.</p>
+                <p className="mt-1 text-sm text-text-secondary">{copy.teams.description}</p>
                 <div className="mt-3 flex gap-2">
-                  <button className="rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg">Invite teammates</button>
-                  <button className="rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg">Set project budgets</button>
+                  <button className="rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg">{copy.teams.actions.invite}</button>
+                  <button className="rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg">{copy.teams.actions.budgets}</button>
                 </div>
-                <p className="mt-2 text-xs text-text-muted">Team note: On shared wallets, status applies to all members.</p>
+                <p className="mt-2 text-xs text-text-muted">{copy.teams.note}</p>
               </>
             ) : (
               <div className="mt-2 rounded-input border border-border bg-bg px-4 py-3 text-sm text-text-secondary">
-                Coming soon — unified wallets, role-based approvals, and budgeting controls. Join the beta at{' '}
-                <a className="underline underline-offset-2" href="mailto:support@maxvideoai.com">
-                  support@maxvideoai.com
+                {copy.teams.comingSoon.replace('{email}', copy.teams.contactEmail)}{' '}
+                <a className="underline underline-offset-2" href={`mailto:${copy.teams.contactEmail}`}>
+                  {copy.teams.contactEmail}
                 </a>
                 .
               </div>
@@ -398,12 +546,12 @@ export default function BillingPage() {
           </section>
 
           <section className="mb-6 rounded-card border border-border bg-white p-4 shadow-card">
-            <h2 className="mb-3 text-lg font-semibold text-text-primary">Cost Estimator</h2>
-            <p className="mb-2 text-sm text-text-secondary">Select Engine · Duration · Resolution → This render: {estimating ? '…' : typeof estimate?.total === 'number' ? `$${estimate.total.toFixed(2)}` : '—'} (estimate)</p>
-            {error && <p className="mb-2 text-sm text-state-warning">Failed to load engines.</p>}
+            <h2 className="mb-3 text-lg font-semibold text-text-primary">{copy.estimator.title}</h2>
+            <p className="mb-2 text-sm text-text-secondary">{estimatorSummary}</p>
+            {error && <p className="mb-2 text-sm text-state-warning">{copy.errors.loadEngines}</p>}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <label className="text-sm">
-                <span className="mb-1 block text-text-secondary">Engine</span>
+                <span className="mb-1 block text-text-secondary">{copy.estimator.fields.engine}</span>
                 <select
                   className="w-full rounded-input border border-border bg-bg px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   value={engineId ?? engines[0]?.id ?? ''}
@@ -415,7 +563,7 @@ export default function BillingPage() {
                 </select>
               </label>
               <label className="text-sm">
-                <span className="mb-1 block text-text-secondary">Mode</span>
+                <span className="mb-1 block text-text-secondary">{copy.estimator.fields.mode}</span>
                 <select
                   className="w-full rounded-input border border-border bg-bg px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   value={mode}
@@ -427,7 +575,7 @@ export default function BillingPage() {
                 </select>
               </label>
               <label className="text-sm">
-                <span className="mb-1 block text-text-secondary">Duration (sec)</span>
+                <span className="mb-1 block text-text-secondary">{copy.estimator.fields.duration}</span>
                 <input
                   type="number"
                   min={1}
@@ -438,7 +586,7 @@ export default function BillingPage() {
                 />
               </label>
               <label className="text-sm">
-                <span className="mb-1 block text-text-secondary">Resolution</span>
+                <span className="mb-1 block text-text-secondary">{copy.estimator.fields.resolution}</span>
                 <select
                   className="w-full rounded-input border border-border bg-bg px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   value={resolution}
@@ -451,29 +599,32 @@ export default function BillingPage() {
               </label>
             </div>
             <div className="mt-4 rounded-input border border-border bg-bg p-3 text-sm">
-              <p className="text-text-secondary">Note: You’ll be charged only if the render succeeds.</p>
+              <p className="text-text-secondary">{copy.estimator.note}</p>
               <div className="mt-2 flex items-center gap-2">
                 {member?.savingsPct ? (
-                  <span className="rounded-full bg-accent/10 px-2 py-1 text-xs text-accent">Member price — You save {member.savingsPct}%</span>
+                  <span className="rounded-full bg-accent/10 px-2 py-1 text-xs text-accent">
+                    {copy.estimator.memberChipSavings.replace('{percent}', String(member.savingsPct))}
+                  </span>
                 ) : (
-                  <span className="rounded-full bg-bg px-2 py-1 text-xs text-text-secondary">Member price</span>
+                  <span className="rounded-full bg-bg px-2 py-1 text-xs text-text-secondary">{copy.estimator.memberChipBase}</span>
                 )}
               </div>
             </div>
           </section>
 
           <section className="mb-6 rounded-card border border-border bg-white p-4 shadow-card">
-            <h2 className="mb-2 text-lg font-semibold text-text-primary">Receipts</h2>
-            <p className="text-sm text-text-secondary">Itemized by engine, duration, and resolution. VAT included where applicable.</p>
+            <h2 className="mb-2 text-lg font-semibold text-text-primary">{copy.receipts.title}</h2>
+            <p className="text-sm text-text-secondary">{copy.receipts.subtitle}</p>
             {receipts.error && <p className="text-sm text-state-warning">{receipts.error}</p>}
             <div className="mt-3 space-y-3">
               {receipts.items.length === 0 && !receipts.loading && (
-                <p className="text-sm text-text-secondary">No receipts yet.</p>
+                <p className="text-sm text-text-secondary">{copy.receipts.empty}</p>
               )}
               {receipts.items.map((r) => {
                 const signedCents = r.type === 'charge' ? -r.amount_cents : r.amount_cents;
                 const amountDisplay = formatMoney(signedCents, r.currency);
-                const typeLabel = r.type === 'charge' ? 'Charge' : r.type === 'refund' ? 'Refund' : 'Top-up';
+                const typeKey = r.type === 'charge' ? 'charge' : r.type === 'refund' ? 'refund' : 'topup';
+                const typeLabel = copy.receipts.typeLabels[typeKey as keyof typeof copy.receipts.typeLabels] ?? r.type;
                 const typeClass =
                   r.type === 'charge'
                     ? 'bg-rose-100 text-rose-700'
@@ -502,18 +653,18 @@ export default function BillingPage() {
                     {r.description && <p className="text-xs text-text-muted">{r.description}</p>}
                     <dl className="grid gap-1 text-xs sm:text-sm">
                       <div className="flex justify-between font-semibold text-text-primary">
-                        <dt>Total</dt>
+                        <dt>{copy.receipts.fields.total}</dt>
                         <dd>{formatMoney(r.amount_cents, r.currency)}</dd>
                       </div>
                       {taxCents > 0 && (
                         <div className="flex justify-between text-text-muted">
-                          <dt>Tax</dt>
+                          <dt>{copy.receipts.fields.tax}</dt>
                           <dd>{formatMoney(taxCents, r.currency)}</dd>
                         </div>
                       )}
                       {discountCents > 0 && (
                         <div className="flex justify-between text-text-muted">
-                          <dt>Discount</dt>
+                          <dt>{copy.receipts.fields.discount}</dt>
                           <dd>{formatMoney(-discountCents, r.currency)}</dd>
                         </div>
                       )}
@@ -522,39 +673,42 @@ export default function BillingPage() {
                 );
               })}
               {receipts.loading && (
-                <p className="text-sm text-text-secondary">Loading…</p>
+                <p className="text-sm text-text-secondary">{copy.receipts.loading}</p>
               )}
               <div className="flex items-center gap-2">
                 {receipts.nextCursor && (
                   <button onClick={loadMoreReceipts} disabled={receipts.loading} className="rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg disabled:opacity-60">
-                    {receipts.loading ? 'Loading…' : 'Load more'}
+                    {receipts.loading ? copy.receipts.loading : copy.receipts.loadMore}
                   </button>
                 )}
-                <button onClick={exportCSV} className="ml-auto rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg">Export CSV</button>
+                <button onClick={exportCSV} className="ml-auto rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg">
+                  {copy.receipts.exportCsv}
+                </button>
               </div>
             </div>
           </section>
 
           {/* Refunds & Protections */}
           <section className="mb-6 rounded-card border border-border bg-white p-4 shadow-card">
-            <h2 className="mb-2 text-lg font-semibold text-text-primary">Refunds & Protections</h2>
+            <h2 className="mb-2 text-lg font-semibold text-text-primary">{copy.refunds.title}</h2>
             <ul className="list-disc pl-5 text-sm text-text-secondary">
-              <li>Failed render: automatic refund.</li>
-              <li>Budget control: set soft/hard limits per project.</li>
-              <li>No vendor lock‑in: Works with leading engines; trademarks belong to their owners.</li>
+              {copy.refunds.points.map((point) => (
+                <li key={point}>{point}</li>
+              ))}
             </ul>
           </section>
 
           {/* Micro‑FAQ */}
           <section className="mb-6 rounded-card border border-border bg-white p-4 shadow-card">
-            <h2 className="mb-2 text-lg font-semibold text-text-primary">Micro‑FAQ</h2>
+            <h2 className="mb-2 text-lg font-semibold text-text-primary">{copy.faq.title}</h2>
             <div className="grid gap-2 text-sm text-text-secondary">
-              <p><span className="font-medium text-text-primary">Do I need a subscription?</span> No. Pay as you go.</p>
-              <p><span className="font-medium text-text-primary">Can I buy just one small render?</span> Yes — funds are debited per run from your $10 Starter balance.</p>
-              <p><span className="font-medium text-text-primary">Will my credits expire?</span> Credits don’t expire while your account remains active.</p>
-              <p><span className="font-medium text-text-primary">How do discounts work?</span> Member status applies automatically based on your last 30 days of spend.</p>
+              {copy.faq.entries.map((entry, index) => (
+                <p key={index}>
+                  <span className="font-medium text-text-primary">{entry.question}</span> {entry.answer}
+                </p>
+              ))}
             </div>
-            <p className="mt-3 text-xs text-text-muted">VAT included where applicable. Refunds on failed renders. “Works with” indicates compatibility; trademarks belong to their respective owners.</p>
+            <p className="mt-3 text-xs text-text-muted">{copy.faq.footnote}</p>
           </section>
 
         </main>

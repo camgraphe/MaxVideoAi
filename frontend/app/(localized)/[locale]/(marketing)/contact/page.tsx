@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Link } from '@/i18n/navigation';
 import { resolveDictionary } from '@/lib/i18n/server';
 
 export const metadata: Metadata = {
@@ -160,8 +161,11 @@ export default async function ContactPage() {
           <div>
             <dt className="font-semibold text-text-primary">Where can I check service status?</dt>
             <dd className="mt-2">
-              Visit the <a href="/status" className="font-semibold text-accent hover:text-accentSoft">status page</a> for current
-              engine latency and incident history before opening a ticket.
+              Visit the{' '}
+              <Link href="/status" className="font-semibold text-accent hover:text-accentSoft">
+                status page
+              </Link>{' '}
+              for current engine latency and incident history before opening a ticket.
             </dd>
           </div>
         </dl>

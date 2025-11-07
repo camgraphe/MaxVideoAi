@@ -45,7 +45,7 @@ export default function AiVideoEnginesPage() {
           <p className="text-base leading-relaxed text-text-secondary">
             Sora 2 remains a staged rollout, so MaxVideoAI handles the verification trail, regional compliance, and predictive routing
             when capacity spikes. Producers can benchmark storyboards against{' '}
-            <Link href="/models/sora-2" className="font-semibold text-accent hover:text-accentSoft">
+            <Link href={{ pathname: '/models/[slug]', params: { slug: 'sora-2' } }} className="font-semibold text-accent hover:text-accentSoft">
               Sora 2 reference projects
             </Link>{' '}
             and switch to Sora 2 Pro presets or Veo 3 sequences when turnaround speed matters more than frontier fidelity. We document
@@ -61,7 +61,7 @@ export default function AiVideoEnginesPage() {
             Veo 3.1 bridges the gap between storyboard accuracy and polished motion, especially when social or advertising deliverables
             need voice-over sync. Our routing keeps latency predictable and lets directors compare the fast preset with the longer-run
             tier before booking studio time. Review the latest guardrails, aspect ratios, and narration-ready examples on the{' '}
-            <Link href="/models/veo-3-1" className="font-semibold text-accent hover:text-accentSoft">
+            <Link href={{ pathname: '/models/[slug]', params: { slug: 'veo-3-1' } }} className="font-semibold text-accent hover:text-accentSoft">
               Veo 3.1 overview
             </Link>{' '}
             or tap the Fast variant when iteration speed outranks audio or frame count. We also surface a change log inside the workspace
@@ -75,7 +75,7 @@ export default function AiVideoEnginesPage() {
             When teams need playful loops or short-form edits, Pika 2.2 delivers multi-aspect outputs at a fraction of the budget.
             MaxVideoAI exposes curated presets so editors can jump from vertical reels to square product shots without leaving the
             workspace. Compare text-to-video and image-to-video modes side-by-side on our{' '}
-            <Link href="/models/pika-text-to-video" className="font-semibold text-accent hover:text-accentSoft">
+            <Link href={{ pathname: '/models/[slug]', params: { slug: 'pika-text-to-video' } }} className="font-semibold text-accent hover:text-accentSoft">
               Pika quickstart guide
             </Link>{' '}
             and reuse prompt banks that have already been cleared for brand-safe campaigns. Daily QA passes flag style drift or artefacts
@@ -89,11 +89,11 @@ export default function AiVideoEnginesPage() {
             Fal.ai powers the multi-engine routing backbone behind MaxVideoAI, letting us burst to capacity while surfacing a consistent
             interface to creative leads. Our orchestration layer keeps prompts portable, logs every render, and exposes diagnostics so
             you know when to retry or hand off to another engine like{' '}
-            <Link href="/models/veo-3-fast" className="font-semibold text-accent hover:text-accentSoft">
+            <Link href={{ pathname: '/models/[slug]', params: { slug: 'veo-3-fast' } }} className="font-semibold text-accent hover:text-accentSoft">
               Veo 3 Fast
             </Link>{' '}
             or{' '}
-            <Link href="/models/minimax-hailuo-02-text" className="font-semibold text-accent hover:text-accentSoft">
+            <Link href={{ pathname: '/models/[slug]', params: { slug: 'minimax-hailuo-02-text' } }} className="font-semibold text-accent hover:text-accentSoft">
               MiniMax Hailuo
             </Link>{' '}
             for stylised outputs. Teams also gain access to rate cards, audit trails, and regional compliance notes in one workspace, and

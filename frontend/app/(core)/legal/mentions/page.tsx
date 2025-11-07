@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Mentions légales',
@@ -67,9 +68,9 @@ export default function MentionsLegalesPage() {
           <h3 className="text-lg font-semibold text-text-primary">Données personnelles</h3>
           <p>
             MaxVideoAI collecte et traite des données personnelles conformément à la{' '}
-            <a href="/legal/privacy" className="text-accent underline">
+            <Link href="/legal/privacy" className="text-accent underline">
               Politique de confidentialité
-            </a>
+            </Link>
             . Pour exercer vos droits RGPD (accès, rectification, suppression, opposition, portabilité), contactez{' '}
             <a href="mailto:privacy@maxvideoai.com" className="text-accent underline">
               privacy@maxvideoai.com

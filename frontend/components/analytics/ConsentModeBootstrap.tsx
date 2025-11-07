@@ -15,7 +15,7 @@ export default function ConsentModeBootstrap() {
 
   return (
     <>
-      <Script id="gcm-default" strategy="beforeInteractive">
+      <Script id="gcm-default" strategy="afterInteractive">
         {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}

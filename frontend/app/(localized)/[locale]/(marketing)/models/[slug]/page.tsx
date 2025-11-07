@@ -1,79 +1,102 @@
 import { Link } from '@/i18n/navigation';
 import Image from 'next/image';
-import clsx from 'clsx';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { resolveDictionary } from '@/lib/i18n/server';
-import { AVAILABILITY_BADGE_CLASS } from '@/lib/availability';
 import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
 import { listFalEngines, getFalEngineBySlug } from '@/config/falEngines';
 import { CURRENCY_LOCALE } from '@/lib/intl';
+import type { AppLocale } from '@/i18n/locales';
+import { locales } from '@/i18n/locales';
+import { buildSlugMap } from '@/lib/i18nSlugs';
+import { buildMetadataUrls } from '@/lib/metadataUrls';
+import { getEngineLocalized } from '@/lib/models/i18n';
 
 type PageParams = {
   params: {
+    locale: AppLocale;
     slug: string;
   };
 };
 
 export function generateStaticParams() {
-  return listFalEngines().map((entry) => ({ slug: entry.modelSlug }));
+  const engines = listFalEngines();
+  return locales.flatMap((locale) => engines.map((entry) => ({ locale, slug: entry.modelSlug })));
 }
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://maxvideoai.com';
+const MODELS_BASE_PATH_MAP = buildSlugMap('models');
 
-const MODEL_META: Record<
-  string,
-  {
-    title: string;
-    description: string;
-    og: string;
-  }
-> = {
-  'sora-2': {
-    title: 'Sora 2 — cinematic text-to-video',
-    description: 'Cinematic, photoreal motion with audio. See presets, limits, and pricing.',
-    og: '/hero/sora2.jpg',
+function buildDetailSlugMap(slug: string) {
+  return locales.reduce<Record<AppLocale, string>>((acc, locale) => {
+    const base = MODELS_BASE_PATH_MAP[locale] ?? 'models';
+    acc[locale] = `${base}/${slug}`;
+    return acc;
+  }, {} as Record<AppLocale, string>);
+}
+
+type DetailCopy = {
+  backLabel: string;
+  overviewTitle: string;
+  overview: {
+    brand: string;
+    engineId: string;
+    slug: string;
+    logoPolicy: string;
+    platformPrice: string;
+  };
+  logoPolicies: {
+    logoAllowed: string;
+    textOnly: string;
+  };
+  promptsTitle: string;
+  faqTitle: string;
+  buttons: {
+    pricing: string;
+    launch: string;
+  };
+  breadcrumb: {
+    home: string;
+    models: string;
+  };
+};
+
+const DEFAULT_DETAIL_COPY: DetailCopy = {
+  backLabel: '← Back to models',
+  overviewTitle: 'Overview',
+  overview: {
+    brand: 'Brand',
+    engineId: 'Engine ID',
+    slug: 'Slug',
+    logoPolicy: 'Logo policy',
+    platformPrice: 'Platform price (incl. 30% fee)',
   },
-  'sora-2-pro': {
-    title: 'Sora 2 Pro — studio-grade Sora presets',
-    description: 'Studio-grade Sora workflows and constraints. Presets, tips, and costs.',
-    og: '/hero/sora2.jpg',
+  logoPolicies: {
+    logoAllowed: 'Logo usage permitted',
+    textOnly: 'Text-only (wordmark)',
   },
-  'veo-3-1': {
-    title: 'Veo 3.1 — ads & b-roll workhorse',
-    description: 'Great for ads and b-roll. Longer clips, audio support, reliable motion.',
-    og: '/hero/veo3.jpg',
+  promptsTitle: 'Prompt ideas',
+  faqTitle: 'FAQ',
+  buttons: {
+    pricing: 'View pricing',
+    launch: 'Launch workspace',
   },
-  'veo-3-fast': {
-    title: 'Veo 3 Fast — quick iterations',
-    description: 'Faster Veo iterations for explorations and bridges. Specs & pricing.',
-    og: '/hero/veo3.jpg',
+  breadcrumb: {
+    home: 'Home',
+    models: 'Models',
   },
-  'veo-3-1-fast': {
-    title: 'Veo 3.1 Fast — frame-to-frame bridges',
-    description: 'Bridge first-to-last frames with Veo 3.1 Fast. Presets and best practices.',
-    og: '/hero/veo3.jpg',
-  },
-  'pika-text-to-video': {
-    title: 'Pika 2.2 — text-to-video',
-    description: 'Fast prompts, multiple aspect ratios, and audio support. Cheap explorations.',
-    og: '/hero/pika-22.jpg',
-  },
-  'pika-image-to-video': {
-    title: 'Pika 2.2 — image-to-video',
-    description: 'Animate images with stylized motion. Tips, limits, and costs.',
-    og: '/hero/pika-22.jpg',
-  },
-  'minimax-hailuo-02-text': {
-    title: 'MiniMax Hailuo 02 — text-to-video',
-    description: 'Stylised motion at low cost. Presets and pricing.',
-    og: '/hero/minimax-video01.jpg',
-  },
-  'minimax-hailuo-02-image': {
-    title: 'MiniMax Hailuo 02 — image-to-video',
-    description: 'Image-to-video loops and stylised motion. Presets and tips.',
-    og: '/hero/minimax-video01.jpg',
-  },
+};
+
+const MODEL_OG_IMAGE_MAP: Record<string, string> = {
+  'sora-2': '/hero/sora2.jpg',
+  'sora-2-pro': '/hero/sora2.jpg',
+  'veo-3-1': '/hero/veo3.jpg',
+  'veo-3-fast': '/hero/veo3.jpg',
+  'veo-3-1-fast': '/hero/veo3.jpg',
+  'pika-text-to-video': '/hero/pika-22.jpg',
+  'pika-image-to-video': '/hero/pika-22.jpg',
+  'minimax-hailuo-02-text': '/hero/minimax-video01.jpg',
+  'minimax-hailuo-02-image': '/hero/minimax-video01.jpg',
 };
 
 function toAbsoluteUrl(url?: string | null): string {
@@ -85,9 +108,8 @@ function toAbsoluteUrl(url?: string | null): string {
 }
 
 export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
-  const { slug } = params;
+  const { slug, locale } = params;
   const engine = getFalEngineBySlug(slug);
-  const { dictionary } = await resolveDictionary();
   if (!engine) {
     return {
       title: 'Model not found - MaxVideo AI',
@@ -95,35 +117,39 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
     };
   }
 
-  const defaultMeta = {
-    title: `${engine.marketingName} — MaxVideo AI`,
-    description: engine.seo.description ?? dictionary.models.hero.subtitle,
-    og: engine.media?.imagePath ?? '/og/price-before.png',
-  };
-  const resolvedMeta = MODEL_META[slug] ?? defaultMeta;
-  const canonicalUrl = `${SITE}${engine.seo.canonicalPath}`;
-  const ogImage = toAbsoluteUrl(resolvedMeta.og ?? defaultMeta.og);
-  const title = `${resolvedMeta.title} — MaxVideo AI`;
-  const description = resolvedMeta.description ?? defaultMeta.description;
+  const localized = await getEngineLocalized(slug, locale);
+  const detailSlugMap = buildDetailSlugMap(slug);
+  const metadataUrls = buildMetadataUrls(locale, detailSlugMap);
+  const fallbackTitle = engine.seo.title ?? `${engine.marketingName} — MaxVideo AI`;
+  const title = localized.seo.title ?? fallbackTitle;
+  const description =
+    localized.seo.description ??
+    engine.seo.description ??
+    'Explore availability, prompts, pricing, and render policies for this model on MaxVideoAI.';
+  const ogImagePath = localized.seo.image ?? MODEL_OG_IMAGE_MAP[slug] ?? engine.media?.imagePath ?? '/og/price-before.png';
+  const ogImage = toAbsoluteUrl(ogImagePath);
 
   return {
     title,
     description,
     alternates: {
-      canonical: canonicalUrl,
+      canonical: metadataUrls.canonical,
+      languages: metadataUrls.languages,
     },
     openGraph: {
       type: 'article',
-      url: canonicalUrl,
+      url: metadataUrls.canonical,
       siteName: 'MaxVideo AI',
       title,
       description,
+      locale: metadataUrls.ogLocale,
+      alternateLocale: metadataUrls.alternateOg,
       images: [
         {
           url: ogImage,
           width: 1200,
           height: 630,
-          alt: resolvedMeta.title,
+          alt: title,
         },
       ],
     },
@@ -141,21 +167,70 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
 }
 
 export default async function ModelDetailPage({ params }: PageParams) {
-  const { slug } = params;
+  const { slug, locale: routeLocale } = params;
   const engine = getFalEngineBySlug(slug);
-  const { dictionary } = await resolveDictionary();
   if (!engine) {
     notFound();
   }
+  const { dictionary } = await resolveDictionary();
+  const activeLocale = routeLocale ?? 'en';
+  if (process.env.NODE_ENV === 'development') {
+    console.info('[models/page] locale debug', { slug, routeLocale, activeLocale });
+  }
+  const localizedContent = await getEngineLocalized(slug, activeLocale);
+  const detailSlugMap = buildDetailSlugMap(slug);
+  const metadataUrls = buildMetadataUrls(activeLocale, detailSlugMap);
 
-  const availabilityLabels = dictionary.models.availabilityLabels;
-  const availabilityKey = engine.availability as keyof typeof availabilityLabels;
-  const availabilityLabel = availabilityLabels[availabilityKey] ?? engine.availability;
+  const detailCopy: DetailCopy = {
+    ...DEFAULT_DETAIL_COPY,
+    ...(dictionary.models.detail ?? {}),
+    overview: {
+      ...DEFAULT_DETAIL_COPY.overview,
+      ...(dictionary.models.detail?.overview ?? {}),
+    },
+    logoPolicies: {
+      ...DEFAULT_DETAIL_COPY.logoPolicies,
+      ...(dictionary.models.detail?.logoPolicies ?? {}),
+    },
+    buttons: {
+      ...DEFAULT_DETAIL_COPY.buttons,
+      ...(dictionary.models.detail?.buttons ?? {}),
+    },
+    breadcrumb: {
+      ...DEFAULT_DETAIL_COPY.breadcrumb,
+      ...(dictionary.models.detail?.breadcrumb ?? {}),
+    },
+  };
+
+  const marketingName = localizedContent.marketingName ?? engine.marketingName;
+  const versionLabel = localizedContent.versionLabel ?? engine.versionLabel;
+  const seoDescription = localizedContent.seo.description ?? engine.seo.description ?? null;
+  const overviewSummary = localizedContent.overview ?? seoDescription;
+  const heroContent = localizedContent.hero;
+  const introText = heroContent?.intro ?? overviewSummary;
+  const bestUseCases = localizedContent.bestUseCases;
+  const technicalOverview = localizedContent.technicalOverview ?? [];
+  const technicalOverviewTitle = localizedContent.technicalOverviewTitle ?? 'Technical overview';
+  const promptStructure = localizedContent.promptStructure;
+  const tips = localizedContent.tips;
+  const compareLink = localizedContent.compareLink;
+  const heroPrimaryCta = heroContent?.ctaPrimary;
+  const secondaryCtas = heroContent?.secondaryLinks ?? [];
   const brand = PARTNER_BRAND_MAP.get(engine.brandId);
   const showSoraSeo = engine.modelSlug.startsWith('sora-2');
-  const faqEntries = engine.faqs ?? [];
+  const promptEntries =
+    localizedContent.prompts.length > 0
+      ? localizedContent.prompts
+      : engine.prompts.map(({ title, prompt, notes }) => ({ title, prompt, notes }));
+  const faqEntries =
+    localizedContent.faqs.length > 0
+      ? localizedContent.faqs
+      : (engine.faqs ?? []).map(({ question, answer }) => ({ question, answer }));
+  const pricingNotes = localizedContent.pricingNotes ?? null;
   const pricingHint = engine.pricingHint;
-  const canonicalUrl = `${SITE}${engine.seo.canonicalPath}`;
+  const canonicalUrl = metadataUrls.canonical;
+  const breadcrumbTitleBase = localizedContent.seo.title ?? marketingName ?? slug;
+  const breadcrumbTitle = breadcrumbTitleBase.replace(/ —.*$/, '');
   const breadcrumbLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -163,19 +238,19 @@ export default async function ModelDetailPage({ params }: PageParams) {
       {
         '@type': 'ListItem',
         position: 1,
-        name: 'Home',
+        name: detailCopy.breadcrumb.home,
         item: `${SITE}/`,
       },
       {
         '@type': 'ListItem',
         position: 2,
-        name: 'Models',
+        name: detailCopy.breadcrumb.models,
         item: `${SITE}/models`,
       },
       {
         '@type': 'ListItem',
         position: 3,
-        name: (MODEL_META[slug]?.title ?? engine.marketingName ?? slug).replace(/ —.*$/, ''),
+        name: breadcrumbTitle,
         item: canonicalUrl,
       },
     ],
@@ -213,7 +288,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
           name: 'MaxVideo AI',
           url: 'https://maxvideoai.com',
         },
-        description: engine.seo.description,
+        description: seoDescription ?? undefined,
         isAccessibleForFree: false,
       }
     : null;
@@ -224,55 +299,155 @@ export default async function ModelDetailPage({ params }: PageParams) {
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(soraSoftwareSchema) }} />
       )}
       <Link href="/models" className="text-sm font-semibold text-accent hover:text-accentSoft">
-        {'<-'} {dictionary.models.hero.title}
+        {detailCopy.backLabel}
       </Link>
       <header className="mt-6 space-y-3">
         <div className="flex flex-wrap items-center gap-4">
           {brand && engine.logoPolicy === 'logoAllowed' ? (
             <span className="flex items-center">
-              <Image src={brand.assets.light.svg} alt={`${engine.marketingName} logo`} width={140} height={32} className="h-9 w-auto dark:hidden" />
-              <Image src={brand.assets.dark.svg} alt={`${engine.marketingName} logo`} width={140} height={32} className="hidden h-9 w-auto dark:inline-flex" />
+              <Image src={brand.assets.light.svg} alt={`${marketingName} logo`} width={140} height={32} className="h-9 w-auto dark:hidden" />
+              <Image src={brand.assets.dark.svg} alt={`${marketingName} logo`} width={140} height={32} className="hidden h-9 w-auto dark:inline-flex" />
             </span>
           ) : null}
           <div>
-            <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{engine.marketingName}</h1>
-            <p className="text-sm uppercase tracking-micro text-text-muted">{engine.versionLabel}</p>
+            <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">
+              {heroContent?.title ?? marketingName}
+            </h1>
+            {versionLabel ? (
+              <p className="text-sm uppercase tracking-micro text-text-muted">{versionLabel}</p>
+            ) : null}
           </div>
-          <span
-            className={clsx(
-              'rounded-pill border px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary',
-              AVAILABILITY_BADGE_CLASS[availabilityKey]
-            )}
-          >
-            {availabilityLabel}
-          </span>
+          
         </div>
-      {engine.seo.description ? <p className="text-sm text-text-secondary">{engine.seo.description}</p> : null}
+      {introText ? <p className="text-sm text-text-secondary">{introText}</p> : null}
       </header>
+
+      {(heroPrimaryCta?.label || secondaryCtas.length) ? (
+        <div className="mt-6 flex flex-wrap gap-3">
+          {heroPrimaryCta?.label && heroPrimaryCta.href ? (
+            <Link
+              href={heroPrimaryCta.href}
+              className="inline-flex items-center rounded-pill bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft"
+            >
+              {heroPrimaryCta.label}
+            </Link>
+          ) : null}
+          {secondaryCtas
+            .filter((cta): cta is { label: string; href: string } => Boolean(cta.label && cta.href))
+            .map((cta) => (
+              <Link
+                key={`${cta.href}-${cta.label}`}
+                href={cta.href!}
+                className="inline-flex items-center rounded-pill border border-hairline px-5 py-2 text-sm font-semibold text-text-primary transition hover:border-accent hover:text-accent"
+              >
+                {cta.label}
+              </Link>
+            ))}
+        </div>
+      ) : null}
+
+      {bestUseCases?.items && bestUseCases.items.length ? (
+        <section className="mt-10 rounded-card border border-hairline bg-white p-6 shadow-card">
+          <h2 className="text-lg font-semibold text-text-primary">
+            {bestUseCases.title ?? 'Best use cases'}
+          </h2>
+          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-text-secondary">
+            {bestUseCases.items.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {technicalOverview.length ? (
+        <section className="mt-10 rounded-card border border-hairline bg-white p-6 shadow-card">
+          <h2 className="text-lg font-semibold text-text-primary">{technicalOverviewTitle}</h2>
+          <div className="mt-4 grid gap-4 text-sm text-text-secondary sm:grid-cols-2">
+            {technicalOverview.map((entry, index) => (
+              <article key={`${entry.label ?? index}-${entry.body}`} className="space-y-1">
+                {entry.label ? <strong className="block text-text-primary">{entry.label}</strong> : null}
+                {entry.body ? <p>{entry.body}</p> : null}
+                {entry.link?.href && entry.link?.label ? (
+                  <a
+                    href={entry.link.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs font-semibold text-accent hover:text-accentSoft"
+                  >
+                    {entry.link.label}
+                  </a>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {promptStructure ? (
+        <section className="mt-10 rounded-card border border-hairline bg-white p-6 shadow-card">
+          <h2 className="text-lg font-semibold text-text-primary">{promptStructure.title ?? 'Prompt structure'}</h2>
+          {promptStructure.quote ? (
+            <blockquote className="mt-3 border-l-2 border-accent pl-3 text-sm text-text-secondary italic">
+              {promptStructure.quote}
+            </blockquote>
+          ) : null}
+          {promptStructure.description ? (
+            <p className="mt-3 text-sm text-text-secondary">{promptStructure.description}</p>
+          ) : null}
+          {promptStructure.steps && promptStructure.steps.length ? (
+            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-text-secondary">
+              {promptStructure.steps.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ul>
+          ) : null}
+        </section>
+      ) : null}
+
+      {tips?.items && tips.items.length ? (
+        <section className="mt-10 rounded-card border border-hairline bg-white p-6 shadow-card">
+          <h2 className="text-lg font-semibold text-text-primary">{tips.title ?? 'Tips & tricks'}</h2>
+          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-text-secondary">
+            {tips.items.map((tip) => (
+              <li key={tip}>{tip}</li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {compareLink?.href && compareLink.label ? (
+        <p className="mt-6 text-sm text-text-secondary">
+          {compareLink.before ?? ''}
+          <Link href={compareLink.href} className="font-semibold text-accent hover:text-accentSoft">
+            {compareLink.label}
+          </Link>
+          {compareLink.after ?? ''}
+        </p>
+      ) : null}
 
       <section className="mt-10 space-y-4">
         <div className="rounded-card border border-hairline bg-white p-6 shadow-card">
-          <h2 className="text-lg font-semibold text-text-primary">Overview</h2>
+          <h2 className="text-lg font-semibold text-text-primary">{detailCopy.overviewTitle}</h2>
           <dl className="mt-4 grid gap-3 text-sm text-text-secondary sm:grid-cols-2">
             <div>
-              <dt className="text-xs uppercase tracking-micro text-text-muted">Brand</dt>
+              <dt className="text-xs uppercase tracking-micro text-text-muted">{detailCopy.overview.brand}</dt>
               <dd>{brand ? brand.label : engine.brandId}</dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-micro text-text-muted">Engine ID</dt>
+              <dt className="text-xs uppercase tracking-micro text-text-muted">{detailCopy.overview.engineId}</dt>
               <dd>{engine.id}</dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-micro text-text-muted">Slug</dt>
+              <dt className="text-xs uppercase tracking-micro text-text-muted">{detailCopy.overview.slug}</dt>
               <dd>/models/{engine.modelSlug}</dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-micro text-text-muted">Logo policy</dt>
-              <dd>{engine.logoPolicy === 'logoAllowed' ? 'Logo usage permitted' : 'Text-only (wordmark)'}</dd>
+              <dt className="text-xs uppercase tracking-micro text-text-muted">{detailCopy.overview.logoPolicy}</dt>
+              <dd>{detailCopy.logoPolicies[engine.logoPolicy as keyof DetailCopy['logoPolicies']] ?? detailCopy.logoPolicies.textOnly}</dd>
             </div>
             {platformPriceInfo ? (
               <div className="sm:col-span-2">
-                <dt className="text-xs uppercase tracking-micro text-text-muted">Platform price (incl. 30% fee)</dt>
+                <dt className="text-xs uppercase tracking-micro text-text-muted">{detailCopy.overview.platformPrice}</dt>
                 <dd>
                   {platformPriceInfo.amount}
                   {platformPriceInfo.descriptor ? <span className="text-xs text-text-muted"> · {platformPriceInfo.descriptor}</span> : null}
@@ -280,14 +455,15 @@ export default async function ModelDetailPage({ params }: PageParams) {
               </div>
             ) : null}
           </dl>
+          {pricingNotes ? <p className="mt-3 text-xs text-text-muted">{pricingNotes}</p> : null}
         </div>
       </section>
 
-      {engine.prompts.length > 0 && (
+      {promptEntries.length > 0 && (
         <section className="mt-10 space-y-4">
-          <h2 className="text-lg font-semibold text-text-primary">Prompt ideas</h2>
+          <h2 className="text-lg font-semibold text-text-primary">{detailCopy.promptsTitle}</h2>
           <div className="grid gap-3 sm:grid-cols-2">
-            {engine.prompts.map((entry) => (
+            {promptEntries.map((entry) => (
               <article key={entry.title} className="rounded-card border border-hairline bg-white p-4 text-sm text-text-secondary shadow-card">
                 <h3 className="text-sm font-semibold text-text-primary">{entry.title}</h3>
                 <p className="mt-1 text-sm text-text-secondary">{entry.prompt}</p>
@@ -300,7 +476,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
 
       {faqEntries.length > 0 && (
         <section className="mt-10 space-y-4">
-          <h2 className="text-lg font-semibold text-text-primary">FAQ</h2>
+          <h2 className="text-lg font-semibold text-text-primary">{detailCopy.faqTitle}</h2>
           <div className="space-y-3 text-sm text-text-secondary">
             {faqEntries.map(({ question, answer }) => (
               <article key={question} className="rounded-card border border-hairline bg-white p-4 shadow-card">
@@ -317,13 +493,13 @@ export default async function ModelDetailPage({ params }: PageParams) {
           href="/pricing"
           className="inline-flex items-center rounded-pill border border-hairline px-4 py-2 text-sm font-semibold text-text-primary transition hover:border-accent hover:text-accent"
         >
-          View pricing
+          {detailCopy.buttons.pricing}
         </Link>
         <Link
           href="/app"
           className="inline-flex items-center rounded-pill bg-accent px-4 py-2 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft"
         >
-          Launch workspace
+          {detailCopy.buttons.launch}
         </Link>
       </footer>
       <script

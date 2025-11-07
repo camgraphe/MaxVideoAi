@@ -125,13 +125,7 @@ type ExamplesPageProps = {
   searchParams: Record<string, string | string[] | undefined>;
 };
 
-const SORT_OPTIONS: Array<{ id: ExampleSort; label: string }> = [
-  { id: 'date-desc', label: 'Newest' },
-  { id: 'date-asc', label: 'Oldest' },
-  { id: 'duration-desc', label: 'Longest' },
-  { id: 'duration-asc', label: 'Shortest' },
-  { id: 'engine-asc', label: 'Engine A->Z' },
-];
+// Labels will be localized from dictionary at render time
 
 export const revalidate = 60;
 
@@ -195,6 +189,20 @@ function toISODate(input?: Date | string) {
 export default async function ExamplesPage({ searchParams }: ExamplesPageProps) {
   const { dictionary } = await resolveDictionary();
   const content = dictionary.examples;
+  const sortLabels = content?.sort ?? {
+    newest: 'Newest',
+    oldest: 'Oldest',
+    longest: 'Longest',
+    shortest: 'Shortest',
+    engineAZ: 'Engine A->Z',
+  };
+  const SORT_OPTIONS: Array<{ id: ExampleSort; label: string }> = [
+    { id: 'date-desc', label: sortLabels.newest ?? 'Newest' },
+    { id: 'date-asc', label: sortLabels.oldest ?? 'Oldest' },
+    { id: 'duration-desc', label: sortLabels.longest ?? 'Longest' },
+    { id: 'duration-asc', label: sortLabels.shortest ?? 'Shortest' },
+    { id: 'engine-asc', label: sortLabels.engineAZ ?? 'Engine A->Z' },
+  ];
   const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
   const sort = getSort(sortParam);
   const videos = await listExamples(sort, 60);
@@ -264,7 +272,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
 
       <section className="mt-8 flex flex-wrap items-center justify-between gap-3 text-xs text-text-secondary">
         <div className="flex items-center gap-2">
-          <span className="font-semibold uppercase tracking-micro text-text-muted">Sort</span>
+          <span className="font-semibold uppercase tracking-micro text-text-muted">{content?.sortLabel ?? 'Sort'}</span>
           <nav className="flex gap-2 rounded-pill border border-hairline bg-white px-2 py-1">
             {SORT_OPTIONS.map((option) => {
               const isActive = option.id === sort;
@@ -284,7 +292,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
             })}
           </nav>
         </div>
-        <span className="text-xs text-text-muted">{videos.length} curated renders</span>
+        <span className="text-xs text-text-muted">{videos.length} {content?.countLabel ?? 'curated renders'}</span>
       </section>
 
       <section className="mt-8 overflow-hidden rounded-[32px] border border-hairline bg-white/80 shadow-card">

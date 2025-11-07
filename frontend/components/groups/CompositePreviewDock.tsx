@@ -6,6 +6,26 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { VideoGroup, VideoItem } from '@/types/video-groups';
 import { ProcessingOverlay } from '@/components/groups/ProcessingOverlay';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
+import { useI18n } from '@/lib/i18n/I18nProvider';
+
+const DEFAULT_PREVIEW_COPY = {
+  title: 'Composite Preview',
+  empty: 'Select a take to preview',
+  variants: {
+    singular: '{count} variant',
+    plural: '{count} variants',
+  },
+  controls: {
+    play: { on: 'Pause', off: 'Play', ariaOn: 'Pause all previews', ariaOff: 'Play all previews' },
+    mute: { on: 'Unmute', off: 'Mute', ariaOn: 'Unmute all previews', ariaOff: 'Mute all previews' },
+    loop: { on: 'Loop on', off: 'Loop off', ariaOn: 'Disable looping', ariaOff: 'Enable looping' },
+    modal: { label: 'Open modal', aria: 'Open preview in modal' },
+    copyPrompt: 'Copy prompt',
+  },
+  placeholder: '—',
+} as const;
+
+type PreviewCopy = typeof DEFAULT_PREVIEW_COPY;
 
 interface CompositePreviewDockProps {
   group: VideoGroup | null;
@@ -38,6 +58,8 @@ function isVideo(item: VideoItem): boolean {
 }
 
 export function CompositePreviewDock({ group, isLoading = false, onOpenModal, copyPrompt, onCopyPrompt }: CompositePreviewDockProps) {
+  const { t } = useI18n();
+  const copy = t('workspace.generate.preview', DEFAULT_PREVIEW_COPY) as PreviewCopy;
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [isLooping, setIsLooping] = useState(true);
@@ -143,9 +165,11 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
     <section className="rounded-card border border-border bg-white/90 shadow-card">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline px-4 py-3">
         <div>
-          <h2 className="text-sm font-semibold text-text-primary">Composite Preview</h2>
+          <h2 className="text-sm font-semibold text-text-primary">{copy.title}</h2>
           <p className="text-xs text-text-muted">
-            {group ? `${group.items.length} variant${group.items.length > 1 ? 's' : ''}` : 'Select a take to preview'}
+            {group
+              ? (group.items.length === 1 ? copy.variants.singular : copy.variants.plural).replace('{count}', String(group.items.length))
+              : copy.empty}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -153,37 +177,37 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
             type="button"
             onClick={() => setIsPlaying((prev) => !prev)}
             className="rounded-full border border-border px-3 py-1 text-xs font-medium text-text-secondary transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label={isPlaying ? 'Pause all previews' : 'Play all previews'}
+            aria-label={isPlaying ? copy.controls.play.ariaOn : copy.controls.play.ariaOff}
             aria-pressed={isPlaying}
           >
-            {isPlaying ? 'Pause' : 'Play'}
+            {isPlaying ? copy.controls.play.on : copy.controls.play.off}
           </button>
           <button
             type="button"
             onClick={() => setIsMuted((prev) => !prev)}
             className="rounded-full border border-border px-3 py-1 text-xs font-medium text-text-secondary transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label={isMuted ? 'Unmute all previews' : 'Mute all previews'}
+            aria-label={isMuted ? copy.controls.mute.ariaOn : copy.controls.mute.ariaOff}
             aria-pressed={isMuted}
           >
-            {isMuted ? 'Unmute' : 'Mute'}
+            {isMuted ? copy.controls.mute.on : copy.controls.mute.off}
           </button>
           <button
             type="button"
             onClick={() => setIsLooping((prev) => !prev)}
             className="rounded-full border border-border px-3 py-1 text-xs font-medium text-text-secondary transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label={isLooping ? 'Disable looping' : 'Enable looping'}
+            aria-label={isLooping ? copy.controls.loop.ariaOn : copy.controls.loop.ariaOff}
             aria-pressed={isLooping}
           >
-            {isLooping ? 'Loop on' : 'Loop off'}
+            {isLooping ? copy.controls.loop.on : copy.controls.loop.off}
           </button>
           <button
             type="button"
             onClick={handleOpenModal}
             disabled={!group}
             className="rounded-full border border-border px-3 py-1 text-xs font-medium text-text-secondary transition hover:bg-accentSoft/10 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label="Open preview in modal"
+            aria-label={copy.controls.modal.aria}
           >
-            Open modal
+            {copy.controls.modal.label}
           </button>
           {copyPrompt && onCopyPrompt ? (
             <button
@@ -191,7 +215,7 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
               onClick={onCopyPrompt}
               className="rounded-full border border-border bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-accent transition hover:bg-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              Copy prompt
+              {copy.controls.copyPrompt}
             </button>
           ) : null}
         </div>
@@ -213,7 +237,7 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
                 if (!item) {
                   return (
                     <div key={`dock-empty-${index}`} className="relative flex items-center justify-center overflow-hidden rounded-[12px] bg-white/70 text-xs text-text-muted">
-                      —
+                      {copy.placeholder}
                     </div>
                   );
                 }

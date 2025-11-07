@@ -1,5 +1,5 @@
 import type { AppLocale } from '@/i18n/locales';
-import { localePathnames, localeRegions, locales } from '@/i18n/locales';
+import { defaultLocale, localePathnames, localeRegions, locales } from '@/i18n/locales';
 
 export const SITE_BASE_URL = 'https://maxvideoai.com';
 
@@ -21,6 +21,7 @@ function buildAbsoluteUrl(pathname: string) {
 }
 
 export function buildMetadataUrls(locale: AppLocale, slugMap?: LocaleSlugMap) {
+  const resolveRegion = (target: AppLocale) => localeRegions[target] ?? localeRegions[defaultLocale];
   const buildUrl = (target: AppLocale) => {
     const slug = slugMap?.[target];
     const path = buildLocalePath(target, slug) || '/';
@@ -40,10 +41,10 @@ export function buildMetadataUrls(locale: AppLocale, slugMap?: LocaleSlugMap) {
     'x-default': urls.en,
   };
 
-  const ogLocale = localeRegions[locale].replace('-', '_');
-  const alternateOg = locales.filter((code) => code !== locale).map((code) =>
-    localeRegions[code].replace('-', '_')
-  );
+  const ogLocale = resolveRegion(locale).replace('-', '_');
+  const alternateOg = locales
+    .filter((code) => code !== locale)
+    .map((code) => resolveRegion(code).replace('-', '_'));
 
   return {
     urls,

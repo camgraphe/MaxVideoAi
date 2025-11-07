@@ -16,8 +16,31 @@ import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { FEATURES } from '@/content/feature-flags';
 import { FlagPill } from '@/components/FlagPill';
+import { useI18n } from '@/lib/i18n/I18nProvider';
+
+const DEFAULT_JOBS_COPY = {
+  title: 'Jobs',
+  teams: {
+    title: 'Teams',
+    srLive: 'Live',
+    srSoon: 'Coming soon',
+    live: 'Shared wallets, approvals, and budgets are enabled in your workspace.',
+    beta: 'Coming soon — shared wallets, approvals, and budgets. Join the beta at {email}.',
+    email: 'support@maxvideoai.com',
+  },
+  curated: 'Starter renders curated by the MaxVideo team appear here until you generate your own clips.',
+  error: 'Failed to load jobs.',
+  retry: 'Retry',
+  empty: 'No renders yet. Start a generation to populate your history.',
+  loadMore: 'Load more',
+  loading: 'Loading…',
+} as const;
+
+type JobsCopy = typeof DEFAULT_JOBS_COPY;
 
 export default function JobsPage() {
+  const { t } = useI18n();
+  const copy = t('workspace.jobs', DEFAULT_JOBS_COPY) as JobsCopy;
   const { data: enginesData } = useEngines();
   const { data, error, isLoading, size, setSize, isValidating, mutate } = useInfiniteJobs(24);
   const { loading: authLoading, session } = useRequireAuth();
@@ -164,52 +187,50 @@ export default function JobsPage() {
         <AppSidebar />
         <main className="flex-1 overflow-y-auto p-5 lg:p-7">
           <div className="mb-4 flex items-center justify-between">
-            <h1 className="text-xl font-semibold text-text-primary">Jobs</h1>
+            <h1 className="text-xl font-semibold text-text-primary">{copy.title}</h1>
           </div>
 
           <section aria-labelledby="teams-beta" className="mb-4 rounded-card border border-hairline bg-white p-4 shadow-card">
             <h2 id="teams-beta" className="flex items-center gap-2 text-base font-semibold text-text-primary">
-              Teams
+              {copy.teams.title}
               <FlagPill live={teamsLive} />
-              <span className="sr-only">{teamsLive ? 'Live' : 'Coming soon'}</span>
+              <span className="sr-only">{teamsLive ? copy.teams.srLive : copy.teams.srSoon}</span>
             </h2>
             {teamsLive ? (
-              <p className="mt-2 text-sm text-text-secondary">
-                Shared wallets, approvals, and budgets are enabled in your workspace.
-              </p>
+              <p className="mt-2 text-sm text-text-secondary">{copy.teams.live}</p>
             ) : (
               <p className="mt-2 text-sm text-text-secondary">
-                Coming soon — shared wallets, approvals, and budgets. Join the beta at{' '}
+                {copy.teams.beta.split('{email}')[0]}
                 <a className="underline underline-offset-2" href="mailto:support@maxvideoai.com">
-                  support@maxvideoai.com
+                  {copy.teams.email}
                 </a>
-                .
+                {copy.teams.beta.split('{email}')[1] ?? ''}
               </p>
             )}
           </section>
 
           {hasCuratedJobs ? (
             <div className="mb-4 rounded-card border border-hairline bg-white p-4 text-sm text-text-secondary">
-              Starter renders curated by the MaxVideo team appear here until you generate your own clips.
+              {copy.curated}
             </div>
           ) : null}
 
           {error ? (
             <div className="rounded-card border border-border bg-white p-4 text-state-warning">
-              Failed to load jobs.
+              {copy.error}
               <button
                 type="button"
                 onClick={() => mutate()}
                 className="ml-3 rounded-input border border-border px-2 py-1 text-sm hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                Retry
+                {copy.retry}
               </button>
             </div>
           ) : (
             <>
               {!isInitialLoading && normalizedGroups.length === 0 ? (
                 <div className="rounded-card border border-border bg-white p-6 text-center text-sm text-text-secondary">
-                  No renders yet. Start a generation to populate your history.
+                  {copy.empty}
                 </div>
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -253,7 +274,7 @@ export default function JobsPage() {
                 disabled={isValidating}
                 className="rounded-input border border-border bg-white px-4 py-2 text-sm font-medium text-text-primary shadow-card hover:bg-white/80 disabled:opacity-60"
               >
-                {isValidating ? 'Loading…' : 'Load more'}
+                {isValidating ? copy.loading : copy.loadMore}
               </button>
             )}
           </div>

@@ -39,6 +39,29 @@ const localeDateMap: Record<AppLocale, string> = {
   es: 'es-ES',
 };
 
+const DEFAULT_BLOG_FAQ = {
+  title: 'Blog FAQ',
+  items: [
+    {
+      question: 'How often do new posts ship?',
+      answer:
+        'We publish every week (and sometimes twice a week) as engines shift. Subscribe in the workspace to get a digest when new coverage lands.',
+    },
+    {
+      question: 'Can I suggest a topic or request coverage?',
+      answer:
+        'Yes—send topics to press@maxvideo.ai and include reference renders if you can. We prioritize stories that help production teams stay current.',
+    },
+    {
+      question: 'Where can I find release notes?',
+      answer:
+        'Feature-level updates live in the product changelog, and API updates post inside the developer docs. The blog covers higher-level workflows.',
+    },
+  ],
+  footnote:
+    'Need more detail? Email press@maxvideo.ai with your request and we’ll route it to the right producer.',
+};
+
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
   const metadataUrls = buildMetadataUrls(locale, BLOG_SLUG_MAP);
@@ -80,6 +103,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
   const posts = await getBlogPosts(locale);
   const { dictionary } = await resolveDictionary();
   const content = dictionary.blog;
+  const faq = content.faq ?? DEFAULT_BLOG_FAQ;
   const metadataUrls = buildMetadataUrls(locale, BLOG_SLUG_MAP);
 
   const articleListSchema = {
@@ -110,49 +134,32 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
       <header className="rounded-[32px] border border-hairline bg-white/80 p-8 shadow-card backdrop-blur sm:p-12">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl space-y-4">
-            <p className="text-xs font-semibold uppercase tracking-micro text-accent">The Studio Journal</p>
+            <p className="text-xs font-semibold uppercase tracking-micro text-accent">
+              {content.hero.eyebrow ?? 'The Studio Journal'}
+            </p>
             <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">
               {content.hero.title}
             </h1>
             <p className="text-base text-text-secondary sm:text-lg">{content.hero.subtitle}</p>
           </div>
           <Link
-            href="/models/sora-2"
+            href={{ pathname: '/models/[slug]', params: { slug: 'sora-2' } }}
             className="inline-flex items-center gap-2 self-start rounded-pill border border-hairline bg-accent px-5 py-2 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           >
-            Latest Sora coverage →
+            {content.hero.ctaLabel ?? 'Latest Sora coverage →'}
           </Link>
         </div>
       </header>
 
       <section className="mt-10 space-y-6 rounded-[28px] border border-hairline bg-white/90 p-8 text-sm text-text-secondary shadow-card sm:p-10">
-        <p>
-          MaxVideoAI’s journal covers everything we learn while routing frontier video engines for real production
-          teams. We document prompt patterns, pricing changes, latency shifts, and the workflows that keep agencies on
-          schedule when models rotate. Every story is written from live usage—not a press release.
-        </p>
+        <p>{content.intro?.lead}</p>
         <div className="grid gap-4 lg:grid-cols-3">
-          <div>
-            <h2 className="text-sm font-semibold uppercase tracking-micro text-text-primary">Model deep dives</h2>
-            <p className="mt-2">
-              Comparisons and capability notes for Sora 2, Veo 3, Pika 2.2, MiniMax Hailuo 02, and the engines queued
-              next in our workspace.
-            </p>
-          </div>
-          <div>
-            <h2 className="text-sm font-semibold uppercase tracking-micro text-text-primary">Workflow tactics</h2>
-            <p className="mt-2">
-              Sequenced prompting, audio integration, and pricing guardrails that help teams ship branded stories
-              without wasting credits.
-            </p>
-          </div>
-          <div>
-            <h2 className="text-sm font-semibold uppercase tracking-micro text-text-primary">Customer stories</h2>
-            <p className="mt-2">
-              How studios and marketers in Europe and North America deploy the same brief across multiple engines and
-              keep review cycles moving.
-            </p>
-          </div>
+          {(content.intro?.cards ?? []).map((card) => (
+            <div key={card.title}>
+              <h2 className="text-sm font-semibold uppercase tracking-micro text-text-primary">{card.title}</h2>
+              <p className="mt-2">{card.body}</p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -254,30 +261,16 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
       </section>
 
       <section className="mt-16 rounded-[28px] border border-hairline bg-white/90 p-8 shadow-card sm:p-10">
-        <h2 className="text-lg font-semibold text-text-primary">Blog FAQ</h2>
+        <h2 className="text-lg font-semibold text-text-primary">{faq.title}</h2>
         <dl className="mt-6 space-y-5 text-sm text-text-secondary">
-          <div>
-            <dt className="font-semibold text-text-primary">How often do new posts ship?</dt>
-            <dd className="mt-2">
-              We publish every one to two weeks, aligned with notable engine releases or major workflow updates that hit
-              production teams.
-            </dd>
-          </div>
-          <div>
-            <dt className="font-semibold text-text-primary">Can I suggest a topic or request coverage?</dt>
-            <dd className="mt-2">
-              Yes—send topics to <a className="font-semibold text-accent hover:text-accentSoft" href="mailto:press@maxvideo.ai">press@maxvideo.ai</a>{' '}
-              and include the use case or engine you need documented.
-            </dd>
-          </div>
-          <div>
-            <dt className="font-semibold text-text-primary">Where can I find release notes?</dt>
-            <dd className="mt-2">
-              Feature-level updates live in the <Link className="font-semibold text-accent hover:text-accentSoft" href="/changelog">product changelog</Link>,
-              while the blog focuses on guidance, comparisons, and field notes.
-            </dd>
-          </div>
+          {faq.items.map((item) => (
+            <div key={item.question}>
+              <dt className="font-semibold text-text-primary">{item.question}</dt>
+              <dd className="mt-2">{item.answer}</dd>
+            </div>
+          ))}
         </dl>
+        {faq.footnote ? <p className="mt-4 text-xs text-text-muted">{faq.footnote}</p> : null}
       </section>
 
       <Script id="blog-list-jsonld" type="application/ld+json">

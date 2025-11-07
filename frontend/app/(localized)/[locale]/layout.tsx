@@ -9,8 +9,8 @@ import { AuthCallbackHandler } from '@/components/AuthCallbackHandler';
 import { CookieBanner } from '@/components/legal/CookieBanner';
 import { JsonLd } from '@/components/SeoJsonLd';
 import { I18nProvider } from '@/lib/i18n/I18nProvider';
-import type { Dictionary } from '@/lib/i18n/types';
 import { defaultLocale, localeRegions, locales, type AppLocale } from '@/i18n/locales';
+import { deserializeMessages } from '@/lib/i18n/server';
 import '@/app/globals.css';
 
 type LocaleLayoutProps = {
@@ -54,9 +54,9 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
 
   setRequestLocale(locale);
 
-  const messages = (await getMessages({ locale })) as Dictionary;
+  const messages = deserializeMessages(await getMessages({ locale }));
   const fallbackMessages =
-    locale === defaultLocale ? messages : ((await getMessages({ locale: defaultLocale })) as Dictionary);
+    locale === defaultLocale ? messages : deserializeMessages(await getMessages({ locale: defaultLocale }));
 
   const orgSchema = {
     '@context': 'https://schema.org',

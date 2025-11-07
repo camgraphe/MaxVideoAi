@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { LegalVersionBadge } from '@/components/legal/LegalVersionBadge';
 import { formatLegalDate, getLegalDocument } from '@/lib/legal';
 
@@ -20,7 +21,11 @@ export default async function PrivacyPage() {
           Version: {version} · Effective date: {effective ?? version}
         </p>
         <p className="text-sm text-text-secondary">
-          Controller: MaxVideoAI (sole proprietorship in formation, France). Registered office: see <a href="/legal/mentions" className="text-accent underline">legal mentions</a>.
+          Controller: MaxVideoAI (sole proprietorship in formation, France). Registered office: see{' '}
+          <Link href="/legal/mentions" className="text-accent underline">
+            legal mentions
+          </Link>
+          .
         </p>
         <p className="text-sm text-text-secondary">
           Contact: privacy@maxvideoai.com · legal@maxvideoai.com
@@ -89,7 +94,11 @@ export default async function PrivacyPage() {
             <li>Email &amp; support tooling (transactional email, helpdesk)</li>
           </ul>
           <p>
-            We maintain data-processing agreements with each provider. A current list is available at <a href="/legal/subprocessors" className="text-accent underline">/legal/subprocessors</a>.
+            We maintain data-processing agreements with each provider. A current list is available at{' '}
+            <Link href="/legal/subprocessors" className="text-accent underline">
+              /legal/subprocessors
+            </Link>
+            .
           </p>
         </section>
 
@@ -112,7 +121,11 @@ export default async function PrivacyPage() {
           <h3 className="text-lg font-semibold text-text-primary">8. Cookies &amp; similar technologies</h3>
           <p>
             We use essential cookies to run the site and, with your consent, analytics or advertising cookies. Consent can be withdrawn at any time via the cookie banner or settings.
-            See the <a href="/legal/cookies" className="text-accent underline">Cookie Policy</a> for details.
+            See the{' '}
+            <Link href="/legal/cookies" className="text-accent underline">
+              Cookie Policy
+            </Link>{' '}
+            for details.
           </p>
         </section>
 

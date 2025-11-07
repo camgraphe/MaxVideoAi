@@ -38,6 +38,7 @@ import {
   LUMA_RAY2_ERROR_UNSUPPORTED,
   type LumaRay2DurationLabel,
 } from '@/lib/luma-ray2';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 function resolveRenderThumb(render: { thumbUrl?: string | null; aspectRatio?: string | null }): string {
   if (render.thumbUrl) return render.thumbUrl;
@@ -145,6 +146,37 @@ type AssetLibraryModalProps = {
   deletingAssetId: string | null;
 };
 
+const DEFAULT_WORKSPACE_COPY = {
+  errors: {
+    loadEngines: 'Failed to load engines.',
+    noEngines: 'No engines available.',
+  },
+  gallery: {
+    empty: 'Launch a generation to populate your gallery. Variants for each run will appear here.',
+  },
+  wallet: {
+    insufficient: 'Insufficient wallet balance. Please add funds to continue generating.',
+    insufficientWithAmount: 'Insufficient wallet balance. Add at least {amount} to continue generating.',
+  },
+  topUp: {
+    title: 'Add credits',
+    presetsLabel: 'Add credits',
+    otherAmountLabel: 'Other amount',
+    minLabel: 'Min {amount}',
+    close: 'Close',
+    maybeLater: 'Maybe later',
+    submit: 'Add funds',
+    submitting: 'Starting top-up…',
+  },
+  assetLibrary: {
+    title: 'Select reference image',
+    refresh: 'Refresh',
+    close: 'Close',
+    fieldFallback: 'Reference image',
+    empty: 'No saved images yet. Upload a reference image to see it here.',
+  },
+} as const;
+
 function normalizeEngineToken(value?: string | null): string {
   if (typeof value !== 'string' || value.length === 0) return '';
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '');
@@ -170,6 +202,8 @@ function AssetLibraryModal({
   onDelete,
   deletingAssetId,
 }: AssetLibraryModalProps) {
+  const { t } = useI18n();
+  const copy = t('workspace.generate.assetLibrary', DEFAULT_WORKSPACE_COPY.assetLibrary);
   const formatSize = (bytes?: number | null) => {
     if (!bytes || bytes <= 0) return null;
     if (bytes >= 1024 * 1024) {
@@ -187,7 +221,7 @@ function AssetLibraryModal({
       <div className="relative z-10 w-full max-w-3xl rounded-[16px] border border-border bg-white p-6 shadow-2xl">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-lg font-semibold text-text-primary">Select reference image</h2>
+            <h2 className="text-lg font-semibold text-text-primary">{copy.title}</h2>
             <p className="text-sm text-text-secondary">{fieldLabel}</p>
           </div>
           <div className="flex items-center gap-2">
@@ -196,14 +230,14 @@ function AssetLibraryModal({
               className="rounded-input border border-border px-3 py-1.5 text-sm text-text-secondary transition hover:border-accentSoft/60 hover:bg-accentSoft/10"
               onClick={onRefresh}
             >
-              Refresh
+              {copy.refresh}
             </button>
             <button
               type="button"
               className="rounded-input border border-border px-3 py-1.5 text-sm text-text-secondary transition hover:border-accentSoft/60 hover:bg-accentSoft/10"
               onClick={onClose}
             >
-              Close
+              {copy.close}
             </button>
           </div>
         </div>
@@ -223,7 +257,7 @@ function AssetLibraryModal({
             </div>
           ) : assets.length === 0 ? (
             <div className="rounded-input border border-border bg-neutral-50 px-4 py-6 text-center text-sm text-text-secondary">
-              No saved images yet. Upload a reference image to see it here.
+              {copy.empty ?? 'No saved images yet. Upload a reference image to see it here.'}
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
@@ -801,6 +835,8 @@ export default function Page() {
   );
   const provider = useResultProvider();
   const showCenterGallery = CLIENT_ENV.WORKSPACE_CENTER_GALLERY === 'true';
+  const { t } = useI18n();
+  const workspaceCopy = t('workspace.generate', DEFAULT_WORKSPACE_COPY);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -2604,7 +2640,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     const presentInsufficientFunds = (shortfallCents?: number) => {
       const normalizedShortfall = typeof shortfallCents === 'number' ? Math.max(0, shortfallCents) : undefined;
 
-      let friendlyNotice = 'Insufficient wallet balance. Please add funds to continue generating.';
+      let friendlyNotice = workspaceCopy.wallet.insufficient;
       let formattedShortfall: string | undefined;
       if (typeof normalizedShortfall === 'number' && normalizedShortfall > 0) {
         try {
@@ -2612,10 +2648,10 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             style: 'currency',
             currency: currencyCode,
           }).format(normalizedShortfall / 100);
-          friendlyNotice = `Insufficient wallet balance. Add at least ${formattedShortfall} to continue generating.`;
+          friendlyNotice = workspaceCopy.wallet.insufficientWithAmount.replace('{amount}', formattedShortfall);
         } catch {
           formattedShortfall = `${currencyCode} ${(normalizedShortfall / 100).toFixed(2)}`;
-          friendlyNotice = `Insufficient wallet balance. Add at least ${formattedShortfall} to continue generating.`;
+          friendlyNotice = workspaceCopy.wallet.insufficientWithAmount.replace('{amount}', formattedShortfall);
         }
       }
 
@@ -3146,7 +3182,23 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     for (let iterationIndex = 0; iterationIndex < iterationCount; iterationIndex += 1) {
       void runIteration(iterationIndex);
     }
-  }, [form, prompt, negativePrompt, selectedEngine, preflight, memberTier, showNotice, inputSchemaSummary, inputAssets, authChecked, setActiveGroupId, capability, defaultAllowIndex]);
+  }, [
+    form,
+    prompt,
+    negativePrompt,
+    selectedEngine,
+    preflight,
+    memberTier,
+    showNotice,
+    inputSchemaSummary,
+    inputAssets,
+    authChecked,
+    setActiveGroupId,
+    capability,
+    defaultAllowIndex,
+    workspaceCopy.wallet.insufficient,
+    workspaceCopy.wallet.insufficientWithAmount,
+  ]);
 
   useEffect(() => {
     if (!selectedEngine || !authChecked) return;
@@ -3482,7 +3534,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   if (enginesError) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-bg text-state-warning">
-        Failed to load engines: {enginesError.message}
+        {workspaceCopy.errors.loadEngines}: {enginesError.message}
       </main>
     );
   }
@@ -3490,7 +3542,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   if (!selectedEngine || !form) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-bg text-text-secondary">
-        No engines available.
+        {workspaceCopy.errors.noEngines}
       </main>
     );
   }
@@ -3595,7 +3647,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                   {showCenterGallery ? (
                     normalizedPendingGroups.length === 0 && !isGenerationLoading ? (
                       <div className="rounded-card border border-border bg-white/80 p-5 text-center text-sm text-text-secondary">
-                        Launch a generation to populate your gallery. Variants for each run will appear here.
+                        {workspaceCopy.gallery.empty}
                       </div>
                     ) : (
                       <div className="grid gap-4 sm:grid-cols-2">
@@ -3708,7 +3760,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                   </p>
                 )}
                 <div className="mt-4">
-                  <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Add credits</p>
+                  <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{workspaceCopy.topUp.title}</p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {[1000, 2500, 5000].map((value) => {
                       const formatted = (() => {
@@ -3738,7 +3790,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                   </div>
                   <div className="mt-3">
                     <label htmlFor="custom-topup" className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-                      Other amount
+                      {workspaceCopy.topUp.otherAmountLabel}
                     </label>
                     <div className="mt-1 flex items-center gap-2">
                       <div className="relative flex-1">
@@ -3755,7 +3807,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                           className="h-10 w-full rounded-input border border-border bg-white pl-6 pr-3 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         />
                       </div>
-                      <span className="text-xs text-text-muted">Min $10</span>
+                      <span className="text-xs text-text-muted">
+                        {workspaceCopy.topUp.minLabel.replace('{amount}', '$10')}
+                      </span>
                     </div>
                   </div>
                   {topUpError && <p className="mt-2 text-sm text-state-warning">{topUpError}</p>}
@@ -3765,9 +3819,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 type="button"
                 onClick={closeTopUpModal}
                 className="rounded-full border border-hairline bg-white/80 p-2 text-text-muted transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label="Close"
+                aria-label={workspaceCopy.topUp.close}
               >
-                Close
+                {workspaceCopy.topUp.close}
               </button>
             </div>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
@@ -3776,7 +3830,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 onClick={closeTopUpModal}
                 className="rounded-input border border-hairline px-4 py-2 text-sm font-medium text-text-secondary transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                Maybe later
+                {workspaceCopy.topUp.maybeLater}
               </button>
               <button
                 type="submit"
@@ -3786,7 +3840,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                   !isTopUpLoading && 'hover:brightness-105'
                 )}
               >
-                {isTopUpLoading ? 'Starting top-up…' : 'Add funds'}
+                {isTopUpLoading ? workspaceCopy.topUp.submitting : workspaceCopy.topUp.submit}
               </button>
             </div>
           </form>
@@ -3794,7 +3848,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       )}
       {assetPickerTarget && (
         <AssetLibraryModal
-          fieldLabel={assetPickerTarget.field.label ?? 'Reference image'}
+          fieldLabel={assetPickerTarget.field.label ?? workspaceCopy.assetLibrary.fieldFallback}
           assets={assetLibrary}
           isLoading={isAssetLibraryLoading}
           error={assetLibraryError}

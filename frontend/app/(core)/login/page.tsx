@@ -7,7 +7,9 @@ import { useRouter } from 'next/navigation';
 import { syncSupabaseCookies, clearSupabaseCookies } from '@/lib/supabase-cookies';
 import { LOGIN_NEXT_STORAGE_KEY, LOGIN_LAST_TARGET_KEY, LOGIN_SKIP_ONBOARDING_KEY } from '@/lib/auth-storage';
 import clsx from 'clsx';
-import Link from 'next/link';
+import enMessages from '@/messages/en.json';
+import frMessages from '@/messages/fr.json';
+import esMessages from '@/messages/es.json';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,6 +20,34 @@ const LEGAL_MIN_AGE = Number.isNaN(MIN_AGE_ENV) ? 15 : MIN_AGE_ENV;
 
 const DEFAULT_NEXT_PATH = '/generate';
 const NEXT_PATH_PREFIXES = ['/app', '/generate', '/dashboard', '/jobs', '/billing', '/settings', '/admin', '/connect'];
+
+const AUTH_COPY = {
+  en: enMessages.auth,
+  fr: frMessages.auth,
+  es: esMessages.auth,
+} as const;
+
+type Locale = keyof typeof AUTH_COPY;
+
+const LOCALE_OPTIONS: Locale[] = ['en', 'fr', 'es'];
+
+function detectLocale(): Locale {
+  if (typeof document !== 'undefined') {
+    const attr = document.documentElement.lang?.slice(0, 2).toLowerCase();
+    if (attr && LOCALE_OPTIONS.includes(attr as Locale)) {
+      return attr as Locale;
+    }
+    const match = document.cookie.match(/(?:NEXT_LOCALE|mvid_locale)=([a-z]{2})/i);
+    if (match && LOCALE_OPTIONS.includes(match[1].toLowerCase() as Locale)) {
+      return match[1].toLowerCase() as Locale;
+    }
+  }
+  return 'en';
+}
+
+function formatTemplate(template: string, replacements: Record<string, string>): string {
+  return Object.entries(replacements).reduce((text, [key, value]) => text.replace(`{${key}}`, value), template);
+}
 
 function sanitizeNextPath(candidate: string | null | undefined): string {
   if (typeof candidate !== 'string') return DEFAULT_NEXT_PATH;
@@ -33,6 +63,7 @@ function sanitizeNextPath(candidate: string | null | undefined): string {
 
 export default function LoginPage() {
   const router = useRouter();
+  const [locale, setLocale] = useState<Locale>('en');
   const [nextPath, setNextPath] = useState<string>(() => {
     if (typeof window === 'undefined') return DEFAULT_NEXT_PATH;
     const params = new URLSearchParams(window.location.search);
@@ -118,7 +149,7 @@ export default function LoginPage() {
   const [termsError, setTermsError] = useState(false);
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
-  const [locale, setLocale] = useState<string | null>(null);
+  const [browserLocale, setBrowserLocale] = useState<string | null>(null);
   const [signupSuggestion, setSignupSuggestion] = useState<{ email: string; password: string } | null>(null);
   const redirectTo = useMemo(() => {
     if (!siteUrl) return undefined;
@@ -240,7 +271,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (typeof navigator !== 'undefined') {
-      setLocale(navigator.language ?? null);
+      setBrowserLocale(navigator.language ?? null);
     }
   }, []);
 
@@ -343,7 +374,7 @@ export default function LoginPage() {
           userId,
           marketingOptIn,
           ageConfirmed: true,
-          locale,
+          locale: browserLocale ?? locale,
           source: 'signup',
         }),
       });
@@ -505,6 +536,27 @@ export default function LoginPage() {
     }
   }, [router]);
 
+  useEffect(() => {
+    const detected = detectLocale();
+    setLocale(detected);
+  }, []);
+
+  const authCopy = AUTH_COPY[locale] ?? AUTH_COPY.en;
+
+  const renderTermsStatement = () => (
+    <span className={clsx(termsError && 'text-state-warning')}>
+      {authCopy.terms.prefix}
+      <a href="/legal/terms" target="_blank" rel="noopener noreferrer" className="text-accent underline">
+        {authCopy.terms.termsLabel}
+      </a>
+      {authCopy.terms.infix}
+      <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-accent underline">
+        {authCopy.terms.privacyLabel}
+      </a>
+      {authCopy.terms.suffix}
+    </span>
+  );
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-bg p-6">
       <div className="mb-6 w-full max-w-md">
@@ -514,21 +566,25 @@ export default function LoginPage() {
           className="inline-flex items-center gap-2 text-sm font-medium text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
         >
           <span aria-hidden>←</span>
-          <span>Back</span>
+          <span>{authCopy.back}</span>
         </button>
       </div>
       <div className="w-full max-w-md space-y-5 rounded-card border border-border bg-white p-6 shadow-card">
         <header className="space-y-4">
           <div>
             <h1 className="text-lg font-semibold text-text-primary">
-              {mode === 'signup' ? 'Create your workspace account' : mode === 'reset' ? 'Reset your password' : 'Access your workspace'}
+              {mode === 'signup'
+                ? authCopy.modes.signup.title
+                : mode === 'reset'
+                  ? authCopy.modes.reset.title
+                  : authCopy.modes.signin.title}
             </h1>
             <p className="text-sm text-text-secondary">
               {mode === 'signup'
-                ? "Get instant access to the MaxVideoAI workspace. We'll confirm your email before your first render."
+                ? authCopy.modes.signup.description
                 : mode === 'reset'
-                  ? "We'll send a secure link to reset your password."
-                  : 'Sign in with Google or email to jump back into the workspace.'}
+                  ? authCopy.modes.reset.description
+                  : authCopy.modes.signin.description}
             </p>
           </div>
 
@@ -541,7 +597,7 @@ export default function LoginPage() {
                 effectiveMode === 'signin' ? 'bg-accent text-white shadow-card' : 'text-text-secondary hover:bg-white'
               )}
             >
-              Sign in
+              {authCopy.tabs.signin}
             </button>
             <button
               type="button"
@@ -551,7 +607,7 @@ export default function LoginPage() {
                 effectiveMode === 'signup' ? 'bg-accent text-white shadow-card' : 'text-text-secondary hover:bg-white'
               )}
             >
-              Create account
+              {authCopy.tabs.signup}
             </button>
           </div>
         </header>
@@ -581,12 +637,12 @@ export default function LoginPage() {
             </button>
             <div className="flex items-center gap-2 text-[11px] uppercase tracking-wide text-text-muted">
               <span className="h-px flex-1 bg-border" aria-hidden />
-              <span>Email access</span>
+              <span>{authCopy.divider}</span>
               <span className="h-px flex-1 bg-border" aria-hidden />
             </div>
             <form onSubmit={mode === 'signin' ? signInWithPassword : signUpWithPassword} className="space-y-3">
               <label className="block text-sm">
-                <span className="mb-1 block text-text-secondary">Email</span>
+                <span className="mb-1 block text-text-secondary">{authCopy.fields.email}</span>
                 <input
                   type="email"
                   required
@@ -596,12 +652,12 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   onFocus={syncInputState}
                   className="w-full rounded-input border border-border bg-bg px-3 py-2"
-                  placeholder="you@domain.com"
+                  placeholder={authCopy.placeholders.email}
                   autoComplete="email"
                 />
               </label>
               <label className="block text-sm">
-                <span className="mb-1 block text-text-secondary">Password</span>
+                <span className="mb-1 block text-text-secondary">{authCopy.fields.password}</span>
                 <input
                   type="password"
                   required
@@ -611,20 +667,20 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   onFocus={syncInputState}
                   className="w-full rounded-input border border-border bg-bg px-3 py-2"
-                  placeholder={mode === 'signup' ? 'At least 6 characters' : '••••••••'}
+                  placeholder={mode === 'signup' ? authCopy.placeholders.passwordNew : authCopy.placeholders.password}
                   autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
                 />
               </label>
               {mode === 'signup' && (
                 <label className="block text-sm">
-                  <span className="mb-1 block text-text-secondary">Confirm password</span>
+                  <span className="mb-1 block text-text-secondary">{authCopy.fields.confirmPassword}</span>
                   <input
                     type="password"
                     required
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
                     className="w-full rounded-input border border-border bg-bg px-3 py-2"
-                    placeholder="Repeat password"
+                  placeholder={authCopy.placeholders.passwordNew}
                     autoComplete="new-password"
                   />
                 </label>
@@ -651,20 +707,12 @@ export default function LoginPage() {
                       )}
                       required
                     />
-                    <span className={clsx(termsError && 'text-state-warning')}>
-                      I have read and agree to the{' '}
-                      <a href="/legal/terms" target="_blank" rel="noopener noreferrer" className="text-accent underline">
-                        Terms of Service
-                      </a>{' '}
-                      and the{' '}
-                      <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-accent underline">
-                        Privacy Policy
-                      </a>
-                      .
+                  <span className={clsx(termsError && 'text-state-warning')}>
+                      {renderTermsStatement()}
                     </span>
                   </label>
                   {termsError ? (
-                    <p className="pl-6 text-xs text-state-warning">You must accept the Terms of Service and Privacy Policy.</p>
+                    <p className="pl-6 text-xs text-state-warning">{authCopy.terms.error}</p>
                   ) : null}
                   <label className="flex items-start gap-2">
                     <input
@@ -674,7 +722,7 @@ export default function LoginPage() {
                       className="mt-1 h-4 w-4 rounded border-border text-accent focus:ring-accent"
                       required
                     />
-                    <span>I confirm I am at least {LEGAL_MIN_AGE} years old.</span>
+                    <span>{formatTemplate(authCopy.terms.age, { age: String(LEGAL_MIN_AGE) })}</span>
                   </label>
                   <label className="flex items-start gap-2">
                     <input
@@ -683,9 +731,7 @@ export default function LoginPage() {
                       onChange={(event) => setMarketingOptIn(event.target.checked)}
                       className="mt-1 h-4 w-4 rounded border-border text-accent focus:ring-accent"
                     />
-                    <span>
-                      Yes, send me occasional product emails. I can unsubscribe anytime.
-                    </span>
+                    <span>{authCopy.terms.marketing}</span>
                   </label>
                 </div>
               )}
@@ -699,21 +745,21 @@ export default function LoginPage() {
                     : 'border border-border bg-white hover:bg-bg text-text-primary'
                 )}
               >
-                {mode === 'signin' ? 'Sign in with email' : 'Create account'}
+                {mode === 'signin' ? authCopy.actions.signin : authCopy.actions.signup}
               </button>
             </form>
 
             {mode === 'signin' ? (
               <div className="flex flex-col gap-2 text-xs">
                 <button type="button" onClick={() => setMode('reset')} className="self-start text-accent hover:underline">
-                  Forgot password?
+                  {authCopy.forgotPassword}
                 </button>
                 <button
                   type="button"
                   onClick={() => setMode('signup')}
                   className="self-start rounded-pill bg-accent/10 px-3 py-2 font-semibold text-accent transition hover:bg-accent/20"
                 >
-                  Create a new account instead
+                  {authCopy.links.newAccount}
                 </button>
               </div>
             ) : (
@@ -722,14 +768,14 @@ export default function LoginPage() {
                 onClick={() => setMode('signin')}
                 className="text-xs font-medium text-text-secondary hover:underline"
               >
-                Already have an account? Sign in
+                {authCopy.links.haveAccount}
               </button>
             )}
           </>
         ) : (
           <form onSubmit={sendReset} className="space-y-3">
             <label className="block text-sm">
-              <span className="mb-1 block text-text-secondary">Email</span>
+              <span className="mb-1 block text-text-secondary">{authCopy.fields.email}</span>
               <input
                 type="email"
                 required
@@ -745,11 +791,11 @@ export default function LoginPage() {
             </label>
             <div className="flex justify-between text-xs">
               <button type="button" onClick={() => setMode('signin')} className="text-text-secondary hover:underline">
-                Back to sign in
+                {authCopy.links.backToSignIn}
               </button>
             </div>
             <button type="submit" className="w-full rounded-input border border-border bg-white px-3 py-2 text-sm font-medium transition hover:bg-bg">
-              Send reset link
+              {authCopy.actions.reset}
             </button>
           </form>
         )}
@@ -770,8 +816,7 @@ export default function LoginPage() {
           <div className="rounded-card border border-dashed border-border bg-white/75 px-3 py-3 text-xs text-text-secondary">
             <p className="text-sm font-semibold text-text-primary">New here?</p>
             <p className="mt-1">
-              Create an account with <span className="font-medium text-text-primary">{signupSuggestion.email}</span> without
-              re-entering your details.
+              {formatTemplate(authCopy.signupSuggestion.body, { email: signupSuggestion.email })}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <button
@@ -779,14 +824,14 @@ export default function LoginPage() {
                 onClick={handleAcceptSignupSuggestion}
                 className="rounded-pill bg-accent px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-accentSoft"
               >
-                Create this account
+                {authCopy.signupSuggestion.accept}
               </button>
               <button
                 type="button"
                 onClick={() => setSignupSuggestion(null)}
                 className="rounded-pill border border-border px-3 py-1.5 text-sm font-semibold text-text-secondary transition hover:bg-bg"
               >
-                I&apos;ll try again
+                {authCopy.signupSuggestion.decline}
               </button>
             </div>
           </div>

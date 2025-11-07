@@ -6,10 +6,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState, useId } from 'react';
 import { Chip } from '@/components/ui/Chip';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 export const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', badge: null, icon: 'dashboard', href: '/dashboard' },
-  { id: 'generate', label: 'Generate', badge: 'LIVE', icon: 'generate', href: '/app' },
+  { id: 'generate', label: 'Generate', badge: 'LIVE', badgeKey: 'live', icon: 'generate', href: '/app' },
   { id: 'jobs', label: 'Jobs', badge: null, icon: 'jobs', href: '/jobs' },
   { id: 'billing', label: 'Billing', badge: null, icon: 'billing', href: '/billing' },
   { id: 'settings', label: 'Settings', badge: null, icon: 'settings', href: '/settings' }
@@ -32,12 +33,18 @@ function getStoredBoolean(key: string, fallback: boolean) {
 }
 
 export function AppSidebar() {
-  const [collapsed, setCollapsed] = useState<boolean>(() => getStoredBoolean(COLLAPSED_STORAGE_KEY, true));
-  const [pinned, setPinned] = useState<boolean>(() => getStoredBoolean(PIN_STORAGE_KEY, false));
+  const { t } = useI18n();
+  const [collapsed, setCollapsed] = useState<boolean>(true);
+  const [pinned, setPinned] = useState<boolean>(false);
   const tooltipBaseId = useId();
 
   const navigationItems = useMemo(() => NAV_ITEMS, []);
   const pathname = usePathname();
+
+  useEffect(() => {
+    setCollapsed(getStoredBoolean(COLLAPSED_STORAGE_KEY, true));
+    setPinned(getStoredBoolean(PIN_STORAGE_KEY, false));
+  }, []);
 
   useEffect(() => {
     if (pinned) {
@@ -105,9 +112,13 @@ export function AppSidebar() {
     }
   };
 
-const renderNavItem = (item: NavItem, collapsed: boolean, tooltipBaseId: string) => {
+  const renderNavItem = (item: NavItem, collapsedNav: boolean, tooltipBase: string) => {
     const active = pathname === item.href || (item.id === 'generate' && (pathname === '/' || pathname === ''));
-    const tooltipId = `${tooltipBaseId}-${item.id}`;
+    const tooltipId = `${tooltipBase}-${item.id}`;
+    const label = t(`workspace.sidebar.links.${item.id}`, item.label);
+    const badgeLabel = item.badge
+      ? t(`workspace.sidebar.badges.${item.badgeKey ?? item.id}`, item.badge)
+      : null;
 
     return (
       <li key={item.id} className="relative">
@@ -115,13 +126,13 @@ const renderNavItem = (item: NavItem, collapsed: boolean, tooltipBaseId: string)
           href={item.href}
           className={clsx(
             'group relative flex w-full items-center rounded-[14px] px-2 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-            collapsed ? 'justify-center gap-0' : 'gap-3 px-3',
+            collapsedNav ? 'justify-center gap-0' : 'gap-3 px-3',
             active
               ? 'bg-accentSoft/20 text-text-primary'
               : 'text-text-muted hover:bg-accentSoft/15 hover:text-text-primary'
           )}
           aria-current={active ? 'page' : undefined}
-          aria-describedby={collapsed ? tooltipId : undefined}
+          aria-describedby={collapsedNav ? tooltipId : undefined}
         >
           <span
             className={clsx(
@@ -133,7 +144,7 @@ const renderNavItem = (item: NavItem, collapsed: boolean, tooltipBaseId: string)
           <span
             className={clsx(
               'flex items-center justify-center rounded-[12px] border transition-colors duration-150',
-              collapsed ? 'h-9 w-9' : 'h-11 w-11',
+              collapsedNav ? 'h-9 w-9' : 'h-11 w-11',
               active
                 ? 'border-accentSoft/40 bg-accentSoft/25 text-accent'
                 : 'border-transparent bg-white/80 text-text-muted group-hover:bg-accentSoft/15 group-hover:text-text-primary'
@@ -143,29 +154,29 @@ const renderNavItem = (item: NavItem, collapsed: boolean, tooltipBaseId: string)
             <Image
               src={`/assets/icons/${item.icon}.svg`}
               alt=""
-              width={collapsed ? 18 : 20}
-              height={collapsed ? 18 : 20}
+              width={collapsedNav ? 18 : 20}
+              height={collapsedNav ? 18 : 20}
               aria-hidden
             />
           </span>
-          {!collapsed && (
+          {!collapsedNav && (
             <span className="flex items-center gap-2">
-              <span>{item.label}</span>
-              {item.badge && (
+              <span>{label}</span>
+              {badgeLabel && (
                 <Chip className="px-2 py-0.5 text-[10px]" variant="outline">
-                  {item.badge}
+                  {badgeLabel}
                 </Chip>
               )}
             </span>
           )}
         </Link>
-        {collapsed && (
+        {collapsedNav && (
           <div
             id={tooltipId}
             role="tooltip"
             className="pointer-events-none absolute left-[76px] top-1/2 z-[1000] -translate-y-1/2 whitespace-nowrap rounded-card border border-border bg-white px-3 py-1 text-xs font-medium text-text-secondary opacity-0 shadow-card transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100"
           >
-            {item.label}
+            {label}
           </div>
         )}
       </li>
@@ -186,7 +197,7 @@ const renderNavItem = (item: NavItem, collapsed: boolean, tooltipBaseId: string)
           'items-center px-4 pt-6',
           collapsed ? 'flex flex-col gap-3' : 'flex flex-row items-center justify-between gap-3 pb-2'
         )}
-        aria-label="Sidebar controls"
+        aria-label={t('workspace.sidebar.aria.controls', 'Sidebar controls')}
       >
         <button
           type="button"
@@ -200,7 +211,11 @@ const renderNavItem = (item: NavItem, collapsed: boolean, tooltipBaseId: string)
             height={16}
             aria-hidden
           />
-          <span className="sr-only">{collapsed ? 'Expand sidebar' : 'Collapse sidebar'}</span>
+          <span className="sr-only">
+            {collapsed
+              ? t('workspace.sidebar.aria.expand', 'Expand sidebar')
+              : t('workspace.sidebar.aria.collapse', 'Collapse sidebar')}
+          </span>
         </button>
 
         <button
@@ -214,12 +229,16 @@ const renderNavItem = (item: NavItem, collapsed: boolean, tooltipBaseId: string)
           tabIndex={collapsed ? -1 : 0}
         >
           <Image src={`/assets/icons/${pinned ? 'unpin' : 'pin'}.svg`} alt="" width={16} height={16} aria-hidden />
-          <span className="sr-only">{pinned ? 'Unpin sidebar' : 'Pin sidebar open'}</span>
+          <span className="sr-only">
+            {pinned
+              ? t('workspace.sidebar.aria.unpin', 'Unpin sidebar')
+              : t('workspace.sidebar.aria.pin', 'Pin sidebar open')}
+          </span>
         </button>
       </div>
 
       <nav
-        aria-label="App menu"
+        aria-label={t('workspace.sidebar.aria.menu', 'App menu')}
         className={clsx(
           'flex flex-1 items-start justify-start overflow-y-auto px-2 pb-6',
           collapsed && 'pt-2'
@@ -237,7 +256,7 @@ const renderNavItem = (item: NavItem, collapsed: boolean, tooltipBaseId: string)
       <div className="px-4 pb-5">
         <Link
           href="/"
-          aria-label="Go to home"
+          aria-label={t('workspace.sidebar.aria.home', 'Go to home')}
           className={clsx(
             'flex items-center justify-center rounded-card border border-hairline bg-white/80 shadow-card transition',
             collapsed ? 'mx-auto h-11 w-11' : 'h-12'

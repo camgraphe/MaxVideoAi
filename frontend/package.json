@@ -16,6 +16,7 @@
     "i18n:messages": "tsx scripts/translate-messages.ts",
     "i18n:check": "tsx scripts/validate-keys.ts",
     "i18n:blog": "tsx scripts/translate-blog.ts",
+    "i18n:models": "tsx scripts/translate-models.ts",
     "qa:hreflang": "tsx scripts/qa/hreflang-check.ts"
   },
   "dependencies": {
