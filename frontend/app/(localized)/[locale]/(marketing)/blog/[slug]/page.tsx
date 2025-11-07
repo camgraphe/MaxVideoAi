@@ -56,17 +56,24 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     return { title: 'Post not found — MaxVideo AI' };
   }
   const canonicalSlug = post.canonicalSlug ?? (post.lang === 'en' ? post.slug : undefined) ?? post.slug;
-  const canonicalUrl = post.canonical ?? `${SITE_BASE_URL}/en/blog/${canonicalSlug}`;
   const localizedSlugs = await findLocalizedSlugs(canonicalSlug);
+  if (!localizedSlugs.en) {
+    localizedSlugs.en = canonicalSlug;
+  }
 
-  const languages: Record<string, string> = {};
-  locales.forEach((locale) => {
-    const slug = localizedSlugs[locale];
-    if (slug) {
-      languages[locale] = `${SITE_BASE_URL}/${localePathnames[locale]}/blog/${slug}`;
-    }
-  });
-  languages['x-default'] = canonicalUrl;
+  const buildLocalizedUrl = (target: AppLocale) => {
+    const slug = localizedSlugs[target] ?? canonicalSlug;
+    const prefix = localePathnames[target] ? `/${localePathnames[target]}` : '';
+    return `${SITE_BASE_URL}${prefix}/blog/${slug}`;
+  };
+
+  const languages: Record<string, string> = {
+    en: buildLocalizedUrl('en'),
+    fr: buildLocalizedUrl('fr'),
+    es: buildLocalizedUrl('es'),
+    'x-default': buildLocalizedUrl('en'),
+  };
+  const canonicalUrl = languages[params.locale] ?? languages.en;
 
   const ogLocale = localeRegions[params.locale].replace('-', '_');
 
@@ -80,7 +87,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     openGraph: {
       title: `${post.title} — MaxVideo AI`,
       description: post.description,
-      url: languages[params.locale] ?? canonicalUrl,
+      url: languages[params.locale] ?? languages.en,
       locale: ogLocale,
       siteName: 'MaxVideoAI',
       images: [
@@ -115,7 +122,12 @@ export default async function BlogPostPage({ params }: { params: Params }) {
   });
   const formattedDate = dateFormatter.format(new Date(post.date));
   const canonicalSlug = post.canonicalSlug ?? (post.lang === 'en' ? post.slug : undefined) ?? post.slug;
-  const canonicalUrl = post.canonical ?? `${SITE_BASE_URL}/en/blog/${canonicalSlug}`;
+  const localizedSlugs = await findLocalizedSlugs(canonicalSlug);
+  if (!localizedSlugs.en) {
+    localizedSlugs.en = canonicalSlug;
+  }
+  const prefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
+  const canonicalUrl = `${SITE_BASE_URL}${prefix}/blog/${localizedSlugs[locale] ?? canonicalSlug}`;
 
   const articleSchema = {
     '@context': 'https://schema.org',

@@ -1,9 +1,8 @@
 
 'use client';
 
-import Link from 'next/link';
+import { Link, usePathname } from '@/i18n/navigation';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 

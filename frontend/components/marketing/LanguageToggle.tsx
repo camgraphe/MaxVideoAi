@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import type { Locale } from '@/lib/i18n/dictionaries';
+import type { Locale } from '@/lib/i18n/types';
 import { LOCALE_COOKIE } from '@/lib/i18n/constants';
 
 export function LanguageToggle() {
   const router = useRouter();
+  const pathname = usePathname();
   const { locale, t } = useI18n();
   const options = t('footer.languages', []) as Array<{ locale: Locale; label: string }>;
   const label = t('footer.languageLabel', 'Language');
@@ -22,7 +23,7 @@ export function LanguageToggle() {
     setPendingLocale(value);
     document.cookie = `${LOCALE_COOKIE}=${value}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
     startTransition(() => {
-      router.refresh();
+      router.replace(pathname, { locale: value });
     });
   };
 

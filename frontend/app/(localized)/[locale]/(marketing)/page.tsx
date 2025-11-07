@@ -262,46 +262,6 @@ async function resolveHeroTilePrices(tiles: HeroTilePricingInput[]) {
   return Object.fromEntries(entries);
 }
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://maxvideoai.com';
-
-export const metadata: Metadata = {
-  title: 'MaxVideo AI — The right engine for every shot',
-  description:
-    'Independent hub for AI video. Price before you generate. Works with Sora 2, Veo 3.1, Pika 2.2, MiniMax Hailuo 02. Wallet-first billing & automatic refunds.',
-  alternates: {
-    canonical: `${SITE}/`,
-    languages: {
-      en: `${SITE}/`,
-      fr: `${SITE}/?lang=fr`,
-    },
-  },
-  openGraph: {
-    type: 'website',
-    url: `${SITE}/`,
-    siteName: 'MaxVideo AI',
-    title: 'The right engine for every shot — MaxVideo AI',
-    description: 'Price-before-you-generate AI video across Sora, Veo, Pika, MiniMax — in one workspace.',
-    images: [
-      {
-        url: `${SITE}/og/price-before.png`,
-        width: 1200,
-        height: 630,
-        alt: 'MaxVideo AI workspace and example outputs',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'MaxVideo AI — Price before you generate',
-    description: 'Route the same brief across Sora, Veo, Pika, MiniMax. Wallet-first billing. Automatic refunds.',
-    images: [`${SITE}/og/price-before.png`],
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
-
 export default async function HomePage() {
   const { dictionary } = await resolveDictionary();
   const home = dictionary.home;

@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { type CSSProperties, type SVGProps } from 'react';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 

@@ -1,31 +1,19 @@
+import localizedSlugConfig from '@/config/localized-slugs.json';
 import type { AppLocale } from '@/i18n/locales';
 import { locales } from '@/i18n/locales';
 
-type SlugKey = 'models' | 'pricing' | 'gallery' | 'compare' | 'blog';
+type SlugKey = keyof typeof localizedSlugConfig;
 
-export const localizedSlugs: Record<AppLocale, Record<SlugKey, string>> = {
-  en: {
-    models: 'models',
-    pricing: 'pricing',
-    gallery: 'examples',
-    compare: 'ai-video-engines',
-    blog: 'blog',
+export const localizedSlugs: Record<AppLocale, Record<SlugKey, string>> = locales.reduce(
+  (acc, locale) => {
+    acc[locale] = Object.entries(localizedSlugConfig).reduce<Record<SlugKey, string>>((map, [key, value]) => {
+      map[key as SlugKey] = value[locale];
+      return map;
+    }, {} as Record<SlugKey, string>);
+    return acc;
   },
-  fr: {
-    models: 'modeles',
-    pricing: 'tarifs',
-    gallery: 'galerie',
-    compare: 'comparatif',
-    blog: 'blog',
-  },
-  es: {
-    models: 'modelos',
-    pricing: 'precios',
-    gallery: 'galeria',
-    compare: 'comparativa',
-    blog: 'blog',
-  },
-};
+  {} as Record<AppLocale, Record<SlugKey, string>>
+);
 
 export type LocalizedSlugKey = SlugKey;
 

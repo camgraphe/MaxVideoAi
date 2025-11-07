@@ -14,10 +14,12 @@ import { visit } from 'unist-util-visit';
 import pLimit from 'p-limit';
 import { localizedSlugs } from '../lib/i18nSlugs';
 import { localePathnames } from '../i18n/locales';
+import type { AppLocale } from '../i18n/locales';
 
 type TargetLocale = 'fr' | 'es';
 type Segment = { id: string; value: string; apply: (value: string) => void };
 type BlogSlugMap = Record<TargetLocale, Record<string, string>>;
+type BlogLocale = AppLocale;
 
 const FRONTEND_DIR = process.cwd();
 const REPO_ROOT = path.resolve(FRONTEND_DIR, '..');
@@ -46,6 +48,20 @@ if (!process.env.OPENAI_API_KEY) {
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const parser = unified().use(remarkParse).use(remarkGfm);
+function getLocalePrefix(locale: BlogLocale) {
+  const prefix = localePathnames[locale];
+  return prefix ? `/${prefix}` : '';
+}
+
+function buildBlogPath(locale: BlogLocale, slug: string) {
+  const prefix = getLocalePrefix(locale);
+  return `${prefix}/blog/${slug}`.replace(/\/{2,}/g, '/');
+}
+
+function buildBlogUrl(locale: BlogLocale, slug: string) {
+  return `${SITE_ORIGIN}${buildBlogPath(locale, slug)}`;
+}
+
 function protect(text: string): string {
   return text
     .replace(PLACEHOLDER_REGEX, (match) => `«${match}»`)
@@ -114,8 +130,12 @@ function rewriteInternalUrl(
     pathname = `/${segments.join('/')}`;
   }
 
-  const prefixed = (localizedPath: string) =>
-    `/${localePathnames[locale]}${localizedPath === '/' ? '' : localizedPath}`;
+  const prefixed = (localizedPath: string) => {
+    const prefix = getLocalePrefix(locale);
+    const suffix = localizedPath === '/' ? '' : localizedPath;
+    const combined = `${prefix}${suffix}` || '/';
+    return combined.startsWith('/') ? combined : `/${combined}`;
+  };
 
   // Blog listings
   if (pathname === '/blog' || pathname === '/blog/') {
@@ -261,7 +281,7 @@ async function translateBody(
 
 async function ensureEnglishFrontmatter(filePath: string, data: Record<string, any>, content: string, slug: string) {
   let changed = false;
-  const canonical = `${SITE_ORIGIN}/en/blog/${slug}`;
+  const canonical = buildBlogUrl('en', slug);
   if (data.slug !== slug) {
     data.slug = slug;
     changed = true;
@@ -319,7 +339,7 @@ async function translatePost(filePath: string, blogSlugMap: BlogSlugMap): Promis
         excerpt: translatedFields.excerpt ?? data.excerpt,
         slug: localizedSlug,
         lang: locale,
-        canonical: `${SITE_ORIGIN}/en/blog/${enSlug}`,
+        canonical: buildBlogUrl(locale as BlogLocale, localizedSlug),
         canonicalSlug: enSlug,
       };
       sanitizeFrontMatter(frontMatter);

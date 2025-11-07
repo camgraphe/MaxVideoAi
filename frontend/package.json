@@ -15,7 +15,8 @@
     "thumbs:backfill": "ts-node --transpile-only --project tsconfig.scripts.json scripts/backfill-thumbnails.ts",
     "i18n:messages": "tsx scripts/translate-messages.ts",
     "i18n:check": "tsx scripts/validate-keys.ts",
-    "i18n:blog": "tsx scripts/translate-blog.ts"
+    "i18n:blog": "tsx scripts/translate-blog.ts",
+    "qa:hreflang": "tsx scripts/qa/hreflang-check.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.911.0",

@@ -1,13 +1,20 @@
-import { cookies } from 'next/headers';
-import { getDictionary, type Dictionary, type Locale } from '@/lib/i18n/dictionaries';
-import { LOCALE_COOKIE } from '@/lib/i18n/constants';
+import { getLocale, getMessages } from 'next-intl/server';
+import type { AppLocale } from '@/i18n/locales';
+import { defaultLocale, locales } from '@/i18n/locales';
+import type { Dictionary, Locale } from '@/lib/i18n/types';
 
-export function resolveLocale(): Locale {
-  const localeCookie = cookies().get(LOCALE_COOKIE)?.value;
-  return localeCookie === 'fr' ? 'fr' : 'en';
+export async function resolveLocale(): Promise<Locale> {
+  const detected = (await getLocale()) as AppLocale | null;
+  if (detected && locales.includes(detected)) {
+    return detected;
+  }
+  return defaultLocale;
 }
 
-export function resolveDictionary(): { locale: Locale; dictionary: Dictionary; fallback: Dictionary } {
-  const locale = resolveLocale();
-  return { locale, dictionary: getDictionary(locale), fallback: getDictionary('en') };
+export async function resolveDictionary(): Promise<{ locale: Locale; dictionary: Dictionary; fallback: Dictionary }> {
+  const locale = await resolveLocale();
+  const dictionary = (await getMessages({ locale })) as Dictionary;
+  const fallback =
+    locale === defaultLocale ? dictionary : ((await getMessages({ locale: defaultLocale })) as Dictionary);
+  return { locale, dictionary, fallback };
 }

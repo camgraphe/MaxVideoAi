@@ -5,11 +5,26 @@ export const SITE_BASE_URL = 'https://maxvideoai.com';
 
 export type LocaleSlugMap = Record<AppLocale, string>;
 
+function buildLocalePath(target: AppLocale, slug?: string) {
+  const prefix = localePathnames[target] ? `/${localePathnames[target]}` : '';
+  const normalizedSlug = slug ? `/${slug.replace(/^\/+/, '')}` : '';
+  const pathname = `${prefix}${normalizedSlug}` || '';
+  return pathname || '';
+}
+
+function buildAbsoluteUrl(pathname: string) {
+  const normalized = pathname || '';
+  if (!normalized || normalized === '/') {
+    return `${SITE_BASE_URL}/`;
+  }
+  return `${SITE_BASE_URL}${normalized}`;
+}
+
 export function buildMetadataUrls(locale: AppLocale, slugMap?: LocaleSlugMap) {
   const buildUrl = (target: AppLocale) => {
     const slug = slugMap?.[target];
-    const suffix = slug ? `/${slug}` : '';
-    return `${SITE_BASE_URL}/${localePathnames[target]}${suffix}`;
+    const path = buildLocalePath(target, slug) || '/';
+    return buildAbsoluteUrl(path === '/' ? '' : path);
   };
 
   const urls = {
