@@ -12,6 +12,10 @@ export interface ContentFrontMatter {
   image?: string;
   keywords?: string[];
   slug: string;
+  excerpt?: string;
+  lang?: string;
+  canonical?: string;
+  canonicalSlug?: string;
 }
 
 export interface ContentEntry extends ContentFrontMatter {

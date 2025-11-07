@@ -1,7 +1,12 @@
 const path = require('path');
 const isPreviewDeployment = process.env.VERCEL_ENV === 'preview';
 const repoRoot = path.join(__dirname, '..');
-const CONTENT_GLOBS = ['../content/blog/**/*', '../content/docs/**/*'];
+const CONTENT_GLOBS = [
+  '../content/en/blog/**/*',
+  '../content/fr/blog/**/*',
+  '../content/es/blog/**/*',
+  '../content/docs/**/*',
+];
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

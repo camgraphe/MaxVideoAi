@@ -1,7 +1,7 @@
 import type { AppLocale } from '@/i18n/locales';
 import { locales } from '@/i18n/locales';
 
-type SlugKey = 'models' | 'pricing' | 'gallery' | 'compare';
+type SlugKey = 'models' | 'pricing' | 'gallery' | 'compare' | 'blog';
 
 export const localizedSlugs: Record<AppLocale, Record<SlugKey, string>> = {
   en: {
@@ -9,18 +9,21 @@ export const localizedSlugs: Record<AppLocale, Record<SlugKey, string>> = {
     pricing: 'pricing',
     gallery: 'examples',
     compare: 'ai-video-engines',
+    blog: 'blog',
   },
   fr: {
     models: 'modeles',
     pricing: 'tarifs',
     gallery: 'galerie',
     compare: 'comparatif',
+    blog: 'blog',
   },
   es: {
     models: 'modelos',
     pricing: 'precios',
     gallery: 'galeria',
     compare: 'comparativa',
+    blog: 'blog',
   },
 };
 
