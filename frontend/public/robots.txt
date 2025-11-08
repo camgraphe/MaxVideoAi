@@ -1,28 +1,11 @@
-# Robots.txt – SEO friendly defaults
+# *
 User-agent: *
-# Allow assets required for rendering
-Allow: /_next/static/
-Allow: /_next/image/
-Allow: /assets/
-Allow: /hero/
-Allow: /favicon.ico
-
-# Block only sensitive areas
+Allow: /
+Disallow: /_next/
 Disallow: /api/
-Disallow: /admin/
-Disallow: /private/
 
-# Host + sitemap references
+# Host
 Host: https://maxvideoai.com
-Sitemap: https://maxvideoai.com/sitemap.xml
-Sitemap: https://maxvideoai.com/sitemap-video.xml
 
-# Optional: toggle AI crawlers per policy
-#User-agent: GPTBot
-#Disallow:
-#User-agent: ClaudeBot
-#Disallow:
-#User-agent: PerplexityBot
-#Disallow:
-#User-agent: Google-Extended
-#Disallow:
+# Sitemaps
+Sitemap: https://maxvideoai.com/sitemap.xml
