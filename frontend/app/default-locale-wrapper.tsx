@@ -9,13 +9,13 @@ export const DEFAULT_LOCALE = defaultLocale as AppLocale;
 type PageParams = Record<string, string | string[]>;
 
 type PageComponent<P extends { params?: PageParams } = { params?: PageParams }> = (
-  props: P
+  props?: P
 ) => Promise<ReactElement> | ReactElement;
 
 export function withDefaultLocalePage<P extends { params?: PageParams }>(Component: PageComponent<P>) {
-  return function DefaultLocalePage(props: P) {
-    const params = { ...(props.params ?? {}), locale: DEFAULT_LOCALE };
-    const nextProps = { ...props, params } as P;
+  return function DefaultLocalePage(props?: P) {
+    const params = { ...((props?.params as PageParams) ?? {}), locale: DEFAULT_LOCALE };
+    const nextProps = { ...(props ?? ({} as P)), params } as P;
     return (
       <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
         <Component {...nextProps} />
@@ -27,5 +27,8 @@ export function withDefaultLocalePage<P extends { params?: PageParams }>(Compone
 export function buildDefaultLocaleMetadata<P extends PageParams = PageParams>(
   generator: (args: { params: P & { locale: AppLocale } }) => Promise<Metadata> | Metadata
 ) {
-  return (args?: { params?: P }) => generator({ params: { ...(args?.params ?? ({} as P)), locale: DEFAULT_LOCALE } as P & { locale: AppLocale } });
+  return (args?: { params?: P }) =>
+    generator({
+      params: { ...((args?.params as P) ?? ({} as P)), locale: DEFAULT_LOCALE } as P & { locale: AppLocale },
+    });
 }
