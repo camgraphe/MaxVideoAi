@@ -31,7 +31,7 @@ const STATIC_ENGINE_DEMOS: Record<string, EngineDemo> = {
     hasAudio: false,
   },
   'minimax-hailuo-02-image': {
-    videoUrl: 'https://fal.media/files/monkey/bkT4T4uLOXr0jDsIMlNd5_output.mp4',
+    videoUrl: '/hero/minimax-video01.mp4',
     posterUrl: '/hero/minimax-video01.jpg',
     hasAudio: false,
   },

@@ -1250,7 +1250,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     type: 'Text only · Silent',
     seoText:
       'Test cinematic prompts quickly with Veo 3 Fast. No audio, up to 8s, ultra-fast generation for storyboarding and social loops.',
-    demoUrl: 'https://v3b.fal.media/files/b/kangaroo/veo3fast_output.mp4',
+    demoUrl: 'https://v3.fal.media/files/lion/L9nkXSW1MCj2oDimeJ4w5_output.mp4',
     media: {
       videoUrl: 'https://v3.fal.media/files/lion/L9nkXSW1MCj2oDimeJ4w5_output.mp4',
       imagePath: '/hero/veo3.jpg',
@@ -1320,9 +1320,9 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     type: 'Text only',
     seoText:
       'Veo 3.1 Fast helps you test cinematic prompts with optional audio. Use it for short loops, mobile formats, or quick experiments with DeepMind fidelity at a lower cost.',
-    demoUrl: 'https://v3b.fal.media/files/b/kangaroo/fast_output.mp4',
+    demoUrl: '/hero/veo3.mp4',
     media: {
-      videoUrl: 'https://v3b.fal.media/files/b/kangaroo/fast_output.mp4',
+      videoUrl: '/hero/veo3.mp4',
       imagePath: '/hero/veo3.jpg',
       altText: 'Fast rendering sample with Veo 3.1 Fast',
     },
@@ -1389,7 +1389,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     type: 'Text only · Stylized',
     seoText:
       'Create fast, fun, stylized AI videos with Pika. Ideal for 3–5 second animations in vertical or square formats—no audio, fast rendering, high visual impact.',
-    demoUrl: 'https://v3.fal.media/files/b/kangaroo/pika_text2video_sample.mp4',
+    demoUrl: 'https://storage.googleapis.com/falserverless/web-examples/pika/pika%202.2/pika22_output.mp4',
     media: {
       videoUrl: 'https://storage.googleapis.com/falserverless/web-examples/pika/pika%202.2/pika22_output.mp4',
       imagePath: '/hero/pika-22.jpg',
@@ -1464,9 +1464,9 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     type: 'Image only · Stylized',
     seoText:
       'Turn still images into motion-rich video clips with Pika. Add zooms, pans or animation styles to any visual—fast and soundless for short loops and cutaways.',
-    demoUrl: 'https://v3.fal.media/files/b/kangaroo/pika_img2video_sample.mp4',
+    demoUrl: '/hero/pika-15.mp4',
     media: {
-      videoUrl: 'https://v3.fal.media/files/b/kangaroo/pika_img2video_sample.mp4',
+      videoUrl: '/hero/pika-15.mp4',
       imagePath: '/hero/pika-15.jpg',
       altText: 'Animated loop generated from still using Pika',
     },
@@ -1533,9 +1533,9 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     type: 'Text only · Stylized',
     seoText:
       'Generate stylized short video clips from text using MiniMax Hailuo 02. Fast, silent, and ideal for quick loops, visual tests, or motion studies.',
-    demoUrl: 'https://v3.fal.media/files/b/kangaroo/minimax_t2v.mp4',
+    demoUrl: '/hero/minimax-video01.mp4',
     media: {
-      videoUrl: 'https://v3.fal.media/files/b/kangaroo/minimax_t2v.mp4',
+      videoUrl: '/hero/minimax-video01.mp4',
       imagePath: '/hero/minimax-video01.jpg',
       altText: 'Fast stylized motion demo from text prompt',
     },
@@ -1604,9 +1604,9 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     type: 'Image only · Stylized',
     seoText:
       'Bring static visuals to life with MiniMax Hailuo 02’s image-to-video engine. Add motion, zoom, or stylized animation to renders and artwork—no sound, fast turnaround.',
-    demoUrl: 'https://v3.fal.media/files/b/kangaroo/minimax_i2v.mp4',
+    demoUrl: '/hero/minimax-video01.mp4',
     media: {
-      videoUrl: 'https://fal.media/files/monkey/bkT4T4uLOXr0jDsIMlNd5_output.mp4',
+      videoUrl: '/hero/minimax-video01.mp4',
       imagePath: '/hero/minimax-video01.jpg',
       altText: 'Animation sample from image with MiniMax',
     },
