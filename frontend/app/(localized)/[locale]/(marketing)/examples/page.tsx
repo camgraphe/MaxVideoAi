@@ -385,6 +385,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                   <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                     <Link
                       href={`/video/${encodeURIComponent(video.id)}`}
+                      locale={false}
                       className="pointer-events-auto inline-flex h-16 w-16 items-center justify-center text-white/30 transition hover:text-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
                       aria-label="View this video"
                     >

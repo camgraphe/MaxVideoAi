@@ -731,7 +731,7 @@
           }
         },
         "media": {
-          "videoSrc": "https://storage.googleapis.com/falserverless/example_outputs/sora_t2v_output.mp4",
+          "videoSrc": "/hero/sora2.mp4",
           "aspectRatio": "16:9"
         }
       },
@@ -750,7 +750,7 @@
           }
         },
         "media": {
-          "videoSrc": "https://storage.googleapis.com/falserverless/example_outputs/veo3-i2v-output.mp4",
+          "videoSrc": "/hero/veo3.mp4",
           "aspectRatio": "16:9"
         }
       },
@@ -769,7 +769,7 @@
           }
         },
         "media": {
-          "videoSrc": "https://v3.fal.media/files/lion/L9nkXSW1MCj2oDimeJ4w5_output.mp4",
+          "videoSrc": "/hero/veo3.mp4",
           "aspectRatio": "16:9"
         }
       },
@@ -788,7 +788,7 @@
           }
         },
         "media": {
-          "videoSrc": "https://storage.googleapis.com/falserverless/web-examples/pika/pika%202.2/pika22_output.mp4",
+          "videoSrc": "/hero/pika-22.mp4",
           "aspectRatio": "16:9"
         }
       },
@@ -807,7 +807,7 @@
           }
         },
         "media": {
-          "videoSrc": "https://fal.media/files/monkey/bkT4T4uLOXr0jDsIMlNd5_output.mp4",
+          "videoSrc": "/hero/minimax-video01.mp4",
           "aspectRatio": "16:9"
         }
       }

@@ -705,7 +705,7 @@ const en: Dictionary = {
           pricing: { engineId: 'sora-2', durationSec: 10, resolution: '1080p', memberTier: 'member' },
         },
         media: {
-          videoSrc: 'https://storage.googleapis.com/falserverless/example_outputs/sora_t2v_output.mp4',
+          videoSrc: '/hero/sora2.mp4',
           aspectRatio: '16:9',
         },
       },
@@ -719,7 +719,7 @@ const en: Dictionary = {
           pricing: { engineId: 'veo-3-1', durationSec: 8, resolution: '1080p', memberTier: 'member' },
         },
         media: {
-          videoSrc: 'https://storage.googleapis.com/falserverless/example_outputs/veo3-i2v-output.mp4',
+          videoSrc: '/hero/veo3.mp4',
           aspectRatio: '16:9',
         },
       },
@@ -733,7 +733,7 @@ const en: Dictionary = {
           pricing: { engineId: 'veo-3-fast', durationSec: 8, resolution: '720p', memberTier: 'member' },
         },
         media: {
-          videoSrc: 'https://v3.fal.media/files/lion/L9nkXSW1MCj2oDimeJ4w5_output.mp4',
+          videoSrc: '/hero/veo3.mp4',
           aspectRatio: '16:9',
         },
       },
@@ -747,7 +747,7 @@ const en: Dictionary = {
           pricing: { engineId: 'pika-text-to-video', durationSec: 8, resolution: '1080p', memberTier: 'member' },
         },
         media: {
-          videoSrc: 'https://storage.googleapis.com/falserverless/web-examples/pika/pika%202.2/pika22_output.mp4',
+          videoSrc: '/hero/pika-22.mp4',
           aspectRatio: '16:9',
         },
       },
@@ -761,7 +761,7 @@ const en: Dictionary = {
           pricing: { engineId: 'minimax-hailuo-02-image', durationSec: 10, resolution: '768P', memberTier: 'member' },
         },
         media: {
-          videoSrc: 'https://fal.media/files/monkey/bkT4T4uLOXr0jDsIMlNd5_output.mp4',
+          videoSrc: '/hero/minimax-video01.mp4',
           aspectRatio: '16:9',
         },
       },
