@@ -183,20 +183,14 @@ function buildLocaleHref(locale, englishPath) {
 
 module.exports = {
   siteUrl: SITE_URL,
-  generateRobotsTxt: true,
+  // We manage robots.txt manually in public/robots.txt to avoid accidental
+  // overwrites and to allow fine-grained Allow rules for Next assets.
+  generateRobotsTxt: false,
   sitemapSize: 7000,
   exclude: ['/api/*', '/_next/*'],
   changefreq: 'weekly',
   priority: 0.8,
-  robotsTxtOptions: {
-    policies: [
-      {
-        userAgent: '*',
-        allow: '/',
-        disallow: ['/_next/', '/api/'],
-      },
-    ],
-  },
+  // robotsTxtOptions no longer used (manual robots.txt)
   transform: async (config, path) => {
     const normalizedPath = path.startsWith('/') ? path : `/${path}`;
     const englishPath = toEnglishPath(normalizedPath);
