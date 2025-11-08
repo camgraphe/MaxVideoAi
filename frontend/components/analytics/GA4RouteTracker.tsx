@@ -2,7 +2,6 @@
 
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useRef } from 'react';
-import { ConsentScriptGate } from '@/components/legal/ConsentScriptGate';
 
 declare global {
   interface Window {
@@ -37,11 +36,7 @@ function TrackerCore() {
 }
 
 export function GA4RouteTracker() {
-  return (
-    <ConsentScriptGate categories="analytics">
-      <TrackerCore />
-    </ConsentScriptGate>
-  );
+  return <TrackerCore />;
 }
 
 export default GA4RouteTracker;
