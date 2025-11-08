@@ -17,6 +17,11 @@ export function MarketingFooter() {
   ];
   const maybeLinks = t('footer.links', defaultLinks);
   const links = Array.isArray(maybeLinks) && maybeLinks.length ? maybeLinks : defaultLinks;
+  const normalizedLinks = links.map((item) => {
+    const shouldBypassLocale =
+      item.locale === false || (item.locale === undefined && typeof item.href === 'string' && item.href.startsWith('/legal'));
+    return shouldBypassLocale ? { ...item, locale: false } : item;
+  });
   const brandNote = t('footer.brandNote', 'Independent hub for professional AI video.');
   const crawlerNote =
     t(
@@ -34,7 +39,7 @@ export function MarketingFooter() {
           </span>
           <div className="flex items-center gap-4">
             <nav className="flex flex-wrap gap-4" aria-label="Footer">
-              {links.map((item) => (
+              {normalizedLinks.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
