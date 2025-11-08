@@ -1,6 +1,13 @@
 import ExamplesPage, { generateMetadata as generateLocalizedMetadata } from '../(localized)/[locale]/(marketing)/examples/page';
-import { buildDefaultLocaleMetadata, withDefaultLocalePage } from '../default-locale-wrapper';
+import LocaleLayout from '../(localized)/[locale]/layout';
+import { DEFAULT_LOCALE } from '../default-locale-wrapper';
 
-export const generateMetadata = buildDefaultLocaleMetadata(generateLocalizedMetadata);
+export const generateMetadata = () => generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE } });
 
-export default withDefaultLocalePage(ExamplesPage);
+export default function ExamplesDefaultPage() {
+  return (
+    <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
+      <ExamplesPage params={{ locale: DEFAULT_LOCALE }} />
+    </LocaleLayout>
+  );
+}

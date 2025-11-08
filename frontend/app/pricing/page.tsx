@@ -1,6 +1,13 @@
 import PricingPage, { generateMetadata as generateLocalizedMetadata } from '../(localized)/[locale]/(marketing)/pricing/page';
-import { buildDefaultLocaleMetadata, withDefaultLocalePage } from '../default-locale-wrapper';
+import LocaleLayout from '../(localized)/[locale]/layout';
+import { DEFAULT_LOCALE } from '../default-locale-wrapper';
 
-export const generateMetadata = buildDefaultLocaleMetadata(generateLocalizedMetadata);
+export const generateMetadata = () => generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE } });
 
-export default withDefaultLocalePage(PricingPage);
+export default function PricingDefaultPage() {
+  return (
+    <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
+      <PricingPage params={{ locale: DEFAULT_LOCALE }} />
+    </LocaleLayout>
+  );
+}

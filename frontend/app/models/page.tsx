@@ -1,6 +1,13 @@
 import ModelsPage, { generateMetadata as generateLocalizedMetadata } from '../(localized)/[locale]/(marketing)/models/page';
-import { buildDefaultLocaleMetadata, withDefaultLocalePage } from '../default-locale-wrapper';
+import LocaleLayout from '../(localized)/[locale]/layout';
+import { DEFAULT_LOCALE } from '../default-locale-wrapper';
 
-export const generateMetadata = buildDefaultLocaleMetadata(generateLocalizedMetadata);
+export const generateMetadata = () => generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE } });
 
-export default withDefaultLocalePage(ModelsPage);
+export default function ModelsDefaultPage() {
+  return (
+    <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
+      <ModelsPage params={{ locale: DEFAULT_LOCALE }} />
+    </LocaleLayout>
+  );
+}

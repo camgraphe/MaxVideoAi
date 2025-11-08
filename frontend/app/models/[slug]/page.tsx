@@ -1,7 +1,8 @@
 import ModelsDetailPage, {
   generateMetadata as generateLocalizedMetadata,
 } from '../../(localized)/[locale]/(marketing)/models/[slug]/page';
-import { withDefaultLocalePage, DEFAULT_LOCALE } from '../../default-locale-wrapper';
+import LocaleLayout from '../../(localized)/[locale]/layout';
+import { DEFAULT_LOCALE } from '../../default-locale-wrapper';
 import { listFalEngines } from '@/config/falEngines';
 
 export function generateStaticParams() {
@@ -11,4 +12,11 @@ export function generateStaticParams() {
 export const generateMetadata = ({ params }: { params: { slug: string } }) =>
   generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE, slug: params.slug } });
 
-export default withDefaultLocalePage(ModelsDetailPage);
+export default function ModelDetailDefaultPage({ params }: { params: { slug: string } }) {
+  const resolvedParams = { locale: DEFAULT_LOCALE, slug: params.slug };
+  return (
+    <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
+      <ModelsDetailPage params={resolvedParams} />
+    </LocaleLayout>
+  );
+}
