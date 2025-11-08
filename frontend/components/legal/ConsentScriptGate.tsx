@@ -28,7 +28,7 @@ function readCookie(): string | null {
 
 export function ConsentScriptGate({ categories, children }: Props) {
   const required = useMemo(() => (Array.isArray(categories) ? categories : [categories]), [categories]);
-  const [allowed, setAllowed] = useState(() => hasConsentFor(parseConsent(readCookie()), required));
+  const [allowed, setAllowed] = useState(false);
 
   useEffect(() => {
     setAllowed(hasConsentFor(parseConsent(readCookie()), required));
