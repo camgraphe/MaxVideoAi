@@ -1,5 +1,5 @@
 import NextLink, { type LinkProps as NextLinkProps } from 'next/link';
-import type { PropsWithChildren, ReactElement, ReactNode, ComponentType } from 'react';
+import type { PropsWithChildren, ReactElement, ReactNode, ComponentType, ComponentProps } from 'react';
 import { createNavigation } from 'next-intl/navigation';
 import { routing } from '@/i18n/routing';
 
@@ -7,7 +7,19 @@ const BYPASS_PREFIXES = ['/app', '/dashboard', '/jobs', '/billing', '/settings',
 
 const { Link: LocalizedLink, redirect, usePathname, useRouter, getPathname } = createNavigation(routing);
 
-function extractHref(href: NextLinkProps['href']): string | null {
+type LocalizedLinkHref =
+  | NextLinkProps['href']
+  | {
+      pathname: string;
+      params?: Record<string, string | number>;
+      query?: Record<string, string | number | undefined>;
+    };
+
+type LocalizedLinkProps = PropsWithChildren<
+  Omit<NextLinkProps, 'href'> & { href: LocalizedLinkHref; className?: string }
+>;
+
+function extractHref(href: LocalizedLinkHref): string | null {
   if (typeof href === 'string') {
     return href;
   }
@@ -17,7 +29,7 @@ function extractHref(href: NextLinkProps['href']): string | null {
   return null;
 }
 
-function shouldBypassLocalization(href: NextLinkProps['href']): boolean {
+function shouldBypassLocalization(href: LocalizedLinkHref): boolean {
   const value = extractHref(href);
   if (!value) {
     return false;
@@ -25,23 +37,21 @@ function shouldBypassLocalization(href: NextLinkProps['href']): boolean {
   return BYPASS_PREFIXES.some((prefix) => value.startsWith(prefix));
 }
 
-type LocalizedLinkProps = PropsWithChildren<NextLinkProps & { className?: string }>;
-
 export function Link({ children, className, ...rest }: LocalizedLinkProps): ReactElement {
   if (shouldBypassLocalization(rest.href)) {
     return (
-      <NextLink {...rest} className={className}>
+      <NextLink {...(rest as unknown as NextLinkProps)} className={className}>
         {children}
       </NextLink>
     );
   }
 
   const Localized = LocalizedLink as unknown as ComponentType<
-    NextLinkProps & { children?: ReactNode; className?: string }
+    ComponentProps<typeof LocalizedLink> & { className?: string }
   >;
 
   return (
-    <Localized {...rest} className={className}>
+    <Localized {...(rest as unknown as ComponentProps<typeof LocalizedLink>)} className={className}>
       {children}
     </Localized>
   );

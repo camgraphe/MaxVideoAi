@@ -194,14 +194,14 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
             </div>
             <div className="space-y-3">
               <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
-                <Link href={`/blog/${featured.slug}`} className="transition hover:text-accent">
+                <Link href={{ pathname: '/blog/[slug]', params: { slug: featured.slug } }} className="transition hover:text-accent">
                   {featured.title}
                 </Link>
               </h2>
               <p className="text-base text-text-secondary sm:text-lg">{featured.description}</p>
             </div>
             <Link
-              href={`/blog/${featured.slug}`}
+              href={{ pathname: '/blog/[slug]', params: { slug: featured.slug } }}
               className="inline-flex items-center gap-2 text-sm font-semibold text-accent transition hover:text-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             >
               {dictionary.blog.cta ?? 'Read more'}
@@ -244,11 +244,11 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
                   ))}
                 </div>
                 <h3 className="text-xl font-semibold text-text-primary transition group-hover:text-accent">
-                  <Link href={`/blog/${post.slug}`}>{post.title}</Link>
+                  <Link href={{ pathname: '/blog/[slug]', params: { slug: post.slug } }}>{post.title}</Link>
                 </h3>
                 <p className="text-sm text-text-secondary">{post.description}</p>
                 <Link
-                  href={`/blog/${post.slug}`}
+                  href={{ pathname: '/blog/[slug]', params: { slug: post.slug } }}
                   className="inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   {dictionary.blog.cta ?? 'Read more'}

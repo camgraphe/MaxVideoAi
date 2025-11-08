@@ -306,7 +306,7 @@ export default async function HomePage() {
   const homepageSlots = await getHomepageSlots();
   const falEngines = listFalEngines();
   const compareEngineIndex = new Map(falEngines.map((entry) => [entry.modelSlug, entry]));
-  const compareEngines: CompareEngineCard[] = COMPARE_ENGINE_PRIORITY.map((slug) => {
+  const compareEngines = COMPARE_ENGINE_PRIORITY.map((slug) => {
     const entry = compareEngineIndex.get(slug);
     if (!entry) {
       return null;
@@ -323,7 +323,9 @@ export default async function HomePage() {
       href: { pathname: '/models/[slug]', params: { slug } },
       bg,
     };
-  }).filter((item): item is CompareEngineCard => Boolean(item));
+  })
+    .filter(Boolean)
+    .map((item) => item as CompareEngineCard);
   const proofBackgroundMedia = (await listExamples('date-desc', 20))
     .map((video) => {
       const videoUrl = video.videoUrl ?? null;

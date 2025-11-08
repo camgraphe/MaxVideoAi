@@ -154,6 +154,13 @@ export default async function PricingPage() {
     },
   };
 
+  type TierCopy = {
+    name?: string;
+    requirement?: string;
+    requirementThreshold?: string;
+    benefit?: string;
+    benefitDiscount?: string;
+  };
   const membershipTiers = await getMembershipTiers();
   const currencyFormatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -178,7 +185,7 @@ export default async function PricingPage() {
   const priceFactors = content.priceFactors ?? DEFAULT_PRICE_FACTORS;
 
   const formattedTiers = membershipTiers.map((tier, index) => {
-    const tierCopy = Array.isArray(member.tiers) ? member.tiers[index] ?? null : null;
+    const tierCopy = Array.isArray(member.tiers) ? ((member.tiers[index] ?? null) as TierCopy | null) : null;
     const name = tierCopy?.name ?? tier.tier.charAt(0).toUpperCase() + tier.tier.slice(1);
     const requirement =
       tier.spendThresholdCents <= 0
@@ -216,7 +223,7 @@ export default async function PricingPage() {
         {heroLink ? (
           <p className="text-base text-text-secondary">
             {heroLink.before}
-            <Link href="/blog/compare-ai-video-engines" className="font-semibold text-accent hover:text-accentSoft">
+            <Link href={{ pathname: '/blog/[slug]', params: { slug: 'compare-ai-video-engines' } }} className="font-semibold text-accent hover:text-accentSoft">
               {heroLink.label ?? 'AI video comparison'}
             </Link>
             {heroLink.after}

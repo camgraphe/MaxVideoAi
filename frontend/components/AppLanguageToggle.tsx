@@ -53,7 +53,7 @@ export function AppLanguageToggle() {
     document.cookie = `${LOCALE_COOKIE}=${value}; path=/; max-age=${maxAge}; SameSite=Lax`;
     document.cookie = `NEXT_LOCALE=${value}; path=/; max-age=${maxAge}; SameSite=Lax`;
     startTransition(() => {
-      router.push(pathname);
+      router.push(pathname ?? '/');
       router.refresh();
     });
   };

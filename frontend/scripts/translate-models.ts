@@ -101,10 +101,11 @@ function setByPath(target: unknown, pathParts: string[], value: string) {
       }
       cursor = cursor[idx] as Record<string, unknown> | unknown[];
     } else if (cursor && typeof cursor === 'object') {
-      if (!(part in cursor)) {
-        (cursor as Record<string, unknown>)[part] = numeric ? [] : {};
+      const record = cursor as Record<string, unknown>;
+      if (!(part in record)) {
+        record[part] = numeric ? [] : {};
       }
-      cursor = (cursor as Record<string, unknown> | unknown[])[part] as Record<string, unknown> | unknown[];
+      cursor = record[part] as Record<string, unknown> | unknown[];
     }
   });
 }

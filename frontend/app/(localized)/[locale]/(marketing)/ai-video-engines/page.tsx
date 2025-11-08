@@ -32,7 +32,7 @@ export default function AiVideoEnginesPage() {
         </p>
         <p className="text-base text-text-secondary">
           Not sure which model to pick? Read our{' '}
-          <Link href="/blog/compare-ai-video-engines" className="font-semibold text-accent hover:text-accentSoft">
+          <Link href={{ pathname: '/blog/[slug]', params: { slug: 'compare-ai-video-engines' } }} className="font-semibold text-accent hover:text-accentSoft">
             comparison article
           </Link>
           .

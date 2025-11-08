@@ -44,11 +44,11 @@ export function LanguageToggle() {
         if (m && m[1]) slugValue = m[1];
       }
       if (slugValue) {
-        router.replace(`/models/${slugValue}`, { locale: value });
+        router.replace({ pathname: '/models/[slug]', params: { slug: slugValue } }, { locale: value });
         return;
       }
       const targetPath = pathname && pathname.length ? pathname : '/';
-      router.replace(targetPath, { locale: value });
+      router.replace(targetPath as never, { locale: value });
     });
   };
 

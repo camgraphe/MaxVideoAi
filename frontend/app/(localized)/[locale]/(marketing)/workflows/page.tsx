@@ -174,7 +174,9 @@ export default async function WorkflowsPage() {
           {pickSection?.subtitle ?? 'Start from a common use case. You can swap engines later.'}
         </p>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {useCaseCards.map((card) => (
+          {useCaseCards.map((card) => {
+            const cardCta = (card as { cta?: string })?.cta;
+            return (
             <a
               key={card.title}
               href={card.href ?? '#'}
@@ -188,10 +190,11 @@ export default async function WorkflowsPage() {
                 ))}
               </ul>
               <div className="mt-3 text-sm font-semibold text-accent underline underline-offset-2">
-                {card.cta ?? 'Browse examples →'}
+                {cardCta ?? 'Browse examples →'}
               </div>
             </a>
-          ))}
+            );
+          })}
         </div>
       </section>
       <section className="mt-12 rounded-card border border-hairline bg-white p-6 shadow-card">

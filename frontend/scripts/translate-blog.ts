@@ -217,7 +217,7 @@ async function translateSegments(locale: TargetLocale, segments: Segment[]) {
 }
 
 function collectSegments(tree: unknown, segments: Segment[]) {
-  visit(tree as any, (node: any, _index: number, parent: any) => {
+  visit(tree as any, (node: any, _index?: number, parent?: any) => {
     if (!node) {
       return;
     }

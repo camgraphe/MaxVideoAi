@@ -3,5 +3,6 @@
   "pricing": { "en": "pricing", "fr": "tarifs", "es": "precios" },
   "gallery": { "en": "examples", "fr": "galerie", "es": "galeria" },
   "compare": { "en": "ai-video-engines", "fr": "comparatif", "es": "comparativa" },
-  "blog": { "en": "blog", "fr": "blog", "es": "blog" }
+  "blog": { "en": "blog", "fr": "blog", "es": "blog" },
+  "workflows": { "en": "workflows", "fr": "workflows", "es": "workflows" }
 }

@@ -87,8 +87,10 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
 
 type EngineTypeKey = 'textImage' | 'text' | 'image' | 'default';
 
+const ENGINE_TYPE_KEYS: EngineTypeKey[] = ['textImage', 'text', 'image', 'default'];
+
 function getEngineTypeKey(entry: FalEngineEntry): EngineTypeKey {
-  if (entry.type) return entry.type;
+  if (entry.type && ENGINE_TYPE_KEYS.includes(entry.type as EngineTypeKey)) return entry.type as EngineTypeKey;
   const modes = new Set(entry.engine.modes);
   const hasText = modes.has('t2v');
   const hasImage = modes.has('i2v');
@@ -131,7 +133,15 @@ export default async function ModelsPage() {
     ...DEFAULT_ENGINE_TYPE_LABELS,
     ...(content.engineTypeLabels ?? {}),
   };
-  const engineMetaCopy = content.meta ?? {};
+  const engineMetaCopy = (content.meta ?? {}) as Record<
+    string,
+    {
+      displayName?: string;
+      description?: string;
+      priceBefore?: string;
+      versionLabel?: string;
+    }
+  >;
 
   const priorityOrder = [
     'sora-2',
@@ -181,7 +191,7 @@ export default async function ModelsPage() {
           <h3 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{introCta.title}</h3>
           <p className="mt-2">
             {introCta.before}
-            <Link href="/blog/compare-ai-video-engines" className="font-semibold text-accent hover:text-accentSoft">
+            <Link href={{ pathname: '/blog/[slug]', params: { slug: 'compare-ai-video-engines' } }} className="font-semibold text-accent hover:text-accentSoft">
               {introCta.comparisonLabel}
             </Link>
             {introCta.middle}

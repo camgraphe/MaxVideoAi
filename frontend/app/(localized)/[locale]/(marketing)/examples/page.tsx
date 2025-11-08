@@ -189,7 +189,10 @@ function toISODate(input?: Date | string) {
 export default async function ExamplesPage({ searchParams }: ExamplesPageProps) {
   const { dictionary } = await resolveDictionary();
   const content = dictionary.examples;
-  const sortLabels = content?.sort ?? {
+  const sortContent = (content as { sort?: Record<string, string> })?.sort;
+  const sortLabel = (content as { sortLabel?: string })?.sortLabel ?? 'Sort';
+  const countLabel = (content as { countLabel?: string })?.countLabel ?? 'curated renders';
+  const sortLabels = sortContent ?? {
     newest: 'Newest',
     oldest: 'Oldest',
     longest: 'Longest',
@@ -203,6 +206,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     { id: 'duration-asc', label: sortLabels.shortest ?? 'Shortest' },
     { id: 'engine-asc', label: sortLabels.engineAZ ?? 'Engine A->Z' },
   ];
+  const DEFAULT_SORT: ExampleSort = 'date-desc';
   const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
   const sort = getSort(sortParam);
   const videos = await listExamples(sort, 60);
@@ -272,15 +276,15 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
 
       <section className="mt-8 flex flex-wrap items-center justify-between gap-3 text-xs text-text-secondary">
         <div className="flex items-center gap-2">
-          <span className="font-semibold uppercase tracking-micro text-text-muted">{content?.sortLabel ?? 'Sort'}</span>
+          <span className="font-semibold uppercase tracking-micro text-text-muted">{sortLabel}</span>
           <nav className="flex gap-2 rounded-pill border border-hairline bg-white px-2 py-1">
             {SORT_OPTIONS.map((option) => {
               const isActive = option.id === sort;
-              const query = new URLSearchParams({ sort: option.id }).toString();
+              const queryParams = option.id === DEFAULT_SORT ? undefined : { sort: option.id };
               return (
                 <Link
                   key={option.id}
-                  href={`/examples?${query}`}
+                  href={{ pathname: '/examples', query: queryParams }}
                   className={clsx(
                     'rounded-full px-3 py-1 text-xs font-medium transition',
                     isActive ? 'bg-text-primary text-white shadow-sm' : 'text-text-secondary hover:bg-accentSoft/20'
@@ -292,7 +296,9 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
             })}
           </nav>
         </div>
-        <span className="text-xs text-text-muted">{videos.length} {content?.countLabel ?? 'curated renders'}</span>
+        <span className="text-xs text-text-muted">
+          {videos.length} {countLabel}
+        </span>
       </section>
 
       <section className="mt-8 overflow-hidden rounded-[32px] border border-hairline bg-white/80 shadow-card">

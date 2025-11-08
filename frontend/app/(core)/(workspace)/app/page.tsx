@@ -203,7 +203,7 @@ function AssetLibraryModal({
   deletingAssetId,
 }: AssetLibraryModalProps) {
   const { t } = useI18n();
-  const copy = t('workspace.generate.assetLibrary', DEFAULT_WORKSPACE_COPY.assetLibrary);
+  const copy = t('workspace.generate.assetLibrary', DEFAULT_WORKSPACE_COPY.assetLibrary) ?? DEFAULT_WORKSPACE_COPY.assetLibrary;
   const formatSize = (bytes?: number | null) => {
     if (!bytes || bytes <= 0) return null;
     if (bytes >= 1024 * 1024) {
@@ -836,7 +836,7 @@ export default function Page() {
   const provider = useResultProvider();
   const showCenterGallery = CLIENT_ENV.WORKSPACE_CENTER_GALLERY === 'true';
   const { t } = useI18n();
-  const workspaceCopy = t('workspace.generate', DEFAULT_WORKSPACE_COPY);
+  const workspaceCopy = t('workspace.generate', DEFAULT_WORKSPACE_COPY) ?? DEFAULT_WORKSPACE_COPY;
 
   const router = useRouter();
   const pathname = usePathname();
@@ -2640,7 +2640,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     const presentInsufficientFunds = (shortfallCents?: number) => {
       const normalizedShortfall = typeof shortfallCents === 'number' ? Math.max(0, shortfallCents) : undefined;
 
-      let friendlyNotice = workspaceCopy.wallet.insufficient;
+      let friendlyNotice: string = workspaceCopy.wallet.insufficient;
       let formattedShortfall: string | undefined;
       if (typeof normalizedShortfall === 'number' && normalizedShortfall > 0) {
         try {

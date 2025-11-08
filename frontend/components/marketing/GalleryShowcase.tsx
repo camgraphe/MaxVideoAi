@@ -96,6 +96,8 @@ export function GalleryShowcase({ featuredItems }: GalleryShowcaseProps) {
     hasAudio: boolean;
   };
 
+  const modelMetaMap = (dictionary.models.meta ?? {}) as Record<string, { displayName?: string; versionLabel?: string }>;
+
   const renderItems: RenderItem[] = featuredItems && featuredItems.length
     ? featuredItems.map((item) => ({
         id: item.id,
@@ -116,7 +118,7 @@ export function GalleryShowcase({ featuredItems }: GalleryShowcaseProps) {
           memberTier: (pricingScenario.memberTier ?? 'member').toString().toLowerCase() as PricingMemberTier,
         });
         const rosterEntry = getModelBySlug(item.meta.slug);
-        const localizedMeta = dictionary.models.meta?.[item.meta.slug];
+        const localizedMeta = modelMetaMap[item.meta.slug];
         const displayName = localizedMeta?.displayName ?? rosterEntry?.marketingName ?? item.label;
         const versionLabel = localizedMeta?.versionLabel ?? rosterEntry?.versionLabel;
         const costLabel = formatCurrency(quote.snapshot.currency, quote.snapshot.totalCents);

@@ -279,7 +279,7 @@ export default async function DocsIndexPage() {
                   <ul className="mt-4 space-y-3 text-sm text-text-secondary">
                     {docs.map((doc) => (
                       <li key={doc.slug}>
-                        <Link href={`/docs/${doc.slug}`} className="font-semibold text-accent hover:text-accentSoft">
+                        <Link href={{ pathname: '/docs/[slug]', params: { slug: doc.slug } }} className="font-semibold text-accent hover:text-accentSoft">
                           {doc.title}
                         </Link>
                         <p className="text-xs text-text-muted">{doc.description}</p>

@@ -1,16 +1,11 @@
-User-agent: OAI-SearchBot
-Allow: /
-
-User-agent: GPTBot
-Allow: /
-
-User-agent: Google-Extended
-Allow: /
-
-User-agent: CCBot
-Allow: /
-
+# *
 User-agent: *
 Allow: /
+Disallow: /_next/
+Disallow: /api/
+
+# Host
+Host: https://maxvideoai.com
+
+# Sitemaps
 Sitemap: https://maxvideoai.com/sitemap.xml
-Sitemap: https://maxvideoai.com/sitemap-video.xml
