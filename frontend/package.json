@@ -5,6 +5,7 @@
   "packageManager": "pnpm@10.18.2",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/bump-sitemap-timestamp.js",
     "build": "next build",
     "postbuild": "next-sitemap",
     "start": "next start",
@@ -31,6 +32,7 @@
     "@react-email/render": "^1.4.0",
     "@supabase/supabase-js": "^2.45.4",
     "@vercel/analytics": "^1.5.0",
+    "@vercel/postgres": "^0.10.0",
     "@vercel/speed-insights": "^1.2.0",
     "clsx": "^2.1.0",
     "deepmerge": "^4.3.1",
