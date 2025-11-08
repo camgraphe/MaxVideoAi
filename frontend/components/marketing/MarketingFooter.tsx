@@ -38,7 +38,7 @@ export function MarketingFooter() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  locale={item.locale == null ? undefined : item.locale}
+                  locale={item.locale === false ? false : undefined}
                   className="transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   {item.label}
