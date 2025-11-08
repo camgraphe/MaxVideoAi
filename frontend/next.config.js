@@ -159,12 +159,22 @@ const nextConfig = {
     ];
   },
   async headers() {
-    if (!isPreviewDeployment) {
-      return [];
-    }
+    const rules = [];
 
-    return [
-      {
+    // Always ensure robots.txt is not cached so changes propagate immediately
+    rules.push({
+      source: '/robots.txt',
+      headers: [
+        {
+          key: 'Cache-Control',
+          value: 'no-store, must-revalidate',
+        },
+      ],
+    });
+
+    // In preview deployments, block indexing site-wide
+    if (isPreviewDeployment) {
+      rules.push({
         source: '/:path*',
         headers: [
           {
@@ -172,8 +182,10 @@ const nextConfig = {
             value: 'noindex, nofollow',
           },
         ],
-      },
-    ];
+      });
+    }
+
+    return rules;
   },
 };
 
