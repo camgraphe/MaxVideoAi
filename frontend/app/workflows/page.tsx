@@ -1,7 +1,8 @@
-import WorkflowsPage from '../(localized)/[locale]/(marketing)/workflows/page';
+import WorkflowsPage, { generateMetadata as generateLocalizedMetadata } from '../(localized)/[locale]/(marketing)/workflows/page';
 import LocaleLayout from '../(localized)/[locale]/layout';
 import { DEFAULT_LOCALE } from '../default-locale-wrapper';
-export { generateMetadata } from '../(localized)/[locale]/(marketing)/workflows/page';
+
+export const generateMetadata = () => generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE } });
 
 export default function WorkflowsDefaultPage() {
   return (
