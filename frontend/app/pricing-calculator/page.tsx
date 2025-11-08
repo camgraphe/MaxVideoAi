@@ -1,7 +1,10 @@
-import CalculatorPage from '../(localized)/[locale]/(marketing)/pricing-calculator/page';
+import CalculatorPage, {
+  generateMetadata as generateLocalizedMetadata,
+} from '../(localized)/[locale]/(marketing)/pricing-calculator/page';
 import LocaleLayout from '../(localized)/[locale]/layout';
 import { DEFAULT_LOCALE } from '../default-locale-wrapper';
-export { metadata } from '../(localized)/[locale]/(marketing)/pricing-calculator/page';
+
+export const generateMetadata = () => generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE } });
 
 export default function PricingCalculatorDefaultPage() {
   return (
