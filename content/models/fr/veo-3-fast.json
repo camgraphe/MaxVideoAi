@@ -31,7 +31,7 @@
     {
       "label": "Durée",
       "body": "Clips de 4, 6 ou 8 s pour itérer vite",
-      "link": { "label": "fal.ai", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
+      "link": { "label": "Fiche modèle", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
     },
     {
       "label": "Résolution",
@@ -44,7 +44,7 @@
     {
       "label": "Audio",
       "body": "Aucun audio — rendus silencieux pour des loops rapides",
-      "link": { "label": "fal.ai", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
+      "link": { "label": "Fiche modèle", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
     },
     { "label": "Entrées", "body": "Prompts texte uniquement — idéal pour explorer des idées" },
     { "label": "Modes", "body": "Texte→vidéo optimisé pour la vitesse, sans upload de référence" },

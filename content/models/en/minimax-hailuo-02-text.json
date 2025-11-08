@@ -31,7 +31,7 @@
     {
       "label": "Duration",
       "body": "6 or 10-second clips for rapid iteration",
-      "link": { "label": "fal.ai model page", "href": "https://fal.ai/models/fal-ai/minimax-hailuo-02-text" }
+      "link": { "label": "Model reference", "href": "https://fal.ai/models/fal-ai/minimax-hailuo-02-text" }
     },
     {
       "label": "Resolution",

@@ -31,7 +31,7 @@
     {
       "label": "Duración",
       "body": "Clips de 4, 6 u 8 s para iterar rápido",
-      "link": { "label": "fal.ai", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
+      "link": { "label": "Ficha del modelo", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
     },
     {
       "label": "Resolución",
@@ -44,7 +44,7 @@
     {
       "label": "Audio",
       "body": "Sin audio: renders silenciosos para loops ágiles",
-      "link": { "label": "fal.ai", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
+      "link": { "label": "Ficha del modelo", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
     },
     { "label": "Entradas", "body": "Solo prompts de texto—perfecto para explorar ideas" },
     { "label": "Modos", "body": "Texto→video afinado para velocidad; sin imágenes de referencia" },

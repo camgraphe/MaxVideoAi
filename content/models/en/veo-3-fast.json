@@ -31,7 +31,7 @@
     {
       "label": "Duration",
       "body": "Select 4, 6, or 8-second clips for rapid iteration",
-      "link": { "label": "fal.ai", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
+      "link": { "label": "Model reference", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
     },
     {
       "label": "Resolution",
@@ -44,7 +44,7 @@
     {
       "label": "Audio",
       "body": "No audio—silent renders for quick loops",
-      "link": { "label": "fal.ai", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
+      "link": { "label": "Model reference", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
     },
     { "label": "Inputs", "body": "Text prompts only—perfect for exploring ideas" },
     { "label": "Modes", "body": "Text-to-video workflows tuned purely for speed; no reference uploads" },

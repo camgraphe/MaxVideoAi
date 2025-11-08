@@ -31,7 +31,7 @@
     {
       "label": "Duración",
       "body": "Clips de hasta 8 s para iteraciones rápidas",
-      "link": { "label": "fal.ai", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
+      "link": { "label": "Ficha del modelo", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
     },
     {
       "label": "Resolución",
@@ -41,7 +41,7 @@
     {
       "label": "Audio",
       "body": "Audio nativo opcional: actívalo para voz y ambiente",
-      "link": { "label": "fal.ai", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
+      "link": { "label": "Ficha del modelo", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
     },
     { "label": "Entradas", "body": "Solo prompts de texto — ideal para iteración rápida" },
     { "label": "Modos", "body": "Texto→video con interruptor de audio; sin imágenes de referencia" },
