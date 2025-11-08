@@ -3,7 +3,7 @@ import type { PropsWithChildren, ReactElement, ReactNode, ComponentType, Compone
 import { createNavigation } from 'next-intl/navigation';
 import { routing } from '@/i18n/routing';
 
-const BYPASS_PREFIXES = ['/app', '/dashboard', '/jobs', '/billing', '/settings', '/generate', '/login'];
+const BYPASS_PREFIXES = ['/app', '/dashboard', '/jobs', '/billing', '/settings', '/generate', '/login', '/legal'];
 
 const { Link: LocalizedLink, redirect, usePathname, useRouter, getPathname } = createNavigation(routing);
 
