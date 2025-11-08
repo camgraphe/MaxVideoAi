@@ -5,6 +5,8 @@ const matter = require('gray-matter');
 const modelRoster = require('./config/model-roster.json');
 const localizedSlugConfig = require('./config/localized-slugs.json');
 
+const { Client } = require('pg');
+
 const SITE_URL = 'https://maxvideoai.com';
 const LOCALES = ['en', 'fr', 'es'];
 const LOCALE_PREFIXES = { en: '', fr: 'fr', es: 'es' };
@@ -28,6 +30,44 @@ const MARKETING_CORE_PATHS = [
 ];
 
 const CONTENT_ROOT = path.join(__dirname, '..', 'content');
+
+function resolveDatabaseUrl() {
+  return (
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.DATABASE_URL ||
+    null
+  );
+}
+
+async function fetchSlugsFromDb(tableName, basePath) {
+  const connectionString = resolveDatabaseUrl();
+  if (!connectionString) {
+    return [];
+  }
+
+  const client = new Client({ connectionString });
+  try {
+    await client.connect();
+    const { rows } = await client.query(
+      `SELECT slug, updated_at FROM ${tableName} WHERE slug IS NOT NULL`
+    );
+    return rows
+      .filter((row) => typeof row.slug === 'string' && row.slug.trim().length > 0)
+      .map((row) => ({
+        path: `${basePath}/${row.slug.trim()}`.replace(/\/{2,}/g, '/'),
+        lastmod: row.updated_at ? new Date(row.updated_at).toISOString() : undefined,
+      }));
+  } catch (error) {
+    console.warn(`[next-sitemap] skipped ${tableName} slugs`, error.message || error);
+    return [];
+  } finally {
+    try {
+      await client.end();
+    } catch {}
+  }
+}
 
 function collectContentSlugs(section) {
   const directory = path.join(CONTENT_ROOT, section);
@@ -92,6 +132,15 @@ function collectLocalizedBlogPaths() {
     }
   }
   return paths;
+}
+
+async function collectDynamicDbPaths() {
+  const [models, examples, workflows] = await Promise.all([
+    fetchSlugsFromDb('models', '/models'),
+    fetchSlugsFromDb('examples', '/examples'),
+    fetchSlugsFromDb('workflows', '/workflows'),
+  ]);
+  return [...models, ...examples, ...workflows];
 }
 
 function normalizePathSegments(...segments) {
@@ -225,8 +274,18 @@ module.exports = {
 
     collectLocalizedBlogPaths().forEach((slug) => marketingPaths.add(slug));
 
+    const dynamicEntries = await collectDynamicDbPaths();
+    const baseEntries = Array.from(marketingPaths).map((loc) => ({ path: loc }));
+    const entries = baseEntries.concat(dynamicEntries);
+
     const transformed = await Promise.all(
-      Array.from(marketingPaths).map((loc) => config.transform(config, loc))
+      entries.map(async ({ path, lastmod }) => {
+        const entry = await config.transform(config, path);
+        if (entry && lastmod) {
+          entry.lastmod = lastmod;
+        }
+        return entry;
+      })
     );
 
     return transformed.filter(Boolean);
