@@ -5,6 +5,7 @@ import { Analytics as VercelAnalytics } from '@vercel/analytics/react';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { AnalyticsScripts } from '@/components/analytics/AnalyticsScripts';
 import ConsentModeBootstrap from '@/components/analytics/ConsentModeBootstrap';
+import GA4RouteTracker from '@/components/analytics/GA4RouteTracker';
 import { AuthCallbackHandler } from '@/components/AuthCallbackHandler';
 import { CookieBanner } from '@/components/legal/CookieBanner';
 import { JsonLd } from '@/components/SeoJsonLd';
@@ -107,6 +108,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
       </head>
       <body>
         <ConsentModeBootstrap />
+        <GA4RouteTracker />
         <AuthCallbackHandler />
         <I18nProvider locale={locale} dictionary={messages} fallback={fallbackMessages}>
           {children}

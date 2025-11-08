@@ -7,10 +7,11 @@ import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
 import { listFalEngines, getFalEngineBySlug } from '@/config/falEngines';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import type { AppLocale } from '@/i18n/locales';
-import { locales } from '@/i18n/locales';
+import { locales, localePathnames, localeRegions } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { getEngineLocalized } from '@/lib/models/i18n';
+import { serializeJsonLd } from '../model-jsonld';
 
 type PageParams = {
   params: {
@@ -231,6 +232,15 @@ export default async function ModelDetailPage({ params }: PageParams) {
   const canonicalUrl = metadataUrls.canonical;
   const breadcrumbTitleBase = localizedContent.seo.title ?? marketingName ?? slug;
   const breadcrumbTitle = breadcrumbTitleBase.replace(/ —.*$/, '');
+  const localePathPrefix = localePathnames[activeLocale] ? `/${localePathnames[activeLocale].replace(/^\/+/, '')}` : '';
+  const homePathname = localePathPrefix || '/';
+  const localizedHomeUrl = homePathname === '/' ? `${SITE}/` : `${SITE}${homePathname}`;
+  const localizedModelsSlug = (MODELS_BASE_PATH_MAP[activeLocale] ?? 'models').replace(/^\/+/, '');
+  const modelsPathname =
+    homePathname === '/'
+      ? `/${localizedModelsSlug}`
+      : `${homePathname.replace(/\/+$/, '')}/${localizedModelsSlug}`.replace(/\/{2,}/g, '/');
+  const localizedModelsUrl = `${SITE}${modelsPathname}`;
   const breadcrumbLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -239,13 +249,13 @@ export default async function ModelDetailPage({ params }: PageParams) {
         '@type': 'ListItem',
         position: 1,
         name: detailCopy.breadcrumb.home,
-        item: `${SITE}/`,
+        item: localizedHomeUrl,
       },
       {
         '@type': 'ListItem',
         position: 2,
         name: detailCopy.breadcrumb.models,
-        item: `${SITE}/models`,
+        item: localizedModelsUrl,
       },
       {
         '@type': 'ListItem',
@@ -255,6 +265,26 @@ export default async function ModelDetailPage({ params }: PageParams) {
       },
     ],
   };
+  const faqEntities =
+    faqEntries.length > 0
+      ? faqEntries.slice(0, 3).map(({ question, answer }) => ({
+          '@type': 'Question' as const,
+          name: question,
+          acceptedAnswer: {
+            '@type': 'Answer' as const,
+            text: answer,
+          },
+        }))
+      : [];
+  const faqLd =
+    faqEntities.length > 0
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          inLanguage: localeRegions[activeLocale] ?? localeRegions.en,
+          mainEntity: faqEntities,
+        }
+      : null;
 
   const platformPriceInfo = (() => {
     if (!pricingHint || typeof pricingHint.amountCents !== 'number') return null;
@@ -292,12 +322,18 @@ export default async function ModelDetailPage({ params }: PageParams) {
         isAccessibleForFree: false,
       }
     : null;
+  const schemaPayloads = [showSoraSeo && soraSoftwareSchema, breadcrumbLd, faqLd].filter(Boolean) as object[];
 
   return (
     <div className="mx-auto max-w-4xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
-      {showSoraSeo && soraSoftwareSchema && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(soraSoftwareSchema) }} />
-      )}
+      {schemaPayloads.map((schema, index) => (
+        <script
+          key={`schema-${index}`}
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
+        />
+      ))}
       <Link href="/models" className="text-sm font-semibold text-accent hover:text-accentSoft">
         {detailCopy.backLabel}
       </Link>
@@ -502,11 +538,6 @@ export default async function ModelDetailPage({ params }: PageParams) {
           {detailCopy.buttons.launch}
         </Link>
       </footer>
-      <script
-        type="application/ld+json"
-        suppressHydrationWarning
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
-      />
     </div>
   );
 }

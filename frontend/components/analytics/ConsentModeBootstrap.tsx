@@ -40,7 +40,9 @@ export default function ConsentModeBootstrap() {
           gtag('js', new Date());
           gtag('config', '${GA_ID}', {
             anonymize_ip: true,
-            allow_google_signals: false
+            allow_google_signals: false,
+            send_page_view: false${process.env.NODE_ENV !== 'production' ? `,
+            debug_mode: true` : ''}
           });
         `}
       </Script>
