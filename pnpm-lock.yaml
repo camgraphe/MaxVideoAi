@@ -44,7 +44,7 @@ importers:
         version: 1.1.0
       '@maxvideoai/pricing':
         specifier: file:../packages/pricing
-        version: file:packages/pricing
+        version: link:../packages/pricing
       '@react-email/components':
         specifier: ^0.5.7
         version: 0.5.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -72,6 +72,9 @@ importers:
       fast-glob:
         specifier: ^3.3.3
         version: 3.3.3
+      fast-xml-parser:
+        specifier: ^5.3.1
+        version: 5.3.1
       ffprobe-static:
         specifier: ^3.1.0
         version: 3.1.0
@@ -705,10 +708,6 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
-
-  '@maxvideoai/pricing@file:packages/pricing':
-    resolution: {directory: packages/pricing, type: directory}
-    engines: {node: '>=18'}
 
   '@msgpack/msgpack@3.1.2':
     resolution: {integrity: sha512-JEW4DEtBzfe8HvUYecLU9e6+XJnKDlUAIve8FvPzF3Kzs6Xo/KuZkZJsDH0wJXl/qEZbeeE7edxDNY3kMs39hQ==}
@@ -2061,6 +2060,10 @@ packages:
 
   fast-xml-parser@5.2.5:
     resolution: {integrity: sha512-pfX9uG9Ki0yekDHx2SiuRIyFdyAr1kMIMitPvb0YBo8SUfKvia7w7FIyd/l6av85pFYRhZscS75MwMnbvY+hcQ==}
+    hasBin: true
+
+  fast-xml-parser@5.3.1:
+    resolution: {integrity: sha512-jbNkWiv2Ec1A7wuuxk0br0d0aTMUtQ4IkL+l/i1r9PRf6pLXjDgsBsWwO+UyczmQlnehi4Tbc8/KIvxGQe+I/A==}
     hasBin: true
 
   fastq@1.19.1:
@@ -4467,8 +4470,6 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@maxvideoai/pricing@file:packages/pricing': {}
-
   '@msgpack/msgpack@3.1.2': {}
 
   '@napi-rs/wasm-runtime@0.2.12':
@@ -6054,6 +6055,10 @@ snapshots:
   fast-sha256@1.3.0: {}
 
   fast-xml-parser@5.2.5:
+    dependencies:
+      strnum: 2.1.1
+
+  fast-xml-parser@5.3.1:
     dependencies:
       strnum: 2.1.1
 

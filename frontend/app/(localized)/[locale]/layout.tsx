@@ -22,8 +22,14 @@ export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  process.env.SITE_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://maxvideoai.com');
+const NORMALIZED_SITE_URL = SITE_URL.replace(/\/+$/, '') || 'https://maxvideoai.com';
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://maxvideoai.com'),
+  metadataBase: new URL(`${NORMALIZED_SITE_URL}/`),
   title: {
     default: 'MaxVideoAI — AI Video Generator Hub',
     template: '%s — MaxVideoAI',
@@ -58,12 +64,14 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   const fallbackMessages =
     locale === defaultLocale ? messages : deserializeMessages(await getMessages({ locale: defaultLocale }));
 
+  const homeUrl = `${NORMALIZED_SITE_URL}/`;
+  const logoUrl = `${NORMALIZED_SITE_URL}/favicon-512.png`;
   const orgSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'MaxVideoAI',
-    url: 'https://maxvideoai.com/',
-    logo: 'https://maxvideoai.com/favicon-512.png',
+    url: homeUrl,
+    logo: logoUrl,
     sameAs: [
       'https://x.com/MaxVideoAI',
       'https://www.linkedin.com/company/maxvideoai/',
@@ -76,14 +84,14 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   const websiteSchema = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    url: 'https://maxvideoai.com/',
+    url: homeUrl,
     name: 'MaxVideoAI',
     inLanguage: localeRegions[locale],
     ...(enableSearchSchema
       ? {
           potentialAction: {
             '@type': 'SearchAction',
-            target: 'https://maxvideoai.com/search?q={query}',
+            target: `${homeUrl}search?q={query}`,
             'query-input': 'required name=query',
           },
         }

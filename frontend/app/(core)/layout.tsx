@@ -10,8 +10,14 @@ import { I18nProvider } from '@/lib/i18n/I18nProvider';
 import { resolveDictionary } from '@/lib/i18n/server';
 import '@/app/globals.css';
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  process.env.SITE_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://maxvideoai.com');
+const NORMALIZED_SITE_URL = SITE_URL.replace(/\/+$/, '') || 'https://maxvideoai.com';
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://maxvideoai.com'),
+  metadataBase: new URL(`${NORMALIZED_SITE_URL}/`),
   title: {
     default: 'MaxVideoAI — AI Video Generator Hub',
     template: '%s — MaxVideoAI',
@@ -37,12 +43,14 @@ export const viewport: Viewport = {
 export default async function CoreLayout({ children }: { children: ReactNode }) {
   const { locale, dictionary, fallback } = await resolveDictionary();
 
+  const homeUrl = `${NORMALIZED_SITE_URL}/`;
+  const logoUrl = `${NORMALIZED_SITE_URL}/favicon-512.png`;
   const orgSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'MaxVideoAI',
-    url: 'https://maxvideoai.com/',
-    logo: 'https://maxvideoai.com/favicon-512.png',
+    url: homeUrl,
+    logo: logoUrl,
     sameAs: [
       'https://x.com/MaxVideoAI',
       'https://www.linkedin.com/company/maxvideoai/',
@@ -55,13 +63,13 @@ export default async function CoreLayout({ children }: { children: ReactNode }) 
   const websiteSchema = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    url: 'https://maxvideoai.com/',
+    url: homeUrl,
     name: 'MaxVideoAI',
     ...(enableSearchSchema
       ? {
           potentialAction: {
             '@type': 'SearchAction',
-            target: 'https://maxvideoai.com/search?q={query}',
+            target: `${homeUrl}search?q={query}`,
             'query-input': 'required name=query',
           },
         }

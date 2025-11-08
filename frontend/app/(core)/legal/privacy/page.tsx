@@ -2,10 +2,16 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LegalVersionBadge } from '@/components/legal/LegalVersionBadge';
 import { formatLegalDate, getLegalDocument } from '@/lib/legal';
+import { SITE_BASE_URL } from '@/lib/metadataUrls';
+
+const PRIVACY_URL = `${SITE_BASE_URL}/legal/privacy`;
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
   description: 'How MaxVideoAI collects, uses, stores, and protects personal data.',
+  alternates: {
+    canonical: PRIVACY_URL,
+  },
 };
 
 export default async function PrivacyPage() {

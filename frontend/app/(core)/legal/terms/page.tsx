@@ -1,10 +1,16 @@
 import type { Metadata } from 'next';
 import { LegalVersionBadge } from '@/components/legal/LegalVersionBadge';
 import { formatLegalDate, getLegalDocument } from '@/lib/legal';
+import { SITE_BASE_URL } from '@/lib/metadataUrls';
+
+const TERMS_URL = `${SITE_BASE_URL}/legal/terms`;
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
   description: 'MaxVideoAI Terms of Service governing access to the platform and AI-assisted video generation tools.',
+  alternates: {
+    canonical: TERMS_URL,
+  },
 };
 
 export default async function TermsPage() {

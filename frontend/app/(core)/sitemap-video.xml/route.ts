@@ -3,7 +3,11 @@ import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import { getExampleDemos } from '@/server/engine-demos';
 import type { EngineDemo } from '@/server/engine-demos';
 
-const CANONICAL_BASE_URL = 'https://maxvideoai.com';
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  process.env.SITE_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://maxvideoai.com');
+const CANONICAL_BASE_URL = (SITE_URL?.replace(/\/+$/, '') || 'https://maxvideoai.com') as string;
 
 const XML_HEADER =
   '<?xml version="1.0" encoding="UTF-8"?>';

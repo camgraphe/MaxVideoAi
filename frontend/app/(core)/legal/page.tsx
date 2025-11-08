@@ -1,10 +1,16 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getLegalDocuments } from '@/lib/legal';
+import { SITE_BASE_URL } from '@/lib/metadataUrls';
+
+const LEGAL_INDEX_URL = `${SITE_BASE_URL}/legal`;
 
 export const metadata: Metadata = {
   title: 'Legal Center',
   description: 'Access the latest MaxVideoAI legal documents and compliance resources.',
+  alternates: {
+    canonical: LEGAL_INDEX_URL,
+  },
 };
 
 const LINKS: Array<{ href: string; label: string; docKey?: 'terms' | 'privacy' | 'cookies' }> = [

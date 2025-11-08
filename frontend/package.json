@@ -17,7 +17,8 @@
     "i18n:check": "tsx scripts/validate-keys.ts",
     "i18n:blog": "tsx scripts/translate-blog.ts",
     "i18n:models": "tsx scripts/translate-models.ts",
-    "qa:hreflang": "tsx scripts/qa/hreflang-check.ts"
+    "qa:hreflang": "tsx scripts/qa/hreflang-check.ts",
+    "qa:compare-en": "tsx scripts/qa/compare-en-prod.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.911.0",
@@ -35,6 +36,7 @@
     "deepmerge": "^4.3.1",
     "dotenv": "^17.2.3",
     "fast-glob": "^3.3.3",
+    "fast-xml-parser": "^5.3.1",
     "ffprobe-static": "^3.1.0",
     "gray-matter": "^4.0.3",
     "isbot": "^5.1.32",

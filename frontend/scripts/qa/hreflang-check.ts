@@ -1,27 +1,133 @@
 /* eslint-disable no-console */
-import { localePathnames } from '@/i18n/locales';
+import fs from 'node:fs';
+import path from 'node:path';
+import matter from 'gray-matter';
+import { localePathnames, type AppLocale } from '@/i18n/locales';
+import { localizedSlugs, type LocalizedSlugKey } from '@/lib/i18nSlugs';
 
-type Locale = 'en' | 'fr' | 'es';
+type Locale = AppLocale;
 
-const BASE_URL = process.env.QA_BASE_URL ?? 'http://localhost:3000';
+const RAW_BASE_URL = process.env.QA_BASE_URL ?? 'http://localhost:3000';
+const BASE_URL = RAW_BASE_URL.replace(/\/+$/, '') || 'http://localhost:3000';
 const LOCALES: Locale[] = ['en', 'fr', 'es'];
-const QA_PAGES = ['/', '/pricing', '/models', '/examples', '/blog', '/blog/compare-ai-video-engines'];
-const EXPECTED_HREFLANGS = ['en', 'fr', 'es', 'x-default'];
+const EXPECTED_HREFLANGS = ['en', 'fr', 'es', 'x-default'] as const;
 
-function buildPath(locale: Locale, path: string) {
+type PageConfig =
+  | { kind: 'home'; label: string }
+  | { kind: 'slug'; slugKey: LocalizedSlugKey; label: string }
+  | { kind: 'blog-post'; canonicalSlug: string; label: string };
+
+const QA_PAGES: PageConfig[] = [
+  { kind: 'home', label: '/' },
+  { kind: 'slug', slugKey: 'pricing', label: '/pricing' },
+  { kind: 'slug', slugKey: 'models', label: '/models' },
+  { kind: 'slug', slugKey: 'gallery', label: '/examples' },
+  { kind: 'slug', slugKey: 'blog', label: '/blog' },
+  { kind: 'blog-post', canonicalSlug: 'compare-ai-video-engines', label: '/blog/compare-ai-video-engines' },
+];
+
+const BLOG_ROOT = path.resolve(process.cwd(), '..', 'content');
+const BLOG_CACHE = new Map<Locale, Record<string, string>>();
+
+function normalizeSegment(segment?: string | null) {
+  if (!segment) return '';
+  return segment.replace(/^\/+|\/+$/g, '');
+}
+
+function buildPath(prefix?: string, slug?: string) {
+  const parts = [normalizeSegment(prefix), normalizeSegment(slug)].filter(Boolean);
+  if (!parts.length) {
+    return '/';
+  }
+  return `/${parts.join('/')}`;
+}
+
+function buildAbsoluteUrl(pathname: string) {
+  if (!pathname || pathname === '/') {
+    return `${BASE_URL}/`;
+  }
+  return `${BASE_URL}${pathname}`;
+}
+
+function loadBlogSlugMap(locale: Locale) {
+  if (BLOG_CACHE.has(locale)) {
+    return BLOG_CACHE.get(locale)!;
+  }
+  const dir = path.join(BLOG_ROOT, locale, 'blog');
+  const map: Record<string, string> = {};
+  if (fs.existsSync(dir)) {
+    for (const file of fs.readdirSync(dir)) {
+      if (!file.endsWith('.md') && !file.endsWith('.mdx')) {
+        continue;
+      }
+      const fullPath = path.join(dir, file);
+      try {
+        const raw = fs.readFileSync(fullPath, 'utf8');
+        const { data } = matter(raw);
+        const slug = typeof data.slug === 'string' ? data.slug : file.replace(/\.(md|mdx)$/i, '');
+        const canonical = typeof data.canonicalSlug === 'string' ? data.canonicalSlug : slug;
+        if (canonical) {
+          map[canonical] = slug;
+        }
+      } catch {
+        // ignore malformed files for QA
+      }
+    }
+  }
+  BLOG_CACHE.set(locale, map);
+  return map;
+}
+
+function resolveBlogSlug(locale: Locale, canonicalSlug: string) {
   if (locale === 'en') {
-    return path === '/' ? '/' : path;
+    return canonicalSlug;
   }
-  const prefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
-  if (path === '/') {
-    return prefix || '/';
+  const map = loadBlogSlugMap(locale);
+  return map[canonicalSlug] ?? canonicalSlug;
+}
+
+function getRequestLocaleSegment(locale: Locale) {
+  const configured = normalizeSegment(localePathnames[locale]);
+  if (configured) {
+    return configured;
   }
-  return `${prefix}${path}`.replace(/\/{2,}/g, '/');
+  return '';
+}
+
+function resolvePaths(locale: Locale, page: PageConfig) {
+  const canonicalPrefix = normalizeSegment(localePathnames[locale]);
+  const requestPrefix = getRequestLocaleSegment(locale);
+
+  if (page.kind === 'home') {
+    return {
+      label: page.label,
+      canonicalPath: buildPath(canonicalPrefix),
+      requestPath: buildPath(requestPrefix),
+    };
+  }
+
+  if (page.kind === 'slug') {
+    const slug = localizedSlugs[locale][page.slugKey];
+    return {
+      label: page.label,
+      canonicalPath: buildPath(canonicalPrefix, slug),
+      requestPath: buildPath(requestPrefix, slug),
+    };
+  }
+
+  // blog post
+  const localizedSlug = resolveBlogSlug(locale, page.canonicalSlug);
+  const blogPath = `blog/${localizedSlug}`;
+  return {
+    label: page.label,
+    canonicalPath: buildPath(canonicalPrefix, blogPath),
+    requestPath: buildPath(requestPrefix, blogPath),
+  };
 }
 
 function normalizeUrl(url: string) {
   try {
-    const parsed = new URL(url, BASE_URL);
+    const parsed = new URL(url, `${BASE_URL}/`);
     const normalizedPath = parsed.pathname === '/' ? '/' : parsed.pathname.replace(/\/+$/, '');
     return `${parsed.origin}${normalizedPath}`;
   } catch {
@@ -51,9 +157,9 @@ function extractLinks(html: string, rel: 'canonical' | 'alternate') {
   return results;
 }
 
-async function checkPage(locale: Locale, path: string) {
-  const localizedPath = buildPath(locale, path);
-  const url = `${BASE_URL.replace(/\/+$/, '')}${localizedPath === '/' ? '/' : localizedPath}`;
+async function checkPage(locale: Locale, page: PageConfig) {
+  const resolved = resolvePaths(locale, page);
+  const url = buildAbsoluteUrl(resolved.requestPath);
   const response = await fetch(url, { headers: { 'Accept-Language': locale } });
   if (!response.ok) {
     throw new Error(`Failed to load ${url} -> ${response.status}`);
@@ -62,7 +168,7 @@ async function checkPage(locale: Locale, path: string) {
   const canonicalLinks = extractLinks(html, 'canonical');
   const canonicalHref = canonicalLinks[0]?.href;
   const normalizedCanonical = canonicalHref ? normalizeUrl(canonicalHref) : null;
-  const expectedCanonical = normalizeUrl(url);
+  const expectedCanonical = normalizeUrl(resolved.canonicalPath);
 
   const alternateLinks = extractLinks(html, 'alternate');
   const alternatesByLang = Object.fromEntries(
@@ -80,11 +186,11 @@ async function checkPage(locale: Locale, path: string) {
   if (missingHreflang.length > 0) {
     issues.push(`missing hreflang: ${missingHreflang.join(', ')}`);
   }
-  return { url, issues };
+  return { url, issues, label: resolved.label };
 }
 
 async function main() {
-  const results: Array<{ url: string; issues: string[] }> = [];
+  const results: Array<{ url: string; issues: string[]; label: string }> = [];
   for (const locale of LOCALES) {
     for (const page of QA_PAGES) {
       try {
@@ -97,7 +203,8 @@ async function main() {
           console.log(`✓ ${result.url}`);
         }
       } catch (error) {
-        console.error(`✗ ${buildPath(locale, page)} failed`, error);
+        const resolved = resolvePaths(locale, page);
+        console.error(`✗ ${resolved.requestPath} failed`, error);
         process.exitCode = 1;
       }
     }
