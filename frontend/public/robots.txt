@@ -1,11 +1,19 @@
-# *
+# robots.txt — SEO friendly
+
 User-agent: *
-Allow: /
-Disallow: /_next/
+# Allow assets required for rendering
+Allow: /_next/static/
+Allow: /_next/image/
+Allow: /assets/
+Allow: /hero/
+Allow: /favicon.ico
+
+# Block only sensitive areas
 Disallow: /api/
+Disallow: /admin/
+Disallow: /private/
 
-# Host
+# Host and sitemaps
 Host: https://maxvideoai.com
-
-# Sitemaps
 Sitemap: https://maxvideoai.com/sitemap.xml
+Sitemap: https://maxvideoai.com/sitemap-video.xml
