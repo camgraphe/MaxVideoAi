@@ -4,6 +4,12 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { ConsentScriptGate } from '@/components/legal/ConsentScriptGate';
 
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void;
+  }
+}
+
 function TrackerCore() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
