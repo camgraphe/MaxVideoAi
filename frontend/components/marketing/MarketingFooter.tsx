@@ -7,12 +7,13 @@ import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 
 export function MarketingFooter() {
   const { t } = useI18n();
-  const defaultLinks: Array<{ label: string; href: string }> = [
-    { label: 'Blog', href: '/blog' },
-    { label: 'Terms', href: '/legal/terms' },
-    { label: 'Privacy', href: '/legal/privacy' },
-    { label: 'Acceptable Use', href: '/legal/acceptable-use' },
-    { label: 'Notice & Takedown', href: '/legal/takedown' },
+  type FooterLink = { label: string; href: string; locale?: boolean };
+  const defaultLinks: FooterLink[] = [
+    { label: 'Blog', href: '/blog', locale: true },
+    { label: 'Terms', href: '/legal/terms', locale: false },
+    { label: 'Privacy', href: '/legal/privacy', locale: false },
+    { label: 'Acceptable Use', href: '/legal/acceptable-use', locale: false },
+    { label: 'Notice & Takedown', href: '/legal/takedown', locale: false },
   ];
   const maybeLinks = t('footer.links', defaultLinks);
   const links = Array.isArray(maybeLinks) && maybeLinks.length ? maybeLinks : defaultLinks;
@@ -37,6 +38,7 @@ export function MarketingFooter() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  locale={item.locale == null ? undefined : item.locale}
                   className="transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   {item.label}

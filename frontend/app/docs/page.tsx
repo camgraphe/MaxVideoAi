@@ -1,8 +1,7 @@
-import DocsIndexPage, { generateMetadata as generateLocalizedMetadata } from '../(localized)/[locale]/(marketing)/docs/page';
+import DocsIndexPage from '../(localized)/[locale]/(marketing)/docs/page';
 import LocaleLayout from '../(localized)/[locale]/layout';
 import { DEFAULT_LOCALE } from '../default-locale-wrapper';
-
-export const generateMetadata = () => generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE } });
+export { generateMetadata } from '../(localized)/[locale]/(marketing)/docs/page';
 
 export default function DocsDefaultPage() {
   return (
