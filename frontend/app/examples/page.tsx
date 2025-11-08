@@ -4,12 +4,10 @@ import { DEFAULT_LOCALE } from '../default-locale-wrapper';
 
 export const generateMetadata = () => generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE } });
 
-type ExamplesPageProps = Parameters<typeof ExamplesPage>[0];
-
-export default function ExamplesDefaultPage(props: Omit<ExamplesPageProps, 'params'>) {
+export default function ExamplesDefaultPage(props: { searchParams?: Record<string, string | string[] | undefined> }) {
   return (
     <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
-      <ExamplesPage {...(props as ExamplesPageProps)} params={{ locale: DEFAULT_LOCALE }} />
+      <ExamplesPage searchParams={props.searchParams ?? {}} />
     </LocaleLayout>
   );
 }

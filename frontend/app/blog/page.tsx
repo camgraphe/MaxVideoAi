@@ -7,7 +7,7 @@ export const generateMetadata = () => generateLocalizedMetadata({ params: { loca
 export default function BlogDefaultPage() {
   return (
     <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
-      <BlogIndexPage params={{ locale: DEFAULT_LOCALE }} />
+      <BlogIndexPage />
     </LocaleLayout>
   );
 }
