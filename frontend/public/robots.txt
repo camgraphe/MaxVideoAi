@@ -13,7 +13,6 @@ Disallow: /api/
 Disallow: /admin/
 Disallow: /private/
 
-# Host and sitemaps
-Host: https://maxvideoai.com
+# Sitemaps
 Sitemap: https://maxvideoai.com/sitemap.xml
 Sitemap: https://maxvideoai.com/sitemap-video.xml
