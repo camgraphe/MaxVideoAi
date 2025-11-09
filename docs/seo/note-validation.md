@@ -1,7 +1,7 @@
 # Validation Checklist & Expected Impacts
 
 ## Sitemap & Robots
-- Regenerate the sitemap via `npm run build` to ensure all canonical slugs are exported (`sitemap-0.xml` should reflect new paths).
+- Regenerate the sitemap data (`npm run build` calls `app/sitemap.ts`) and confirm `curl https://maxvideoai.com/sitemap.xml` returns the updated `<urlset>` entries.
 - Confirm `robots.txt` keeps only canonical sitemap URL and continues to disallow `/_next/` and `/api/`.
 - After deployment, fetch `https://maxvideoai.com/sitemap.xml` and resubmit it in Google Search Console.
 

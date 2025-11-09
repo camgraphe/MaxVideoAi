@@ -361,15 +361,49 @@ type JobRow = {
     const nextCursor = hasMore && items.length ? formatCursorValue(items[items.length - 1]) : null;
 
     type Row = (typeof rows)[number];
-    let mapped = items.map((r: Row) => ({
-      jobId: r.job_id,
-      engineLabel: r.engine_label,
-      durationSec: r.duration_sec,
-      prompt: r.prompt,
-      thumbUrl: normalizeMediaUrl(r.thumb_url) ?? undefined,
-      videoUrl: normalizeMediaUrl(r.video_url) ?? undefined,
-      createdAt: r.created_at,
-      engineId: r.engine_id,
+    const normalizeRenderIds = (value: unknown): string[] | undefined => {
+      const coerce = (entries: unknown[]): string[] =>
+        entries
+          .map((entry) => {
+            if (typeof entry === 'string' && entry.length) return entry;
+            if (entry && typeof entry === 'object') {
+              const record = entry as Record<string, unknown>;
+              if (typeof record.url === 'string' && record.url.length) {
+                return record.url;
+              }
+            }
+            return null;
+          })
+          .filter((entry): entry is string => Boolean(entry));
+
+      if (Array.isArray(value)) {
+        return coerce(value);
+      }
+      if (typeof value === 'string' && value.trim().length) {
+        try {
+          const parsed = JSON.parse(value) as unknown;
+          if (Array.isArray(parsed)) {
+            return coerce(parsed);
+          }
+        } catch {
+          return undefined;
+        }
+      }
+      return undefined;
+    };
+
+    let mapped = items.map((r: Row) => {
+      const renderIds = normalizeRenderIds(r.render_ids);
+      const primaryImage = renderIds?.[0] ? normalizeMediaUrl(renderIds[0]) ?? renderIds[0] : undefined;
+      return {
+        jobId: r.job_id,
+        engineLabel: r.engine_label,
+        durationSec: r.duration_sec,
+        prompt: r.prompt,
+        thumbUrl: normalizeMediaUrl(r.thumb_url) ?? primaryImage ?? undefined,
+        videoUrl: normalizeMediaUrl(r.video_url) ?? undefined,
+        createdAt: r.created_at,
+        engineId: r.engine_id,
       aspectRatio: r.aspect_ratio ?? undefined,
       hasAudio: Boolean(r.has_audio ?? false),
       canUpscale: Boolean(r.can_upscale ?? false),
@@ -384,22 +418,19 @@ type JobRow = {
       batchId: r.batch_id ?? undefined,
       groupId: r.group_id ?? undefined,
       iterationIndex: r.iteration_index ?? undefined,
-      iterationCount: r.iteration_count ?? undefined,
-      renderIds: Array.isArray(r.render_ids)
-        ? (r.render_ids as unknown[]).map((value) => (typeof value === 'string' ? value : null)).filter(
-            (entry): entry is string => Boolean(entry)
-          )
-        : undefined,
-      status: r.status ?? undefined,
-      progress: typeof r.progress === 'number' ? r.progress : undefined,
-      heroRenderId: r.hero_render_id ?? undefined,
-      localKey: r.local_key ?? undefined,
-      message: r.message ?? undefined,
-      etaSeconds: r.eta_seconds ?? undefined,
-      etaLabel: r.eta_label ?? undefined,
-      visibility: r.visibility ?? 'public',
-      indexable: r.indexable ?? true,
-    }));
+        iterationCount: r.iteration_count ?? undefined,
+        renderIds,
+        status: r.status ?? undefined,
+        progress: typeof r.progress === 'number' ? r.progress : undefined,
+        heroRenderId: r.hero_render_id ?? undefined,
+        localKey: r.local_key ?? undefined,
+        message: r.message ?? undefined,
+        etaSeconds: r.eta_seconds ?? undefined,
+        etaLabel: r.eta_label ?? undefined,
+        visibility: r.visibility ?? 'public',
+        indexable: r.indexable ?? true,
+      };
+    });
 
     if (!mapped.length && !cursor) {
       const starterVideos = await listStarterPlaylistVideos(limit);

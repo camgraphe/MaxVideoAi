@@ -80,6 +80,12 @@ function buildMember(job: Job): GroupMemberSummary {
   };
 }
 
+function isImageVariantJob(job: Job): job is Job & { renderIds: string[] } {
+  if (!Array.isArray(job.renderIds) || job.renderIds.length <= 1) return false;
+  if (job.videoUrl || job.readyVideoUrl) return false;
+  return job.renderIds.every((value) => typeof value === 'string' && /^https?:\/\//i.test(value));
+}
+
 function pickHero(bucket: GroupBucket, members: GroupMemberSummary[]): GroupMemberSummary {
   const byId = new Map<string, Job>();
   bucket.jobs.forEach((job) => {
@@ -218,7 +224,23 @@ export function groupJobsIntoSummaries(
         return Date.parse(b.createdAt) - Date.parse(a.createdAt);
       });
 
-    const members = sorted.map(buildMember);
+    const members: GroupMemberSummary[] = [];
+    sorted.forEach((job) => {
+      const baseMember = buildMember(job);
+      if (isImageVariantJob(job)) {
+        job.renderIds.forEach((url, index) => {
+          members.push({
+            ...baseMember,
+            id: `${job.jobId}-image-${index}`,
+            thumbUrl: normalizeMediaUrl(url) ?? url,
+            videoUrl: null,
+            aspectRatio: baseMember.aspectRatio ?? '1:1',
+          });
+        });
+      } else {
+        members.push(baseMember);
+      }
+    });
     if (members.length === 0) {
       singles.push(...bucket.jobs);
       return;

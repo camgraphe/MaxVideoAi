@@ -17,9 +17,16 @@ import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { FEATURES } from '@/content/feature-flags';
 import { FlagPill } from '@/components/FlagPill';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { listFalEngines } from '@/config/falEngines';
 
 const DEFAULT_JOBS_COPY = {
   title: 'Jobs',
+  sections: {
+    video: 'Video jobs',
+    image: 'Image jobs',
+    videoEmpty: 'No video jobs yet.',
+    imageEmpty: 'No image jobs yet.',
+  },
   teams: {
     title: 'Teams',
     srLive: 'Live',
@@ -40,7 +47,22 @@ type JobsCopy = typeof DEFAULT_JOBS_COPY;
 
 export default function JobsPage() {
   const { t } = useI18n();
-  const copy = t('workspace.jobs', DEFAULT_JOBS_COPY) as JobsCopy;
+  const rawCopy = t('workspace.jobs', DEFAULT_JOBS_COPY);
+  const copy: JobsCopy = useMemo(() => {
+    if (!rawCopy || typeof rawCopy !== 'object') return DEFAULT_JOBS_COPY;
+    return {
+      ...DEFAULT_JOBS_COPY,
+      ...rawCopy,
+      sections: {
+        ...DEFAULT_JOBS_COPY.sections,
+        ...(rawCopy.sections ?? {}),
+      },
+      teams: {
+        ...DEFAULT_JOBS_COPY.teams,
+        ...(rawCopy.teams ?? {}),
+      },
+    };
+  }, [rawCopy]);
   const { data: enginesData } = useEngines();
   const { data, error, isLoading, size, setSize, isValidating, mutate } = useInfiniteJobs(24);
   const { loading: authLoading, session } = useRequireAuth();
@@ -50,7 +72,6 @@ export default function JobsPage() {
   const pages = data ?? [];
   const jobs = pages.flatMap((p) => p.jobs);
   const hasMore = pages.length === 0 ? false : pages[pages.length - 1].nextCursor !== null;
-  const hasCuratedJobs = useMemo(() => jobs.some((job) => job.curated), [jobs]);
 
   const { groups: apiGroups } = useMemo(
     () => groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true }),
@@ -102,11 +123,28 @@ export default function JobsPage() {
   }, [groupedJobs]);
 
   const normalizedGroups = useMemo(() => normalizeGroupSummaries(groupedJobs), [groupedJobs]);
+  const { videoGroups, imageGroups } = useMemo(() => {
+    const videos: GroupSummary[] = [];
+    const images: GroupSummary[] = [];
+    normalizedGroups.forEach((group) => {
+      const engineId = group.hero.engineId ?? group.hero.job?.engineId ?? '';
+      if (engineId && IMAGE_ENGINE_IDS.has(engineId)) {
+        images.push(group);
+      } else {
+        videos.push(group);
+      }
+    });
+    return { videoGroups: videos, imageGroups: images };
+  }, [normalizedGroups]);
   const normalizedGroupMap = useMemo(() => {
     const map = new Map<string, GroupSummary>();
     normalizedGroups.forEach((group) => map.set(group.id, group));
     return map;
   }, [normalizedGroups]);
+  const hasCuratedVideo = useMemo(
+    () => videoGroups.some((group) => Boolean(group.hero.job?.curated)),
+    [videoGroups]
+  );
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
   const teamsLive = FEATURES.workflows.approvals && FEATURES.workflows.budgetControls;
 
@@ -176,6 +214,45 @@ export default function JobsPage() {
     return adaptGroupSummary(target, provider);
   }, [activeGroupId, normalizedGroupMap, summaryMap, provider]);
 
+  const renderGroupGrid = useCallback(
+    (groups: GroupSummary[], emptyCopy: string, prefix: string) => {
+      if (!groups.length) {
+        if (isInitialLoading) {
+          return (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {renderSkeletonCards(4, `${prefix}-initial`)}
+            </div>
+          );
+        }
+        return (
+          <div className="rounded-card border border-border bg-white p-6 text-center text-sm text-text-secondary">
+            {emptyCopy}
+          </div>
+        );
+      }
+      return (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {groups.map((group) => {
+            const engineId = group.hero.engineId;
+            const engine = engineId ? engineLookup.byId.get(engineId) ?? null : null;
+            return (
+              <GroupedJobCard
+                key={group.id}
+                group={group}
+                engine={engine ?? undefined}
+                onOpen={handleGroupOpen}
+                onAction={handleGroupAction}
+                allowRemove={allowRemove(group)}
+              />
+            );
+          })}
+          {isValidating && hasMore && renderSkeletonCards(2, `${prefix}-more`)}
+        </div>
+      );
+    },
+    [allowRemove, engineLookup.byId, handleGroupAction, handleGroupOpen, hasMore, isInitialLoading, isValidating]
+  );
+
   if (authLoading) {
     return null;
   }
@@ -209,7 +286,7 @@ export default function JobsPage() {
             )}
           </section>
 
-          {hasCuratedJobs ? (
+          {hasCuratedVideo ? (
             <div className="mb-4 rounded-card border border-hairline bg-white p-4 text-sm text-text-secondary">
               {copy.curated}
             </div>
@@ -228,41 +305,21 @@ export default function JobsPage() {
             </div>
           ) : (
             <>
-              {!isInitialLoading && normalizedGroups.length === 0 ? (
-                <div className="rounded-card border border-border bg-white p-6 text-center text-sm text-text-secondary">
-                  {copy.empty}
+              <section className="mb-8">
+                <div className="mb-3 flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-text-primary">{copy.sections.video}</h2>
+                  <span className="text-xs text-text-secondary">{videoGroups.length}</span>
                 </div>
-              ) : (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {normalizedGroups.map((group) => {
-                    const engineId = group.hero.engineId;
-                    const engine = engineId ? engineLookup.byId.get(engineId) ?? null : null;
-                    return (
-                      <GroupedJobCard
-                        key={group.id}
-                        group={group}
-                        engine={engine ?? undefined}
-                        onOpen={handleGroupOpen}
-                        onAction={handleGroupAction}
-                        allowRemove={allowRemove(group)}
-                      />
-                    );
-                  })}
-                  {(isInitialLoading || (isValidating && hasMore)) &&
-                    Array.from({ length: isInitialLoading ? 8 : hasMore ? 3 : 0 }).map((_, index) => (
-                      <div key={`jobs-skeleton-${index}`} className="rounded-card border border-border bg-white/60 p-0" aria-hidden>
-                        <div className="relative overflow-hidden rounded-card">
-                          <div className="relative" style={{ aspectRatio: '16 / 9' }}>
-                            <div className="skeleton absolute inset-0" />
-                          </div>
-                        </div>
-                        <div className="border-t border-border bg-white/70 px-3 py-2">
-                          <div className="h-3 w-24 rounded-full bg-neutral-200" />
-                        </div>
-                      </div>
-                    ))}
+                {renderGroupGrid(videoGroups, copy.sections.videoEmpty, 'video')}
+              </section>
+
+              <section>
+                <div className="mb-3 flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-text-primary">{copy.sections.image}</h2>
+                  <span className="text-xs text-text-secondary">{imageGroups.length}</span>
                 </div>
-              )}
+                {renderGroupGrid(imageGroups, copy.sections.imageEmpty, 'image')}
+              </section>
             </>
           )}
 
@@ -291,3 +348,23 @@ export default function JobsPage() {
     </div>
   );
 }
+
+function renderSkeletonCards(count: number, prefix: string) {
+  return Array.from({ length: count }).map((_, index) => (
+    <div key={`${prefix}-skeleton-${index}`} className="rounded-card border border-border bg-white/60 p-0" aria-hidden>
+      <div className="relative overflow-hidden rounded-card">
+        <div className="relative" style={{ aspectRatio: '16 / 9' }}>
+          <div className="skeleton absolute inset-0" />
+        </div>
+      </div>
+      <div className="border-t border-border bg-white/70 px-3 py-2">
+        <div className="h-3 w-24 rounded-full bg-neutral-200" />
+      </div>
+    </div>
+  ));
+}
+const IMAGE_ENGINE_IDS = new Set(
+  listFalEngines()
+    .filter((engine) => (engine.category ?? 'video') === 'image')
+    .map((engine) => engine.id)
+);

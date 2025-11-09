@@ -26,7 +26,7 @@ const MODEL_PRIORITY_ENTRIES = getModelRoster().map(
 const MODEL_PRIORITY = new Map<string, number>(MODEL_PRIORITY_ENTRIES);
 const DEFAULT_PRIORITY = MODEL_PRIORITY_ENTRIES.length;
 
-const REGISTRY_ENGINES = listFalEngines();
+const REGISTRY_ENGINES = listFalEngines().filter((entry) => (entry.category ?? 'video') === 'video');
 
 const ENGINES_BASE: EngineCaps[] = REGISTRY_ENGINES.map((entry) => cloneEngine(entry.engine))
   .filter((engine) => !ENGINE_BLOCKLIST.has(engine.id.trim().toLowerCase()))

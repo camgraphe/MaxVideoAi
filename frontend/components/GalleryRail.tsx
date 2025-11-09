@@ -19,6 +19,7 @@ interface Props {
   activeGroups?: GroupSummary[];
   onOpenGroup?: (group: GroupSummary) => void;
   onGroupAction?: (group: GroupSummary, action: GroupedJobAction) => void;
+  jobFilter?: (job: Job) => boolean;
 }
 
 interface SnackbarAction {
@@ -53,6 +54,7 @@ export function GalleryRail({
   activeGroups = [],
   onOpenGroup,
   onGroupAction,
+  jobFilter,
 }: Props) {
   const { t } = useI18n();
   const copy = t('workspace.generate.galleryRail', DEFAULT_GALLERY_COPY) as GalleryCopy;
@@ -60,10 +62,14 @@ export function GalleryRail({
   const { data: enginesData } = useEngines();
   const engineList = useMemo(() => enginesData?.engines ?? [], [enginesData?.engines]);
   const jobs = useMemo(() => data?.flatMap((page) => page.jobs) ?? [], [data]);
-  const hasCuratedJobs = useMemo(() => jobs.some((job) => job.curated), [jobs]);
+  const filteredJobs = useMemo(() => {
+    if (!jobFilter) return jobs;
+    return jobs.filter(jobFilter);
+  }, [jobFilter, jobs]);
+  const hasCuratedJobs = useMemo(() => filteredJobs.some((job) => job.curated), [filteredJobs]);
   const { groups: groupedJobSummariesFromApi } = useMemo(
-    () => groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true }),
-    [jobs]
+    () => groupJobsIntoSummaries(filteredJobs, { includeSinglesAsGroups: true }),
+    [filteredJobs]
   );
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -223,8 +229,8 @@ export function GalleryRail({
     return () => observer.disconnect();
   }, [hasMore, loadMore]);
 
-  const isInitialLoading = isLoading && jobs.length === 0;
-  const isFetchingMore = isValidating && jobs.length > 0;
+  const isInitialLoading = isLoading && filteredJobs.length === 0;
+  const isFetchingMore = isValidating && filteredJobs.length > 0;
 
   return (
     <aside className="hidden xl:flex h-[calc(125vh-var(--header-height))] w-[272px] shrink-0 flex-col border-l border-border bg-bg/80 px-4 pb-6 pt-4">

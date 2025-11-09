@@ -10,6 +10,7 @@ import type { GenerateAttachment } from '@/lib/fal';
 import type { VideoAsset } from '@/types/render';
 import { translateError } from '@/lib/error-messages';
 import { normalizeJobMessage, normalizeJobProgress, normalizeJobStatus } from '@/lib/job-status';
+import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types/image-generation';
 
 type PrimitiveValue = string | number | boolean | null | undefined;
 
@@ -468,6 +469,29 @@ export async function runGenerate(
   }
 
   return body as GenerateResult;
+}
+
+export async function runImageGeneration(payload: ImageGenerationRequest): Promise<ImageGenerationResponse> {
+  const response = await fetch('/api/images/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  const data = (await response.json().catch(() => null)) as ImageGenerationResponse | null;
+  if (!data) {
+    throw new Error('Image generation response malformed');
+  }
+  if (!response.ok || !data.ok) {
+    const error = new Error(data.error?.message ?? `Image generation failed (${response.status})`);
+    Object.assign(error, {
+      code: data.error?.code ?? 'image_generation_failed',
+      detail: data.error?.detail,
+      status: response.status,
+    });
+    throw error;
+  }
+  return data;
 }
 
 export async function getJobStatus(jobId: string): Promise<JobStatusResult> {

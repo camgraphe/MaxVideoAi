@@ -232,6 +232,8 @@ function buildLocaleHref(locale, englishPath) {
 
 module.exports = {
   siteUrl: SITE_URL,
+  // Keep generated XML under a namespaced folder so the runtime sitemap route owns /sitemap.xml.
+  outDir: './public/generated-sitemaps',
   // We manage robots.txt manually in public/robots.txt to avoid accidental
   // overwrites and to allow fine-grained Allow rules for Next assets.
   generateRobotsTxt: false,

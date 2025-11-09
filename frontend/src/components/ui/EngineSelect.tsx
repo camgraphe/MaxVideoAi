@@ -22,6 +22,8 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 const MODE_LABELS: Record<Mode, string> = {
   t2v: 'Text -> Video',
   i2v: 'Image -> Video',
+  t2i: 'Text -> Image',
+  i2i: 'Image -> Image',
 };
 
 const ENGINE_REGISTRY: FalEngineEntry[] = listFalEngines();

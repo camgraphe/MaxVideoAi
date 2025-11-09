@@ -329,6 +329,8 @@ function AssetLibraryModal({
 const MODE_DISPLAY_LABEL: Record<Mode, string> = {
   t2v: 'Text → Video',
   i2v: 'Image → Video',
+  t2i: 'Text → Image',
+  i2i: 'Image → Image',
 };
 
 type DurationOptionMeta = {

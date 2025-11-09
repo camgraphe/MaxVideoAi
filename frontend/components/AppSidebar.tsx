@@ -10,7 +10,9 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 
 export const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', badge: null, icon: 'dashboard', href: '/dashboard' },
-  { id: 'generate', label: 'Generate', badge: 'LIVE', badgeKey: 'live', icon: 'generate', href: '/app' },
+  { id: 'generate', label: 'Generate Video', badge: 'LIVE', badgeKey: 'live', icon: 'generate', href: '/app' },
+  { id: 'generate-image', label: 'Generate Image', badge: 'NEW', badgeKey: 'new', icon: 'generate', href: '/app/image' },
+  { id: 'library', label: 'Library', badge: null, icon: 'library', href: '/app/library' },
   { id: 'jobs', label: 'Jobs', badge: null, icon: 'jobs', href: '/jobs' },
   { id: 'billing', label: 'Billing', badge: null, icon: 'billing', href: '/billing' },
   { id: 'settings', label: 'Settings', badge: null, icon: 'settings', href: '/settings' }
@@ -113,7 +115,15 @@ export function AppSidebar() {
   };
 
   const renderNavItem = (item: NavItem, collapsedNav: boolean, tooltipBase: string) => {
-    const active = pathname === item.href || (item.id === 'generate' && (pathname === '/' || pathname === ''));
+    const normalizedPath = pathname?.replace(/\/+$/, '') || '/';
+    const normalizedHref = item.href.replace(/\/+$/, '') || '/';
+    const matchesExact = normalizedPath === normalizedHref;
+    const matchesSubroute =
+      normalizedHref !== '/' && normalizedPath.startsWith(`${normalizedHref}/`);
+    const active =
+      item.id === 'generate'
+        ? matchesExact
+        : matchesExact || matchesSubroute || (item.id === 'generate-image' && normalizedPath === '/app/image');
     const tooltipId = `${tooltipBase}-${item.id}`;
     const label = t(`workspace.sidebar.links.${item.id}`, item.label);
     const badgeLabel = item.badge
