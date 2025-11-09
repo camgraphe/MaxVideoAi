@@ -625,7 +625,7 @@ export async function POST(req: NextRequest) {
     durationOption: lumaDurationInfo?.label ?? rawDurationOption ?? null,
     currency: 'USD',
   });
-  const { cents: settlementAmountCents, rate: settlementFxRate, source: settlementFxSource } = convertCents(
+  const { cents: settlementAmountCents, rate: settlementFxRate, source: settlementFxSource } = await convertCents(
     pricing.totalCents,
     DISPLAY_CURRENCY_LOWER,
     resolvedCurrencyLower
@@ -885,7 +885,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
       : null;
     const expectedSettlementCents = metadataSettlementCents && metadataSettlementCents > 0
       ? metadataSettlementCents
-      : convertCents(pricing.totalCents, DISPLAY_CURRENCY_LOWER, resolvedCurrencyLower).cents;
+      : (await convertCents(pricing.totalCents, DISPLAY_CURRENCY_LOWER, resolvedCurrencyLower)).cents;
     if (intent.status !== 'succeeded' || receivedSettlementCents < expectedSettlementCents) {
       return NextResponse.json({ ok: false, error: 'Payment not captured yet' }, { status: 402 });
     }

@@ -1,16 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { loadStripe } from '@stripe/stripe-js';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { FlagPill } from '@/components/FlagPill';
-import { runPreflight, useEngines } from '@/lib/api';
 import { FEATURES } from '@/content/feature-flags';
-import type { EngineCaps, Mode, Resolution, AspectRatio } from '@/types/engines';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { USD_TOPUP_TIERS } from '@/config/topupTiers';
 
 type ReceiptItem = {
   id: number;
@@ -47,6 +47,9 @@ const FALLBACK_MEMBERSHIP_TIERS: MembershipTierInfo[] = [
 
 export const dynamic = 'force-dynamic';
 
+const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
+const stripePromise = PUBLISHABLE_KEY ? loadStripe(PUBLISHABLE_KEY) : null;
+
 const GOOGLE_ADS_CONVERSION_TARGET = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID ?? 'AW-992154028/7oDUCMuC9rQbEKyjjNkD';
 const GOOGLE_ADS_CONVERSION_CURRENCY = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_CURRENCY ?? 'EUR';
 const GOOGLE_ADS_CONVERSION_VALUE_ENV = Number(process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_VALUE ?? 1);
@@ -67,6 +70,13 @@ const DEFAULT_BILLING_COPY = {
     quickAmount: '{amount}',
     autoTopUp: 'Enable auto top-up (optional)',
     lowBalance: 'Your balance is low. Top up to keep creating.',
+    currencyLabel: 'Charge currency',
+    currencyLoading: 'Detecting currencies…',
+    currencyLoadError: 'Unable to load currencies. Defaulting to USD.',
+    currencyDetected: 'Auto-detected {currency}',
+    currencyOverride: 'Charging in {selected} (auto: {detected})',
+    quoteLoading: 'Fetching live totals…',
+    quoteError: 'Unable to fetch FX quotes. Amount finalized at checkout.',
   },
   membership: {
     title: 'Member Status',
@@ -96,21 +106,6 @@ const DEFAULT_BILLING_COPY = {
     statusLive: 'Live',
     statusSoon: 'Coming soon',
   },
-  estimator: {
-    title: 'Cost Estimator',
-    summary: 'Select Engine · Duration · Resolution → This render: {value} (estimate)',
-    estimateLoading: '…',
-    estimateMissing: '—',
-    fields: {
-      engine: 'Engine',
-      mode: 'Mode',
-      duration: 'Duration (sec)',
-      resolution: 'Resolution',
-    },
-    note: 'Note: You’ll be charged only if the render succeeds.',
-    memberChipSavings: 'Member price — You save {percent}%',
-    memberChipBase: 'Member price',
-  },
   receipts: {
     title: 'Receipts',
     subtitle: 'Itemized by engine, duration, and resolution. VAT included where applicable.',
@@ -118,6 +113,8 @@ const DEFAULT_BILLING_COPY = {
     loading: 'Loading…',
     loadMore: 'Load more',
     exportCsv: 'Export CSV',
+    collapsedLabel: 'Show',
+    expandedLabel: 'Hide',
     typeLabels: {
       charge: 'Charge',
       refund: 'Refund',
@@ -155,67 +152,25 @@ const DEFAULT_BILLING_COPY = {
   errors: {
     loadReceipts: 'Failed to load receipts',
     loadMore: 'Failed to load more receipts',
-    loadEngines: 'Failed to load engines.',
-    estimator: 'Estimator failed',
     lowBalance: 'Your balance is low. Top up to keep creating.',
+    topupStart: 'Unable to start payment.',
   },
 };
 
-type BillingCopy = typeof DEFAULT_BILLING_COPY;
+ type BillingCopy = Omit<typeof DEFAULT_BILLING_COPY, 'estimator'>;
 
 export default function BillingPage() {
   const { t } = useI18n();
   const copy = t('workspace.billing', DEFAULT_BILLING_COPY) as BillingCopy;
-  const { data, error } = useEngines();
-  const engines = useMemo(() => data?.engines ?? [], [data]);
+  const walletCurrencyDetected = copy.wallet.currencyDetected ?? DEFAULT_BILLING_COPY.wallet.currencyDetected;
+  const walletCurrencyOverride = copy.wallet.currencyOverride ?? DEFAULT_BILLING_COPY.wallet.currencyOverride;
+  const walletCurrencyLoading = copy.wallet.currencyLoading ?? DEFAULT_BILLING_COPY.wallet.currencyLoading;
+  const walletCurrencyLoadError = copy.wallet.currencyLoadError ?? DEFAULT_BILLING_COPY.wallet.currencyLoadError;
+  const walletQuoteLoading = copy.wallet.quoteLoading ?? DEFAULT_BILLING_COPY.wallet.quoteLoading;
+  const walletQuoteError = copy.wallet.quoteError ?? DEFAULT_BILLING_COPY.wallet.quoteError;
   const { session, loading: authLoading } = useRequireAuth();
 
-  const [engineId, setEngineId] = useState<string | null>(null);
-  const [mode, setMode] = useState<Mode>('t2v');
-  const [durationSec, setDurationSec] = useState<number>(4);
-  const [resolution, setResolution] = useState<Resolution>('1080p' as Resolution);
-  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
-  const [estimate, setEstimate] = useState<{ total?: number; currency?: string; messages?: string[] } | null>(null);
-  const [estimating, setEstimating] = useState(false);
-  const selected = useMemo<EngineCaps | null>(() => engines.find((e) => e.id === engineId) ?? engines[0] ?? null, [engines, engineId]);
-
-  useEffect(() => {
-    if (!selected) return;
-    setEngineId((current) => current ?? selected.id);
-    setMode((current) => (selected.modes.includes(current) ? current : selected.modes[0]));
-    setDurationSec((current) => Math.min(selected.maxDurationSec, current ?? Math.min(8, selected.maxDurationSec)));
-    setResolution((current) => (current && selected.resolutions.includes(current) ? current : (selected.resolutions[0] || '1080p') as Resolution));
-    setAspectRatio((current) => (current && selected.aspectRatios.includes(current) ? current : (selected.aspectRatios[0] || '16:9') as AspectRatio));
-  }, [selected]);
-
-  useEffect(() => {
-    let canceled = false;
-    async function fetchEstimate() {
-      if (!selected) return;
-      setEstimating(true);
-      try {
-        const res = await runPreflight({
-          engine: selected.id,
-          mode,
-          durationSec,
-          resolution,
-          aspectRatio,
-          fps: selected.fps[0],
-          user: { memberTier: 'Plus' },
-        });
-        if (!canceled) setEstimate({ total: res.total, currency: res.currency, messages: res.messages });
-      } catch {
-        if (!canceled) setEstimate({ total: undefined, currency: 'USD', messages: [copy.errors.estimator] });
-      } finally {
-        if (!canceled) setEstimating(false);
-      }
-    }
-    fetchEstimate();
-    return () => {
-      canceled = true;
-    };
-  }, [selected, mode, durationSec, resolution, aspectRatio, copy.errors.estimator]);
-
+  const [currencyOptions, setCurrencyOptions] = useState<string[]>(['USD']);
   const [wallet, setWallet] = useState<{ balance: number; currency: string } | null>(null);
   const [member, setMember] = useState<MemberStatus | null>(null);
   const [stripeMode, setStripeMode] = useState<'test' | 'live' | 'disabled'>('disabled');
@@ -226,7 +181,23 @@ export default function BillingPage() {
     loading: boolean;
     error?: string | null;
   }>({ items: [], nextCursor: null, loading: false });
+  const [receiptsCollapsed, setReceiptsCollapsed] = useState(true);
+  const [chargeCurrency, setChargeCurrency] = useState<string>('USD');
+  const [autoCurrency, setAutoCurrency] = useState<string>('USD');
+  const [currencyLoading, setCurrencyLoading] = useState(false);
+  const [currencyError, setCurrencyError] = useState<string | null>(null);
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
+  const toggleReceipts = useCallback(() => setReceiptsCollapsed((prev) => !prev), []);
+  const [topupQuotes, setTopupQuotes] = useState<Record<number, { amountMinor: number; currency: string }>>({});
+  const userCurrencyOverrideRef = useRef(false);
+  const autoCurrencyRef = useRef('USD');
   const conversionSentRef = useRef(false);
+  const normalizedChargeCurrency = (chargeCurrency || 'USD').toUpperCase();
+
+  useEffect(() => {
+    autoCurrencyRef.current = autoCurrency;
+  }, [autoCurrency]);
 
   const triggerGoogleAdsConversion = useCallback((value?: number, currency?: string) => {
     if (typeof window === 'undefined') return;
@@ -263,7 +234,15 @@ export default function BillingPage() {
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
       fetch('/api/wallet', { headers })
         .then((r) => r.json())
-        .then((d) => mounted && setWallet(d))
+        .then((d) => {
+          if (!mounted) return;
+          setWallet(d);
+          const resolvedCurrency = String(d.settlementCurrency ?? d.currency ?? 'USD').toUpperCase();
+          setAutoCurrency(resolvedCurrency);
+          if (!userCurrencyOverrideRef.current) {
+            setChargeCurrency(resolvedCurrency);
+          }
+        })
         .catch(() => mounted && setWallet({ balance: 0, currency: 'USD' }));
       fetch('/api/member-status?includeTiers=1', { headers })
         .then((r) => r.json())
@@ -285,6 +264,98 @@ export default function BillingPage() {
       mounted = false;
     };
   }, [authLoading, session, copy.membership.defaultTier, copy.errors.loadReceipts]);
+
+  useEffect(() => {
+    if (authLoading || !session) return;
+    let canceled = false;
+    async function loadCurrencySummary() {
+      setCurrencyLoading(true);
+      setCurrencyError(null);
+      const token = session?.access_token ?? null;
+      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+      try {
+        const res = await fetch('/api/me/currency', { headers });
+        const data = await res.json().catch(() => null);
+        if (!res.ok || !data?.ok) {
+          throw new Error(data?.error ?? 'currency_summary_failed');
+        }
+        if (canceled) return;
+        const enabled = Array.isArray(data.enabled) && data.enabled.length ? data.enabled : ['USD'];
+        const normalized = enabled.map((code: string) => String(code ?? 'USD').toUpperCase());
+        setCurrencyOptions(normalized);
+        if (!userCurrencyOverrideRef.current) {
+          const preferred = String(data.currency ?? data.defaultCurrency ?? autoCurrencyRef.current ?? 'USD').toUpperCase();
+          setChargeCurrency(preferred);
+        }
+      } catch (error) {
+        console.warn('[billing] currency summary load failed', error);
+        if (!canceled) {
+          setCurrencyError(walletCurrencyLoadError);
+        }
+      } finally {
+        if (!canceled) {
+          setCurrencyLoading(false);
+        }
+      }
+    }
+    loadCurrencySummary();
+    return () => {
+      canceled = true;
+    };
+  }, [authLoading, session, walletCurrencyLoadError]);
+
+  useEffect(() => {
+    if (!session) return;
+    let canceled = false;
+    async function loadQuotes() {
+      setQuoteLoading(true);
+      setQuoteError(null);
+      const token = session?.access_token ?? null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
+      try {
+        const res = await fetch('/api/topup/quote', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            currency: normalizedChargeCurrency,
+            amounts: USD_TOPUP_TIERS.map((tier) => tier.amountCents),
+          }),
+        });
+        const data = await res.json().catch(() => null);
+        if (!res.ok || !data?.ok) {
+          throw new Error(data?.error ?? 'quote_failed');
+        }
+        if (canceled) return;
+        const mapped: Record<number, { amountMinor: number; currency: string }> = {};
+        (data.quotes ?? []).forEach((entry: Record<string, unknown>) => {
+          const usdAmount = Number(entry?.usdAmountCents);
+          const localAmount = Number(entry?.localAmountMinor);
+          const quoteCurrency = String(entry?.currency ?? normalizedChargeCurrency).toUpperCase();
+          if (Number.isFinite(usdAmount) && usdAmount > 0 && Number.isFinite(localAmount)) {
+            mapped[usdAmount] = { amountMinor: localAmount, currency: quoteCurrency };
+          }
+        });
+        setTopupQuotes(mapped);
+      } catch (error) {
+        if (!canceled) {
+          console.warn('[billing] topup quote fetch failed', error);
+          setTopupQuotes({});
+          setQuoteError(walletQuoteError);
+        }
+      } finally {
+        if (!canceled) {
+          setQuoteLoading(false);
+        }
+      }
+    }
+    loadQuotes();
+    return () => {
+      canceled = true;
+    };
+  }, [session, normalizedChargeCurrency, walletQuoteError]);
+
+  // no FX preview when using Checkout redirection
 
   // Detect Stripe mode for badge
   useEffect(() => {
@@ -330,15 +401,46 @@ export default function BillingPage() {
     return undefined;
   }, [copy.toasts.success, copy.toasts.cancelled, triggerGoogleAdsConversion]);
 
+  const handleCurrencyChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+    const next = String(event.target.value || 'USD').toUpperCase();
+    userCurrencyOverrideRef.current = true;
+    setChargeCurrency(next);
+  }, []);
+
   async function handleTopUp(amountCents: number) {
-    const token = session?.access_token;
+    const token = session?.access_token ?? null;
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
-    const res = await fetch('/api/wallet', { method: 'POST', headers, body: JSON.stringify({ amountCents }) });
-    const json = await res.json();
-    if (json?.url) window.location.href = json.url as string;
+    try {
+      const response = await fetch('/api/wallet', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ amountCents, currency: (chargeCurrency || 'USD').toLowerCase() }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(payload?.error ?? 'checkout_session_failed');
+      }
+      const checkoutUrl = typeof payload?.url === 'string' ? payload.url : null;
+      if (checkoutUrl) {
+        window.location.href = checkoutUrl;
+        return;
+      }
+      if (payload?.id && stripePromise) {
+        const stripe = await stripePromise;
+        const redirectResult = await stripe?.redirectToCheckout({ sessionId: payload.id as string });
+        if (!redirectResult?.error) {
+          return;
+        }
+        console.error('[billing] redirectToCheckout error', redirectResult.error);
+      }
+      throw new Error('missing_checkout_target');
+    } catch (error) {
+      console.error('[billing] top-up failed', error);
+      setToast(copy.errors.topupStart);
+    }
   }
 
   async function loadMoreReceipts() {
@@ -416,14 +518,31 @@ export default function BillingPage() {
     }
   };
 
-  const formatUsdAmount = (amountCents: number) => `$${(amountCents / 100).toFixed(0)}`;
+  const formatLocalAmount = useCallback((amountMinor: number, currency: string) => {
+    const upper = (currency ?? 'USD').toUpperCase();
+    const zeroDecimal = upper === 'JPY';
+    const divisor = zeroDecimal ? 1 : 100;
+    const value = amountMinor / divisor;
+    try {
+      return new Intl.NumberFormat(CURRENCY_LOCALE, { style: 'currency', currency: upper }).format(value);
+    } catch {
+      return `${upper} ${value.toFixed(zeroDecimal ? 0 : 2)}`;
+    }
+  }, []);
 
-  const estimatorValue = estimating
-    ? copy.estimator.estimateLoading
-    : typeof estimate?.total === 'number'
-      ? `$${estimate.total.toFixed(2)}`
-      : copy.estimator.estimateMissing;
-  const estimatorSummary = copy.estimator.summary.replace('{value}', estimatorValue);
+
+  const formatUsdAmount = (amountCents: number) => `$${(amountCents / 100).toFixed(0)}`;
+  const normalizedAutoCurrency = (autoCurrency || 'USD').toUpperCase();
+  const currencyStatus = currencyError
+    ? currencyError
+    : currencyLoading && !userCurrencyOverrideRef.current
+      ? walletCurrencyLoading
+      : normalizedChargeCurrency === normalizedAutoCurrency
+        ? walletCurrencyDetected.replace('{currency}', normalizedChargeCurrency)
+        : walletCurrencyOverride
+            .replace('{selected}', normalizedChargeCurrency)
+            .replace('{detected}', normalizedAutoCurrency);
+  const currencyStatusClass = currencyError ? 'text-state-warning' : 'text-text-secondary';
 
   if (authLoading || !session) {
     return null;
@@ -461,20 +580,58 @@ export default function BillingPage() {
               <h2 className="mb-2 text-lg font-semibold text-text-primary">{copy.wallet.title}</h2>
               <p className="text-sm text-text-secondary">{copy.wallet.description}</p>
               <p className="mt-1 text-2xl font-semibold text-text-primary">${(wallet?.balance ?? 0).toFixed(2)}</p>
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-                <button onClick={() => handleTopUp(1000)} className="rounded-input border border-border px-3 py-2 hover:bg-bg">
-                  {copy.wallet.addFunds.replace('{amount}', formatUsdAmount(1000))}
-                </button>
-                <button onClick={() => handleTopUp(2500)} className="rounded-input border border-border px-3 py-2 hover:bg-bg">
-                  {copy.wallet.quickAmount.replace('{amount}', formatUsdAmount(2500))}
-                </button>
-                <button onClick={() => handleTopUp(5000)} className="rounded-input border border-border px-3 py-2 hover:bg-bg">
-                  {copy.wallet.quickAmount.replace('{amount}', formatUsdAmount(5000))}
-                </button>
-                <Link href="/settings" className="ml-auto rounded-input border border-border px-3 py-2 hover:bg-bg">
+              <div className="mt-3 flex flex-col gap-3 text-sm text-text-secondary sm:flex-row sm:items-start sm:gap-4">
+                <div className="flex flex-col gap-1 text-left">
+                  <label className="text-xs font-medium text-text-secondary" htmlFor="billing-currency-select">
+                    {copy.wallet.currencyLabel}
+                  </label>
+                  <select
+                    id="billing-currency-select"
+                    className="w-full rounded-input border border-border bg-bg px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:min-w-[140px]"
+                    value={normalizedChargeCurrency}
+                    onChange={handleCurrencyChange}
+                    disabled={currencyLoading}
+                  >
+                    {currencyOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                  <p className={`text-xs ${currencyStatusClass}`}>{currencyStatus}</p>
+                </div>
+                <Link href="/settings" className="rounded-input border border-border px-3 py-2 text-center text-sm hover:bg-bg">
                   {copy.wallet.autoTopUp}
                 </Link>
               </div>
+              <div className="mt-3 grid gap-2 md:grid-cols-2">
+                {USD_TOPUP_TIERS.map((tier) => (
+                  <button
+                    key={tier.id}
+                    type="button"
+                    onClick={() => handleTopUp(tier.amountCents)}
+                    className="rounded-input border border-border px-3 py-2 text-left transition hover:bg-bg"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col">
+                        <span>{copy.wallet.addFunds.replace('{amount}', formatUsdAmount(tier.amountCents))}</span>
+                        {topupQuotes[tier.amountCents] && normalizedChargeCurrency !== 'USD' && (
+                          <span className="text-xs text-text-secondary">
+                            ≈ {formatLocalAmount(topupQuotes[tier.amountCents].amountMinor, topupQuotes[tier.amountCents].currency)}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-text-secondary">Stripe</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              {quoteLoading && (
+                <p className="mt-2 text-xs text-text-secondary">{walletQuoteLoading}</p>
+              )}
+              {quoteError && (
+                <p className="mt-2 text-xs text-state-warning">{quoteError}</p>
+              )}
               {(wallet?.balance ?? 0) < 2 && (
                 <p className="mt-2 text-sm text-state-warning">{copy.wallet.lowBalance}</p>
               )}
@@ -546,146 +703,99 @@ export default function BillingPage() {
           </section>
 
           <section className="mb-6 rounded-card border border-border bg-white p-4 shadow-card">
-            <h2 className="mb-3 text-lg font-semibold text-text-primary">{copy.estimator.title}</h2>
-            <p className="mb-2 text-sm text-text-secondary">{estimatorSummary}</p>
-            {error && <p className="mb-2 text-sm text-state-warning">{copy.errors.loadEngines}</p>}
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <label className="text-sm">
-                <span className="mb-1 block text-text-secondary">{copy.estimator.fields.engine}</span>
-                <select
-                  className="w-full rounded-input border border-border bg-bg px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  value={engineId ?? engines[0]?.id ?? ''}
-                  onChange={(e) => setEngineId(e.target.value)}
-                >
-                  {engines.map((e) => (
-                    <option key={e.id} value={e.id}>{e.label}</option>
-                  ))}
-                </select>
-              </label>
-              <label className="text-sm">
-                <span className="mb-1 block text-text-secondary">{copy.estimator.fields.mode}</span>
-                <select
-                  className="w-full rounded-input border border-border bg-bg px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  value={mode}
-                  onChange={(e) => setMode(e.target.value as Mode)}
-                >
-                  {(selected?.modes ?? ['t2v']).map((m) => (
-                    <option key={m} value={m}>{m.toUpperCase()}</option>
-                  ))}
-                </select>
-              </label>
-              <label className="text-sm">
-                <span className="mb-1 block text-text-secondary">{copy.estimator.fields.duration}</span>
-                <input
-                  type="number"
-                  min={1}
-                  max={selected?.maxDurationSec ?? 8}
-                  value={durationSec}
-                  onChange={(e) => setDurationSec(Number(e.target.value))}
-                  className="w-full rounded-input border border-border bg-bg px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                />
-              </label>
-              <label className="text-sm">
-                <span className="mb-1 block text-text-secondary">{copy.estimator.fields.resolution}</span>
-                <select
-                  className="w-full rounded-input border border-border bg-bg px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  value={resolution}
-                  onChange={(e) => setResolution(e.target.value as Resolution)}
-                >
-                  {(selected?.resolutions ?? ['1080p']).map((r) => (
-                    <option key={r} value={r}>{r}</option>
-                  ))}
-                </select>
-              </label>
-            </div>
-            <div className="mt-4 rounded-input border border-border bg-bg p-3 text-sm">
-              <p className="text-text-secondary">{copy.estimator.note}</p>
-              <div className="mt-2 flex items-center gap-2">
-                {member?.savingsPct ? (
-                  <span className="rounded-full bg-accent/10 px-2 py-1 text-xs text-accent">
-                    {copy.estimator.memberChipSavings.replace('{percent}', String(member.savingsPct))}
+              <button
+                type="button"
+                onClick={toggleReceipts}
+                className="flex w-full items-center justify-between rounded-input border border-transparent px-2 py-2 text-left transition hover:bg-[rgba(69,112,255,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-expanded={!receiptsCollapsed}
+              >
+                <div>
+                  <h2 className="text-lg font-semibold text-text-primary">{copy.receipts.title}</h2>
+                  <p className="text-sm text-text-secondary">{copy.receipts.subtitle}</p>
+                </div>
+                <div className="flex items-center gap-2 text-text-secondary">
+                  <span className="text-xs uppercase tracking-wide">{receiptsCollapsed ? copy.receipts.collapsedLabel : copy.receipts.expandedLabel}</span>
+                  <span
+                    className={`text-3xl font-semibold leading-none transition-transform ${receiptsCollapsed ? 'rotate-0' : 'rotate-180'} text-text-primary`}
+                    aria-hidden="true"
+                  >
+                    ▾
                   </span>
-                ) : (
-                  <span className="rounded-full bg-bg px-2 py-1 text-xs text-text-secondary">{copy.estimator.memberChipBase}</span>
-                )}
-              </div>
-            </div>
-          </section>
-
-          <section className="mb-6 rounded-card border border-border bg-white p-4 shadow-card">
-            <h2 className="mb-2 text-lg font-semibold text-text-primary">{copy.receipts.title}</h2>
-            <p className="text-sm text-text-secondary">{copy.receipts.subtitle}</p>
+                </div>
+              </button>
             {receipts.error && <p className="text-sm text-state-warning">{receipts.error}</p>}
-            <div className="mt-3 space-y-3">
-              {receipts.items.length === 0 && !receipts.loading && (
-                <p className="text-sm text-text-secondary">{copy.receipts.empty}</p>
-              )}
-              {receipts.items.map((r) => {
-                const signedCents = r.type === 'charge' ? -r.amount_cents : r.amount_cents;
-                const amountDisplay = formatMoney(signedCents, r.currency);
-                const typeKey = r.type === 'charge' ? 'charge' : r.type === 'refund' ? 'refund' : 'topup';
-                const typeLabel = copy.receipts.typeLabels[typeKey as keyof typeof copy.receipts.typeLabels] ?? r.type;
-                const typeClass =
-                  r.type === 'charge'
-                    ? 'bg-rose-100 text-rose-700'
-                    : r.type === 'refund'
-                      ? 'bg-sky-100 text-sky-700'
-                      : 'bg-emerald-100 text-emerald-700';
-                const amountClass = signedCents < 0 ? 'text-text-primary' : 'text-emerald-600';
-                const taxCents = Number(r.tax_amount_cents ?? 0);
-                const discountCents = Number(r.discount_amount_cents ?? 0);
-                return (
-                  <article key={r.id} className="space-y-3 rounded-card border border-border bg-bg p-4 text-sm text-text-secondary">
-                    <header className="flex flex-wrap items-center justify-between gap-3">
-                      <div className="flex flex-col">
-                        <span className="text-xs text-text-muted" suppressHydrationWarning>
-                          {dateFormatter.format(new Date(r.created_at))}
-                        </span>
-                        {r.job_id && <span className="text-[11px] text-text-muted">Job {r.job_id}</span>}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className={`rounded-full px-2 py-1 text-[11px] font-semibold uppercase tracking-micro ${typeClass}`}>
-                          {typeLabel}
-                        </span>
-                        <span className={`text-base font-semibold ${amountClass}`}>{amountDisplay}</span>
-                      </div>
-                    </header>
-                    {r.description && <p className="text-xs text-text-muted">{r.description}</p>}
-                    <dl className="grid gap-1 text-xs sm:text-sm">
-                      <div className="flex justify-between font-semibold text-text-primary">
-                        <dt>{copy.receipts.fields.total}</dt>
-                        <dd>{formatMoney(r.amount_cents, r.currency)}</dd>
-                      </div>
-                      {taxCents > 0 && (
-                        <div className="flex justify-between text-text-muted">
-                          <dt>{copy.receipts.fields.tax}</dt>
-                          <dd>{formatMoney(taxCents, r.currency)}</dd>
-                        </div>
-                      )}
-                      {discountCents > 0 && (
-                        <div className="flex justify-between text-text-muted">
-                          <dt>{copy.receipts.fields.discount}</dt>
-                          <dd>{formatMoney(-discountCents, r.currency)}</dd>
-                        </div>
-                      )}
-                    </dl>
-                  </article>
-                );
-              })}
-              {receipts.loading && (
-                <p className="text-sm text-text-secondary">{copy.receipts.loading}</p>
-              )}
-              <div className="flex items-center gap-2">
-                {receipts.nextCursor && (
-                  <button onClick={loadMoreReceipts} disabled={receipts.loading} className="rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg disabled:opacity-60">
-                    {receipts.loading ? copy.receipts.loading : copy.receipts.loadMore}
-                  </button>
+            {!receiptsCollapsed && (
+              <div className="mt-3 space-y-3">
+                {receipts.items.length === 0 && !receipts.loading && (
+                  <p className="text-sm text-text-secondary">{copy.receipts.empty}</p>
                 )}
-                <button onClick={exportCSV} className="ml-auto rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg">
-                  {copy.receipts.exportCsv}
-                </button>
+                {receipts.items.map((r) => {
+                  const signedCents = r.type === 'charge' ? -r.amount_cents : r.amount_cents;
+                  const amountDisplay = formatMoney(signedCents, r.currency);
+                  const typeKey = r.type === 'charge' ? 'charge' : r.type === 'refund' ? 'refund' : 'topup';
+                  const typeLabel = copy.receipts.typeLabels[typeKey as keyof typeof copy.receipts.typeLabels] ?? r.type;
+                  const typeClass =
+                    r.type === 'charge'
+                      ? 'bg-rose-100 text-rose-700'
+                      : r.type === 'refund'
+                        ? 'bg-sky-100 text-sky-700'
+                        : 'bg-emerald-100 text-emerald-700';
+                  const amountClass = signedCents < 0 ? 'text-text-primary' : 'text-emerald-600';
+                  const taxCents = Number(r.tax_amount_cents ?? 0);
+                  const discountCents = Number(r.discount_amount_cents ?? 0);
+                  return (
+                    <article key={r.id} className="space-y-3 rounded-card border border-border bg-bg p-4 text-sm text-text-secondary">
+                      <header className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex flex-col">
+                          <span className="text-xs text-text-muted" suppressHydrationWarning>
+                            {dateFormatter.format(new Date(r.created_at))}
+                          </span>
+                          {r.job_id && <span className="text-[11px] text-text-muted">Job {r.job_id}</span>}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className={`rounded-full px-2 py-1 text-[11px] font-semibold uppercase tracking-micro ${typeClass}`}>
+                            {typeLabel}
+                          </span>
+                          <span className={`text-base font-semibold ${amountClass}`}>{amountDisplay}</span>
+                        </div>
+                      </header>
+                      {r.description && <p className="text-xs text-text-muted">{r.description}</p>}
+                      <dl className="grid gap-1 text-xs sm:text-sm">
+                        <div className="flex justify-between font-semibold text-text-primary">
+                          <dt>{copy.receipts.fields.total}</dt>
+                          <dd>{formatMoney(r.amount_cents, r.currency)}</dd>
+                        </div>
+                        {taxCents > 0 && (
+                          <div className="flex justify-between text-text-muted">
+                            <dt>{copy.receipts.fields.tax}</dt>
+                            <dd>{formatMoney(taxCents, r.currency)}</dd>
+                          </div>
+                        )}
+                        {discountCents > 0 && (
+                          <div className="flex justify-between text-text-muted">
+                            <dt>{copy.receipts.fields.discount}</dt>
+                            <dd>{formatMoney(-discountCents, r.currency)}</dd>
+                          </div>
+                        )}
+                      </dl>
+                    </article>
+                  );
+                })}
+                {receipts.loading && (
+                  <p className="text-sm text-text-secondary">{copy.receipts.loading}</p>
+                )}
+                <div className="flex items-center gap-2">
+                  {receipts.nextCursor && (
+                    <button onClick={loadMoreReceipts} disabled={receipts.loading} className="rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg disabled:opacity-60">
+                      {receipts.loading ? copy.receipts.loading : copy.receipts.loadMore}
+                    </button>
+                  )}
+                  <button onClick={exportCSV} className="ml-auto rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg">
+                    {copy.receipts.exportCsv}
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </section>
 
           {/* Refunds & Protections */}

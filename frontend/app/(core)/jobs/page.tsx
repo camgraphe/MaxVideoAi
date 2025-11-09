@@ -17,7 +17,7 @@ import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { FEATURES } from '@/content/feature-flags';
 import { FlagPill } from '@/components/FlagPill';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { listFalEngines } from '@/config/falEngines';
+import { getEngineAliases, listFalEngines } from '@/config/falEngines';
 
 const DEFAULT_JOBS_COPY = {
   title: 'Jobs',
@@ -64,7 +64,7 @@ export default function JobsPage() {
     };
   }, [rawCopy]);
   const { data: enginesData } = useEngines();
-  const { data, error, isLoading, size, setSize, isValidating, mutate } = useInfiniteJobs(24);
+  const { data, error, isLoading, setSize, isValidating, mutate } = useInfiniteJobs(24);
   const { loading: authLoading, session } = useRequireAuth();
   const { data: preferences } = useUserPreferences(!authLoading && Boolean(session));
   const defaultAllowIndex = preferences?.defaultAllowIndex ?? true;
@@ -123,8 +123,8 @@ export default function JobsPage() {
   }, [groupedJobs]);
 
   const [collapsedSections, setCollapsedSections] = useState<{ video: boolean; image: boolean }>({
-    video: false,
-    image: false,
+    video: true,
+    image: true,
   });
 
   const toggleSection = useCallback((section: 'video' | 'image') => {
@@ -329,7 +329,23 @@ export default function JobsPage() {
                   </button>
                   <span className="text-xs text-text-secondary">{videoGroups.length}</span>
                 </div>
-                {!collapsedSections.video && renderGroupGrid(videoGroups, copy.sections.videoEmpty, 'video')}
+                {!collapsedSections.video && (
+                  <>
+                    {renderGroupGrid(videoGroups, copy.sections.videoEmpty, 'video')}
+                    {videoGroups.length > 0 && hasMore && (
+                      <div className="mt-4 flex justify-center">
+                        <button
+                          type="button"
+                          onClick={() => setSize((prev) => prev + 1)}
+                          disabled={isValidating}
+                          className="rounded-input border border-border bg-white px-4 py-2 text-sm font-medium text-text-primary shadow-card hover:bg-white/80 disabled:opacity-60"
+                        >
+                          {isValidating ? copy.loading : copy.loadMore}
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
               </section>
 
               <section>
@@ -347,23 +363,26 @@ export default function JobsPage() {
                   </button>
                   <span className="text-xs text-text-secondary">{imageGroups.length}</span>
                 </div>
-                {!collapsedSections.image && renderGroupGrid(imageGroups, copy.sections.imageEmpty, 'image')}
+                {!collapsedSections.image && (
+                  <>
+                    {renderGroupGrid(imageGroups, copy.sections.imageEmpty, 'image')}
+                    {imageGroups.length > 0 && hasMore && (
+                      <div className="mt-4 flex justify-center">
+                        <button
+                          type="button"
+                          onClick={() => setSize((prev) => prev + 1)}
+                          disabled={isValidating}
+                          className="rounded-input border border-border bg-white px-4 py-2 text-sm font-medium text-text-primary shadow-card hover:bg-white/80 disabled:opacity-60"
+                        >
+                          {isValidating ? copy.loading : copy.loadMore}
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
               </section>
             </>
           )}
-
-          <div className="mt-5 flex items-center justify-center">
-            {hasMore && !error && (
-              <button
-                type="button"
-                onClick={() => setSize(size + 1)}
-                disabled={isValidating}
-                className="rounded-input border border-border bg-white px-4 py-2 text-sm font-medium text-text-primary shadow-card hover:bg-white/80 disabled:opacity-60"
-              >
-                {isValidating ? copy.loading : copy.loadMore}
-              </button>
-            )}
-          </div>
         </main>
       </div>
       {viewerGroup ? (
@@ -395,5 +414,5 @@ function renderSkeletonCards(count: number, prefix: string) {
 const IMAGE_ENGINE_IDS = new Set(
   listFalEngines()
     .filter((engine) => (engine.category ?? 'video') === 'image')
-    .map((engine) => engine.id)
+    .flatMap((engine) => getEngineAliases(engine))
 );

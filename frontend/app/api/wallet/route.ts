@@ -9,7 +9,12 @@ import { ensureBillingSchema } from '@/lib/schema';
 import { applyMockWalletTopUp, getMockWalletBalance } from '@/lib/wallet';
 import { getConfiguredEngine } from '@/server/engines';
 import { getSoraVariantForEngine, isSoraEngineId, parseSoraRequest, type SoraRequest } from '@/lib/sora';
-import { getUserPreferredCurrency, normalizeCurrencyCode, resolveCurrency } from '@/lib/currency';
+import {
+  getUserPreferredCurrency,
+  normalizeCurrencyCode,
+  resolveCurrency,
+  resolveEnabledCurrencies,
+} from '@/lib/currency';
 import { convertCents } from '@/lib/exchange';
 import type { Currency } from '@/lib/currency';
 
@@ -66,12 +71,15 @@ export async function GET(req: NextRequest) {
     }
 
     walletCurrency = WALLET_DISPLAY_CURRENCY_LOWER as Currency;
+    const normalizedMismatches = Array.from(mismatchedCurrencies).filter(
+      (currency) => currency !== walletCurrency
+    );
 
-    if (mismatchedCurrencies.size) {
+    if (normalizedMismatches.length) {
       console.warn('[wallet] detected receipts with mismatched currency', {
         userId,
         walletCurrency,
-        mismatched: Array.from(mismatchedCurrencies),
+        mismatched: normalizedMismatches,
       });
     }
 
@@ -133,7 +141,16 @@ export async function POST(req: NextRequest) {
   if (!useMock && databaseConfigured) {
     preferredCurrency = await getUserPreferredCurrency(userId);
   }
-  const currencyResolution = resolveCurrency(req, preferredCurrency ? { preferred_currency: preferredCurrency } : undefined);
+  let currencyResolution = resolveCurrency(req, preferredCurrency ? { preferred_currency: preferredCurrency } : undefined);
+  const enabledCurrencies = resolveEnabledCurrencies();
+  const requestedCurrency = normalizeCurrencyCode(body.currency);
+  if (requestedCurrency && enabledCurrencies.includes(requestedCurrency)) {
+    currencyResolution = {
+      currency: requestedCurrency,
+      source: 'manual',
+      country: currencyResolution.country,
+    };
+  }
   const resolvedCurrencyLower = currencyResolution.currency;
   const resolvedCurrencyUpper = resolvedCurrencyLower.toUpperCase();
 
@@ -224,7 +241,7 @@ export async function POST(req: NextRequest) {
     const applicationFeeCents = getPlatformFeeCents(pricing);
     const vendorShareCents = getVendorShareCents(pricing);
     const settlementCurrencyUpper = resolvedCurrencyUpper;
-    const { cents: settlementAmountCents, rate: fxRate, source: fxSource } = convertCents(
+    const { cents: settlementAmountCents, rate: fxRate, source: fxSource } = await convertCents(
       pricing.totalCents,
       WALLET_DISPLAY_CURRENCY_LOWER,
       resolvedCurrencyLower
@@ -354,7 +371,7 @@ export async function POST(req: NextRequest) {
     if (currencyResolution.country) {
       sessionMetadata.currency_country = currencyResolution.country;
     }
-    const { cents: settlementAmountCents, rate: fxRate, source: fxSource } = convertCents(
+    const { cents: settlementAmountCents, rate: fxRate, source: fxSource } = await convertCents(
       amountCents,
       WALLET_DISPLAY_CURRENCY_LOWER,
       resolvedCurrencyLower

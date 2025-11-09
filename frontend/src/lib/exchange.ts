@@ -1,4 +1,5 @@
 import { normalizeCurrencyCode } from '@/lib/currency';
+import { convertUsdToCurrencyAmount } from '@/lib/fxQuote';
 
 type FxRateResult = {
   rate: number;
@@ -46,15 +47,37 @@ export function getFxRate(base: string, target: string): FxRateResult {
   return { rate: 1, source: 'identity' };
 }
 
-export function convertCents(amountCents: number, base: string, target: string): {
+export async function convertCents(amountCents: number, base: string, target: string): Promise<{
   cents: number;
   rate: number;
   source: string;
-} {
-  const { rate, source } = getFxRate(base, target);
-  if (!Number.isFinite(amountCents) || amountCents <= 0) {
-    return { cents: 0, rate, source };
+  rateTimestamp?: string;
+  marginBps?: number;
+}> {
+  const normalizedBase = normalizeCurrencyCode(base)?.toLowerCase();
+  const normalizedTarget = normalizeCurrencyCode(target)?.toLowerCase();
+
+  if (!normalizedBase || !normalizedTarget || amountCents <= 0) {
+    return { cents: 0, rate: 1, source: 'identity' };
   }
+
+  if (normalizedBase === normalizedTarget) {
+    return { cents: amountCents, rate: 1, source: 'identity' };
+  }
+
+  if (normalizedBase === 'usd') {
+    const quote = await convertUsdToCurrencyAmount({ usdAmountCents: amountCents, targetCurrency: normalizedTarget });
+    return {
+      cents: quote.amountMinor,
+      rate: quote.rate,
+      source: quote.source,
+      rateTimestamp: quote.rateTimestamp,
+      marginBps: quote.marginBps,
+    };
+  }
+
+  // Fallback to env-configured rates for non-USD base conversions
+  const { rate, source } = getFxRate(normalizedBase, normalizedTarget);
   const converted = Math.max(1, Math.round(amountCents * rate));
   return { cents: converted, rate, source };
 }

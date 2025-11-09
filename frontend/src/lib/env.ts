@@ -70,6 +70,7 @@ export const ENV = {
     (getOptionalEnv('FAL_USE_UPLOAD') ?? 'false').toLowerCase() === 'true',
   DEFAULT_CURRENCY: getOptionalEnv('DEFAULT_CURRENCY'),
   ENABLED_CURRENCIES: getOptionalEnv('ENABLED_CURRENCIES'),
+  FX_MARGIN_BPS: getOptionalEnv('FX_MARGIN_BPS'),
   PAYMENT_MODE,
   RECEIPTS_PRICE_ONLY,
 };

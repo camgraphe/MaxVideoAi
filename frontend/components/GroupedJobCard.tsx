@@ -29,30 +29,33 @@ function GroupPreviewMedia({
   preview: GroupSummary['previews'][number] | undefined;
   shouldPlay: boolean;
 }) {
-  if (preview?.videoUrl) {
-    const poster = preview.thumbUrl ?? undefined;
-    const videoRef = useRef<HTMLVideoElement | null>(null);
-    const [videoReady, setVideoReady] = useState(false);
+  const hasVideo = Boolean(preview?.videoUrl);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [videoReady, setVideoReady] = useState(false);
 
-    useEffect(() => {
-      setVideoReady(false);
-    }, [preview?.videoUrl]);
+  useEffect(() => {
+    if (!hasVideo) return;
+    setVideoReady(false);
+  }, [hasVideo, preview?.videoUrl]);
 
-    useEffect(() => {
-      const element = videoRef.current;
-      if (!element) return;
-      if (shouldPlay) {
-        const playPromise = element.play();
-        if (playPromise) {
-          playPromise.catch(() => {
-            /* ignore autoplay rejection */
-          });
-        }
-      } else {
-        element.pause();
+  useEffect(() => {
+    if (!hasVideo) return;
+    const element = videoRef.current;
+    if (!element) return;
+    if (shouldPlay) {
+      const playPromise = element.play();
+      if (playPromise) {
+        playPromise.catch(() => {
+          /* ignore autoplay rejection */
+        });
       }
-    }, [shouldPlay, preview?.videoUrl]);
+    } else {
+      element.pause();
+    }
+  }, [hasVideo, preview?.videoUrl, shouldPlay]);
 
+  if (hasVideo && preview?.videoUrl) {
+    const poster = preview.thumbUrl ?? undefined;
     return (
       <div className="relative h-full w-full">
         {preview.thumbUrl ? (
@@ -195,7 +198,8 @@ export function GroupedJobCard({ group, engine, onOpen, onAction, actionMenu = t
               const preview = previews[index];
               const member = preview ? group.members.find((entry) => entry.id === preview.id) : undefined;
               const memberStatus = member?.status ?? 'completed';
-              const isCompleted = memberStatus === 'completed';
+              const previewHasMedia = Boolean(preview?.videoUrl || preview?.thumbUrl);
+              const isCompleted = memberStatus === 'completed' || previewHasMedia;
               const previewKey = preview?.id ? `${preview.id}-${index}` : `preview-${index}`;
               return (
                 <div key={previewKey} className="relative flex items-center justify-center overflow-hidden rounded-[10px] bg-[var(--surface-2)]">
