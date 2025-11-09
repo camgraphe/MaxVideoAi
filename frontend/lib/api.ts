@@ -126,17 +126,21 @@ type StatusRetryMeta = {
 };
 
 function normalizeJobFromApi(job: Job): Job {
-  const hasMedia = Boolean(job.videoUrl);
+  const hasImageMedia =
+    Array.isArray(job.renderIds) && job.renderIds.some((value) => typeof value === 'string' && value.length);
+  const hasMedia = Boolean(job.videoUrl) || hasImageMedia;
   const normalizedStatus = normalizeJobStatus(job.status ?? null, hasMedia);
   const status: Job['status'] =
     normalizedStatus ?? (hasMedia ? 'completed' : 'pending');
   const progress = normalizeJobProgress(job.progress, status as 'pending' | 'completed' | 'failed', hasMedia);
   const messageFromApi = normalizeJobMessage(job.message);
   const message =
-    messageFromApi ??
-    (status === 'failed'
-      ? 'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'
-      : undefined);
+    hasImageMedia && status === 'completed'
+      ? undefined
+      : messageFromApi ??
+        (status === 'failed'
+          ? 'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'
+          : undefined);
 
   return {
     ...job,

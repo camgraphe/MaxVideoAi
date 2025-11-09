@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { listFalEngines } from '@/config/falEngines';
+import { getEngineAliases, listFalEngines } from '@/config/falEngines';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import ImageWorkspace, { type ImageEngineOption } from './ImageWorkspace';
 
@@ -51,6 +51,7 @@ export default function ImageGeneratePage() {
       prompts,
       modes,
       engineCaps: entry.engine,
+      aliases: getEngineAliases(entry),
     };
   });
 

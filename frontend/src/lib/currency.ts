@@ -1,9 +1,9 @@
 import { isDatabaseConfigured, query } from '@/lib/db';
 import type { NextRequest } from 'next/server';
 
-export type Currency = 'eur' | 'usd';
+export type Currency = 'eur' | 'usd' | 'gbp' | 'chf';
 
-export type CurrencyResolutionSource = 'user_pref' | 'geo' | 'default';
+export type CurrencyResolutionSource = 'user_pref' | 'geo' | 'default' | 'manual';
 
 const EU_COUNTRIES = new Set([
   'FR',
@@ -38,7 +38,10 @@ const EU_COUNTRIES = new Set([
   'DK',
 ]);
 
-const KNOWN_CURRENCIES: Currency[] = ['eur', 'usd'];
+const GBP_COUNTRIES = new Set(['GB', 'UK', 'GG', 'JE', 'IM']);
+const CHF_COUNTRIES = new Set(['CH', 'LI']);
+
+const KNOWN_CURRENCIES: Currency[] = ['eur', 'usd', 'gbp', 'chf'];
 
 export function normalizeCurrencyCode(value: string | null | undefined): Currency | null {
   if (!value) return null;
@@ -47,7 +50,7 @@ export function normalizeCurrencyCode(value: string | null | undefined): Currenc
 }
 
 export function resolveEnabledCurrencies(): Currency[] {
-  const raw = process.env.ENABLED_CURRENCIES ?? 'eur,usd';
+  const raw = process.env.ENABLED_CURRENCIES ?? 'eur,usd,gbp,chf';
   const parsed = raw
     .split(',')
     .map((entry) => normalizeCurrencyCode(entry))
@@ -60,7 +63,9 @@ export function resolveDefaultCurrency(enabled: Currency[]): Currency {
   if (fromEnv && enabled.includes(fromEnv)) {
     return fromEnv;
   }
-  return enabled.includes('eur') ? 'eur' : enabled[0] ?? 'usd';
+  if (enabled.includes('eur')) return 'eur';
+  if (enabled.includes('usd')) return 'usd';
+  return enabled[0] ?? 'usd';
 }
 
 export function resolveCurrency(
@@ -79,14 +84,19 @@ export function resolveCurrency(
   const geoCountry = (req as unknown as { geo?: { country?: string | null } }).geo?.country;
   const country = (headerCountry ?? geoCountry ?? '').toUpperCase();
 
-  if (country && EU_COUNTRIES.has(country)) {
-    const euCurrency = enabled.includes('eur') ? 'eur' : fallback;
-    return { currency: euCurrency, source: 'geo', country };
-  }
+  const preferCurrency = (desired: Currency): Currency => (enabled.includes(desired) ? desired : fallback);
 
   if (country) {
-    const nonEuCurrency = enabled.includes('usd') ? 'usd' : fallback;
-    return { currency: nonEuCurrency, source: 'geo', country };
+    if (GBP_COUNTRIES.has(country)) {
+      return { currency: preferCurrency('gbp'), source: 'geo', country };
+    }
+    if (CHF_COUNTRIES.has(country)) {
+      return { currency: preferCurrency('chf'), source: 'geo', country };
+    }
+    if (EU_COUNTRIES.has(country)) {
+      return { currency: preferCurrency('eur'), source: 'geo', country };
+    }
+    return { currency: preferCurrency('usd'), source: 'geo', country };
   }
 
   return { currency: fallback, source: 'default' };

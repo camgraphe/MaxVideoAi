@@ -196,6 +196,15 @@ export async function ensureBillingSchema(): Promise<void> {
       `);
 
       await query(`
+        ALTER TABLE app_receipts
+        ADD COLUMN IF NOT EXISTS original_amount_cents INTEGER,
+        ADD COLUMN IF NOT EXISTS original_currency TEXT,
+        ADD COLUMN IF NOT EXISTS fx_rate NUMERIC,
+        ADD COLUMN IF NOT EXISTS fx_margin_bps INTEGER,
+        ADD COLUMN IF NOT EXISTS fx_rate_timestamp TIMESTAMPTZ;
+      `);
+
+      await query(`
         CREATE INDEX IF NOT EXISTS app_receipts_user_created_idx ON app_receipts (user_id, created_at DESC);
       `);
 
@@ -289,7 +298,7 @@ export async function ensureBillingSchema(): Promise<void> {
 
       await query(`
         ALTER TABLE IF EXISTS profiles
-        ADD COLUMN IF NOT EXISTS preferred_currency TEXT CHECK (preferred_currency IN ('eur','usd'));
+        ADD COLUMN IF NOT EXISTS preferred_currency TEXT CHECK (preferred_currency IN ('eur','usd','gbp','chf'));
       `);
 
       try {

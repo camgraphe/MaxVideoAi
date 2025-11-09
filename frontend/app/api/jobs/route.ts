@@ -8,7 +8,7 @@ import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { updateJobFromFalWebhook } from '@/server/fal-webhook-handler';
 import { listStarterPlaylistVideos } from '@/server/videos';
-import { listFalEngines } from '@/config/falEngines';
+import { getEngineAliases, listFalEngines } from '@/config/falEngines';
 
 function parseCursorParam(value: string | null): { createdAt: Date | null; id: number | null } {
   if (!value) {
@@ -47,10 +47,10 @@ function formatCursorValue(row: { created_at: string; id: number }): string {
   return `${createdAt.toISOString()}|${row.id}`;
 }
 
-const IMAGE_ENGINE_IDS = listFalEngines()
+const IMAGE_ENGINE_ALIASES = listFalEngines()
   .filter((engine) => (engine.category ?? 'video') === 'image')
-  .map((engine) => engine.id);
-const IMAGE_ENGINE_ID_SET = new Set(IMAGE_ENGINE_IDS);
+  .flatMap((engine) => getEngineAliases(engine));
+const IMAGE_ENGINE_ID_SET = new Set(IMAGE_ENGINE_ALIASES);
 
 export async function GET(req: NextRequest) {
   if (!isDatabaseConfigured()) {
@@ -83,20 +83,25 @@ export async function GET(req: NextRequest) {
 
   try {
     const params: Array<string | number | Date | string[]> = [userId];
-    const conditions: string[] = [
-      'user_id = $1',
-      'hidden IS NOT TRUE',
-      "NOT (LOWER(status) IN ('failed','error','errored','cancelled','canceled') AND updated_at < NOW() - INTERVAL '150 seconds')"
-    ];
+    const baseFailureClause =
+      "NOT (LOWER(status) IN ('failed','error','errored','cancelled','canceled') AND updated_at < NOW() - INTERVAL '150 seconds')";
+    const conditions: string[] = ['user_id = $1', 'hidden IS NOT TRUE'];
+    if (feedType === 'image' || feedType === 'all') {
+      conditions.push(`(${baseFailureClause} OR render_ids IS NOT NULL)`);
+    } else {
+      conditions.push(baseFailureClause);
+    }
 
-    if (feedType === 'image' && IMAGE_ENGINE_IDS.length) {
-      params.push(IMAGE_ENGINE_IDS);
-      const idx = params.length;
-      conditions.push(`COALESCE(engine_id, '') = ANY($${idx}::text[])`);
-    } else if (feedType === 'video' && IMAGE_ENGINE_IDS.length) {
-      params.push(IMAGE_ENGINE_IDS);
-      const idx = params.length;
-      conditions.push(`NOT (COALESCE(engine_id, '') = ANY($${idx}::text[]))`);
+    if (IMAGE_ENGINE_ALIASES.length && feedType !== 'all') {
+      params.push(IMAGE_ENGINE_ALIASES);
+      const aliasIdx = params.length;
+      const aliasClause = `COALESCE(engine_id, '') = ANY($${aliasIdx}::text[])`;
+      const heuristicClause = `((COALESCE(engine_id, '') = '' OR engine_id IS NULL) AND (render_ids IS NOT NULL OR (video_url IS NULL AND hero_render_id IS NOT NULL)))`;
+      if (feedType === 'image') {
+        conditions.push(`(${aliasClause} OR ${heuristicClause})`);
+      } else if (feedType === 'video') {
+        conditions.push(`NOT (${aliasClause} OR ${heuristicClause})`);
+      }
     }
 
     const cursorInfo = parseCursorParam(cursor);

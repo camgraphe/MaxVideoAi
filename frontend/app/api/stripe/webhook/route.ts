@@ -86,6 +86,15 @@ async function handleCheckoutSession(session: Stripe.Checkout.Session) {
         : undefined
     : undefined;
   const destinationAcct = connectMode ? session.metadata.destination_account_id ?? undefined : undefined;
+  const fxRate =
+    session.metadata.fx_rate && Number.isFinite(Number(session.metadata.fx_rate))
+      ? Number(session.metadata.fx_rate)
+      : null;
+  const fxMarginBps =
+    session.metadata.fx_margin_bps && Number.isFinite(Number(session.metadata.fx_margin_bps))
+      ? Number(session.metadata.fx_margin_bps)
+      : null;
+  const fxRateTimestamp = session.metadata.rate_timestamp ?? null;
 
   if (!amountCents || amountCents <= 0) return;
 
@@ -105,6 +114,11 @@ async function handleCheckoutSession(session: Stripe.Checkout.Session) {
       fx_rate: session.metadata.fx_rate ?? null,
       fx_source: session.metadata.fx_source ?? null,
     },
+    originalAmountCents: settlementAmountCents ?? amountCents,
+    originalCurrency: settlementCurrency,
+    fxRate,
+    fxMarginBps,
+    fxRateTimestamp,
   });
 }
 
@@ -137,6 +151,16 @@ async function handlePaymentIntent(intent: Stripe.PaymentIntent) {
         : intent.application_fee_amount ?? undefined;
     const vendorShareCents =
       amountCents !== null && platformRevenueCents !== undefined ? amountCents - platformRevenueCents : null;
+    const fxRate =
+      intent.metadata?.fx_rate && Number.isFinite(Number(intent.metadata.fx_rate))
+        ? Number(intent.metadata.fx_rate)
+        : null;
+    const fxMarginBps =
+      intent.metadata?.fx_margin_bps && Number.isFinite(Number(intent.metadata.fx_margin_bps))
+        ? Number(intent.metadata.fx_margin_bps)
+        : null;
+    const fxRateTimestamp = intent.metadata?.rate_timestamp ?? null;
+    const originalCurrency = intent.metadata?.target_currency ?? settlementCurrency;
 
     if (connectMode && destinationAcct && vendorShareCents && vendorShareCents !== 0) {
       await upsertVendorBalance({
@@ -163,6 +187,11 @@ async function handlePaymentIntent(intent: Stripe.PaymentIntent) {
         fx_rate: intent.metadata?.fx_rate ?? null,
         fx_source: intent.metadata?.fx_source ?? null,
       },
+      originalAmountCents: settlementAmountCents ?? amountCents,
+      originalCurrency,
+      fxRate,
+      fxMarginBps,
+      fxRateTimestamp,
     });
   } else if (connectMode && destinationAcct) {
     const totalCents = intent.amount_received ?? intent.amount ?? 0;
@@ -189,6 +218,11 @@ async function recordTopup({
   platformRevenueCents,
   destinationAcct,
   metadata,
+  originalAmountCents,
+  originalCurrency,
+  fxRate,
+  fxMarginBps,
+  fxRateTimestamp,
 }: {
   userId: string;
   walletAmountCents: number;
@@ -200,6 +234,11 @@ async function recordTopup({
   platformRevenueCents?: number | null | undefined;
   destinationAcct?: string | null | undefined;
   metadata?: Record<string, unknown>;
+  originalAmountCents?: number | null;
+  originalCurrency?: string | null;
+  fxRate?: number | null;
+  fxMarginBps?: number | null;
+  fxRateTimestamp?: string | Date | null;
 }) {
   const walletCurrencyUpper = walletCurrency ? walletCurrency.toUpperCase() : 'USD';
   const normalizedWalletAmount = Math.max(0, Math.round(walletAmountCents));
@@ -257,8 +296,8 @@ async function recordTopup({
     };
 
     const rows = await query<{ id: number }>(
-      `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, metadata, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct)
-       VALUES ($1, 'topup', $2, $3, $4, $5, $6, $7, $8, $9)
+      `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, metadata, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct, original_amount_cents, original_currency, fx_rate, fx_margin_bps, fx_rate_timestamp)
+       VALUES ($1, 'topup', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
        ON CONFLICT DO NOTHING
        RETURNING id`,
       [
@@ -271,6 +310,11 @@ async function recordTopup({
         chargeId ?? null,
         receiptsPriceOnly ? null : platformRevenueCents ?? null,
         connectMode ? destinationAcct ?? null : null,
+        originalAmountCents ?? normalizedSettlementAmount ?? normalizedWalletAmount,
+        originalCurrency ? originalCurrency.toUpperCase() : settlementCurrencyUpper,
+        fxRate ?? null,
+        fxMarginBps ?? null,
+        fxRateTimestamp ? new Date(fxRateTimestamp) : null,
       ]
     );
 

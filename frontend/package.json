@@ -29,6 +29,7 @@
     "@maxvideoai/pricing": "file:../packages/pricing",
     "@react-email/components": "^0.5.7",
     "@react-email/render": "^1.4.0",
+    "@stripe/stripe-js": "^8.3.0",
     "@supabase/supabase-js": "^2.45.4",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",

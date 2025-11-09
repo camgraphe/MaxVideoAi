@@ -38,12 +38,16 @@ type EngineGuideEntry = {
   badges: string[];
 };
 
+const DEFAULT_MODE_OPTIONS: Mode[] = ['t2v', 'i2v'];
+
 interface EngineSelectProps {
   engines: EngineCaps[];
   engineId: string;
   onEngineChange: (engineId: string) => void;
   mode: Mode;
   onModeChange: (mode: Mode) => void;
+  modeOptions?: Mode[];
+  modeLabelOverrides?: Partial<Record<Mode, string>>;
 }
 
 const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
@@ -127,7 +131,15 @@ interface DropdownPosition {
   width: number;
 }
 
-export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeChange }: EngineSelectProps) {
+export function EngineSelect({
+  engines,
+  engineId,
+  onEngineChange,
+  mode,
+  onModeChange,
+  modeOptions,
+  modeLabelOverrides,
+}: EngineSelectProps) {
   const { t } = useI18n();
   const copy = t('workspace.generate.engineSelect', DEFAULT_ENGINE_SELECT_COPY) as EngineSelectCopy;
   const [open, setOpen] = useState(false);
@@ -195,6 +207,22 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
       onModeChange(selectedEngine.modes[0]);
     }
   }, [mode, onModeChange, selectedEngine]);
+
+  const displayedModeOptions = useMemo(() => {
+    const base = modeOptions && modeOptions.length ? modeOptions : DEFAULT_MODE_OPTIONS;
+    const deduped: Mode[] = [];
+    base.forEach((value) => {
+      if (!deduped.includes(value)) {
+        deduped.push(value);
+      }
+    });
+    return deduped;
+  }, [modeOptions]);
+
+  const resolveModeLabel = useCallback(
+    (value: Mode) => modeLabelOverrides?.[value] ?? MODE_LABELS[value] ?? value.toUpperCase(),
+    [modeLabelOverrides]
+  );
 
   const updatePosition = useCallback(() => {
     if (!triggerRef.current) return;
@@ -518,32 +546,34 @@ export function EngineSelect({ engines, engineId, onEngineChange, mode, onModeCh
           </button>
         </div>
 
-        <div className="min-w-[200px] flex-1 space-y-3">
-          <p className="text-[12px] uppercase tracking-micro text-text-muted">{copy.inputMode}</p>
-          <div className="flex flex-wrap gap-2">
-            {(['t2v', 'i2v'] as Mode[]).map((candidate) => {
-              const supported = selectedEngine.modes.includes(candidate);
-              return (
-                <button
-                  key={candidate}
-                  type="button"
-                  onClick={() => supported && onModeChange(candidate)}
-                  disabled={!supported}
-                  className={clsx(
-                    'rounded-input border px-4 py-2 text-[13px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    mode === candidate && supported
-                      ? 'border-accent bg-accent text-white'
-                      : supported
-                        ? 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
-                        : 'cursor-not-allowed border-hairline bg-white text-text-muted/60'
-                  )}
-                >
-                  {MODE_LABELS[candidate]}
-                </button>
-              );
-            })}
+        {displayedModeOptions.length ? (
+          <div className="min-w-[200px] flex-1 space-y-3">
+            <p className="text-[12px] uppercase tracking-micro text-text-muted">{copy.inputMode}</p>
+            <div className="flex flex-wrap gap-2">
+              {displayedModeOptions.map((candidate) => {
+                const supported = selectedEngine.modes.includes(candidate);
+                return (
+                  <button
+                    key={candidate}
+                    type="button"
+                    onClick={() => supported && onModeChange(candidate)}
+                    disabled={!supported}
+                    className={clsx(
+                      'rounded-input border px-4 py-2 text-[13px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      mode === candidate && supported
+                        ? 'border-accent bg-accent text-white'
+                        : supported
+                          ? 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
+                          : 'cursor-not-allowed border-hairline bg-white text-text-muted/60'
+                    )}
+                  >
+                    {resolveModeLabel(candidate)}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
       {browseOpen && (
         <BrowseEnginesModal

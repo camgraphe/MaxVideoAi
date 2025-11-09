@@ -816,7 +816,15 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   const finalPreviewFrame = finalThumbUrl ?? job.preview_frame;
   const isMediaMissing = !finalVideoUrl && !hasImageMedia;
   const renderIdsJson = hasImageMedia ? JSON.stringify(imageUrls) : null;
-  const heroRenderId = hasImageMedia ? heroImageUrl ?? imageUrls[0] ?? null : null;
+  const heroRenderId = hasImageMedia
+    ? heroImageUrl ?? imageUrls[0] ?? job.hero_render_id ?? null
+    : job.hero_render_id ?? null;
+
+  if (hasImageMedia) {
+    nextStatus = 'completed';
+    nextProgress = 100;
+    nextMessage = null;
+  }
 
   let forcedNoMediaFailure = false;
   if ((finalVideoUrl || hasImageMedia) && nextStatus !== 'failed') {
