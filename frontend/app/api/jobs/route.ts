@@ -8,6 +8,7 @@ import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { updateJobFromFalWebhook } from '@/server/fal-webhook-handler';
 import { listStarterPlaylistVideos } from '@/server/videos';
+import { listFalEngines } from '@/config/falEngines';
 
 function parseCursorParam(value: string | null): { createdAt: Date | null; id: number | null } {
   if (!value) {
@@ -46,6 +47,11 @@ function formatCursorValue(row: { created_at: string; id: number }): string {
   return `${createdAt.toISOString()}|${row.id}`;
 }
 
+const IMAGE_ENGINE_IDS = listFalEngines()
+  .filter((engine) => (engine.category ?? 'video') === 'image')
+  .map((engine) => engine.id);
+const IMAGE_ENGINE_ID_SET = new Set(IMAGE_ENGINE_IDS);
+
 export async function GET(req: NextRequest) {
   if (!isDatabaseConfigured()) {
     return NextResponse.json(
@@ -67,6 +73,8 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const limit = Math.min(100, Math.max(1, Number(url.searchParams.get('limit') ?? '24')));
   const cursor = url.searchParams.get('cursor');
+  const typeParam = url.searchParams.get('type');
+  const feedType = typeParam === 'image' || typeParam === 'video' ? typeParam : 'all';
   const userId = await getUserIdFromRequest(req);
 
   if (!userId) {
@@ -74,12 +82,22 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const params: Array<string | number | Date> = [userId];
+    const params: Array<string | number | Date | string[]> = [userId];
     const conditions: string[] = [
       'user_id = $1',
       'hidden IS NOT TRUE',
       "NOT (LOWER(status) IN ('failed','error','errored','cancelled','canceled') AND updated_at < NOW() - INTERVAL '150 seconds')"
     ];
+
+    if (feedType === 'image' && IMAGE_ENGINE_IDS.length) {
+      params.push(IMAGE_ENGINE_IDS);
+      const idx = params.length;
+      conditions.push(`COALESCE(engine_id, '') = ANY($${idx}::text[])`);
+    } else if (feedType === 'video' && IMAGE_ENGINE_IDS.length) {
+      params.push(IMAGE_ENGINE_IDS);
+      const idx = params.length;
+      conditions.push(`NOT (COALESCE(engine_id, '') = ANY($${idx}::text[]))`);
+    }
 
     const cursorInfo = parseCursorParam(cursor);
     if (cursorInfo.createdAt) {
@@ -146,6 +164,9 @@ type JobRow = {
     );
 
     const staleJobs = rows.filter((row) => {
+      if (row.engine_id && IMAGE_ENGINE_ID_SET.has(row.engine_id)) {
+        return false;
+      }
       if (!row.provider_job_id) return false;
       const status = (row.status ?? '').toLowerCase();
       if (status === 'failed' || status === 'cancelled' || status === 'canceled' || status === 'error') return false;

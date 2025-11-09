@@ -38,6 +38,8 @@ type AppJobRow = {
   preview_frame: string | null;
   message: string | null;
   has_audio: boolean | null;
+  render_ids: unknown;
+  hero_render_id: string | null;
 };
 
 const COMPLETED_STATUSES = new Set(['COMPLETED', 'FINISHED', 'SUCCESS']);
@@ -265,6 +267,85 @@ function extractMediaUrls(payload: unknown): { videoUrl?: string | null; thumbUr
   return { videoUrl, thumbUrl };
 }
 
+function normalizeRenderIdList(value: unknown): string[] {
+  const collect = (entries: unknown[]): string[] =>
+    entries
+      .map((entry) => {
+        if (typeof entry === 'string' && entry.trim().length) {
+          return normalizeMediaUrl(entry) ?? entry;
+        }
+        if (entry && typeof entry === 'object') {
+          const record = entry as Record<string, unknown>;
+          if (typeof record.url === 'string' && record.url.trim().length) {
+            return normalizeMediaUrl(record.url) ?? record.url;
+          }
+        }
+        return null;
+      })
+      .filter((entry): entry is string => Boolean(entry));
+
+  if (Array.isArray(value)) {
+    return collect(value);
+  }
+  if (typeof value === 'string' && value.trim().length) {
+    try {
+      const parsed = JSON.parse(value) as unknown;
+      if (Array.isArray(parsed)) {
+        return collect(parsed);
+      }
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+function extractImageUrlsFromPayload(payload: unknown): string[] {
+  if (!payload) return [];
+  const urls = new Set<string>();
+  const visited = new Set<unknown>();
+  const stack: unknown[] = [payload];
+
+  while (stack.length) {
+    const current = stack.pop();
+    if (!current || visited.has(current)) continue;
+    visited.add(current);
+
+    if (typeof current === 'string') {
+      if (/^https?:\/\//i.test(current)) {
+        urls.add(normalizeMediaUrl(current) ?? current);
+      }
+      continue;
+    }
+
+    if (Array.isArray(current)) {
+      current.forEach((entry) => stack.push(entry));
+      continue;
+    }
+
+    if (typeof current === 'object') {
+      const record = current as Record<string, unknown>;
+      if (Array.isArray(record.images)) {
+        record.images.forEach((entry) => stack.push(entry));
+      }
+      const directUrl =
+        (typeof record.url === 'string' && record.url.trim().length ? record.url : null) ||
+        (typeof record.image_url === 'string' && record.image_url.trim().length ? record.image_url : null) ||
+        (typeof record.thumbnail === 'string' && record.thumbnail.trim().length ? record.thumbnail : null);
+      if (directUrl) {
+        urls.add(normalizeMediaUrl(directUrl) ?? directUrl);
+      }
+      for (const value of Object.values(record)) {
+        if (value && (typeof value === 'object' || typeof value === 'string')) {
+          stack.push(value);
+        }
+      }
+    }
+  }
+
+  return Array.from(urls);
+}
+
 const ERROR_MESSAGE_KEYS = [
   'error_message',
   'errorMessage',
@@ -465,7 +546,7 @@ async function createProvisionalJobFromWebhook(params: {
            status = EXCLUDED.status,
            progress = EXCLUDED.progress,
            updated_at = NOW()
-     RETURNING job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio`,
+     RETURNING job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id`,
     [
       jobId,
       null,
@@ -500,7 +581,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   const identifiers = extractIdentifiersFromPayload(payload);
 
   let jobRows = await query<AppJobRow>(
-    `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio
+    `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id
      FROM app_jobs
      WHERE provider_job_id = $1
      LIMIT 1`,
@@ -509,7 +590,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
 
   if (!jobRows.length && identifiers.jobId) {
     jobRows = await query<AppJobRow>(
-      `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio
+      `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id
        FROM app_jobs
        WHERE job_id = $1
        LIMIT 1`,
@@ -519,7 +600,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
 
   if (!jobRows.length && identifiers.localKey) {
     jobRows = await query<AppJobRow>(
-      `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio
+      `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id
        FROM app_jobs
        WHERE local_key = $1
        ORDER BY updated_at DESC
@@ -539,9 +620,9 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     );
     if (logRows.length) {
       jobRows = await query<AppJobRow>(
-      `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio
-       FROM app_jobs
-       WHERE job_id = $1
+        `SELECT job_id, user_id, engine_id, engine_label, duration_sec, status, progress, video_url, thumb_url, aspect_ratio, preview_frame, message, has_audio, render_ids, hero_render_id
+         FROM app_jobs
+         WHERE job_id = $1
          LIMIT 1`,
         [logRows[0].job_id]
       );
@@ -582,6 +663,15 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     });
   }
 
+  const inferredEngine =
+    (effectiveEngineId && effectiveEngineId !== 'fal-unknown' && getFalEngineById(effectiveEngineId)) ||
+    (job.engine_id && job.engine_id !== 'fal-unknown' ? getFalEngineById(job.engine_id) : null);
+  const isImageEngine = (inferredEngine?.category ?? 'video') === 'image';
+  const existingImageUrls = normalizeRenderIdList(job.render_ids);
+  const existingHeroImage = job.hero_render_id
+    ? normalizeMediaUrl(job.hero_render_id) ?? job.hero_render_id
+    : null;
+
   let finalPayload = payload.result ?? payload.response ?? payload.data ?? null;
   const statusInfo = normalizeStatus(payload.status, job.status, job.progress);
   let nextStatus = statusInfo.status;
@@ -617,6 +707,41 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   }
   let nextVideoUrl = media.videoUrl ? normalizeMediaUrl(media.videoUrl) : null;
   let nextThumbUrl = media.thumbUrl ? normalizeMediaUrl(media.thumbUrl) : null;
+
+  const imageUrlSet = new Set<string>();
+  existingImageUrls.forEach((url) => {
+    if (url) imageUrlSet.add(url);
+  });
+  if (existingHeroImage && !imageUrlSet.has(existingHeroImage)) {
+    imageUrlSet.add(existingHeroImage);
+  }
+  if (isImageEngine) {
+    const ingest = (source: unknown) => {
+      extractImageUrlsFromPayload(source).forEach((url) => {
+        if (url) {
+          imageUrlSet.add(url);
+        }
+      });
+    };
+    ingest(payload);
+    ingest(payload.result);
+    ingest(payload.response);
+    ingest(payload.data);
+    ingest(finalPayload);
+  }
+  const imageUrls = isImageEngine ? Array.from(imageUrlSet) : [];
+  let heroImageUrl: string | null = null;
+  if (isImageEngine && imageUrls.length) {
+    if (existingHeroImage && imageUrlSet.has(existingHeroImage)) {
+      heroImageUrl = existingHeroImage;
+    } else {
+      heroImageUrl = imageUrls[0] ?? null;
+    }
+  }
+  if (isImageEngine && heroImageUrl && !nextThumbUrl) {
+    nextThumbUrl = heroImageUrl;
+  }
+  const hasImageMedia = isImageEngine && imageUrls.length > 0;
 
   if (
     nextStatus === 'completed' &&
@@ -689,10 +814,12 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
   const finalVideoUrl = nextVideoUrl ?? job.video_url;
   const finalThumbUrl = resolvedThumbUrl ?? fallbackThumbnail(job.aspect_ratio);
   const finalPreviewFrame = finalThumbUrl ?? job.preview_frame;
-  const isMediaMissing = !finalVideoUrl;
+  const isMediaMissing = !finalVideoUrl && !hasImageMedia;
+  const renderIdsJson = hasImageMedia ? JSON.stringify(imageUrls) : null;
+  const heroRenderId = hasImageMedia ? heroImageUrl ?? imageUrls[0] ?? null : null;
 
   let forcedNoMediaFailure = false;
-  if (finalVideoUrl && nextStatus !== 'failed') {
+  if ((finalVideoUrl || hasImageMedia) && nextStatus !== 'failed') {
     nextStatus = 'completed';
     nextProgress = 100;
   } else if (nextStatus === 'completed' && isMediaMissing) {
@@ -704,19 +831,19 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     }
   }
 
-  const shouldClearVideo = (nextStatus === 'failed' && !nextVideoUrl) || forcedNoMediaFailure;
+  const shouldClearVideo = isImageEngine || (!finalVideoUrl && !hasImageMedia) || forcedNoMediaFailure;
   const shouldClearThumb =
     nextStatus === 'failed' &&
     (!nextThumbUrl || !resolvedThumbUrl || (resolvedThumbUrl && isPlaceholderThumbnail(resolvedThumbUrl)));
 
   let detectedHasAudio: boolean | null = null;
-  if (shouldClearVideo) {
+  if (shouldClearVideo || isImageEngine) {
     detectedHasAudio = false;
   } else if (finalVideoUrl && (!job.has_audio || finalVideoUrl !== job.video_url)) {
     detectedHasAudio = await detectHasAudioStream(finalVideoUrl);
   }
 
-  if (finalVideoUrl && nextStatus === 'failed') {
+  if ((finalVideoUrl || hasImageMedia) && nextStatus === 'failed') {
     const providerStatus = typeof payload.status === 'string' ? payload.status.toUpperCase() : null;
     const isProviderSuccess =
       providerStatus && (COMPLETED_STATUSES.has(providerStatus) || providerStatus === 'OK');
@@ -768,6 +895,8 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
          has_audio = CASE WHEN $9 THEN FALSE ELSE COALESCE($13, has_audio) END,
          engine_id = COALESCE($11, engine_id),
          engine_label = COALESCE($12, engine_label),
+         render_ids = CASE WHEN $14::jsonb IS NOT NULL THEN $14::jsonb ELSE render_ids END,
+         hero_render_id = CASE WHEN $15::text IS NOT NULL THEN $15::text ELSE hero_render_id END,
          updated_at = NOW()
      WHERE job_id = $1`,
     [
@@ -784,6 +913,8 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       engineIdForUpdate,
       engineLabelForUpdate,
       detectedHasAudio,
+      renderIdsJson,
+      heroRenderId,
     ]
   );
 
@@ -797,6 +928,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     nextProgress,
     videoUrl: finalVideoUrl ?? null,
     thumbUrl: finalThumbUrl ?? null,
+    imageCount: hasImageMedia ? imageUrls.length : 0,
     message: normalizedMessage ?? null,
     falStatus: payload.status ?? null,
     falError: extractedErrorMessage ?? null,

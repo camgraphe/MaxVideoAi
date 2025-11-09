@@ -3,17 +3,30 @@
 /* eslint-disable @next/next/no-img-element */
 
 import clsx from 'clsx';
-import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { FormEvent } from 'react';
-import { runImageGeneration, useInfiniteJobs } from '@/lib/api';
+import useSWR from 'swr';
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import type {
+  FormEvent,
+  DragEvent as ReactDragEvent,
+  ClipboardEvent as ReactClipboardEvent,
+  MouseEvent as ReactMouseEvent,
+} from 'react';
+import type { PricingSnapshot } from '@maxvideoai/pricing';
+import { EngineSelect } from '@/components/ui/EngineSelect';
+import { runImageGeneration, useInfiniteJobs, saveImageToLibrary } from '@/lib/api';
 import type { ImageGenerationMode, GeneratedImage } from '@/types/image-generation';
 import type { EngineCaps } from '@/types/engines';
 import type { Job } from '@/types/jobs';
+import type { VideoGroup } from '@/types/video-groups';
+import type { MediaLightboxEntry } from '@/components/MediaLightbox';
+import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
+import { buildVideoGroupFromImageRun } from '@/lib/image-groups';
 
 const EMPTY_STATE_COPY = {
   history: 'Launch a generation to populate your history. Each image variant appears below.',
 };
+
+const MAX_REFERENCE_SLOTS = 4;
 
 type PromptPreset = {
   title: string;
@@ -42,6 +55,36 @@ type HistoryEntry = {
   createdAt: number;
   description?: string | null;
   images: GeneratedImage[];
+  jobId?: string | null;
+};
+
+type ReferenceSlotValue = {
+  id: string;
+  url: string;
+  previewUrl?: string;
+  name?: string;
+  status: 'ready' | 'uploading';
+  source?: 'upload' | 'library' | 'paste';
+};
+
+type LibraryAsset = {
+  id: string;
+  url: string;
+  mime?: string | null;
+  width?: number | null;
+  height?: number | null;
+  size?: number | null;
+  createdAt?: string;
+};
+
+type AssetsResponse = {
+  ok: boolean;
+  assets: LibraryAsset[];
+};
+
+type PricingEstimateResponse = {
+  ok: boolean;
+  pricing: PricingSnapshot;
 };
 
 interface ImageWorkspaceProps {
@@ -69,13 +112,6 @@ function formatTimestamp(timestamp: number): string {
   }).format(new Date(timestamp));
 }
 
-function parseImageUrls(input: string): string[] {
-  return input
-    .split(/\n|,/)
-    .map((entry) => entry.trim())
-    .filter((entry) => entry.length);
-}
-
 function mapJobToHistoryEntry(job: Job): HistoryEntry | null {
   const renderUrls = Array.isArray(job.renderIds)
     ? job.renderIds.filter((url): url is string => typeof url === 'string' && url.length)
@@ -90,6 +126,7 @@ function mapJobToHistoryEntry(job: Job): HistoryEntry | null {
   const timestamp = Date.parse(job.createdAt ?? '');
   return {
     id: job.jobId,
+    jobId: job.jobId,
     engineId: job.engineId ?? '',
     engineLabel: job.engineLabel ?? job.engineId ?? 'Image generation',
     mode: 't2i',
@@ -105,13 +142,28 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [mode, setMode] = useState<ImageGenerationMode>('t2i');
   const [prompt, setPrompt] = useState('');
   const [numImages, setNumImages] = useState(1);
-  const [imageUrlInput, setImageUrlInput] = useState('');
+  const [referenceSlots, setReferenceSlots] = useState<(ReferenceSlotValue | null)[]>(
+    Array(MAX_REFERENCE_SLOTS).fill(null)
+  );
   const [localHistory, setLocalHistory] = useState<HistoryEntry[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+  const [viewerGroup, setViewerGroup] = useState<VideoGroup | null>(null);
+  const [libraryModal, setLibraryModal] = useState<{ open: boolean; slotIndex: number | null }>({
+    open: false,
+    slotIndex: null,
+  });
+  const fileInputRefs = useRef<Array<HTMLInputElement | null>>([]);
+  const [
+    priceEstimateKey,
+    setPriceEstimateKey,
+  ] = useState<[string, string, ImageGenerationMode, number] | null>(() =>
+    engines[0] ? ['image-pricing', engines[0].id, 't2i', 1] : null
+  );
 
+  const engineCapsList = useMemo(() => engines.map((engine) => engine.engineCaps), [engines]);
   const selectedEngine = useMemo(
     () => engines.find((engine) => engine.id === engineId) ?? engines[0],
     [engineId, engines]
@@ -125,26 +177,47 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     }
   }, [selectedEngine, mode]);
 
-  const priceLabel = useMemo(() => {
-    if (!selectedEngine) return '$0.039';
-    return `${formatCurrency(selectedEngine.pricePerImage, selectedEngine.currency)} / image`;
-  }, [selectedEngine]);
+  useEffect(() => {
+    if (!selectedEngine) return;
+    setPriceEstimateKey(['image-pricing', selectedEngine.id, mode, numImages]);
+  }, [selectedEngine, mode, numImages]);
+
+  const {
+    data: pricingData,
+    error: pricingError,
+    isValidating: pricingValidating,
+  } = useSWR(
+    priceEstimateKey,
+    async ([, engineId, requestMode, count]) => {
+      const response = await fetch('/api/images/estimate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ engineId, mode: requestMode, numImages: count }),
+      });
+      const payload = (await response.json().catch(() => null)) as PricingEstimateResponse | null;
+      if (!response.ok || !payload?.ok) {
+        throw new Error((payload as { error?: string } | null)?.error ?? 'Unable to estimate price');
+      }
+      return payload;
+    },
+    {
+      revalidateOnFocus: false,
+      keepPreviousData: true,
+    }
+  );
+
+  const pricingSnapshot = pricingData?.pricing ?? null;
 
   const estimatedCostLabel = useMemo(() => {
+    if (pricingSnapshot) {
+      const currency = pricingSnapshot.currency ?? selectedEngine?.currency ?? 'USD';
+      return formatCurrency(pricingSnapshot.totalCents / 100, currency);
+    }
     if (!selectedEngine) return '$0.00';
     const estimate = selectedEngine.pricePerImage * numImages;
     return formatCurrency(estimate, selectedEngine.currency);
-  }, [numImages, selectedEngine]);
-
-  const imageUrls = useMemo(() => parseImageUrls(imageUrlInput), [imageUrlInput]);
-  const referenceSlots = useMemo(() => {
-    const slots = imageUrls.slice(0, 4);
-    while (slots.length < 4) {
-      slots.push('');
-    }
-    return slots;
-  }, [imageUrls]);
-  const imageEngineIds = useMemo(() => new Set(engines.map((engine) => engine.engineCaps.id)), [engines]);
+  }, [numImages, pricingSnapshot, selectedEngine]);
 
   const {
     data: jobPages,
@@ -152,16 +225,21 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     isValidating: jobsValidating,
     size: jobsSize,
     setSize: setJobsSize,
-  } = useInfiniteJobs(24);
+  } = useInfiniteJobs(24, { type: 'image' });
+
+  const imageEngineIdSet = useMemo(
+    () => new Set(engines.map((option) => option.engineCaps.id)),
+    [engines]
+  );
 
   const remoteHistory = useMemo(() => {
     if (!jobPages) return [];
     return jobPages
       .flatMap((page) => page.jobs ?? [])
-      .filter((job) => job.engineId && imageEngineIds.has(job.engineId))
+      .filter((job) => job.engineId && imageEngineIdSet.has(job.engineId))
       .map((job) => mapJobToHistoryEntry(job))
       .filter((entry): entry is HistoryEntry => Boolean(entry));
-  }, [jobPages, imageEngineIds]);
+  }, [jobPages, imageEngineIdSet]);
 
   const combinedHistory = useMemo(() => {
     const map = new Map<string, HistoryEntry>();
@@ -174,6 +252,236 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     return Array.from(map.values()).sort((a, b) => b.createdAt - a.createdAt);
   }, [localHistory, remoteHistory]);
 
+  const readyReferenceUrls = useMemo(
+    () => referenceSlots.filter((slot): slot is ReferenceSlotValue => Boolean(slot && slot.status === 'ready')).map((slot) => slot.url),
+    [referenceSlots]
+  );
+
+  const handleOpenHistoryEntry = useCallback((entry: HistoryEntry) => {
+    if (!entry.images.length) return;
+    const group = buildVideoGroupFromImageRun({
+      id: entry.id,
+      jobId: entry.jobId ?? entry.id,
+      createdAt: entry.createdAt,
+      prompt: entry.prompt,
+      engineLabel: entry.engineLabel,
+      engineId: entry.engineId,
+      images: entry.images.map((image) => ({
+        url: image.url,
+        width: image.width ?? null,
+        height: image.height ?? null,
+      })),
+    });
+    setViewerGroup(group);
+  }, []);
+
+  const closeViewer = useCallback(() => setViewerGroup(null), []);
+
+  const handleSaveVariantToLibrary = useCallback(async (entry: MediaLightboxEntry) => {
+    const mediaUrl = entry.videoUrl ?? entry.thumbUrl;
+    if (!mediaUrl) {
+      throw new Error('No image available to save');
+    }
+    await saveImageToLibrary({
+      url: mediaUrl,
+      jobId: entry.jobId ?? entry.id,
+      label: entry.label ?? undefined,
+    });
+  }, []);
+
+  const cleanupSlotPreview = useCallback((slot: ReferenceSlotValue | null) => {
+    if (slot?.previewUrl && slot.previewUrl.startsWith('blob:')) {
+      try {
+        URL.revokeObjectURL(slot.previewUrl);
+      } catch {}
+    }
+  }, []);
+
+  const handleRemoveReferenceSlot = useCallback(
+    (index: number) => {
+      setReferenceSlots((previous) => {
+        const next = previous.slice();
+        cleanupSlotPreview(next[index]);
+        next[index] = null;
+        return next;
+      });
+    },
+    [cleanupSlotPreview]
+  );
+
+  const handleReferenceFile = useCallback(
+    async (index: number, file: File | null) => {
+      if (!file || !file.type.startsWith('image/')) {
+        setError('Only image files are supported.');
+        return;
+      }
+      const tempUrl = URL.createObjectURL(file);
+      const slotId = crypto.randomUUID();
+      setReferenceSlots((previous) => {
+        const next = previous.slice();
+        cleanupSlotPreview(next[index]);
+        next[index] = {
+          id: slotId,
+          url: tempUrl,
+          previewUrl: tempUrl,
+          name: file.name,
+          status: 'uploading',
+          source: 'upload',
+        };
+        return next;
+      });
+      try {
+        const formData = new FormData();
+        formData.append('file', file, file.name);
+        const response = await fetch('/api/uploads/image', {
+          method: 'POST',
+          body: formData,
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.ok) {
+          throw new Error(typeof payload?.error === 'string' ? payload.error : 'UPLOAD_FAILED');
+        }
+        const asset = payload.asset as {
+          id: string;
+          url: string;
+        };
+        setReferenceSlots((previous) => {
+          const next = previous.slice();
+          const current = next[index];
+          if (!current || current.id !== slotId) {
+            return previous;
+          }
+          next[index] = {
+            id: slotId,
+            url: asset.url,
+            previewUrl: asset.url,
+            name: file.name,
+            status: 'ready',
+            source: 'upload',
+          };
+          if (current.previewUrl && current.previewUrl !== asset.url) {
+            try {
+              URL.revokeObjectURL(current.previewUrl);
+            } catch {}
+          }
+          return next;
+        });
+      } catch (uploadError) {
+        console.error('[image-workspace] reference upload failed', uploadError);
+        setReferenceSlots((previous) => {
+          const next = previous.slice();
+          const current = next[index];
+          if (current?.previewUrl) {
+            try {
+              URL.revokeObjectURL(current.previewUrl);
+            } catch {}
+          }
+          next[index] = null;
+          return next;
+        });
+        setError('Unable to upload the selected image. Try again.');
+      }
+    },
+    [cleanupSlotPreview]
+  );
+
+  const handleReferenceUrl = useCallback(
+    (index: number, url: string, source: ReferenceSlotValue['source']) => {
+      if (!url) return;
+      setReferenceSlots((previous) => {
+        const next = previous.slice();
+        cleanupSlotPreview(next[index]);
+        next[index] = {
+          id: crypto.randomUUID(),
+          url,
+          previewUrl: url,
+          status: 'ready',
+          source: source ?? 'paste',
+        };
+        return next;
+      });
+    },
+    [cleanupSlotPreview]
+  );
+
+  const handleSlotDrop = useCallback(
+    (event: ReactDragEvent<HTMLDivElement>, index: number) => {
+      event.preventDefault();
+      const files = event.dataTransfer.files;
+      if (files && files.length) {
+        void handleReferenceFile(index, files[0]);
+        return;
+      }
+      const uri = event.dataTransfer.getData('text/uri-list') || event.dataTransfer.getData('text/plain');
+      if (uri && /^https?:\/\//i.test(uri.trim())) {
+        handleReferenceUrl(index, uri.trim(), 'paste');
+      }
+    },
+    [handleReferenceFile, handleReferenceUrl]
+  );
+
+  const handleSlotPaste = useCallback(
+    (event: ReactClipboardEvent<HTMLDivElement>, index: number) => {
+      const clipboard = event.clipboardData;
+      if (!clipboard) return;
+      const items = clipboard.items;
+      for (let i = 0; i < items.length; i += 1) {
+        const item = items[i];
+        if (item.kind === 'file' && item.type.startsWith('image/')) {
+          event.preventDefault();
+          const file = item.getAsFile();
+          void handleReferenceFile(index, file);
+          return;
+        }
+      }
+      const text = clipboard.getData('text/plain');
+      if (text && /^https?:\/\//i.test(text.trim())) {
+        event.preventDefault();
+        handleReferenceUrl(index, text.trim(), 'paste');
+      }
+    },
+    [handleReferenceFile, handleReferenceUrl]
+  );
+
+  const handleLibrarySelect = useCallback(
+    (asset: LibraryAsset) => {
+      let slotIndex = libraryModal.slotIndex;
+      if (slotIndex == null) {
+        slotIndex = referenceSlots.findIndex((slot) => slot === null);
+        if (slotIndex < 0) {
+          slotIndex = 0;
+        }
+      }
+      const index = slotIndex;
+      setReferenceSlots((previous) => {
+        const next = previous.slice();
+        cleanupSlotPreview(next[index]);
+        next[index] = {
+          id: asset.id,
+          url: asset.url,
+          previewUrl: asset.url,
+          status: 'ready',
+          source: 'library',
+        };
+        return next;
+      });
+      setLibraryModal({ open: false, slotIndex: null });
+    },
+    [cleanupSlotPreview, libraryModal.slotIndex, referenceSlots]
+  );
+
+  const triggerFileDialog = useCallback((index: number) => {
+    const target = fileInputRefs.current[index];
+    target?.click();
+  }, []);
+
+  const openLibraryForSlot = useCallback(
+    (index: number) => {
+      setLibraryModal({ open: true, slotIndex: index });
+    },
+    []
+  );
+
   const handleRun = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -182,8 +490,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         setError('Prompt is required.');
         return;
       }
-      if (mode === 'i2i' && !imageUrls.length) {
-        setError('Provide at least one source image URL for edit mode.');
+      if (mode === 'i2i' && readyReferenceUrls.length === 0) {
+        setError('Provide at least one source image for edit mode.');
         return;
       }
       setIsGenerating(true);
@@ -195,10 +503,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           mode,
           prompt: prompt.trim(),
           numImages,
-          imageUrls: mode === 'i2i' ? imageUrls : undefined,
+          imageUrls: mode === 'i2i' ? readyReferenceUrls : undefined,
         });
         const entry: HistoryEntry = {
           id: response.jobId ?? response.requestId ?? crypto.randomUUID(),
+          jobId: response.jobId ?? response.requestId ?? null,
           engineId: response.engineId ?? selectedEngine.id,
           engineLabel: response.engineLabel ?? selectedEngine.name,
           mode,
@@ -215,7 +524,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         setIsGenerating(false);
       }
     },
-    [imageUrls, mode, numImages, prompt, selectedEngine]
+    [mode, numImages, prompt, readyReferenceUrls, selectedEngine]
   );
 
   const handlePreset = useCallback((preset: PromptPreset) => {
@@ -260,6 +569,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const previewEntry = historyEntries[0];
 
   return (
+    <>
     <div className="flex flex-1 flex-col overflow-hidden">
       <main className="flex flex-1 flex-col gap-6 p-6">
         <div className="grid gap-6 xl:grid-cols-[400px,1fr]">
@@ -271,47 +581,22 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">Engine</p>
                 <div className="mt-2 flex flex-col gap-3">
-                  <select
-                    className="w-full rounded-2xl border border-hairline bg-white/80 px-4 py-2 text-sm font-medium text-text-primary"
-                    value={engineId}
-                    onChange={(event) => setEngineId(event.target.value)}
-                  >
-                    {engines.map((engine) => (
-                      <option key={engine.id} value={engine.id}>
-                        {engine.name}
-                      </option>
-                    ))}
-                  </select>
+                  <EngineSelect
+                    engines={engineCapsList}
+                    engineId={selectedEngine.id}
+                    onEngineChange={(nextId) => setEngineId(nextId)}
+                    mode={mode}
+                    onModeChange={(nextMode) => setMode(nextMode as ImageGenerationMode)}
+                  />
                   <span className="inline-flex items-center gap-2 rounded-full bg-accentSoft/15 px-3 py-1 text-xs font-semibold text-accent">
-                    {priceLabel}
+                    {pricingValidating ? 'Calculating price…' : `${estimatedCostLabel} / run`}
                   </span>
+                  {pricingError ? (
+                    <p className="text-xs text-state-warning">{pricingError.message}</p>
+                  ) : null}
                   {selectedEngine.description && (
                     <p className="text-sm text-text-secondary">{selectedEngine.description}</p>
                   )}
-                </div>
-              </div>
-
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">Mode</p>
-                <div className="mt-2 inline-flex rounded-full border border-hairline bg-white/80 p-1">
-                  {(['t2i', 'i2i'] as ImageGenerationMode[]).map((candidate) => {
-                    const disabled = !selectedEngine.modes.includes(candidate);
-                    return (
-                      <button
-                        key={candidate}
-                        type="button"
-                        disabled={disabled}
-                        className={clsx(
-                          'rounded-full px-4 py-1 text-sm font-semibold transition',
-                          candidate === mode ? 'bg-text-primary text-white' : 'text-text-secondary',
-                          disabled && 'cursor-not-allowed opacity-40'
-                        )}
-                        onClick={() => setMode(candidate)}
-                      >
-                        {candidate === 't2i' ? 'Generate' : 'Edit'}
-                      </button>
-                    );
-                  })}
                 </div>
               </div>
 
@@ -361,52 +646,118 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                 <p className="mt-1 text-xs text-text-secondary">Estimated cost: {estimatedCostLabel}</p>
               </div>
 
-              {mode === 'i2i' && (
-                <div>
-                  <label htmlFor="image-urls" className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
-                    Source image URLs
-                  </label>
-                  <textarea
-                    id="image-urls"
-                    className="mt-2 min-h-[120px] w-full rounded-2xl border border-hairline bg-white/80 px-4 py-3 text-sm text-text-primary outline-none focus:border-accent"
-                    placeholder="Paste 1–4 URLs, one per line."
-                    value={imageUrlInput}
-                    onChange={(event) => setImageUrlInput(event.target.value)}
-                  />
-                  <p className="mt-1 text-xs text-text-secondary">Nano Banana supports up to 4 reference images.</p>
-                </div>
-              )}
-
               <div>
                 <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
-                  <span>Reference slots</span>
-                  <Link
-                    href="/app/library"
-                    className="text-[11px] font-semibold text-accent underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    Open library
-                  </Link>
+                  <span>Reference images</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-text-secondary">Optional · up to 4 images</span>
+                    <button
+                      type="button"
+                      onClick={() => setLibraryModal({ open: true, slotIndex: null })}
+                      className="rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold text-text-primary transition hover:bg-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      Library
+                    </button>
+                  </div>
                 </div>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  {referenceSlots.map((url, index) => (
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  {referenceSlots.map((slot, index) => (
                     <div
                       key={`slot-${index}`}
+                      onDragOver={(event) => {
+                        event.preventDefault();
+                        event.dataTransfer.dropEffect = 'copy';
+                      }}
+                      onDrop={(event) => handleSlotDrop(event, index)}
+                      onPaste={(event) => handleSlotPaste(event, index)}
                       className={clsx(
-                        'flex aspect-square flex-col items-center justify-center rounded-2xl border border-dashed border-hairline bg-white/70 text-center text-[11px] text-text-secondary',
-                        url && 'border-solid border-accent/40 bg-white'
+                        'group relative flex aspect-square flex-col overflow-hidden rounded-2xl border border-dashed border-hairline bg-white/80 text-center text-[11px] text-text-secondary transition',
+                        slot && 'border-solid border-accent/40 bg-white shadow-card'
                       )}
                     >
-                      {url ? (
-                        <img src={url} alt="" className="h-full w-full rounded-2xl object-cover" referrerPolicy="no-referrer" />
-                      ) : (
+                      <input
+                        type="file"
+                        accept="image/*"
+                        ref={(element) => {
+                          fileInputRefs.current[index] = element;
+                        }}
+                        className="sr-only"
+                        onChange={(event) => {
+                          const file = event.target.files?.[0] ?? null;
+                          event.target.value = '';
+                          void handleReferenceFile(index, file);
+                        }}
+                      />
+                      {slot ? (
                         <>
-                          <span>Slot {index + 1}</span>
-                          <span className="mt-1 text-[10px] text-text-muted">Paste or import</span>
+                          <img
+                            src={slot.previewUrl ?? slot.url}
+                            alt=""
+                            className="h-full w-full object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-black/55 px-2 py-1 text-[10px] text-white">
+                            <span className="truncate">{slot.name ?? slot.source ?? 'Image'}</span>
+                            <div className="flex gap-1">
+                              <button
+                                type="button"
+                                onClick={() => triggerFileDialog(index)}
+                                className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold"
+                              >
+                                Replace
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => openLibraryForSlot(index)}
+                                className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold"
+                              >
+                                Library
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveReferenceSlot(index)}
+                                className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                          {slot.status === 'uploading' ? (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-xs font-semibold text-white">
+                              Uploading…
+                            </div>
+                          ) : null}
                         </>
+                      ) : (
+                        <div className="flex h-full flex-col items-center justify-center gap-2 px-3 text-[11px] text-text-secondary">
+                          <span className="text-text-primary">Slot {index + 1}</span>
+                          <p className="text-[10px] leading-tight text-text-muted">
+                            Drop image, click to upload, paste, or choose from your library.
+                          </p>
+                          <div className="flex flex-wrap justify-center gap-2 text-[10px]">
+                            <button
+                              type="button"
+                              onClick={() => triggerFileDialog(index)}
+                              className="rounded-full border border-border px-3 py-1 font-semibold text-text-primary"
+                            >
+                              Upload
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => openLibraryForSlot(index)}
+                              className="rounded-full border border-border px-3 py-1 font-semibold text-text-primary"
+                            >
+                              Library
+                            </button>
+                          </div>
+                        </div>
                       )}
                     </div>
                   ))}
                 </div>
+                <p className="mt-2 text-xs text-text-secondary">
+                  Drag & drop, paste, upload from your device, or pull from your Library. These references are required for Edit mode.
+                </p>
               </div>
 
               {error && (
@@ -512,7 +863,19 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                   const displayImages = entry.images.slice(0, 4);
                   const primaryImage = displayImages[0];
                   return (
-                    <div key={entry.id} className="rounded-2xl border border-white/40 bg-white/80 shadow-card">
+                    <div
+                      key={entry.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => handleOpenHistoryEntry(entry)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          handleOpenHistoryEntry(entry);
+                        }
+                      }}
+                      className="rounded-2xl border border-white/40 bg-white/80 shadow-card transition hover:border-text-primary cursor-pointer"
+                    >
                       <div className="rounded-t-2xl bg-[#f2f4f8] p-1">
                         {displayImages.length ? (
                           <div className="grid grid-cols-2 gap-1">
@@ -542,7 +905,12 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                         <div className="flex items-center gap-2 pt-2">
                           <button
                             type="button"
-                            onClick={() => primaryImage && handleDownload(primaryImage.url)}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              if (primaryImage) {
+                                handleDownload(primaryImage.url);
+                              }
+                            }}
                             className="rounded-full bg-text-primary/10 px-3 py-1 text-[11px] font-semibold text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
                             disabled={!primaryImage}
                           >
@@ -550,7 +918,12 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                           </button>
                           <button
                             type="button"
-                            onClick={() => primaryImage && handleCopy(primaryImage.url)}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              if (primaryImage) {
+                                handleCopy(primaryImage.url);
+                              }
+                            }}
                             className="rounded-full border border-text-primary/20 px-3 py-1 text-[11px] font-semibold text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
                             disabled={!primaryImage}
                           >
@@ -595,6 +968,124 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           </div>
         </div>
       </main>
+    </div>
+    {viewerGroup ? (
+      <GroupViewerModal
+        group={viewerGroup}
+        onClose={closeViewer}
+        defaultAllowIndex={false}
+        onSaveToLibrary={handleSaveVariantToLibrary}
+      />
+    ) : null}
+    {libraryModal.open ? (
+      <ImageLibraryModal
+        open={libraryModal.open}
+        onClose={() => setLibraryModal({ open: false, slotIndex: null })}
+        onSelect={handleLibrarySelect}
+      />
+    ) : null}
+    </>
+  );
+}
+
+function ImageLibraryModal({
+  open,
+  onClose,
+  onSelect,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSelect: (asset: LibraryAsset) => void;
+}) {
+  const { data, error, isLoading } = useSWR(open ? '/api/user-assets?limit=60' : null, async (url: string) => {
+    const response = await fetch(url, { credentials: 'include' });
+    const payload = (await response.json().catch(() => null)) as AssetsResponse | null;
+    if (!response.ok || !payload?.ok) {
+      throw new Error(payload?.['error'] ?? 'Failed to load library');
+    }
+    return payload.assets;
+  });
+
+  if (!open) {
+    return null;
+  }
+
+  const assets = data ?? [];
+
+  const handleBackdropClick = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (event.target === event.currentTarget) {
+      onClose();
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[10050] flex items-center justify-center bg-black/60 px-4 py-6"
+      role="dialog"
+      aria-modal="true"
+      onMouseDown={handleBackdropClick}
+    >
+      <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-[24px] border border-border bg-white shadow-2xl">
+        <div className="flex items-center justify-between border-b border-border px-6 py-4">
+          <div>
+            <h2 className="text-lg font-semibold text-text-primary">Select from library</h2>
+            <p className="text-xs text-text-secondary">Choose an image you previously imported.</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-border px-3 py-1 text-sm font-medium text-text-secondary hover:bg-bg"
+          >
+            Close
+          </button>
+        </div>
+        <div className="max-h-[70vh] overflow-y-auto px-6 py-4">
+          {error ? (
+            <div className="rounded-card border border-state-warning/40 bg-state-warning/10 px-4 py-6 text-sm text-state-warning">
+              Unable to load assets. Please retry.
+            </div>
+          ) : isLoading && !assets.length ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div key={`library-modal-skeleton-${index}`} className="rounded-card border border-border bg-white/60 p-0" aria-hidden>
+                  <div className="relative aspect-square overflow-hidden rounded-t-card bg-neutral-100">
+                    <div className="skeleton absolute inset-0" />
+                  </div>
+                  <div className="border-t border-border px-4 py-3">
+                    <div className="h-3 w-24 rounded-full bg-neutral-200" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : assets.length === 0 ? (
+            <div className="rounded-card border border-dashed border-border px-4 py-6 text-center text-sm text-text-secondary">
+              No assets saved yet. Upload images from the composer or the Library page.
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {assets.map((asset) => (
+                <button
+                  key={asset.id}
+                  type="button"
+                  onClick={() => onSelect(asset)}
+                  className="group rounded-card border border-border bg-white text-left shadow-card transition hover:border-text-primary"
+                >
+                  <div className="relative aspect-square overflow-hidden rounded-t-card bg-[#f2f4f8]">
+                    <img src={asset.url} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
+                    <div className="absolute inset-0 hidden items-center justify-center bg-black/40 text-sm font-semibold text-white group-hover:flex">
+                      Use this image
+                    </div>
+                  </div>
+                  <div className="space-y-1 border-t border-border px-4 py-3 text-xs text-text-secondary">
+                    <p className="truncate text-text-primary">{asset.url.split('/').pop() ?? 'Asset'}</p>
+                    {asset.createdAt ? <p className="text-text-muted">{new Date(asset.createdAt).toLocaleString()}</p> : null}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

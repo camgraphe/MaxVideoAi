@@ -190,12 +190,21 @@ export function useEngines() {
   );
 }
 
-async function fetchJobsPage(limit: number, cursor?: string | null): Promise<JobsPage> {
+type JobFeedType = 'video' | 'image' | 'all';
+
+async function fetchJobsPage(
+  limit: number,
+  cursor?: string | null,
+  options?: { type?: JobFeedType }
+): Promise<JobsPage> {
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token ?? null;
 
   const params = new URLSearchParams({ limit: String(limit) });
   if (cursor) params.set('cursor', cursor);
+  if (options?.type && options.type !== 'all') {
+    params.set('type', options.type);
+  }
 
   const headers: Record<string, string> = {};
   if (token) {
@@ -227,10 +236,12 @@ async function fetchJobsPage(limit: number, cursor?: string | null): Promise<Job
   };
 }
 
-type JobsKey = readonly ['jobs', string, number, string | null];
+type JobsKey = readonly ['jobs', string, number, string | null, JobFeedType];
 
-export function useInfiniteJobs(pageSize = 12) {
+export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType }) {
   const [cacheKey, setCacheKey] = useState<string | null>(() => (typeof window === 'undefined' ? 'server' : null));
+  const feedType: JobFeedType =
+    options?.type === 'image' || options?.type === 'video' ? options.type : 'all';
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -257,12 +268,12 @@ export function useInfiniteJobs(pageSize = 12) {
       return null;
     }
     const cursor = index === 0 ? null : previousPage?.nextCursor ?? null;
-    return ['jobs', cacheKey, pageSize, cursor];
+    return ['jobs', cacheKey, pageSize, cursor, feedType];
   };
 
   const fetchJobs = async (key: JobsKey) => {
-    const [, , limit, cursor] = key;
-    return fetchJobsPage(limit, cursor);
+    const [, , limit, cursor, type] = key;
+    return fetchJobsPage(limit, cursor, { type });
   };
 
   const swr = useSWRInfinite<JobsPage, Error>(
@@ -579,6 +590,29 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResult> {
   }
 
   return result;
+}
+
+type SavedAsset = {
+  id: string;
+  url: string;
+  width?: number | null;
+  height?: number | null;
+  mime?: string | null;
+  size?: number | null;
+};
+
+export async function saveImageToLibrary(payload: { url: string; jobId?: string | null; label?: string | null }) {
+  const response = await fetch('/api/user-assets', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  const data = (await response.json().catch(() => null)) as { ok?: boolean; error?: string; asset?: SavedAsset } | null;
+  if (!response.ok || !data?.ok || !data.asset) {
+    throw new Error(data?.error ?? `Failed to save image (${response.status})`);
+  }
+  return data.asset;
 }
 
 export async function hideJob(jobId: string): Promise<void> {

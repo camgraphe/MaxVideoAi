@@ -22,21 +22,64 @@ function ThumbImage({ src, alt, className }: { src: string; alt: string; classNa
   return <Image src={src} alt={alt} fill className={baseClass} />;
 }
 
-function GroupPreviewMedia({ preview }: { preview: GroupSummary['previews'][number] | undefined }) {
-  const baseClass = 'h-full w-full pointer-events-none object-contain';
+function GroupPreviewMedia({
+  preview,
+  shouldPlay,
+}: {
+  preview: GroupSummary['previews'][number] | undefined;
+  shouldPlay: boolean;
+}) {
   if (preview?.videoUrl) {
     const poster = preview.thumbUrl ?? undefined;
+    const videoRef = useRef<HTMLVideoElement | null>(null);
+    const [videoReady, setVideoReady] = useState(false);
+
+    useEffect(() => {
+      setVideoReady(false);
+    }, [preview?.videoUrl]);
+
+    useEffect(() => {
+      const element = videoRef.current;
+      if (!element) return;
+      if (shouldPlay) {
+        const playPromise = element.play();
+        if (playPromise) {
+          playPromise.catch(() => {
+            /* ignore autoplay rejection */
+          });
+        }
+      } else {
+        element.pause();
+      }
+    }, [shouldPlay, preview?.videoUrl]);
+
     return (
-      <video
-        src={preview.videoUrl}
-        poster={poster}
-        className={baseClass}
-        muted
-        playsInline
-        autoPlay
-        loop
-        preload="metadata"
-      />
+      <div className="relative h-full w-full">
+        {preview.thumbUrl ? (
+          <ThumbImage
+            src={preview.thumbUrl}
+            alt=""
+            className={clsx(
+              'absolute inset-0 object-contain transition-opacity duration-150 ease-out',
+              videoReady && shouldPlay ? 'opacity-0' : 'opacity-100'
+            )}
+          />
+        ) : null}
+        <video
+          ref={videoRef}
+          src={preview.videoUrl}
+          poster={poster}
+          className={clsx(
+            'absolute inset-0 h-full w-full pointer-events-none object-contain transition-opacity duration-150 ease-out',
+            videoReady ? 'opacity-100' : 'opacity-0'
+          )}
+          muted
+          playsInline
+          loop
+          preload="auto"
+          onLoadedData={() => setVideoReady(true)}
+        />
+      </div>
     );
   }
   if (preview?.thumbUrl) {
@@ -126,6 +169,8 @@ export function GroupedJobCard({ group, engine, onOpen, onAction, actionMenu = t
   const splitModeLabel = group.splitMode ? group.splitMode.charAt(0).toUpperCase() + group.splitMode.slice(1) : 'Split mode';
   const heroHasAudio = Boolean(group.hero.job?.hasAudio);
 
+  const [hovered, setHovered] = useState(false);
+
   return (
     <Card className="relative overflow-hidden rounded-card border border-border bg-white/90 p-0 shadow-card">
       <figure
@@ -133,6 +178,10 @@ export function GroupedJobCard({ group, engine, onOpen, onAction, actionMenu = t
         role="button"
         tabIndex={0}
         onClick={() => onOpen?.(group)}
+        onPointerEnter={() => setHovered(true)}
+        onPointerLeave={() => setHovered(false)}
+        onFocus={() => setHovered(true)}
+        onBlur={() => setHovered(false)}
         onKeyDown={(event) => {
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
@@ -152,7 +201,7 @@ export function GroupedJobCard({ group, engine, onOpen, onAction, actionMenu = t
                 <div key={previewKey} className="relative flex items-center justify-center overflow-hidden rounded-[10px] bg-[var(--surface-2)]">
                   <div className="absolute inset-0">
                     {isCompleted ? (
-                      <GroupPreviewMedia preview={preview} />
+                      <GroupPreviewMedia preview={preview} shouldPlay={hovered} />
                     ) : preview?.thumbUrl ? (
                       <Image src={preview.thumbUrl} alt="" fill className="pointer-events-none object-contain" />
                     ) : null}

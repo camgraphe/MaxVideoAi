@@ -9,6 +9,7 @@ interface GroupViewerModalProps {
   onClose: () => void;
   onRefreshJob?: (jobId: string) => Promise<void> | void;
   defaultAllowIndex?: boolean;
+  onSaveToLibrary?: (entry: MediaLightboxEntry) => Promise<void>;
 }
 
 function isVideo(item: VideoItem): boolean {
@@ -19,7 +20,7 @@ function isVideo(item: VideoItem): boolean {
   return url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.mov');
 }
 
-export function GroupViewerModal({ group, onClose, onRefreshJob, defaultAllowIndex }: GroupViewerModalProps) {
+export function GroupViewerModal({ group, onClose, onRefreshJob, defaultAllowIndex, onSaveToLibrary }: GroupViewerModalProps) {
   const [indexingOverrides, setIndexingOverrides] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -79,6 +80,12 @@ export function GroupViewerModal({ group, onClose, onRefreshJob, defaultAllowInd
             : item.meta && typeof item.meta === 'object' && 'hasAudio' in item.meta
               ? Boolean((item.meta as Record<string, unknown>).hasAudio)
               : false,
+        mediaType:
+          item.meta && typeof item.meta === 'object' && 'mediaType' in item.meta
+            ? ((item.meta as Record<string, unknown>).mediaType as 'image' | 'video' | undefined)
+            : video
+              ? 'video'
+              : 'image',
       };
     });
   }, [group, indexingOverrides]);
@@ -158,6 +165,7 @@ export function GroupViewerModal({ group, onClose, onRefreshJob, defaultAllowInd
       }
       allowIndexingControls={Boolean(defaultAllowIndex)}
       onToggleIndexable={defaultAllowIndex ? handleToggleIndexable : undefined}
+      onSaveToLibrary={onSaveToLibrary}
     />
   );
 }

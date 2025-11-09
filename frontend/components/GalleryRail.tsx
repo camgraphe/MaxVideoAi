@@ -8,11 +8,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { EngineCaps } from '@/types/engines';
 import type { Job } from '@/types/jobs';
 import type { GroupSummary } from '@/types/groups';
+import type { VideoGroup } from '@/types/video-groups';
 import { hideJob, useEngines, useInfiniteJobs } from '@/lib/api';
 import { groupJobsIntoSummaries } from '@/lib/job-groups';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
-import { normalizeGroupSummaries } from '@/lib/normalize-group-summary';
+import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 
 interface Props {
   engine: EngineCaps;
@@ -58,7 +60,7 @@ export function GalleryRail({
 }: Props) {
   const { t } = useI18n();
   const copy = t('workspace.generate.galleryRail', DEFAULT_GALLERY_COPY) as GalleryCopy;
-  const { data, error, isLoading, isValidating, setSize, mutate } = useInfiniteJobs(24);
+  const { data, error, isLoading, isValidating, setSize, mutate } = useInfiniteJobs(24, { type: 'video' });
   const { data: enginesData } = useEngines();
   const engineList = useMemo(() => enginesData?.engines ?? [], [enginesData?.engines]);
   const jobs = useMemo(() => data?.flatMap((page) => page.jobs) ?? [], [data]);
@@ -105,6 +107,7 @@ export function GalleryRail({
     () => [...normalizedActiveGroups, ...normalizedHistoricalGroups],
     [normalizedActiveGroups, normalizedHistoricalGroups]
   );
+  const [viewerGroup, setViewerGroup] = useState<VideoGroup | null>(null);
 
   const lastPage = data?.[data.length - 1];
   const hasMore = Boolean(lastPage?.nextCursor);
@@ -162,6 +165,7 @@ export function GalleryRail({
   }, [engine, engineList]);
 
   const closeSnackbar = useCallback(() => setSnackbar(null), []);
+  const closeViewer = useCallback(() => setViewerGroup(null), []);
 
   const handleCardAction = useCallback(
     (group: GroupSummary, action: GroupedJobAction) => {
@@ -178,7 +182,12 @@ export function GalleryRail({
   const handleCardOpen = useCallback(
     (group: GroupSummary) => {
       const original = summaryIndex.get(group.id) ?? group;
-      onOpenGroup?.(original);
+      if (onOpenGroup) {
+        onOpenGroup(original);
+        return;
+      }
+      const normalized = normalizeGroupSummary(original);
+      setViewerGroup(normalized);
     },
     [onOpenGroup, summaryIndex]
   );
@@ -233,6 +242,7 @@ export function GalleryRail({
   const isFetchingMore = isValidating && filteredJobs.length > 0;
 
   return (
+    <>
     <aside className="hidden xl:flex h-[calc(125vh-var(--header-height))] w-[272px] shrink-0 flex-col border-l border-border bg-bg/80 px-4 pb-6 pt-4">
       <header className="flex items-center justify-between">
         <h2 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">{copy.title}</h2>
@@ -296,6 +306,8 @@ export function GalleryRail({
 
       <Snackbar state={snackbar} onClose={closeSnackbar} />
     </aside>
+    {viewerGroup ? <GroupViewerModal group={viewerGroup} onClose={closeViewer} /> : null}
+    </>
   );
 }
 function Snackbar({ state, onClose }: { state: SnackbarState | null; onClose: () => void }) {

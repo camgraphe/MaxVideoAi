@@ -823,7 +823,7 @@ const FRIENDLY_MESSAGES = [
 export default function Page() {
   const { data, error: enginesError, isLoading } = useEngines();
   const engines = useMemo(() => data?.engines ?? [], [data]);
-  const { data: latestJobsPages } = useInfiniteJobs(1);
+  const { data: latestJobsPages } = useInfiniteJobs(1, { type: 'video' });
   const engineIdByLabel = useMemo(() => {
     const map = new Map<string, string>();
     engines.forEach((engine) => {

@@ -122,6 +122,15 @@ export default function JobsPage() {
     return map;
   }, [groupedJobs]);
 
+  const [collapsedSections, setCollapsedSections] = useState<{ video: boolean; image: boolean }>({
+    video: false,
+    image: false,
+  });
+
+  const toggleSection = useCallback((section: 'video' | 'image') => {
+    setCollapsedSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  }, []);
+
   const normalizedGroups = useMemo(() => normalizeGroupSummaries(groupedJobs), [groupedJobs]);
   const { videoGroups, imageGroups } = useMemo(() => {
     const videos: GroupSummary[] = [];
@@ -307,18 +316,38 @@ export default function JobsPage() {
             <>
               <section className="mb-8">
                 <div className="mb-3 flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-text-primary">{copy.sections.video}</h2>
+                  <button
+                    type="button"
+                    onClick={() => toggleSection('video')}
+                    aria-label={collapsedSections.video ? 'Expand video jobs' : 'Collapse video jobs'}
+                    className="flex items-center gap-2 text-lg font-semibold text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <span className="text-2xl leading-none text-text-primary">
+                      {collapsedSections.video ? '▸' : '▾'}
+                    </span>
+                    <span>{copy.sections.video}</span>
+                  </button>
                   <span className="text-xs text-text-secondary">{videoGroups.length}</span>
                 </div>
-                {renderGroupGrid(videoGroups, copy.sections.videoEmpty, 'video')}
+                {!collapsedSections.video && renderGroupGrid(videoGroups, copy.sections.videoEmpty, 'video')}
               </section>
 
               <section>
                 <div className="mb-3 flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-text-primary">{copy.sections.image}</h2>
+                  <button
+                    type="button"
+                    onClick={() => toggleSection('image')}
+                    aria-label={collapsedSections.image ? 'Expand image jobs' : 'Collapse image jobs'}
+                    className="flex items-center gap-2 text-lg font-semibold text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <span className="text-2xl leading-none text-text-primary">
+                      {collapsedSections.image ? '▸' : '▾'}
+                    </span>
+                    <span>{copy.sections.image}</span>
+                  </button>
                   <span className="text-xs text-text-secondary">{imageGroups.length}</span>
                 </div>
-                {renderGroupGrid(imageGroups, copy.sections.imageEmpty, 'image')}
+                {!collapsedSections.image && renderGroupGrid(imageGroups, copy.sections.imageEmpty, 'image')}
               </section>
             </>
           )}

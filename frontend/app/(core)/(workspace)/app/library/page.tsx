@@ -2,14 +2,11 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { useInfiniteJobs } from '@/lib/api';
-import type { Job } from '@/types/jobs';
-import { listFalEngines } from '@/config/falEngines';
 
 type UserAsset = {
   id: string;
@@ -25,12 +22,6 @@ type AssetsResponse = {
   ok: boolean;
   assets: UserAsset[];
 };
-
-const IMAGE_ENGINE_IDS = new Set(
-  listFalEngines()
-    .filter((engine) => (engine.category ?? 'video') === 'image')
-    .map((engine) => engine.id)
-);
 
 const fetcher = async (url: string): Promise<AssetsResponse> => {
   const res = await fetch(url, { credentials: 'include' });
@@ -49,15 +40,40 @@ function formatFileSize(bytes?: number | null): string {
 }
 
 export default function LibraryPage() {
-  const { data: assetsData, error: assetsError, isLoading: assetsLoading } = useSWR<AssetsResponse>('/api/user-assets', fetcher);
-  const { data, isLoading, isValidating, size, setSize, error } = useInfiniteJobs(24);
-
-  const pages = data ?? [];
-  const jobs = pages.flatMap((page) => page.jobs);
-  const imageJobs = useMemo(() => jobs.filter(isImageJob), [jobs]);
-  const hasMore = pages.length === 0 ? false : pages[pages.length - 1].nextCursor !== null;
-
+  const {
+    data: assetsData,
+    error: assetsError,
+    isLoading: assetsLoading,
+    mutate: mutateAssets,
+  } = useSWR<AssetsResponse>('/api/user-assets', fetcher);
   const assets = assetsData?.assets ?? [];
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const handleDeleteAsset = useCallback(
+    async (assetId: string) => {
+      setDeletingId(assetId);
+      setDeleteError(null);
+      try {
+        const response = await fetch('/api/user-assets', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ id: assetId }),
+        });
+        const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+        if (!response.ok || !payload?.ok) {
+          throw new Error(payload?.error ?? 'Failed to delete image');
+        }
+        await mutateAssets();
+      } catch (error) {
+        setDeleteError(error instanceof Error ? error.message : 'Unable to delete this image.');
+      } finally {
+        setDeletingId((current) => (current === assetId ? null : current));
+      }
+    },
+    [mutateAssets]
+  );
 
   return (
     <div className="flex min-h-screen flex-col bg-bg">
@@ -68,7 +84,7 @@ export default function LibraryPage() {
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h1 className="text-2xl font-semibold text-text-primary">Library</h1>
-              <p className="text-sm text-text-secondary">Generate, import, and reuse assets across your workspace.</p>
+              <p className="text-sm text-text-secondary">Import, organize, and reuse reference assets.</p>
             </div>
             <div className="flex gap-2 text-sm text-text-secondary">
               <Link href="/app/image" className="rounded-input border border-border px-3 py-1 hover:bg-white/70">
@@ -80,78 +96,18 @@ export default function LibraryPage() {
             </div>
           </div>
 
-          <section className="mb-8 rounded-card border border-border bg-white/80 p-5 shadow-card">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-text-primary">Generated images</h2>
-              <span className="text-xs text-text-secondary">{imageJobs.length}</span>
-            </div>
-            {isLoading && imageJobs.length === 0 ? (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <div key={`library-image-skeleton-${index}`} className="rounded-card border border-hairline bg-white/60">
-                    <div className="relative aspect-square rounded-t-card bg-neutral-100">
-                      <div className="skeleton absolute inset-0" />
-                    </div>
-                    <div className="border-t border-border px-4 py-3">
-                      <div className="h-3 w-24 rounded bg-neutral-200" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : imageJobs.length === 0 ? (
-              <div className="rounded-card border border-dashed border-border px-4 py-6 text-center text-sm text-text-secondary">
-                No generated images yet. Run a text-to-image or edit generation to populate this section.
-              </div>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {imageJobs.map((job) => (
-                  <article key={job.jobId} className="rounded-card border border-border bg-white shadow-card">
-                    <div className="rounded-t-card bg-[#f2f4f8] p-1">
-                      {job.renderIds && job.renderIds.length ? (
-                        <div className="grid grid-cols-2 gap-1">
-                          {job.renderIds.slice(0, 4).map((url, index) => (
-                            <div key={`${job.jobId}-${index}`} className="relative aspect-square overflow-hidden rounded-xl bg-neutral-100">
-                              <img src={url} alt={job.prompt} className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
-                            </div>
-                          ))}
-                        </div>
-                      ) : job.thumbUrl ? (
-                        <img src={job.thumbUrl} alt={job.prompt} className="h-full w-full rounded-xl object-cover" loading="lazy" referrerPolicy="no-referrer" />
-                      ) : (
-                        <div className="flex aspect-square items-center justify-center text-xs text-text-secondary">No preview</div>
-                      )}
-                    </div>
-                    <div className="space-y-2 border-t border-border px-4 py-3 text-sm text-text-secondary">
-                      <p className="font-semibold text-text-primary">{job.engineLabel}</p>
-                      <p className="line-clamp-2 text-xs text-text-secondary">{job.prompt}</p>
-                      <div className="text-[11px] text-text-muted">{formatTimestamp(job.createdAt)}</div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
-            {hasMore && (
-              <div className="mt-4 flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => setSize(size + 1)}
-                  disabled={isValidating}
-                  className="rounded-input border border-border px-4 py-2 text-sm font-medium text-text-primary hover:bg-white/80 disabled:opacity-60"
-                >
-                  {isValidating ? 'Loading…' : 'Load more'}
-                </button>
-              </div>
-            )}
-            {error && !isLoading && (
-              <p className="mt-2 text-sm text-state-warning">Failed to load generated jobs. Please retry.</p>
-            )}
-          </section>
-
           <section className="rounded-card border border-border bg-white/80 p-5 shadow-card">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-text-primary">Imported assets</h2>
+              <h2 className="text-lg font-semibold text-text-primary">Library assets</h2>
               <span className="text-xs text-text-secondary">{assets.length}</span>
             </div>
+
+            {deleteError ? (
+              <div className="mb-4 rounded-input border border-state-warning/50 bg-state-warning/10 px-3 py-2 text-sm text-state-warning">
+                {deleteError}
+              </div>
+            ) : null}
+
             {assetsLoading && assets.length === 0 ? (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {Array.from({ length: 8 }).map((_, index) => (
@@ -180,10 +136,18 @@ export default function LibraryPage() {
                     <div className="relative aspect-square overflow-hidden rounded-t-card bg-[#f2f4f8]">
                       <img src={asset.url} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
                     </div>
-                    <div className="space-y-1 border-t border-border px-4 py-3 text-xs text-text-secondary">
+                    <div className="space-y-2 border-t border-border px-4 py-3 text-xs text-text-secondary">
                       <p className="truncate text-text-primary">{asset.url.split('/').pop() ?? 'Asset'}</p>
                       <p className="text-text-secondary">{formatFileSize(asset.size)}</p>
-                      {asset.createdAt ? <p className="text-text-muted">{formatTimestamp(asset.createdAt)}</p> : null}
+                      {asset.createdAt ? <p className="text-text-muted">{new Date(asset.createdAt).toLocaleString()}</p> : null}
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteAsset(asset.id)}
+                        disabled={deletingId === asset.id}
+                        className="w-full rounded-input border border-state-warning/40 bg-state-warning/10 py-1 text-[11px] font-semibold text-state-warning transition hover:bg-state-warning/20 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {deletingId === asset.id ? 'Deleting…' : 'Delete'}
+                      </button>
                     </div>
                   </article>
                 ))}
@@ -194,17 +158,4 @@ export default function LibraryPage() {
       </div>
     </div>
   );
-}
-
-function isImageJob(job: Job): boolean {
-  const engineId = job.engineId ?? '';
-  if (engineId && IMAGE_ENGINE_IDS.has(engineId)) return true;
-  return false;
-}
-
-function formatTimestamp(dateString?: string) {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleString();
 }

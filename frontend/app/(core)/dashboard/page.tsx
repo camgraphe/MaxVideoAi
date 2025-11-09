@@ -76,7 +76,9 @@ export default function DashboardPage() {
   const { t } = useI18n();
   const copy = t('workspace.dashboard', DEFAULT_DASHBOARD_COPY) as DashboardCopy;
   const { data: enginesData, error: enginesError } = useEngines();
-  const { data: jobsPages, error: jobsError, isLoading, mutate: mutateJobs } = useInfiniteJobs(9);
+  const { data: jobsPages, error: jobsError, isLoading, mutate: mutateJobs } = useInfiniteJobs(9, {
+    type: 'video',
+  });
   const { loading: authLoading } = useRequireAuth();
 
   const engineLookup = useMemo(() => {

@@ -21,6 +21,7 @@ export interface MediaLightboxEntry {
   indexable?: boolean;
   visibility?: 'public' | 'private';
   hasAudio?: boolean;
+  mediaType?: 'image' | 'video';
 }
 
 export interface MediaLightboxProps {
@@ -33,6 +34,7 @@ export interface MediaLightboxProps {
   onRefreshEntry?: (entry: MediaLightboxEntry) => Promise<void> | void;
   allowIndexingControls?: boolean;
   onToggleIndexable?: (entry: MediaLightboxEntry, nextIndexable: boolean) => Promise<void>;
+  onSaveToLibrary?: (entry: MediaLightboxEntry) => Promise<void>;
 }
 
 function aspectRatioClass(aspectRatio?: string | null): string {
@@ -61,6 +63,7 @@ export function MediaLightbox({
   onRefreshEntry,
   allowIndexingControls = false,
   onToggleIndexable,
+  onSaveToLibrary,
 }: MediaLightboxProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [refreshStates, setRefreshStates] = useState<Record<string, { loading: boolean; error: string | null }>>({});
@@ -68,6 +71,7 @@ export function MediaLightbox({
   const [indexingStates, setIndexingStates] = useState<
     Record<string, { loading: boolean; value?: boolean; error: string | null }>
   >({});
+  const [libraryStates, setLibraryStates] = useState<Record<string, { loading: boolean; success: boolean; error: string | null }>>({});
 
   const handleCopyLink = useCallback(
     async (entryId: string, url?: string | null) => {
@@ -196,6 +200,21 @@ export function MediaLightbox({
     });
   }, [entries]);
 
+  useEffect(() => {
+    setLibraryStates((prev) => {
+      const activeIds = new Set(entries.map((entry) => entry.id));
+      let mutated = false;
+      const next = { ...prev };
+      Object.keys(next).forEach((key) => {
+        if (!activeIds.has(key)) {
+          delete next[key];
+          mutated = true;
+        }
+      });
+      return mutated ? next : prev;
+    });
+  }, [entries]);
+
   const handleRefreshEntry = useCallback(
     async (entry: MediaLightboxEntry) => {
       if (!onRefreshEntry) return;
@@ -219,6 +238,42 @@ export function MediaLightbox({
       }
     },
     [onRefreshEntry]
+  );
+
+  const handleSaveEntryToLibrary = useCallback(
+    async (entry: MediaLightboxEntry, mediaUrl?: string | null) => {
+      if (!onSaveToLibrary || !mediaUrl) return;
+      setLibraryStates((prev) => ({
+        ...prev,
+        [entry.id]: { loading: true, success: false, error: null },
+      }));
+      try {
+        await onSaveToLibrary(entry);
+        setLibraryStates((prev) => ({
+          ...prev,
+          [entry.id]: { loading: false, success: true, error: null },
+        }));
+        window.setTimeout(() => {
+          setLibraryStates((prev) => {
+            const next = { ...prev };
+            if (next[entry.id]?.success) {
+              delete next[entry.id];
+            }
+            return next;
+          });
+        }, 2500);
+      } catch (error) {
+        setLibraryStates((prev) => ({
+          ...prev,
+          [entry.id]: {
+            loading: false,
+            success: false,
+            error: error instanceof Error ? error.message : 'Unable to save image',
+          },
+        }));
+      }
+    },
+    [onSaveToLibrary]
   );
 
   const handleIndexingToggle = useCallback(
@@ -295,6 +350,8 @@ export function MediaLightbox({
             const aspectClass = aspectRatioClass(entry.aspectRatio);
             const videoUrl = entry.videoUrl ?? undefined;
             const thumbUrl = entry.thumbUrl ?? undefined;
+            const mediaUrl = entry.videoUrl ?? entry.thumbUrl ?? null;
+            const libraryState = libraryStates[entry.id];
             const isProcessing = entry.status === 'pending';
             const progressLabel =
               typeof entry.progress === 'number'
@@ -389,12 +446,12 @@ export function MediaLightbox({
 
                   <div className="mt-3 flex flex-wrap gap-2">
                     <a
-                      href={videoUrl ?? undefined}
+                      href={mediaUrl ?? undefined}
                       target="_blank"
                       rel="noreferrer"
                       className={clsx(
                         'rounded-input border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                        videoUrl
+                        mediaUrl
                           ? 'border-border bg-white text-text-secondary hover:bg-bg'
                           : 'pointer-events-none border-border/60 bg-bg text-text-muted'
                       )}
@@ -403,11 +460,11 @@ export function MediaLightbox({
                     </a>
                     <button
                       type="button"
-                      onClick={() => handleDownloadEntry(entry, videoUrl)}
-                      disabled={!videoUrl || isDownloading}
+                      onClick={() => handleDownloadEntry(entry, mediaUrl)}
+                      disabled={!mediaUrl || isDownloading}
                       className={clsx(
                         'rounded-input border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                        videoUrl
+                        mediaUrl
                           ? 'border-border bg-white text-text-secondary hover:bg-bg disabled:cursor-not-allowed'
                           : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
                       )}
@@ -416,17 +473,38 @@ export function MediaLightbox({
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleCopyLink(entry.id, videoUrl)}
-                      disabled={!videoUrl}
+                      onClick={() => handleCopyLink(entry.id, mediaUrl)}
+                      disabled={!mediaUrl}
                       className={clsx(
                         'rounded-input border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                        videoUrl
+                        mediaUrl
                           ? 'border-border bg-white text-text-secondary hover:bg-bg disabled:cursor-not-allowed'
                           : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
                       )}
                     >
                       {copiedId === entry.id ? 'Link copied' : 'Copy link'}
                     </button>
+                    {onSaveToLibrary ? (
+                      <button
+                        type="button"
+                        onClick={() => handleSaveEntryToLibrary(entry, mediaUrl)}
+                        disabled={!mediaUrl || libraryState?.loading}
+                        className={clsx(
+                          'rounded-input border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed',
+                          mediaUrl
+                            ? 'border-accent bg-accent/10 text-accent hover:bg-accent/20'
+                            : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
+                        )}
+                      >
+                        {libraryState?.loading
+                          ? 'Saving…'
+                          : libraryState?.success
+                            ? 'Saved'
+                            : libraryState?.error
+                              ? 'Retry save'
+                              : 'Save to library'}
+                      </button>
+                    ) : null}
                     {canRefresh ? (
                       <button
                         type="button"
@@ -454,6 +532,9 @@ export function MediaLightbox({
                   ) : null}
                   {refreshError ? (
                     <p className="mt-2 text-xs text-state-warning">{refreshError}</p>
+                  ) : null}
+                  {libraryState?.error ? (
+                    <p className="mt-2 text-xs text-state-warning">{libraryState.error}</p>
                   ) : null}
                   {allowIndexingControls && onToggleIndexable && entry.jobId && typeof displayIndexable === 'boolean' ? (
                     <div className="mt-3 flex flex-col gap-1 text-sm text-text-secondary">
