@@ -1247,7 +1247,7 @@ function ImageLibraryModal({
     const response = await fetch(url, { credentials: 'include' });
     const payload = (await response.json().catch(() => null)) as AssetsResponse | null;
     if (!response.ok || !payload?.ok) {
-      throw new Error(payload?.['error'] ?? 'Failed to load library');
+      throw new Error((payload && 'error' in payload ? payload.error : undefined) ?? 'Failed to load library');
     }
     return payload.assets;
   });
