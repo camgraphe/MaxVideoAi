@@ -1247,10 +1247,14 @@ function ImageLibraryModal({
     const response = await fetch(url, { credentials: 'include' });
     const payload = (await response.json().catch(() => null)) as AssetsResponse | null;
     if (!response.ok || !payload?.ok) {
-      const message = payload && typeof payload === 'object' && 'error' in payload && typeof payload.error === 'string'
-        ? payload.error
-        : 'Failed to load library';
-      throw new Error(message);
+      let message: string | undefined;
+      if (payload && typeof payload === 'object' && 'error' in payload) {
+        const maybeError = (payload as { error?: unknown }).error;
+        if (typeof maybeError === 'string') {
+          message = maybeError;
+        }
+      }
+      throw new Error(message ?? 'Failed to load library');
     }
     return payload.assets;
   });
