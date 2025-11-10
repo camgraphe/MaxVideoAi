@@ -620,55 +620,55 @@
       "sora-2": {
         "displayName": "OpenAI Sora 2",
         "description": "Texto→Vídeo y remezclas con audio nativo a través del enrutamiento de Fal.",
-        "priceBefore": "$0.10/s vía Fal, o trae tu propia clave de OpenAI para facturar directamente.",
+        "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "v2"
       },
       "sora-2-pro": {
         "displayName": "OpenAI Sora 2 Pro",
         "description": "Sincronización labial cinematográfica con salida 1080p y control de Imagen→Vídeo para equipos premium.",
-        "priceBefore": "$0.30/s a 720p o $0.50/s a 1080p antes de las tasas.",
+        "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "Pro"
       },
       "veo-3-1": {
         "displayName": "Google Veo 3.1",
         "description": "Control de referencia a vídeo con guía de sujeto mediante varias imágenes.",
-        "priceBefore": "$0.20/s audio desactivado o $0.40/s audio activado, resaltado antes de ponerlo en la cola.",
+        "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "Veo 3.1"
       },
       "veo-3-fast": {
         "displayName": "Google Veo 3 Rápido",
         "description": "Cola más rápida para previsualización manteniendo el aspecto de Veo y el conmutador de audio.",
-        "priceBefore": "$0.25/s audio desactivado o $0.40/s audio activado en el chip.",
+        "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "Veo 3 Rápido"
       },
       "veo-3-1-fast": {
         "displayName": "Google Veo 3.1 Rápido",
         "description": "Conecta el primer y el último fotograma en 8 segundos con audio opcional.",
-        "priceBefore": "$0.10/s audio desactivado o $0.15/s audio activado, mostrado por adelantado.",
+        "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "Veo 3.1 Rápido"
       },
       "pika-text-to-video": {
         "displayName": "Pika 2.2 · Texto→Vídeo",
         "description": "Bucles pensados para redes sociales con superposición de subtítulos y rápida iteración.",
-        "priceBefore": "$0.20 por clip de 5s a 720p, $0.45 por clip de 5s a 1080p.",
+        "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "2.2"
       },
       "pika-image-to-video": {
         "displayName": "Pika 2.2 · Imagen→Vídeo",
         "description": "Anima un fotograma estático con movimiento estilizado y desplazamientos de cámara.",
-        "priceBefore": "$0.20 por clip de 5s a 720p, $0.45 por clip de 5s a 1080p.",
+        "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "2.2"
       },
       "minimax-hailuo-02-text": {
         "displayName": "MiniMax Hailuo 02 Estándar · Texto→Vídeo",
         "description": "Borradores con optimizador de prompts antes del render principal.",
-        "priceBefore": "$0.045/s con actualizaciones en vivo en el chip.",
+        "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "Estándar"
       },
       "minimax-hailuo-02-image": {
         "displayName": "MiniMax Hailuo 02 Estándar · Imagen→Vídeo",
         "description": "Transforma una imagen de referencia en movimiento con fotograma final opcional.",
-        "priceBefore": "$0.045/s con actualizaciones en vivo en el chip.",
+        "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "Estándar"
       },
       "title": "Motores de vídeo IA — Compara Sora, Veo, Pika | MaxVideoAI",
@@ -683,7 +683,7 @@
         "engineId": "ID del motor",
         "slug": "Slug",
         "logoPolicy": "Política de logotipo",
-        "platformPrice": "Precio en plataforma (incluye 30 %)"
+        "platformPrice": "Precios en vivo dentro del workspace Generate."
       },
       "logoPolicies": {
         "logoAllowed": "Uso de logotipo permitido",
@@ -692,7 +692,7 @@
       "promptsTitle": "Ideas de prompt",
       "faqTitle": "FAQ",
       "buttons": {
-        "pricing": "Ver precios",
+        "pricing": "Abrir Generate",
         "launch": "Abrir workspace"
       },
       "breadcrumb": {
@@ -1250,15 +1250,15 @@
       "galleryRail": {
         "title": "Últimos renders",
         "viewAll": "Ver todo",
-      "curated": "Los renders de muestra del equipo MaxVideo se muestran aquí hasta que generes tus propios videos.",
-      "error": "No se pudieron cargar los últimos renders. Intenta de nuevo.",
-      "retry": "Reintentar",
-      "imageCta": "Generar imágenes",
-      "snackbar": {
-        "samples": "No se pueden quitar los clips de muestra.",
-        "removed": "Eliminado de la galería.",
-        "failed": "No se pudo eliminar de la galería."
-      }
+        "curated": "Los renders de muestra del equipo MaxVideo se muestran aquí hasta que generes tus propios videos.",
+        "error": "No se pudieron cargar los últimos renders. Intenta de nuevo.",
+        "retry": "Reintentar",
+        "imageCta": "Generar imágenes",
+        "snackbar": {
+          "samples": "No se pueden quitar los clips de muestra.",
+          "removed": "Eliminado de la galería.",
+          "failed": "No se pudo eliminar de la galería."
+        }
       },
       "composer": {
         "title": "Compositor",

@@ -616,55 +616,55 @@
       "sora-2": {
         "displayName": "OpenAI Sora 2",
         "description": "Text-to-video and remix with native audio via Fal routing.",
-        "priceBefore": "$0.10/s via Fal, or bring your own OpenAI key to bill direct.",
+        "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "v2"
       },
       "sora-2-pro": {
         "displayName": "OpenAI Sora 2 Pro",
         "description": "Cinematic lip-sync with 1080p output and image-to-video control for premium teams.",
-        "priceBefore": "$0.30/s at 720p or $0.50/s at 1080p before fees.",
+        "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "Pro"
       },
       "veo-3-1": {
         "displayName": "Google Veo 3.1",
         "description": "Reference-to-video control with multi-image subject guidance.",
-        "priceBefore": "$0.20/s audio off or $0.40/s audio on highlighted before you queue.",
+        "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "Veo 3.1"
       },
       "veo-3-fast": {
         "displayName": "Google Veo 3 Fast",
         "description": "Faster queue for previz while keeping the Veo look and audio toggle.",
-        "priceBefore": "$0.25/s audio off or $0.40/s audio on in the chip.",
+        "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "Veo 3 Fast"
       },
       "veo-3-1-fast": {
         "displayName": "Google Veo 3.1 Fast",
         "description": "Bridge a first and last frame in 8 seconds with optional audio.",
-        "priceBefore": "$0.10/s audio off or $0.15/s audio on surfaced upfront.",
+        "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "Veo 3.1 Fast"
       },
       "pika-text-to-video": {
         "displayName": "Pika 2.2 · Text to Video",
         "description": "Social-first loops with caption overlays and fast iteration.",
-        "priceBefore": "$0.20 per 5s clip at 720p, $0.45 per 5s at 1080p.",
+        "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "2.2"
       },
       "pika-image-to-video": {
         "displayName": "Pika 2.2 · Image to Video",
         "description": "Animate a still frame with stylised motion and camera moves.",
-        "priceBefore": "$0.20 per 5s clip at 720p, $0.45 per 5s at 1080p.",
+        "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "2.2"
       },
       "minimax-hailuo-02-text": {
         "displayName": "MiniMax Hailuo 02 Standard · Text to Video",
         "description": "Prompt optimiser-enabled drafts before the hero render.",
-        "priceBefore": "$0.045/s with live chip updates.",
+        "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "Standard"
       },
       "minimax-hailuo-02-image": {
         "displayName": "MiniMax Hailuo 02 Standard · Image to Video",
         "description": "Reference image to motion with optional end frame.",
-        "priceBefore": "$0.045/s with live chip updates.",
+        "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "Standard"
       },
       "title": "AI video engines — Compare Sora, Veo, Pika | MaxVideoAI",
@@ -679,7 +679,7 @@
         "engineId": "Engine ID",
         "slug": "Slug",
         "logoPolicy": "Logo policy",
-        "platformPrice": "Platform price (incl. 30% fee)"
+        "platformPrice": "Live pricing updates inside the Generate workspace."
       },
       "logoPolicies": {
         "logoAllowed": "Logo usage permitted",
@@ -688,7 +688,7 @@
       "promptsTitle": "Prompt ideas",
       "faqTitle": "FAQ",
       "buttons": {
-        "pricing": "View pricing",
+        "pricing": "Open Generate",
         "launch": "Launch workspace"
       },
       "breadcrumb": {
@@ -1244,17 +1244,17 @@
         "placeholder": "—"
       },
       "galleryRail": {
-      "title": "Latest renders",
-      "viewAll": "View all",
-      "curated": "Starter samples curated by the MaxVideo team are shown until you generate your own videos.",
-      "error": "Failed to load latest renders. Please retry.",
-      "retry": "Retry",
-      "imageCta": "Generate images",
-      "snackbar": {
-        "samples": "Sample clips cannot be removed.",
-        "removed": "Removed from gallery.",
-        "failed": "Unable to remove from gallery."
-      }
+        "title": "Latest renders",
+        "viewAll": "View all",
+        "curated": "Starter samples curated by the MaxVideo team are shown until you generate your own videos.",
+        "error": "Failed to load latest renders. Please retry.",
+        "retry": "Retry",
+        "imageCta": "Generate images",
+        "snackbar": {
+          "samples": "Sample clips cannot be removed.",
+          "removed": "Removed from gallery.",
+          "failed": "Unable to remove from gallery."
+        }
       },
       "composer": {
         "title": "Composer",

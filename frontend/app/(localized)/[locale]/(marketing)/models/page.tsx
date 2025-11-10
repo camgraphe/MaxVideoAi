@@ -218,11 +218,9 @@ export default async function ModelsPage() {
           const priceNote = meta?.priceBefore ?? null;
 
           return (
-            <Link
+            <article
               key={engine.modelSlug}
-              href={{ pathname: '/models/[slug]', params: { slug: engine.modelSlug } }}
               className="group relative overflow-hidden rounded-3xl border border-black/5 bg-white text-neutral-900 shadow-lg transition hover:border-black/10 hover:shadow-xl"
-              aria-label={`${cardAriaPrefix} ${engine.marketingName}`}
             >
               <div className="relative aspect-video overflow-hidden">
                 {videoUrl ? (
@@ -249,7 +247,7 @@ export default async function ModelsPage() {
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-white via-white/70 to-white/50 opacity-95 transition group-hover:opacity-80" />
               </div>
-              <div className="absolute inset-0 flex flex-col justify-between p-6">
+              <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-6 pb-16">
                 <div className="flex items-center justify-between text-xs uppercase tracking-[0.18em] text-neutral-500">
                   <span>{versionLabel}</span>
                   <span className="rounded-full border border-black/10 px-2 py-1 text-[10px] font-semibold text-neutral-500">MaxVideoAI</span>
@@ -257,13 +255,27 @@ export default async function ModelsPage() {
                 <div>
                   <h2 className="text-2xl font-semibold text-neutral-900 transition group-hover:text-neutral-800">{displayName}</h2>
                   <p className="mt-1 text-sm text-neutral-500">{description}</p>
-                  {priceNote ? <p className="mt-1 text-xs text-neutral-400">{priceNote}</p> : null}
-                  <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-neutral-900/70 transition group-hover:translate-x-1 group-hover:text-neutral-900">
-                    {cardCtaLabel}
-                  </span>
                 </div>
+                <span className="inline-flex items-center gap-1 text-sm font-semibold text-neutral-900/70 transition group-hover:translate-x-1 group-hover:text-neutral-900">
+                  {cardCtaLabel}
+                </span>
               </div>
-            </Link>
+              {priceNote ? (
+                <Link
+                  href="/generate"
+                  className="absolute left-6 bottom-6 z-20 inline-flex text-xs font-semibold text-accent transition hover:text-accentSoft"
+                >
+                  {priceNote}
+                </Link>
+              ) : null}
+              <Link
+                href={{ pathname: '/models/[slug]', params: { slug: engine.modelSlug } }}
+                className="absolute inset-0 z-10"
+                aria-label={`${cardAriaPrefix} ${engine.marketingName}`}
+              >
+                <span className="sr-only">{cardCtaLabel}</span>
+              </Link>
+            </article>
           );
         })}
       </section>

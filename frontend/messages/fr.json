@@ -620,55 +620,55 @@
       "sora-2": {
         "displayName": "OpenAI Sora 2",
         "description": "Texte→Vidéo et remix avec audio natif via le routage Fal.",
-        "priceBefore": "$0.10/s via Fal, ou apportez votre propre clé OpenAI pour facturer directement.",
+        "priceBefore": "Tarifs en direct dans le workspace Generate.",
         "versionLabel": "v2"
       },
       "sora-2-pro": {
         "displayName": "OpenAI Sora 2 Pro",
         "description": "Synchronisation labiale cinématographique avec sortie 1080p et contrôle Image→Vidéo pour équipes premium.",
-        "priceBefore": "$0.30/s à 720p ou $0.50/s à 1080p avant frais.",
+        "priceBefore": "Tarifs en direct dans le workspace Generate.",
         "versionLabel": "Pro"
       },
       "veo-3-1": {
         "displayName": "Google Veo 3.1",
         "description": "Contrôle de référence vers vidéo avec guidage du sujet par plusieurs images.",
-        "priceBefore": "$0.20/s sans audio ou $0.40/s avec audio, mis en évidence avant la mise en file.",
+        "priceBefore": "Tarifs en direct dans le workspace Generate.",
         "versionLabel": "Veo 3.1"
       },
       "veo-3-fast": {
         "displayName": "Google Veo 3 Fast",
         "description": "File plus rapide pour le previz tout en conservant le rendu Veo et le basculement audio.",
-        "priceBefore": "$0.25/s sans audio ou $0.40/s avec audio, indiqué dans la puce.",
+        "priceBefore": "Tarifs en direct dans le workspace Generate.",
         "versionLabel": "Veo 3 Fast"
       },
       "veo-3-1-fast": {
         "displayName": "Google Veo 3.1 Fast",
         "description": "Relie la première et la dernière image en 8 secondes, audio optionnel.",
-        "priceBefore": "$0.10/s sans audio ou $0.15/s avec audio, affichés en amont.",
+        "priceBefore": "Tarifs en direct dans le workspace Generate.",
         "versionLabel": "Veo 3.1 Fast"
       },
       "pika-text-to-video": {
         "displayName": "Pika 2.2 · Texte→Vidéo",
         "description": "Boucles pensées pour le social avec superpositions de légendes et itérations rapides.",
-        "priceBefore": "$0.20 par clip de 5s en 720p, $0.45 par clip de 5s en 1080p.",
+        "priceBefore": "Tarifs en direct dans le workspace Generate.",
         "versionLabel": "2.2"
       },
       "pika-image-to-video": {
         "displayName": "Pika 2.2 · Image→Vidéo",
         "description": "Anime une image fixe avec un mouvement stylisé et des déplacements de caméra.",
-        "priceBefore": "$0.20 par clip de 5s en 720p, $0.45 par clip de 5s en 1080p.",
+        "priceBefore": "Tarifs en direct dans le workspace Generate.",
         "versionLabel": "2.2"
       },
       "minimax-hailuo-02-text": {
         "displayName": "MiniMax Hailuo 02 Standard · Texte→Vidéo",
         "description": "Brouillons avec optimiseur de prompt activé avant le rendu final.",
-        "priceBefore": "$0.045/s avec mises à jour dynamiques dans la puce.",
+        "priceBefore": "Tarifs en direct dans le workspace Generate.",
         "versionLabel": "Standard"
       },
       "minimax-hailuo-02-image": {
         "displayName": "MiniMax Hailuo 02 Standard · Image→Vidéo",
         "description": "Conversion d'une image de référence en mouvement avec image finale optionnelle.",
-        "priceBefore": "$0.045/s avec mises à jour dynamiques dans la puce.",
+        "priceBefore": "Tarifs en direct dans le workspace Generate.",
         "versionLabel": "Standard"
       },
       "title": "Moteurs vidéo IA — Comparez Sora, Veo, Pika | MaxVideoAI",
@@ -683,7 +683,7 @@
         "engineId": "ID moteur",
         "slug": "Slug",
         "logoPolicy": "Politique de logo",
-        "platformPrice": "Tarif plateforme (30 % inclus)"
+        "platformPrice": "Tarifs en direct dans le workspace Generate."
       },
       "logoPolicies": {
         "logoAllowed": "Utilisation du logo autorisée",
@@ -692,7 +692,7 @@
       "promptsTitle": "Idées de prompt",
       "faqTitle": "FAQ",
       "buttons": {
-        "pricing": "Voir les tarifs",
+        "pricing": "Ouvrir Generate",
         "launch": "Ouvrir l’espace"
       },
       "breadcrumb": {
@@ -1259,15 +1259,15 @@
       "galleryRail": {
         "title": "Derniers rendus",
         "viewAll": "Tout voir",
-      "curated": "Des extraits exemples sélectionnés par l’équipe MaxVideo s’affichent ici jusqu’à ce que vous génériez vos propres vidéos.",
-      "error": "Impossible de charger les derniers rendus. Merci de réessayer.",
-      "retry": "Réessayer",
-      "imageCta": "Générer des images",
-      "snackbar": {
-        "samples": "Les clips exemples ne peuvent pas être retirés.",
-        "removed": "Supprimé de la galerie.",
-        "failed": "Impossible de retirer cet élément de la galerie."
-      }
+        "curated": "Des extraits exemples sélectionnés par l’équipe MaxVideo s’affichent ici jusqu’à ce que vous génériez vos propres vidéos.",
+        "error": "Impossible de charger les derniers rendus. Merci de réessayer.",
+        "retry": "Réessayer",
+        "imageCta": "Générer des images",
+        "snackbar": {
+          "samples": "Les clips exemples ne peuvent pas être retirés.",
+          "removed": "Supprimé de la galerie.",
+          "failed": "Impossible de retirer cet élément de la galerie."
+        }
       },
       "composer": {
         "title": "Compositeur",

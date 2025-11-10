@@ -5,7 +5,6 @@ import type { Metadata } from 'next';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
 import { listFalEngines, getFalEngineBySlug } from '@/config/falEngines';
-import { CURRENCY_LOCALE } from '@/lib/intl';
 import type { AppLocale } from '@/i18n/locales';
 import { locales, localePathnames, localeRegions } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
@@ -70,7 +69,7 @@ const DEFAULT_DETAIL_COPY: DetailCopy = {
     engineId: 'Engine ID',
     slug: 'Slug',
     logoPolicy: 'Logo policy',
-    platformPrice: 'Platform price (incl. 30% fee)',
+    platformPrice: 'Live pricing updates inside the Generate workspace.',
   },
   logoPolicies: {
     logoAllowed: 'Logo usage permitted',
@@ -79,7 +78,7 @@ const DEFAULT_DETAIL_COPY: DetailCopy = {
   promptsTitle: 'Prompt ideas',
   faqTitle: 'FAQ',
   buttons: {
-    pricing: 'View pricing',
+    pricing: 'Open Generate',
     launch: 'Launch workspace',
   },
   breadcrumb: {
@@ -228,7 +227,6 @@ export default async function ModelDetailPage({ params }: PageParams) {
       ? localizedContent.faqs
       : (engine.faqs ?? []).map(({ question, answer }) => ({ question, answer }));
   const pricingNotes = localizedContent.pricingNotes ?? null;
-  const pricingHint = engine.pricingHint;
   const canonicalUrl = metadataUrls.canonical;
   const breadcrumbTitleBase = localizedContent.seo.title ?? marketingName ?? slug;
   const breadcrumbTitle = breadcrumbTitleBase.replace(/ —.*$/, '');
@@ -286,25 +284,12 @@ export default async function ModelDetailPage({ params }: PageParams) {
         }
       : null;
 
-  const platformPriceInfo = (() => {
-    if (!pricingHint || typeof pricingHint.amountCents !== 'number') return null;
-    const currency = pricingHint.currency ?? 'USD';
-    const platformCents = Math.round(pricingHint.amountCents * 1.3);
-    const priceFormatter = new Intl.NumberFormat(CURRENCY_LOCALE, { style: 'currency', currency });
-    const descriptorParts: string[] = [];
-    if (pricingHint.label) descriptorParts.push(pricingHint.label);
-    const durationLabel =
-      typeof pricingHint.durationSeconds === 'number' && pricingHint.durationSeconds > 0
-        ? `${pricingHint.durationSeconds}s`
-        : null;
-    if (durationLabel) descriptorParts.push(durationLabel);
-    if (pricingHint.resolution) descriptorParts.push(pricingHint.resolution);
-    const descriptor = descriptorParts.length ? descriptorParts.join(' · ') : null;
-    return {
-      amount: priceFormatter.format(platformCents / 100),
-      descriptor,
-    };
-  })();
+  const platformPriceInfo = detailCopy.overview.platformPrice
+    ? {
+        label: detailCopy.overview.platformPrice,
+        href: '/generate',
+      }
+    : null;
 
   const soraSoftwareSchema = showSoraSeo
     ? {
@@ -485,8 +470,9 @@ export default async function ModelDetailPage({ params }: PageParams) {
               <div className="sm:col-span-2">
                 <dt className="text-xs uppercase tracking-micro text-text-muted">{detailCopy.overview.platformPrice}</dt>
                 <dd>
-                  {platformPriceInfo.amount}
-                  {platformPriceInfo.descriptor ? <span className="text-xs text-text-muted"> · {platformPriceInfo.descriptor}</span> : null}
+                  <Link href={platformPriceInfo.href} className="text-sm font-semibold text-accent hover:text-accentSoft">
+                    {platformPriceInfo.label}
+                  </Link>
                 </dd>
               </div>
             ) : null}
@@ -526,7 +512,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
 
       <footer className="mt-10 flex flex-wrap gap-3">
         <Link
-          href="/pricing"
+          href="/generate"
           className="inline-flex items-center rounded-pill border border-hairline px-4 py-2 text-sm font-semibold text-text-primary transition hover:border-accent hover:text-accent"
         >
           {detailCopy.buttons.pricing}
