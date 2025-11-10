@@ -77,7 +77,14 @@ const fetcher = async (url: string): Promise<AssetsResponse> => {
   const res = await fetch(url, { credentials: 'include' });
   const json = (await res.json().catch(() => null)) as AssetsResponse | null;
   if (!res.ok || !json) {
-    throw new Error(json?.['error'] ?? 'Failed to load assets');
+    let message: string | undefined;
+    if (json && typeof json === 'object' && 'error' in json) {
+      const maybeError = (json as { error?: unknown }).error;
+      if (typeof maybeError === 'string') {
+        message = maybeError;
+      }
+    }
+    throw new Error(message ?? 'Failed to load assets');
   }
   return json;
 };
