@@ -1,0 +1,106 @@
+{
+  "marketingName": "Nano Banana",
+  "versionLabel": "Image + Édition",
+  "seo": {
+    "title": "Nano Banana – Génération & édition d’images sur MaxVideoAI",
+    "description": "Exploitez le modèle Nano Banana de Google (via Fal.ai) pour créer des visuels haute fidélité ou retoucher vos sources. À partir de 0,039 $ par image.",
+    "image": "/hero/nano-banana.jpg"
+  },
+  "hero": {
+    "title": "Nano Banana – Texte→Image photoréaliste + édition ciblée",
+    "intro": "Nano Banana propose deux endpoints Fal : texte-vers-image ultra-rapide et image-vers-image précis. Vous restez dans MaxVideoAI avec le même wallet, les mêmes logs et le prompt lab partagé avec nos moteurs vidéo.",
+    "ctaPrimary": { "label": "Générer une image", "href": "/app/image?engine=nano-banana" },
+    "secondaryLinks": [
+      { "label": "Voir les moteurs image", "href": "/modeles" },
+      { "label": "Ouvrir le prompt lab", "href": "/app/image" },
+      { "label": "Tarifs", "href": "/tarifs" }
+    ]
+  },
+  "overview": "Nano Banana livre des rendus photoréalistes propres tout en acceptant prompts, seed, batchs et uploads. Parfait pour pré-visualiser des plans Sora/Veo, créer du matériel marketing ou retoucher des frames avant animation.",
+  "bestUseCases": {
+    "title": "Cas d’usage recommandés",
+    "items": [
+      "Concept art photoréaliste et hero shots",
+      "Variantes d’un storyboard avant passage en vidéo",
+      "Création d’assets marketing directement dans MaxVideoAI",
+      "Édition précise (props, tenues, éclairage, ambiance)"
+    ]
+  },
+  "technicalOverviewTitle": "Points techniques",
+  "technicalOverview": [
+    {
+      "label": "Modes",
+      "body": "Deux endpoints Fal : `fal-ai/nano-banana` (texte→image) et `fal-ai/nano-banana/edit` (image→image).",
+      "link": { "label": "Documentation Fal", "href": "https://fal.ai/models/fal-ai/nano-banana" }
+    },
+    {
+      "label": "Entrées",
+      "body": "`prompt` obligatoire, `num_images` (1–8). En mode édition, ajoutez `image_urls` pour vos sources."
+    },
+    {
+      "label": "Sorties",
+      "body": "URLs JPEG/PNG haute résolution avec description. Chaque image est historisée (Recent Runs + Library)."
+    },
+    {
+      "label": "Tarif",
+      "body": "0,039 $ / image (texte ou édition). Débité du wallet MaxVideoAI."
+    },
+    {
+      "label": "Seed & batch",
+      "body": "Verrouillez le seed pour retrouver un style, utilisez `num_images` pour générer plusieurs variations."
+    }
+  ],
+  "promptStructure": {
+    "title": "Construire un prompt efficace",
+    "quote": "« Portrait éditorial d’une femme en imper chrome sous des néons, objectif 85 mm, profondeur de champ réduite, grading cinématique. »",
+    "description": "Structure type recommandée :",
+    "steps": [
+      "Sujet + décor (« portrait… dans un bar jazz tokyoïte »).",
+      "Cues caméra / optique (objectif, ouverture, film look).",
+      "Ambiance / action pour éviter les poses génériques.",
+      "En édition, décrivez la transformation (« remplacer la veste par un tissu holographique… »).",
+      "Batchs de 4 images pour comparer rapidement, puis réutilisez le seed gagnant."
+    ]
+  },
+  "tips": {
+    "title": "Astuces",
+    "items": [
+      "🖼 Préparez les keyframes avant un rendu Veo/Sora.",
+      "🎨 Le mode édition agit comme un “re-roll” ciblé pour retouches de props ou d’éclairage.",
+      "📚 Archivez vos visuels via Library → Images pour garder vos campagnes propres.",
+      "⚡ `num_images = 4` + nommage de lot = comparaisons instantanées.",
+      "🔁 Exploitez la Jobs view “Images” pour suivre les coûts par concept."
+    ]
+  },
+  "compareLink": {
+    "label": "guide moteurs",
+    "href": "/comparatif",
+    "before": "Comparez Nano Banana à AuraFlow, Flux, etc. dans notre ",
+    "after": "."
+  },
+  "prompts": [
+    {
+      "title": "Hero shot lifestyle",
+      "prompt": "Photo golden hour d’une runneuse éclaboussant une piscine à Los Angeles, obturateur rapide, gouttes nettes, Leica 50 mm."
+    },
+    {
+      "title": "Prompt édition",
+      "prompt": "Rendre le salon plus lumineux, remplacer la table basse par une plaque de verre, ajouter une enseigne néon « BANANA » au fond."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Combien d’images par run ?",
+      "a": "`num_images` accepte 1 à 8 images. Chaque sortie apparaît dans Recent Runs et peut être téléchargée individuellement."
+    },
+    {
+      "q": "Faut-il des masques pour éditer ?",
+      "a": "Non, décrivez simplement la modification. Pour des zones précises, recadrez vos uploads ou itérez par passes."
+    },
+    {
+      "q": "Où sont stockées les images ?",
+      "a": "Dans Recent Runs + Library → Images. Vous pouvez copier l’URL CDN ou télécharger le fichier original."
+    }
+  ],
+  "pricingNotes": "Comptez ~0,039 $ par image. Un batch de 4 images ≈ 0,156 $."
+}

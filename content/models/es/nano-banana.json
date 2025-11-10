@@ -1,0 +1,106 @@
+{
+  "marketingName": "Nano Banana",
+  "versionLabel": "Imagen + Edición",
+  "seo": {
+    "title": "Nano Banana – Generador y editor de imágenes en MaxVideoAI",
+    "description": "Aprovecha el modelo Nano Banana de Google (Fal.ai) para crear imágenes fotorrealistas o editar tus referencias. Desde 0,039 US$ por imagen.",
+    "image": "/hero/nano-banana.jpg"
+  },
+  "hero": {
+    "title": "Nano Banana – Texto→Imagen y edición precisa",
+    "intro": "Nano Banana incluye dos endpoints Fal: texto→imagen ultrarrápido y edición imagen→imagen muy controlable. Comparte wallet, registros y prompt lab con nuestros motores de vídeo, así que puedes preparar frames, moodboards o shot plates sin salir de MaxVideoAI.",
+    "ctaPrimary": { "label": "Generar imagen", "href": "/app/image?engine=nano-banana" },
+    "secondaryLinks": [
+      { "label": "Motores de imagen", "href": "/modelos" },
+      { "label": "Abrir prompt lab", "href": "/app/image" },
+      { "label": "Ver precios", "href": "/precios" }
+    ]
+  },
+  "overview": "Nano Banana entrega renders limpios con control de prompt, seed, lotes y uploads. Ideal para concept frames antes de Veo/Sora, campañas de marketing o retoques detallados sobre frames existentes.",
+  "bestUseCases": {
+    "title": "Mejores casos de uso",
+    "items": [
+      "Concept art e imágenes hero fotorrealistas",
+      "Exploración de variantes antes de animar",
+      "Assets de marketing sin salir de MaxVideoAI",
+      "Ediciones precisas de props, vestuario o iluminación"
+    ]
+  },
+  "technicalOverviewTitle": "Ficha técnica",
+  "technicalOverview": [
+    {
+      "label": "Modos",
+      "body": "Endpoints: `fal-ai/nano-banana` (texto→imagen) y `fal-ai/nano-banana/edit` (imagen→imagen).",
+      "link": { "label": "Docs Fal.ai", "href": "https://fal.ai/models/fal-ai/nano-banana" }
+    },
+    {
+      "label": "Entradas",
+      "body": "`prompt` (obligatorio), `num_images` (1–8). En modo edición añade `image_urls` con tus fuentes."
+    },
+    {
+      "label": "Salidas",
+      "body": "URLs JPEG/PNG de alta resolución + metadatos. Cada imagen queda registrada (Recent Runs + Library)."
+    },
+    {
+      "label": "Precio",
+      "body": "0,039 US$ por imagen, tanto en generación como en edición."
+    },
+    {
+      "label": "Seed y lotes",
+      "body": "Usa seed fijo para repetir estilos. `num_images` permite lotes multi-variante."
+    }
+  ],
+  "promptStructure": {
+    "title": "Estructura de prompt",
+    "quote": "“Retrato editorial de una mujer con gabardina cromada bajo luces de neón, lente 85 mm, profundidad de campo corta, gradación cinematográfica.”",
+    "description": "Sugerencia de estructura:",
+    "steps": [
+      "Define sujeto + escenario (“retrato… en un bar jazz de Tokio”).",
+      "Añade pista de cámara/lente (film stock, apertura, color).",
+      "Describe el mood o la acción para evitar poses genéricas.",
+      "En edición, explica la transformación (“cambia la chaqueta por tejido holográfico…”).",
+      "Para comparar, genera lotes de 4 imágenes y reutiliza el seed favorito."
+    ]
+  },
+  "tips": {
+    "title": "Consejos",
+    "items": [
+      "🖼 Úsalo para keyframes antes de pasar a Veo/Sora.",
+      "🎨 Edición = “re-roll” localizado para props o luces.",
+      "📚 Organiza resultados en Library → Images.",
+      "⚡ `num_images = 4` facilita comparar estilos en segundos.",
+      "🔁 Consulta la vista Jobs (Images) para auditar gasto por concepto."
+    ]
+  },
+  "compareLink": {
+    "label": "guía de motores",
+    "href": "/comparativa",
+    "before": "Compara Nano Banana con AuraFlow, Flux y otros en la ",
+    "after": "."
+  },
+  "prompts": [
+    {
+      "title": "Hero lifestyle",
+      "prompt": "Foto golden hour de una corredora salpicando una piscina en Los Ángeles, obturador rápido, gotas nítidas, Leica 50 mm."
+    },
+    {
+      "title": "Prompt de edición",
+      "prompt": "Haz el salón más luminoso, cambia la mesa por cristal y coloca un rótulo de neón “BANANA” al fondo."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "¿Cuántas imágenes por ejecución?",
+      "a": "`num_images` permite 1–8. Cada salida queda registrada y puede descargarse o copiarse desde Library."
+    },
+    {
+      "q": "¿Necesito máscaras para editar?",
+      "a": "No, describe el cambio en lenguaje natural. Para zonas muy concretas, recorta la imagen o itera en varias pasadas."
+    },
+    {
+      "q": "¿Dónde quedan almacenadas?",
+      "a": "En Recent Runs y en Library → Images. Allí puedes descargar o copiar el enlace CDN."
+    }
+  ],
+  "pricingNotes": "Calcula ~0,039 US$ por imagen; un lote de 4 cuesta ~0,156 US$ con cargo al wallet."
+}

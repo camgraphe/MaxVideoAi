@@ -4,10 +4,8 @@ import { Pool } from 'pg';
 import modelRoster from '@/config/model-roster.json';
 import {
   BLOG_ENTRIES,
-  BLOG_SLUG_MAP,
   CONTENT_ROOT,
   LOCALES,
-  LOCALE_PREFIXES,
   buildLanguageAlternates,
   localizePathFromEnglish,
   normalizePathSegments,

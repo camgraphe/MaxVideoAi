@@ -1,0 +1,106 @@
+{
+  "marketingName": "Nano Banana",
+  "versionLabel": "Image + Edit",
+  "seo": {
+    "title": "Nano Banana – Text-to-Image & Image Editing on MaxVideoAI",
+    "description": "Use Google’s Nano Banana model (via Fal.ai) to generate studio-quality stills or remix existing visuals. Pay per image starting at $0.039.",
+    "image": "/hero/nano-banana.jpg"
+  },
+  "hero": {
+    "title": "Nano Banana – Photoreal Text-to-Image + Image Editing",
+    "intro": "Nano Banana ships with two Fal endpoints: lightning-fast text-to-image and precise image-to-image editing. It shares the same wallet, logs, and prompt lab as our video engines—so you can storyboard frames, iterate on references, or prep shot plates directly inside MaxVideoAI.",
+    "ctaPrimary": { "label": "Generate an image", "href": "/app/image?engine=nano-banana" },
+    "secondaryLinks": [
+      { "label": "See image engines", "href": "/models" },
+      { "label": "Visit the prompt lab", "href": "/app/image" },
+      { "label": "Pricing", "href": "/pricing" }
+    ]
+  },
+  "overview": "Nano Banana pairs clean photoreal renders with tight controls (prompt, seed, image uploads, batch count). You can concept thumbnails for Veo/Sora shoots, design marketing key visuals, or upscale storyboard frames before motion work.",
+  "bestUseCases": {
+    "title": "Where Nano Banana shines",
+    "items": [
+      "Photoreal concept frames and hero stills",
+      "Variant exploration before animating in Veo / Sora",
+      "High-quality marketing art without leaving MaxVideoAI",
+      "Precise image edits (prop swaps, wardrobe tweaks, room re-lighting)"
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    {
+      "label": "Modes",
+      "body": "Two Fal endpoints: `fal-ai/nano-banana` (text-to-image) and `fal-ai/nano-banana/edit` (image-to-image).",
+      "link": { "label": "Fal.ai docs", "href": "https://fal.ai/models/fal-ai/nano-banana" }
+    },
+    {
+      "label": "Inputs",
+      "body": "`prompt` (required), `num_images` (1–8). Edit mode adds `image_urls` for source uploads."
+    },
+    {
+      "label": "Outputs",
+      "body": "High-resolution JPEG/PNG URLs with metadata (description + CDN URL). Each run is logged in Recent Runs & Library."
+    },
+    {
+      "label": "Pricing",
+      "body": "$0.039 / image (text or edit). Wallet + logs identical to video engines."
+    },
+    {
+      "label": "Seed & batches",
+      "body": "Lock the seed to reproduce looks; use `num_images` for multi-shot batches."
+    }
+  ],
+  "promptStructure": {
+    "title": "Prompt mini-guide",
+    "quote": "“Editorial fashion portrait of a woman in a chrome raincoat under neon signage, 85mm lens, shallow depth of field, cinematic grading.”",
+    "description": "Keep prompts descriptive but grounded:",
+    "steps": [
+      "Anchor subject + setting (“portrait of… inside a Tokyo jazz bar”).",
+      "Add lens and lighting cues for style (film emulation, aperture, color palette).",
+      "Mention mood / action to avoid generic poses.",
+      "For edits, describe the transformation (“replace the jacket with holographic fabric…”).",
+      "Use `num_images` for variety; reuse the seed when you find a favorite."
+    ]
+  },
+  "tips": {
+    "title": "Tips & tricks",
+    "items": [
+      "🖼 Generate keyframes, then feed them into Veo/Sora shot-by-shot.",
+      "🎨 Treat edit mode as a “texture re-roll” for props, lighting, or wardrobe.",
+      "📚 Organize outputs via Library → Images to keep campaigns tidy.",
+      "⚡ Use `num_images = 4` with batch naming to compare variations quickly.",
+      "🔁 Pair with the new Image Jobs view to audit spend per concept."
+    ]
+  },
+  "compareLink": {
+    "label": "guide moteurs",
+    "href": "/ai-video-engines",
+    "before": "Compare Nano Banana with AuraFlow, Flux et al. in the ",
+    "after": "."
+  },
+  "prompts": [
+    {
+      "title": "Lifestyle hero shot",
+      "prompt": "Golden hour photo of a runner splashing through a Los Angeles backyard pool, high-speed shutter, crisp water droplets, Leica 50mm."
+    },
+    {
+      "title": "Edit prompt",
+      "prompt": "Make the living room brighter, swap the coffee table for a glass slab, add a neon “BANANA” sign on the back wall."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "How many images per run?",
+      "a": "Set `num_images` between 1 and 8. Each image is logged separately, so you can download / favorite individually."
+    },
+    {
+      "q": "Does edit mode require masks?",
+      "a": "No—describe the transformation in plain language. For precise regions, upload cropped inputs or run multiple passes."
+    },
+    {
+      "q": "Where do the images live?",
+      "a": "Every output hits Recent Runs + the new Library → Images tab. You can copy the CDN link or download lossless files."
+    }
+  ],
+  "pricingNotes": "Expect ~$0.039 per image. A 4-image batch costs ~$0.156, pulled straight from your wallet."
+}
