@@ -208,7 +208,8 @@ export default function JobsPage() {
   const handleSaveImageGroup = useCallback(
     async (group: GroupSummary) => {
       const job = group.hero.job;
-      const renderIds = job?.renderIds?.filter((url): url is string => typeof url === 'string' && url.length) ?? [];
+      const renderIds =
+        job?.renderIds?.filter((url): url is string => typeof url === 'string' && url.length > 0) ?? [];
       const previewThumb = group.previews.find((preview) => preview.thumbUrl)?.thumbUrl;
       const imageUrl = renderIds[0] ?? previewThumb ?? job?.thumbUrl ?? group.hero.thumbUrl ?? null;
       if (!imageUrl) {
