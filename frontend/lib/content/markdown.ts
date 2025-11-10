@@ -9,6 +9,7 @@ export interface ContentFrontMatter {
   title: string;
   description: string;
   date: string;
+  updatedAt?: string;
   image?: string;
   keywords?: string[];
   slug: string;

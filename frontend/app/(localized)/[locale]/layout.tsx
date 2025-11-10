@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { Analytics as VercelAnalytics } from '@vercel/analytics/react';
@@ -11,6 +12,12 @@ import { CookieBanner } from '@/components/legal/CookieBanner';
 import { JsonLd } from '@/components/SeoJsonLd';
 import { I18nProvider } from '@/lib/i18n/I18nProvider';
 import { defaultLocale, localeRegions, locales, type AppLocale } from '@/i18n/locales';
+import {
+  LOCALES as SUPPORTED_LOCALES,
+  englishPathFromLocale,
+  localizePathFromEnglish,
+  normalizePathSegments,
+} from '@/lib/i18n/paths';
 import { deserializeMessages } from '@/lib/i18n/server';
 import '@/app/globals.css';
 
@@ -102,6 +109,34 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   return (
     <html lang={locale} data-show-wavel-badge>
       <head>
+        {(() => {
+          const headerList = headers();
+          const rawPath =
+            headerList.get('x-pathname') ??
+            headerList.get('x-invoke-path') ??
+            headerList.get('x-matched-path') ??
+            '/';
+          const normalizedPath = normalizePathSegments(rawPath.split('?')[0]);
+          const englishPath = englishPathFromLocale(locale, normalizedPath);
+          const defaultHref = `${NORMALIZED_SITE_URL}${englishPath === '/' ? '' : englishPath}`;
+          return (
+            <>
+              {SUPPORTED_LOCALES.map((targetLocale) => {
+                const localizedPath = localizePathFromEnglish(targetLocale, englishPath);
+                const href = `${NORMALIZED_SITE_URL}${localizedPath === '/' ? '' : localizedPath}`;
+                return (
+                  <link
+                    rel="alternate"
+                    hrefLang={targetLocale}
+                    href={href}
+                    key={`alt-${targetLocale}`}
+                  />
+                );
+              })}
+              <link rel="alternate" hrefLang="x-default" href={defaultHref} key="alt-default" />
+            </>
+          );
+        })()}
         {process.env.NEXT_PUBLIC_BING_VERIFY ? (
           <meta name="msvalidate.01" content={process.env.NEXT_PUBLIC_BING_VERIFY} />
         ) : null}

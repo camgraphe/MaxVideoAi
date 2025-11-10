@@ -19,6 +19,15 @@ const localeDateMap: Record<AppLocale, string> = {
   es: 'es-ES',
 };
 
+function toIsoDate(value?: string | null): string | undefined {
+  if (!value) return undefined;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return undefined;
+  }
+  return date.toISOString();
+}
+
 async function getPost(locale: AppLocale, slug: string) {
   return getEntryBySlug(`content/${locale}/blog`, slug);
 }
@@ -55,6 +64,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   if (!post) {
     return { title: 'Post not found — MaxVideo AI' };
   }
+  const lastModified = toIsoDate(post.updatedAt ?? post.date);
+  const published = toIsoDate(post.date);
   const canonicalSlug = post.canonicalSlug ?? (post.lang === 'en' ? post.slug : undefined) ?? post.slug;
   const localizedSlugs = await findLocalizedSlugs(canonicalSlug);
   if (!localizedSlugs.en) {
@@ -90,6 +101,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       url: languages[params.locale] ?? languages.en,
       locale: ogLocale,
       siteName: 'MaxVideoAI',
+      ...(published ? { publishedTime: published } : {}),
+      ...(lastModified ? { modifiedTime: lastModified, updatedTime: lastModified } : {}),
       images: [
         {
           url: post.image ?? '/og/price-before.png',
@@ -105,6 +118,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       description: post.description,
       images: [post.image ?? '/og/price-before.png'],
     },
+    ...(lastModified ? { other: { 'last-modified': lastModified } } : {}),
   };
 }
 
@@ -128,13 +142,16 @@ export default async function BlogPostPage({ params }: { params: Params }) {
   }
   const prefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
   const canonicalUrl = `${SITE_BASE_URL}${prefix}/blog/${localizedSlugs[locale] ?? canonicalSlug}`;
+  const publishedIso = toIsoDate(post.date) ?? post.date;
+  const modifiedIso = toIsoDate(post.updatedAt ?? post.date) ?? publishedIso;
 
   const articleSchema = {
     '@context': 'https://schema.org',
     '@type': 'Article',
     headline: post.title,
     description: post.description,
-    datePublished: post.date,
+    datePublished: publishedIso,
+    dateModified: modifiedIso,
     inLanguage: localeRegions[locale],
     image: post.image ?? '/og/price-before.png',
     author: {
