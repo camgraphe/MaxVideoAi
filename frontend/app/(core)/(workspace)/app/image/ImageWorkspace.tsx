@@ -1279,7 +1279,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                               {displayImages.map((image, index) => (
                                 <div
                                   key={`${entry.id}-${index}`}
-                                  className="relative overflow-hidden rounded-xl bg-neutral-100"
+                                  className="relative overflow-hidden rounded-xl bg-neutral-900/5"
                                   style={{
                                     aspectRatio: resolveCssAspectRatio({
                                       value: entry.aspectRatio ?? null,

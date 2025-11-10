@@ -12,7 +12,6 @@ import { EngineIcon } from '@/components/ui/EngineIcon';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { ProcessingOverlay } from '@/components/groups/ProcessingOverlay';
 import { CURRENCY_LOCALE } from '@/lib/intl';
-import { resolveCssAspectRatio } from '@/lib/aspect';
 
 export type GroupedJobAction = 'open' | 'continue' | 'refine' | 'branch' | 'compare' | 'remove' | 'save-image';
 
@@ -183,11 +182,6 @@ export function GroupedJobCard({
     if (previewCount === 3) return 'grid-cols-3';
     return 'grid-cols-2';
   }, [previewCount]);
-  const heroAspectRatio = resolveCssAspectRatio({
-    value: hero.aspectRatio ?? hero.job?.aspectRatio ?? null,
-    fallback: '16 / 9',
-  });
-
   const showMenu = Boolean(onAction) && actionMenu;
   const isCurated = Boolean(hero.job?.curated);
 
@@ -219,7 +213,7 @@ export function GroupedJobCard({
           }
         }}
       >
-        <div className="relative w-full" style={{ aspectRatio: heroAspectRatio }}>
+        <div className="relative w-full" style={{ aspectRatio: '16 / 9' }}>
           <div className={clsx('absolute inset-0 grid gap-1 bg-[#E7ECF7] p-1', previewGridClass)}>
             {Array.from({ length: previewCount }).map((_, index) => {
               const preview = previews[index];
@@ -228,15 +222,10 @@ export function GroupedJobCard({
               const previewHasMedia = Boolean(preview?.videoUrl || preview?.thumbUrl);
               const isCompleted = memberStatus === 'completed' || previewHasMedia;
               const previewKey = preview?.id ? `${preview.id}-${index}` : `preview-${index}`;
-              const previewAspectRatio = resolveCssAspectRatio({
-                value: preview?.aspectRatio ?? hero.aspectRatio ?? hero.job?.aspectRatio ?? null,
-                fallback: heroAspectRatio,
-              });
               return (
                 <div
                   key={previewKey}
                   className="relative flex items-center justify-center overflow-hidden rounded-[10px] bg-[var(--surface-2)]"
-                  style={{ aspectRatio: previewAspectRatio }}
                 >
                   <div className="absolute inset-0">
                     {isCompleted ? (
@@ -245,6 +234,7 @@ export function GroupedJobCard({
                       <Image src={preview.thumbUrl} alt="" fill className="pointer-events-none object-contain" />
                     ) : null}
                   </div>
+                  <div className="pointer-events-none block" style={{ width: '100%', aspectRatio: '16 / 9' }} aria-hidden />
                   {!isCompleted && member ? (
                     <ProcessingOverlay
                       className="absolute inset-0"

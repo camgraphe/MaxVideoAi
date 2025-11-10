@@ -276,6 +276,54 @@ export default function LoginPage() {
   }, []);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const hash = window.location.hash;
+    if (!hash || !hash.includes('access_token=')) {
+      return;
+    }
+    const params = new URLSearchParams(hash.replace(/^#/, ''));
+    const accessToken = params.get('access_token');
+    const refreshToken =
+      params.get('refresh_token') ?? params.get('refreshToken') ?? params.get('refresh-token');
+    if (!accessToken || !refreshToken) {
+      window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+      return;
+    }
+    let cancelled = false;
+    setStatusTone('info');
+    setStatus('Completing sign-in…');
+    setError(null);
+    void supabase.auth
+      .setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      })
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) {
+          setError(error.message ?? 'Unable to complete sign-in.');
+          setStatus(null);
+          return;
+        }
+        if (data.session) {
+          syncSupabaseCookies(data.session);
+        }
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : 'Unable to complete sign-in.');
+        setStatus(null);
+      })
+      .finally(() => {
+        if (cancelled) return;
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
     if (mode !== 'signin' && signupSuggestion) {
       setSignupSuggestion(null);
     }
