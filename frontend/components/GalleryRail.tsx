@@ -42,6 +42,7 @@ const DEFAULT_GALLERY_COPY = {
   curated: 'Starter samples curated by the MaxVideo team are shown until you generate your own videos.',
   error: 'Failed to load latest renders. Please retry.',
   retry: 'Retry',
+  imageCta: 'Generate images',
   snackbar: {
     samples: 'Sample clips cannot be removed.',
     removed: 'Removed from gallery.',
@@ -277,6 +278,7 @@ export function GalleryRail({
         {combinedGroups.map((group, index) => {
           const engineId = group.hero.engineId;
           const engineEntry = engineId ? engineMap.get(engineId) ?? null : null;
+          const curated = Boolean(group.hero.job?.curated);
           return (
             <GroupedJobCard
               key={`${group.id}-${index}`}
@@ -285,6 +287,8 @@ export function GalleryRail({
               onOpen={handleCardOpen}
               onAction={handleCardAction}
               allowRemove={allowCardRemoval(group)}
+              showImageCta={curated}
+              imageCtaLabel={copy.imageCta}
             />
           );
         })}

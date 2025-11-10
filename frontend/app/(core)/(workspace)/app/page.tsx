@@ -3606,6 +3606,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                       onLoopChange={(next) =>
                         setForm((current) => (current ? { ...current, loop: next } : current))
                       }
+                      showExtendControl={false}
                       seedLocked={form.seedLocked}
                       onSeedLockedChange={(seedLocked) =>
                         setForm((current) => (current ? { ...current, seedLocked } : current))

@@ -48,6 +48,7 @@ interface EngineSelectProps {
   onModeChange: (mode: Mode) => void;
   modeOptions?: Mode[];
   modeLabelOverrides?: Partial<Record<Mode, string>>;
+  showBillingNote?: boolean;
 }
 
 const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
@@ -139,6 +140,7 @@ export function EngineSelect({
   onModeChange,
   modeOptions,
   modeLabelOverrides,
+  showBillingNote = true,
 }: EngineSelectProps) {
   const { t } = useI18n();
   const copy = t('workspace.generate.engineSelect', DEFAULT_ENGINE_SELECT_COPY) as EngineSelectCopy;
@@ -437,7 +439,7 @@ export function EngineSelect({
             </div>
           )}
 
-          {selectedMeta?.billingNote && (
+          {showBillingNote && selectedMeta?.billingNote && (
             <p className="text-[11px] text-text-muted">{selectedMeta.billingNote}</p>
           )}
 

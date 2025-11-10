@@ -427,12 +427,12 @@ const en: Dictionary = {
             slug: 'veo-3-1-fast',
             pricing: { engineId: 'veo-3-1-fast', durationSec: 8, resolution: '720p', memberTier: 'member' },
           },
-          media: {
-            videoSrc: '/assets/gallery/robot-eyes.mp4',
-            posterSrc: '/hero/luma-ray2-flash.jpg',
-            hasAudio: true,
-          },
+        media: {
+          videoSrc: '/assets/gallery/robot-eyes.mp4',
+          posterSrc: '/hero/veo3.jpg',
+          hasAudio: true,
         },
+      },
         {
           id: 'minimax-hailuo',
           label: 'MiniMax Hailuo 02 · Concept draft',

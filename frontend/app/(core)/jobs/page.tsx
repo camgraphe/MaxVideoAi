@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { getJobStatus, hideJob, useEngines, useInfiniteJobs } from '@/lib/api';
+import { getJobStatus, hideJob, useEngines, useInfiniteJobs, saveImageToLibrary } from '@/lib/api';
 import { groupJobsIntoSummaries } from '@/lib/job-groups';
 import type { GroupSummary } from '@/types/groups';
 import type { EngineCaps } from '@/types/engines';
@@ -41,6 +41,10 @@ const DEFAULT_JOBS_COPY = {
   empty: 'No renders yet. Start a generation to populate your history.',
   loadMore: 'Load more',
   loading: 'Loading…',
+  actions: {
+    addToLibrary: 'Add to Library',
+    saving: 'Saving…',
+  },
 } as const;
 
 type JobsCopy = typeof DEFAULT_JOBS_COPY;
@@ -60,6 +64,10 @@ export default function JobsPage() {
       teams: {
         ...DEFAULT_JOBS_COPY.teams,
         ...(rawCopy.teams ?? {}),
+      },
+      actions: {
+        ...DEFAULT_JOBS_COPY.actions,
+        ...(rawCopy.actions ?? {}),
       },
     };
   }, [rawCopy]);
@@ -126,6 +134,7 @@ export default function JobsPage() {
     video: true,
     image: true,
   });
+  const [savingImageGroupIds, setSavingImageGroupIds] = useState<Set<string>>(new Set());
 
   const toggleSection = useCallback((section: 'video' | 'image') => {
     setCollapsedSections((prev) => ({ ...prev, [section]: !prev[section] }));
@@ -196,17 +205,55 @@ export default function JobsPage() {
     [summaryMap]
   );
 
+  const handleSaveImageGroup = useCallback(
+    async (group: GroupSummary) => {
+      const job = group.hero.job;
+      const renderIds = job?.renderIds?.filter((url): url is string => typeof url === 'string' && url.length) ?? [];
+      const previewThumb = group.previews.find((preview) => preview.thumbUrl)?.thumbUrl;
+      const imageUrl = renderIds[0] ?? previewThumb ?? job?.thumbUrl ?? group.hero.thumbUrl ?? null;
+      if (!imageUrl) {
+        console.warn('No image available to save for group', group.id);
+        return;
+      }
+      setSavingImageGroupIds((prev) => {
+        const next = new Set(prev);
+        next.add(group.id);
+        return next;
+      });
+      try {
+        await saveImageToLibrary({
+          url: imageUrl,
+          jobId: job?.jobId ?? group.id,
+          label: job?.prompt ?? undefined,
+        });
+      } catch (error) {
+        console.error('Failed to save image to library', error);
+      } finally {
+        setSavingImageGroupIds((prev) => {
+          const next = new Set(prev);
+          next.delete(group.id);
+          return next;
+        });
+      }
+    },
+    []
+  );
+
   const handleGroupAction = useCallback(
     (group: GroupSummary, action: GroupedJobAction) => {
       if (action === 'remove') {
         void handleRemoveVideoGroup(group);
         return;
       }
+      if (action === 'save-image') {
+        void handleSaveImageGroup(group);
+        return;
+      }
       if (action === 'open' || action === 'continue' || action === 'refine' || action === 'branch' || action === 'compare') {
         setActiveGroupId(group.id);
       }
     },
-    [handleRemoveVideoGroup]
+    [handleRemoveVideoGroup, handleSaveImageGroup]
   );
 
   const handleGroupOpen = useCallback((group: GroupSummary) => {
@@ -244,6 +291,7 @@ export default function JobsPage() {
           {groups.map((group) => {
             const engineId = group.hero.engineId;
             const engine = engineId ? engineLookup.byId.get(engineId) ?? null : null;
+            const isImageGroup = IMAGE_ENGINE_IDS.has(engineId ?? '');
             return (
               <GroupedJobCard
                 key={group.id}
@@ -252,6 +300,10 @@ export default function JobsPage() {
                 onOpen={handleGroupOpen}
                 onAction={handleGroupAction}
                 allowRemove={allowRemove(group)}
+                isImageGroup={isImageGroup || prefix === 'image'}
+                savingToLibrary={savingImageGroupIds.has(group.id)}
+                imageLibraryLabel={copy.actions.addToLibrary}
+                imageLibrarySavingLabel={copy.actions.saving}
               />
             );
           })}
@@ -259,7 +311,18 @@ export default function JobsPage() {
         </div>
       );
     },
-    [allowRemove, engineLookup.byId, handleGroupAction, handleGroupOpen, hasMore, isInitialLoading, isValidating]
+    [
+      allowRemove,
+      copy.actions.addToLibrary,
+      copy.actions.saving,
+      engineLookup.byId,
+      handleGroupAction,
+      handleGroupOpen,
+      hasMore,
+      isInitialLoading,
+      isValidating,
+      savingImageGroupIds,
+    ]
   );
 
   if (authLoading) {

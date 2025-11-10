@@ -213,7 +213,7 @@
           },
           "media": {
             "videoSrc": "/assets/gallery/robot-eyes.mp4",
-            "posterSrc": "/hero/luma-ray2-flash.jpg",
+            "posterSrc": "/hero/veo3.jpg",
             "hasAudio": true
           }
         },
@@ -1139,6 +1139,10 @@
         "fieldFallback": "Imagen de referencia",
         "empty": "Aún no hay imágenes guardadas. Sube una referencia para verla aquí."
       },
+      "assetSlots": {
+        "imageCtaLabel": "Generar imágenes de referencia",
+        "imageCtaHref": "/app/image"
+      },
       "controls": {
         "core": {
           "title": "Ajustes principales",
@@ -1217,10 +1221,28 @@
           "plural": "{count} variantes"
         },
         "controls": {
-          "play": { "on": "Pausa", "off": "Reproducir", "ariaOn": "Pausar todas las previsualizaciones", "ariaOff": "Reproducir todas las previsualizaciones" },
-          "mute": { "on": "Activar sonido", "off": "Silenciar", "ariaOn": "Activar el sonido en todas las previsualizaciones", "ariaOff": "Silenciar todas las previsualizaciones" },
-          "loop": { "on": "Bucle activado", "off": "Bucle desactivado", "ariaOn": "Desactivar el bucle", "ariaOff": "Activar el bucle" },
-          "modal": { "label": "Abrir en modal", "aria": "Abrir la vista previa en una ventana" },
+          "play": {
+            "on": "Pausa",
+            "off": "Reproducir",
+            "ariaOn": "Pausar todas las previsualizaciones",
+            "ariaOff": "Reproducir todas las previsualizaciones"
+          },
+          "mute": {
+            "on": "Activar sonido",
+            "off": "Silenciar",
+            "ariaOn": "Activar el sonido en todas las previsualizaciones",
+            "ariaOff": "Silenciar todas las previsualizaciones"
+          },
+          "loop": {
+            "on": "Bucle activado",
+            "off": "Bucle desactivado",
+            "ariaOn": "Desactivar el bucle",
+            "ariaOff": "Activar el bucle"
+          },
+          "modal": {
+            "label": "Abrir en modal",
+            "aria": "Abrir la vista previa en una ventana"
+          },
           "copyPrompt": "Copiar prompt"
         },
         "placeholder": "—"
@@ -1228,14 +1250,15 @@
       "galleryRail": {
         "title": "Últimos renders",
         "viewAll": "Ver todo",
-        "curated": "Los renders de muestra del equipo MaxVideo se muestran aquí hasta que generes tus propios videos.",
-        "error": "No se pudieron cargar los últimos renders. Intenta de nuevo.",
-        "retry": "Reintentar",
-        "snackbar": {
-          "samples": "No se pueden quitar los clips de muestra.",
-          "removed": "Eliminado de la galería.",
-          "failed": "No se pudo eliminar de la galería."
-        }
+      "curated": "Los renders de muestra del equipo MaxVideo se muestran aquí hasta que generes tus propios videos.",
+      "error": "No se pudieron cargar los últimos renders. Intenta de nuevo.",
+      "retry": "Reintentar",
+      "imageCta": "Generar imágenes",
+      "snackbar": {
+        "samples": "No se pueden quitar los clips de muestra.",
+        "removed": "Eliminado de la galería.",
+        "failed": "No se pudo eliminar de la galería."
+      }
       },
       "composer": {
         "title": "Compositor",
@@ -1292,6 +1315,12 @@
     },
     "jobs": {
       "title": "Trabajos",
+      "sections": {
+        "video": "Jobs de video",
+        "image": "Jobs de imagen",
+        "videoEmpty": "Todavía no hay jobs de video.",
+        "imageEmpty": "Todavía no hay jobs de imagen."
+      },
       "teams": {
         "title": "Equipos",
         "srLive": "Activo",
@@ -1305,7 +1334,11 @@
       "retry": "Reintentar",
       "empty": "Todavía no hay renders. Inicia una generación para llenar tu historial.",
       "loadMore": "Cargar más",
-      "loading": "Cargando…"
+      "loading": "Cargando…",
+      "actions": {
+        "addToLibrary": "Agregar a la biblioteca",
+        "saving": "Guardando…"
+      }
     },
     "dashboard": {
       "quickActions": {
@@ -1442,10 +1475,22 @@
       "faq": {
         "title": "Micro-FAQ",
         "entries": [
-          { "question": "¿Necesito suscripción?", "answer": "No. Pago por uso." },
-          { "question": "¿Puedo comprar un único render pequeño?", "answer": "Sí — se descuenta de tus 10 $ iniciales por ejecución." },
-          { "question": "¿Caducan mis créditos?", "answer": "No, mientras la cuenta siga activa." },
-          { "question": "¿Cómo funcionan los descuentos?", "answer": "El estado de miembro se aplica automáticamente según tu gasto de los últimos 30 días." }
+          {
+            "question": "¿Necesito suscripción?",
+            "answer": "No. Pago por uso."
+          },
+          {
+            "question": "¿Puedo comprar un único render pequeño?",
+            "answer": "Sí — se descuenta de tus 10 $ iniciales por ejecución."
+          },
+          {
+            "question": "¿Caducan mis créditos?",
+            "answer": "No, mientras la cuenta siga activa."
+          },
+          {
+            "question": "¿Cómo funcionan los descuentos?",
+            "answer": "El estado de miembro se aplica automáticamente según tu gasto de los últimos 30 días."
+          }
         ],
         "footnote": "IVA incluido cuando aplica. Reembolsos en renders fallidos. “Funciona con” indica compatibilidad; las marcas pertenecen a sus dueños."
       },
@@ -1459,6 +1504,205 @@
         "loadEngines": "No se pudieron cargar los motores.",
         "estimator": "La calculadora falló",
         "lowBalance": "Tu saldo es bajo. Recarga para seguir creando."
+      }
+    },
+    "image": {
+      "hero": {
+        "eyebrow": "Workspace de imágenes",
+        "title": "Generar imágenes",
+        "subtitle": "Crea y edita visuales de alta fidelidad con Nano Banana y los motores de Fal."
+      },
+      "preview": {
+        "eyebrow": "Previsualización",
+        "title": "Último resultado",
+        "emptyTitle": "Aún no hay vista previa.",
+        "emptyDescription": "Ejecuta una generación para ver aquí la última imagen.",
+        "download": "Descargar",
+        "copy": "Copiar enlace",
+        "copied": "Copiado"
+      },
+      "engine": {
+        "eyebrow": "Motor",
+        "priceCalculating": "Calculando precio…",
+        "priceLabel": "{amount} / ejecución"
+      },
+      "modeTabs": {
+        "generate": "Generar",
+        "edit": "Editar"
+      },
+      "composer": {
+        "promptLabel": "Prompt",
+        "promptPlaceholder": "Describe la imagen que quieres generar…",
+        "charCount": "{count} caracteres",
+        "presetsHint": "Elige un preset · 1–8 por ejecución",
+        "numImagesLabel": "Número de imágenes",
+        "numImagesCount": "{count} {unit}",
+        "numImagesUnit": {
+          "singular": "imagen",
+          "plural": "imágenes"
+        },
+        "estimatedCost": "Costo estimado: {amount}",
+        "referenceLabel": "Imágenes de referencia",
+        "referenceHelper": "Opcional · hasta 4 imágenes",
+        "referenceNote": "Arrastra y suelta, pega, sube desde tu dispositivo o abre la biblioteca. Obligatorio en modo Edición.",
+        "referenceButton": "Biblioteca",
+        "referenceSlotLabel": "Ranura {index}",
+        "referenceSlotHint": "Suelta una imagen, súbela o elige una de tu biblioteca.",
+        "referenceSlotNameFallback": "Imagen",
+        "referenceSlotActions": {
+          "upload": "Subir",
+          "library": "Biblioteca",
+          "replace": "Reemplazar",
+          "remove": "Quitar"
+        }
+      },
+      "history": {
+        "eyebrow": "Run reciente",
+        "empty": "Lanza una generación para completar el historial. Cada variante aparecerá aquí.",
+        "runsLabel": {
+          "zero": "Sin runs",
+          "other": "{count} runs"
+        },
+        "noPreview": "Sin vista previa",
+        "loadMore": "Cargar más",
+        "refreshing": "Actualizando historial…"
+      },
+      "runButton": {
+        "idle": "Generar imágenes",
+        "running": "Generando…"
+      },
+      "errors": {
+        "onlyImages": "Solo se aceptan archivos de imagen.",
+        "uploadFailed": "No se pudo subir la imagen. Intenta de nuevo.",
+        "promptMissing": "El prompt es obligatorio.",
+        "referenceMissing": "Agrega al menos una imagen de referencia para el modo Edición.",
+        "generic": "La generación de imagen falló."
+      },
+      "messages": {
+        "success": "Se generaron {count} imagen(es)."
+      },
+      "general": {
+        "uploading": "Subiendo…",
+        "emptyEngines": "No hay motores de imagen disponibles."
+      },
+      "library": {
+        "button": "Biblioteca",
+        "empty": "Aún no guardaste recursos. Súbelos desde el compositor o desde esta página.",
+        "overlay": "Usar esta imagen",
+        "assetFallback": "Recurso",
+        "modal": {
+          "title": "Seleccionar desde la biblioteca",
+          "description": "Elige una imagen que ya importaste.",
+          "close": "Cerrar",
+          "error": "No se pudieron cargar los recursos. Intenta de nuevo.",
+          "empty": "Aún no guardaste recursos. Súbelos desde el compositor o desde esta página."
+        }
+      }
+    },
+    "library": {
+      "hero": {
+        "title": "Biblioteca",
+        "subtitle": "Importa, organiza y reutiliza tus recursos de referencia.",
+        "ctas": {
+          "image": "Generar imagen",
+          "video": "Generar video"
+        }
+      },
+      "assets": {
+        "title": "Recursos de la biblioteca",
+        "countLabel": "{count}",
+        "loadError": "No se pudieron cargar los recursos importados.",
+        "empty": "Aún no tienes recursos importados. Súbelos desde el compositor o arrástralos aquí.",
+        "deleteError": "No se pudo eliminar esta imagen.",
+        "deleteButton": "Eliminar",
+        "deleting": "Eliminando…",
+        "assetFallback": "Recurso"
+      }
+    },
+    "settings": {
+      "title": "Configuración",
+      "tabs": {
+        "account": "Cuenta",
+        "team": "Equipo",
+        "keys": "Claves API",
+        "privacy": "Privacidad y seguridad",
+        "notifications": "Notificaciones"
+      },
+      "account": {
+        "title": "Cuenta",
+        "fields": {
+          "name": {
+            "label": "Nombre",
+            "placeholder": "Tu nombre"
+          },
+          "email": {
+            "label": "Email",
+            "placeholder": "tu@dominio.com"
+          },
+          "locale": {
+            "label": "Idioma",
+            "options": [
+              "EN",
+              "FR",
+              "ES"
+            ]
+          },
+          "theme": {
+            "label": "Tema",
+            "options": [
+              "Sistema",
+              "Claro",
+              "Oscuro"
+            ]
+          }
+        }
+      },
+      "team": {
+        "title": "Equipo",
+        "srLive": "Disponible",
+        "srSoon": "Próximamente",
+        "liveDescription": "Gestiona miembros, roles, presupuestos e integraciones.",
+        "invite": "Invitar miembro",
+        "createProject": "Crear proyecto",
+        "upcomingPrefix": "Muy pronto — monederos compartidos, aprobaciones y presupuestos. Únete a la beta en ",
+        "upcomingEmail": "support@maxvideoai.com",
+        "upcomingSuffix": "."
+      },
+      "keys": {
+        "title": "Claves API",
+        "placeholder": "sk_live_…",
+        "copy": "Copiar",
+        "revoke": "Revocar",
+        "create": "Crear nueva clave"
+      },
+      "privacy": {
+        "title": "Privacidad y seguridad",
+        "allowIndexLabel": "Permitir indexación por defecto",
+        "allowIndexDescription": "Los nuevos videos pueden aparecer en la galería, sitemap y búsquedas. Cada render puede ajustarse de forma individual.",
+        "saving": "Guardando preferencia…",
+        "disableHint": "Desactiva esta opción si prefieres que todo quede privado. Los videos publicados mantienen su estado actual.",
+        "preferenceError": "No se pudo actualizar la preferencia"
+      },
+      "notifications": {
+        "title": "Notificaciones",
+        "comingSoon": "Próximamente — resúmenes por email y web push para gasto, colas y estado de jobs.",
+        "srSoon": "Próximamente",
+        "srLive": "Disponible",
+        "marketing": {
+          "title": "Emails de marketing",
+          "description": "Recibe novedades, lanzamientos y consejos. Puedes darte de baja cuando quieras.",
+          "lastUpdatedPrefix": "Última actualización:",
+          "confirmPending": "Necesitamos confirmación — revisa tu bandeja de entrada."
+        },
+        "toggles": {
+          "jobDone": "Job completado",
+          "jobFailed": "Job fallido",
+          "lowWallet": "Saldo bajo",
+          "weeklySummary": "Resumen semanal"
+        },
+        "errors": {
+          "generic": "No se pudo actualizar la preferencia"
+        }
       }
     }
   },

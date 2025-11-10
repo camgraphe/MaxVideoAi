@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 import clsx from 'clsx';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { EngineCaps } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
@@ -12,7 +13,7 @@ import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { ProcessingOverlay } from '@/components/groups/ProcessingOverlay';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 
-export type GroupedJobAction = 'open' | 'continue' | 'refine' | 'branch' | 'compare' | 'remove';
+export type GroupedJobAction = 'open' | 'continue' | 'refine' | 'branch' | 'compare' | 'remove' | 'save-image';
 
 function ThumbImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
   const baseClass = clsx('h-full w-full pointer-events-none', className);
@@ -98,9 +99,30 @@ export interface GroupedJobCardProps {
   onAction?: (group: GroupSummary, action: GroupedJobAction) => void;
   actionMenu?: boolean;
   allowRemove?: boolean;
+  isImageGroup?: boolean;
+  savingToLibrary?: boolean;
+  showImageCta?: boolean;
+  imageCtaHref?: string;
+  imageCtaLabel?: string;
+  imageLibraryLabel?: string;
+  imageLibrarySavingLabel?: string;
 }
 
-export function GroupedJobCard({ group, engine, onOpen, onAction, actionMenu = true, allowRemove = true }: GroupedJobCardProps) {
+export function GroupedJobCard({
+  group,
+  engine,
+  onOpen,
+  onAction,
+  actionMenu = true,
+  allowRemove = true,
+  isImageGroup = false,
+  savingToLibrary = false,
+  showImageCta = false,
+  imageCtaHref = '/app/image',
+  imageCtaLabel = 'Generate images',
+  imageLibraryLabel = 'Add to Library',
+  imageLibrarySavingLabel = 'Saving…',
+}: GroupedJobCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -254,10 +276,38 @@ export function GroupedJobCard({ group, engine, onOpen, onAction, actionMenu = t
           <span className="text-[11px] uppercase tracking-micro text-text-muted">{splitModeLabel} • {splitLabel}</span>
         </div>
         <div className="flex items-center gap-2">
+          {isImageGroup && (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                handleAction('save-image');
+              }}
+              disabled={savingToLibrary}
+              className={clsx(
+                'rounded-pill border px-2.5 py-1 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                savingToLibrary
+                  ? 'border-border bg-white/70 text-text-muted'
+                  : 'border-accent/40 bg-white text-accent hover:bg-accentSoft/20'
+              )}
+            >
+              {savingToLibrary ? imageLibrarySavingLabel : imageLibraryLabel}
+            </button>
+          )}
           {isCurated ? (
-            <span className="rounded-pill border border-hairline bg-bg px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
-              Sample
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="rounded-pill border border-hairline bg-bg px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
+                Sample
+              </span>
+              {showImageCta ? (
+                <Link
+                  href={imageCtaHref}
+                  className="rounded-pill border border-accent/40 px-2 py-0.5 text-[11px] font-semibold text-accent transition hover:bg-accentSoft/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {imageCtaLabel}
+                </Link>
+              ) : null}
+            </div>
           ) : null}
           {formattedPrice ? (
             <span className="flex-shrink-0 text-[12px] font-semibold text-text-primary">{formattedPrice}</span>
@@ -306,6 +356,19 @@ export function GroupedJobCard({ group, engine, onOpen, onAction, actionMenu = t
           >
             <span>Compare</span>
           </button>
+          {isImageGroup && (
+            <button
+              type="button"
+              onClick={() => handleAction('save-image')}
+              className={clsx(
+                'mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition',
+                savingToLibrary ? 'opacity-60' : 'hover:bg-accentSoft/10'
+              )}
+              disabled={savingToLibrary}
+            >
+              <span>{savingToLibrary ? 'Saving…' : 'Add to Library'}</span>
+            </button>
+          )}
           {allowRemove && group.count <= 1 && (
             <button
               type="button"

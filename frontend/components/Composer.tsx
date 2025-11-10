@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import clsx from 'clsx';
+import Link from 'next/link';
 import { useMemo, useCallback, useRef, useEffect, useState } from 'react';
 import type { Ref, ChangeEvent, DragEvent } from 'react';
 import type { EngineCaps, EngineInputField, PreflightResponse } from '@/types/engines';
@@ -76,6 +77,10 @@ const DEFAULT_COMPOSER_COPY = {
     placeholder: 'Elements to avoid…',
     requiredHint: 'Required',
   },
+  assetSlots: {
+    imageCtaLabel: 'Generate reference images',
+    imageCtaHref: '/app/image',
+  },
   shortcuts: {
     generate: 'Cmd+Enter • Generate',
     price: 'G • Price-before',
@@ -118,7 +123,44 @@ export function Composer({
   onOpenLibrary,
 }: Props) {
   const { t } = useI18n();
-  const copy = t('workspace.generate.composer', DEFAULT_COMPOSER_COPY) as ComposerCopy;
+  const composerCopy = useMemo<ComposerCopy>(() => {
+    const localized = t('workspace.generate.composer', DEFAULT_COMPOSER_COPY) as Partial<ComposerCopy> | undefined;
+    if (!localized) {
+      return DEFAULT_COMPOSER_COPY;
+    }
+    return {
+      ...DEFAULT_COMPOSER_COPY,
+      ...localized,
+      badges: {
+        ...DEFAULT_COMPOSER_COPY.badges,
+        ...(localized.badges ?? {}),
+      },
+      prompt: {
+        ...DEFAULT_COMPOSER_COPY.prompt,
+        ...(localized.prompt ?? {}),
+      },
+      negativePrompt: {
+        ...DEFAULT_COMPOSER_COPY.negativePrompt,
+        ...(localized.negativePrompt ?? {}),
+      },
+      shortcuts: {
+        ...DEFAULT_COMPOSER_COPY.shortcuts,
+        ...(localized.shortcuts ?? {}),
+      },
+      labels: {
+        ...DEFAULT_COMPOSER_COPY.labels,
+        ...(localized.labels ?? {}),
+      },
+      button: {
+        ...DEFAULT_COMPOSER_COPY.button,
+        ...(localized.button ?? {}),
+      },
+      assetSlots: {
+        ...DEFAULT_COMPOSER_COPY.assetSlots,
+        ...(localized.assetSlots ?? {}),
+      },
+    };
+  }, [t]);
   const [isButtonAnimating, setIsButtonAnimating] = useState(false);
   const [isPulseVisible, setIsPulseVisible] = useState(false);
   const animationTimeoutRef = useRef<number | null>(null);
@@ -180,27 +222,27 @@ export function Composer({
     <Card className="space-y-5 p-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">{copy.title}</h2>
-          <p className="text-sm text-text-secondary">{copy.subtitle}</p>
+          <h2 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">{composerCopy.title}</h2>
+          <p className="text-sm text-text-secondary">{composerCopy.subtitle}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
           <Chip className="px-2.5 py-1" variant="outline">
-            {copy.badges.payg}
+            {composerCopy.badges.payg}
           </Chip>
           <Chip className="px-2.5 py-1" variant="outline">
-            {copy.badges.priceBefore}
+            {composerCopy.badges.priceBefore}
           </Chip>
           <Chip className="px-2.5 py-1" variant="outline">
-            {copy.badges.alwaysCurrent}
+            {composerCopy.badges.alwaysCurrent}
           </Chip>
           {formattedPrice && (
             <Chip variant="accent" className="px-3 py-1.5">
-              {copy.priceLabel.replace('{amount}', formattedPrice)}
+              {composerCopy.priceLabel.replace('{amount}', formattedPrice)}
             </Chip>
           )}
           {memberDiscount && memberDiscount.amountCents > 0 && (
             <Chip className="px-3 py-1.5 text-accent" variant="outline">
-              {copy.memberLabel.replace(
+              {composerCopy.memberLabel.replace(
                 '{percent}',
                 String(Math.round((memberDiscount.percentApplied ?? 0) * 100))
               )}
@@ -219,14 +261,14 @@ export function Composer({
               )}
             </div>
             <span className={clsx('rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-micro', promptRequired ? 'border-accent text-accent' : 'border-border text-text-muted')}>
-              {promptRequired ? copy.labels.required : copy.labels.optional}
+              {promptRequired ? composerCopy.labels.required : composerCopy.labels.optional}
             </span>
           </div>
           <div className="relative">
             <textarea
               value={prompt}
               onChange={(event) => onPromptChange(event.currentTarget.value)}
-              placeholder={copy.prompt.placeholder}
+              placeholder={composerCopy.prompt.placeholder}
               rows={6}
               className="w-full rounded-input border border-border bg-white px-4 py-3 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               ref={textareaRef}
@@ -239,14 +281,14 @@ export function Composer({
             <div className="flex items-center justify-between gap-2">
               <span className="text-[12px] uppercase tracking-micro text-text-muted">{negativePromptLabel}</span>
               {negativePromptRequired && (
-                <span className="text-[11px] text-text-muted/80">{copy.negativePrompt.requiredHint}</span>
+                <span className="text-[11px] text-text-muted/80">{composerCopy.negativePrompt.requiredHint}</span>
               )}
             </div>
             <input
               type="text"
               value={negativePrompt ?? ''}
               onChange={(event) => onNegativePromptChange?.(event.currentTarget.value)}
-              placeholder={negativePromptDescription ?? copy.negativePrompt.placeholder}
+              placeholder={negativePromptDescription ?? composerCopy.negativePrompt.placeholder}
               className="w-full rounded-input border border-border bg-white px-4 py-2 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
             {negativePromptDescription && (
@@ -256,30 +298,35 @@ export function Composer({
         )}
 
         {assetFields.length > 0 && (
-          <div className="flex flex-wrap gap-3 text-sm">
-            {assetFields.map(({ field, required }) => (
-              <AssetDropzone
-                key={field.id}
-                engine={engine}
-                caps={caps}
-                field={field}
-                required={required}
-                assets={assets[field.id] ?? []}
-                onSelect={onAssetAdd}
-                onRemove={onAssetRemove}
-                onError={onNotice}
-                onOpenLibrary={onOpenLibrary}
-              />
-            ))}
-          </div>
+      <div className="flex flex-wrap gap-3 text-sm">
+        {assetFields.map(({ field, required }) => (
+          <AssetDropzone
+            key={field.id}
+            engine={engine}
+            caps={caps}
+            field={field}
+            required={required}
+            assets={assets[field.id] ?? []}
+            onSelect={onAssetAdd}
+            onRemove={onAssetRemove}
+            onError={onNotice}
+            onOpenLibrary={onOpenLibrary}
+            assetSlotCta={
+              field.type === 'image'
+                ? { href: composerCopy.assetSlots.imageCtaHref, label: composerCopy.assetSlots.imageCtaLabel }
+                : undefined
+            }
+          />
+        ))}
+      </div>
         )}
       </div>
 
       <footer className="flex flex-col gap-3 text-sm text-text-secondary sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap gap-3 text-xs text-text-muted">
-          <span>{copy.shortcuts.generate}</span>
-          <span>{copy.shortcuts.price}</span>
-          <span>{copy.shortcuts.seed}</span>
+          <span>{composerCopy.shortcuts.generate}</span>
+          <span>{composerCopy.shortcuts.price}</span>
+          <span>{composerCopy.shortcuts.seed}</span>
         </div>
         <div className="flex flex-1 flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-end">
           {error && (
@@ -288,7 +335,7 @@ export function Composer({
             </div>
           )}
           <span className="inline-flex items-center rounded-full bg-black/5 px-2.5 py-1 text-[12px] font-semibold uppercase tracking-micro text-text-secondary">
-            {copy.iterationsLabel.replace('{count}', String(Math.max(1, iterations)))}
+            {composerCopy.iterationsLabel.replace('{count}', String(Math.max(1, iterations)))}
           </span>
           <button
             type="button"
@@ -303,7 +350,7 @@ export function Composer({
             )}
             onClick={handleGenerateClick}
           >
-            <span className="relative z-10">{isLoading ? copy.button.loading : copy.button.idle}</span>
+            <span className="relative z-10">{isLoading ? composerCopy.button.loading : composerCopy.button.idle}</span>
             <span
               aria-hidden
               className={clsx(
@@ -335,9 +382,21 @@ interface AssetDropzoneProps {
   onRemove?: (field: EngineInputField, index: number) => void;
   onError?: (message: string) => void;
   onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;
+  assetSlotCta?: { href: string; label: string };
 }
 
-function AssetDropzone({ engine, caps, field, required, assets, onSelect, onRemove, onError, onOpenLibrary }: AssetDropzoneProps) {
+function AssetDropzone({
+  engine,
+  caps,
+  field,
+  required,
+  assets,
+  onSelect,
+  onRemove,
+  onError,
+  onOpenLibrary,
+  assetSlotCta,
+}: AssetDropzoneProps) {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const maxCount = field.maxCount ?? 0;
   const minCount = field.minCount ?? (required ? 1 : 0);
@@ -442,7 +501,7 @@ function AssetDropzone({ engine, caps, field, required, assets, onSelect, onRemo
     if (field.minCount && field.minCount > 1) {
       lines.push(`At least ${field.minCount} files`);
     }
-    return lines.join(' • ');
+    return lines;
   }, [acceptFormats, caps?.maxUploadMB, constraints.maxImageSizeMB, constraints.maxVideoSizeMB, field.maxCount, field.minCount, field.type, limits.imageMaxMB, limits.videoMaxDurationSec, limits.videoMaxMB]);
 
   return (
@@ -458,7 +517,12 @@ function AssetDropzone({ engine, caps, field, required, assets, onSelect, onRemo
           </span>
         </div>
 
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div
+          className={clsx(
+            'grid gap-2',
+            slotAssets.length <= 1 ? 'sm:grid-cols-1' : 'sm:grid-cols-2'
+          )}
+        >
           {slotAssets.map((asset, index) => {
             const slotRequired = index < minCount;
             const allowClick = asset === null || maxCount === 0;
@@ -490,12 +554,12 @@ function AssetDropzone({ engine, caps, field, required, assets, onSelect, onRemo
                   className="sr-only"
                   onChange={(event) => onInputChange(event, index)}
                 />
-                    {asset ? (
+                {asset ? (
+                  <>
+                    {asset.kind === 'image' ? (
+                      <img src={asset.previewUrl} alt={asset.name} className="absolute inset-0 h-full w-full object-cover" />
+                    ) : (
                       <>
-                        {asset.kind === 'image' ? (
-                          <img src={asset.previewUrl} alt={asset.name} className="absolute inset-0 h-full w-full object-cover" />
-                        ) : (
-                          <>
                             <video src={asset.previewUrl} controls className="absolute inset-0 h-full w-full bg-black object-cover" />
                             <AudioEqualizerBadge tone="light" size="sm" label="Video includes audio" />
                           </>
@@ -537,14 +601,43 @@ function AssetDropzone({ engine, caps, field, required, assets, onSelect, onRemo
                     )}
                   </>
                 ) : (
-                  <div className="flex h-full flex-col items-center justify-center gap-2 px-4">
-                    <span className="text-[12px] font-medium text-text-secondary">{slotRequired ? 'Required' : 'Optional'} slot</span>
-                    <span>Drag & drop or click to add.</span>
-                    {helperLines && <span className="text-[11px] text-text-muted">{helperLines}</span>}
-                    {slotRequired && <span className="text-[11px] text-[#F97316]">Needed before generating.</span>}
+                  <div className="flex h-full flex-col items-center justify-center gap-1.5 px-3 text-center">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
+                      {slotRequired ? 'Required' : 'Optional'} slot
+                    </span>
+                    <span className="text-[11px] text-text-muted">
+                      Drag & drop or click to add.{' '}
+                      {helperLines.length > 0 ? helperLines.join(' • ') : null}
+                    </span>
+                    {slotRequired && <span className="text-[10px] text-[#F97316]">Needed before generating.</span>}
+                    {field.type === 'image' && (
+                      <div className="flex w-full items-center justify-center gap-2 pt-1">
+                        {assetSlotCta ? (
+                          <Link
+                            href={assetSlotCta.href}
+                            className="flex-1 rounded-full border border-accent/40 px-2 py-1 text-[10px] font-semibold text-accent transition hover:bg-accentSoft/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            onClick={(event) => event.stopPropagation()}
+                          >
+                            {assetSlotCta.label}
+                          </Link>
+                        ) : null}
+                        {onOpenLibrary ? (
+                          <button
+                            type="button"
+                            className="flex-1 rounded-full border border-border px-2 py-1 text-[10px] font-semibold text-text-secondary transition hover:border-accentSoft/40 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              onOpenLibrary(field, index);
+                            }}
+                          >
+                            Library
+                          </button>
+                        ) : null}
+                      </div>
+                    )}
                   </div>
                 )}
-                {onOpenLibrary && field.type === 'image' && (
+                {asset && onOpenLibrary && field.type === 'image' && (
                   <button
                     type="button"
                     className="absolute bottom-2 right-2 rounded-full bg-white/90 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-text-secondary shadow transition hover:bg-white hover:text-text-primary"

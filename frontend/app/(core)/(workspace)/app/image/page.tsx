@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ImageGeneratePage() {
+export default async function ImageGeneratePage() {
   const imageEntries = listFalEngines().filter((engine) => (engine.category ?? 'video') === 'image');
   if (!imageEntries.length) {
     notFound();

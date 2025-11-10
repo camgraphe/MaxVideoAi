@@ -11,7 +11,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 export const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', badge: null, icon: 'dashboard', href: '/dashboard' },
   { id: 'generate', label: 'Generate Video', badge: 'LIVE', badgeKey: 'live', icon: 'generate', href: '/app' },
-  { id: 'generate-image', label: 'Generate Image', badge: 'NEW', badgeKey: 'new', icon: 'generate', href: '/app/image' },
+  { id: 'generate-image', label: 'Generate Image', badge: 'NEW', badgeKey: 'new', icon: 'generate-image', href: '/app/image' },
   { id: 'library', label: 'Library', badge: null, icon: 'library', href: '/app/library' },
   { id: 'jobs', label: 'Jobs', badge: null, icon: 'jobs', href: '/jobs' },
   { id: 'billing', label: 'Billing', badge: null, icon: 'billing', href: '/billing' },
@@ -154,7 +154,7 @@ export function AppSidebar() {
           <span
             className={clsx(
               'flex items-center justify-center rounded-[12px] border transition-colors duration-150',
-              collapsedNav ? 'h-9 w-9' : 'h-11 w-11',
+              collapsedNav ? 'h-10 w-10' : 'h-12 w-12',
               active
                 ? 'border-accentSoft/40 bg-accentSoft/25 text-accent'
                 : 'border-transparent bg-white/80 text-text-muted group-hover:bg-accentSoft/15 group-hover:text-text-primary'
@@ -164,8 +164,8 @@ export function AppSidebar() {
             <Image
               src={`/assets/icons/${item.icon}.svg`}
               alt=""
-              width={collapsedNav ? 18 : 20}
-              height={collapsedNav ? 18 : 20}
+              width={collapsedNav ? 22 : 24}
+              height={collapsedNav ? 22 : 24}
               aria-hidden
             />
           </span>

@@ -213,7 +213,7 @@
           },
           "media": {
             "videoSrc": "/assets/gallery/robot-eyes.mp4",
-            "posterSrc": "/hero/luma-ray2-flash.jpg",
+            "posterSrc": "/hero/veo3.jpg",
             "hasAudio": true
           }
         },
@@ -1135,6 +1135,10 @@
         "fieldFallback": "Reference image",
         "empty": "No saved images yet. Upload a reference image to see it here."
       },
+      "assetSlots": {
+        "imageCtaLabel": "Generate reference images",
+        "imageCtaHref": "/app/image"
+      },
       "controls": {
         "core": {
           "title": "Core settings",
@@ -1213,25 +1217,44 @@
           "plural": "{count} variants"
         },
         "controls": {
-          "play": { "on": "Pause", "off": "Play", "ariaOn": "Pause all previews", "ariaOff": "Play all previews" },
-          "mute": { "on": "Unmute", "off": "Mute", "ariaOn": "Unmute all previews", "ariaOff": "Mute all previews" },
-          "loop": { "on": "Loop on", "off": "Loop off", "ariaOn": "Disable looping", "ariaOff": "Enable looping" },
-          "modal": { "label": "Open modal", "aria": "Open preview in modal" },
+          "play": {
+            "on": "Pause",
+            "off": "Play",
+            "ariaOn": "Pause all previews",
+            "ariaOff": "Play all previews"
+          },
+          "mute": {
+            "on": "Unmute",
+            "off": "Mute",
+            "ariaOn": "Unmute all previews",
+            "ariaOff": "Mute all previews"
+          },
+          "loop": {
+            "on": "Loop on",
+            "off": "Loop off",
+            "ariaOn": "Disable looping",
+            "ariaOff": "Enable looping"
+          },
+          "modal": {
+            "label": "Open modal",
+            "aria": "Open preview in modal"
+          },
           "copyPrompt": "Copy prompt"
         },
         "placeholder": "—"
       },
       "galleryRail": {
-        "title": "Latest renders",
-        "viewAll": "View all",
-        "curated": "Starter samples curated by the MaxVideo team are shown until you generate your own videos.",
-        "error": "Failed to load latest renders. Please retry.",
-        "retry": "Retry",
-        "snackbar": {
-          "samples": "Sample clips cannot be removed.",
-          "removed": "Removed from gallery.",
-          "failed": "Unable to remove from gallery."
-        }
+      "title": "Latest renders",
+      "viewAll": "View all",
+      "curated": "Starter samples curated by the MaxVideo team are shown until you generate your own videos.",
+      "error": "Failed to load latest renders. Please retry.",
+      "retry": "Retry",
+      "imageCta": "Generate images",
+      "snackbar": {
+        "samples": "Sample clips cannot be removed.",
+        "removed": "Removed from gallery.",
+        "failed": "Unable to remove from gallery."
+      }
       },
       "composer": {
         "title": "Composer",
@@ -1286,8 +1309,107 @@
         }
       }
     },
+    "image": {
+      "hero": {
+        "eyebrow": "Image workspace",
+        "title": "Generate Images",
+        "subtitle": "Create and edit high-fidelity images with Nano Banana and other Fal image engines."
+      },
+      "preview": {
+        "eyebrow": "Generate preview",
+        "title": "Latest output",
+        "emptyTitle": "No preview yet.",
+        "emptyDescription": "Run a generation to see the latest image here.",
+        "download": "Download",
+        "copy": "Copy link",
+        "copied": "Copied"
+      },
+      "engine": {
+        "eyebrow": "Engine",
+        "priceCalculating": "Calculating price…",
+        "priceLabel": "{amount} / run"
+      },
+      "modeTabs": {
+        "generate": "Generate",
+        "edit": "Edit"
+      },
+      "composer": {
+        "promptLabel": "Prompt",
+        "promptPlaceholder": "Describe the image you’d like to generate...",
+        "charCount": "{count} chars",
+        "presetsHint": "Tap a preset · 1–8 per run",
+        "numImagesLabel": "Number of images",
+        "numImagesCount": "{count} {unit}",
+        "numImagesUnit": {
+          "singular": "image",
+          "plural": "images"
+        },
+        "estimatedCost": "Estimated cost: {amount}",
+        "referenceLabel": "Reference images",
+        "referenceHelper": "Optional · up to 4 images",
+        "referenceNote": "Drag & drop, paste, upload from your device, or pull from your Library. These references are required for Edit mode.",
+        "referenceButton": "Library",
+        "referenceSlotLabel": "Slot {index}",
+        "referenceSlotHint": "Drop image, click to upload, paste, or choose from your library.",
+        "referenceSlotNameFallback": "Image",
+        "referenceSlotActions": {
+          "upload": "Upload",
+          "library": "Library",
+          "replace": "Replace",
+          "remove": "Remove"
+        }
+      },
+      "history": {
+        "eyebrow": "Recent run",
+        "empty": "Launch a generation to populate your history. Each image variant appears below.",
+        "runsLabel": {
+          "zero": "No runs yet",
+          "other": "{count} runs"
+        },
+        "noPreview": "No preview",
+        "loadMore": "Load more",
+        "refreshing": "Refreshing history…"
+      },
+      "runButton": {
+        "idle": "Generate images",
+        "running": "Generating…"
+      },
+      "errors": {
+        "onlyImages": "Only image files are supported.",
+        "uploadFailed": "Unable to upload the selected image. Try again.",
+        "promptMissing": "Prompt is required.",
+        "referenceMissing": "Provide at least one source image for edit mode.",
+        "generic": "Image generation failed."
+      },
+      "messages": {
+        "success": "Generated {count} image{suffix}."
+      },
+      "general": {
+        "uploading": "Uploading…",
+        "emptyEngines": "No image engines available."
+      },
+      "library": {
+        "button": "Library",
+        "empty": "No assets saved yet. Upload images from the composer or the Library page.",
+        "overlay": "Use this image",
+        "assetFallback": "Asset",
+        "modal": {
+          "title": "Select from library",
+          "description": "Choose an image you previously imported.",
+          "close": "Close",
+          "error": "Unable to load assets. Please retry.",
+          "empty": "No assets saved yet. Upload images from the composer or the Library page."
+        }
+      }
+    },
     "jobs": {
       "title": "Jobs",
+      "sections": {
+        "video": "Video jobs",
+        "image": "Image jobs",
+        "videoEmpty": "No video jobs yet.",
+        "imageEmpty": "No image jobs yet."
+      },
       "teams": {
         "title": "Teams",
         "srLive": "Live",
@@ -1301,7 +1423,11 @@
       "retry": "Retry",
       "empty": "No renders yet. Start a generation to populate your history.",
       "loadMore": "Load more",
-      "loading": "Loading…"
+      "loading": "Loading…",
+      "actions": {
+        "addToLibrary": "Add to Library",
+        "saving": "Saving…"
+      }
     },
     "dashboard": {
       "quickActions": {
@@ -1438,10 +1564,22 @@
       "faq": {
         "title": "Micro-FAQ",
         "entries": [
-          { "question": "Do I need a subscription?", "answer": "No. Pay as you go." },
-          { "question": "Can I buy just one small render?", "answer": "Yes — funds are debited per run from your $10 Starter balance." },
-          { "question": "Will my credits expire?", "answer": "Credits don’t expire while your account remains active." },
-          { "question": "How do discounts work?", "answer": "Member status applies automatically based on your last 30 days of spend." }
+          {
+            "question": "Do I need a subscription?",
+            "answer": "No. Pay as you go."
+          },
+          {
+            "question": "Can I buy just one small render?",
+            "answer": "Yes — funds are debited per run from your $10 Starter balance."
+          },
+          {
+            "question": "Will my credits expire?",
+            "answer": "Credits don’t expire while your account remains active."
+          },
+          {
+            "question": "How do discounts work?",
+            "answer": "Member status applies automatically based on your last 30 days of spend."
+          }
         ],
         "footnote": "VAT included where applicable. Refunds on failed renders. “Works with” indicates compatibility; trademarks belong to their respective owners."
       },
@@ -1455,6 +1593,112 @@
         "loadEngines": "Failed to load engines.",
         "estimator": "Estimator failed",
         "lowBalance": "Your balance is low. Top up to keep creating."
+      }
+    },
+    "library": {
+      "hero": {
+        "title": "Library",
+        "subtitle": "Import, organize, and reuse reference assets.",
+        "ctas": {
+          "image": "Generate image",
+          "video": "Generate video"
+        }
+      },
+      "assets": {
+        "title": "Library assets",
+        "countLabel": "{count}",
+        "loadError": "Unable to load imported assets.",
+        "empty": "No imported assets yet. Upload references from the composer or drop files here.",
+        "deleteError": "Unable to delete this image.",
+        "deleteButton": "Delete",
+        "deleting": "Deleting…",
+        "assetFallback": "Asset"
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "tabs": {
+        "account": "Account",
+        "team": "Team",
+        "keys": "API Keys",
+        "privacy": "Privacy & Safety",
+        "notifications": "Notifications"
+      },
+      "account": {
+        "title": "Account",
+        "fields": {
+          "name": {
+            "label": "Name",
+            "placeholder": "Your name"
+          },
+          "email": {
+            "label": "Email",
+            "placeholder": "you@domain.com"
+          },
+          "locale": {
+            "label": "Locale",
+            "options": [
+              "EN",
+              "FR",
+              "ES"
+            ]
+          },
+          "theme": {
+            "label": "Theme",
+            "options": [
+              "System",
+              "Light",
+              "Dark"
+            ]
+          }
+        }
+      },
+      "team": {
+        "title": "Team",
+        "srLive": "Live",
+        "srSoon": "Coming soon",
+        "liveDescription": "Manage members, roles, budgets and integrations.",
+        "invite": "Invite member",
+        "createProject": "Create project",
+        "upcomingPrefix": "Coming soon — shared wallets, approvals, and budgets. Join the beta at ",
+        "upcomingEmail": "support@maxvideoai.com",
+        "upcomingSuffix": "."
+      },
+      "keys": {
+        "title": "API Keys",
+        "placeholder": "sk_live_…",
+        "copy": "Copy",
+        "revoke": "Revoke",
+        "create": "Create new key"
+      },
+      "privacy": {
+        "title": "Privacy & Safety",
+        "allowIndexLabel": "Allow indexing by default",
+        "allowIndexDescription": "New videos can appear in the gallery, sitemap, and search previews. You can still uncheck individual renders from their detail view.",
+        "saving": "Saving preference…",
+        "disableHint": "Disable this toggle if you prefer every render to stay private by default. Published videos will keep their current visibility until you change them individually.",
+        "preferenceError": "Failed to update preference"
+      },
+      "notifications": {
+        "title": "Notifications",
+        "comingSoon": "Coming soon — email digests and web push alerts for spend, queue health, and job status.",
+        "srSoon": "Coming soon",
+        "srLive": "Live",
+        "marketing": {
+          "title": "Marketing emails",
+          "description": "Receive occasional updates, launch announcements, and workflow tips. You can unsubscribe anytime.",
+          "lastUpdatedPrefix": "Last updated:",
+          "confirmPending": "Confirmation required — check your inbox to finish subscribing."
+        },
+        "toggles": {
+          "jobDone": "Job done",
+          "jobFailed": "Job failed",
+          "lowWallet": "Low wallet",
+          "weeklySummary": "Weekly summary"
+        },
+        "errors": {
+          "generic": "Failed to update preference"
+        }
       }
     }
   },

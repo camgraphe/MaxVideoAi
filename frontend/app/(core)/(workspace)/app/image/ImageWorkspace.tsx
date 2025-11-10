@@ -5,6 +5,7 @@
 import clsx from 'clsx';
 import useSWR from 'swr';
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import deepmerge from 'deepmerge';
 import type {
   FormEvent,
   DragEvent as ReactDragEvent,
@@ -21,10 +22,202 @@ import type { VideoGroup } from '@/types/video-groups';
 import type { MediaLightboxEntry } from '@/components/MediaLightbox';
 import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 import { buildVideoGroupFromImageRun } from '@/lib/image-groups';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
-const EMPTY_STATE_COPY = {
-  history: 'Launch a generation to populate your history. Each image variant appears below.',
+interface ImageWorkspaceCopy {
+  hero: {
+    eyebrow: string;
+    title: string;
+    subtitle: string;
+  };
+  preview: {
+    eyebrow: string;
+    title: string;
+    emptyTitle: string;
+    emptyDescription: string;
+    download: string;
+    copy: string;
+    copied: string;
+  };
+  engine: {
+    eyebrow: string;
+    priceCalculating: string;
+    priceLabel: string;
+  };
+  modeTabs: {
+    generate: string;
+    edit: string;
+  };
+  composer: {
+    promptLabel: string;
+    promptPlaceholder: string;
+    charCount: string;
+    presetsHint: string;
+    numImagesLabel: string;
+    numImagesCount: string;
+    numImagesUnit: {
+      singular: string;
+      plural: string;
+    };
+    estimatedCost: string;
+    referenceLabel: string;
+    referenceHelper: string;
+    referenceNote: string;
+    referenceButton: string;
+    referenceSlotLabel: string;
+    referenceSlotHint: string;
+    referenceSlotNameFallback: string;
+    referenceSlotActions: {
+      upload: string;
+      library: string;
+      replace: string;
+      remove: string;
+    };
+  };
+  history: {
+    eyebrow: string;
+    empty: string;
+    runsLabel: {
+      zero: string;
+      other: string;
+    };
+    noPreview: string;
+    loadMore: string;
+    refreshing: string;
+  };
+  runButton: {
+    idle: string;
+    running: string;
+  };
+  errors: {
+    onlyImages: string;
+    uploadFailed: string;
+    promptMissing: string;
+    referenceMissing: string;
+    generic: string;
+  };
+  messages: {
+    success: string;
+  };
+  general: {
+    uploading: string;
+    emptyEngines: string;
+  };
+  library: {
+    button: string;
+    empty: string;
+    overlay: string;
+    assetFallback: string;
+    modal: {
+      title: string;
+      description: string;
+      close: string;
+      error: string;
+      empty: string;
+    };
+  };
+}
+
+const DEFAULT_COPY: ImageWorkspaceCopy = {
+  hero: {
+    eyebrow: 'Image workspace',
+    title: 'Generate Images',
+    subtitle: 'Create and edit high-fidelity images.',
+  },
+  preview: {
+    eyebrow: 'Generate preview',
+    title: 'Latest output',
+    emptyTitle: 'No preview yet.',
+    emptyDescription: 'Run a generation to see the latest image here.',
+    download: 'Download',
+    copy: 'Copy link',
+    copied: 'Copied',
+  },
+  engine: {
+    eyebrow: 'Engine',
+    priceCalculating: 'Calculating price…',
+    priceLabel: '{amount} / run',
+  },
+  modeTabs: {
+    generate: 'Generate',
+    edit: 'Edit',
+  },
+  composer: {
+    promptLabel: 'Prompt',
+    promptPlaceholder: 'Describe the image you’d like to generate...',
+    charCount: '{count} chars',
+    presetsHint: 'Tap a preset · 1–8 per run',
+    numImagesLabel: 'Number of images',
+    numImagesCount: '{count} {unit}',
+    numImagesUnit: {
+      singular: 'image',
+      plural: 'images',
+    },
+    estimatedCost: 'Estimated cost: {amount}',
+    referenceLabel: 'Reference images',
+    referenceHelper: 'Optional · up to 4 images',
+    referenceNote:
+      'Drag & drop, paste, upload from your device, or pull from your Library. These references are required for Edit mode.',
+    referenceButton: 'Library',
+    referenceSlotLabel: 'Slot {index}',
+    referenceSlotHint: 'Drop image, click to upload, paste, or choose from your library.',
+    referenceSlotNameFallback: 'Image',
+    referenceSlotActions: {
+      upload: 'Upload',
+      library: 'Library',
+      replace: 'Replace',
+      remove: 'Remove',
+    },
+  },
+  history: {
+    eyebrow: 'Recent run',
+    empty: 'Launch a generation to populate your history. Each image variant appears below.',
+    runsLabel: {
+      zero: 'No runs yet',
+      other: '{count} runs',
+    },
+    noPreview: 'No preview',
+    loadMore: 'Load more',
+    refreshing: 'Refreshing history…',
+  },
+  runButton: {
+    idle: 'Generate images',
+    running: 'Generating…',
+  },
+  errors: {
+    onlyImages: 'Only image files are supported.',
+    uploadFailed: 'Unable to upload the selected image. Try again.',
+    promptMissing: 'Prompt is required.',
+    referenceMissing: 'Provide at least one source image for edit mode.',
+    generic: 'Image generation failed.',
+  },
+  messages: {
+    success: 'Generated {count} image{suffix}.',
+  },
+  general: {
+    uploading: 'Uploading…',
+    emptyEngines: 'No image engines available.',
+  },
+  library: {
+    button: 'Library',
+    empty: 'No assets saved yet. Upload images from the composer or the Library page.',
+    overlay: 'Use this image',
+    assetFallback: 'Asset',
+    modal: {
+      title: 'Select from library',
+      description: 'Choose an image you previously imported.',
+      close: 'Close',
+      error: 'Unable to load assets. Please retry.',
+      empty: 'No assets saved yet. Upload images from the composer or the Library page.',
+    },
+  },
 };
+
+function formatTemplate(template: string, values: Record<string, string | number>): string {
+  return Object.entries(values).reduce((result, [key, value]) => {
+    return result.replaceAll(`{${key}}`, String(value));
+  }, template);
+}
 
 const MAX_REFERENCE_SLOTS = 4;
 const MIN_IMAGE_COUNT = 1;
@@ -144,6 +337,11 @@ function mapJobToHistoryEntry(job: Job): HistoryEntry | null {
 }
 
 export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
+  const { t } = useI18n();
+  const rawCopy = t('workspace.image', DEFAULT_COPY);
+  const resolvedCopy = useMemo<ImageWorkspaceCopy>(() => {
+    return deepmerge<ImageWorkspaceCopy>(DEFAULT_COPY, (rawCopy ?? {}) as Partial<ImageWorkspaceCopy>);
+  }, [rawCopy]);
   const [engineId, setEngineId] = useState(() => engines[0]?.id ?? '');
   const [mode, setMode] = useState<ImageGenerationMode>('t2i');
   const [prompt, setPrompt] = useState('');
@@ -224,6 +422,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     const estimate = selectedEngine.pricePerImage * numImages;
     return formatCurrency(estimate, selectedEngine.currency);
   }, [numImages, pricingSnapshot, selectedEngine]);
+
+  const priceBadgeLabel = useMemo(
+    () => formatTemplate(resolvedCopy.engine.priceLabel, { amount: estimatedCostLabel }),
+    [estimatedCostLabel, resolvedCopy.engine.priceLabel]
+  );
 
   const {
     data: jobPages,
@@ -342,7 +545,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const handleReferenceFile = useCallback(
     async (index: number, file: File | null) => {
       if (!file || !file.type.startsWith('image/')) {
-        setError('Only image files are supported.');
+        setError(resolvedCopy.errors.onlyImages);
         return;
       }
       const tempUrl = URL.createObjectURL(file);
@@ -409,10 +612,10 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           next[index] = null;
           return next;
         });
-        setError('Unable to upload the selected image. Try again.');
+        setError(resolvedCopy.errors.uploadFailed);
       }
     },
-    [cleanupSlotPreview]
+    [cleanupSlotPreview, resolvedCopy.errors.onlyImages, resolvedCopy.errors.uploadFailed]
   );
 
   const handleReferenceUrl = useCallback(
@@ -517,11 +720,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       event.preventDefault();
       if (!selectedEngine) return;
       if (!prompt.trim()) {
-        setError('Prompt is required.');
+        setError(resolvedCopy.errors.promptMissing);
         return;
       }
       if (mode === 'i2i' && readyReferenceUrls.length === 0) {
-        setError('Provide at least one source image for edit mode.');
+        setError(resolvedCopy.errors.referenceMissing);
         return;
       }
       setIsGenerating(true);
@@ -547,14 +750,27 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           images: response.images,
         };
         setLocalHistory((prev) => [entry, ...prev].slice(0, 24));
-        setStatusMessage(`Generated ${response.images.length} image${response.images.length === 1 ? '' : 's'}.`);
+        const suffix = response.images.length === 1 ? '' : 's';
+        setStatusMessage(
+          formatTemplate(resolvedCopy.messages.success, { count: response.images.length, suffix })
+        );
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Image generation failed.');
+        setError(err instanceof Error ? err.message : resolvedCopy.errors.generic);
       } finally {
         setIsGenerating(false);
       }
     },
-    [mode, numImages, prompt, readyReferenceUrls, selectedEngine]
+    [
+      mode,
+      numImages,
+      prompt,
+      readyReferenceUrls,
+      resolvedCopy.errors.generic,
+      resolvedCopy.errors.promptMissing,
+      resolvedCopy.errors.referenceMissing,
+      resolvedCopy.messages.success,
+      selectedEngine,
+    ]
   );
 
   const handlePreset = useCallback((preset: PromptPreset) => {
@@ -590,24 +806,41 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   if (!selectedEngine || !selectedEngineCaps) {
     return (
       <main className="flex flex-1 items-center justify-center bg-bg text-text-secondary">
-        No image engines available.
+        {resolvedCopy.general.emptyEngines}
       </main>
     );
   }
 
   const historyEntries = combinedHistory;
   const previewEntry = historyEntries[0];
+  const numImagesUnit =
+    numImages === 1 ? resolvedCopy.composer.numImagesUnit.singular : resolvedCopy.composer.numImagesUnit.plural;
+  const numImagesCountLabel = formatTemplate(resolvedCopy.composer.numImagesCount, {
+    count: numImages,
+    unit: numImagesUnit,
+  });
+  const promptCharCount = formatTemplate(resolvedCopy.composer.charCount, { count: prompt.length });
+  const estimatedCostText = formatTemplate(resolvedCopy.composer.estimatedCost, { amount: estimatedCostLabel });
+  const historyCountLabel =
+    historyEntries.length === 0
+      ? resolvedCopy.history.runsLabel.zero
+      : formatTemplate(resolvedCopy.history.runsLabel.other, { count: historyEntries.length });
 
   return (
     <>
       <div className="flex flex-1 flex-col overflow-hidden">
         <main className="flex flex-1 flex-col gap-6 p-6">
+          <section className="rounded-[32px] border border-white/30 bg-white/80 p-6 shadow-card">
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">{resolvedCopy.hero.eyebrow}</p>
+            <h1 className="mt-2 text-3xl font-semibold text-text-primary">{resolvedCopy.hero.title}</h1>
+            <p className="mt-1 text-sm text-text-secondary">{resolvedCopy.hero.subtitle}</p>
+          </section>
           <div className="grid gap-6 xl:grid-cols-[400px,1fr] xl:items-start">
             <section className="order-1 rounded-[24px] border border-white/20 bg-white/70 p-6 shadow-card xl:col-start-2 xl:row-start-1">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">Generate preview</p>
-                  <h2 className="text-2xl font-semibold text-text-primary">Latest output</h2>
+                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">{resolvedCopy.preview.eyebrow}</p>
+                  <h2 className="text-2xl font-semibold text-text-primary">{resolvedCopy.preview.title}</h2>
                 </div>
                 {previewEntry ? <span className="text-xs text-text-secondary">{formatTimestamp(previewEntry.createdAt)}</span> : null}
               </div>
@@ -629,7 +862,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                       <p className="font-semibold text-text-primary">{previewEntry.engineLabel}</p>
                       <p className="text-text-secondary">{previewEntry.prompt}</p>
                       <div className="text-[11px] uppercase tracking-[0.25em] text-text-muted">
-                        {previewEntry.mode === 't2i' ? 'Generate' : 'Edit'}
+                        {previewEntry.mode === 't2i' ? resolvedCopy.modeTabs.generate : resolvedCopy.modeTabs.edit}
                       </div>
                       <div className="flex gap-2 pt-2">
                         <button
@@ -637,22 +870,22 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                           onClick={() => handleDownload(previewEntry.images[0].url)}
                           className="rounded-full bg-text-primary/10 px-3 py-1 text-[11px] font-semibold text-text-primary"
                         >
-                          Download
+                          {resolvedCopy.preview.download}
                         </button>
                         <button
                           type="button"
                           onClick={() => handleCopy(previewEntry.images[0].url)}
                           className="rounded-full border border-text-primary/20 px-3 py-1 text-[11px] font-semibold text-text-primary"
                         >
-                          {copiedUrl === previewEntry.images[0].url ? 'Copied' : 'Copy link'}
+                          {copiedUrl === previewEntry.images[0].url ? resolvedCopy.preview.copied : resolvedCopy.preview.copy}
                         </button>
                       </div>
                     </div>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-hairline bg-white/60 px-6 py-12 text-center text-sm text-text-secondary">
-                    <p>No preview yet.</p>
-                    <p className="text-xs text-text-muted">Run a generation to see the latest image here.</p>
+                    <p>{resolvedCopy.preview.emptyTitle}</p>
+                    <p className="text-xs text-text-muted">{resolvedCopy.preview.emptyDescription}</p>
                   </div>
                 )}
               </div>
@@ -664,7 +897,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
             >
             <div className="flex flex-col gap-6">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">Engine</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">{resolvedCopy.engine.eyebrow}</p>
                 <div className="mt-2 flex flex-col gap-3">
                   <EngineSelect
                     engines={engineCapsList}
@@ -674,33 +907,31 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                     onModeChange={(nextMode) => setMode(nextMode as ImageGenerationMode)}
                     modeOptions={['t2i', 'i2i']}
                     modeLabelOverrides={{
-                      t2i: 'Stylized action still',
-                      i2i: 'Reference remix',
+                      t2i: resolvedCopy.modeTabs.generate,
+                      i2i: resolvedCopy.modeTabs.edit,
                     }}
+                    showBillingNote={false}
                   />
                   <span className="inline-flex items-center gap-2 rounded-full bg-accentSoft/15 px-3 py-1 text-xs font-semibold text-accent">
-                    {pricingValidating ? 'Calculating price…' : `${estimatedCostLabel} / run`}
+                    {pricingValidating ? resolvedCopy.engine.priceCalculating : priceBadgeLabel}
                   </span>
                   {pricingError ? (
                     <p className="text-xs text-state-warning">{pricingError.message}</p>
                   ) : null}
-                  {selectedEngine.description && (
-                    <p className="text-sm text-text-secondary">{selectedEngine.description}</p>
-                  )}
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between">
                   <label htmlFor="prompt" className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
-                    Prompt
+                    {resolvedCopy.composer.promptLabel}
                   </label>
-                  <span className="text-xs text-text-secondary">{prompt.length} chars</span>
+                  <span className="text-xs text-text-secondary">{promptCharCount}</span>
                 </div>
                 <textarea
                   id="prompt"
                   className="mt-2 min-h-[140px] w-full rounded-2xl border border-hairline bg-white/80 px-4 py-3 text-sm text-text-primary outline-none focus:border-accent"
-                  placeholder="Describe the image you’d like to generate..."
+                  placeholder={resolvedCopy.composer.promptPlaceholder}
                   value={prompt}
                   onChange={(event) => setPrompt(event.target.value)}
                 />
@@ -722,10 +953,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
 
               <div>
                 <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
-                  <span>Number of images</span>
-                  <span className="text-text-secondary">
-                    {numImages} {numImages === 1 ? 'image' : 'images'}
-                  </span>
+                  <span>{resolvedCopy.composer.numImagesLabel}</span>
+                  <span className="text-text-secondary">{numImagesCountLabel}</span>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {QUICK_IMAGE_COUNT_OPTIONS.map((option) => (
@@ -744,21 +973,21 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                     </button>
                   ))}
                 </div>
-                <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-text-muted">Tap a preset · 1–8 per run</p>
-                <p className="mt-1 text-xs text-text-secondary">Estimated cost: {estimatedCostLabel}</p>
+                <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-text-muted">{resolvedCopy.composer.presetsHint}</p>
+                <p className="mt-1 text-xs text-text-secondary">{estimatedCostText}</p>
               </div>
 
               <div>
                 <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
-                  <span>Reference images</span>
+                  <span>{resolvedCopy.composer.referenceLabel}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-text-secondary">Optional · up to 4 images</span>
+                    <span className="text-[10px] text-text-secondary">{resolvedCopy.composer.referenceHelper}</span>
                     <button
                       type="button"
                       onClick={() => setLibraryModal({ open: true, slotIndex: null })}
                       className="rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold text-text-primary transition hover:bg-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      Library
+                      {resolvedCopy.library.button}
                     </button>
                   </div>
                 </div>
@@ -799,57 +1028,59 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                             referrerPolicy="no-referrer"
                           />
                           <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-black/55 px-2 py-1 text-[10px] text-white">
-                            <span className="truncate">{slot.name ?? slot.source ?? 'Image'}</span>
+                            <span className="truncate">
+                              {slot.name ?? slot.source ?? resolvedCopy.composer.referenceSlotNameFallback}
+                            </span>
                             <div className="flex gap-1">
                               <button
                                 type="button"
                                 onClick={() => triggerFileDialog(index)}
                                 className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold"
                               >
-                                Replace
+                                {resolvedCopy.composer.referenceSlotActions.replace}
                               </button>
                               <button
                                 type="button"
                                 onClick={() => openLibraryForSlot(index)}
                                 className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold"
                               >
-                                Library
+                                {resolvedCopy.composer.referenceSlotActions.library}
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleRemoveReferenceSlot(index)}
                                 className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold"
                               >
-                                Remove
+                                {resolvedCopy.composer.referenceSlotActions.remove}
                               </button>
                             </div>
                           </div>
                           {slot.status === 'uploading' ? (
                             <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-xs font-semibold text-white">
-                              Uploading…
+                              {resolvedCopy.general.uploading}
                             </div>
                           ) : null}
                         </>
                       ) : (
                         <div className="flex h-full flex-col items-center justify-center gap-2 px-3 text-[11px] text-text-secondary">
-                          <span className="text-text-primary">Slot {index + 1}</span>
-                          <p className="text-[10px] leading-tight text-text-muted">
-                            Drop image, click to upload, paste, or choose from your library.
-                          </p>
+                          <span className="text-text-primary">
+                            {formatTemplate(resolvedCopy.composer.referenceSlotLabel, { index: index + 1 })}
+                          </span>
+                          <p className="text-[10px] leading-tight text-text-muted">{resolvedCopy.composer.referenceSlotHint}</p>
                           <div className="flex flex-wrap justify-center gap-2 text-[10px]">
                             <button
                               type="button"
                               onClick={() => triggerFileDialog(index)}
                               className="rounded-full border border-border px-3 py-1 font-semibold text-text-primary"
                             >
-                              Upload
+                              {resolvedCopy.composer.referenceSlotActions.upload}
                             </button>
                             <button
                               type="button"
                               onClick={() => openLibraryForSlot(index)}
                               className="rounded-full border border-border px-3 py-1 font-semibold text-text-primary"
                             >
-                              Library
+                              {resolvedCopy.composer.referenceSlotActions.library}
                             </button>
                           </div>
                         </div>
@@ -857,9 +1088,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                     </div>
                   ))}
                 </div>
-                <p className="mt-2 text-xs text-text-secondary">
-                  Drag & drop, paste, upload from your device, or pull from your Library. These references are required for Edit mode.
-                </p>
+                <p className="mt-2 text-xs text-text-secondary">{resolvedCopy.composer.referenceNote}</p>
               </div>
 
               {error && (
@@ -882,7 +1111,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                   isGenerating ? 'opacity-60' : 'hover:bg-text-secondary'
                 )}
               >
-                {isGenerating ? 'Generating…' : 'Generate images'}
+                {isGenerating ? resolvedCopy.runButton.running : resolvedCopy.runButton.idle}
               </button>
             </div>
             </form>
@@ -890,16 +1119,14 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
             <div className="order-3 rounded-[24px] border border-dashed border-white/20 bg-white/60 p-6 shadow-inner xl:col-start-2 xl:row-start-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">Recent run</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">{resolvedCopy.history.eyebrow}</p>
                   <h2 className="text-2xl font-semibold text-text-primary">{selectedEngine.name}</h2>
                 </div>
-                <span className="text-xs text-text-secondary">
-                  {historyEntries.length ? `${historyEntries.length} run${historyEntries.length === 1 ? '' : 's'}` : 'No runs yet'}
-                </span>
+                <span className="text-xs text-text-secondary">{historyCountLabel}</span>
               </div>
               {historyEntries.length === 0 ? (
                 <div className="mt-8 rounded-2xl border border-white/50 bg-white/70 p-8 text-center text-sm text-text-secondary">
-                  {EMPTY_STATE_COPY.history}
+                  {resolvedCopy.history.empty}
                 </div>
               ) : (
                 <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -935,14 +1162,16 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                               ))}
                             </div>
                           ) : (
-                            <div className="flex aspect-square items-center justify-center text-xs text-text-secondary">No preview</div>
+                            <div className="flex aspect-square items-center justify-center text-xs text-text-secondary">
+                              {resolvedCopy.history.noPreview}
+                            </div>
                           )}
                         </div>
                       <div className="space-y-2 border-t border-white/60 px-4 py-3 text-xs text-text-secondary">
                         <p className="font-semibold text-text-primary">{entry.engineLabel}</p>
                         <p className="line-clamp-2 text-text-secondary">{entry.prompt}</p>
                         <div className="flex items-center justify-between text-[11px] text-text-muted">
-                          <span>{entry.mode === 't2i' ? 'Generate' : 'Edit'}</span>
+                          <span>{entry.mode === 't2i' ? resolvedCopy.modeTabs.generate : resolvedCopy.modeTabs.edit}</span>
                           <span>{formatTimestamp(entry.createdAt)}</span>
                         </div>
                       </div>
@@ -966,7 +1195,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                 </div>
               )}
               {jobsValidating && historyEntries.length > 0 && (
-                <div className="mt-4 text-center text-xs text-text-secondary">Refreshing history…</div>
+                <div className="mt-4 text-center text-xs text-text-secondary">{resolvedCopy.history.refreshing}</div>
               )}
               {jobPages && jobPages[jobPages.length - 1]?.nextCursor && (
                 <div className="mt-4 flex justify-center">
@@ -975,7 +1204,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                     onClick={() => setJobsSize(jobsSize + 1)}
                     className="rounded-full border border-white/60 px-4 py-2 text-xs font-semibold text-text-primary hover:bg-white/80"
                   >
-                    Load more
+                    {resolvedCopy.history.loadMore}
                   </button>
                 </div>
               )}
@@ -996,6 +1225,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         open={libraryModal.open}
         onClose={() => setLibraryModal({ open: false, slotIndex: null })}
         onSelect={handleLibrarySelect}
+        copy={resolvedCopy.library}
       />
     ) : null}
     </>
@@ -1006,10 +1236,12 @@ function ImageLibraryModal({
   open,
   onClose,
   onSelect,
+  copy,
 }: {
   open: boolean;
   onClose: () => void;
   onSelect: (asset: LibraryAsset) => void;
+  copy: ImageWorkspaceCopy['library'];
 }) {
   const { data, error, isLoading } = useSWR(open ? '/api/user-assets?limit=60' : null, async (url: string) => {
     const response = await fetch(url, { credentials: 'include' });
@@ -1042,21 +1274,21 @@ function ImageLibraryModal({
       <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-[24px] border border-border bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
           <div>
-            <h2 className="text-lg font-semibold text-text-primary">Select from library</h2>
-            <p className="text-xs text-text-secondary">Choose an image you previously imported.</p>
+            <h2 className="text-lg font-semibold text-text-primary">{copy.modal.title}</h2>
+            <p className="text-xs text-text-secondary">{copy.modal.description}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="rounded-full border border-border px-3 py-1 text-sm font-medium text-text-secondary hover:bg-bg"
           >
-            Close
+            {copy.modal.close}
           </button>
         </div>
         <div className="max-h-[70vh] overflow-y-auto px-6 py-4">
           {error ? (
             <div className="rounded-card border border-state-warning/40 bg-state-warning/10 px-4 py-6 text-sm text-state-warning">
-              Unable to load assets. Please retry.
+              {copy.modal.error}
             </div>
           ) : isLoading && !assets.length ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -1073,7 +1305,7 @@ function ImageLibraryModal({
             </div>
           ) : assets.length === 0 ? (
             <div className="rounded-card border border-dashed border-border px-4 py-6 text-center text-sm text-text-secondary">
-              No assets saved yet. Upload images from the composer or the Library page.
+              {copy.modal.empty}
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -1087,11 +1319,11 @@ function ImageLibraryModal({
                   <div className="relative aspect-square overflow-hidden rounded-t-card bg-[#f2f4f8]">
                     <img src={asset.url} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
                     <div className="absolute inset-0 hidden items-center justify-center bg-black/40 text-sm font-semibold text-white group-hover:flex">
-                      Use this image
+                      {copy.overlay}
                     </div>
                   </div>
                   <div className="space-y-1 border-t border-border px-4 py-3 text-xs text-text-secondary">
-                    <p className="truncate text-text-primary">{asset.url.split('/').pop() ?? 'Asset'}</p>
+                    <p className="truncate text-text-primary">{asset.url.split('/').pop() ?? copy.assetFallback}</p>
                     {asset.createdAt ? <p className="text-text-muted">{new Date(asset.createdAt).toLocaleString()}</p> : null}
                   </div>
                 </button>

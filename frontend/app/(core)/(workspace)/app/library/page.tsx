@@ -2,11 +2,13 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
+import deepmerge from 'deepmerge';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 type UserAsset = {
   id: string;
@@ -22,6 +24,54 @@ type AssetsResponse = {
   ok: boolean;
   assets: UserAsset[];
 };
+
+interface LibraryCopy {
+  hero: {
+    title: string;
+    subtitle: string;
+    ctas: {
+      image: string;
+      video: string;
+    };
+  };
+  assets: {
+    title: string;
+    countLabel: string;
+    loadError: string;
+    empty: string;
+    deleteError: string;
+    deleteButton: string;
+    deleting: string;
+    assetFallback: string;
+  };
+}
+
+const DEFAULT_LIBRARY_COPY: LibraryCopy = {
+  hero: {
+    title: 'Library',
+    subtitle: 'Import, organize, and reuse reference assets.',
+    ctas: {
+      image: 'Generate image',
+      video: 'Generate video',
+    },
+  },
+  assets: {
+    title: 'Library assets',
+    countLabel: '{count}',
+    loadError: 'Unable to load imported assets.',
+    empty: 'No imported assets yet. Upload references from the composer or drop files here.',
+    deleteError: 'Unable to delete this image.',
+    deleteButton: 'Delete',
+    deleting: 'Deleting…',
+    assetFallback: 'Asset',
+  },
+};
+
+function formatTemplate(template: string, values: Record<string, string | number>): string {
+  return Object.entries(values).reduce((result, [key, value]) => {
+    return result.replaceAll(`{${key}}`, String(value));
+  }, template);
+}
 
 const fetcher = async (url: string): Promise<AssetsResponse> => {
   const res = await fetch(url, { credentials: 'include' });
@@ -40,6 +90,11 @@ function formatFileSize(bytes?: number | null): string {
 }
 
 export default function LibraryPage() {
+  const { t } = useI18n();
+  const rawCopy = t('workspace.library', DEFAULT_LIBRARY_COPY);
+  const copy = useMemo<LibraryCopy>(() => {
+    return deepmerge<LibraryCopy>(DEFAULT_LIBRARY_COPY, (rawCopy ?? {}) as Partial<LibraryCopy>);
+  }, [rawCopy]);
   const {
     data: assetsData,
     error: assetsError,
@@ -49,6 +104,7 @@ export default function LibraryPage() {
   const assets = assetsData?.assets ?? [];
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const assetCountLabel = formatTemplate(copy.assets.countLabel, { count: assets.length });
 
   const handleDeleteAsset = useCallback(
     async (assetId: string) => {
@@ -63,16 +119,16 @@ export default function LibraryPage() {
         });
         const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
         if (!response.ok || !payload?.ok) {
-          throw new Error(payload?.error ?? 'Failed to delete image');
+          throw new Error(payload?.error ?? copy.assets.deleteError);
         }
         await mutateAssets();
       } catch (error) {
-        setDeleteError(error instanceof Error ? error.message : 'Unable to delete this image.');
+        setDeleteError(error instanceof Error ? error.message : copy.assets.deleteError);
       } finally {
         setDeletingId((current) => (current === assetId ? null : current));
       }
     },
-    [mutateAssets]
+    [copy.assets.deleteError, mutateAssets]
   );
 
   return (
@@ -83,23 +139,23 @@ export default function LibraryPage() {
         <main className="flex-1 overflow-y-auto p-5 lg:p-7">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h1 className="text-2xl font-semibold text-text-primary">Library</h1>
-              <p className="text-sm text-text-secondary">Import, organize, and reuse reference assets.</p>
+              <h1 className="text-2xl font-semibold text-text-primary">{copy.hero.title}</h1>
+              <p className="text-sm text-text-secondary">{copy.hero.subtitle}</p>
             </div>
             <div className="flex gap-2 text-sm text-text-secondary">
               <Link href="/app/image" className="rounded-input border border-border px-3 py-1 hover:bg-white/70">
-                Generate image
+                {copy.hero.ctas.image}
               </Link>
               <Link href="/app" className="rounded-input border border-border px-3 py-1 hover:bg-white/70">
-                Generate video
+                {copy.hero.ctas.video}
               </Link>
             </div>
           </div>
 
           <section className="rounded-card border border-border bg-white/80 p-5 shadow-card">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-text-primary">Library assets</h2>
-              <span className="text-xs text-text-secondary">{assets.length}</span>
+              <h2 className="text-lg font-semibold text-text-primary">{copy.assets.title}</h2>
+              <span className="text-xs text-text-secondary">{assetCountLabel}</span>
             </div>
 
             {deleteError ? (
@@ -123,11 +179,11 @@ export default function LibraryPage() {
               </div>
             ) : assetsError ? (
               <div className="rounded-card border border-state-warning/40 bg-state-warning/10 px-4 py-6 text-sm text-state-warning">
-                Unable to load imported assets.
+                {copy.assets.loadError}
               </div>
             ) : assets.length === 0 ? (
               <div className="rounded-card border border-dashed border-border px-4 py-6 text-center text-sm text-text-secondary">
-                No imported assets yet. Upload references from the composer or drop files here.
+                {copy.assets.empty}
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -137,7 +193,7 @@ export default function LibraryPage() {
                       <img src={asset.url} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
                     </div>
                     <div className="space-y-2 border-t border-border px-4 py-3 text-xs text-text-secondary">
-                      <p className="truncate text-text-primary">{asset.url.split('/').pop() ?? 'Asset'}</p>
+                      <p className="truncate text-text-primary">{asset.url.split('/').pop() ?? copy.assets.assetFallback}</p>
                       <p className="text-text-secondary">{formatFileSize(asset.size)}</p>
                       {asset.createdAt ? <p className="text-text-muted">{new Date(asset.createdAt).toLocaleString()}</p> : null}
                       <button
@@ -146,7 +202,7 @@ export default function LibraryPage() {
                         disabled={deletingId === asset.id}
                         className="w-full rounded-input border border-state-warning/40 bg-state-warning/10 py-1 text-[11px] font-semibold text-state-warning transition hover:bg-state-warning/20 disabled:cursor-not-allowed disabled:opacity-60"
                       >
-                        {deletingId === asset.id ? 'Deleting…' : 'Delete'}
+                        {deletingId === asset.id ? copy.assets.deleting : copy.assets.deleteButton}
                       </button>
                     </div>
                   </article>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { FlagPill } from '@/components/FlagPill';
@@ -9,12 +9,91 @@ import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useMarketingPreference } from '@/hooks/useMarketingPreference';
 import { FEATURES } from '@/content/feature-flags';
 import type { Session } from '@supabase/supabase-js';
+import deepmerge from 'deepmerge';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 type Tab = 'account' | 'team' | 'keys' | 'privacy' | 'notifications';
+
+const DEFAULT_SETTINGS_COPY = {
+  title: 'Settings',
+  tabs: {
+    account: 'Account',
+    team: 'Team',
+    keys: 'API Keys',
+    privacy: 'Privacy & Safety',
+    notifications: 'Notifications',
+  },
+  account: {
+    title: 'Account',
+    fields: {
+      name: { label: 'Name', placeholder: 'Your name' },
+      email: { label: 'Email', placeholder: 'you@domain.com' },
+      locale: { label: 'Locale', options: ['EN', 'FR', 'ES'] },
+      theme: { label: 'Theme', options: ['System', 'Light', 'Dark'] },
+    },
+  },
+  team: {
+    title: 'Team',
+    srLive: 'Live',
+    srSoon: 'Coming soon',
+    liveDescription: 'Manage members, roles, budgets and integrations.',
+    invite: 'Invite member',
+    createProject: 'Create project',
+    upcomingPrefix: 'Coming soon — shared wallets, approvals, and budgets. Join the beta at ',
+    upcomingEmail: 'support@maxvideoai.com',
+    upcomingSuffix: '.',
+  },
+  keys: {
+    title: 'API Keys',
+    placeholder: 'sk_live_…',
+    copy: 'Copy',
+    revoke: 'Revoke',
+    create: 'Create new key',
+  },
+  privacy: {
+    title: 'Privacy & Safety',
+    allowIndexLabel: 'Allow indexing by default',
+    allowIndexDescription:
+      'New videos can appear in the gallery, sitemap, and search previews. You can still uncheck individual renders from their detail view.',
+    saving: 'Saving preference…',
+    disableHint:
+      'Disable this toggle if you prefer every render to stay private by default. Published videos will keep their current visibility until you change them individually.',
+    preferenceError: 'Failed to update preference',
+  },
+  notifications: {
+    title: 'Notifications',
+    comingSoon: 'Coming soon — email digests and web push alerts for spend, queue health, and job status.',
+    srSoon: 'Coming soon',
+    srLive: 'Live',
+    marketing: {
+      title: 'Marketing emails',
+      description: 'Receive occasional updates, launch announcements, and workflow tips. You can unsubscribe anytime.',
+      lastUpdatedPrefix: 'Last updated:',
+      confirmPending: 'Confirmation required — check your inbox to finish subscribing.',
+    },
+    toggles: {
+      jobDone: 'Job done',
+      jobFailed: 'Job failed',
+      lowWallet: 'Low wallet',
+      weeklySummary: 'Weekly summary',
+    },
+    errors: {
+      generic: 'Failed to update preference',
+    },
+  },
+} as const;
+
+type SettingsCopy = typeof DEFAULT_SETTINGS_COPY;
 
 export default function SettingsPage() {
   const [tab, setTab] = useState<Tab>('account');
   const { loading: authLoading, session } = useRequireAuth();
+  const { t } = useI18n();
+  const rawCopy = t('workspace.settings', DEFAULT_SETTINGS_COPY);
+  const copy = useMemo<SettingsCopy>(() => {
+    if (!rawCopy || typeof rawCopy !== 'object') return DEFAULT_SETTINGS_COPY;
+    return deepmerge(DEFAULT_SETTINGS_COPY, rawCopy as Partial<SettingsCopy>);
+  }, [rawCopy]);
   const {
     data: preferences,
     isLoading: prefsLoading,
@@ -45,14 +124,14 @@ export default function SettingsPage() {
           false
         );
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Failed to update preference';
+        const message = error instanceof Error ? error.message : copy.privacy.preferenceError;
         setPrefError(message);
         console.error('[settings] default index update failed', error);
       } finally {
         setPrefSaving(false);
       }
     },
-    [prefSaving, mutatePreferences]
+    [prefSaving, mutatePreferences, copy.privacy.preferenceError]
   );
 
   if (authLoading || !session) {
@@ -69,25 +148,35 @@ export default function SettingsPage() {
       <div className="flex flex-1">
         <AppSidebar />
         <main className="flex-1 overflow-y-auto p-5 lg:p-7">
-          <h1 className="mb-4 text-xl font-semibold text-text-primary">Settings</h1>
+          <h1 className="mb-4 text-xl font-semibold text-text-primary">{copy.title}</h1>
 
           <nav className="mb-4 flex flex-wrap gap-2" aria-label="Settings tabs">
-            <TabLink id="account" label="Account" active={tab === 'account'} onClick={() => setTab('account')} />
-            <TabLink id="team" label="Team" active={tab === 'team'} onClick={() => setTab('team')} badgeLive={teamsLive} />
-            <TabLink id="keys" label="API Keys" active={tab === 'keys'} onClick={() => setTab('keys')} />
-            <TabLink id="privacy" label="Privacy & Safety" active={tab === 'privacy'} onClick={() => setTab('privacy')} />
+            <TabLink id="account" label={copy.tabs.account} active={tab === 'account'} onClick={() => setTab('account')} />
+            <TabLink
+              id="team"
+              label={copy.tabs.team}
+              active={tab === 'team'}
+              onClick={() => setTab('team')}
+              badgeLive={teamsLive}
+              badgeSrLive={copy.team.srLive}
+              badgeSrSoon={copy.team.srSoon}
+            />
+            <TabLink id="keys" label={copy.tabs.keys} active={tab === 'keys'} onClick={() => setTab('keys')} />
+            <TabLink id="privacy" label={copy.tabs.privacy} active={tab === 'privacy'} onClick={() => setTab('privacy')} />
             <TabLink
               id="notifications"
-              label="Notifications"
+              label={copy.tabs.notifications}
               active={tab === 'notifications'}
               onClick={() => setTab('notifications')}
               badgeLive={notificationsLive}
+              badgeSrLive={copy.notifications.srLive}
+              badgeSrSoon={copy.notifications.srSoon}
             />
           </nav>
 
-          {tab === 'account' && <AccountTab session={session} />}
-          {tab === 'team' && <TeamTab live={teamsLive} />}
-          {tab === 'keys' && <KeysTab />}
+          {tab === 'account' && <AccountTab session={session} copy={copy.account} />}
+          {tab === 'team' && <TeamTab live={teamsLive} copy={copy.team} />}
+          {tab === 'keys' && <KeysTab copy={copy.keys} />}
           {tab === 'privacy' && (
             <PrivacyTab
               defaultAllowIndex={preferences?.defaultAllowIndex}
@@ -95,12 +184,13 @@ export default function SettingsPage() {
               saving={prefSaving}
               loadError={preferencesLoadError}
               error={prefError}
+              copy={copy.privacy}
               onToggleIndexing={(value) => {
                 void handleDefaultIndexChange(value);
               }}
             />
           )}
-          {tab === 'notifications' && <NotificationsTab live={notificationsLive} />}
+          {tab === 'notifications' && <NotificationsTab live={notificationsLive} copy={copy.notifications} />}
         </main>
       </div>
     </div>
@@ -113,12 +203,16 @@ function TabLink({
   active,
   onClick,
   badgeLive,
+  badgeSrLive,
+  badgeSrSoon,
 }: {
   id: string;
   label: string;
   active: boolean;
   onClick: () => void;
   badgeLive?: boolean;
+  badgeSrLive?: string;
+  badgeSrSoon?: string;
 }) {
   return (
     <button
@@ -133,7 +227,7 @@ function TabLink({
         {badgeLive === undefined ? null : (
           <>
             <FlagPill live={badgeLive} />
-            <span className="sr-only">{badgeLive ? 'Live' : 'Coming soon'}</span>
+            <span className="sr-only">{badgeLive ? badgeSrLive ?? 'Live' : badgeSrSoon ?? 'Coming soon'}</span>
           </>
         )}
       </span>
@@ -143,9 +237,10 @@ function TabLink({
 
 type AccountTabProps = {
   session: Session | null;
+  copy: SettingsCopy['account'];
 };
 
-function AccountTab({ session }: AccountTabProps) {
+function AccountTab({ session, copy }: AccountTabProps) {
   const nameDefault =
     typeof session?.user?.user_metadata?.full_name === 'string'
       ? session?.user?.user_metadata?.full_name
@@ -154,41 +249,49 @@ function AccountTab({ session }: AccountTabProps) {
 
   return (
     <section className="rounded-card border border-border bg-white p-4 shadow-card">
-      <h2 className="mb-3 text-lg font-semibold text-text-primary">Account</h2>
+      <h2 className="mb-3 text-lg font-semibold text-text-primary">{copy.title}</h2>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="text-sm">
-          <span className="mb-1 block text-text-secondary">Name</span>
+          <span className="mb-1 block text-text-secondary">{copy.fields.name.label}</span>
           <input
             className="w-full rounded-input border border-border bg-bg px-3 py-2"
-            placeholder="Your name"
+            placeholder={copy.fields.name.placeholder}
             defaultValue={nameDefault}
             readOnly={!nameDefault}
           />
         </label>
         <label className="text-sm">
-          <span className="mb-1 block text-text-secondary">Email</span>
+          <span className="mb-1 block text-text-secondary">{copy.fields.email.label}</span>
           <input
             type="email"
             className="w-full rounded-input border border-border bg-bg px-3 py-2"
-            placeholder="you@domain.com"
+            placeholder={copy.fields.email.placeholder}
             defaultValue={emailDefault}
             readOnly
           />
         </label>
         <label className="text-sm">
-          <span className="mb-1 block text-text-secondary">Locale</span>
-          <select className="w-full rounded-input border border-border bg-bg px-3 py-2" defaultValue="EN" disabled>
-            <option>EN</option>
-            <option>FR</option>
-            <option>ES</option>
+          <span className="mb-1 block text-text-secondary">{copy.fields.locale.label}</span>
+          <select
+            className="w-full rounded-input border border-border bg-bg px-3 py-2"
+            defaultValue={copy.fields.locale.options[0]}
+            disabled
+          >
+            {copy.fields.locale.options.map((option) => (
+              <option key={option}>{option}</option>
+            ))}
           </select>
         </label>
         <label className="text-sm">
-          <span className="mb-1 block text-text-secondary">Theme</span>
-          <select className="w-full rounded-input border border-border bg-bg px-3 py-2" defaultValue="System" disabled>
-            <option>System</option>
-            <option>Light</option>
-            <option>Dark</option>
+          <span className="mb-1 block text-text-secondary">{copy.fields.theme.label}</span>
+          <select
+            className="w-full rounded-input border border-border bg-bg px-3 py-2"
+            defaultValue={copy.fields.theme.options[0]}
+            disabled
+          >
+            {copy.fields.theme.options.map((option) => (
+              <option key={option}>{option}</option>
+            ))}
           </select>
         </label>
       </div>
@@ -196,46 +299,46 @@ function AccountTab({ session }: AccountTabProps) {
   );
 }
 
-function TeamTab({ live }: { live: boolean }) {
+function TeamTab({ live, copy }: { live: boolean; copy: SettingsCopy['team'] }) {
   return (
     <section className="rounded-card border border-border bg-white p-4 shadow-card">
       <h2 className="mb-2 flex items-center gap-2 text-lg font-semibold text-text-primary">
-        Team
+        {copy.title}
         <FlagPill live={live} />
-        <span className="sr-only">{live ? 'Live' : 'Coming soon'}</span>
+        <span className="sr-only">{live ? copy.srLive : copy.srSoon}</span>
       </h2>
       {live ? (
         <>
-          <p className="text-sm text-text-secondary">Manage members, roles, budgets and integrations.</p>
+          <p className="text-sm text-text-secondary">{copy.liveDescription}</p>
           <div className="mt-3 flex gap-2">
-            <button className="rounded-input border border-border px-3 py-2 text-sm hover:bg-bg">Invite member</button>
-            <button className="rounded-input border border-border px-3 py-2 text-sm hover:bg-bg">Create project</button>
+            <button className="rounded-input border border-border px-3 py-2 text-sm hover:bg-bg">{copy.invite}</button>
+            <button className="rounded-input border border-border px-3 py-2 text-sm hover:bg-bg">{copy.createProject}</button>
           </div>
         </>
       ) : (
         <div className="mt-2 rounded-xl border border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
-          Coming soon — shared wallets, approvals, and budgets. Join the beta at{' '}
-          <a className="underline underline-offset-2" href="mailto:support@maxvideoai.com">
-            support@maxvideoai.com
+          {copy.upcomingPrefix}
+          <a className="underline underline-offset-2" href={`mailto:${copy.upcomingEmail}`}>
+            {copy.upcomingEmail}
           </a>
-          .
+          {copy.upcomingSuffix}
         </div>
       )}
     </section>
   );
 }
 
-function KeysTab() {
+function KeysTab({ copy }: { copy: SettingsCopy['keys'] }) {
   return (
     <section className="rounded-card border border-border bg-white p-4 shadow-card">
-      <h2 className="mb-3 text-lg font-semibold text-text-primary">API Keys</h2>
+      <h2 className="mb-3 text-lg font-semibold text-text-primary">{copy.title}</h2>
       <div className="flex items-center gap-2 text-sm">
-        <input className="flex-1 rounded-input border border-border bg-bg px-3 py-2" placeholder="sk_live_…" readOnly value="sk_demo_xxx" />
-        <button className="rounded-input border border-border px-3 py-2 hover:bg-bg">Copy</button>
-        <button className="rounded-input border border-border px-3 py-2 hover:bg-bg">Revoke</button>
+        <input className="flex-1 rounded-input border border-border bg-bg px-3 py-2" placeholder={copy.placeholder} readOnly value="sk_demo_xxx" />
+        <button className="rounded-input border border-border px-3 py-2 hover:bg-bg">{copy.copy}</button>
+        <button className="rounded-input border border-border px-3 py-2 hover:bg-bg">{copy.revoke}</button>
       </div>
       <div className="mt-3">
-        <button className="rounded-input border border-border px-3 py-2 text-sm hover:bg-bg">Create new key</button>
+        <button className="rounded-input border border-border px-3 py-2 text-sm hover:bg-bg">{copy.create}</button>
       </div>
     </section>
   );
@@ -248,6 +351,7 @@ function PrivacyTab({
   loadError,
   error,
   onToggleIndexing,
+  copy,
 }: {
   defaultAllowIndex?: boolean | null;
   loading: boolean;
@@ -255,13 +359,14 @@ function PrivacyTab({
   loadError?: string | null;
   error: string | null;
   onToggleIndexing: (next: boolean) => void;
+  copy: SettingsCopy['privacy'];
 }) {
   const allowIndex = defaultAllowIndex ?? true;
   const isDisabled = loading || saving || Boolean(loadError);
 
   return (
     <section className="rounded-card border border-border bg-white p-4 shadow-card">
-      <h2 className="mb-3 text-lg font-semibold text-text-primary">Privacy & Safety</h2>
+      <h2 className="mb-3 text-lg font-semibold text-text-primary">{copy.title}</h2>
       <div className="space-y-4 text-sm text-text-secondary">
         <div className="rounded-card border border-hairline bg-bg px-4 py-3">
           <label className="flex items-start gap-3">
@@ -273,25 +378,21 @@ function PrivacyTab({
               disabled={isDisabled}
             />
             <span>
-              <span className="block font-medium text-text-primary">Allow indexing by default</span>
-              <span className="mt-1 block text-xs text-text-muted">
-                New videos can appear in the gallery, sitemap, and search previews. You can still uncheck individual renders from their detail view.
-              </span>
+              <span className="block font-medium text-text-primary">{copy.allowIndexLabel}</span>
+              <span className="mt-1 block text-xs text-text-muted">{copy.allowIndexDescription}</span>
             </span>
           </label>
-          {saving ? <p className="mt-2 text-xs text-text-muted">Saving preference…</p> : null}
+          {saving ? <p className="mt-2 text-xs text-text-muted">{copy.saving}</p> : null}
           {loadError ? <p className="mt-2 text-xs text-state-warning">{loadError}</p> : null}
           {error ? <p className="mt-2 text-xs text-state-warning">{error}</p> : null}
         </div>
-        <p className="text-xs text-text-muted">
-          Disable this toggle if you prefer every render to stay private by default. Published videos will keep their current visibility until you change them individually.
-        </p>
+        <p className="text-xs text-text-muted">{copy.disableHint}</p>
       </div>
     </section>
   );
 }
 
-function NotificationsTab({ live }: { live: boolean }) {
+function NotificationsTab({ live, copy }: { live: boolean; copy: SettingsCopy['notifications'] }) {
   const { data: marketingPref, isLoading, mutate } = useMarketingPreference(live);
   const [saving, setSaving] = useState(false);
   const [prefError, setPrefError] = useState<string | null>(null);
@@ -300,12 +401,12 @@ function NotificationsTab({ live }: { live: boolean }) {
     return (
       <section className="rounded-card border border-border bg-white p-4 shadow-card">
         <h2 className="mb-2 flex items-center gap-2 text-lg font-semibold text-text-primary">
-          Notifications
+          {copy.title}
           <FlagPill live={false} />
-          <span className="sr-only">Coming soon</span>
+          <span className="sr-only">{copy.srSoon}</span>
         </h2>
         <div className="rounded-xl border border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
-          Coming soon — email digests and web push alerts for spend, queue health, and job status.
+          {copy.comingSoon}
         </div>
       </section>
     );
@@ -324,7 +425,7 @@ function NotificationsTab({ live }: { live: boolean }) {
       });
       const json = await res.json().catch(() => null);
       if (!res.ok || !json?.ok) {
-        throw new Error(json?.error ?? 'Failed to update preference');
+        throw new Error(json?.error ?? copy.errors.generic);
       }
       await mutate(
         () => ({
@@ -335,7 +436,7 @@ function NotificationsTab({ live }: { live: boolean }) {
         false
       );
     } catch (error) {
-      setPrefError(error instanceof Error ? error.message : 'Failed to update preference');
+      setPrefError(error instanceof Error ? error.message : copy.errors.generic);
     } finally {
       setSaving(false);
     }
@@ -349,21 +450,19 @@ function NotificationsTab({ live }: { live: boolean }) {
 
   return (
     <section className="rounded-card border border-border bg-white p-4 shadow-card">
-      <h2 className="mb-3 text-lg font-semibold text-text-primary">Notifications</h2>
+      <h2 className="mb-3 text-lg font-semibold text-text-primary">{copy.title}</h2>
       <div className="space-y-4">
         <div className="flex flex-col gap-3 rounded-input border border-border bg-bg px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex-1">
-            <p className="text-sm font-semibold text-text-primary">Marketing emails</p>
-            <p className="text-xs text-text-secondary">
-              Receive occasional updates, launch announcements, and workflow tips. You can unsubscribe anytime.
-            </p>
+            <p className="text-sm font-semibold text-text-primary">{copy.marketing.title}</p>
+            <p className="text-xs text-text-secondary">{copy.marketing.description}</p>
             {lastUpdatedLabel ? (
-              <p className="mt-1 text-xs text-text-muted">Last updated: {lastUpdatedLabel}</p>
+              <p className="mt-1 text-xs text-text-muted">
+                {copy.marketing.lastUpdatedPrefix} {lastUpdatedLabel}
+              </p>
             ) : null}
             {doubleOptInPending ? (
-              <p className="mt-1 text-xs text-accent">
-                Confirmation required — check your inbox to finish subscribing.
-              </p>
+              <p className="mt-1 text-xs text-accent">{copy.marketing.confirmPending}</p>
             ) : null}
           </div>
           <button
@@ -380,10 +479,10 @@ function NotificationsTab({ live }: { live: boolean }) {
         </div>
         {prefError ? <p className="text-xs text-state-warning">{prefError}</p> : null}
         <div className="grid gap-3 sm:grid-cols-2">
-          <ToggleRow label="Job done" />
-          <ToggleRow label="Job failed" />
-          <ToggleRow label="Low wallet" />
-          <ToggleRow label="Weekly summary" />
+          <ToggleRow label={copy.toggles.jobDone} />
+          <ToggleRow label={copy.toggles.jobFailed} />
+          <ToggleRow label={copy.toggles.lowWallet} />
+          <ToggleRow label={copy.toggles.weeklySummary} />
         </div>
       </div>
     </section>

@@ -38,6 +38,7 @@ interface Props {
     duration?: Ref<HTMLElement>;
     resolution?: Ref<HTMLDivElement>;
   };
+  showExtendControl?: boolean;
 }
 
 const DEFAULT_CONTROLS_COPY = {
@@ -137,6 +138,7 @@ export function SettingsControls({
   loopEnabled,
   onLoopChange,
   focusRefs,
+  showExtendControl = true,
 }: Props) {
   const { t } = useI18n();
   const controlsCopy = (t('workspace.generate.controls', DEFAULT_CONTROLS_COPY) ??
@@ -565,7 +567,7 @@ export function SettingsControls({
               </div>
             )}
 
-            {engine.extend && (
+            {showExtendControl && engine.extend && (
               <div className="space-y-2">
                 <h4 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">
                   {controlsCopy.extend.label}

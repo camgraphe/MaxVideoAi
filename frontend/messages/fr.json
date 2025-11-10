@@ -213,7 +213,7 @@
           },
           "media": {
             "videoSrc": "/assets/gallery/robot-eyes.mp4",
-            "posterSrc": "/hero/luma-ray2-flash.jpg",
+            "posterSrc": "/hero/veo3.jpg",
             "hasAudio": true
           }
         },
@@ -1148,6 +1148,10 @@
         "fieldFallback": "Image de référence",
         "empty": "Aucune image enregistrée pour l’instant. Ajoutez une référence pour la voir ici."
       },
+      "assetSlots": {
+        "imageCtaLabel": "Générer des images de référence",
+        "imageCtaHref": "/app/image"
+      },
       "controls": {
         "core": {
           "title": "Réglages essentiels",
@@ -1226,10 +1230,28 @@
           "plural": "{count} variantes"
         },
         "controls": {
-          "play": { "on": "Pause", "off": "Lecture", "ariaOn": "Mettre toutes les prévisualisations en pause", "ariaOff": "Lire toutes les prévisualisations" },
-          "mute": { "on": "Activer le son", "off": "Couper le son", "ariaOn": "Activer le son sur toutes les prévisualisations", "ariaOff": "Couper le son sur toutes les prévisualisations" },
-          "loop": { "on": "Boucle activée", "off": "Boucle désactivée", "ariaOn": "Désactiver la boucle", "ariaOff": "Activer la boucle" },
-          "modal": { "label": "Ouvrir dans une fenêtre", "aria": "Ouvrir l’aperçu dans une fenêtre" },
+          "play": {
+            "on": "Pause",
+            "off": "Lecture",
+            "ariaOn": "Mettre toutes les prévisualisations en pause",
+            "ariaOff": "Lire toutes les prévisualisations"
+          },
+          "mute": {
+            "on": "Activer le son",
+            "off": "Couper le son",
+            "ariaOn": "Activer le son sur toutes les prévisualisations",
+            "ariaOff": "Couper le son sur toutes les prévisualisations"
+          },
+          "loop": {
+            "on": "Boucle activée",
+            "off": "Boucle désactivée",
+            "ariaOn": "Désactiver la boucle",
+            "ariaOff": "Activer la boucle"
+          },
+          "modal": {
+            "label": "Ouvrir dans une fenêtre",
+            "aria": "Ouvrir l’aperçu dans une fenêtre"
+          },
           "copyPrompt": "Copier le prompt"
         },
         "placeholder": "—"
@@ -1237,14 +1259,15 @@
       "galleryRail": {
         "title": "Derniers rendus",
         "viewAll": "Tout voir",
-        "curated": "Des extraits exemples sélectionnés par l’équipe MaxVideo s’affichent ici jusqu’à ce que vous génériez vos propres vidéos.",
-        "error": "Impossible de charger les derniers rendus. Merci de réessayer.",
-        "retry": "Réessayer",
-        "snackbar": {
-          "samples": "Les clips exemples ne peuvent pas être retirés.",
-          "removed": "Supprimé de la galerie.",
-          "failed": "Impossible de retirer cet élément de la galerie."
-        }
+      "curated": "Des extraits exemples sélectionnés par l’équipe MaxVideo s’affichent ici jusqu’à ce que vous génériez vos propres vidéos.",
+      "error": "Impossible de charger les derniers rendus. Merci de réessayer.",
+      "retry": "Réessayer",
+      "imageCta": "Générer des images",
+      "snackbar": {
+        "samples": "Les clips exemples ne peuvent pas être retirés.",
+        "removed": "Supprimé de la galerie.",
+        "failed": "Impossible de retirer cet élément de la galerie."
+      }
       },
       "composer": {
         "title": "Compositeur",
@@ -1301,6 +1324,12 @@
     },
     "jobs": {
       "title": "Jobs",
+      "sections": {
+        "video": "Jobs vidéo",
+        "image": "Jobs image",
+        "videoEmpty": "Aucun job vidéo pour le moment.",
+        "imageEmpty": "Aucun job image pour le moment."
+      },
       "teams": {
         "title": "Équipes",
         "srLive": "Disponible",
@@ -1314,7 +1343,11 @@
       "retry": "Réessayer",
       "empty": "Aucun rendu pour l’instant. Lancez une génération pour remplir votre historique.",
       "loadMore": "Charger plus",
-      "loading": "Chargement…"
+      "loading": "Chargement…",
+      "actions": {
+        "addToLibrary": "Ajouter à la bibliothèque",
+        "saving": "Enregistrement…"
+      }
     },
     "dashboard": {
       "quickActions": {
@@ -1451,10 +1484,22 @@
       "faq": {
         "title": "Micro-FAQ",
         "entries": [
-          { "question": "Faut-il un abonnement ?", "answer": "Non. Paiement à l’usage." },
-          { "question": "Puis-je acheter un seul petit rendu ?", "answer": "Oui — débit par exécution à partir du solde de 10 $." },
-          { "question": "Mes crédits expirent-ils ?", "answer": "Non, tant que le compte reste actif." },
-          { "question": "Comment fonctionnent les remises ?", "answer": "Le statut membre s’applique automatiquement selon vos dépenses des 30 derniers jours." }
+          {
+            "question": "Faut-il un abonnement ?",
+            "answer": "Non. Paiement à l’usage."
+          },
+          {
+            "question": "Puis-je acheter un seul petit rendu ?",
+            "answer": "Oui — débit par exécution à partir du solde de 10 $."
+          },
+          {
+            "question": "Mes crédits expirent-ils ?",
+            "answer": "Non, tant que le compte reste actif."
+          },
+          {
+            "question": "Comment fonctionnent les remises ?",
+            "answer": "Le statut membre s’applique automatiquement selon vos dépenses des 30 derniers jours."
+          }
         ],
         "footnote": "TVA incluse le cas échéant. Remboursements en cas d’échec. « Fonctionne avec » indique la compatibilité ; les marques appartiennent à leurs propriétaires."
       },
@@ -1468,6 +1513,205 @@
         "loadEngines": "Impossible de charger les moteurs.",
         "estimator": "L’estimateur a échoué",
         "lowBalance": "Votre solde est faible. Rechargez pour continuer."
+      }
+    },
+    "image": {
+      "hero": {
+        "eyebrow": "Espace image",
+        "title": "Générer des images",
+        "subtitle": "Créez et éditez des visuels haute fidélité avec Nano Banana et les autres moteurs Fal."
+      },
+      "preview": {
+        "eyebrow": "Aperçu de génération",
+        "title": "Dernier rendu",
+        "emptyTitle": "Pas encore d’aperçu.",
+        "emptyDescription": "Lancez une génération pour voir la dernière image ici.",
+        "download": "Télécharger",
+        "copy": "Copier le lien",
+        "copied": "Copié"
+      },
+      "engine": {
+        "eyebrow": "Moteur",
+        "priceCalculating": "Calcul du prix…",
+        "priceLabel": "{amount} / exécution"
+      },
+      "modeTabs": {
+        "generate": "Générer",
+        "edit": "Éditer"
+      },
+      "composer": {
+        "promptLabel": "Prompt",
+        "promptPlaceholder": "Décrivez l’image à générer…",
+        "charCount": "{count} caractères",
+        "presetsHint": "Choisissez un preset · 1–8 par run",
+        "numImagesLabel": "Nombre d’images",
+        "numImagesCount": "{count} {unit}",
+        "numImagesUnit": {
+          "singular": "image",
+          "plural": "images"
+        },
+        "estimatedCost": "Coût estimé : {amount}",
+        "referenceLabel": "Images de référence",
+        "referenceHelper": "Optionnel · jusqu’à 4 images",
+        "referenceNote": "Glissez-déposez, collez, importez depuis votre appareil ou ouvrez votre Bibliothèque. Requis pour le mode Édition.",
+        "referenceButton": "Bibliothèque",
+        "referenceSlotLabel": "Emplacement {index}",
+        "referenceSlotHint": "Déposez une image, importez, collez ou choisissez-la dans votre bibliothèque.",
+        "referenceSlotNameFallback": "Image",
+        "referenceSlotActions": {
+          "upload": "Téléverser",
+          "library": "Bibliothèque",
+          "replace": "Remplacer",
+          "remove": "Retirer"
+        }
+      },
+      "history": {
+        "eyebrow": "Run récent",
+        "empty": "Lancez une génération pour alimenter l’historique. Chaque variante apparaîtra ci-dessous.",
+        "runsLabel": {
+          "zero": "Aucun run",
+          "other": "{count} lancements"
+        },
+        "noPreview": "Aucun aperçu",
+        "loadMore": "Charger plus",
+        "refreshing": "Actualisation de l’historique…"
+      },
+      "runButton": {
+        "idle": "Générer des images",
+        "running": "Génération…"
+      },
+      "errors": {
+        "onlyImages": "Seuls les fichiers image sont pris en charge.",
+        "uploadFailed": "Impossible de téléverser cette image. Réessayez.",
+        "promptMissing": "Le prompt est obligatoire.",
+        "referenceMissing": "Ajoutez au moins une image source pour le mode Édition.",
+        "generic": "La génération d’image a échoué."
+      },
+      "messages": {
+        "success": "Génération terminée : {count} image(s)."
+      },
+      "general": {
+        "uploading": "Téléversement…",
+        "emptyEngines": "Aucun moteur image disponible."
+      },
+      "library": {
+        "button": "Bibliothèque",
+        "empty": "Aucune ressource enregistrée. Importez des références depuis le compositeur ou via cette page.",
+        "overlay": "Utiliser cette image",
+        "assetFallback": "Ressource",
+        "modal": {
+          "title": "Choisir dans la bibliothèque",
+          "description": "Sélectionnez une image importée auparavant.",
+          "close": "Fermer",
+          "error": "Impossible de charger les ressources. Réessayez.",
+          "empty": "Aucune ressource enregistrée. Importez des références depuis le compositeur ou via cette page."
+        }
+      }
+    },
+    "library": {
+      "hero": {
+        "title": "Bibliothèque",
+        "subtitle": "Importez, organisez et réutilisez vos références visuelles.",
+        "ctas": {
+          "image": "Générer une image",
+          "video": "Générer une vidéo"
+        }
+      },
+      "assets": {
+        "title": "Ressources de la bibliothèque",
+        "countLabel": "{count}",
+        "loadError": "Impossible de charger les ressources importées.",
+        "empty": "Aucune ressource importée pour l’instant. Ajoutez des références depuis le compositeur ou en les déposant ici.",
+        "deleteError": "Suppression impossible pour cette image.",
+        "deleteButton": "Supprimer",
+        "deleting": "Suppression…",
+        "assetFallback": "Ressource"
+      }
+    },
+    "settings": {
+      "title": "Paramètres",
+      "tabs": {
+        "account": "Compte",
+        "team": "Équipe",
+        "keys": "Clés API",
+        "privacy": "Confidentialité & sécurité",
+        "notifications": "Notifications"
+      },
+      "account": {
+        "title": "Compte",
+        "fields": {
+          "name": {
+            "label": "Nom",
+            "placeholder": "Votre nom"
+          },
+          "email": {
+            "label": "Email",
+            "placeholder": "vous@domaine.com"
+          },
+          "locale": {
+            "label": "Langue",
+            "options": [
+              "EN",
+              "FR",
+              "ES"
+            ]
+          },
+          "theme": {
+            "label": "Thème",
+            "options": [
+              "Système",
+              "Clair",
+              "Sombre"
+            ]
+          }
+        }
+      },
+      "team": {
+        "title": "Équipe",
+        "srLive": "Disponible",
+        "srSoon": "Bientôt disponible",
+        "liveDescription": "Gérez les membres, les rôles, les budgets et les intégrations.",
+        "invite": "Inviter un membre",
+        "createProject": "Créer un projet",
+        "upcomingPrefix": "Bientôt — portefeuilles partagés, validations et budgets. Rejoignez la bêta via ",
+        "upcomingEmail": "support@maxvideoai.com",
+        "upcomingSuffix": "."
+      },
+      "keys": {
+        "title": "Clés API",
+        "placeholder": "sk_live_…",
+        "copy": "Copier",
+        "revoke": "Révoquer",
+        "create": "Créer une nouvelle clé"
+      },
+      "privacy": {
+        "title": "Confidentialité & sécurité",
+        "allowIndexLabel": "Autoriser l’indexation par défaut",
+        "allowIndexDescription": "Les nouvelles vidéos peuvent apparaître dans la galerie, le sitemap et la recherche. Chaque rendu reste modifiable individuellement.",
+        "saving": "Enregistrement de la préférence…",
+        "disableHint": "Désactivez cette option si vous voulez que tout reste privé par défaut. Les vidéos publiées garderont leur visibilité actuelle.",
+        "preferenceError": "Impossible de mettre à jour la préférence"
+      },
+      "notifications": {
+        "title": "Notifications",
+        "comingSoon": "Bientôt — emails récapitulatifs et web push pour les dépenses, la file et l’état des jobs.",
+        "srSoon": "Bientôt disponible",
+        "srLive": "Disponible",
+        "marketing": {
+          "title": "Emails marketing",
+          "description": "Recevez des mises à jour ponctuelles, annonces de lancement et astuces. Désinscription à tout moment.",
+          "lastUpdatedPrefix": "Dernière mise à jour :",
+          "confirmPending": "Confirmation requise — vérifiez votre boîte mail."
+        },
+        "toggles": {
+          "jobDone": "Job terminé",
+          "jobFailed": "Job échoué",
+          "lowWallet": "Solde faible",
+          "weeklySummary": "Résumé hebdo"
+        },
+        "errors": {
+          "generic": "Impossible de mettre à jour la préférence"
+        }
       }
     }
   },
