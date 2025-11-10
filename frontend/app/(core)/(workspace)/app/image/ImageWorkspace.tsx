@@ -313,7 +313,7 @@ function formatTimestamp(timestamp: number): string {
 
 function mapJobToHistoryEntry(job: Job): HistoryEntry | null {
   const renderUrls = Array.isArray(job.renderIds)
-    ? job.renderIds.filter((url): url is string => typeof url === 'string' && url.length)
+    ? job.renderIds.filter((url): url is string => typeof url === 'string' && url.length > 0)
     : [];
   const images: GeneratedImage[] =
     renderUrls.length > 0
