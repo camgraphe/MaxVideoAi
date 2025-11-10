@@ -186,12 +186,16 @@ function toISODate(input?: Date | string) {
   return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
 }
 
+const ENGINE_FILTER_LIMIT = 6;
+
 export default async function ExamplesPage({ searchParams }: ExamplesPageProps) {
   const { dictionary } = await resolveDictionary();
   const content = dictionary.examples;
   const sortContent = (content as { sort?: Record<string, string> })?.sort;
   const sortLabel = (content as { sortLabel?: string })?.sortLabel ?? 'Sort';
   const countLabel = (content as { countLabel?: string })?.countLabel ?? 'curated renders';
+  const engineFilterLabel = (content as { engineFilterLabel?: string })?.engineFilterLabel ?? 'Engines';
+  const engineFilterAllLabel = (content as { engineFilterAllLabel?: string })?.engineFilterAllLabel ?? 'All';
   const sortLabels = sortContent ?? {
     newest: 'Newest',
     oldest: 'Oldest',
@@ -209,7 +213,71 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   const DEFAULT_SORT: ExampleSort = 'date-desc';
   const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
   const sort = getSort(sortParam);
-  const videos = await listExamples(sort, 60);
+  const allVideos = await listExamples(sort, 60);
+
+  const engineFilterMap = allVideos.reduce<
+    Map<
+      string,
+      {
+        id: string;
+        label: string;
+        brandId?: string;
+        count: number;
+      }
+    >
+  >((acc, video) => {
+    const canonicalEngineId = resolveEngineLinkId(video.engineId);
+    if (!canonicalEngineId) return acc;
+    const key = canonicalEngineId.toLowerCase();
+    const existing = acc.get(key);
+    if (existing) {
+      existing.count += 1;
+      return acc;
+    }
+    const engineMeta = ENGINE_META.get(key);
+    acc.set(key, {
+      id: canonicalEngineId,
+      label: engineMeta?.label ?? video.engineLabel ?? canonicalEngineId,
+      brandId: engineMeta?.brandId,
+      count: 1,
+    });
+    return acc;
+  }, new Map());
+
+  let engineFilterOptions = Array.from(engineFilterMap.values()).sort((a, b) => {
+    if (b.count !== a.count) return b.count - a.count;
+    return a.label.localeCompare(b.label);
+  });
+  const engineParam = Array.isArray(searchParams.engine) ? searchParams.engine[0] : searchParams.engine;
+  const normalizedEngineParam = typeof engineParam === 'string' ? engineParam.trim() : '';
+  const selectedEngine =
+    normalizedEngineParam && engineFilterOptions.some((option) => option.id === normalizedEngineParam)
+      ? normalizedEngineParam
+      : null;
+
+  const videos = selectedEngine
+    ? allVideos.filter((video) => resolveEngineLinkId(video.engineId) === selectedEngine)
+    : allVideos;
+
+  engineFilterOptions = engineFilterOptions.slice(0, ENGINE_FILTER_LIMIT);
+  if (selectedEngine && !engineFilterOptions.some((option) => option.id === selectedEngine)) {
+    const selectedMeta = engineFilterMap.get(selectedEngine.toLowerCase());
+    if (selectedMeta) {
+      engineFilterOptions = [...engineFilterOptions, selectedMeta];
+    }
+  }
+
+  const buildQueryParams = (nextSort: ExampleSort, engineValue: string | null): Record<string, string> | undefined => {
+    const query: Record<string, string> = {};
+    if (nextSort !== DEFAULT_SORT) {
+      query.sort = nextSort;
+    }
+    if (engineValue) {
+      query.engine = engineValue;
+    }
+    return Object.keys(query).length ? query : undefined;
+  };
+
   const itemListElements = videos
     .filter((video) => Boolean(video.thumbUrl))
     .map((video, index) => {
@@ -275,12 +343,12 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
       </header>
 
       <section className="mt-8 flex flex-wrap items-center justify-between gap-3 text-xs text-text-secondary">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-4">
           <span className="font-semibold uppercase tracking-micro text-text-muted">{sortLabel}</span>
           <nav className="flex gap-2 rounded-pill border border-hairline bg-white px-2 py-1">
             {SORT_OPTIONS.map((option) => {
               const isActive = option.id === sort;
-              const queryParams = option.id === DEFAULT_SORT ? undefined : { sort: option.id };
+              const queryParams = buildQueryParams(option.id, selectedEngine);
               return (
                 <Link
                   key={option.id}
@@ -295,6 +363,47 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
               );
             })}
           </nav>
+          {engineFilterOptions.length ? (
+            <div className="flex items-center gap-2">
+              <span className="font-semibold uppercase tracking-micro text-text-muted">{engineFilterLabel}</span>
+              <div className="flex items-center gap-1">
+                <Link
+                  href={{ pathname: '/examples', query: buildQueryParams(sort, null) }}
+                  className={clsx(
+                    'flex h-9 items-center justify-center rounded-full border px-3 text-[11px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
+                    selectedEngine
+                      ? 'border-hairline bg-white text-text-secondary hover:border-accent hover:text-text-primary'
+                      : 'border-transparent bg-text-primary text-white shadow-card'
+                  )}
+                >
+                  {engineFilterAllLabel}
+                </Link>
+                {engineFilterOptions.map((engine) => {
+                  const isActive = selectedEngine === engine.id;
+                  return (
+                    <Link
+                      key={engine.id}
+                      href={{ pathname: '/examples', query: buildQueryParams(sort, isActive ? null : engine.id) }}
+                      className={clsx(
+                        'flex h-9 w-9 items-center justify-center rounded-full border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
+                        isActive
+                          ? 'border-transparent bg-text-primary text-white shadow-card'
+                          : 'border-hairline bg-white text-text-secondary hover:border-accent hover:text-text-primary'
+                      )}
+                      aria-label={engine.label}
+                      title={engine.label}
+                    >
+                      <EngineIcon
+                        engine={{ id: engine.id, label: engine.label, brandId: engine.brandId }}
+                        size={20}
+                        rounded="full"
+                      />
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
         </div>
         <span className="text-xs text-text-muted">
           {videos.length} {countLabel}

@@ -703,6 +703,10 @@
     }
   },
   "examples": {
+    "sortLabel": "Orden",
+    "countLabel": "renders seleccionados",
+    "engineFilterLabel": "Motores",
+    "engineFilterAllLabel": "Todos",
     "hero": {
       "title": "Muestras de motores.",
       "subtitle": "Pasa el cursor para reproducir en bucle, haz clic para ampliar. Cada clip previsualiza el movimiento y el estilo que puedes dirigir en MaxVideoAI."
@@ -904,6 +908,68 @@
         }
       ],
       "footnote": "¿Necesitas más detalles? Escribe a press@maxvideo.ai y lo derivaremos al productor adecuado."
+    }
+  },
+  "videoPage": {
+    "backLink": "← Volver a la galería",
+    "hero": {
+      "titleFallback": "Render MaxVideoAI",
+      "intro": "Este video se generó con {engine} en MaxVideoAI — descubre cómo producir renders similares a continuación.",
+      "promptLabel": "Prompt",
+      "promptFallback": "Prompt no disponible.",
+      "copy": "Copiar prompt",
+      "copied": "¡Copiado!",
+      "showMore": "Ver más",
+      "showLess": "Ver menos"
+    },
+    "seo": {
+      "title": "Desglose del render",
+      "promptFallback": "una escena cinemática generada por IA",
+      "durationPhrase": "un clip de {value} segundos",
+      "durationFallback": "un clip breve",
+      "aspectPhrase": "un formato {value}",
+      "aspectFallback": "un formato adaptable",
+      "sentences": [
+        "Este video generado por IA muestra {promptStyle} y proviene directamente de nuestra playlist pública de Ejemplos.",
+        "{engineName} gestionó este render dentro de MaxVideoAI, entregando {durationLabel} con {aspectRatioLabel} y {audioState}.",
+        "La secuencia destaca un movimiento coherente, iluminación nítida y reflejos naturales para que los equipos creativos evalúen el modelo.",
+        "El estilo del prompt mantiene señales de {promptTone} que puedes remezclar o ampliar con referencias visuales, narración o upscale.",
+        "Utiliza la tarjeta del motor, el enlace de precios y el blog para comparar modelos o iniciar una ejecución similar."
+      ]
+    },
+    "details": {
+      "title": "Detalles del render",
+      "engineLabel": "Motor",
+      "engineDescriptionFallback": "Consulta la ficha completa de este modelo.",
+      "engineCta": "Abrir página del modelo",
+      "engineUnavailable": "Motor no disponible",
+      "durationLabel": "Duración",
+      "durationValue": "{value} segundos",
+      "durationUnknown": "Desconocida",
+      "aspectLabel": "Relación",
+      "aspectAuto": "Auto",
+      "createdLabel": "Creado el",
+      "priceTotalLabel": "Costo del render",
+      "priceTotalValue": "{value}",
+      "priceTotalUnknown": "No disponible",
+      "audioLabel": "Audio",
+      "cta": "Comparar precios",
+      "ctaDescription": "Explora todas las tarifas"
+    },
+    "audioStates": {
+      "withAudio": "audio activado",
+      "withoutAudio": "salida en silencio"
+    },
+    "create": {
+      "title": "Crea la tuya",
+      "subtitle": "¿Quieres generar un video como este?",
+      "body": "Inicia un render con este prompt o cárgalo en el workspace para remezclarlo con tu motor, duración o audio preferido.",
+      "cta": "Iniciar un render →"
+    },
+    "blog": {
+      "title": "Sigue mejorando",
+      "message": "Aprende más sobre video con IA — visita nuestro blog para consejos, comparativas de motores y casos creativos.",
+      "cta": "Visitar el blog"
     }
   },
   "about": {

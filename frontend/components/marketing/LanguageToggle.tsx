@@ -13,6 +13,13 @@ const FLAG_MAP: Record<Locale, string> = {
   es: '🇪🇸',
 };
 
+const LOCALE_BYPASS_PREFIXES = ['/video'];
+
+function shouldBypassLocale(pathname: string | null | undefined) {
+  if (!pathname) return false;
+  return LOCALE_BYPASS_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
+
 export function LanguageToggle() {
   const router = useRouter();
   const pathname = usePathname();
@@ -48,6 +55,10 @@ export function LanguageToggle() {
         return;
       }
       const targetPath = pathname && pathname.length ? pathname : '/';
+      if (shouldBypassLocale(pathname)) {
+        router.refresh();
+        return;
+      }
       router.replace(targetPath as never, { locale: value });
     });
   };

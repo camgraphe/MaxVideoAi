@@ -4,13 +4,20 @@ import { useState } from 'react';
 
 type CopyPromptButtonProps = {
   prompt: string;
+  copyLabel?: string;
+  copiedLabel?: string;
 };
 
-export function CopyPromptButton({ prompt }: CopyPromptButtonProps) {
+export function CopyPromptButton({
+  prompt,
+  copyLabel = 'Copy prompt',
+  copiedLabel = 'Copied!',
+}: CopyPromptButtonProps) {
   const [copied, setCopied] = useState(false);
+  const disabled = !prompt?.trim();
 
   const handleCopy = async () => {
-    if (!prompt) return;
+    if (disabled) return;
     try {
       await navigator.clipboard.writeText(prompt);
       setCopied(true);
@@ -24,10 +31,11 @@ export function CopyPromptButton({ prompt }: CopyPromptButtonProps) {
     <button
       type="button"
       onClick={handleCopy}
-      className="rounded-input border border-border px-3 py-2 text-xs font-semibold uppercase tracking-micro text-text-primary transition hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
-      aria-label="Copy prompt"
+      className="rounded-input border border-border px-3 py-2 text-xs font-semibold uppercase tracking-micro text-text-primary transition hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 disabled:cursor-not-allowed disabled:opacity-60"
+      aria-label={copyLabel}
+      disabled={disabled}
     >
-      {copied ? 'Copied!' : 'Copy prompt'}
+      {copied ? copiedLabel : copyLabel}
     </button>
   );
 }
