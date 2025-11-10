@@ -28,6 +28,7 @@ import {
   getNanoBananaAspectRatios,
   getNanoBananaDefaultAspectRatio,
 } from '@/lib/image/aspectRatios';
+import { resolveCssAspectRatio } from '@/lib/aspect';
 
 interface ImageWorkspaceCopy {
   hero: {
@@ -302,6 +303,10 @@ interface ImageWorkspaceProps {
   engines: ImageEngineOption[];
 }
 
+function SectionDivider() {
+  return <div className="my-6 border-t border-white/60" role="presentation" />;
+}
+
 function formatCurrency(amount: number, currency: string): string {
   try {
     return new Intl.NumberFormat('en-US', {
@@ -321,18 +326,6 @@ function formatTimestamp(timestamp: number): string {
     month: 'short',
     day: 'numeric',
   }).format(new Date(timestamp));
-}
-
-function toCssAspectRatio(value?: string | null): string | undefined {
-  if (!value || value === 'auto') return undefined;
-  const parts = value.split(':');
-  if (parts.length !== 2) return undefined;
-  const width = Number(parts[0]);
-  const height = Number(parts[1]);
-  if (!Number.isFinite(width) || !Number.isFinite(height) || height <= 0) {
-    return undefined;
-  }
-  return `${width} / ${height}`;
 }
 
 function mapJobToHistoryEntry(job: Job): HistoryEntry | null {
@@ -882,7 +875,13 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       : formatTemplate(resolvedCopy.history.runsLabel.other, { count: historyEntries.length });
   const aspectRatioOptions = isNanoBanana ? getNanoBananaAspectRatios(mode) : [];
   const selectedAspectRatioLabel = formatAspectRatioLabel(aspectRatio);
-  const previewAspectRatioCss = toCssAspectRatio(previewEntry?.aspectRatio ?? null);
+  const previewPrimaryImage = previewEntry?.images?.[0];
+  const previewAspectRatioCss = resolveCssAspectRatio({
+    value: previewEntry?.aspectRatio ?? null,
+    width: previewPrimaryImage?.width ?? null,
+    height: previewPrimaryImage?.height ?? null,
+    fallback: '1 / 1',
+  });
   const previewAspectRatioLabel = formatAspectRatioLabel(previewEntry?.aspectRatio ?? null);
 
   return (
@@ -1018,12 +1017,21 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                 ) : null}
               </div>
 
-              <div>
-                <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
-                  <span>{resolvedCopy.composer.numImagesLabel}</span>
-                  <span className="text-text-secondary">{numImagesCountLabel}</span>
+              <SectionDivider />
+
+              <section className="space-y-3">
+                <div className="flex flex-wrap items-baseline justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
+                      {resolvedCopy.composer.numImagesLabel}
+                    </p>
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-text-muted">
+                      {resolvedCopy.composer.presetsHint}
+                    </p>
+                  </div>
+                  <p className="text-sm font-semibold text-text-primary">{numImagesCountLabel}</p>
                 </div>
-                <div className="mt-2 flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2">
                   {QUICK_IMAGE_COUNT_OPTIONS.map((option) => (
                     <button
                       key={`image-count-${option}`}
@@ -1040,54 +1048,68 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                     </button>
                   ))}
                 </div>
-                <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-text-muted">{resolvedCopy.composer.presetsHint}</p>
-                <p className="mt-1 text-xs text-text-secondary">{estimatedCostText}</p>
-              </div>
+                <p className="text-xs text-text-secondary">{estimatedCostText}</p>
+              </section>
 
               {isNanoBanana ? (
-                <div>
-                  <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
-                    <span>{resolvedCopy.composer.aspectRatioLabel}</span>
-                    <span className="text-text-secondary">{selectedAspectRatioLabel ?? resolvedCopy.composer.aspectRatioHint}</span>
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {aspectRatioOptions.map((option) => (
-                      <button
-                        key={`aspect-ratio-${option}`}
-                        type="button"
-                        onClick={() => setAspectRatio(option)}
-                        className={clsx(
-                          'rounded-full border px-3 py-1 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                          aspectRatio === option
-                            ? 'border-accent bg-accent text-white'
-                            : 'border-border bg-white text-text-secondary hover:border-accentSoft/60 hover:text-text-primary'
-                        )}
-                      >
-                        {formatAspectRatioLabel(option) ?? option}
-                      </button>
-                    ))}
-                  </div>
-                  <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-text-muted">
-                    {mode === 'i2i' ? resolvedCopy.composer.aspectRatioAutoNote : resolvedCopy.composer.aspectRatioHint}
-                  </p>
-                </div>
+                <>
+                  <SectionDivider />
+                  <section className="space-y-3">
+                    <div className="flex flex-wrap items-baseline justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
+                          {resolvedCopy.composer.aspectRatioLabel}
+                        </p>
+                        <p className="text-xs text-text-secondary">
+                          {mode === 'i2i'
+                            ? resolvedCopy.composer.aspectRatioAutoNote
+                            : resolvedCopy.composer.aspectRatioHint}
+                        </p>
+                      </div>
+                      <p className="text-sm font-semibold text-text-primary">
+                        {selectedAspectRatioLabel ?? resolvedCopy.composer.aspectRatioHint}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {aspectRatioOptions.map((option) => (
+                        <button
+                          key={`aspect-ratio-${option}`}
+                          type="button"
+                          onClick={() => setAspectRatio(option)}
+                          className={clsx(
+                            'rounded-full border px-3 py-1 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                            aspectRatio === option
+                              ? 'border-accent bg-accent text-white'
+                              : 'border-border bg-white text-text-secondary hover:border-accentSoft/60 hover:text-text-primary'
+                          )}
+                        >
+                          {formatAspectRatioLabel(option) ?? option}
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                </>
               ) : null}
 
-              <div>
-                <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
-                  <span>{resolvedCopy.composer.referenceLabel}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-text-secondary">{resolvedCopy.composer.referenceHelper}</span>
-                    <button
-                      type="button"
-                      onClick={() => setLibraryModal({ open: true, slotIndex: null })}
-                      className="rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold text-text-primary transition hover:bg-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      {resolvedCopy.library.button}
-                    </button>
+              <SectionDivider />
+
+              <section className="space-y-3">
+                <div className="flex flex-wrap items-baseline justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
+                      {resolvedCopy.composer.referenceLabel}
+                    </p>
+                    <p className="text-[10px] text-text-secondary">{resolvedCopy.composer.referenceHelper}</p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setLibraryModal({ open: true, slotIndex: null })}
+                    className="rounded-full border border-border px-3 py-1 text-[11px] font-semibold text-text-secondary transition hover:border-accent hover:text-text-primary"
+                  >
+                    {resolvedCopy.composer.referenceButton}
+                  </button>
                 </div>
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-3 sm:grid-cols-2">
                   {referenceSlots.map((slot, index) => (
                     <div
                       key={`slot-${index}`}
@@ -1123,6 +1145,14 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                             className="h-full w-full object-cover"
                             referrerPolicy="no-referrer"
                           />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveReferenceSlot(index)}
+                            className="absolute right-2 top-2 rounded-full bg-black/65 px-2 py-0.5 text-[11px] font-semibold text-white shadow"
+                            aria-label={resolvedCopy.composer.referenceSlotActions.remove}
+                          >
+                            ×
+                          </button>
                           <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-black/55 px-2 py-1 text-[10px] text-white">
                             <span className="truncate">
                               {slot.name ?? slot.source ?? resolvedCopy.composer.referenceSlotNameFallback}
@@ -1185,7 +1215,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                   ))}
                 </div>
                 <p className="mt-2 text-xs text-text-secondary">{resolvedCopy.composer.referenceNote}</p>
-              </div>
+              </section>
 
               {error && (
                 <p className="rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
@@ -1247,7 +1277,18 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                           {displayImages.length ? (
                             <div className="grid grid-cols-2 gap-1">
                               {displayImages.map((image, index) => (
-                                <div key={`${entry.id}-${index}`} className="relative aspect-square overflow-hidden rounded-xl bg-neutral-100">
+                                <div
+                                  key={`${entry.id}-${index}`}
+                                  className="relative overflow-hidden rounded-xl bg-neutral-100"
+                                  style={{
+                                    aspectRatio: resolveCssAspectRatio({
+                                      value: entry.aspectRatio ?? null,
+                                      width: image.width ?? null,
+                                      height: image.height ?? null,
+                                      fallback: '1 / 1',
+                                    }),
+                                  }}
+                                >
                                   <img
                                     src={image.url}
                                     alt={entry.prompt}

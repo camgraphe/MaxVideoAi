@@ -46,3 +46,39 @@ export function getAspectRatioString(value?: string | null, fallback = '16 / 9')
   if (!parsed) return fallback;
   return `${parsed.width} / ${parsed.height}`;
 }
+
+export function getAspectRatioFromDimensions(width?: number | null, height?: number | null): AspectRatioParts | null {
+  if (typeof width !== 'number' || typeof height !== 'number') return null;
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+    return null;
+  }
+  return { width, height };
+}
+
+export function getAspectRatioStringFromDimensions(
+  width?: number | null,
+  height?: number | null,
+  fallback = '16 / 9'
+): string {
+  const parts = getAspectRatioFromDimensions(width, height);
+  if (!parts) return fallback;
+  return `${parts.width} / ${parts.height}`;
+}
+
+export function resolveCssAspectRatio({
+  value,
+  width,
+  height,
+  fallback = '16 / 9',
+}: {
+  value?: string | null;
+  width?: number | null;
+  height?: number | null;
+  fallback?: string;
+}): string {
+  const dimensions = getAspectRatioFromDimensions(width, height);
+  if (dimensions) {
+    return `${dimensions.width} / ${dimensions.height}`;
+  }
+  return getAspectRatioString(value, fallback);
+}

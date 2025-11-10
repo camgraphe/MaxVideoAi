@@ -32,7 +32,7 @@ function shouldGroup(job: Job, iterationCountHint: number): boolean {
 function buildMember(job: Job): GroupMemberSummary {
   const thumbUrl = normalizeMediaUrl(job.thumbUrl) ?? null;
   const videoUrl = normalizeMediaUrl(job.videoUrl) ?? null;
-  const aspectRatio = job.aspectRatio ?? '16:9';
+  const aspectRatio = job.aspectRatio ?? null;
   const priceCents = job.finalPriceCents ?? job.pricingSnapshot?.totalCents ?? null;
   const currency = job.currency ?? job.pricingSnapshot?.currency ?? null;
   const iterationCount = job.iterationCount ?? (Array.isArray(job.renderIds) ? job.renderIds.length : null) ?? null;
@@ -112,7 +112,7 @@ function buildSingleGroup(job: Job): GroupSummary {
   const member = buildMember(job);
   const thumb = member.thumbUrl ?? null;
   const video = member.videoUrl ?? null;
-  const aspect = member.aspectRatio ?? job.aspectRatio ?? '16:9';
+  const aspect = member.aspectRatio ?? job.aspectRatio ?? null;
   const priceCents = typeof member.priceCents === 'number' ? member.priceCents : null;
   const currency = member.currency ?? null;
   const createdAt = member.createdAt ?? job.createdAt;
@@ -258,7 +258,7 @@ export function groupJobsIntoSummaries(
     const previews = members.slice(0, count).map((member) => {
       const thumb = member.thumbUrl ?? null;
       const video = member.videoUrl ?? null;
-      const aspect = member.aspectRatio ?? '16:9';
+      const aspect = member.aspectRatio ?? member.job?.aspectRatio ?? null;
       return {
         id: member.id,
         thumbUrl: thumb,
