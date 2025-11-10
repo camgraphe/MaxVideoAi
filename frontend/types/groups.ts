@@ -44,6 +44,7 @@ export interface GroupSummary {
     thumbUrl?: string | null;
     videoUrl?: string | null;
     aspectRatio?: string | null;
+    source?: string | null;
   }>;
   members: GroupMemberSummary[];
 }

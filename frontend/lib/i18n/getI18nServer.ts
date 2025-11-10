@@ -1,6 +1,6 @@
 import { resolveDictionary } from '@/lib/i18n/server';
 
-type TranslateFn = <T = unknown>(path: string, fallback?: T) => T;
+type TranslateFn = <T = unknown>(path: string, fallback?: T) => T | undefined;
 
 function resolvePath<T>(source: Record<string, unknown>, path: string): T | undefined {
   return path.split('.').reduce<unknown>((acc, key) => {

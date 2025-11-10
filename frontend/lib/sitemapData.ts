@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';
-import { Client } from 'pg';
+import { Pool } from 'pg';
 import modelRoster from '@/config/model-roster.json';
 import localizedSlugConfig from '@/config/localized-slugs.json';
 
@@ -168,24 +168,27 @@ async function fetchSlugsFromDb(
   if (!connectionString) {
     return [];
   }
-  const client = new Client({ connectionString });
+  const pool = new Pool({ connectionString });
   try {
-    await client.connect();
-    const { rows } = await client.query(
+    const { rows } = await pool.query<{ slug: string | null; updated_at: string | Date | null }>(
       `SELECT slug, updated_at FROM ${tableName} WHERE slug IS NOT NULL`
     );
     return rows
       .filter((row) => typeof row.slug === 'string' && row.slug.trim().length > 0)
-      .map((row) => ({
-        path: normalizePathSegments(basePath, row.slug.trim()),
-        lastmod: row.updated_at ? new Date(row.updated_at).toISOString() : undefined,
-      }));
+      .map((row) => {
+        const slug = row.slug?.trim() ?? '';
+        const lastmod = row.updated_at ? new Date(row.updated_at).toISOString() : undefined;
+        return {
+          path: normalizePathSegments(basePath, slug),
+          lastmod,
+        };
+      });
   } catch (error) {
     console.warn(`[sitemap] skipped ${tableName} slugs`, error instanceof Error ? error.message : error);
     return [];
   } finally {
     try {
-      await client.end();
+      await pool.end();
     } catch {}
   }
 }

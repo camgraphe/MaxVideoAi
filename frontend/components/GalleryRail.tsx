@@ -8,13 +8,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { EngineCaps } from '@/types/engines';
 import type { Job } from '@/types/jobs';
 import type { GroupSummary } from '@/types/groups';
-import type { VideoGroup } from '@/types/video-groups';
+import type { VideoGroup, ResultProvider } from '@/types/video-groups';
 import { hideJob, useEngines, useInfiniteJobs } from '@/lib/api';
 import { groupJobsIntoSummaries } from '@/lib/job-groups';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
+import { adaptGroupSummary } from '@/lib/video-group-adapter';
 
 interface Props {
   engine: EngineCaps;
@@ -51,6 +52,7 @@ const DEFAULT_GALLERY_COPY = {
 } as const;
 
 type GalleryCopy = typeof DEFAULT_GALLERY_COPY;
+const DEFAULT_GROUP_PROVIDER: ResultProvider = 'fal';
 
 export function GalleryRail({
   engine,
@@ -188,7 +190,8 @@ export function GalleryRail({
         return;
       }
       const normalized = normalizeGroupSummary(original);
-      setViewerGroup(normalized);
+      const adapted = adaptGroupSummary(normalized, DEFAULT_GROUP_PROVIDER);
+      setViewerGroup(adapted);
     },
     [onOpenGroup, summaryIndex]
   );

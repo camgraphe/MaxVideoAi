@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   const rawAmounts: number[] = Array.isArray(body.amounts)
     ? body.amounts
         .map((value: unknown) => (typeof value === 'number' ? Math.round(value) : Number.parseInt(String(value), 10)))
-        .filter((value) => Number.isFinite(value) && value > 0)
+        .filter((value: number): value is number => Number.isFinite(value) && value > 0)
     : [];
   const usdAmounts = rawAmounts.length ? rawAmounts : USD_TOPUP_TIERS.map((tier) => tier.amountCents);
 

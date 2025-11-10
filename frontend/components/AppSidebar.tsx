@@ -8,7 +8,16 @@ import { useEffect, useMemo, useState, useId } from 'react';
 import { Chip } from '@/components/ui/Chip';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
-export const NAV_ITEMS = [
+type NavItemDefinition = {
+  id: string;
+  label: string;
+  icon: string;
+  href: string;
+  badge?: string | null;
+  badgeKey?: string | null;
+};
+
+export const NAV_ITEMS: readonly NavItemDefinition[] = [
   { id: 'dashboard', label: 'Dashboard', badge: null, icon: 'dashboard', href: '/dashboard' },
   { id: 'generate', label: 'Generate Video', badge: 'LIVE', badgeKey: 'live', icon: 'generate', href: '/app' },
   { id: 'generate-image', label: 'Generate Image', badge: 'NEW', badgeKey: 'new', icon: 'generate-image', href: '/app/image' },
@@ -16,7 +25,7 @@ export const NAV_ITEMS = [
   { id: 'jobs', label: 'Jobs', badge: null, icon: 'jobs', href: '/jobs' },
   { id: 'billing', label: 'Billing', badge: null, icon: 'billing', href: '/billing' },
   { id: 'settings', label: 'Settings', badge: null, icon: 'settings', href: '/settings' }
-] as const;
+];
 
 const COLLAPSED_STORAGE_KEY = 'sidebarCollapsed';
 const PIN_STORAGE_KEY = 'sidebarPinned';

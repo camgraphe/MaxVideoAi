@@ -38,6 +38,7 @@ const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER = 'usd';
 
 type PaymentMode = 'wallet' | 'direct' | 'platform';
+type VideoMode = Extract<Mode, 't2v' | 'i2v'>;
 
 const LUMA_RAY2_TIMEOUT_MS = 180_000;
 const FAL_RETRY_DELAYS_MS = [5_000, 15_000, 30_000];
@@ -77,6 +78,10 @@ function withFalTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
       clearTimeout(timeoutId);
     }
   }) as Promise<T>;
+}
+
+function isVideoMode(value: unknown): value is VideoMode {
+  return value === 't2v' || value === 'i2v';
 }
 
 function delay(ms: number): Promise<void> {
@@ -440,11 +445,11 @@ export async function POST(req: NextRequest) {
   const requestedJobId = typeof body.jobId === 'string' && body.jobId.trim() ? String(body.jobId).trim() : null;
   const jobId = requestedJobId ?? `job_${randomUUID()}`;
   const rawMode = typeof body.mode === 'string' ? body.mode.trim().toLowerCase() : '';
-  const mode: Mode = (['t2v', 'i2v'] as const).includes(rawMode as Mode)
-    ? ((rawMode as Mode) ?? engine.modes[0] ?? 't2v')
+  const mode: Mode = isVideoMode(rawMode)
+    ? rawMode
     : engine.modes.includes('t2v')
       ? 't2v'
-      : engine.modes[0];
+      : engine.modes[0] ?? 't2v';
 
   const prompt = String(body.prompt || '');
   const isLumaRay2 = engine.id === 'lumaRay2';

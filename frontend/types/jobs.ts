@@ -7,6 +7,7 @@ export interface Job {
   prompt: string;
   thumbUrl?: string | null;
   videoUrl?: string;
+  readyVideoUrl?: string | null;
   createdAt: string;
   engineId?: string;
   aspectRatio?: string;

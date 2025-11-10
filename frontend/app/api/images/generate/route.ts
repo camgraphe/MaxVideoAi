@@ -18,11 +18,12 @@ import type { PricingSnapshot } from '@/types/engines';
 import { reserveWalletCharge } from '@/lib/wallet';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import { ensureUserPreferences } from '@/server/preferences';
-import { ensureUserPreferredCurrency } from '@/lib/currency';
+import { ensureUserPreferredCurrency, type Currency } from '@/lib/currency';
 import { normalizeMediaUrl } from '@/lib/media';
 import { getResultProviderMode } from '@/lib/result-provider';
 
 const DISPLAY_CURRENCY = 'USD';
+const DISPLAY_CURRENCY_LOWER: Currency = 'usd';
 const MAX_IMAGES = 8;
 const PLACEHOLDER_THUMB = '/assets/frames/thumb-1x1.svg';
 
@@ -86,28 +87,31 @@ function extractImages(payload: unknown): GeneratedImage[] {
     if (!root || typeof root !== 'object') continue;
     const imagesCandidate = (root as { images?: unknown }).images;
     if (!Array.isArray(imagesCandidate)) continue;
-    const mapped = imagesCandidate
-      .map((entry) => {
-        if (!entry || typeof entry !== 'object') return null;
-        const record = entry as Record<string, unknown>;
-        const urlRaw = typeof record.url === 'string' ? record.url : null;
-        if (!urlRaw) return null;
-        const width = typeof record.width === 'number' ? record.width : null;
-        const height = typeof record.height === 'number' ? record.height : null;
-        const mime =
-          typeof record.content_type === 'string'
-            ? (record.content_type as string)
-            : typeof record.mimetype === 'string'
-              ? (record.mimetype as string)
-              : null;
-        return {
-          url: normalizeUrl(urlRaw),
-          width,
-          height,
-          mimeType: mime,
-        } satisfies GeneratedImage;
-      })
-      .filter((entry): entry is GeneratedImage => Boolean(entry));
+    const mapped = imagesCandidate.reduce<GeneratedImage[]>((acc, entry) => {
+      if (!entry || typeof entry !== 'object') {
+        return acc;
+      }
+      const record = entry as Record<string, unknown>;
+      const urlRaw = typeof record.url === 'string' ? record.url : null;
+      if (!urlRaw) {
+        return acc;
+      }
+      const width = typeof record.width === 'number' ? record.width : null;
+      const height = typeof record.height === 'number' ? record.height : null;
+      const mime =
+        typeof record.content_type === 'string'
+          ? (record.content_type as string)
+          : typeof record.mimetype === 'string'
+            ? (record.mimetype as string)
+            : null;
+      acc.push({
+        url: normalizeUrl(urlRaw),
+        width,
+        height,
+        mimeType: mime,
+      });
+      return acc;
+    }, []);
     if (mapped.length) {
       return mapped;
     }
@@ -391,7 +395,7 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  await ensureUserPreferredCurrency(userId, DISPLAY_CURRENCY.toLowerCase());
+  await ensureUserPreferredCurrency(userId, DISPLAY_CURRENCY_LOWER);
 
   try {
     await query(
@@ -588,7 +592,7 @@ export async function POST(req: NextRequest) {
       providerJobId: providerJobId ?? null,
       engineId: engineEntry.id,
       engineLabel: engineEntry.marketingName,
-      durationMs: null,
+      durationMs: undefined,
       pricing,
       paymentStatus: 'paid_wallet',
       thumbUrl: hero,
