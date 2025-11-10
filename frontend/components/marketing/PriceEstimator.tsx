@@ -26,6 +26,8 @@ interface EngineOption {
   currency: string;
   availability: EngineAvailability;
   availabilityLink?: string | null;
+  showResolution: boolean;
+  rateUnit?: string;
 }
 
 interface PriceEstimatorProps {
@@ -141,6 +143,8 @@ function buildEngineOption(
         ? Object.keys(definition.resolutionMultipliers)
         : [];
 
+  const isNanoBanana = entry.id === 'nano-banana';
+
   let rates = resolutionSources
     .map((resolution) => {
       if (definition) {
@@ -170,6 +174,16 @@ function buildEngineOption(
 
   if (!rates.length) {
     return null;
+  }
+
+  if (isNanoBanana) {
+    rates = [
+      {
+        value: 'per-image',
+        label: 'Per image',
+        rate: 0.05,
+      },
+    ];
   }
 
   const durationField = getDurationField(engineCaps);
@@ -208,6 +222,8 @@ function buildEngineOption(
     currency: definition?.currency ?? engineCaps.pricingDetails?.currency ?? 'USD',
     availability: entry.availability,
     availabilityLink,
+    showResolution: !isNanoBanana,
+    rateUnit: isNanoBanana ? '/image' : '/s',
   };
 }
 
@@ -322,13 +338,16 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
 
   const [memberTier, setMemberTier] = useState<MemberTier>('Member');
 
-  const activeResolution = selectedEngine?.resolutions.find((resolution) => resolution.value === selectedResolution) ?? selectedEngine?.resolutions[0];
+  const activeResolution =
+    selectedEngine?.resolutions.find((resolution) => resolution.value === selectedResolution) ??
+    selectedEngine?.resolutions[0];
   const rate = activeResolution?.rate ?? 0;
+  const bypassPricing = selectedEngine?.id === 'nano-banana';
 
   const pricingMemberTier = (memberTier.toLowerCase() as PricingMemberTier);
 
   const pricingQuote = useMemo(() => {
-    if (!selectedEngine) return null;
+    if (!selectedEngine || bypassPricing) return null;
     try {
       return kernel.quote({
         engineId: selectedEngine.id,
@@ -339,11 +358,23 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
     } catch {
       return null;
     }
-  }, [kernel, selectedEngine, duration, selectedResolution, pricingMemberTier]);
+  }, [kernel, selectedEngine, duration, selectedResolution, pricingMemberTier, bypassPricing]);
 
-  const pricingSnapshot = pricingQuote?.snapshot ?? null;
+  const pricingSnapshot = bypassPricing ? null : pricingQuote?.snapshot ?? null;
+  const manualPricing = useMemo(() => {
+    if (!selectedEngine || selectedEngine.id !== 'nano-banana') return null;
+    return {
+      base: rate,
+      discountRate: 0,
+      discountValue: 0,
+      total: rate,
+    };
+  }, [selectedEngine, rate]);
 
   const pricing = useMemo(() => {
+    if (manualPricing) {
+      return manualPricing;
+    }
     if (!pricingSnapshot) {
       return {
         base: 0,
@@ -357,9 +388,9 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
     const discountValue = (pricingSnapshot.discount?.amountCents ?? 0) / 100;
     const total = pricingSnapshot.totalCents / 100;
     return { base, discountRate, discountValue, total };
-  }, [pricingSnapshot]);
+  }, [pricingSnapshot, manualPricing]);
 
-  const currency = pricingSnapshot?.currency ?? selectedEngine?.currency ?? 'USD';
+  const currency = bypassPricing ? 'USD' : pricingSnapshot?.currency ?? selectedEngine?.currency ?? 'USD';
   const tiers = dictionary.pricing.member.tiers;
   const tooltip = dictionary.pricing.member.tooltip;
   const memberNames = useMemo(() => {
@@ -467,26 +498,43 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
               </div>
 
               <div className="grid gap-6 sm:grid-cols-2">
-                <div className="rounded-[24px] border border-white/60 bg-white/85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
-                  <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">{fields.resolution}</span>
-                  <select
-                    id={resolutionId}
-                    value={selectedResolution}
-                    onChange={(event) => setSelectedResolution(event.target.value)}
-                    className="mt-3 w-full rounded-[16px] border border-transparent bg-white px-4 py-3 text-sm font-semibold text-text-primary shadow-[0_1px_3px_rgba(15,23,42,0.1)] transition focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-                  >
-                    {selectedEngine?.resolutions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  {activeResolution ? (
-                    <p className="mt-3 text-xs text-text-muted">
-                      {t('pricing.estimator.engineRateLabel', 'Engine rate')} {formatCurrency(rate, currency)}/s
+                {selectedEngine?.showResolution !== false ? (
+                  <div className="rounded-[24px] border border-white/60 bg-white/85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
+                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">{fields.resolution}</span>
+                    <select
+                      id={resolutionId}
+                      value={selectedResolution}
+                      onChange={(event) => setSelectedResolution(event.target.value)}
+                      className="mt-3 w-full rounded-[16px] border border-transparent bg-white px-4 py-3 text-sm font-semibold text-text-primary shadow-[0_1px_3px_rgba(15,23,42,0.1)] transition focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                    >
+                      {selectedEngine?.resolutions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    {activeResolution ? (
+                      <p className="mt-3 text-xs text-text-muted">
+                        {t('pricing.estimator.engineRateLabel', 'Engine rate')}{' '}
+                        {formatCurrency(rate, currency)}
+                        {selectedEngine?.rateUnit ?? '/s'}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : (
+                  <div className="rounded-[24px] border border-white/60 bg-white/85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
+                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
+                      {t('pricing.estimator.engineRateLabel', 'Engine rate')}
+                    </span>
+                    <p className="mt-3 text-2xl font-semibold text-text-primary">
+                      {formatCurrency(rate, currency)}
+                      {selectedEngine?.rateUnit ?? ''}
                     </p>
-                  ) : null}
-                </div>
+                    <p className="mt-2 text-xs text-text-muted">
+                      {t('pricing.estimator.perImageLabel', 'Applies per generated image inside Generate.')}
+                    </p>
+                  </div>
+                )}
 
                 {selectedEngine ? (
                   <div className="rounded-[24px] border border-white/60 bg-white/85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
@@ -609,14 +657,26 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
                     </span>
                     <p className="text-base font-semibold text-text-primary">{durationDisplay}</p>
                   </div>
-                  <div>
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
-                      {t('pricing.estimator.resolutionLabel', 'Resolution')}
-                    </span>
-                    <p className="text-base font-semibold text-text-primary">
-                      {activeResolution?.label ?? selectedResolution?.toUpperCase()}
-                    </p>
-                  </div>
+                  {selectedEngine?.showResolution !== false ? (
+                    <div>
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
+                        {t('pricing.estimator.resolutionLabel', 'Resolution')}
+                      </span>
+                      <p className="text-base font-semibold text-text-primary">
+                        {activeResolution?.label ?? selectedResolution?.toUpperCase()}
+                      </p>
+                    </div>
+                  ) : (
+                    <div>
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
+                        {t('pricing.estimator.engineRateLabel', 'Engine rate')}
+                      </span>
+                      <p className="text-base font-semibold text-text-primary">
+                        {formatCurrency(rate, currency)}
+                        {selectedEngine?.rateUnit ?? ''}
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">

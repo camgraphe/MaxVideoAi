@@ -332,7 +332,8 @@
       },
       "engineRateLabel": "Tarif du moteur",
       "durationLabel": "Durée",
-      "resolutionLabel": "Résolution"
+      "resolutionLabel": "Résolution",
+      "perImageLabel": "Tarif appliqué par image générée dans Generate."
     },
     "wallet": {
       "title": "Portefeuille",

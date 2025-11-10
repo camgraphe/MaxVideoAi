@@ -332,7 +332,8 @@
       },
       "engineRateLabel": "Engine rate",
       "durationLabel": "Duration",
-      "resolutionLabel": "Resolution"
+      "resolutionLabel": "Resolution",
+      "perImageLabel": "Applies per generated image inside Generate."
     },
     "wallet": {
       "title": "Wallet",
