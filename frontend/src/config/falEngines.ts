@@ -972,7 +972,7 @@ const NANO_BANANA_ENGINE: EngineCaps = {
   modes: ['t2i', 'i2i'],
   maxDurationSec: 8,
   resolutions: ['square_hd', 'landscape_hd', 'portrait_hd'],
-  aspectRatios: ['1:1', '16:9', '9:16', '4:5', '5:4', '3:2', '2:3'],
+  aspectRatios: ['9:16', '16:9', '1:1', '4:5', '5:4', '4:3', '3:4', '3:2', '2:3', '21:9'],
   fps: [1],
   audio: false,
   upscale4k: false,
@@ -1738,7 +1738,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
         falModelId: 'fal-ai/nano-banana',
         ui: {
           modes: ['t2i'],
-          aspectRatio: ['16:9', '9:16', '1:1', '4:5', '5:4', '3:2', '2:3'],
+          aspectRatio: ['9:16', '16:9', '1:1', '4:5', '5:4', '4:3', '3:4', '3:2', '2:3', '21:9'],
           notes: 'Launch up to 8 high-quality renders from one prompt.',
         },
       },
@@ -1747,7 +1747,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
         falModelId: 'fal-ai/nano-banana/edit',
         ui: {
           modes: ['i2i'],
-          aspectRatio: ['16:9', '9:16', '1:1', '4:5', '5:4', '3:2', '2:3'],
+          aspectRatio: ['auto', '9:16', '16:9', '1:1', '4:5', '5:4', '4:3', '3:4', '3:2', '2:3', '21:9'],
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
           maxUploadMB: 25,
           notes: 'Upload 1–4 references to remix or extend shots.',

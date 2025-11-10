@@ -5,7 +5,20 @@ export type EngineStatus = 'live' | 'busy' | 'degraded' | 'maintenance' | 'early
 export type LatencyTier = 'fast' | 'standard';
 export type Mode = 't2v' | 'i2v' | 't2i' | 'i2i';
 export type Resolution = '720p' | '1080p' | '4k' | '512P' | '768P' | 'square_hd' | 'landscape_hd' | 'portrait_hd' | 'auto';
-export type AspectRatio = '16:9' | '9:16' | '1:1' | '4:5' | '5:4' | '3:2' | '2:3' | 'custom' | 'source' | 'auto';
+export type AspectRatio =
+  | '16:9'
+  | '9:16'
+  | '1:1'
+  | '4:5'
+  | '5:4'
+  | '4:3'
+  | '3:4'
+  | '3:2'
+  | '2:3'
+  | '21:9'
+  | 'custom'
+  | 'source'
+  | 'auto';
 export type EngineAvailability = 'available' | 'limited' | 'waitlist' | 'paused';
 
 export interface BrandAssetPolicy {
