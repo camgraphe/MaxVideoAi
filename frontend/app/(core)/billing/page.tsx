@@ -49,6 +49,9 @@ export const dynamic = 'force-dynamic';
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
 const stripePromise = PUBLISHABLE_KEY ? loadStripe(PUBLISHABLE_KEY) : null;
+type LegacyCheckoutStripe = Stripe & {
+  redirectToCheckout?: (params: { sessionId: string }) => Promise<{ error?: { message?: string } }>;
+};
 
 const GOOGLE_ADS_CONVERSION_TARGET = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID ?? 'AW-992154028/7oDUCMuC9rQbEKyjjNkD';
 const GOOGLE_ADS_CONVERSION_CURRENCY = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_CURRENCY ?? 'EUR';
@@ -429,8 +432,8 @@ export default function BillingPage() {
         return;
       }
       if (payload?.id && stripePromise) {
-        const stripe = (await stripePromise) as Stripe | null;
-        const redirectResult = await stripe?.redirectToCheckout({ sessionId: payload.id as string });
+        const stripe = (await stripePromise) as LegacyCheckoutStripe | null;
+        const redirectResult = await stripe?.redirectToCheckout?.({ sessionId: String(payload.id) });
         if (!redirectResult?.error) {
           return;
         }
