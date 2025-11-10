@@ -9,11 +9,23 @@
   "hero": {
     "title": "Pika Image-to-Video – Animate Any Image with Stylized Motion",
     "intro": "Upload a still, add a short prompt, and let Pika add cinematic zooms, motion, or animation styles. It’s fast, silent, and ideal for looping content, thumbnails, and concept reels.",
-    "ctaPrimary": { "label": "Animate with Pika Image-to-Video", "href": "/app?engine=pika-image-to-video" },
+    "ctaPrimary": {
+      "label": "Animate with Pika Image-to-Video",
+      "href": "/app?engine=pika-image-to-video"
+    },
     "secondaryLinks": [
-      { "label": "See all engines", "href": "/models" },
-      { "label": "Explore workflows", "href": "/workflows" },
-      { "label": "View pricing", "href": "/pricing" }
+      {
+        "label": "See all engines",
+        "href": "/models"
+      },
+      {
+        "label": "Explore workflows",
+        "href": "/workflows"
+      },
+      {
+        "label": "Check live pricing in-app",
+        "href": "/generate"
+      }
     ]
   },
   "overview": "Bring still visuals to life in seconds. Pika’s image-to-video mode adds motion to illustrations, renders, and product shots without audio—perfect for short loops and stylized b-roll.",
@@ -31,17 +43,35 @@
     {
       "label": "Duration",
       "body": "5 or 8-second animations tuned for looping",
-      "link": { "label": "Pika Docs", "href": "https://www.pika.art/docs/image-to-video" }
+      "link": {
+        "label": "Pika Docs",
+        "href": "https://www.pika.art/docs/image-to-video"
+      }
     },
     {
       "label": "Resolution",
       "body": "720p or 1080p output in 1:1, 16:9, or 9:16",
-      "link": { "label": "Pika Discord", "href": "https://discord.gg/pika" }
+      "link": {
+        "label": "Pika Discord",
+        "href": "https://discord.gg/pika"
+      }
     },
-    { "label": "Audio", "body": "Silent clips—ideal for overlays or post-production sound" },
-    { "label": "Inputs", "body": "Upload an image plus an optional short prompt to steer motion" },
-    { "label": "Modes", "body": "Image-to-video only; reference frame required" },
-    { "label": "Pricing", "body": "Pay-as-you-go via MaxVideoAI — $0.06/s (no audio)" }
+    {
+      "label": "Audio",
+      "body": "Silent clips—ideal for overlays or post-production sound"
+    },
+    {
+      "label": "Inputs",
+      "body": "Upload an image plus an optional short prompt to steer motion"
+    },
+    {
+      "label": "Modes",
+      "body": "Image-to-video only; reference frame required"
+    },
+    {
+      "label": "Pricing",
+      "body": "Live wallet-based pricing — open the Generate workspace for current rates."
+    }
   ],
   "promptStructure": {
     "title": "Prompt structure",
@@ -91,5 +121,5 @@
       "a": "Yes. Route the finished clip through the MaxVideoAI upscaler or rerun it in MiniMax Hailuo 02 for a sharper pass while keeping the same motion blueprint."
     }
   ],
-  "pricingNotes": "Plan for ~$0.30 per render (Silent clip · 5s · 720p)."
+  "pricingNotes": "Live pricing updates inside the Generate workspace. Check the current rate before you run a job."
 }

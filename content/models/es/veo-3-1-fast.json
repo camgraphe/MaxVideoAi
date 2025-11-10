@@ -9,11 +9,23 @@
   "hero": {
     "title": "Veo 3.1 Fast – motor veloz con audio opcional",
     "intro": "Veo 3.1 Fast acerca los controles cinemáticos de DeepMind a un precio menor. Conservas la fidelidad de prompts y presets de cámara de Veo 3.1, eliges clips de hasta 8 s y activas o no el audio nativo para iterar con agilidad.",
-    "ctaPrimary": { "label": "Probar Veo 3.1 Fast", "href": "/app?engine=veo-3-1-fast" },
+    "ctaPrimary": {
+      "label": "Probar Veo 3.1 Fast",
+      "href": "/app?engine=veo-3-1-fast"
+    },
     "secondaryLinks": [
-      { "label": "Ver todos los motores", "href": "/modelos" },
-      { "label": "Explorar flujos de trabajo", "href": "/workflows" },
-      { "label": "Ver precios", "href": "/precios" }
+      {
+        "label": "Ver todos los motores",
+        "href": "/modelos"
+      },
+      {
+        "label": "Explorar flujos de trabajo",
+        "href": "/workflows"
+      },
+      {
+        "label": "Consultar precios en vivo",
+        "href": "/generate"
+      }
     ]
   },
   "overview": "Equilibra calidad y velocidad con Veo 3.1 Fast. Mantiene los controles de encuadre de DeepMind, reduce la latencia y permite sumar ambiente gracias al audio opcional sin esperar a un render completo de Veo 3.1.",
@@ -31,21 +43,39 @@
     {
       "label": "Duración",
       "body": "Clips de hasta 8 s para iteraciones rápidas",
-      "link": { "label": "Ficha del modelo", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
+      "link": {
+        "label": "Ficha del modelo",
+        "href": "https://fal.ai/models/fal-ai/veo3.1/fast"
+      }
     },
     {
       "label": "Resolución",
       "body": "Salida 1080p en formatos 16:9 y 9:16",
-      "link": { "label": "DeepMind Veo", "href": "https://deepmind.google/models/veo" }
+      "link": {
+        "label": "DeepMind Veo",
+        "href": "https://deepmind.google/models/veo"
+      }
     },
     {
       "label": "Audio",
       "body": "Audio nativo opcional: actívalo para voz y ambiente",
-      "link": { "label": "Ficha del modelo", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
+      "link": {
+        "label": "Ficha del modelo",
+        "href": "https://fal.ai/models/fal-ai/veo3.1/fast"
+      }
     },
-    { "label": "Entradas", "body": "Solo prompts de texto — ideal para iteración rápida" },
-    { "label": "Modos", "body": "Texto→video con interruptor de audio; sin imágenes de referencia" },
-    { "label": "Precio", "body": "Pago por uso vía MaxVideoAI — $0.15/s con audio o $0.10/s sin (~$1.20 máximo por clip)" }
+    {
+      "label": "Entradas",
+      "body": "Solo prompts de texto — ideal para iteración rápida"
+    },
+    {
+      "label": "Modos",
+      "body": "Texto→video con interruptor de audio; sin imágenes de referencia"
+    },
+    {
+      "label": "Precio",
+      "body": "Precios dinámicos basados en tu wallet — abre la página Generate para ver la tarifa actual."
+    }
   ],
   "promptStructure": {
     "title": "Estructura de prompt",
@@ -93,8 +123,8 @@
     },
     {
       "q": "¿Cómo se compara el precio?",
-      "a": "Ahorra aproximadamente 15 % frente a ejecuciones completas de Veo 3.1 manteniendo el encuadre premium. El calculador y la cola muestran la tarifa exacta antes de cada render."
+      "a": "La tarifa es dinámica. Abre Generate para ver el precio en vivo; suele ser más bajo que una ejecución completa de Veo 3.1 conservando los mismos controles de cámara."
     }
   ],
-  "pricingNotes": "Calcula ~1,20 USD por render (Audio activado · 8 s · 1080p)."
+  "pricingNotes": "Los precios se actualizan dentro de Generate. Comprueba la tarifa en vivo antes de lanzar un render."
 }

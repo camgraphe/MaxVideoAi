@@ -9,11 +9,23 @@
   "hero": {
     "title": "Sora 2 Pro – Video extendido con audio nativo y control de escenas",
     "intro": "Sora 2 Pro amplía el motor de Sora 2 para desbloquear duraciones mayores, prompts multiescena y un control más fino sobre la continuidad audiovisual. Encadena escenas, dirige los movimientos de cámara o anima referencias para contar historias que se mantengan fieles a la marca.",
-    "ctaPrimary": { "label": "Generar con Sora 2 Pro", "href": "/app?engine=sora-2-pro" },
+    "ctaPrimary": {
+      "label": "Generar con Sora 2 Pro",
+      "href": "/app?engine=sora-2-pro"
+    },
     "secondaryLinks": [
-      { "label": "Ver todos los motores", "href": "/modelos" },
-      { "label": "Explorar flujos de trabajo", "href": "/workflows" },
-      { "label": "Ver precios", "href": "/precios" }
+      {
+        "label": "Ver todos los motores",
+        "href": "/modelos"
+      },
+      {
+        "label": "Explorar flujos de trabajo",
+        "href": "/workflows"
+      },
+      {
+        "label": "Consultar precios en vivo",
+        "href": "/generate"
+      }
     ]
   },
   "overview": "Genera vídeos de IA más largos con sonido y control de escenas usando Sora 2 Pro. Perfecto para narración, vídeos explicativos y diseño de motion para marcas — partiendo de prompts de imagen o texto.",
@@ -66,7 +78,7 @@
     },
     {
       "label": "Precio",
-      "body": "Audio activado desde $0.60/s (~$4.80 por clip de 8 s)"
+      "body": "Precios dinámicos basados en tu wallet — abre la página Generate para ver la tarifa actual."
     }
   ],
   "promptStructure": {
@@ -119,5 +131,5 @@
       "a": "El audio está activado por defecto para sincronización labial y diseño sonoro, pero puedes desactivarlo en el compositor si solo necesitas imágenes."
     }
   ],
-  "pricingNotes": "Calcula ~$4.80 por render (Audio activado · 8s · 1080p)."
+  "pricingNotes": "Los precios se actualizan dentro de Generate. Comprueba la tarifa en vivo antes de lanzar un render."
 }

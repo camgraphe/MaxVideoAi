@@ -9,11 +9,23 @@
   "hero": {
     "title": "Sora 2 – AI Video from Text or Image with Native Sound",
     "intro": "Sora 2 by OpenAI brings text-to-video and image-to-video generation into one engine, combining cinematic visuals with full native audio—voice-over, ambient sound, and synced motion. Animate concepts, scenes, or objects directly from words or reference images without leaving MaxVideoAI.",
-    "ctaPrimary": { "label": "Generate with Sora 2", "href": "/app?engine=sora-2" },
+    "ctaPrimary": {
+      "label": "Generate with Sora 2",
+      "href": "/app?engine=sora-2"
+    },
     "secondaryLinks": [
-      { "label": "See all engines", "href": "/models" },
-      { "label": "Explore workflows", "href": "/workflows" },
-      { "label": "View pricing", "href": "/pricing" }
+      {
+        "label": "See all engines",
+        "href": "/models"
+      },
+      {
+        "label": "Explore workflows",
+        "href": "/workflows"
+      },
+      {
+        "label": "Check live pricing in-app",
+        "href": "/generate"
+      }
     ]
   },
   "overview": "Generate videos from text or images using Sora 2 — now with voice-over, ambient sound, and smooth animation. Animate reference stills or craft full prompts with synced audio.",
@@ -66,7 +78,7 @@
     },
     {
       "label": "Pricing",
-      "body": "Pay-as-you-go via MaxVideoAI — audio-on renders from $0.52/s (~$4.16 per 8-second clip)"
+      "body": "Live wallet-based pricing — open the Generate workspace for current rates."
     }
   ],
   "promptStructure": {
@@ -120,5 +132,5 @@
       "a": "MaxVideo AI routes Sora 2 runs through FAL by default. Drop your own OpenAI API key in the app to bill usage directly through OpenAI—the interface keeps showing an indicative rate and adds a \"Billed by OpenAI\" badge so finance teams stay aligned."
     }
   ],
-  "pricingNotes": "Plan for ~$2.08 per render (Audio on · 4s · 720p)."
+  "pricingNotes": "Live pricing updates inside the Generate workspace. Check the current rate before you run a job."
 }

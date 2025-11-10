@@ -9,11 +9,23 @@
   "hero": {
     "title": "MiniMax Hailuo 02 – motor imagen→video",
     "intro": "Hailuo 02 te permite dar vida a tus stills con prompts cortos. Anima renders, storyboards y miniaturas con zooms fluidos, paneos o efectos estilizados en cuestión de segundos.",
-    "ctaPrimary": { "label": "Animar con MiniMax Imagen→Video", "href": "/app?engine=minimax-hailuo-02-image" },
+    "ctaPrimary": {
+      "label": "Animar con MiniMax Imagen→Video",
+      "href": "/app?engine=minimax-hailuo-02-image"
+    },
     "secondaryLinks": [
-      { "label": "Ver todos los motores", "href": "/modelos" },
-      { "label": "Explorar flujos de trabajo", "href": "/workflows" },
-      { "label": "Ver precios", "href": "/precios" }
+      {
+        "label": "Ver todos los motores",
+        "href": "/modelos"
+      },
+      {
+        "label": "Explorar flujos de trabajo",
+        "href": "/workflows"
+      },
+      {
+        "label": "Consultar precios en vivo",
+        "href": "/generate"
+      }
     ]
   },
   "overview": "Carga una imagen de referencia, describe el movimiento y Hailuo 02 hace el resto. Es silencioso, asequible e ideal para motion design playlists, tomas de producto o b-roll en loop.",
@@ -31,17 +43,35 @@
     {
       "label": "Duración",
       "body": "Animaciones de 6 u 10 s para flujos rápidos",
-      "link": { "label": "Ficha del modelo", "href": "https://fal.ai/models/fal-ai/minimax-hailuo-02-image" }
+      "link": {
+        "label": "Ficha del modelo",
+        "href": "https://fal.ai/models/fal-ai/minimax-hailuo-02-image"
+      }
     },
     {
       "label": "Resolución",
       "body": "720p o 1080p con soporte vertical y horizontal",
-      "link": { "label": "Docs MiniMax", "href": "https://www.minimax.chat/developer/docs/video" }
+      "link": {
+        "label": "Docs MiniMax",
+        "href": "https://www.minimax.chat/developer/docs/video"
+      }
     },
-    { "label": "Audio", "body": "Sin audio — pensado para efectos visuales silenciosos" },
-    { "label": "Entradas", "body": "Sube una imagen y añade un prompt breve para guiar el movimiento" },
-    { "label": "Modos", "body": "Solo imagen→video; se requiere imagen de referencia" },
-    { "label": "Precio", "body": "Pago por uso vía MaxVideoAI — $0.05/s (sin audio)" }
+    {
+      "label": "Audio",
+      "body": "Sin audio — pensado para efectos visuales silenciosos"
+    },
+    {
+      "label": "Entradas",
+      "body": "Sube una imagen y añade un prompt breve para guiar el movimiento"
+    },
+    {
+      "label": "Modos",
+      "body": "Solo imagen→video; se requiere imagen de referencia"
+    },
+    {
+      "label": "Precio",
+      "body": "Precios dinámicos basados en tu wallet — abre la página Generate para ver la tarifa actual."
+    }
   ],
   "promptStructure": {
     "title": "Estructura de prompt",
@@ -91,5 +121,5 @@
       "a": "Sube overlays o logos desde MaxVideoAI y reutiliza el mismo preset en MiniMax, Pika y Veo para conservar el encuadre de marca."
     }
   ],
-  "pricingNotes": "Calcula ~$0.30 por render (clip silencioso · 6 s · 720p)."
+  "pricingNotes": "Los precios se actualizan dentro de Generate. Comprueba la tarifa en vivo antes de lanzar un render."
 }

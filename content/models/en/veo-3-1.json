@@ -9,11 +9,23 @@
   "hero": {
     "title": "Veo 3.1 – Advanced Text-to-Video & Native Audio Engine",
     "intro": "Veo 3.1 is DeepMind’s premium video-generation engine routed through MaxVideoAI for reference-to-video runs. Focus on high-fidelity 8-second sequences with native sound design—voice-over, ambient layers, synced motion—and use up to four reference stills to lock identity.",
-    "ctaPrimary": { "label": "Generate with Veo 3.1", "href": "/app?engine=veo-3-1" },
+    "ctaPrimary": {
+      "label": "Generate with Veo 3.1",
+      "href": "/app?engine=veo-3-1"
+    },
     "secondaryLinks": [
-      { "label": "See all engines", "href": "/models" },
-      { "label": "Explore workflows", "href": "/workflows" },
-      { "label": "View pricing", "href": "/pricing" }
+      {
+        "label": "See all engines",
+        "href": "/models"
+      },
+      {
+        "label": "Explore workflows",
+        "href": "/workflows"
+      },
+      {
+        "label": "Check live pricing in-app",
+        "href": "/generate"
+      }
     ]
   },
   "overview": "Route Veo 3.1 through MaxVideoAI to deliver polished hero shots with native audio. Reference-to-video fidelity keeps wardrobe and lighting locked while you stack 8-second clips for longer edits.",
@@ -28,11 +40,17 @@
   },
   "technicalOverviewTitle": "Technical overview",
   "technicalOverview": [
-    { "label": "Duration", "body": "8-second renders (stack clips or loop for longer edits)" },
+    {
+      "label": "Duration",
+      "body": "8-second renders (stack clips or loop for longer edits)"
+    },
     {
       "label": "Resolution",
       "body": "Full HD 1080p in 16:9, 9:16, or 1:1 aspect ratios",
-      "link": { "label": "Fliki", "href": "https://fliki.ai/blog/google-veo-3-and-imagen-4?utm_source=chatgpt.com" }
+      "link": {
+        "label": "Fliki",
+        "href": "https://fliki.ai/blog/google-veo-3-and-imagen-4?utm_source=chatgpt.com"
+      }
     },
     {
       "label": "Audio",
@@ -45,10 +63,19 @@
     {
       "label": "Inputs",
       "body": "Reference images (1–4) plus prompts to animate subjects",
-      "link": { "label": "Google DeepMind", "href": "https://deepmind.google/models/veo/?utm_source=chatgpt.com" }
+      "link": {
+        "label": "Google DeepMind",
+        "href": "https://deepmind.google/models/veo/?utm_source=chatgpt.com"
+      }
     },
-    { "label": "Identity lock", "body": "Multi-image guidance keeps wardrobe, lighting, and likeness consistent" },
-    { "label": "Pricing", "body": "Pay-as-you-go via MaxVideoAI — audio-on renders from $0.52/s (~$4.16 per 8-second clip)" }
+    {
+      "label": "Identity lock",
+      "body": "Multi-image guidance keeps wardrobe, lighting, and likeness consistent"
+    },
+    {
+      "label": "Pricing",
+      "body": "Live wallet-based pricing — open the Generate workspace for current rates."
+    }
   ],
   "promptStructure": {
     "title": "Prompt structure",
@@ -98,5 +125,5 @@
       "a": "Yes. Block sequences with Veo 3.1, then rerun hero shots in Sora 2 Pro. Upload the Veo frame as a reference in Sora to maintain visual continuity."
     }
   ],
-  "pricingNotes": "Plan for ~$4.16 per render (Audio on · 8s · 1080p)."
+  "pricingNotes": "Live pricing updates inside the Generate workspace. Check the current rate before you run a job."
 }

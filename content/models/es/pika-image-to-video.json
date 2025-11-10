@@ -9,11 +9,23 @@
   "hero": {
     "title": "Pika Imagen→Video – anima tus imágenes con motion estilizado",
     "intro": "Sube un visual, agrega un prompt breve y deja que Pika aporte zooms cinemáticos, movimiento o estilos de animación. Es rápido, silencioso e ideal para loops, miniaturas y reels de concepto.",
-    "ctaPrimary": { "label": "Animar con Pika Imagen→Video", "href": "/app?engine=pika-image-to-video" },
+    "ctaPrimary": {
+      "label": "Animar con Pika Imagen→Video",
+      "href": "/app?engine=pika-image-to-video"
+    },
     "secondaryLinks": [
-      { "label": "Ver todos los motores", "href": "/modelos" },
-      { "label": "Explorar flujos de trabajo", "href": "/workflows" },
-      { "label": "Ver precios", "href": "/precios" }
+      {
+        "label": "Ver todos los motores",
+        "href": "/modelos"
+      },
+      {
+        "label": "Explorar flujos de trabajo",
+        "href": "/workflows"
+      },
+      {
+        "label": "Consultar precios en vivo",
+        "href": "/generate"
+      }
     ]
   },
   "overview": "Da vida a tus visuales en segundos. El modo imagen→video de Pika añade movimiento a ilustraciones, renders y fotos de producto sin audio: perfecto para loops cortos y b-roll estilizado.",
@@ -31,17 +43,35 @@
     {
       "label": "Duración",
       "body": "Animaciones de 5 u 8 segundos pensadas para loop",
-      "link": { "label": "Docs Pika", "href": "https://www.pika.art/docs/image-to-video" }
+      "link": {
+        "label": "Docs Pika",
+        "href": "https://www.pika.art/docs/image-to-video"
+      }
     },
     {
       "label": "Resolución",
       "body": "720p o 1080p en 1:1, 16:9 o 9:16",
-      "link": { "label": "Discord Pika", "href": "https://discord.gg/pika" }
+      "link": {
+        "label": "Discord Pika",
+        "href": "https://discord.gg/pika"
+      }
     },
-    { "label": "Audio", "body": "Clips silenciosos: ideales para overlays o sonido en post" },
-    { "label": "Entradas", "body": "Sube una imagen y añade un mini prompt para guiar el movimiento" },
-    { "label": "Modos", "body": "Solo imagen→video; imagen de referencia obligatoria" },
-    { "label": "Precio", "body": "Pago por uso vía MaxVideoAI — $0.06/s (sin audio)" }
+    {
+      "label": "Audio",
+      "body": "Clips silenciosos: ideales para overlays o sonido en post"
+    },
+    {
+      "label": "Entradas",
+      "body": "Sube una imagen y añade un mini prompt para guiar el movimiento"
+    },
+    {
+      "label": "Modos",
+      "body": "Solo imagen→video; imagen de referencia obligatoria"
+    },
+    {
+      "label": "Precio",
+      "body": "Precios dinámicos basados en tu wallet — abre la página Generate para ver la tarifa actual."
+    }
   ],
   "promptStructure": {
     "title": "Estructura de prompt",
@@ -91,5 +121,5 @@
       "a": "Sí. Pasa el clip por el upscaler de MaxVideoAI o repítelo en MiniMax Hailuo 02 para una versión más nítida manteniendo el mismo motion."
     }
   ],
-  "pricingNotes": "Calcula ~$0.30 por render (clip silencioso · 5 s · 720p)."
+  "pricingNotes": "Los precios se actualizan dentro de Generate. Comprueba la tarifa en vivo antes de lanzar un render."
 }

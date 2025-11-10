@@ -9,11 +9,23 @@
   "hero": {
     "title": "Sora 2 Pro – Extended Video Generation with Full Audio & Scene Control",
     "intro": "Sora 2 Pro builds on the core engine of Sora 2, unlocking longer durations, multi-scene prompts, and tighter control over audio+visual continuity. Chain scenes, direct camera moves, or animate reference art for storytelling that stays on-brand.",
-    "ctaPrimary": { "label": "Generate with Sora 2 Pro", "href": "/app?engine=sora-2-pro" },
+    "ctaPrimary": {
+      "label": "Generate with Sora 2 Pro",
+      "href": "/app?engine=sora-2-pro"
+    },
     "secondaryLinks": [
-      { "label": "See all engines", "href": "/models" },
-      { "label": "Explore workflows", "href": "/workflows" },
-      { "label": "View pricing", "href": "/pricing" }
+      {
+        "label": "See all engines",
+        "href": "/models"
+      },
+      {
+        "label": "Explore workflows",
+        "href": "/workflows"
+      },
+      {
+        "label": "Check live pricing in-app",
+        "href": "/generate"
+      }
     ]
   },
   "overview": "Generate longer AI videos with sound and scene control using Sora 2 Pro. Perfect for storytelling, explainers, and branded motion design—starting from image or text prompts.",
@@ -66,7 +78,7 @@
     },
     {
       "label": "Pricing",
-      "body": "Audio-on renders from $0.60/s (~$4.80 per 8-second clip)"
+      "body": "Live wallet-based pricing — open the Generate workspace for current rates."
     }
   ],
   "promptStructure": {
@@ -119,5 +131,5 @@
       "a": "Audio is on by default for lip-sync and sound design, but you can toggle it off in the composer if you only need visuals."
     }
   ],
-  "pricingNotes": "Plan for ~$4.80 per render (Audio on · 8s · 1080p)."
+  "pricingNotes": "Live pricing updates inside the Generate workspace. Check the current rate before you run a job."
 }

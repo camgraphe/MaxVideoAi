@@ -3,17 +3,29 @@
   "versionLabel": "Imagen + Edición",
   "seo": {
     "title": "Nano Banana – Generador y editor de imágenes en MaxVideoAI",
-    "description": "Aprovecha el modelo Nano Banana de Google (Fal.ai) para crear imágenes fotorrealistas o editar tus referencias. Desde 0,039 US$ por imagen.",
+    "description": "Usa Nano Banana de Google (Fal.ai) para generar o editar imágenes con precios de wallet que se actualizan en vivo en Generate.",
     "image": "/hero/nano-banana.jpg"
   },
   "hero": {
     "title": "Nano Banana – Texto→Imagen y edición precisa",
     "intro": "Nano Banana incluye dos endpoints Fal: texto→imagen ultrarrápido y edición imagen→imagen muy controlable. Comparte wallet, registros y prompt lab con nuestros motores de vídeo, así que puedes preparar frames, moodboards o shot plates sin salir de MaxVideoAI.",
-    "ctaPrimary": { "label": "Generar imagen", "href": "/app/image?engine=nano-banana" },
+    "ctaPrimary": {
+      "label": "Generar imagen",
+      "href": "/app/image?engine=nano-banana"
+    },
     "secondaryLinks": [
-      { "label": "Motores de imagen", "href": "/modelos" },
-      { "label": "Abrir prompt lab", "href": "/app/image" },
-      { "label": "Ver precios", "href": "/precios" }
+      {
+        "label": "Motores de imagen",
+        "href": "/modelos"
+      },
+      {
+        "label": "Abrir prompt lab",
+        "href": "/app/image"
+      },
+      {
+        "label": "Consultar precios en vivo",
+        "href": "/generate"
+      }
     ]
   },
   "overview": "Nano Banana entrega renders limpios con control de prompt, seed, lotes y uploads. Ideal para concept frames antes de Veo/Sora, campañas de marketing o retoques detallados sobre frames existentes.",
@@ -31,7 +43,10 @@
     {
       "label": "Modos",
       "body": "Endpoints: `fal-ai/nano-banana` (texto→imagen) y `fal-ai/nano-banana/edit` (imagen→imagen).",
-      "link": { "label": "Docs Fal.ai", "href": "https://fal.ai/models/fal-ai/nano-banana" }
+      "link": {
+        "label": "Docs Fal.ai",
+        "href": "https://fal.ai/models/fal-ai/nano-banana"
+      }
     },
     {
       "label": "Entradas",
@@ -43,7 +58,7 @@
     },
     {
       "label": "Precio",
-      "body": "0,039 US$ por imagen, tanto en generación como en edición."
+      "body": "Precios dinámicos basados en tu wallet — abre la página Generate para ver la tarifa actual."
     },
     {
       "label": "Seed y lotes",
@@ -102,5 +117,5 @@
       "a": "En Recent Runs y en Library → Images. Allí puedes descargar o copiar el enlace CDN."
     }
   ],
-  "pricingNotes": "Calcula ~0,039 US$ por imagen; un lote de 4 cuesta ~0,156 US$ con cargo al wallet."
+  "pricingNotes": "Los precios se actualizan dentro de Generate. Comprueba la tarifa en vivo antes de lanzar un render."
 }

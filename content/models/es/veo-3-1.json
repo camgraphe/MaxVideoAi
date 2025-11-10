@@ -9,11 +9,23 @@
   "hero": {
     "title": "Veo 3.1 – motor texto→video con audio nativo",
     "intro": "Veo 3.1 es el motor premium de DeepMind, enrutado por MaxVideoAI para ejecuciones referencia→video. Produce secuencias de 8 segundos en alta fidelidad con voz en off, capas ambientales y movimiento sincronizado, usando hasta cuatro imágenes de referencia para fijar la identidad.",
-    "ctaPrimary": { "label": "Generar con Veo 3.1", "href": "/app?engine=veo-3-1" },
+    "ctaPrimary": {
+      "label": "Generar con Veo 3.1",
+      "href": "/app?engine=veo-3-1"
+    },
     "secondaryLinks": [
-      { "label": "Ver todos los motores", "href": "/modelos" },
-      { "label": "Explorar flujos de trabajo", "href": "/workflows" },
-      { "label": "Ver precios", "href": "/precios" }
+      {
+        "label": "Ver todos los motores",
+        "href": "/modelos"
+      },
+      {
+        "label": "Explorar flujos de trabajo",
+        "href": "/workflows"
+      },
+      {
+        "label": "Consultar precios en vivo",
+        "href": "/generate"
+      }
     ]
   },
   "overview": "Enruta Veo 3.1 mediante MaxVideoAI para entregar tomas hero pulidas con audio nativo. La fidelidad referencia→video mantiene vestuario e iluminación mientras encadenas clips de 8 segundos para ediciones más largas.",
@@ -28,11 +40,17 @@
   },
   "technicalOverviewTitle": "Resumen técnico",
   "technicalOverview": [
-    { "label": "Duración", "body": "Renders de 8 segundos (encadena o haz bucles para ediciones más largas)" },
+    {
+      "label": "Duración",
+      "body": "Renders de 8 segundos (encadena o haz bucles para ediciones más largas)"
+    },
     {
       "label": "Resolución",
       "body": "Full HD 1080p en relaciones 16:9, 9:16 o 1:1",
-      "link": { "label": "Fliki", "href": "https://fliki.ai/blog/google-veo-3-and-imagen-4?utm_source=chatgpt.com" }
+      "link": {
+        "label": "Fliki",
+        "href": "https://fliki.ai/blog/google-veo-3-and-imagen-4?utm_source=chatgpt.com"
+      }
     },
     {
       "label": "Audio",
@@ -45,10 +63,19 @@
     {
       "label": "Entradas",
       "body": "Imágenes de referencia (1–4) más prompts para animar sujetos",
-      "link": { "label": "Google DeepMind", "href": "https://deepmind.google/models/veo/?utm_source=chatgpt.com" }
+      "link": {
+        "label": "Google DeepMind",
+        "href": "https://deepmind.google/models/veo/?utm_source=chatgpt.com"
+      }
     },
-    { "label": "Bloqueo de identidad", "body": "La guía multi-imagen mantiene vestuario, luz y parecido" },
-    { "label": "Precio", "body": "Pago por uso vía MaxVideoAI — audio activado desde $0.52/s (~$4.16 por clip de 8 s)" }
+    {
+      "label": "Bloqueo de identidad",
+      "body": "La guía multi-imagen mantiene vestuario, luz y parecido"
+    },
+    {
+      "label": "Precio",
+      "body": "Precios dinámicos basados en tu wallet — abre la página Generate para ver la tarifa actual."
+    }
   ],
   "promptStructure": {
     "title": "Estructura de prompt",
@@ -98,5 +125,5 @@
       "a": "Sí. Bloquea las secuencias con Veo 3.1 y vuelve a lanzar los planos hero en Sora 2 Pro. Sube el fotograma de Veo como referencia en Sora para mantener la continuidad visual."
     }
   ],
-  "pricingNotes": "Calcula ~4,16 USD por render (Audio activado · 8 s · 1080p)."
+  "pricingNotes": "Los precios se actualizan dentro de Generate. Comprueba la tarifa en vivo antes de lanzar un render."
 }

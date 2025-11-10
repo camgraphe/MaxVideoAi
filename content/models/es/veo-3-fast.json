@@ -9,11 +9,23 @@
   "hero": {
     "title": "Veo 3 Fast – motor cinemático enfocado en velocidad (silencioso)",
     "intro": "Veo 3 Fast es el motor ideal para prototipos rápidos. Es el modelo visual de DeepMind ajustado para la velocidad—sin audio ni colas—para probar prompts, crear referencias e iterar en cuestión de segundos.",
-    "ctaPrimary": { "label": "Generar con Veo 3 Fast", "href": "/app?engine=veo-3-fast" },
+    "ctaPrimary": {
+      "label": "Generar con Veo 3 Fast",
+      "href": "/app?engine=veo-3-fast"
+    },
     "secondaryLinks": [
-      { "label": "Ver todos los motores", "href": "/modelos" },
-      { "label": "Explorar flujos de trabajo", "href": "/workflows" },
-      { "label": "Ver precios", "href": "/precios" }
+      {
+        "label": "Ver todos los motores",
+        "href": "/modelos"
+      },
+      {
+        "label": "Explorar flujos de trabajo",
+        "href": "/workflows"
+      },
+      {
+        "label": "Consultar precios en vivo",
+        "href": "/generate"
+      }
     ]
   },
   "overview": "Prueba prompts cinemáticos al instante con Veo 3 Fast. Clips silenciosos de 4 a 8 segundos perfectos para storyboards, loops sociales y experimentación de bajo costo antes de promover las tomas a Veo 3.1 o Sora.",
@@ -31,7 +43,10 @@
     {
       "label": "Duración",
       "body": "Clips de 4, 6 u 8 s para iterar rápido",
-      "link": { "label": "Ficha del modelo", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
+      "link": {
+        "label": "Ficha del modelo",
+        "href": "https://fal.ai/models/fal-ai/veo3.1/fast"
+      }
     },
     {
       "label": "Resolución",
@@ -44,11 +59,23 @@
     {
       "label": "Audio",
       "body": "Sin audio: renders silenciosos para loops ágiles",
-      "link": { "label": "Ficha del modelo", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
+      "link": {
+        "label": "Ficha del modelo",
+        "href": "https://fal.ai/models/fal-ai/veo3.1/fast"
+      }
     },
-    { "label": "Entradas", "body": "Solo prompts de texto—perfecto para explorar ideas" },
-    { "label": "Modos", "body": "Texto→video afinado para velocidad; sin imágenes de referencia" },
-    { "label": "Precio", "body": "Pago por uso vía MaxVideoAI — renders silenciosos desde $0.10/s (~$0.80 por clip)" }
+    {
+      "label": "Entradas",
+      "body": "Solo prompts de texto—perfecto para explorar ideas"
+    },
+    {
+      "label": "Modos",
+      "body": "Texto→video afinado para velocidad; sin imágenes de referencia"
+    },
+    {
+      "label": "Precio",
+      "body": "Precios dinámicos basados en tu wallet — abre la página Generate para ver la tarifa actual."
+    }
   ],
   "promptStructure": {
     "title": "Estructura de prompt",
@@ -98,5 +125,5 @@
       "a": "No, los renders son silenciosos para mantener el costo bajo. Añade tu pista en postproducción o vuelve a ejecutar el prompt en Veo 3.1 si necesitas audio nativo."
     }
   ],
-  "pricingNotes": "Calcula ~0,80 USD por render (Clip silencioso · 8 s · 1080p)."
+  "pricingNotes": "Los precios se actualizan dentro de Generate. Comprueba la tarifa en vivo antes de lanzar un render."
 }

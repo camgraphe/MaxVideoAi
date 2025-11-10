@@ -9,11 +9,23 @@
   "hero": {
     "title": "MiniMax Hailuo 02 – Text-to-Video Engine for Fast Visuals",
     "intro": "MiniMax’s Hailuo 02 engine outputs short, stylized clips directly from text prompts. Use it to sketch motion, experiment with transitions, or build mood-driven loops at a fraction of premium-engine costs.",
-    "ctaPrimary": { "label": "Try MiniMax Text-to-Video", "href": "/app?engine=minimax-hailuo-02-text" },
+    "ctaPrimary": {
+      "label": "Try MiniMax Text-to-Video",
+      "href": "/app?engine=minimax-hailuo-02-text"
+    },
     "secondaryLinks": [
-      { "label": "See all engines", "href": "/models" },
-      { "label": "Explore workflows", "href": "/workflows" },
-      { "label": "View pricing", "href": "/pricing" }
+      {
+        "label": "See all engines",
+        "href": "/models"
+      },
+      {
+        "label": "Explore workflows",
+        "href": "/workflows"
+      },
+      {
+        "label": "Check live pricing in-app",
+        "href": "/generate"
+      }
     ]
   },
   "overview": "Spin up stylized 6–10 second clips without reference images. Hailuo 02 is silent, fast, and ideal for storyboards, transitions, and proof-of-motion explorations.",
@@ -31,17 +43,35 @@
     {
       "label": "Duration",
       "body": "6 or 10-second clips for rapid iteration",
-      "link": { "label": "Model reference", "href": "https://fal.ai/models/fal-ai/minimax-hailuo-02-text" }
+      "link": {
+        "label": "Model reference",
+        "href": "https://fal.ai/models/fal-ai/minimax-hailuo-02-text"
+      }
     },
     {
       "label": "Resolution",
       "body": "720p or 1080p in landscape and portrait",
-      "link": { "label": "MiniMax API Docs", "href": "https://www.minimax.chat/developer/docs/video" }
+      "link": {
+        "label": "MiniMax API Docs",
+        "href": "https://www.minimax.chat/developer/docs/video"
+      }
     },
-    { "label": "Audio", "body": "Silent output—built for visual exploration only" },
-    { "label": "Inputs", "body": "Text prompts only—focus on motion, lighting, and style cues" },
-    { "label": "Modes", "body": "Text-to-video drafts—no reference images or audio toggles" },
-    { "label": "Pricing", "body": "Pay-as-you-go via MaxVideoAI — $0.05/s (no audio)" }
+    {
+      "label": "Audio",
+      "body": "Silent output—built for visual exploration only"
+    },
+    {
+      "label": "Inputs",
+      "body": "Text prompts only—focus on motion, lighting, and style cues"
+    },
+    {
+      "label": "Modes",
+      "body": "Text-to-video drafts—no reference images or audio toggles"
+    },
+    {
+      "label": "Pricing",
+      "body": "Live wallet-based pricing — open the Generate workspace for current rates."
+    }
   ],
   "promptStructure": {
     "title": "Prompt structure",
@@ -91,5 +121,5 @@
       "a": "Route the resulting clip through the MaxVideoAI upscaler or rerun the same prompt in Veo 3 Fast for a sharper pass. Pricing transparency helps you compare before committing credits."
     }
   ],
-  "pricingNotes": "Plan for ~$0.30 per render (Silent clip · 6s · 720p)."
+  "pricingNotes": "Live pricing updates inside the Generate workspace. Check the current rate before you run a job."
 }

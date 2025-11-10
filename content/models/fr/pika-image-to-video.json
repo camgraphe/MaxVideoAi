@@ -9,11 +9,23 @@
   "hero": {
     "title": "Pika Image→Vidéo – animez vos images avec un motion stylisé",
     "intro": "Téléversez un visuel, ajoutez un prompt court et laissez Pika appliquer zooms ciné, mouvements ou styles d’animation. Rapide, muet et idéal pour les contenus en boucle, miniatures et concept reels.",
-    "ctaPrimary": { "label": "Animer avec Pika Image→Vidéo", "href": "/app?engine=pika-image-to-video" },
+    "ctaPrimary": {
+      "label": "Animer avec Pika Image→Vidéo",
+      "href": "/app?engine=pika-image-to-video"
+    },
     "secondaryLinks": [
-      { "label": "Voir tous les moteurs", "href": "/modeles" },
-      { "label": "Explorer les workflows", "href": "/workflows" },
-      { "label": "Voir les tarifs", "href": "/tarifs" }
+      {
+        "label": "Voir tous les moteurs",
+        "href": "/modeles"
+      },
+      {
+        "label": "Explorer les workflows",
+        "href": "/workflows"
+      },
+      {
+        "label": "Consulter les prix en direct",
+        "href": "/generate"
+      }
     ]
   },
   "overview": "Donnez vie à vos visuels en quelques secondes. Le mode image→vidéo de Pika ajoute du mouvement aux illustrations, rendus ou photos produits — idéal pour les loops courtes et le b-roll stylisé.",
@@ -31,17 +43,35 @@
     {
       "label": "Durée",
       "body": "Animations de 5 ou 8 secondes pensées pour la boucle",
-      "link": { "label": "Docs Pika", "href": "https://www.pika.art/docs/image-to-video" }
+      "link": {
+        "label": "Docs Pika",
+        "href": "https://www.pika.art/docs/image-to-video"
+      }
     },
     {
       "label": "Résolution",
       "body": "Sortie 720p ou 1080p en 1:1, 16:9 ou 9:16",
-      "link": { "label": "Discord Pika", "href": "https://discord.gg/pika" }
+      "link": {
+        "label": "Discord Pika",
+        "href": "https://discord.gg/pika"
+      }
     },
-    { "label": "Audio", "body": "Clips muets — parfaits pour l’overlay ou l'habillage sonore en post" },
-    { "label": "Entrées", "body": "Import d’image + prompt court optionnel pour guider le mouvement" },
-    { "label": "Modes", "body": "Image→vidéo uniquement ; image de référence obligatoire" },
-    { "label": "Tarification", "body": "Pay-as-you-go via MaxVideoAI — 0,06 $/s (sans audio)" }
+    {
+      "label": "Audio",
+      "body": "Clips muets — parfaits pour l’overlay ou l'habillage sonore en post"
+    },
+    {
+      "label": "Entrées",
+      "body": "Import d’image + prompt court optionnel pour guider le mouvement"
+    },
+    {
+      "label": "Modes",
+      "body": "Image→vidéo uniquement ; image de référence obligatoire"
+    },
+    {
+      "label": "Tarification",
+      "body": "Tarification dynamique via le wallet MaxVideoAI — ouvrez la page Generate pour connaître le tarif actuel."
+    }
   ],
   "promptStructure": {
     "title": "Structure de prompt",
@@ -91,5 +121,5 @@
       "a": "Oui. Passez le clip dans l’upscaler MaxVideoAI ou relancez-le dans MiniMax Hailuo 02 pour une version plus nette en conservant le même mouvement."
     }
   ],
-  "pricingNotes": "Prévoyez ~0,30 $ par rendu (clip silencieux · 5 s · 720p)."
+  "pricingNotes": "Les prix évoluent directement dans Generate. Vérifiez le tarif en direct avant de lancer un rendu."
 }

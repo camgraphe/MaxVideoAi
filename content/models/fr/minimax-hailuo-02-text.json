@@ -9,11 +9,23 @@
   "hero": {
     "title": "MiniMax Hailuo 02 – moteur texte→vidéo pour visuels rapides",
     "intro": "Le moteur Hailuo 02 de MiniMax produit des clips courts et stylisés directement depuis vos prompts. Esquissez du motion, testez des transitions ou créez des loops mood-driven pour une fraction du coût des moteurs premium.",
-    "ctaPrimary": { "label": "Essayer MiniMax Texte→Vidéo", "href": "/app?engine=minimax-hailuo-02-text" },
+    "ctaPrimary": {
+      "label": "Essayer MiniMax Texte→Vidéo",
+      "href": "/app?engine=minimax-hailuo-02-text"
+    },
     "secondaryLinks": [
-      { "label": "Voir tous les moteurs", "href": "/modeles" },
-      { "label": "Explorer les workflows", "href": "/workflows" },
-      { "label": "Voir les tarifs", "href": "/tarifs" }
+      {
+        "label": "Voir tous les moteurs",
+        "href": "/modeles"
+      },
+      {
+        "label": "Explorer les workflows",
+        "href": "/workflows"
+      },
+      {
+        "label": "Consulter les prix en direct",
+        "href": "/generate"
+      }
     ]
   },
   "overview": "Générez des clips stylisés de 6 à 10 secondes sans image de référence. Hailuo 02 est muet, rapide et parfait pour les storyboards, transitions ou explorations de rythme.",
@@ -31,17 +43,35 @@
     {
       "label": "Durée",
       "body": "Clips de 6 ou 10 secondes pour itérer vite",
-      "link": { "label": "Fiche modèle", "href": "https://fal.ai/models/fal-ai/minimax-hailuo-02-text" }
+      "link": {
+        "label": "Fiche modèle",
+        "href": "https://fal.ai/models/fal-ai/minimax-hailuo-02-text"
+      }
     },
     {
       "label": "Résolution",
       "body": "720p ou 1080p en modes paysage ou portrait",
-      "link": { "label": "Docs API MiniMax", "href": "https://www.minimax.chat/developer/docs/video" }
+      "link": {
+        "label": "Docs API MiniMax",
+        "href": "https://www.minimax.chat/developer/docs/video"
+      }
     },
-    { "label": "Audio", "body": "Sortie muette — pensée pour l’exploration visuelle" },
-    { "label": "Entrées", "body": "Prompts texte uniquement — insistez sur mouvement, lumière et style" },
-    { "label": "Modes", "body": "Ébauches texte→vidéo — pas d’images de référence ni d’options audio" },
-    { "label": "Tarification", "body": "Pay-as-you-go via MaxVideoAI — 0,05 $/s (sans audio)" }
+    {
+      "label": "Audio",
+      "body": "Sortie muette — pensée pour l’exploration visuelle"
+    },
+    {
+      "label": "Entrées",
+      "body": "Prompts texte uniquement — insistez sur mouvement, lumière et style"
+    },
+    {
+      "label": "Modes",
+      "body": "Ébauches texte→vidéo — pas d’images de référence ni d’options audio"
+    },
+    {
+      "label": "Tarification",
+      "body": "Tarification dynamique via le wallet MaxVideoAI — ouvrez la page Generate pour connaître le tarif actuel."
+    }
   ],
   "promptStructure": {
     "title": "Structure de prompt",
@@ -91,5 +121,5 @@
       "a": "Passez le clip dans l’upscaler MaxVideoAI ou relancez le même prompt dans Veo 3 Fast pour une version plus nette tout en gardant la base motion."
     }
   ],
-  "pricingNotes": "Prévoyez ~0,30 $ par rendu (clip silencieux · 6 s · 720p)."
+  "pricingNotes": "Les prix évoluent directement dans Generate. Vérifiez le tarif en direct avant de lancer un rendu."
 }

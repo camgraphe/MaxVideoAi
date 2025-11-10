@@ -9,11 +9,23 @@
   "hero": {
     "title": "Pika Texto→Video – motor creativo sin audio",
     "intro": "El motor texto→video de Pika prioriza la velocidad y el estilo. Produce clips divertidos con looks de animación audaces y movimientos expresivos, ideales para visuales social-first en minutos.",
-    "ctaPrimary": { "label": "Probar Pika Texto→Video", "href": "/app?engine=pika-text-to-video" },
+    "ctaPrimary": {
+      "label": "Probar Pika Texto→Video",
+      "href": "/app?engine=pika-text-to-video"
+    },
     "secondaryLinks": [
-      { "label": "Ver todos los motores", "href": "/modelos" },
-      { "label": "Explorar flujos de trabajo", "href": "/workflows" },
-      { "label": "Ver precios", "href": "/precios" }
+      {
+        "label": "Ver todos los motores",
+        "href": "/modelos"
+      },
+      {
+        "label": "Explorar flujos de trabajo",
+        "href": "/workflows"
+      },
+      {
+        "label": "Consultar precios en vivo",
+        "href": "/generate"
+      }
     ]
   },
   "overview": "Crea clips estilizados de 5–8 segundos con Pika. Lanza loops, reels o bocetos de motion solo con texto, sin imágenes de referencia ni audio.",
@@ -31,17 +43,35 @@
     {
       "label": "Duración",
       "body": "Clips de 5 u 8 segundos optimizados para loops sociales",
-      "link": { "label": "FAQ Pika Labs", "href": "https://www.pika.art/faq" }
+      "link": {
+        "label": "FAQ Pika Labs",
+        "href": "https://www.pika.art/faq"
+      }
     },
     {
       "label": "Resolución",
       "body": "720p o 1080p en 1:1, 16:9 o 9:16",
-      "link": { "label": "Discord Pika", "href": "https://discord.gg/pika" }
+      "link": {
+        "label": "Discord Pika",
+        "href": "https://discord.gg/pika"
+      }
     },
-    { "label": "Audio", "body": "Salida silenciosa: añade música o VO en la edición" },
-    { "label": "Entradas", "body": "Solo prompts de texto: apuesta por sujetos audaces y estilos claros" },
-    { "label": "Modos", "body": "Texto→video únicamente; sin cargas de imágenes de referencia" },
-    { "label": "Precio", "body": "Pago por uso vía MaxVideoAI — renders silenciosos desde $0.06/s (~$0.30 por clip de 5 s)" }
+    {
+      "label": "Audio",
+      "body": "Salida silenciosa: añade música o VO en la edición"
+    },
+    {
+      "label": "Entradas",
+      "body": "Solo prompts de texto: apuesta por sujetos audaces y estilos claros"
+    },
+    {
+      "label": "Modos",
+      "body": "Texto→video únicamente; sin cargas de imágenes de referencia"
+    },
+    {
+      "label": "Precio",
+      "body": "Precios dinámicos basados en tu wallet — abre la página Generate para ver la tarifa actual."
+    }
   ],
   "promptStructure": {
     "title": "Estructura de prompt",
@@ -95,5 +125,5 @@
       "a": "Los renders son silenciosos para mantenerlos livianos. Agrega tu propia banda sonora en MaxVideoAI o repite el prompt en Sora 2 Pro si necesitas narración nativa."
     }
   ],
-  "pricingNotes": "Calcula ~$0.30 por render (clip silencioso · 5 s · 720p)."
+  "pricingNotes": "Los precios se actualizan dentro de Generate. Comprueba la tarifa en vivo antes de lanzar un render."
 }

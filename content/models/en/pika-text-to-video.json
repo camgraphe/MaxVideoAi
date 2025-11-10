@@ -9,11 +9,23 @@
   "hero": {
     "title": "Pika Text-to-Video – Creative AI Video Engine (No Audio)",
     "intro": "Pika’s text-to-video engine focuses on speed and style. Draft fun, snappy clips with bold animation looks and quick camera moves—ideal for social-first visuals produced in minutes.",
-    "ctaPrimary": { "label": "Try Pika Text-to-Video", "href": "/app?engine=pika-text-to-video" },
+    "ctaPrimary": {
+      "label": "Try Pika Text-to-Video",
+      "href": "/app?engine=pika-text-to-video"
+    },
     "secondaryLinks": [
-      { "label": "See all engines", "href": "/models" },
-      { "label": "Explore workflows", "href": "/workflows" },
-      { "label": "View pricing", "href": "/pricing" }
+      {
+        "label": "See all engines",
+        "href": "/models"
+      },
+      {
+        "label": "Explore workflows",
+        "href": "/workflows"
+      },
+      {
+        "label": "Check live pricing in-app",
+        "href": "/generate"
+      }
     ]
   },
   "overview": "Create fast, stylized clips with Pika. Spin up 5–8 second loops, reels, or motion sketches directly from text prompts—no reference images or audio required.",
@@ -31,17 +43,35 @@
     {
       "label": "Duration",
       "body": "5 or 8-second clips tuned for social loops",
-      "link": { "label": "Pika Labs FAQ", "href": "https://www.pika.art/faq" }
+      "link": {
+        "label": "Pika Labs FAQ",
+        "href": "https://www.pika.art/faq"
+      }
     },
     {
       "label": "Resolution",
       "body": "720p or 1080p in 1:1, 16:9, or 9:16",
-      "link": { "label": "Pika Discord", "href": "https://discord.gg/pika" }
+      "link": {
+        "label": "Pika Discord",
+        "href": "https://discord.gg/pika"
+      }
     },
-    { "label": "Audio", "body": "Silent output—drop into edits or add music later" },
-    { "label": "Inputs", "body": "Text prompts only—focus on bold subjects and stylistic cues" },
-    { "label": "Modes", "body": "Text-to-video only; no reference image uploads" },
-    { "label": "Pricing", "body": "Pay-as-you-go via MaxVideoAI — silent renders from $0.06/s (~$0.30 per 5-second clip)" }
+    {
+      "label": "Audio",
+      "body": "Silent output—drop into edits or add music later"
+    },
+    {
+      "label": "Inputs",
+      "body": "Text prompts only—focus on bold subjects and stylistic cues"
+    },
+    {
+      "label": "Modes",
+      "body": "Text-to-video only; no reference image uploads"
+    },
+    {
+      "label": "Pricing",
+      "body": "Live wallet-based pricing — open the Generate workspace for current rates."
+    }
   ],
   "promptStructure": {
     "title": "Prompt structure",
@@ -95,5 +125,5 @@
       "a": "Renders are silent by default to keep output lightweight. Layer your own soundtrack in MaxVideoAI or rerun the prompt in Sora 2 Pro if you need native narration."
     }
   ],
-  "pricingNotes": "Plan for ~$0.30 per render (Silent clip · 5s · 720p)."
+  "pricingNotes": "Live pricing updates inside the Generate workspace. Check the current rate before you run a job."
 }

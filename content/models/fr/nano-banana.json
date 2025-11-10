@@ -3,17 +3,29 @@
   "versionLabel": "Image + Édition",
   "seo": {
     "title": "Nano Banana – Génération & édition d’images sur MaxVideoAI",
-    "description": "Exploitez le modèle Nano Banana de Google (via Fal.ai) pour créer des visuels haute fidélité ou retoucher vos sources. À partir de 0,039 $ par image.",
+    "description": "Exploitez Nano Banana (Fal.ai) pour créer ou éditer des images haute fidélité, avec une tarification wallet qui s’actualise en direct dans Generate.",
     "image": "/hero/nano-banana.jpg"
   },
   "hero": {
     "title": "Nano Banana – Texte→Image photoréaliste + édition ciblée",
     "intro": "Nano Banana propose deux endpoints Fal : texte-vers-image ultra-rapide et image-vers-image précis. Vous restez dans MaxVideoAI avec le même wallet, les mêmes logs et le prompt lab partagé avec nos moteurs vidéo.",
-    "ctaPrimary": { "label": "Générer une image", "href": "/app/image?engine=nano-banana" },
+    "ctaPrimary": {
+      "label": "Générer une image",
+      "href": "/app/image?engine=nano-banana"
+    },
     "secondaryLinks": [
-      { "label": "Voir les moteurs image", "href": "/modeles" },
-      { "label": "Ouvrir le prompt lab", "href": "/app/image" },
-      { "label": "Tarifs", "href": "/tarifs" }
+      {
+        "label": "Voir les moteurs image",
+        "href": "/modeles"
+      },
+      {
+        "label": "Ouvrir le prompt lab",
+        "href": "/app/image"
+      },
+      {
+        "label": "Consulter les prix en direct",
+        "href": "/generate"
+      }
     ]
   },
   "overview": "Nano Banana livre des rendus photoréalistes propres tout en acceptant prompts, seed, batchs et uploads. Parfait pour pré-visualiser des plans Sora/Veo, créer du matériel marketing ou retoucher des frames avant animation.",
@@ -31,7 +43,10 @@
     {
       "label": "Modes",
       "body": "Deux endpoints Fal : `fal-ai/nano-banana` (texte→image) et `fal-ai/nano-banana/edit` (image→image).",
-      "link": { "label": "Documentation Fal", "href": "https://fal.ai/models/fal-ai/nano-banana" }
+      "link": {
+        "label": "Documentation Fal",
+        "href": "https://fal.ai/models/fal-ai/nano-banana"
+      }
     },
     {
       "label": "Entrées",
@@ -43,7 +58,7 @@
     },
     {
       "label": "Tarif",
-      "body": "0,039 $ / image (texte ou édition). Débité du wallet MaxVideoAI."
+      "body": "Tarification dynamique via le wallet MaxVideoAI — ouvrez la page Generate pour connaître le tarif actuel."
     },
     {
       "label": "Seed & batch",
@@ -102,5 +117,5 @@
       "a": "Dans Recent Runs + Library → Images. Vous pouvez copier l’URL CDN ou télécharger le fichier original."
     }
   ],
-  "pricingNotes": "Comptez ~0,039 $ par image. Un batch de 4 images ≈ 0,156 $."
+  "pricingNotes": "Les prix évoluent directement dans Generate. Vérifiez le tarif en direct avant de lancer un rendu."
 }

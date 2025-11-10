@@ -9,11 +9,23 @@
   "hero": {
     "title": "Veo 3 Fast – Speed-First Cinematic AI Video Engine (Silent)",
     "intro": "Veo 3 Fast is the go-to engine for rapid cinematic prototyping. It’s DeepMind’s visual model tuned for speed—no audio, no queues—so you can test prompts, build references, and iterate on visuals in seconds.",
-    "ctaPrimary": { "label": "Generate with Veo 3 Fast", "href": "/app?engine=veo-3-fast" },
+    "ctaPrimary": {
+      "label": "Generate with Veo 3 Fast",
+      "href": "/app?engine=veo-3-fast"
+    },
     "secondaryLinks": [
-      { "label": "See all engines", "href": "/models" },
-      { "label": "Explore workflows", "href": "/workflows" },
-      { "label": "View pricing", "href": "/pricing" }
+      {
+        "label": "See all engines",
+        "href": "/models"
+      },
+      {
+        "label": "Explore workflows",
+        "href": "/workflows"
+      },
+      {
+        "label": "Check live pricing in-app",
+        "href": "/generate"
+      }
     ]
   },
   "overview": "Test cinematic prompts quickly with Veo 3 Fast. Silent 4–8 second clips make it ideal for storyboards, social loops, and low-cost experimentation before promoting shots to Veo 3.1 or Sora.",
@@ -31,7 +43,10 @@
     {
       "label": "Duration",
       "body": "Select 4, 6, or 8-second clips for rapid iteration",
-      "link": { "label": "Model reference", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
+      "link": {
+        "label": "Model reference",
+        "href": "https://fal.ai/models/fal-ai/veo3.1/fast"
+      }
     },
     {
       "label": "Resolution",
@@ -44,11 +59,23 @@
     {
       "label": "Audio",
       "body": "No audio—silent renders for quick loops",
-      "link": { "label": "Model reference", "href": "https://fal.ai/models/fal-ai/veo3.1/fast" }
+      "link": {
+        "label": "Model reference",
+        "href": "https://fal.ai/models/fal-ai/veo3.1/fast"
+      }
     },
-    { "label": "Inputs", "body": "Text prompts only—perfect for exploring ideas" },
-    { "label": "Modes", "body": "Text-to-video workflows tuned purely for speed; no reference uploads" },
-    { "label": "Pricing", "body": "Pay-as-you-go via MaxVideoAI — silent renders from $0.10/s (~$0.80 per clip)" }
+    {
+      "label": "Inputs",
+      "body": "Text prompts only—perfect for exploring ideas"
+    },
+    {
+      "label": "Modes",
+      "body": "Text-to-video workflows tuned purely for speed; no reference uploads"
+    },
+    {
+      "label": "Pricing",
+      "body": "Live wallet-based pricing — open the Generate workspace for current rates."
+    }
   ],
   "promptStructure": {
     "title": "Prompt structure",
@@ -98,5 +125,5 @@
       "a": "No—renders are silent by design to keep costs low. Add your own soundtrack in post or rerun the prompt in Veo 3.1 if you need native audio."
     }
   ],
-  "pricingNotes": "Plan for ~$0.80 per render (Silent clip · 8s · 1080p)."
+  "pricingNotes": "Live pricing updates inside the Generate workspace. Check the current rate before you run a job."
 }

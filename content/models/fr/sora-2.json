@@ -9,11 +9,23 @@
   "hero": {
     "title": "Sora 2 – Vidéo IA à partir de texte ou d'image avec audio natif",
     "intro": "Sora 2 d'OpenAI réunit génération texte→vidéo et image→vidéo dans un seul moteur, avec visuels cinématographiques et audio natif complet — voix off, ambiance et mouvements synchronisés. Animez concepts, scènes ou objets à partir de mots ou d'images de référence sans quitter MaxVideoAI.",
-    "ctaPrimary": { "label": "Générer avec Sora 2", "href": "/app?engine=sora-2" },
+    "ctaPrimary": {
+      "label": "Générer avec Sora 2",
+      "href": "/app?engine=sora-2"
+    },
     "secondaryLinks": [
-      { "label": "Voir tous les moteurs", "href": "/modeles" },
-      { "label": "Explorer les workflows", "href": "/workflows" },
-      { "label": "Voir les tarifs", "href": "/tarifs" }
+      {
+        "label": "Voir tous les moteurs",
+        "href": "/modeles"
+      },
+      {
+        "label": "Explorer les workflows",
+        "href": "/workflows"
+      },
+      {
+        "label": "Consulter les prix en direct",
+        "href": "/generate"
+      }
     ]
   },
   "overview": "Générez des vidéos à partir de texte ou d'images avec Sora 2 — désormais avec voix off, son d'ambiance et animation fluide. Animez des images de référence ou créez des prompts complets avec audio synchronisé.",
@@ -66,7 +78,7 @@
     },
     {
       "label": "Tarification",
-      "body": "Pay-as-you-go via MaxVideoAI — rendus audio activé dès 0,52 $/s (~4,16 $ le clip de 8 s)"
+      "body": "Tarification dynamique via le wallet MaxVideoAI — ouvrez la page Generate pour connaître le tarif actuel."
     }
   ],
   "promptStructure": {
@@ -120,5 +132,5 @@
       "a": "Par défaut, MaxVideo AI fait passer les exécutions de Sora 2 par FAL. Ajoutez votre propre clé API OpenAI dans l'application pour que la facturation soit directement gérée par OpenAI — l'interface continue d'afficher un tarif indicatif et ajoute un badge \"Billed by OpenAI\" afin que les équipes financières restent alignées."
     }
   ],
-  "pricingNotes": "Prévoyez environ 2,08 $ par rendu (Audio activé · 4 s · 720p)."
+  "pricingNotes": "Les prix évoluent directement dans Generate. Vérifiez le tarif en direct avant de lancer un rendu."
 }

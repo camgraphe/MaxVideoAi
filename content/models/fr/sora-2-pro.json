@@ -9,11 +9,23 @@
   "hero": {
     "title": "Sora 2 Pro – Génération vidéo étendue avec audio et contrôle de scène",
     "intro": "Sora 2 Pro s'appuie sur le moteur Sora 2 pour débloquer des durées plus longues, l'enchaînement multi-scènes et un contrôle accru de la continuité audio/visuelle. Chaînez des scènes, dirigez les mouvements de caméra ou animez des références pour des histoires pleinement maîtrisées.",
-    "ctaPrimary": { "label": "Générer avec Sora 2 Pro", "href": "/app?engine=sora-2-pro" },
+    "ctaPrimary": {
+      "label": "Générer avec Sora 2 Pro",
+      "href": "/app?engine=sora-2-pro"
+    },
     "secondaryLinks": [
-      { "label": "Voir tous les moteurs", "href": "/modeles" },
-      { "label": "Explorer les workflows", "href": "/workflows" },
-      { "label": "Voir les tarifs", "href": "/tarifs" }
+      {
+        "label": "Voir tous les moteurs",
+        "href": "/modeles"
+      },
+      {
+        "label": "Explorer les workflows",
+        "href": "/workflows"
+      },
+      {
+        "label": "Consulter les prix en direct",
+        "href": "/generate"
+      }
     ]
   },
   "overview": "Générez des vidéos IA plus longues avec son et contrôle des scènes grâce à Sora 2 Pro. Parfait pour la narration, les vidéos explicatives et le motion design de marque — à partir d'images ou d'invites textuelles.",
@@ -66,7 +78,7 @@
     },
     {
       "label": "Tarification",
-      "body": "Audio activé dès 0,60 $/s (~4,80 $ pour 8 s)"
+      "body": "Tarification dynamique via le wallet MaxVideoAI — ouvrez la page Generate pour connaître le tarif actuel."
     }
   ],
   "promptStructure": {
@@ -119,5 +131,5 @@
       "a": "L'audio est activé par défaut pour la synchronisation labiale et la conception sonore, mais vous pouvez le désactiver dans le compositeur si vous n'avez besoin que des visuels."
     }
   ],
-  "pricingNotes": "Prévoyez environ 4,80 $ par rendu (audio activé · 8 s · 1080p)."
+  "pricingNotes": "Les prix évoluent directement dans Generate. Vérifiez le tarif en direct avant de lancer un rendu."
 }
