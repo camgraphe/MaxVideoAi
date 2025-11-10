@@ -2,7 +2,7 @@
 
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe, type Stripe } from '@stripe/stripe-js';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { FlagPill } from '@/components/FlagPill';
@@ -429,7 +429,7 @@ export default function BillingPage() {
         return;
       }
       if (payload?.id && stripePromise) {
-        const stripe = await stripePromise;
+        const stripe = (await stripePromise) as Stripe | null;
         const redirectResult = await stripe?.redirectToCheckout({ sessionId: payload.id as string });
         if (!redirectResult?.error) {
           return;
