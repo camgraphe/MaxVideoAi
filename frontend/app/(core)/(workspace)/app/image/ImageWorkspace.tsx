@@ -23,6 +23,11 @@ import type { MediaLightboxEntry } from '@/components/MediaLightbox';
 import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 import { buildVideoGroupFromImageRun } from '@/lib/image-groups';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import {
+  formatAspectRatioLabel,
+  getNanoBananaAspectRatios,
+  getNanoBananaDefaultAspectRatio,
+} from '@/lib/image/aspectRatios';
 
 interface ImageWorkspaceCopy {
   hero: {
@@ -59,6 +64,9 @@ interface ImageWorkspaceCopy {
       singular: string;
       plural: string;
     };
+    aspectRatioLabel: string;
+    aspectRatioHint: string;
+    aspectRatioAutoNote: string;
     estimatedCost: string;
     referenceLabel: string;
     referenceHelper: string;
@@ -153,6 +161,9 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
       singular: 'image',
       plural: 'images',
     },
+    aspectRatioLabel: 'Aspect ratio',
+    aspectRatioHint: 'Choose a preset to match your frame.',
+    aspectRatioAutoNote: 'Auto lets Nano Banana decide the final crop.',
     estimatedCost: 'Estimated cost: {amount}',
     referenceLabel: 'Reference images',
     referenceHelper: 'Optional · up to 4 images',
@@ -255,6 +266,7 @@ type HistoryEntry = {
   description?: string | null;
   images: GeneratedImage[];
   jobId?: string | null;
+  aspectRatio?: string | null;
 };
 
 type ReferenceSlotValue = {
@@ -311,6 +323,18 @@ function formatTimestamp(timestamp: number): string {
   }).format(new Date(timestamp));
 }
 
+function toCssAspectRatio(value?: string | null): string | undefined {
+  if (!value || value === 'auto') return undefined;
+  const parts = value.split(':');
+  if (parts.length !== 2) return undefined;
+  const width = Number(parts[0]);
+  const height = Number(parts[1]);
+  if (!Number.isFinite(width) || !Number.isFinite(height) || height <= 0) {
+    return undefined;
+  }
+  return `${width} / ${height}`;
+}
+
 function mapJobToHistoryEntry(job: Job): HistoryEntry | null {
   const renderUrls = Array.isArray(job.renderIds)
     ? job.renderIds.filter((url): url is string => typeof url === 'string' && url.length > 0)
@@ -333,6 +357,7 @@ function mapJobToHistoryEntry(job: Job): HistoryEntry | null {
     createdAt: Number.isNaN(timestamp) ? Date.now() : timestamp,
     description: job.message ?? null,
     images,
+    aspectRatio: job.aspectRatio ?? null,
   };
 }
 
@@ -346,6 +371,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [mode, setMode] = useState<ImageGenerationMode>('t2i');
   const [prompt, setPrompt] = useState('');
   const [numImages, setNumImages] = useState(1);
+  const [aspectRatio, setAspectRatio] = useState<string | null>(null);
   const [referenceSlots, setReferenceSlots] = useState<(ReferenceSlotValue | null)[]>(
     Array(MAX_REFERENCE_SLOTS).fill(null)
   );
@@ -373,6 +399,9 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     [engineId, engines]
   );
   const selectedEngineCaps = selectedEngine?.engineCaps ?? engines[0]?.engineCaps;
+  const isNanoBanana =
+    selectedEngine?.id === 'nano-banana' ||
+    Boolean(selectedEngine?.aliases?.some((alias) => alias === 'nano-banana' || alias === 'fal-ai/nano-banana'));
 
   useEffect(() => {
     if (!selectedEngine) return;
@@ -380,6 +409,21 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       setMode(selectedEngine.modes[0] ?? 't2i');
     }
   }, [selectedEngine, mode]);
+
+  useEffect(() => {
+    if (!isNanoBanana) {
+      setAspectRatio(null);
+      return;
+    }
+    const options = getNanoBananaAspectRatios(mode);
+    const defaultValue = getNanoBananaDefaultAspectRatio(mode);
+    setAspectRatio((previous) => {
+      if (previous && options.includes(previous)) {
+        return previous;
+      }
+      return defaultValue;
+    });
+  }, [isNanoBanana, mode]);
 
   useEffect(() => {
     if (!selectedEngine) return;
@@ -495,6 +539,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       prompt: entry.prompt,
       engineLabel: entry.engineLabel,
       engineId: entry.engineId,
+      aspectRatio: entry.aspectRatio ?? null,
       images: entry.images.map((image) => ({
         url: image.url,
         width: image.width ?? null,
@@ -731,12 +776,19 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       setError(null);
       setStatusMessage(null);
       try {
+        const appliedAspectRatio =
+          isNanoBanana && (aspectRatio || aspectRatio === 'auto')
+            ? aspectRatio
+            : isNanoBanana
+              ? getNanoBananaDefaultAspectRatio(mode)
+              : undefined;
         const response = await runImageGeneration({
           engineId: selectedEngine.id,
           mode,
           prompt: prompt.trim(),
           numImages,
           imageUrls: mode === 'i2i' ? readyReferenceUrls : undefined,
+          aspectRatio: appliedAspectRatio,
         });
         const entry: HistoryEntry = {
           id: response.jobId ?? response.requestId ?? crypto.randomUUID(),
@@ -748,6 +800,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           createdAt: Date.now(),
           description: response.description,
           images: response.images,
+          aspectRatio: response.aspectRatio ?? appliedAspectRatio ?? null,
         };
         setLocalHistory((prev) => [entry, ...prev].slice(0, 24));
         const suffix = response.images.length === 1 ? '' : 's';
@@ -769,6 +822,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       resolvedCopy.errors.promptMissing,
       resolvedCopy.errors.referenceMissing,
       resolvedCopy.messages.success,
+      aspectRatio,
+      isNanoBanana,
       selectedEngine,
     ]
   );
@@ -825,6 +880,10 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     historyEntries.length === 0
       ? resolvedCopy.history.runsLabel.zero
       : formatTemplate(resolvedCopy.history.runsLabel.other, { count: historyEntries.length });
+  const aspectRatioOptions = isNanoBanana ? getNanoBananaAspectRatios(mode) : [];
+  const selectedAspectRatioLabel = formatAspectRatioLabel(aspectRatio);
+  const previewAspectRatioCss = toCssAspectRatio(previewEntry?.aspectRatio ?? null);
+  const previewAspectRatioLabel = formatAspectRatioLabel(previewEntry?.aspectRatio ?? null);
 
   return (
     <>
@@ -848,7 +907,10 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                 {previewEntry?.images[0] ? (
                   <div className="flex flex-col gap-3 lg:flex-row">
                     <div className="flex-1">
-                      <div className="relative overflow-hidden rounded-2xl bg-[#f2f4f8]" style={{ aspectRatio: '1 / 1' }}>
+                      <div
+                        className="relative overflow-hidden rounded-2xl bg-[#f2f4f8]"
+                        style={{ aspectRatio: previewAspectRatioCss ?? '1 / 1' }}
+                      >
                         <img
                           src={previewEntry.images[0].url}
                           alt={previewEntry.prompt}
@@ -861,8 +923,13 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                     <div className="flex-1 space-y-2 text-sm text-text-secondary">
                       <p className="font-semibold text-text-primary">{previewEntry.engineLabel}</p>
                       <p className="text-text-secondary">{previewEntry.prompt}</p>
-                      <div className="text-[11px] uppercase tracking-[0.25em] text-text-muted">
-                        {previewEntry.mode === 't2i' ? resolvedCopy.modeTabs.generate : resolvedCopy.modeTabs.edit}
+                      <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.25em] text-text-muted">
+                        <span>{previewEntry.mode === 't2i' ? resolvedCopy.modeTabs.generate : resolvedCopy.modeTabs.edit}</span>
+                        {previewAspectRatioLabel ? (
+                          <span className="rounded-full bg-text-primary/10 px-2 py-0.5 text-[9px] font-semibold text-text-primary">
+                            {previewAspectRatioLabel}
+                          </span>
+                        ) : null}
                       </div>
                       <div className="flex gap-2 pt-2">
                         <button
@@ -976,6 +1043,35 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                 <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-text-muted">{resolvedCopy.composer.presetsHint}</p>
                 <p className="mt-1 text-xs text-text-secondary">{estimatedCostText}</p>
               </div>
+
+              {isNanoBanana ? (
+                <div>
+                  <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
+                    <span>{resolvedCopy.composer.aspectRatioLabel}</span>
+                    <span className="text-text-secondary">{selectedAspectRatioLabel ?? resolvedCopy.composer.aspectRatioHint}</span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {aspectRatioOptions.map((option) => (
+                      <button
+                        key={`aspect-ratio-${option}`}
+                        type="button"
+                        onClick={() => setAspectRatio(option)}
+                        className={clsx(
+                          'rounded-full border px-3 py-1 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                          aspectRatio === option
+                            ? 'border-accent bg-accent text-white'
+                            : 'border-border bg-white text-text-secondary hover:border-accentSoft/60 hover:text-text-primary'
+                        )}
+                      >
+                        {formatAspectRatioLabel(option) ?? option}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-text-muted">
+                    {mode === 'i2i' ? resolvedCopy.composer.aspectRatioAutoNote : resolvedCopy.composer.aspectRatioHint}
+                  </p>
+                </div>
+              ) : null}
 
               <div>
                 <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
@@ -1132,6 +1228,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                 <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {historyEntries.map((entry) => {
                     const displayImages = entry.images.slice(0, 4);
+                    const entryAspectRatioLabel = formatAspectRatioLabel(entry.aspectRatio ?? null);
                     return (
                       <div
                         key={entry.id}
@@ -1167,14 +1264,19 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                             </div>
                           )}
                         </div>
-                      <div className="space-y-2 border-t border-white/60 px-4 py-3 text-xs text-text-secondary">
-                        <p className="font-semibold text-text-primary">{entry.engineLabel}</p>
-                        <p className="line-clamp-2 text-text-secondary">{entry.prompt}</p>
-                        <div className="flex items-center justify-between text-[11px] text-text-muted">
-                          <span>{entry.mode === 't2i' ? resolvedCopy.modeTabs.generate : resolvedCopy.modeTabs.edit}</span>
-                          <span>{formatTimestamp(entry.createdAt)}</span>
+                        <div className="space-y-2 border-t border-white/60 px-4 py-3 text-xs text-text-secondary">
+                          <p className="font-semibold text-text-primary">{entry.engineLabel}</p>
+                          <p className="line-clamp-2 text-text-secondary">{entry.prompt}</p>
+                          <div className="flex flex-wrap items-center gap-2 text-[11px] text-text-muted">
+                            <span>{entry.mode === 't2i' ? resolvedCopy.modeTabs.generate : resolvedCopy.modeTabs.edit}</span>
+                            {entryAspectRatioLabel ? (
+                              <span className="rounded-full bg-text-primary/10 px-2 py-0.5 text-[9px] font-semibold text-text-primary">
+                                {entryAspectRatioLabel}
+                              </span>
+                            ) : null}
+                          </div>
+                          <span className="block text-[11px] text-text-muted">{formatTimestamp(entry.createdAt)}</span>
                         </div>
-                      </div>
                     </div>
                   );
                 })}

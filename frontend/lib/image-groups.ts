@@ -15,9 +15,34 @@ export type ImageRunDescriptor = {
   jobId?: string | null;
   provider?: ResultProvider;
   images: ImageVariant[];
+  aspectRatio?: string | null;
 };
 
-function inferAspect(width?: number | null, height?: number | null): VideoAspect {
+function parseAspectHint(value?: string | null): VideoAspect | null {
+  if (!value || value === 'auto') {
+    return null;
+  }
+  const normalized = value.toLowerCase().replace(/\s+/g, '');
+  const parts = normalized.split(':');
+  if (parts.length !== 2) {
+    return null;
+  }
+  const width = Number.parseFloat(parts[0]);
+  const height = Number.parseFloat(parts[1]);
+  if (!Number.isFinite(width) || !Number.isFinite(height) || height === 0) {
+    return null;
+  }
+  const ratio = width / height;
+  if (ratio > 1.1) return '16:9';
+  if (ratio < 0.9) return '9:16';
+  return '1:1';
+}
+
+function inferAspect(width?: number | null, height?: number | null, aspectHint?: string | null): VideoAspect {
+  const fromHint = parseAspectHint(aspectHint);
+  if (fromHint) {
+    return fromHint;
+  }
   if (typeof width === 'number' && typeof height === 'number' && width > 0 && height > 0) {
     const ratio = width / height;
     if (ratio > 1.2) return '16:9';
@@ -34,7 +59,7 @@ export function buildVideoGroupFromImageRun(run: ImageRunDescriptor): VideoGroup
     id: `${run.id}-img-${index}`,
     url: image.url,
     thumb: image.url,
-    aspect: inferAspect(image.width, image.height),
+    aspect: inferAspect(image.width, image.height, run.aspectRatio),
     jobId: run.jobId ?? run.id,
     engineId: run.engineId ?? undefined,
     meta: {
@@ -59,6 +84,7 @@ export function buildVideoGroupFromImageRun(run: ImageRunDescriptor): VideoGroup
     paramsSnapshot: {
       prompt: run.prompt ?? undefined,
       engineLabel: run.engineLabel ?? undefined,
+      ...(run.aspectRatio ? { aspectRatio: run.aspectRatio } : {}),
     },
     status: 'ready',
     heroItemId: items[0]?.id,

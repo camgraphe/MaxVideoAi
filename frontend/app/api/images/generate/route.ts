@@ -21,6 +21,10 @@ import { ensureUserPreferences } from '@/server/preferences';
 import { ensureUserPreferredCurrency, type Currency } from '@/lib/currency';
 import { normalizeMediaUrl } from '@/lib/media';
 import { getResultProviderMode } from '@/lib/result-provider';
+import {
+  getNanoBananaDefaultAspectRatio,
+  normalizeNanoBananaAspectRatio,
+} from '@/lib/image/aspectRatios';
 
 const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER: Currency = 'usd';
@@ -272,6 +276,10 @@ export async function POST(req: NextRequest) {
       engineLabel: engineEntry.marketingName,
     });
   }
+  const isNanoBanana = engineEntry.id === 'nano-banana';
+  const resolvedAspectRatio = isNanoBanana
+    ? normalizeNanoBananaAspectRatio(mode, body?.aspectRatio) ?? getNanoBananaDefaultAspectRatio(mode)
+    : null;
 
   const prompt = typeof body?.prompt === 'string' ? body.prompt.trim() : '';
   if (!prompt.length) {
@@ -320,6 +328,8 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  const jobAspectRatio = resolvedAspectRatio ?? null;
+
   pricing.meta = {
     ...(pricing.meta ?? {}),
     request: {
@@ -328,6 +338,7 @@ export async function POST(req: NextRequest) {
       mode,
       numImages,
       resolution,
+      ...(resolvedAspectRatio ? { aspectRatio: resolvedAspectRatio } : {}),
     },
   };
 
@@ -448,7 +459,7 @@ export async function POST(req: NextRequest) {
         durationSec,
         prompt,
         PLACEHOLDER_THUMB,
-        '1:1',
+        jobAspectRatio,
         false,
         Boolean(engine.upscale4k),
         PLACEHOLDER_THUMB,
@@ -495,6 +506,7 @@ export async function POST(req: NextRequest) {
         prompt,
         num_images: numImages,
         ...(mode === 'i2i' ? { image_urls: imageUrls } : {}),
+        ...(resolvedAspectRatio ? { aspect_ratio: resolvedAspectRatio } : {}),
       },
       mode: 'polling',
       onEnqueue(requestId) {
@@ -573,7 +585,12 @@ export async function POST(req: NextRequest) {
           engine.id,
           'completed',
           JSON.stringify({
-            request: { mode, numImages, resolution },
+            request: {
+              mode,
+              numImages,
+              resolution,
+              ...(resolvedAspectRatio ? { aspect_ratio: resolvedAspectRatio } : {}),
+            },
             pricing: { totalCents: pricing.totalCents, currency: pricing.currency },
           }),
         ]
@@ -596,6 +613,7 @@ export async function POST(req: NextRequest) {
       pricing,
       paymentStatus: 'paid_wallet',
       thumbUrl: hero,
+      aspectRatio: resolvedAspectRatio,
     } satisfies ImageGenerationResponse);
   } catch (error) {
     console.error('[images] Fal generation failed', error);
