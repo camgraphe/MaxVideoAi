@@ -1092,11 +1092,12 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     type: 'Text + Image',
     seoText:
       'Generate videos from text or images using Sora 2 — now with voice-over, ambient sound, and smooth animation. Animate reference stills or craft full prompts with synced audio.',
-    demoUrl: 'https://storage.googleapis.com/falserverless/example_outputs/sora_t2v_output.mp4',
+    demoUrl: 'https://v3b.fal.media/files/b/elephant/ch7vRQJfqfY__OPr6sl6Z_output.mp4',
     media: {
-      videoUrl: 'https://storage.googleapis.com/falserverless/example_outputs/sora_t2v_output.mp4',
-      imagePath: '/hero/sora2.jpg',
-      altText: 'Sora 2 demo: Text-to-video with ambient audio',
+      videoUrl: 'https://v3b.fal.media/files/b/elephant/ch7vRQJfqfY__OPr6sl6Z_output.mp4',
+      imagePath:
+        'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg',
+      altText: 'Sora 2 demo: Director in creative studio beside AI monitors',
     },
     prompts: [
       {
@@ -1188,11 +1189,12 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     type: 'Text + Image',
     seoText:
       'Generate longer AI videos with sound and scene control using Sora 2 Pro. Perfect for storytelling, explainers, and branded motion design—starting from image or text prompts.',
-    demoUrl: 'https://storage.googleapis.com/falserverless/example_outputs/sora_2_i2v_output.mp4',
+    demoUrl: 'https://v3b.fal.media/files/b/elephant/ch7vRQJfqfY__OPr6sl6Z_output.mp4',
     media: {
-      videoUrl: 'https://storage.googleapis.com/falserverless/example_outputs/sora_2_i2v_output.mp4',
-      imagePath: '/hero/sora2.jpg',
-      altText: 'Sora 2 Pro multi-scene demo with audio',
+      videoUrl: 'https://v3b.fal.media/files/b/elephant/ch7vRQJfqfY__OPr6sl6Z_output.mp4',
+      imagePath:
+        'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg',
+      altText: 'Sora 2 Pro demo: director alongside AI preview screens',
     },
     prompts: [
       {

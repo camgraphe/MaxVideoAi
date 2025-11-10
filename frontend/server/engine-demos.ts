@@ -6,13 +6,15 @@ export type EngineDemo = {
 
 const STATIC_ENGINE_DEMOS: Record<string, EngineDemo> = {
   'sora-2': {
-    videoUrl: 'https://storage.googleapis.com/falserverless/example_outputs/sora_t2v_output.mp4',
-    posterUrl: '/hero/sora2.jpg',
+    videoUrl: 'https://v3b.fal.media/files/b/elephant/ch7vRQJfqfY__OPr6sl6Z_output.mp4',
+    posterUrl:
+      'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg',
     hasAudio: true,
   },
   'sora-2-pro': {
-    videoUrl: 'https://storage.googleapis.com/falserverless/example_outputs/sora_2_i2v_output.mp4',
-    posterUrl: '/hero/sora2.jpg',
+    videoUrl: 'https://v3b.fal.media/files/b/elephant/ch7vRQJfqfY__OPr6sl6Z_output.mp4',
+    posterUrl:
+      'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg',
     hasAudio: true,
   },
   'veo-3-1': {
