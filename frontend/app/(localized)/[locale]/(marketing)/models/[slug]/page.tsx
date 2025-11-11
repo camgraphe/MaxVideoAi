@@ -6,7 +6,7 @@ import { resolveDictionary } from '@/lib/i18n/server';
 import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
 import { listFalEngines, getFalEngineBySlug } from '@/config/falEngines';
 import type { AppLocale } from '@/i18n/locales';
-import { locales, localePathnames, localeRegions } from '@/i18n/locales';
+import { locales, localePathnames } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { getEngineLocalized } from '@/lib/models/i18n';
@@ -265,27 +265,6 @@ export default async function ModelDetailPage({ params }: PageParams) {
       },
     ],
   };
-  const faqEntities =
-    faqEntries.length > 0
-      ? faqEntries.slice(0, 3).map(({ question, answer }) => ({
-          '@type': 'Question' as const,
-          name: question,
-          acceptedAnswer: {
-            '@type': 'Answer' as const,
-            text: answer,
-          },
-        }))
-      : [];
-  const faqLd =
-    faqEntities.length > 0
-      ? {
-          '@context': 'https://schema.org',
-          '@type': 'FAQPage',
-          inLanguage: localeRegions[activeLocale] ?? localeRegions.en,
-          mainEntity: faqEntities,
-        }
-      : null;
-
   const platformPriceInfo = detailCopy.overview.platformPrice
     ? {
         label: detailCopy.overview.platformPrice,
@@ -309,7 +288,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
         isAccessibleForFree: false,
       }
     : null;
-  const schemaPayloads = [showSoraSeo && soraSoftwareSchema, breadcrumbLd, faqLd].filter(Boolean) as object[];
+  const schemaPayloads = [showSoraSeo && soraSoftwareSchema, breadcrumbLd].filter(Boolean) as object[];
 
   return (
     <div className="mx-auto max-w-4xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
