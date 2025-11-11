@@ -45,8 +45,8 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     posterSrc: '/hero/sora2.jpg',
     durationSec: 8,
     resolution: '1080p',
-    fallbackPriceLabel: 'from $0.43',
-    minPriceCents: 43,
+    fallbackPriceLabel: 'from $0.52',
+    minPriceCents: 52,
     showAudioIcon: true,
     alt: 'Sora 2  -  example clip',
     examplesSlug: 'sora-2',
@@ -341,7 +341,8 @@ export default async function HomePage() {
     const label = slot?.title || video?.engineLabel || fallback.label;
     const videoSrc = video?.videoUrl ?? fallback.videoSrc;
     const posterSrc = video?.thumbUrl ?? fallback.posterSrc;
-    const alt = slot?.subtitle || video?.promptExcerpt || fallback.alt;
+    const adminPriceLabel = slot?.subtitle?.trim() || null;
+    const alt = video?.promptExcerpt || fallback.alt;
     const engineId = normalizeEngineId(video?.engineId ?? fallback.engineId) ?? fallback.engineId;
     const durationSec = video?.durationSec ?? fallback.durationSec;
     const resolution = fallback.resolution;
@@ -356,7 +357,7 @@ export default async function HomePage() {
       engineId,
       durationSec,
       resolution,
-      fallbackPriceLabel: fallback.fallbackPriceLabel,
+      fallbackPriceLabel: adminPriceLabel ?? fallback.fallbackPriceLabel,
       minPriceCents: fallback.minPriceCents ?? null,
       minPriceCurrency: fallback.minPriceCurrency ?? 'USD',
       examplesSlug: HERO_TILE_EXAMPLE_SLUGS[engineId] ?? fallback.examplesSlug ?? (engineId.includes('/') ? null : engineId),
