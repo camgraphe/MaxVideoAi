@@ -262,7 +262,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   const engineFilterMap = allVideos.reduce<Map<string, EngineFilterOption>>((acc, video) => {
     const canonicalEngineId = resolveEngineLinkId(video.engineId);
     if (!canonicalEngineId) return acc;
-    const engineMeta = ENGINE_META.get(canonicalEngineId.toLowerCase());
+    const engineMeta = ENGINE_META.get(canonicalEngineId.toLowerCase()) ?? null;
     const descriptor = resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engineLabel);
     if (!descriptor) return acc;
     const filterKey = descriptor.id.toLowerCase();
@@ -297,10 +297,10 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
 
   const videos = selectedEngine
     ? allVideos.filter((video) => {
-        const canonicalEngineId = resolveEngineLinkId(video.engineId);
-        if (!canonicalEngineId) return false;
-        const engineMeta = ENGINE_META.get(canonicalEngineId.toLowerCase());
-        const descriptor = resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engineLabel);
+      const canonicalEngineId = resolveEngineLinkId(video.engineId);
+      if (!canonicalEngineId) return false;
+      const engineMeta = ENGINE_META.get(canonicalEngineId.toLowerCase()) ?? null;
+      const descriptor = resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engineLabel);
         if (!descriptor) return false;
         return descriptor.id.toLowerCase() === selectedEngine.toLowerCase();
       })
