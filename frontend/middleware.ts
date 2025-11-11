@@ -56,6 +56,7 @@ const EXACT_PATH_REDIRECTS: Record<string, string> = {
   '/pikavideo': '/models/pika-image-to-video',
   '/sora2': '/models/sora-2',
   '/sora-2': '/models/sora-2',
+  '/models/luma-dream-machine': '/models',
 };
 const FUZZY_REDIRECT_TARGETS: Array<{ slug: string; destination: string }> = [
   { slug: 'models', destination: '/models' },
