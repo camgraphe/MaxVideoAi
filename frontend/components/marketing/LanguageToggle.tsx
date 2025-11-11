@@ -6,6 +6,7 @@ import { usePathname, useRouter } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import type { Locale } from '@/lib/i18n/types';
 import { LOCALE_COOKIE } from '@/lib/i18n/constants';
+import localizedSlugConfig from '@/config/localized-slugs.json';
 
 const FLAG_MAP: Record<Locale, string> = {
   en: '🇺🇸',
@@ -14,6 +15,18 @@ const FLAG_MAP: Record<Locale, string> = {
 };
 
 const LOCALE_BYPASS_PREFIXES = ['/video'];
+const LOCALE_PREFIXES: Record<Locale, string> = { en: '', fr: 'fr', es: 'es' } as const;
+const LOCALIZED_SEGMENT_TO_EN: Record<string, string> = Object.values(localizedSlugConfig).reduce(
+  (map, value) => {
+    Object.values(value).forEach((segment) => {
+      if (segment) {
+        map[segment] = value.en;
+      }
+    });
+    return map;
+  },
+  {} as Record<string, string>
+);
 
 function shouldBypassLocale(pathname: string | null | undefined) {
   if (!pathname) return false;
@@ -59,9 +72,43 @@ export function LanguageToggle() {
         router.refresh();
         return;
       }
+      if (value === 'en') {
+        router.replace(resolveEnglishPath(targetPath, locale as Locale) as never);
+        return;
+      }
       router.replace(targetPath as never, { locale: value });
     });
   };
+
+function resolveEnglishPath(pathname: string, currentLocale: Locale): string {
+  if (currentLocale === 'en') {
+    return pathname || '/';
+  }
+  const prefix = LOCALE_PREFIXES[currentLocale];
+  if (!prefix) {
+    return pathname || '/';
+  }
+  const normalized = pathname?.split('?')[0] ?? '/';
+  const prefixed = normalized.startsWith('/') ? normalized : `/${normalized}`;
+  const prefixToken = `/${prefix}`;
+  if (!prefixed.startsWith(prefixToken)) {
+    return prefixed || '/';
+  }
+  let remainder = prefixed.slice(prefixToken.length);
+  if (!remainder || remainder === '/') {
+    return '/';
+  }
+  if (remainder.startsWith('/')) {
+    remainder = remainder.slice(1);
+  }
+  const segments = remainder.split('/').filter(Boolean);
+  if (!segments.length) {
+    return '/';
+  }
+  const [first, ...rest] = segments;
+  const englishFirst = LOCALIZED_SEGMENT_TO_EN[first] ?? first;
+  return `/${[englishFirst, ...rest].join('/')}`;
+}
 
   const displayFor = (code: Locale) => FLAG_MAP[code] ?? code.toUpperCase();
 
