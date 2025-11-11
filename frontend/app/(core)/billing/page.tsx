@@ -613,9 +613,10 @@ export default function BillingPage() {
                     key={tier.id}
                     type="button"
                     onClick={() => handleTopUp(tier.amountCents)}
-                    className="rounded-input border border-border px-3 py-2 text-left transition hover:bg-bg"
+                    className="group relative overflow-hidden rounded-input border border-transparent bg-accentSoft/15 px-3 py-2 text-left text-text-primary shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring hover:shadow-md"
                   >
-                    <div className="flex items-center justify-between">
+                    <span className="pointer-events-none absolute inset-0 z-0 bg-accent/10 opacity-0 transition group-hover:opacity-100" aria-hidden />
+                    <div className="relative z-10 flex items-center justify-between">
                       <div className="flex flex-col">
                         <span>{copy.wallet.addFunds.replace('{amount}', formatUsdAmount(tier.amountCents))}</span>
                         {topupQuotes[tier.amountCents] && normalizedChargeCurrency !== 'USD' && (

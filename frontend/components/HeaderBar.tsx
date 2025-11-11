@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { Chip } from '@/components/ui/Chip';
 import { NAV_ITEMS } from '@/components/AppSidebar';
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useId } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
@@ -17,8 +17,11 @@ export function HeaderBar() {
   const [wallet, setWallet] = useState<{ balance: number } | null>(null);
   const [member, setMember] = useState<{ tier: string } | null>(null);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [walletPromptOpen, setWalletPromptOpen] = useState(false);
   const avatarRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const walletPromptCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const walletPromptId = useId();
   useEffect(() => {
     let mounted = true;
     const fetchAccountState = async (token?: string | null) => {
@@ -102,6 +105,32 @@ export function HeaderBar() {
     { key: 'blog', href: '/blog' },
   ] as const;
 
+  const openWalletPrompt = () => {
+    if (walletPromptCloseTimeout.current) {
+      clearTimeout(walletPromptCloseTimeout.current);
+      walletPromptCloseTimeout.current = null;
+    }
+    setWalletPromptOpen(true);
+  };
+
+  const scheduleWalletPromptClose = () => {
+    if (walletPromptCloseTimeout.current) {
+      clearTimeout(walletPromptCloseTimeout.current);
+    }
+    walletPromptCloseTimeout.current = setTimeout(() => {
+      setWalletPromptOpen(false);
+      walletPromptCloseTimeout.current = null;
+    }, 200);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (walletPromptCloseTimeout.current) {
+        clearTimeout(walletPromptCloseTimeout.current);
+      }
+    };
+  }, []);
+
   return (
     <>
       <header
@@ -127,10 +156,42 @@ export function HeaderBar() {
 
       <div className="flex items-center gap-3 text-xs text-text-muted">
         <AppLanguageToggle />
-        <div className="flex items-center gap-2 rounded-input border border-hairline bg-white/80 px-3 py-1 uppercase tracking-micro">
-          <Image src="/assets/icons/wallet.svg" alt="" width={16} height={16} aria-hidden />
-          <span>{t('workspace.header.walletLabel', 'Wallet')}</span>
-          <span className="text-sm font-semibold tracking-normal text-text-primary">${(wallet?.balance ?? 0).toFixed(2)}</span>
+        <div className="relative" onMouseEnter={openWalletPrompt} onMouseLeave={scheduleWalletPromptClose}>
+          <Link
+            href="/billing"
+            className="flex items-center gap-2 rounded-input border border-hairline bg-white/80 px-3 py-1 uppercase tracking-micro transition-colors hover:border-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-describedby={walletPromptOpen ? walletPromptId : undefined}
+            onFocus={openWalletPrompt}
+            onBlur={scheduleWalletPromptClose}
+          >
+            <Image src="/assets/icons/wallet.svg" alt="" width={16} height={16} aria-hidden />
+            <span>{t('workspace.header.walletLabel', 'Wallet')}</span>
+            <span className="text-sm font-semibold tracking-normal text-text-primary">${(wallet?.balance ?? 0).toFixed(2)}</span>
+          </Link>
+          {walletPromptOpen && (
+            <div
+              id={walletPromptId}
+              role="status"
+              className="absolute right-0 top-full z-10 mt-2 w-64 rounded-card border border-hairline bg-white p-3 text-left text-xs text-text-secondary shadow-card"
+              onMouseEnter={openWalletPrompt}
+              onMouseLeave={scheduleWalletPromptClose}
+            >
+              <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+                {t('workspace.header.walletTopUp.label', 'Top up available')}
+              </p>
+              <p className="mt-1 text-sm text-text-primary">
+                {t('workspace.header.walletTopUp.copy', 'Click to add funds and keep generating without interruption.')}
+              </p>
+              <Link
+                href="/billing"
+                className="mt-3 inline-flex w-full items-center justify-center rounded-input bg-accent px-3 py-2 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                onFocus={openWalletPrompt}
+                onBlur={scheduleWalletPromptClose}
+              >
+                {t('workspace.header.walletTopUp.cta', 'Top up now')}
+              </Link>
+            </div>
+          )}
         </div>
         <Chip className="px-2.5 py-1 text-[12px]" variant="outline">{member?.tier ?? t('workspace.header.memberFallback', 'Member')}</Chip>
         {email ? (
