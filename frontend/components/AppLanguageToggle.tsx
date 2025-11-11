@@ -59,17 +59,25 @@ export function AppLanguageToggle() {
   };
 
   return (
-    <select
-      value={pendingLocale}
-      onChange={(event) => handleChange(event.target.value as Locale)}
-      className="rounded-input border border-hairline bg-white/80 px-2 py-1 text-sm text-text-primary focus:border-accent focus:outline-none"
-      aria-label={t('workspace.languageToggle.ariaLabel', 'Select language')}
-    >
-      {options.map((option) => (
-        <option key={option.locale} value={option.locale} aria-label={option.label} title={option.label}>
-          {FLAG_MAP[option.locale]}
-        </option>
-      ))}
-    </select>
+    <div className="relative text-xs font-medium text-text-secondary">
+      <select
+        value={pendingLocale}
+        onChange={(event) => handleChange(event.target.value as Locale)}
+        className="appearance-none rounded-full border border-[#dce4ff] bg-gradient-to-r from-white via-[#f7f9ff] to-white px-4 py-1.5 pr-8 text-xs font-semibold text-text-primary shadow-[0_2px_8px_rgba(15,23,42,0.12)] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        aria-label={t('workspace.languageToggle.ariaLabel', 'Select language')}
+      >
+        {options.map((option) => (
+          <option key={option.locale} value={option.locale} aria-label={option.label} title={option.label}>
+            {FLAG_MAP[option.locale]}
+          </option>
+        ))}
+      </select>
+      <span
+        aria-hidden
+        className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-text-muted"
+      >
+        ▾
+      </span>
+    </div>
   );
 }

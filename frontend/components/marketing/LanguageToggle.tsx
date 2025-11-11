@@ -114,19 +114,27 @@ function resolveEnglishPath(pathname: string, currentLocale: Locale): string {
   const displayFor = (code: Locale) => FLAG_MAP[code] ?? code.toUpperCase();
 
   return (
-    <div className="text-sm text-text-muted">
-      <select
-        value={pendingLocale}
-        onChange={(event) => handleChange(event.target.value as Locale)}
-        className="rounded-input border border-hairline bg-bg px-2 py-1 text-sm text-text-primary focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-        aria-label={label}
-      >
-        {options.map((option) => (
-          <option key={option.locale} value={option.locale}>
-            {displayFor(option.locale as Locale)}
-          </option>
-        ))}
-      </select>
+    <div className="text-xs font-medium text-text-secondary">
+      <div className="relative">
+        <select
+          value={pendingLocale}
+          onChange={(event) => handleChange(event.target.value as Locale)}
+          className="appearance-none rounded-full border border-[#dce4ff] bg-gradient-to-r from-white via-[#f7f9ff] to-white px-4 py-1.5 pr-8 text-xs font-semibold text-text-primary shadow-[0_2px_8px_rgba(15,23,42,0.08)] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          aria-label={label}
+        >
+          {options.map((option) => (
+            <option key={option.locale} value={option.locale}>
+              {displayFor(option.locale as Locale)}
+            </option>
+          ))}
+        </select>
+        <span
+          aria-hidden
+          className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-text-muted"
+        >
+          ▾
+        </span>
+      </div>
     </div>
   );
 }

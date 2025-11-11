@@ -1,15 +1,25 @@
-
 'use client';
 
-import { Link, usePathname } from '@/i18n/navigation';
 import Image from 'next/image';
 import clsx from 'clsx';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { Link, usePathname } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
+import { supabase } from '@/lib/supabaseClient';
+import { NAV_ITEMS } from '@/components/AppSidebar';
 
 export function MarketingNav() {
   const pathname = usePathname();
   const { t } = useI18n();
+  const [email, setEmail] = useState<string | null>(null);
+  const [wallet, setWallet] = useState<{ balance: number } | null>(null);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [walletPromptOpen, setWalletPromptOpen] = useState(false);
+  const avatarRef = useRef<HTMLButtonElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const walletPromptCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const walletPromptId = useId();
   const brand = t('nav.brand', 'MaxVideo AI') ?? 'MaxVideo AI';
   const defaultLinks: Array<{ key: string; href: string }> = [
     { key: 'models', href: '/models' },
@@ -23,6 +33,115 @@ export function MarketingNav() {
   const links = Array.isArray(maybeLinks) && maybeLinks.length ? maybeLinks : defaultLinks;
   const login = t('nav.login', 'Log in');
   const cta = t('nav.cta', 'Start a render');
+  const generateLabel = t('nav.generate', 'Generate');
+  const isAuthenticated = Boolean(email);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchAccountState = async (token?: string | null) => {
+      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+      try {
+        const walletRes = await fetch('/api/wallet', { headers }).then((response) => response.json());
+        if (!mounted) return;
+        setWallet({ balance: walletRes.balance ?? 0 });
+      } catch {
+        if (mounted) {
+          setWallet(null);
+        }
+      }
+    };
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
+      setEmail(data.session?.user?.email ?? null);
+      void fetchAccountState(data.session?.access_token);
+    });
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      setEmail(session?.user?.email ?? null);
+      void fetchAccountState(session?.access_token);
+    });
+    const handleInvalidate = async () => {
+      const { data } = await supabase.auth.getSession();
+      await fetchAccountState(data.session?.access_token);
+    };
+    window.addEventListener('wallet:invalidate', handleInvalidate);
+    return () => {
+      mounted = false;
+      subscription.subscription.unsubscribe();
+      window.removeEventListener('wallet:invalidate', handleInvalidate);
+      if (walletPromptCloseTimeout.current) {
+        clearTimeout(walletPromptCloseTimeout.current);
+        walletPromptCloseTimeout.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!accountMenuOpen) {
+      return;
+    }
+    const handlePointer = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node;
+      if (avatarRef.current?.contains(target)) return;
+      if (menuRef.current?.contains(target)) return;
+      setAccountMenuOpen(false);
+    };
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setAccountMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handlePointer);
+    document.addEventListener('touchstart', handlePointer);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handlePointer);
+      document.removeEventListener('touchstart', handlePointer);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [accountMenuOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (walletPromptCloseTimeout.current) {
+        clearTimeout(walletPromptCloseTimeout.current);
+        walletPromptCloseTimeout.current = null;
+      }
+    };
+  }, []);
+
+  const openWalletPrompt = () => {
+    if (walletPromptCloseTimeout.current) {
+      clearTimeout(walletPromptCloseTimeout.current);
+      walletPromptCloseTimeout.current = null;
+    }
+    setWalletPromptOpen(true);
+  };
+
+  const scheduleWalletPromptClose = () => {
+    if (walletPromptCloseTimeout.current) {
+      clearTimeout(walletPromptCloseTimeout.current);
+    }
+    walletPromptCloseTimeout.current = setTimeout(() => {
+      setWalletPromptOpen(false);
+      walletPromptCloseTimeout.current = null;
+    }, 200);
+  };
+
+  const initials = useMemo(() => {
+    if (!email) return '?';
+    const [namePart] = email.split('@');
+    if (!namePart) return email.slice(0, 2).toUpperCase();
+    const tokens = namePart
+      .replace(/[^a-zA-Z0-9]+/g, ' ')
+      .trim()
+      .split(' ')
+      .filter(Boolean);
+    if (tokens.length >= 2) {
+      return (tokens[0][0] + tokens[1][0]).toUpperCase();
+    }
+    return namePart.slice(0, 2).toUpperCase();
+  }, [email]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-hairline bg-white/90 backdrop-blur">
@@ -56,18 +175,139 @@ export function MarketingNav() {
           <div className="hidden md:block">
             <LanguageToggle />
           </div>
-          <Link
-            href="/login?next=/app"
-            className="hidden text-sm font-medium text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white md:inline-flex"
-          >
-            {login}
-          </Link>
-          <Link
-            href="/app"
-            className="inline-flex items-center rounded-pill bg-accent px-4 py-2 text-sm font-semibold text-white shadow-card transition transform-gpu hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-          >
-            {cta}
-          </Link>
+          {isAuthenticated ? (
+            <>
+              <div className="hidden items-center gap-3 md:flex">
+                <div className="relative" onMouseEnter={openWalletPrompt} onMouseLeave={scheduleWalletPromptClose}>
+                  <Link
+                    href="/billing"
+                    className="flex items-center gap-2 rounded-pill border border-hairline bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary transition hover:border-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-describedby={walletPromptOpen ? walletPromptId : undefined}
+                    onFocus={openWalletPrompt}
+                    onBlur={scheduleWalletPromptClose}
+                  >
+                    <Image src="/assets/icons/wallet.svg" alt="" width={16} height={16} aria-hidden />
+                    <span className="text-sm font-semibold tracking-normal text-text-primary">
+                      ${(wallet?.balance ?? 0).toFixed(2)}
+                    </span>
+                  </Link>
+                  {walletPromptOpen && (
+                    <div
+                      id={walletPromptId}
+                      role="status"
+                      className="absolute right-0 top-full z-10 mt-2 w-64 rounded-card border border-hairline bg-white p-3 text-left text-xs text-text-secondary shadow-card"
+                      onMouseEnter={openWalletPrompt}
+                      onMouseLeave={scheduleWalletPromptClose}
+                    >
+                      <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+                        {t('workspace.header.walletTopUp.label', 'Top up available')}
+                      </p>
+                      <p className="mt-1 text-sm text-text-primary">
+                        {t(
+                          'workspace.header.walletTopUp.copy',
+                          'Click to add funds and keep generating without interruption.'
+                        )}
+                      </p>
+                      <Link
+                        href="/billing"
+                        className="mt-3 inline-flex w-full items-center justify-center rounded-input bg-accent px-3 py-2 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        onFocus={openWalletPrompt}
+                        onBlur={scheduleWalletPromptClose}
+                      >
+                        {t('workspace.header.walletTopUp.cta', 'Top up now')}
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <Link
+                href="/app"
+                className="inline-flex items-center rounded-pill border border-hairline px-4 py-2 text-sm font-semibold text-text-primary shadow-card transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              >
+                {generateLabel}
+              </Link>
+              <div className="relative">
+                <button
+                  ref={avatarRef}
+                  type="button"
+                  onClick={() => setAccountMenuOpen((prev) => !prev)}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-[#dce4ff] bg-gradient-to-br from-[#dfe6ff] via-white/95 to-white text-sm font-semibold text-text-primary shadow-card transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-haspopup="menu"
+                  aria-expanded={accountMenuOpen}
+                >
+                  {initials}
+                </button>
+                {accountMenuOpen && (
+                  <div
+                    ref={menuRef}
+                    className="absolute right-0 mt-3 w-56 rounded-card border border-hairline bg-white p-3 text-sm text-text-secondary shadow-card"
+                    role="menu"
+                  >
+                    <div className="mb-3 rounded-input bg-bg px-3 py-2">
+                      <p className="text-xs uppercase tracking-micro text-text-muted">
+                        {t('workspace.header.signedIn', 'Signed in')}
+                      </p>
+                      <p className="mt-1 truncate text-sm font-medium text-text-primary">{email}</p>
+                    </div>
+                    <nav
+                      className="mb-2 flex flex-col gap-1"
+                      aria-label={t('workspace.header.primaryNav', 'Primary navigation')}
+                    >
+                      {NAV_ITEMS.map((item) => {
+                        const label = t(`workspace.sidebar.links.${item.id}`, item.label);
+                        const badgeLabel = item.badge
+                          ? t(`workspace.sidebar.badges.${item.badgeKey ?? item.id}`, item.badge)
+                          : null;
+                        return (
+                          <Link
+                            key={item.id}
+                            href={item.href}
+                            role="menuitem"
+                            className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            onClick={() => setAccountMenuOpen(false)}
+                          >
+                            <span>{label}</span>
+                            {badgeLabel ? (
+                              <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-accent">
+                                {badgeLabel}
+                              </span>
+                            ) : null}
+                          </Link>
+                        );
+                      })}
+                    </nav>
+                    <button
+                      type="button"
+                      className="flex w-full items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      onClick={async () => {
+                        setAccountMenuOpen(false);
+                        await supabase.auth.signOut();
+                        window.location.href = '/';
+                      }}
+                    >
+                      {t('workspace.header.signOut', 'Sign out')}
+                      <span className="text-[11px] uppercase tracking-micro text-text-muted">⌘⇧Q</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login?next=/app"
+                className="hidden text-sm font-medium text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white md:inline-flex"
+              >
+                {login}
+              </Link>
+              <Link
+                href="/app"
+                className="inline-flex items-center rounded-pill bg-accent px-4 py-2 text-sm font-semibold text-white shadow-card transition transform-gpu hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              >
+                {cta}
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

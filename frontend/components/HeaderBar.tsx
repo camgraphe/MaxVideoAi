@@ -200,7 +200,7 @@ export function HeaderBar() {
               ref={avatarRef}
               type="button"
               onClick={() => setAccountMenuOpen((prev) => !prev)}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-hairline bg-white/80 text-sm font-semibold text-text-primary transition hover:bg-accentSoft/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-[#dce4ff] bg-gradient-to-br from-[#dfe6ff] via-white/95 to-white text-sm font-semibold text-text-primary shadow-card transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-haspopup="menu"
               aria-expanded={accountMenuOpen}
             >
