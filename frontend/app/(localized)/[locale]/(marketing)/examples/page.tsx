@@ -11,6 +11,7 @@ import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import type { AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls, SITE_BASE_URL } from '@/lib/metadataUrls';
+import { normalizeEngineId } from '@/lib/engine-alias';
 
 const ENGINE_LINK_ALIASES = (() => {
   const map = new Map<string, string>();
@@ -33,9 +34,12 @@ const ENGINE_LINK_ALIASES = (() => {
 
 function resolveEngineLinkId(engineId: string | null | undefined): string | null {
   if (!engineId) return null;
-  const alias = ENGINE_LINK_ALIASES.get(engineId.trim().toLowerCase());
+  const normalized = normalizeEngineId(engineId) ?? engineId;
+  const alias = ENGINE_LINK_ALIASES.get(normalized.trim().toLowerCase());
   if (alias) return alias;
-  return engineId;
+  const fallback = ENGINE_LINK_ALIASES.get(engineId.trim().toLowerCase());
+  if (fallback) return fallback;
+  return normalized;
 }
 
 const ENGINE_META = (() => {
@@ -67,6 +71,24 @@ const ENGINE_META = (() => {
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || SITE_BASE_URL;
 const GALLERY_SLUG_MAP = buildSlugMap('gallery');
+
+const ENGINE_FILTER_GROUPS: Record<
+  string,
+  {
+    id: string;
+    label: string;
+    brandId?: string;
+  }
+> = {
+  'sora-2': { id: 'sora-2', label: 'Sora 2' },
+  'sora-2-pro': { id: 'sora-2', label: 'Sora 2' },
+  'minimax-hailuo-02-text': { id: 'minimax-hailuo-02', label: 'MiniMax Hailuo 02', brandId: 'minimax' },
+  'minimax-hailuo-02-image': { id: 'minimax-hailuo-02', label: 'MiniMax Hailuo 02', brandId: 'minimax' },
+  'minimax-hailuo-02': { id: 'minimax-hailuo-02', label: 'MiniMax Hailuo 02', brandId: 'minimax' },
+  'pika-text-to-video': { id: 'pika-2-2', label: 'Pika 2.2', brandId: 'pika' },
+  'pika-image-to-video': { id: 'pika-2-2', label: 'Pika 2.2', brandId: 'pika' },
+  'pika-2-2': { id: 'pika-2-2', label: 'Pika 2.2', brandId: 'pika' },
+};
 
 function toAbsoluteUrl(url?: string | null): string | null {
   if (!url) return null;
@@ -188,6 +210,28 @@ function toISODate(input?: Date | string) {
 
 const ENGINE_FILTER_LIMIT = 6;
 
+type EngineFilterOption = {
+  id: string;
+  key: string;
+  label: string;
+  brandId?: string;
+  count: number;
+};
+
+function resolveFilterDescriptor(
+  canonicalEngineId: string | null | undefined,
+  engineMeta: { label?: string; brandId?: string | undefined } | null,
+  fallbackLabel?: string | null
+): { id: string; label: string; brandId?: string } | null {
+  if (!canonicalEngineId) return null;
+  const override = ENGINE_FILTER_GROUPS[canonicalEngineId];
+  const targetId = override?.id ?? canonicalEngineId;
+  const targetOverride = ENGINE_FILTER_GROUPS[targetId];
+  const label = override?.label ?? targetOverride?.label ?? engineMeta?.label ?? fallbackLabel ?? targetId;
+  const brandId = override?.brandId ?? targetOverride?.brandId ?? engineMeta?.brandId;
+  return { id: targetId, label, brandId };
+}
+
 export default async function ExamplesPage({ searchParams }: ExamplesPageProps) {
   const { dictionary } = await resolveDictionary();
   const content = dictionary.examples;
@@ -215,30 +259,23 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   const sort = getSort(sortParam);
   const allVideos = await listExamples(sort, 60);
 
-  const engineFilterMap = allVideos.reduce<
-    Map<
-      string,
-      {
-        id: string;
-        label: string;
-        brandId?: string;
-        count: number;
-      }
-    >
-  >((acc, video) => {
+  const engineFilterMap = allVideos.reduce<Map<string, EngineFilterOption>>((acc, video) => {
     const canonicalEngineId = resolveEngineLinkId(video.engineId);
     if (!canonicalEngineId) return acc;
-    const key = canonicalEngineId.toLowerCase();
-    const existing = acc.get(key);
+    const engineMeta = ENGINE_META.get(canonicalEngineId.toLowerCase());
+    const descriptor = resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engineLabel);
+    if (!descriptor) return acc;
+    const filterKey = descriptor.id.toLowerCase();
+    const existing = acc.get(filterKey);
     if (existing) {
       existing.count += 1;
       return acc;
     }
-    const engineMeta = ENGINE_META.get(key);
-    acc.set(key, {
-      id: canonicalEngineId,
-      label: engineMeta?.label ?? video.engineLabel ?? canonicalEngineId,
-      brandId: engineMeta?.brandId,
+    acc.set(filterKey, {
+      id: descriptor.id,
+      key: filterKey,
+      label: descriptor.label,
+      brandId: descriptor.brandId,
       count: 1,
     });
     return acc;
@@ -249,18 +286,28 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     return a.label.localeCompare(b.label);
   });
   const engineParam = Array.isArray(searchParams.engine) ? searchParams.engine[0] : searchParams.engine;
-  const normalizedEngineParam = typeof engineParam === 'string' ? engineParam.trim() : '';
-  const selectedEngine =
-    normalizedEngineParam && engineFilterOptions.some((option) => option.id === normalizedEngineParam)
-      ? normalizedEngineParam
+  const engineParamValue = typeof engineParam === 'string' ? engineParam.trim() : '';
+  const canonicalEngineParam = engineParamValue ? normalizeEngineId(engineParamValue) ?? engineParamValue : '';
+  const normalizedEngineParam = canonicalEngineParam.toLowerCase();
+  const selectedOption =
+    normalizedEngineParam && engineFilterOptions.length
+      ? engineFilterOptions.find((option) => option.key === normalizedEngineParam)
       : null;
+  const selectedEngine = selectedOption?.id ?? null;
 
   const videos = selectedEngine
-    ? allVideos.filter((video) => resolveEngineLinkId(video.engineId) === selectedEngine)
+    ? allVideos.filter((video) => {
+        const canonicalEngineId = resolveEngineLinkId(video.engineId);
+        if (!canonicalEngineId) return false;
+        const engineMeta = ENGINE_META.get(canonicalEngineId.toLowerCase());
+        const descriptor = resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engineLabel);
+        if (!descriptor) return false;
+        return descriptor.id.toLowerCase() === selectedEngine.toLowerCase();
+      })
     : allVideos;
 
   engineFilterOptions = engineFilterOptions.slice(0, ENGINE_FILTER_LIMIT);
-  if (selectedEngine && !engineFilterOptions.some((option) => option.id === selectedEngine)) {
+  if (selectedEngine && !engineFilterOptions.some((option) => option.key === selectedEngine.toLowerCase())) {
     const selectedMeta = engineFilterMap.get(selectedEngine.toLowerCase());
     if (selectedMeta) {
       engineFilterOptions = [...engineFilterOptions, selectedMeta];

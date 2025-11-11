@@ -70,6 +70,10 @@ const DEFAULT_VIDEO_COPY = {
     audioLabel: 'Audio',
     cta: 'Compare pricing',
     ctaDescription: 'Explore all engine rates',
+    discountAppliedLabel: 'Member discount applied',
+    discountSavedLabel: 'Saved {amount}',
+    discountPercentLabel: '{percent} off',
+    discountTierLabel: '{tier} tier',
   },
   audioStates: {
     withAudio: 'audio enabled',
@@ -287,6 +291,47 @@ function formatTotalPriceDisplay(video: GalleryVideo, copy: VideoPageCopy, local
   return renderTemplate(copy.details.priceTotalValue, { value: formatted });
 }
 
+function formatPercentLabel(value?: number | null): string | null {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
+    return null;
+  }
+  const normalized = value > 1 ? value : value * 100;
+  const precision = Math.abs(normalized % 1) < 1e-6 ? 0 : 1;
+  return `${normalized.toFixed(precision)}%`;
+}
+
+function formatTierLabel(value?: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+  return value
+    .split(/[\s_-]+/)
+    .filter(Boolean)
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1).toLowerCase())
+    .join(' ');
+}
+
+function buildDiscountNote(video: GalleryVideo, copy: VideoPageCopy, locale: AppLocale): string | null {
+  const snapshot = video.pricingSnapshot;
+  const discount = snapshot?.discount;
+  if (!snapshot || !discount || typeof discount.amountCents !== 'number' || discount.amountCents <= 0) {
+    return null;
+  }
+  const currency = snapshot.currency ?? video.currency ?? 'USD';
+  const amount = formatCurrency(discount.amountCents / 100, currency, locale);
+  const percent = formatPercentLabel(discount.percentApplied);
+  const tier = formatTierLabel(snapshot.membershipTier ?? discount.tier ?? null);
+
+  const segments = [renderTemplate(copy.details.discountSavedLabel, { amount })];
+  if (percent) {
+    segments.push(renderTemplate(copy.details.discountPercentLabel, { percent }));
+  }
+  if (tier) {
+    segments.push(renderTemplate(copy.details.discountTierLabel, { tier }));
+  }
+  return `${copy.details.discountAppliedLabel} — ${segments.join(' · ')}`;
+}
+
 function buildSeoContent(video: GalleryVideo, copy: VideoPageCopy, locale: AppLocale) {
   const promptStyle = getPromptStyle(video, copy);
   const durationLabel = formatDurationSeo(video.durationSec, locale, copy);
@@ -392,6 +437,7 @@ export default async function VideoPage({ params }: PageProps) {
   const pricingPath = localizePathFromEnglish(supportedLocale, '/pricing');
   const blogPath = localizePathFromEnglish(supportedLocale, '/blog');
   const totalPriceDisplay = formatTotalPriceDisplay(video, copy, locale);
+  const discountNote = buildDiscountNote(video, copy, locale);
   const durationDisplay = formatDurationDisplay(video.durationSec, locale, copy);
   const aspectDisplay = formatAspectDisplay(video.aspectRatio, copy);
   const createdDisplay = formatDateDisplay(video.createdAt, locale);
@@ -511,6 +557,9 @@ export default async function VideoPage({ params }: PageProps) {
                 <div>
                   <dt className="text-xs uppercase tracking-micro text-text-muted">{copy.details.priceTotalLabel}</dt>
                   <dd className="mt-1 text-base font-medium text-text-primary">{totalPriceDisplay}</dd>
+                  {discountNote ? (
+                    <p className="mt-1 text-xs font-semibold text-accent">{discountNote}</p>
+                  ) : null}
                 </div>
                 <div>
                   <dt className="text-xs uppercase tracking-micro text-text-muted">{copy.details.durationLabel}</dt>

@@ -954,7 +954,11 @@
       "priceTotalUnknown": "No disponible",
       "audioLabel": "Audio",
       "cta": "Comparar precios",
-      "ctaDescription": "Explora todas las tarifas"
+      "ctaDescription": "Explora todas las tarifas",
+      "discountAppliedLabel": "Descuento de miembro aplicado",
+      "discountSavedLabel": "Ahorro de {amount}",
+      "discountPercentLabel": "{percent} menos",
+      "discountTierLabel": "Nivel {tier}"
     },
     "audioStates": {
       "withAudio": "audio activado",

@@ -950,7 +950,11 @@
       "priceTotalUnknown": "Unavailable",
       "audioLabel": "Audio",
       "cta": "Compare pricing",
-      "ctaDescription": "Explore all engine rates"
+      "ctaDescription": "Explore all engine rates",
+      "discountAppliedLabel": "Member discount applied",
+      "discountSavedLabel": "Saved {amount}",
+      "discountPercentLabel": "{percent} off",
+      "discountTierLabel": "{tier} tier"
     },
     "audioStates": {
       "withAudio": "audio enabled",
