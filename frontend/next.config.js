@@ -158,6 +158,16 @@ const nextConfig = {
         destination: '/legal/terms',
         permanent: true,
       },
+      {
+        source: '/en',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/en/:path*',
+        destination: '/:path*',
+        permanent: true,
+      },
     ];
   },
   async headers() {

@@ -73,7 +73,8 @@ export function LanguageToggle() {
         return;
       }
       if (value === 'en') {
-        router.replace(resolveEnglishPath(targetPath, locale as Locale) as never);
+        const englishPath = resolveEnglishPath(targetPath, locale as Locale);
+        router.replace(englishPath as never, { locale: value });
         return;
       }
       router.replace(targetPath as never, { locale: value });
