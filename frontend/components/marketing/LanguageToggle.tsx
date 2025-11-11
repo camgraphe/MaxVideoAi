@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
+import { useParams } from 'next/navigation';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import type { Locale } from '@/lib/i18n/types';
 import { LOCALE_COOKIE } from '@/lib/i18n/constants';
-import { englishPathFromLocale } from '@/lib/i18n/paths';
 
 const FLAG_MAP: Record<Locale, string> = {
   en: '🇺🇸',
@@ -23,6 +23,7 @@ function shouldBypassLocale(pathname: string | null | undefined) {
 export function LanguageToggle() {
   const router = useRouter();
   const pathname = usePathname();
+  const params = useParams();
   const { locale, t } = useI18n();
   const defaultOptions: Array<{ locale: Locale; label: string }> = [
     { locale: 'en', label: 'English' },
@@ -43,14 +44,22 @@ export function LanguageToggle() {
     setPendingLocale(value);
     document.cookie = `${LOCALE_COOKIE}=${value}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
     startTransition(() => {
-      const currentPath = typeof pathname === 'string' && pathname.length ? pathname : '/';
-      if (shouldBypassLocale(currentPath)) {
+      const slugParam = params?.slug;
+      let slugValue = Array.isArray(slugParam) ? slugParam[0] : slugParam;
+      if (!slugValue && typeof pathname === 'string') {
+        const m = pathname.match(/^\/(?:en|fr|es)?\/(?:models|modeles|modelos)\/([^\/?#]+)/i);
+        if (m && m[1]) slugValue = m[1];
+      }
+      if (slugValue) {
+        router.replace({ pathname: '/models/[slug]', params: { slug: slugValue } }, { locale: value });
+        return;
+      }
+      const targetPath = pathname && pathname.length ? pathname : '/';
+      if (shouldBypassLocale(pathname)) {
         router.refresh();
         return;
       }
-      const englishPath = englishPathFromLocale(locale as Locale, currentPath) || '/';
-      const routerOptions = value === 'en' ? undefined : { locale: value };
-      router.replace(englishPath as never, routerOptions as never);
+      router.replace(targetPath as never, { locale: value });
     });
   };
 
