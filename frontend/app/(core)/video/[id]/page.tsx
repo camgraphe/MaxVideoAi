@@ -90,7 +90,7 @@ const DEFAULT_VIDEO_COPY = {
     message: 'Learn more about AI video creation — visit our blog for tips, engine comparisons, and creative use cases.',
     cta: 'Visit the blog',
   },
-} as const;
+};
 
 type VideoPageCopy = typeof DEFAULT_VIDEO_COPY;
 
