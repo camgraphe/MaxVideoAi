@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import Script from 'next/script';
 import { getContentEntries, getEntryBySlug } from '@/lib/content/markdown';
 import type { AppLocale } from '@/i18n/locales';
@@ -29,7 +29,19 @@ function toIsoDate(value?: string | null): string | undefined {
 }
 
 async function getPost(locale: AppLocale, slug: string) {
-  return getEntryBySlug(`content/${locale}/blog`, slug);
+  const basePath = `content/${locale}/blog`;
+  const direct = await getEntryBySlug(basePath, slug);
+  if (direct) {
+    return direct;
+  }
+  const entries = await getContentEntries(basePath);
+  const canonicalMatch = entries.find((entry) => {
+    if (entry.slug === slug) return true;
+    if (entry.canonicalSlug && entry.canonicalSlug === slug) return true;
+    if (!entry.canonicalSlug && entry.lang === 'en' && entry.slug === slug) return true;
+    return false;
+  });
+  return canonicalMatch ?? null;
 }
 
 async function findLocalizedSlugs(canonicalSlug: string) {
@@ -127,6 +139,10 @@ export default async function BlogPostPage({ params }: { params: Params }) {
   const post = await getPost(locale, slug);
   if (!post) {
     notFound();
+  }
+  if (post.slug !== slug) {
+    const localizedPrefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
+    redirect(`${localizedPrefix}/blog/${post.slug}`);
   }
 
   const dateFormatter = new Intl.DateTimeFormat(localeDateMap[locale], {
