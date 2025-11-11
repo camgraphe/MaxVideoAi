@@ -6,6 +6,7 @@ import { routing } from '@/i18n/routing';
 import { defaultLocale, localePathnames, locales } from '@/i18n/locales';
 import { LOCALE_COOKIE } from '@/lib/i18n/constants';
 import { getUserIdFromSupabase } from '@/lib/supabase';
+import localizedSlugConfig from '@/config/localized-slugs.json';
 
 const LOGIN_PATH = '/login';
 const PROTECTED_PREFIXES = ['/app', '/dashboard', '/jobs', '/billing', '/settings'];
@@ -27,6 +28,15 @@ const NON_LOCALIZED_PREFIXES = [
   '/_next',
   '/_vercel',
 ];
+const LOCALIZED_SEGMENT_VALUES = Array.from(
+  new Set(
+    Object.values(localizedSlugConfig as Record<string, Record<string, string>>)
+      .flatMap((entry) => Object.values(entry))
+      .filter((segment): segment is string => Boolean(segment && segment.length))
+      .map((segment) => segment.toLowerCase())
+  )
+);
+
 const KNOWN_MARKETING_SEGMENTS = new Set(
   [
     '',
@@ -46,6 +56,7 @@ const KNOWN_MARKETING_SEGMENTS = new Set(
     'workflows',
     'v',
     '404',
+    ...LOCALIZED_SEGMENT_VALUES,
   ].map((segment) => segment.toLowerCase())
 );
 const EXACT_PATH_REDIRECTS: Record<string, string> = {
