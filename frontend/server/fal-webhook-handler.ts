@@ -95,12 +95,12 @@ function formatAspectRatioLabel(width: number, height: number): string | null {
   }
   const ratio = width / height;
   let closest: { label: string; diff: number } | null = null;
-  COMMON_ASPECT_RATIOS.forEach((entry) => {
+  for (const entry of COMMON_ASPECT_RATIOS) {
     const diff = Math.abs(ratio - entry.value);
     if (!closest || diff < closest.diff) {
       closest = { label: entry.label, diff };
     }
-  });
+  }
   if (closest && closest.diff <= 0.03) {
     return closest.label;
   }
