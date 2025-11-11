@@ -5,6 +5,13 @@
 | http → https (`maxvideoai.com/:path*`) | https://maxvideoai.com/:path* | Force HTTPS |
 | https://maxvideoai.com/:path* | https://maxvideoai.com/:path* | Canonical non-www |
 | /:path*/ | /:path* | Remove trailing slash |
+| /a | / | Catch stray single-letter tests |
+| /ai | / | Funnel AI typo hits to homepage |
+| /video | / | Remove obsolete short slug |
+| /sora2 | /models/sora-2 | Handle hyphen-less Sora queries |
+| /sora-2 | /models/sora-2 | Promote canonical Sora page |
+| /pika | /models/pika-image-to-video | Map shorthand Pika slug |
+| /pikavideo | /models/pika-image-to-video | Capture manual Pika tests |
 | /calculator | /pricing-calculator | Keyword-rich pricing calculator slug |
 | /docs/getting-started | /docs/get-started | Shorten onboarding slug |
 | /models/pika-2-2 | /models/pika-text-to-video | Consolidate legacy Pika slug |

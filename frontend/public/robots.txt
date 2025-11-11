@@ -11,6 +11,8 @@ Allow: /favicon.ico
 # Block only sensitive areas
 Disallow: /api/
 Disallow: /admin/
+Disallow: /draft
+Disallow: /test
 Disallow: /private/
 
 # Sitemaps
