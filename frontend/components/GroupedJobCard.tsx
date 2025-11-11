@@ -12,6 +12,7 @@ import { EngineIcon } from '@/components/ui/EngineIcon';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { ProcessingOverlay } from '@/components/groups/ProcessingOverlay';
 import { CURRENCY_LOCALE } from '@/lib/intl';
+import { isPlaceholderMediaUrl } from '@/lib/media';
 
 export type GroupedJobAction = 'open' | 'continue' | 'refine' | 'branch' | 'compare' | 'remove' | 'save-image';
 
@@ -31,6 +32,7 @@ function GroupPreviewMedia({
   shouldPlay: boolean;
 }) {
   const hasVideo = Boolean(preview?.videoUrl);
+  const thumbSrc = preview?.thumbUrl && !isPlaceholderMediaUrl(preview.thumbUrl) ? preview.thumbUrl : null;
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [videoReady, setVideoReady] = useState(false);
 
@@ -56,12 +58,12 @@ function GroupPreviewMedia({
   }, [hasVideo, preview?.videoUrl, shouldPlay]);
 
   if (hasVideo && preview?.videoUrl) {
-    const poster = preview.thumbUrl ?? undefined;
+    const poster = thumbSrc ?? undefined;
     return (
       <div className="relative h-full w-full">
-        {preview.thumbUrl ? (
+        {thumbSrc ? (
           <ThumbImage
-            src={preview.thumbUrl}
+            src={thumbSrc}
             alt=""
             className={clsx(
               'absolute inset-0 object-contain transition-opacity duration-150 ease-out',
@@ -86,8 +88,8 @@ function GroupPreviewMedia({
       </div>
     );
   }
-  if (preview?.thumbUrl) {
-    return <ThumbImage src={preview.thumbUrl} alt="" className="object-contain" />;
+  if (thumbSrc) {
+    return <ThumbImage src={thumbSrc} alt="" className="object-contain" />;
   }
   return null;
 }
@@ -219,7 +221,8 @@ export function GroupedJobCard({
               const preview = previews[index];
               const member = preview ? group.members.find((entry) => entry.id === preview.id) : undefined;
               const memberStatus = member?.status ?? 'completed';
-              const previewHasMedia = Boolean(preview?.videoUrl || preview?.thumbUrl);
+              const previewThumb = preview?.thumbUrl && !isPlaceholderMediaUrl(preview.thumbUrl) ? preview.thumbUrl : null;
+              const previewHasMedia = Boolean(preview?.videoUrl || previewThumb);
               const isCompleted = memberStatus === 'completed' || previewHasMedia;
               const previewKey = preview?.id ? `${preview.id}-${index}` : `preview-${index}`;
               return (
@@ -230,8 +233,8 @@ export function GroupedJobCard({
                   <div className="absolute inset-0">
                     {isCompleted ? (
                       <GroupPreviewMedia preview={preview} shouldPlay={hovered} />
-                    ) : preview?.thumbUrl ? (
-                      <Image src={preview.thumbUrl} alt="" fill className="pointer-events-none object-contain" />
+                    ) : previewThumb ? (
+                      <Image src={previewThumb} alt="" fill className="pointer-events-none object-contain" />
                     ) : null}
                   </div>
                   <div className="pointer-events-none block" style={{ width: '100%', aspectRatio: '16 / 9' }} aria-hidden />

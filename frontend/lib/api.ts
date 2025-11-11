@@ -104,6 +104,7 @@ type JobStatusResult = {
   progress: number;
   videoUrl: string | null;
   thumbUrl: string | null;
+  aspectRatio?: string | null;
   pricing?: PricingSnapshot;
   finalPriceCents?: number;
   currency?: string;
@@ -573,6 +574,7 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResult> {
     progress,
     videoUrl: payload.videoUrl ?? null,
     thumbUrl: payload.thumbUrl ?? null,
+    aspectRatio: payload.aspectRatio ?? null,
     pricing: payload.pricing,
     finalPriceCents: payload.finalPriceCents,
     currency: payload.currency,

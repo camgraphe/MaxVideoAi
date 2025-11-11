@@ -39,6 +39,7 @@ import {
   type LumaRay2DurationLabel,
 } from '@/lib/luma-ray2';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { isPlaceholderMediaUrl } from '@/lib/media';
 
 function resolveRenderThumb(render: { thumbUrl?: string | null; aspectRatio?: string | null }): string {
   if (render.thumbUrl) return render.thumbUrl;
@@ -1055,7 +1056,11 @@ useEffect(() => {
           : normalizedStatus === 'failed'
             ? 'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'
             : pendingMessage);
-      const thumbUrl = job.thumbUrl ?? job.previewFrame ?? resolveRenderThumb({ thumbUrl: job.thumbUrl, aspectRatio: job.aspectRatio ?? null });
+      const jobThumb = job.thumbUrl && !isPlaceholderMediaUrl(job.thumbUrl) ? job.thumbUrl : null;
+      const thumbUrl =
+        jobThumb ??
+        job.previewFrame ??
+        resolveRenderThumb({ thumbUrl: job.thumbUrl, aspectRatio: job.aspectRatio ?? null });
 
       return {
         localKey,
@@ -1274,7 +1279,7 @@ useEffect(() => {
       if (typeof render.jobId !== 'string' || render.jobId.length === 0) return false;
       if (render.status === 'failed') return false;
       const hasVideo = Boolean(render.videoUrl);
-      const hasThumb = Boolean(render.thumbUrl);
+      const hasThumb = Boolean(render.thumbUrl && !isPlaceholderMediaUrl(render.thumbUrl));
       if ((render.status ?? 'pending') !== 'completed') return true;
       return !hasVideo || !hasThumb;
     });
@@ -1304,6 +1309,7 @@ useEffect(() => {
                       readyVideoUrl: status.videoUrl ?? item.readyVideoUrl,
                       videoUrl: status.videoUrl ?? item.videoUrl ?? item.readyVideoUrl,
                       thumbUrl: status.thumbUrl ?? item.thumbUrl,
+                      aspectRatio: status.aspectRatio ?? item.aspectRatio,
                       priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? item.priceCents,
                       currency: status.currency ?? status.pricing?.currency ?? item.currency,
                       pricingSnapshot: status.pricing ?? item.pricingSnapshot,
@@ -1323,6 +1329,7 @@ useEffect(() => {
                     progress: status.progress ?? cur.progress,
                     videoUrl: status.videoUrl ?? cur.videoUrl,
                     thumbUrl: status.thumbUrl ?? cur.thumbUrl,
+                    aspectRatio: status.aspectRatio ?? cur.aspectRatio,
                     priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? cur.priceCents,
                     currency: status.currency ?? status.pricing?.currency ?? cur.currency,
                     message: status.message ?? cur.message,

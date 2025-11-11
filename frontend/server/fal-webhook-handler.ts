@@ -5,7 +5,7 @@ import { getFalClient } from '@/lib/fal-client';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { getFalEngineById } from '@/config/falEngines';
 import { fetchFalJobMedia } from '@/server/fal-job-sync';
-import { detectHasAudioStream } from '@/server/media/detect-has-audio';
+import { detectHasAudioStream, detectVideoDimensions } from '@/server/media/detect-has-audio';
 
 function fallbackThumbnail(aspectRatio?: string | null): string {
   const normalized = aspectRatio?.trim().toLowerCase();
@@ -64,6 +64,51 @@ const PROVIDER_ENGINE_MAP: Record<string, string> = {
   luma: 'luma-dream-machine',
   'luma-dream-machine': 'luma-dream-machine',
 };
+
+const COMMON_ASPECT_RATIOS: Array<{ label: string; value: number }> = [
+  { label: '21:9', value: 21 / 9 },
+  { label: '16:9', value: 16 / 9 },
+  { label: '5:3', value: 5 / 3 },
+  { label: '4:3', value: 4 / 3 },
+  { label: '3:2', value: 3 / 2 },
+  { label: '1:1', value: 1 },
+  { label: '3:4', value: 3 / 4 },
+  { label: '2:3', value: 2 / 3 },
+  { label: '4:5', value: 4 / 5 },
+  { label: '9:16', value: 9 / 16 },
+];
+
+function gcd(a: number, b: number): number {
+  let x = Math.abs(Math.round(a));
+  let y = Math.abs(Math.round(b));
+  while (y !== 0) {
+    const temp = y;
+    y = x % y;
+    x = temp;
+  }
+  return x || 1;
+}
+
+function formatAspectRatioLabel(width: number, height: number): string | null {
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+    return null;
+  }
+  const ratio = width / height;
+  let closest: { label: string; diff: number } | null = null;
+  COMMON_ASPECT_RATIOS.forEach((entry) => {
+    const diff = Math.abs(ratio - entry.value);
+    if (!closest || diff < closest.diff) {
+      closest = { label: entry.label, diff };
+    }
+  });
+  if (closest && closest.diff <= 0.03) {
+    return closest.label;
+  }
+  const divisor = gcd(width, height);
+  const simplifiedWidth = Math.max(1, Math.round(width / divisor));
+  const simplifiedHeight = Math.max(1, Math.round(height / divisor));
+  return `${simplifiedWidth}:${simplifiedHeight}`;
+}
 
 type WebhookIdentifiers = {
   jobId?: string | null;
@@ -851,6 +896,17 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     detectedHasAudio = await detectHasAudioStream(finalVideoUrl);
   }
 
+  let detectedAspectRatio: string | null = null;
+  if (!shouldClearVideo && finalVideoUrl) {
+    const dimensions = await detectVideoDimensions(finalVideoUrl).catch(() => null);
+    if (dimensions) {
+      detectedAspectRatio = formatAspectRatioLabel(dimensions.width, dimensions.height);
+      if (detectedAspectRatio) {
+        job.aspect_ratio = detectedAspectRatio;
+      }
+    }
+  }
+
   if ((finalVideoUrl || hasImageMedia) && nextStatus === 'failed') {
     const providerStatus = typeof payload.status === 'string' ? payload.status.toUpperCase() : null;
     const isProviderSuccess =
@@ -903,8 +959,9 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
          has_audio = CASE WHEN $9 THEN FALSE ELSE COALESCE($13, has_audio) END,
          engine_id = COALESCE($11, engine_id),
          engine_label = COALESCE($12, engine_label),
-         render_ids = CASE WHEN $14::jsonb IS NOT NULL THEN $14::jsonb ELSE render_ids END,
-         hero_render_id = CASE WHEN $15::text IS NOT NULL THEN $15::text ELSE hero_render_id END,
+         aspect_ratio = COALESCE($14, aspect_ratio),
+         render_ids = CASE WHEN $15::jsonb IS NOT NULL THEN $15::jsonb ELSE render_ids END,
+         hero_render_id = CASE WHEN $16::text IS NOT NULL THEN $16::text ELSE hero_render_id END,
          updated_at = NOW()
      WHERE job_id = $1`,
     [
@@ -921,6 +978,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       engineIdForUpdate,
       engineLabelForUpdate,
       detectedHasAudio,
+      detectedAspectRatio,
       renderIdsJson,
       heroRenderId,
     ]
