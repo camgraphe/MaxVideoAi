@@ -438,7 +438,6 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                           : 'border-hairline bg-white text-text-secondary hover:border-accent hover:text-text-primary'
                       )}
                       aria-label={engine.label}
-                      title={engine.label}
                     >
                       <EngineIcon
                         engine={{ id: engine.id, label: engine.label, brandId: engine.brandId }}
