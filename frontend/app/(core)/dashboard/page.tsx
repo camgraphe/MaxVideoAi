@@ -100,7 +100,7 @@ export default function DashboardPage() {
   );
   const quickActions = useMemo(
     () => [
-      { id: 'create', href: '/', icon: 'generate' },
+      { id: 'create', href: '/app', icon: 'generate' },
       { id: 'jobs', href: '/jobs', icon: 'jobs' },
       { id: 'billing', href: '/billing', icon: 'wallet' },
     ],
