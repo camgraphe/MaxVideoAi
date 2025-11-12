@@ -49,6 +49,16 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/fr/simulateur-prix',
+        destination: '/pricing-calculator?lang=fr',
+        permanent: true,
+      },
+      {
+        source: '/es/calculadora-precio',
+        destination: '/pricing-calculator?lang=es',
+        permanent: true,
+      },
+      {
         source: '/docs/getting-started',
         destination: '/docs/get-started',
         permanent: true,
@@ -116,6 +126,16 @@ const nextConfig = {
       {
         source: '/models/luma-ray-2-flash',
         destination: '/models',
+        permanent: true,
+      },
+      {
+        source: '/fr/sitemap-video.xml',
+        destination: '/sitemap-video.xml',
+        permanent: true,
+      },
+      {
+        source: '/es/sitemap-video.xml',
+        destination: '/sitemap-video.xml',
         permanent: true,
       },
       {
