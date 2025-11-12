@@ -19,6 +19,14 @@ interface HeroMediaTileProps {
   guestHref?: string;
   overlayHref?: string;
   overlayLabel?: string;
+  detailHref?: string | null;
+  generateHref?: string | null;
+  modelHref?: string | null;
+  detailMeta?: {
+    prompt?: string | null;
+    engineLabel?: string | null;
+    durationSec?: number | null;
+  } | null;
 }
 
 export function HeroMediaTile({
@@ -34,6 +42,10 @@ export function HeroMediaTile({
   guestHref,
   overlayHref,
   overlayLabel,
+  detailHref,
+  generateHref,
+  modelHref,
+  detailMeta,
 }: HeroMediaTileProps) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
     if (typeof window === 'undefined') {
@@ -41,19 +53,22 @@ export function HeroMediaTile({
     }
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   });
-  const [targetHref, setTargetHref] = useState<string | null>(() => guestHref ?? authenticatedHref ?? null);
+  const [ctaHref, setCtaHref] = useState<string | null>(() => guestHref ?? authenticatedHref ?? null);
+  const cardHref = detailHref ? null : ctaHref;
   const [shouldRenderVideo, setShouldRenderVideo] = useState<boolean>(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!authenticatedHref && !guestHref) {
+      setCtaHref(null);
       return;
     }
     let mounted = true;
     const resolveHref = (sessionPresent: boolean) => {
       const next = sessionPresent ? authenticatedHref ?? guestHref ?? null : guestHref ?? authenticatedHref ?? null;
       if (mounted) {
-        setTargetHref(next);
+        setCtaHref(next);
       }
     };
     const runAuthCheck = () => {
@@ -139,6 +154,22 @@ export function HeroMediaTile({
     return () => observer.disconnect();
   }, [prefersReducedMotion]);
 
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setLightboxOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKey);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', handleKey);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [lightboxOpen]);
+
   const content = (
     <figure className="group relative overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-card">
       <div className="relative aspect-[16/9] w-full">
@@ -190,9 +221,18 @@ export function HeroMediaTile({
       </Link>
     ) : null;
 
-  const card = targetHref ? (
+  const card = detailHref ? (
+    <button
+      type="button"
+      onClick={() => setLightboxOpen(true)}
+      className="w-full rounded-[28px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+      aria-label={`Preview ${label}`}
+    >
+      {content}
+    </button>
+  ) : cardHref ? (
     <Link
-      href={targetHref}
+      href={cardHref}
       className="block rounded-[28px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
       aria-label={`Open ${label} generator`}
     >
@@ -206,6 +246,103 @@ export function HeroMediaTile({
     <div className="relative" ref={containerRef}>
       {card}
       {overlay}
+      {lightboxOpen && detailHref ? (
+        <div
+          className="fixed inset-0 z-[180] flex items-center justify-center bg-black/80 px-4 py-8"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${label} preview`}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              setLightboxOpen(false);
+            }
+          }}
+        >
+          <div
+            className="relative w-full max-w-4xl rounded-[32px] border border-white/20 bg-white/95 p-4 text-left shadow-2xl backdrop-blur"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-hairline pb-4 pr-14">
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-micro text-text-muted">
+                  <span>{detailMeta?.engineLabel ?? label}</span>
+                  {modelHref ? (
+                    <Link
+                      href={modelHref}
+                      className="inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-accent shadow-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <span>Model page</span>
+                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
+                        <path
+                          d="M4 12L12 4M5 4h7v7"
+                          stroke="currentColor"
+                          strokeWidth="1.6"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </Link>
+                  ) : null}
+                </div>
+                <h3 className="text-xl font-semibold text-text-primary">{label}</h3>
+                {detailMeta?.prompt ? (
+                  <p className="text-sm text-text-secondary">{detailMeta.prompt}</p>
+                ) : null}
+                <p className="text-xs font-medium text-text-muted">
+                  {priceLabel}
+                  {typeof detailMeta?.durationSec === 'number' ? ` · ${detailMeta.durationSec}s` : null}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {generateHref ? (
+                  <Link
+                    href={generateHref}
+                    className="inline-flex rounded-pill bg-accent px-4 py-2 text-xs font-semibold uppercase tracking-micro text-white transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    Generate like this
+                  </Link>
+                ) : null}
+                <Link
+                  href={detailHref}
+                  className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-primary transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  View details
+                </Link>
+              </div>
+            </div>
+            <div className="mt-4 overflow-hidden rounded-3xl border border-hairline bg-black">
+              <video
+                key={videoSrc}
+                className="h-full w-full object-contain"
+                controls
+                autoPlay
+                muted
+                playsInline
+                preload="metadata"
+                poster={posterSrc}
+              >
+                <source src={videoSrc} type="video/mp4" />
+              </video>
+            </div>
+            <button
+              type="button"
+              onClick={() => setLightboxOpen(false)}
+              className="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-text-primary shadow-lg ring-1 ring-border transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              aria-label="Close preview"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path
+                  d="M18 6L6 18M6 6l12 12"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

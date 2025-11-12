@@ -347,6 +347,26 @@ export default async function HomePage() {
     const durationSec = video?.durationSec ?? fallback.durationSec;
     const resolution = fallback.resolution;
 
+    const canonicalSlug =
+      HERO_TILE_EXAMPLE_SLUGS[engineId] ??
+      fallback.examplesSlug ??
+      (engineId.includes('/') ? null : engineId);
+    const detailHref = video?.id ? `/video/${encodeURIComponent(video.id)}` : null;
+    const generateHref =
+      video?.id && engineId
+        ? `/generate?from=${encodeURIComponent(video.id)}&engine=${encodeURIComponent(engineId)}`
+        : video?.id
+          ? `/generate?from=${encodeURIComponent(video.id)}`
+          : null;
+    const modelHref = canonicalSlug ? `/models/${encodeURIComponent(canonicalSlug)}` : null;
+    const detailMeta = video
+      ? {
+          prompt: video.promptExcerpt ?? video.prompt ?? null,
+          engineLabel: video.engineLabel ?? label,
+          durationSec: video.durationSec ?? null,
+        }
+      : null;
+
     return {
       id: key,
       label,
@@ -360,7 +380,11 @@ export default async function HomePage() {
       fallbackPriceLabel: adminPriceLabel ?? fallback.fallbackPriceLabel,
       minPriceCents: fallback.minPriceCents ?? null,
       minPriceCurrency: fallback.minPriceCurrency ?? 'USD',
-      examplesSlug: HERO_TILE_EXAMPLE_SLUGS[engineId] ?? fallback.examplesSlug ?? (engineId.includes('/') ? null : engineId),
+      examplesSlug: canonicalSlug,
+      detailHref,
+      generateHref,
+      modelHref,
+      detailMeta,
     };
   });
 
@@ -493,6 +517,10 @@ export default async function HomePage() {
               alt={tile.alt}
               showAudioIcon={tile.showAudioIcon}
               priority={index === 0}
+              detailHref={tile.detailHref}
+              generateHref={tile.generateHref}
+              modelHref={tile.modelHref}
+              detailMeta={tile.detailMeta}
               authenticatedHref="/generate"
               guestHref="/login?next=/generate"
               overlayHref={tile.examplesSlug ? `/examples?engine=${encodeURIComponent(tile.examplesSlug)}` : undefined}
