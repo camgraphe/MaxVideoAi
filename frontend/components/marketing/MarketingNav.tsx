@@ -301,8 +301,7 @@ export function MarketingNav() {
                           <Link
                             key={item.id}
                             href={item.href}
-                            role="menuitem"
-                            className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             onClick={() => setAccountMenuOpen(false)}
                           >
                             <span>{label}</span>
