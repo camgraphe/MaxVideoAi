@@ -215,13 +215,17 @@ export function MarketingNav() {
           {isAuthenticated ? (
             <>
               <div className="hidden items-center gap-3 md:flex">
-                <div className="relative" onMouseEnter={openWalletPrompt} onMouseLeave={scheduleWalletPromptClose}>
+                <div
+                  className="relative"
+                  onMouseEnter={openWalletPrompt}
+                  onMouseLeave={scheduleWalletPromptClose}
+                  onFocusCapture={openWalletPrompt}
+                  onBlurCapture={scheduleWalletPromptClose}
+                >
                   <Link
                     href="/billing"
                     className="flex items-center gap-2 rounded-pill border border-hairline bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary transition hover:border-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     aria-describedby={walletPromptOpen ? walletPromptId : undefined}
-                    onFocus={openWalletPrompt}
-                    onBlur={scheduleWalletPromptClose}
                   >
                     <Image src="/assets/icons/wallet.svg" alt="" width={16} height={16} aria-hidden />
                     <span className="text-sm font-semibold tracking-normal text-text-primary">
@@ -248,8 +252,6 @@ export function MarketingNav() {
                       <Link
                         href="/billing"
                         className="mt-3 inline-flex w-full items-center justify-center rounded-input bg-accent px-3 py-2 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        onFocus={openWalletPrompt}
-                        onBlur={scheduleWalletPromptClose}
                       >
                         {t('workspace.header.walletTopUp.cta', 'Top up now')}
                       </Link>
