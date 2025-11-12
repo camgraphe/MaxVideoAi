@@ -8,6 +8,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 import { supabase } from '@/lib/supabaseClient';
 import { NAV_ITEMS } from '@/components/AppSidebar';
+import { setLogoutIntent } from '@/lib/logout-intent';
 
 export function MarketingNav() {
   const pathname = usePathname();
@@ -16,6 +17,7 @@ export function MarketingNav() {
   const [wallet, setWallet] = useState<{ balance: number } | null>(null);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [walletPromptOpen, setWalletPromptOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const avatarRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const walletPromptCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -110,6 +112,28 @@ export function MarketingNav() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!mobileMenuOpen) {
+      document.body.style.removeProperty('overflow');
+      return;
+    }
+    document.body.style.overflow = 'hidden';
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.body.style.removeProperty('overflow');
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
   const openWalletPrompt = () => {
     if (walletPromptCloseTimeout.current) {
       clearTimeout(walletPromptCloseTimeout.current);
@@ -144,6 +168,7 @@ export function MarketingNav() {
   }, [email]);
 
   return (
+    <>
     <header className="sticky top-0 z-40 border-b border-hairline bg-white/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link
@@ -154,6 +179,18 @@ export function MarketingNav() {
           <Image src="/assets/branding/logo-mark.svg" alt={brand} width={28} height={28} />
           <span>{brand}</span>
         </Link>
+        <button
+          type="button"
+          className="inline-flex items-center justify-center rounded-full border border-hairline bg-white/80 p-2 text-text-primary transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+          aria-label={t('nav.mobileToggle', 'Open menu')}
+          onClick={() => setMobileMenuOpen(true)}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
         <nav aria-label="Primary" className="hidden items-center gap-6 text-sm font-medium text-text-secondary md:flex">
           {links.map((item) => {
             const isActive = pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href + '/'));
@@ -279,12 +316,17 @@ export function MarketingNav() {
                     <button
                       type="button"
                       className="flex w-full items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      onClick={async () => {
-                        setAccountMenuOpen(false);
+                    onClick={async () => {
+                      setAccountMenuOpen(false);
+                      setLogoutIntent();
+                      try {
                         await supabase.auth.signOut();
-                        window.location.href = '/';
-                      }}
-                    >
+                      } catch {
+                        // ignore logout errors
+                      }
+                      window.location.href = '/';
+                    }}
+                  >
                       {t('workspace.header.signOut', 'Sign out')}
                       <span className="text-[11px] uppercase tracking-micro text-text-muted">⌘⇧Q</span>
                     </button>
@@ -311,5 +353,102 @@ export function MarketingNav() {
         </div>
       </div>
     </header>
+      {mobileMenuOpen ? (
+        <div className="fixed inset-0 z-50 bg-white/95 px-4 py-6 sm:px-6">
+          <div className="mx-auto flex max-w-sm items-center justify-between">
+            <Link
+              href="/"
+              className="flex items-center gap-2 font-display text-base font-semibold text-text-primary"
+              aria-label={brand}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Image src="/assets/branding/logo-mark.svg" alt={brand} width={24} height={24} />
+              <span>{brand}</span>
+            </Link>
+            <button
+              type="button"
+              className="rounded-full border border-hairline bg-white p-2 text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label={t('nav.mobileClose', 'Close menu')}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                <line x1="6" y1="6" x2="18" y2="18" />
+                <line x1="18" y1="6" x2="6" y2="18" />
+              </svg>
+            </button>
+          </div>
+          <div className="mx-auto mt-5 max-w-sm space-y-5">
+            <div className="flex justify-end">
+              <LanguageToggle />
+            </div>
+            <nav className="flex flex-col gap-2 text-base font-semibold text-text-primary">
+              {links.map((item) => (
+                <Link
+                  key={item.key}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={clsx(
+                    'rounded-2xl border border-hairline px-4 py-3',
+                    pathname === item.href ? 'bg-accent/10 text-text-primary' : 'bg-white'
+                  )}
+                >
+                  {t(`nav.linkLabels.${item.key}`, item.key)}
+                </Link>
+              ))}
+            </nav>
+            {isAuthenticated ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between rounded-2xl border border-hairline bg-white px-4 py-3">
+                  <span className="flex items-center gap-2 text-base font-semibold text-text-primary">
+                    <Image src="/assets/icons/wallet.svg" alt="" width={18} height={18} aria-hidden />
+                    ${(wallet?.balance ?? 0).toFixed(2)}
+                  </span>
+                </div>
+                <Link
+                  href="/app"
+                  className="block rounded-2xl bg-accent px-4 py-3 text-center text-base font-semibold text-white shadow-card"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {generateLabel}
+                </Link>
+                <button
+                  type="button"
+                  className="w-full rounded-2xl border border-hairline px-4 py-3 text-base font-semibold text-text-primary shadow-card"
+                  onClick={async () => {
+                    setMobileMenuOpen(false);
+                    setLogoutIntent();
+                    try {
+                      await supabase.auth.signOut();
+                    } catch {
+                      // ignore logout errors
+                    }
+                    window.location.href = '/';
+                  }}
+                >
+                  {t('workspace.header.signOut', 'Sign out')}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <Link
+                  href="/login?next=/app"
+                  className="block rounded-2xl border border-hairline px-4 py-3 text-center text-base font-semibold text-text-primary shadow-card"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {login}
+                </Link>
+                <Link
+                  href="/app"
+                  className="block rounded-2xl bg-accent px-4 py-3 text-center text-base font-semibold text-white shadow-card"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {cta}
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }

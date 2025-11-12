@@ -12,6 +12,7 @@ import {
   queueClarityCommand,
 } from '@/lib/clarity-client';
 import { clearSupabaseCookies, syncSupabaseCookies } from '@/lib/supabase-cookies';
+import { consumeLogoutIntent } from '@/lib/logout-intent';
 
 type RequireAuthResult = {
   userId: string | null;
@@ -38,6 +39,13 @@ export function useRequireAuth(): RequireAuthResult {
 
   const redirectToLogin = useCallback(() => {
     if (redirectingRef.current) return;
+    if (consumeLogoutIntent()) {
+      redirectingRef.current = true;
+      router.replace('/');
+      router.refresh();
+      redirectingRef.current = false;
+      return;
+    }
     redirectingRef.current = true;
     const target =
       nextPath && nextPath !== '/login' ? `/login?next=${encodeURIComponent(nextPath)}` : '/login';

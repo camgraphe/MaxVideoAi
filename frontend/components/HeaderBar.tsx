@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { setLogoutIntent } from '@/lib/logout-intent';
 
 export function HeaderBar() {
   const { t } = useI18n();
@@ -193,7 +194,9 @@ export function HeaderBar() {
             </div>
           )}
         </div>
-        <Chip className="px-2.5 py-1 text-[12px]" variant="outline">{member?.tier ?? t('workspace.header.memberFallback', 'Member')}</Chip>
+        <Chip className="hidden px-2.5 py-1 text-[12px] md:inline-flex" variant="outline">
+          {member?.tier ?? t('workspace.header.memberFallback', 'Member')}
+        </Chip>
         {email ? (
           <div className="relative">
             <button
@@ -245,7 +248,12 @@ export function HeaderBar() {
                   className="flex w-full items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   onClick={async () => {
                     setAccountMenuOpen(false);
-                    await supabase.auth.signOut();
+                    setLogoutIntent();
+                    try {
+                      await supabase.auth.signOut();
+                    } catch {
+                      // ignore logout errors
+                    }
                     window.location.href = '/';
                   }}
                 >
