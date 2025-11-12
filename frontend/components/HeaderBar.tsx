@@ -166,7 +166,6 @@ export function HeaderBar() {
             onBlur={scheduleWalletPromptClose}
           >
             <Image src="/assets/icons/wallet.svg" alt="" width={16} height={16} aria-hidden />
-            <span>{t('workspace.header.walletLabel', 'Wallet')}</span>
             <span className="text-sm font-semibold tracking-normal text-text-primary">${(wallet?.balance ?? 0).toFixed(2)}</span>
           </Link>
           {walletPromptOpen && (
