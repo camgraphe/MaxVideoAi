@@ -34,6 +34,7 @@ type HeroTileConfig = {
   showAudioIcon?: boolean;
   alt: string;
   examplesSlug?: string | null;
+  adminPriceLabel?: string | null;
 };
 
 const HERO_TILES: readonly HeroTileConfig[] = [
@@ -385,20 +386,26 @@ export default async function HomePage() {
       generateHref,
       modelHref,
       detailMeta,
+      adminPriceLabel,
     };
   });
 
-  const heroPriceMap = await resolveHeroTilePrices(
-    heroTileConfigs.map((tile) => ({
-      id: tile.id,
-      engineId: tile.engineId,
-      durationSec: tile.durationSec,
-      resolution: tile.resolution,
-      fallbackPriceLabel: tile.fallbackPriceLabel,
-      minPriceCents: tile.minPriceCents,
-      minPriceCurrency: tile.minPriceCurrency,
-    }))
-  );
+  const heroPriceMap: Record<string, string> =
+    heroTileConfigs.some((tile) => !tile.adminPriceLabel)
+      ? await resolveHeroTilePrices(
+          heroTileConfigs
+            .filter((tile) => !tile.adminPriceLabel)
+            .map((tile) => ({
+              id: tile.id,
+              engineId: tile.engineId,
+              durationSec: tile.durationSec,
+              resolution: tile.resolution,
+              fallbackPriceLabel: tile.fallbackPriceLabel,
+              minPriceCents: tile.minPriceCents,
+              minPriceCurrency: tile.minPriceCurrency,
+            }))
+        )
+      : {};
 
   const examplesCalloutCopy = home.examplesCallout ?? {
     eyebrow: 'Live gallery',
@@ -511,7 +518,7 @@ export default async function HomePage() {
             <HeroMediaTile
               key={tile.id}
               label={tile.label}
-              priceLabel={heroPriceMap[tile.id] ?? tile.fallbackPriceLabel}
+              priceLabel={tile.adminPriceLabel ?? heroPriceMap[tile.id] ?? tile.fallbackPriceLabel}
               videoSrc={tile.videoSrc}
               posterSrc={tile.posterSrc}
               alt={tile.alt}

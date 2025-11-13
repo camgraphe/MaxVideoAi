@@ -4,6 +4,7 @@ import { createNavigation } from 'next-intl/navigation';
 import { routing } from '@/i18n/routing';
 
 const BYPASS_PREFIXES = ['/app', '/dashboard', '/jobs', '/billing', '/settings', '/generate', '/login', '/legal'];
+const EXTERNAL_HREF_PATTERN = /^(?:[a-z][a-z0-9+\-.]*:|\/\/)/i;
 
 const { Link: LocalizedLink, redirect, usePathname, useRouter, getPathname } = createNavigation(routing);
 
@@ -33,6 +34,9 @@ function shouldBypassLocalization(href: LocalizedLinkHref): boolean {
   const value = extractHref(href);
   if (!value) {
     return false;
+  }
+  if (EXTERNAL_HREF_PATTERN.test(value)) {
+    return true;
   }
   return BYPASS_PREFIXES.some((prefix) => value.startsWith(prefix));
 }
