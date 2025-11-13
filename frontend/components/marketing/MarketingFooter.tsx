@@ -38,6 +38,14 @@ export function MarketingFooter() {
     { label: 'Contact', href: '/contact', locale: true },
     { label: 'Blog', href: '/blog', locale: true },
   ];
+  const localeShortcutLinks: Array<{ label: string; href: string }> = [
+    { label: '🇫🇷 Accueil', href: '/fr' },
+    { label: '🇫🇷 Galerie', href: '/fr/galerie' },
+    { label: '🇫🇷 About', href: '/fr/about' },
+    { label: '🇪🇸 Inicio', href: '/es' },
+    { label: '🇪🇸 Galería', href: '/es/galeria' },
+    { label: '🇪🇸 About', href: '/es/about' },
+  ];
 
   return (
     <footer className="border-t border-hairline bg-white">
@@ -62,7 +70,7 @@ export function MarketingFooter() {
             <LanguageToggle />
           </div>
         </div>
-        <div className="grid gap-4 text-sm text-text-secondary sm:grid-cols-2">
+        <div className="grid gap-4 text-sm text-text-secondary sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Explore MaxVideoAI</p>
             <nav className="mt-3 flex flex-wrap gap-3" aria-label="Key pages">
@@ -85,6 +93,21 @@ export function MarketingFooter() {
                   key={`policy-${item.href}`}
                   href={item.href}
                   locale={item.locale === false ? false : undefined}
+                  className="text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Locales rapides</p>
+            <nav className="mt-3 flex flex-wrap gap-3" aria-label="Locale shortcuts">
+              {localeShortcutLinks.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  locale={false}
                   className="text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   {item.label}

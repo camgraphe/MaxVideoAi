@@ -184,6 +184,11 @@ const nextConfig = {
         destination: '/:path*',
         permanent: true,
       },
+      {
+        source: '/models/veo3fast',
+        destination: '/models/veo-3-fast',
+        permanent: true,
+      },
     ];
   },
   async headers() {

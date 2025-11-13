@@ -1,30 +1,45 @@
 import type { Metadata } from 'next';
+import type { AppLocale } from '@/i18n/locales';
 import { resolveDictionary } from '@/lib/i18n/server';
+import { buildSlugMap } from '@/lib/i18nSlugs';
+import { buildMetadataUrls } from '@/lib/metadataUrls';
 
-export const metadata: Metadata = {
-  title: 'About — MaxVideo AI',
-  description: 'Quiet, premium, precise. Independent AI video hub that routes the right engine for every shot.',
-  keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
-  openGraph: {
+const ABOUT_SLUG_MAP = buildSlugMap('about');
+
+export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
+  const metadataUrls = buildMetadataUrls(params.locale, ABOUT_SLUG_MAP);
+  return {
     title: 'About — MaxVideo AI',
-    description: 'Learn about MaxVideo AI’s independence, team, and approach to routing and pricing.',
-    images: [
-      {
-        url: '/og/price-before.png',
-        width: 1200,
-        height: 630,
-        alt: 'About MaxVideo AI.',
-      },
-    ],
-  },
-  alternates: {
-    canonical: 'https://maxvideoai.com/about',
-    languages: {
-      en: 'https://maxvideoai.com/about',
-      fr: 'https://maxvideoai.com/about?lang=fr',
+    description: 'Quiet, premium, precise. Independent AI video hub that routes the right engine for every shot.',
+    keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
+    alternates: {
+      canonical: metadataUrls.canonical,
+      languages: metadataUrls.languages,
     },
-  },
-};
+    openGraph: {
+      title: 'About — MaxVideo AI',
+      description: 'Learn about MaxVideo AI’s independence, team, and approach to routing and pricing.',
+      url: metadataUrls.canonical,
+      siteName: 'MaxVideoAI',
+      images: [
+        {
+          url: '/og/price-before.png',
+          width: 1200,
+          height: 630,
+          alt: 'About MaxVideo AI.',
+        },
+      ],
+      locale: metadataUrls.ogLocale,
+      alternateLocale: metadataUrls.alternateOg,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'About — MaxVideo AI',
+      description: 'Learn about MaxVideo AI’s independence, team, and approach to routing and pricing.',
+      images: ['/og/price-before.png'],
+    },
+  };
+}
 
 export default async function AboutPage() {
   const { dictionary } = await resolveDictionary();

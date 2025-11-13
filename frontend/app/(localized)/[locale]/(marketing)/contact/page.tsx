@@ -1,31 +1,46 @@
 import type { Metadata } from 'next';
+import type { AppLocale } from '@/i18n/locales';
 import { Link } from '@/i18n/navigation';
 import { resolveDictionary } from '@/lib/i18n/server';
+import { buildSlugMap } from '@/lib/i18nSlugs';
+import { buildMetadataUrls } from '@/lib/metadataUrls';
 
-export const metadata: Metadata = {
-  title: 'Contact — MaxVideo AI',
-  description: 'Reach the MaxVideo AI team for support, partnerships, and enterprise onboarding.',
-  keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
-  openGraph: {
+const CONTACT_SLUG_MAP = buildSlugMap('contact');
+
+export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
+  const metadataUrls = buildMetadataUrls(params.locale, CONTACT_SLUG_MAP);
+  return {
     title: 'Contact — MaxVideo AI',
-    description: 'Get in touch with MaxVideo AI support or sales.',
-    images: [
-      {
-        url: '/og/price-before.png',
-        width: 1200,
-        height: 630,
-        alt: 'Contact MaxVideo AI.',
-      },
-    ],
-  },
-  alternates: {
-    canonical: 'https://maxvideoai.com/contact',
-    languages: {
-      en: 'https://maxvideoai.com/contact',
-      fr: 'https://maxvideoai.com/contact?lang=fr',
+    description: 'Reach the MaxVideo AI team for support, partnerships, and enterprise onboarding.',
+    keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
+    alternates: {
+      canonical: metadataUrls.canonical,
+      languages: metadataUrls.languages,
     },
-  },
-};
+    openGraph: {
+      title: 'Contact — MaxVideo AI',
+      description: 'Get in touch with MaxVideo AI support or sales.',
+      url: metadataUrls.canonical,
+      siteName: 'MaxVideoAI',
+      images: [
+        {
+          url: '/og/price-before.png',
+          width: 1200,
+          height: 630,
+          alt: 'Contact MaxVideo AI.',
+        },
+      ],
+      locale: metadataUrls.ogLocale,
+      alternateLocale: metadataUrls.alternateOg,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Contact — MaxVideo AI',
+      description: 'Get in touch with MaxVideo AI support or sales.',
+      images: ['/og/price-before.png'],
+    },
+  };
+}
 
 export default async function ContactPage() {
   const { dictionary } = await resolveDictionary();

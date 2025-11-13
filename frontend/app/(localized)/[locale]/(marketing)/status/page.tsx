@@ -1,30 +1,45 @@
 import type { Metadata } from 'next';
+import type { AppLocale } from '@/i18n/locales';
 import { resolveDictionary } from '@/lib/i18n/server';
+import { buildSlugMap } from '@/lib/i18nSlugs';
+import { buildMetadataUrls } from '@/lib/metadataUrls';
 
-export const metadata: Metadata = {
-  title: 'Status — MaxVideo AI',
-  description: 'Live status for engines, queue health, and incidents.',
-  keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
-  openGraph: {
+const STATUS_SLUG_MAP = buildSlugMap('status');
+
+export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
+  const metadataUrls = buildMetadataUrls(params.locale, STATUS_SLUG_MAP);
+  return {
     title: 'Status — MaxVideo AI',
-    description: 'Live and historical uptime for engines and queue processing.',
-    images: [
-      {
-        url: '/og/price-before.png',
-        width: 1200,
-        height: 630,
-        alt: 'Status indicators.',
-      },
-    ],
-  },
-  alternates: {
-    canonical: 'https://maxvideoai.com/status',
-    languages: {
-      en: 'https://maxvideoai.com/status',
-      fr: 'https://maxvideoai.com/status?lang=fr',
+    description: 'Live status for engines, queue health, and incidents.',
+    keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
+    alternates: {
+      canonical: metadataUrls.canonical,
+      languages: metadataUrls.languages,
     },
-  },
-};
+    openGraph: {
+      title: 'Status — MaxVideo AI',
+      description: 'Live and historical uptime for engines and queue processing.',
+      url: metadataUrls.canonical,
+      siteName: 'MaxVideoAI',
+      images: [
+        {
+          url: '/og/price-before.png',
+          width: 1200,
+          height: 630,
+          alt: 'Status indicators.',
+        },
+      ],
+      locale: metadataUrls.ogLocale,
+      alternateLocale: metadataUrls.alternateOg,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Status — MaxVideo AI',
+      description: 'Live status for engines, queue health, and incidents.',
+      images: ['/og/price-before.png'],
+    },
+  };
+}
 
 const STATUS_BADGE_CLASSES: Record<string, string> = {
   Operational: 'bg-emerald-100 text-emerald-700',
