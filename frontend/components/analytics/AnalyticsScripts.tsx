@@ -1,10 +1,16 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { ConsentScriptGate } from '@/components/legal/ConsentScriptGate';
-import { Clarity } from '@/components/analytics/Clarity';
-import { GoogleAds } from '@/components/analytics/GoogleAds';
-import { SpeedInsights } from '@vercel/speed-insights/next';
+
+const Clarity = dynamic(() => import('@/components/analytics/Clarity').then((mod) => mod.Clarity), { ssr: false });
+const GoogleAds = dynamic(() => import('@/components/analytics/GoogleAds').then((mod) => mod.GoogleAds), {
+  ssr: false,
+});
+const SpeedInsights = dynamic(() => import('@vercel/speed-insights/next').then((mod) => mod.SpeedInsights), {
+  ssr: false,
+});
 
 const PRIVATE_PATH_PREFIXES = [
   '/admin',

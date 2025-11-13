@@ -222,7 +222,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
               <div className="relative h-32 w-full overflow-hidden rounded-2xl bg-bg sm:h-28 sm:w-40">
                 <Image
                   src={post.image ?? '/og/price-before.png'}
-                  alt=""
+                  alt={post.title ?? 'MaxVideoAI blog cover'}
                   fill
                   sizes="160px"
                   className="object-cover object-center transition duration-700 group-hover:scale-105"

@@ -12,12 +12,12 @@ import { CookieBanner } from '@/components/legal/CookieBanner';
 import { JsonLd } from '@/components/SeoJsonLd';
 import { I18nProvider } from '@/lib/i18n/I18nProvider';
 import { defaultLocale, localeRegions, locales, type AppLocale } from '@/i18n/locales';
+import { englishPathFromLocale, normalizePathSegments } from '@/lib/i18n/paths';
 import {
-  LOCALES as SUPPORTED_LOCALES,
-  englishPathFromLocale,
-  localizePathFromEnglish,
-  normalizePathSegments,
-} from '@/lib/i18n/paths';
+  HREFLANG_VARIANTS,
+  buildAbsoluteLocalizedUrl,
+  resolveLocalesForEnglishPath,
+} from '@/lib/seo/alternateLocales';
 import { deserializeMessages } from '@/lib/i18n/server';
 import '@/app/globals.css';
 
@@ -118,21 +118,18 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
             '/';
           const normalizedPath = normalizePathSegments(rawPath.split('?')[0]);
           const englishPath = englishPathFromLocale(locale, normalizedPath);
-          const defaultHref = `${NORMALIZED_SITE_URL}${englishPath === '/' ? '' : englishPath}`;
+          const allowedLocales = resolveLocalesForEnglishPath(englishPath);
+          const defaultHref = englishPath === '/' ? NORMALIZED_SITE_URL : `${NORMALIZED_SITE_URL}${englishPath}`;
           return (
             <>
-              {SUPPORTED_LOCALES.map((targetLocale) => {
-                const localizedPath = localizePathFromEnglish(targetLocale, englishPath);
-                const href = `${NORMALIZED_SITE_URL}${localizedPath === '/' ? '' : localizedPath}`;
-                return (
-                  <link
-                    rel="alternate"
-                    hrefLang={targetLocale}
-                    href={href}
-                    key={`alt-${targetLocale}`}
-                  />
-                );
-              })}
+              {HREFLANG_VARIANTS.filter((entry) => allowedLocales.has(entry.locale)).map((entry) => (
+                <link
+                  rel="alternate"
+                  hrefLang={entry.hreflang}
+                  href={buildAbsoluteLocalizedUrl(NORMALIZED_SITE_URL, entry.locale, englishPath)}
+                  key={`alt-${entry.hreflang}`}
+                />
+              ))}
               <link rel="alternate" hrefLang="x-default" href={defaultHref} key="alt-default" />
             </>
           );

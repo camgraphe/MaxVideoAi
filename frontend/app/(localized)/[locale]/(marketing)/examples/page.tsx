@@ -1,5 +1,7 @@
 import clsx from 'clsx';
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
@@ -71,6 +73,8 @@ const ENGINE_META = (() => {
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || SITE_BASE_URL;
 const GALLERY_SLUG_MAP = buildSlugMap('gallery');
+const DEFAULT_SORT: ExampleSort = 'date-desc';
+const ALLOWED_QUERY_KEYS = new Set(['sort', 'engine']);
 
 const ENGINE_FILTER_GROUPS: Record<
   string,
@@ -254,9 +258,33 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     { id: 'duration-asc', label: sortLabels.shortest ?? 'Shortest' },
     { id: 'engine-asc', label: sortLabels.engineAZ ?? 'Engine A->Z' },
   ];
-  const DEFAULT_SORT: ExampleSort = 'date-desc';
   const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
   const sort = getSort(sortParam);
+  const engineParam = Array.isArray(searchParams.engine) ? searchParams.engine[0] : searchParams.engine;
+  const engineParamValue = typeof engineParam === 'string' ? engineParam.trim() : '';
+  const canonicalEngineParam = engineParamValue ? normalizeEngineId(engineParamValue) ?? engineParamValue : '';
+  const normalizedEngineParam = canonicalEngineParam.toLowerCase();
+  const unsupportedQueryKeys = Object.keys(searchParams).filter((key) => !ALLOWED_QUERY_KEYS.has(key));
+
+  if (unsupportedQueryKeys.length > 0) {
+    const headerList = headers();
+    const rawPath =
+      headerList.get('x-pathname') ??
+      headerList.get('x-invoke-path') ??
+      headerList.get('x-matched-path') ??
+      '/examples';
+    const canonicalPath = rawPath.split('?')[0] || '/examples';
+    const redirectedQuery = new URLSearchParams();
+    if (sort !== DEFAULT_SORT) {
+      redirectedQuery.set('sort', sort);
+    }
+    if (canonicalEngineParam) {
+      redirectedQuery.set('engine', canonicalEngineParam);
+    }
+    const target = redirectedQuery.toString() ? `${canonicalPath}?${redirectedQuery.toString()}` : canonicalPath;
+    redirect(target);
+  }
+
   const allVideos = await listExamples(sort, 60);
 
   const engineFilterMap = allVideos.reduce<Map<string, EngineFilterOption>>((acc, video) => {
@@ -285,10 +313,6 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     if (b.count !== a.count) return b.count - a.count;
     return a.label.localeCompare(b.label);
   });
-  const engineParam = Array.isArray(searchParams.engine) ? searchParams.engine[0] : searchParams.engine;
-  const engineParamValue = typeof engineParam === 'string' ? engineParam.trim() : '';
-  const canonicalEngineParam = engineParamValue ? normalizeEngineId(engineParamValue) ?? engineParamValue : '';
-  const normalizedEngineParam = canonicalEngineParam.toLowerCase();
   const selectedOption =
     normalizedEngineParam && engineFilterOptions.length
       ? engineFilterOptions.find((option) => option.key === normalizedEngineParam)

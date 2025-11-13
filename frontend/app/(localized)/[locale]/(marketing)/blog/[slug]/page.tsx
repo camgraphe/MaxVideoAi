@@ -6,12 +6,14 @@ import Script from 'next/script';
 import { getContentEntries, getEntryBySlug } from '@/lib/content/markdown';
 import type { AppLocale } from '@/i18n/locales';
 import { localePathnames, localeRegions, locales } from '@/i18n/locales';
-import { SITE_BASE_URL } from '@/lib/metadataUrls';
+import { buildMetadataUrls } from '@/lib/metadataUrls';
 
 interface Params {
   locale: AppLocale;
   slug: string;
 }
+
+export const dynamicParams = false;
 
 const localeDateMap: Record<AppLocale, string> = {
   en: 'en-US',
@@ -84,35 +86,39 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     localizedSlugs.en = canonicalSlug;
   }
 
-  const buildLocalizedUrl = (target: AppLocale) => {
-    const slug = localizedSlugs[target] ?? canonicalSlug;
-    const prefix = localePathnames[target] ? `/${localePathnames[target]}` : '';
-    return `${SITE_BASE_URL}${prefix}/blog/${slug}`;
+  const publishableLocales = new Set<AppLocale>(['en']);
+  locales.forEach((code) => {
+    if (code !== 'en' && localizedSlugs[code]) {
+      publishableLocales.add(code);
+    }
+  });
+  const slugMap: Partial<Record<AppLocale, string>> = {};
+  const ensureSlugFor = (target: AppLocale) => {
+    const slugValue = localizedSlugs[target] ?? canonicalSlug;
+    slugMap[target] = `blog/${slugValue}`;
   };
+  publishableLocales.forEach(ensureSlugFor);
+  ensureSlugFor(params.locale);
 
-  const languages: Record<string, string> = {
-    en: buildLocalizedUrl('en'),
-    fr: buildLocalizedUrl('fr'),
-    es: buildLocalizedUrl('es'),
-    'x-default': buildLocalizedUrl('en'),
-  };
-  const canonicalUrl = languages[params.locale] ?? languages.en;
-
+  const metadataUrls = buildMetadataUrls(params.locale, slugMap, {
+    availableLocales: Array.from(publishableLocales),
+  });
   const ogLocale = localeRegions[params.locale].replace('-', '_');
 
   return {
     title: `${post.title} — MaxVideo AI`,
     description: post.description,
     alternates: {
-      canonical: canonicalUrl,
-      languages,
+      canonical: metadataUrls.canonical,
+      languages: metadataUrls.languages,
     },
     openGraph: {
       title: `${post.title} — MaxVideo AI`,
       description: post.description,
-      url: languages[params.locale] ?? languages.en,
+      url: metadataUrls.canonical,
       locale: ogLocale,
       siteName: 'MaxVideoAI',
+      alternateLocale: metadataUrls.alternateOg,
       ...(published ? { publishedTime: published } : {}),
       ...(lastModified ? { modifiedTime: lastModified, updatedTime: lastModified } : {}),
       images: [
@@ -156,8 +162,21 @@ export default async function BlogPostPage({ params }: { params: Params }) {
   if (!localizedSlugs.en) {
     localizedSlugs.en = canonicalSlug;
   }
-  const prefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
-  const canonicalUrl = `${SITE_BASE_URL}${prefix}/blog/${localizedSlugs[locale] ?? canonicalSlug}`;
+  const publishableLocales = new Set<AppLocale>(['en']);
+  locales.forEach((code) => {
+    if (code !== 'en' && localizedSlugs[code]) {
+      publishableLocales.add(code);
+    }
+  });
+  const slugMap: Partial<Record<AppLocale, string>> = {};
+  const ensureSlugFor = (target: AppLocale) => {
+    const targetSlug = localizedSlugs[target] ?? canonicalSlug;
+    slugMap[target] = `blog/${targetSlug}`;
+  };
+  publishableLocales.forEach(ensureSlugFor);
+  ensureSlugFor(locale);
+  const metadataUrls = buildMetadataUrls(locale, slugMap, { availableLocales: Array.from(publishableLocales) });
+  const canonicalUrl = metadataUrls.canonical;
   const publishedIso = toIsoDate(post.date) ?? post.date;
   const modifiedIso = toIsoDate(post.updatedAt ?? post.date) ?? publishedIso;
 

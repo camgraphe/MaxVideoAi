@@ -11,6 +11,8 @@ export async function generateStaticParams(): Promise<Params[]> {
   return docs.map((entry) => ({ slug: entry.slug }));
 }
 
+export const dynamicParams = false;
+
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const doc = await getEntryBySlug('content/docs', params.slug);
   if (!doc) {

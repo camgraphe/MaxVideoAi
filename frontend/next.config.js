@@ -14,6 +14,7 @@ const withNextIntl = require('next-intl/plugin')('./i18n/request.ts');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  compress: true,
   trailingSlash: false,
   transpilePackages: ['@maxvideoai/pricing'],
   images: {
@@ -37,12 +38,40 @@ const nextConfig = {
     },
   },
   async redirects() {
-    return [
+    const localeSafeRedirects = [
       {
-        source: '/:path+/',
-        destination: '/:path+',
+        source: '/fr/galerie',
+        destination: '/fr/examples',
         permanent: true,
       },
+      {
+        source: '/fr/comparatif',
+        destination: '/fr/ai-video-engines',
+        permanent: true,
+      },
+      {
+        source: '/fr/tarifs',
+        destination: '/fr/pricing',
+        permanent: true,
+      },
+      {
+        source: '/fr/modeles/:slug*',
+        destination: '/fr/models/:slug*',
+        permanent: true,
+      },
+      {
+        source: '/es/precios',
+        destination: '/es/pricing',
+        permanent: true,
+      },
+      {
+        source: '/es/modelos/:slug*',
+        destination: '/es/models/:slug*',
+        permanent: true,
+      },
+    ];
+
+    return [
       {
         source: '/calculator',
         destination: '/pricing-calculator',
@@ -188,6 +217,7 @@ const nextConfig = {
         destination: '/:path*',
         permanent: true,
       },
+      ...localeSafeRedirects,
     ];
   },
   async headers() {

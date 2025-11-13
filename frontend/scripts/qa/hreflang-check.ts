@@ -10,7 +10,7 @@ type Locale = AppLocale;
 const RAW_BASE_URL = process.env.QA_BASE_URL ?? 'http://localhost:3000';
 const BASE_URL = RAW_BASE_URL.replace(/\/+$/, '') || 'http://localhost:3000';
 const LOCALES: Locale[] = ['en', 'fr', 'es'];
-const EXPECTED_HREFLANGS = ['en', 'fr', 'es', 'x-default'] as const;
+const EXPECTED_HREFLANGS = ['en', 'en-gb', 'fr-fr', 'es-es', 'x-default'] as const;
 
 type PageConfig =
   | { kind: 'home'; label: string }

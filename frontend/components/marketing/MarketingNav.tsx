@@ -227,7 +227,7 @@ export function MarketingNav() {
                     className="flex items-center gap-2 rounded-pill border border-hairline bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary transition hover:border-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     aria-describedby={walletPromptOpen ? walletPromptId : undefined}
                   >
-                    <Image src="/assets/icons/wallet.svg" alt="" width={16} height={16} aria-hidden />
+                    <Image src="/assets/icons/wallet.svg" alt="Wallet balance" width={16} height={16} />
                     <span className="text-sm font-semibold tracking-normal text-text-primary">
                       ${(wallet?.balance ?? 0).toFixed(2)}
                     </span>
@@ -401,7 +401,7 @@ export function MarketingNav() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between rounded-2xl border border-hairline bg-white px-4 py-3">
                   <span className="flex items-center gap-2 text-base font-semibold text-text-primary">
-                    <Image src="/assets/icons/wallet.svg" alt="" width={18} height={18} aria-hidden />
+                    <Image src="/assets/icons/wallet.svg" alt="Wallet balance" width={18} height={18} />
                     ${(wallet?.balance ?? 0).toFixed(2)}
                   </span>
                 </div>

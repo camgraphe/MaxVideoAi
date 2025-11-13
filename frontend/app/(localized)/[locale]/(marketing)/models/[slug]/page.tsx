@@ -9,6 +9,7 @@ import type { AppLocale } from '@/i18n/locales';
 import { locales, localePathnames } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
+import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
 import { getEngineLocalized } from '@/lib/models/i18n';
 import { serializeJsonLd } from '../model-jsonld';
 
@@ -18,6 +19,8 @@ type PageParams = {
     slug: string;
   };
 };
+
+export const dynamicParams = false;
 
 export function generateStaticParams() {
   const engines = listFalEngines();
@@ -121,7 +124,8 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
 
   const localized = await getEngineLocalized(slug, locale);
   const detailSlugMap = buildDetailSlugMap(slug);
-  const metadataUrls = buildMetadataUrls(locale, detailSlugMap);
+  const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${slug}`));
+  const metadataUrls = buildMetadataUrls(locale, detailSlugMap, { availableLocales: publishableLocales });
   const fallbackTitle = engine.seo.title ?? `${engine.marketingName} — MaxVideo AI`;
   const title = localized.seo.title ?? fallbackTitle;
   const description =
@@ -181,7 +185,8 @@ export default async function ModelDetailPage({ params }: PageParams) {
   }
   const localizedContent = await getEngineLocalized(slug, activeLocale);
   const detailSlugMap = buildDetailSlugMap(slug);
-  const metadataUrls = buildMetadataUrls(activeLocale, detailSlugMap);
+  const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${slug}`));
+  const metadataUrls = buildMetadataUrls(activeLocale, detailSlugMap, { availableLocales: publishableLocales });
 
   const detailCopy: DetailCopy = {
     ...DEFAULT_DETAIL_COPY,

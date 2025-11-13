@@ -28,6 +28,7 @@ const NON_LOCALIZED_PREFIXES = [
   '/_next',
   '/_vercel',
 ];
+const PLACEHOLDER_SEGMENTS = new Set(['[locale]', '[lang]', '[language]']);
 const LOCALIZED_SEGMENT_VALUES = Array.from(
   new Set(
     Object.values(localizedSlugConfig as Record<string, Record<string, string>>)
@@ -90,7 +91,7 @@ const handleI18nRouting = createMiddleware({
 const LOCALIZED_PREFIXES = locales
   .map((locale) => localePathnames[locale])
   .filter((prefix): prefix is string => Boolean(prefix && prefix.length));
-const LOCALIZED_PREFIX_SET = new Set(LOCALIZED_PREFIXES);
+const LOCALIZED_PREFIX_SET = new Set(LOCALIZED_PREFIXES.map((value) => value.toLowerCase()));
 const LOCALE_PREFIX_REGEX = LOCALIZED_PREFIXES.length
   ? new RegExp(`^/(${LOCALIZED_PREFIXES.join('|')})(/|$)`)
   : null;
@@ -144,6 +145,20 @@ export async function middleware(req: NextRequest) {
   }
 
   const pathname = req.nextUrl.pathname;
+
+  if (containsLocalePlaceholder(pathname)) {
+    const { localePrefix } = splitLocaleFromPath(pathname);
+    return rewriteToNotFound(req, localePrefix);
+  }
+
+  const sanitizedLocalePath = dropDuplicateLocaleSegments(pathname);
+  if (sanitizedLocalePath && sanitizedLocalePath !== pathname) {
+    const redirectUrl = req.nextUrl.clone();
+    redirectUrl.pathname = sanitizedLocalePath;
+    redirectUrl.search = req.nextUrl.search;
+    return NextResponse.redirect(redirectUrl, 301);
+  }
+
   const isMarketingPath = shouldHandleLocale(pathname);
   const isBotRequest = detectBot(req.headers.get('user-agent') ?? '');
 
@@ -244,7 +259,7 @@ function handleMarketingSlug(req: NextRequest, pathname: string): NextResponse |
 function splitLocaleFromPath(pathname: string) {
   const trimmed = pathname || '/';
   const segments = trimmed.split('/').filter(Boolean);
-  if (segments.length && LOCALIZED_PREFIX_SET.has(segments[0])) {
+  if (segments.length && LOCALIZED_PREFIX_SET.has(segments[0].toLowerCase())) {
     const localeSegment = segments[0];
     const rest = segments.slice(1);
     return {
@@ -253,6 +268,38 @@ function splitLocaleFromPath(pathname: string) {
     };
   }
   return { localePrefix: '', pathWithoutLocale: trimmed };
+}
+
+function containsLocalePlaceholder(pathname: string) {
+  return pathname
+    .split('/')
+    .filter(Boolean)
+    .some((segment) => PLACEHOLDER_SEGMENTS.has(segment.toLowerCase()));
+}
+
+function dropDuplicateLocaleSegments(pathname: string) {
+  const segments = pathname.split('/').filter(Boolean);
+  if (!segments.length) {
+    return null;
+  }
+  const normalized: string[] = [];
+  let foundLocale = false;
+  let removed = false;
+  segments.forEach((segment) => {
+    const lower = segment.toLowerCase();
+    if (LOCALIZED_PREFIX_SET.has(lower)) {
+      if (foundLocale) {
+        removed = true;
+        return;
+      }
+      foundLocale = true;
+    }
+    normalized.push(segment);
+  });
+  if (!removed) {
+    return null;
+  }
+  return normalized.length ? `/${normalized.join('/')}` : '/';
 }
 
 function normalizePath(pathname: string) {

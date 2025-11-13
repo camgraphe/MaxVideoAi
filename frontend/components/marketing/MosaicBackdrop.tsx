@@ -48,7 +48,7 @@ export function MosaicBackdrop({ media = [], className, children }: MosaicBackdr
                   ) : item.posterUrl ? (
                     <Image
                       src={item.posterUrl}
-                      alt=""
+                      alt="AI video preview tile"
                       fill
                       sizes="(min-width: 1280px) 12vw, (min-width: 768px) 24vw, 32vw"
                       className="object-cover"
