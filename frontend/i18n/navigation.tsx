@@ -16,7 +16,7 @@ type LocalizedLinkHref =
     };
 
 type LocalizedLinkProps = PropsWithChildren<
-  Omit<NextLinkProps, 'href'> & { href: LocalizedLinkHref; className?: string }
+  Omit<NextLinkProps, 'href'> & { href: LocalizedLinkHref; className?: string; rel?: string }
 >;
 
 function extractHref(href: LocalizedLinkHref): string | null {
@@ -37,21 +37,25 @@ function shouldBypassLocalization(href: LocalizedLinkHref): boolean {
   return BYPASS_PREFIXES.some((prefix) => value.startsWith(prefix));
 }
 
-export function Link({ children, className, ...rest }: LocalizedLinkProps): ReactElement {
+export function Link({ children, className, rel, ...rest }: LocalizedLinkProps): ReactElement {
   if (shouldBypassLocalization(rest.href)) {
     return (
-      <NextLink {...(rest as unknown as NextLinkProps)} className={className}>
+      <NextLink {...(rest as unknown as NextLinkProps)} className={className} rel={rel}>
         {children}
       </NextLink>
     );
   }
 
   const Localized = LocalizedLink as unknown as ComponentType<
-    ComponentProps<typeof LocalizedLink> & { className?: string }
+    ComponentProps<typeof LocalizedLink> & { className?: string; rel?: string }
   >;
 
   return (
-    <Localized {...(rest as unknown as ComponentProps<typeof LocalizedLink>)} className={className}>
+    <Localized
+      {...(rest as unknown as ComponentProps<typeof LocalizedLink>)}
+      className={className}
+      rel={rel}
+    >
       {children}
     </Localized>
   );
