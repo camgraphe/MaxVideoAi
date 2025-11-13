@@ -8,11 +8,19 @@ import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
 import { FEATURES } from '@/content/feature-flags';
 import { FlagPill } from '@/components/FlagPill';
 import type { AppLocale } from '@/i18n/locales';
+import { localePathnames } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { getTranslations } from 'next-intl/server';
 
 const WORKFLOWS_SLUG_MAP = buildSlugMap('workflows');
+const MODELS_BASE_SLUG_MAP = buildSlugMap('models');
+
+function buildModelPath(locale: AppLocale, slug: string) {
+  const prefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
+  const base = MODELS_BASE_SLUG_MAP[locale] ?? MODELS_BASE_SLUG_MAP.en ?? 'models';
+  return `${prefix}/${base}/${slug}`.replace(/\/{2,}/g, '/');
+}
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
@@ -54,7 +62,8 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
 }
 
 export default async function WorkflowsPage() {
-  const { dictionary } = await resolveDictionary();
+  const { locale, dictionary } = await resolveDictionary();
+  const activeLocale = locale as AppLocale;
   const content = dictionary.workflows;
   const models = listAvailableModels(true);
   const availabilityLabels = dictionary.models.availabilityLabels;
@@ -222,7 +231,10 @@ export default async function WorkflowsPage() {
                 </div>
                 <p className="mt-2 text-xs text-text-secondary">
                   {brand ? `${brand.label}` : model.brandId} ·{' '}
-                  <Link href={{ pathname: '/models/[slug]', params: { slug: model.modelSlug } }} className="text-accent hover:text-accentSoft">
+                  <Link
+                    href={buildModelPath(activeLocale, model.modelSlug)}
+                    className="text-accent hover:text-accentSoft"
+                  >
                     view details
                   </Link>
                 </p>

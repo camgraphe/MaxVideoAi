@@ -1,11 +1,19 @@
 import type { Metadata } from 'next';
 import type { AppLocale } from '@/i18n/locales';
+import { localePathnames } from '@/i18n/locales';
 import { Link } from '@/i18n/navigation';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 
 const CONTACT_SLUG_MAP = buildSlugMap('contact');
+const STATUS_SLUG_MAP = buildSlugMap('status');
+
+function buildLocalizedPath(locale: AppLocale, slug?: string) {
+  const prefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
+  const normalized = slug ? `/${slug.replace(/^\/+/, '')}` : '';
+  return (prefix + normalized || '/').replace(/\/{2,}/g, '/');
+}
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const metadataUrls = buildMetadataUrls(params.locale, CONTACT_SLUG_MAP);
@@ -42,9 +50,11 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   };
 }
 
-export default async function ContactPage() {
+export default async function ContactPage({ params }: { params: { locale: AppLocale } }) {
+  const locale = params.locale;
   const { dictionary } = await resolveDictionary();
   const content = dictionary.contact;
+  const statusHref = buildLocalizedPath(locale, STATUS_SLUG_MAP[locale] ?? STATUS_SLUG_MAP.en);
 
   return (
     <div className="mx-auto max-w-4xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
@@ -177,13 +187,26 @@ export default async function ContactPage() {
             <dt className="font-semibold text-text-primary">Where can I check service status?</dt>
             <dd className="mt-2">
               Visit the{' '}
-              <Link href="/status" className="font-semibold text-accent hover:text-accentSoft">
+              <Link href={statusHref} className="font-semibold text-accent hover:text-accentSoft">
                 status page
               </Link>{' '}
               for current engine latency and incident history before opening a ticket.
             </dd>
           </div>
         </dl>
+      </section>
+      <section className="mt-12 rounded-card border border-hairline bg-white/90 p-6 shadow-card">
+        <h2 className="text-lg font-semibold text-text-primary">Check live engine status</h2>
+        <p className="mt-2 text-sm text-text-secondary">
+          Before opening a ticket, confirm whether an engine is already degraded. Status updates list latency, incident notes,
+          and mitigation steps so you can decide whether to retry or switch models.
+        </p>
+        <Link
+          href={statusHref}
+          className="mt-4 inline-flex items-center text-sm font-semibold text-accent transition hover:text-accentSoft"
+        >
+          View status page <span aria-hidden>→</span>
+        </Link>
       </section>
     </div>
   );

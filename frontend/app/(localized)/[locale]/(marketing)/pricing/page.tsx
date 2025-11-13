@@ -10,11 +10,18 @@ import { FEATURES } from '@/content/feature-flags';
 import { FlagPill } from '@/components/FlagPill';
 import { getMembershipTiers } from '@/lib/membership';
 import FaqJsonLd from '@/components/FaqJsonLd';
-import type { AppLocale } from '@/i18n/locales';
+import { localePathnames, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 
 const PRICING_SLUG_MAP = buildSlugMap('pricing');
+const PRICING_CALCULATOR_SLUG_MAP = buildSlugMap('pricing-calculator');
+
+function buildLocalizedPath(locale: AppLocale, slug?: string) {
+  const prefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
+  const normalized = slug ? `/${slug.replace(/^\/+/, '')}` : '';
+  return (prefix + normalized || '/').replace(/\/{2,}/g, '/');
+}
 
 const DEFAULT_EXAMPLE_COSTS = {
   title: 'Example costs',
@@ -183,6 +190,10 @@ export default async function PricingPage() {
       ? exampleCosts.cards
       : DEFAULT_EXAMPLE_COSTS.cards;
   const priceFactors = content.priceFactors ?? DEFAULT_PRICE_FACTORS;
+  const calculatorHref = buildLocalizedPath(
+    locale as AppLocale,
+    PRICING_CALCULATOR_SLUG_MAP[locale as AppLocale] ?? PRICING_CALCULATOR_SLUG_MAP.en
+  );
 
   const formattedTiers = membershipTiers.map((tier, index) => {
     const tierCopy = Array.isArray(member.tiers) ? ((member.tiers[index] ?? null) as TierCopy | null) : null;
@@ -231,6 +242,22 @@ export default async function PricingPage() {
         ) : null}
       </header>
 
+      <section className="mt-8 rounded-card border border-hairline bg-white/90 p-6 text-sm text-text-secondary shadow-card">
+        <h2 className="text-lg font-semibold text-text-primary">
+          {content.calculator?.title ?? 'Estimate with the calculator'}
+        </h2>
+        <p className="mt-2">
+          {content.calculator?.description ??
+            'Run detailed estimates by engine, duration, and resolution before topping up your wallet.'}
+        </p>
+        <Link
+          href={calculatorHref}
+          className="mt-3 inline-flex items-center text-sm font-semibold text-accent transition hover:text-accentSoft"
+        >
+          {content.calculator?.cta ?? 'Open pricing calculator'} <span aria-hidden>→</span>
+        </Link>
+      </section>
+
       <section id="estimator" className="mt-12 scroll-mt-28">
         <div className="mx-auto max-w-4xl">
           <PriceEstimator />
@@ -239,7 +266,7 @@ export default async function PricingPage() {
           <FlagPill live={FEATURES.pricing.publicCalculator} />
           <span>
             {content.estimator.walletLink}{' '}
-            <Link href="/pricing-calculator" className="font-semibold text-accent hover:text-accentSoft">
+            <Link href={calculatorHref} className="font-semibold text-accent hover:text-accentSoft">
               {content.estimator.walletLinkCta}
             </Link>
             .

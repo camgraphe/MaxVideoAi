@@ -7,7 +7,7 @@ export { generateMetadata };
 export default function ContactDefaultPage() {
   return (
     <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
-      <ContactPage />
+      <ContactPage params={{ locale: DEFAULT_LOCALE }} />
     </LocaleLayout>
   );
 }

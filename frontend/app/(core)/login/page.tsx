@@ -13,6 +13,14 @@ import esMessages from '@/messages/es.json';
 
 export const dynamic = 'force-dynamic';
 
+export const metadata = {
+  title: 'MaxVideoAI — Log in',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 type AuthMode = 'signin' | 'signup' | 'reset';
 
 const MIN_AGE_ENV = Number.parseInt(process.env.NEXT_PUBLIC_LEGAL_MIN_AGE ?? '15', 10);

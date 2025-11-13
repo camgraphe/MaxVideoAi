@@ -424,6 +424,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                 <Link
                   key={option.id}
                   href={{ pathname: '/examples', query: queryParams }}
+                  rel="nofollow"
                   className={clsx(
                     'rounded-full px-3 py-1 text-xs font-medium transition',
                     isActive ? 'bg-text-primary text-white shadow-sm' : 'text-text-secondary hover:bg-accentSoft/20'
@@ -440,6 +441,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
               <div className="flex items-center gap-1">
                 <Link
                   href={{ pathname: '/examples', query: buildQueryParams(sort, null) }}
+                  rel="nofollow"
                   className={clsx(
                     'flex h-9 items-center justify-center rounded-full border px-3 text-[11px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
                     selectedEngine
@@ -455,6 +457,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                     <Link
                       key={engine.id}
                       href={{ pathname: '/examples', query: buildQueryParams(sort, isActive ? null : engine.id) }}
+                      rel="nofollow"
                       className={clsx(
                         'flex h-9 w-9 items-center justify-center rounded-full border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
                         isActive
