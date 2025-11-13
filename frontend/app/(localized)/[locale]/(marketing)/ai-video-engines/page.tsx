@@ -16,8 +16,8 @@ const COMPARE_META: Record<AppLocale, { title: string; description: string }> = 
     description: 'Comparez disponibilité, latence et conformité pour Sora 2, Veo 3, Pika et MiniMax en Europe.',
   },
   es: {
-    title: 'Motores de vídeo IA — Compara Sora, Veo, Pika | MaxVideoAI',
-    description: 'Compara disponibilidad, latencia y rutas de cumplimiento para Sora 2, Veo 3, Pika y MiniMax en Europa.',
+    title: 'Comparativa de motores de vídeo IA | MaxVideoAI',
+    description: 'Analiza disponibilidad, latencia y rutas de cumplimiento para Sora 2, Veo 3, Pika y MiniMax en Europa.',
   },
 };
 

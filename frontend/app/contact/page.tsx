@@ -1,8 +1,8 @@
-import ContactPage, { generateMetadata } from '../(localized)/[locale]/(marketing)/contact/page';
+import ContactPage, { generateMetadata as generateLocalizedMetadata } from '../(localized)/[locale]/(marketing)/contact/page';
 import LocaleLayout from '../(localized)/[locale]/layout';
 import { DEFAULT_LOCALE } from '../default-locale-wrapper';
 
-export { generateMetadata };
+export const generateMetadata = () => generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE } });
 
 export default function ContactDefaultPage() {
   return (

@@ -1,8 +1,8 @@
-import Page, { generateMetadata } from '../(localized)/[locale]/(marketing)/ai-video-engines/page';
+import Page, { generateMetadata as generateLocalizedMetadata } from '../(localized)/[locale]/(marketing)/ai-video-engines/page';
 import LocaleLayout from '../(localized)/[locale]/layout';
 import { DEFAULT_LOCALE } from '../default-locale-wrapper';
 
-export { generateMetadata };
+export const generateMetadata = () => generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE } });
 
 export default function AiVideoEnginesDefaultPage() {
   return (

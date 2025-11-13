@@ -1,8 +1,8 @@
-import AboutPage, { generateMetadata } from '../(localized)/[locale]/(marketing)/about/page';
+import AboutPage, { generateMetadata as generateLocalizedMetadata } from '../(localized)/[locale]/(marketing)/about/page';
 import LocaleLayout from '../(localized)/[locale]/layout';
 import { DEFAULT_LOCALE } from '../default-locale-wrapper';
 
-export { generateMetadata };
+export const generateMetadata = () => generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE } });
 
 export default function AboutDefaultPage() {
   return (

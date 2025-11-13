@@ -12,16 +12,16 @@ import { buildMetadataUrls } from '@/lib/metadataUrls';
 const BLOG_SLUG_MAP = buildSlugMap('blog');
 const BLOG_META = {
   en: {
-    title: 'Blog — MaxVideo AI',
+    title: 'Blog — MaxVideoAI',
     description: 'News on new engines, case studies, prompt guides, and price-before best practices.',
   },
   fr: {
-    title: 'Blog — MaxVideoAI',
-    description: 'Actualités moteurs, études de cas, guides de prompts et bonnes pratiques prix-avant.',
+    title: 'Blog MaxVideoAI (FR)',
+    description: 'Actualités moteurs, études de cas et guides prix-avant dédiés aux équipes francophones.',
   },
   es: {
-    title: 'Blog — MaxVideoAI',
-    description: 'Novedades de motores, casos de uso, guías de prompts y mejores prácticas de precio previo.',
+    title: 'Blog MaxVideoAI (ES)',
+    description: 'Novedades de motores, casos de uso y guías de prompts en español.',
   },
 } satisfies Record<AppLocale, { title: string; description: string }>;
 
