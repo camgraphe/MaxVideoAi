@@ -58,11 +58,7 @@
     },
     {
       "label": "Audio",
-      "body": "Voice-over + spatial ambience baked in",
-      "link": {
-        "label": "OpenAI Audio Research",
-        "href": "https://openai.com/blog/sora-2-pro-audio"
-      }
+      "body": "Voice-over + spatial ambience baked in"
     },
     {
       "label": "Inputs",

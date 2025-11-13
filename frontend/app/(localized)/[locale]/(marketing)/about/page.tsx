@@ -5,20 +5,39 @@ import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 
 const ABOUT_SLUG_MAP = buildSlugMap('about');
+const ABOUT_META: Record<AppLocale, { title: string; description: string }> = {
+  en: {
+    title: 'About — MaxVideoAI',
+    description: 'Quiet, premium, precise. Independent AI video hub that routes the right engine for every shot.',
+  },
+  fr: {
+    title: 'À propos — MaxVideoAI',
+    description:
+      'Hub vidéo IA indépendant : précision, sobriété et transparence pour router le bon moteur à chaque plan.',
+  },
+  es: {
+    title: 'Acerca de — MaxVideoAI',
+    description:
+      'Hub independiente de vídeo con IA que dirige el motor adecuado para cada plano con precio antes de generar.',
+  },
+};
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
-  const metadataUrls = buildMetadataUrls(params.locale, ABOUT_SLUG_MAP);
+  const locale = params.locale;
+  const metadataUrls = buildMetadataUrls(locale, ABOUT_SLUG_MAP);
+  const metaCopy = ABOUT_META[locale] ?? ABOUT_META.en;
+
   return {
-    title: 'About — MaxVideo AI',
-    description: 'Quiet, premium, precise. Independent AI video hub that routes the right engine for every shot.',
+    title: metaCopy.title,
+    description: metaCopy.description,
     keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
     alternates: {
       canonical: metadataUrls.canonical,
       languages: metadataUrls.languages,
     },
     openGraph: {
-      title: 'About — MaxVideo AI',
-      description: 'Learn about MaxVideo AI’s independence, team, and approach to routing and pricing.',
+      title: metaCopy.title,
+      description: metaCopy.description,
       url: metadataUrls.canonical,
       siteName: 'MaxVideoAI',
       images: [
@@ -34,8 +53,8 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     },
     twitter: {
       card: 'summary_large_image',
-      title: 'About — MaxVideo AI',
-      description: 'Learn about MaxVideo AI’s independence, team, and approach to routing and pricing.',
+      title: metaCopy.title,
+      description: metaCopy.description,
       images: ['/og/price-before.png'],
     },
   };

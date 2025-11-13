@@ -58,11 +58,7 @@
     },
     {
       "label": "Audio",
-      "body": "Voix off native + ambiance spatiale intégrée",
-      "link": {
-        "label": "Recherche audio OpenAI",
-        "href": "https://openai.com/blog/sora-2-pro-audio"
-      }
+      "body": "Voix off native + ambiance spatiale intégrée"
     },
     {
       "label": "Entrées",

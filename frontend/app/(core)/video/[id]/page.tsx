@@ -167,6 +167,11 @@ function buildMetaTitle(primary: string) {
   return `${truncated}${TITLE_SUFFIX}`;
 }
 
+function formatJobSuffix(id: string) {
+  const clean = id.replace(/[^a-z0-9]/gi, '');
+  return clean.slice(-6).toUpperCase();
+}
+
 function renderTemplate(template: string, values: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (_match, key: string) => values[key] ?? '');
 }
@@ -367,11 +372,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const copy = resolveVideoCopy(dictionary);
   const seoContent = buildSeoContent(video, copy, locale);
 
-  const primaryTitle =
+  const engineLabel = video.engineLabel ?? 'MaxVideoAI';
+  const promptHeading =
     video.promptExcerpt ||
     video.prompt ||
-    `${video.engineLabel ?? 'MaxVideoAI'} example (${video.durationSec}s)`;
-  const metaTitle = buildMetaTitle(primaryTitle);
+    `${engineLabel} example (${video.durationSec ?? 'short'}s)`;
+  const metaPrimary = `${promptHeading} · ${engineLabel} [${formatJobSuffix(video.id)}]`;
+  const metaTitle = buildMetaTitle(metaPrimary);
   const description = seoContent.description;
   const canonical = `${SITE}/video/${encodeURIComponent(video.id)}`;
   const thumbnail = toAbsoluteUrl(video.thumbUrl) ?? FALLBACK_THUMB;
@@ -426,8 +433,9 @@ export default async function VideoPage({ params }: PageProps) {
   const aspect = parseAspectRatio(video.aspectRatio);
   const isPortrait = aspect ? aspect.width < aspect.height : false;
   const engineEntry = resolveEngineEntry(video.engineId);
-  const heroTitle = video.engineLabel ?? copy.hero.titleFallback;
-  const heroIntro = renderTemplate(copy.hero.intro, { engine: heroTitle });
+  const engineLabel = video.engineLabel ?? copy.hero.titleFallback;
+  const heroHeading = video.promptExcerpt || video.prompt || engineLabel;
+  const heroIntro = renderTemplate(copy.hero.intro, { engine: engineLabel });
   const engineDescription = engineEntry?.seo?.description ?? copy.details.engineDescriptionFallback;
   const engineSlug = engineEntry?.modelSlug ?? normalizeEngineId(video.engineId ?? '') ?? '';
   const engineLink = engineSlug
@@ -505,7 +513,7 @@ export default async function VideoPage({ params }: PageProps) {
               ) : (
                 <Image
                   src={poster}
-                  alt={heroTitle}
+                  alt={heroHeading}
                   fill
                   className="object-contain"
                   style={aspect ? { aspectRatio: `${aspect.width} / ${aspect.height}` } : undefined}
@@ -516,9 +524,9 @@ export default async function VideoPage({ params }: PageProps) {
           </div>
           <div className="space-y-4 lg:order-none">
             <p className="text-sm font-semibold uppercase tracking-micro text-text-muted">
-              {video.engineLabel ?? video.engineId ?? 'MaxVideoAI'}
+              {engineLabel ?? video.engineId ?? 'MaxVideoAI'}
             </p>
-            <h1 className="text-3xl font-semibold tracking-tight text-text-primary">{heroTitle}</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-text-primary">{heroHeading}</h1>
             <p className="text-base leading-relaxed text-text-secondary">{heroIntro}</p>
             <PromptPreview
               prompt={prompt}
@@ -540,7 +548,7 @@ export default async function VideoPage({ params }: PageProps) {
                   className="block rounded-lg border border-hairline bg-bg p-4 transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
                 >
                   <p className="text-xs uppercase tracking-micro text-text-muted">{copy.details.engineLabel}</p>
-                  <p className="mt-1 text-lg font-semibold text-text-primary">{heroTitle}</p>
+                  <p className="mt-1 text-lg font-semibold text-text-primary">{engineLabel}</p>
                   <p className="mt-1 text-sm text-text-secondary">{engineDescription}</p>
                   <span className="mt-3 inline-flex items-center text-sm font-semibold text-accent">
                     {copy.details.engineCta} →

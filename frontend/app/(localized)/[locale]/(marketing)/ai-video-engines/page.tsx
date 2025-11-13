@@ -6,23 +6,36 @@ import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 
 const COMPARE_SLUG_MAP = buildSlugMap('compare');
+const COMPARE_META: Record<AppLocale, { title: string; description: string }> = {
+  en: {
+    title: 'AI Video Engines — Compare Sora, Veo, Pika | MaxVideoAI',
+    description: 'Compare availability, latency, and compliance routes for Sora 2, Veo 3, Pika, and MiniMax engines in Europe.',
+  },
+  fr: {
+    title: 'Comparatif moteurs vidéo IA — Sora, Veo, Pika | MaxVideoAI',
+    description: 'Comparez disponibilité, latence et conformité pour Sora 2, Veo 3, Pika et MiniMax en Europe.',
+  },
+  es: {
+    title: 'Motores de vídeo IA — Compara Sora, Veo, Pika | MaxVideoAI',
+    description: 'Compara disponibilidad, latencia y rutas de cumplimiento para Sora 2, Veo 3, Pika y MiniMax en Europa.',
+  },
+};
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
-  const metadataUrls = buildMetadataUrls(params.locale, COMPARE_SLUG_MAP);
-  const title = 'AI Video Engines — Compare Sora, Veo, Pika | MaxVideoAI';
-  const description =
-    'Compare availability, latency, and compliance routes for Sora 2, Veo 3, Pika, and MiniMax engines in Europe.';
+  const locale = params.locale;
+  const metadataUrls = buildMetadataUrls(locale, COMPARE_SLUG_MAP);
+  const metaCopy = COMPARE_META[locale] ?? COMPARE_META.en;
 
   return {
-    title,
-    description,
+    title: metaCopy.title,
+    description: metaCopy.description,
     alternates: {
       canonical: metadataUrls.canonical,
       languages: metadataUrls.languages,
     },
     openGraph: {
-      title,
-      description,
+      title: metaCopy.title,
+      description: metaCopy.description,
       url: metadataUrls.canonical,
       siteName: 'MaxVideoAI',
       images: [
@@ -30,7 +43,7 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
           url: '/og/price-before.png',
           width: 1200,
           height: 630,
-          alt: title,
+          alt: metaCopy.title,
         },
       ],
       locale: metadataUrls.ogLocale,
@@ -38,8 +51,8 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     },
     twitter: {
       card: 'summary_large_image',
-      title,
-      description,
+      title: metaCopy.title,
+      description: metaCopy.description,
       images: ['/og/price-before.png'],
     },
   };

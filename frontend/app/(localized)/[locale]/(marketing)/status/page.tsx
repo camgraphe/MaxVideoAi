@@ -5,20 +5,36 @@ import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 
 const STATUS_SLUG_MAP = buildSlugMap('status');
+const STATUS_META: Record<AppLocale, { title: string; description: string }> = {
+  en: {
+    title: 'Status — MaxVideoAI',
+    description: 'Live status for engines, queue health, and incidents.',
+  },
+  fr: {
+    title: 'Statut des moteurs — MaxVideoAI',
+    description: 'Statut en direct des moteurs, santé des files d’attente et incidents récents.',
+  },
+  es: {
+    title: 'Estado de motores — MaxVideoAI',
+    description: 'Estado en vivo de los motores, salud de las colas y registro de incidentes.',
+  },
+};
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
-  const metadataUrls = buildMetadataUrls(params.locale, STATUS_SLUG_MAP);
+  const locale = params.locale;
+  const metadataUrls = buildMetadataUrls(locale, STATUS_SLUG_MAP);
+  const metaCopy = STATUS_META[locale] ?? STATUS_META.en;
   return {
-    title: 'Status — MaxVideo AI',
-    description: 'Live status for engines, queue health, and incidents.',
+    title: metaCopy.title,
+    description: metaCopy.description,
     keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
     alternates: {
       canonical: metadataUrls.canonical,
       languages: metadataUrls.languages,
     },
     openGraph: {
-      title: 'Status — MaxVideo AI',
-      description: 'Live and historical uptime for engines and queue processing.',
+      title: metaCopy.title,
+      description: metaCopy.description,
       url: metadataUrls.canonical,
       siteName: 'MaxVideoAI',
       images: [
@@ -34,8 +50,8 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     },
     twitter: {
       card: 'summary_large_image',
-      title: 'Status — MaxVideo AI',
-      description: 'Live status for engines, queue health, and incidents.',
+      title: metaCopy.title,
+      description: metaCopy.description,
       images: ['/og/price-before.png'],
     },
   };

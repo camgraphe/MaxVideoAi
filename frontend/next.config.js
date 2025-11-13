@@ -205,6 +205,17 @@ const nextConfig = {
       ],
     });
 
+    // Ensure login variants stay out of the index regardless of query params
+    rules.push({
+      source: '/login',
+      headers: [
+        {
+          key: 'X-Robots-Tag',
+          value: 'noindex, nofollow',
+        },
+      ],
+    });
+
     // In preview deployments, block indexing site-wide
     if (isPreviewDeployment) {
       rules.push({

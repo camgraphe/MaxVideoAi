@@ -8,6 +8,20 @@ import { buildMetadataUrls } from '@/lib/metadataUrls';
 
 const CONTACT_SLUG_MAP = buildSlugMap('contact');
 const STATUS_SLUG_MAP = buildSlugMap('status');
+const CONTACT_META: Record<AppLocale, { title: string; description: string }> = {
+  en: {
+    title: 'Contact MaxVideoAI — Support & Partnerships',
+    description: 'Reach the MaxVideoAI team for support, partnerships, and enterprise onboarding.',
+  },
+  fr: {
+    title: 'Contact — MaxVideoAI',
+    description: "Contactez l’équipe MaxVideoAI pour le support, les partenariats ou l’onboarding entreprise.",
+  },
+  es: {
+    title: 'Contacto — MaxVideoAI',
+    description: 'Habla con el equipo de MaxVideoAI para soporte, alianzas o incorporación empresarial.',
+  },
+};
 
 function buildLocalizedPath(locale: AppLocale, slug?: string) {
   const prefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
@@ -16,18 +30,20 @@ function buildLocalizedPath(locale: AppLocale, slug?: string) {
 }
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
-  const metadataUrls = buildMetadataUrls(params.locale, CONTACT_SLUG_MAP);
+  const locale = params.locale;
+  const metadataUrls = buildMetadataUrls(locale, CONTACT_SLUG_MAP);
+  const metaCopy = CONTACT_META[locale] ?? CONTACT_META.en;
   return {
-    title: 'Contact — MaxVideo AI',
-    description: 'Reach the MaxVideo AI team for support, partnerships, and enterprise onboarding.',
+    title: metaCopy.title,
+    description: metaCopy.description,
     keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
     alternates: {
       canonical: metadataUrls.canonical,
       languages: metadataUrls.languages,
     },
     openGraph: {
-      title: 'Contact — MaxVideo AI',
-      description: 'Get in touch with MaxVideo AI support or sales.',
+      title: metaCopy.title,
+      description: metaCopy.description,
       url: metadataUrls.canonical,
       siteName: 'MaxVideoAI',
       images: [
@@ -43,8 +59,8 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     },
     twitter: {
       card: 'summary_large_image',
-      title: 'Contact — MaxVideo AI',
-      description: 'Get in touch with MaxVideo AI support or sales.',
+      title: metaCopy.title,
+      description: metaCopy.description,
       images: ['/og/price-before.png'],
     },
   };

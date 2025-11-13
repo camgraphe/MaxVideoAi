@@ -58,11 +58,7 @@
     },
     {
       "label": "Audio",
-      "body": "Voz en off nativa + capas ambientales",
-      "link": {
-        "label": "OpenAI Audio Research",
-        "href": "https://openai.com/blog/sora-2-pro-audio"
-      }
+      "body": "Voz en off nativa + capas ambientales"
     },
     {
       "label": "Entradas",
