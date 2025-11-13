@@ -1,16 +1,17 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import type { AppLocale } from '@/i18n/locales';
 import modelRoster from '@/config/model-roster.json';
-import { BLOG_ENTRIES, normalizePathSegments } from '@/lib/i18n/paths';
 import {
-  HREFLANG_VARIANTS,
-  buildAbsoluteLocalizedUrl,
-  resolveLocalesForEnglishPath,
-} from '@/lib/seo/alternateLocales';
+  BLOG_ENTRIES,
+  BLOG_SLUG_MAP,
+  CONTENT_ROOT,
+  localizePathFromEnglish,
+} from '@/lib/i18n/paths';
 
 export type SitemapEntry = {
   url: string;
   lastModified?: string;
-  alternates?: Record<string, string>;
 };
 
 const RAW_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL || 'https://maxvideoai.com';
@@ -19,39 +20,23 @@ const SITE_URL =
     ? RAW_SITE_URL.replace(/\/+$/, '')
     : `https://${RAW_SITE_URL.replace(/\/+$/, '')}`;
 
-const MARKETING_CORE_PATHS = ['/', '/models', '/pricing', '/examples', '/about', '/contact', '/blog'];
+const LOCALE_SITEMAP_PATHS: Record<AppLocale, string> = {
+  en: '/sitemap-en.xml',
+  fr: '/sitemap-fr.xml',
+  es: '/sitemap-es.xml',
+};
 
-export async function getSitemapEntries(): Promise<SitemapEntry[]> {
-  const entries = new Map<string, string | undefined>();
-  const addPath = (candidate: string, lastmod?: string) => {
-    const normalized = normalizePathSegments(candidate);
-    if (!entries.has(normalized) || lastmod) {
-      entries.set(normalized, lastmod ?? entries.get(normalized));
-    }
-  };
+const LOCALES: AppLocale[] = ['en', 'fr', 'es'];
+const MARKETING_PATHS = ['/', '/pricing', '/examples', '/about', '/contact', '/blog'];
+const MODEL_CONTENT_ROOT = path.join(CONTENT_ROOT, 'models');
 
-  MARKETING_CORE_PATHS.forEach((path) => addPath(path));
-
-  modelRoster.forEach((entry) => {
-    if (entry?.modelSlug) {
-      addPath(`/models/${entry.modelSlug}`);
-    }
-  });
-
-  BLOG_ENTRIES.forEach((entry) => addPath(`/blog/${entry.canonicalSlug}`, entry.lastModified));
-
-  const sitemapEntries: SitemapEntry[] = [];
-  for (const [pathKey, lastmod] of entries.entries()) {
-    const availableLocales = resolveLocalesForEnglishPath(pathKey);
-    sitemapEntries.push({
-      url: buildAbsoluteUrl(pathKey),
-      lastModified: lastmod,
-      alternates: buildAlternateMap(pathKey, availableLocales),
-    });
-  }
-
-  return sitemapEntries;
-}
+export const escapeXml = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 
 function buildAbsoluteUrl(pathname: string): string {
   const normalized = pathname === '/' ? '/' : pathname.startsWith('/') ? pathname : `/${pathname}`;
@@ -61,14 +46,91 @@ function buildAbsoluteUrl(pathname: string): string {
   return `${SITE_URL}${normalized}`;
 }
 
-function buildAlternateMap(englishPath: string, localesForPath: Set<AppLocale>): Record<string, string> {
-  const alternates: Record<string, string> = {};
-  HREFLANG_VARIANTS.forEach((variant) => {
-    if (!localesForPath.has(variant.locale)) {
+function hasModelLocale(slug: string, locale: AppLocale): boolean {
+  if (locale === 'en') {
+    return true;
+  }
+  const candidate = path.join(MODEL_CONTENT_ROOT, locale, `${slug}.json`);
+  return fs.existsSync(candidate);
+}
+
+function hasBlogLocale(canonicalSlug: string, locale: AppLocale): boolean {
+  if (locale === 'en') {
+    return true;
+  }
+  const mapping = BLOG_SLUG_MAP.get(canonicalSlug);
+  return Boolean(mapping?.[locale]);
+}
+
+function formatLastModified(value?: string): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return undefined;
+  }
+  return date.toISOString();
+}
+
+export async function getLocaleSitemapEntries(locale: AppLocale): Promise<SitemapEntry[]> {
+  const seen = new Set<string>();
+  const entries: SitemapEntry[] = [];
+
+  const addLocalizedPath = (englishPath: string, lastModified?: string) => {
+    const localizedPath = localizePathFromEnglish(locale, englishPath);
+    const url = buildAbsoluteUrl(localizedPath);
+    if (seen.has(url)) {
       return;
     }
-    alternates[variant.hreflang] = buildAbsoluteLocalizedUrl(SITE_URL, variant.locale, englishPath);
+    seen.add(url);
+    entries.push({ url, lastModified: formatLastModified(lastModified) });
+  };
+
+  MARKETING_PATHS.forEach((path) => addLocalizedPath(path));
+
+  modelRoster.forEach((model) => {
+    if (!model?.modelSlug) {
+      return;
+    }
+    if (!hasModelLocale(model.modelSlug, locale)) {
+      return;
+    }
+    addLocalizedPath(`/models/${model.modelSlug}`);
   });
-  alternates['x-default'] = buildAbsoluteLocalizedUrl(SITE_URL, 'en', englishPath);
-  return alternates;
+
+  BLOG_ENTRIES.forEach((entry) => {
+    if (!hasBlogLocale(entry.canonicalSlug, locale)) {
+      return;
+    }
+    addLocalizedPath(`/blog/${entry.canonicalSlug}`, entry.lastModified);
+  });
+
+  return entries;
 }
+
+export async function buildLocaleSitemapXml(locale: AppLocale): Promise<string> {
+  const entries = await getLocaleSitemapEntries(locale);
+  const body = entries
+    .map((entry) => {
+      const lastmod = entry.lastModified ? `<lastmod>${escapeXml(entry.lastModified)}</lastmod>` : '';
+      return `  <url>\n    <loc>${escapeXml(entry.url)}</loc>\n${lastmod ? `    ${lastmod}\n` : ''}  </url>`;
+    })
+    .join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>`;
+}
+
+export function buildSitemapIndexXml(): string {
+  const sitemapUrls = LOCALES.map((locale) => buildAbsoluteUrl(LOCALE_SITEMAP_PATHS[locale])).concat(
+    `${SITE_URL}/sitemap-video.xml`
+  );
+
+  const body = sitemapUrls
+    .map((url) => `  <sitemap>\n    <loc>${escapeXml(url)}</loc>\n  </sitemap>`)
+    .join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</sitemapindex>`;
+}
+
+export { LOCALES, LOCALE_SITEMAP_PATHS };
