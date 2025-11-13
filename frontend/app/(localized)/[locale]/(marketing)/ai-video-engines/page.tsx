@@ -1,5 +1,49 @@
+import type { Metadata } from 'next';
+import type { AppLocale } from '@/i18n/locales';
 import { Link } from '@/i18n/navigation';
 import FaqJsonLd from '@/components/FaqJsonLd';
+import { buildSlugMap } from '@/lib/i18nSlugs';
+import { buildMetadataUrls } from '@/lib/metadataUrls';
+
+const COMPARE_SLUG_MAP = buildSlugMap('compare');
+
+export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
+  const metadataUrls = buildMetadataUrls(params.locale, COMPARE_SLUG_MAP);
+  const title = 'AI Video Engines — Compare Sora, Veo, Pika | MaxVideoAI';
+  const description =
+    'Compare availability, latency, and compliance routes for Sora 2, Veo 3, Pika, and MiniMax engines in Europe.';
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: metadataUrls.canonical,
+      languages: metadataUrls.languages,
+    },
+    openGraph: {
+      title,
+      description,
+      url: metadataUrls.canonical,
+      siteName: 'MaxVideoAI',
+      images: [
+        {
+          url: '/og/price-before.png',
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+      locale: metadataUrls.ogLocale,
+      alternateLocale: metadataUrls.alternateOg,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['/og/price-before.png'],
+    },
+  };
+}
 
 const FAQ_ITEMS = [
   {

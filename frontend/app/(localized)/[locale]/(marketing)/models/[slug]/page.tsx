@@ -189,6 +189,8 @@ export default async function ModelDetailPage({ params }: PageParams) {
   const metadataUrls = buildMetadataUrls(activeLocale, detailSlugMap, { availableLocales: publishableLocales });
   const allEngines = listFalEngines();
   const rankEngine = (entry: FalEngineEntry) => (entry.family === engine.family ? 0 : 1);
+  type RelatedCopyContent = { title?: string; subtitle?: string; cta?: string };
+  const relatedContent = (dictionary.models as typeof dictionary.models & { related?: RelatedCopyContent }).related ?? {};
   const relatedEngines = allEngines
     .filter((entry) => entry.modelSlug !== slug)
     .sort((a, b) => {
@@ -200,11 +202,10 @@ export default async function ModelDetailPage({ params }: PageParams) {
     })
     .slice(0, 3);
   const relatedCopy = {
-    title: dictionary.models.related?.title ?? 'Explore other engines',
+    title: relatedContent.title ?? 'Explore other engines',
     subtitle:
-      dictionary.models.related?.subtitle ??
-      'Compare price tiers, latency, and prompt presets across the rest of the catalog.',
-    cta: dictionary.models.related?.cta ?? 'View model →',
+      relatedContent.subtitle ?? 'Compare price tiers, latency, and prompt presets across the rest of the catalog.',
+    cta: relatedContent.cta ?? 'View model →',
   };
 
   const detailCopy: DetailCopy = {

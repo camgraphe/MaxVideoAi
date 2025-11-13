@@ -1,8 +1,8 @@
-import Page from '../(localized)/[locale]/(marketing)/ai-video-engines/page';
+import Page, { generateMetadata } from '../(localized)/[locale]/(marketing)/ai-video-engines/page';
 import LocaleLayout from '../(localized)/[locale]/layout';
 import { DEFAULT_LOCALE } from '../default-locale-wrapper';
 
-export { metadata } from '../(localized)/[locale]/(marketing)/ai-video-engines/page';
+export { generateMetadata };
 
 export default function AiVideoEnginesDefaultPage() {
   return (
