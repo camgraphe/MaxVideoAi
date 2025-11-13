@@ -296,16 +296,21 @@
     }
   },
   "pricing": {
-    "hero": {
-      "title": "Estimez le prix avant de générer. Payez uniquement ce que vous exécutez. Commencez avec des Crédits de démarrage (10 $). Sans abonnement. Aucun engagement.",
-      "subtitle": "Chaque estimation se met à jour en temps réel lorsque vous ajustez les moteurs, les durées et les sorties. Les soldes des portefeuilles se synchronisent entre les équipes avec des vérifications d’état quotidiennes.",
-      "link": {
-        "before": "Comparez les tarifs des moteurs dans notre ",
-        "label": "comparatif vidéo IA",
-        "after": "."
-      }
-    },
-    "estimator": {
+  "hero": {
+    "title": "Estimez le prix avant de générer. Payez uniquement ce que vous exécutez. Commencez avec des Crédits de démarrage (10 $). Sans abonnement. Aucun engagement.",
+    "subtitle": "Chaque estimation se met à jour en temps réel lorsque vous ajustez les moteurs, les durées et les sorties. Les soldes des portefeuilles se synchronisent entre les équipes avec des vérifications d’état quotidiennes.",
+    "link": {
+      "before": "Comparez les tarifs des moteurs dans notre ",
+      "label": "comparatif vidéo IA",
+      "after": "."
+    }
+  },
+  "calculator": {
+    "title": "Estimer avec le calculateur",
+    "description": "Lancez des estimations détaillées par moteur, durée et résolution avant d’ajouter des crédits.",
+    "cta": "Ouvrir le calculateur"
+  },
+  "estimator": {
       "title": "Estimateur de coûts",
       "subtitle": "Choisissez le moteur, la durée et la résolution pour voir le prix avant de mettre le rendu en file d'attente. Facturé uniquement si le rendu réussit.",
       "walletLink": "Vous voulez une version publique pour les clients ?",

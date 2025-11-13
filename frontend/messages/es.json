@@ -296,16 +296,21 @@
     }
   },
   "pricing": {
-    "hero": {
-      "title": "Consulta el precio antes de generar. Paga solo por lo que ejecutes. Empieza con Créditos iniciales ($10). Sin suscripción. Sin compromiso.",
-      "subtitle": "Cada estimación se actualiza en tiempo real al ajustar motores, duraciones y salidas. Los saldos del monedero se sincronizan entre equipos con comprobaciones diarias de estado.",
-      "link": {
-        "before": "Compara los precios entre motores en nuestra ",
-        "label": "guía comparativa de vídeo IA",
-        "after": "."
-      }
-    },
-    "estimator": {
+  "hero": {
+    "title": "Consulta el precio antes de generar. Paga solo por lo que ejecutes. Empieza con Créditos iniciales ($10). Sin suscripción. Sin compromiso.",
+    "subtitle": "Cada estimación se actualiza en tiempo real al ajustar motores, duraciones y salidas. Los saldos del monedero se sincronizan entre equipos con comprobaciones diarias de estado.",
+    "link": {
+      "before": "Compara los precios entre motores en nuestra ",
+      "label": "guía comparativa de vídeo IA",
+      "after": "."
+    }
+  },
+  "calculator": {
+    "title": "Estimar con la calculadora",
+    "description": "Realiza estimaciones detalladas por motor, duración y resolución antes de recargar tu monedero.",
+    "cta": "Abrir la calculadora"
+  },
+  "estimator": {
       "title": "Calculadora de costes",
       "subtitle": "Elige el motor, la duración y la resolución para ver el precio antes de poner el render en cola. Se cobra solo si tiene éxito.",
       "walletLink": "¿Quieres una versión pública para clientes?",
