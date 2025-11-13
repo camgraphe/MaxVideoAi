@@ -38,39 +38,6 @@ const nextConfig = {
     },
   },
   async redirects() {
-    const localeSafeRedirects = [
-      {
-        source: '/fr/galerie',
-        destination: '/fr/examples',
-        permanent: true,
-      },
-      {
-        source: '/fr/comparatif',
-        destination: '/fr/ai-video-engines',
-        permanent: true,
-      },
-      {
-        source: '/fr/tarifs',
-        destination: '/fr/pricing',
-        permanent: true,
-      },
-      {
-        source: '/fr/modeles/:slug*',
-        destination: '/fr/models/:slug*',
-        permanent: true,
-      },
-      {
-        source: '/es/precios',
-        destination: '/es/pricing',
-        permanent: true,
-      },
-      {
-        source: '/es/modelos/:slug*',
-        destination: '/es/models/:slug*',
-        permanent: true,
-      },
-    ];
-
     return [
       {
         source: '/calculator',
@@ -217,7 +184,6 @@ const nextConfig = {
         destination: '/:path*',
         permanent: true,
       },
-      ...localeSafeRedirects,
     ];
   },
   async headers() {
