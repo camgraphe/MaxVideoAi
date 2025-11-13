@@ -160,6 +160,10 @@ export default async function ModelsPage() {
   const engines = priorityOrder
     .map((slug) => engineIndex.get(slug))
     .filter((entry): entry is FalEngineEntry => Boolean(entry));
+  const quickLinkSlugs = ['sora-2', 'sora-2-pro', 'veo-3-1', 'pika-text-to-video', 'minimax-hailuo-02-text'];
+  const quickLinks = quickLinkSlugs
+    .map((slug) => engineIndex.get(slug))
+    .filter((entry): entry is FalEngineEntry => Boolean(entry));
 
   return (
     <div className="mx-auto max-w-5xl px-4 pb-6 pt-16 sm:px-6 lg:px-8">
@@ -201,6 +205,24 @@ export default async function ModelsPage() {
             {introCta.after}
           </p>
         </div>
+
+        {quickLinks.length ? (
+          <div className="rounded-3xl border border-hairline bg-white/80 p-4 shadow-card">
+            <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Popular engines</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {quickLinks.map((entry) => (
+                <Link
+                  key={entry.modelSlug}
+                  href={{ pathname: '/models/[slug]', params: { slug: entry.modelSlug } }}
+                  className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary transition hover:border-accent hover:text-accent"
+                  aria-label={`View ${entry.marketingName ?? entry.engine.label}`}
+                >
+                  {entry.marketingName ?? entry.engine.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </section>
       <section className="mt-12 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
         {engines.map((engine) => {

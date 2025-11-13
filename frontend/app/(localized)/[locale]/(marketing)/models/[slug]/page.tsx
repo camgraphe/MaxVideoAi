@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
-import { listFalEngines, getFalEngineBySlug } from '@/config/falEngines';
+import { listFalEngines, getFalEngineBySlug, type FalEngineEntry } from '@/config/falEngines';
 import type { AppLocale } from '@/i18n/locales';
 import { locales, localePathnames } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
@@ -187,6 +187,25 @@ export default async function ModelDetailPage({ params }: PageParams) {
   const detailSlugMap = buildDetailSlugMap(slug);
   const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${slug}`));
   const metadataUrls = buildMetadataUrls(activeLocale, detailSlugMap, { availableLocales: publishableLocales });
+  const allEngines = listFalEngines();
+  const rankEngine = (entry: FalEngineEntry) => (entry.family === engine.family ? 0 : 1);
+  const relatedEngines = allEngines
+    .filter((entry) => entry.modelSlug !== slug)
+    .sort((a, b) => {
+      const familyDiff = rankEngine(a) - rankEngine(b);
+      if (familyDiff !== 0) {
+        return familyDiff;
+      }
+      return (a.marketingName ?? a.engine.label).localeCompare(b.marketingName ?? b.engine.label);
+    })
+    .slice(0, 3);
+  const relatedCopy = {
+    title: dictionary.models.related?.title ?? 'Explore other engines',
+    subtitle:
+      dictionary.models.related?.subtitle ??
+      'Compare price tiers, latency, and prompt presets across the rest of the catalog.',
+    cta: dictionary.models.related?.cta ?? 'View model →',
+  };
 
   const detailCopy: DetailCopy = {
     ...DEFAULT_DETAIL_COPY,
@@ -495,6 +514,35 @@ export default async function ModelDetailPage({ params }: PageParams) {
           </div>
         </section>
       )}
+
+      {relatedEngines.length ? (
+        <section className="mt-12">
+          <div className="mb-6 space-y-2">
+            <h2 className="text-xl font-semibold text-text-primary">{relatedCopy.title}</h2>
+            <p className="text-sm text-text-secondary">{relatedCopy.subtitle}</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {relatedEngines.map((candidate) => {
+              const label = candidate.marketingName ?? candidate.engine.label;
+              return (
+                <article key={candidate.modelSlug} className="rounded-2xl border border-hairline bg-white/90 p-5 shadow-card">
+                  <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{candidate.brandId}</p>
+                  <h3 className="mt-2 text-lg font-semibold text-text-primary">{label}</h3>
+                  <p className="mt-2 text-sm text-text-secondary">
+                    {candidate.seo?.description ?? 'Latency, pricing, and prompt guides are documented on the detail page.'}
+                  </p>
+                  <Link
+                    href={{ pathname: '/models/[slug]', params: { slug: candidate.modelSlug } }}
+                    className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accentSoft"
+                  >
+                    {relatedCopy.cta} <span aria-hidden>→</span>
+                  </Link>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
 
       <footer className="mt-10 flex flex-wrap gap-3">
         <Link

@@ -179,6 +179,10 @@ export default async function BlogPostPage({ params }: { params: Params }) {
   const canonicalUrl = metadataUrls.canonical;
   const publishedIso = toIsoDate(post.date) ?? post.date;
   const modifiedIso = toIsoDate(post.updatedAt ?? post.date) ?? publishedIso;
+  const relatedPool = (await getContentEntries(`content/${locale}/blog`)).filter((entry) => entry.slug !== post.slug);
+  const relatedPosts = relatedPool
+    .sort((a, b) => Date.parse(b.date ?? '') - Date.parse(a.date ?? ''))
+    .slice(0, 3);
 
   const articleSchema = {
     '@context': 'https://schema.org',
@@ -258,6 +262,36 @@ export default async function BlogPostPage({ params }: { params: Params }) {
 
         <div className="blog-prose px-6 py-10 sm:px-10" dangerouslySetInnerHTML={{ __html: post.content }} />
       </article>
+
+      {relatedPosts.length ? (
+        <section className="mt-12 space-y-4">
+          <div>
+            <h2 className="text-xl font-semibold text-text-primary">Related reading</h2>
+            <p className="text-sm text-text-secondary">More launch notes and engine breakdowns curated for you.</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {relatedPosts.map((related) => (
+              <article key={related.slug} className="rounded-2xl border border-hairline bg-white/90 p-5 shadow-card">
+                <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
+                  {new Date(related.date).toLocaleDateString(localeDateMap[locale], {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </p>
+                <h3 className="mt-2 text-base font-semibold text-text-primary">{related.title}</h3>
+                <p className="mt-2 text-sm text-text-secondary">{related.description}</p>
+                <Link
+                  href={{ pathname: '/blog/[slug]', params: { slug: related.slug } }}
+                  className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accentSoft"
+                >
+                  Read article <span aria-hidden>→</span>
+                </Link>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <Script
         id={`article-${locale}-${post.slug}-jsonld`}
