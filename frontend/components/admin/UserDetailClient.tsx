@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo } from 'react';
+import type { FormEvent } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import useSWR from 'swr';
 
@@ -94,9 +95,19 @@ type UserResponse =
 
 export default function UserDetailClient({ userId }: { userId: string }) {
   const { data: userData, error: userError } = useSWR<UserResponse>(`/api/admin/users/${userId}`, fetcher);
-  const { data: walletData } = useSWR<WalletResponse>(`/api/admin/users/${userId}/wallet`, fetcher);
-  const { data: receiptsData } = useSWR<ReceiptsResponse>(`/api/admin/users/${userId}/receipts?limit=25`, fetcher);
+  const {
+    data: walletData,
+    mutate: mutateWallet,
+  } = useSWR<WalletResponse>(`/api/admin/users/${userId}/wallet`, fetcher);
+  const {
+    data: receiptsData,
+    mutate: mutateReceipts,
+  } = useSWR<ReceiptsResponse>(`/api/admin/users/${userId}/receipts?limit=25`, fetcher);
   const { data: jobsData } = useSWR<JobsResponse>(`/api/admin/users/${userId}/jobs?limit=20`, fetcher);
+  const [creditAmount, setCreditAmount] = useState('');
+  const [creditNote, setCreditNote] = useState('');
+  const [creditStatus, setCreditStatus] = useState<{ variant: 'success' | 'error'; message: string } | null>(null);
+  const [creditPending, setCreditPending] = useState(false);
 
   const jobsError = jobsData && jobsData.ok === false ? jobsData.error ?? jobsData.message ?? 'Failed to load jobs.' : null;
   const receiptsError =
@@ -112,6 +123,46 @@ export default function UserDetailClient({ userId }: { userId: string }) {
     [jobEntries]
   );
   const receiptEntries = receiptsData && receiptsData.ok ? receiptsData.receipts : [];
+
+  const handleManualCredit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (creditPending) return;
+
+    const normalizedInput = Number.parseFloat(creditAmount);
+    if (!Number.isFinite(normalizedInput) || normalizedInput <= 0) {
+      setCreditStatus({ variant: 'error', message: 'Enter a valid USD amount greater than zero.' });
+      return;
+    }
+    const amountCents = Math.round(normalizedInput * 100);
+    if (!Number.isFinite(amountCents) || amountCents <= 0) {
+      setCreditStatus({ variant: 'error', message: 'Amount must be at least $0.01.' });
+      return;
+    }
+
+    const note = creditNote.trim();
+    setCreditPending(true);
+    setCreditStatus(null);
+    try {
+      const response = await fetch(`/api/admin/users/${userId}/wallet`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amountCents, note: note.length ? note : undefined }),
+      });
+      const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.error ?? 'Manual credit failed.');
+      }
+      setCreditStatus({ variant: 'success', message: 'Credits added successfully.' });
+      setCreditAmount('');
+      setCreditNote('');
+      await Promise.all([mutateWallet(), mutateReceipts()]);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Manual credit failed.';
+      setCreditStatus({ variant: 'error', message });
+    } finally {
+      setCreditPending(false);
+    }
+  };
 
   if (userError) {
     return (
@@ -205,6 +256,52 @@ export default function UserDetailClient({ userId }: { userId: string }) {
                   </div>
                 </div>
               ) : null}
+              <div className="mt-6 border-t border-hairline pt-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-tertiary">Manual credit</p>
+                <p className="mt-1 text-xs text-text-tertiary">
+                  Issue a USD wallet credit to this user. Appears instantly in transaction history.
+                </p>
+                <form className="mt-3 space-y-3" onSubmit={handleManualCredit}>
+                  <label className="block text-xs font-medium uppercase tracking-[0.16em] text-text-secondary">
+                    Amount (USD)
+                    <input
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      value={creditAmount}
+                      onChange={(event) => setCreditAmount(event.target.value)}
+                      placeholder="250"
+                      className="mt-1 w-full rounded-lg border border-hairline bg-bg px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
+                    />
+                  </label>
+                  <label className="block text-xs font-medium uppercase tracking-[0.16em] text-text-secondary">
+                    Note (optional)
+                    <input
+                      type="text"
+                      value={creditNote}
+                      onChange={(event) => setCreditNote(event.target.value)}
+                      placeholder="Welcome bonus"
+                      className="mt-1 w-full rounded-lg border border-hairline bg-bg px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
+                    />
+                  </label>
+                  <button
+                    type="submit"
+                    disabled={creditPending || !walletData}
+                    className="w-full rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-white transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {creditPending ? 'Adding credits…' : 'Add credits'}
+                  </button>
+                </form>
+                {creditStatus ? (
+                  <p
+                    className={`mt-2 text-xs font-medium ${
+                      creditStatus.variant === 'success' ? 'text-green-700' : 'text-rose-600'
+                    }`}
+                  >
+                    {creditStatus.message}
+                  </p>
+                ) : null}
+              </div>
             </div>
           ) : (
             <p className="mt-4 text-sm text-text-secondary">Loading…</p>

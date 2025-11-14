@@ -596,3 +596,73 @@ export async function issueManualWalletRefundByReceipt(params: {
     throw error;
   }
 }
+
+
+export async function issueManualWalletTopUp(params: {
+  userId: string;
+  amountCents: number;
+  currency?: string | null;
+  description?: string | null;
+  adminUserId: string;
+  adminEmail?: string | null;
+  note?: string | null;
+}): Promise<{ receiptId: number; createdAt: string; amountCents: number; currency: string }> {
+  if (!process.env.DATABASE_URL) {
+    throw new Error('Database unavailable');
+  }
+
+  const targetUserId = params.userId.trim();
+  if (!targetUserId) {
+    throw new Error('Missing userId');
+  }
+
+  const normalizedAmount = Math.round(Number(params.amountCents ?? 0));
+  if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
+    throw new Error('Invalid amountCents');
+  }
+
+  await ensureBillingSchema();
+
+  const currency = normalizeCurrency(params.currency ?? 'USD');
+  const metadata: Record<string, unknown> = {
+    reason: 'manual_admin_topup',
+    admin_user_id: params.adminUserId,
+    admin_email: params.adminEmail ?? null,
+  };
+  if (params.note && params.note.trim().length) {
+    metadata.note = params.note.trim();
+  }
+
+  const description = params.description && params.description.trim().length
+    ? params.description.trim()
+    : `Manual wallet credit issued by ${params.adminEmail ?? params.adminUserId}`;
+
+  const inserted = await query<{ id: number; created_at: string; amount_cents: number | string | null; currency: string | null }>(
+    `INSERT INTO app_receipts (
+       user_id,
+       type,
+       amount_cents,
+       currency,
+       description,
+       metadata
+     )
+     VALUES (
+       $1,
+       'topup',
+       $2,
+       $3,
+       $4,
+       $5::jsonb
+     )
+     RETURNING id, created_at, amount_cents, currency`,
+    [targetUserId, normalizedAmount, currency, description, JSON.stringify(metadata)]
+  );
+
+  const row = inserted.at(0);
+  return {
+    receiptId: row?.id ?? 0,
+    createdAt: row?.created_at ?? new Date().toISOString(),
+    amountCents: coerceNumber(row?.amount_cents ?? normalizedAmount),
+    currency: normalizeCurrency(row?.currency ?? currency),
+  };
+}
