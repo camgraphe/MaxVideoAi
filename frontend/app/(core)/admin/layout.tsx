@@ -49,6 +49,10 @@ const NAV_SECTIONS: Array<{
       { label: 'Consent exports (CSV)', href: '/admin/consents.csv' },
     ],
   },
+  {
+    title: 'Site',
+    items: [{ label: 'Marketing homepage', href: '/' }],
+  },
 ];
 
 export default async function AdminLayout({ children }: AdminLayoutProps) {
