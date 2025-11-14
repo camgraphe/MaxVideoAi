@@ -13,7 +13,7 @@ export default async function AdminHomepagePage() {
     notFound();
   }
 
-  const { hero, gallery } = await getHomepageSlots();
+  const { hero } = await getHomepageSlots();
 
   const mapSlot = (slot: HomepageSlotWithVideo) => ({
     sectionId: slot.sectionId,
@@ -36,17 +36,14 @@ export default async function AdminHomepagePage() {
   });
 
   const heroSlots = hero.map(mapSlot);
-  const gallerySlots = gallery.map(mapSlot);
 
   return (
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-semibold text-text-primary">Homepage programming</h1>
-        <p className="mt-2 text-sm text-text-secondary">
-          Pick the hero highlights and featured gallery clips shown on the marketing homepage.
-        </p>
+        <p className="mt-2 text-sm text-text-secondary">Pick the hero highlights shown on the marketing homepage.</p>
       </header>
-      <HomepageVideoManager initialHero={heroSlots} initialGallery={gallerySlots} />
+      <HomepageVideoManager initialHero={heroSlots} />
     </div>
   );
 }
