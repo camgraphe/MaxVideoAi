@@ -39,7 +39,6 @@ const NAV_SECTIONS: Array<{
       { label: 'Pricing rules', href: '/admin/pricing' },
       { label: 'Job audit', href: '/admin/jobs' },
       { label: 'Transactions', href: '/admin/transactions' },
-      { label: 'Payouts', href: '/admin/payouts' },
     ],
   },
   {

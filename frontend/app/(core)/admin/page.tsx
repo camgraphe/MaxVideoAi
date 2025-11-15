@@ -10,11 +10,6 @@ const SECTION_GROUPS: Array<{
     title: 'Curation',
     items: [
       {
-        title: 'Admin overview',
-        description: 'Snapshots of recent activity and quick links to high-signal queues.',
-        href: '/admin',
-      },
-      {
         title: 'Moderation queue',
         description: 'Review pending uploads, visibility flags, and indexation decisions.',
         href: '/admin/moderation',
@@ -58,11 +53,6 @@ const SECTION_GROUPS: Array<{
         title: 'Transactions',
         description: 'Inspect charges and refunds, issue manual wallet credits.',
         href: '/admin/transactions',
-      },
-      {
-        title: 'Payouts',
-        description: 'Monitor vendor balances, view pending transfers, and trigger payouts.',
-        href: '/admin/payouts',
       },
     ],
   },
