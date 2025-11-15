@@ -8,7 +8,7 @@
   },
   "hero": {
     "title": "Veo 3.1 – Advanced Text-to-Video & Native Audio Engine",
-    "intro": "Veo 3.1 is DeepMind’s premium video-generation engine routed through MaxVideoAI for reference-to-video runs. Focus on high-fidelity 8-second sequences with native sound design—voice-over, ambient layers, synced motion—and use up to four reference stills to lock identity.",
+    "intro": "Veo 3.1 is DeepMind’s premium video-generation engine routed through MaxVideoAI for both direct prompts and reference-to-video runs. Swap between text briefs and multi-image guidance, keep eight-second sequences cinematic, and lean on native sound design—voice-over, ambient layers, synced motion.",
     "ctaPrimary": {
       "label": "Generate with Veo 3.1",
       "href": "/app?engine=veo-3-1"
@@ -28,7 +28,7 @@
       }
     ]
   },
-  "overview": "Route Veo 3.1 through MaxVideoAI to deliver polished hero shots with native audio. Reference-to-video fidelity keeps wardrobe and lighting locked while you stack 8-second clips for longer edits.",
+  "overview": "Route Veo 3.1 through MaxVideoAI to deliver polished hero shots with native audio. Start from a pure text prompt or promote a bank of stills for reference-to-video fidelity—the same engine handles both so you can iterate faster.",
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
@@ -62,7 +62,7 @@
     },
     {
       "label": "Inputs",
-      "body": "Reference images (1–4) plus prompts to animate subjects",
+      "body": "Text prompt only or add 1–4 reference images to lock wardrobe & lighting",
       "link": {
         "label": "Google DeepMind",
         "href": "https://deepmind.google/models/veo/?utm_source=chatgpt.com"

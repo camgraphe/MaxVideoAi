@@ -52,6 +52,16 @@
     "logoPolicy": "textOnly"
   },
   {
+    "engineId": "veo-3-1-first-last",
+    "marketingName": "Google Veo 3.1 First/Last Frame",
+    "brandId": "google-veo",
+    "modelSlug": "veo-3-1-first-last",
+    "family": "veo",
+    "versionLabel": "3.1",
+    "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
     "engineId": "pika-text-to-video",
     "marketingName": "Pika 2.2 Text to Video",
     "brandId": "pika",

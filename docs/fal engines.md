@@ -798,68 +798,38 @@ console.log(result.requestId);
 
 # Veo 3.1 Fast
 
-> Generate videos from a first/last frame using Google's Veo 3.1 Fast
+> Generate videos from a single reference image using Google's Veo 3.1 Fast
 
 
 ## Overview
 
-- **Endpoint**: `https://fal.run/fal-ai/veo3.1/fast/first-last-frame-to-video`
-- **Model ID**: `fal-ai/veo3.1/fast/first-last-frame-to-video`
+- **Endpoint**: `https://fal.run/fal-ai/veo3.1/fast/image-to-video`
+- **Model ID**: `fal-ai/veo3.1/fast/image-to-video`
 - **Category**: image-to-video
 - **Kind**: inference
 
 
 ## API Information
 
-This model can be used via our HTTP API or more conveniently via our client libraries.
-See the input and output schema below, as well as the usage examples.
+This model can be used via our HTTP API or client libraries. See the schema below plus usage examples.
 
 
 ### Input Schema
 
-The API accepts the following input parameters:
-
-
-- **`first_frame_url`** (`string`, _required_):
-  URL of the first frame of the video
-  - Examples: "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-1.jpeg"
-
-- **`last_frame_url`** (`string`, _required_):
-  URL of the last frame of the video
-  - Examples: "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-2.jpeg"
-
-- **`prompt`** (`string`, _required_):
-  The text prompt describing the video you want to generate
-  - Examples: "A woman looks into the camera, breathes in, then exclaims energetically, \"have you guys checked out Veo3.1 First-Last-Frame-to-Video on Fal? It's incredible!\""
-
-- **`duration`** (`DurationEnum`, _optional_):
-  The duration of the generated video in seconds Default value: `"8s"`
-  - Default: `"8s"`
-  - Options: `"8s"`
-
-- **`aspect_ratio`** (`AspectRatioEnum`, _optional_):
-  Aspect ratio of the generated video Default value: `"auto"`
-  - Default: `"auto"`
-  - Options: `"auto"`, `"9:16"`, `"16:9"`, `"1:1"`
-
-- **`resolution`** (`ResolutionEnum`, _optional_):
-  Resolution of the generated video Default value: `"720p"`
-  - Default: `"720p"`
-  - Options: `"720p"`, `"1080p"`
-
-- **`generate_audio`** (`boolean`, _optional_):
-  Whether to generate audio for the video. If false, %33 less credits will be used. Default value: `true`
-  - Default: `true`
-
+- **`prompt`** (`string`, _required_): Describe how the still image should animate.
+- **`image_url`** (`string`, _required_): URL to the source image (720p+ recommended).
+- **`duration`** (`DurationEnum`, _optional_): `"4s"`, `"6s"`, or `"8s"` (default `"8s"`).
+- **`aspect_ratio`** (`AspectRatioEnum`, _optional_): `"auto"` (default), `"9:16"`, `"16:9"`, `"1:1"`.
+- **`resolution`** (`ResolutionEnum`, _optional_): `"720p"` (default) or `"1080p"`.
+- **`generate_audio`** (`boolean`, _optional_): Defaults to `true`. Disable to save ~33% credits.
 
 
 **Required Parameters Example**:
 
 ```json
 {
-  "first_frame_url": "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-1.jpeg",
-  "last_frame_url": "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-2.jpeg",
-  "prompt": "A woman looks into the camera, breathes in, then exclaims energetically, \"have you guys checked out Veo3.1 First-Last-Frame-to-Video on Fal? It's incredible!\""
+  "prompt": "A woman looks into the camera, smiles, then exclaims: \"have you seen Veo 3.1 Fast image-to-video on Fal?\"",
+  "image_url": "https://storage.googleapis.com/falserverless/example_inputs/veo3-i2v-input.png"
 }
 ```
 
@@ -867,9 +837,8 @@ The API accepts the following input parameters:
 
 ```json
 {
-  "first_frame_url": "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-1.jpeg",
-  "last_frame_url": "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-2.jpeg",
-  "prompt": "A woman looks into the camera, breathes in, then exclaims energetically, \"have you guys checked out Veo3.1 First-Last-Frame-to-Video on Fal? It's incredible!\"",
+  "prompt": "A woman looks into the camera, smiles, then exclaims: \"have you seen Veo 3.1 Fast image-to-video on Fal?\"",
+  "image_url": "https://storage.googleapis.com/falserverless/example_inputs/veo3-i2v-input.png",
   "duration": "8s",
   "aspect_ratio": "auto",
   "resolution": "720p",
@@ -907,7 +876,7 @@ The API returns the following output format:
 | **Unit** | per second |
 | **Price** | $0.10/s (audio off) / $0.15/s (audio on) |
 | **Notes** | Listed on fal.ai model page |
-| **Source** | [Fal.ai – Veo 3.1 Fast First-Last-Frame](https://fal.ai/models/fal-ai/veo3.1/fast/first-last-frame-to-video) |
+| **Source** | [Fal.ai – Veo 3.1 Fast Image-to-Video](https://fal.ai/models/fal-ai/veo3.1/fast/image-to-video) |
 
 ## Usage Examples
 
@@ -915,13 +884,12 @@ The API returns the following output format:
 
 ```bash
 curl --request POST \
-  --url https://fal.run/fal-ai/veo3.1/fast/first-last-frame-to-video \
+  --url https://fal.run/fal-ai/veo3.1/fast/image-to-video \
   --header "Authorization: Key $FAL_KEY" \
   --header "Content-Type: application/json" \
   --data '{
-     "first_frame_url": "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-1.jpeg",
-     "last_frame_url": "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-2.jpeg",
-     "prompt": "A woman looks into the camera, breathes in, then exclaims energetically, \"have you guys checked out Veo3.1 First-Last-Frame-to-Video on Fal? It's incredible!\""
+     "prompt": "A woman looks into the camera, smiles, then shouts: \"have you tried Veo3.1 Fast image-to-video on Fal?\"",
+     "image_url": "https://storage.googleapis.com/falserverless/example_inputs/veo3-i2v-input.png"
    }'
 ```
 
@@ -944,11 +912,10 @@ def on_queue_update(update):
            print(log["message"])
 
 result = fal_client.subscribe(
-    "fal-ai/veo3.1/fast/first-last-frame-to-video",
+    "fal-ai/veo3.1/fast/image-to-video",
     arguments={
-        "first_frame_url": "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-1.jpeg",
-        "last_frame_url": "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-2.jpeg",
-        "prompt": "A woman looks into the camera, breathes in, then exclaims energetically, \"have you guys checked out Veo3.1 First-Last-Frame-to-Video on Fal? It's incredible!\""
+        "prompt": "A woman looks into the camera, smiles, then shouts: \"have you tried Veo3.1 Fast image-to-video on Fal?\"",
+        "image_url": "https://storage.googleapis.com/falserverless/example_inputs/veo3-i2v-input.png"
     },
     with_logs=True,
     on_queue_update=on_queue_update,
@@ -969,11 +936,10 @@ Then use the API client to make requests:
 ```javascript
 import { fal } from "@fal-ai/client";
 
-const result = await fal.subscribe("fal-ai/veo3.1/fast/first-last-frame-to-video", {
+const result = await fal.subscribe("fal-ai/veo3.1/fast/image-to-video", {
   input: {
-    first_frame_url: "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-1.jpeg",
-    last_frame_url: "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-2.jpeg",
-    prompt: "A woman looks into the camera, breathes in, then exclaims energetically, \"have you guys checked out Veo3.1 First-Last-Frame-to-Video on Fal? It's incredible!\""
+    prompt: "A woman looks into the camera, smiles, then shouts: \"have you tried Veo3.1 Fast image-to-video on Fal?\"",
+    image_url: "https://storage.googleapis.com/falserverless/example_inputs/veo3-i2v-input.png"
   },
   logs: true,
   onQueueUpdate: (update) => {
@@ -991,9 +957,9 @@ console.log(result.requestId);
 
 ### Documentation
 
-- [Model Playground](https://fal.ai/models/fal-ai/veo3.1/fast/first-last-frame-to-video)
-- [API Documentation](https://fal.ai/models/fal-ai/veo3.1/fast/first-last-frame-to-video/api)
-- [OpenAPI Schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=fal-ai/veo3.1/fast/first-last-frame-to-video)
+- [Model Playground](https://fal.ai/models/fal-ai/veo3.1/fast/image-to-video)
+- [API Documentation](https://fal.ai/models/fal-ai/veo3.1/fast/image-to-video/api)
+- [OpenAPI Schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=fal-ai/veo3.1/fast/image-to-video)
 
 ### fal.ai Platform
 

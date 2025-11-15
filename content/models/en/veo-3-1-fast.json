@@ -8,7 +8,7 @@
   },
   "hero": {
     "title": "Veo 3.1 Fast – Faster AI Video with Optional Audio",
-    "intro": "Veo 3.1 Fast brings DeepMind’s cinematic controls to a lower price point. You keep the prompt fidelity and camera presets from Veo 3.1, choose up to 8-second clips, and toggle native audio on or off for agile testing.",
+    "intro": "Veo 3.1 Fast brings DeepMind’s cinematic controls to a lower price point. Start from a text prompt or hand it a single reference image, keep 8-second clips moving smoothly, and toggle native audio on or off for agile testing.",
     "ctaPrimary": {
       "label": "Try Veo 3.1 Fast",
       "href": "/app?engine=veo-3-1-fast"
@@ -28,7 +28,7 @@
       }
     ]
   },
-  "overview": "Balance quality and speed with Veo 3.1 Fast. It keeps DeepMind’s framing controls while cutting latency and cost, and optional native audio lets you add ambience without waiting for full Veo 3.1 runs.",
+  "overview": "Balance quality and speed with Veo 3.1 Fast. Use it as a pure text-to-video workhorse or animate a single still—either way you keep DeepMind’s framing controls while cutting latency, cost, and adding optional native audio.",
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
@@ -66,11 +66,11 @@
     },
     {
       "label": "Inputs",
-      "body": "Text prompts only—ideal for quick iteration"
+      "body": "Text prompt alone or a single reference image to animate"
     },
     {
       "label": "Modes",
-      "body": "Text-to-video with audio toggle; no reference images"
+      "body": "Text-to-video plus single-image-to-video"
     },
     {
       "label": "Pricing",
@@ -110,6 +110,11 @@
       "title": "Misty forest zoom",
       "prompt": "Misty forest at dawn, camera slowly zooms toward a mossy rock while sun rays cut through trees, ambient birdsong and no dialogue.",
       "notes": "Enable audio for subtle ambience or switch it off for silent loops."
+    },
+    {
+      "title": "Still-to-video animation",
+      "prompt": "Animate a lifestyle product photo into an eight-second hero shot, gentle dolly forward, confident VO: “Veo 3.1 Fast.”",
+      "notes": "Upload a single reference image and guide the motion via the prompt."
     }
   ],
   "faqs": [

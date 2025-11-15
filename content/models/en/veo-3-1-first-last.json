@@ -1,0 +1,95 @@
+{
+  "marketingName": "Google Veo 3.1 First/Last Frame",
+  "versionLabel": "3.1",
+  "seo": {
+    "title": "Veo 3.1 First/Last – Bridge Any Two Frames with Native Audio",
+    "description": "Upload a starting frame and an ending frame, write a brief, and let Veo 3.1 animate the motion in-between. Optional audio, 4–8 second clips, pay-as-you-go.",
+    "image": "/hero/veo3.jpg"
+  },
+  "hero": {
+    "title": "Veo 3.1 First/Last – Seamless Bridges Between Keyframes",
+    "intro": "Pick two still frames—the opening and closing beat—then let Veo 3.1 or Veo 3.1 Fast animate the transition. Keep wardrobe, lighting, and framing locked while the engine interpolates motion, adds camera moves, and optionally layers in native audio.",
+    "ctaPrimary": {
+      "label": "Animate with Veo First/Last",
+      "href": "/app?engine=veo-3-1-first-last"
+    },
+    "secondaryLinks": [
+      { "label": "See all engines", "href": "/models" },
+      { "label": "Explore workflows", "href": "/workflows" },
+      { "label": "Check live pricing", "href": "/generate" }
+    ]
+  },
+  "overview": "Veo 3.1 First/Last turns static frames into polished motion. Upload the bookends of your shot, describe the action, and choose Standard (Veo 3.1) for maximum fidelity or Fast (Veo 3.1 Fast) for cheaper previews. Each run produces up to eight seconds with optional native audio and supports 9:16, 16:9, or square outputs.",
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      "Bridge storyboards or previz stills into short hero clips",
+      "Replace expensive pickup shots with matched transitions",
+      "Add motion between key art variations for product launches",
+      "Iterate fast with Fast mode, then upgrade to Standard for final delivery"
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    {
+      "label": "Inputs",
+      "body": "Two frames (start + end) plus a descriptive prompt"
+    },
+    {
+      "label": "Durations",
+      "body": "4s, 6s, or 8s clips with native audio toggle"
+    },
+    {
+      "label": "Resolutions",
+      "body": "720p or 1080p in 16:9, 9:16, 1:1, or auto crop"
+    },
+    {
+      "label": "Modes",
+      "body": "Standard (Veo 3.1) for fidelity, Fast (Veo 3.1 Fast) for rapid iteration"
+    }
+  ],
+  "promptStructure": {
+    "title": "Prompt structure",
+    "quote": "“Start frame: calm living room set. End frame: same scene with neon lighting as the host lifts a product. Bridge with a whip-pan and upbeat VO: ‘Powered by Veo 3.1 First/Last.’”",
+    "description": "Describe:",
+    "steps": [
+      "What changes between the first and last frame (lighting, poses, props)",
+      "Camera motion or FX (whip-pan, dolly-in, rack focus)",
+      "Audio notes (VO script, ambience, music cues)",
+      "Timing (“Accelerate halfway through”, “Slow dissolve”)"
+    ]
+  },
+  "tips": {
+    "title": "Tips & tricks",
+    "items": [
+      "📷 Use consistent resolution/aspect in both frames for best alignment",
+      "🎚️ Mention how quickly you want to reach the ending pose",
+      "🎧 Call out audio beats even if you plan to mute later",
+      "⚡ Draft in Fast mode, finalize in Standard without rewriting prompts"
+    ]
+  },
+  "compareLink": {
+    "label": "engine guide",
+    "href": "/ai-video-engines",
+    "before": "Compare Veo variants alongside Sora and Pika in our ",
+    "after": "."
+  },
+  "prompts": [
+    {
+      "title": "Launch sequence bridge",
+      "prompt": "First frame: product on podium, cool lighting. Last frame: same scene but warm spotlight and confetti. Animate a dramatic dolly and reveal voice-over: “Presenting Aurora X.”"
+    }
+  ],
+  "faqTitle": "FAQs",
+  "faqs": [
+    {
+      "q": "What if my frames differ in aspect ratio?",
+      "a": "Upload frames cropped to the target ratio when possible. Otherwise, Veo auto-crops to preserve the most important subjects."
+    },
+    {
+      "q": "Can I swap audio later?",
+      "a": "Yes. Export without audio (generate_audio=false) for cheaper runs, or keep the native mix and mute it during editing."
+    }
+  ],
+  "pricingNotes": "Live wallet pricing updates inside Generate. Switch between Standard and Fast modes before you run."
+}

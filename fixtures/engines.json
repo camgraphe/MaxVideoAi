@@ -125,6 +125,7 @@
       "queueDepth": 0,
       "region": "global",
       "modes": [
+        "t2v",
         "i2v"
       ],
       "maxDurationSec": 10,
@@ -242,6 +243,161 @@
       "brandId": "pika"
     },
     {
+      "id": "veo-3-1-first-last",
+      "label": "Google Veo 3.1 First/Last Frame",
+      "provider": "Google",
+      "version": "3.1",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "i2v",
+        "i2i"
+      ],
+      "maxDurationSec": 8,
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "auto",
+        "9:16",
+        "16:9",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 12
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          },
+          {
+            "id": "first_frame_url",
+            "type": "image",
+            "label": "First frame",
+            "modes": [
+              "i2v",
+              "i2i"
+            ],
+            "requiredInModes": [
+              "i2v",
+              "i2i"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "last_frame_url",
+            "type": "image",
+            "label": "Last frame",
+            "modes": [
+              "i2v",
+              "i2i"
+            ],
+            "requiredInModes": [
+              "i2v",
+              "i2i"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "optional": [
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration",
+            "values": [
+              "4s",
+              "6s",
+              "8s"
+            ],
+            "default": "8s"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "auto",
+              "9:16",
+              "16:9",
+              "1:1"
+            ],
+            "default": "auto"
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p",
+              "1080p"
+            ],
+            "default": "720p"
+          },
+          {
+            "id": "negative_prompt",
+            "type": "text",
+            "label": "Negative prompt"
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ]
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 40,
+          "byResolution": {
+            "720p": 40,
+            "1080p": 55
+          }
+        },
+        "addons": {
+          "audio_off": {
+            "perSecondCents": -13
+          }
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.4,
+        "currency": "USD",
+        "notes": "Bridge two frames with Veo 3.1 or Veo 3.1 Fast."
+      },
+      "updatedAt": "2025-02-14T00:00:00Z",
+      "ttlSec": 600,
+      "brandId": "google-veo"
+    },
+    {
       "id": "veo-3-1",
       "label": "Google Veo 3.1",
       "provider": "Google",
@@ -281,7 +437,9 @@
             "id": "prompt",
             "type": "text",
             "label": "Prompt"
-          },
+          }
+        ],
+        "optional": [
           {
             "id": "image_urls",
             "type": "image",
@@ -295,17 +453,28 @@
             "minCount": 1,
             "maxCount": 4,
             "source": "either"
-          }
-        ],
-        "optional": [
+          },
           {
             "id": "duration",
             "type": "enum",
             "label": "Duration",
             "values": [
+              "4s",
+              "6s",
               "8s"
             ],
             "default": "8s"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9",
+              "9:16",
+              "1:1"
+            ],
+            "default": "16:9"
           },
           {
             "id": "resolution",
@@ -316,6 +485,17 @@
               "1080p"
             ],
             "default": "720p"
+          },
+          {
+            "id": "negative_prompt",
+            "type": "text",
+            "label": "Negative prompt"
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed",
+            "description": "Lock motion & noise for iterative runs."
           }
         ],
         "constraints": {
@@ -467,6 +647,7 @@
       "queueDepth": 0,
       "region": "global",
       "modes": [
+        "t2v",
         "i2v"
       ],
       "maxDurationSec": 8,
@@ -500,23 +681,9 @@
             "label": "Prompt"
           },
           {
-            "id": "first_frame_url",
+            "id": "image_url",
             "type": "image",
-            "label": "First frame",
-            "modes": [
-              "i2v"
-            ],
-            "requiredInModes": [
-              "i2v"
-            ],
-            "minCount": 1,
-            "maxCount": 1,
-            "source": "either"
-          },
-          {
-            "id": "last_frame_url",
-            "type": "image",
-            "label": "Last frame",
+            "label": "Reference image",
             "modes": [
               "i2v"
             ],
@@ -534,6 +701,8 @@
             "type": "enum",
             "label": "Duration",
             "values": [
+              "4s",
+              "6s",
               "8s"
             ],
             "default": "8s"
@@ -559,6 +728,16 @@
               "1080p"
             ],
             "default": "720p"
+          },
+          {
+            "id": "negative_prompt",
+            "type": "text",
+            "label": "Negative prompt"
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed"
           }
         ],
         "constraints": {

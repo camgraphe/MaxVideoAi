@@ -117,8 +117,8 @@
   {
     "engine": "Google Veo 3.1 Fast",
     "catalogSlug": "veo-3-1-fast",
-    "falSlug": "fal-ai/veo3.1/fast/first-last-frame-to-video",
-    "source_url": "https://fal.ai/models/fal-ai/veo3.1/fast/first-last-frame-to-video",
+    "falSlug": "fal-ai/veo3.1/fast/image-to-video",
+    "source_url": "https://fal.ai/models/fal-ai/veo3.1/fast/image-to-video",
     "last_checked_at": "2025-02-14T00:00:00",
     "stale": false,
     "checksum": "",
@@ -138,6 +138,37 @@
         "variant": {
           "resolution": "720p",
           "audio": "on"
+        },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.15
+        }
+      }
+    ]
+  },
+  {
+    "engine": "Google Veo 3.1 First/Last Frame",
+    "catalogSlug": "veo-3-1-first-last",
+    "falSlug": "fal-ai/veo3.1/first-last-frame-to-video",
+    "source_url": "https://fal.ai/models/fal-ai/veo3.1/first-last-frame-to-video",
+    "last_checked_at": "2025-02-14T00:00:00",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      {
+        "variant": {
+          "mode": "standard"
+        },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.4
+        }
+      },
+      {
+        "variant": {
+          "mode": "fast"
         },
         "raw": {
           "currency": "USD",

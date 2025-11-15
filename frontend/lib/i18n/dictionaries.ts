@@ -492,7 +492,7 @@ const en: Dictionary = {
       },
       descriptions: {
         'sora-2': 'Text/image remix with native audio.',
-        'veo-3-1': 'Reference-to-video with multi-image control.',
+        'veo-3-1': 'Swap between text-to-video prompts or multi-image reference control.',
         'veo-3-fast': 'Fast queue Veo with optional audio.',
         'pika-text-to-video': 'Quick social loops with captions and remix-friendly settings.',
         'minimax-hailuo-02-text': 'Prompt-optimised drafts before the hero render.',
@@ -658,9 +658,15 @@ const en: Dictionary = {
       },
       'veo-3-1-fast': {
         displayName: 'Google Veo 3.1 Fast',
-        description: 'Bridge a first and last frame in 8 seconds with optional audio.',
+        description: 'Run fast text prompts or animate a single reference image with optional audio.',
         priceBefore: 'Live pricing updates inside the Generate workspace.',
         versionLabel: 'Veo 3.1 Fast',
+      },
+      'veo-3-1-first-last': {
+        displayName: 'Google Veo 3.1 First/Last Frame',
+        description: 'Upload first & last frames, describe the bridge, and animate with Veo 3.1 or Veo 3.1 Fast.',
+        priceBefore: 'Live pricing updates inside the Generate workspace.',
+        versionLabel: 'First/Last',
       },
       'pika-text-to-video': {
         displayName: 'Pika 2.2 · Text to Video',

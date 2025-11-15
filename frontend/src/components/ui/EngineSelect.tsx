@@ -74,8 +74,8 @@ const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
   },
   'veo-3-1': {
     description:
-      'Veo 3.1 reference-to-video keeps subject fidelity across shots thanks to multi-image conditioning.',
-    badges: ['Multi reference', 'Audio option', 'High fidelity'],
+      'Veo 3.1 now handles direct prompts or reference stills. Swap between text-to-video and image-to-video without leaving the queue.',
+    badges: ['Text prompts', 'Multi reference', 'Audio native'],
   },
   'veo-3-fast': {
     description:
@@ -84,8 +84,13 @@ const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
   },
   'veo-3-1-fast': {
     description:
-      'Bridge a starting and ending frame in eight seconds - great for transitions or product hero sweeps.',
-    badges: ['First/last frame', 'Eight seconds', 'Audio option'],
+      'Veo 3.1 Fast now handles quick text prompts or single-image animations with optional audio.',
+    badges: ['Text prompts', 'Image-to-video', 'Audio option'],
+  },
+  'veo-3-1-first-last': {
+    description:
+      'Upload first and last frames, describe the bridge, and toggle between Veo 3.1 and Veo 3.1 Fast for the transition.',
+    badges: ['Two frames', 'Audio option', 'Standard & Fast'],
   },
   'minimax-hailuo-02-text': {
     description:

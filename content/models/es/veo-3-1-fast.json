@@ -8,7 +8,7 @@
   },
   "hero": {
     "title": "Veo 3.1 Fast – motor veloz con audio opcional",
-    "intro": "Veo 3.1 Fast acerca los controles cinemáticos de DeepMind a un precio menor. Conservas la fidelidad de prompts y presets de cámara de Veo 3.1, eliges clips de hasta 8 s y activas o no el audio nativo para iterar con agilidad.",
+    "intro": "Veo 3.1 Fast acerca los controles cinemáticos de DeepMind a un precio menor. Puedes arrancar con un prompt de texto o aportar una única imagen de referencia para animarla, mantener clips de hasta 8 s y activar o no el audio nativo para iterar con agilidad.",
     "ctaPrimary": {
       "label": "Probar Veo 3.1 Fast",
       "href": "/app?engine=veo-3-1-fast"
@@ -28,7 +28,7 @@
       }
     ]
   },
-  "overview": "Equilibra calidad y velocidad con Veo 3.1 Fast. Mantiene los controles de encuadre de DeepMind, reduce la latencia y permite sumar ambiente gracias al audio opcional sin esperar a un render completo de Veo 3.1.",
+  "overview": "Equilibra calidad y velocidad con Veo 3.1 Fast. Úsalo como motor texto→video o para animar una sola imagen: en ambos casos conservas los controles de DeepMind, reduces latencia y sumas audio nativo opcional.",
   "bestUseCases": {
     "title": "Casos de uso ideales",
     "items": [
@@ -66,11 +66,11 @@
     },
     {
       "label": "Entradas",
-      "body": "Solo prompts de texto — ideal para iteración rápida"
+      "body": "Prompt de texto o imagen de referencia única para animar"
     },
     {
       "label": "Modos",
-      "body": "Texto→video con interruptor de audio; sin imágenes de referencia"
+      "body": "Texto→video + imagen→video"
     },
     {
       "label": "Precio",
@@ -110,6 +110,11 @@
       "title": "Zoom bosque brumoso",
       "prompt": "Bosque brumoso al amanecer, zoom lento hacia una roca cubierta de musgo mientras rayos atraviesan los árboles, ambiente de aves sin diálogo.",
       "notes": "Activa el audio para una ambientación sutil o apágalo para bucles silenciosos."
+    },
+    {
+      "title": "Animación desde un fotograma único",
+      "prompt": "Anima una foto lifestyle de producto en ocho segundos, travelling suave hacia adelante, VO confiada: “Veo 3.1 Fast”.",
+      "notes": "Sube una sola imagen de referencia y guía el movimiento mediante el prompt."
     }
   ],
   "faqs": [

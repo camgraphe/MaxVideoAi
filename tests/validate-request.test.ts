@@ -76,6 +76,62 @@ test('Veo 3 T2V accepts string durations and audio toggle', () => {
   assert.deepEqual(valid, OK);
 });
 
+test('Veo 3.1 T2V supports 4-8 second prompts', () => {
+  const valid = validateRequest('veo-3-1', 't2v', {
+    duration: '6s',
+    resolution: '1080p',
+    aspect_ratio: '16:9',
+  });
+  assert.deepEqual(valid, OK);
+});
+
+test('Veo 3.1 Fast T2V supports text prompts', () => {
+  const valid = validateRequest('veo-3-1-fast', 't2v', {
+    duration: '4s',
+    resolution: '720p',
+    aspect_ratio: '9:16',
+  });
+  assert.deepEqual(valid, OK);
+});
+
+test('Veo 3.1 Fast I2V requires image_url', () => {
+  const invalid = validateRequest('veo-3-1-fast', 'i2v', {
+    prompt: 'Animate this still',
+  });
+  assert.equal(invalid.ok, false);
+  assert.equal(invalid.error?.field, 'image_url');
+
+  const valid = validateRequest('veo-3-1-fast', 'i2v', {
+    prompt: 'Animate this still',
+    image_url: 'https://example.com/test.png',
+    duration: '8s',
+  });
+  assert.deepEqual(valid, OK);
+});
+
+test('Veo 3.1 First/Last requires both frames', () => {
+  const missing = validateRequest('veo-3-1-first-last', 'i2v', {
+    prompt: 'Bridge frames',
+  });
+  assert.equal(missing.ok, false);
+  assert.equal(missing.error?.field, 'first_frame_url');
+
+  const partial = validateRequest('veo-3-1-first-last', 'i2v', {
+    prompt: 'Bridge frames',
+    first_frame_url: 'https://example.com/frame1.png',
+  });
+  assert.equal(partial.ok, false);
+  assert.equal(partial.error?.field, 'last_frame_url');
+
+  const valid = validateRequest('veo-3-1-first-last', 'i2v', {
+    prompt: 'Bridge frames',
+    first_frame_url: 'https://example.com/frame1.png',
+    last_frame_url: 'https://example.com/frame2.png',
+    duration: '8s',
+  });
+  assert.deepEqual(valid, OK);
+});
+
 test('Veo 3 I2V rejects durations other than 8s', () => {
   const invalid = validateRequest('veo-3-1', 'i2v', {
     duration: '6s',

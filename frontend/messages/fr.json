@@ -330,8 +330,9 @@
       },
       "descriptions": {
         "sora-2": "Remix texte/image avec audio natif.",
-        "veo-3-1": "De la référence à la vidéo avec contrôle multi-image.",
+        "veo-3-1": "Passez d’un prompt texte à la référence multi-image sans changer de moteur.",
         "veo-3-fast": "File rapide Veo avec audio optionnel.",
+        "veo-3-1-first-last": "Reliez deux frames avec Veo 3.1 ou sa version Fast.",
         "pika-text-to-video": "Boucles sociales rapides avec légendes et paramètres adaptés au remix.",
         "minimax-hailuo-02-text": "Brouillons optimisés par prompt avant le rendu principal."
       },
@@ -649,9 +650,15 @@
       },
       "veo-3-1-fast": {
         "displayName": "Google Veo 3.1 Fast",
-        "description": "Relie la première et la dernière image en 8 secondes, audio optionnel.",
+        "description": "Prompts texte rapides ou animation d’une image de référence unique, audio optionnel.",
         "priceBefore": "Tarifs en direct dans le workspace Generate.",
         "versionLabel": "Veo 3.1 Fast"
+      },
+      "veo-3-1-first-last": {
+        "displayName": "Google Veo 3.1 First/Last",
+        "description": "Téléversez des frames de début et de fin pour créer des transitions cinématiques avec audio optionnel.",
+        "priceBefore": "Tarifs en direct dans le workspace Generate.",
+        "versionLabel": "First/Last"
       },
       "pika-text-to-video": {
         "displayName": "Pika 2.2 · Texte→Vidéo",

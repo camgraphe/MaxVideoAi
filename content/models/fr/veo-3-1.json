@@ -8,7 +8,7 @@
   },
   "hero": {
     "title": "Veo 3.1 – moteur texte→vidéo avec audio natif",
-    "intro": "Veo 3.1 est le moteur vidéo premium de DeepMind, routé par MaxVideoAI pour les runs référence→vidéo. Produisez des séquences de 8 secondes en haute fidélité avec voix off, ambiance sonore et mouvements synchronisés, tout en verrouillant l’identité via jusqu’à quatre images de référence.",
+    "intro": "Veo 3.1 est le moteur vidéo premium de DeepMind, routé par MaxVideoAI pour les runs texte→vidéo comme référence→vidéo. Passez d’un brief 100% textuel à une animation guidée par 4 images, et gardez vos séquences de 8 secondes cinématiques avec voix off, ambiance et mouvements synchronisés.",
     "ctaPrimary": {
       "label": "Générer avec Veo 3.1",
       "href": "/app?engine=veo-3-1"
@@ -28,7 +28,7 @@
       }
     ]
   },
-  "overview": "Routez Veo 3.1 via MaxVideoAI pour livrer des plans héros polis avec audio natif. La fidélité référence→vidéo verrouille tenue et éclairage pendant que vous empilez des clips de 8 secondes pour composer des séquences plus longues.",
+  "overview": "Routez Veo 3.1 via MaxVideoAI pour livrer des plans héros polis avec audio natif. Choisissez un prompt texte pour démarrer de zéro ou ajoutez des images pour verrouiller tenue et lumière — le même moteur gère les deux, vous permettant d’empiler rapidement des clips de 8 secondes.",
   "bestUseCases": {
     "title": "Cas d'usage clés",
     "items": [
@@ -62,7 +62,7 @@
     },
     {
       "label": "Entrées",
-      "body": "Images de référence (1 à 4) + prompt pour animer les sujets",
+      "body": "Prompt texte seul ou 1 à 4 images de référence pour verrouiller l’identité",
       "link": {
         "label": "Google DeepMind",
         "href": "https://deepmind.google/models/veo/?utm_source=chatgpt.com"

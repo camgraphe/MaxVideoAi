@@ -303,7 +303,7 @@ const VEO_3_1_ENGINE: EngineCaps = {
   latencyTier: 'standard',
   queueDepth: 0,
   region: 'global',
-  modes: ['i2v'],
+  modes: ['t2v', 'i2v'],
   maxDurationSec: 8,
   resolutions: ['720p', '1080p'],
   aspectRatios: ['16:9', '9:16', '1:1'],
@@ -324,6 +324,8 @@ const VEO_3_1_ENGINE: EngineCaps = {
         type: 'text',
         label: 'Prompt',
       },
+    ],
+    optional: [
       {
         id: 'image_urls',
         type: 'image',
@@ -334,14 +336,19 @@ const VEO_3_1_ENGINE: EngineCaps = {
         maxCount: 4,
         source: 'either',
       },
-    ],
-    optional: [
       {
         id: 'duration',
         type: 'enum',
         label: 'Duration',
-        values: ['8s'],
+        values: ['4s', '6s', '8s'],
         default: '8s',
+      },
+      {
+        id: 'aspect_ratio',
+        type: 'enum',
+        label: 'Aspect ratio',
+        values: ['16:9', '9:16', '1:1'],
+        default: '16:9',
       },
       {
         id: 'resolution',
@@ -349,6 +356,17 @@ const VEO_3_1_ENGINE: EngineCaps = {
         label: 'Resolution',
         values: ['720p', '1080p'],
         default: '720p',
+      },
+      {
+        id: 'negative_prompt',
+        type: 'text',
+        label: 'Negative prompt',
+      },
+      {
+        id: 'seed',
+        type: 'number',
+        label: 'Seed',
+        description: 'Lock motion & noise for iterative runs.',
       },
     ],
     constraints: {
@@ -380,7 +398,7 @@ const VEO_3_1_ENGINE: EngineCaps = {
   ttlSec: 600,
   providerMeta: {
     provider: 'google-veo',
-    modelSlug: 'fal-ai/veo3.1/reference-to-video',
+    modelSlug: 'fal-ai/veo3.1',
   },
   availability: 'available',
   brandId: 'google-veo',
@@ -484,7 +502,7 @@ const VEO_3_1_FAST_ENGINE: EngineCaps = {
   latencyTier: 'fast',
   queueDepth: 0,
   region: 'global',
-  modes: ['i2v'],
+  modes: ['t2v', 'i2v'],
   maxDurationSec: 8,
   resolutions: ['720p', '1080p'],
   aspectRatios: ['auto', '9:16', '16:9', '1:1'],
@@ -506,19 +524,9 @@ const VEO_3_1_FAST_ENGINE: EngineCaps = {
         label: 'Prompt',
       },
       {
-        id: 'first_frame_url',
+        id: 'image_url',
         type: 'image',
-        label: 'First frame',
-        modes: ['i2v'],
-        requiredInModes: ['i2v'],
-        minCount: 1,
-        maxCount: 1,
-        source: 'either',
-      },
-      {
-        id: 'last_frame_url',
-        type: 'image',
-        label: 'Last frame',
+        label: 'Reference image',
         modes: ['i2v'],
         requiredInModes: ['i2v'],
         minCount: 1,
@@ -531,7 +539,7 @@ const VEO_3_1_FAST_ENGINE: EngineCaps = {
         id: 'duration',
         type: 'enum',
         label: 'Duration',
-        values: ['8s'],
+        values: ['4s', '6s', '8s'],
         default: '8s',
       },
       {
@@ -547,6 +555,17 @@ const VEO_3_1_FAST_ENGINE: EngineCaps = {
         label: 'Resolution',
         values: ['720p', '1080p'],
         default: '720p',
+      },
+      {
+        id: 'negative_prompt',
+        type: 'text',
+        label: 'Negative prompt',
+      },
+      {
+        id: 'seed',
+        type: 'number',
+        label: 'Seed',
+        description: 'Lock motion & noise for iterative runs.',
       },
     ],
     constraints: {
@@ -578,7 +597,127 @@ const VEO_3_1_FAST_ENGINE: EngineCaps = {
   ttlSec: 600,
   providerMeta: {
     provider: 'google-veo',
-    modelSlug: 'fal-ai/veo3.1/fast/first-last-frame-to-video',
+    modelSlug: 'fal-ai/veo3.1/fast',
+  },
+  availability: 'available',
+  brandId: 'google-veo',
+};
+
+const VEO_3_1_FIRST_LAST_ENGINE: EngineCaps = {
+  id: 'veo-3-1-first-last',
+  label: 'Google Veo 3.1 First/Last Frame',
+  provider: 'Google',
+  version: '3.1',
+  status: 'live',
+  latencyTier: 'standard',
+  queueDepth: 0,
+  region: 'global',
+  modes: ['i2v', 'i2i'],
+  maxDurationSec: 8,
+  resolutions: ['720p', '1080p'],
+  aspectRatios: ['auto', '9:16', '16:9', '1:1'],
+  fps: [24],
+  audio: true,
+  upscale4k: false,
+  extend: false,
+  motionControls: false,
+  keyframes: false,
+  params: {},
+  inputLimits: {
+    imageMaxMB: 12,
+  },
+  inputSchema: {
+    required: [
+      {
+        id: 'prompt',
+        type: 'text',
+        label: 'Prompt',
+      },
+      {
+        id: 'first_frame_url',
+        type: 'image',
+        label: 'First frame',
+        modes: ['i2v', 'i2i'],
+        requiredInModes: ['i2v', 'i2i'],
+        minCount: 1,
+        maxCount: 1,
+        source: 'either',
+      },
+      {
+        id: 'last_frame_url',
+        type: 'image',
+        label: 'Last frame',
+        modes: ['i2v', 'i2i'],
+        requiredInModes: ['i2v', 'i2i'],
+        minCount: 1,
+        maxCount: 1,
+        source: 'either',
+      },
+    ],
+    optional: [
+      {
+        id: 'duration',
+        type: 'enum',
+        label: 'Duration',
+        values: ['4s', '6s', '8s'],
+        default: '8s',
+      },
+      {
+        id: 'aspect_ratio',
+        type: 'enum',
+        label: 'Aspect ratio',
+        values: ['auto', '9:16', '16:9', '1:1'],
+        default: 'auto',
+      },
+      {
+        id: 'resolution',
+        type: 'enum',
+        label: 'Resolution',
+        values: ['720p', '1080p'],
+        default: '720p',
+      },
+      {
+        id: 'negative_prompt',
+        type: 'text',
+        label: 'Negative prompt',
+      },
+      {
+        id: 'seed',
+        type: 'number',
+        label: 'Seed',
+        description: 'Lock motion & noise for iterative runs.',
+      },
+    ],
+    constraints: {
+      supportedFormats: ['jpg', 'jpeg', 'png', 'webp'],
+    },
+  },
+  pricingDetails: {
+    currency: 'USD',
+    perSecondCents: {
+      default: 40,
+      byResolution: {
+        '720p': 40,
+        '1080p': 55,
+      },
+    },
+    addons: {
+      audio_off: {
+        perSecondCents: -13,
+      },
+    },
+  },
+  pricing: {
+    unit: 'USD/s',
+    base: 0.4,
+    currency: 'USD',
+    notes: 'First/last frame animation with optional audio.',
+  },
+  updatedAt: '2025-02-14T00:00:00Z',
+  ttlSec: 600,
+  providerMeta: {
+    provider: 'google-veo',
+    modelSlug: 'fal-ai/veo3.1/first-last-frame-to-video',
   },
   availability: 'available',
   brandId: 'google-veo',
@@ -1248,6 +1387,17 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     engine: VEO_3_1_ENGINE,
     modes: [
       {
+        mode: 't2v',
+        falModelId: 'fal-ai/veo3.1',
+        ui: {
+          modes: ['t2v'],
+          duration: { options: ['4s', '6s', '8s'], default: '8s' },
+          resolution: ['720p', '1080p'],
+          aspectRatio: ['16:9', '9:16', '1:1'],
+          audioToggle: true,
+        },
+      },
+      {
         mode: 'i2v',
         falModelId: 'fal-ai/veo3.1/reference-to-video',
         ui: {
@@ -1261,14 +1411,14 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
         },
       },
     ],
-    defaultFalModelId: 'fal-ai/veo3.1/reference-to-video',
+    defaultFalModelId: 'fal-ai/veo3.1',
     seo: {
       title: 'Veo 3.1 – Advanced Text-to-Video & Native Audio Engine',
       description:
         'Generate cinematic 8-second videos with native audio using Veo 3.1 by Google DeepMind on MaxVideoAI. Reference-to-video guidance, multi-image fidelity, pay-as-you-go pricing from $0.52/s.',
       canonicalPath: '/models/veo-3-1',
     },
-    type: 'Image only',
+    type: 'Text or image',
     demoUrl: 'https://v3b.fal.media/files/b/kangaroo/oUCiZjQwEy6bIQdPUSLDF_output.mp4',
     media: {
       videoUrl: 'https://storage.googleapis.com/falserverless/example_outputs/veo3-i2v-output.mp4',
@@ -1276,6 +1426,11 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
       altText: 'Demo video generated with Veo 3.1',
     },
     prompts: [
+      {
+        title: 'Scripted hero read',
+        prompt: 'Two person street interview in New York City.\nSample dialogue:\nHost: “Did you hear the news?”\nPerson: “Yes, Veo 3.1 text-to-video just landed inside MaxVideoAI.”\nCinematic handheld camera, rich ambient audio, confident VO tone.',
+        mode: 't2v',
+      },
       {
         title: 'Reference fidelity shot',
         prompt: 'Eight second tracking shot of the hero walking through neon city streets, maintain wardrobe and face from reference stills, cinematic lighting',
@@ -1382,8 +1537,19 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     engine: VEO_3_1_FAST_ENGINE,
     modes: [
       {
+        mode: 't2v',
+        falModelId: 'fal-ai/veo3.1/fast',
+        ui: {
+          modes: ['t2v'],
+          duration: { options: ['4s', '6s', '8s'], default: '8s' },
+          resolution: ['720p', '1080p'],
+          aspectRatio: ['16:9', '9:16', '1:1'],
+          audioToggle: true,
+        },
+      },
+      {
         mode: 'i2v',
-        falModelId: 'fal-ai/veo3.1/fast/first-last-frame-to-video',
+        falModelId: 'fal-ai/veo3.1/fast/image-to-video',
         ui: {
           modes: ['i2v'],
           duration: { options: ['8s'], default: '8s' },
@@ -1395,14 +1561,14 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
         },
       },
     ],
-    defaultFalModelId: 'fal-ai/veo3.1/fast/first-last-frame-to-video',
+    defaultFalModelId: 'fal-ai/veo3.1/fast',
     seo: {
       title: 'Veo 3.1 Fast – High-Speed AI Video Generation (with or without Audio)',
       description:
         'Use Veo 3.1 Fast for affordable, fast AI video generation. Up to 8-second clips with optional native audio—ideal for social formats and iterative testing.',
       canonicalPath: '/models/veo-3-1-fast',
     },
-    type: 'Text only',
+    type: 'Text or image',
     seoText:
       'Veo 3.1 Fast helps you test cinematic prompts with optional audio. Use it for short loops, mobile formats, or quick experiments with DeepMind fidelity at a lower cost.',
     demoUrl: '/hero/veo3.mp4',
@@ -1413,10 +1579,15 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     },
     prompts: [
       {
+        title: 'Street interview',
+        prompt: 'Casual street interview on a busy sidewalk, handheld camera, native dialogue: “Have you seen Veo 3.1 Fast inside MaxVideoAI?”',
+        mode: 't2v',
+      },
+      {
         title: 'Misty forest zoom',
-        prompt: 'A misty forest at dawn, camera slowly zooms in on a mossy rock, sun rays piercing through trees, optional ambient birdsong.',
+        prompt: 'Animate a still of a misty forest at dawn, slow zoom toward a mossy rock as sun rays pierce the trees, optional ambient birdsong.',
         mode: 'i2v',
-        notes: 'Enable audio for subtle ambience or leave it off for silent loops.',
+        notes: 'Upload a single reference image and enable audio for subtle ambience or leave it off for silent loops.',
       },
     ],
     faqs: [
@@ -1438,6 +1609,93 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     },
     promptExample:
       'A person walking alone on a bridge at night, city lights in the background, camera tracks from behind, ambient street noise',
+  },
+  {
+    id: 'veo-3-1-first-last',
+    modelSlug: 'veo-3-1-first-last',
+    marketingName: 'Google Veo 3.1 First/Last Frame',
+    cardTitle: 'Veo 3.1 First/Last',
+    provider: 'Google',
+    brandId: 'google-veo',
+    family: 'veo',
+    versionLabel: '3.1',
+    availability: 'available',
+    logoPolicy: 'textOnly',
+    engine: VEO_3_1_FIRST_LAST_ENGINE,
+    modes: [
+      {
+        mode: 'i2v',
+        falModelId: 'fal-ai/veo3.1/first-last-frame-to-video',
+        ui: {
+          modes: ['i2v'],
+          duration: { options: ['4s', '6s', '8s'], default: '8s' },
+          resolution: ['720p', '1080p'],
+          aspectRatio: ['auto', '9:16', '16:9', '1:1'],
+          audioToggle: true,
+          acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
+          maxUploadMB: 12,
+        },
+      },
+      {
+        mode: 'i2i',
+        falModelId: 'fal-ai/veo3.1/fast/first-last-frame-to-video',
+        ui: {
+          modes: ['i2i'],
+          duration: { options: ['4s', '6s', '8s'], default: '8s' },
+          resolution: ['720p', '1080p'],
+          aspectRatio: ['auto', '9:16', '16:9', '1:1'],
+          audioToggle: true,
+          acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
+          maxUploadMB: 12,
+        },
+      },
+    ],
+    defaultFalModelId: 'fal-ai/veo3.1/first-last-frame-to-video',
+    seo: {
+      title: 'Veo 3.1 First/Last – Bridge two keyframes with DeepMind fidelity',
+      description:
+        'Upload starting and ending frames, write a brief, and let Veo 3.1 animate seamless transitions with optional native audio. Swap to Fast mode for cheaper iterations.',
+      canonicalPath: '/models/veo-3-1-first-last',
+    },
+    type: 'Image pair',
+    demoUrl: '/hero/veo3.mp4',
+    media: {
+      videoUrl: '/hero/veo3.mp4',
+      imagePath: '/hero/veo3.jpg',
+      altText: 'Bridge between first and last frames with Veo 3.1',
+    },
+    prompts: [
+      {
+        title: 'Hero transition',
+        prompt: 'Bridge a product hero shot from glossy studio lighting to lifestyle daylight in eight seconds, upbeat VO “This is Veo 3.1 First/Last.”',
+        mode: 'i2v',
+        notes: 'Upload first and last frames to lock wardrobe, lighting, and layout.',
+      },
+      {
+        title: 'Fast storyboard bridge',
+        prompt: 'Animate between two storyboard frames for a sprint review, minimal VO, ambient city tone.',
+        mode: 'i2i',
+      },
+    ],
+    faqs: [
+      {
+        question: 'What’s the difference between Standard and Fast modes?',
+        answer:
+          'Standard mode routes through Veo 3.1 for highest fidelity, Fast mode uses Veo 3.1 Fast to cut latency and cost. Both accept first/last frames plus prompts.',
+      },
+      {
+        question: 'How many frames can I upload?',
+        answer:
+          'Provide exactly two frames: starting and ending. Use the prompt to describe how the motion should evolve between them.',
+      },
+    ],
+    pricingHint: {
+      currency: 'USD',
+      amountCents: 440,
+      durationSeconds: 8,
+      resolution: '1080p',
+      label: 'Standard',
+    },
   },
   {
     id: 'pika-text-to-video',

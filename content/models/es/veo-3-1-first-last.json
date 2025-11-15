@@ -1,0 +1,83 @@
+{
+  "marketingName": "Google Veo 3.1 First/Last Frame",
+  "versionLabel": "3.1",
+  "seo": {
+    "title": "Veo 3.1 First/Last – Une dos fotogramas con audio nativo",
+    "description": "Sube el primer y el último fotograma, escribe el brief y deja que Veo 3.1 anime la transición. Audio opcional, clips de 4–8 s, pago por uso.",
+    "image": "/hero/veo3.jpg"
+  },
+  "hero": {
+    "title": "Veo 3.1 First/Last – Transiciones fluidas entre dos frames",
+    "intro": "Selecciona las imágenes de inicio y cierre, añade un prompt y deja que Veo 3.1 (o su modo Fast) interpolen el movimiento. Mantén vestuario, iluminación y encuadre intactos mientras el motor añade cámara y audio nativo.",
+    "ctaPrimary": {
+      "label": "Animar con Veo First/Last",
+      "href": "/app?engine=veo-3-1-first-last"
+    },
+    "secondaryLinks": [
+      { "label": "Ver todos los motores", "href": "/modelos" },
+      { "label": "Explorar flujos de trabajo", "href": "/workflows" },
+      { "label": "Consultar precios en vivo", "href": "/generate" }
+    ]
+  },
+  "overview": "Veo 3.1 First/Last convierte dos frames clave en movimiento cinematográfico. Sube los bookends del plano, describe la acción y elige Standard (Veo 3.1) para la máxima fidelidad o Fast (Veo 3.1 Fast) para iteraciones más baratas. Clips de hasta 8 s, audio nativo opcional y salidas 9:16, 16:9 o cuadradas.",
+  "bestUseCases": {
+    "title": "Mejores usos",
+    "items": [
+      "Dar vida a storyboards o renders fijos",
+      "Rellenar planos de transición sin volver al set",
+      "Crear reveals de producto coherentes con key art existente",
+      "Iterar en modo Fast y entregar con modo Standard"
+    ]
+  },
+  "technicalOverviewTitle": "Resumen técnico",
+  "technicalOverview": [
+    { "label": "Entradas", "body": "Dos frames (inicio + fin) más un prompt detallado" },
+    { "label": "Duración", "body": "Clips de 4, 6 u 8 s con audio opcional" },
+    { "label": "Resolución", "body": "720p o 1080p en 16:9, 9:16, 1:1 o auto" },
+    { "label": "Modos", "body": "Standard (Veo 3.1) o Fast (Veo 3.1 Fast)" }
+  ],
+  "promptStructure": {
+    "title": "Estructura del prompt",
+    "quote": "“Frame 1: set minimalista. Frame 2: mismo set con luces neón. Puente: travelling heroico + VO ‘Veo 3.1 First/Last’.”",
+    "description": "Explica:",
+    "steps": [
+      "Qué cambia entre inicio y cierre (luz, pose, ambiente)",
+      "Movimiento de cámara o FX deseados",
+      "Notas de audio (VO, Foley, música)",
+      "Ritmo (“apresurar al final”, “fade suave”)"
+    ]
+  },
+  "tips": {
+    "title": "Consejos",
+    "items": [
+      "🖼️ Mantén la misma proporción en ambos frames para evitar recortes",
+      "⏱️ Indica si la acción debe acelerarse o frenarse",
+      "🎧 Incluye pistas de audio aunque planees silenciarlas luego",
+      "⚡ Trabaja en Fast para previas, cambia a Standard para el master"
+    ]
+  },
+  "compareLink": {
+    "label": "guía de motores",
+    "href": "/comparativa",
+    "before": "Compara Veo con Sora y Pika en nuestra ",
+    "after": "."
+  },
+  "prompts": [
+    {
+      "title": "Bridge de lanzamiento",
+      "prompt": "Frame 1: producto iluminado en estudio frío. Frame 2: mismo producto con spotlight cálido y confeti. Bridge con dolly heroico y VO: “Presentamos Aurora X”."
+    }
+  ],
+  "faqTitle": "Preguntas frecuentes",
+  "faqs": [
+    {
+      "q": "¿Qué pasa si mis frames tienen distinta relación de aspecto?",
+      "a": "Recorta al formato final cuando puedas. Si no, Veo ajusta automáticamente priorizando el sujeto principal."
+    },
+    {
+      "q": "¿Puedo quitar el audio después?",
+      "a": "Sí. Genera sin audio para ahorrar créditos o conserva la mezcla nativa y silénciala en edición."
+    }
+  ],
+  "pricingNotes": "Los precios se actualizan dentro de Generate. Cambia entre Standard y Fast antes de lanzar."
+}
