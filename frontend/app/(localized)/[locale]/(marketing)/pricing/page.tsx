@@ -10,17 +10,11 @@ import { FEATURES } from '@/content/feature-flags';
 import { FlagPill } from '@/components/FlagPill';
 import { getMembershipTiers } from '@/lib/membership';
 import FaqJsonLd from '@/components/FaqJsonLd';
-import { localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
+import { localeRegions, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 
 const PRICING_SLUG_MAP = buildSlugMap('pricing');
-
-function buildLocalizedPath(locale: AppLocale, slug?: string) {
-  const prefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
-  const normalized = slug ? `/${slug.replace(/^\/+/, '')}` : '';
-  return (prefix + normalized || '/').replace(/\/{2,}/g, '/');
-}
 
 type ExampleCardConfig = {
   title: string;
@@ -237,7 +231,7 @@ export default async function PricingPage() {
       ? (exampleCosts.cards as ExampleCardConfig[])
       : DEFAULT_EXAMPLE_COSTS.cards;
   const priceFactors = content.priceFactors ?? DEFAULT_PRICE_FACTORS;
-  const generatorHref = buildLocalizedPath(locale as AppLocale, 'generate');
+  const generatorHref = '/generate';
 
   const resolvedExampleCards: ExampleCardConfig[] = exampleCards.map((card) => {
     if ((typeof card.price === 'string' && card.price.trim().length > 0) || !card.pricingScenario) {
