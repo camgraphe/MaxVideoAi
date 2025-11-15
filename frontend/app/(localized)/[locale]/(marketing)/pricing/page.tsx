@@ -5,17 +5,16 @@ import { getTranslations } from 'next-intl/server';
 import { PriceEstimator } from '@/components/marketing/PriceEstimator';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { getPricingKernel } from '@/lib/pricing-kernel';
-import { DEFAULT_MARKETING_SCENARIO, scenarioToPricingInput } from '@/lib/pricing-scenarios';
+import { DEFAULT_MARKETING_SCENARIO, scenarioToPricingInput, type PricingScenario } from '@/lib/pricing-scenarios';
 import { FEATURES } from '@/content/feature-flags';
 import { FlagPill } from '@/components/FlagPill';
 import { getMembershipTiers } from '@/lib/membership';
 import FaqJsonLd from '@/components/FaqJsonLd';
-import { localePathnames, type AppLocale } from '@/i18n/locales';
+import { localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 
 const PRICING_SLUG_MAP = buildSlugMap('pricing');
-const PRICING_CALCULATOR_SLUG_MAP = buildSlugMap('pricing-calculator');
 
 function buildLocalizedPath(locale: AppLocale, slug?: string) {
   const prefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
@@ -23,7 +22,40 @@ function buildLocalizedPath(locale: AppLocale, slug?: string) {
   return (prefix + normalized || '/').replace(/\/{2,}/g, '/');
 }
 
-const DEFAULT_EXAMPLE_COSTS = {
+type ExampleCardConfig = {
+  title: string;
+  engine: string;
+  duration: string;
+  resolution: string;
+  audio: string;
+  price?: string;
+  note?: string;
+  pricingScenario?: PricingScenario;
+};
+
+type ExampleCostsContent = {
+  title: string;
+  subtitle: string;
+  labels: {
+    engine: string;
+    duration: string;
+    resolution: string;
+    audio: string;
+  };
+  cards: ExampleCardConfig[];
+};
+
+function formatCurrencyForLocale(locale: AppLocale, currency: string, amount: number) {
+  const region = localeRegions[locale] ?? 'en-US';
+  return new Intl.NumberFormat(region, {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+const DEFAULT_EXAMPLE_COSTS: ExampleCostsContent = {
   title: 'Example costs',
   subtitle: 'Realistic runs to help you plan. Prices update as engines evolve.',
   labels: {
@@ -39,8 +71,13 @@ const DEFAULT_EXAMPLE_COSTS = {
       duration: '5s',
       resolution: '1080×1920',
       audio: 'Off',
-      price: '≈ $0.25',
       note: 'Charged only if it succeeds.',
+      pricingScenario: {
+        engineId: 'pika-text-to-video',
+        durationSec: 5,
+        resolution: '1080p',
+        memberTier: 'member',
+      },
     },
     {
       title: 'Cinematic test (landscape)',
@@ -48,17 +85,27 @@ const DEFAULT_EXAMPLE_COSTS = {
       duration: '8s',
       resolution: '1920×1080',
       audio: 'On',
-      price: '≈ $3.20',
       note: 'Price before you generate.',
+      pricingScenario: {
+        engineId: 'veo-3-1',
+        durationSec: 8,
+        resolution: '1080p',
+        memberTier: 'member',
+      },
     },
     {
       title: 'Sora 2 narrative (voice-over)',
       engine: 'Sora 2',
       duration: '12s',
-      resolution: '1920×1080',
+      resolution: '1280×720',
       audio: 'On',
-      price: '≈ $6.20',
       note: 'Automatic refund on fail.',
+      pricingScenario: {
+        engineId: 'sora-2',
+        durationSec: 12,
+        resolution: '720p',
+        memberTier: 'member',
+      },
     },
   ],
 } as const;
@@ -185,15 +232,32 @@ export default async function PricingPage() {
     ...DEFAULT_EXAMPLE_COSTS.labels,
     ...(exampleCosts.labels ?? {}),
   };
-  const exampleCards =
+  const exampleCards: ExampleCardConfig[] =
     Array.isArray(exampleCosts.cards) && exampleCosts.cards.length
-      ? exampleCosts.cards
+      ? (exampleCosts.cards as ExampleCardConfig[])
       : DEFAULT_EXAMPLE_COSTS.cards;
   const priceFactors = content.priceFactors ?? DEFAULT_PRICE_FACTORS;
-  const calculatorHref = buildLocalizedPath(
-    locale as AppLocale,
-    PRICING_CALCULATOR_SLUG_MAP[locale as AppLocale] ?? PRICING_CALCULATOR_SLUG_MAP.en
-  );
+  const generatorHref = buildLocalizedPath(locale as AppLocale, 'generate');
+
+  const resolvedExampleCards: ExampleCardConfig[] = exampleCards.map((card) => {
+    if ((typeof card.price === 'string' && card.price.trim().length > 0) || !card.pricingScenario) {
+      return card;
+    }
+    try {
+      const quote = kernel.quote({
+        ...scenarioToPricingInput(card.pricingScenario),
+        addons: card.pricingScenario.addons,
+      });
+      const priceLabel = formatCurrencyForLocale(locale as AppLocale, quote.snapshot.currency ?? starterCurrency, quote.snapshot.totalCents / 100);
+      return {
+        ...card,
+        price: `≈ ${priceLabel}`,
+      };
+    } catch (error) {
+      console.error('Failed to compute example card price', card.title, error);
+      return card;
+    }
+  });
 
   const formattedTiers = membershipTiers.map((tier, index) => {
     const tierCopy = Array.isArray(member.tiers) ? ((member.tiers[index] ?? null) as TierCopy | null) : null;
@@ -244,17 +308,17 @@ export default async function PricingPage() {
 
       <section className="mt-8 rounded-card border border-hairline bg-white/90 p-6 text-sm text-text-secondary shadow-card">
         <h2 className="text-lg font-semibold text-text-primary">
-          {content.calculator?.title ?? 'Estimate with the calculator'}
+          {content.calculator?.title ?? 'Preview prices in the app'}
         </h2>
         <p className="mt-2">
           {content.calculator?.description ??
-            'Run detailed estimates by engine, duration, and resolution before topping up your wallet.'}
+            'Open the generator to see the exact price before you create a video.'}
         </p>
         <Link
-          href={calculatorHref}
+          href={generatorHref}
           className="mt-3 inline-flex items-center text-sm font-semibold text-accent transition hover:text-accentSoft"
         >
-          {content.calculator?.cta ?? 'Open pricing calculator'} <span aria-hidden>→</span>
+          {content.calculator?.cta ?? 'Open the generator'} <span aria-hidden>→</span>
         </Link>
       </section>
 
@@ -266,7 +330,7 @@ export default async function PricingPage() {
           <FlagPill live={FEATURES.pricing.publicCalculator} />
           <span>
             {content.estimator.walletLink}{' '}
-            <Link href={calculatorHref} className="font-semibold text-accent hover:text-accentSoft">
+            <Link href={generatorHref} className="font-semibold text-accent hover:text-accentSoft">
               {content.estimator.walletLinkCta}
             </Link>
             .
@@ -284,7 +348,7 @@ export default async function PricingPage() {
           {exampleCosts.subtitle ?? DEFAULT_EXAMPLE_COSTS.subtitle}
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {exampleCards.map((card) => (
+          {resolvedExampleCards.map((card) => (
             <div key={card.title} className="rounded-xl border border-hairline bg-white p-4 shadow-card">
               <div className="text-sm font-medium text-text-primary">{card.title}</div>
               <dl className="mt-2 text-sm text-text-secondary">
@@ -305,7 +369,9 @@ export default async function PricingPage() {
                   <dd>{card.audio}</dd>
                 </div>
               </dl>
-              <div className="mt-3 text-base font-semibold text-text-primary">{card.price}</div>
+              <div className="mt-3 text-base font-semibold text-text-primary">
+                {card.price ?? '—'}
+              </div>
               {card.note ? <div className="text-xs text-text-muted">{card.note}</div> : null}
             </div>
           ))}

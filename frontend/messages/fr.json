@@ -306,15 +306,15 @@
     }
   },
   "calculator": {
-    "title": "Estimer avec le calculateur",
-    "description": "Lancez des estimations détaillées par moteur, durée et résolution avant d’ajouter des crédits.",
-    "cta": "Ouvrir le calculateur"
+    "title": "Prévisualiser les prix dans l’app",
+    "description": "Ouvrez le générateur pour voir le prix exact avant de lancer une vidéo.",
+    "cta": "Ouvrir le générateur"
   },
   "estimator": {
       "title": "Estimateur de coûts",
       "subtitle": "Choisissez le moteur, la durée et la résolution pour voir le prix avant de mettre le rendu en file d'attente. Facturé uniquement si le rendu réussit.",
-      "walletLink": "Vous voulez une version publique pour les clients ?",
-      "walletLinkCta": "Ouvrir le calculateur",
+      "walletLink": "Vous voulez voir les prix dans l’app avant de générer ?",
+      "walletLinkCta": "Ouvrir le générateur",
       "chargedNote": "Facturé uniquement si le rendu réussit.",
       "fields": {
         "engine": "Moteur",

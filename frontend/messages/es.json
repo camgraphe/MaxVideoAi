@@ -306,15 +306,15 @@
     }
   },
   "calculator": {
-    "title": "Estimar con la calculadora",
-    "description": "Realiza estimaciones detalladas por motor, duración y resolución antes de recargar tu monedero.",
-    "cta": "Abrir la calculadora"
+    "title": "Previsualiza precios en la app",
+    "description": "Abre el generador para ver el precio exacto antes de crear el video.",
+    "cta": "Abrir el generador"
   },
   "estimator": {
       "title": "Calculadora de costes",
       "subtitle": "Elige el motor, la duración y la resolución para ver el precio antes de poner el render en cola. Se cobra solo si tiene éxito.",
-      "walletLink": "¿Quieres una versión pública para clientes?",
-      "walletLinkCta": "Abrir la calculadora",
+      "walletLink": "¿Quieres ver los precios en la app antes de generar?",
+      "walletLinkCta": "Abrir el generador",
       "chargedNote": "Se carga solo si el render tiene éxito.",
       "fields": {
         "engine": "Motor",

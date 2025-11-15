@@ -306,15 +306,15 @@
     }
   },
   "calculator": {
-    "title": "Estimate with the calculator",
-    "description": "Run detailed estimates by engine, duration, and resolution before topping up your wallet.",
-    "cta": "Open pricing calculator"
+    "title": "Preview prices in the app",
+    "description": "Open the generator to see the exact price before you create a video.",
+    "cta": "Open the generator"
   },
   "estimator": {
       "title": "Cost Estimator",
       "subtitle": "Choose the engine, duration, and resolution to see pricing before you queue the render. Charged only if it succeeds.",
-      "walletLink": "Want a public version for clients?",
-      "walletLinkCta": "Open the calculator",
+      "walletLink": "Want to see prices inside the app before you generate?",
+      "walletLinkCta": "Open the generator",
       "chargedNote": "Charged only if render succeeds.",
       "fields": {
         "engine": "Engine",
