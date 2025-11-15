@@ -75,6 +75,11 @@ const SECTION_GROUPS: Array<{
         href: '/admin/legal',
       },
       {
+        title: 'Marketing opt-ins',
+        description: 'See how many members accepted promotional email updates and export their emails.',
+        href: '/admin/marketing',
+      },
+      {
         title: 'Consent exports',
         description: 'Download CSV proofs of user consents for regulatory reporting.',
         href: '/admin/consents.csv',

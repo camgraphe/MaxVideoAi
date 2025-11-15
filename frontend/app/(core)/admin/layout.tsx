@@ -46,6 +46,7 @@ const NAV_SECTIONS: Array<{
     title: 'Compliance',
     items: [
       { label: 'Legal center', href: '/admin/legal' },
+      { label: 'Marketing opt-ins', href: '/admin/marketing' },
       { label: 'Consent exports (CSV)', href: '/admin/consents.csv' },
     ],
   },
