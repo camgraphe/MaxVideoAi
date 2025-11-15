@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import Link from 'next/link';
 import clsx from 'clsx';
 import type { AdminTransactionRecord } from '@/server/admin-transactions';
 
@@ -186,12 +187,25 @@ export function AdminTransactionTable({ initialTransactions }: AdminTransactionT
                       {formatDate(row.createdAt)}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex flex-col">
-                        <span className="text-sm text-text-primary">{userLabel}</span>
-                        {row.userEmail && row.userId && row.userEmail !== row.userId ? (
-                          <span className="text-xs text-text-muted">{row.userId}</span>
-                        ) : null}
-                      </div>
+                      {row.userId ? (
+                        <Link
+                          href={`/admin/users/${row.userId}`}
+                          className="flex flex-col rounded-md border border-transparent px-1 py-0.5 text-left transition hover:border-accent/20 hover:bg-accentSoft/10"
+                        >
+                          <span className="text-sm font-medium text-accent">{userLabel}</span>
+                          {row.userEmail && row.userId && row.userEmail !== row.userId ? (
+                            <span className="text-xs text-text-muted">{row.userId}</span>
+                          ) : null}
+                          <span className="text-[11px] uppercase tracking-wide text-text-muted">View member</span>
+                        </Link>
+                      ) : (
+                        <div className="flex flex-col">
+                          <span className="text-sm text-text-primary">{userLabel}</span>
+                          {row.userEmail && row.userId && row.userEmail !== row.userId ? (
+                            <span className="text-xs text-text-muted">{row.userId}</span>
+                          ) : null}
+                        </div>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <span
