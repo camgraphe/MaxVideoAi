@@ -40,6 +40,18 @@ type EngineGuideEntry = {
 
 const DEFAULT_MODE_OPTIONS: Mode[] = ['t2v', 'i2v'];
 
+const ENGINE_MODE_LABEL_OVERRIDES: Record<string, Partial<Record<Mode, string>>> = {
+  'veo-3-1-first-last': {
+    i2v: 'Standard',
+    i2i: 'Fast',
+  },
+};
+
+function getModeLabel(engineId: string | undefined, value: Mode): string {
+  const engineOverrides = engineId ? ENGINE_MODE_LABEL_OVERRIDES[engineId] : undefined;
+  return engineOverrides?.[value] ?? MODE_LABELS[value] ?? value.toUpperCase();
+}
+
 interface EngineSelectProps {
   engines: EngineCaps[];
   engineId: string;
@@ -47,20 +59,14 @@ interface EngineSelectProps {
   mode: Mode;
   onModeChange: (mode: Mode) => void;
   modeOptions?: Mode[];
-  modeLabelOverrides?: Partial<Record<Mode, string>>;
   showBillingNote?: boolean;
 }
 
 const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
   'pika-text-to-video': {
     description:
-      'Pika 2.2 Text to Video delivers stylized motion graphics fast - perfect for social teasers and product explainers.',
-    badges: ['Fast queue', 'Social ready', 'Prompt friendly'],
-  },
-  'pika-image-to-video': {
-    description:
-      'Start from a still frame and let Pika animate it with smooth camera moves.',
-    badges: ['Image input', 'Camera moves', 'Loop ready'],
+      'Pika 2.2 handles stylized prompts or uploaded stills in one card — perfect for quick loops and product explainers.',
+    badges: ['Text prompts', 'Image input', 'Fast queue'],
   },
   'sora-2': {
     description:
@@ -76,11 +82,6 @@ const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
     description:
       'Veo 3.1 now handles direct prompts or reference stills. Swap between text-to-video and image-to-video without leaving the queue.',
     badges: ['Text prompts', 'Multi reference', 'Audio native'],
-  },
-  'veo-3-fast': {
-    description:
-      'Fast Veo 3 is tuned for quick iterations while keeping the Google Veo look.',
-    badges: ['Fast queue', 'Storyboard', 'Audio option'],
   },
   'veo-3-1-fast': {
     description:
@@ -144,7 +145,6 @@ export function EngineSelect({
   mode,
   onModeChange,
   modeOptions,
-  modeLabelOverrides,
   showBillingNote = true,
 }: EngineSelectProps) {
   const { t } = useI18n();
@@ -225,11 +225,6 @@ export function EngineSelect({
     });
     return deduped;
   }, [modeOptions]);
-
-  const resolveModeLabel = useCallback(
-    (value: Mode) => modeLabelOverrides?.[value] ?? MODE_LABELS[value] ?? value.toUpperCase(),
-    [modeLabelOverrides]
-  );
 
   const updatePosition = useCallback(() => {
     if (!triggerRef.current) return;
@@ -522,7 +517,7 @@ export function EngineSelect({
                                 <div className="flex flex-wrap gap-1.5 text-[11px]">
                                   {engine.modes.map((engineMode) => (
                                     <Chip key={engineMode} variant="outline" className="px-2 py-0.5 text-[11px]">
-                                      {engineMode.toUpperCase()}
+                                      {getModeLabel(engine.id, engineMode)}
                                     </Chip>
                                   ))}
                                   {engine.isLab && (
@@ -574,7 +569,7 @@ export function EngineSelect({
                           : 'cursor-not-allowed border-hairline bg-white text-text-muted/60'
                     )}
                   >
-                    {resolveModeLabel(candidate)}
+                    {getModeLabel(selectedEngine?.id, candidate)}
                   </button>
                 );
               })}
@@ -660,10 +655,8 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect, copy
       'sora-2',
       'sora-2-pro',
       'veo-3-1',
-      'veo-3-fast',
       'veo-3-1-fast',
       'pika-text-to-video',
-      'pika-image-to-video',
       'minimax-hailuo-02-text',
       'minimax-hailuo-02-image',
     ];
@@ -863,7 +856,7 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect, copy
                   </div>
                   <div className="flex flex-wrap items-center gap-3 text-xs text-text-muted">
                     <span>
-                      Modes: {engine.modes.map((entry) => entry.toUpperCase()).join(' / ')}
+                      Modes: {engine.modes.map((entry) => getModeLabel(engine.id, entry)).join(' / ')}
                     </span>
                     <span>
                       Max {engine.maxDurationSec}s / Res {engine.resolutions.join(' / ')}

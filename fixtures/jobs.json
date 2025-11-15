@@ -3,7 +3,7 @@
   "jobs": [
     {
       "jobId": "job-001",
-      "engineId": "veo-3-fast",
+      "engineId": "veo-3-1-fast",
       "engineLabel": "Google Veo 3 Fast",
       "durationSec": 8,
       "prompt": "Beach flyover with morning haze",
@@ -50,7 +50,7 @@
     },
     {
       "jobId": "job-005",
-      "engineId": "veo-3-fast",
+      "engineId": "veo-3-1-fast",
       "engineLabel": "Google Veo 3 Fast",
       "durationSec": 14,
       "prompt": "Night drive through neon district",
@@ -96,7 +96,7 @@
     },
     {
       "jobId": "job-009",
-      "engineId": "veo-3-fast",
+      "engineId": "veo-3-1-fast",
       "engineLabel": "Google Veo 3 Fast",
       "durationSec": 8,
       "prompt": "Nightlife b-roll, crosswalk streaks",
@@ -141,7 +141,7 @@
     },
     {
       "jobId": "job-013",
-      "engineId": "veo-3-fast",
+      "engineId": "veo-3-1-fast",
       "engineLabel": "Google Veo 3 Fast",
       "durationSec": 9,
       "prompt": "Top-down workspace timelapse",
@@ -186,7 +186,7 @@
     },
     {
       "jobId": "job-017",
-      "engineId": "veo-3-fast",
+      "engineId": "veo-3-1-fast",
       "engineLabel": "Google Veo 3 Fast",
       "durationSec": 11,
       "prompt": "Snowboarder carving fresh powder",

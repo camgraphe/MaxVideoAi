@@ -45,6 +45,7 @@ const DEFAULT_CONTROLS_COPY = {
   core: {
     title: 'Core settings',
     subtitle: 'Duration, Aspect, Resolution',
+    audioIncluded: 'Audio included in every render',
   },
   billingTip: {
     label: 'Billing tip:',
@@ -90,10 +91,6 @@ const DEFAULT_CONTROLS_COPY = {
     label: 'Seed',
     placeholder: 'Random',
     lock: 'Lock seed',
-  },
-  jitter: {
-    label: 'Jitter',
-    unit: '%',
   },
   fpsSuffix: '{value} fps',
   promptStrength: 'Prompt strength',
@@ -141,14 +138,38 @@ export function SettingsControls({
   showExtendControl = true,
 }: Props) {
   const { t } = useI18n();
-  const controlsCopy = (t('workspace.generate.controls', DEFAULT_CONTROLS_COPY) ??
-    DEFAULT_CONTROLS_COPY) as typeof DEFAULT_CONTROLS_COPY;
+  const localizedControls = t('workspace.generate.controls', DEFAULT_CONTROLS_COPY) as
+    | Partial<typeof DEFAULT_CONTROLS_COPY>
+    | undefined;
+  const controlsCopy = useMemo(() => {
+    const source = localizedControls ?? {};
+    return {
+      ...DEFAULT_CONTROLS_COPY,
+      ...source,
+      core: { ...DEFAULT_CONTROLS_COPY.core, ...(source.core ?? {}) },
+      billingTip: { ...DEFAULT_CONTROLS_COPY.billingTip, ...(source.billingTip ?? {}) },
+      frames: { ...DEFAULT_CONTROLS_COPY.frames, ...(source.frames ?? {}) },
+      duration: { ...DEFAULT_CONTROLS_COPY.duration, ...(source.duration ?? {}) },
+      resolution: { ...DEFAULT_CONTROLS_COPY.resolution, ...(source.resolution ?? {}) },
+      aspect: {
+        ...DEFAULT_CONTROLS_COPY.aspect,
+        ...(source.aspect ?? {}),
+        options: {
+          ...DEFAULT_CONTROLS_COPY.aspect.options,
+          ...(source.aspect?.options ?? {}),
+        },
+      },
+      loop: { ...DEFAULT_CONTROLS_COPY.loop, ...(source.loop ?? {}) },
+      seed: { ...DEFAULT_CONTROLS_COPY.seed, ...(source.seed ?? {}) },
+      apiKey: { ...DEFAULT_CONTROLS_COPY.apiKey, ...(source.apiKey ?? {}) },
+      extend: { ...DEFAULT_CONTROLS_COPY.extend, ...(source.extend ?? {}) },
+    } as typeof DEFAULT_CONTROLS_COPY;
+  }, [localizedControls]);
   const [seed, setSeed] = useState<string>('');
-  const [jitter, setJitter] = useState<number>(0);
   const [guidance, setGuidance] = useState<number | null>(null);
   const [initInfluence, setInitInfluence] = useState<number | null>(null);
   const [promptStrength, setPromptStrength] = useState<number | null>(null);
-  const [isAdvancedOpen, setIsAdvancedOpen] = useState(true);
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
 
 
   const enumeratedDurationOptions = useMemo(() => {
@@ -220,6 +241,7 @@ export function SettingsControls({
 
   const showResolutionControl = resolutionOptions.length > 0;
   const showAspectControl = aspectOptions.length > 0;
+  const audioIncluded = Boolean(engine.audio);
 
   return (
     <Card className="space-y-4 p-4">
@@ -229,6 +251,12 @@ export function SettingsControls({
             {controlsCopy.core.title}
           </h2>
           <p className="text-[12px] text-text-muted">{controlsCopy.core.subtitle}</p>
+          {audioIncluded && controlsCopy.core.audioIncluded && (
+            <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accentSoft/10 px-3 py-1 text-[11px] font-semibold text-accent">
+              <span className="text-[9px] text-accent">●</span>
+              <span>{controlsCopy.core.audioIncluded}</span>
+            </div>
+          )}
         </div>
       </header>
 
@@ -394,6 +422,7 @@ export function SettingsControls({
             }}
           />
         )}
+
       </div>
 
       {onIterationsChange && (
@@ -466,30 +495,16 @@ export function SettingsControls({
                 className="rounded-input border border-border bg-white px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
             </label>
-            <div className="flex items-center justify-between gap-3">
-              <label className="inline-flex items-center gap-2 text-[13px] text-text-secondary">
-                <input
-                  type="checkbox"
-                  checked={Boolean(seedLocked)}
-                  onChange={(e) => onSeedLockedChange?.(e.currentTarget.checked)}
-                />
-                <span>{controlsCopy.seed.lock}</span>
-              </label>
-              <label className="flex items-center gap-2 text-[13px] text-text-secondary">
-                <span className="text-[12px] uppercase tracking-micro text-text-muted">{controlsCopy.jitter.label}</span>
-                <input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={jitter}
-                  onChange={(e) => setJitter(Number(e.currentTarget.value))}
-                  className="w-20 rounded-input border border-border bg-white px-2 py-1 text-right text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                />
-                <span className="text-[12px] text-text-muted">{controlsCopy.jitter.unit}</span>
-              </label>
-            </div>
+            <label className="inline-flex items-center gap-2 text-[13px] text-text-secondary">
+              <input
+                type="checkbox"
+                checked={Boolean(seedLocked)}
+                onChange={(e) => onSeedLockedChange?.(e.currentTarget.checked)}
+              />
+              <span>{controlsCopy.seed.lock}</span>
+            </label>
 
-            {engine.fps.length > 0 && (
+            {engine.fps.length > 1 && (
               <div className="flex flex-wrap gap-2">
                 {engine.fps.map((option) => (
                 <button

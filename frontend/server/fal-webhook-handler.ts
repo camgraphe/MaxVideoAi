@@ -58,9 +58,9 @@ const PROVIDER_ENGINE_MAP: Record<string, string> = {
   pika: 'pika-text-to-video',
   'pika-labs': 'pika-text-to-video',
   'pika-2.2': 'pika-text-to-video',
-  'google-veo': 'veo-3-fast',
-  google: 'veo-3-fast',
-  veo: 'veo-3-fast',
+  'google-veo': 'veo-3-1-fast',
+  google: 'veo-3-1-fast',
+  veo: 'veo-3-1-fast',
   luma: 'luma-dream-machine',
   'luma-dream-machine': 'luma-dream-machine',
 };

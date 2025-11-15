@@ -21,7 +21,7 @@ function computeAddonAmount(
   const perSecondCents = rule.perSecondCents ?? 0;
   const flatCents = rule.flatCents ?? 0;
   const total = perSecondCents * duration + flatCents;
-  if (total <= 0) return null;
+  if (total === 0) return null;
   return { type: addonKey, amountCents: total };
 }
 

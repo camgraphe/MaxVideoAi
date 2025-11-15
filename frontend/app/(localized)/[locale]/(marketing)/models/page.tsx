@@ -147,10 +147,8 @@ export default async function ModelsPage() {
     'sora-2',
     'sora-2-pro',
     'veo-3-1',
-    'veo-3-fast',
     'veo-3-1-fast',
     'pika-text-to-video',
-    'pika-image-to-video',
     'minimax-hailuo-02-text',
     'minimax-hailuo-02-image',
   ];

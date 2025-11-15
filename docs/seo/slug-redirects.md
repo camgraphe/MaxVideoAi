@@ -10,16 +10,18 @@
 | /video | / | Remove obsolete short slug |
 | /sora2 | /models/sora-2 | Handle hyphen-less Sora queries |
 | /sora-2 | /models/sora-2 | Promote canonical Sora page |
-| /pika | /models/pika-image-to-video | Map shorthand Pika slug |
-| /pikavideo | /models/pika-image-to-video | Capture manual Pika tests |
+| /pika | /models/pika-text-to-video | Map shorthand Pika slug |
+| /pikavideo | /models/pika-text-to-video | Capture manual Pika tests |
 | /calculator | /pricing-calculator | Keyword-rich pricing calculator slug |
 | /docs/getting-started | /docs/get-started | Shorten onboarding slug |
 | /models/pika-2-2 | /models/pika-text-to-video | Consolidate legacy Pika slug |
-| /models/pika-image-video | /models/pika-image-to-video | Align Pika image-to-video slug |
+| /models/pika-image-video | /models/pika-text-to-video | Align Pika image-to-video slug |
+| /models/pika-image-to-video | /models/pika-text-to-video | Merge old standalone Pika page |
 | /models/openai-sora-2 | /models/sora-2 | Standardize Sora slug |
 | /models/openai-sora-2-pro | /models/sora-2-pro | Harmonise legacy naming with new Sora Pro page |
 | /models/google-veo-3 | /models/veo-3-1 | Promote latest Veo release |
-| /models/google-veo-3-fast | /models/veo-3-fast | Drop brand prefix for Veo fast |
+| /models/google-veo-3-fast | /models/veo-3-1-fast | Drop brand prefix for Veo fast |
+| /models/veo-3-fast | /models/veo-3-1-fast | Sunset legacy Veo 3 slug |
 | /models/google-veo-3-1-fast | /models/veo-3-1-fast | Align new fast tier naming |
 | /models/minimax-video-01 | /models/minimax-hailuo-02-text | Map legacy MiniMax slug to Standard text tier |
 | /models/minimax-video-1 | /models/minimax-hailuo-02-text | Additional legacy MiniMax slug |

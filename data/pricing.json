@@ -82,39 +82,6 @@
     ]
   },
   {
-    "engine": "Google Veo 3 Fast",
-    "catalogSlug": "veo-3-fast",
-    "falSlug": "fal-ai/veo3/fast",
-    "source_url": "https://fal.ai/models/fal-ai/veo3/fast",
-    "last_checked_at": "2025-02-14T00:00:00",
-    "stale": false,
-    "checksum": "",
-    "prices": [
-      {
-        "variant": {
-          "resolution": "720p",
-          "audio": "off"
-        },
-        "raw": {
-          "currency": "USD",
-          "unit": "second",
-          "amount": 0.25
-        }
-      },
-      {
-        "variant": {
-          "resolution": "720p",
-          "audio": "on"
-        },
-        "raw": {
-          "currency": "USD",
-          "unit": "second",
-          "amount": 0.4
-        }
-      }
-    ]
-  },
-  {
     "engine": "Google Veo 3.1 Fast",
     "catalogSlug": "veo-3-1-fast",
     "falSlug": "fal-ai/veo3.1/fast/image-to-video",
@@ -179,41 +146,10 @@
     ]
   },
   {
-    "engine": "Pika 2.2 Text to Video",
+    "engine": "Pika 2.2 Text & Image to Video",
     "catalogSlug": "pika-text-to-video",
     "falSlug": "fal-ai/pika/v2.2/text-to-video",
     "source_url": "https://fal.ai/models/fal-ai/pika/v2.2/text-to-video",
-    "last_checked_at": "2025-02-14T00:00:00",
-    "stale": false,
-    "checksum": "",
-    "prices": [
-      {
-        "variant": {
-          "resolution": "720p"
-        },
-        "raw": {
-          "currency": "USD",
-          "unit": "second",
-          "amount": 0.04
-        }
-      },
-      {
-        "variant": {
-          "resolution": "1080p"
-        },
-        "raw": {
-          "currency": "USD",
-          "unit": "second",
-          "amount": 0.09
-        }
-      }
-    ]
-  },
-  {
-    "engine": "Pika 2.2 Image to Video",
-    "catalogSlug": "pika-image-to-video",
-    "falSlug": "fal-ai/pika/v2.2/image-to-video",
-    "source_url": "https://fal.ai/models/fal-ai/pika/v2.2/image-to-video",
     "last_checked_at": "2025-02-14T00:00:00",
     "stale": false,
     "checksum": "",

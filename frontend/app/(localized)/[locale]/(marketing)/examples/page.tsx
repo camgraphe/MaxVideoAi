@@ -90,7 +90,6 @@ const ENGINE_FILTER_GROUPS: Record<
   'minimax-hailuo-02-image': { id: 'minimax-hailuo-02', label: 'MiniMax Hailuo 02', brandId: 'minimax' },
   'minimax-hailuo-02': { id: 'minimax-hailuo-02', label: 'MiniMax Hailuo 02', brandId: 'minimax' },
   'pika-text-to-video': { id: 'pika-2-2', label: 'Pika 2.2', brandId: 'pika' },
-  'pika-image-to-video': { id: 'pika-2-2', label: 'Pika 2.2', brandId: 'pika' },
   'pika-2-2': { id: 'pika-2-2', label: 'Pika 2.2', brandId: 'pika' },
 };
 

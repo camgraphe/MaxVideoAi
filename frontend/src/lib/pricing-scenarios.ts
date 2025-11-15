@@ -10,8 +10,8 @@ export interface PricingScenario {
 }
 
 export const DEFAULT_MARKETING_SCENARIO: PricingScenario = {
-  engineId: 'veo-3-fast',
-  durationSec: 12,
+  engineId: 'veo-3-1-fast',
+  durationSec: 8,
   resolution: '1080p',
   memberTier: 'member',
 };

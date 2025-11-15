@@ -146,8 +146,8 @@ export default function AiVideoEnginesPage() {
             Fal.ai powers the multi-engine routing backbone behind MaxVideoAI, letting us burst to capacity while surfacing a consistent
             interface to creative leads. Our orchestration layer keeps prompts portable, logs every render, and exposes diagnostics so
             you know when to retry or hand off to another engine like{' '}
-            <Link href={{ pathname: '/models/[slug]', params: { slug: 'veo-3-fast' } }} className="font-semibold text-accent hover:text-accentSoft">
-              Veo 3 Fast
+            <Link href={{ pathname: '/models/[slug]', params: { slug: 'veo-3-1-fast' } }} className="font-semibold text-accent hover:text-accentSoft">
+              Veo 3.1 Fast
             </Link>{' '}
             or{' '}
             <Link href={{ pathname: '/models/[slug]', params: { slug: 'minimax-hailuo-02-text' } }} className="font-semibold text-accent hover:text-accentSoft">

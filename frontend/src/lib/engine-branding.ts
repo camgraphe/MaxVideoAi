@@ -21,12 +21,10 @@ const BRAND_PICTOGRAMS: Record<string, EnginePictogram> = {
 
 const ENGINE_PICTOGRAMS: Record<string, EnginePictogram> = {
   'veo-3-1': BRAND_PICTOGRAMS['google-veo'],
-  'veo-3-fast': BRAND_PICTOGRAMS['google-veo'],
   'veo-3-1-fast': BRAND_PICTOGRAMS['google-veo'],
   'sora-2': BRAND_PICTOGRAMS.openai,
   'sora-2-pro': BRAND_PICTOGRAMS.openai,
   'pika-text-to-video': BRAND_PICTOGRAMS.pika,
-  'pika-image-to-video': BRAND_PICTOGRAMS.pika,
   'minimax-hailuo-02-text': BRAND_PICTOGRAMS.minimax,
   'minimax-hailuo-02-image': BRAND_PICTOGRAMS.minimax,
 };

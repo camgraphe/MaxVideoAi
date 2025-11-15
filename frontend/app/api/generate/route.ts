@@ -33,12 +33,13 @@ import {
 import { ensureUserPreferredCurrency, getUserPreferredCurrency, resolveCurrency } from '@/lib/currency';
 import type { Currency } from '@/lib/currency';
 import { convertCents } from '@/lib/exchange';
+import { applyEngineVariantPricing } from '@/lib/pricing-addons';
 
 const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER = 'usd';
 
 type PaymentMode = 'wallet' | 'direct' | 'platform';
-type VideoMode = Extract<Mode, 't2v' | 'i2v'>;
+type VideoMode = Extract<Mode, 't2v' | 'i2v' | 'i2i'>;
 
 const LUMA_RAY2_TIMEOUT_MS = 180_000;
 const FAL_RETRY_DELAYS_MS = [5_000, 15_000, 30_000];
@@ -621,8 +622,9 @@ export async function POST(req: NextRequest) {
   const resolvedCurrencyLower = currencyResolution.currency;
   const resolvedCurrencyUpper = resolvedCurrencyLower.toUpperCase();
 
+  const pricingEngine = applyEngineVariantPricing(engine, mode);
   const pricing = await computePricingSnapshot({
-    engine,
+    engine: pricingEngine,
     durationSec,
     resolution: pricingResolution,
     membershipTier: body.membershipTier,

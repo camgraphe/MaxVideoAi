@@ -18,10 +18,10 @@ const ENGINE_ID_ALIASES = (() => {
   });
 
   const manualAliases: Record<string, string> = {
-    'veo3': 'veo-3-fast',
+    'veo3': 'veo-3-1-fast',
     'veo-3': 'veo-3-1',
     'veo3.1': 'veo-3-1',
-    'veo3-fast': 'veo-3-fast',
+    'veo3-fast': 'veo-3-1-fast',
     'pika22': 'pika-text-to-video',
     'pika-22': 'pika-text-to-video',
     'luma-dm': 'minimax-hailuo-02-text',

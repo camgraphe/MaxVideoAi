@@ -30,17 +30,6 @@
     "availability": "available",
     "logoPolicy": "textOnly"
   },
-  {
-    "engineId": "veo-3-fast",
-    "marketingName": "Google Veo 3 Fast",
-    "brandId": "google-veo",
-    "modelSlug": "veo-3-fast",
-    "family": "veo",
-    "versionLabel": "3 Fast",
-    "availability": "available",
-    "logoPolicy": "textOnly"
-  },
-  {
     "engineId": "veo-3-1-fast",
     "marketingName": "Google Veo 3.1 Fast",
     "brandId": "google-veo",
@@ -62,19 +51,9 @@
   },
   {
     "engineId": "pika-text-to-video",
-    "marketingName": "Pika 2.2 Text to Video",
+    "marketingName": "Pika 2.2 Text & Image to Video",
     "brandId": "pika",
     "modelSlug": "pika-text-to-video",
-    "family": "pika",
-    "versionLabel": "2.2",
-    "availability": "available",
-    "logoPolicy": "textOnly"
-  },
-  {
-    "engineId": "pika-image-to-video",
-    "marketingName": "Pika 2.2 Image to Video",
-    "brandId": "pika",
-    "modelSlug": "pika-image-to-video",
     "family": "pika",
     "versionLabel": "2.2",
     "availability": "available",

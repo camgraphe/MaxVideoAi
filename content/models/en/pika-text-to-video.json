@@ -1,16 +1,16 @@
 {
-  "marketingName": "Pika 2.2 Text to Video",
+  "marketingName": "Pika 2.2 Text & Image to Video",
   "versionLabel": "2.2",
   "seo": {
-    "title": "Pika Text-to-Video – Stylized AI Video from Prompts",
-    "description": "Generate creative, stylized AI videos from text prompts using Pika. Perfect for short-form loops, motion hooks, and playful visuals—silent, fast, and budget-friendly via MaxVideoAI.",
+    "title": "Pika 2.2 – Text & Image to Video",
+    "description": "Generate creative, stylized AI videos from text prompts or animate a reference still with Pika. Perfect for short-form loops, motion hooks, and playful visuals—silent, fast, and budget-friendly via MaxVideoAI.",
     "image": "/hero/pika-22.jpg"
   },
   "hero": {
-    "title": "Pika Text-to-Video – Creative AI Video Engine (No Audio)",
-    "intro": "Pika’s text-to-video engine focuses on speed and style. Draft fun, snappy clips with bold animation looks and quick camera moves—ideal for social-first visuals produced in minutes.",
+    "title": "Pika 2.2 – Text & Image to Video (No Audio)",
+    "intro": "Run Pika from a prompt or drop in a still frame to animate it. Draft fun, snappy clips with bold animation looks and quick camera moves—ideal for social-first visuals produced in minutes.",
     "ctaPrimary": {
-      "label": "Try Pika Text-to-Video",
+      "label": "Try Pika 2.2",
       "href": "/app?engine=pika-text-to-video"
     },
     "secondaryLinks": [
@@ -28,12 +28,12 @@
       }
     ]
   },
-  "overview": "Create fast, stylized clips with Pika. Spin up 5–8 second loops, reels, or motion sketches directly from text prompts—no reference images or audio required.",
+  "overview": "Create fast, stylized clips with Pika. Spin up 5–8 second loops, reels, or motion sketches directly from text prompts, or animate uploaded stills without touching a timeline.",
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
       "Short TikTok/Reel-style videos with stylized animation",
-      "Fast previews of motion ideas or visual hooks",
+      "Animating uploaded moodboards or styleframes into motion",
       "Looping animations or cutaway effects for editors",
       "Playful visuals for gaming, fashion, or pop-culture beats"
     ]
@@ -62,11 +62,11 @@
     },
     {
       "label": "Inputs",
-      "body": "Text prompts only—focus on bold subjects and stylistic cues"
+      "body": "Text prompts plus optional single reference image (PNG, JPG, WEBP, GIF, AVIF)"
     },
     {
       "label": "Modes",
-      "body": "Text-to-video only; no reference image uploads"
+      "body": "Text-to-video & image-to-video in one card"
     },
     {
       "label": "Pricing",
@@ -90,6 +90,7 @@
     "items": [
       "⚡ Perfect for quick loops and visual punchlines",
       "🎨 Layer in stylistic cues—anime, comic, vintage, pixel, CG",
+      "🖼️ Upload poster frames or boards to keep colors and layout consistent",
       "🔁 Use simple prompts to craft seamless 3–5 second loops",
       "📱 9:16 exports pop in reels, stories, and Shorts",
       "❌ No audio—overlay custom music or VO in the edit"

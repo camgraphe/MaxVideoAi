@@ -86,7 +86,12 @@ const nextConfig = {
       },
       {
         source: '/models/google-veo-3-fast',
-        destination: '/models/veo-3-fast',
+        destination: '/models/veo-3-1-fast',
+        permanent: true,
+      },
+      {
+        source: '/models/veo-3-fast',
+        destination: '/models/veo-3-1-fast',
         permanent: true,
       },
       {
@@ -186,7 +191,7 @@ const nextConfig = {
       },
       {
         source: '/models/veo3fast',
-        destination: '/models/veo-3-fast',
+        destination: '/models/veo-3-1-fast',
         permanent: true,
       },
     ];

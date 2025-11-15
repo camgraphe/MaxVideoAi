@@ -920,10 +920,22 @@ const requestedEngineId = useMemo(() => {
   const trimmed = value.trim();
   return trimmed.length ? trimmed : null;
 }, [searchParams]);
-const requestedEngineToken = useMemo(() => normalizeEngineToken(requestedEngineId), [requestedEngineId]);
+const resolvedRequestedEngineId = useMemo(() => {
+  if (!requestedEngineId) return null;
+  const normalized = requestedEngineId.trim().toLowerCase();
+  if (normalized === 'pika-image-to-video') {
+    return 'pika-text-to-video';
+  }
+  return requestedEngineId;
+}, [requestedEngineId]);
+const requestedEngineToken = useMemo(
+  () => normalizeEngineToken(resolvedRequestedEngineId),
+  [resolvedRequestedEngineId]
+);
 if (typeof window !== 'undefined') {
   console.log('[generate] requested engine params', {
     raw: requestedEngineId,
+    resolved: resolvedRequestedEngineId,
     token: requestedEngineToken,
     search: searchParams?.toString() ?? '',
   });
@@ -1196,10 +1208,10 @@ useEffect(() => {
       const formValue = readStorage(STORAGE_KEYS.form);
       const storedForm = formValue ? parseStoredForm(formValue) : null;
       let nextForm: FormState | null = storedForm;
-      if (requestedEngineId) {
-        if (!storedForm || storedForm.engineId !== requestedEngineId) {
+      if (resolvedRequestedEngineId) {
+        if (!storedForm || storedForm.engineId !== resolvedRequestedEngineId) {
           const base = storedForm ?? {
-            engineId: requestedEngineId,
+            engineId: resolvedRequestedEngineId,
             mode: 't2v' as Mode,
             durationSec: 4,
             durationOption: 4,
@@ -1210,7 +1222,7 @@ useEffect(() => {
             iterations: 1,
             seedLocked: false,
           } satisfies FormState;
-          nextForm = { ...base, engineId: requestedEngineId };
+          nextForm = { ...base, engineId: resolvedRequestedEngineId };
           if (process.env.NODE_ENV !== 'production') {
             console.log('[generate] engine override from storage hydrate', {
               from: storedForm?.engineId,
@@ -1258,7 +1270,7 @@ useEffect(() => {
       setActiveBatchId(null);
       setActiveGroupId(null);
     }
-  }, [readStorage, writeStorage, setMemberTier, storageScope, requestedEngineId]);
+  }, [readStorage, writeStorage, setMemberTier, storageScope, resolvedRequestedEngineId]);
 
   useEffect(() => {
     rendersRef.current = renders;
@@ -2378,6 +2390,23 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     }
     return engines[0];
   }, [engines, form, engineOverride]);
+
+  useEffect(() => {
+    if (form?.engineId === 'pika-image-to-video') {
+      setForm((current) => {
+        if (!current || current.engineId !== 'pika-image-to-video') return current;
+        return { ...current, engineId: 'pika-text-to-video' };
+      });
+    }
+  }, [form?.engineId, setForm]);
+
+  const engineModeOptions = useMemo<Mode[] | undefined>(() => {
+    if (!selectedEngine) return undefined;
+    const preferredOrder: Mode[] = ['t2v', 'i2v', 'i2i'];
+    const available = preferredOrder.filter((value) => selectedEngine.modes.includes(value));
+    return available.length ? available : undefined;
+  }, [selectedEngine]);
+
   const engineMap = useMemo(() => {
     const map = new Map<string, EngineCaps>();
     engines.forEach((entry) => {
@@ -2606,6 +2635,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       negativePromptRequired,
     };
   }, [selectedEngine, activeMode]);
+
   useEffect(() => {
     setInputAssets((previous) => {
       if (!inputSchemaSummary.assetFields.length) {
@@ -3318,7 +3348,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       loop: form.loop,
       user: { memberTier },
     };
-
     setPricing(true);
     setPreflightError(undefined);
 
@@ -3645,6 +3674,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                       onEngineChange={handleEngineChange}
                       mode={form.mode}
                       onModeChange={handleModeChange}
+                      modeOptions={engineModeOptions}
                     />
                   </div>
                 </div>

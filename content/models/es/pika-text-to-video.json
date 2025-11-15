@@ -1,16 +1,16 @@
 {
-  "marketingName": "Pika 2.2 Texto→Video",
+  "marketingName": "Pika 2.2 Texto e Imagen→Video",
   "versionLabel": "2.2",
   "seo": {
-    "title": "Pika Texto→Video – Video IA estilizado desde prompts",
-    "description": "Genera videos IA creativos y estilizados a partir de simples indicaciones de texto con Pika. Perfecto para loops cortos, ganchos visuales y contenido social: silencioso, rápido y económico vía MaxVideoAI.",
+    "title": "Pika 2.2 – Texto e Imagen→Video",
+    "description": "Genera videos IA creativos a partir de prompts o anima un fotograma de referencia con Pika. Ideal para loops cortos, ganchos visuales y contenido social: silencioso, rápido y económico vía MaxVideoAI.",
     "image": "/hero/pika-22.jpg"
   },
   "hero": {
-    "title": "Pika Texto→Video – motor creativo sin audio",
-    "intro": "El motor texto→video de Pika prioriza la velocidad y el estilo. Produce clips divertidos con looks de animación audaces y movimientos expresivos, ideales para visuales social-first en minutos.",
+    "title": "Pika 2.2 – Texto e Imagen→Video (sin audio)",
+    "intro": "Lanza Pika desde un prompt o sube un frame para animarlo. Produce clips estilizados con looks de animación audaces y movimientos expresivos, ideales para visuales social-first en minutos.",
     "ctaPrimary": {
-      "label": "Probar Pika Texto→Video",
+      "label": "Probar Pika 2.2",
       "href": "/app?engine=pika-text-to-video"
     },
     "secondaryLinks": [
@@ -28,12 +28,12 @@
       }
     ]
   },
-  "overview": "Crea clips estilizados de 5–8 segundos con Pika. Lanza loops, reels o bocetos de motion solo con texto, sin imágenes de referencia ni audio.",
+  "overview": "Crea clips estilizados de 5–8 segundos con Pika. Lanza loops, reels o bocetos de motion desde texto o anima tus moodboards sin tocar la línea de tiempo.",
   "bestUseCases": {
     "title": "Casos de uso ideales",
     "items": [
       "Videos cortos tipo TikTok/Reels con animación estilizada",
-      "Previews rápidas de ideas de movimiento o ganchos visuales",
+      "Animar moodboards, keyframes o styleframes para presentar conceptos",
       "Loops o recursos de corte para editores y motion designers",
       "Visuales lúdicos para gaming, moda o beats de cultura pop"
     ]
@@ -62,11 +62,11 @@
     },
     {
       "label": "Entradas",
-      "body": "Solo prompts de texto: apuesta por sujetos audaces y estilos claros"
+      "body": "Prompts de texto y una imagen de referencia opcional (PNG/JPG/WEBP/GIF/AVIF)"
     },
     {
       "label": "Modos",
-      "body": "Texto→video únicamente; sin cargas de imágenes de referencia"
+      "body": "Texto→video e Imagen→video en una sola tarjeta"
     },
     {
       "label": "Precio",
@@ -90,6 +90,7 @@
     "items": [
       "⚡ Ideal para loops rápidos y punchlines visuales",
       "🎨 Superpone pistas de estilo — anime, vintage, pixel, CG",
+      "🖼️ Sube frames de storyboard para mantener colores y composición",
       "🔁 Prompts simples = loops limpios de 3–5 s",
       "📱 Los formatos 9:16 brillan en Reels, Stories y Shorts",
       "❌ Sin audio: agrega tu pista en post o rerun en Sora si requieres narración"

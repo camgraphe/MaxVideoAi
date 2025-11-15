@@ -12,6 +12,7 @@ import {
   normaliseLumaRay2Loop,
   LUMA_RAY2_ERROR_UNSUPPORTED,
 } from '@/lib/luma-ray2';
+import { applyEngineVariantPricing } from '@/lib/pricing-addons';
 
 function applyPricingDetails(engine: EngineCaps, pricing: EnginePricingDetails | null): void {
   if (!pricing) return;
@@ -167,6 +168,7 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
   }
 
   const isLumaRay2 = engine.id === 'lumaRay2';
+  const pricingEngine = applyEngineVariantPricing(engine, request.mode);
   const requestedResolution = request.resolution;
   const availableResolutions: string[] = engine.resolutions.map((value) => value);
   let effectiveResolution = requestedResolution;
@@ -219,11 +221,10 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
   const durationSec = durationInfo ? durationInfo.seconds : durationSecRaw;
   const memberTier = normalizeMemberTier(request.user?.memberTier);
   const loop = isLumaRay2 ? normaliseLumaRay2Loop(request.loop) : undefined;
-
   let snapshot: PricingSnapshot;
   try {
     snapshot = await computePricingSnapshot({
-      engine,
+      engine: pricingEngine,
       durationSec,
       resolution: effectiveResolution,
       membershipTier: memberTier,
@@ -257,8 +258,8 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
       params: engine.params,
       inputLimits: engine.inputLimits,
       inputSchema: engine.inputSchema,
-      pricing: engine.pricing,
-      pricingDetails: engine.pricingDetails,
+      pricing: pricingEngine.pricing,
+      pricingDetails: pricingEngine.pricingDetails,
     },
   };
 }

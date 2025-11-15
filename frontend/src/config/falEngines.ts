@@ -95,14 +95,14 @@ export interface FalEngineEntry {
 
 const PIKA_TEXT_TO_VIDEO_ENGINE: EngineCaps = {
   id: 'pika-text-to-video',
-  label: 'Pika 2.2 Text to Video',
+  label: 'Pika 2.2 Text & Image to Video',
   provider: 'Pika',
   version: '2.2',
   status: 'live',
   latencyTier: 'standard',
   queueDepth: 0,
   region: 'global',
-  modes: ['t2v'],
+  modes: ['t2v', 'i2v'],
   maxDurationSec: 8,
   resolutions: ['720p', '1080p'],
   aspectRatios: ['16:9', '9:16', '1:1', '4:5', '5:4', '3:2', '2:3'],
@@ -123,103 +123,10 @@ const PIKA_TEXT_TO_VIDEO_ENGINE: EngineCaps = {
         type: 'text',
         label: 'Prompt',
       },
-    ],
-    optional: [
-      {
-        id: 'duration_seconds',
-        type: 'enum',
-        label: 'Duration (seconds)',
-        values: ['5', '8'],
-        default: '5',
-      },
-      {
-        id: 'aspect_ratio',
-        type: 'enum',
-        label: 'Aspect ratio',
-        values: ['16:9', '9:16', '1:1', '4:5', '5:4', '3:2', '2:3'],
-        default: '16:9',
-      },
-      {
-        id: 'resolution',
-        type: 'enum',
-        label: 'Resolution',
-        values: ['720p', '1080p'],
-        default: '720p',
-      },
-      {
-        id: 'negative_prompt',
-        type: 'text',
-        label: 'Negative prompt',
-      },
-      {
-        id: 'seed',
-        type: 'number',
-        label: 'Seed',
-      },
-    ],
-  },
-  pricingDetails: {
-    currency: 'USD',
-    perSecondCents: {
-      default: 4,
-      byResolution: {
-        '720p': 4,
-        '1080p': 9,
-      },
-    },
-  },
-  pricing: {
-    unit: 'USD/s',
-    base: 0.04,
-    byResolution: {
-      '720p': 0.04,
-      '1080p': 0.09,
-    },
-    currency: 'USD',
-    notes: '$0.20 per 5s at 720p, $0.45 per 5s at 1080p',
-  },
-  updatedAt: '2025-02-14T00:00:00Z',
-  ttlSec: 600,
-  providerMeta: {
-    provider: 'pika',
-    modelSlug: 'fal-ai/pika/v2.2/text-to-video',
-  },
-  availability: 'available',
-  brandId: 'pika',
-};
-
-const PIKA_IMAGE_TO_VIDEO_ENGINE: EngineCaps = {
-  id: 'pika-image-to-video',
-  label: 'Pika 2.2 Image to Video',
-  provider: 'Pika',
-  version: '2.2',
-  status: 'live',
-  latencyTier: 'standard',
-  queueDepth: 0,
-  region: 'global',
-  modes: ['i2v'],
-  maxDurationSec: 8,
-  resolutions: ['720p', '1080p'],
-  aspectRatios: ['16:9', '9:16', '1:1', '4:5', '5:4', '3:2', '2:3'],
-  fps: [24],
-  audio: false,
-  upscale4k: false,
-  extend: false,
-  motionControls: false,
-  keyframes: false,
-  params: {},
-  inputLimits: {},
-  inputSchema: {
-    required: [
-      {
-        id: 'prompt',
-        type: 'text',
-        label: 'Prompt',
-      },
       {
         id: 'image_url',
         type: 'image',
-        label: 'Source image',
+        label: 'Reference image',
         modes: ['i2v'],
         requiredInModes: ['i2v'],
         minCount: 1,
@@ -288,7 +195,7 @@ const PIKA_IMAGE_TO_VIDEO_ENGINE: EngineCaps = {
   ttlSec: 600,
   providerMeta: {
     provider: 'pika',
-    modelSlug: 'fal-ai/pika/v2.2/image-to-video',
+    modelSlug: 'fal-ai/pika/v2.2/text-to-video',
   },
   availability: 'available',
   brandId: 'pika',
@@ -396,14 +303,10 @@ const VEO_3_1_ENGINE: EngineCaps = {
     currency: 'USD',
     perSecondCents: {
       default: 40,
-      byResolution: {
-        '720p': 40,
-        '1080p': 55,
-      },
     },
     addons: {
       audio_off: {
-        perSecondCents: -13,
+        perSecondCents: -20,
       },
     },
   },
@@ -411,123 +314,13 @@ const VEO_3_1_ENGINE: EngineCaps = {
     unit: 'USD/s',
     base: 0.4,
     currency: 'USD',
-    notes: '$0.40/s with audio, ~33% less with audio disabled',
+    notes: '$0.40/s with audio, $0.20/s audio off',
   },
   updatedAt: '2025-02-14T00:00:00Z',
   ttlSec: 600,
   providerMeta: {
     provider: 'google-veo',
     modelSlug: 'fal-ai/veo3.1',
-  },
-  availability: 'available',
-  brandId: 'google-veo',
-};
-
-const VEO_3_FAST_ENGINE: EngineCaps = {
-  id: 'veo-3-fast',
-  label: 'Google Veo 3 Fast',
-  provider: 'Google',
-  version: '3 Fast',
-  status: 'live',
-  latencyTier: 'fast',
-  queueDepth: 0,
-  region: 'global',
-  modes: ['t2v'],
-  maxDurationSec: 8,
-  resolutions: ['720p', '1080p'],
-  aspectRatios: ['16:9', '9:16', '1:1'],
-  fps: [24],
-  audio: true,
-  upscale4k: false,
-  extend: false,
-  motionControls: false,
-  keyframes: false,
-  params: {},
-  inputLimits: {},
-  inputSchema: {
-    required: [
-      {
-        id: 'prompt',
-        type: 'text',
-        label: 'Prompt',
-      },
-    ],
-    optional: [
-      {
-        id: 'duration',
-        type: 'enum',
-        label: 'Duration',
-        values: ['4s', '6s', '8s'],
-        default: '8s',
-      },
-      {
-        id: 'aspect_ratio',
-        type: 'enum',
-        label: 'Aspect ratio',
-        values: ['16:9', '9:16', '1:1'],
-        default: '16:9',
-      },
-      {
-        id: 'resolution',
-        type: 'enum',
-        label: 'Resolution',
-        values: ['720p', '1080p'],
-        default: '720p',
-      },
-      {
-        id: 'seed',
-        type: 'number',
-        label: 'Seed',
-      },
-      {
-        id: 'enhance_prompt',
-        type: 'enum',
-        label: 'Enhance prompt',
-        values: ['true', 'false'],
-        default: 'true',
-      },
-      {
-        id: 'auto_fix',
-        type: 'enum',
-        label: 'Auto fix policy',
-        values: ['true', 'false'],
-        default: 'true',
-      },
-      {
-        id: 'generate_audio',
-        type: 'enum',
-        label: 'Generate audio',
-        values: ['true', 'false'],
-        default: 'true',
-      },
-    ],
-  },
-  pricingDetails: {
-    currency: 'USD',
-    perSecondCents: {
-      default: 40,
-      byResolution: {
-        '720p': 40,
-        '1080p': 50,
-      },
-    },
-    addons: {
-      audio_off: {
-        perSecondCents: -15,
-      },
-    },
-  },
-  pricing: {
-    unit: 'USD/s',
-    base: 0.4,
-    currency: 'USD',
-    notes: '$0.40/s with audio, about $0.25/s with audio off',
-  },
-  updatedAt: '2025-02-14T00:00:00Z',
-  ttlSec: 600,
-  providerMeta: {
-    provider: 'google-veo',
-    modelSlug: 'fal-ai/veo3/fast',
   },
   availability: 'available',
   brandId: 'google-veo',
@@ -635,10 +428,6 @@ const VEO_3_1_FAST_ENGINE: EngineCaps = {
     currency: 'USD',
     perSecondCents: {
       default: 15,
-      byResolution: {
-        '720p': 10,
-        '1080p': 15,
-      },
     },
     addons: {
       audio_off: {
@@ -751,14 +540,10 @@ const VEO_3_1_FIRST_LAST_ENGINE: EngineCaps = {
     currency: 'USD',
     perSecondCents: {
       default: 40,
-      byResolution: {
-        '720p': 40,
-        '1080p': 55,
-      },
     },
     addons: {
       audio_off: {
-        perSecondCents: -13,
+        perSecondCents: -20,
       },
     },
   },
@@ -766,7 +551,7 @@ const VEO_3_1_FIRST_LAST_ENGINE: EngineCaps = {
     unit: 'USD/s',
     base: 0.4,
     currency: 'USD',
-    notes: 'First/last frame animation with optional audio.',
+    notes: '$0.40/s with audio, $0.20/s audio off',
   },
   updatedAt: '2025-02-14T00:00:00Z',
   ttlSec: 600,
@@ -1246,7 +1031,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     brandId: 'openai',
     family: 'sora',
     versionLabel: '2',
-    availability: 'available',
+    availability: 'paused',
     logoPolicy: 'textOnly',
     billingNote: 'Si une cle OpenAI est fournie, la facturation passe directement chez OpenAI ; sinon Fal credite MaxVideoAI.',
     engine: SORA_2_ENGINE,
@@ -1457,9 +1242,9 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
         falModelId: 'fal-ai/veo3.1/reference-to-video',
         ui: {
           modes: ['i2v'],
-          duration: { options: ['8s'], default: '8s' },
+          duration: { options: ['4s', '6s', '8s'], default: '8s' },
           resolution: ['720p', '1080p'],
-          aspectRatio: ['16:9', '9:16', '1:1'],
+          aspectRatio: ['auto', '16:9', '9:16'],
           audioToggle: true,
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
           maxUploadMB: 12,
@@ -1511,74 +1296,6 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     },
   },
   {
-    id: 'veo-3-fast',
-    modelSlug: 'veo-3-fast',
-    marketingName: 'Google Veo 3 Fast',
-    cardTitle: 'Veo 3 Fast',
-    provider: 'Google',
-    brandId: 'google-veo',
-    family: 'veo',
-    versionLabel: '3 Fast',
-    availability: 'available',
-    logoPolicy: 'textOnly',
-    engine: VEO_3_FAST_ENGINE,
-    modes: [
-      {
-        mode: 't2v',
-        falModelId: 'fal-ai/veo3/fast',
-        ui: {
-          modes: ['t2v'],
-          duration: { options: ['4s', '6s', '8s'], default: '8s' },
-          resolution: ['720p', '1080p'],
-          aspectRatio: ['16:9', '9:16', '1:1'],
-          audioToggle: true,
-        },
-      },
-    ],
-    defaultFalModelId: 'fal-ai/veo3/fast',
-    seo: {
-      title: 'Veo 3 Fast – Quick Cinematic Video Generation (No Audio)',
-      description:
-        'Generate cinematic-style AI videos in seconds using Veo 3 Fast. Optimized for speed, silent playback, and low-cost prototyping via MaxVideoAI.',
-      canonicalPath: '/models/veo-3-fast',
-    },
-    type: 'Text only · Silent',
-    seoText:
-      'Test cinematic prompts quickly with Veo 3 Fast. No audio, up to 8s, ultra-fast generation for storyboarding and social loops.',
-    demoUrl: 'https://v3.fal.media/files/lion/L9nkXSW1MCj2oDimeJ4w5_output.mp4',
-    media: {
-      videoUrl: 'https://v3.fal.media/files/lion/L9nkXSW1MCj2oDimeJ4w5_output.mp4',
-      imagePath: '/hero/veo3.jpg',
-      altText: 'Short clip generated with Veo 3 Fast',
-    },
-    prompts: [
-      {
-        title: 'Frozen lake cinematic test',
-        prompt: 'A lone astronaut walking across a frozen lake at sunset, cinematic wide shot with reflective ice, slow pan left, no audio mentioned.',
-        mode: 't2v',
-      },
-    ],
-    faqs: [
-      {
-        question: 'Does Veo 3 ship with the latest motion tuning?',
-        answer: 'Yes. MaxVideoAI syncs routing with Google DeepMind updates so motion tuning stays current without manual work.',
-      },
-      {
-        question: 'Can I brief Veo 3 with reference images?',
-        answer: 'Upload stills when drafting your prompt. The render queue keeps the references attached end-to-end.',
-      },
-    ],
-    pricingHint: {
-      currency: 'USD',
-      amountCents: 80,
-      durationSeconds: 8,
-      resolution: '720p',
-      label: 'Silent clip',
-    },
-    promptExample:
-      'A futuristic corridor with flickering neon lights, camera slowly tracks forward, shadows moving on the walls',
-  },
-  {
     id: 'veo-3-1-fast',
     modelSlug: 'veo-3-1-fast',
     marketingName: 'Google Veo 3.1 Fast',
@@ -1607,9 +1324,9 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
         falModelId: 'fal-ai/veo3.1/fast/image-to-video',
         ui: {
           modes: ['i2v'],
-          duration: { options: ['8s'], default: '8s' },
+          duration: { options: ['4s', '6s', '8s'], default: '8s' },
           resolution: ['720p', '1080p'],
-          aspectRatio: ['auto', '9:16', '16:9', '1:1'],
+          aspectRatio: ['auto', '16:9', '9:16'],
           audioToggle: true,
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
           maxUploadMB: 12,
@@ -1755,7 +1472,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
   {
     id: 'pika-text-to-video',
     modelSlug: 'pika-text-to-video',
-    marketingName: 'Pika 2.2 Text to Video',
+    marketingName: 'Pika 2.2 Text & Image to Video',
     cardTitle: 'Pika 2.2',
     provider: 'Pika',
     brandId: 'pika',
@@ -1776,22 +1493,35 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
           audioToggle: false,
         },
       },
+      {
+        mode: 'i2v',
+        falModelId: 'fal-ai/pika/v2.2/image-to-video',
+        ui: {
+          modes: ['i2v'],
+          duration: { options: [5, 8], default: 5 },
+          resolution: ['720p', '1080p'],
+          aspectRatio: ['16:9', '9:16', '1:1', '4:5', '5:4', '3:2', '2:3'],
+          acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif'],
+          maxUploadMB: 25,
+          audioToggle: false,
+        },
+      },
     ],
     defaultFalModelId: 'fal-ai/pika/v2.2/text-to-video',
     seo: {
-      title: 'Pika Text-to-Video – Stylized AI Video from Prompts',
+      title: 'Pika 2.2 – Stylized Text & Image to Video',
       description:
-        'Generate creative, animated AI videos from text prompts using Pika. Perfect for short-form, stylized visuals without audio via MaxVideoAI.',
+        'Generate stylized AI video from prompts or animate uploaded stills using Pika 2.2. Perfect for short-form loops without audio via MaxVideoAI.',
       canonicalPath: '/models/pika-text-to-video',
     },
-    type: 'Text only · Stylized',
+    type: 'textImage',
     seoText:
       'Create fast, fun, stylized AI videos with Pika. Ideal for 3–5 second animations in vertical or square formats—no audio, fast rendering, high visual impact.',
     demoUrl: 'https://storage.googleapis.com/falserverless/web-examples/pika/pika%202.2/pika22_output.mp4',
     media: {
       videoUrl: 'https://storage.googleapis.com/falserverless/web-examples/pika/pika%202.2/pika22_output.mp4',
       imagePath: '/hero/pika-22.jpg',
-      altText: 'Stylized short clip made with Pika (text-to-video)',
+      altText: 'Stylized short clip made with Pika 2.2',
     },
     prompts: [
       {
@@ -1803,6 +1533,12 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
         title: 'Comic pop intro',
         prompt: 'Comic-book style splash screen with bold text bursts, camera punch-in, bright halftone textures',
         mode: 't2v',
+      },
+      {
+        title: 'Animate a sketch',
+        prompt: 'Animate the uploaded storyboard still into a sweeping camera move, add parallax and light leaks',
+        mode: 'i2v',
+        notes: 'Upload a still frame under Reference images to drive the animation.',
       },
     ],
     faqs: [
@@ -1824,76 +1560,6 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     },
     promptExample:
       'A cartoon astronaut floating through candy space, bubble gum planets, comic-book animation style',
-  },
-  {
-    id: 'pika-image-to-video',
-    modelSlug: 'pika-image-to-video',
-    marketingName: 'Pika 2.2 Image to Video',
-    cardTitle: 'Pika 2.2',
-    provider: 'Pika',
-    brandId: 'pika',
-    family: 'pika',
-    versionLabel: '2.2',
-    availability: 'available',
-    logoPolicy: 'textOnly',
-    engine: PIKA_IMAGE_TO_VIDEO_ENGINE,
-    modes: [
-      {
-        mode: 'i2v',
-        falModelId: 'fal-ai/pika/v2.2/image-to-video',
-        ui: {
-          modes: ['i2v'],
-          duration: { options: [5, 8], default: 5 },
-          resolution: ['720p', '1080p'],
-          aspectRatio: ['16:9', '9:16', '1:1', '4:5', '5:4', '3:2', '2:3'],
-          acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif'],
-          maxUploadMB: 20,
-          audioToggle: false,
-        },
-      },
-    ],
-    defaultFalModelId: 'fal-ai/pika/v2.2/image-to-video',
-    seo: {
-      title: 'Pika Image-to-Video – Animate Any Still Frame with AI',
-      description:
-        'Turn a static image into a dynamic video using Pika. Add motion, zooms, and stylized transitions—silent clips perfect for loops and product shots.',
-      canonicalPath: '/models/pika-image-to-video',
-    },
-    type: 'Image only · Stylized',
-    seoText:
-      'Turn still images into motion-rich video clips with Pika. Add zooms, pans or animation styles to any visual—fast and soundless for short loops and cutaways.',
-    demoUrl: '/hero/pika-15.mp4',
-    media: {
-      videoUrl: '/hero/pika-15.mp4',
-      imagePath: '/hero/pika-15.jpg',
-      altText: 'Animated loop generated from still using Pika',
-    },
-    prompts: [
-      {
-        title: 'Fantasy castle drift',
-        prompt: 'Zoom slowly into a fantasy castle on a cliff at sunset, birds glide by, anime art style with drifting clouds',
-        mode: 'i2v',
-      },
-    ],
-    faqs: [
-      {
-        question: 'Can I create both 9:16 and 16:9 clips with Pika 2.2?',
-        answer: 'Yes. Select your aspect ratio before queuing and the render will match without extra tooling.',
-      },
-      {
-        question: 'Does Pika 2.2 include audio?',
-        answer: 'Base renders are silent. Layer audio afterwards in MaxVideoAI using the soundtrack add-on.',
-      },
-    ],
-    pricingHint: {
-      currency: 'USD',
-      amountCents: 30,
-      durationSeconds: 5,
-      resolution: '720p',
-      label: 'Silent clip',
-    },
-    promptExample:
-      'Slow pan across a futuristic skyline at night, with fog and neon reflections, low poly style',
   },
   {
     id: 'minimax-hailuo-02-text',

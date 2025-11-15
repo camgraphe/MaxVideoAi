@@ -209,6 +209,13 @@ function resolveModelSlug(payload: GeneratePayload, fallback?: string): string |
   const baseSlug = fallback;
   const mode = payload.mode === 'i2v' ? 'image-to-video' : 'text-to-video';
 
+  if (payload.engineId === 'veo-3-1-first-last') {
+    if (payload.mode === 'i2i') {
+      return 'fal-ai/veo3.1/fast/first-last-frame-to-video';
+    }
+    return 'fal-ai/veo3.1/first-last-frame-to-video';
+  }
+
   if (payload.engineId === 'sora-2') {
     return `fal-ai/sora-2/${mode}`;
   }

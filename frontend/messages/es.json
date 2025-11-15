@@ -331,7 +331,6 @@
       "descriptions": {
         "sora-2": "Remix de texto/imagen con audio nativo.",
         "veo-3-1": "Alterna entre texto→video y referencia multi-imagen en el mismo motor.",
-        "veo-3-fast": "Cola rápida Veo con audio opcional.",
         "veo-3-1-first-last": "Puentea frames inicial y final con Veo 3.1 o su modo Fast.",
         "pika-text-to-video": "Bucle social rápido con subtítulos y ajustes amigables para remix.",
         "minimax-hailuo-02-text": "Bocetos optimizados por prompt antes del render principal."
@@ -642,12 +641,6 @@
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "Veo 3.1"
       },
-      "veo-3-fast": {
-        "displayName": "Google Veo 3 Rápido",
-        "description": "Cola más rápida para previsualización manteniendo el aspecto de Veo y el conmutador de audio.",
-        "priceBefore": "Precios en vivo dentro del workspace Generate.",
-        "versionLabel": "Veo 3 Rápido"
-      },
       "veo-3-1-fast": {
         "displayName": "Google Veo 3.1 Rápido",
         "description": "Prompts de texto rápidos o animación de una sola imagen de referencia con audio opcional.",
@@ -661,14 +654,8 @@
         "versionLabel": "First/Last"
       },
       "pika-text-to-video": {
-        "displayName": "Pika 2.2 · Texto→Vídeo",
-        "description": "Bucles pensados para redes sociales con superposición de subtítulos y rápida iteración.",
-        "priceBefore": "Precios en vivo dentro del workspace Generate.",
-        "versionLabel": "2.2"
-      },
-      "pika-image-to-video": {
-        "displayName": "Pika 2.2 · Imagen→Vídeo",
-        "description": "Anima un fotograma estático con movimiento estilizado y desplazamientos de cámara.",
+        "displayName": "Pika 2.2 · Texto e Imagen→Vídeo",
+        "description": "Bucles para redes sociales desde prompts o imágenes subidas con iteración rápida.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "2.2"
       },
@@ -763,14 +750,14 @@
         }
       },
       {
-        "title": "Storyboard Veo 3 Fast",
-        "engine": "Veo 3 Fast · Text-to-video · 16:9",
-        "description": "Render de cola rápida para previsualizar el movimiento antes del clip héroe.",
-        "alt": "Clip de ejemplo de Veo 3 Fast.",
+        "title": "Storyboard Veo 3.1 Fast",
+        "engine": "Veo 3.1 Fast · Text-to-video · 16:9",
+        "description": "Cola rápida con audio opcional para iterar motion antes del render final.",
+        "alt": "Clip de ejemplo de Veo 3.1 Fast.",
         "meta": {
-          "slug": "veo-3-fast",
+          "slug": "veo-3-1-fast",
           "pricing": {
-            "engineId": "veo-3-fast",
+            "engineId": "veo-3-1-fast",
             "durationSec": 8,
             "resolution": "720p",
             "memberTier": "member"

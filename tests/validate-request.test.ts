@@ -66,8 +66,8 @@ test('Sora 2 Pro enforces Pro duration and resolution options', () => {
   assert.deepEqual(valid, OK);
 });
 
-test('Veo 3 T2V accepts string durations and audio toggle', () => {
-  const valid = validateRequest('veo-3-fast', 't2v', {
+test('Veo 3.1 Fast T2V accepts string durations and audio toggle', () => {
+  const valid = validateRequest('veo-3-1-fast', 't2v', {
     duration: '6s',
     resolution: '1080p',
     aspect_ratio: '16:9',

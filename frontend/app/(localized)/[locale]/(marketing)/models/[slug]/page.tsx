@@ -96,10 +96,8 @@ const MODEL_OG_IMAGE_MAP: Record<string, string> = {
   'sora-2-pro':
     'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg',
   'veo-3-1': '/hero/veo3.jpg',
-  'veo-3-fast': '/hero/veo3.jpg',
   'veo-3-1-fast': '/hero/veo3.jpg',
   'pika-text-to-video': '/hero/pika-22.jpg',
-  'pika-image-to-video': '/hero/pika-22.jpg',
   'minimax-hailuo-02-text': '/hero/minimax-video01.jpg',
   'minimax-hailuo-02-image': '/hero/minimax-video01.jpg',
 };

@@ -22,11 +22,6 @@ const STATIC_ENGINE_DEMOS: Record<string, EngineDemo> = {
     posterUrl: '/hero/veo3.jpg',
     hasAudio: true,
   },
-  'veo-3-fast': {
-    videoUrl: 'https://v3.fal.media/files/lion/L9nkXSW1MCj2oDimeJ4w5_output.mp4',
-    posterUrl: '/hero/veo3.jpg',
-    hasAudio: false,
-  },
   'veo-3-1-first-last': {
     videoUrl: 'https://storage.googleapis.com/falserverless/example_outputs/veo31-flf2v-output.mp4',
     posterUrl: '/hero/veo3.jpg',

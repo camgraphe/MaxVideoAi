@@ -19,8 +19,7 @@ collections:
         pika-text-to-video:
           aliases:
             - pika-2-2
-        pika-image-to-video:
-          aliases:
+            - pika-image-to-video
             - pika-image-video
         sora-2:
           aliases:
@@ -33,12 +32,11 @@ collections:
           aliases:
             - google-veo-3-1
             - veo-3
-        veo-3-fast:
-          aliases:
-            - google-veo-3-fast
         veo-3-1-fast:
           aliases:
             - google-veo-3-1-fast
+            - veo-3-fast
+            - google-veo-3-fast
         minimax-hailuo-02-text:
           aliases:
             - minimax-video-1

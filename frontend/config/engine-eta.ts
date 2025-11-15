@@ -1,8 +1,6 @@
 const ENGINE_ETA_SECONDS: Record<string, number> = {
   'pika-text-to-video': 24,
-  'pika-image-to-video': 26,
   'veo-3-1': 44,
-  'veo-3-fast': 28,
   'veo-3-1-fast': 26,
   'sora-2': 38,
   'sora-2-pro': 46,

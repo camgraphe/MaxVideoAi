@@ -331,7 +331,6 @@
       "descriptions": {
         "sora-2": "Text/image remix with native audio.",
         "veo-3-1": "Swap between text-to-video prompts or multi-image reference control.",
-        "veo-3-fast": "Fast queue Veo with optional audio.",
         "veo-3-1-first-last": "Bridge first & last frames with Veo 3.1 or its Fast variant.",
         "pika-text-to-video": "Quick social loops with captions and remix-friendly settings.",
         "minimax-hailuo-02-text": "Prompt-optimised drafts before the hero render."
@@ -638,12 +637,6 @@
         "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "Veo 3.1"
       },
-      "veo-3-fast": {
-        "displayName": "Google Veo 3 Fast",
-        "description": "Faster queue for previz while keeping the Veo look and audio toggle.",
-        "priceBefore": "Live pricing updates inside the Generate workspace.",
-        "versionLabel": "Veo 3 Fast"
-      },
       "veo-3-1-fast": {
         "displayName": "Google Veo 3.1 Fast",
         "description": "Run fast text prompts or animate a single reference image with optional audio.",
@@ -657,14 +650,8 @@
         "versionLabel": "First/Last"
       },
       "pika-text-to-video": {
-        "displayName": "Pika 2.2 · Text to Video",
-        "description": "Social-first loops with caption overlays and fast iteration.",
-        "priceBefore": "Live pricing updates inside the Generate workspace.",
-        "versionLabel": "2.2"
-      },
-      "pika-image-to-video": {
-        "displayName": "Pika 2.2 · Image to Video",
-        "description": "Animate a still frame with stylised motion and camera moves.",
+        "displayName": "Pika 2.2 · Text & Image to Video",
+        "description": "Social-first loops from prompts or uploaded stills with fast iteration.",
         "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "2.2"
       },
@@ -759,14 +746,14 @@
         }
       },
       {
-        "title": "Veo 3 Fast storyboard pass",
-        "engine": "Veo 3 Fast · Text-to-video · 16:9",
-        "description": "Fast queue render to preview motion before the final hero clip.",
-        "alt": "Veo 3 Fast example clip.",
+        "title": "Veo 3.1 Fast storyboard pass",
+        "engine": "Veo 3.1 Fast · Text-to-video · 16:9",
+        "description": "Fast queue render to preview motion with optional ambient audio.",
+        "alt": "Veo 3.1 Fast example clip.",
         "meta": {
-          "slug": "veo-3-fast",
+          "slug": "veo-3-1-fast",
           "pricing": {
-            "engineId": "veo-3-fast",
+            "engineId": "veo-3-1-fast",
             "durationSec": 8,
             "resolution": "720p",
             "memberTier": "member"

@@ -64,11 +64,13 @@ const EXACT_PATH_REDIRECTS: Record<string, string> = {
   '/a': '/',
   '/ai': '/',
   '/video': '/',
-  '/pika': '/models/pika-image-to-video',
-  '/pikavideo': '/models/pika-image-to-video',
+  '/pika': '/models/pika-text-to-video',
+  '/pikavideo': '/models/pika-text-to-video',
   '/sora2': '/models/sora-2',
   '/sora-2': '/models/sora-2',
   '/models/luma-dream-machine': '/models',
+  '/models/pika-image-to-video': '/models/pika-text-to-video',
+  '/models/pika-image-video': '/models/pika-text-to-video',
 };
 const FUZZY_REDIRECT_TARGETS: Array<{ slug: string; destination: string }> = [
   { slug: 'models', destination: '/models' },
@@ -78,7 +80,7 @@ const FUZZY_REDIRECT_TARGETS: Array<{ slug: string; destination: string }> = [
   { slug: 'workflows', destination: '/workflows' },
   { slug: 'sora-2', destination: '/models/sora-2' },
   { slug: 'sora-2-pro', destination: '/models/sora-2-pro' },
-  { slug: 'pika-image-to-video', destination: '/models/pika-image-to-video' },
+  { slug: 'pika-image-to-video', destination: '/models/pika-text-to-video' },
   { slug: 'pika-text-to-video', destination: '/models/pika-text-to-video' },
 ];
 

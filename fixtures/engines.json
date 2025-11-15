@@ -2,125 +2,10 @@
   "engines": [
     {
       "id": "pika-text-to-video",
-      "label": "Pika 2.2 Text to Video",
+      "label": "Pika 2.2 Text & Image to Video",
       "provider": "Pika",
       "version": "2.2",
-      "status": "live",
-      "latencyTier": "standard",
-      "queueDepth": 0,
-      "region": "global",
-      "modes": [
-        "t2v"
-      ],
-      "maxDurationSec": 10,
-      "resolutions": [
-        "720p",
-        "1080p"
-      ],
-      "aspectRatios": [
-        "16:9",
-        "9:16",
-        "1:1",
-        "4:5",
-        "5:4",
-        "3:2",
-        "2:3"
-      ],
-      "fps": [
-        24
-      ],
-      "audio": false,
-      "upscale4k": false,
-      "extend": false,
-      "motionControls": false,
-      "keyframes": false,
-      "params": {},
-      "inputLimits": {},
-      "inputSchema": {
-        "required": [
-          {
-            "id": "prompt",
-            "type": "text",
-            "label": "Prompt"
-          }
-        ],
-        "optional": [
-          {
-            "id": "duration_seconds",
-            "type": "number",
-            "label": "Duration (seconds)",
-            "min": 4,
-            "max": 10,
-            "step": 1,
-            "default": 5
-          },
-          {
-            "id": "aspect_ratio",
-            "type": "enum",
-            "label": "Aspect ratio",
-            "values": [
-              "16:9",
-              "9:16",
-              "1:1",
-              "4:5",
-              "5:4",
-              "3:2",
-              "2:3"
-            ],
-            "default": "16:9"
-          },
-          {
-            "id": "resolution",
-            "type": "enum",
-            "label": "Resolution",
-            "values": [
-              "720p",
-              "1080p"
-            ],
-            "default": "720p"
-          },
-          {
-            "id": "negative_prompt",
-            "type": "text",
-            "label": "Negative prompt"
-          },
-          {
-            "id": "seed",
-            "type": "number",
-            "label": "Seed"
-          }
-        ]
-      },
-      "pricingDetails": {
-        "currency": "USD",
-        "perSecondCents": {
-          "default": 4,
-          "byResolution": {
-            "720p": 4,
-            "1080p": 9
-          }
-        }
-      },
-      "pricing": {
-        "unit": "USD/s",
-        "base": 0.04,
-        "byResolution": {
-          "720p": 0.04,
-          "1080p": 0.09
-        },
-        "currency": "USD",
-        "notes": "$0.20 per 5s at 720p, $0.45 per 5s at 1080p"
-      },
-      "updatedAt": "2025-02-14T00:00:00Z",
-      "ttlSec": 600,
-      "brandId": "pika"
-    },
-    {
-      "id": "pika-image-to-video",
-      "label": "Pika 2.2 Image to Video",
-      "provider": "Pika",
-      "version": "2.2",
-      "status": "live",
+      "status": "paused",
       "latencyTier": "standard",
       "queueDepth": 0,
       "region": "global",
@@ -128,7 +13,7 @@
         "t2v",
         "i2v"
       ],
-      "maxDurationSec": 10,
+      "maxDurationSec": 8,
       "resolutions": [
         "720p",
         "1080p"
@@ -164,7 +49,7 @@
           {
             "id": "image_url",
             "type": "image",
-            "label": "Source image",
+            "label": "Reference image",
             "modes": [
               "i2v"
             ],
@@ -179,12 +64,28 @@
         "optional": [
           {
             "id": "duration_seconds",
-            "type": "number",
+            "type": "enum",
             "label": "Duration (seconds)",
-            "min": 4,
-            "max": 10,
-            "step": 1,
-            "default": 5
+            "values": [
+              "5",
+              "8"
+            ],
+            "default": "5"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9",
+              "9:16",
+              "1:1",
+              "4:5",
+              "5:4",
+              "3:2",
+              "2:3"
+            ],
+            "default": "16:9"
           },
           {
             "id": "resolution",
@@ -197,48 +98,14 @@
             "default": "720p"
           },
           {
+            "id": "negative_prompt",
+            "type": "text",
+            "label": "Negative prompt"
+          },
+          {
             "id": "seed",
             "type": "number",
-            "label": "Seed",
-            "modes": [
-              "t2v"
-            ]
-          },
-          {
-            "id": "enhance_prompt",
-            "type": "enum",
-            "label": "Enhance prompt",
-            "values": [
-              "true",
-              "false"
-            ],
-            "default": "true",
-            "modes": [
-              "t2v"
-            ]
-          },
-          {
-            "id": "auto_fix",
-            "type": "enum",
-            "label": "Auto fix policy",
-            "values": [
-              "true",
-              "false"
-            ],
-            "default": "true",
-            "modes": [
-              "t2v"
-            ]
-          },
-          {
-            "id": "generate_audio",
-            "type": "enum",
-            "label": "Generate audio",
-            "values": [
-              "true",
-              "false"
-            ],
-            "default": "true"
+            "label": "Seed"
           }
         ],
         "constraints": {
@@ -296,8 +163,8 @@
       ],
       "aspectRatios": [
         "auto",
-        "9:16",
         "16:9",
+        "9:16",
         "1:1"
       ],
       "fps": [
@@ -409,15 +276,11 @@
       "pricingDetails": {
         "currency": "USD",
         "perSecondCents": {
-          "default": 40,
-          "byResolution": {
-            "720p": 40,
-            "1080p": 55
-          }
+          "default": 40
         },
         "addons": {
           "audio_off": {
-            "perSecondCents": -13
+            "perSecondCents": -20
           }
         }
       },
@@ -425,7 +288,7 @@
         "unit": "USD/s",
         "base": 0.4,
         "currency": "USD",
-        "notes": "Bridge two frames with Veo 3.1 or Veo 3.1 Fast."
+        "notes": "$0.40/s with audio, $0.20/s audio off"
       },
       "updatedAt": "2025-02-14T00:00:00Z",
       "ttlSec": 600,
@@ -581,15 +444,11 @@
       "pricingDetails": {
         "currency": "USD",
         "perSecondCents": {
-          "default": 40,
-          "byResolution": {
-            "720p": 40,
-            "1080p": 55
-          }
+          "default": 40
         },
         "addons": {
           "audio_off": {
-            "perSecondCents": -13
+            "perSecondCents": -20
           }
         }
       },
@@ -597,142 +456,7 @@
         "unit": "USD/s",
         "base": 0.4,
         "currency": "USD",
-        "notes": "$0.40/s with audio, \u224833% less with audio disabled"
-      },
-      "updatedAt": "2025-02-14T00:00:00Z",
-      "ttlSec": 600,
-      "brandId": "google-veo"
-    },
-    {
-      "id": "veo-3-fast",
-      "label": "Google Veo 3 Fast",
-      "provider": "Google",
-      "version": "3 Fast",
-      "status": "live",
-      "latencyTier": "fast",
-      "queueDepth": 0,
-      "region": "global",
-      "modes": [
-        "t2v"
-      ],
-      "maxDurationSec": 8,
-      "resolutions": [
-        "720p",
-        "1080p"
-      ],
-      "aspectRatios": [
-        "16:9",
-        "9:16",
-        "1:1"
-      ],
-      "fps": [
-        24
-      ],
-      "audio": true,
-      "upscale4k": false,
-      "extend": false,
-      "motionControls": false,
-      "keyframes": false,
-      "params": {},
-      "inputLimits": {},
-      "inputSchema": {
-        "required": [
-          {
-            "id": "prompt",
-            "type": "text",
-            "label": "Prompt"
-          }
-        ],
-        "optional": [
-          {
-            "id": "duration",
-            "type": "enum",
-            "label": "Duration",
-            "values": [
-              "4s",
-              "6s",
-              "8s"
-            ],
-            "default": "8s"
-          },
-          {
-            "id": "aspect_ratio",
-            "type": "enum",
-            "label": "Aspect ratio",
-            "values": [
-              "16:9",
-              "9:16",
-              "1:1"
-            ],
-            "default": "16:9"
-          },
-          {
-            "id": "resolution",
-            "type": "enum",
-            "label": "Resolution",
-            "values": [
-              "720p",
-              "1080p"
-            ],
-            "default": "720p"
-          },
-          {
-            "id": "seed",
-            "type": "number",
-            "label": "Seed"
-          },
-          {
-            "id": "enhance_prompt",
-            "type": "enum",
-            "label": "Enhance prompt",
-            "values": [
-              "true",
-              "false"
-            ],
-            "default": "true"
-          },
-          {
-            "id": "auto_fix",
-            "type": "enum",
-            "label": "Auto fix policy",
-            "values": [
-              "true",
-              "false"
-            ],
-            "default": "true"
-          },
-          {
-            "id": "generate_audio",
-            "type": "enum",
-            "label": "Generate audio",
-            "values": [
-              "true",
-              "false"
-            ],
-            "default": "true"
-          }
-        ]
-      },
-      "pricingDetails": {
-        "currency": "USD",
-        "perSecondCents": {
-          "default": 40,
-          "byResolution": {
-            "720p": 40,
-            "1080p": 50
-          }
-        },
-        "addons": {
-          "audio_off": {
-            "perSecondCents": -15
-          }
-        }
-      },
-      "pricing": {
-        "unit": "USD/s",
-        "base": 0.4,
-        "currency": "USD",
-        "notes": "$0.40/s with audio, $0.25/s approx. with audio off"
+        "notes": "$0.40/s with audio, $0.20/s audio off"
       },
       "updatedAt": "2025-02-14T00:00:00Z",
       "ttlSec": 600,
@@ -853,11 +577,7 @@
       "pricingDetails": {
         "currency": "USD",
         "perSecondCents": {
-          "default": 15,
-          "byResolution": {
-            "720p": 10,
-            "1080p": 15
-          }
+          "default": 15
         },
         "addons": {
           "audio_off": {

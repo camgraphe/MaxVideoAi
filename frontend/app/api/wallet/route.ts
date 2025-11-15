@@ -17,6 +17,8 @@ import {
 } from '@/lib/currency';
 import { convertCents } from '@/lib/exchange';
 import type { Currency } from '@/lib/currency';
+import type { Mode } from '@/types/engines';
+import { applyEngineVariantPricing } from '@/lib/pricing-addons';
 
 const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
@@ -177,7 +179,10 @@ export async function POST(req: NextRequest) {
     let durationSec = Number(body.durationSec ?? engine.maxDurationSec ?? 4);
     let resolution = String(body.resolution || engine.resolutions?.[0] || '1080p');
     const rawMode = typeof body.mode === 'string' ? body.mode.trim().toLowerCase() : 't2v';
-    const mode: 't2v' | 'i2v' = rawMode === 'i2v' ? 'i2v' : 't2v';
+    let mode: Mode = 't2v';
+    if (rawMode === 'i2v' || rawMode === 'i2i') {
+      mode = rawMode as Mode;
+    }
     let soraRequest: SoraRequest | null = null;
 
     if (isSoraEngineId(engine.id)) {
@@ -223,8 +228,9 @@ export async function POST(req: NextRequest) {
       resolution = soraRequest.resolution === 'auto' ? defaultResolution : soraRequest.resolution;
     }
 
+    const pricingEngine = applyEngineVariantPricing(engine, mode);
     const pricing = await computePricingSnapshot({
-      engine,
+      engine: pricingEngine,
       durationSec,
       resolution,
       membershipTier: body.membershipTier,
