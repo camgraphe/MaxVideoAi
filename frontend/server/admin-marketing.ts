@@ -1,8 +1,8 @@
 import { isDatabaseConfigured, query } from '@/lib/db';
+import { getUserIdentity } from '@/server/supabase-admin';
 
 type MarketingOptInRow = {
   user_id: string;
-  email: string | null;
   marketing_opt_in_at: Date | null;
 };
 
@@ -21,18 +21,32 @@ export async function fetchMarketingOptIns(): Promise<MarketingOptInRecord[]> {
     `
       SELECT
         p.id AS user_id,
-        u.email,
         p.marketing_opt_in_at
       FROM profiles p
-      LEFT JOIN auth.users u ON u.id = p.id
       WHERE COALESCE(p.marketing_opt_in, FALSE) = TRUE
       ORDER BY p.marketing_opt_in_at DESC NULLS LAST
     `
   );
 
+  const emailMap = new Map<string, string | null>();
+  const ids = rows.map((row) => row.user_id);
+  if (ids.length && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    await Promise.all(
+      ids.map(async (userId) => {
+        try {
+          const identity = await getUserIdentity(userId);
+          emailMap.set(userId, identity?.email ?? null);
+        } catch (error) {
+          console.warn('[admin-marketing] failed to resolve email', userId, error);
+          emailMap.set(userId, null);
+        }
+      })
+    );
+  }
+
   return rows.map((row) => ({
     userId: row.user_id,
-    email: row.email,
+    email: emailMap.get(row.user_id) ?? null,
     optedInAt: row.marketing_opt_in_at ? row.marketing_opt_in_at.toISOString() : null,
   }));
 }
