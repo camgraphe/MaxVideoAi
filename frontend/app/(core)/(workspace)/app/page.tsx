@@ -1440,6 +1440,73 @@ useEffect(() => {
     }
   }, [convertJobToLocalRender, recentJobs]);
 
+  useEffect(() => {
+    if (!renders.length || !recentJobs.length) return;
+    const recentJobIds = new Set<string>();
+    recentJobs.forEach((job) => {
+      if (typeof job.jobId === 'string' && job.jobId.length > 0) {
+        recentJobIds.add(job.jobId);
+      }
+    });
+    if (!recentJobIds.size) return;
+    const removedLocalKeys: string[] = [];
+    const removedGroupIds = new Set<string>();
+    setRenders((prev) => {
+      let changed = false;
+      const next = prev.filter((render) => {
+        if (!render.jobId || !recentJobIds.has(render.jobId)) {
+          return true;
+        }
+        if (render.status !== 'completed') {
+          return true;
+        }
+        const hasVideo = Boolean(render.videoUrl ?? render.readyVideoUrl);
+        const hasThumb = Boolean(render.thumbUrl && !isPlaceholderMediaUrl(render.thumbUrl));
+        if (!hasVideo || !hasThumb) {
+          return true;
+        }
+        changed = true;
+        if (render.localKey) {
+          removedLocalKeys.push(render.localKey);
+        }
+        if (render.batchId) {
+          removedGroupIds.add(render.batchId);
+        }
+        if (render.groupId) {
+          removedGroupIds.add(render.groupId);
+        }
+        return false;
+      });
+      return changed ? next : prev;
+    });
+    if (!removedLocalKeys.length && !removedGroupIds.size) {
+      return;
+    }
+    setBatchHeroes((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      removedGroupIds.forEach((groupId) => {
+        if (groupId && next[groupId]) {
+          delete next[groupId];
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+    setActiveBatchId((current) => (current && removedGroupIds.has(current) ? null : current));
+    setActiveGroupId((current) => (current && removedGroupIds.has(current) ? null : current));
+    setSelectedPreview((current) => {
+      if (!current) return current;
+      if (current.localKey && removedLocalKeys.includes(current.localKey)) {
+        return null;
+      }
+      if (current.batchId && removedGroupIds.has(current.batchId)) {
+        return null;
+      }
+      return current;
+    });
+  }, [recentJobs, renders.length]);
+
   const renderGroups = useMemo<Map<string, LocalRenderGroup>>(() => {
     const map = new Map<string, LocalRenderGroup>();
     renders.forEach((item) => {
