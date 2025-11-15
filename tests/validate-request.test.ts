@@ -143,26 +143,29 @@ test('Veo 3 I2V rejects durations other than 8s', () => {
 });
 
 test('Hailuo-02 Std enforces duration and resolution', () => {
-  const invalid = validateRequest('minimax-hailuo-02-image', 'i2v', {
+  const invalid = validateRequest('minimax-hailuo-02-text', 'i2v', {
     duration: 12,
     resolution: '1080p',
     aspect_ratio: '16:9',
+    image_url: 'https://example.com/frame.png',
   });
   assert.equal(invalid.ok, false);
   assert.equal(invalid.error?.field, 'duration');
 
-  const invalidResolution = validateRequest('minimax-hailuo-02-image', 'i2v', {
+  const invalidResolution = validateRequest('minimax-hailuo-02-text', 'i2v', {
     duration: 6,
     resolution: '1080p',
     aspect_ratio: '16:9',
+    image_url: 'https://example.com/frame.png',
   });
   assert.equal(invalidResolution.ok, false);
   assert.equal(invalidResolution.error?.field, 'resolution');
 
-  const valid = validateRequest('minimax-hailuo-02-image', 'i2v', {
+  const valid = validateRequest('minimax-hailuo-02-text', 'i2v', {
     duration: 10,
     resolution: '768P',
     _uploadedFileMB: 10,
+    image_url: 'https://example.com/frame.png',
   });
   assert.deepEqual(valid, OK);
 });

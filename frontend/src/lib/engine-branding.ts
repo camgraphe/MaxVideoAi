@@ -26,7 +26,6 @@ const ENGINE_PICTOGRAMS: Record<string, EnginePictogram> = {
   'sora-2-pro': BRAND_PICTOGRAMS.openai,
   'pika-text-to-video': BRAND_PICTOGRAMS.pika,
   'minimax-hailuo-02-text': BRAND_PICTOGRAMS.minimax,
-  'minimax-hailuo-02-image': BRAND_PICTOGRAMS.minimax,
 };
 
 const FALLBACK_COLORS = ['#E8EDFF', '#FFE6F1', '#E6F5EB', '#FFF2DC', '#F2E9FF', '#E2F7F4', '#FFECE1', '#E9EEF5'];

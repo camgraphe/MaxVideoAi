@@ -764,95 +764,16 @@ const SORA_2_PRO_ENGINE: EngineCaps = {
   brandId: 'openai',
 };
 
-const HAILUO_TEXT_ENGINE: EngineCaps = {
+const HAILUO_ENGINE: EngineCaps = {
   id: 'minimax-hailuo-02-text',
-  label: 'MiniMax Hailuo 02 Standard (Text to Video)',
+  label: 'MiniMax Hailuo 02 Standard',
   provider: 'MiniMax',
   version: 'Standard',
   status: 'live',
   latencyTier: 'standard',
   queueDepth: 0,
   region: 'global',
-  modes: ['t2v'],
-  maxDurationSec: 10,
-  resolutions: ['512P', '768P'],
-  aspectRatios: ['16:9', '9:16', '1:1'],
-  fps: [25],
-  audio: false,
-  upscale4k: false,
-  extend: false,
-  motionControls: false,
-  keyframes: false,
-  params: {},
-  inputLimits: {},
-  inputSchema: {
-    required: [
-      {
-        id: 'prompt',
-        type: 'text',
-        label: 'Prompt',
-      },
-    ],
-    optional: [
-      {
-        id: 'duration',
-        type: 'enum',
-        label: 'Duration',
-        values: ['6', '10'],
-        default: '6',
-      },
-      {
-        id: 'resolution',
-        type: 'enum',
-        label: 'Resolution',
-        values: ['512P', '768P'],
-        default: '768P',
-      },
-      {
-        id: 'prompt_optimizer',
-        type: 'enum',
-        label: 'Prompt optimiser',
-        values: ['on', 'off'],
-        default: 'on',
-      },
-    ],
-  },
-  pricingDetails: {
-    currency: 'USD',
-    perSecondCents: {
-      default: 4.5,
-      byResolution: {
-        '512P': 4,
-        '768P': 4.5,
-      },
-    },
-  },
-  pricing: {
-    unit: 'USD/s',
-    base: 0.045,
-    currency: 'USD',
-    notes: '$0.045/s standard tier',
-  },
-  updatedAt: '2025-02-14T00:00:00Z',
-  ttlSec: 600,
-  providerMeta: {
-    provider: 'minimax',
-    modelSlug: 'fal-ai/minimax/hailuo-02/standard/text-to-video',
-  },
-  availability: 'available',
-  brandId: 'minimax',
-};
-
-const HAILUO_IMAGE_ENGINE: EngineCaps = {
-  id: 'minimax-hailuo-02-image',
-  label: 'MiniMax Hailuo 02 Standard (Image to Video)',
-  provider: 'MiniMax',
-  version: 'Standard',
-  status: 'live',
-  latencyTier: 'standard',
-  queueDepth: 0,
-  region: 'global',
-  modes: ['i2v'],
+  modes: ['t2v', 'i2v'],
   maxDurationSec: 10,
   resolutions: ['512P', '768P'],
   aspectRatios: ['16:9', '9:16', '1:1'],
@@ -876,7 +797,7 @@ const HAILUO_IMAGE_ENGINE: EngineCaps = {
       {
         id: 'image_url',
         type: 'image',
-        label: 'Source image',
+        label: 'Reference image',
         modes: ['i2v'],
         requiredInModes: ['i2v'],
         minCount: 1,
@@ -898,6 +819,14 @@ const HAILUO_IMAGE_ENGINE: EngineCaps = {
         label: 'Resolution',
         values: ['512P', '768P'],
         default: '768P',
+      },
+      {
+        id: 'prompt_optimizer',
+        type: 'enum',
+        label: 'Prompt optimiser',
+        values: ['on', 'off'],
+        default: 'on',
+        modes: ['t2v'],
       },
       {
         id: 'end_image_url',
@@ -927,13 +856,13 @@ const HAILUO_IMAGE_ENGINE: EngineCaps = {
     unit: 'USD/s',
     base: 0.045,
     currency: 'USD',
-    notes: '$0.045/s with reference support',
+    notes: '$0.045/s standard tier',
   },
   updatedAt: '2025-02-14T00:00:00Z',
   ttlSec: 600,
   providerMeta: {
     provider: 'minimax',
-    modelSlug: 'fal-ai/minimax/hailuo-02/standard/image-to-video',
+    modelSlug: 'fal-ai/minimax/hailuo-02/standard/text-to-video',
   },
   availability: 'available',
   brandId: 'minimax',
@@ -1564,7 +1493,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
   {
     id: 'minimax-hailuo-02-text',
     modelSlug: 'minimax-hailuo-02-text',
-    marketingName: 'MiniMax Hailuo 02 Standard (Text to Video)',
+    marketingName: 'MiniMax Hailuo 02 Standard (Text & Image to Video)',
     cardTitle: 'MiniMax Hailuo 02',
     provider: 'MiniMax',
     brandId: 'minimax',
@@ -1572,7 +1501,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     versionLabel: 'Standard',
     availability: 'available',
     logoPolicy: 'textOnly',
-    engine: HAILUO_TEXT_ENGINE,
+    engine: HAILUO_ENGINE,
     modes: [
       {
         mode: 't2v',
@@ -1584,65 +1513,9 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
           aspectRatio: ['16:9', '9:16', '1:1'],
           fps: 25,
           audioToggle: false,
+          notes: 'Enable the prompt optimiser toggle for longer scripts.',
         },
       },
-    ],
-    defaultFalModelId: 'fal-ai/minimax/hailuo-02/standard/text-to-video',
-    seo: {
-      title: 'MiniMax Hailuo 02 (Text-to-Video) – Fast, Stylized AI Generation',
-      description:
-        'Generate fast, stylized video from text prompts with MiniMax Hailuo 02. Ideal for testing motion concepts and short clips—silent and budget-friendly via MaxVideoAI.',
-      canonicalPath: '/models/minimax-hailuo-02-text',
-    },
-    type: 'Text only · Stylized',
-    seoText:
-      'Generate stylized short video clips from text using MiniMax Hailuo 02. Fast, silent, and ideal for quick loops, visual tests, or motion studies.',
-    demoUrl: '/hero/minimax-video01.mp4',
-    media: {
-      videoUrl: '/hero/minimax-video01.mp4',
-      imagePath: '/hero/minimax-video01.jpg',
-      altText: 'Fast stylized motion demo from text prompt',
-    },
-    prompts: [
-      {
-        title: 'Cinematic fox run',
-        prompt: 'A stylized fox running through a windy forest, camera follows from behind, swirling leaves, cinematic depth of field',
-        mode: 't2v',
-      },
-    ],
-    faqs: [
-      {
-        question: 'Does MiniMax Hailuo 02 support the prompt optimiser?',
-        answer: 'Yes. Enable the optimiser toggle in the composer to clean up long prompts before you render.',
-      },
-      {
-        question: 'Can I supply an end frame for Hailuo image-to-video runs?',
-        answer: 'Upload an optional end frame in the composer. MaxVideoAI forwards it so the clip resolves on your target image.',
-      },
-    ],
-    pricingHint: {
-      currency: 'USD',
-      amountCents: 30,
-      durationSeconds: 6,
-      resolution: '768P',
-      label: 'Silent clip',
-    },
-    promptExample:
-      'A glowing butterfly flying across a dark cave, dust particles in the air, camera slowly zooms out',
-  },
-  {
-    id: 'minimax-hailuo-02-image',
-    modelSlug: 'minimax-hailuo-02-image',
-    marketingName: 'MiniMax Hailuo 02 Standard (Image to Video)',
-    cardTitle: 'MiniMax Hailuo 02',
-    provider: 'MiniMax',
-    brandId: 'minimax',
-    family: 'hailuo',
-    versionLabel: 'Standard',
-    availability: 'available',
-    logoPolicy: 'textOnly',
-    engine: HAILUO_IMAGE_ENGINE,
-    modes: [
       {
         mode: 'i2v',
         falModelId: 'fal-ai/minimax/hailuo-02/standard/image-to-video',
@@ -1655,26 +1528,32 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif'],
           maxUploadMB: 20,
           audioToggle: false,
+          notes: 'Upload an optional end frame if you need the shot to land on a specific still.',
         },
       },
     ],
-    defaultFalModelId: 'fal-ai/minimax/hailuo-02/standard/image-to-video',
+    defaultFalModelId: 'fal-ai/minimax/hailuo-02/standard/text-to-video',
     seo: {
-      title: 'MiniMax Hailuo 02 (Image-to-Video) – Animate Any Visual in Seconds',
+      title: 'MiniMax Hailuo 02 – Stylized Text & Image to Video',
       description:
-        'Transform static images into animated motion with MiniMax Hailuo 02. Add subtle movement, zooms, or stylization—silent loops ready for creative workflows.',
-      canonicalPath: '/models/minimax-hailuo-02-image',
+        'Generate fast, stylized motion from prompts or animate uploaded stills with MiniMax Hailuo 02. Ideal for testing motion concepts, loops, and storyboard passes—silent and budget-friendly via MaxVideoAI.',
+      canonicalPath: '/models/minimax-hailuo-02-text',
     },
-    type: 'Image only · Stylized',
+    type: 'Text + Image · Stylized',
     seoText:
-      'Bring static visuals to life with MiniMax Hailuo 02’s image-to-video engine. Add motion, zoom, or stylized animation to renders and artwork—no sound, fast turnaround.',
+      'Generate stylized short clips from text or breathe life into stills using MiniMax Hailuo 02. Fast, silent, and ideal for loops, visual tests, or motion studies.',
     demoUrl: '/hero/minimax-video01.mp4',
     media: {
       videoUrl: '/hero/minimax-video01.mp4',
       imagePath: '/hero/minimax-video01.jpg',
-      altText: 'Animation sample from image with MiniMax',
+      altText: 'Fast stylized motion demo from MiniMax Hailuo 02',
     },
     prompts: [
+      {
+        title: 'Cinematic fox run',
+        prompt: 'A stylized fox running through a windy forest, camera follows from behind, swirling leaves, cinematic depth of field',
+        mode: 't2v',
+      },
       {
         title: 'Control room drift',
         prompt: 'Zoom slowly across a sci-fi spaceship control room, blinking lights and flickering screens, low-poly animation style',
@@ -1699,7 +1578,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
       label: 'Silent clip',
     },
     promptExample:
-      'Zoom into a desert landscape at twilight, blowing sand and glowing horizon, cinematic style',
+      'A glowing butterfly flying across a dark cave, dust particles in the air, camera slowly zooms out',
   },
   {
     id: 'nano-banana',

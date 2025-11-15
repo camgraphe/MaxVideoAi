@@ -805,12 +805,12 @@
             "id": "api_key",
             "type": "text",
             "label": "OpenAI API key",
-            "description": "Fournissez votre clé pour une facturation OpenAI directe"
+            "description": "Fournissez votre cl\u00e9 pour une facturation OpenAI directe"
           },
           {
             "id": "image_url",
             "type": "image",
-            "label": "Image de départ",
+            "label": "Image de d\u00e9part",
             "modes": [
               "i2v"
             ],
@@ -856,7 +856,7 @@
     },
     {
       "id": "minimax-hailuo-02-text",
-      "label": "MiniMax Hailuo 02 Standard (Text to Video)",
+      "label": "MiniMax Hailuo 02 Standard",
       "provider": "MiniMax",
       "version": "Standard",
       "status": "live",
@@ -864,99 +864,7 @@
       "queueDepth": 0,
       "region": "global",
       "modes": [
-        "t2v"
-      ],
-      "maxDurationSec": 10,
-      "resolutions": [
-        "512P",
-        "768P"
-      ],
-      "aspectRatios": [
-        "16:9",
-        "9:16",
-        "1:1"
-      ],
-      "fps": [
-        25
-      ],
-      "audio": false,
-      "upscale4k": false,
-      "extend": false,
-      "motionControls": false,
-      "keyframes": false,
-      "params": {},
-      "inputLimits": {},
-      "inputSchema": {
-        "required": [
-          {
-            "id": "prompt",
-            "type": "text",
-            "label": "Prompt"
-          }
-        ],
-        "optional": [
-          {
-            "id": "duration",
-            "type": "enum",
-            "label": "Duration",
-            "values": [
-              "6",
-              "10"
-            ],
-            "default": "6"
-          },
-          {
-            "id": "resolution",
-            "type": "enum",
-            "label": "Resolution",
-            "values": [
-              "512P",
-              "768P"
-            ],
-            "default": "768P"
-          },
-          {
-            "id": "prompt_optimizer",
-            "type": "enum",
-            "label": "Prompt optimiser",
-            "values": [
-              "on",
-              "off"
-            ],
-            "default": "on"
-          }
-        ]
-      },
-      "pricingDetails": {
-        "currency": "USD",
-        "perSecondCents": {
-          "default": 4.5,
-          "byResolution": {
-            "512P": 4,
-            "768P": 4.5
-          }
-        }
-      },
-      "pricing": {
-        "unit": "USD/s",
-        "base": 0.045,
-        "currency": "USD",
-        "notes": "$0.045/s"
-      },
-      "updatedAt": "2025-02-14T00:00:00Z",
-      "ttlSec": 600,
-      "brandId": "minimax"
-    },
-    {
-      "id": "minimax-hailuo-02-image",
-      "label": "MiniMax Hailuo 02 Standard (Image to Video)",
-      "provider": "MiniMax",
-      "version": "Standard",
-      "status": "live",
-      "latencyTier": "standard",
-      "queueDepth": 0,
-      "region": "global",
-      "modes": [
+        "t2v",
         "i2v"
       ],
       "maxDurationSec": 10,
@@ -991,7 +899,7 @@
           {
             "id": "image_url",
             "type": "image",
-            "label": "Source image",
+            "label": "Reference image",
             "modes": [
               "i2v"
             ],
@@ -1025,9 +933,22 @@
             "default": "768P"
           },
           {
+            "id": "prompt_optimizer",
+            "type": "enum",
+            "label": "Prompt optimiser",
+            "values": [
+              "on",
+              "off"
+            ],
+            "default": "on",
+            "modes": [
+              "t2v"
+            ]
+          },
+          {
             "id": "end_image_url",
             "type": "image",
-            "label": "End frame (optionnel)",
+            "label": "End frame (optional)",
             "modes": [
               "i2v"
             ],

@@ -150,7 +150,6 @@ export default async function ModelsPage() {
     'veo-3-1-fast',
     'pika-text-to-video',
     'minimax-hailuo-02-text',
-    'minimax-hailuo-02-image',
   ];
 
   const engineIndex = new Map<string, FalEngineEntry>(listFalEngines().map((entry) => [entry.modelSlug, entry]));

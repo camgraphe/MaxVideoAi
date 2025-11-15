@@ -1,5 +1,5 @@
 {
-  "marketingName": "MiniMax Hailuo 02 (Text-to-Video)",
+  "marketingName": "MiniMax Hailuo 02 (Text & Image to Video)",
   "versionLabel": "02",
   "seo": {
     "title": "MiniMax Hailuo 02 Text-to-Video – Fast, Stylized Drafts",
@@ -7,10 +7,10 @@
     "image": "/hero/minimax-video01.jpg"
   },
   "hero": {
-    "title": "MiniMax Hailuo 02 – Text-to-Video Engine for Fast Visuals",
-    "intro": "MiniMax’s Hailuo 02 engine outputs short, stylized clips directly from text prompts. Use it to sketch motion, experiment with transitions, or build mood-driven loops at a fraction of premium-engine costs.",
+    "title": "MiniMax Hailuo 02 – Text & Image-to-Video Engine",
+    "intro": "MiniMax’s Hailuo 02 engine outputs short, stylized clips from a prompt alone or by animating a still frame. Sketch motion, experiment with transitions, or build mood-driven loops at a fraction of premium-engine costs.",
     "ctaPrimary": {
-      "label": "Try MiniMax Text-to-Video",
+      "label": "Try MiniMax Hailuo 02",
       "href": "/app?engine=minimax-hailuo-02-text"
     },
     "secondaryLinks": [
@@ -28,14 +28,14 @@
       }
     ]
   },
-  "overview": "Spin up stylized 6–10 second clips without reference images. Hailuo 02 is silent, fast, and ideal for storyboards, transitions, and proof-of-motion explorations.",
+  "overview": "Spin up stylized 6–10 second clips from text or upload a key frame to guide the motion. Hailuo 02 is silent, fast, and ideal for storyboards, transitions, and proof-of-motion explorations.",
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
       "Create stylized visual sketches straight from text",
+      "Animate storyboards, renders, or style frames into motion",
       "Test transitions, mood, or motion structures before polishing",
-      "Generate quick clips for editing workflows or prototyping feeds",
-      "Produce experimental visuals for reels, openers, or background loops"
+      "Produce experimental loops for reels, openers, or background plates"
     ]
   },
   "technicalOverviewTitle": "Technical overview",
@@ -50,7 +50,7 @@
     },
     {
       "label": "Resolution",
-      "body": "720p or 1080p in landscape and portrait",
+      "body": "512P or 768P in landscape, square, or portrait formats",
       "link": {
         "label": "MiniMax API Docs",
         "href": "https://www.minimax.chat/developer/docs/video"
@@ -62,11 +62,11 @@
     },
     {
       "label": "Inputs",
-      "body": "Text prompts only—focus on motion, lighting, and style cues"
+      "body": "Text prompts plus optional reference image and end frame"
     },
     {
       "label": "Modes",
-      "body": "Text-to-video drafts—no reference images or audio toggles"
+      "body": "Text-to-video drafts and image-to-video animation in one engine"
     },
     {
       "label": "Pricing",
@@ -81,17 +81,18 @@
       "Describe a clear subject in motion with a strong verb",
       "Layer environmental movement—wind, fog, leaves, shadows",
       "Call out cinematic camera cues: pan, follow, tracking, zoom",
-      "Skip audio references—Hailuo 02 is visual-only",
+      "Mention if you’re uploading a reference or end frame for image-to-video",
       "Use two to three sentences maximum for consistent output"
     ]
   },
   "tips": {
     "title": "Tips & tricks",
-    "items": [
-      "🦊 Perfect for sketching motion ideas or animated cutaways",
+      "items": [
+      "🦊 Perfect for sketching motion ideas or animating uploaded stills",
       "⚡ Build short creative loops or story beats quickly",
       "📷 Think like a DoP—mention lenses, tracking, and lighting cues",
       "🎨 Layer stylistic texture: foggy, glowing, inked, sketch, neon",
+      "🖼️ Add an end frame to land the shot on a specific layout",
       "❌ Silent output—overlay your own soundtrack or VO later"
     ]
   },
@@ -105,6 +106,10 @@
     {
       "title": "Cinematic fox run",
       "prompt": "A stylized fox running through a windy forest, camera follows from behind, swirling leaves, cinematic depth of field"
+    },
+    {
+      "title": "Control room drift",
+      "prompt": "Zoom slowly across a sci-fi spaceship control room, blinking lights and flickering screens, low-poly animation style. Upload the key frame as reference."
     }
   ],
   "faqs": [

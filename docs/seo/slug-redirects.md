@@ -25,7 +25,7 @@
 | /models/google-veo-3-1-fast | /models/veo-3-1-fast | Align new fast tier naming |
 | /models/minimax-video-01 | /models/minimax-hailuo-02-text | Map legacy MiniMax slug to Standard text tier |
 | /models/minimax-video-1 | /models/minimax-hailuo-02-text | Additional legacy MiniMax slug |
-| /models/minimax-hailuo-02 | /models/minimax-hailuo-02-image | Normalize Hailuo Standard image route |
+| /models/minimax-hailuo-02 | /models/minimax-hailuo-02-text | Normalize Hailuo Standard route |
 | /models/minimax-hailuo-02-pro | /models/minimax-hailuo-02-text | Sunset Pro variant |
 | /models/hailuo-2-pro | /models/minimax-hailuo-02-text | Redirect deprecated Pro slug to Standard page |
 | /models/luma-dream-machine | /models | Route removed Luma engine to models hub |

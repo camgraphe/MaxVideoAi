@@ -660,14 +660,8 @@
         "versionLabel": "2.2"
       },
       "minimax-hailuo-02-text": {
-        "displayName": "MiniMax Hailuo 02 Standard · Texte→Vidéo",
-        "description": "Brouillons avec optimiseur de prompt activé avant le rendu final.",
-        "priceBefore": "Tarifs en direct dans le workspace Generate.",
-        "versionLabel": "Standard"
-      },
-      "minimax-hailuo-02-image": {
-        "displayName": "MiniMax Hailuo 02 Standard · Image→Vidéo",
-        "description": "Conversion d'une image de référence en mouvement avec image finale optionnelle.",
+        "displayName": "MiniMax Hailuo 02 Standard · Texte & Image→Vidéo",
+        "description": "Brouillons avec optimiseur ou animation de références dans un seul moteur.",
         "priceBefore": "Tarifs en direct dans le workspace Generate.",
         "versionLabel": "Standard"
       },
@@ -796,13 +790,13 @@
       },
       {
         "title": "Passe conceptuelle MiniMax Hailuo",
-        "engine": "MiniMax Hailuo 02 · Image-to-video · 16:9",
-        "description": "Passe d'art animée avec cadrage dynamique.",
+        "engine": "MiniMax Hailuo 02 · Texte/Image→Vidéo · 16:9",
+        "description": "Passe d'art animée à partir d'un still de référence et cadrage verrouillé.",
         "alt": "Exemple de clip MiniMax Hailuo Standard.",
         "meta": {
-          "slug": "minimax-hailuo-02-image",
+          "slug": "minimax-hailuo-02-text",
           "pricing": {
-            "engineId": "minimax-hailuo-02-image",
+            "engineId": "minimax-hailuo-02-text",
             "durationSec": 10,
             "resolution": "768P",
             "memberTier": "member"

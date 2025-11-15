@@ -99,7 +99,6 @@ const MODEL_OG_IMAGE_MAP: Record<string, string> = {
   'veo-3-1-fast': '/hero/veo3.jpg',
   'pika-text-to-video': '/hero/pika-22.jpg',
   'minimax-hailuo-02-text': '/hero/minimax-video01.jpg',
-  'minimax-hailuo-02-image': '/hero/minimax-video01.jpg',
 };
 
 function toAbsoluteUrl(url?: string | null): string {

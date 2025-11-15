@@ -42,8 +42,6 @@ collections:
             - minimax-video-1
             - minimax-video-01
             - minimax-hailuo-02-pro
-        minimax-hailuo-02-image:
-          aliases:
             - minimax-hailuo-02
     - id: examples
       path: /examples

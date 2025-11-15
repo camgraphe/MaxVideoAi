@@ -277,7 +277,6 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
       'veo-3-1-fast',
       'pika-text-to-video',
       'minimax-hailuo-02-text',
-      'minimax-hailuo-02-image',
     ];
     const preferredIndex = new Map<string, number>(preferredOrder.map((id, index) => [id, index]));
 

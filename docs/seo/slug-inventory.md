@@ -12,7 +12,6 @@ This table covers current public routes (and near-term additions), the recommend
 | /models/google-veo-3-1 | /models/veo-3-1 | /models/google-veo-3-1 | /models/veo-3-1-overview | Google Veo 3.1 feature and pricing breakdown. |
 | /models/google-veo-3-1-fast | /models/veo-3-1-fast | /models/google-veo-3-1-fast | /models/veo-3-fastest | Coverage for Veo 3.1 Fast tier. |
 | /models/minimax-hailuo-02-text | /models/minimax-hailuo-02-text | /models/hailuo-02-text | /models/minimax-hailuo-text | MiniMax Hailuo 02 Standard text-to-video specs. |
-| /models/minimax-hailuo-02-image | /models/minimax-hailuo-02-image | /models/hailuo-02-image | /models/minimax-hailuo-image | MiniMax Hailuo 02 Standard image-to-video specs. |
 | /examples | /examples | /ai-video-examples | /video-examples | Gallery of AI video outputs and use cases. |
 | /workflows | /workflows | /video-workflows | /ai-video-workflows | Workflow templates for AI video generation. |
 | (planned) /workflows/prompt-director | /workflows/prompt-director | /workflows/prompt-engine | /workflows/prompt-production | Guide to using Prompt Director workflow. |

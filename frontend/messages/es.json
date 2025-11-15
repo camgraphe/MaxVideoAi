@@ -660,14 +660,8 @@
         "versionLabel": "2.2"
       },
       "minimax-hailuo-02-text": {
-        "displayName": "MiniMax Hailuo 02 Estándar · Texto→Vídeo",
-        "description": "Borradores con optimizador de prompts antes del render principal.",
-        "priceBefore": "Precios en vivo dentro del workspace Generate.",
-        "versionLabel": "Estándar"
-      },
-      "minimax-hailuo-02-image": {
-        "displayName": "MiniMax Hailuo 02 Estándar · Imagen→Vídeo",
-        "description": "Transforma una imagen de referencia en movimiento con fotograma final opcional.",
+        "displayName": "MiniMax Hailuo 02 Estándar · Texto e Imagen→Vídeo",
+        "description": "Borradores con optimizador o animación basada en referencias en un solo motor.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "Estándar"
       },
@@ -789,13 +783,13 @@
       },
       {
         "title": "Passe conceptual MiniMax Hailuo",
-        "engine": "MiniMax Hailuo 02 · Image-to-video · 16:9",
-        "description": "Passe de arte animado con encuadres dinámicos.",
+        "engine": "MiniMax Hailuo 02 · Texto/Imagen→Vídeo · 16:9",
+        "description": "Passe de arte animado que parte de un fotograma de referencia y conserva el encuadre.",
         "alt": "Clip de ejemplo de MiniMax Hailuo Standard.",
         "meta": {
-          "slug": "minimax-hailuo-02-image",
+          "slug": "minimax-hailuo-02-text",
           "pricing": {
-            "engineId": "minimax-hailuo-02-image",
+            "engineId": "minimax-hailuo-02-text",
             "durationSec": 10,
             "resolution": "768P",
             "memberTier": "member"

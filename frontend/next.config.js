@@ -110,6 +110,16 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/models/minimax-hailuo-02',
+        destination: '/models/minimax-hailuo-02-text',
+        permanent: true,
+      },
+      {
+        source: '/models/minimax-hailuo-02-image',
+        destination: '/models/minimax-hailuo-02-text',
+        permanent: true,
+      },
+      {
         source: '/models/hailuo-2-pro',
         destination: '/models/minimax-hailuo-02-text',
         permanent: true,

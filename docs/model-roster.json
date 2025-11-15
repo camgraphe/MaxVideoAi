@@ -30,6 +30,7 @@
     "availability": "available",
     "logoPolicy": "textOnly"
   },
+  {
     "engineId": "veo-3-1-fast",
     "marketingName": "Google Veo 3.1 Fast",
     "brandId": "google-veo",
@@ -61,19 +62,9 @@
   },
   {
     "engineId": "minimax-hailuo-02-text",
-    "marketingName": "MiniMax Hailuo 02 Standard (Text to Video)",
+    "marketingName": "MiniMax Hailuo 02 Standard (Text & Image to Video)",
     "brandId": "minimax",
     "modelSlug": "minimax-hailuo-02-text",
-    "family": "hailuo",
-    "versionLabel": "Standard",
-    "availability": "available",
-    "logoPolicy": "textOnly"
-  },
-  {
-    "engineId": "minimax-hailuo-02-image",
-    "marketingName": "MiniMax Hailuo 02 Standard (Image to Video)",
-    "brandId": "minimax",
-    "modelSlug": "minimax-hailuo-02-image",
     "family": "hailuo",
     "versionLabel": "Standard",
     "availability": "available",

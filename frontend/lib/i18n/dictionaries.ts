@@ -668,14 +668,8 @@ const en: Dictionary = {
         versionLabel: '2.2',
       },
       'minimax-hailuo-02-text': {
-        displayName: 'MiniMax Hailuo 02 Standard · Text to Video',
-        description: 'Prompt optimiser-enabled drafts before the hero render.',
-        priceBefore: 'Live pricing updates inside the Generate workspace.',
-        versionLabel: 'Standard',
-      },
-      'minimax-hailuo-02-image': {
-        displayName: 'MiniMax Hailuo 02 Standard · Image to Video',
-        description: 'Reference image to motion with optional end frame.',
+        displayName: 'MiniMax Hailuo 02 Standard · Text & Image to Video',
+        description: 'Prompt optimiser-enabled drafts or reference-driven animation in one engine.',
         priceBefore: 'Live pricing updates inside the Generate workspace.',
         versionLabel: 'Standard',
       },
@@ -746,12 +740,12 @@ const en: Dictionary = {
       },
       {
         title: 'MiniMax Hailuo concept pass',
-        engine: 'MiniMax Hailuo 02 · Image-to-video · 16:9',
-        description: 'Animated concept art pass with dynamic framing.',
+        engine: 'MiniMax Hailuo 02 · Text/Image-to-video · 16:9',
+        description: 'Animated concept art pass driven by a single reference frame.',
         alt: 'MiniMax Hailuo Standard example clip.',
         meta: {
-          slug: 'minimax-hailuo-02-image',
-          pricing: { engineId: 'minimax-hailuo-02-image', durationSec: 10, resolution: '768P', memberTier: 'member' },
+          slug: 'minimax-hailuo-02-text',
+          pricing: { engineId: 'minimax-hailuo-02-text', durationSec: 10, resolution: '768P', memberTier: 'member' },
         },
         media: {
           videoSrc: '/hero/minimax-video01.mp4',

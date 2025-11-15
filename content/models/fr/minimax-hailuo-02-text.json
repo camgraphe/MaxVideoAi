@@ -1,5 +1,5 @@
 {
-  "marketingName": "MiniMax Hailuo 02 (Texte→Vidéo)",
+  "marketingName": "MiniMax Hailuo 02 (Texte & Image→Vidéo)",
   "versionLabel": "02",
   "seo": {
     "title": "MiniMax Hailuo 02 Texte→Vidéo – Brouillons rapides et stylisés",
@@ -7,10 +7,10 @@
     "image": "/hero/minimax-video01.jpg"
   },
   "hero": {
-    "title": "MiniMax Hailuo 02 – moteur texte→vidéo pour visuels rapides",
-    "intro": "Le moteur Hailuo 02 de MiniMax produit des clips courts et stylisés directement depuis vos prompts. Esquissez du motion, testez des transitions ou créez des loops mood-driven pour une fraction du coût des moteurs premium.",
+    "title": "MiniMax Hailuo 02 – moteur texte & image→vidéo pour visuels rapides",
+    "intro": "Le moteur Hailuo 02 de MiniMax produit des clips courts et stylisés à partir de texte ou en animant une image de référence. Esquissez du motion, testez des transitions ou donnez vie à vos styleframes pour une fraction du coût des moteurs premium.",
     "ctaPrimary": {
-      "label": "Essayer MiniMax Texte→Vidéo",
+      "label": "Essayer MiniMax Hailuo 02",
       "href": "/app?engine=minimax-hailuo-02-text"
     },
     "secondaryLinks": [
@@ -28,11 +28,11 @@
       }
     ]
   },
-  "overview": "Générez des clips stylisés de 6 à 10 secondes sans image de référence. Hailuo 02 est muet, rapide et parfait pour les storyboards, transitions ou explorations de rythme.",
+  "overview": "Générez des clips stylisés de 6 à 10 secondes depuis un prompt seul ou à partir d’un still. Hailuo 02 est muet, rapide et parfait pour storyboards, transitions ou explorations de rythme.",
   "bestUseCases": {
     "title": "Cas d'usage clés",
     "items": [
-      "Croquis visuels stylisés directement depuis le texte",
+      "Croquis visuels stylisés depuis le texte ou vos références",
       "Tester transitions, ambiance ou structure de mouvement avant polissage",
       "Produire rapidement des clips pour workflows montage ou prototypage",
       "Créer des visuels expérimentaux pour Reels, openers ou loops de fond"
@@ -50,7 +50,7 @@
     },
     {
       "label": "Résolution",
-      "body": "720p ou 1080p en modes paysage ou portrait",
+      "body": "512P ou 768P en paysage, carré ou portrait",
       "link": {
         "label": "Docs API MiniMax",
         "href": "https://www.minimax.chat/developer/docs/video"
@@ -62,11 +62,11 @@
     },
     {
       "label": "Entrées",
-      "body": "Prompts texte uniquement — insistez sur mouvement, lumière et style"
+      "body": "Prompts texte + image de référence et frame final optionnel"
     },
     {
       "label": "Modes",
-      "body": "Ébauches texte→vidéo — pas d’images de référence ni d’options audio"
+      "body": "Texte→vidéo et image→vidéo silencieux dans un seul moteur"
     },
     {
       "label": "Tarification",
@@ -87,11 +87,12 @@
   },
   "tips": {
     "title": "Astuces",
-    "items": [
-      "🦊 Idéal pour esquisser des idées de motion ou des cutaways animés",
+      "items": [
+      "🦊 Idéal pour esquisser des idées de motion ou animer vos styleframes",
       "⚡ Construisez loops créatives ou beats narratifs en un rien de temps",
       "📷 Pensez comme un chef op : mentionnez lentilles, tracking, lumière",
       "🎨 Superposez les textures de style : brumeux, néon, encre, croquis",
+      "🖼️ Ajoutez un frame final pour verrouiller la dernière image",
       "❌ Sortie muette — ajoutez votre bande-son en post"
     ]
   },
@@ -105,6 +106,10 @@
     {
       "title": "Course cinématique du renard",
       "prompt": "Renard stylisé courant dans une forêt venteuse, caméra en suivi arrière, feuilles tourbillonnantes, profondeur de champ ciné"
+    },
+    {
+      "title": "Control room drift",
+      "prompt": "Zoom lent dans une salle de contrôle sci-fi, écrans holographiques et lumières clignotantes. Téléversez l’image de base pour conserver le cadrage."
     }
   ],
   "faqs": [

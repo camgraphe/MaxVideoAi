@@ -32,7 +32,7 @@ const STATIC_ENGINE_DEMOS: Record<string, EngineDemo> = {
     posterUrl: '/hero/pika-22.jpg',
     hasAudio: false,
   },
-  'minimax-hailuo-02-image': {
+  'minimax-hailuo-02-text': {
     videoUrl: '/hero/minimax-video01.mp4',
     posterUrl: '/hero/minimax-video01.jpg',
     hasAudio: false,

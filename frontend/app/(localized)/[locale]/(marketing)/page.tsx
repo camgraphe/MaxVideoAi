@@ -114,7 +114,6 @@ const COMPARE_ENGINE_PRIORITY: readonly string[] = [
   'veo-3-1-fast',
   'pika-text-to-video',
   'minimax-hailuo-02-text',
-  'minimax-hailuo-02-image',
 ];
 
 const COMPARE_ENGINE_META: Record<
@@ -130,8 +129,7 @@ const COMPARE_ENGINE_META: Record<
   'veo-3-1': { maxDuration: '8–12s', audio: 'Yes', bestFor: 'Ads & B-roll' },
   'veo-3-1-fast': { maxDuration: '4–8s', audio: 'Yes', bestFor: 'Frame-to-frame bridges' },
   'pika-text-to-video': { maxDuration: '3–6s', audio: 'No', bestFor: 'Prompts or image loops' },
-  'minimax-hailuo-02-text': { maxDuration: '6–8s', audio: 'No', bestFor: 'Stylised motion' },
-  'minimax-hailuo-02-image': { maxDuration: '6–8s', audio: 'No', bestFor: 'Image-to-video loops' },
+  'minimax-hailuo-02-text': { maxDuration: '6–8s', audio: 'No', bestFor: 'Stylised text/image motion' },
 };
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {

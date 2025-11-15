@@ -1,5 +1,5 @@
 {
-  "marketingName": "MiniMax Hailuo 02 (Texto→Video)",
+  "marketingName": "MiniMax Hailuo 02 (Texto e Imagen→Video)",
   "versionLabel": "02",
   "seo": {
     "title": "MiniMax Hailuo 02 Texto→Video – Bocetos rápidos y estilizados",
@@ -7,10 +7,10 @@
     "image": "/hero/minimax-video01.jpg"
   },
   "hero": {
-    "title": "MiniMax Hailuo 02 – motor texto→video para visuales veloces",
-    "intro": "El motor Hailuo 02 produce clips cortos y estilizados directamente desde tus prompts. Úsalo para bosquejar motion, probar transiciones o crear loops atmosféricos a una fracción del costo de los motores premium.",
+    "title": "MiniMax Hailuo 02 – Texto e Imagen→Video para visuales veloces",
+    "intro": "El motor Hailuo 02 produce clips cortos y estilizados a partir de texto o animando un fotograma de referencia. Úsalo para bosquejar motion, probar transiciones o dar vida a renders y styleframes a una fracción del costo de motores premium.",
     "ctaPrimary": {
-      "label": "Probar MiniMax Texto→Video",
+      "label": "Probar MiniMax Hailuo 02",
       "href": "/app?engine=minimax-hailuo-02-text"
     },
     "secondaryLinks": [
@@ -28,11 +28,11 @@
       }
     ]
   },
-  "overview": "Genera clips estilizados de 6–10 segundos sin imágenes de referencia. Hailuo 02 es silencioso, rápido y perfecto para storyboards, transiciones o exploraciones de ritmo.",
+  "overview": "Genera clips estilizados de 6–10 segundos con solo texto o subiendo tu referencia. Hailuo 02 es silencioso, rápido y perfecto para storyboards, transiciones o exploraciones de ritmo.",
   "bestUseCases": {
     "title": "Casos de uso ideales",
     "items": [
-      "Bocetos visuales estilizados directamente desde texto",
+      "Bocetos visuales estilizados desde texto o partiendo de una imagen",
       "Probar transiciones, tono o estructura de movimiento antes del pulido",
       "Crear clips rápidos para flujos de edición o prototipos",
       "Visuales experimentales para Reels, openers o loops de fondo"
@@ -50,7 +50,7 @@
     },
     {
       "label": "Resolución",
-      "body": "720p o 1080p en horizontal o vertical",
+      "body": "512P o 768P en horizontal, cuadrado o vertical",
       "link": {
         "label": "Docs MiniMax API",
         "href": "https://www.minimax.chat/developer/docs/video"
@@ -62,11 +62,11 @@
     },
     {
       "label": "Entradas",
-      "body": "Solo prompts de texto: enfócate en movimiento, luz y estilo"
+      "body": "Prompts de texto con imagen de referencia y frame final opcional"
     },
     {
       "label": "Modos",
-      "body": "Borradores texto→video; sin imágenes de referencia ni interruptor de audio"
+      "body": "Texto→video e Imagen→video silenciosos en un solo motor"
     },
     {
       "label": "Precio",
@@ -87,11 +87,12 @@
   },
   "tips": {
     "title": "Consejos",
-    "items": [
-      "🦊 Ideal para bosquejar ideas de motion o cutaways animados",
+      "items": [
+      "🦊 Ideal para bosquejar ideas de motion o animar styleframes",
       "⚡ Crea loops creativos o beats narrativos en segundos",
       "📷 Piensa como un DoP: menciona lentes, tracking y luz",
       "🎨 Aplica texturas de estilo: brumoso, neón, tinta, sketch",
+      "🖼️ Sube un frame final si necesitas que el clip termine en un layout exacto",
       "❌ Salida silenciosa: agrega tu soundtrack o VO en post"
     ]
   },
@@ -105,6 +106,10 @@
     {
       "title": "Carrera cinemática del zorro",
       "prompt": "Zorro estilizado corriendo por un bosque ventoso, la cámara sigue desde atrás, hojas arremolinadas, profundidad de campo cinemática"
+    },
+    {
+      "title": "Control room drift",
+      "prompt": "Zoom lento por una sala de control sci-fi con luces parpadeando y pantallas holográficas. Sube la imagen base para conservar el diseño."
     }
   ],
   "faqs": [

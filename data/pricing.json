@@ -177,28 +177,10 @@
     ]
   },
   {
-    "engine": "MiniMax Hailuo 02 Standard Text",
+    "engine": "MiniMax Hailuo 02 Standard (Text & Image to Video)",
     "catalogSlug": "minimax-hailuo-02-text",
     "falSlug": "fal-ai/minimax/hailuo-02/standard/text-to-video",
     "source_url": "https://fal.ai/models/fal-ai/minimax/hailuo-02/standard/text-to-video",
-    "last_checked_at": "2025-02-14T00:00:00",
-    "stale": false,
-    "checksum": "",
-    "prices": [
-      {
-        "raw": {
-          "currency": "USD",
-          "unit": "second",
-          "amount": 0.045
-        }
-      }
-    ]
-  },
-  {
-    "engine": "MiniMax Hailuo 02 Standard Image",
-    "catalogSlug": "minimax-hailuo-02-image",
-    "falSlug": "fal-ai/minimax/hailuo-02/standard/image-to-video",
-    "source_url": "https://fal.ai/models/fal-ai/minimax/hailuo-02/standard/image-to-video",
     "last_checked_at": "2025-02-14T00:00:00",
     "stale": false,
     "checksum": "",

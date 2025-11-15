@@ -26,6 +26,7 @@ const ENGINE_ID_ALIASES = (() => {
     'pika-22': 'pika-text-to-video',
     'luma-dm': 'minimax-hailuo-02-text',
     'lumadreammachine': 'minimax-hailuo-02-text',
+    'minimax-hailuo-02-image': 'minimax-hailuo-02-text',
     'runway-gen2': 'sora-2',
     'runwaygen-2': 'sora-2',
     'sora2pro': 'sora-2-pro',

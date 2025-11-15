@@ -95,13 +95,8 @@ const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
   },
   'minimax-hailuo-02-text': {
     description:
-      'Hailuo 02 Standard (T2V) shines on stylized storytelling with prompt optimizer support.',
-    badges: ['Prompt optimizer', 'Six to ten seconds', 'Stylized'],
-  },
-  'minimax-hailuo-02-image': {
-    description:
-      'Use MiniMax Hailuo 02 with reference images for sharp motion control at 768P.',
-    badges: ['Image input', 'End frame', '768P'],
+      'Hailuo 02 Standard handles stylized text prompts or animated reference stills with prompt optimiser support.',
+    badges: ['Prompt optimiser', 'Image input', '6–10s silent'],
   },
 };
 
@@ -658,7 +653,6 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect, copy
       'veo-3-1-fast',
       'pika-text-to-video',
       'minimax-hailuo-02-text',
-      'minimax-hailuo-02-image',
     ];
     const priorityIndex = new Map(priorityOrder.map((id, index) => [id, index]));
     const ranked = engines
