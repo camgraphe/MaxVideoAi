@@ -101,6 +101,10 @@ const ENGINE_FILTER_GROUPS: Record<
   'pika-image-to-video': { id: 'pika', label: 'Pika', brandId: 'pika' },
   'pika-2-2': { id: 'pika', label: 'Pika', brandId: 'pika' },
   pika: { id: 'pika', label: 'Pika', brandId: 'pika' },
+  'kling-2-5-turbo': { id: 'kling', label: 'Kling', brandId: 'kling' },
+  kling: { id: 'kling', label: 'Kling', brandId: 'kling' },
+  'wan-2-5': { id: 'wan', label: 'Wan 2.5', brandId: 'wan' },
+  wan: { id: 'wan', label: 'Wan 2.5', brandId: 'wan' },
 };
 
 function toAbsoluteUrl(url?: string | null): string | null {
@@ -248,6 +252,10 @@ function resolveFilterDescriptor(
       group = ENGINE_FILTER_GROUPS['pika'];
     } else if (normalized.includes('hailuo')) {
       group = ENGINE_FILTER_GROUPS['hailuo'];
+    } else if (normalized.startsWith('kling')) {
+      group = ENGINE_FILTER_GROUPS['kling'];
+    } else if (normalized.startsWith('wan')) {
+      group = ENGINE_FILTER_GROUPS['wan'];
     }
   }
 
@@ -336,7 +344,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     return acc;
   }, new Map());
 
-const PREFERRED_ENGINE_ORDER = ['sora-2', 'veo', 'pika', 'hailuo'];
+const PREFERRED_ENGINE_ORDER = ['sora-2', 'veo', 'kling', 'wan', 'pika', 'hailuo'];
 const normalizeFilterId = (value: string) => value.trim().toLowerCase();
 
 const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
@@ -344,6 +352,8 @@ const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
   veo: { bg: 'bg-[#E7F1FF]', text: 'text-[#1A4D91]' },
   pika: { bg: 'bg-[#FFEFF8]', text: 'text-[#C42F7A]' },
   hailuo: { bg: 'bg-[#FFF4E6]', text: 'text-[#B05600]' },
+  kling: { bg: 'bg-[#E6F4FF]', text: 'text-[#0F4C81]' },
+  wan: { bg: 'bg-[#F2EAFE]', text: 'text-[#6B2BAA]' },
 };
 
   const engineFilterOptions = PREFERRED_ENGINE_ORDER.map((preferredId) => {
