@@ -47,7 +47,13 @@ const ENGINE_MODE_LABEL_OVERRIDES: Record<string, Partial<Record<Mode, string>>>
   },
 };
 
-function getModeLabel(engineId: string | undefined, value: Mode): string {
+function getModeLabel(
+  engineId: string | undefined,
+  value: Mode,
+  overrides?: Partial<Record<Mode, string>>
+): string {
+  const custom = overrides?.[value];
+  if (custom) return custom;
   const engineOverrides = engineId ? ENGINE_MODE_LABEL_OVERRIDES[engineId] : undefined;
   return engineOverrides?.[value] ?? MODE_LABELS[value] ?? value.toUpperCase();
 }
@@ -60,6 +66,7 @@ interface EngineSelectProps {
   onModeChange: (mode: Mode) => void;
   modeOptions?: Mode[];
   showBillingNote?: boolean;
+  modeLabelOverrides?: Partial<Record<Mode, string>>;
 }
 
 const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
@@ -141,6 +148,7 @@ export function EngineSelect({
   onModeChange,
   modeOptions,
   showBillingNote = true,
+  modeLabelOverrides,
 }: EngineSelectProps) {
   const { t } = useI18n();
   const copy = t('workspace.generate.engineSelect', DEFAULT_ENGINE_SELECT_COPY) as EngineSelectCopy;
@@ -510,10 +518,10 @@ export function EngineSelect({
                                   {engine.provider} - {meta?.versionLabel ?? engine.version ?? '-'}
                                 </p>
                                 <div className="flex flex-wrap gap-1.5 text-[11px]">
-                                  {engine.modes.map((engineMode) => (
-                                    <Chip key={engineMode} variant="outline" className="px-2 py-0.5 text-[11px]">
-                                      {getModeLabel(engine.id, engineMode)}
-                                    </Chip>
+                                      {engine.modes.map((engineMode) => (
+                                        <Chip key={engineMode} variant="outline" className="px-2 py-0.5 text-[11px]">
+                                          {getModeLabel(engine.id, engineMode, modeLabelOverrides)}
+                                        </Chip>
                                   ))}
                                   {engine.isLab && (
                                     <Chip variant="ghost" className="px-2 py-0.5 text-[11px]">Lab</Chip>
@@ -564,7 +572,7 @@ export function EngineSelect({
                           : 'cursor-not-allowed border-hairline bg-white text-text-muted/60'
                     )}
                   >
-                    {getModeLabel(selectedEngine?.id, candidate)}
+                    {getModeLabel(selectedEngine?.id, candidate, modeLabelOverrides)}
                   </button>
                 );
               })}
@@ -582,6 +590,7 @@ export function EngineSelect({
             setBrowseOpen(false);
           }}
           copy={copy}
+          modeLabelOverrides={modeLabelOverrides}
         />
       )}
     </Card>
@@ -594,11 +603,19 @@ interface BrowseEnginesModalProps {
   onClose: () => void;
   onSelect: (engineId: string) => void;
   copy: EngineSelectCopy;
+  modeLabelOverrides?: Partial<Record<Mode, string>>;
 }
 
 type ModeFilter = 'all' | Mode;
 
-function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect, copy }: BrowseEnginesModalProps) {
+function BrowseEnginesModal({
+  engines,
+  selectedEngineId,
+  onClose,
+  onSelect,
+  copy,
+  modeLabelOverrides,
+}: BrowseEnginesModalProps) {
   const modalCopy = copy.modal;
   const [portalElement, setPortalElement] = useState<HTMLDivElement | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -850,7 +867,7 @@ function BrowseEnginesModal({ engines, selectedEngineId, onClose, onSelect, copy
                   </div>
                   <div className="flex flex-wrap items-center gap-3 text-xs text-text-muted">
                     <span>
-                      Modes: {engine.modes.map((entry) => getModeLabel(engine.id, entry)).join(' / ')}
+                      Modes: {engine.modes.map((entry) => getModeLabel(engine.id, entry, modeLabelOverrides)).join(' / ')}
                     </span>
                     <span>
                       Max {engine.maxDurationSec}s / Res {engine.resolutions.join(' / ')}
