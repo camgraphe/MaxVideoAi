@@ -76,16 +76,6 @@ export default async function CoreLayout({ children }: { children: ReactNode }) 
 
   return (
     <>
-      <head>
-        {process.env.NEXT_PUBLIC_BING_VERIFY ? (
-          <meta name="msvalidate.01" content={process.env.NEXT_PUBLIC_BING_VERIFY} />
-        ) : null}
-      </head>
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `document.documentElement.lang='${locale}';document.documentElement.setAttribute('data-show-wavel-badge','');`,
-        }}
-      />
       <ConsentModeBootstrap />
       <AuthCallbackHandler />
       <I18nProvider locale={locale} dictionary={dictionary} fallback={fallback}>

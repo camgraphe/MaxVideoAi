@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next';
-import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { Analytics as VercelAnalytics } from '@vercel/analytics/react';
@@ -12,12 +11,6 @@ import { CookieBanner } from '@/components/legal/CookieBanner';
 import { JsonLd } from '@/components/SeoJsonLd';
 import { I18nProvider } from '@/lib/i18n/I18nProvider';
 import { defaultLocale, localeRegions, locales, type AppLocale } from '@/i18n/locales';
-import { englishPathFromLocale, normalizePathSegments } from '@/lib/i18n/paths';
-import {
-  HREFLANG_VARIANTS,
-  buildAbsoluteLocalizedUrl,
-  resolveLocalesForEnglishPath,
-} from '@/lib/seo/alternateLocales';
 import { deserializeMessages } from '@/lib/i18n/server';
 type LocaleLayoutProps = {
   children: ReactNode;
@@ -106,77 +99,6 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
 
   return (
     <>
-      <head>
-        {(() => {
-          const headerList = headers();
-
-          const extractPathname = () => {
-            const candidates = [
-              headerList.get('next-url'),
-              headerList.get('x-pathname'),
-              headerList.get('x-invoke-path'),
-              headerList.get('x-matched-path'),
-            ];
-            for (const candidate of candidates) {
-              if (!candidate) continue;
-              try {
-                // next-url is absolute; others are pathnames
-                const url = candidate.startsWith('http') ? new URL(candidate) : null;
-                const pathname = (url ? url.pathname : candidate)?.split('?')[0] ?? '/';
-                if (pathname) {
-                  return pathname;
-                }
-              } catch {
-                // swallow parse errors and continue to fallback
-              }
-            }
-            return '/';
-          };
-
-          const stripRouteGroups = (pathname: string) => {
-            const segments = pathname.split('/').filter(Boolean);
-            const sanitized = segments
-              .filter((segment) => {
-                if (segment.startsWith('(') && segment.endsWith(')')) {
-                  return false;
-                }
-                if (segment.includes('[') || segment.includes(']')) {
-                  return false;
-                }
-                return true;
-              })
-              .join('/');
-            return sanitized ? `/${sanitized}` : '/';
-          };
-
-          const rawPath = extractPathname();
-          const normalizedPath = normalizePathSegments(stripRouteGroups(rawPath));
-          const englishPath = englishPathFromLocale(locale, normalizedPath);
-          const allowedLocales = resolveLocalesForEnglishPath(englishPath);
-          const defaultHref = englishPath === '/' ? NORMALIZED_SITE_URL : `${NORMALIZED_SITE_URL}${englishPath}`;
-          return (
-            <>
-              {HREFLANG_VARIANTS.filter((entry) => allowedLocales.has(entry.locale)).map((entry) => (
-                <link
-                  rel="alternate"
-                  hrefLang={entry.hreflang}
-                  href={buildAbsoluteLocalizedUrl(NORMALIZED_SITE_URL, entry.locale, englishPath)}
-                  key={`alt-${entry.hreflang}`}
-                />
-              ))}
-              <link rel="alternate" hrefLang="x-default" href={defaultHref} key="alt-default" />
-            </>
-          );
-        })()}
-        {process.env.NEXT_PUBLIC_BING_VERIFY ? (
-          <meta name="msvalidate.01" content={process.env.NEXT_PUBLIC_BING_VERIFY} />
-        ) : null}
-      </head>
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `document.documentElement.lang='${locale}';document.documentElement.setAttribute('data-show-wavel-badge','');`,
-        }}
-      />
       <ConsentModeBootstrap />
       <GA4RouteTracker />
       <AuthCallbackHandler />
