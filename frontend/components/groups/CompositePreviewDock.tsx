@@ -208,16 +208,27 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
             <UIIcon icon={Repeat} />
             <span className="sr-only">{isLooping ? copy.controls.loop.on : copy.controls.loop.off}</span>
           </button>
-          <button
-            type="button"
-            onClick={handleOpenModal}
-            disabled={!group}
-            className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
-            aria-label={copy.controls.modal.aria}
-          >
-            <UIIcon icon={ExternalLink} />
-            <span className="sr-only">{copy.controls.modal.label}</span>
-          </button>
+          {group?.hero?.id ? (
+            <Link
+              href={`/jobs/${encodeURIComponent(group.hero.id)}`}
+              className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary')}
+              aria-label={copy.controls.modal.aria}
+            >
+              <UIIcon icon={ExternalLink} />
+              <span className="sr-only">{copy.controls.modal.label}</span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={handleOpenModal}
+              disabled={!group}
+              className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
+              aria-label={copy.controls.modal.aria}
+            >
+              <UIIcon icon={ExternalLink} />
+              <span className="sr-only">{copy.controls.modal.label}</span>
+            </button>
+          )}
           {copyPrompt && onCopyPrompt ? (
             <button
               type="button"
