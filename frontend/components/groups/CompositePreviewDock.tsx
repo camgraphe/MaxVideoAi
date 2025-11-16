@@ -7,6 +7,7 @@ import type { VideoGroup, VideoItem } from '@/types/video-groups';
 import { ProcessingOverlay } from '@/components/groups/ProcessingOverlay';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { Link } from '@/i18n/navigation';
 
 const DEFAULT_PREVIEW_COPY = {
   title: 'Composite Preview',
@@ -20,6 +21,8 @@ const DEFAULT_PREVIEW_COPY = {
     mute: { on: 'Unmute', off: 'Mute', ariaOn: 'Unmute all previews', ariaOff: 'Mute all previews' },
     loop: { on: 'Loop on', off: 'Loop off', ariaOn: 'Disable looping', ariaOff: 'Enable looping' },
     modal: { label: 'Open modal', aria: 'Open preview in modal' },
+    openTake: { label: 'Open', aria: 'Open this take' },
+    openTake: { label: 'Open', aria: 'Open this take' },
     copyPrompt: 'Copy prompt',
   },
   placeholder: '—',
@@ -48,6 +51,51 @@ const GRID_CLASS: Record<VideoGroup['layout'], string> = {
   x3: 'md:grid-cols-2',
   x4: 'grid-cols-2',
 };
+
+const IconPlay = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden fill="currentColor">
+    <path d="M8 5v14l11-7z" />
+  </svg>
+);
+
+const IconPause = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden fill="currentColor">
+    <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
+  </svg>
+);
+
+const IconVolume = ({ muted }: { muted: boolean }) =>
+  muted ? (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden fill="currentColor">
+      <path d="M4 9v6h4l5 5V4L8 9H4z" opacity="0.6" />
+      <path d="M18 9l-2 2m0 0l-2 2m2-2l2 2m-2-2l2-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  ) : (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden fill="currentColor">
+      <path d="M4 9v6h4l5 5V4L8 9H4z" />
+      <path
+        d="M16 9c1.38 1.38 1.38 4.62 0 6m3-9c3.45 3.45 3.45 8.55 0 12"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        fill="none"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+
+const IconLoop = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M4 7h12a4 4 0 014 4v0a4 4 0 01-4 4h-6" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M8 5l-4 2 4 2V5zM16 17l4-2-4-2v4z" fill="currentColor" />
+  </svg>
+);
+
+const IconExternal = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M7 17h10a2 2 0 002-2V7" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M21 3h-6m6 0l-9 9m9-9v6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
 
 function isVideo(item: VideoItem): boolean {
   const hint = typeof item.meta?.mediaType === 'string' ? String(item.meta.mediaType).toLowerCase() : null;
@@ -133,17 +181,6 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
     [isLooping, isMuted, isPlaying]
   );
 
-  const handleDownload = useCallback((item: VideoItem) => {
-    if (!item.url) return;
-    const anchor = document.createElement('a');
-    anchor.href = item.url;
-    anchor.download = `${item.id || 'video'}.mp4`;
-    anchor.rel = 'noopener noreferrer';
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
-  }, []);
-
   const handleOpenModal = useCallback(() => {
     if (group && onOpenModal) {
       onOpenModal(group);
@@ -176,38 +213,51 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
           <button
             type="button"
             onClick={() => setIsPlaying((prev) => !prev)}
-            className="rounded-full border border-border px-3 py-1 text-xs font-medium text-text-secondary transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className={clsx(
+              'flex h-10 w-10 items-center justify-center rounded-full border border-border bg-white text-text-primary transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              isPlaying && 'shadow-inner'
+            )}
             aria-label={isPlaying ? copy.controls.play.ariaOn : copy.controls.play.ariaOff}
             aria-pressed={isPlaying}
           >
-            {isPlaying ? copy.controls.play.on : copy.controls.play.off}
+            {isPlaying ? <IconPause /> : <IconPlay />}
+            <span className="sr-only">{isPlaying ? copy.controls.play.on : copy.controls.play.off}</span>
           </button>
           <button
             type="button"
             onClick={() => setIsMuted((prev) => !prev)}
-            className="rounded-full border border-border px-3 py-1 text-xs font-medium text-text-secondary transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className={clsx(
+              'flex h-10 w-10 items-center justify-center rounded-full border border-border bg-white text-text-primary transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              isMuted && 'shadow-inner'
+            )}
             aria-label={isMuted ? copy.controls.mute.ariaOn : copy.controls.mute.ariaOff}
             aria-pressed={isMuted}
           >
-            {isMuted ? copy.controls.mute.on : copy.controls.mute.off}
+            <IconVolume muted={isMuted} />
+            <span className="sr-only">{isMuted ? copy.controls.mute.on : copy.controls.mute.off}</span>
           </button>
           <button
             type="button"
             onClick={() => setIsLooping((prev) => !prev)}
-            className="rounded-full border border-border px-3 py-1 text-xs font-medium text-text-secondary transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className={clsx(
+              'flex h-10 w-10 items-center justify-center rounded-full border border-border bg-white text-text-primary transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              isLooping && 'shadow-inner'
+            )}
             aria-label={isLooping ? copy.controls.loop.ariaOn : copy.controls.loop.ariaOff}
             aria-pressed={isLooping}
           >
-            {isLooping ? copy.controls.loop.on : copy.controls.loop.off}
+            <IconLoop />
+            <span className="sr-only">{isLooping ? copy.controls.loop.on : copy.controls.loop.off}</span>
           </button>
           <button
             type="button"
             onClick={handleOpenModal}
             disabled={!group}
-            className="rounded-full border border-border px-3 py-1 text-xs font-medium text-text-secondary transition hover:bg-accentSoft/10 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-white text-text-primary transition hover:bg-accentSoft/10 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label={copy.controls.modal.aria}
           >
-            {copy.controls.modal.label}
+            <IconExternal />
+            <span className="sr-only">{copy.controls.modal.label}</span>
           </button>
           {copyPrompt && onCopyPrompt ? (
             <button
@@ -310,16 +360,19 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
                         tileCount={tileCount || slots.length}
                       />
                     ) : null}
-                    <div className="absolute bottom-2 left-2">
-                      <button
-                        type="button"
-                        onClick={() => handleDownload(item)}
-                        className="pointer-events-auto rounded-full border border-border bg-white/90 px-2 py-0.5 text-[10px] font-medium text-text-secondary shadow transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        aria-label="Download this take"
-                      >
-                        Download
-                      </button>
-                    </div>
+                    {item.id ? (
+                      <div className="absolute bottom-2 left-2">
+                        <Link
+                          href={`/video/${encodeURIComponent(item.id)}`}
+                          locale={false}
+                          className="pointer-events-auto inline-flex items-center gap-1 rounded-full border border-border bg-white/90 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-secondary shadow transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          aria-label={copy.controls.openTake.aria}
+                        >
+                          <IconExternal />
+                          <span>{copy.controls.openTake.label}</span>
+                        </Link>
+                      </div>
+                    ) : null}
                   </figure>
                 );
               })}

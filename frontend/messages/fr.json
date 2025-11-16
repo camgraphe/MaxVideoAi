@@ -1403,18 +1403,22 @@
             "ariaOn": "Activer le son sur toutes les prévisualisations",
             "ariaOff": "Couper le son sur toutes les prévisualisations"
           },
-          "loop": {
-            "on": "Boucle activée",
-            "off": "Boucle désactivée",
-            "ariaOn": "Désactiver la boucle",
-            "ariaOff": "Activer la boucle"
-          },
-          "modal": {
-            "label": "Ouvrir dans une fenêtre",
-            "aria": "Ouvrir l’aperçu dans une fenêtre"
-          },
-          "copyPrompt": "Copier le prompt"
+        "loop": {
+          "on": "Boucle activée",
+          "off": "Boucle désactivée",
+          "ariaOn": "Désactiver la boucle",
+          "ariaOff": "Activer la boucle"
         },
+        "modal": {
+          "label": "Ouvrir dans une fenêtre",
+          "aria": "Ouvrir l’aperçu dans une fenêtre"
+        },
+        "openTake": {
+          "label": "Ouvrir",
+          "aria": "Ouvrir cette prise"
+        },
+        "copyPrompt": "Copier le prompt"
+      },
         "placeholder": "—"
       },
       "galleryRail": {

@@ -1392,18 +1392,22 @@
             "ariaOn": "Unmute all previews",
             "ariaOff": "Mute all previews"
           },
-          "loop": {
-            "on": "Loop on",
-            "off": "Loop off",
-            "ariaOn": "Disable looping",
-            "ariaOff": "Enable looping"
-          },
-          "modal": {
-            "label": "Open modal",
-            "aria": "Open preview in modal"
-          },
-          "copyPrompt": "Copy prompt"
+        "loop": {
+          "on": "Loop on",
+          "off": "Loop off",
+          "ariaOn": "Disable looping",
+          "ariaOff": "Enable looping"
         },
+        "modal": {
+          "label": "Open modal",
+          "aria": "Open preview in modal"
+        },
+        "openTake": {
+          "label": "Open",
+          "aria": "Open this take"
+        },
+        "copyPrompt": "Copy prompt"
+      },
         "placeholder": "—"
       },
       "galleryRail": {

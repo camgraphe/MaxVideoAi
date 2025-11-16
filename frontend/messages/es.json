@@ -1402,12 +1402,16 @@
             "ariaOn": "Desactivar el bucle",
             "ariaOff": "Activar el bucle"
           },
-          "modal": {
-            "label": "Abrir en modal",
-            "aria": "Abrir la vista previa en una ventana"
-          },
-          "copyPrompt": "Copiar prompt"
+        "modal": {
+          "label": "Abrir en modal",
+          "aria": "Abrir la vista previa en una ventana"
         },
+        "openTake": {
+          "label": "Abrir",
+          "aria": "Abrir esta toma"
+        },
+        "copyPrompt": "Copiar prompt"
+      },
         "placeholder": "—"
       },
       "galleryRail": {
