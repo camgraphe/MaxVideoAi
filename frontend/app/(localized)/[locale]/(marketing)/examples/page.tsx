@@ -321,8 +321,15 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     return acc;
   }, new Map());
 
-  const PREFERRED_ENGINE_ORDER = ['sora-2', 'veo', 'pika', 'hailuo'];
-  const normalizeFilterId = (value: string) => value.trim().toLowerCase();
+const PREFERRED_ENGINE_ORDER = ['sora-2', 'veo', 'pika', 'hailuo'];
+const normalizeFilterId = (value: string) => value.trim().toLowerCase();
+
+const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
+  'sora-2': { bg: 'bg-[#F4EEFF]', text: 'text-[#5C3DC4]' },
+  veo: { bg: 'bg-[#E7F1FF]', text: 'text-[#1A4D91]' },
+  pika: { bg: 'bg-[#FFEFF8]', text: 'text-[#C42F7A]' },
+  hailuo: { bg: 'bg-[#FFF4E6]', text: 'text-[#B05600]' },
+};
 
   const engineFilterOptions = PREFERRED_ENGINE_ORDER.map((preferredId) => {
     const key = normalizeFilterId(preferredId);
@@ -471,6 +478,7 @@ const selectedOption =
                 </Link>
                 {engineFilterOptions.map((engine) => {
                   const isActive = selectedEngine === engine.id;
+                  const palette = ENGINE_FILTER_STYLES[engine.id.toLowerCase()] ?? null;
                   return (
                     <Link
                       key={engine.id}
@@ -480,7 +488,9 @@ const selectedOption =
                         'flex h-9 items-center justify-center rounded-full border px-4 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
                         isActive
                           ? 'border-transparent bg-text-primary text-white shadow-card'
-                          : 'border-hairline bg-white text-text-secondary hover:border-accent hover:text-text-primary'
+                          : palette
+                            ? clsx('border-transparent hover:opacity-90', palette.bg, palette.text)
+                            : 'border-hairline bg-white text-text-secondary hover:border-accent hover:text-text-primary'
                       )}
                     >
                       {engine.label}
