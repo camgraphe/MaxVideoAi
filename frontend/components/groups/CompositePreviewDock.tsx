@@ -210,7 +210,7 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
           </button>
           {group?.hero?.id ? (
             <Link
-              href={`/jobs/${encodeURIComponent(group.hero.id)}`}
+              href={`/jobs/${encodeURIComponent(group.hero.jobId ?? group.hero.id)}`}
               className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary')}
               aria-label={copy.controls.modal.aria}
             >
@@ -333,7 +333,7 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
                     {item.id ? (
                       <div className="absolute bottom-2 left-2">
                         <Link
-                          href={`/jobs/${encodeURIComponent(item.id)}`}
+                          href={`/jobs/${encodeURIComponent(item.jobId ?? item.id)}`}
                           className="pointer-events-auto inline-flex items-center gap-1 rounded-full border border-border bg-white/90 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-secondary shadow transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           aria-label={copy.controls.openTake.aria}
                         >
