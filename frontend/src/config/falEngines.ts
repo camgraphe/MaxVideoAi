@@ -627,12 +627,6 @@ const SORA_2_ENGINE: EngineCaps = {
         default: '720p',
       },
       {
-        id: 'api_key',
-        type: 'text',
-        label: 'OpenAI API key',
-        description: 'Use your own key for direct OpenAI billing',
-      },
-      {
         id: 'image_url',
         type: 'image',
         label: 'Image input',
@@ -726,12 +720,6 @@ const SORA_2_PRO_ENGINE: EngineCaps = {
         label: 'Resolution',
         values: ['720p', '1080p', 'auto'],
         default: '1080p',
-      },
-      {
-        id: 'api_key',
-        type: 'text',
-        label: 'OpenAI API key',
-        description: 'Bring your own OpenAI key for direct billing.',
       },
       {
         id: 'image_url',
@@ -986,7 +974,6 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
           resolution: ['720p'],
           aspectRatio: ['16:9', '9:16'],
           audioToggle: false,
-          notes: 'Optional OpenAI API key routes billing directly through OpenAI.',
         },
       },
       {
@@ -1040,11 +1027,6 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
       {
         question: 'Do Sora 2 renders include a watermark?',
         answer: 'No. Outputs are delivered clean, ready for editing and distribution.',
-      },
-      {
-        question: 'How does billing work with FAL credits or my OpenAI API key?',
-        answer:
-          'MaxVideo AI routes Sora 2 runs through FAL by default. Drop your own OpenAI API key in the app to bill usage directly through OpenAI—the interface keeps showing an indicative rate and adds a "Billed by OpenAI" badge so finance teams stay aligned.',
       },
     ],
     pricingHint: {
@@ -1131,11 +1113,6 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
       },
     ],
     faqs: [
-      {
-        question: 'Can I use my own OpenAI key with Sora 2 Pro?',
-        answer:
-          'Yes. Enter your OpenAI API key before you render and billing is handled on your OpenAI account while MaxVideo routes the job.',
-      },
       {
         question: 'Does Sora 2 Pro always output audio?',
         answer:

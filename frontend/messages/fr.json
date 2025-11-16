@@ -1316,10 +1316,6 @@
           "title": "Réglages essentiels",
           "subtitle": "Durée, format, résolution"
         },
-        "billingTip": {
-          "label": "Astuce facturation :",
-          "body": "Ajoutez votre clé API OpenAI dans les réglages avancés pour facturer directement chez OpenAI. Laissez vide pour débiter vos crédits FAL."
-        },
         "frames": {
           "label": "Images (frames)",
           "options": "Options : {options}",
@@ -1368,11 +1364,6 @@
         "fpsSuffix": "{value} i/s",
         "promptStrength": "Intensité du prompt",
         "guidance": "Guidance",
-        "apiKey": {
-          "label": "Clé API OpenAI",
-          "placeholder": "sk-...",
-          "note": "Renseignez votre clé OpenAI pour facturer directement sur votre compte. Nous ne la stockons pas côté serveur."
-        },
         "inputInfluence": "Influence de l’entrée",
         "extend": {
           "label": "Extension",
@@ -1792,7 +1783,6 @@
       "tabs": {
         "account": "Compte",
         "team": "Équipe",
-        "keys": "Clés API",
         "privacy": "Confidentialité & sécurité",
         "notifications": "Notifications"
       },
@@ -1835,13 +1825,6 @@
         "upcomingPrefix": "Bientôt — portefeuilles partagés, validations et budgets. Rejoignez la bêta via ",
         "upcomingEmail": "support@maxvideoai.com",
         "upcomingSuffix": "."
-      },
-      "keys": {
-        "title": "Clés API",
-        "placeholder": "sk_live_…",
-        "copy": "Copier",
-        "revoke": "Révoquer",
-        "create": "Créer une nouvelle clé"
       },
       "privacy": {
         "title": "Confidentialité & sécurité",

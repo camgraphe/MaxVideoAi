@@ -119,10 +119,6 @@
   ],
   "faqs": [
     {
-      "q": "Can I use my own OpenAI key with Sora 2 Pro?",
-      "a": "Yes. Enter your OpenAI API key before you render and billing is handled on your OpenAI account while MaxVideo routes the job."
-    },
-    {
       "q": "Does Sora 2 Pro always output audio?",
       "a": "Audio is on by default for lip-sync and sound design, but you can toggle it off in the composer if you only need visuals."
     }

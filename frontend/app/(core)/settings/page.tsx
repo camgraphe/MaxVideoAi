@@ -12,14 +12,13 @@ import type { Session } from '@supabase/supabase-js';
 import deepmerge from 'deepmerge';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
-type Tab = 'account' | 'team' | 'keys' | 'privacy' | 'notifications';
+type Tab = 'account' | 'team' | 'privacy' | 'notifications';
 
 const DEFAULT_SETTINGS_COPY = {
   title: 'Settings',
   tabs: {
     account: 'Account',
     team: 'Team',
-    keys: 'API Keys',
     privacy: 'Privacy & Safety',
     notifications: 'Notifications',
   },
@@ -42,13 +41,6 @@ const DEFAULT_SETTINGS_COPY = {
     upcomingPrefix: 'Coming soon — shared wallets, approvals, and budgets. Join the beta at ',
     upcomingEmail: 'support@maxvideoai.com',
     upcomingSuffix: '.',
-  },
-  keys: {
-    title: 'API Keys',
-    placeholder: 'sk_live_…',
-    copy: 'Copy',
-    revoke: 'Revoke',
-    create: 'Create new key',
   },
   privacy: {
     title: 'Privacy & Safety',
@@ -161,7 +153,6 @@ export default function SettingsPage() {
               badgeSrLive={copy.team.srLive}
               badgeSrSoon={copy.team.srSoon}
             />
-            <TabLink id="keys" label={copy.tabs.keys} active={tab === 'keys'} onClick={() => setTab('keys')} />
             <TabLink id="privacy" label={copy.tabs.privacy} active={tab === 'privacy'} onClick={() => setTab('privacy')} />
             <TabLink
               id="notifications"
@@ -176,7 +167,6 @@ export default function SettingsPage() {
 
           {tab === 'account' && <AccountTab session={session} copy={copy.account} />}
           {tab === 'team' && <TeamTab live={teamsLive} copy={copy.team} />}
-          {tab === 'keys' && <KeysTab copy={copy.keys} />}
           {tab === 'privacy' && (
             <PrivacyTab
               defaultAllowIndex={preferences?.defaultAllowIndex}
@@ -324,22 +314,6 @@ function TeamTab({ live, copy }: { live: boolean; copy: SettingsCopy['team'] }) 
           {copy.upcomingSuffix}
         </div>
       )}
-    </section>
-  );
-}
-
-function KeysTab({ copy }: { copy: SettingsCopy['keys'] }) {
-  return (
-    <section className="rounded-card border border-border bg-white p-4 shadow-card">
-      <h2 className="mb-3 text-lg font-semibold text-text-primary">{copy.title}</h2>
-      <div className="flex items-center gap-2 text-sm">
-        <input className="flex-1 rounded-input border border-border bg-bg px-3 py-2" placeholder={copy.placeholder} readOnly value="sk_demo_xxx" />
-        <button className="rounded-input border border-border px-3 py-2 hover:bg-bg">{copy.copy}</button>
-        <button className="rounded-input border border-border px-3 py-2 hover:bg-bg">{copy.revoke}</button>
-      </div>
-      <div className="mt-3">
-        <button className="rounded-input border border-border px-3 py-2 text-sm hover:bg-bg">{copy.create}</button>
-      </div>
     </section>
   );
 }

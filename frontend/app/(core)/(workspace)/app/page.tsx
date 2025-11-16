@@ -483,7 +483,6 @@ function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | n
     fps,
     iterations,
     seedLocked: previous?.seedLocked ?? false,
-    openaiApiKey: previous?.openaiApiKey,
     loop,
   };
 }
@@ -528,7 +527,6 @@ interface FormState {
   fps: number;
   iterations: number;
   seedLocked?: boolean;
-  openaiApiKey?: string;
   loop?: boolean;
 }
 
@@ -557,7 +555,6 @@ function parseStoredForm(value: string): FormState | null {
       fps,
       iterations,
       seedLocked,
-      openaiApiKey,
       loop,
     } = raw;
 
@@ -589,7 +586,6 @@ function parseStoredForm(value: string): FormState | null {
       fps,
       iterations: typeof iterations === 'number' && iterations > 0 ? iterations : 1,
       seedLocked: typeof seedLocked === 'boolean' ? seedLocked : undefined,
-      openaiApiKey: typeof openaiApiKey === 'string' ? openaiApiKey : undefined,
       loop: typeof loop === 'boolean' ? loop : undefined,
     };
   } catch {
@@ -3051,7 +3047,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           ...(inputsPayload ? { inputs: inputsPayload } : {}),
           ...(primaryImageUrl ? { imageUrl: primaryImageUrl } : {}),
           ...(referenceImageUrls.length ? { referenceImages: referenceImageUrls } : {}),
-          ...(form.openaiApiKey ? { apiKey: form.openaiApiKey } : {}),
           idempotencyKey: id,
           batchId,
           groupId: batchId,
@@ -3325,7 +3320,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           candidate.fps !== nextState.fps ||
           candidate.iterations !== nextState.iterations ||
           candidate.seedLocked !== nextState.seedLocked ||
-          candidate.openaiApiKey !== nextState.openaiApiKey ||
           candidate.loop !== nextState.loop;
         return hasChanged ? nextState : candidate;
       }
@@ -3715,15 +3709,6 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                       onSeedLockedChange={(seedLocked) =>
                         setForm((current) => (current ? { ...current, seedLocked } : current))
                       }
-                      apiKey={form.openaiApiKey}
-                      onApiKeyChange={(value) =>
-                        setForm((current) => {
-                          if (!current) return current;
-                          const next = value.trim();
-                          return { ...current, openaiApiKey: next ? next : undefined };
-                        })
-                      }
-                      showApiKeyField={false}
                       focusRefs={{
                         duration: durationRef,
                         resolution: resolutionRef,

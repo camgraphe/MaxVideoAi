@@ -235,11 +235,26 @@ function resolveFilterDescriptor(
   fallbackLabel?: string | null
 ): { id: string; label: string; brandId?: string } | null {
   if (!canonicalEngineId) return null;
-  const override = ENGINE_FILTER_GROUPS[canonicalEngineId];
-  const targetId = override?.id ?? canonicalEngineId;
+  const normalized = canonicalEngineId.trim().toLowerCase();
+  const directMatch = ENGINE_FILTER_GROUPS[normalized];
+  let group = directMatch;
+
+  if (!group) {
+    if (normalized.startsWith('veo-3') || normalized.startsWith('veo3')) {
+      group = ENGINE_FILTER_GROUPS['veo'];
+    } else if (normalized.startsWith('sora-2')) {
+      group = ENGINE_FILTER_GROUPS['sora-2'];
+    } else if (normalized.startsWith('pika')) {
+      group = ENGINE_FILTER_GROUPS['pika'];
+    } else if (normalized.includes('hailuo')) {
+      group = ENGINE_FILTER_GROUPS['hailuo'];
+    }
+  }
+
+  const targetId = group?.id ?? normalized;
   const targetOverride = ENGINE_FILTER_GROUPS[targetId];
-  const label = override?.label ?? targetOverride?.label ?? engineMeta?.label ?? fallbackLabel ?? targetId;
-  const brandId = override?.brandId ?? targetOverride?.brandId ?? engineMeta?.brandId;
+  const label = group?.label ?? targetOverride?.label ?? engineMeta?.label ?? fallbackLabel ?? canonicalEngineId;
+  const brandId = group?.brandId ?? targetOverride?.brandId ?? engineMeta?.brandId;
   return { id: targetId, label, brandId };
 }
 

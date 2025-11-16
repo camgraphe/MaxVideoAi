@@ -28,9 +28,6 @@ interface Props {
   onIterationsChange?: (value: number) => void;
   seedLocked?: boolean;
   onSeedLockedChange?: (value: boolean) => void;
-  apiKey?: string;
-  onApiKeyChange?: (value: string) => void;
-  showApiKeyField?: boolean;
   showLoopControl?: boolean;
   loopEnabled?: boolean;
   onLoopChange?: (value: boolean) => void;
@@ -46,10 +43,6 @@ const DEFAULT_CONTROLS_COPY = {
     title: 'Core settings',
     subtitle: 'Duration, Aspect, Resolution',
     audioIncluded: 'Audio included in every render',
-  },
-  billingTip: {
-    label: 'Billing tip:',
-    body: 'Add your OpenAI API key in Advanced settings to bill runs directly through OpenAI. Leave it blank to route charges via FAL credits.',
   },
   frames: {
     label: 'Frames',
@@ -95,11 +88,6 @@ const DEFAULT_CONTROLS_COPY = {
   fpsSuffix: '{value} fps',
   promptStrength: 'Prompt strength',
   guidance: 'Guidance',
-  apiKey: {
-    label: 'OpenAI API key',
-    placeholder: 'sk-...',
-    note: 'Provide your OpenAI key to bill directly through your account. We do not store the key server-side.',
-  },
   inputInfluence: 'Input influence',
   extend: {
     label: 'Extend',
@@ -128,9 +116,6 @@ export function SettingsControls({
   onIterationsChange,
   seedLocked,
   onSeedLockedChange,
-  apiKey,
-  onApiKeyChange,
-  showApiKeyField = false,
   showLoopControl = false,
   loopEnabled,
   onLoopChange,
@@ -147,7 +132,6 @@ export function SettingsControls({
       ...DEFAULT_CONTROLS_COPY,
       ...source,
       core: { ...DEFAULT_CONTROLS_COPY.core, ...(source.core ?? {}) },
-      billingTip: { ...DEFAULT_CONTROLS_COPY.billingTip, ...(source.billingTip ?? {}) },
       frames: { ...DEFAULT_CONTROLS_COPY.frames, ...(source.frames ?? {}) },
       duration: { ...DEFAULT_CONTROLS_COPY.duration, ...(source.duration ?? {}) },
       resolution: { ...DEFAULT_CONTROLS_COPY.resolution, ...(source.resolution ?? {}) },
@@ -161,7 +145,6 @@ export function SettingsControls({
       },
       loop: { ...DEFAULT_CONTROLS_COPY.loop, ...(source.loop ?? {}) },
       seed: { ...DEFAULT_CONTROLS_COPY.seed, ...(source.seed ?? {}) },
-      apiKey: { ...DEFAULT_CONTROLS_COPY.apiKey, ...(source.apiKey ?? {}) },
       extend: { ...DEFAULT_CONTROLS_COPY.extend, ...(source.extend ?? {}) },
     } as typeof DEFAULT_CONTROLS_COPY;
   }, [localizedControls]);
@@ -259,13 +242,6 @@ export function SettingsControls({
           )}
         </div>
       </header>
-
-      {showApiKeyField && (
-        <div className="rounded-input border border-dashed border-border bg-white/80 p-3 text-[12px] text-text-muted">
-          <span className="font-semibold text-text-secondary">{controlsCopy.billingTip.label}</span>{' '}
-          {controlsCopy.billingTip.body}
-        </div>
-      )}
 
       <div className="grid gap-3">
         {frameOptions && frameOptions.length ? (
@@ -542,23 +518,6 @@ export function SettingsControls({
                   step={engine.params.guidance.step ?? 0.05}
                   onChange={(value) => setGuidance(value)}
                 />
-              </div>
-            )}
-
-            {showApiKeyField && (
-              <div className="space-y-2">
-                <span className="text-[12px] uppercase tracking-micro text-text-muted">{controlsCopy.apiKey.label}</span>
-                <input
-                  type="password"
-                  placeholder={controlsCopy.apiKey.placeholder}
-                  autoComplete="off"
-                  value={apiKey ?? ''}
-                  onChange={(event) => onApiKeyChange?.(event.currentTarget.value)}
-                  className="rounded-input border border-border bg-white px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                />
-                <p className="text-[11px] text-text-muted">
-                  {controlsCopy.apiKey.note}
-                </p>
               </div>
             )}
 

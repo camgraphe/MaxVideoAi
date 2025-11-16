@@ -1305,10 +1305,6 @@
           "title": "Core settings",
           "subtitle": "Duration, Aspect, Resolution"
         },
-        "billingTip": {
-          "label": "Billing tip:",
-          "body": "Add your OpenAI API key in Advanced settings to bill runs directly through OpenAI. Leave it blank to route charges via FAL credits."
-        },
         "frames": {
           "label": "Frames",
           "options": "Options: {options}",
@@ -1357,11 +1353,6 @@
         "fpsSuffix": "{value} fps",
         "promptStrength": "Prompt strength",
         "guidance": "Guidance",
-        "apiKey": {
-          "label": "OpenAI API key",
-          "placeholder": "sk-...",
-          "note": "Provide your OpenAI key to bill directly through your account. We do not store the key server-side."
-        },
         "inputInfluence": "Input influence",
         "extend": {
           "label": "Extend",
@@ -1781,7 +1772,6 @@
       "tabs": {
         "account": "Account",
         "team": "Team",
-        "keys": "API Keys",
         "privacy": "Privacy & Safety",
         "notifications": "Notifications"
       },
@@ -1824,13 +1814,6 @@
         "upcomingPrefix": "Coming soon — shared wallets, approvals, and budgets. Join the beta at ",
         "upcomingEmail": "support@maxvideoai.com",
         "upcomingSuffix": "."
-      },
-      "keys": {
-        "title": "API Keys",
-        "placeholder": "sk_live_…",
-        "copy": "Copy",
-        "revoke": "Revoke",
-        "create": "Create new key"
       },
       "privacy": {
         "title": "Privacy & Safety",

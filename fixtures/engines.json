@@ -672,12 +672,6 @@
             "default": "auto"
           },
           {
-            "id": "api_key",
-            "type": "text",
-            "label": "OpenAI API key",
-            "description": "Utilisez votre cl\u00e9 pour une facturation directe OpenAI"
-          },
-          {
             "id": "image_url",
             "type": "image",
             "label": "Image de d\u00e9part",
@@ -800,12 +794,6 @@
               "auto"
             ],
             "default": "1080p"
-          },
-          {
-            "id": "api_key",
-            "type": "text",
-            "label": "OpenAI API key",
-            "description": "Fournissez votre cl\u00e9 pour une facturation OpenAI directe"
           },
           {
             "id": "image_url",

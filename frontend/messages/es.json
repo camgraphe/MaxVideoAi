@@ -1309,10 +1309,6 @@
           "title": "Ajustes principales",
           "subtitle": "Duración, formato y resolución"
         },
-        "billingTip": {
-          "label": "Consejo de facturación:",
-          "body": "Añade tu clave API de OpenAI en los ajustes avanzados para facturar directamente con OpenAI. Déjala en blanco para usar créditos FAL."
-        },
         "frames": {
           "label": "Fotogramas",
           "options": "Opciones: {options}",
@@ -1361,11 +1357,6 @@
         "fpsSuffix": "{value} fps",
         "promptStrength": "Fuerza del prompt",
         "guidance": "Guidance",
-        "apiKey": {
-          "label": "Clave API de OpenAI",
-          "placeholder": "sk-...",
-          "note": "Indica tu clave de OpenAI para facturar directamente en tu cuenta. No la almacenamos en el servidor."
-        },
         "inputInfluence": "Influencia de la entrada",
         "extend": {
           "label": "Extender",
@@ -1785,7 +1776,6 @@
       "tabs": {
         "account": "Cuenta",
         "team": "Equipo",
-        "keys": "Claves API",
         "privacy": "Privacidad y seguridad",
         "notifications": "Notificaciones"
       },
@@ -1828,13 +1818,6 @@
         "upcomingPrefix": "Muy pronto — monederos compartidos, aprobaciones y presupuestos. Únete a la beta en ",
         "upcomingEmail": "support@maxvideoai.com",
         "upcomingSuffix": "."
-      },
-      "keys": {
-        "title": "Claves API",
-        "placeholder": "sk_live_…",
-        "copy": "Copiar",
-        "revoke": "Revocar",
-        "create": "Crear nueva clave"
       },
       "privacy": {
         "title": "Privacidad y seguridad",
