@@ -1,10 +1,14 @@
 import type { ReactNode } from 'react';
+import './globals.css';
 
 type RootLayoutProps = {
   children: ReactNode;
 };
 
 export default function RootLayout({ children }: RootLayoutProps) {
-  // Each route group defines its own document shell (HTML, body, scripts).
-  return children;
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body>{children}</body>
+    </html>
+  );
 }

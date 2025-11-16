@@ -8,8 +8,6 @@ import { CookieBanner } from '@/components/legal/CookieBanner';
 import { JsonLd } from '@/components/SeoJsonLd';
 import { I18nProvider } from '@/lib/i18n/I18nProvider';
 import { resolveDictionary } from '@/lib/i18n/server';
-import '@/app/globals.css';
-
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ??
   process.env.SITE_URL ??
@@ -77,24 +75,27 @@ export default async function CoreLayout({ children }: { children: ReactNode }) 
   };
 
   return (
-    <html lang={locale} data-show-wavel-badge>
+    <>
       <head>
         {process.env.NEXT_PUBLIC_BING_VERIFY ? (
           <meta name="msvalidate.01" content={process.env.NEXT_PUBLIC_BING_VERIFY} />
         ) : null}
       </head>
-      <body>
-        <ConsentModeBootstrap />
-        <AuthCallbackHandler />
-        <I18nProvider locale={locale} dictionary={dictionary} fallback={fallback}>
-          {children}
-        </I18nProvider>
-        {process.env.NODE_ENV === 'production' ? <VercelAnalytics /> : null}
-        <AnalyticsScripts />
-        <CookieBanner />
-        <JsonLd json={orgSchema} />
-        <JsonLd json={websiteSchema} />
-      </body>
-    </html>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `document.documentElement.lang='${locale}';document.documentElement.setAttribute('data-show-wavel-badge','');`,
+        }}
+      />
+      <ConsentModeBootstrap />
+      <AuthCallbackHandler />
+      <I18nProvider locale={locale} dictionary={dictionary} fallback={fallback}>
+        {children}
+      </I18nProvider>
+      {process.env.NODE_ENV === 'production' ? <VercelAnalytics /> : null}
+      <AnalyticsScripts />
+      <CookieBanner />
+      <JsonLd json={orgSchema} />
+      <JsonLd json={websiteSchema} />
+    </>
   );
 }

@@ -19,8 +19,6 @@ import {
   resolveLocalesForEnglishPath,
 } from '@/lib/seo/alternateLocales';
 import { deserializeMessages } from '@/lib/i18n/server';
-import '@/app/globals.css';
-
 type LocaleLayoutProps = {
   children: ReactNode;
   params: { locale: string };
@@ -107,7 +105,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   };
 
   return (
-    <html lang={locale} data-show-wavel-badge>
+    <>
       <head>
         {(() => {
           const headerList = headers();
@@ -174,19 +172,22 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
           <meta name="msvalidate.01" content={process.env.NEXT_PUBLIC_BING_VERIFY} />
         ) : null}
       </head>
-      <body>
-        <ConsentModeBootstrap />
-        <GA4RouteTracker />
-        <AuthCallbackHandler />
-        <I18nProvider locale={locale} dictionary={messages} fallback={fallbackMessages}>
-          {children}
-        </I18nProvider>
-        {process.env.NODE_ENV === 'production' ? <VercelAnalytics /> : null}
-        <AnalyticsScripts />
-        <CookieBanner />
-        <JsonLd json={orgSchema} />
-        <JsonLd json={websiteSchema} />
-      </body>
-    </html>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `document.documentElement.lang='${locale}';document.documentElement.setAttribute('data-show-wavel-badge','');`,
+        }}
+      />
+      <ConsentModeBootstrap />
+      <GA4RouteTracker />
+      <AuthCallbackHandler />
+      <I18nProvider locale={locale} dictionary={messages} fallback={fallbackMessages}>
+        {children}
+      </I18nProvider>
+      {process.env.NODE_ENV === 'production' ? <VercelAnalytics /> : null}
+      <AnalyticsScripts />
+      <CookieBanner />
+      <JsonLd json={orgSchema} />
+      <JsonLd json={websiteSchema} />
+    </>
   );
 }
