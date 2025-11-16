@@ -17,12 +17,15 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 import { adaptGroupSummary } from '@/lib/video-group-adapter';
 
+type GalleryVariant = 'desktop' | 'mobile';
+
 interface Props {
   engine: EngineCaps;
   activeGroups?: GroupSummary[];
   onOpenGroup?: (group: GroupSummary) => void;
   onGroupAction?: (group: GroupSummary, action: GroupedJobAction) => void;
   jobFilter?: (job: Job) => boolean;
+  variant?: GalleryVariant;
 }
 
 interface SnackbarAction {
@@ -60,6 +63,7 @@ export function GalleryRail({
   onOpenGroup,
   onGroupAction,
   jobFilter,
+  variant = 'desktop',
 }: Props) {
   const { t } = useI18n();
   const copy = t('workspace.generate.galleryRail', DEFAULT_GALLERY_COPY) as GalleryCopy;
@@ -117,6 +121,7 @@ export function GalleryRail({
   const sentinelRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [snackbar, setSnackbar] = useState<SnackbarState | null>(null);
+  const isDesktopVariant = variant === 'desktop';
   const handleRemoveJob = useCallback(
     async (job: Job) => {
       if (job.curated) {
@@ -234,86 +239,116 @@ export function GalleryRail({
       },
       {
         threshold: 0.2,
-        root: scrollContainerRef.current ?? null,
+        root: isDesktopVariant ? scrollContainerRef.current ?? null : null,
       }
     );
 
     observer.observe(element);
     return () => observer.disconnect();
-  }, [hasMore, loadMore]);
+  }, [hasMore, isDesktopVariant, loadMore]);
 
   const isInitialLoading = isLoading && filteredJobs.length === 0;
   const isFetchingMore = isValidating && filteredJobs.length > 0;
 
-  return (
+  const cards = (
     <>
-    <aside className="hidden xl:flex h-[calc(125vh-var(--header-height))] w-[272px] shrink-0 flex-col border-l border-border bg-bg/80 px-4 pb-6 pt-4">
-      <header className="flex items-center justify-between">
-        <h2 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">{copy.title}</h2>
-        <Link
-          href="/jobs"
-          className="rounded-[10px] border border-transparent px-3 py-1 text-[12px] font-medium text-text-muted transition hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          {copy.viewAll}
-        </Link>
-      </header>
-
-      {hasCuratedJobs ? (
-        <div className="mt-3 rounded-[10px] border border-hairline bg-white/80 px-3 py-2 text-[12px] text-text-secondary">
-          {copy.curated}
-        </div>
-      ) : null}
-
-      {error && (
-        <div className="mt-4 flex items-center justify-between gap-3 rounded-[10px] border border-[#FACC15]/60 bg-[#FEF3C7] px-3 py-2 text-[12px] text-[#92400E]">
-          <span role="alert">{copy.error}</span>
-          <button
-            type="button"
-            onClick={retry}
-            className="inline-flex items-center rounded-[8px] border border-[#92400E]/20 bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-[#92400E] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#92400E]/40"
-          >
-            {copy.retry}
-          </button>
-        </div>
-      )}
-
-      <div ref={scrollContainerRef} className="mt-4 flex-1 space-y-4 overflow-y-auto pr-1">
-        {combinedGroups.map((group, index) => {
-          const engineId = group.hero.engineId;
-          const engineEntry = engineId ? engineMap.get(engineId) ?? null : null;
-          const curated = Boolean(group.hero.job?.curated);
-          return (
-            <GroupedJobCard
-              key={`${group.id}-${index}`}
-              group={group}
-              engine={engineEntry ?? undefined}
-              onOpen={handleCardOpen}
-              onAction={handleCardAction}
-              allowRemove={allowCardRemoval(group)}
-              showImageCta={curated}
-              imageCtaLabel={copy.imageCta}
-            />
-          );
-        })}
-        {(isInitialLoading || isFetchingMore) &&
-          Array.from({ length: isInitialLoading ? 4 : 2 }).map((_, index) => (
-            <div key={`rail-skeleton-${index}`} className="rounded-card border border-border bg-white/60 p-0" aria-hidden>
-              <div className="relative overflow-hidden rounded-card">
-                <div className="relative" style={{ aspectRatio: '16 / 9' }}>
-                  <div className="skeleton absolute inset-0" />
-                </div>
-              </div>
-              <div className="border-t border-border bg-white/70 px-3 py-2">
-                <div className="h-3 w-24 rounded-full bg-neutral-200" />
+      {combinedGroups.map((group, index) => {
+        const engineId = group.hero.engineId;
+        const engineEntry = engineId ? engineMap.get(engineId) ?? null : null;
+        const curated = Boolean(group.hero.job?.curated);
+        return (
+          <GroupedJobCard
+            key={`${group.id}-${index}`}
+            group={group}
+            engine={engineEntry ?? undefined}
+            onOpen={handleCardOpen}
+            onAction={handleCardAction}
+            allowRemove={allowCardRemoval(group)}
+            showImageCta={curated}
+            imageCtaLabel={copy.imageCta}
+          />
+        );
+      })}
+      {(isInitialLoading || isFetchingMore) &&
+        Array.from({ length: isInitialLoading ? 4 : 2 }).map((_, index) => (
+          <div key={`rail-skeleton-${index}`} className="rounded-card border border-border bg-white/60 p-0" aria-hidden>
+            <div className="relative overflow-hidden rounded-card">
+              <div className="relative" style={{ aspectRatio: '16 / 9' }}>
+                <div className="skeleton absolute inset-0" />
               </div>
             </div>
-          ))}
-        <div ref={sentinelRef} className="h-1 w-full" aria-hidden />
-      </div>
+            <div className="border-t border-border bg-white/70 px-3 py-2">
+              <div className="h-3 w-24 rounded-full bg-neutral-200" />
+            </div>
+          </div>
+        ))}
+      <div ref={sentinelRef} className="h-1 w-full" aria-hidden />
+    </>
+  );
 
+  const header = (
+    <header className="flex flex-wrap items-center justify-between gap-2">
+      <h2 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">{copy.title}</h2>
+      <Link
+        href="/jobs"
+        className="rounded-[10px] border border-transparent px-3 py-1 text-[12px] font-medium text-text-muted transition hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        {copy.viewAll}
+      </Link>
+    </header>
+  );
+
+  const curatedBanner = hasCuratedJobs ? (
+    <div className="rounded-[10px] border border-hairline bg-white/80 px-3 py-2 text-[12px] text-text-secondary">{copy.curated}</div>
+  ) : null;
+
+  const errorBanner = error ? (
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-[#FACC15]/60 bg-[#FEF3C7] px-3 py-2 text-[12px] text-[#92400E]">
+      <span role="alert">{copy.error}</span>
+      <button
+        type="button"
+        onClick={retry}
+        className="inline-flex items-center rounded-[8px] border border-[#92400E]/20 bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-[#92400E] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#92400E]/40"
+      >
+        {copy.retry}
+      </button>
+    </div>
+  ) : null;
+
+  const body = (
+    <div
+      ref={scrollContainerRef}
+      className={clsx(
+        'mt-1 space-y-4',
+        isDesktopVariant ? 'flex-1 overflow-y-auto pr-1 pt-3' : ''
+      )}
+    >
+      {cards}
+    </div>
+  );
+
+  const content = (
+    <>
+      {header}
+      {curatedBanner}
+      {errorBanner}
+      {body}
       <Snackbar state={snackbar} onClose={closeSnackbar} />
-    </aside>
-    {viewerGroup ? <GroupViewerModal group={viewerGroup} onClose={closeViewer} /> : null}
+    </>
+  );
+
+  return (
+    <>
+      {isDesktopVariant ? (
+        <aside className="flex h-[calc(125vh-var(--header-height))] w-[272px] shrink-0 flex-col border-l border-border bg-bg/80 px-4 pb-6 pt-4">
+          {content}
+        </aside>
+      ) : (
+        <section className="flex w-full flex-col gap-3">
+          {content}
+        </section>
+      )}
+      {viewerGroup ? <GroupViewerModal group={viewerGroup} onClose={closeViewer} /> : null}
     </>
   );
 }

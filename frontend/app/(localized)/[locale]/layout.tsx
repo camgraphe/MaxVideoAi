@@ -111,12 +111,48 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
       <head>
         {(() => {
           const headerList = headers();
-          const rawPath =
-            headerList.get('x-pathname') ??
-            headerList.get('x-invoke-path') ??
-            headerList.get('x-matched-path') ??
-            '/';
-          const normalizedPath = normalizePathSegments(rawPath.split('?')[0]);
+
+          const extractPathname = () => {
+            const candidates = [
+              headerList.get('next-url'),
+              headerList.get('x-pathname'),
+              headerList.get('x-invoke-path'),
+              headerList.get('x-matched-path'),
+            ];
+            for (const candidate of candidates) {
+              if (!candidate) continue;
+              try {
+                // next-url is absolute; others are pathnames
+                const url = candidate.startsWith('http') ? new URL(candidate) : null;
+                const pathname = (url ? url.pathname : candidate)?.split('?')[0] ?? '/';
+                if (pathname) {
+                  return pathname;
+                }
+              } catch {
+                // swallow parse errors and continue to fallback
+              }
+            }
+            return '/';
+          };
+
+          const stripRouteGroups = (pathname: string) => {
+            const segments = pathname.split('/').filter(Boolean);
+            const sanitized = segments
+              .filter((segment) => {
+                if (segment.startsWith('(') && segment.endsWith(')')) {
+                  return false;
+                }
+                if (segment.includes('[') || segment.includes(']')) {
+                  return false;
+                }
+                return true;
+              })
+              .join('/');
+            return sanitized ? `/${sanitized}` : '/';
+          };
+
+          const rawPath = extractPathname();
+          const normalizedPath = normalizePathSegments(stripRouteGroups(rawPath));
           const englishPath = englishPathFromLocale(locale, normalizedPath);
           const allowedLocales = resolveLocalesForEnglishPath(englishPath);
           const defaultHref = englishPath === '/' ? NORMALIZED_SITE_URL : `${NORMALIZED_SITE_URL}${englishPath}`;

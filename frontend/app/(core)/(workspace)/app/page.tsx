@@ -1018,6 +1018,24 @@ useEffect(() => {
   const [batchHeroes, setBatchHeroes] = useState<Record<string, string>>({});
   const [viewerTarget, setViewerTarget] = useState<{ kind: 'pending'; id: string } | { kind: 'summary'; summary: GroupSummary } | null>(null);
   const [viewMode, setViewMode] = useState<'single' | 'quad'>('single');
+  const [isDesktopLayout, setIsDesktopLayout] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(min-width: 1280px)').matches;
+  });
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const mediaQuery = window.matchMedia('(min-width: 1280px)');
+    const handleChange = (event: MediaQueryListEvent | MediaQueryList) => {
+      setIsDesktopLayout(event.matches);
+    };
+    handleChange(mediaQuery);
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+    mediaQuery.addListener(handleChange);
+    return () => mediaQuery.removeListener(handleChange);
+  }, []);
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
   const rendersRef = useRef<LocalRender[]>([]);
   const persistedRendersRef = useRef<string | null>(null);
@@ -3838,15 +3856,29 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             </div>
           </main>
         </div>
-        <div className="w-full border-t border-hairline bg-white/70 px-4 py-4 xl:w-[360px] xl:border-l xl:border-t-0 xl:bg-white/80">
+        {isDesktopLayout && (
+          <div className="w-[360px] px-4 py-4">
+            <GalleryRail
+              engine={selectedEngine}
+              activeGroups={normalizedPendingGroups}
+              onOpenGroup={openGroupViaGallery}
+              onGroupAction={handleGalleryGroupAction}
+              variant="desktop"
+            />
+          </div>
+        )}
+      </div>
+      {!isDesktopLayout && (
+        <div className="border-t border-hairline bg-white/70 px-4 py-4">
           <GalleryRail
             engine={selectedEngine}
             activeGroups={normalizedPendingGroups}
             onOpenGroup={openGroupViaGallery}
             onGroupAction={handleGalleryGroupAction}
+            variant="mobile"
           />
         </div>
-      </div>
+      )}
       </div>
       {viewerGroup ? (
         <GroupViewerModal

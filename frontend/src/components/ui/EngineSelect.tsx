@@ -688,6 +688,7 @@ function BrowseEnginesModal({
   const searchValue = searchTerm.trim().toLowerCase();
 
   const filteredEngines = useMemo(() => {
+    const guides = copy.guides ?? DEFAULT_ENGINE_GUIDE;
     const priorityOrder = [
       'sora-2',
       'sora-2-pro',
@@ -705,7 +706,7 @@ function BrowseEnginesModal({
 
         const meta = ENGINE_META.get(engine.id);
         if (!searchValue) return true;
-        const guide = ENGINE_GUIDE[engine.id];
+        const guide = guides[engine.id];
         const haystack = [
           meta?.marketingName ?? engine.label ?? engine.id,
           engine.provider,
@@ -732,7 +733,7 @@ function BrowseEnginesModal({
         return a.isLab ? 1 : -1;
       });
     return ranked;
-  }, [engines, modeFilter, resolutionFilter, searchValue]);
+  }, [engines, modeFilter, resolutionFilter, searchValue, copy]);
 
   const handleBackdropClick = useCallback(
     (event: ReactMouseEvent<HTMLDivElement>) => {
@@ -843,7 +844,7 @@ function BrowseEnginesModal({
         <div className="flex-1 overflow-y-auto bg-white px-6 py-6">
           <div className="grid gap-4 md:grid-cols-2">
             {filteredEngines.map((engine) => {
-              const guide = ENGINE_GUIDE[engine.id];
+              const guide = (copy.guides ?? DEFAULT_ENGINE_GUIDE)[engine.id];
               const isSelected = engine.id === selectedEngineId;
               const badges = guide?.badges ?? [];
               const labsBadgeNeeded = engine.isLab && !badges.some((badge) => badge === 'Labs');
