@@ -191,7 +191,7 @@
       {
         "id": "workspace",
         "label": "Área de trabajo",
-        "heading": "Empieza en el mismo espacio que usamos cada día.",
+        "heading": "Comienza en el mismo espacio que usamos cada día.",
         "body": "Elige un motor, define duración y resolución y el compositor muestra los campos que necesita. Sin lista de espera ni maquetas."
       },
       {
@@ -377,7 +377,7 @@
   },
   "pricing": {
     "hero": {
-      "title": "Consulta el precio antes de generar. Paga solo por lo que ejecutes. Empieza con Créditos iniciales ($10). Sin suscripción. Sin compromiso.",
+      "title": "Consulta el precio antes de generar. Paga solo por lo que ejecutes. Comienza con Créditos iniciales ($10). Sin suscripción. Sin compromiso.",
       "subtitle": "Cada estimación se actualiza en tiempo real al ajustar motores, duraciones y salidas. Los saldos de la billetera se sincronizan entre equipos con comprobaciones diarias de estado.",
       "link": {
         "before": "Compara los precios entre motores en nuestra ",
@@ -535,8 +535,8 @@
       ],
       "chipBase": "Precio para miembros — Ahorras",
       "tooltip": "El estado se actualiza diariamente según tus gastos de los últimos 30 días.",
-      "requirementDefault": "Estado predeterminado — se aplica automáticamente",
-      "requirementThreshold": "Umbral definido por el admin: {amount} (30 días móviles)",
+      "requirementDefault": "Estado predefinido — se aplica automáticamente",
+      "requirementThreshold": "Umbral definido por el admin: {amount} (últimos 30 días)",
       "benefitBase": "Tarifa base",
       "benefitDiscount": "Ahorra {percent}% en cada render"
     },
@@ -1074,7 +1074,7 @@
     "paragraphs": [
       "Creemos que los equipos profesionales merecen claridad antes de iniciar el render. Eso significa transparencia de precios, enrutamiento fiable y contexto compartido entre creativos, productores y stakeholders.",
       "La independencia importa: nos mantenemos neutrales entre motores, nos integramos con Sora 2, Veo 3.1, Veo 3 Fast, Pika 2.2, MiniMax Hailuo 02, Hunyuan Image y betas rotativas, y listamos marcas sólo para describir compatibilidad.",
-      "El producto está diseñado para equipos que necesitan precisión sin ruido. Interfaz discreta, ajustes predeterminados premium, controles precisos y etiquetas de precio antes de generar que mantienen a finanzas en el bucle."
+      "El producto está diseñado para equipos que necesitan precisión sin ruido. Interfaz discreta, ajustes predefinidos premium, controles precisos y etiquetas de precio antes de generar que mantienen a finanzas en el bucle."
     ],
     "note": "Las marcas registradas y signos de servicio son propiedad de sus respectivos propietarios. MaxVideo AI se mantiene independiente para que usted pueda mantenerse al día sin cambiar de plataforma."
   },
@@ -1502,7 +1502,7 @@
         "title": "Billetera y estado",
         "balanceLabel": "Saldo actual",
         "tierLabel": "Nivel de miembro",
-        "savingsLabel": "Ahorro en 30 días móviles: {percent} %",
+        "savingsLabel": "Ahorro en los últimos 30 días: {percent} %",
         "manageCta": "Gestionar facturación",
         "memberFallback": "Miembro"
       },
@@ -1545,7 +1545,7 @@
       "title": "Facturación",
       "hero": {
         "title": "Precio antes de generar.",
-        "subtitle": "Paga solo por lo que ejecutes. Empieza con Créditos iniciales (10 $). Sin suscripción. Sin compromiso.",
+        "subtitle": "Paga solo por lo que ejecutes. Comienza con Créditos iniciales (10 $). Sin suscripción. Sin compromiso.",
         "liveMode": "Modo en vivo",
         "testMode": "Modo de prueba"
       },
@@ -1559,7 +1559,7 @@
       },
       "membership": {
         "title": "Estado de miembro",
-        "description": "Estado automático — sin suscripción. Se calcula sobre 30 días móviles. Se actualiza a diario según tu gasto.",
+        "description": "Estado automático — sin suscripción. Se calcula sobre los últimos 30 días. Se actualiza a diario según tu gasto.",
         "defaultTier": "Miembro",
         "savingsChip": "Ahorra {percent} %",
         "defaultLine": "{tier}: tarifa estándar en cada render.",
