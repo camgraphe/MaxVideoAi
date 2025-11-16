@@ -90,6 +90,8 @@ const ENGINE_FILTER_GROUPS: Record<
   'veo-3-1-fast': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
   'veo-3-1-first-last': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
   'veo-3-1-first-last-fast': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
+  'veo-3': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
+  'veo-3-fast': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
   veo: { id: 'veo', label: 'Veo', brandId: 'google-veo' },
   'minimax-hailuo-02-text': { id: 'hailuo', label: 'MiniMax Hailuo', brandId: 'minimax' },
   'minimax-hailuo-02-image': { id: 'hailuo', label: 'MiniMax Hailuo', brandId: 'minimax' },
