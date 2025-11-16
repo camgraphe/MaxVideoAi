@@ -1307,6 +1307,16 @@
         "fieldFallback": "Image de référence",
         "empty": "Aucune image enregistrée pour l’instant. Ajoutez une référence pour la voir ici."
       },
+      "processing": {
+        "title": "Traitement…",
+        "errorTitle": "Échec du rendu",
+        "phrases": [
+          "Routage de votre rendu chez les fournisseurs…",
+          "Préparation des repères de mouvement…",
+          "Assemblage des images en aperçu…",
+          "Exécution des contrôles de sécurité avant livraison…"
+        ]
+      },
       "assetSlots": {
         "imageCtaLabel": "Générer des images de référence",
         "imageCtaHref": "/app/image"

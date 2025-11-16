@@ -1296,6 +1296,16 @@
         "fieldFallback": "Reference image",
         "empty": "No saved images yet. Upload a reference image to see it here."
       },
+      "processing": {
+        "title": "Processing…",
+        "errorTitle": "Generation failed",
+        "phrases": [
+          "Routing your render through providers…",
+          "Warming up motion cues…",
+          "Stitching frames into a preview…",
+          "Running safety checks before delivery…"
+        ]
+      },
       "assetSlots": {
         "imageCtaLabel": "Generate reference images",
         "imageCtaHref": "/app/image"

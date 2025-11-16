@@ -243,7 +243,6 @@ export function GroupedJobCard({
                       className="absolute inset-0"
                       state={memberStatus === 'failed' ? 'error' : 'pending'}
                       message={member.message}
-                      progress={member.progress ?? undefined}
                       tone="light"
                       tileIndex={index + 1}
                       tileCount={previewCount}

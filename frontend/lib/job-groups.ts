@@ -47,7 +47,7 @@ function buildMember(job: Job): GroupMemberSummary {
       message =
         'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.';
     } else if (status === 'pending') {
-      message = 'Processing…';
+      message = null;
     }
   }
   const progressValue = normalizeJobProgress(job.progress, status, hasVideo);

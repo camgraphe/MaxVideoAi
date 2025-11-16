@@ -305,7 +305,6 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
                         className="absolute inset-0"
                         state={itemStatus === 'error' ? 'error' : 'pending'}
                         message={itemMessage}
-                        progress={itemProgress}
                         tone="light"
                         tileIndex={index + 1}
                         tileCount={tileCount || slots.length}

@@ -6,7 +6,7 @@ import { Link } from '@/i18n/navigation';
 import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
-import { listExamples, type ExampleSort } from '@/server/videos';
+import { listExamples, listExamplesPage, type ExampleSort } from '@/server/videos';
 import { listFalEngines } from '@/config/falEngines';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
@@ -74,7 +74,8 @@ const ENGINE_META = (() => {
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || SITE_BASE_URL;
 const GALLERY_SLUG_MAP = buildSlugMap('gallery');
 const DEFAULT_SORT: ExampleSort = 'date-desc';
-const ALLOWED_QUERY_KEYS = new Set(['sort', 'engine']);
+const ALLOWED_QUERY_KEYS = new Set(['sort', 'engine', 'page']);
+const EXAMPLES_PAGE_SIZE = 60;
 
 const ENGINE_FILTER_GROUPS: Record<
   string,
@@ -115,24 +116,34 @@ function toAbsoluteUrl(url?: string | null): string | null {
   return `${SITE}/${url}`;
 }
 
-export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: { locale: AppLocale };
+  searchParams: Record<string, string | string[] | undefined>;
+}): Promise<Metadata> {
   const locale = params.locale;
   const t = await getTranslations({ locale, namespace: 'gallery.meta' });
   const metadataUrls = buildMetadataUrls(locale, GALLERY_SLUG_MAP);
+  const pageParam = Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page;
+  const parsedPage = pageParam ? Number.parseInt(pageParam, 10) : NaN;
+  const normalizedPage = Number.isFinite(parsedPage) && parsedPage > 1 ? parsedPage : null;
   const latest = await listExamples('date-desc', 20);
   const firstWithThumb = latest.find((video) => Boolean(video.thumbUrl));
   const ogImage = toAbsoluteUrl(firstWithThumb?.thumbUrl) ?? `${SITE}/og/price-before.png`;
+  const canonical = normalizedPage ? `${metadataUrls.canonical}?page=${normalizedPage}` : metadataUrls.canonical;
 
   return {
     title: t('title'),
     description: t('description'),
     alternates: {
-      canonical: metadataUrls.canonical,
+      canonical,
       languages: metadataUrls.languages,
     },
     openGraph: {
       type: 'website',
-      url: metadataUrls.canonical,
+      url: canonical,
       siteName: 'MaxVideoAI',
       title: t('title'),
       description: t('description'),
@@ -274,6 +285,10 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   const countLabel = (content as { countLabel?: string })?.countLabel ?? 'curated renders';
   const engineFilterLabel = (content as { engineFilterLabel?: string })?.engineFilterLabel ?? 'Engines';
   const engineFilterAllLabel = (content as { engineFilterAllLabel?: string })?.engineFilterAllLabel ?? 'All';
+  const paginationContent = (content as { pagination?: { prev?: string; next?: string; page?: string } })?.pagination ?? {};
+  const paginationPrevLabel = paginationContent.prev ?? 'Previous';
+  const paginationNextLabel = paginationContent.next ?? 'Next';
+  const paginationPageLabel = paginationContent.page ?? 'Page';
   const sortLabels = sortContent ?? {
     newest: 'Newest',
     oldest: 'Oldest',
@@ -299,9 +314,19 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     const descriptor = resolveFilterDescriptor(canonicalEngineParam, engineMeta, canonicalEngineParam);
     return descriptor?.id.toLowerCase() ?? canonicalEngineParam.toLowerCase();
   })();
+  const pageParam = Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page;
+  const parsedPage = (() => {
+    if (typeof pageParam !== 'string' || pageParam.trim().length === 0) {
+      return 1;
+    }
+    const value = Number.parseInt(pageParam, 10);
+    return Number.isFinite(value) ? value : Number.NaN;
+  })();
+  const hasInvalidPageParam = typeof pageParam !== 'undefined' && (!Number.isFinite(parsedPage) || parsedPage < 1);
+  const currentPage = hasInvalidPageParam ? 1 : Math.max(1, parsedPage || 1);
   const unsupportedQueryKeys = Object.keys(searchParams).filter((key) => !ALLOWED_QUERY_KEYS.has(key));
 
-  if (unsupportedQueryKeys.length > 0) {
+  const redirectToNormalized = (targetPage: number) => {
     const headerList = headers();
     const rawPath =
       headerList.get('x-pathname') ??
@@ -316,11 +341,26 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     if (collapsedEngineParam) {
       redirectedQuery.set('engine', collapsedEngineParam);
     }
+    if (targetPage > 1) {
+      redirectedQuery.set('page', String(targetPage));
+    }
     const target = redirectedQuery.toString() ? `${canonicalPath}?${redirectedQuery.toString()}` : canonicalPath;
     redirect(target);
+  };
+
+  if (unsupportedQueryKeys.length > 0 || hasInvalidPageParam) {
+    redirectToNormalized(1);
   }
 
-  const allVideos = await listExamples(sort, 60);
+  const offset = (currentPage - 1) * EXAMPLES_PAGE_SIZE;
+  const pageResult = await listExamplesPage({ sort, limit: EXAMPLES_PAGE_SIZE, offset });
+  const allVideos = pageResult.items;
+  const totalCount = pageResult.total;
+  const totalPages = Math.max(1, Math.ceil(totalCount / EXAMPLES_PAGE_SIZE));
+
+  if (currentPage > totalPages) {
+    redirectToNormalized(Math.max(1, totalPages));
+  }
 
   const engineFilterMap = allVideos.reduce<Map<string, EngineFilterOption>>((acc, video) => {
     const canonicalEngineId = resolveEngineLinkId(video.engineId);
@@ -379,22 +419,35 @@ const selectedOption =
 
   const videos = selectedEngine
     ? allVideos.filter((video) => {
-      const canonicalEngineId = resolveEngineLinkId(video.engineId);
-      if (!canonicalEngineId) return false;
-      const engineMeta = ENGINE_META.get(canonicalEngineId.toLowerCase()) ?? null;
-      const descriptor = resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engineLabel);
+        const canonicalEngineId = resolveEngineLinkId(video.engineId);
+        if (!canonicalEngineId) return false;
+        const engineMeta = ENGINE_META.get(canonicalEngineId.toLowerCase()) ?? null;
+        const descriptor = resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engineLabel);
         if (!descriptor) return false;
         return descriptor.id.toLowerCase() === selectedEngine.toLowerCase();
       })
     : allVideos;
+  const hasPreviousPage = currentPage > 1;
+  const hasNextPage = currentPage < totalPages;
+  const pageSummary =
+    totalCount === 0
+      ? `0 ${countLabel}`
+      : `${paginationPageLabel} ${currentPage} / ${totalPages} • ${totalCount} ${countLabel}`;
 
-  const buildQueryParams = (nextSort: ExampleSort, engineValue: string | null): Record<string, string> | undefined => {
+  const buildQueryParams = (
+    nextSort: ExampleSort,
+    engineValue: string | null,
+    pageValue?: number
+  ): Record<string, string> | undefined => {
     const query: Record<string, string> = {};
     if (nextSort !== DEFAULT_SORT) {
       query.sort = nextSort;
     }
     if (engineValue) {
       query.engine = engineValue;
+    }
+    if (pageValue && pageValue > 1) {
+      query.page = String(pageValue);
     }
     return Object.keys(query).length ? query : undefined;
   };
@@ -469,7 +522,7 @@ const selectedOption =
           <nav className="flex gap-2 rounded-pill border border-hairline bg-white px-2 py-1">
             {SORT_OPTIONS.map((option) => {
               const isActive = option.id === sort;
-              const queryParams = buildQueryParams(option.id, selectedEngine);
+              const queryParams = buildQueryParams(option.id, selectedEngine, 1);
               return (
                 <Link
                   key={option.id}
@@ -490,7 +543,7 @@ const selectedOption =
               <span className="font-semibold uppercase tracking-micro text-text-muted">{engineFilterLabel}</span>
               <div className="flex items-center gap-1">
                 <Link
-                  href={{ pathname: '/examples', query: buildQueryParams(sort, null) }}
+                  href={{ pathname: '/examples', query: buildQueryParams(sort, null, 1) }}
                   rel="nofollow"
                   className={clsx(
                     'flex h-9 items-center justify-center rounded-full border px-3 text-[11px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
@@ -507,7 +560,10 @@ const selectedOption =
                   return (
                     <Link
                       key={engine.id}
-                      href={{ pathname: '/examples', query: buildQueryParams(sort, isActive ? null : engine.id) }}
+                      href={{
+                        pathname: '/examples',
+                        query: buildQueryParams(sort, isActive ? null : engine.id, 1),
+                      }}
                       rel="nofollow"
                       className={clsx(
                         'flex h-9 items-center justify-center rounded-full border px-4 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
@@ -526,9 +582,7 @@ const selectedOption =
             </div>
           ) : null}
         </div>
-        <span className="text-xs text-text-muted">
-          {videos.length} {countLabel}
-        </span>
+        <span className="text-xs text-text-muted">{pageSummary}</span>
       </section>
 
       <section className="mt-8 overflow-hidden rounded-[32px] border border-hairline bg-white/80 shadow-card">
@@ -630,6 +684,50 @@ const selectedOption =
           })}
         </div>
       </section>
+
+      {totalPages > 1 ? (
+        <nav className="mt-6 flex flex-col items-center justify-between gap-4 rounded-[24px] border border-hairline bg-white/70 px-4 py-4 text-sm text-text-secondary sm:flex-row">
+          <div>
+            {hasPreviousPage ? (
+              <Link
+                href={{
+                  pathname: '/examples',
+                  query: buildQueryParams(sort, selectedEngine, currentPage - 1),
+                }}
+                rel="prev"
+                className="inline-flex items-center rounded-full border border-hairline px-3 py-1 font-medium text-text-primary transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+              >
+                ← {paginationPrevLabel}
+              </Link>
+            ) : (
+              <span className="inline-flex items-center rounded-full border border-dashed border-hairline px-3 py-1 text-text-muted">
+                ← {paginationPrevLabel}
+              </span>
+            )}
+          </div>
+          <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">
+            {paginationPageLabel} {currentPage} / {totalPages}
+          </span>
+          <div>
+            {hasNextPage ? (
+              <Link
+                href={{
+                  pathname: '/examples',
+                  query: buildQueryParams(sort, selectedEngine, currentPage + 1),
+                }}
+                rel="next"
+                className="inline-flex items-center rounded-full border border-hairline px-3 py-1 font-medium text-text-primary transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+              >
+                {paginationNextLabel} →
+              </Link>
+            ) : (
+              <span className="inline-flex items-center rounded-full border border-dashed border-hairline px-3 py-1 text-text-muted">
+                {paginationNextLabel} →
+              </span>
+            )}
+          </div>
+        </nav>
+      ) : null}
 
       {jsonLdChunks.map((chunk, index) => (
         <script

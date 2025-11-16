@@ -1,33 +1,81 @@
 'use client';
 
 import clsx from 'clsx';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 type ProcessingState = 'pending' | 'error';
 
 interface ProcessingOverlayProps {
   state: ProcessingState;
   message?: string | null;
-  progress?: number | null;
   tone?: 'light' | 'dark';
   className?: string;
   tileIndex?: number;
   tileCount?: number;
 }
 
+const DEFAULT_PROCESSING_COPY = {
+  title: 'Processing…',
+  errorTitle: 'Generation failed',
+  phrases: [
+    'Routing your render through providers…',
+    'Warming up motion cues…',
+    'Stitching frames into a preview…',
+    'Running safety checks before delivery…',
+  ],
+} as const;
+
+const ROTATION_INTERVAL_MS = 10_000;
+
 export function ProcessingOverlay({
   state,
   message,
-  progress,
   tone = 'dark',
   className,
   tileIndex,
   tileCount,
 }: ProcessingOverlayProps) {
-  const safeProgress =
-    typeof progress === 'number' && Number.isFinite(progress)
-      ? Math.max(0, Math.min(100, Math.round(progress)))
-      : null;
+  const { t } = useI18n();
+  const processingCopy = (t('workspace.generate.processing', DEFAULT_PROCESSING_COPY) ??
+    DEFAULT_PROCESSING_COPY) as typeof DEFAULT_PROCESSING_COPY;
+  const phrases = Array.isArray(processingCopy.phrases) && processingCopy.phrases.length > 0
+    ? processingCopy.phrases
+    : DEFAULT_PROCESSING_COPY.phrases;
+  const normalizedMessage = typeof message === 'string' ? message.trim() : '';
+  const isPlaceholderMessage =
+    normalizedMessage.length === 0 ||
+    normalizedMessage === DEFAULT_PROCESSING_COPY.title ||
+    normalizedMessage === DEFAULT_PROCESSING_COPY.errorTitle ||
+    normalizedMessage === 'Processing...' ||
+    normalizedMessage === processingCopy.title;
+  const shouldRotate = state !== 'error' && isPlaceholderMessage && phrases.length > 0;
+  const [phraseIndex, setPhraseIndex] = useState(0);
+
+  useEffect(() => {
+    if (!shouldRotate) return undefined;
+    const id = window.setInterval(() => {
+      setPhraseIndex((current) => (current + 1) % phrases.length);
+    }, ROTATION_INTERVAL_MS);
+    return () => window.clearInterval(id);
+  }, [shouldRotate, phrases.length]);
+
+  useEffect(() => {
+    setPhraseIndex(0);
+  }, [shouldRotate, phrases.length]);
+
+  const rotatingMessage = shouldRotate ? phrases[phraseIndex % phrases.length] : null;
+
+  const resolvedMessage =
+    state === 'error'
+      ? normalizedMessage.length
+        ? normalizedMessage
+        : processingCopy.errorTitle
+      : shouldRotate
+        ? rotatingMessage
+        : normalizedMessage.length
+          ? normalizedMessage
+          : null;
 
   const ariaLabel = useMemo(() => {
     const segments: string[] = [];
@@ -38,12 +86,10 @@ export function ProcessingOverlay({
     }
     if (state === 'error') {
       segments.push('failed');
-    } else if (safeProgress != null) {
-      segments.push(`${safeProgress}%`);
     }
-    if (message) segments.push(message);
+    if (resolvedMessage) segments.push(resolvedMessage);
     return segments.join(' — ');
-  }, [tileIndex, tileCount, state, safeProgress, message]);
+  }, [tileIndex, tileCount, state, resolvedMessage]);
 
   return (
     <>
@@ -53,10 +99,7 @@ export function ProcessingOverlay({
           `processing-overlay--${tone}`,
           className
         )}
-        role={state === 'error' ? 'status' : 'progressbar'}
-        aria-valuemin={state === 'error' ? undefined : 0}
-        aria-valuemax={state === 'error' ? undefined : 100}
-        aria-valuenow={state === 'error' ? undefined : safeProgress ?? undefined}
+        role="status"
         aria-label={ariaLabel}
       >
         <div
@@ -65,14 +108,11 @@ export function ProcessingOverlay({
           aria-atomic="true"
         >
           <div className="processing-overlay__spinner" aria-hidden />
-          <span className="processing-overlay__title text-xs font-semibold uppercase tracking-micro">
-            {state === 'error' ? 'Generation failed' : 'Processing…'}
+          <span className="processing-overlay__title text-xs font-semibold uppercase tracking-micro" role="presentation">
+            {state === 'error' ? processingCopy.errorTitle : processingCopy.title}
           </span>
-          {message ? (
-            <span className="processing-overlay__message text-[12px]">{message}</span>
-          ) : null}
-          {safeProgress != null && state !== 'error' ? (
-            <span className="processing-overlay__progress text-sm font-semibold">{safeProgress}%</span>
+          {resolvedMessage ? (
+            <span className="processing-overlay__message text-[12px]">{resolvedMessage}</span>
           ) : null}
         </div>
       </div>
@@ -100,8 +140,7 @@ export function ProcessingOverlay({
           z-index: 1;
           color: var(--overlay-muted);
         }
-        .processing-overlay__title,
-        .processing-overlay__progress {
+        .processing-overlay__title {
           color: var(--overlay-ink);
         }
         .processing-overlay__spinner {

@@ -1300,6 +1300,16 @@
         "fieldFallback": "Imagen de referencia",
         "empty": "Aún no hay imágenes guardadas. Sube una referencia para verla aquí."
       },
+      "processing": {
+        "title": "Procesando…",
+        "errorTitle": "El render falló",
+        "phrases": [
+          "Enrutando tu render entre los proveedores…",
+          "Preparando las pistas de movimiento…",
+          "Uniendo fotogramas para la vista previa…",
+          "Ejecutando las comprobaciones de seguridad antes de la entrega…"
+        ]
+      },
       "assetSlots": {
         "imageCtaLabel": "Generar imágenes de referencia",
         "imageCtaHref": "/app/image"

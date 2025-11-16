@@ -188,6 +188,20 @@ export async function listStarterPlaylistVideos(limit: number): Promise<GalleryV
 
 export type ExampleSort = 'date-desc' | 'date-asc' | 'duration-desc' | 'duration-asc' | 'engine-asc';
 
+export type ListExamplesPageOptions = {
+  sort: ExampleSort;
+  limit?: number;
+  offset?: number;
+};
+
+export type ListExamplesPageResult = {
+  items: GalleryVideo[];
+  total: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+};
+
 function sortVideosByPreference(videos: GalleryVideo[], sort: ExampleSort): GalleryVideo[] {
   const copy = [...videos];
   switch (sort) {
@@ -207,16 +221,19 @@ function sortVideosByPreference(videos: GalleryVideo[], sort: ExampleSort): Gall
   }
 }
 
-export async function listExamples(sort: ExampleSort, limit = 60): Promise<GalleryVideo[]> {
+export async function listExamplesPage(options: ListExamplesPageOptions): Promise<ListExamplesPageResult> {
+  const { sort, limit = 60, offset = 0 } = options;
   const slugs = getIndexablePlaylistSlugs();
   if (!slugs.length) {
-    return [];
+    return { items: [], total: 0, limit, offset, hasMore: false };
   }
+
+  const playlistFetchLimit = Math.max(limit + Math.max(offset, 0), limit);
 
   const playlistResults = await Promise.all(
     slugs.map(async (slug) => {
       try {
-        const videos = await listPlaylistVideos(slug, limit);
+        const videos = await listPlaylistVideos(slug, playlistFetchLimit);
         return videos;
       } catch (error) {
         console.warn(`[examples] failed to load playlist "${slug}"`, error);
@@ -238,10 +255,25 @@ export async function listExamples(sort: ExampleSort, limit = 60): Promise<Galle
   });
 
   if (!aggregated.length) {
-    return [];
+    return { items: [], total: 0, limit, offset, hasMore: false };
   }
 
-  return sortVideosByPreference(aggregated, sort).slice(0, limit);
+  const sorted = sortVideosByPreference(aggregated, sort);
+  const total = sorted.length;
+  const start = Math.max(0, offset);
+  const items = sorted.slice(start, start + limit);
+  return {
+    items,
+    total,
+    limit,
+    offset: start,
+    hasMore: start + items.length < total,
+  };
+}
+
+export async function listExamples(sort: ExampleSort, limit = 60): Promise<GalleryVideo[]> {
+  const result = await listExamplesPage({ sort, limit, offset: 0 });
+  return result.items;
 }
 
 export async function getPlaylistExamples(limit = 60): Promise<GalleryVideo[]> {
