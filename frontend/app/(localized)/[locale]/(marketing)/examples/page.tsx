@@ -86,10 +86,19 @@ const ENGINE_FILTER_GROUPS: Record<
 > = {
   'sora-2': { id: 'sora-2', label: 'Sora 2' },
   'sora-2-pro': { id: 'sora-2', label: 'Sora 2' },
-  'minimax-hailuo-02-text': { id: 'minimax-hailuo-02', label: 'MiniMax Hailuo 02', brandId: 'minimax' },
-  'minimax-hailuo-02': { id: 'minimax-hailuo-02', label: 'MiniMax Hailuo 02', brandId: 'minimax' },
-  'pika-text-to-video': { id: 'pika-2-2', label: 'Pika 2.2', brandId: 'pika' },
-  'pika-2-2': { id: 'pika-2-2', label: 'Pika 2.2', brandId: 'pika' },
+  'veo-3-1': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
+  'veo-3-1-fast': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
+  'veo-3-1-first-last': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
+  'veo-3-1-first-last-fast': { id: 'veo', label: 'Veo', brandId: 'google-veo' },
+  veo: { id: 'veo', label: 'Veo', brandId: 'google-veo' },
+  'minimax-hailuo-02-text': { id: 'hailuo', label: 'MiniMax Hailuo', brandId: 'minimax' },
+  'minimax-hailuo-02-image': { id: 'hailuo', label: 'MiniMax Hailuo', brandId: 'minimax' },
+  'minimax-hailuo-02': { id: 'hailuo', label: 'MiniMax Hailuo', brandId: 'minimax' },
+  hailuo: { id: 'hailuo', label: 'MiniMax Hailuo', brandId: 'minimax' },
+  'pika-text-to-video': { id: 'pika', label: 'Pika', brandId: 'pika' },
+  'pika-image-to-video': { id: 'pika', label: 'Pika', brandId: 'pika' },
+  'pika-2-2': { id: 'pika', label: 'Pika', brandId: 'pika' },
+  pika: { id: 'pika', label: 'Pika', brandId: 'pika' },
 };
 
 function toAbsoluteUrl(url?: string | null): string | null {
@@ -307,7 +316,36 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     return acc;
   }, new Map());
 
+  const PREFERRED_ENGINE_ORDER = ['sora-2', 'veo', 'pika', 'hailuo'];
+  const orderMap = new Map<string, number>(PREFERRED_ENGINE_ORDER.map((id, index) => [id.toLowerCase(), index]));
+  const normalizeId = (value: string) => value.trim().toLowerCase();
+
   let engineFilterOptions = Array.from(engineFilterMap.values()).sort((a, b) => {
+    const prefA = orderMap.get(normalizeId(a.id)) ?? Number.MAX_SAFE_INTEGER;
+    const prefB = orderMap.get(normalizeId(b.id)) ?? Number.MAX_SAFE_INTEGER;
+    if (prefA !== prefB) return prefA - prefB;
+    if (b.count !== a.count) return b.count - a.count;
+    return a.label.localeCompare(b.label);
+  });
+
+  PREFERRED_ENGINE_ORDER.forEach((preferredId) => {
+    const key = preferredId.toLowerCase();
+    if (engineFilterOptions.some((option) => option.key === key)) return;
+    const base = ENGINE_FILTER_GROUPS[preferredId];
+    if (!base) return;
+    engineFilterOptions.push({
+      id: base.id,
+      key,
+      label: base.label,
+      brandId: base.brandId,
+      count: 0,
+    });
+  });
+
+  engineFilterOptions.sort((a, b) => {
+    const prefA = orderMap.get(normalizeId(a.id)) ?? Number.MAX_SAFE_INTEGER;
+    const prefB = orderMap.get(normalizeId(b.id)) ?? Number.MAX_SAFE_INTEGER;
+    if (prefA !== prefB) return prefA - prefB;
     if (b.count !== a.count) return b.count - a.count;
     return a.label.localeCompare(b.label);
   });
