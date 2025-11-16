@@ -54,9 +54,7 @@ const GRID_CLASS: Record<VideoGroup['layout'], string> = {
 };
 
 const ICON_BUTTON_BASE =
-  'flex h-10 w-10 items-center justify-center rounded-md p-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
-const ICON_BUTTON_ACTIVE = 'bg-neutral-200/80 text-text-primary';
-const ICON_BUTTON_IDLE = 'text-text-secondary hover:bg-neutral-200/60';
+  'flex h-10 w-10 items-center justify-center rounded-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 function isVideo(item: VideoItem): boolean {
   const hint = typeof item.meta?.mediaType === 'string' ? String(item.meta.mediaType).toLowerCase() : null;
@@ -174,7 +172,10 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
           <button
             type="button"
             onClick={() => setIsPlaying((prev) => !prev)}
-            className={clsx(ICON_BUTTON_BASE, isPlaying ? ICON_BUTTON_ACTIVE : ICON_BUTTON_IDLE)}
+            className={clsx(
+              ICON_BUTTON_BASE,
+              isPlaying ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary'
+            )}
             aria-label={isPlaying ? copy.controls.play.ariaOn : copy.controls.play.ariaOff}
             aria-pressed={isPlaying}
           >
@@ -184,7 +185,10 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
           <button
             type="button"
             onClick={() => setIsMuted((prev) => !prev)}
-            className={clsx(ICON_BUTTON_BASE, isMuted ? ICON_BUTTON_ACTIVE : ICON_BUTTON_IDLE)}
+            className={clsx(
+              ICON_BUTTON_BASE,
+              isMuted ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary'
+            )}
             aria-label={isMuted ? copy.controls.mute.ariaOn : copy.controls.mute.ariaOff}
             aria-pressed={isMuted}
           >
@@ -194,7 +198,10 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
           <button
             type="button"
             onClick={() => setIsLooping((prev) => !prev)}
-            className={clsx(ICON_BUTTON_BASE, isLooping ? ICON_BUTTON_ACTIVE : ICON_BUTTON_IDLE)}
+            className={clsx(
+              ICON_BUTTON_BASE,
+              isLooping ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary'
+            )}
             aria-label={isLooping ? copy.controls.loop.ariaOn : copy.controls.loop.ariaOff}
             aria-pressed={isLooping}
           >
@@ -205,7 +212,7 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
             type="button"
             onClick={handleOpenModal}
             disabled={!group}
-            className={clsx(ICON_BUTTON_BASE, ICON_BUTTON_IDLE, 'disabled:opacity-50')}
+            className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
             aria-label={copy.controls.modal.aria}
           >
             <UIIcon icon={ExternalLink} />
@@ -315,7 +322,7 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
                     {item.id ? (
                       <div className="absolute bottom-2 left-2">
                         <Link
-                          href={`/video/${encodeURIComponent(item.id)}`}
+                          href={`/jobs/${encodeURIComponent(item.id)}`}
                           className="pointer-events-auto inline-flex items-center gap-1 rounded-full border border-border bg-white/90 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-secondary shadow transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           aria-label={copy.controls.openTake.aria}
                         >
