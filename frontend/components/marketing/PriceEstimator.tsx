@@ -2,8 +2,7 @@
 
 import { useEffect, useId, useMemo, useState } from 'react';
 import clsx from 'clsx';
-import { useEngines } from '@/lib/api';
-import type { EngineAvailability, EngineCaps, EngineInputField } from '@/types/engines';
+import type { EngineAvailability, EngineCaps, EngineInputField, Mode } from '@/types/engines';
 import type { MemberTier as PricingMemberTier } from '@maxvideoai/pricing';
 import type { PricingKernel } from '@maxvideoai/pricing';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -28,6 +27,11 @@ interface EngineOption {
   availabilityLink?: string | null;
   showResolution: boolean;
   rateUnit?: string;
+  audioIncluded: boolean;
+  pricingEngineId: string;
+  sortIndex: number;
+  baseEngineId: string;
+  showDuration: boolean;
 }
 
 interface PriceEstimatorProps {
@@ -37,6 +41,15 @@ interface PriceEstimatorProps {
 const MEMBER_ORDER: MemberTier[] = ['Member', 'Plus', 'Pro'];
 const FAL_ENGINE_REGISTRY = listFalEngines();
 const FAL_ENGINE_ORDER = new Map<string, number>(FAL_ENGINE_REGISTRY.map((entry, index) => [entry.id, index]));
+const SUPPORTED_MODES = new Set<Mode>(['t2v', 'i2v', 't2i', 'i2i']);
+type EngineOptionOverrides = {
+  idOverride?: string;
+  labelOverride?: string;
+  descriptionOverride?: string;
+  pricingEngineId?: string;
+  sortIndexOverride?: number;
+  showDuration?: boolean;
+};
 
 function centsToDollars(cents?: number | null) {
   if (typeof cents !== 'number' || Number.isNaN(cents)) return null;
@@ -128,15 +141,21 @@ function buildEngineOption(
   entry: FalEngineEntry,
   engineCaps: EngineCaps,
   kernel: PricingKernel,
-  descriptions: Record<string, string>
+  descriptions: Record<string, string>,
+  overrides?: EngineOptionOverrides
 ): EngineOption | null {
   if (entry.availability === 'paused') {
     return null;
   }
 
-  const definition = kernel.getDefinition(entry.id);
+  const pricingEngineId = overrides?.pricingEngineId ?? entry.id;
+  const definition = kernel.getDefinition(pricingEngineId);
+  const optionId = overrides?.idOverride ?? entry.id;
+  const labelOverride = overrides?.labelOverride;
   const perSecond = engineCaps.pricingDetails?.perSecondCents;
   const perSecondDefault = centsToDollars(perSecond?.default);
+  const platformFeePct = definition?.platformFeePct ?? 0;
+  const platformMultiplier = 1 + platformFeePct;
   const resolutionSources = engineCaps.resolutions?.length
     ? engineCaps.resolutions
     : definition
@@ -152,12 +171,12 @@ function buildEngineOption(
           definition.resolutionMultipliers[resolution] ?? definition.resolutionMultipliers.default ?? 1;
         const rate = (definition.baseUnitPriceCents * multiplier) / 100;
         if (!rate) return null;
-        return { value: resolution, label: resolution.toUpperCase(), rate };
+        return { value: resolution, label: resolution.toUpperCase(), rate: rate * platformMultiplier };
       }
       const cents = perSecond?.byResolution?.[resolution] ?? perSecond?.default;
       const rate = centsToDollars(cents) ?? perSecondDefault;
       if (!rate) return null;
-      return { value: resolution, label: resolution.toUpperCase(), rate };
+      return { value: resolution, label: resolution.toUpperCase(), rate: rate * platformMultiplier };
     })
     .filter((rate): rate is { value: string; label: string; rate: number } => Boolean(rate));
 
@@ -167,7 +186,7 @@ function buildEngineOption(
       {
         value: 'default',
         label: 'DEFAULT',
-        rate: fallbackRate,
+        rate: fallbackRate * platformMultiplier,
       },
     ];
   }
@@ -189,15 +208,18 @@ function buildEngineOption(
   const durationField = getDurationField(engineCaps);
   const defaultMin = typeof durationField?.min === 'number' ? durationField.min : engineCaps.maxDurationSec || 4;
   const defaultMax = typeof durationField?.max === 'number' ? durationField.max : engineCaps.maxDurationSec || defaultMin;
-  const minDuration = definition?.durationSteps?.min ?? defaultMin ?? 4;
-  let maxDuration = definition?.durationSteps?.max ?? defaultMax ?? minDuration;
-  if (maxDuration < minDuration) {
-    maxDuration = minDuration;
+  const fallbackMin = definition?.durationSteps?.min ?? defaultMin ?? 4;
+  let fallbackMax = definition?.durationSteps?.max ?? defaultMax ?? fallbackMin;
+  if (fallbackMax < fallbackMin) {
+    fallbackMax = fallbackMin;
   }
 
-  const durationOptions = collectDurationOptions(entry, engineCaps, durationField, definition).filter(
-    (option) => option.value >= minDuration && option.value <= maxDuration
+  const rawDurationOptions = collectDurationOptions(entry, engineCaps, durationField, definition).filter(
+    (option) => option.value >= fallbackMin && option.value <= fallbackMax
   );
+  const minDuration = rawDurationOptions.length ? rawDurationOptions[0].value : fallbackMin;
+  const maxDuration = rawDurationOptions.length ? rawDurationOptions[rawDurationOptions.length - 1].value : fallbackMax;
+  const durationOptions = rawDurationOptions;
 
   const defaultDuration =
     parseDurationValue(definition?.durationSteps?.default as number | string | undefined)?.value ??
@@ -208,11 +230,17 @@ function buildEngineOption(
   const brand = getPartnerByEngineId(entry.id);
   const availabilityLink =
     entry.availability !== 'available' ? brand?.availabilityLink ?? engineCaps.apiAvailability ?? null : null;
-  const description = descriptions[entry.id] ?? entry.seo.description ?? entry.marketingName;
+  const description =
+    overrides?.descriptionOverride ??
+    descriptions[optionId] ??
+    descriptions[entry.id] ??
+    entry.seo.description ??
+    entry.marketingName;
+  const sortIndex = overrides?.sortIndexOverride ?? FAL_ENGINE_ORDER.get(entry.id) ?? Number.MAX_SAFE_INTEGER;
 
   return {
-    id: entry.id,
-    label: entry.marketingName,
+    id: optionId,
+    label: labelOverride ?? entry.marketingName,
     description,
     minDuration,
     maxDuration,
@@ -224,6 +252,11 @@ function buildEngineOption(
     availabilityLink,
     showResolution: !isNanoBanana,
     rateUnit: isNanoBanana ? '/image' : '/s',
+    audioIncluded: Boolean(engineCaps.audio),
+    pricingEngineId,
+    sortIndex,
+    baseEngineId: entry.id,
+    showDuration: overrides?.showDuration ?? entry.id !== 'nano-banana',
   };
 }
 
@@ -240,7 +273,6 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
   const durationId = useId();
   const resolutionId = useId();
   const { t, dictionary } = useI18n();
-  const { data } = useEngines();
   const kernel = getPricingKernel();
 
   const fields = t('pricing.estimator.fields', {
@@ -261,22 +293,44 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
   const availabilityLabels = dictionary.models.availabilityLabels;
 
   const engineOptions = useMemo(() => {
-    const payload = data?.engines ?? [];
-    const runtimeMap = new Map<string, EngineCaps>(payload.map((engine) => [engine.id, engine]));
-    const options = FAL_ENGINE_REGISTRY.map((entry) => {
-      const runtimeCaps = runtimeMap.get(entry.id) ?? entry.engine;
-      return buildEngineOption(entry, runtimeCaps, kernel, descriptions);
-    })
-      .filter((option): option is EngineOption => Boolean(option))
-      .filter((option) => option.availability !== 'paused');
+    const options: EngineOption[] = [];
+    FAL_ENGINE_REGISTRY.forEach((entry) => {
+      const engineCaps = entry.engine;
+      if (!engineCaps) {
+        return;
+      }
+      if (!engineCaps.modes?.some((mode) => SUPPORTED_MODES.has(mode))) {
+        return;
+      }
+      const baseOption = buildEngineOption(entry, engineCaps, kernel, descriptions);
+      if (baseOption && baseOption.availability !== 'paused') {
+        options.push(baseOption);
+      }
+      if (entry.id === 'veo-3-1-first-last') {
+        const fastOption = buildEngineOption(entry, engineCaps, kernel, descriptions, {
+          idOverride: 'veo-3-1-first-last-fast',
+          labelOverride: `${entry.marketingName} (Fast)`,
+          descriptionOverride:
+            descriptions['veo-3-1-first-last-fast'] ?? descriptions[entry.id] ?? entry.seo.description ?? entry.marketingName,
+          pricingEngineId: 'veo-3-1-fast',
+          sortIndexOverride: (FAL_ENGINE_ORDER.get(entry.id) ?? Number.MAX_SAFE_INTEGER) + 0.1,
+        });
+        if (fastOption && fastOption.availability !== 'paused') {
+          options.push(fastOption);
+        }
+      }
+    });
 
     const preferredOrder = [
       'sora-2',
       'sora-2-pro',
       'veo-3-1',
       'veo-3-1-fast',
+      'veo-3-1-first-last',
+      'veo-3-1-first-last-fast',
       'pika-text-to-video',
       'minimax-hailuo-02-text',
+      'nano-banana',
     ];
     const preferredIndex = new Map<string, number>(preferredOrder.map((id, index) => [id, index]));
 
@@ -284,11 +338,11 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
       const prefA = preferredIndex.get(a.id) ?? Number.MAX_SAFE_INTEGER;
       const prefB = preferredIndex.get(b.id) ?? Number.MAX_SAFE_INTEGER;
       if (prefA !== prefB) return prefA - prefB;
-      const orderA = FAL_ENGINE_ORDER.get(a.id) ?? Number.MAX_SAFE_INTEGER;
-      const orderB = FAL_ENGINE_ORDER.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+      const orderA = a.sortIndex;
+      const orderB = b.sortIndex;
       return orderA - orderB;
     });
-  }, [data?.engines, descriptions, kernel]);
+  }, [descriptions, kernel]);
 
   const [selectedEngineId, setSelectedEngineId] = useState(() => engineOptions[0]?.id ?? '');
   const selectedEngine = useMemo(() => engineOptions.find((option) => option.id === selectedEngineId) ?? engineOptions[0], [engineOptions, selectedEngineId]);
@@ -347,7 +401,7 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
     if (!selectedEngine || bypassPricing) return null;
     try {
       return kernel.quote({
-        engineId: selectedEngine.id,
+        engineId: selectedEngine.pricingEngineId,
         durationSec: duration,
         resolution: selectedResolution,
         memberTier: pricingMemberTier,
@@ -464,20 +518,33 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
                   )}
                 </div>
                 <div className="mt-3">
-                  <select
-                    id={engineId}
-                    value={selectedEngine?.id ?? ''}
-                    onChange={(event) => setSelectedEngineId(event.target.value)}
-                    className="w-full rounded-[16px] border border-transparent bg-white px-4 py-3 text-sm font-semibold text-text-primary shadow-[0_1px_3px_rgba(15,23,42,0.1)] transition focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-                  >
-                    {engineOptions.map((option) => (
-                      <option key={option.id} value={option.id} disabled={option.availability === 'paused'}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      id={engineId}
+                      value={selectedEngine?.id ?? ''}
+                      onChange={(event) => setSelectedEngineId(event.target.value)}
+                      className="w-full appearance-none rounded-[16px] border border-transparent bg-white px-4 py-3 pr-12 text-sm font-semibold text-text-primary shadow-[0_1px_3px_rgba(15,23,42,0.1)] transition focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                    >
+                      {engineOptions.map((option) => (
+                        <option key={option.id} value={option.id} disabled={option.availability === 'paused'}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-text-muted/60">
+                      <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </span>
+                  </div>
                   {selectedEngine?.description ? (
                     <p className="mt-3 text-xs text-text-muted">{selectedEngine.description}</p>
+                  ) : null}
+                  {selectedEngine?.audioIncluded ? (
+                    <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/5 px-3 py-1 text-[11px] font-semibold text-accent">
+                      <span className="text-[9px] leading-none text-accent">●</span>
+                      <span>{t('pricing.estimator.audioIncluded', 'Audio included by default')}</span>
+                    </div>
                   ) : null}
                   {selectedEngine && selectedEngine.availability !== 'available' && selectedEngine.availabilityLink ? (
                     <a
@@ -498,18 +565,25 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
                 {selectedEngine?.showResolution !== false ? (
                   <div className="rounded-[24px] border border-white/60 bg-white/85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
                     <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">{fields.resolution}</span>
-                    <select
-                      id={resolutionId}
-                      value={selectedResolution}
-                      onChange={(event) => setSelectedResolution(event.target.value)}
-                      className="mt-3 w-full rounded-[16px] border border-transparent bg-white px-4 py-3 text-sm font-semibold text-text-primary shadow-[0_1px_3px_rgba(15,23,42,0.1)] transition focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-                    >
-                      {selectedEngine?.resolutions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="relative mt-3">
+                      <select
+                        id={resolutionId}
+                        value={selectedResolution}
+                        onChange={(event) => setSelectedResolution(event.target.value)}
+                        className="w-full appearance-none rounded-[16px] border border-transparent bg-white px-4 py-3 pr-12 text-sm font-semibold text-text-primary shadow-[0_1px_3px_rgba(15,23,42,0.1)] transition focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                      >
+                        {selectedEngine?.resolutions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {`${option.label} — ${formatCurrency(option.rate, selectedEngine.currency)}${selectedEngine.rateUnit ?? '/s'}`}
+                          </option>
+                        ))}
+                      </select>
+                      <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-text-muted/60">
+                        <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                          <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </span>
+                    </div>
                     {activeResolution ? (
                       <p className="mt-3 text-xs text-text-muted">
                         {t('pricing.estimator.engineRateLabel', 'Engine rate')}{' '}
@@ -533,7 +607,7 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
                   </div>
                 )}
 
-                {selectedEngine ? (
+                {selectedEngine?.showDuration !== false ? (
                   <div className="rounded-[24px] border border-white/60 bg-white/85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
                     <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">{fields.duration}</span>
                     {selectedEngine.durationOptions.length ? (
@@ -648,12 +722,14 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
                   <p className="text-base font-semibold text-text-primary">{selectedEngine?.label ?? '—'}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
-                      {t('pricing.estimator.durationLabel', 'Duration')}
-                    </span>
-                    <p className="text-base font-semibold text-text-primary">{durationDisplay}</p>
-                  </div>
+                  {selectedEngine?.showDuration !== false ? (
+                    <div>
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
+                        {t('pricing.estimator.durationLabel', 'Duration')}
+                      </span>
+                      <p className="text-base font-semibold text-text-primary">{durationDisplay}</p>
+                    </div>
+                  ) : null}
                   {selectedEngine?.showResolution !== false ? (
                     <div>
                       <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
@@ -684,13 +760,12 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
                   </p>
                   {memberBenefitCopy ? <p className="mt-1 text-xs text-text-muted">{memberBenefitCopy}</p> : null}
                 </div>
-                <div className="space-y-1 text-xs text-text-muted">
-                  <p>
-                    {estimateLabels.base} {formatCurrency(pricing.base, currency)} · {estimateLabels.discount}{' '}
-                    {formatCurrency(pricing.discountValue, currency)} ({discountPercent}%)
+                {selectedEngine?.audioIncluded ? (
+                  <p className="text-xs font-semibold text-accent">
+                    {t('pricing.estimator.audioIncluded', 'Audio included by default')}
                   </p>
-                  <p>{chargedNote}</p>
-                </div>
+                ) : null}
+                <p className="text-xs text-text-muted">{chargedNote}</p>
               </div>
             </div>
 

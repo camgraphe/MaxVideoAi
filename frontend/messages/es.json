@@ -296,26 +296,27 @@
     }
   },
   "pricing": {
-  "hero": {
-    "title": "Consulta el precio antes de generar. Paga solo por lo que ejecutes. Empieza con Créditos iniciales ($10). Sin suscripción. Sin compromiso.",
-    "subtitle": "Cada estimación se actualiza en tiempo real al ajustar motores, duraciones y salidas. Los saldos del monedero se sincronizan entre equipos con comprobaciones diarias de estado.",
-    "link": {
-      "before": "Compara los precios entre motores en nuestra ",
-      "label": "guía comparativa de vídeo IA",
-      "after": "."
-    }
-  },
-  "calculator": {
-    "title": "Previsualiza precios en la app",
-    "description": "Abre el generador para ver el precio exacto antes de crear el video.",
-    "cta": "Abrir el generador"
-  },
-  "estimator": {
+    "hero": {
+      "title": "Consulta el precio antes de generar. Paga solo por lo que ejecutes. Empieza con Créditos iniciales ($10). Sin suscripción. Sin compromiso.",
+      "subtitle": "Cada estimación se actualiza en tiempo real al ajustar motores, duraciones y salidas. Los saldos del monedero se sincronizan entre equipos con comprobaciones diarias de estado.",
+      "link": {
+        "before": "Compara los precios entre motores en nuestra ",
+        "label": "guía comparativa de vídeo IA",
+        "after": "."
+      }
+    },
+    "calculator": {
+      "title": "Previsualiza precios en la app",
+      "description": "Abre el generador para ver el precio exacto antes de crear el video.",
+      "cta": "Abrir el generador"
+    },
+    "estimator": {
       "title": "Calculadora de costes",
       "subtitle": "Elige el motor, la duración y la resolución para ver el precio antes de poner el render en cola. Se cobra solo si tiene éxito.",
       "walletLink": "¿Quieres ver los precios en la app antes de generar?",
       "walletLinkCta": "Abrir el generador",
       "chargedNote": "Se carga solo si el render tiene éxito.",
+      "audioIncluded": "Audio incluido por defecto.",
       "fields": {
         "engine": "Motor",
         "resolution": "Resolución",
@@ -332,6 +333,7 @@
         "sora-2": "Remix de texto/imagen con audio nativo.",
         "veo-3-1": "Alterna entre texto→video y referencia multi-imagen en el mismo motor.",
         "veo-3-1-first-last": "Puentea frames inicial y final con Veo 3.1 o su modo Fast.",
+        "veo-3-1-first-last-fast": "Encamina First/Last por Veo 3.1 Fast para iteraciones más baratas.",
         "pika-text-to-video": "Bucle social rápido con subtítulos y ajustes amigables para remix.",
         "minimax-hailuo-02-text": "Bocetos optimizados por prompt antes del render principal."
       },
@@ -369,27 +371,42 @@
           "engine": "Pika 2.2",
           "duration": "5 s",
           "resolution": "1080×1920",
-          "audio": "Desactivado",
-          "price": "≈ 0,25 $",
-          "note": "Se cobra solo si termina correctamente."
+          "audio": "Silencioso",
+          "note": "Se cobra solo si termina correctamente.",
+          "pricingScenario": {
+            "engineId": "pika-text-to-video",
+            "durationSec": 5,
+            "resolution": "1080p",
+            "memberTier": "member"
+          }
         },
         {
           "title": "Test cinematográfico (horizontal)",
           "engine": "Veo 3.1",
           "duration": "8 s",
           "resolution": "1920×1080",
-          "audio": "Activado",
-          "price": "≈ 3,20 $",
-          "note": "Precio visible antes de generar."
+          "audio": "Incluido",
+          "note": "Precio visible antes de generar.",
+          "pricingScenario": {
+            "engineId": "veo-3-1",
+            "durationSec": 8,
+            "resolution": "1080p",
+            "memberTier": "member"
+          }
         },
         {
           "title": "Narrativa Sora 2 (voz en off)",
           "engine": "Sora 2",
           "duration": "12 s",
-          "resolution": "720P",
-          "audio": "Activado",
-          "price": "≈ 1,73 $",
-          "note": "Reembolso automático si falla."
+          "resolution": "1280×720",
+          "audio": "Incluido",
+          "note": "Reembolso automático si falla.",
+          "pricingScenario": {
+            "engineId": "sora-2",
+            "durationSec": 12,
+            "resolution": "720p",
+            "memberTier": "member"
+          }
         }
       ]
     },
@@ -665,7 +682,7 @@
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "Estándar"
       },
-    "title": "Catálogo de motores de vídeo IA | MaxVideoAI",
+      "title": "Catálogo de motores de vídeo IA | MaxVideoAI",
       "description": "Elige el mejor motor para cada toma. Compara capacidades, costes y ejemplos en vivo en un único espacio de trabajo."
     },
     "note": "Los precios de Fal cambian rápido; confirma la pastilla Precio-Antes o tu clave directa antes de lanzar.",

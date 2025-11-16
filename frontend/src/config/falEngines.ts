@@ -141,6 +141,8 @@ const PIKA_TEXT_TO_VIDEO_ENGINE: EngineCaps = {
         label: 'Duration (seconds)',
         values: ['5', '8'],
         default: '5',
+        min: 5,
+        max: 8,
       },
       {
         id: 'aspect_ratio',
@@ -249,6 +251,8 @@ const VEO_3_1_ENGINE: EngineCaps = {
         label: 'Duration',
         values: ['4s', '6s', '8s'],
         default: '8s',
+        min: 4,
+        max: 8,
       },
       {
         id: 'aspect_ratio',
@@ -374,6 +378,8 @@ const VEO_3_1_FAST_ENGINE: EngineCaps = {
         label: 'Duration',
         values: ['4s', '6s', '8s'],
         default: '8s',
+        min: 4,
+        max: 8,
       },
       {
         id: 'aspect_ratio',
@@ -509,6 +515,8 @@ const VEO_3_1_FIRST_LAST_ENGINE: EngineCaps = {
         label: 'Duration',
         values: ['4s', '6s', '8s'],
         default: '8s',
+        min: 4,
+        max: 8,
       },
       {
         id: 'aspect_ratio',
@@ -574,7 +582,7 @@ const SORA_2_ENGINE: EngineCaps = {
   region: 'global',
   modes: ['t2v', 'i2v'],
   maxDurationSec: 12,
-  resolutions: ['auto', '720p'],
+  resolutions: ['720p'],
   aspectRatios: ['auto', '16:9', '9:16'],
   fps: [24],
   audio: true,
@@ -601,6 +609,8 @@ const SORA_2_ENGINE: EngineCaps = {
         label: 'Duration',
         values: ['4', '8', '12'],
         default: '4',
+        min: 4,
+        max: 12,
       },
       {
         id: 'aspect_ratio',
@@ -613,8 +623,8 @@ const SORA_2_ENGINE: EngineCaps = {
         id: 'resolution',
         type: 'enum',
         label: 'Resolution',
-        values: ['auto', '720p'],
-        default: 'auto',
+        values: ['720p'],
+        default: '720p',
       },
       {
         id: 'api_key',
@@ -640,9 +650,8 @@ const SORA_2_ENGINE: EngineCaps = {
   pricingDetails: {
     currency: 'USD',
     perSecondCents: {
-      default: 10,
+      default: 12,
       byResolution: {
-        auto: 10,
         '720p': 12,
       },
     },
@@ -701,6 +710,8 @@ const SORA_2_PRO_ENGINE: EngineCaps = {
         label: 'Duration',
         values: ['4', '8', '12'],
         default: '4',
+        min: 4,
+        max: 12,
       },
       {
         id: 'aspect_ratio',
@@ -812,6 +823,8 @@ const HAILUO_ENGINE: EngineCaps = {
         label: 'Duration',
         values: ['6', '10'],
         default: '6',
+        min: 6,
+        max: 10,
       },
       {
         id: 'resolution',
@@ -960,7 +973,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     brandId: 'openai',
     family: 'sora',
     versionLabel: '2',
-    availability: 'paused',
+    availability: 'available',
     logoPolicy: 'textOnly',
     billingNote: 'Si une cle OpenAI est fournie, la facturation passe directement chez OpenAI ; sinon Fal credite MaxVideoAI.',
     engine: SORA_2_ENGINE,
@@ -983,7 +996,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
         ui: {
           modes: ['i2v'],
           duration: { options: [4, 8, 12], default: 4 },
-          resolution: ['auto', '720p'],
+          resolution: ['720p'],
           aspectRatio: ['auto', '16:9', '9:16'],
           acceptsImageFormats: ['png', 'jpeg', 'jpg', 'webp', 'gif', 'avif'],
           audioToggle: false,

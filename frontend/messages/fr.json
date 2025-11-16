@@ -296,26 +296,27 @@
     }
   },
   "pricing": {
-  "hero": {
-    "title": "Estimez le prix avant de générer. Payez uniquement ce que vous exécutez. Commencez avec des Crédits de démarrage (10 $). Sans abonnement. Aucun engagement.",
-    "subtitle": "Chaque estimation se met à jour en temps réel lorsque vous ajustez les moteurs, les durées et les sorties. Les soldes des portefeuilles se synchronisent entre les équipes avec des vérifications d’état quotidiennes.",
-    "link": {
-      "before": "Comparez les tarifs des moteurs dans notre ",
-      "label": "comparatif vidéo IA",
-      "after": "."
-    }
-  },
-  "calculator": {
-    "title": "Prévisualiser les prix dans l’app",
-    "description": "Ouvrez le générateur pour voir le prix exact avant de lancer une vidéo.",
-    "cta": "Ouvrir le générateur"
-  },
-  "estimator": {
+    "hero": {
+      "title": "Estimez le prix avant de générer. Payez uniquement ce que vous exécutez. Commencez avec des Crédits de démarrage (10 $). Sans abonnement. Aucun engagement.",
+      "subtitle": "Chaque estimation se met à jour en temps réel lorsque vous ajustez les moteurs, les durées et les sorties. Les soldes des portefeuilles se synchronisent entre les équipes avec des vérifications d’état quotidiennes.",
+      "link": {
+        "before": "Comparez les tarifs des moteurs dans notre ",
+        "label": "comparatif vidéo IA",
+        "after": "."
+      }
+    },
+    "calculator": {
+      "title": "Prévisualiser les prix dans l’app",
+      "description": "Ouvrez le générateur pour voir le prix exact avant de lancer une vidéo.",
+      "cta": "Ouvrir le générateur"
+    },
+    "estimator": {
       "title": "Estimateur de coûts",
       "subtitle": "Choisissez le moteur, la durée et la résolution pour voir le prix avant de mettre le rendu en file d'attente. Facturé uniquement si le rendu réussit.",
       "walletLink": "Vous voulez voir les prix dans l’app avant de générer ?",
       "walletLinkCta": "Ouvrir le générateur",
       "chargedNote": "Facturé uniquement si le rendu réussit.",
+      "audioIncluded": "Audio inclus par défaut.",
       "fields": {
         "engine": "Moteur",
         "resolution": "Résolution",
@@ -332,6 +333,7 @@
         "sora-2": "Remix texte/image avec audio natif.",
         "veo-3-1": "Passez d’un prompt texte à la référence multi-image sans changer de moteur.",
         "veo-3-1-first-last": "Reliez deux frames avec Veo 3.1 ou sa version Fast.",
+        "veo-3-1-first-last-fast": "Faites transiter First/Last par Veo 3.1 Fast pour itérer à moindre coût.",
         "pika-text-to-video": "Boucles sociales rapides avec légendes et paramètres adaptés au remix.",
         "minimax-hailuo-02-text": "Brouillons optimisés par prompt avant le rendu principal."
       },
@@ -369,27 +371,42 @@
           "engine": "Pika 2.2",
           "duration": "5 s",
           "resolution": "1080×1920",
-          "audio": "Désactivé",
-          "price": "≈ 0,25 $",
-          "note": "Débité uniquement si le rendu aboutit."
+          "audio": "Silencieux",
+          "note": "Débité uniquement si le rendu aboutit.",
+          "pricingScenario": {
+            "engineId": "pika-text-to-video",
+            "durationSec": 5,
+            "resolution": "1080p",
+            "memberTier": "member"
+          }
         },
         {
           "title": "Test cinématographique (paysage)",
           "engine": "Veo 3.1",
           "duration": "8 s",
           "resolution": "1920×1080",
-          "audio": "Activé",
-          "price": "≈ 3,20 $",
-          "note": "Prix affiché avant génération."
+          "audio": "Inclus",
+          "note": "Prix affiché avant génération.",
+          "pricingScenario": {
+            "engineId": "veo-3-1",
+            "durationSec": 8,
+            "resolution": "1080p",
+            "memberTier": "member"
+          }
         },
         {
           "title": "Narratif Sora 2 (voice-over)",
           "engine": "Sora 2",
           "duration": "12 s",
-          "resolution": "720P",
-          "audio": "Activé",
-          "price": "≈ 1,73 $",
-          "note": "Remboursement automatique en cas d’échec."
+          "resolution": "1280×720",
+          "audio": "Inclus",
+          "note": "Remboursement automatique en cas d’échec.",
+          "pricingScenario": {
+            "engineId": "sora-2",
+            "durationSec": 12,
+            "resolution": "720p",
+            "memberTier": "member"
+          }
         }
       ]
     },

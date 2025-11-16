@@ -296,26 +296,27 @@
     }
   },
   "pricing": {
-  "hero": {
-    "title": "Price before you generate. Pay only for what you run. Start with Starter Credits ($10). No subscription. No lock-in.",
-    "subtitle": "Every estimate updates live as you adjust engines, durations, and outputs. Wallet balances sync across teams with daily status checks.",
-    "link": {
-      "before": "See how pricing compares across engines in our ",
-      "label": "AI video comparison",
-      "after": "."
-    }
-  },
-  "calculator": {
-    "title": "Preview prices in the app",
-    "description": "Open the generator to see the exact price before you create a video.",
-    "cta": "Open the generator"
-  },
-  "estimator": {
+    "hero": {
+      "title": "Price before you generate. Pay only for what you run. Start with Starter Credits ($10). No subscription. No lock-in.",
+      "subtitle": "Every estimate updates live as you adjust engines, durations, and outputs. Wallet balances sync across teams with daily status checks.",
+      "link": {
+        "before": "See how pricing compares across engines in our ",
+        "label": "AI video comparison",
+        "after": "."
+      }
+    },
+    "calculator": {
+      "title": "Preview prices in the app",
+      "description": "Open the generator to see the exact price before you create a video.",
+      "cta": "Open the generator"
+    },
+    "estimator": {
       "title": "Cost Estimator",
       "subtitle": "Choose the engine, duration, and resolution to see pricing before you queue the render. Charged only if it succeeds.",
       "walletLink": "Want to see prices inside the app before you generate?",
       "walletLinkCta": "Open the generator",
       "chargedNote": "Charged only if render succeeds.",
+      "audioIncluded": "Audio included by default.",
       "fields": {
         "engine": "Engine",
         "resolution": "Resolution",
@@ -332,6 +333,7 @@
         "sora-2": "Text/image remix with native audio.",
         "veo-3-1": "Swap between text-to-video prompts or multi-image reference control.",
         "veo-3-1-first-last": "Bridge first & last frames with Veo 3.1 or its Fast variant.",
+        "veo-3-1-first-last-fast": "Route First/Last runs through Veo 3.1 Fast for cheaper iterations.",
         "pika-text-to-video": "Quick social loops with captions and remix-friendly settings.",
         "minimax-hailuo-02-text": "Prompt-optimised drafts before the hero render."
       },
@@ -369,27 +371,42 @@
           "engine": "Pika 2.2",
           "duration": "5s",
           "resolution": "1080×1920",
-          "audio": "Off",
-          "price": "≈ $0.25",
-          "note": "Charged only if it succeeds."
+          "audio": "Silent",
+          "note": "Charged only if it succeeds.",
+          "pricingScenario": {
+            "engineId": "pika-text-to-video",
+            "durationSec": 5,
+            "resolution": "1080p",
+            "memberTier": "member"
+          }
         },
         {
           "title": "Cinematic test (landscape)",
           "engine": "Veo 3.1",
           "duration": "8s",
           "resolution": "1920×1080",
-          "audio": "On",
-          "price": "≈ $3.20",
-          "note": "Price before you generate."
+          "audio": "Included",
+          "note": "Price before you generate.",
+          "pricingScenario": {
+            "engineId": "veo-3-1",
+            "durationSec": 8,
+            "resolution": "1080p",
+            "memberTier": "member"
+          }
         },
         {
           "title": "Sora 2 narrative (voice-over)",
           "engine": "Sora 2",
           "duration": "12s",
-          "resolution": "720P",
-          "audio": "On",
-          "price": "≈ $1.73",
-          "note": "Automatic refund on fail."
+          "resolution": "1280×720",
+          "audio": "Included",
+          "note": "Automatic refund on fail.",
+          "pricingScenario": {
+            "engineId": "sora-2",
+            "durationSec": 12,
+            "resolution": "720p",
+            "memberTier": "member"
+          }
         }
       ]
     },
