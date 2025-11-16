@@ -2,7 +2,6 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ExternalLink, Pause, Play, Repeat, Volume2, VolumeX } from 'lucide-react';
 import type { VideoGroup, VideoItem } from '@/types/video-groups';
@@ -208,27 +207,16 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
             <UIIcon icon={Repeat} />
             <span className="sr-only">{isLooping ? copy.controls.loop.on : copy.controls.loop.off}</span>
           </button>
-          {group?.hero?.id ? (
-            <Link
-              href={`/jobs/${encodeURIComponent(group.hero.jobId ?? group.hero.id)}`}
-              className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary')}
-              aria-label={copy.controls.modal.aria}
-            >
-              <UIIcon icon={ExternalLink} />
-              <span className="sr-only">{copy.controls.modal.label}</span>
-            </Link>
-          ) : (
-            <button
-              type="button"
-              onClick={handleOpenModal}
-              disabled={!group}
-              className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
-              aria-label={copy.controls.modal.aria}
-            >
-              <UIIcon icon={ExternalLink} />
-              <span className="sr-only">{copy.controls.modal.label}</span>
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={handleOpenModal}
+            disabled={!group}
+            className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
+            aria-label={copy.controls.modal.aria}
+          >
+            <UIIcon icon={ExternalLink} />
+            <span className="sr-only">{copy.controls.modal.label}</span>
+          </button>
           {copyPrompt && onCopyPrompt ? (
             <button
               type="button"
@@ -330,16 +318,17 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
                         tileCount={tileCount || slots.length}
                       />
                     ) : null}
-                    {item.id ? (
+                    {onOpenModal ? (
                       <div className="absolute bottom-2 left-2">
-                        <Link
-                          href={`/jobs/${encodeURIComponent(item.jobId ?? item.id)}`}
+                        <button
+                          type="button"
+                          onClick={handleOpenModal}
                           className="pointer-events-auto inline-flex items-center gap-1 rounded-full border border-border bg-white/90 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-secondary shadow transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           aria-label={copy.controls.openTake.aria}
                         >
                           <UIIcon icon={ExternalLink} size={16} />
                           <span>{copy.controls.openTake.label}</span>
-                        </Link>
+                        </button>
                       </div>
                     ) : null}
                   </figure>
