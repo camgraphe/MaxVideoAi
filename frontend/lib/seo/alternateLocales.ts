@@ -17,7 +17,7 @@ export const HREFLANG_VARIANTS: Array<{ hreflang: string; locale: AppLocale }> =
   { hreflang: 'en', locale: 'en' },
   { hreflang: 'en-GB', locale: 'en' },
   { hreflang: 'fr-FR', locale: 'fr' },
-  { hreflang: 'es-ES', locale: 'es' },
+  { hreflang: 'es', locale: 'es' },
 ];
 
 const modelLocaleCache = new Map<string, Set<AppLocale>>();

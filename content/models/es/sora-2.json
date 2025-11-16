@@ -2,8 +2,8 @@
   "marketingName": "OpenAI Sora 2",
   "versionLabel": "2",
   "seo": {
-    "title": "Sora 2 – Genera vídeos con IA a partir de texto o imagen con sonido",
-    "description": "Crea vídeos ricos generados por IA a partir de indicaciones de texto o imagen usando Sora 2. Voz en off nativa, efectos ambientales y sincronización de movimiento mediante MaxVideoAI.",
+    "title": "Sora 2 – Genera videos con IA a partir de texto o imagen con sonido",
+    "description": "Crea videos ricos generados por IA a partir de indicaciones de texto o imagen usando Sora 2. Voz en off nativa, efectos ambientales y sincronización de movimiento mediante MaxVideoAI.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg"
   },
   "hero": {
@@ -28,7 +28,7 @@
       }
     ]
   },
-  "overview": "Genera vídeos a partir de texto o imágenes con Sora 2 — ahora con voz en off, sonido ambiental y animaciones fluidas. Anima imágenes de referencia o elabora indicaciones completas con audio sincronizado.",
+  "overview": "Genera videos a partir de texto o imágenes con Sora 2 — ahora con voz en off, sonido ambiental y animaciones fluidas. Anima imágenes de referencia o elabora indicaciones completas con audio sincronizado.",
   "bestUseCases": {
     "title": "Mejores casos de uso",
     "items": [
@@ -98,7 +98,7 @@
       "🎙️ Usa la voz en off para narrativas de formato corto",
       "🖼️ Combina imagen de referencia + texto para animaciones precisas",
       "🎧 Describe siempre el paisaje sonoro para ganar realismo",
-      "📱 Para contenido móvil, trabaja en 9:16 con transiciones enérgicas",
+      "📱 Para contenido para celular, trabaja en 9:16 con transiciones enérgicas",
       "🧪 Prototipa escenas sencillas antes de añadir instrucciones de estilo"
     ]
   },

@@ -18,7 +18,7 @@ const ABOUT_META: Record<AppLocale, { title: string; description: string }> = {
   es: {
     title: 'Acerca de — MaxVideoAI',
     description:
-      'Hub independiente de vídeo con IA que dirige el motor adecuado para cada plano con precio antes de generar.',
+      'Hub independiente de video con IA que dirige el motor adecuado para cada plano con precio antes de generar.',
   },
 };
 

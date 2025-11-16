@@ -141,7 +141,7 @@
         "href": "/legal/takedown"
       }
     ],
-    "brandNote": "Centro independiente para vídeo profesional con IA - precio antes de generar, mantente con los motores más recientes, un espacio de trabajo para cada plano. Funciona con Sora 2, Veo 3.1, Pika 2.2, MiniMax Hailuo 02, and more. Trademarks belong to their owners.",
+    "brandNote": "Centro independiente para video profesional con IA - precio antes de generar, mantente con los motores más recientes, un espacio de trabajo para cada plano. Funciona con Sora 2, Veo 3.1, Pika 2.2, MiniMax Hailuo 02, and more. Trademarks belong to their owners.",
     "languageLabel": "Idioma",
     "languages": [
       {
@@ -167,7 +167,7 @@
     ],
     "hero": {
       "title": "El motor adecuado para cada toma.",
-      "subtitle": "Vídeo profesional con IA, sin complicaciones. Precio antes de generar. Un centro para tu trabajo.",
+      "subtitle": "Video profesional con IA, sin complicaciones. Precio antes de generar. Un centro para tu trabajo.",
       "primaryCta": "Iniciar renderizado",
       "secondaryCta": "Ver cómo funciona"
     },
@@ -322,7 +322,7 @@
     "pricing": {
       "badge": "Precios",
       "title": "Los Créditos iniciales desbloquean el espacio de trabajo completo.",
-      "body": "Recarga $10 y ejecuta tus primeros renders inmediatamente. Añade $10 / $25 / $50 siempre que necesites más saldo en el monedero.",
+      "body": "Recarga $10 y ejecuta tus primeros renders inmediatamente. Añade $10 / $25 / $50 siempre que necesites más saldo en la billetera.",
       "link": "Ir a precios"
     },
     "trust": {
@@ -352,14 +352,14 @@
         },
         {
           "q": "¿Cuál es la política de reembolso?",
-          "a": "Los renders fallidos se reembolsan automáticamente en tu monedero con un recibo detallado. Controlas el gasto en todo momento."
+          "a": "Los renders fallidos se reembolsan automáticamente en tu billetera con un recibo detallado. Controlas el gasto en todo momento."
         }
       ]
     },
     "priceChipSuffix": "Sin suscripción. Pago por uso.",
     "meta": {
-      "title": "Generador de vídeo IA Multi-motor – Pago por uso | MaxVideoAI",
-      "description": "Crea vídeo IA con Sora 2, Veo 3, Pika y más desde un único espacio de trabajo. Precios transparentes, monederos de Pago por uso, Reescalado 4K, Renders iterativos x1-x4."
+      "title": "Generador de video IA Multi-motor – Pago por uso | MaxVideoAI",
+      "description": "Crea video IA con Sora 2, Veo 3, Pika y más desde un único espacio de trabajo. Precios transparentes, billeteras de pago por uso, Reescalado 4K, Renders iterativos x1-x4."
     },
     "compare": {
       "title": "Compara motores de un vistazo",
@@ -378,10 +378,10 @@
   "pricing": {
     "hero": {
       "title": "Consulta el precio antes de generar. Paga solo por lo que ejecutes. Empieza con Créditos iniciales ($10). Sin suscripción. Sin compromiso.",
-      "subtitle": "Cada estimación se actualiza en tiempo real al ajustar motores, duraciones y salidas. Los saldos del monedero se sincronizan entre equipos con comprobaciones diarias de estado.",
+      "subtitle": "Cada estimación se actualiza en tiempo real al ajustar motores, duraciones y salidas. Los saldos de la billetera se sincronizan entre equipos con comprobaciones diarias de estado.",
       "link": {
         "before": "Compara los precios entre motores en nuestra ",
-        "label": "guía comparativa de vídeo IA",
+        "label": "guía comparativa de video IA",
         "after": "."
       }
     },
@@ -423,15 +423,15 @@
       "perImageLabel": "Se aplica por imagen generada dentro de Generate."
     },
     "wallet": {
-      "title": "Monedero",
-      "description": "Financia tu monedero con Créditos iniciales ($10) o añade $10 / $25 / $50 a la vez. La recarga automática opcional mantiene los renders en marcha.",
+      "title": "Billetera",
+      "description": "Financia tu billetera con Créditos iniciales ($10) o añade $10 / $25 / $50 a la vez. La recarga automática opcional mantiene los renders en marcha.",
       "points": [
         "Créditos iniciales ($10) para empezar al instante.",
         "Añade fondos en incrementos de $10, $25 o $50 cuando los necesites.",
         "Recarga automática opcional con alertas cuando el saldo cae por debajo de tu umbral."
       ],
-      "balanceLabel": "Saldo del monedero",
-      "balanceHelper": "Los Créditos iniciales empiezan en $10. Los monederos compartidos se sincronizan automáticamente.",
+      "balanceLabel": "Saldo de la billetera",
+      "balanceHelper": "Los Créditos iniciales empiezan en $10. Las billeteras compartidas se sincronizan automáticamente.",
       "autoTopUpLabel": "Recarga automática cuando el saldo baja de $10",
       "autoTopUpHint": "Los correos diarios de estado mantienen a finanzas informadas.",
       "addLabel": "Añadir ${amount}"
@@ -501,10 +501,10 @@
     },
     "teams": {
       "title": "Equipos",
-      "description": "Aprobaciones basadas en roles, monederos compartidos y entregas se implementarán próximamente. Únete a la beta para probar los controles de equipo antes.",
+      "description": "Aprobaciones basadas en roles, billeteras compartidas y entregas se implementarán próximamente. Únete a la beta para probar los controles de equipo antes.",
       "comingSoonNote": "Las funciones de equipos están en beta privada. Contacta con support@maxvideoai.com para unirte al despliegue.",
       "points": [
-        "Monederos compartidos basados en roles con aprobaciones para finanzas, productores y stakeholders.",
+        "Billeteras compartidos basados en roles con aprobaciones para finanzas, productores y stakeholders.",
         "Resúmenes diarios automatizados sobre gasto, reembolsos y salud de la cola.",
         "Entregas a Google Drive, OneDrive y Dropbox."
       ]
@@ -545,7 +545,7 @@
       "points": [
         "Reembolsos automáticos cuando las renderizaciones fallan o los proveedores incumplen los SLA.",
         "Recibos desglosados con motor, duración, resolución y complementos.",
-        "Protecciones del monedero con Créditos recargables opcionales que requieren varios aprobadores.",
+        "Protecciones de la billetera con Créditos recargables opcionales que requieren varios aprobadores.",
         "La tarifa de la aplicación se reconoce de inmediato; la parte del proveedor se liquida al realizar el pago.",
         "Cada intento de renderizado incluye una clave de idempotencia para evitar cargos duplicados."
       ]
@@ -577,26 +577,26 @@
         "answer": "El acceso directo sigue siendo solo por invitación. MaxVideoAI ofrece acceso de pago al renderizado de Sora 2 desde Europa a través de nuestro hub."
       },
       {
-        "question": "¿Los vídeos llevan marca de agua?",
+        "question": "¿Los videos llevan marca de agua?",
         "answer": "No. Los renders producidos mediante MaxVideoAI se entregan sin watermark."
       }
     ],
     "priceChipSuffix": "Precio antes de generar.",
     "priceChipPrefix": "Esta renderización",
     "meta": {
-      "title": "Precios — Generador de vídeo IA Pago por uso | MaxVideoAI",
+      "title": "Precios — Generador de video IA Pago por uso | MaxVideoAI",
       "description": "Créditos recargables: paga solo por las renderizaciones que apruebes. Tarifas claras por motor, Sin suscripción, Reescalado 4K y opciones de audio."
     }
   },
   "calculator": {
     "hero": {
-      "title": "Calcula el coste de tu vídeo con IA antes de generar.",
+      "title": "Calcula el coste de tu video con IA antes de generar.",
       "subtitle": "Este calculador público refleja el estimador dentro de MaxVideo AI. Elige un motor, duración y resolución para previsualizar la ficha de coste sin necesidad de iniciar sesión."
     },
     "lite": {
       "title": "Calculadora Lite",
       "subtitle": "Ideal para las partes interesadas que necesitan una estimación rápida antes de compartir indicaciones o recursos.",
-      "footer": "¿Listo para ejecutar el trabajo? {link} para financiar tu monedero y generar dentro del espacio de trabajo.",
+      "footer": "¿Listo para ejecutar el trabajo? {link} para financiar tu billetera y generar dentro del espacio de trabajo.",
       "footerLinkText": "Ir a Precios"
     }
   },
@@ -653,7 +653,7 @@
           "href": "/examples?tag=product-broll"
         },
         {
-          "title": "Vídeo musical / Narrativa",
+          "title": "Video musical / Narrativa",
           "description": "Movimiento cinematográfico y audio sincronizado. Fuerte con Sora 2.",
           "bullets": [
             "Planos de 8–12 s",
@@ -672,7 +672,7 @@
   "models": {
     "hero": {
       "title": "Motores de Fal.ai sin el bloqueo del proveedor.",
-      "subtitle": "Fal.ai lanza nuevos endpoints de vídeo semanalmente. Sincronizamos su catálogo para que tu ficha «Precio antes de generar» se mantenga precisa en los niveles Sora, Veo, Pika y MiniMax."
+      "subtitle": "Fal.ai lanza nuevos endpoints de video semanalmente. Sincronizamos su catálogo para que tu ficha «Precio antes de generar» se mantenga precisa en los niveles Sora, Veo, Pika y MiniMax."
     },
     "intro": {
       "paragraphs": [
@@ -722,19 +722,19 @@
     "meta": {
       "sora-2": {
         "displayName": "OpenAI Sora 2",
-        "description": "Texto→Vídeo y remezclas con audio nativo a través del enrutamiento de Fal.",
+        "description": "Texto→Video y remezclas con audio nativo a través del enrutamiento de Fal.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "v2"
       },
       "sora-2-pro": {
         "displayName": "OpenAI Sora 2 Pro",
-        "description": "Sincronización labial cinematográfica con salida 1080p y control de Imagen→Vídeo para equipos premium.",
+        "description": "Sincronización labial cinematográfica con salida 1080p y control de Imagen→Video para equipos premium.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "Pro"
       },
       "veo-3-1": {
         "displayName": "Google Veo 3.1",
-        "description": "Control de referencia a vídeo con guía de sujeto mediante varias imágenes.",
+        "description": "Control de referencia a video con guía de sujeto mediante varias imágenes.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "Veo 3.1"
       },
@@ -751,18 +751,18 @@
         "versionLabel": "First/Last"
       },
       "pika-text-to-video": {
-        "displayName": "Pika 2.2 · Texto e Imagen→Vídeo",
+        "displayName": "Pika 2.2 · Texto e Imagen→Video",
         "description": "Bucles para redes sociales desde prompts o imágenes subidas con iteración rápida.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "2.2"
       },
       "minimax-hailuo-02-text": {
-        "displayName": "MiniMax Hailuo 02 Estándar · Texto e Imagen→Vídeo",
+        "displayName": "MiniMax Hailuo 02 Estándar · Texto e Imagen→Video",
         "description": "Borradores con optimizador o animación basada en referencias en un solo motor.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "Estándar"
       },
-      "title": "Catálogo de motores de vídeo IA | MaxVideoAI",
+      "title": "Catálogo de motores de video IA | MaxVideoAI",
       "description": "Elige el mejor motor para cada toma. Compara capacidades, costes y ejemplos en vivo en un único espacio de trabajo."
     },
     "note": "Los precios de Fal cambian rápido; confirma la pastilla Precio-Antes o tu clave directa antes de lanzar.",
@@ -880,7 +880,7 @@
       },
       {
         "title": "Passe conceptual MiniMax Hailuo",
-        "engine": "MiniMax Hailuo 02 · Texto/Imagen→Vídeo · 16:9",
+        "engine": "MiniMax Hailuo 02 · Texto/Imagen→Video · 16:9",
         "description": "Passe de arte animado que parte de un fotograma de referencia y conserva el encuadre.",
         "alt": "Clip de ejemplo de MiniMax Hailuo Standard.",
         "meta": {
@@ -898,7 +898,7 @@
         }
       }
     ],
-    "cta": "Generar vídeo similar"
+    "cta": "Generar video similar"
   },
   "docs": {
     "hero": {
@@ -1068,8 +1068,8 @@
   },
   "about": {
     "hero": {
-      "title": "Confianza discreta para equipos de vídeo con IA.",
-      "subtitle": "MaxVideo AI es el núcleo independiente para la producción de vídeo con IA. Enrutamos al motor adecuado para cada plano, mostramos el precio antes de generar y mantenemos a su equipo en control sin bloqueo de proveedor."
+      "title": "Confianza discreta para equipos de video con IA.",
+      "subtitle": "MaxVideo AI es el núcleo independiente para la producción de video con IA. Enrutamos al motor adecuado para cada plano, mostramos el precio antes de generar y mantenemos a su equipo en control sin bloqueo de proveedor."
     },
     "paragraphs": [
       "Creemos que los equipos profesionales merecen claridad antes de iniciar el render. Eso significa transparencia de precios, enrutamiento fiable y contexto compartido entre creativos, productores y stakeholders.",
@@ -1231,14 +1231,14 @@
   },
   "gallery": {
     "meta": {
-      "title": "Galería — prompts y renders de vídeo con IA | MaxVideoAI",
+      "title": "Galería — prompts y renders de video con IA | MaxVideoAI",
       "description": "Explora renders reales de IA con prompts y ajustes. Inspírate y recrea resultados en unos pocos clics."
     }
   },
   "workspace": {
     "header": {
       "marketingNav": "Navegación de marketing",
-      "walletLabel": "Monedero",
+      "walletLabel": "Billetera",
       "memberFallback": "Miembro",
       "signedIn": "Sesión iniciada",
       "primaryNav": "Navegación principal",
@@ -1499,7 +1499,7 @@
         "billing": "Añadir fondos"
       },
       "wallet": {
-        "title": "Monedero y estado",
+        "title": "Billetera y estado",
         "balanceLabel": "Saldo actual",
         "tierLabel": "Nivel de miembro",
         "savingsLabel": "Ahorro en 30 días móviles: {percent} %",
@@ -1550,8 +1550,8 @@
         "testMode": "Modo de prueba"
       },
       "wallet": {
-        "title": "Monedero",
-        "description": "Créditos iniciales (10 $). Recarga una vez y paga cada render al céntimo. Cualquier saldo sin usar sigue siendo tuyo.",
+        "title": "Billetera",
+        "description": "Créditos iniciales (10 $). Recarga una vez y paga cada render al centavo. Cualquier saldo sin usar sigue siendo tuyo.",
         "addFunds": "Añadir {amount}",
         "quickAmount": "{amount}",
         "autoTopUp": "Activar recarga automática (opcional)",
@@ -1572,13 +1572,13 @@
       },
       "teams": {
         "title": "Para equipos",
-        "description": "Monedero compartido y roles. Un único saldo para todos. Presupuestos blandos/duros por proyecto. Resumen diario por correo.",
+        "description": "Billetera compartido y roles. Un único saldo para todos. Presupuestos blandos/duros por proyecto. Resumen diario por correo.",
         "actions": {
           "invite": "Invitar compañeros",
           "budgets": "Definir presupuestos"
         },
-        "note": "Nota: en monederos compartidos, el estado aplica a todos.",
-        "comingSoon": "Próximamente — monederos unificados, aprobaciones por rol y control de presupuestos. Únete a la beta en {email}.",
+        "note": "Nota: en billeteras compartidas, el estado aplica a todos.",
+        "comingSoon": "Próximamente — billeteras unificadas, aprobaciones por rol y control de presupuestos. Únete a la beta en {email}.",
         "contactEmail": "support@maxvideoai.com",
         "statusLive": "En vivo",
         "statusSoon": "Próximamente"
@@ -1647,7 +1647,7 @@
         "footnote": "IVA incluido cuando aplica. Reembolsos en renders fallidos. “Funciona con” indica compatibilidad; las marcas pertenecen a sus dueños."
       },
       "toasts": {
-        "success": "Pago realizado con éxito. Fondos añadidos a tu monedero.",
+        "success": "Pago realizado con éxito. Fondos añadidos a tu billetera.",
         "cancelled": "Pago cancelado. No se aplicaron cargos."
       },
       "errors": {
@@ -1815,7 +1815,7 @@
         "liveDescription": "Gestiona miembros, roles, presupuestos e integraciones.",
         "invite": "Invitar miembro",
         "createProject": "Crear proyecto",
-        "upcomingPrefix": "Muy pronto — monederos compartidos, aprobaciones y presupuestos. Únete a la beta en ",
+        "upcomingPrefix": "Muy pronto — billeteras compartidas, aprobaciones y presupuestos. Únete a la beta en ",
         "upcomingEmail": "support@maxvideoai.com",
         "upcomingSuffix": "."
       },

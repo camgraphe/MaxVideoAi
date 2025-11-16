@@ -3,7 +3,7 @@
   "versionLabel": "Pro",
   "seo": {
     "title": "Sora 2 Pro – Videos de IA más largos con audio y control de prompts mejorado",
-    "description": "Crea vídeos de IA más largos e inmersivos a partir de texto o imágenes con Sora 2 Pro. Voz nativa, sonido ambiental, encadenamiento de prompts y control avanzado mediante MaxVideoAI.",
+    "description": "Crea videos de IA más largos e inmersivos a partir de texto o imágenes con Sora 2 Pro. Voz nativa, sonido ambiental, encadenamiento de prompts y control avanzado mediante MaxVideoAI.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg"
   },
   "hero": {
@@ -28,12 +28,12 @@
       }
     ]
   },
-  "overview": "Genera vídeos de IA más largos con sonido y control de escenas usando Sora 2 Pro. Perfecto para narración, vídeos explicativos y diseño de motion para marcas — partiendo de prompts de imagen o texto.",
+  "overview": "Genera videos de IA más largos con sonido y control de escenas usando Sora 2 Pro. Perfecto para narración, videos explicativos y diseño de motion para marcas — partiendo de prompts de imagen o texto.",
   "bestUseCases": {
     "title": "Casos de uso ideales",
     "items": [
       "Narrativas multiescena con personajes consistentes",
-      "Vídeos explicativos de marca que requieren diseño sonoro",
+      "Videos explicativos de marca que requieren diseño sonoro",
       "Remixes imagen→video donde la iluminación debe mantenerse",
       "Briefs híbridos texto+imagen con encadenamiento de prompts"
     ]

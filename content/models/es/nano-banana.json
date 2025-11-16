@@ -8,7 +8,7 @@
   },
   "hero": {
     "title": "Nano Banana – Texto→Imagen y edición precisa",
-    "intro": "Nano Banana incluye dos endpoints Fal: texto→imagen ultrarrápido y edición imagen→imagen muy controlable. Comparte wallet, registros y prompt lab con nuestros motores de vídeo, así que puedes preparar frames, moodboards o shot plates sin salir de MaxVideoAI.",
+    "intro": "Nano Banana incluye dos endpoints Fal: texto→imagen ultrarrápido y edición imagen→imagen muy controlable. Comparte wallet, registros y prompt lab con nuestros motores de video, así que puedes preparar frames, moodboards o shot plates sin salir de MaxVideoAI.",
     "ctaPrimary": {
       "label": "Generar imagen",
       "href": "/app/image?engine=nano-banana"
