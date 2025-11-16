@@ -67,11 +67,6 @@ function getModeLabel(
   return engineOverrides?.[value] ?? MODE_LABELS[value] ?? value.toUpperCase();
 }
 
-type EngineGuideEntry = {
-  description: string;
-  badges: string[];
-};
-
 interface EngineSelectProps {
   engines: EngineCaps[];
   engineId: string;
