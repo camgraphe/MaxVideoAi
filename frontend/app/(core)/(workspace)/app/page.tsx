@@ -3664,10 +3664,11 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <HeaderBar />
-      <div className="flex flex-1">
-        <AppSidebar />
-        <div className="flex flex-1 flex-col overflow-hidden">
-          <main className="flex flex-1 flex-col gap-5 p-5 lg:p-7">
+      <div className="flex flex-1 flex-col xl:flex-row">
+        <div className="flex flex-1">
+          <AppSidebar />
+          <div className="flex flex-1 flex-col overflow-hidden">
+            <main className="flex flex-1 flex-col gap-5 p-5 lg:p-7">
             {notice && (
               <div className="rounded-[12px] border border-[#FACC15]/60 bg-[#FEF3C7] px-4 py-2 text-sm text-[#92400E] shadow-card">
                 {notice}
@@ -3836,13 +3837,16 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
               </div>
             </div>
           </main>
+        </div>
+        <div className="w-full border-t border-hairline bg-white/70 px-4 py-4 xl:w-[360px] xl:border-l xl:border-t-0 xl:bg-white/80">
+          <GalleryRail
+            engine={selectedEngine}
+            activeGroups={normalizedPendingGroups}
+            onOpenGroup={openGroupViaGallery}
+            onGroupAction={handleGalleryGroupAction}
+          />
+        </div>
       </div>
-      <GalleryRail
-        engine={selectedEngine}
-        activeGroups={normalizedPendingGroups}
-        onOpenGroup={openGroupViaGallery}
-        onGroupAction={handleGalleryGroupAction}
-      />
       </div>
       {viewerGroup ? (
         <GroupViewerModal

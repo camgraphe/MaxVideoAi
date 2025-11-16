@@ -223,18 +223,8 @@ export function Composer({
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">{composerCopy.title}</h2>
-          <p className="text-sm text-text-secondary">{composerCopy.subtitle}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
-          <Chip className="px-2.5 py-1" variant="outline">
-            {composerCopy.badges.payg}
-          </Chip>
-          <Chip className="px-2.5 py-1" variant="outline">
-            {composerCopy.badges.priceBefore}
-          </Chip>
-          <Chip className="px-2.5 py-1" variant="outline">
-            {composerCopy.badges.alwaysCurrent}
-          </Chip>
           {formattedPrice && (
             <Chip variant="accent" className="px-3 py-1.5">
               {composerCopy.priceLabel.replace('{amount}', formattedPrice)}
@@ -323,11 +313,6 @@ export function Composer({
       </div>
 
       <footer className="flex flex-col gap-3 text-sm text-text-secondary sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap gap-3 text-xs text-text-muted">
-          <span>{composerCopy.shortcuts.generate}</span>
-          <span>{composerCopy.shortcuts.price}</span>
-          <span>{composerCopy.shortcuts.seed}</span>
-        </div>
         <div className="flex flex-1 flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-end">
           {error && (
             <div className="rounded-input border border-rose-200 bg-rose-50 px-3 py-2 text-[13px] text-rose-700 whitespace-pre-line">
