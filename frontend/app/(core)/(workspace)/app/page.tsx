@@ -3723,7 +3723,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                           return { ...current, openaiApiKey: next ? next : undefined };
                         })
                       }
-                      showApiKeyField={selectedEngine.id.startsWith('sora-2')}
+                      showApiKeyField={false}
                       focusRefs={{
                         duration: durationRef,
                         resolution: resolutionRef,

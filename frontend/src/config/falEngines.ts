@@ -975,7 +975,6 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     versionLabel: '2',
     availability: 'available',
     logoPolicy: 'textOnly',
-    billingNote: 'Si une cle OpenAI est fournie, la facturation passe directement chez OpenAI ; sinon Fal credite MaxVideoAI.',
     engine: SORA_2_ENGINE,
     modes: [
       {
@@ -1069,8 +1068,6 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     versionLabel: 'Pro',
     availability: 'waitlist',
     logoPolicy: 'textOnly',
-    billingNote:
-      'Requires Sora Pro allocation. Provide an OpenAI API key to bill directly with OpenAI or use Fal routing credits.',
     engine: SORA_2_PRO_ENGINE,
     modes: [
       {
