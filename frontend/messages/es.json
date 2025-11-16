@@ -38,6 +38,86 @@
       "blog": "Blog"
     }
   },
+  "aiVideoEngines": {
+    "meta": {
+      "title": "Motores de video IA — Sora, Veo, Pika | MaxVideoAI",
+      "description": "Compara disponibilidad, latencia y rutas de cumplimiento para Sora 2, Veo 3, Pika y MiniMax en Europa."
+    },
+    "hero": {
+      "title": "Ejecuta generadores de video IA en Europa — Sora 2, Veo 3, Pika y más",
+      "intro": "MaxVideoAI mantiene los motores texto‑a‑video en regla, monitorizados y listos para producción en equipos europeos. Usa este hub para entender la disponibilidad, comparar compromisos creativos y lanzar proyectos con las garantías adecuadas desde el primer día.",
+      "secondary": "¿No sabes qué modelo elegir? Lee nuestra {{article:comparativa}}."
+    },
+    "sections": [
+      {
+        "title": "Disponibilidad de Sora 2 y alternativas",
+        "body": "Sora 2 sigue desplegándose por fases, así que MaxVideoAI gestiona todo el rastro de verificación, la conformidad regional y el enrutado predictivo cuando la capacidad fluctúa. Los productores pueden comparar storyboards con las {{sora:referencias de Sora 2}} y pasar a presets Sora 2 Pro o secuencias Veo 3 cuando la rapidez pesa más que la fidelidad de frontera. Documentamos estructuras de prompts, aprobaciones de material y mejores prácticas de postproducción para que cada brief cumpla con la revisión de OpenAI sin retrasar entregas. Los equipos regionales reciben además notas semanales sobre audio, duración y trazabilidad para sectores regulados."
+      },
+      {
+        "title": "Veo 3: texto a video cinemático",
+        "body": "Veo 3.1 equilibra precisión de storyboard y movimiento pulido, sobre todo en piezas con voz en off sincronizada. Nuestro enrutado mantiene una latencia predecible y permite comparar el preset rápido con la cola estándar antes de reservar estudio. Revisa las últimas restricciones, formatos y ejemplos con narración en la {{veo:guía de Veo 3.1}} o usa la variante Fast cuando la velocidad manda. El workspace muestra además un registro de cambios para que editores vean cuándo varían los controles de movimiento, la calidad de audio o las políticas."
+      },
+      {
+        "title": "Pika 2.2 para social rápido",
+        "body": "Cuando hace falta generar loops divertidos o clips cortos, Pika 2.2 entrega varios formatos con costes contenidos. MaxVideoAI publica presets curados para saltar de reels verticales a piezas cuadradas sin salir del workspace. Compara texto‑a‑video e imagen‑a‑video en nuestra {{pika:guía rápida de Pika}} y reutiliza bancos de prompts ya aprobados para campañas seguras para la marca. Controles diarios de calidad detectan derivas de estilo o artefactos para decidir si regenerar, escalar o pasar el archivo a un animador."
+      },
+      {
+        "title": "Cómo MaxVideoAI orquesta Fal.ai",
+        "body": "Fal.ai impulsa la columna multi‑motor de MaxVideoAI y nos permite escalar sin perder una interfaz coherente. Nuestra capa de orquestación mantiene los prompts portables, registra cada render y expone diagnósticos para saber cuándo reintentar o cambiar a otro motor como {{veoFast:Veo 3.1 Fast}} o {{hailuo:MiniMax Hailuo}} para estilos más artísticos. Los equipos acceden en un mismo espacio a tarifas, auditorías y notas de cumplimiento, con playbooks automáticos para aumentar prioridad o cambiar región cuando sube la demanda."
+      }
+    ],
+    "comparison": {
+      "title": "Compara los principales generadores",
+      "intro": "Ya sea fidelidad extrema o loops económicos, MaxVideoAI mantiene cada motor listo para producción.",
+      "cards": [
+        {
+          "label": "Sora 2",
+          "title": "Máxima fidelidad",
+          "points": [
+            "Modelo frontier con audio nativo",
+            "Revisión estricta y colas más largas",
+            "Ideal para campañas hero y briefs cinematográficos"
+          ]
+        },
+        {
+          "label": "Veo 3.1",
+          "title": "Velocidad cinemática",
+          "points": [
+            "Equilibra precisión de storyboard e iteración veloz",
+            "Cambio sencillo entre colas estándar y rápidas",
+            "Audio listo para entrevistas, anuncios y explainers"
+          ]
+        },
+        {
+          "label": "Pika 2.2",
+          "title": "Loops sociales exprés",
+          "points": [
+            "Renders texto o imagen a video casi al instante",
+            "Perfecto para reels, teasers y conceptos divertidos",
+            "Créditos asequibles para experimentar"
+          ]
+        }
+      ]
+    },
+    "faqTitle": "Preguntas frecuentes sobre enrutado IA",
+    "faq": [
+      {
+        "question": "¿MaxVideoAI ofrece facturación europea para Fal.ai?",
+        "answer": "Sí. Emitimos facturas en EUR o GBP y las conciliamos con el uso de Fal.ai, evitando filiales en EE. UU. o tarjetas prepago."
+      },
+      {
+        "question": "¿Cuánto se tarda en arrancar un proyecto con Sora 2?",
+        "answer": "La mayoría de equipos empiezan a hacer prompts en dos días laborables. Disponemos de plantillas de onboarding y presets Veo o Pika de apoyo hasta que se activa Sora."
+      },
+      {
+        "question": "¿Puedo seguir los cambios de los modelos sin revisar toda la documentación?",
+        "answer": "El workspace destaca en tiempo real la latencia, los límites y las políticas, así sabes cuándo reintentar o pasar a otro motor."
+      }
+    ],
+    "cta": {
+      "body": "¿Buscas recetas de prompts encadenadas? Consulta las últimas guías del {{blog:blog de MaxVideoAI}} para walkthroughs narrativos y novedades de motores."
+    }
+  },
   "footer": {
     "links": [
       {
