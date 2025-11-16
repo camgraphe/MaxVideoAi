@@ -29,6 +29,7 @@ test('Sora image-to-video only allows 4/8/12 seconds', () => {
     duration: 6,
     resolution: '720p',
     aspect_ratio: 'auto',
+    image_url: 'https://example.com/frame.png',
   });
   assert.equal(invalid.ok, false);
   assert.equal(invalid.error?.field, 'duration');
@@ -37,6 +38,7 @@ test('Sora image-to-video only allows 4/8/12 seconds', () => {
     duration: 8,
     resolution: '720p',
     aspect_ratio: 'auto',
+    image_url: 'https://example.com/frame.png',
   });
   assert.deepEqual(valid, OK);
 });
@@ -97,6 +99,8 @@ test('Veo 3.1 Fast T2V supports text prompts', () => {
 test('Veo 3.1 Fast I2V requires image_url', () => {
   const invalid = validateRequest('veo-3-1-fast', 'i2v', {
     prompt: 'Animate this still',
+    duration: '8s',
+    resolution: '720p',
   });
   assert.equal(invalid.ok, false);
   assert.equal(invalid.error?.field, 'image_url');
@@ -105,6 +109,7 @@ test('Veo 3.1 Fast I2V requires image_url', () => {
     prompt: 'Animate this still',
     image_url: 'https://example.com/test.png',
     duration: '8s',
+    resolution: '720p',
   });
   assert.deepEqual(valid, OK);
 });
@@ -112,6 +117,7 @@ test('Veo 3.1 Fast I2V requires image_url', () => {
 test('Veo 3.1 First/Last requires both frames', () => {
   const missing = validateRequest('veo-3-1-first-last', 'i2v', {
     prompt: 'Bridge frames',
+    duration: '8s',
   });
   assert.equal(missing.ok, false);
   assert.equal(missing.error?.field, 'first_frame_url');
@@ -119,6 +125,7 @@ test('Veo 3.1 First/Last requires both frames', () => {
   const partial = validateRequest('veo-3-1-first-last', 'i2v', {
     prompt: 'Bridge frames',
     first_frame_url: 'https://example.com/frame1.png',
+    duration: '8s',
   });
   assert.equal(partial.ok, false);
   assert.equal(partial.error?.field, 'last_frame_url');
@@ -137,9 +144,18 @@ test('Veo 3 I2V rejects durations other than 8s', () => {
     duration: '6s',
     resolution: '1080p',
     aspect_ratio: 'auto',
+    image_url: 'https://example.com/frame.png',
   });
   assert.equal(invalid.ok, false);
   assert.equal(invalid.error?.field, 'duration');
+
+  const valid = validateRequest('veo-3-1', 'i2v', {
+    duration: '8s',
+    resolution: '1080p',
+    aspect_ratio: 'auto',
+    image_url: 'https://example.com/frame.png',
+  });
+  assert.deepEqual(valid, OK);
 });
 
 test('Hailuo-02 Std enforces duration and resolution', () => {

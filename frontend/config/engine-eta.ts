@@ -5,6 +5,8 @@ const ENGINE_ETA_SECONDS: Record<string, number> = {
   'sora-2': 38,
   'sora-2-pro': 46,
   'minimax-hailuo-02-text': 30,
+  'kling-2-5-turbo': 32,
+  'wan-2-5': 34,
 };
 
 function clampSeconds(value: number, min: number, max: number): number {

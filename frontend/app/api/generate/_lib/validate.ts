@@ -199,6 +199,46 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
     };
   }
 
+  const normalizedMode: Mode = mode ?? 't2v';
+
+  if (engineId === 'veo-3-1-first-last' && (normalizedMode === 'i2v' || normalizedMode === 'i2i')) {
+    const firstFrame = typeof payload['first_frame_url'] === 'string' ? payload['first_frame_url'].trim() : '';
+    if (!firstFrame) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'first_frame_url',
+          message: 'First frame is required for this engine',
+        },
+      };
+    }
+    const lastFrame = typeof payload['last_frame_url'] === 'string' ? payload['last_frame_url'].trim() : '';
+    if (!lastFrame) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'last_frame_url',
+          message: 'Last frame is required for this engine',
+        },
+      };
+    }
+  } else if (normalizedMode === 'i2v' || normalizedMode === 'i2i') {
+    const imageUrl =
+      typeof payload['image_url'] === 'string' && payload['image_url'].trim().length ? payload['image_url'].trim() : null;
+    if (!imageUrl) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'image_url',
+          message: 'Image URL is required for this engine mode',
+        },
+      };
+    }
+  }
+
   const audioFlag = payload['generate_audio'] ?? payload['audio'];
   if (audioFlag !== undefined && !caps.audioToggle) {
     return {

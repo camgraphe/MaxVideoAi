@@ -149,6 +149,8 @@ export default async function ModelsPage() {
     'veo-3-1',
     'veo-3-1-fast',
     'pika-text-to-video',
+    'wan-2-5',
+    'kling-2-5-turbo',
     'minimax-hailuo-02-text',
   ];
 
@@ -157,7 +159,15 @@ export default async function ModelsPage() {
   const engines = priorityOrder
     .map((slug) => engineIndex.get(slug))
     .filter((entry): entry is FalEngineEntry => Boolean(entry));
-  const quickLinkSlugs = ['sora-2', 'sora-2-pro', 'veo-3-1', 'pika-text-to-video', 'minimax-hailuo-02-text'];
+  const quickLinkSlugs = [
+    'sora-2',
+    'sora-2-pro',
+    'veo-3-1',
+    'pika-text-to-video',
+    'kling-2-5-turbo',
+    'wan-2-5',
+    'minimax-hailuo-02-text',
+  ];
   const quickLinks = quickLinkSlugs
     .map((slug) => engineIndex.get(slug))
     .filter((entry): entry is FalEngineEntry => Boolean(entry));

@@ -848,6 +848,7 @@ export default function Page() {
   const [form, setForm] = useState<FormState | null>(null);
   const [prompt, setPrompt] = useState<string>(DEFAULT_PROMPT);
   const [negativePrompt, setNegativePrompt] = useState<string>('');
+  const [cfgScale, setCfgScale] = useState<number | null>(null);
   const [preflight, setPreflight] = useState<PreflightResponse | null>(null);
   const [preflightError, setPreflightError] = useState<string | undefined>();
   const [isPricing, setPricing] = useState(false);
@@ -2656,6 +2657,19 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     });
   }, [inputSchemaSummary.assetFields]);
 
+  useEffect(() => {
+    if (!selectedEngine) {
+      setCfgScale(null);
+      return;
+    }
+    const cfgParam = selectedEngine.params?.cfg_scale;
+    if (cfgParam) {
+      setCfgScale(cfgParam.default ?? null);
+    } else {
+      setCfgScale(null);
+    }
+  }, [selectedEngine?.id, form?.mode]);
+
   const composerAssets = useMemo<Record<string, (ComposerAttachment | null)[]>>(() => {
     const map: Record<string, (ComposerAttachment | null)[]> = {};
     Object.entries(inputAssets).forEach(([fieldId, entries]) => {
@@ -3039,6 +3053,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           mode: form.mode,
           membershipTier: memberTier,
           payment: { mode: paymentMode },
+          cfgScale: typeof cfgScale === 'number' ? cfgScale : undefined,
           ...(selectedEngine.id.startsWith('sora-2')
             ? { variant: selectedEngine.id === 'sora-2-pro' ? 'sora2pro' : 'sora2' }
             : {}),
@@ -3713,6 +3728,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                         duration: durationRef,
                         resolution: resolutionRef,
                       }}
+                      cfgScale={cfgScale}
+                      onCfgScaleChange={(value) => setCfgScale(value)}
                     />
                     {selectedEngine && (
                       <div className="mt-3 space-y-1 rounded-input border border-border/80 bg-white/80 p-3 text-[12px] text-text-secondary">

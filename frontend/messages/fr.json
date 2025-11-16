@@ -1365,6 +1365,7 @@
         "promptStrength": "Intensité du prompt",
         "guidance": "Guidance",
         "inputInfluence": "Influence de l’entrée",
+        "cfgScale": "Cfg scale",
         "extend": {
           "label": "Extension",
           "action": "Allonger de",
@@ -1461,7 +1462,6 @@
           "close": "Fermer",
           "title": "Choisissez le moteur adapté à votre plan",
           "subtitle": "Chaque modèle a ses forces : certains sont rapides, d’autres cinématiques ou expérimentaux. Trouvez celui qui convient à votre projet, puis lancez-vous sereinement.",
-          "pricingLink": "Comment fonctionne la tarification",
           "searchPlaceholder": "Recherchez par moteur, fournisseur ou capacité",
           "modeAll": "Mode : Tous",
           "modeValue": "Mode : {value}",
@@ -1469,6 +1469,44 @@
           "empty": "Aucun moteur ne correspond encore à vos filtres. Ajustez-les ou effacez la recherche pour explorer tout le catalogue.",
           "disclaimer": "Les logos sont utilisés à titre descriptif uniquement. Les marques appartiennent à leurs propriétaires.",
           "descriptionFallback": "Moteur polyvalent prêt pour les workflows « prix avant génération ». Consultez les spécifications et lancez vos rendus en toute confiance."
+        },
+        "guides": {
+          "pika-text-to-video": {
+            "description": "Pika 2.2 gère les prompts stylisés ou les stills importés dans une seule carte — parfait pour les boucles rapides et les démonstrations produit.",
+            "badges": ["Prompts texte", "Image de référence", "File rapide"]
+          },
+          "sora-2": {
+            "description": "OpenAI Sora 2 orchestre des narrations ciné avec lipsync et audio natif — idéal pour les plans héros.",
+            "badges": ["Audio natif", "Cinématique", "Remix"]
+          },
+          "sora-2-pro": {
+            "description": "Sora 2 Pro débloque des résolutions supérieures, du dialogue synchronisé et le mode image→vidéo pour les productions premium.",
+            "badges": ["1080p", "Audio natif", "Lip-sync"]
+          },
+          "veo-3-1": {
+            "description": "Veo 3.1 accepte désormais prompts texte ou références. Alternez texte→vidéo et image→vidéo sans quitter la queue.",
+            "badges": ["Prompts texte", "Multi-référence", "Audio natif"]
+          },
+          "veo-3-1-fast": {
+            "description": "Veo 3.1 Fast gère vos prompts rapides ou l’animation d’une seule image, audio optionnel compris.",
+            "badges": ["Prompts texte", "Image→vidéo", "Option audio"]
+          },
+          "veo-3-1-first-last": {
+            "description": "Uploadez premier et dernier frame, décrivez la transition et basculez entre Veo 3.1 et la variante Fast.",
+            "badges": ["Deux images", "Option audio", "Standard & Fast"]
+          },
+          "minimax-hailuo-02-text": {
+            "description": "Hailuo 02 Standard traite les prompts stylisés ou les stills animés avec optimiseur intégré.",
+            "badges": ["Optimiseur de prompt", "Entrée image", "6–10 s sans audio"]
+          },
+          "kling-2-5-turbo": {
+            "description": "Kling 2.5 Turbo regroupe Pro texte, Pro image et Standard image→vidéo pour alterner entre rendu ciné et boucles budget.",
+            "badges": ["Prompts texte", "Image→vidéo", "Palier standard"]
+          },
+          "wan-2-5": {
+            "description": "Wan 2.5 produit des clips de 5 ou 10 s avec audio optionnel et expansion de prompt quand vos briefs sont courts.",
+            "badges": ["Option audio", "5 s ou 10 s", "480p–1080p"]
+          }
         }
       }
     },

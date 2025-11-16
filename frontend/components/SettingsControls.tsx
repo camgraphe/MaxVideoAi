@@ -36,6 +36,8 @@ interface Props {
     resolution?: Ref<HTMLDivElement>;
   };
   showExtendControl?: boolean;
+  cfgScale?: number | null;
+  onCfgScaleChange?: (value: number) => void;
 }
 
 const DEFAULT_CONTROLS_COPY = {
@@ -89,6 +91,7 @@ const DEFAULT_CONTROLS_COPY = {
   promptStrength: 'Prompt strength',
   guidance: 'Guidance',
   inputInfluence: 'Input influence',
+  cfgScale: 'Cfg scale',
   extend: {
     label: 'Extend',
     action: 'Extend by',
@@ -121,6 +124,8 @@ export function SettingsControls({
   onLoopChange,
   focusRefs,
   showExtendControl = true,
+  cfgScale,
+  onCfgScaleChange,
 }: Props) {
   const { t } = useI18n();
   const localizedControls = t('workspace.generate.controls', DEFAULT_CONTROLS_COPY) as
@@ -153,6 +158,11 @@ export function SettingsControls({
   const [initInfluence, setInitInfluence] = useState<number | null>(null);
   const [promptStrength, setPromptStrength] = useState<number | null>(null);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+  const [internalCfgScale, setInternalCfgScale] = useState<number | null>(null);
+
+  useEffect(() => {
+    setInternalCfgScale(null);
+  }, [engine.id, mode]);
 
 
   const enumeratedDurationOptions = useMemo(() => {
@@ -222,9 +232,14 @@ export function SettingsControls({
     return engine.aspectRatios;
   }, [caps, engine.aspectRatios]);
 
-  const showResolutionControl = resolutionOptions.length > 0;
+  const resolutionLocked = Boolean(caps?.resolutionLocked);
+  const showResolutionControl = resolutionOptions.length > 0 && !resolutionLocked;
   const showAspectControl = aspectOptions.length > 0;
   const audioIncluded = Boolean(engine.audio);
+  const effectiveCfgScale =
+    typeof cfgScale === 'number'
+      ? cfgScale
+      : internalCfgScale ?? engine.params.cfg_scale?.default ?? 0.5;
 
   return (
     <Card className="space-y-4 p-4">
@@ -551,6 +566,25 @@ export function SettingsControls({
 
             {engine.keyframes && (
               <div className="text-[12px] text-text-muted">{controlsCopy.keyframes}</div>
+            )}
+
+            {engine.params.cfg_scale && (
+              <div className="space-y-2">
+                <span className="text-[12px] uppercase tracking-micro text-text-muted">{controlsCopy.cfgScale}</span>
+                <RangeWithInput
+                  value={effectiveCfgScale}
+                  min={engine.params.cfg_scale.min ?? 0}
+                  max={engine.params.cfg_scale.max ?? 1}
+                  step={engine.params.cfg_scale.step ?? 0.01}
+                  onChange={(value) => {
+                    if (onCfgScaleChange) {
+                      onCfgScaleChange(value);
+                    } else {
+                      setInternalCfgScale(value);
+                    }
+                  }}
+                />
+              </div>
             )}
           </div>
         )}

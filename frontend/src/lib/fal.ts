@@ -86,6 +86,7 @@ export type GeneratePayload = {
   jobId?: string;
   localKey?: string | null;
   loop?: boolean;
+  cfgScale?: number | null;
 };
 
 export type GenerateResult = {
@@ -340,6 +341,10 @@ async function generateViaFal(
     if (typeof payload.loop === 'boolean') {
       requestBody.loop = payload.loop;
     }
+  }
+
+  if (typeof payload.cfgScale === 'number') {
+    requestBody.cfg_scale = payload.cfgScale;
   }
 
   const arrayCollectors = new Map<string, Set<string>>();

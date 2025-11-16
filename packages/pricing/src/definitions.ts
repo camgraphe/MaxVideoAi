@@ -38,15 +38,28 @@ function normaliseResolutionMultipliers(
   pricingFallback: Record<string, number> | undefined
 ) {
   const multipliers: Record<string, number> = {};
+  const parseNumber = (value: unknown): number | null => {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+    if (typeof value === 'string') {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    return null;
+  };
   if (byResolution) {
     for (const [resolution, cents] of Object.entries(byResolution)) {
-      const rateCents = Math.round(cents);
+      const rateCents = parseNumber(cents);
+      if (rateCents == null) continue;
       const multiplier = baseRateCents > 0 ? rateCents / baseRateCents : 1;
       multipliers[resolution] = multiplier;
     }
   } else if (pricingFallback) {
     for (const [resolution, amount] of Object.entries(pricingFallback)) {
-      const rateCents = Math.round(Number(amount) * 100);
+      const numericUsd = parseNumber(amount);
+      if (numericUsd == null) continue;
+      const rateCents = numericUsd * 100;
       const multiplier = baseRateCents > 0 ? rateCents / baseRateCents : 1;
       multipliers[resolution] = multiplier;
     }
@@ -75,7 +88,7 @@ function resolveBaseUnitPriceCents(engine: EngineCaps): { baseUnitPriceCents: nu
 
   if (typeof base === 'number') {
     return {
-      baseUnitPriceCents: Math.round(base),
+      baseUnitPriceCents: base,
       currency,
       byResolution,
     };
@@ -85,7 +98,7 @@ function resolveBaseUnitPriceCents(engine: EngineCaps): { baseUnitPriceCents: nu
   const fallbackByResolution = engine.pricing?.byResolution;
   if (typeof fallbackBase === 'number' && fallbackBase > 0) {
     return {
-      baseUnitPriceCents: Math.round(fallbackBase * 100),
+      baseUnitPriceCents: fallbackBase * 100,
       currency,
       byResolution: undefined,
     };
@@ -95,7 +108,7 @@ function resolveBaseUnitPriceCents(engine: EngineCaps): { baseUnitPriceCents: nu
     const [firstResolution] = Object.values(fallbackByResolution);
     if (typeof firstResolution === 'number') {
       return {
-        baseUnitPriceCents: Math.round(firstResolution * 100),
+        baseUnitPriceCents: firstResolution * 100,
         currency,
         byResolution: fallbackByResolution,
       };

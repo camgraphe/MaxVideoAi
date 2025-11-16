@@ -151,12 +151,12 @@ const nextConfig = {
       },
       {
         source: '/models/kling-25-turbo-pro',
-        destination: '/models',
+        destination: '/models/kling-2-5-turbo',
         permanent: true,
       },
       {
         source: '/models/kling-2-5-turbo-pro',
-        destination: '/models',
+        destination: '/models/kling-2-5-turbo',
         permanent: true,
       },
       {

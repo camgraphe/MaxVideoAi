@@ -1,0 +1,95 @@
+{
+  "marketingName": "Wan 2.5 Text & Image to Video",
+  "versionLabel": "Preview",
+  "seo": {
+    "title": "Wan 2.5 – Audio-Ready Text & Image to Video",
+    "description": "Generate 5 or 10 second Wan 2.5 clips from prompts or single reference stills, complete with optional background audio and prompt expansion.",
+    "image": "/hero/wan-25.jpg"
+  },
+  "hero": {
+    "title": "Wan 2.5 – Text or Image to Video with Optional Audio",
+    "intro": "Storyboard cinematic beats with Wan 2.5. Draft 5 or 10 second clips straight from a prompt, animate one polished still, then drop in background music for faster reviews—no manual sync required.",
+    "ctaPrimary": {
+      "label": "Try Wan 2.5",
+      "href": "/app?engine=wan-2-5"
+    },
+    "secondaryLinks": [
+      { "label": "See all engines", "href": "/models" },
+      { "label": "Explore workflows", "href": "/workflows" },
+      { "label": "Check live pricing in-app", "href": "/generate" }
+    ]
+  },
+  "overview": "Wan 2.5 brings Wan’s preview model into MaxVideoAI so you can iterate alongside Sora, Veo, and Kling. Swap between text-to-video and image-to-video inside one card, adjust the resolution from 480p through 1080p, and keep optional audio synced without touching an editor.",
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      "5 or 10 second hero beats with built-in soundtrack cues",
+      "Animating brand portraits or concept art via the image mode",
+      "Low-cost ideation at 480p before committing to 1080p renders",
+      "Localized motion tests with prompt expansion in English or Chinese"
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    { "label": "Duration", "body": "5 or 10 second clips" },
+    { "label": "Aspect ratios", "body": "16:9, 9:16, or 1:1" },
+    { "label": "Resolutions", "body": "480p, 720p, or 1080p tiers" },
+    { "label": "Audio", "body": "Optional WAV/MP3 (3–30 s, ≤15 MB) auto-trims to the clip length" },
+    { "label": "Inputs", "body": "Text prompt plus optional image (required for image-to-video)" },
+    { "label": "Prompt expansion", "body": "Toggle LLM rewriting to add detail to short briefs" }
+  ],
+  "promptStructure": {
+    "title": "Prompt structure",
+    "quote": "The white dragon warrior stands still as mist swirls, camera dolly-forward with a slow arc, cinematic backlighting, triumphant strings.",
+    "description": "Keep prompts concise but descriptive:",
+    "steps": [
+      "Lead with the subject and emotional tone",
+      "Describe the camera move or pacing (slow dolly, whip-pan, loop)",
+      "Highlight key lighting or environmental cues",
+      "Call out soundtrack mood if you’re attaching audio",
+      "For image-to-video, mention what aspects must stay untouched"
+    ]
+  },
+  "tips": {
+    "title": "Tips & tricks",
+    "items": [
+      "🎧 Trim your WAV/MP3 to 5 or 10 seconds so Wan doesn’t discard the tail",
+      "🖼️ Upload a 360–2000px still to avoid upscaling artifacts in image mode",
+      "📝 Disable prompt expansion when you already have a detailed brief",
+      "🌀 Keep prompts under ~800 characters for best rewrite results",
+      "⚙️ Use 480p for cheap look-dev then rerun final shots at 1080p",
+      "🌐 Wan handles English and Chinese prompts equally well"
+    ]
+  },
+  "compareLink": {
+    "label": "engine guide",
+    "href": "/ai-video-engines",
+    "before": "See how Wan stacks up against Sora, Veo, Kling, and Pika in our ",
+    "after": "."
+  },
+  "prompts": [
+    {
+      "title": "Hero reveal",
+      "prompt": "Gimbal push-in on a chrome concept car under soft rain, neon reflections on wet pavement, synth score swelling, 10 second runtime"
+    },
+    {
+      "title": "Portrait briefing",
+      "prompt": "Animate the uploaded executive portrait into a confident walk toward camera, golden hour backlight, handheld camera sway, gentle piano track"
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Does Wan 2.5 include background audio?",
+      "a": "You can attach a WAV or MP3 up to 30 seconds. Wan trims or loops it to match the 5 or 10 second video while leaving the remainder silent."
+    },
+    {
+      "q": "Can I disable prompt expansion or the safety checker?",
+      "a": "Yes. Toggle both options off when you need literal control, or leave them on for exploratory runs that benefit from additional detail."
+    },
+    {
+      "q": "Which resolution should I choose?",
+      "a": "Use 480p or 720p for cheap ideation, then rerun final clips at 1080p (billed at $0.15/s) once you’ve locked the direction."
+    }
+  ],
+  "pricingNotes": "Wan 2.5 bills at $0.05/s (480p), $0.10/s (720p) or $0.15/s (1080p). A 5-second 1080p render is $0.75; double it for 10 seconds."
+}

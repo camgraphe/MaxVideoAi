@@ -1354,6 +1354,7 @@
         "promptStrength": "Prompt strength",
         "guidance": "Guidance",
         "inputInfluence": "Input influence",
+        "cfgScale": "Cfg scale",
         "extend": {
           "label": "Extend",
           "action": "Extend by",
@@ -1450,7 +1451,6 @@
           "close": "Close",
           "title": "Choose the right engine for your shot",
           "subtitle": "Each model has its own strengths - some are fast, others cinematic or experimental. See what fits your project, then generate with confidence.",
-          "pricingLink": "How pricing works",
           "searchPlaceholder": "Search by engine, provider, or capability",
           "modeAll": "Mode: All",
           "modeValue": "Mode: {value}",
@@ -1458,6 +1458,44 @@
           "empty": "No engines match your filters yet. Adjust the filters or clear the search to explore the full catalogue.",
           "disclaimer": "Logos are used for descriptive purposes only. Trademarks belong to their respective owners.",
           "descriptionFallback": "Versatile engine ready for price-before-you-generate workflows. Review specs and run with confidence."
+        },
+        "guides": {
+          "pika-text-to-video": {
+            "description": "Pika 2.2 handles stylized prompts or uploaded stills in one card — perfect for quick loops and product explainers.",
+            "badges": ["Text prompts", "Image input", "Fast queue"]
+          },
+          "sora-2": {
+            "description": "OpenAI Sora 2 handles cinematic narratives with lip-sync and audio - ideal for hero renders.",
+            "badges": ["Audio native", "Cinematic", "Remix"]
+          },
+          "sora-2-pro": {
+            "description": "Sora 2 Pro unlocks higher resolutions, synced dialogue, and image-to-video control for top-tier productions.",
+            "badges": ["1080p", "Audio native", "Lip-sync"]
+          },
+          "veo-3-1": {
+            "description": "Veo 3.1 now handles direct prompts or reference stills. Swap between text-to-video and image-to-video without leaving the queue.",
+            "badges": ["Text prompts", "Multi reference", "Audio native"]
+          },
+          "veo-3-1-fast": {
+            "description": "Veo 3.1 Fast now handles quick text prompts or single-image animations with optional audio.",
+            "badges": ["Text prompts", "Image-to-video", "Audio option"]
+          },
+          "veo-3-1-first-last": {
+            "description": "Upload first and last frames, describe the bridge, and toggle between Veo 3.1 and Veo 3.1 Fast for the transition.",
+            "badges": ["Two frames", "Audio option", "Standard & Fast"]
+          },
+          "minimax-hailuo-02-text": {
+            "description": "Hailuo 02 Standard handles stylized text prompts or animated reference stills with prompt optimiser support.",
+            "badges": ["Prompt optimiser", "Image input", "6–10s silent"]
+          },
+          "kling-2-5-turbo": {
+            "description": "Kling 2.5 Turbo lives in one card with Pro text, Pro image, and Standard image-to-video modes for cinematic shots or budget loops.",
+            "badges": ["Text prompts", "Image-to-video", "Standard tier"]
+          },
+          "wan-2-5": {
+            "description": "Wan 2.5 handles 5 or 10 second clips with optional background audio plus prompt expansion when you need extra detail.",
+            "badges": ["Audio option", "5s or 10s", "480p–1080p"]
+          }
         }
       }
     },

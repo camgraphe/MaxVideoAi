@@ -1,0 +1,95 @@
+{
+  "marketingName": "Wan 2.5 Texto e Imagen→Video",
+  "versionLabel": "Preview",
+  "seo": {
+    "title": "Wan 2.5 – Texto o imagen a video con audio",
+    "description": "Genera clips de 5 o 10 segundos con Wan 2.5 desde un prompt o un solo still, con audio opcional y expansión de prompt.",
+    "image": "/hero/wan-25.jpg"
+  },
+  "hero": {
+    "title": "Wan 2.5 – Texto o imagen a video con audio opcional",
+    "intro": "Planea tomas cinemáticas sin salir de MaxVideoAI. Wan 2.5 acepta prompts o una imagen, añade música de fondo y comparte espacio con Sora, Veo o Kling para comparar resultados al instante.",
+    "ctaPrimary": {
+      "label": "Probar Wan 2.5",
+      "href": "/app?engine=wan-2-5"
+    },
+    "secondaryLinks": [
+      { "label": "Ver todos los motores", "href": "/modelos" },
+      { "label": "Explorar workflows", "href": "/workflows" },
+      { "label": "Ver precios en vivo", "href": "/generate" }
+    ]
+  },
+  "overview": "Wan 2.5 se integra al hub Fal de MaxVideoAI para generar clips cortos con audio sincronizado. Usa 480p para exploración barata, 720p para previos y 1080p cuando el brief esté aprobado.",
+  "bestUseCases": {
+    "title": "Mejores usos",
+    "items": [
+      "Beats de producto de 5–10 s con música incluida",
+      "Animar retratos o concept art desde una sola imagen",
+      "Look-dev económico antes de escalar a 1080p",
+      "Prompts bilingües (inglés/chino) que se benefician del rewrite"
+    ]
+  },
+  "technicalOverviewTitle": "Ficha técnica",
+  "technicalOverview": [
+    { "label": "Duración", "body": "5 o 10 segundos" },
+    { "label": "Formatos", "body": "16:9, 9:16 o 1:1" },
+    { "label": "Resolución", "body": "480p, 720p o 1080p" },
+    { "label": "Audio", "body": "WAV/MP3 opcional (3–30 s, hasta 15 MB) recortado automáticamente" },
+    { "label": "Entradas", "body": "Prompt + imagen única para el modo imagen→video" },
+    { "label": "Expansión", "body": "Activa/desactiva la expansión de prompt y el safety checker" }
+  ],
+  "promptStructure": {
+    "title": "Estructura de prompt",
+    "quote": "Guerrero dragón blanco de pie entre humo y vitrales, cámara en dolly circular, luz dramática, cuerdas heroicas.",
+    "description": "Mantén el texto claro y cinematográfico:",
+    "steps": [
+      "Presenta al sujeto y el tono",
+      "Describe el movimiento de cámara/ritmo",
+      "Añade notas de iluminación o ambiente",
+      "Menciona mood musical si adjuntas audio",
+      "En imagen→video indica qué elementos deben preservarse"
+    ]
+  },
+  "tips": {
+    "title": "Consejos",
+    "items": [
+      "🎧 Corta tu audio a 5 o 10 s para evitar silencios inesperados",
+      "🖼️ Usa imágenes entre 360 y 2000 px para evitar artefactos",
+      "✏️ Desactiva la expansión cuando el prompt ya es detallado",
+      "⚙️ Usa 480p para pruebas rápidas y sube a 1080p al final",
+      "🌐 Wan entiende prompts en inglés o chino",
+      "📎 Adjunta WAV/MP3 entre 3 y 30 s (≤15 MB)"
+    ]
+  },
+  "compareLink": {
+    "label": "guía de motores",
+    "href": "/comparativa",
+    "before": "Compara Wan con Sora, Veo y Kling en la ",
+    "after": "."
+  },
+  "prompts": [
+    {
+      "title": "Reveal futurista",
+      "prompt": "Paneo lento sobre un dron futurista flotando sobre la bahía, luces neón reflejadas, soundtrack synthwave"
+    },
+    {
+      "title": "Retrato dinámico",
+      "prompt": "Anima el retrato cargado del portavoz en una caminata lenta hacia cámara, luz cálida, leve movimiento handheld"
+    }
+  ],
+  "faqs": [
+    {
+      "q": "¿Wan genera el audio?",
+      "a": "Puedes adjuntar WAV/MP3 entre 3 y 30 segundos; Wan lo recorta o repite para que coincida con la duración y deja el resto silencioso."
+    },
+    {
+      "q": "¿Puedo desactivar la expansión o el safety checker?",
+      "a": "Sí, apágalos cuando quieras control literal o ya tengas procesos internos de compliance."
+    },
+    {
+      "q": "¿Cuánto cuesta cada tier?",
+      "a": "$0.05/s en 480p, $0.10/s en 720p y $0.15/s en 1080p (5 segundos a 1080p = $0.75)."
+    }
+  ],
+  "pricingNotes": "Wan 2.5 factura por resolución: $0.05/s (480p), $0.10/s (720p) y $0.15/s (1080p)."
+}

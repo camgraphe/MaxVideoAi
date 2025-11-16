@@ -1187,6 +1187,9 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
   if (typeof body.fps === 'number' && Number.isFinite(body.fps) && body.fps > 0) {
     falPayload.fps = body.fps;
   }
+  if (typeof body.cfgScale === 'number' && Number.isFinite(body.cfgScale)) {
+    falPayload.cfgScale = body.cfgScale;
+  }
 
   let lastProviderJobId: string | null = null;
   const persistProviderJobId = async (requestId: string) => {

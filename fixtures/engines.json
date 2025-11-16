@@ -144,6 +144,302 @@
       "brandId": "pika"
     },
     {
+      "id": "kling-2-5-turbo",
+      "label": "Kling 2.5 Turbo",
+      "provider": "Kling by Kuaishou",
+      "version": "2.5 Turbo",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "i2i"
+      ],
+      "maxDurationSec": 10,
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": false,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 25
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Reference image",
+            "modes": [
+              "i2v",
+              "i2i"
+            ],
+            "requiredInModes": [
+              "i2v",
+              "i2i"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "optional": [
+          {
+            "id": "duration_seconds",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "values": [
+              "5",
+              "10"
+            ],
+            "default": "5"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9",
+              "9:16",
+              "1:1"
+            ],
+            "default": "16:9"
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p",
+              "1080p"
+            ],
+            "default": "720p"
+          },
+          {
+            "id": "negative_prompt",
+            "type": "text",
+            "label": "Negative prompt",
+            "default": "blur, distort, and low quality"
+          },
+          {
+            "id": "cfg_scale",
+            "type": "number",
+            "label": "CFG scale (0-1)",
+            "min": 0,
+            "max": 1,
+            "step": 0.05,
+            "default": 0.5
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ]
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 7
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.07,
+        "currency": "USD",
+        "notes": "$0.35 per 5s on Pro modes; Standard image mode billed at $0.21 per 5s."
+      },
+      "updatedAt": "2025-02-14T00:00:00Z",
+      "ttlSec": 600,
+      "brandId": "kling"
+    },
+    {
+      "id": "wan-2-5",
+      "label": "Wan 2.5 Text & Image to Video",
+      "provider": "Wan",
+      "version": "2.5 Preview",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 10,
+      "resolutions": [
+        "480p",
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 25,
+        "videoMaxMB": 15
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Reference image",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "optional": [
+          {
+            "id": "audio_url",
+            "type": "text",
+            "label": "Audio URL"
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration",
+            "values": [
+              "5",
+              "10"
+            ],
+            "default": "5"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9",
+              "9:16",
+              "1:1"
+            ],
+            "default": "16:9"
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "480p",
+              "720p",
+              "1080p"
+            ],
+            "default": "1080p"
+          },
+          {
+            "id": "negative_prompt",
+            "type": "text",
+            "label": "Negative prompt"
+          },
+          {
+            "id": "enable_prompt_expansion",
+            "type": "enum",
+            "label": "Prompt expansion",
+            "values": [
+              "true",
+              "false"
+            ],
+            "default": "true"
+          },
+          {
+            "id": "enable_safety_checker",
+            "type": "enum",
+            "label": "Safety checker",
+            "values": [
+              "true",
+              "false"
+            ],
+            "default": "true"
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ]
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 5,
+          "byResolution": {
+            "480p": 5,
+            "720p": 10,
+            "1080p": 15
+          }
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.05,
+        "byResolution": {
+          "480p": 0.05,
+          "720p": 0.1,
+          "1080p": 0.15
+        },
+        "currency": "USD",
+        "notes": "$0.25 per 5s @480p, $0.75 per 5s @1080p"
+      },
+      "updatedAt": "2025-02-14T00:00:00Z",
+      "ttlSec": 600,
+      "brandId": "wan"
+    },
+    {
       "id": "veo-3-1-first-last",
       "label": "Google Veo 3.1 First/Last Frame",
       "provider": "Google",
@@ -225,8 +521,6 @@
             "type": "enum",
             "label": "Duration",
             "values": [
-              "4s",
-              "6s",
               "8s"
             ],
             "default": "8s"

@@ -46,6 +46,7 @@ type GeneratePayload = {
   resolution: string;
   fps: number;
   mode: string;
+  cfgScale?: number | null;
   membershipTier?: string;
   payment?: { mode?: string | null; paymentIntentId?: string | null } | null;
   negativePrompt?: string;

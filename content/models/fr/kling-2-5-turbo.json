@@ -1,0 +1,94 @@
+{
+  "marketingName": "Kling 2.5 Turbo",
+  "versionLabel": "2.5 Turbo",
+  "seo": {
+    "title": "Kling 2.5 Turbo – Texte & Image vers vidéo",
+    "description": "Exécutez Kling 2.5 Turbo dans MaxVideoAI et passez du mode Pro texte au mode Pro image ou Standard en un clic.",
+    "image": "/hero/kling-25.jpg"
+  },
+  "hero": {
+    "title": "Kling 2.5 Turbo – Texte ou image vers vidéo",
+    "intro": "Générez des plans ciné depuis un prompt, animez un portrait unique ou basculez sur le mode Standard pour les boucles à petit budget. Tout Kling 2.5 Turbo vit dans une seule carte afin de choisir le bon mode à chaque rendu.",
+    "ctaPrimary": {
+      "label": "Essayer Kling 2.5 Turbo",
+      "href": "/app?engine=kling-2-5-turbo"
+    },
+    "secondaryLinks": [
+      { "label": "Voir tous les moteurs", "href": "/modeles" },
+      { "label": "Explorer les workflows", "href": "/workflows" },
+      { "label": "Vérifier les tarifs en direct", "href": "/generate" }
+    ]
+  },
+  "overview": "Kling 2.5 Turbo apporte le réalisme de Kuaishou dans le même laboratoire de prompts que Sora et Veo. Créez des plans de 5 à 10 s pour les pubs, animez un portrait uploadé en mode Pro Image ou utilisez le mode Standard pour multiplier les boucles sociales.",
+  "bestUseCases": {
+    "title": "Cas d’usage phares",
+    "items": [
+      "Plans produit héros sans le temps d’attente de Sora",
+      "Animation de portrait fondateur/influenceur avec fidélité",
+      "B-roll abordable ou loops d’ambiance via le mode Standard",
+      "Teasers verticaux pour TikTok/Reels sur 5–10 s"
+    ]
+  },
+  "technicalOverviewTitle": "Fiche technique",
+  "technicalOverview": [
+    { "label": "Durée", "body": "Rendus de 5 ou 10 secondes" },
+    { "label": "Formats", "body": "16:9, 9:16 ou 1:1 en texte et image" },
+    { "label": "Entrées", "body": "Prompt libre ou une image JPG/PNG/WEBP pour les modes image" },
+    { "label": "Tarifs", "body": "$0.35 par 5 s en Pro, $0.21 par 5 s en Standard" }
+  ],
+  "promptStructure": {
+    "title": "Structure de prompt",
+    "quote": "Travelling circulaire sur deux voitures qui démarrent au coucher du soleil, haze volumétrique, lumière dramatique, profondeur de champ faible, 24 ips.",
+    "description": "Restez clair et cinématographique :",
+    "steps": [
+      "Décrivez le mouvement caméra principal",
+      "Ajoutez détails de lumière ou d’optique",
+      "Indiquez le rythme (slow motion, whip-pan, boucle)",
+      "Pour image→vidéo, précisez ce qui doit rester intact"
+    ]
+  },
+  "tips": {
+    "title": "Astuces",
+    "items": [
+      "⭐ Mode Pro Image pour les plans héros ultra précis",
+      "💸 Mode Standard pour générer des dizaines de variations",
+      "🖼️ Un portrait frontal verrouille visage et stylisme",
+      "🎚️ CFG entre 0.4 et 0.7 selon la liberté souhaitée",
+      "🔁 Prompts courts (2 phrases) pour éviter les caméras erratiques",
+      "📼 Préférez 9:16 si la diffusion est 100 % verticale"
+    ]
+  },
+  "compareLink": {
+    "label": "guide moteurs",
+    "href": "/comparatif",
+    "before": "Comparez Kling à Sora, Veo et Pika dans notre ",
+    "after": "."
+  },
+  "prompts": [
+    {
+      "title": "Mode créateur",
+      "prompt": "Lent zoom-in sur un mannequin dans un décor miroir, néons en rim light, tissu qui flotte, optique 35 mm.",
+      "mode": "t2v"
+    },
+    {
+      "title": "Portrait animé",
+      "prompt": "Animer le portrait uploadé du fondateur en marche confiante, golden hour, léger mouvement caméra.",
+      "mode": "i2v"
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Différence entre Pro et Standard ?",
+      "a": "Les modes Pro (texte et image) restent au plus proche du prompt. Le mode Standard image réduit coût et latence pour les boucles sociales."
+    },
+    {
+      "q": "Combien d’images puis-je envoyer ?",
+      "a": "Une seule par rendu. Fusionnez vos références dans un collage si besoin et décrivez la caméra avec précision."
+    },
+    {
+      "q": "Kling génère-t-il de l’audio ?",
+      "a": "Non, les exports sont silencieux pour s’intégrer à n’importe quel montage. Ajoutez la musique/VO dans MaxVideoAI ou combinez avec Sora 2 Pro pour la narration native."
+    }
+  ],
+  "pricingNotes": "Vérifiez la pastille Prix avant de générer : $0.35 pour 5 s en Pro, $0.21 pour 5 s en Standard."
+}

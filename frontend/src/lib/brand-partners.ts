@@ -1,6 +1,6 @@
 import type { BrandAssetPolicy, EngineAvailability } from '@/types/engines';
 
-export type PartnerBrandId = 'runway' | 'luma' | 'google-veo' | 'pika' | 'kling' | 'openai' | 'minimax';
+export type PartnerBrandId = 'runway' | 'luma' | 'google-veo' | 'pika' | 'kling' | 'openai' | 'minimax' | 'wan';
 
 type PartnerBrandAsset = {
   svg: string;
@@ -65,6 +65,13 @@ const OPENAI_POLICY: BrandAssetPolicy = {
   textOnly: true,
   linkToGuidelines: 'https://openai.com/policies/brand',
   usageNotes: 'Use the “OpenAI — Sora 2” textual lockup until explicit logo rights are granted.',
+};
+
+const WAN_POLICY: BrandAssetPolicy = {
+  logoAllowed: false,
+  textOnly: true,
+  linkToGuidelines: 'https://www.wan-ai.com',
+  usageNotes: 'Use the “Wan 2.5” text lockup on solid backgrounds until official assets are provided.',
 };
 
 export const PARTNER_BRANDS: PartnerBrand[] = [
@@ -178,7 +185,7 @@ export const PARTNER_BRANDS: PartnerBrand[] = [
       light: 'Kling by Kuaishou wordmark',
       dark: 'Kling by Kuaishou wordmark (inverse)',
     },
-    engineIds: ['kling25', 'kling-2-5', 'kling25_turbo'],
+    engineIds: ['kling25', 'kling-2-5', 'kling25_turbo', 'kling-2-5-turbo'],
   },
   {
     id: 'openai',
@@ -201,6 +208,28 @@ export const PARTNER_BRANDS: PartnerBrand[] = [
       dark: 'OpenAI wordmark (inverse)',
     },
     engineIds: ['sora-2', 'sora2', 'sora-2-pro', 'sora2pro'],
+  },
+  {
+    id: 'wan',
+    label: 'Wan',
+    shortText: 'Wan',
+    policy: WAN_POLICY,
+    defaultAvailability: 'limited',
+    assets: {
+      light: {
+        svg: '/brand/partners/wan/wan-wordmark-light.svg',
+        png: '/brand/partners/wan/wan-wordmark-light.svg',
+      },
+      dark: {
+        svg: '/brand/partners/wan/wan-wordmark-dark.svg',
+        png: '/brand/partners/wan/wan-wordmark-dark.svg',
+      },
+    },
+    alt: {
+      light: 'Wan 2.5 wordmark',
+      dark: 'Wan 2.5 wordmark (inverse)',
+    },
+    engineIds: ['wan-2-5', 'wan-25', 'wan25', 'wan-25-preview'],
   },
 ];
 

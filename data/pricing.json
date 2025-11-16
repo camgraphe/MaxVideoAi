@@ -177,6 +177,77 @@
     ]
   },
   {
+    "engine": "Kling 2.5 Turbo (Text & Pro Image)",
+    "catalogSlug": "kling-2-5-turbo",
+    "falSlug": "fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
+    "source_url": "https://fal.ai/models/fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
+    "last_checked_at": "2025-02-14T00:00:00",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      {
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.07
+        }
+      }
+    ]
+  },
+  {
+    "engine": "Kling 2.5 Turbo Standard (Image to Video)",
+    "catalogSlug": "kling-2-5-turbo-standard",
+    "falSlug": "fal-ai/kling-video/v2.5-turbo/standard/image-to-video",
+    "source_url": "https://fal.ai/models/fal-ai/kling-video/v2.5-turbo/standard/image-to-video",
+    "last_checked_at": "2025-02-14T00:00:00",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      {
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.042
+        }
+      }
+    ]
+  },
+  {
+    "engine": "Wan 2.5 Text & Image to Video",
+    "catalogSlug": "wan-2-5",
+    "falSlug": "fal-ai/wan-25-preview/text-to-video",
+    "source_url": "https://fal.ai/models/fal-ai/wan-25-preview/text-to-video",
+    "last_checked_at": "2025-02-14T00:00:00",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      {
+        "variant": { "resolution": "480p" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.05
+        }
+      },
+      {
+        "variant": { "resolution": "720p" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.1
+        }
+      },
+      {
+        "variant": { "resolution": "1080p" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.15
+        }
+      }
+    ]
+  },
+  {
     "engine": "MiniMax Hailuo 02 Standard (Text & Image to Video)",
     "catalogSlug": "minimax-hailuo-02-text",
     "falSlug": "fal-ai/minimax/hailuo-02/standard/text-to-video",

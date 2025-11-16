@@ -45,6 +45,15 @@ const ENGINE_MODE_LABEL_OVERRIDES: Record<string, Partial<Record<Mode, string>>>
     i2v: 'Standard',
     i2i: 'Fast',
   },
+  'kling-2-5-turbo': {
+    t2v: 'Pro · Text',
+    i2v: 'Pro · Image',
+    i2i: 'Standard · Image',
+  },
+  'wan-2-5': {
+    t2v: 'Text · Audio-ready',
+    i2v: 'Image · Audio-ready',
+  },
 };
 
 function getModeLabel(
@@ -58,6 +67,11 @@ function getModeLabel(
   return engineOverrides?.[value] ?? MODE_LABELS[value] ?? value.toUpperCase();
 }
 
+type EngineGuideEntry = {
+  description: string;
+  badges: string[];
+};
+
 interface EngineSelectProps {
   engines: EngineCaps[];
   engineId: string;
@@ -69,7 +83,7 @@ interface EngineSelectProps {
   modeLabelOverrides?: Partial<Record<Mode, string>>;
 }
 
-const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
+const DEFAULT_ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
   'pika-text-to-video': {
     description:
       'Pika 2.2 handles stylized prompts or uploaded stills in one card — perfect for quick loops and product explainers.',
@@ -105,6 +119,16 @@ const ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
       'Hailuo 02 Standard handles stylized text prompts or animated reference stills with prompt optimiser support.',
     badges: ['Prompt optimiser', 'Image input', '6–10s silent'],
   },
+  'kling-2-5-turbo': {
+    description:
+      'Kling 2.5 Turbo lives in one card with Pro text, Pro image, and Standard image-to-video modes for cinematic shots or budget loops.',
+    badges: ['Text prompts', 'Image-to-video', 'Standard tier'],
+  },
+  'wan-2-5': {
+    description:
+      'Wan 2.5 handles 5 or 10 second clips with optional background audio plus prompt expansion when you need extra detail.',
+    badges: ['Audio option', '5s or 10s', '480p–1080p'],
+  },
 };
 
 const DEFAULT_ENGINE_SELECT_COPY = {
@@ -129,6 +153,7 @@ const DEFAULT_ENGINE_SELECT_COPY = {
     descriptionFallback:
       'Versatile engine ready for price-before-you-generate workflows. Review specs and run with confidence.',
   },
+  guides: DEFAULT_ENGINE_GUIDE,
 } as const;
 
 type EngineSelectCopy = typeof DEFAULT_ENGINE_SELECT_COPY;

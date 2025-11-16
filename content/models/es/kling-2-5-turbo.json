@@ -1,0 +1,94 @@
+{
+  "marketingName": "Kling 2.5 Turbo",
+  "versionLabel": "2.5 Turbo",
+  "seo": {
+    "title": "Kling 2.5 Turbo – Texto e imagen a video",
+    "description": "Opera Kling 2.5 Turbo dentro de MaxVideoAI y cambia entre los modos Pro y Standard sin salir del flujo.",
+    "image": "/hero/kling-25.jpg"
+  },
+  "hero": {
+    "title": "Kling 2.5 Turbo – Texto o imagen a video",
+    "intro": "Genera planos cinematográficos desde un prompt, anima un retrato único o pasa al modo Standard para loops económicos. Todas las variantes de Kling se controlan desde una sola tarjeta en MaxVideoAI.",
+    "ctaPrimary": {
+      "label": "Probar Kling 2.5 Turbo",
+      "href": "/app?engine=kling-2-5-turbo"
+    },
+    "secondaryLinks": [
+      { "label": "Ver todos los motores", "href": "/modelos" },
+      { "label": "Explorar workflows", "href": "/workflows" },
+      { "label": "Ver precios en vivo", "href": "/generate" }
+    ]
+  },
+  "overview": "Kling 2.5 Turbo trae el motor realista de Kuaishou al mismo laboratorio de prompts donde ya operas Sora o Veo. Produce clips de 5–10 s, anima retratos con el modo Pro imagen o usa Standard cuando necesitas decenas de variantes para sociales.",
+  "bestUseCases": {
+    "title": "Casos ideales",
+    "items": [
+      "Shots de producto con acabado cinematográfico sin la cola de Sora",
+      "Animar retratos de founders o talento con un solo still",
+      "B-roll y loops de ambiente de bajo costo con el modo Standard",
+      "Teasers para TikTok/Reels donde 5–10 s bastan"
+    ]
+  },
+  "technicalOverviewTitle": "Ficha técnica",
+  "technicalOverview": [
+    { "label": "Duración", "body": "5 o 10 segundos" },
+    { "label": "Formatos", "body": "16:9, 9:16 o 1:1 en texto e imagen" },
+    { "label": "Entradas", "body": "Prompt libre o una imagen JPG/PNG/WEBP para los modos de imagen" },
+    { "label": "Precio", "body": "$0.35 por 5 s en Pro, $0.21 por 5 s en Standard" }
+  ],
+  "promptStructure": {
+    "title": "Estructura de prompt",
+    "quote": "Travelling cinematográfico de dos autos saliendo en la línea al atardecer, niebla volumétrica, luz dramática, 24 fps.",
+    "description": "Mantén el brief preciso y cinematográfico:",
+    "steps": [
+      "Describe el movimiento de cámara principal",
+      "Añade notas de luz u óptica para fijar el tono",
+      "Indica el ritmo (slow motion, loop perfecto, whip-pan)",
+      "En imagen→video di qué elementos deben conservarse"
+    ]
+  },
+  "tips": {
+    "title": "Consejos",
+    "items": [
+      "⭐ Usa Pro imagen cuando necesitas fidelidad total",
+      "💸 Cambia a Standard para campañas con alto volumen",
+      "🖼️ Un retrato frontal mantiene rostro y vestuario",
+      "🎚️ Ajusta CFG entre 0.4–0.7 según cuánta creatividad buscas",
+      "🔁 Limita el prompt a dos frases para evitar movimientos erráticos",
+      "📼 Exporta 9:16 si el entregable es 100 % vertical"
+    ]
+  },
+  "compareLink": {
+    "label": "guía de motores",
+    "href": "/comparativa",
+    "before": "Compara Kling con Sora, Veo y Pika en la ",
+    "after": "."
+  },
+  "prompts": [
+    {
+      "title": "Fashion hero",
+      "prompt": "Slow push-in sobre modelo en set espejado, neon rim lights, tela flotando, lente 35 mm.",
+      "mode": "t2v"
+    },
+    {
+      "title": "Retrato animado",
+      "prompt": "Anima el retrato cargado del fundador en una caminata segura, golden hour, balanceo handheld.",
+      "mode": "i2v"
+    }
+  ],
+  "faqs": [
+    {
+      "q": "¿Qué diferencia hay entre Pro y Standard?",
+      "a": "Pro (texto e imagen) prioriza detalle y adherencia. Standard imagen usa la misma tarjeta pero reduce costo y latencia para loops sociales."
+    },
+    {
+      "q": "¿Puedo subir varias imágenes?",
+      "a": "No, Kling acepta una por render. Junta referencias en un mismo collage si hace falta y describe la cámara con claridad."
+    },
+    {
+      "q": "¿Genera audio?",
+      "a": "No. Los renders salen silenciosos para funcionar en cualquier edición. Añade audio en MaxVideoAI o combina con Sora 2 Pro para narración nativa."
+    }
+  ],
+  "pricingNotes": "Revisa la ficha Precio antes de generar: $0.35 por 5 s en Pro y $0.21 por 5 s en Standard."
+}

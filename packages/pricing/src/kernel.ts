@@ -9,6 +9,13 @@ import type {
   MemberTier,
 } from './types';
 
+const CENTS_PRECISION = 1000;
+
+function normaliseCents(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.round(value * CENTS_PRECISION) / CENTS_PRECISION;
+}
+
 function computeAddonAmount(
   addonKey: string,
   enabledValue: boolean | number | undefined,
@@ -20,7 +27,7 @@ function computeAddonAmount(
   if (!rule) return null;
   const perSecondCents = rule.perSecondCents ?? 0;
   const flatCents = rule.flatCents ?? 0;
-  const total = perSecondCents * duration + flatCents;
+  const total = normaliseCents(perSecondCents * duration + flatCents);
   if (total === 0) return null;
   return { type: addonKey, amountCents: total };
 }
@@ -32,9 +39,9 @@ export function computePricingSnapshot(
   const memberTier: MemberTier = toMemberTier(input.memberTier);
   const duration = clampDuration(input.durationSec, definition.durationSteps);
   const resolutionMultiplier = definition.resolutionMultipliers[input.resolution] ?? 1;
-  const baseRateCents = Math.round(definition.baseUnitPriceCents * resolutionMultiplier);
+  const baseRateCents = normaliseCents(definition.baseUnitPriceCents * resolutionMultiplier);
 
-  let baseAmountCents = baseRateCents * duration;
+  let baseAmountCents = normaliseCents(baseRateCents * duration);
   if (definition.minChargeCents && baseAmountCents < definition.minChargeCents) {
     baseAmountCents = definition.minChargeCents;
   }
@@ -50,13 +57,13 @@ export function computePricingSnapshot(
   }
 
   const addonsTotal = addons.reduce((sum, line) => sum + line.amountCents, 0);
-  const subtotalBeforeMargin = baseAmountCents + addonsTotal;
+  const subtotalBeforeMargin = normaliseCents(baseAmountCents + addonsTotal);
 
   const platformFeePct = definition.platformFeePct ?? 0;
   const platformFeeFlatCents = definition.platformFeeFlatCents ?? 0;
   const marginFromPercent = platformFeePct > 0 ? Math.round(subtotalBeforeMargin * platformFeePct) : 0;
   const marginAmount = Math.max(0, marginFromPercent + platformFeeFlatCents);
-  const subtotalBeforeDiscount = subtotalBeforeMargin + marginAmount;
+  const subtotalBeforeDiscount = normaliseCents(subtotalBeforeMargin + marginAmount);
 
   const discountPercent = definition.memberTierDiscounts[memberTier] ?? 0;
   const discountAmount = discountPercent > 0 ? Math.round(subtotalBeforeDiscount * discountPercent) : 0;

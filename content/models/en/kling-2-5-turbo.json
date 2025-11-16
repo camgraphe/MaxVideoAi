@@ -1,0 +1,94 @@
+{
+  "marketingName": "Kling 2.5 Turbo",
+  "versionLabel": "2.5 Turbo",
+  "seo": {
+    "title": "Kling 2.5 Turbo – Text & Image to Video",
+    "description": "Route Kling 2.5 Turbo through MaxVideoAI and switch between Pro text, Pro image, or Standard image-to-video tiers without leaving the workspace.",
+    "image": "/hero/kling-25.jpg"
+  },
+  "hero": {
+    "title": "Kling 2.5 Turbo – Text or Image to Video",
+    "intro": "Draft cinematic clips from a prompt, animate a single still, or drop to the Standard tier for budget-friendly loops. One card exposes every Kling 2.5 Turbo variant so you can decide per render without juggling endpoints.",
+    "ctaPrimary": {
+      "label": "Try Kling 2.5 Turbo",
+      "href": "/app?engine=kling-2-5-turbo"
+    },
+    "secondaryLinks": [
+      { "label": "See all engines", "href": "/models" },
+      { "label": "Explore workflows", "href": "/workflows" },
+      { "label": "Check live pricing in-app", "href": "/generate" }
+    ]
+  },
+  "overview": "Kling 2.5 Turbo brings Kuaishou's realistic motion system into the same prompt lab as Sora and Veo. Spin up 5–10 second hero shots, animate uploaded portraits with the Pro image tier, or switch to the Standard mode when you need dozens of social loops without blowing the budget.",
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      "Hero product beats that need camera polish without Sora timing",
+      "Reference-driven portrait animation for founders or talent",
+      "Budget-friendly B-roll or mood loops using the Standard tier",
+      "Cinematic teasers for TikTok/Reels where 5–10s cadence matters"
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    { "label": "Duration", "body": "5 or 10 second renders with fixed timing" },
+    { "label": "Aspect ratios", "body": "16:9, 9:16, or 1:1 across text and image runs" },
+    { "label": "Inputs", "body": "Freeform prompt or a single JPG/PNG/WEBP reference for Pro/Standard image-to-video" },
+    { "label": "Pricing", "body": "$0.35 per 5s in Pro, $0.21 per 5s in Standard image mode" }
+  ],
+  "promptStructure": {
+    "title": "Prompt structure",
+    "quote": "Cinematic dolly shot of two cars launching off the line at dusk, volumetric haze, dramatic lighting, shallow depth of field, 24fps.",
+    "description": "Keep the directions cinematic and structured:",
+    "steps": [
+      "Spell out the primary camera move (dolly, handheld sway, drone arc)",
+      "Call out lens or lighting cues to lock the mood",
+      "Set the pacing (slow motion, whip-pan, seamless loop)",
+      "For image→video, remind Kling what needs to stay untouched"
+    ]
+  },
+  "tips": {
+    "title": "Tips & tricks",
+    "items": [
+      "⭐ Use Pro Image when every stitch of wardrobe needs to hold up on a hero shot",
+      "💸 Drop to Standard image mode for batch runs of mood loops or TikTok hooks",
+      "🖼️ Upload a straight-on portrait to keep face structure and styling intact",
+      "🎚️ Sweep CFG scale between 0.4–0.7 to balance fidelity vs exploration",
+      "🔁 Keep prompts to two sentences max to avoid wandering camera paths",
+      "📼 Default to 9:16 when the deliverable is reels/stories-only"
+    ]
+  },
+  "compareLink": {
+    "label": "engine guide",
+    "href": "/ai-video-engines",
+    "before": "Compare Kling with Sora, Veo, and Pika in our ",
+    "after": "."
+  },
+  "prompts": [
+    {
+      "title": "Fashion hero",
+      "prompt": "Slow push-in on a model in a mirrored set, neon rim lights, fabric billowing in gentle wind, 35mm lens.",
+      "mode": "t2v"
+    },
+    {
+      "title": "Portrait remix",
+      "prompt": "Animate the uploaded founder portrait into a confident walk-and-talk moment, golden hour backlight, handheld sway.",
+      "mode": "i2v"
+    }
+  ],
+  "faqs": [
+    {
+      "q": "What’s the difference between Pro and Standard?",
+      "a": "Pro modes (text and image) prioritise fidelity and motion nuance. Standard image-to-video runs inside the same card but lowers cost and render time for higher volume loops."
+    },
+    {
+      "q": "Can I upload more than one image?",
+      "a": "Kling accepts one image per render. Merge reference angles into a single board if you need more context and describe the camera path clearly."
+    },
+    {
+      "q": "Does Kling output audio?",
+      "a": "No. Renders are silent so they fit any edit. Layer music/VO in MaxVideoAI or pair the brief with Sora 2 Pro when you need native dialogue."
+    }
+  ],
+  "pricingNotes": "Check the Price-Before chip before each run: $0.35 per 5s on Pro tiers and $0.21 per 5s on Standard image-to-video."
+}
