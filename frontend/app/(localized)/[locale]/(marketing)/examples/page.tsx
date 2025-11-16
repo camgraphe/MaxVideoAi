@@ -219,8 +219,6 @@ function toISODate(input?: Date | string) {
   return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
 }
 
-const ENGINE_FILTER_LIMIT = 6;
-
 type EngineFilterOption = {
   id: string;
   key: string;
@@ -270,7 +268,12 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   const engineParam = Array.isArray(searchParams.engine) ? searchParams.engine[0] : searchParams.engine;
   const engineParamValue = typeof engineParam === 'string' ? engineParam.trim() : '';
   const canonicalEngineParam = engineParamValue ? normalizeEngineId(engineParamValue) ?? engineParamValue : '';
-  const normalizedEngineParam = canonicalEngineParam.toLowerCase();
+  const collapsedEngineParam = (() => {
+    if (!canonicalEngineParam) return '';
+    const engineMeta = ENGINE_META.get(canonicalEngineParam.toLowerCase()) ?? null;
+    const descriptor = resolveFilterDescriptor(canonicalEngineParam, engineMeta, canonicalEngineParam);
+    return descriptor?.id.toLowerCase() ?? canonicalEngineParam.toLowerCase();
+  })();
   const unsupportedQueryKeys = Object.keys(searchParams).filter((key) => !ALLOWED_QUERY_KEYS.has(key));
 
   if (unsupportedQueryKeys.length > 0) {
@@ -285,8 +288,8 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     if (sort !== DEFAULT_SORT) {
       redirectedQuery.set('sort', sort);
     }
-    if (canonicalEngineParam) {
-      redirectedQuery.set('engine', canonicalEngineParam);
+    if (collapsedEngineParam) {
+      redirectedQuery.set('engine', collapsedEngineParam);
     }
     const target = redirectedQuery.toString() ? `${canonicalPath}?${redirectedQuery.toString()}` : canonicalPath;
     redirect(target);
@@ -317,41 +320,26 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   }, new Map());
 
   const PREFERRED_ENGINE_ORDER = ['sora-2', 'veo', 'pika', 'hailuo'];
-  const orderMap = new Map<string, number>(PREFERRED_ENGINE_ORDER.map((id, index) => [id.toLowerCase(), index]));
-  const normalizeId = (value: string) => value.trim().toLowerCase();
+  const normalizeFilterId = (value: string) => value.trim().toLowerCase();
 
-  let engineFilterOptions = Array.from(engineFilterMap.values()).sort((a, b) => {
-    const prefA = orderMap.get(normalizeId(a.id)) ?? Number.MAX_SAFE_INTEGER;
-    const prefB = orderMap.get(normalizeId(b.id)) ?? Number.MAX_SAFE_INTEGER;
-    if (prefA !== prefB) return prefA - prefB;
-    if (b.count !== a.count) return b.count - a.count;
-    return a.label.localeCompare(b.label);
-  });
-
-  PREFERRED_ENGINE_ORDER.forEach((preferredId) => {
-    const key = preferredId.toLowerCase();
-    if (engineFilterOptions.some((option) => option.key === key)) return;
-    const base = ENGINE_FILTER_GROUPS[preferredId];
-    if (!base) return;
-    engineFilterOptions.push({
+  const engineFilterOptions = PREFERRED_ENGINE_ORDER.map((preferredId) => {
+    const key = normalizeFilterId(preferredId);
+    const existing = engineFilterMap.get(key);
+    if (existing) {
+      return existing;
+    }
+    const base = ENGINE_FILTER_GROUPS[preferredId] ?? { id: preferredId, label: preferredId };
+    return {
       id: base.id,
       key,
       label: base.label,
       brandId: base.brandId,
       count: 0,
-    });
+    };
   });
-
-  engineFilterOptions.sort((a, b) => {
-    const prefA = orderMap.get(normalizeId(a.id)) ?? Number.MAX_SAFE_INTEGER;
-    const prefB = orderMap.get(normalizeId(b.id)) ?? Number.MAX_SAFE_INTEGER;
-    if (prefA !== prefB) return prefA - prefB;
-    if (b.count !== a.count) return b.count - a.count;
-    return a.label.localeCompare(b.label);
-  });
-  const selectedOption =
-    normalizedEngineParam && engineFilterOptions.length
-      ? engineFilterOptions.find((option) => option.key === normalizedEngineParam)
+const selectedOption =
+    collapsedEngineParam && engineFilterOptions.length
+      ? engineFilterOptions.find((option) => option.key === normalizeFilterId(collapsedEngineParam))
       : null;
   const selectedEngine = selectedOption?.id ?? null;
 
@@ -365,14 +353,6 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
         return descriptor.id.toLowerCase() === selectedEngine.toLowerCase();
       })
     : allVideos;
-
-  engineFilterOptions = engineFilterOptions.slice(0, ENGINE_FILTER_LIMIT);
-  if (selectedEngine && !engineFilterOptions.some((option) => option.key === selectedEngine.toLowerCase())) {
-    const selectedMeta = engineFilterMap.get(selectedEngine.toLowerCase());
-    if (selectedMeta) {
-      engineFilterOptions = [...engineFilterOptions, selectedMeta];
-    }
-  }
 
   const buildQueryParams = (nextSort: ExampleSort, engineValue: string | null): Record<string, string> | undefined => {
     const query: Record<string, string> = {};
@@ -495,18 +475,13 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
                       href={{ pathname: '/examples', query: buildQueryParams(sort, isActive ? null : engine.id) }}
                       rel="nofollow"
                       className={clsx(
-                        'flex h-9 w-9 items-center justify-center rounded-full border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
+                        'flex h-9 items-center justify-center rounded-full border px-4 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
                         isActive
                           ? 'border-transparent bg-text-primary text-white shadow-card'
                           : 'border-hairline bg-white text-text-secondary hover:border-accent hover:text-text-primary'
                       )}
-                      aria-label={engine.label}
                     >
-                      <EngineIcon
-                        engine={{ id: engine.id, label: engine.label, brandId: engine.brandId }}
-                        size={20}
-                        rounded="full"
-                      />
+                      {engine.label}
                     </Link>
                   );
                 })}
