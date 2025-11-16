@@ -1,11 +1,25 @@
 'use client';
 
 import clsx from 'clsx';
-import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState, useId } from 'react';
+import {
+  BookOpen,
+  Image as ImageIcon,
+  LayoutDashboard,
+  ListVideo,
+  LucideIcon,
+  PanelLeftOpen,
+  PanelRightOpen,
+  Pin,
+  PinOff,
+  Settings as SettingsIcon,
+  Sparkles,
+  Wallet,
+} from 'lucide-react';
 import { Chip } from '@/components/ui/Chip';
+import { UIIcon } from '@/components/ui/UIIcon';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
 type NavItemDefinition = {
@@ -26,6 +40,16 @@ export const NAV_ITEMS: readonly NavItemDefinition[] = [
   { id: 'billing', label: 'Billing', badge: null, icon: 'billing', href: '/billing' },
   { id: 'settings', label: 'Settings', badge: null, icon: 'settings', href: '/settings' }
 ];
+
+const NAV_ICON_MAP: Record<string, LucideIcon> = {
+  dashboard: LayoutDashboard,
+  generate: Sparkles,
+  'generate-image': ImageIcon,
+  library: BookOpen,
+  jobs: ListVideo,
+  billing: Wallet,
+  settings: SettingsIcon,
+};
 
 const COLLAPSED_STORAGE_KEY = 'sidebarCollapsed';
 const PIN_STORAGE_KEY = 'sidebarPinned';
@@ -138,6 +162,7 @@ export function AppSidebar() {
     const badgeLabel = item.badge
       ? t(`workspace.sidebar.badges.${item.badgeKey ?? item.id}`, item.badge)
       : null;
+    const IconComponent = NAV_ICON_MAP[item.id] ?? LayoutDashboard;
 
     return (
       <li key={item.id} className="relative">
@@ -170,13 +195,7 @@ export function AppSidebar() {
             )}
             aria-hidden
           >
-            <Image
-              src={`/assets/icons/${item.icon}.svg`}
-              alt=""
-              width={collapsedNav ? 22 : 24}
-              height={collapsedNav ? 22 : 24}
-              aria-hidden
-            />
+            <UIIcon icon={IconComponent} size={collapsedNav ? 20 : 22} />
           </span>
           {!collapsedNav && (
             <span className="flex items-center gap-2">
@@ -223,13 +242,7 @@ export function AppSidebar() {
           onClick={handleCollapsedToggle}
           className="flex h-10 w-10 items-center justify-center rounded-input border border-hairline bg-white/70 text-text-secondary transition hover:-translate-y-0.5 hover:bg-white/80 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <Image
-            src={`/assets/icons/${collapsed ? 'sidebar-expand' : 'sidebar-collapse'}.svg`}
-            alt=""
-            width={16}
-            height={16}
-            aria-hidden
-          />
+          <UIIcon icon={collapsed ? PanelRightOpen : PanelLeftOpen} size={20} />
           <span className="sr-only">
             {collapsed
               ? t('workspace.sidebar.aria.expand', 'Expand sidebar')
@@ -247,7 +260,7 @@ export function AppSidebar() {
           aria-hidden={collapsed}
           tabIndex={collapsed ? -1 : 0}
         >
-          <Image src={`/assets/icons/${pinned ? 'unpin' : 'pin'}.svg`} alt="" width={16} height={16} aria-hidden />
+          <UIIcon icon={pinned ? PinOff : Pin} size={18} />
           <span className="sr-only">
             {pinned
               ? t('workspace.sidebar.aria.unpin', 'Unpin sidebar')
