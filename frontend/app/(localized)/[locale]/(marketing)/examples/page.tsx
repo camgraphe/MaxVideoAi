@@ -489,7 +489,7 @@ const selectedOption =
                         isActive
                           ? 'border-transparent bg-text-primary text-white shadow-card'
                           : palette
-                            ? clsx('border-transparent hover:opacity-90', palette.bg, palette.text)
+                            ? clsx('border border-black/10 hover:opacity-90', palette.bg, palette.text)
                             : 'border-hairline bg-white text-text-secondary hover:border-accent hover:text-text-primary'
                       )}
                     >
