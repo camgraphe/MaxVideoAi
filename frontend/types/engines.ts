@@ -4,7 +4,17 @@ export type { PricingSnapshot } from '@maxvideoai/pricing';
 export type EngineStatus = 'live' | 'busy' | 'degraded' | 'maintenance' | 'early_access';
 export type LatencyTier = 'fast' | 'standard';
 export type Mode = 't2v' | 'i2v' | 't2i' | 'i2i';
-export type Resolution = '720p' | '1080p' | '4k' | '512P' | '768P' | 'square_hd' | 'landscape_hd' | 'portrait_hd' | 'auto';
+export type Resolution =
+  | '480p'
+  | '720p'
+  | '1080p'
+  | '4k'
+  | '512P'
+  | '768P'
+  | 'square_hd'
+  | 'landscape_hd'
+  | 'portrait_hd'
+  | 'auto';
 export type AspectRatio =
   | '16:9'
   | '9:16'
