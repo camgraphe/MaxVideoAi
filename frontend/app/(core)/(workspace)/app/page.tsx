@@ -714,7 +714,7 @@ function coercePersistedRender(entry: PersistedRender): LocalRender | null {
     durationSec,
     prompt: typeof entry.prompt === 'string' ? entry.prompt : '',
     progress,
-    message: typeof entry.message === 'string' && entry.message.length ? entry.message : null,
+    message: typeof entry.message === 'string' && entry.message.length ? entry.message : '',
     status,
     videoUrl: typeof entry.videoUrl === 'string' && entry.videoUrl.length ? entry.videoUrl : undefined,
     readyVideoUrl:
