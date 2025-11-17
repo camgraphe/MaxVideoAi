@@ -186,7 +186,7 @@ export default async function ModelsPage() {
     const example = demos.get(engine.id);
     const videoUrl = example?.videoUrl ?? media?.videoUrl ?? null;
     const poster = example?.posterUrl ?? media?.imagePath ?? '/hero/veo3.jpg';
-    const optimizedPosterUrl = buildOptimizedPosterUrl(poster, 960, 70);
+    const optimizedPosterUrl = buildOptimizedPosterUrl(poster);
     const meta = engineMetaCopy[engine.modelSlug] ?? engineMetaCopy[engine.id] ?? null;
     const engineTypeKey = getEngineTypeKey(engine);
     const engineType = engineTypeLabels[engineTypeKey] ?? DEFAULT_ENGINE_TYPE_LABELS[engineTypeKey];

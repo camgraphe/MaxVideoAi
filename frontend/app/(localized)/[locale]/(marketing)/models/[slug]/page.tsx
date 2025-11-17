@@ -314,7 +314,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
     : null;
   const schemaPayloads = [showSoraSeo && soraSoftwareSchema, breadcrumbLd].filter(Boolean) as object[];
   const heroPosterSrc = localizedContent.seo.image ?? engine.media?.imagePath ?? null;
-  const heroPosterPreload = heroPosterSrc ? buildOptimizedPosterUrl(heroPosterSrc, 1280, 70) ?? heroPosterSrc : null;
+  const heroPosterPreload = heroPosterSrc ? buildOptimizedPosterUrl(heroPosterSrc) ?? heroPosterSrc : null;
 
   return (
     <div className="mx-auto max-w-4xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">

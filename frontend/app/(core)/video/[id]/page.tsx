@@ -432,7 +432,7 @@ export default async function VideoPage({ params }: PageProps) {
   const videoUrl = toAbsoluteUrl(video.videoUrl) ?? video.videoUrl ?? canonical;
   const thumbnailUrl = toAbsoluteUrl(video.thumbUrl) ?? FALLBACK_THUMB;
   const poster = video.thumbUrl ?? FALLBACK_POSTER;
-  const optimizedPoster = buildOptimizedPosterUrl(poster, 1280, 70);
+  const optimizedPoster = buildOptimizedPosterUrl(poster);
   const playbackPoster = optimizedPoster ?? poster;
   const aspect = parseAspectRatio(video.aspectRatio);
   const isPortrait = aspect ? aspect.width < aspect.height : false;
