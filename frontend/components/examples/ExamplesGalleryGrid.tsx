@@ -216,6 +216,18 @@ function MediaPreview({
   const [isActive, setIsActive] = useState(isLcp);
 
   useEffect(() => {
+    const node = videoRef.current;
+    if (!node) return;
+    node.defaultMuted = true;
+    node.muted = true;
+    node.playsInline = true;
+    node.autoplay = true;
+    node.setAttribute('muted', '');
+    node.setAttribute('playsinline', '');
+    node.setAttribute('webkit-playsinline', 'true');
+  }, []);
+
+  useEffect(() => {
     if (!videoUrl) return undefined;
     const node = videoRef.current;
     if (!node) return undefined;
@@ -238,20 +250,63 @@ function MediaPreview({
 
   useEffect(() => {
     const node = videoRef.current;
-    if (!node || !videoUrl) return;
+    if (!node || !videoUrl) return undefined;
+
     if (shouldLoad && !node.src) {
       node.src = videoUrl;
       node.load();
     }
-    if (!shouldLoad) return;
-    if (isActive) {
+
+    if (!shouldLoad) {
+      node.pause();
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    const attemptPlay = () => {
+      if (!node || cancelled || !isActive) return;
       const playPromise = node.play();
       if (playPromise && typeof playPromise.catch === 'function') {
-        playPromise.catch(() => undefined);
+        playPromise.catch(() => {
+          if (cancelled || !isActive) return;
+          // iOS Safari may reject before metadata is ready; retry once data loads.
+          if (node.readyState < 2) {
+            waitForData();
+          }
+        });
+      }
+    };
+
+    const handleCanPlay = () => {
+      node.removeEventListener('loadeddata', handleCanPlay);
+      node.removeEventListener('canplay', handleCanPlay);
+      attemptPlay();
+    };
+
+    const waitForData = () => {
+      if (!node || cancelled) return;
+      node.removeEventListener('loadeddata', handleCanPlay);
+      node.removeEventListener('canplay', handleCanPlay);
+      node.addEventListener('loadeddata', handleCanPlay, { once: true });
+      node.addEventListener('canplay', handleCanPlay, { once: true });
+    };
+
+    if (isActive) {
+      if (node.readyState >= 2) {
+        attemptPlay();
+      } else {
+        waitForData();
       }
     } else {
       node.pause();
     }
+
+    return () => {
+      cancelled = true;
+      node.removeEventListener('loadeddata', handleCanPlay);
+      node.removeEventListener('canplay', handleCanPlay);
+    };
   }, [shouldLoad, isActive, videoUrl]);
 
   if (!videoUrl) {
