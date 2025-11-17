@@ -275,6 +275,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   const paginationPrevLabel = paginationContent.prev ?? 'Previous';
   const paginationNextLabel = paginationContent.next ?? 'Next';
   const paginationPageLabel = paginationContent.page ?? 'Page';
+  const loadMoreLabel = paginationContent.loadMore ?? 'Load more examples';
   const sortLabels = sortContent ?? {
     newest: 'Newest',
     oldest: 'Oldest',
@@ -608,7 +609,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
         <ExamplesGalleryGrid
           initialVideos={initialClientVideos}
           remainingVideos={remainingClientVideos}
-          loadMoreLabel={content.pagination?.loadMore ?? 'Load more examples'}
+          loadMoreLabel={loadMoreLabel}
         />
       </section>
 
