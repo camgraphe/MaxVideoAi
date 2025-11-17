@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import Head from 'next/head';
 import { Link } from '@/i18n/navigation';
 import Script from 'next/script';
 import { getTranslations } from 'next-intl/server';
@@ -470,8 +471,13 @@ export default async function HomePage() {
       },
     },
   };
+  const lcpPosterSrc = heroTileConfigs[0]?.posterSrc ?? HERO_TILES[0].posterSrc;
+
   return (
     <div className="pb-24">
+      <Head>
+        {lcpPosterSrc ? <link rel="preload" as="image" href={lcpPosterSrc} fetchPriority="high" /> : null}
+      </Head>
       <section className="mx-auto flex max-w-6xl flex-col items-center gap-10 px-4 pt-20 pb-16 text-center sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-center gap-3">
           {badges.map((badge) => (

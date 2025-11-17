@@ -190,7 +190,17 @@ export function HeroMediaTile({
             <source src={videoSrc} type="video/mp4" />
           </video>
         ) : (
-          <Image src={posterSrc} alt={alt} fill priority={priority} sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover" />
+          <Image
+            src={posterSrc}
+            alt={alt}
+            fill
+            priority={priority}
+            fetchPriority={priority ? 'high' : undefined}
+            loading={priority ? 'eager' : 'lazy'}
+            quality={80}
+            sizes="(min-width: 1024px) 40vw, 100vw"
+            className="object-cover"
+          />
         )}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-2 bg-gradient-to-t from-black/65 via-black/35 to-transparent p-4 text-left text-white">
           {badge ? (
