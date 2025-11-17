@@ -32,37 +32,11 @@ type ExtendedWindow = Window &
     cancelIdleCallback?: (handle: number) => void;
   };
 
-const pendingGesturePlayback = new Set<HTMLVideoElement>();
-let gestureListenersAttached = false;
-
-function registerGesturePlayback(video: HTMLVideoElement) {
-  pendingGesturePlayback.add(video);
-  if (gestureListenersAttached || typeof window === 'undefined') {
-    return;
-  }
-  gestureListenersAttached = true;
-  const unlock = () => {
-    pendingGesturePlayback.forEach((vid) => {
-      const attempt = vid.play();
-      if (attempt && typeof attempt.catch === 'function') {
-        attempt.catch(() => undefined);
-      }
-    });
-    pendingGesturePlayback.clear();
-    window.removeEventListener('touchstart', unlock);
-    window.removeEventListener('pointerdown', unlock);
-    window.removeEventListener('keydown', unlock);
-  };
-  window.addEventListener('touchstart', unlock, { once: true });
-  window.addEventListener('pointerdown', unlock, { once: true });
-  window.addEventListener('keydown', unlock, { once: true });
-}
-
 function runAfterIdle(work: () => (() => void) | void) {
   if (typeof window === 'undefined') {
     return work();
   }
-let cleanup: void | (() => void);
+  let cleanup: void | (() => void);
   const win = window as ExtendedWindow;
   if (typeof win.requestIdleCallback === 'function') {
     const idleId = win.requestIdleCallback(() => {
@@ -163,7 +137,6 @@ function ExampleCard({ video, isFirst }: { video: ExampleGalleryVideo; isFirst: 
   const posterSrc = video.optimizedPosterUrl ?? video.rawPosterUrl ?? null;
   const isPortrait = rawAspect < 1;
   const posterSizes = isPortrait ? PORTRAIT_SIZES : LANDSCAPE_SIZES;
-  const videoDetailHref = `/video/${encodeURIComponent(video.id)}`;
 
   return (
     <article className="group relative mb-[2px] break-inside-avoid overflow-hidden bg-neutral-900/5">
@@ -178,13 +151,17 @@ function ExampleCard({ video, isFirst }: { video: ExampleGalleryVideo; isFirst: 
           />
           {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available on playback" /> : null}
           <CardOverlay video={video} />
+        </div>
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <Link
-            href={videoDetailHref}
+            href={`/video/${encodeURIComponent(video.id)}`}
             locale={false}
-            className="pointer-events-auto absolute right-3 top-3 inline-flex items-center rounded-full bg-black/60 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-white transition hover:bg-black/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
-            aria-label={`Open video detail for ${video.engineLabel}`}
+            className="pointer-events-auto inline-flex h-16 w-16 items-center justify-center text-white/30 transition hover:text-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
+            aria-label="View this video"
           >
-            Open
+            <svg width="32" height="36" viewBox="0 0 18 20" fill="currentColor" aria-hidden>
+              <path d="M16.5 9.134c1 0.577 1 2.155 0 2.732L2.5 20.014C1.5 20.59 0 19.812 0 18.548V2.452C0 1.188 1.5 0.41 2.5 0.986l14 8.148z" />
+            </svg>
           </Link>
         </div>
       </div>
@@ -243,7 +220,6 @@ function MediaPreview({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [shouldLoad, setShouldLoad] = useState(isLcp);
   const [isActive, setIsActive] = useState(isLcp);
-  const [isPosterVisible, setIsPosterVisible] = useState(true);
 
   useEffect(() => {
     if (!videoUrl) return undefined;
@@ -253,13 +229,13 @@ function MediaPreview({
       const observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
-            if (entry.isIntersecting || entry.intersectionRatio > 0) {
+            if (entry.isIntersecting) {
               setShouldLoad(true);
             }
-            setIsActive(entry.isIntersecting || entry.intersectionRatio > 0);
+            setIsActive(entry.isIntersecting);
           });
         },
-        { rootMargin: isLcp ? '0px' : '300px 0px', threshold: 0.1 }
+        { rootMargin: isLcp ? '0px' : '300px 0px', threshold: 0.35 }
       );
       observer.observe(node);
       return () => observer.disconnect();
@@ -269,58 +245,20 @@ function MediaPreview({
   useEffect(() => {
     const node = videoRef.current;
     if (!node || !videoUrl) return;
-    node.defaultMuted = true;
-    node.muted = true;
-    node.playsInline = true;
-    node.autoplay = true;
-    const loadVideo = () => {
-      if (node.getAttribute('data-loaded-src') === videoUrl) {
-        return Promise.resolve();
-      }
-      node.preload = 'auto';
+    if (shouldLoad && !node.src) {
       node.src = videoUrl;
       node.load();
-      node.setAttribute('data-loaded-src', videoUrl);
-      return new Promise<void>((resolve) => {
-        const onLoaded = () => {
-          node.removeEventListener('canplay', onLoaded);
-          resolve();
-        };
-        node.addEventListener('canplay', onLoaded, { once: true });
-      });
-    };
-    const playVideo = () => {
-      const promise = node.play();
-      if (promise && typeof promise.catch === 'function') {
-        promise.catch(() => {
-          registerGesturePlayback(node);
-        });
+    }
+    if (!shouldLoad) return;
+    if (isActive) {
+      const playPromise = node.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => undefined);
       }
-    };
-    if (shouldLoad && isActive) {
-      loadVideo().then(playVideo);
+    } else {
+      node.pause();
     }
   }, [shouldLoad, isActive, videoUrl]);
-
-  useEffect(() => {
-    const node = videoRef.current;
-    if (!node) return;
-    const handlePlaying = () => {
-      pendingGesturePlayback.delete(node);
-      setIsPosterVisible(false);
-    };
-    const handlePause = () => {
-      if (!shouldLoad) {
-        setIsPosterVisible(true);
-      }
-    };
-    node.addEventListener('playing', handlePlaying);
-    node.addEventListener('pause', handlePause);
-    return () => {
-      node.removeEventListener('playing', handlePlaying);
-      node.removeEventListener('pause', handlePause);
-    };
-  }, [shouldLoad]);
 
   if (!videoUrl) {
     if (!posterUrl) {
@@ -353,27 +291,22 @@ function MediaPreview({
           src={posterUrl}
           alt={prompt}
           fill
-          className={clsx(
-            'pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-300',
-            isPosterVisible ? 'opacity-100' : 'opacity-0'
-          )}
+          className="absolute inset-0 h-full w-full object-cover"
           priority={isLcp}
           fetchPriority={isLcp ? 'high' : undefined}
           loading={isLcp ? 'eager' : 'lazy'}
           decoding="async"
           quality={80}
           sizes={sizes}
-          aria-hidden
         />
       ) : null}
       <video
         ref={videoRef}
-        className={clsx('pointer-events-none absolute inset-0 z-10 h-full w-full object-cover transition duration-300', {
+        className={clsx('absolute inset-0 z-10 h-full w-full object-cover transition duration-300', {
           'opacity-100': shouldLoad,
           'opacity-0': !shouldLoad,
         })}
         playsInline
-        autoPlay
         muted
         loop
         preload="none"
