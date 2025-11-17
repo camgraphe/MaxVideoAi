@@ -248,17 +248,27 @@ function MediaPreview({
     const node = videoRef.current;
     if (!node || !videoUrl) return;
     if (shouldLoad && !node.src) {
-      const loadTask = () =>
-        new Promise<void>((resolve) => {
-          const handleLoaded = () => {
-            node.removeEventListener('loadeddata', handleLoaded);
-            resolve();
-          };
-          node.addEventListener('loadeddata', handleLoaded, { once: true });
-          node.src = videoUrl;
-          node.load();
-        });
-      enqueueVideoLoad(loadTask);
+      const loadImmediately = () => {
+        node.src = videoUrl;
+        node.load();
+      };
+      const prefersFullLoadQueue =
+        typeof window === 'undefined' ? true : !window.matchMedia('(max-width: 640px)').matches;
+      if (prefersFullLoadQueue) {
+        const loadTask = () =>
+          new Promise<void>((resolve) => {
+            const handleLoaded = () => {
+              node.removeEventListener('loadeddata', handleLoaded);
+              resolve();
+            };
+            node.addEventListener('loadeddata', handleLoaded, { once: true });
+            node.src = videoUrl;
+            node.load();
+          });
+        enqueueVideoLoad(loadTask);
+      } else {
+        loadImmediately();
+      }
     }
     if (!shouldLoad) return;
     if (isActive) {
