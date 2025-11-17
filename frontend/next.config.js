@@ -27,6 +27,11 @@ const nextConfig = {
       { protocol: 'https', hostname: 'fal.media' },
     ],
   },
+  modularizeImports: {
+    'lucide-react': {
+      transform: 'lucide-react/dist/esm/icons/{{member}}',
+    },
+  },
   experimental: {
     serverComponentsExternalPackages: ['@ffmpeg-installer/ffmpeg', 'ffprobe-static'],
     outputFileTracingExcludes: {

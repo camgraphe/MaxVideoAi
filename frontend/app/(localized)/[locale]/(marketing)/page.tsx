@@ -1,17 +1,17 @@
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Head from 'next/head';
 import { Link } from '@/i18n/navigation';
 import Script from 'next/script';
 import { getTranslations } from 'next-intl/server';
-import { ProofTabs } from '@/components/marketing/ProofTabs';
 import { PriceChip } from '@/components/marketing/PriceChip';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
 import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
 import { MosaicBackdrop } from '@/components/marketing/MosaicBackdrop';
 import { ExamplesOrbitCallout } from '@/components/marketing/ExamplesOrbitCallout';
-import { CompareEnginesCarousel, type CompareEngineCard } from '@/components/marketing/CompareEnginesCarousel';
+import type { CompareEngineCard } from '@/components/marketing/CompareEnginesCarousel';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getHomepageSlots, HERO_SLOT_KEYS } from '@/server/homepage';
@@ -20,6 +20,32 @@ import { listExamples } from '@/server/videos';
 import { listFalEngines } from '@/config/falEngines';
 import type { AppLocale } from '@/i18n/locales';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
+
+const ProofTabs = dynamic(
+  () =>
+    import('@/components/marketing/ProofTabs').then((mod) => ({
+      default: mod.ProofTabs,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="mx-auto mt-6 h-48 w-full max-w-6xl animate-pulse rounded-card bg-white/40" aria-hidden />
+    ),
+  }
+);
+
+const CompareEnginesCarousel = dynamic(
+  () =>
+    import('@/components/marketing/CompareEnginesCarousel').then((mod) => ({
+      default: mod.CompareEnginesCarousel,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="mx-auto mt-10 h-64 w-full max-w-6xl animate-pulse rounded-card bg-white/40" aria-hidden />
+    ),
+  }
+);
 
 type HeroTileConfig = {
   id: string;
