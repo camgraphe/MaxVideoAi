@@ -874,7 +874,7 @@ const KLING_2_5_TURBO_ENGINE: EngineCaps = {
     provider: 'kling',
     modelSlug: 'fal-ai/kling-video/v2.5-turbo/pro/text-to-video',
   },
-  availability: 'limited',
+  availability: 'available',
   brandId: 'kling',
 };
 
@@ -1005,7 +1005,7 @@ const WAN_2_5_ENGINE: EngineCaps = {
     provider: 'wan',
     modelSlug: 'fal-ai/wan-25-preview/text-to-video',
   },
-  availability: 'limited',
+  availability: 'available',
   brandId: 'wan',
 };
 
@@ -1732,7 +1732,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     brandId: 'kling',
     family: 'kling',
     versionLabel: '2.5 Turbo',
-    availability: 'limited',
+    availability: 'available',
     logoPolicy: 'textOnly',
     engine: KLING_2_5_TURBO_ENGINE,
     modes: [
@@ -1848,7 +1848,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
     brandId: 'wan',
     family: 'wan',
     versionLabel: 'Preview',
-    availability: 'limited',
+    availability: 'available',
     logoPolicy: 'textOnly',
     engine: WAN_2_5_ENGINE,
     modes: [

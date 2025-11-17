@@ -590,8 +590,8 @@
   },
   "models": {
     "hero": {
-      "title": "Fal.ai engines without the vendor lock-in.",
-      "subtitle": "Fal.ai ships new video endpoints weekly. We sync their catalog so your Price Before chip stays accurate across Sora, Veo, Pika, and MiniMax tiers."
+      "title": "One workspace, every video engine that matters.",
+      "subtitle": "Fal.ai drops new endpoints weekly — we pull them in automatically so your pricing and model catalog stay fresh across Sora, Veo, Pika, MiniMax, Kling, Wan, and Nano Banana."
     },
     "intro": {
       "paragraphs": [
@@ -613,6 +613,11 @@
           "emoji": "⚡",
           "title": "When to choose Pika or MiniMax",
           "body": "Pika 2.2 excels at stylised loops and social edits, while MiniMax Hailuo 02 keeps budgets low for volume runs. Both complement Sora and Veo when you need fast alternates or lightweight briefs."
+        },
+        {
+          "emoji": "🖼️",
+          "title": "When to choose Nano Banana",
+          "body": "Storyboard or edit photoreal stills before jumping into motion. Nano Banana shares the same wallet and prompt lab, so you can prep Veo/Sora shots with text-to-image or reference edits."
         }
       ],
       "cta": {

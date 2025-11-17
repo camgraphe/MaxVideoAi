@@ -674,8 +674,8 @@
   },
   "models": {
     "hero": {
-      "title": "Moteurs Fal.ai sans verrouillage fournisseur.",
-      "subtitle": "Fal.ai publie de nouveaux endpoints vidéo chaque semaine. Nous synchronisons leur catalogue afin que votre pastille «Prix avant génération» reste précise sur les niveaux Sora, Veo, Pika et MiniMax."
+      "title": "Un seul workspace pour tous les moteurs vidéo qui comptent.",
+      "subtitle": "Fal.ai ajoute de nouveaux endpoints chaque semaine ; nous les intégrons automatiquement pour que vos tarifs et votre catalogue restent à jour sur Sora, Veo, Pika, MiniMax, Kling, Wan et Nano Banana."
     },
     "intro": {
       "paragraphs": [
@@ -697,6 +697,11 @@
           "emoji": "⚡",
           "title": "Quand choisir Pika ou MiniMax",
           "body": "Pika 2.2 brille sur les boucles stylisées et le social, MiniMax Hailuo 02 garde les budgets serrés pour les runs volumineux."
+        },
+        {
+          "emoji": "🖼️",
+          "title": "Quand choisir Nano Banana",
+          "body": "Préparez ou retouchez des visuels photoréalistes avant de passer à la motion. Nano Banana partage wallet et prompt lab pour peaufiner vos prises Veo/Sora en texte→image ou retouche de références."
         }
       ],
       "cta": {

@@ -620,9 +620,9 @@ const en: Dictionary = {
   },
   models: {
     hero: {
-      title: 'Fal.ai engines without the vendor lock-in.',
+      title: 'One workspace, every video engine that matters.',
       subtitle:
-        'Fal.ai ships new video endpoints weekly. We sync their catalog so your Price Before chip stays accurate across Sora, Veo, Pika, and MiniMax tiers.',
+        'Fal.ai drops new endpoints weekly — we pull them in automatically so your pricing and model catalog stay fresh across Sora, Veo, Pika, MiniMax, Kling, Wan, and Nano Banana.',
     },
     availabilityLabels: {
       available: 'Available',

@@ -213,32 +213,34 @@ export default async function WorkflowsPage() {
           {models.map((model) => {
             const brand = PARTNER_BRAND_MAP.get(model.brandId);
             const availabilityLabel = availabilityLabels[model.availability] ?? model.availability;
+            const modelHref = buildModelPath(activeLocale, model.modelSlug);
+            const showAvailabilityBadge = model.availability !== 'limited';
             return (
-              <article key={model.modelSlug} className="rounded-card border border-hairline bg-bg p-4">
+              <Link
+                key={model.modelSlug}
+                href={modelHref}
+                className="rounded-card border border-hairline bg-bg p-4 transition hover:border-accentSoft hover:bg-white hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              >
                 <div className="flex items-center justify-between gap-2">
                   <div>
                     <h3 className="text-sm font-semibold text-text-primary">{model.marketingName}</h3>
                     <p className="text-xs uppercase tracking-micro text-text-muted">{model.versionLabel}</p>
                   </div>
-                  <span
-                    className={clsx(
-                      'rounded-pill border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-secondary',
-                      AVAILABILITY_BADGE_CLASS[model.availability]
-                    )}
-                  >
-                    {availabilityLabel}
-                  </span>
+                  {showAvailabilityBadge ? (
+                    <span
+                      className={clsx(
+                        'rounded-pill border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-secondary',
+                        AVAILABILITY_BADGE_CLASS[model.availability]
+                      )}
+                    >
+                      {availabilityLabel}
+                    </span>
+                  ) : null}
                 </div>
                 <p className="mt-2 text-xs text-text-secondary">
-                  {brand ? `${brand.label}` : model.brandId} ·{' '}
-                  <Link
-                    href={buildModelPath(activeLocale, model.modelSlug)}
-                    className="text-accent hover:text-accentSoft"
-                  >
-                    view details
-                  </Link>
+                  {brand ? `${brand.label}` : model.brandId} · <span className="text-accent">view details</span>
                 </p>
-              </article>
+              </Link>
             );
           })}
         </div>
