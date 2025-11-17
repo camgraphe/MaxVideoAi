@@ -131,11 +131,6 @@ export function HeroMediaTile({
       return;
     }
     if (typeof window === 'undefined') return;
-    const mq = window.matchMedia('(min-width: 768px)');
-    if (!mq.matches) {
-      setShouldRenderVideo(false);
-      return;
-    }
     const node = containerRef.current;
     if (!node) {
       setShouldRenderVideo(true);
