@@ -231,13 +231,13 @@ function MediaPreview({
       const observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
-            if (entry.isIntersecting) {
+            if (entry.isIntersecting || entry.intersectionRatio > 0) {
               setShouldLoad(true);
             }
-            setIsActive(entry.isIntersecting);
+            setIsActive(entry.isIntersecting || entry.intersectionRatio > 0);
           });
         },
-        { rootMargin: isLcp ? '0px' : '300px 0px', threshold: 0.35 }
+        { rootMargin: isLcp ? '0px' : '300px 0px', threshold: 0.1 }
       );
       observer.observe(node);
       return () => observer.disconnect();
