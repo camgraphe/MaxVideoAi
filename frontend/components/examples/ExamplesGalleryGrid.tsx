@@ -144,9 +144,15 @@ function ExampleCard({ video, isFirst }: { video: ExampleGalleryVideo; isFirst: 
   const posterSrc = video.optimizedPosterUrl ?? video.rawPosterUrl ?? null;
   const isPortrait = rawAspect < 1;
   const posterSizes = isPortrait ? PORTRAIT_SIZES : LANDSCAPE_SIZES;
+  const videoDetailHref = `/video/${encodeURIComponent(video.id)}`;
 
   return (
-    <article className="group relative mb-[2px] break-inside-avoid overflow-hidden bg-neutral-900/5">
+    <Link
+      href={videoDetailHref}
+      locale={false}
+      className="group relative mb-[2px] block break-inside-avoid overflow-hidden bg-neutral-900/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
+      aria-label={`Open video ${video.engineLabel}`}
+    >
       <div className="relative">
         <div className="relative w-full overflow-hidden" style={{ aspectRatio: aspectValue }}>
           <MediaPreview
@@ -159,20 +165,8 @@ function ExampleCard({ video, isFirst }: { video: ExampleGalleryVideo; isFirst: 
           {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available on playback" /> : null}
           <CardOverlay video={video} />
         </div>
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <Link
-            href={`/video/${encodeURIComponent(video.id)}`}
-            locale={false}
-            className="pointer-events-auto inline-flex h-16 w-16 items-center justify-center text-white/30 transition hover:text-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
-            aria-label="View this video"
-          >
-            <svg width="32" height="36" viewBox="0 0 18 20" fill="currentColor" aria-hidden>
-              <path d="M16.5 9.134c1 0.577 1 2.155 0 2.732L2.5 20.014C1.5 20.59 0 19.812 0 18.548V2.452C0 1.188 1.5 0.41 2.5 0.986l14 8.148z" />
-            </svg>
-          </Link>
-        </div>
       </div>
-    </article>
+    </Link>
   );
 }
 
@@ -202,6 +196,7 @@ function CardOverlay({ video }: { video: ExampleGalleryVideo }) {
           href={video.href}
           className="pointer-events-auto rounded-full bg-white/20 px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-micro text-white transition hover:bg-white/40 sm:text-[10px]"
           aria-label={`Generate like render ${video.id}`}
+          onClick={(event) => event.stopPropagation()}
         >
           Generate like this
         </Link>
