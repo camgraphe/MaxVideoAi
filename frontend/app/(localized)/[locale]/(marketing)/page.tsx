@@ -476,7 +476,9 @@ export default async function HomePage() {
   return (
     <div className="pb-24">
       <Head>
-        {lcpPosterSrc ? <link rel="preload" as="image" href={lcpPosterSrc} fetchPriority="high" /> : null}
+        <link rel="preconnect" href="https://videohub-uploads-us.s3.amazonaws.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://v3b.fal.media" crossOrigin="anonymous" />
+        {lcpPosterSrc ? <link rel="preload" as="image" href={lcpPosterSrc} fetchPriority="high" media="(max-width: 767px)" /> : null}
       </Head>
       <section className="mx-auto flex max-w-6xl flex-col items-center gap-10 px-4 pt-20 pb-16 text-center sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-center gap-3">

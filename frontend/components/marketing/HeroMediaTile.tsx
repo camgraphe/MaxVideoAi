@@ -197,8 +197,9 @@ export function HeroMediaTile({
             priority={priority}
             fetchPriority={priority ? 'high' : undefined}
             loading={priority ? 'eager' : 'lazy'}
+            decoding="async"
             quality={80}
-            sizes="(min-width: 1024px) 40vw, 100vw"
+            sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 40vw"
             className="object-cover"
           />
         )}

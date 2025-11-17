@@ -15,7 +15,7 @@ export default function ConsentModeBootstrap() {
 
   return (
     <>
-      <Script id="gcm-default" strategy="afterInteractive">
+      <Script id="gcm-default" strategy="lazyOnload">
         {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
@@ -32,8 +32,8 @@ export default function ConsentModeBootstrap() {
           gtag('set', 'url_passthrough', true);
         `}
       </Script>
-      <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
-      <Script id="ga-init" strategy="afterInteractive">
+      <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="lazyOnload" />
+      <Script id="ga-init" strategy="lazyOnload">
         {`
           window.dataLayer = window.dataLayer || [];
           window.gtag = window.gtag || function(){dataLayer.push(arguments);};
