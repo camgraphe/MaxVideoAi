@@ -266,9 +266,6 @@ function resolveFilterDescriptor(
 export default async function ExamplesPage({ searchParams }: ExamplesPageProps) {
   const { dictionary } = await resolveDictionary();
   const content = dictionary.examples;
-  const sortContent = (content as { sort?: Record<string, string> })?.sort;
-  const sortLabel = (content as { sortLabel?: string })?.sortLabel ?? 'Sort';
-  const countLabel = (content as { countLabel?: string })?.countLabel ?? 'curated renders';
   const engineFilterLabel = (content as { engineFilterLabel?: string })?.engineFilterLabel ?? 'Engines';
   const engineFilterAllLabel = (content as { engineFilterAllLabel?: string })?.engineFilterAllLabel ?? 'All';
   const paginationContent =
@@ -277,20 +274,6 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   const paginationNextLabel = paginationContent.next ?? 'Next';
   const paginationPageLabel = paginationContent.page ?? 'Page';
   const loadMoreLabel = paginationContent.loadMore ?? 'Load more examples';
-  const sortLabels = sortContent ?? {
-    newest: 'Newest',
-    oldest: 'Oldest',
-    longest: 'Longest',
-    shortest: 'Shortest',
-    engineAZ: 'Engine A->Z',
-  };
-  const SORT_OPTIONS: Array<{ id: ExampleSort; label: string }> = [
-    { id: 'date-desc', label: sortLabels.newest ?? 'Newest' },
-    { id: 'date-asc', label: sortLabels.oldest ?? 'Oldest' },
-    { id: 'duration-desc', label: sortLabels.longest ?? 'Longest' },
-    { id: 'duration-asc', label: sortLabels.shortest ?? 'Shortest' },
-    { id: 'engine-asc', label: sortLabels.engineAZ ?? 'Engine A->Z' },
-  ];
   const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
   const sort = getSort(sortParam);
   const engineParam = Array.isArray(searchParams.engine) ? searchParams.engine[0] : searchParams.engine;
@@ -446,11 +429,6 @@ const remainingClientVideos = clientVideos.slice(EXAMPLES_INITIAL_BATCH);
 const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClientVideos[0]?.rawPosterUrl ?? null;
   const hasPreviousPage = currentPage > 1;
   const hasNextPage = currentPage < totalPages;
-  const pageSummary =
-    totalCount === 0
-      ? `0 ${countLabel}`
-      : `${paginationPageLabel} ${currentPage} / ${totalPages} • ${totalCount} ${countLabel}`;
-
   const buildQueryParams = (
     nextSort: ExampleSort,
     engineValue: string | null,
@@ -539,73 +517,47 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
         <p className="text-base text-text-secondary">{content.hero.subtitle}</p>
       </header>
 
-      <section className="mt-8 flex flex-wrap items-center justify-between gap-3 text-xs text-text-secondary">
-        <div className="flex flex-wrap items-center gap-4">
-          <span className="font-semibold uppercase tracking-micro text-text-muted">{sortLabel}</span>
-          <nav className="flex gap-2 rounded-pill border border-hairline bg-white px-2 py-1">
-            {SORT_OPTIONS.map((option) => {
-              const isActive = option.id === sort;
-              const queryParams = buildQueryParams(option.id, selectedEngine, 1);
-              return (
-                <Link
-                  key={option.id}
-                  href={{ pathname: '/examples', query: queryParams }}
-                  rel="nofollow"
-                  className={clsx(
-                    'rounded-full px-3 py-1 text-xs font-medium transition',
-                    isActive ? 'bg-text-primary text-white shadow-sm' : 'text-text-secondary hover:bg-accentSoft/20'
-                  )}
-                >
-                  {option.label}
-                </Link>
-              );
-            })}
-          </nav>
-          {engineFilterOptions.length ? (
-            <div className="flex items-center gap-2">
-              <span className="font-semibold uppercase tracking-micro text-text-muted">{engineFilterLabel}</span>
-              <div className="flex items-center gap-1">
-                <Link
-                  href={{ pathname: '/examples', query: buildQueryParams(sort, null, 1) }}
-                  rel="nofollow"
-                  className={clsx(
-                    'flex h-9 items-center justify-center rounded-full border px-3 text-[11px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
-                    selectedEngine
-                      ? 'border-hairline bg-white text-text-secondary hover:border-accent hover:text-text-primary'
-                      : 'border-transparent bg-text-primary text-white shadow-card'
-                  )}
-                >
-                  {engineFilterAllLabel}
-                </Link>
-                {engineFilterOptions.map((engine) => {
-                  const isActive = selectedEngine === engine.id;
-                  const palette = ENGINE_FILTER_STYLES[engine.id.toLowerCase()] ?? null;
-                  return (
-                    <Link
-                      key={engine.id}
-                      href={{
-                        pathname: '/examples',
-                        query: buildQueryParams(sort, isActive ? null : engine.id, 1),
-                      }}
-                      rel="nofollow"
-                      className={clsx(
-                        'flex h-9 items-center justify-center rounded-full border px-4 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
-                        isActive
-                          ? 'border-transparent bg-text-primary text-white shadow-card'
-                          : palette
-                            ? clsx('border border-black/10 hover:opacity-90', palette.bg, palette.text)
-                            : 'border-hairline bg-white text-text-secondary hover:border-accent hover:text-text-primary'
-                      )}
-                    >
-                      {engine.label}
-                    </Link>
-                  );
-                })}
-              </div>
+      <section className="mt-8 flex flex-wrap items-center gap-3 text-xs text-text-secondary">
+        {engineFilterOptions.length ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-semibold uppercase tracking-micro text-text-muted">{engineFilterLabel}</span>
+            <div className="flex flex-wrap items-center gap-1">
+              <Link
+                href={{ pathname: '/examples', query: buildQueryParams(DEFAULT_SORT, null, 1) }}
+                rel="nofollow"
+                className={clsx(
+                  'flex h-9 items-center justify-center rounded-full border px-3 text-[11px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
+                  selectedEngine
+                    ? 'border-hairline bg-white text-text-secondary hover:border-accent hover:text-text-primary'
+                    : 'border-transparent bg-text-primary text-white shadow-card'
+                )}
+              >
+                {engineFilterAllLabel}
+              </Link>
+              {engineFilterOptions.map((engine) => {
+                const isActive = selectedEngine === engine.id;
+                const palette = ENGINE_FILTER_STYLES[engine.id.toLowerCase()] ?? null;
+                return (
+                  <Link
+                    key={engine.id}
+                    href={{ pathname: '/examples', query: buildQueryParams(DEFAULT_SORT, engine.id, 1) }}
+                    rel="nofollow"
+                    className={clsx(
+                      'flex h-9 items-center justify-center rounded-full border px-4 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
+                      isActive
+                        ? 'border-transparent bg-text-primary text-white shadow-card'
+                        : palette
+                          ? clsx('border border-black/10 hover:opacity-90', palette.bg, palette.text)
+                          : 'border-hairline bg-white text-text-secondary hover:border-accent hover:text-text-primary'
+                    )}
+                  >
+                    {engine.label}
+                  </Link>
+                );
+              })}
             </div>
-          ) : null}
-        </div>
-        <span className="text-xs text-text-muted">{pageSummary}</span>
+          </div>
+        ) : null}
       </section>
 
       <section className="mt-8 overflow-hidden rounded-[32px] border border-hairline bg-white/80 shadow-card">
