@@ -312,7 +312,7 @@ function MediaPreview({
         preload="none"
         poster={posterUrl ?? undefined}
       >
-        <track kind="captions" srclang="en" label="auto-generated" default />
+        <track kind="captions" srcLang="en" label="auto-generated" default />
       </video>
     </>
   );
