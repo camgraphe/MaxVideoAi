@@ -300,6 +300,7 @@ function MediaPreview({
           'opacity-100': shouldLoad,
           'opacity-0': !shouldLoad,
         })}
+        autoPlay
         playsInline
         muted
         loop
