@@ -271,7 +271,8 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   const countLabel = (content as { countLabel?: string })?.countLabel ?? 'curated renders';
   const engineFilterLabel = (content as { engineFilterLabel?: string })?.engineFilterLabel ?? 'Engines';
   const engineFilterAllLabel = (content as { engineFilterAllLabel?: string })?.engineFilterAllLabel ?? 'All';
-  const paginationContent = (content as { pagination?: { prev?: string; next?: string; page?: string } })?.pagination ?? {};
+  const paginationContent =
+    (content as { pagination?: { prev?: string; next?: string; page?: string; loadMore?: string } })?.pagination ?? {};
   const paginationPrevLabel = paginationContent.prev ?? 'Previous';
   const paginationNextLabel = paginationContent.next ?? 'Next';
   const paginationPageLabel = paginationContent.page ?? 'Page';
