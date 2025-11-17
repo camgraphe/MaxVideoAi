@@ -1303,6 +1303,7 @@
       "processing": {
         "title": "Procesando…",
         "errorTitle": "El render falló",
+        "takeLabel": "Toma {current}/{total}",
         "phrases": [
           "Enrutando tu render entre los proveedores…",
           "Preparando las pistas de movimiento…",

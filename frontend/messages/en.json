@@ -1299,6 +1299,7 @@
       "processing": {
         "title": "Processing…",
         "errorTitle": "Generation failed",
+        "takeLabel": "Take {current}/{total}",
         "phrases": [
           "Routing your render through providers…",
           "Warming up motion cues…",

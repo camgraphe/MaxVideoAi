@@ -20,6 +20,7 @@ import { GalleryRail } from '@/components/GalleryRail';
 import type { GroupSummary, GroupMemberSummary } from '@/types/groups';
 import { CompositePreviewDock } from '@/components/groups/CompositePreviewDock';
 import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
+import { DEFAULT_PROCESSING_COPY } from '@/components/groups/ProcessingOverlay';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getRenderEta } from '@/lib/render-eta';
 import { ENV as CLIENT_ENV } from '@/lib/env';
@@ -808,14 +809,6 @@ function serializePendingRenders(renders: LocalRender[]): string | null {
 }
 
 const DEBOUNCE_MS = 200;
-const FRIENDLY_MESSAGES = [
-  'Warming up the camera…',
-  'Stirring pixels gently…',
-  'Brewing a fresh render…',
-  'Setting the virtual stage…',
-  'Letting ideas take shape…',
-  'Polishing the lights…'
-] as const;
 
 export default function Page() {
   const { data, error: enginesError, isLoading } = useEngines();
@@ -836,6 +829,17 @@ export default function Page() {
   const showCenterGallery = CLIENT_ENV.WORKSPACE_CENTER_GALLERY === 'true';
   const { t } = useI18n();
   const workspaceCopy = t('workspace.generate', DEFAULT_WORKSPACE_COPY) ?? DEFAULT_WORKSPACE_COPY;
+  const processingCopy = (t('workspace.generate.processing', DEFAULT_PROCESSING_COPY) ??
+    DEFAULT_PROCESSING_COPY) as typeof DEFAULT_PROCESSING_COPY;
+  const formatTakeLabel = useCallback(
+    (current: number, total: number) => {
+      if (total <= 1) return '';
+      const template = processingCopy.takeLabel ?? DEFAULT_PROCESSING_COPY.takeLabel;
+      if (!template) return '';
+      return template.replace('{current}', `${current}`).replace('{total}', `${total}`);
+    },
+    [processingCopy.takeLabel]
+  );
 
   const router = useRouter();
   const pathname = usePathname();
@@ -2932,9 +2936,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           : '/assets/frames/thumb-16x9.svg';
 
       const { seconds: etaSeconds, label: etaLabel } = getRenderEta(selectedEngine, form.durationSec);
-      const friendlyMessage = iterationCount > 1
-        ? `Take ${iterationIndex + 1}/${iterationCount} • ${FRIENDLY_MESSAGES[Math.floor(Math.random() * FRIENDLY_MESSAGES.length)]}`
-        : FRIENDLY_MESSAGES[Math.floor(Math.random() * FRIENDLY_MESSAGES.length)];
+      const friendlyMessage =
+        iterationCount > 1 ? formatTakeLabel(iterationIndex + 1, iterationCount) : '';
       const startedAt = Date.now();
       const minEtaSeconds = Math.min(Math.max(etaSeconds ?? 4, 0), 8);
       const minDurationMs = Math.max(1200, minEtaSeconds * 1000);
@@ -3332,6 +3335,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     defaultAllowIndex,
     workspaceCopy.wallet.insufficient,
     workspaceCopy.wallet.insufficientWithAmount,
+    cfgScale,
+    formatTakeLabel,
   ]);
 
   useEffect(() => {

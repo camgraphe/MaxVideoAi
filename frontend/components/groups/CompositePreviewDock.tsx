@@ -199,7 +199,9 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
             onClick={() => setIsLooping((prev) => !prev)}
             className={clsx(
               ICON_BUTTON_BASE,
-              isLooping ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary'
+              isLooping
+                ? 'text-text-primary bg-neutral-800/20 hover:bg-neutral-800/30'
+                : 'text-text-secondary hover:text-text-primary'
             )}
             aria-label={isLooping ? copy.controls.loop.ariaOn : copy.controls.loop.ariaOff}
             aria-pressed={isLooping}

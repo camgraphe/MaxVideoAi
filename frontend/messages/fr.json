@@ -1310,6 +1310,7 @@
       "processing": {
         "title": "Traitement…",
         "errorTitle": "Échec du rendu",
+        "takeLabel": "Prise {current}/{total}",
         "phrases": [
           "Routage de votre rendu chez les fournisseurs…",
           "Préparation des repères de mouvement…",

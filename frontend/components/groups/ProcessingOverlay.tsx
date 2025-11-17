@@ -15,9 +15,10 @@ interface ProcessingOverlayProps {
   tileCount?: number;
 }
 
-const DEFAULT_PROCESSING_COPY = {
+export const DEFAULT_PROCESSING_COPY = {
   title: 'Processing…',
   errorTitle: 'Generation failed',
+  takeLabel: 'Take {current}/{total}',
   phrases: [
     'Routing your render through providers…',
     'Warming up motion cues…',
@@ -25,6 +26,16 @@ const DEFAULT_PROCESSING_COPY = {
     'Running safety checks before delivery…',
   ],
 } as const;
+
+function buildTakeLabelRegex(template: string | undefined | null): RegExp | null {
+  if (!template) return null;
+  const escaped = template
+    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    .replace(/\\\{current\\\}/g, '(\\d+)')
+    .replace(/\\\{total\\\}/g, '(\\d+)');
+  if (!escaped.length) return null;
+  return new RegExp(`^${escaped}(?:\\s*[•·\\-]\\s*.*)?$`, 'i');
+}
 
 const ROTATION_INTERVAL_MS = 10_000;
 
@@ -39,16 +50,28 @@ export function ProcessingOverlay({
   const { t } = useI18n();
   const processingCopy = (t('workspace.generate.processing', DEFAULT_PROCESSING_COPY) ??
     DEFAULT_PROCESSING_COPY) as typeof DEFAULT_PROCESSING_COPY;
+  const takeLabelRegex = useMemo(
+    () => buildTakeLabelRegex(processingCopy.takeLabel ?? DEFAULT_PROCESSING_COPY.takeLabel),
+    [processingCopy.takeLabel]
+  );
   const phrases = Array.isArray(processingCopy.phrases) && processingCopy.phrases.length > 0
     ? processingCopy.phrases
     : DEFAULT_PROCESSING_COPY.phrases;
   const normalizedMessage = typeof message === 'string' ? message.trim() : '';
+  const placeholderSet = useMemo(() => {
+    const set = new Set<string>();
+    DEFAULT_PROCESSING_COPY.phrases.forEach((phrase) => set.add(phrase));
+    phrases.forEach((phrase) => set.add(phrase));
+    set.add(DEFAULT_PROCESSING_COPY.title);
+    set.add(DEFAULT_PROCESSING_COPY.errorTitle);
+    set.add(processingCopy.title);
+    set.add(processingCopy.errorTitle);
+    set.add('Processing...');
+    return set;
+  }, [phrases, processingCopy.title, processingCopy.errorTitle]);
+  const matchesTakeLabel = normalizedMessage.length > 0 && takeLabelRegex ? takeLabelRegex.test(normalizedMessage) : false;
   const isPlaceholderMessage =
-    normalizedMessage.length === 0 ||
-    normalizedMessage === DEFAULT_PROCESSING_COPY.title ||
-    normalizedMessage === DEFAULT_PROCESSING_COPY.errorTitle ||
-    normalizedMessage === 'Processing...' ||
-    normalizedMessage === processingCopy.title;
+    normalizedMessage.length === 0 || placeholderSet.has(normalizedMessage) || matchesTakeLabel;
   const shouldRotate = state !== 'error' && isPlaceholderMessage && phrases.length > 0;
   const [phraseIndex, setPhraseIndex] = useState(0);
 
