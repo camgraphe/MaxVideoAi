@@ -36,7 +36,7 @@ function runAfterIdle(work: () => (() => void) | void) {
   if (typeof window === 'undefined') {
     return work();
   }
-  let cleanup: void | (() => void);
+let cleanup: void | (() => void);
   const win = window as ExtendedWindow;
   if (typeof win.requestIdleCallback === 'function') {
     const idleId = win.requestIdleCallback(() => {
@@ -58,6 +58,13 @@ function runAfterIdle(work: () => (() => void) | void) {
       cleanup();
     }
   };
+}
+
+let videoLoadChain: Promise<void> = Promise.resolve();
+
+function enqueueVideoLoad(task: () => Promise<void>) {
+  const runTask = () => task().catch(() => undefined);
+  videoLoadChain = videoLoadChain.then(runTask, runTask);
 }
 
 export function ExamplesGalleryGrid({
@@ -246,8 +253,17 @@ function MediaPreview({
     const node = videoRef.current;
     if (!node || !videoUrl) return;
     if (shouldLoad && !node.src) {
-      node.src = videoUrl;
-      node.load();
+      const loadTask = () =>
+        new Promise<void>((resolve) => {
+          const handleLoaded = () => {
+            node.removeEventListener('loadeddata', handleLoaded);
+            resolve();
+          };
+          node.addEventListener('loadeddata', handleLoaded, { once: true });
+          node.src = videoUrl;
+          node.load();
+        });
+      enqueueVideoLoad(loadTask);
     }
     if (!shouldLoad) return;
     if (isActive) {
