@@ -31,6 +31,11 @@ const DEFAULT_INTRO = {
       title: 'When to choose Pika or MiniMax',
       body: 'Pika 2.2 excels at stylised loops and social edits, while MiniMax Hailuo 02 keeps budgets low for volume runs. Both complement Sora and Veo when you need fast alternates or lightweight briefs.',
     },
+    {
+      emoji: '🖼️',
+      title: 'When to choose Nano Banana',
+      body: 'Storyboard or edit photoreal stills before jumping into motion. Nano Banana shares the same wallet and prompt lab, so you can prep Veo/Sora shots with text-to-image or reference edits.',
+    },
   ],
   cta: {
     title: 'Need a side-by-side?',
@@ -152,6 +157,7 @@ export default async function ModelsPage() {
     'wan-2-5',
     'kling-2-5-turbo',
     'minimax-hailuo-02-text',
+    'nano-banana',
   ];
 
   const engineIndex = new Map<string, FalEngineEntry>(listFalEngines().map((entry) => [entry.modelSlug, entry]));
@@ -167,6 +173,7 @@ export default async function ModelsPage() {
     'kling-2-5-turbo',
     'wan-2-5',
     'minimax-hailuo-02-text',
+    'nano-banana',
   ];
   const quickLinks = quickLinkSlugs
     .map((slug) => engineIndex.get(slug))
