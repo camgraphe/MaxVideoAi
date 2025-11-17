@@ -214,6 +214,7 @@ function MediaPreview({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [shouldLoad, setShouldLoad] = useState(isLcp);
   const [isActive, setIsActive] = useState(isLcp);
+  const [preloadMode, setPreloadMode] = useState<'none' | 'metadata'>('none');
 
   useEffect(() => {
     const node = videoRef.current;
@@ -225,6 +226,15 @@ function MediaPreview({
     node.setAttribute('muted', '');
     node.setAttribute('playsinline', '');
     node.setAttribute('webkit-playsinline', 'true');
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const query = window.matchMedia('(pointer: coarse) and (max-width: 1024px)');
+    const update = () => setPreloadMode(query.matches ? 'metadata' : 'none');
+    update();
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
   }, []);
 
   useEffect(() => {
@@ -253,6 +263,7 @@ function MediaPreview({
     if (!node || !videoUrl) return undefined;
 
     if (shouldLoad && !node.src) {
+      node.preload = preloadMode;
       node.src = videoUrl;
       node.load();
     }
@@ -307,7 +318,7 @@ function MediaPreview({
       node.removeEventListener('loadeddata', handleCanPlay);
       node.removeEventListener('canplay', handleCanPlay);
     };
-  }, [shouldLoad, isActive, videoUrl]);
+  }, [shouldLoad, isActive, videoUrl, preloadMode]);
 
   if (!videoUrl) {
     if (!posterUrl) {
@@ -359,7 +370,7 @@ function MediaPreview({
         playsInline
         muted
         loop
-        preload="none"
+        preload={preloadMode}
         poster={posterUrl ?? undefined}
       >
         <track kind="captions" srcLang="en" label="auto-generated" default />
