@@ -32,6 +32,32 @@ type ExtendedWindow = Window &
     cancelIdleCallback?: (handle: number) => void;
   };
 
+const pendingGesturePlayback = new Set<HTMLVideoElement>();
+let gestureListenersAttached = false;
+
+function registerGesturePlayback(video: HTMLVideoElement) {
+  pendingGesturePlayback.add(video);
+  if (gestureListenersAttached || typeof window === 'undefined') {
+    return;
+  }
+  gestureListenersAttached = true;
+  const unlock = () => {
+    pendingGesturePlayback.forEach((vid) => {
+      const attempt = vid.play();
+      if (attempt && typeof attempt.catch === 'function') {
+        attempt.catch(() => undefined);
+      }
+    });
+    pendingGesturePlayback.clear();
+    window.removeEventListener('touchstart', unlock);
+    window.removeEventListener('pointerdown', unlock);
+    window.removeEventListener('keydown', unlock);
+  };
+  window.addEventListener('touchstart', unlock, { once: true });
+  window.addEventListener('pointerdown', unlock, { once: true });
+  window.addEventListener('keydown', unlock, { once: true });
+}
+
 function runAfterIdle(work: () => (() => void) | void) {
   if (typeof window === 'undefined') {
     return work();
@@ -266,7 +292,9 @@ function MediaPreview({
     const playVideo = () => {
       const promise = node.play();
       if (promise && typeof promise.catch === 'function') {
-        promise.catch(() => undefined);
+        promise.catch(() => {
+          registerGesturePlayback(node);
+        });
       }
     };
     if (shouldLoad && isActive) {
@@ -277,7 +305,10 @@ function MediaPreview({
   useEffect(() => {
     const node = videoRef.current;
     if (!node) return;
-    const handlePlaying = () => setIsPosterVisible(false);
+    const handlePlaying = () => {
+      pendingGesturePlayback.delete(node);
+      setIsPosterVisible(false);
+    };
     const handlePause = () => {
       if (!shouldLoad) {
         setIsPosterVisible(true);
