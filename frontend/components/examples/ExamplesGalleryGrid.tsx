@@ -60,13 +60,6 @@ let cleanup: void | (() => void);
   };
 }
 
-let videoLoadChain: Promise<void> = Promise.resolve();
-
-function enqueueVideoLoad(task: () => Promise<void>) {
-  const runTask = () => task().catch(() => undefined);
-  videoLoadChain = videoLoadChain.then(runTask, runTask);
-}
-
 export function ExamplesGalleryGrid({
   initialVideos,
   remainingVideos,
@@ -252,38 +245,30 @@ function MediaPreview({
     node.muted = true;
     node.playsInline = true;
     node.autoplay = true;
-    const prefersFullLoadQueue =
-      typeof window === 'undefined' ? true : !window.matchMedia('(max-width: 640px)').matches;
-    const loadVideo = () =>
-      new Promise<void>((resolve) => {
-        const handleLoaded = () => {
-          node.removeEventListener('loadeddata', handleLoaded);
+    const loadVideo = () => {
+      if (node.getAttribute('data-loaded-src') === videoUrl) {
+        return Promise.resolve();
+      }
+      node.preload = 'auto';
+      node.src = videoUrl;
+      node.load();
+      node.setAttribute('data-loaded-src', videoUrl);
+      return new Promise<void>((resolve) => {
+        const onLoaded = () => {
+          node.removeEventListener('canplay', onLoaded);
           resolve();
         };
-        node.addEventListener('loadeddata', handleLoaded, { once: true });
-        if (!prefersFullLoadQueue) {
-          node.preload = 'auto';
-        }
-        node.src = videoUrl;
-        node.load();
+        node.addEventListener('canplay', onLoaded, { once: true });
       });
+    };
     const playVideo = () => {
-      const playPromise = node.play();
-      if (playPromise && typeof playPromise.catch === 'function') {
-        playPromise.catch(() => undefined);
+      const promise = node.play();
+      if (promise && typeof promise.catch === 'function') {
+        promise.catch(() => undefined);
       }
     };
-    if (shouldLoad && !node.src) {
-      if (prefersFullLoadQueue) {
-        enqueueVideoLoad(async () => {
-          await loadVideo();
-          playVideo();
-        });
-      } else {
-        loadVideo().then(playVideo);
-      }
-    } else if (shouldLoad && isActive) {
-      playVideo();
+    if (shouldLoad && isActive) {
+      loadVideo().then(playVideo);
     }
   }, [shouldLoad, isActive, videoUrl]);
 
