@@ -279,8 +279,8 @@ export function EngineSelect({
       updatePosition();
     }
 
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('scroll', handleResize, true);
+    window.addEventListener('resize', handleResize, { passive: true });
+    window.addEventListener('scroll', handleResize, { passive: true, capture: true });
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('scroll', handleResize, true);
@@ -348,7 +348,7 @@ export function EngineSelect({
     }
 
     document.addEventListener('mousedown', handlePointer);
-    document.addEventListener('touchstart', handlePointer);
+    document.addEventListener('touchstart', handlePointer, { passive: true });
     document.addEventListener('keydown', handleKey);
     return () => {
       document.removeEventListener('mousedown', handlePointer);

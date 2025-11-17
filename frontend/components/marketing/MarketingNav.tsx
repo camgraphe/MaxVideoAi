@@ -94,7 +94,7 @@ export function MarketingNav() {
       }
     };
     document.addEventListener('mousedown', handlePointer);
-    document.addEventListener('touchstart', handlePointer);
+    document.addEventListener('touchstart', handlePointer, { passive: true });
     document.addEventListener('keydown', handleKey);
     return () => {
       document.removeEventListener('mousedown', handlePointer);

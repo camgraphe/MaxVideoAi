@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import type { Metadata } from 'next';
+import Head from 'next/head';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
@@ -427,6 +428,7 @@ const selectedOption =
         return descriptor.id.toLowerCase() === selectedEngine.toLowerCase();
       })
     : allVideos;
+  const lcpPosterSrc = videos[0]?.thumbUrl ?? null;
   const hasPreviousPage = currentPage > 1;
   const hasNextPage = currentPage < totalPages;
   const pageSummary =
@@ -510,7 +512,11 @@ const selectedOption =
   })();
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
+    <>
+      <Head>
+        {lcpPosterSrc ? <link rel="preload" as="image" href={lcpPosterSrc} fetchPriority="high" /> : null}
+      </Head>
+      <div className="mx-auto max-w-7xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
       <header className="max-w-3xl space-y-4">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
         <p className="text-base text-text-secondary">{content.hero.subtitle}</p>
@@ -587,7 +593,8 @@ const selectedOption =
 
       <section className="mt-8 overflow-hidden rounded-[32px] border border-hairline bg-white/80 shadow-card">
         <div className="columns-1 gap-[2px] bg-white/60 p-[2px] sm:columns-2 lg:columns-3 xl:columns-4">
-          {videos.map((video) => {
+          {videos.map((video, index) => {
+            const isFirstTile = index === 0;
             const canonicalEngineId = resolveEngineLinkId(video.engineId);
             const href =
               canonicalEngineId && canonicalEngineId.length
@@ -600,6 +607,8 @@ const selectedOption =
             const rawRatio = parseAspectRatio(video.aspectRatio) ?? 16 / 9;
             const clampedRatio = Math.min(Math.max(rawRatio, 0.68), 1.35);
             const displayAspect = `${clampedRatio} / 1`;
+            const posterSrc = video.thumbUrl ?? null;
+            const imageSizes = '(min-width: 1280px) 320px, (min-width: 768px) 280px, 100vw';
 
             return (
               <article
@@ -609,24 +618,43 @@ const selectedOption =
                 <div className="relative">
                   <div className="relative w-full overflow-hidden" style={{ aspectRatio: displayAspect }}>
                     {video.videoUrl ? (
-                      <video
-                        className="absolute inset-0 h-full w-full object-cover"
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                        preload="metadata"
-                        poster={video.thumbUrl}
-                      >
-                        <source src={video.videoUrl} type="video/mp4" />
-                      </video>
+                      <>
+                        {posterSrc ? (
+                          <Image
+                            src={posterSrc}
+                            alt={promptDisplay}
+                            fill
+                            className="absolute inset-0 h-full w-full object-cover"
+                            priority={isFirstTile}
+                            fetchPriority={isFirstTile ? 'high' : undefined}
+                            loading={isFirstTile ? 'eager' : 'lazy'}
+                            quality={80}
+                            sizes={imageSizes}
+                          />
+                        ) : null}
+                        <video
+                          className="absolute inset-0 z-10 h-full w-full object-cover"
+                          autoPlay
+                          muted
+                          loop
+                          playsInline
+                          preload={isFirstTile ? 'auto' : 'metadata'}
+                          poster={posterSrc ?? undefined}
+                        >
+                          <source src={video.videoUrl} type="video/mp4" />
+                        </video>
+                      </>
                     ) : video.thumbUrl ? (
                       <Image
                         src={video.thumbUrl}
                         alt={promptDisplay}
                         fill
                         className="object-cover"
-                        sizes="(min-width: 1280px) 320px, (min-width: 768px) 280px, 100vw"
+                        priority={isFirstTile}
+                        fetchPriority={isFirstTile ? 'high' : undefined}
+                        loading={isFirstTile ? 'eager' : 'lazy'}
+                        quality={80}
+                        sizes={imageSizes}
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center bg-neutral-200 text-xs font-semibold uppercase tracking-micro text-text-muted">
@@ -729,14 +757,15 @@ const selectedOption =
         </nav>
       ) : null}
 
-      {jsonLdChunks.map((chunk, index) => (
-        <script
-          key={`examples-jsonld-${index}`}
-          type="application/ld+json"
-          suppressHydrationWarning
-          dangerouslySetInnerHTML={{ __html: chunk }}
-        />
-      ))}
-    </div>
+        {jsonLdChunks.map((chunk, index) => (
+          <script
+            key={`examples-jsonld-${index}`}
+            type="application/ld+json"
+            suppressHydrationWarning
+            dangerouslySetInnerHTML={{ __html: chunk }}
+          />
+        ))}
+      </div>
+    </>
   );
 }

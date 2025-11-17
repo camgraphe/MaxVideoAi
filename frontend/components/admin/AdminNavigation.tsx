@@ -35,7 +35,7 @@ export function AdminNavigation({ sections }: AdminNavigationProps) {
     }
 
     document.addEventListener('mousedown', handlePointer);
-    document.addEventListener('touchstart', handlePointer);
+    document.addEventListener('touchstart', handlePointer, { passive: true });
     document.addEventListener('keydown', handleEscape);
     return () => {
       document.removeEventListener('mousedown', handlePointer);
