@@ -222,6 +222,7 @@ function MediaPreview({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [shouldLoad, setShouldLoad] = useState(isLcp);
   const [isActive, setIsActive] = useState(isLcp);
+  const [isPosterVisible, setIsPosterVisible] = useState(true);
 
   useEffect(() => {
     if (!videoUrl) return undefined;
@@ -286,6 +287,23 @@ function MediaPreview({
     }
   }, [shouldLoad, isActive, videoUrl]);
 
+  useEffect(() => {
+    const node = videoRef.current;
+    if (!node) return;
+    const handlePlaying = () => setIsPosterVisible(false);
+    const handlePause = () => {
+      if (!shouldLoad) {
+        setIsPosterVisible(true);
+      }
+    };
+    node.addEventListener('playing', handlePlaying);
+    node.addEventListener('pause', handlePause);
+    return () => {
+      node.removeEventListener('playing', handlePlaying);
+      node.removeEventListener('pause', handlePause);
+    };
+  }, [shouldLoad]);
+
   if (!videoUrl) {
     if (!posterUrl) {
       return (
@@ -317,13 +335,17 @@ function MediaPreview({
           src={posterUrl}
           alt={prompt}
           fill
-          className="absolute inset-0 h-full w-full object-cover"
+          className={clsx(
+            'absolute inset-0 h-full w-full object-cover transition-opacity duration-300',
+            isPosterVisible ? 'opacity-100' : 'opacity-0'
+          )}
           priority={isLcp}
           fetchPriority={isLcp ? 'high' : undefined}
           loading={isLcp ? 'eager' : 'lazy'}
           decoding="async"
           quality={80}
           sizes={sizes}
+          aria-hidden
         />
       ) : null}
       <video
