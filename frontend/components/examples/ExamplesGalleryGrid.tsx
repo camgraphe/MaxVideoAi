@@ -281,15 +281,9 @@ function MediaPreview({
       } else {
         loadVideo().then(playVideo);
       }
-    } else if (shouldLoad) {
+    } else if (shouldLoad && isActive) {
       playVideo();
     }
-    if (!shouldLoad || !isActive) {
-      node.pause();
-    }
-    return () => {
-      node.pause();
-    };
   }, [shouldLoad, isActive, videoUrl]);
 
   if (!videoUrl) {
