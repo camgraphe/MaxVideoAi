@@ -140,12 +140,7 @@ function ExampleCard({ video, isFirst }: { video: ExampleGalleryVideo; isFirst: 
   const videoDetailHref = `/video/${encodeURIComponent(video.id)}`;
 
   return (
-    <Link
-      href={videoDetailHref}
-      locale={false}
-      className="group relative mb-[2px] block break-inside-avoid overflow-hidden bg-neutral-900/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
-      aria-label={`Open video ${video.engineLabel}`}
-    >
+    <article className="group relative mb-[2px] break-inside-avoid overflow-hidden bg-neutral-900/5">
       <div className="relative">
         <div className="relative w-full overflow-hidden" style={{ aspectRatio: aspectValue }}>
           <MediaPreview
@@ -157,9 +152,17 @@ function ExampleCard({ video, isFirst }: { video: ExampleGalleryVideo; isFirst: 
           />
           {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available on playback" /> : null}
           <CardOverlay video={video} />
+          <Link
+            href={videoDetailHref}
+            locale={false}
+            className="pointer-events-auto absolute right-3 top-3 inline-flex items-center rounded-full bg-black/60 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-white transition hover:bg-black/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
+            aria-label={`Open video detail for ${video.engineLabel}`}
+          >
+            Open
+          </Link>
         </div>
       </div>
-    </Link>
+    </article>
   );
 }
 
@@ -189,7 +192,6 @@ function CardOverlay({ video }: { video: ExampleGalleryVideo }) {
           href={video.href}
           className="pointer-events-auto rounded-full bg-white/20 px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-micro text-white transition hover:bg-white/40 sm:text-[10px]"
           aria-label={`Generate like render ${video.id}`}
-          onClick={(event) => event.stopPropagation()}
         >
           Generate like this
         </Link>
