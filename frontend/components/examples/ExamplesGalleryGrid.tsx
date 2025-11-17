@@ -214,7 +214,13 @@ function MediaPreview({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [shouldLoad, setShouldLoad] = useState(isLcp);
   const [isActive, setIsActive] = useState(isLcp);
-  const [preloadMode, setPreloadMode] = useState<'none' | 'metadata'>('none');
+  const [preloadMode, setPreloadMode] = useState<'none' | 'metadata'>(() => {
+    if (typeof window === 'undefined') {
+      return 'none';
+    }
+    return window.matchMedia('(pointer: coarse) and (max-width: 1024px)').matches ? 'metadata' : 'none';
+  });
+  const retryTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     const node = videoRef.current;
@@ -275,15 +281,31 @@ function MediaPreview({
 
     let cancelled = false;
 
+    const clearRetry = () => {
+      if (retryTimeoutRef.current !== null) {
+        window.clearTimeout(retryTimeoutRef.current);
+        retryTimeoutRef.current = null;
+      }
+    };
+
+    const scheduleRetry = () => {
+      clearRetry();
+      retryTimeoutRef.current = window.setTimeout(() => {
+        retryTimeoutRef.current = null;
+        attemptPlay();
+      }, 200);
+    };
+
     const attemptPlay = () => {
       if (!node || cancelled || !isActive) return;
       const playPromise = node.play();
       if (playPromise && typeof playPromise.catch === 'function') {
         playPromise.catch(() => {
           if (cancelled || !isActive) return;
-          // iOS Safari may reject before metadata is ready; retry once data loads.
           if (node.readyState < 2) {
             waitForData();
+          } else {
+            scheduleRetry();
           }
         });
       }
@@ -315,6 +337,7 @@ function MediaPreview({
 
     return () => {
       cancelled = true;
+      clearRetry();
       node.removeEventListener('loadeddata', handleCanPlay);
       node.removeEventListener('canplay', handleCanPlay);
     };
