@@ -94,7 +94,7 @@ const HERO_TILES: readonly HeroTileConfig[] = [
   },
 ] as const;
 
-const WORKS_WITH_BRANDS = ['Sora 2', 'Veo 3.1', 'Pika 2.2', 'MiniMax Hailuo 02'] as const;
+const WORKS_WITH_BRANDS = ['Sora 2', 'Veo 3.1', 'Pika 2.2', 'MiniMax Hailuo 02', 'Kling 2.5', 'Wan 2.5', 'Nano Banana'] as const;
 
 const HERO_TILE_EXAMPLE_SLUGS: Record<string, string> = {
   'sora-2': 'sora-2',
@@ -674,7 +674,7 @@ export default async function HomePage() {
             logo: 'https://maxvideoai.com/logo-wordmark.svg',
             sameAs: [],
             description:
-              'Independent hub for AI video generation. Price before you generate. Works with Sora, Veo, Pika, MiniMax.',
+              'Independent hub for AI video generation. Price before you generate. Works with Sora, Veo, Pika, MiniMax, Kling, Wan, Nano Banana.',
           }),
         }}
       />
@@ -697,7 +697,7 @@ export default async function HomePage() {
               description: 'Pay-as-you-go. Load credits to render; no subscription.',
             },
             featureList: [
-              'Multi-engine routing (Sora, Veo, Pika, MiniMax)',
+              'Multi-engine routing (Sora, Veo, Pika, MiniMax, Kling, Wan, Nano Banana)',
               'Live pricing before render',
               'Wallet-first billing with automatic refunds',
               'Composer, gallery, and job tracking in one workspace',
