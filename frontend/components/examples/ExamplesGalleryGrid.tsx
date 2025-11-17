@@ -7,6 +7,13 @@ import clsx from 'clsx';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 
+declare global {
+  interface Window {
+    requestIdleCallback?(cb: IdleRequestCallback): number;
+    cancelIdleCallback?(handle: number): void;
+  }
+}
+
 export type ExampleGalleryVideo = {
   id: string;
   href: string;
@@ -24,6 +31,35 @@ export type ExampleGalleryVideo = {
 };
 
 const BATCH_SIZE = 12;
+const LANDSCAPE_SIZES = '(min-width: 1280px) 400px, 100vw';
+const PORTRAIT_SIZES = '(min-width: 1280px) 300px, 100vw';
+
+function runAfterIdle(work: () => (() => void) | void) {
+  if (typeof window === 'undefined') {
+    return work();
+  }
+  let cleanup: void | (() => void);
+  if ('requestIdleCallback' in window) {
+    const idleId = window.requestIdleCallback(() => {
+      cleanup = work();
+    });
+    return () => {
+      window.cancelIdleCallback?.(idleId);
+      if (typeof cleanup === 'function') {
+        cleanup();
+      }
+    };
+  }
+  const timeout = window.setTimeout(() => {
+    cleanup = work();
+  }, 0);
+  return () => {
+    window.clearTimeout(timeout);
+    if (typeof cleanup === 'function') {
+      cleanup();
+    }
+  };
+}
 
 export function ExamplesGalleryGrid({
   initialVideos,
@@ -55,16 +91,18 @@ export function ExamplesGalleryGrid({
     if (!pendingVideos.length) return undefined;
     const node = sentinelRef.current;
     if (!node) return undefined;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          appendBatch();
-        }
-      },
-      { rootMargin: '600px 0px 0px 0px' }
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
+    return runAfterIdle(() => {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((entry) => entry.isIntersecting)) {
+            appendBatch();
+          }
+        },
+        { rootMargin: '600px 0px 0px 0px' }
+      );
+      observer.observe(node);
+      return () => observer.disconnect();
+    });
   }, [appendBatch, pendingVideos.length]);
 
   return (
@@ -91,12 +129,15 @@ export function ExamplesGalleryGrid({
 }
 
 function ExampleCard({ video, isFirst }: { video: ExampleGalleryVideo; isFirst: boolean }) {
+  const rawAspect = useMemo(() => (video.aspectRatio ? parseAspectRatio(video.aspectRatio) : 16 / 9), [video.aspectRatio]);
   const aspectValue = useMemo(() => {
-    const raw = video.aspectRatio ? parseAspectRatio(video.aspectRatio) : 16 / 9;
+    const raw = rawAspect;
     const clamped = Math.min(Math.max(raw, 0.68), 1.35);
     return `${clamped} / 1`;
-  }, [video.aspectRatio]);
+  }, [rawAspect]);
   const posterSrc = video.optimizedPosterUrl ?? video.rawPosterUrl ?? null;
+  const isPortrait = rawAspect < 1;
+  const posterSizes = isPortrait ? PORTRAIT_SIZES : LANDSCAPE_SIZES;
 
   return (
     <article className="group relative mb-[2px] break-inside-avoid overflow-hidden bg-neutral-900/5">
@@ -107,6 +148,7 @@ function ExampleCard({ video, isFirst }: { video: ExampleGalleryVideo; isFirst: 
             posterUrl={posterSrc}
             prompt={video.prompt}
             isLcp={isFirst}
+            sizes={posterSizes}
           />
           {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available on playback" /> : null}
           <CardOverlay video={video} />
@@ -153,6 +195,7 @@ function CardOverlay({ video }: { video: ExampleGalleryVideo }) {
         <Link
           href={video.href}
           className="pointer-events-auto rounded-full bg-white/20 px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-micro text-white transition hover:bg-white/40 sm:text-[10px]"
+          aria-label={`Generate like render ${video.id}`}
         >
           Generate like this
         </Link>
@@ -167,11 +210,13 @@ function MediaPreview({
   posterUrl,
   prompt,
   isLcp,
+  sizes,
 }: {
   videoUrl: string | null;
   posterUrl: string | null;
   prompt: string;
   isLcp: boolean;
+  sizes: string;
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [shouldLoad, setShouldLoad] = useState(isLcp);
@@ -181,19 +226,21 @@ function MediaPreview({
     if (!videoUrl) return undefined;
     const node = videoRef.current;
     if (!node) return undefined;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setShouldLoad(true);
-          }
-          setIsActive(entry.isIntersecting);
-        });
-      },
-      { rootMargin: isLcp ? '0px' : '300px 0px', threshold: 0.35 }
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
+    return runAfterIdle(() => {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              setShouldLoad(true);
+            }
+            setIsActive(entry.isIntersecting);
+          });
+        },
+        { rootMargin: isLcp ? '0px' : '300px 0px', threshold: 0.35 }
+      );
+      observer.observe(node);
+      return () => observer.disconnect();
+    });
   }, [videoUrl, isLcp]);
 
   useEffect(() => {
@@ -214,8 +261,6 @@ function MediaPreview({
     }
   }, [shouldLoad, isActive, videoUrl]);
 
-  const sizes = '(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 320px';
-
   if (!videoUrl) {
     if (!posterUrl) {
       return (
@@ -233,6 +278,7 @@ function MediaPreview({
         priority={isLcp}
         fetchPriority={isLcp ? 'high' : undefined}
         loading={isLcp ? 'eager' : 'lazy'}
+        decoding="async"
         quality={80}
         sizes={sizes}
       />
@@ -250,6 +296,7 @@ function MediaPreview({
           priority={isLcp}
           fetchPriority={isLcp ? 'high' : undefined}
           loading={isLcp ? 'eager' : 'lazy'}
+          decoding="async"
           quality={80}
           sizes={sizes}
         />
@@ -265,7 +312,9 @@ function MediaPreview({
         loop
         preload="none"
         poster={posterUrl ?? undefined}
-      />
+      >
+        <track kind="captions" srclang="en" label="auto-generated" default />
+      </video>
     </>
   );
 }

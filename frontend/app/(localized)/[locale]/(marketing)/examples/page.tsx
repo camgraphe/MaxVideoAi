@@ -529,9 +529,11 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
   return (
     <>
       <Head>
+        <link rel="preconnect" href="https://videohub-uploads-us.s3.amazonaws.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://v3b.fal.media" crossOrigin="anonymous" />
         {lcpPosterSrc ? <link rel="preload" as="image" href={lcpPosterSrc} fetchPriority="high" /> : null}
       </Head>
-      <div className="mx-auto max-w-7xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
       <header className="max-w-3xl space-y-4">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
         <p className="text-base text-text-secondary">{content.hero.subtitle}</p>
@@ -666,7 +668,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
             dangerouslySetInnerHTML={{ __html: chunk }}
           />
         ))}
-      </div>
+      </main>
     </>
   );
 }
