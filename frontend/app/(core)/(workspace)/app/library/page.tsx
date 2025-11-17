@@ -6,6 +6,7 @@ import { useState, useCallback, useMemo } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
 import deepmerge from 'deepmerge';
+import { Download, Trash2 } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -41,6 +42,7 @@ interface LibraryCopy {
     empty: string;
     deleteError: string;
     deleteButton: string;
+    downloadButton: string;
     deleting: string;
     assetFallback: string;
   };
@@ -62,6 +64,7 @@ const DEFAULT_LIBRARY_COPY: LibraryCopy = {
     empty: 'No imported assets yet. Upload references from the composer or drop files here.',
     deleteError: 'Unable to delete this image.',
     deleteButton: 'Delete',
+    downloadButton: 'Download',
     deleting: 'Deleting…',
     assetFallback: 'Asset',
   },
@@ -203,14 +206,32 @@ export default function LibraryPage() {
                       <p className="truncate text-text-primary">{asset.url.split('/').pop() ?? copy.assets.assetFallback}</p>
                       <p className="text-text-secondary">{formatFileSize(asset.size)}</p>
                       {asset.createdAt ? <p className="text-text-muted">{new Date(asset.createdAt).toLocaleString()}</p> : null}
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteAsset(asset.id)}
-                        disabled={deletingId === asset.id}
-                        className="w-full rounded-input border border-state-warning/40 bg-state-warning/10 py-1 text-[11px] font-semibold text-state-warning transition hover:bg-state-warning/20 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {deletingId === asset.id ? copy.assets.deleting : copy.assets.deleteButton}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <a
+                          href={asset.url}
+                          download
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex flex-1 items-center justify-center gap-1 rounded-input border border-border/70 bg-white py-1 text-[11px] font-semibold text-text-secondary transition hover:border-accent hover:text-accent"
+                          aria-label={`${copy.assets.downloadButton} ${asset.url.split('/').pop() ?? copy.assets.assetFallback}`}
+                        >
+                          <Download className="h-3.5 w-3.5" aria-hidden />
+                          <span>{copy.assets.downloadButton}</span>
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteAsset(asset.id)}
+                          disabled={deletingId === asset.id}
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-state-warning/40 bg-state-warning/10 text-state-warning transition hover:bg-state-warning/20 disabled:cursor-not-allowed disabled:opacity-60"
+                          aria-label={copy.assets.deleteButton}
+                        >
+                          {deletingId === asset.id ? (
+                            <span className="text-[10px] font-semibold">{copy.assets.deleting}</span>
+                          ) : (
+                            <Trash2 className="h-4 w-4" aria-hidden />
+                          )}
+                        </button>
+                      </div>
                     </div>
                   </article>
                 ))}
