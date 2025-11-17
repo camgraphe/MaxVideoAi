@@ -212,8 +212,8 @@ function MediaPreview({
   sizes: string;
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [shouldLoad, setShouldLoad] = useState(isLcp);
   const [isActive, setIsActive] = useState(isLcp);
+  const [hasLoaded, setHasLoaded] = useState(isLcp);
   const [preloadMode, setPreloadMode] = useState<'none' | 'metadata'>(() => {
     if (typeof window === 'undefined') {
       return 'none';
@@ -251,9 +251,6 @@ function MediaPreview({
       const observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              setShouldLoad(true);
-            }
             setIsActive(entry.isIntersecting);
           });
         },
@@ -267,18 +264,18 @@ function MediaPreview({
   useEffect(() => {
     const node = videoRef.current;
     if (!node || !videoUrl) return undefined;
+    const handleLoaded = () => setHasLoaded(true);
+    node.addEventListener('loadeddata', handleLoaded);
+    return () => {
+      node.removeEventListener('loadeddata', handleLoaded);
+    };
+  }, [videoUrl]);
 
-    if (shouldLoad && !node.src) {
-      node.preload = preloadMode;
-      node.src = videoUrl;
-      node.load();
-    }
+  useEffect(() => {
+    const node = videoRef.current;
+    if (!node || !videoUrl) return undefined;
 
-    if (!shouldLoad) {
-      node.pause();
-      return undefined;
-    }
-
+    node.preload = preloadMode;
     let cancelled = false;
 
     const clearRetry = () => {
@@ -341,7 +338,7 @@ function MediaPreview({
       node.removeEventListener('loadeddata', handleCanPlay);
       node.removeEventListener('canplay', handleCanPlay);
     };
-  }, [shouldLoad, isActive, videoUrl, preloadMode]);
+  }, [isActive, videoUrl, preloadMode]);
 
   if (!videoUrl) {
     if (!posterUrl) {
@@ -386,8 +383,8 @@ function MediaPreview({
       <video
         ref={videoRef}
         className={clsx('pointer-events-none absolute inset-0 z-10 h-full w-full object-cover transition duration-300', {
-          'opacity-100': shouldLoad,
-          'opacity-0': !shouldLoad,
+          'opacity-100': hasLoaded,
+          'opacity-0': !hasLoaded,
         })}
         autoPlay
         playsInline
@@ -395,6 +392,7 @@ function MediaPreview({
         loop
         preload={preloadMode}
         poster={posterUrl ?? undefined}
+        src={videoUrl ?? undefined}
       >
         <track kind="captions" srcLang="en" label="auto-generated" default />
       </video>

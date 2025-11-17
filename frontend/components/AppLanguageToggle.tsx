@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { LOCALE_COOKIE } from '@/lib/i18n/constants';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -38,12 +38,8 @@ export function AppLanguageToggle() {
   const router = useRouter();
   const pathname = usePathname();
   const { t } = useI18n();
-  const [pendingLocale, setPendingLocale] = useState<Locale>('en');
+  const [pendingLocale, setPendingLocale] = useState<Locale>(() => detectInitialLocale());
   const [, startTransition] = useTransition();
-
-  useEffect(() => {
-    setPendingLocale(detectInitialLocale());
-  }, []);
 
   const options = useMemo(() => OPTIONS, []);
 
