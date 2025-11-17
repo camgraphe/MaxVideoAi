@@ -7,13 +7,6 @@ import clsx from 'clsx';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 
-declare global {
-  interface Window {
-    requestIdleCallback?(cb: IdleRequestCallback): number;
-    cancelIdleCallback?(handle: number): void;
-  }
-}
-
 export type ExampleGalleryVideo = {
   id: string;
   href: string;
@@ -33,18 +26,24 @@ export type ExampleGalleryVideo = {
 const BATCH_SIZE = 12;
 const LANDSCAPE_SIZES = '(min-width: 1280px) 400px, 100vw';
 const PORTRAIT_SIZES = '(min-width: 1280px) 300px, 100vw';
+type ExtendedWindow = Window &
+  typeof globalThis & {
+    requestIdleCallback?: (callback: IdleRequestCallback) => number;
+    cancelIdleCallback?: (handle: number) => void;
+  };
 
 function runAfterIdle(work: () => (() => void) | void) {
   if (typeof window === 'undefined') {
     return work();
   }
   let cleanup: void | (() => void);
-  if ('requestIdleCallback' in window) {
-    const idleId = window.requestIdleCallback(() => {
+  const win = window as ExtendedWindow;
+  if (typeof win.requestIdleCallback === 'function') {
+    const idleId = win.requestIdleCallback(() => {
       cleanup = work();
     });
     return () => {
-      window.cancelIdleCallback?.(idleId);
+      win.cancelIdleCallback?.(idleId);
       if (typeof cleanup === 'function') {
         cleanup();
       }
