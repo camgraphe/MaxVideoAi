@@ -1,5 +1,6 @@
 import { Link } from '@/i18n/navigation';
 import Image from 'next/image';
+import Head from 'next/head';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { resolveDictionary } from '@/lib/i18n/server';
@@ -11,6 +12,7 @@ import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
 import { getEngineLocalized } from '@/lib/models/i18n';
+import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { serializeJsonLd } from '../model-jsonld';
 
 type PageParams = {
@@ -311,9 +313,16 @@ export default async function ModelDetailPage({ params }: PageParams) {
       }
     : null;
   const schemaPayloads = [showSoraSeo && soraSoftwareSchema, breadcrumbLd].filter(Boolean) as object[];
+  const heroPosterSrc = localizedContent.seo.image ?? engine.media?.imagePath ?? null;
+  const heroPosterPreload = heroPosterSrc ? buildOptimizedPosterUrl(heroPosterSrc, 1280, 70) ?? heroPosterSrc : null;
 
   return (
     <div className="mx-auto max-w-4xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
+      {heroPosterPreload ? (
+        <Head>
+          <link rel="preload" as="image" href={heroPosterPreload} fetchPriority="high" />
+        </Head>
+      ) : null}
       {schemaPayloads.map((schema, index) => (
         <script
           key={`schema-${index}`}

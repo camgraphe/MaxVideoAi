@@ -229,6 +229,7 @@ export default async function BlogPostPage({ params }: { params: Params }) {
                 alt={post.title}
                 fill
                 priority
+                fetchPriority="high"
                 sizes="(min-width: 1024px) 960px, 100vw"
                 className="object-cover object-center"
               />

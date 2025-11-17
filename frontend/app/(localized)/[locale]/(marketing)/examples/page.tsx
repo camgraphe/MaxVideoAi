@@ -4,17 +4,16 @@ import Head from 'next/head';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
-import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { listExamples, listExamplesPage, type ExampleSort } from '@/server/videos';
 import { listFalEngines } from '@/config/falEngines';
-import { EngineIcon } from '@/components/ui/EngineIcon';
-import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
+import { ExamplesGalleryGrid, type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import type { AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls, SITE_BASE_URL } from '@/lib/metadataUrls';
 import { normalizeEngineId } from '@/lib/engine-alias';
+import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 
 const ENGINE_LINK_ALIASES = (() => {
   const map = new Map<string, string>();
@@ -77,6 +76,10 @@ const GALLERY_SLUG_MAP = buildSlugMap('gallery');
 const DEFAULT_SORT: ExampleSort = 'date-desc';
 const ALLOWED_QUERY_KEYS = new Set(['sort', 'engine', 'page']);
 const EXAMPLES_PAGE_SIZE = 60;
+const EXAMPLES_INITIAL_BATCH = 12;
+
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 const ENGINE_FILTER_GROUPS: Record<
   string,
@@ -207,24 +210,6 @@ function formatPrice(priceCents: number | null | undefined, currency: string | n
   } catch {
     return `${normalizedCurrency} ${(priceCents / 100).toFixed(2)}`;
   }
-}
-
-function parseAspectRatio(value?: string | null): number | null {
-  if (!value) return null;
-  const normalized = value.trim();
-  if (!normalized.length) return null;
-  if (normalized.includes(':')) {
-    const [w, h] = normalized.split(':');
-    const width = Number.parseFloat(w);
-    const height = Number.parseFloat(h);
-    if (Number.isFinite(width) && Number.isFinite(height) && height !== 0) {
-      return width / height;
-    }
-    return null;
-  }
-  const ratio = Number.parseFloat(normalized);
-  if (Number.isFinite(ratio) && ratio > 0) return ratio;
-  return null;
 }
 
 function toISODuration(seconds?: number) {
@@ -418,17 +403,45 @@ const selectedOption =
       : null;
   const selectedEngine = selectedOption?.id ?? null;
 
-  const videos = selectedEngine
-    ? allVideos.filter((video) => {
-        const canonicalEngineId = resolveEngineLinkId(video.engineId);
-        if (!canonicalEngineId) return false;
-        const engineMeta = ENGINE_META.get(canonicalEngineId.toLowerCase()) ?? null;
-        const descriptor = resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engineLabel);
-        if (!descriptor) return false;
-        return descriptor.id.toLowerCase() === selectedEngine.toLowerCase();
-      })
-    : allVideos;
-  const lcpPosterSrc = videos[0]?.thumbUrl ?? null;
+const videos = selectedEngine
+  ? allVideos.filter((video) => {
+      const canonicalEngineId = resolveEngineLinkId(video.engineId);
+      if (!canonicalEngineId) return false;
+      const engineMeta = ENGINE_META.get(canonicalEngineId.toLowerCase()) ?? null;
+      const descriptor = resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engineLabel);
+      if (!descriptor) return false;
+      return descriptor.id.toLowerCase() === selectedEngine.toLowerCase();
+    })
+  : allVideos;
+const clientVideos: ExampleGalleryVideo[] = videos.map((video) => {
+  const canonicalEngineId = resolveEngineLinkId(video.engineId);
+  const href =
+    canonicalEngineId && canonicalEngineId.length
+      ? `/generate?from=${encodeURIComponent(video.id)}&engine=${encodeURIComponent(canonicalEngineId)}`
+        : `/generate?from=${encodeURIComponent(video.id)}`;
+    const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
+    const engineMeta = engineKey ? ENGINE_META.get(engineKey) : null;
+    const priceLabel = formatPrice(video.finalPriceCents ?? null, video.currency ?? null);
+    const promptDisplay = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render');
+    return {
+      id: video.id,
+      href,
+      engineLabel: engineMeta?.label ?? video.engineLabel ?? 'Engine',
+      engineIconId: engineMeta?.id ?? canonicalEngineId ?? video.engineId ?? 'engine',
+      engineBrandId: engineMeta?.brandId,
+      priceLabel,
+      prompt: promptDisplay,
+      aspectRatio: video.aspectRatio ?? null,
+      durationSec: video.durationSec,
+      hasAudio: video.hasAudio,
+      optimizedPosterUrl: buildOptimizedPosterUrl(video.thumbUrl),
+      rawPosterUrl: video.thumbUrl ?? null,
+    videoUrl: video.videoUrl ?? null,
+  };
+});
+const initialClientVideos = clientVideos.slice(0, EXAMPLES_INITIAL_BATCH);
+const remainingClientVideos = clientVideos.slice(EXAMPLES_INITIAL_BATCH);
+const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClientVideos[0]?.rawPosterUrl ?? null;
   const hasPreviousPage = currentPage > 1;
   const hasNextPage = currentPage < totalPages;
   const pageSummary =
@@ -592,125 +605,11 @@ const selectedOption =
       </section>
 
       <section className="mt-8 overflow-hidden rounded-[32px] border border-hairline bg-white/80 shadow-card">
-        <div className="columns-1 gap-[2px] bg-white/60 p-[2px] sm:columns-2 lg:columns-3 xl:columns-4">
-          {videos.map((video, index) => {
-            const isFirstTile = index === 0;
-            const canonicalEngineId = resolveEngineLinkId(video.engineId);
-            const href =
-              canonicalEngineId && canonicalEngineId.length
-                ? `/generate?from=${encodeURIComponent(video.id)}&engine=${encodeURIComponent(canonicalEngineId)}`
-                : `/generate?from=${encodeURIComponent(video.id)}`;
-            const engineKey = canonicalEngineId?.toLowerCase() ?? '';
-            const engineMeta = engineKey ? ENGINE_META.get(engineKey) : null;
-            const priceLabel = formatPrice(video.finalPriceCents ?? null, video.currency ?? null);
-            const promptDisplay = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render');
-            const rawRatio = parseAspectRatio(video.aspectRatio) ?? 16 / 9;
-            const clampedRatio = Math.min(Math.max(rawRatio, 0.68), 1.35);
-            const displayAspect = `${clampedRatio} / 1`;
-            const posterSrc = video.thumbUrl ?? null;
-            const imageSizes = '(min-width: 1280px) 320px, (min-width: 768px) 280px, 100vw';
-
-            return (
-              <article
-                key={video.id}
-                className="group relative mb-[2px] break-inside-avoid overflow-hidden bg-neutral-900/5"
-              >
-                <div className="relative">
-                  <div className="relative w-full overflow-hidden" style={{ aspectRatio: displayAspect }}>
-                    {video.videoUrl ? (
-                      <>
-                        {posterSrc ? (
-                          <Image
-                            src={posterSrc}
-                            alt={promptDisplay}
-                            fill
-                            className="absolute inset-0 h-full w-full object-cover"
-                            priority={isFirstTile}
-                            fetchPriority={isFirstTile ? 'high' : undefined}
-                            loading={isFirstTile ? 'eager' : 'lazy'}
-                            quality={80}
-                            sizes={imageSizes}
-                          />
-                        ) : null}
-                        <video
-                          className="absolute inset-0 z-10 h-full w-full object-cover"
-                          autoPlay
-                          muted
-                          loop
-                          playsInline
-                          preload={isFirstTile ? 'auto' : 'metadata'}
-                          poster={posterSrc ?? undefined}
-                        >
-                          <source src={video.videoUrl} type="video/mp4" />
-                        </video>
-                      </>
-                    ) : video.thumbUrl ? (
-                      <Image
-                        src={video.thumbUrl}
-                        alt={promptDisplay}
-                        fill
-                        className="object-cover"
-                        priority={isFirstTile}
-                        fetchPriority={isFirstTile ? 'high' : undefined}
-                        loading={isFirstTile ? 'eager' : 'lazy'}
-                        quality={80}
-                        sizes={imageSizes}
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center bg-neutral-200 text-xs font-semibold uppercase tracking-micro text-text-muted">
-                        Preview unavailable
-                      </div>
-                    )}
-                    {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available on playback" /> : null}
-                    <div className="pointer-events-none absolute inset-0 flex flex-col justify-between bg-gradient-to-b from-black/20 via-black/60 to-black/85 opacity-0 transition duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
-                      <div className="space-y-2.5 p-5 text-white">
-                        <div className="flex items-center gap-2 text-white">
-                          <EngineIcon
-                            engine={{
-                              id: engineMeta?.id ?? video.engineId ?? '',
-                              label: engineMeta?.label ?? video.engineLabel ?? 'Engine',
-                              brandId: engineMeta?.brandId,
-                            }}
-                            size={24}
-                            rounded="full"
-                          />
-                          <h2 className="text-base font-semibold leading-tight sm:text-lg">
-                            {engineMeta?.label ?? video.engineLabel ?? 'Engine'}
-                          </h2>
-                          {priceLabel ? (
-                            <span className="ml-auto text-[11px] font-medium text-white/70 sm:text-xs">{priceLabel}</span>
-                          ) : null}
-                        </div>
-                        <p className="text-[10px] font-medium leading-snug text-white/75 sm:text-[11px]">{promptDisplay}</p>
-                      </div>
-                      <div className="flex items-center justify-between gap-3 p-5 text-[10px] text-white/70 sm:text-xs">
-                        <Link
-                          href={href}
-                          className="pointer-events-auto rounded-full bg-white/20 px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-micro text-white transition hover:bg-white/40 sm:text-[10px]"
-                        >
-                          Generate like this
-                        </Link>
-                        <span className="text-white/60">{video.aspectRatio ?? 'Auto'} · {video.durationSec}s</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                    <Link
-                      href={`/video/${encodeURIComponent(video.id)}`}
-                      locale={false}
-                      className="pointer-events-auto inline-flex h-16 w-16 items-center justify-center text-white/30 transition hover:text-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
-                      aria-label="View this video"
-                    >
-                      <svg width="32" height="36" viewBox="0 0 18 20" fill="currentColor" aria-hidden>
-                        <path d="M16.5 9.134c1 0.577 1 2.155 0 2.732L2.5 20.014C1.5 20.59 0 19.812 0 18.548V2.452C0 1.188 1.5 0.41 2.5 0.986l14 8.148z" />
-                      </svg>
-                    </Link>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
-        </div>
+        <ExamplesGalleryGrid
+          initialVideos={initialClientVideos}
+          remainingVideos={remainingClientVideos}
+          loadMoreLabel={content.pagination?.loadMore ?? 'Load more examples'}
+        />
       </section>
 
       {totalPages > 1 ? (

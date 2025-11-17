@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import Head from 'next/head';
 import { Link } from '@/i18n/navigation';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
@@ -8,6 +9,8 @@ import { getExampleDemos } from '@/server/engine-demos';
 import type { AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
+import { ModelsGallery } from '@/components/marketing/ModelsGallery';
+import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 
 const MODELS_SLUG_MAP = buildSlugMap('models');
 const DEFAULT_INTRO = {
@@ -178,8 +181,42 @@ export default async function ModelsPage() {
   const quickLinks = quickLinkSlugs
     .map((slug) => engineIndex.get(slug))
     .filter((entry): entry is FalEngineEntry => Boolean(entry));
+  const modelCards = engines.map((engine) => {
+    const media = engine.media;
+    const example = demos.get(engine.id);
+    const videoUrl = example?.videoUrl ?? media?.videoUrl ?? null;
+    const poster = example?.posterUrl ?? media?.imagePath ?? '/hero/veo3.jpg';
+    const optimizedPosterUrl = buildOptimizedPosterUrl(poster, 960, 70);
+    const meta = engineMetaCopy[engine.modelSlug] ?? engineMetaCopy[engine.id] ?? null;
+    const engineTypeKey = getEngineTypeKey(engine);
+    const engineType = engineTypeLabels[engineTypeKey] ?? DEFAULT_ENGINE_TYPE_LABELS[engineTypeKey];
+    const versionLabel = meta?.versionLabel ?? engine.versionLabel ?? '';
+    const displayName = meta?.displayName ?? engine.cardTitle ?? getEngineDisplayName(engine);
+    const description = meta?.description ?? engineType;
+    const priceNote = meta?.priceBefore ?? null;
 
-  return (
+    return {
+      id: engine.modelSlug,
+      label: displayName,
+      description,
+      versionLabel,
+      priceNote,
+      priceNoteHref: priceNote ? '/generate' : null,
+      href: `/models/${encodeURIComponent(engine.modelSlug)}`,
+      media: {
+        videoUrl,
+        optimizedPosterUrl,
+        posterUrl: poster,
+      },
+    };
+  });
+  const lcpPosterSrc = modelCards[0]?.media.optimizedPosterUrl ?? modelCards[0]?.media.posterUrl ?? null;
+
+return (
+  <>
+    <Head>
+      {lcpPosterSrc ? <link rel="preload" as="image" href={lcpPosterSrc} fetchPriority="high" /> : null}
+    </Head>
     <div className="mx-auto max-w-5xl px-4 pb-6 pt-16 sm:px-6 lg:px-8">
       <header className="space-y-3">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
@@ -238,88 +275,13 @@ export default async function ModelsPage() {
           </div>
         ) : null}
       </section>
-      <section className="mt-12 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-        {engines.map((engine) => {
-          const media = engine.media;
-          const example = demos.get(engine.id);
-          const videoUrl = example?.videoUrl ?? media?.videoUrl ?? null;
-          const poster = example?.posterUrl ?? media?.imagePath ?? '/hero/veo3.jpg';
-          const meta = engineMetaCopy[engine.modelSlug] ?? engineMetaCopy[engine.id] ?? null;
-          const altText = media?.altText ?? meta?.description ?? `${engine.marketingName} demo preview`;
-          const engineTypeKey = getEngineTypeKey(engine);
-          const engineType = engineTypeLabels[engineTypeKey] ?? DEFAULT_ENGINE_TYPE_LABELS[engineTypeKey];
-          const versionLabel = meta?.versionLabel ?? engine.versionLabel ?? '';
-          const displayName = meta?.displayName ?? engine.cardTitle ?? getEngineDisplayName(engine);
-          const description = meta?.description ?? engineType;
-          const priceNote = meta?.priceBefore ?? null;
-
-          return (
-            <article
-              key={engine.modelSlug}
-              className="group relative min-h-[26rem] overflow-hidden rounded-3xl border border-black/5 bg-white text-neutral-900 shadow-lg transition hover:border-black/10 hover:shadow-xl"
-            >
-              <div className="relative aspect-video overflow-hidden">
-                {videoUrl ? (
-                  <video
-                    className="h-full w-full object-cover opacity-10 transition duration-500 group-hover:scale-105 group-hover:opacity-25"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="none"
-                    poster={poster}
-                  >
-                    <source src={videoUrl} type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-                ) : (
-                  <Image
-                    src={poster}
-                    alt={altText}
-                    fill
-                    className="object-cover opacity-10"
-                    sizes="(min-width: 1280px) 32rem, (min-width: 640px) 50vw, 100vw"
-                  />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-white via-white/70 to-white/50 opacity-95 transition group-hover:opacity-80" />
-              </div>
-              <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-6 pb-24">
-                <div className="flex items-center justify-between text-xs uppercase tracking-[0.18em] text-neutral-500">
-                  <span>{versionLabel}</span>
-                  <span className="rounded-full border border-black/10 px-2 py-1 text-[10px] font-semibold text-neutral-500">MaxVideoAI</span>
-                </div>
-                <div>
-                  <h2 className="text-2xl font-semibold text-neutral-900 transition group-hover:text-neutral-800">{displayName}</h2>
-                  <p className="mt-1 text-sm text-neutral-500">{description}</p>
-                </div>
-                <span className="inline-flex items-center gap-1 text-sm font-semibold text-neutral-900/70 transition group-hover:translate-x-1 group-hover:text-neutral-900">
-                  {cardCtaLabel}
-                </span>
-              </div>
-              {priceNote ? (
-                <Link
-                  href="/generate"
-                  className="absolute left-6 bottom-6 z-20 inline-flex text-xs font-semibold text-accent transition hover:text-accentSoft"
-                >
-                  {priceNote}
-                </Link>
-              ) : null}
-              <Link
-                href={{ pathname: '/models/[slug]', params: { slug: engine.modelSlug } }}
-                className="absolute inset-0 z-10"
-                aria-label={`${cardAriaPrefix} ${engine.marketingName}`}
-              >
-                <span className="sr-only">{cardCtaLabel}</span>
-              </Link>
-            </article>
-          );
-        })}
-      </section>
+      <ModelsGallery cards={modelCards} ctaLabel={cardCtaLabel} />
       {content.note ? (
         <p className="mt-10 rounded-3xl border border-dashed border-hairline bg-bg/70 px-6 py-4 text-sm text-text-secondary">
           {content.note}
         </p>
       ) : null}
     </div>
-  );
+  </>
+);
 }

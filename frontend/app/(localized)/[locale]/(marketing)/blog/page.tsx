@@ -170,6 +170,8 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
               src={featured.image ?? '/og/price-before.png'}
               alt={featured.title}
               fill
+              priority
+              fetchPriority="high"
               sizes="(min-width: 1280px) 720px, (min-width: 1024px) 600px, 100vw"
               className="object-cover object-center transition duration-700 group-hover:scale-105"
             />
@@ -224,6 +226,8 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
                   src={post.image ?? '/og/price-before.png'}
                   alt={post.title ?? 'MaxVideoAI blog cover'}
                   fill
+                  loading="lazy"
+                  decoding="async"
                   sizes="160px"
                   className="object-cover object-center transition duration-700 group-hover:scale-105"
                 />

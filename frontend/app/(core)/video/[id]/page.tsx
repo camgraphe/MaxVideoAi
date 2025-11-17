@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { CSSProperties } from 'react';
 import Image from 'next/image';
+import Head from 'next/head';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Script from 'next/script';
@@ -12,6 +13,7 @@ import { localeRegions, type AppLocale } from '@/i18n/locales';
 import { localizePathFromEnglish, type SupportedLocale } from '@/lib/i18n/paths';
 import { getFalEngineById, getFalEngineBySlug, type FalEngineEntry } from '@/config/falEngines';
 import { normalizeEngineId } from '@/lib/engine-alias';
+import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 
 type PageProps = {
   params: { id: string };
@@ -430,6 +432,8 @@ export default async function VideoPage({ params }: PageProps) {
   const videoUrl = toAbsoluteUrl(video.videoUrl) ?? video.videoUrl ?? canonical;
   const thumbnailUrl = toAbsoluteUrl(video.thumbUrl) ?? FALLBACK_THUMB;
   const poster = video.thumbUrl ?? FALLBACK_POSTER;
+  const optimizedPoster = buildOptimizedPosterUrl(poster, 1280, 70);
+  const playbackPoster = optimizedPoster ?? poster;
   const aspect = parseAspectRatio(video.aspectRatio);
   const isPortrait = aspect ? aspect.width < aspect.height : false;
   const engineEntry = resolveEngineEntry(video.engineId);
@@ -487,6 +491,9 @@ export default async function VideoPage({ params }: PageProps) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
+      <Head>
+        <link rel="preload" as="image" href={playbackPoster} fetchPriority="high" />
+      </Head>
       <div className="mb-6 text-xs uppercase tracking-micro text-text-muted">
         <Link href={examplesPath} className="transition hover:text-text-secondary">
           {copy.backLink}
@@ -502,7 +509,7 @@ export default async function VideoPage({ params }: PageProps) {
               {video.videoUrl ? (
                 <video
                   controls
-                  poster={poster}
+                  poster={playbackPoster}
                   className="h-full w-full object-contain"
                   playsInline
                   preload="metadata"
@@ -512,7 +519,7 @@ export default async function VideoPage({ params }: PageProps) {
                 </video>
               ) : (
                 <Image
-                  src={poster}
+                  src={playbackPoster}
                   alt={heroHeading}
                   fill
                   className="object-contain"
