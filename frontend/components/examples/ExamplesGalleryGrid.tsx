@@ -323,7 +323,7 @@ function MediaPreview({
           alt={prompt}
           fill
           className={clsx(
-            'absolute inset-0 h-full w-full object-cover transition-opacity duration-300',
+            'pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-300',
             isPosterVisible ? 'opacity-100' : 'opacity-0'
           )}
           priority={isLcp}
@@ -337,7 +337,7 @@ function MediaPreview({
       ) : null}
       <video
         ref={videoRef}
-        className={clsx('absolute inset-0 z-10 h-full w-full object-cover transition duration-300', {
+        className={clsx('pointer-events-none absolute inset-0 z-10 h-full w-full object-cover transition duration-300', {
           'opacity-100': shouldLoad,
           'opacity-0': !shouldLoad,
         })}
