@@ -54,6 +54,11 @@ const SECTION_GROUPS: Array<{
         description: 'Inspect charges and refunds, issue manual wallet credits.',
         href: '/admin/transactions',
       },
+      {
+        title: 'Service notice',
+        description: 'Broadcast dashboard banners during supplier incidents.',
+        href: '/admin/system',
+      },
     ],
   },
   {

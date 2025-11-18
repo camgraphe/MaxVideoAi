@@ -23,6 +23,20 @@ export function HeaderBar() {
   const menuRef = useRef<HTMLDivElement>(null);
   const walletPromptCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const walletPromptId = useId();
+  const serviceNoticeEnv = process.env.NEXT_PUBLIC_SERVICE_NOTICE;
+  const envNotice =
+    serviceNoticeEnv && serviceNoticeEnv.toLowerCase() === 'off'
+      ? ''
+      : serviceNoticeEnv?.trim() ?? '';
+  const defaultNotice = envNotice
+    ? envNotice
+    : t(
+        'workspace.header.serviceNotice',
+        'Nous rencontrons actuellement des problèmes avec certains fournisseurs vidéo. Les rendus peuvent être retardés pendant que nous travaillons à la résolution.'
+      );
+  const [serviceNotice, setServiceNotice] = useState(envNotice);
+  const bannerMessage = serviceNotice?.trim() ?? '';
+  const showServiceNotice = Boolean(bannerMessage);
   useEffect(() => {
     let mounted = true;
     const fetchAccountState = async (token?: string | null) => {
@@ -62,6 +76,38 @@ export function HeaderBar() {
       window.removeEventListener('wallet:invalidate', handleInvalidate);
     };
   }, []);
+
+  useEffect(() => {
+    let isActive = true;
+    const fetchNotice = async () => {
+      try {
+        const response = await fetch('/api/service-notice', { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error('Failed to fetch notice');
+        }
+        const data = (await response.json().catch(() => null)) as { enabled?: boolean; message?: string } | null;
+        if (!isActive || !data) return;
+        if (data.enabled && data.message) {
+          setServiceNotice(data.message);
+        } else {
+          setServiceNotice('');
+        }
+      } catch {
+        if (isActive && !envNotice) {
+          setServiceNotice(defaultNotice);
+        } else if (isActive && envNotice) {
+          setServiceNotice(envNotice);
+        }
+      }
+    };
+    fetchNotice();
+    const interval = window.setInterval(fetchNotice, 60_000);
+    return () => {
+      isActive = false;
+      window.clearInterval(interval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [envNotice, defaultNotice]);
 
   useEffect(() => {
     if (!accountMenuOpen) return;
@@ -134,6 +180,11 @@ export function HeaderBar() {
 
   return (
     <>
+      {showServiceNotice ? (
+        <div className="relative z-40 border-b border-amber-200 bg-amber-50 px-4 py-2 text-center text-xs font-medium text-amber-900 sm:text-sm" role="status" aria-live="polite">
+          {bannerMessage}
+        </div>
+      ) : null}
       <header
         className={clsx(
           'sticky top-0 z-40 flex h-[var(--header-height)] items-center justify-between px-6 lg:px-8',
