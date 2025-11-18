@@ -43,6 +43,7 @@ type VideoMode = Extract<Mode, 't2v' | 'i2v' | 'i2i'>;
 
 const LUMA_RAY2_TIMEOUT_MS = 180_000;
 const FAL_RETRY_DELAYS_MS = [5_000, 15_000, 30_000];
+const FAL_HARD_TIMEOUT_MS = 120_000;
 const FAL_PROGRESS_FLOOR = 10;
 
 const TRANSIENT_FAL_STATUS_CODES = new Set([404, 408, 409, 410, 412, 425, 500, 502, 503, 504, 522, 524, 598]);
@@ -1228,6 +1229,7 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     }
   };
 
+  let jobInserted = false;
   try {
     await query(
         `INSERT INTO app_jobs (
@@ -1310,9 +1312,10 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
         true,
       ]
     );
+    jobInserted = true;
   } catch (error) {
     console.error('[api/generate] failed to persist provisional job record', error);
-    if (walletChargeReserved && pendingReceipt) {
+    if (walletChargeReserved && pendingReceipt && !jobInserted) {
       try {
         await query(
           `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct)
@@ -1360,7 +1363,10 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
             },
           }
         );
-        generationResult = isLumaRay2 ? await withFalTimeout(promise, LUMA_RAY2_TIMEOUT_MS) : await promise;
+        generationResult = await withFalTimeout(
+          promise,
+          isLumaRay2 ? LUMA_RAY2_TIMEOUT_MS : FAL_HARD_TIMEOUT_MS
+        );
         break;
       } catch (error) {
         lastError = error;

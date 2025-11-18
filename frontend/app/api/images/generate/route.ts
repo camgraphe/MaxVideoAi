@@ -408,6 +408,7 @@ export async function POST(req: NextRequest) {
 
   await ensureUserPreferredCurrency(userId, DISPLAY_CURRENCY_LOWER);
 
+  let jobInserted = false;
   try {
     await query(
       `INSERT INTO app_jobs (
@@ -490,9 +491,12 @@ export async function POST(req: NextRequest) {
         true,
       ]
     );
+    jobInserted = true;
   } catch (error) {
     console.error('[images] failed to persist provisional job record', error);
-    await recordRefundReceipt(pendingReceipt, `Refund ${engine.label} - ${numImages} images`, priceOnlyReceipts);
+    if (!jobInserted) {
+      await recordRefundReceipt(pendingReceipt, `Refund ${engine.label} - ${numImages} images`, priceOnlyReceipts);
+    }
     return respondError(mode, 'job_persist_failed', 'Failed to save job record.', 500);
   }
 
