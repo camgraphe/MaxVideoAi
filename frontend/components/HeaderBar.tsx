@@ -24,10 +24,10 @@ export function HeaderBar() {
   const walletPromptCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const walletPromptId = useId();
   const serviceNoticeEnv = process.env.NEXT_PUBLIC_SERVICE_NOTICE;
-  const envNotice =
+  const envNotice: string =
     serviceNoticeEnv && serviceNoticeEnv.toLowerCase() === 'off'
       ? ''
-      : (serviceNoticeEnv?.trim() ?? '');
+      : serviceNoticeEnv?.trim() ?? '';
   const defaultNotice: string =
     envNotice ||
     t(
