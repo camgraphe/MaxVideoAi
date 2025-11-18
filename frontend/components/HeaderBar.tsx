@@ -27,14 +27,14 @@ export function HeaderBar() {
   const envNotice =
     serviceNoticeEnv && serviceNoticeEnv.toLowerCase() === 'off'
       ? ''
-      : serviceNoticeEnv?.trim() ?? '';
-  const defaultNotice = envNotice
-    ? envNotice
-    : t(
-        'workspace.header.serviceNotice',
-        'Nous rencontrons actuellement des problèmes avec certains fournisseurs vidéo. Les rendus peuvent être retardés pendant que nous travaillons à la résolution.'
-      );
-  const [serviceNotice, setServiceNotice] = useState(envNotice);
+      : (serviceNoticeEnv?.trim() ?? '');
+  const defaultNotice: string =
+    envNotice ||
+    t(
+      'workspace.header.serviceNotice',
+      'Nous rencontrons actuellement des problèmes avec certains fournisseurs vidéo. Les rendus peuvent être retardés pendant que nous travaillons à la résolution.'
+    );
+  const [serviceNotice, setServiceNotice] = useState<string>(envNotice);
   const bannerMessage = serviceNotice?.trim() ?? '';
   const showServiceNotice = Boolean(bannerMessage);
   useEffect(() => {
