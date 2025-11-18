@@ -30,12 +30,12 @@ export function HeaderBar() {
       : serviceNoticeEnv
         ? serviceNoticeEnv.trim()
         : '';
-  const defaultNotice: string =
-    envNotice ||
+  const localizedNotice =
     t(
       'workspace.header.serviceNotice',
       'Nous rencontrons actuellement des problèmes avec certains fournisseurs vidéo. Les rendus peuvent être retardés pendant que nous travaillons à la résolution.'
-    );
+    ) ?? '';
+  const defaultNotice: string = envNotice || localizedNotice || '';
   const [serviceNotice, setServiceNotice] = useState<string>(envNotice);
   const bannerMessage = serviceNotice?.trim() ?? '';
   const showServiceNotice = Boolean(bannerMessage);
