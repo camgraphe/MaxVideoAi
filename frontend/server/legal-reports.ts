@@ -1,6 +1,6 @@
 import { isDatabaseConfigured, query } from '@/lib/db';
-import { ENV } from '@/lib/env';
 import { postSlackMessage } from '@/server/slack';
+import { getDefaultFromAddress, getMailer } from '@/server/mailer';
 
 type CreateLegalReportInput = {
   email: string;
@@ -54,23 +54,24 @@ export async function createLegalReport(input: CreateLegalReportInput): Promise<
 }
 
 async function notifyLegalTeam(reportId: string, payload: CreateLegalReportInput): Promise<void> {
-  if (LEGAL_NOTIFY_EMAIL && ENV.RESEND_API_KEY && ENV.EMAIL_FROM) {
-    const { Resend } = await import('resend');
-    const resend = new Resend(ENV.RESEND_API_KEY);
+  const mailer = getMailer();
+  const fromAddress = getDefaultFromAddress();
+  if (LEGAL_NOTIFY_EMAIL && mailer && fromAddress) {
     const subject = `[MaxVideoAI] New legal report (${payload.reason})`;
     const attachment =
       payload.attachmentBase64 && payload.attachmentName
         ? [
             {
               filename: payload.attachmentName,
-              content: payload.attachmentBase64,
+              content: Buffer.from(payload.attachmentBase64, 'base64'),
+              encoding: 'base64',
             },
           ]
         : undefined;
 
     try {
-      await resend.emails.send({
-        from: ENV.EMAIL_FROM,
+      await mailer.sendMail({
+        from: fromAddress,
         to: LEGAL_NOTIFY_EMAIL,
         subject,
         text: [
