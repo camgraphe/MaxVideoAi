@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
@@ -444,20 +443,11 @@ function MediaPreview({
   onVideoRef?: (video: HTMLVideoElement | null) => void;
   shouldRenderVideo?: boolean;
 }) {
-  const [hasLoaded, setHasLoaded] = useState(false);
   const hasPrimedRef = useRef(false);
-
-  useEffect(() => {
-    setHasLoaded(false);
-  }, [videoUrl, shouldRenderVideo]);
 
   useEffect(() => {
     hasPrimedRef.current = false;
   }, [videoUrl]);
-
-  const handleVideoReady = useCallback(() => {
-    setHasLoaded(true);
-  }, []);
 
   const primeVideo = useCallback((node: HTMLVideoElement) => {
     if (hasPrimedRef.current) return;
@@ -496,70 +486,33 @@ function MediaPreview({
   );
 
   if (!videoUrl || !shouldRenderVideo) {
-    if (!posterUrl) {
-      return (
-        <div className="absolute inset-0 flex items-center justify-center bg-neutral-200 text-xs font-semibold uppercase tracking-micro text-text-muted">
-          Preview unavailable
-        </div>
-      );
-    }
     return (
-      <Image
-        src={posterUrl}
-        alt={prompt}
-        fill
-        className="pointer-events-none object-cover"
-        priority={isLcp}
-        fetchPriority={isLcp ? 'high' : undefined}
-        loading={isLcp ? 'eager' : 'lazy'}
-        decoding="async"
-        quality={80}
-        sizes={sizes}
+      <video
+        className="absolute inset-0 z-0 h-full w-full object-cover"
+        poster={posterUrl ?? undefined}
+        muted
+        playsInline
+        preload="metadata"
+        aria-label={prompt}
       />
     );
   }
 
-  const shouldHidePoster = hasLoaded;
-
   return (
-    <>
-      {posterUrl ? (
-        <Image
-          src={posterUrl}
-          alt={prompt}
-          fill
-          className={clsx('absolute inset-0 h-full w-full object-cover transition-opacity duration-300', {
-            'opacity-0': shouldHidePoster,
-            'opacity-100': !shouldHidePoster,
-          })}
-          priority={isLcp}
-          fetchPriority={isLcp ? 'high' : undefined}
-          loading={isLcp ? 'eager' : 'lazy'}
-          decoding="async"
-          quality={80}
-          sizes={sizes}
-        />
-      ) : (
-        <div className="absolute inset-0 flex items-center justify-center bg-neutral-200 text-xs font-semibold uppercase tracking-micro text-text-muted">
-          Preview unavailable
-        </div>
-      )}
-      <video
-        ref={setVideoElement}
-        className="absolute inset-0 z-10 h-full w-full object-cover"
-        src={videoUrl ?? undefined}
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        poster={posterUrl ?? undefined}
-        onLoadedData={handleVideoReady}
-        onPlaying={handleVideoReady}
-      >
-        <track kind="captions" srcLang="en" label="auto-generated" default />
-      </video>
-    </>
+    <video
+      ref={setVideoElement}
+      className="absolute inset-0 z-0 h-full w-full object-cover"
+      src={videoUrl ?? undefined}
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="metadata"
+      poster={posterUrl ?? undefined}
+      aria-label={prompt}
+    >
+      <track kind="captions" srcLang="en" label="auto-generated" default />
+    </video>
   );
 }
 
