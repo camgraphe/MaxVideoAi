@@ -246,6 +246,7 @@ function MediaPreview({
     attachedSrcRef.current = videoUrl;
     setHasLoaded(false);
     node.src = videoUrl;
+    node.load();
   }, [isActive, videoUrl]);
 
   useEffect(() => {
@@ -257,6 +258,10 @@ function MediaPreview({
     node.load();
     setHasLoaded(false);
   }, [videoUrl]);
+
+  const handleVideoReady = useCallback(() => {
+    setHasLoaded(true);
+  }, []);
 
   if (!videoUrl) {
     if (!posterUrl) {
@@ -289,7 +294,10 @@ function MediaPreview({
           src={posterUrl}
           alt={prompt}
           fill
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+          className={clsx('pointer-events-none absolute inset-0 h-full w-full object-cover transition duration-300', {
+            'opacity-0': hasLoaded,
+            'opacity-100': !hasLoaded,
+          })}
           priority={isLcp}
           fetchPriority={isLcp ? 'high' : undefined}
           loading={isLcp ? 'eager' : 'lazy'}
@@ -314,7 +322,8 @@ function MediaPreview({
         playsInline
         preload="metadata"
         poster={posterUrl ?? undefined}
-        onLoadedData={() => setHasLoaded(true)}
+        onLoadedData={handleVideoReady}
+        onPlay={handleVideoReady}
       >
         <track kind="captions" srcLang="en" label="auto-generated" default />
       </video>
