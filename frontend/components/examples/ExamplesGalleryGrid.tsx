@@ -498,7 +498,7 @@ function MediaPreview({
         preload="metadata"
         poster={posterUrl ?? undefined}
         onLoadedData={handleVideoReady}
-        onPlay={handleVideoReady}
+        onPlaying={handleVideoReady}
       >
         <track kind="captions" srcLang="en" label="auto-generated" default />
       </video>
