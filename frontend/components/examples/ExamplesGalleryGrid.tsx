@@ -247,6 +247,17 @@ export function ExamplesGalleryGrid({
     };
   }, [computeRowsAndActive, throttledScrollHandler]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handleLoad = () => {
+      computeRowsAndActive();
+    };
+    window.addEventListener('load', handleLoad);
+    return () => {
+      window.removeEventListener('load', handleLoad);
+    };
+  }, [computeRowsAndActive]);
+
   if (!isClient) {
     return (
       <>
@@ -488,12 +499,24 @@ function MediaPreview({
       node.pause();
       return;
     }
-    const playPromise = node.play();
-    if (typeof playPromise?.catch === 'function') {
-      playPromise.catch(() => {
-        onAutoplayError?.();
-      });
-    }
+    const tryPlay = async () => {
+      try {
+        await node.play();
+      } catch {
+        const handleLoadedData = () => {
+          node
+            .play()
+            .catch(() => {
+              onAutoplayError?.();
+            })
+            .finally(() => {
+              node.removeEventListener('loadeddata', handleLoadedData);
+            });
+        };
+        node.addEventListener('loadeddata', handleLoadedData, { once: true });
+      }
+    };
+    void tryPlay();
   }, [shouldPlay, onAutoplayError]);
 
   if (!videoUrl) {
@@ -509,7 +532,7 @@ function MediaPreview({
         src={posterUrl}
         alt={altText || prompt}
         fill
-        className="pointer-events-none object-cover"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover"
         priority={isLcp}
         fetchPriority={isLcp ? 'high' : undefined}
         loading={isLcp ? 'eager' : 'lazy'}
