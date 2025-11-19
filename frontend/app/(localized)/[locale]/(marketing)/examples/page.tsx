@@ -559,7 +559,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
         ) : null}
       </section>
 
-      <section className="mt-8 overflow-hidden rounded-[32px] border border-hairline bg-white/80 shadow-card">
+      <section className="mt-8 overflow-hidden rounded-[12px] border border-hairline bg-white/80 shadow-card">
         <ExamplesGalleryGrid
           initialVideos={initialClientVideos}
           remainingVideos={remainingClientVideos}

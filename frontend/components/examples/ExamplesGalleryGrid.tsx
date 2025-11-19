@@ -270,7 +270,8 @@ export function ExamplesGalleryGrid({
     }));
     visibleVideos.forEach((video) => {
       const aspect = video.aspectRatio ? parseAspectRatio(video.aspectRatio) : 16 / 9;
-      const estimatedHeight = aspect > 0 ? 1 / aspect : 1;
+      const displayAspect = getDisplayAspect(aspect);
+      const estimatedHeight = displayAspect > 0 ? 1 / displayAspect : 1;
       let targetColumn = columns[0];
       for (const column of columns) {
         if (column.height < targetColumn.height) {
@@ -286,7 +287,7 @@ export function ExamplesGalleryGrid({
   if (!isClient) {
     return (
       <>
-        <div className="grid gap-4 bg-white/60 p-4 grid-cols-1">
+        <div className="grid gap-[2px] bg-white/60 p-[2px] grid-cols-1">
           {visibleVideos.map((video, index) => (
             <ExampleCard
               key={video.id}
@@ -314,11 +315,11 @@ export function ExamplesGalleryGrid({
 
   return (
     <>
-      <div className="flex gap-4 bg-white/60 p-4" style={{ minHeight: 0 }}>
+      <div className="flex gap-[2px] bg-white/60 p-[2px]" style={{ minHeight: 0 }}>
         {masonryColumns.map((column, columnIndex) => (
           <div
             key={`masonry-column-${columnIndex}`}
-            className="flex min-w-0 flex-1 flex-col gap-4"
+            className="flex min-w-0 flex-1 flex-col gap-[2px]"
             style={{ width: `${100 / columnCount}%` }}
           >
             {column.items.map((video, index) => (
@@ -358,7 +359,7 @@ function ExampleCard({
   onVisibilityChange?: (payload: VideoVisibilityPayload) => void;
 }) {
   const rawAspect = useMemo(() => (video.aspectRatio ? parseAspectRatio(video.aspectRatio) : 16 / 9), [video.aspectRatio]);
-  const cssAspectRatio = useMemo(() => formatCssAspectRatio(video.aspectRatio), [video.aspectRatio]);
+  const displayAspect = useMemo(() => getDisplayAspect(rawAspect), [rawAspect]);
   const posterSrc = video.optimizedPosterUrl ?? video.rawPosterUrl ?? null;
   const isPortrait = rawAspect < 1;
   const posterSizes = isPortrait ? PORTRAIT_SIZES : LANDSCAPE_SIZES;
@@ -462,8 +463,8 @@ function ExampleCard({
       >
         <div
           ref={containerRef}
-          className="relative w-full overflow-hidden rounded-lg bg-neutral-900/5"
-          style={{ aspectRatio: cssAspectRatio }}
+          className="relative w-full overflow-hidden bg-neutral-900/5"
+          style={{ aspectRatio: `${displayAspect} / 1` }}
         >
           <MediaPreview
             videoUrl={video.videoUrl ?? null}
@@ -645,6 +646,16 @@ function formatCssAspectRatio(value: string | null | undefined): string {
     return `${numeric} / 1`;
   }
   return '16 / 9';
+}
+
+function getDisplayAspect(raw: number): number {
+  if (!Number.isFinite(raw) || raw <= 0) return 16 / 9;
+  const minVertical = 0.8;
+  const maxHorizontal = 1.35;
+  if (raw < 1) {
+    return Math.max(raw, minVertical);
+  }
+  return Math.min(raw, maxHorizontal);
 }
 
 function dedupeVideos(videos: ExampleGalleryVideo[]): ExampleGalleryVideo[] {
