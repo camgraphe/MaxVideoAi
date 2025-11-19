@@ -89,6 +89,7 @@ export function ExamplesGalleryGrid({
   const visibilityRegistryRef = useRef<Map<string, RegistryEntry>>(new Map());
   const activeVideoIdRef = useRef<string | null>(null);
   const frameHandleRef = useRef<number | null>(null);
+  const [isMobileLayout, setIsMobileLayout] = useState(false);
   const resetVideoRef = useCallback((video: HTMLVideoElement) => {
     video.pause();
     if (typeof window !== 'undefined') {
@@ -130,14 +131,10 @@ export function ExamplesGalleryGrid({
       if (!entry.ref) return;
       if (id === nextId) {
         if (activeVideoIdRef.current !== id || entry.ref.paused) {
-          window.setTimeout(() => {
-            window.requestAnimationFrame(() => {
-              const playPromise = entry.ref.play();
-              if (typeof playPromise?.catch === 'function') {
-                playPromise.catch(() => {});
-              }
-            });
-          }, 30);
+          const playPromise = entry.ref.play();
+          if (typeof playPromise?.catch === 'function') {
+            playPromise.catch(() => {});
+          }
         }
       } else if (!entry.ref.paused) {
         resetVideoRef(entry.ref);
@@ -166,7 +163,7 @@ export function ExamplesGalleryGrid({
       visibilityRegistryRef.current.set(id, { ref: video, ratio });
       schedulePlaybackUpdate();
     },
-    [resetVideoRef, schedulePlaybackUpdate]
+    [schedulePlaybackUpdate]
   );
 
   useEffect(() => {
@@ -214,15 +211,31 @@ export function ExamplesGalleryGrid({
     });
   }, [appendBatch, pendingVideos.length]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const updateLayout = () => {
+      setIsMobileLayout(window.innerWidth < 768);
+    };
+    updateLayout();
+    window.addEventListener('resize', updateLayout);
+    return () => window.removeEventListener('resize', updateLayout);
+  }, []);
+
   return (
     <>
-      <div className="grid grid-cols-1 gap-[2px] bg-white/60 p-[2px] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div
+        className={clsx('bg-white/60 p-[2px]', {
+          'space-y-[2px]': isMobileLayout,
+          'columns-1 gap-[2px] sm:columns-2 lg:columns-3 xl:columns-4': !isMobileLayout,
+        })}
+      >
         {visibleVideos.map((video, index) => (
           <ExampleCard
             key={video.id}
             video={video}
             isFirst={index === 0}
             onVisibilityChange={handleVisibilityChange}
+            forceFullWidth={isMobileLayout}
           />
         ))}
       </div>
@@ -246,10 +259,12 @@ function ExampleCard({
   video,
   isFirst,
   onVisibilityChange,
+  forceFullWidth,
 }: {
   video: ExampleGalleryVideo;
   isFirst: boolean;
   onVisibilityChange?: (payload: VideoVisibilityPayload) => void;
+  forceFullWidth: boolean;
 }) {
   const rawAspect = useMemo(() => (video.aspectRatio ? parseAspectRatio(video.aspectRatio) : 16 / 9), [video.aspectRatio]);
   const aspectValue = useMemo(() => {
@@ -266,63 +281,36 @@ function ExampleCard({
   const shouldReportVisibility = Boolean(video.videoUrl);
   const videoElementRef = useRef<HTMLVideoElement | null>(null);
   const lastRatioRef = useRef(isFirst ? 1 : 0);
-  const [shouldRenderVideo, setShouldRenderVideo] = useState(() => Boolean(isFirst && video.videoUrl));
-  const [allowOverlay, setAllowOverlay] = useState(false);
-
-  useEffect(() => {
-    if (!shouldRenderVideo) {
-      setAllowOverlay(false);
-    }
-  }, [shouldRenderVideo]);
-
-  useEffect(() => {
-    if (!video.videoUrl) {
-      setShouldRenderVideo(false);
-    }
-  }, [video.videoUrl]);
 
   const emitVisibility = useCallback(
     (ratio: number, isIntersecting: boolean) => {
       lastRatioRef.current = ratio;
       if (!shouldReportVisibility || !onVisibilityChange) return;
       const meetsThreshold = isIntersecting && ratio >= VIDEO_PREPARE_THRESHOLD;
-      const nextShouldRender = Boolean(video.videoUrl) && meetsThreshold;
-      setShouldRenderVideo(nextShouldRender);
       onVisibilityChange({
         id: video.id,
-        video: nextShouldRender ? videoElementRef.current : null,
-        ratio: nextShouldRender ? ratio : 0,
-        isVisible: nextShouldRender,
+        video: meetsThreshold ? videoElementRef.current : null,
+        ratio: meetsThreshold ? ratio : 0,
+        isVisible: meetsThreshold,
       });
     },
-    [onVisibilityChange, shouldReportVisibility, video.id, video.videoUrl]
+    [onVisibilityChange, shouldReportVisibility, video.id]
   );
 
   const handleVideoRef = useCallback(
     (node: HTMLVideoElement | null) => {
       videoElementRef.current = node;
       if (!shouldReportVisibility || !onVisibilityChange) return;
-      if (!shouldRenderVideo) return;
+      const meetsThreshold = lastRatioRef.current >= VIDEO_PREPARE_THRESHOLD;
       onVisibilityChange({
         id: video.id,
-        video: node,
-        ratio: lastRatioRef.current,
-        isVisible: Boolean(node),
+        video: meetsThreshold && node ? node : null,
+        ratio: meetsThreshold ? lastRatioRef.current : 0,
+        isVisible: meetsThreshold && Boolean(node),
       });
     },
-    [onVisibilityChange, shouldReportVisibility, shouldRenderVideo, video.id]
+    [onVisibilityChange, shouldReportVisibility, video.id]
   );
-
-  useEffect(() => {
-    if (!shouldReportVisibility || !onVisibilityChange) return;
-    const node = videoElementRef.current;
-    onVisibilityChange({
-      id: video.id,
-      video: shouldRenderVideo ? node : null,
-      ratio: shouldRenderVideo ? lastRatioRef.current : 0,
-      isVisible: shouldRenderVideo && Boolean(node),
-    });
-  }, [onVisibilityChange, shouldRenderVideo, shouldReportVisibility, video.id]);
 
   useEffect(() => {
     if (!shouldReportVisibility) return undefined;
@@ -371,7 +359,7 @@ function ExampleCard({
   );
 
   return (
-    <article className="relative mb-[2px]">
+    <article className={clsx('relative mb-[2px]', { 'break-inside-avoid': !forceFullWidth })}>
       <div
         ref={containerRef}
         className="group relative block w-full cursor-pointer overflow-hidden bg-neutral-900/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
@@ -389,11 +377,9 @@ function ExampleCard({
           isLcp={isFirst}
           sizes={posterSizes}
           onVideoRef={shouldReportVisibility ? handleVideoRef : undefined}
-          shouldRenderVideo={shouldRenderVideo}
-          onPlaybackStart={() => setAllowOverlay(true)}
         />
         {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available on playback" /> : null}
-        {allowOverlay ? <CardOverlay video={video} /> : null}
+        <CardOverlay video={video} />
       </div>
     </article>
   );
@@ -442,8 +428,6 @@ function MediaPreview({
   isLcp,
   sizes,
   onVideoRef,
-  shouldRenderVideo = true,
-  onPlaybackStart,
 }: {
   videoUrl: string | null;
   posterUrl: string | null;
@@ -451,70 +435,25 @@ function MediaPreview({
   isLcp: boolean;
   sizes: string;
   onVideoRef?: (video: HTMLVideoElement | null) => void;
-  shouldRenderVideo?: boolean;
-  onPlaybackStart?: () => void;
 }) {
   const [hasLoaded, setHasLoaded] = useState(false);
-  const hasPrimedRef = useRef(false);
-  const hasNotifiedPlaybackRef = useRef(false);
 
   useEffect(() => {
     setHasLoaded(false);
-    hasNotifiedPlaybackRef.current = false;
-  }, [videoUrl, shouldRenderVideo]);
-
-  useEffect(() => {
-    hasPrimedRef.current = false;
   }, [videoUrl]);
-
-  const handlePlaybackStarted = useCallback(() => {
-    if (hasNotifiedPlaybackRef.current) return;
-    hasNotifiedPlaybackRef.current = true;
-    onPlaybackStart?.();
-  }, [onPlaybackStart]);
 
   const handleVideoReady = useCallback(() => {
     setHasLoaded(true);
-    handlePlaybackStarted();
-  }, [handlePlaybackStarted]);
-
-  const primeVideo = useCallback((node: HTMLVideoElement) => {
-    if (hasPrimedRef.current) return;
-    hasPrimedRef.current = true;
-    node.muted = true;
-    node.playsInline = true;
-    node.preload = 'auto';
-    try {
-      const playPromise = node.play();
-      if (typeof playPromise?.then === 'function') {
-        playPromise
-          .then(() => {
-            node.pause();
-            node.currentTime = 0;
-          })
-          .catch(() => {
-            hasPrimedRef.current = false;
-          });
-      } else {
-        node.pause();
-        node.currentTime = 0;
-      }
-    } catch {
-      hasPrimedRef.current = false;
-    }
   }, []);
 
   const setVideoElement = useCallback(
     (node: HTMLVideoElement | null) => {
       onVideoRef?.(node);
-      if (node) {
-        primeVideo(node);
-      }
     },
-    [onVideoRef, primeVideo]
+    [onVideoRef]
   );
 
-  if (!videoUrl || !shouldRenderVideo) {
+  if (!videoUrl) {
     if (!posterUrl) {
       return (
         <div className="absolute inset-0 flex items-center justify-center bg-neutral-200 text-xs font-semibold uppercase tracking-micro text-text-muted">
@@ -565,7 +504,7 @@ function MediaPreview({
       )}
       <video
         ref={setVideoElement}
-        className="pointer-events-none absolute inset-0 z-10 h-full w-full object-cover"
+        className="absolute inset-0 z-10 h-full w-full object-cover"
         src={videoUrl ?? undefined}
         autoPlay
         muted
@@ -575,7 +514,6 @@ function MediaPreview({
         poster={posterUrl ?? undefined}
         onLoadedData={handleVideoReady}
         onPlaying={handleVideoReady}
-        aria-label={prompt}
       >
         <track kind="captions" srcLang="en" label="auto-generated" default />
       </video>
