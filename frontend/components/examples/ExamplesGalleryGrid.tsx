@@ -78,7 +78,8 @@ export function ExamplesGalleryGrid({
   const [viewportWidth, setViewportWidth] = useState<number>(0);
   const [isClient, setIsClient] = useState(false);
   const [activeRowIndex, setActiveRowIndex] = useState<number | null>(null);
-  const rowsRef = useRef<(HTMLElement | null)[]>([]);
+  const [cardRowIndex, setCardRowIndex] = useState<Map<string, number>>(new Map());
+  const cardRefs = useRef<Map<string, HTMLElement | null>>(new Map());
   const lastScrollYRef = useRef(0);
 
   useEffect(() => {
@@ -157,46 +158,67 @@ export function ExamplesGalleryGrid({
     return columns;
   }, [columnCount, visibleVideos]);
 
-  const rows = useMemo(() => {
-    if (!masonryColumns.length) return [];
-    const maxRowLength = masonryColumns.reduce((max, column) => Math.max(max, column.items.length), 0);
-    const result: ExampleGalleryVideo[][] = [];
-    for (let rowIndex = 0; rowIndex < maxRowLength; rowIndex += 1) {
-      const rowItems: ExampleGalleryVideo[] = [];
-      masonryColumns.forEach((column) => {
-        const item = column.items[rowIndex];
-        if (item) {
-          rowItems.push(item);
-        }
-      });
-      if (rowItems.length) {
-        result.push(rowItems);
-      }
-    }
-    return result;
-  }, [masonryColumns]);
-
-  const registerRow = useCallback((index: number) => {
+  const registerCard = useCallback((id: string) => {
     return (node: HTMLElement | null) => {
-      rowsRef.current[index] = node;
+      cardRefs.current.set(id, node);
     };
   }, []);
 
-  const computeActiveRow = useCallback(() => {
+  const computeRowsAndActive = useCallback(() => {
     if (typeof window === 'undefined') return;
-    const centerY = window.innerHeight / 2 + window.scrollY;
-    let bestIndex: number | null = null;
-    let bestDistance = Number.POSITIVE_INFINITY;
-    rowsRef.current.forEach((node, index) => {
-      if (!node) return;
+    const entries = Array.from(cardRefs.current.entries()).filter((entry): entry is [string, HTMLElement] => {
+      return Boolean(entry[1]);
+    });
+    if (!entries.length) return;
+
+    const tolerance = 5;
+    const rows: { top: number; bottom: number; items: string[] }[] = [];
+    entries.forEach(([id, node]) => {
       const rect = node.getBoundingClientRect();
-      const rowCenter = rect.top + window.scrollY + rect.height / 2;
-      const distance = Math.abs(rowCenter - centerY);
+      const top = rect.top + window.scrollY;
+      const bottom = top + rect.height;
+      let target = rows.find((row) => Math.abs(row.top - top) <= tolerance);
+      if (!target) {
+        target = { top, bottom, items: [] };
+        rows.push(target);
+      } else {
+        if (top < target.top) target.top = top;
+        if (bottom > target.bottom) target.bottom = bottom;
+      }
+      target.items.push(id);
+    });
+
+    if (!rows.length) return;
+    rows.sort((a, b) => a.top - b.top);
+
+    const lineY = window.scrollY + window.innerHeight / 2;
+    let bestIndex = 0;
+    let bestDistance = Number.POSITIVE_INFINITY;
+
+    rows.forEach((row, index) => {
+      const { top, bottom } = row;
+      let distance = 0;
+      if (lineY < top) {
+        distance = top - lineY;
+      } else if (lineY > bottom) {
+        distance = lineY - bottom;
+      } else {
+        distance = 0;
+      }
       if (distance < bestDistance) {
         bestDistance = distance;
         bestIndex = index;
       }
     });
+
+    const nextMap = new Map<string, number>();
+    rows.forEach((row, index) => {
+      row.items.forEach((id) => {
+        nextMap.set(id, index);
+      });
+    });
+
+    setCardRowIndex(nextMap);
     setActiveRowIndex(bestIndex);
   }, []);
 
@@ -209,29 +231,35 @@ export function ExamplesGalleryGrid({
       if (timeoutId !== null) return;
       timeoutId = window.setTimeout(() => {
         timeoutId = null;
-        computeActiveRow();
+        computeRowsAndActive();
       }, SCROLL_THROTTLE_MS);
     };
     return handler;
-  }, [computeActiveRow]);
+  }, [computeRowsAndActive]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !throttledScrollHandler) return undefined;
-    computeActiveRow();
+    computeRowsAndActive();
     window.addEventListener('scroll', throttledScrollHandler, { passive: true });
     window.addEventListener('resize', throttledScrollHandler);
     return () => {
       window.removeEventListener('scroll', throttledScrollHandler);
       window.removeEventListener('resize', throttledScrollHandler);
     };
-  }, [computeActiveRow, throttledScrollHandler]);
+  }, [computeRowsAndActive, throttledScrollHandler]);
 
   if (!isClient) {
     return (
       <>
         <div className="grid gap-[2px] bg-white/60 p-[2px] grid-cols-1">
           {visibleVideos.map((video, index) => (
-            <ExampleCard key={video.id} video={video} isFirst={index === 0} isActiveRow={index === 0} shouldMount />
+            <ExampleCard
+              key={video.id}
+              video={video}
+              isFirst={index === 0}
+              isActiveRow={index === 0}
+              shouldMount={index === 0}
+            />
           ))}
         </div>
         <div ref={sentinelRef} className="h-8 w-full" aria-hidden />
@@ -252,33 +280,36 @@ export function ExamplesGalleryGrid({
 
   return (
     <>
-      <div className="flex flex-col gap-[2px] bg-white/60 p-[2px]" style={{ minHeight: 0 }}>
-        {rows.map((rowVideos, rowIndex) => {
-          const isActive = activeRowIndex === rowIndex;
-          const shouldMountRow =
-            activeRowIndex === null ||
-            Math.abs(rowIndex - (activeRowIndex ?? 0)) <= ACTIVE_ROW_NEIGHBORHOOD;
-          return (
-            <section
-              key={`example-row-${rowIndex}`}
-              ref={registerRow(rowIndex)}
-              className={clsx(
-                'example-row flex gap-[2px] rounded-[10px] transition-transform duration-150',
-                isActive ? 'scale-[1.01] shadow-sm' : 'scale-[1]'
-              )}
-            >
-              {rowVideos.map((video, index) => (
+      <div className="flex gap-[2px] bg-white/60 p-[2px]" style={{ minHeight: 0 }}>
+        {masonryColumns.map((column, columnIndex) => (
+          <div
+            key={`masonry-column-${columnIndex}`}
+            className="flex min-w-0 flex-1 flex-col gap-[2px]"
+            style={{ width: `${100 / columnCount}%` }}
+          >
+            {column.items.map((video, index) => {
+              const rowIndex = cardRowIndex.get(video.id) ?? null;
+              const isActive =
+                rowIndex !== null && activeRowIndex !== null
+                  ? rowIndex === activeRowIndex
+                  : columnIndex === 0 && index === 0;
+              const shouldMountRow =
+                rowIndex !== null && activeRowIndex !== null
+                  ? Math.abs(rowIndex - activeRowIndex) <= ACTIVE_ROW_NEIGHBORHOOD
+                  : columnIndex === 0 && index === 0;
+              return (
                 <ExampleCard
                   key={video.id}
                   video={video}
-                  isFirst={rowIndex === 0 && index === 0}
+                  isFirst={columnIndex === 0 && index === 0}
                   isActiveRow={isActive}
                   shouldMount={shouldMountRow}
+                  cardRef={registerCard(video.id)}
                 />
-              ))}
-            </section>
-          );
-        })}
+              );
+            })}
+          </div>
+        ))}
       </div>
       <div ref={sentinelRef} className="h-8 w-full" aria-hidden />
       {pendingVideos.length ? (
@@ -301,11 +332,13 @@ function ExampleCard({
   isFirst,
   isActiveRow,
   shouldMount,
+  cardRef,
 }: {
   video: ExampleGalleryVideo;
   isFirst: boolean;
   isActiveRow: boolean;
   shouldMount: boolean;
+  cardRef?: (node: HTMLElement | null) => void;
 }) {
   const rawAspect = useMemo(() => (video.aspectRatio ? parseAspectRatio(video.aspectRatio) : 16 / 9), [video.aspectRatio]);
   const displayAspect = useMemo(() => getDisplayAspect(rawAspect), [rawAspect]);
@@ -343,6 +376,7 @@ function ExampleCard({
         'relative mb-[2px] flex-1',
         isActiveRow ? 'brightness-105' : 'brightness-100'
       )}
+      ref={cardRef}
     >
       <div
         className="group block w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
