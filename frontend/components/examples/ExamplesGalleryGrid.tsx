@@ -234,8 +234,29 @@ function MediaPreview({
   sizes: string;
   isActive: boolean;
 }) {
-  const [hasLoaded, setHasLoaded] = useState(() => isLcp && Boolean(videoUrl));
-  const shouldRenderVideo = Boolean(videoUrl) && isActive;
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const attachedSrcRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!videoUrl || !isActive) return;
+    const node = videoRef.current;
+    if (!node) return;
+    if (attachedSrcRef.current === videoUrl) return;
+    attachedSrcRef.current = videoUrl;
+    setHasLoaded(false);
+    node.src = videoUrl;
+  }, [isActive, videoUrl]);
+
+  useEffect(() => {
+    if (videoUrl) return;
+    const node = videoRef.current;
+    if (!node) return;
+    attachedSrcRef.current = null;
+    node.removeAttribute('src');
+    node.load();
+    setHasLoaded(false);
+  }, [videoUrl]);
 
   if (!videoUrl) {
     if (!posterUrl) {
@@ -281,24 +302,22 @@ function MediaPreview({
           Preview unavailable
         </div>
       )}
-      {shouldRenderVideo ? (
-        <video
-          className={clsx('pointer-events-none absolute inset-0 z-10 h-full w-full object-cover transition duration-300', {
-            'opacity-100': hasLoaded,
-            'opacity-0': !hasLoaded,
-          })}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          poster={posterUrl ?? undefined}
-          src={videoUrl ?? undefined}
-          onLoadedData={() => setHasLoaded(true)}
-        >
-          <track kind="captions" srcLang="en" label="auto-generated" default />
-        </video>
-      ) : null}
+      <video
+        ref={videoRef}
+        className={clsx('pointer-events-none absolute inset-0 z-10 h-full w-full object-cover transition duration-300', {
+          'opacity-100': hasLoaded,
+          'opacity-0': !hasLoaded,
+        })}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        poster={posterUrl ?? undefined}
+        onLoadedData={() => setHasLoaded(true)}
+      >
+        <track kind="captions" srcLang="en" label="auto-generated" default />
+      </video>
     </>
   );
 }
