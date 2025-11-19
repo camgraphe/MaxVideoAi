@@ -42,6 +42,10 @@ const NAV_SECTIONS: Array<{
     ],
   },
   {
+    title: 'Analytics',
+    items: [{ label: 'Insights', href: '/admin/insights' }],
+  },
+  {
     title: 'Compliance',
     items: [
       { label: 'Legal center', href: '/admin/legal' },

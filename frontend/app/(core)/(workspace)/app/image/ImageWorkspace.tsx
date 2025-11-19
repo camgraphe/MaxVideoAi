@@ -886,8 +886,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
 
   return (
     <>
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <main className="flex flex-1 flex-col gap-6 p-6">
+      <div className="flex w-full flex-1 flex-col overflow-hidden">
+        <main className="flex w-full flex-1 flex-col gap-6 p-4 sm:p-6">
           <section className="rounded-[32px] border border-white/30 bg-white/80 p-6 shadow-card">
             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">{resolvedCopy.hero.eyebrow}</p>
             <h1 className="mt-2 text-3xl font-semibold text-text-primary">{resolvedCopy.hero.title}</h1>
@@ -1416,13 +1416,13 @@ function ImageLibraryModal({
 
   return (
     <div
-      className="fixed inset-0 z-[10050] flex items-center justify-center bg-black/60 px-4 py-6"
+      className="fixed inset-0 z-[10050] flex items-center justify-center bg-black/60 px-3 py-6 sm:px-6"
       role="dialog"
       aria-modal="true"
       onMouseDown={handleBackdropClick}
     >
       <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-[24px] border border-border bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-border px-6 py-4">
+        <div className="flex flex-col gap-3 border-b border-border px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6">
           <div>
             <h2 className="text-lg font-semibold text-text-primary">{copy.modal.title}</h2>
             <p className="text-xs text-text-secondary">{copy.modal.description}</p>
@@ -1430,12 +1430,12 @@ function ImageLibraryModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-border px-3 py-1 text-sm font-medium text-text-secondary hover:bg-bg"
+            className="self-start rounded-full border border-border px-3 py-1 text-sm font-medium text-text-secondary hover:bg-bg sm:self-auto"
           >
             {copy.modal.close}
           </button>
         </div>
-        <div className="max-h-[70vh] overflow-y-auto px-6 py-4">
+        <div className="max-h-[70vh] overflow-y-auto px-4 py-4 sm:px-6">
           {error ? (
             <div className="rounded-card border border-state-warning/40 bg-state-warning/10 px-4 py-6 text-sm text-state-warning">
               {copy.modal.error}

@@ -58,7 +58,7 @@ export default async function ImageGeneratePage() {
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <HeaderBar />
-      <div className="flex flex-1">
+      <div className="flex flex-1 flex-col lg:flex-row">
         <AppSidebar />
         <ImageWorkspace engines={engines} />
       </div>
