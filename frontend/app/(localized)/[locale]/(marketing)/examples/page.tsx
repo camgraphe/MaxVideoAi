@@ -51,6 +51,7 @@ const ENGINE_META = (() => {
       id: string;
       label: string;
       brandId?: string;
+      modelSlug?: string;
     }
   >();
   listFalEngines().forEach((entry) => {
@@ -58,6 +59,7 @@ const ENGINE_META = (() => {
       id: entry.id,
       label: entry.engine.label,
       brandId: entry.engine.brandId ?? entry.brandId,
+      modelSlug: entry.modelSlug,
     };
     const register = (key: string | null | undefined) => {
       if (!key) return;
@@ -409,27 +411,28 @@ const videos = selectedEngine
   : allVideos;
 const clientVideos: ExampleGalleryVideo[] = videos.map((video) => {
   const canonicalEngineId = resolveEngineLinkId(video.engineId);
+  const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
+  const engineMeta = engineKey ? ENGINE_META.get(engineKey) : null;
+  const engineSlug = engineMeta?.modelSlug ?? canonicalEngineId ?? video.engineId ?? null;
   const href =
-    canonicalEngineId && canonicalEngineId.length
-      ? `/generate?from=${encodeURIComponent(video.id)}&engine=${encodeURIComponent(canonicalEngineId)}`
-        : `/generate?from=${encodeURIComponent(video.id)}`;
-    const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
-    const engineMeta = engineKey ? ENGINE_META.get(engineKey) : null;
-    const priceLabel = formatPrice(video.finalPriceCents ?? null, video.currency ?? null);
-    const promptDisplay = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render');
-    return {
-      id: video.id,
-      href,
-      engineLabel: engineMeta?.label ?? video.engineLabel ?? 'Engine',
-      engineIconId: engineMeta?.id ?? canonicalEngineId ?? video.engineId ?? 'engine',
-      engineBrandId: engineMeta?.brandId,
-      priceLabel,
-      prompt: promptDisplay,
-      aspectRatio: video.aspectRatio ?? null,
-      durationSec: video.durationSec,
-      hasAudio: video.hasAudio,
-      optimizedPosterUrl: buildOptimizedPosterUrl(video.thumbUrl),
-      rawPosterUrl: video.thumbUrl ?? null,
+    engineSlug && engineSlug.length
+      ? `/models/${encodeURIComponent(engineSlug)}?ref=examples`
+      : '/models?ref=examples';
+  const priceLabel = formatPrice(video.finalPriceCents ?? null, video.currency ?? null);
+  const promptDisplay = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render');
+  return {
+    id: video.id,
+    href,
+    engineLabel: engineMeta?.label ?? video.engineLabel ?? 'Engine',
+    engineIconId: engineMeta?.id ?? canonicalEngineId ?? video.engineId ?? 'engine',
+    engineBrandId: engineMeta?.brandId,
+    priceLabel,
+    prompt: promptDisplay,
+    aspectRatio: video.aspectRatio ?? null,
+    durationSec: video.durationSec,
+    hasAudio: video.hasAudio,
+    optimizedPosterUrl: buildOptimizedPosterUrl(video.thumbUrl),
+    rawPosterUrl: video.thumbUrl ?? null,
     videoUrl: video.videoUrl ?? null,
   };
 });
@@ -463,7 +466,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
       const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
       const engineMeta = engineKey ? ENGINE_META.get(engineKey) : null;
       const engineLabel = engineMeta?.label ?? video.engineLabel ?? canonicalEngineId ?? 'Engine';
-      const engineSlug = canonicalEngineId ?? video.engineId ?? 'engine';
+      const engineSlug = ENGINE_META.get(engineKey)?.modelSlug ?? canonicalEngineId ?? video.engineId ?? 'engine';
       const detailPath =
         engineSlug && engineSlug.length
           ? `/generate?from=${encodeURIComponent(video.id)}&engine=${encodeURIComponent(engineSlug)}`
@@ -479,6 +482,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
         uploadDate: toISODate(video.createdAt),
         duration: toISODuration(video.durationSec),
         inLanguage: 'en',
+        engine: engineLabel,
         publisher: {
           '@type': 'Organization',
           name: 'MaxVideo AI',
@@ -511,10 +515,17 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
         {lcpPosterSrc ? <link rel="preload" as="image" href={lcpPosterSrc} fetchPriority="high" /> : null}
       </Head>
       <main className="mx-auto max-w-7xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
-      <header className="max-w-3xl space-y-4">
-        <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
-        <p className="text-base text-text-secondary">{content.hero.subtitle}</p>
-      </header>
+        <header className="max-w-3xl space-y-4">
+          <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
+          <p className="text-base text-text-secondary">{content.hero.subtitle}</p>
+          <p className="text-sm leading-relaxed text-text-secondary/90">
+            Browse a curated gallery of AI video examples generated with engines like Sora 2, Veo, Pika, Kling, Wan and
+            more. Each clip shows the prompt, aspect ratio and duration so you can quickly understand how different
+            models handle camera moves, product shots, selfie framing or cinematic storytelling. MaxVideoAI lets you mix
+            and match engines, styles and formats on a simple pay‑as‑you‑go model, so professional creators and teams can
+            test ideas, compare quality and ship production‑ready videos without committing to a single vendor.
+          </p>
+        </header>
 
       <section className="mt-8 flex flex-wrap items-center gap-3 text-xs text-text-secondary">
         {engineFilterOptions.length ? (
@@ -610,6 +621,16 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
           </div>
         </nav>
       ) : null}
+
+        <section className="mt-10 max-w-4xl text-sm leading-relaxed text-text-secondary/90">
+          <p>
+            These AI video renders cover a range of formats including selfie talking heads, cinematic establishing shots,
+            product close‑ups, mobile‑first ads and social‑ready loops. Explore how each engine handles motion, lighting
+            and composition for storytelling, performance marketing, product launches or UGC‑style content. MaxVideoAI
+            routes your prompts to the best engines for your use case, with transparent pricing and pro‑grade controls so
+            creatives, studios and growth teams can move from concept to final export in a single workspace.
+          </p>
+        </section>
 
         {itemListJson ? (
           <script
