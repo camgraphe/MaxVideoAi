@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { EngineIcon } from '@/components/ui/EngineIcon';
@@ -139,6 +140,8 @@ function ExampleCard({ video, isFirst }: { video: ExampleGalleryVideo; isFirst: 
   const posterSizes = isPortrait ? PORTRAIT_SIZES : LANDSCAPE_SIZES;
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [hasEnteredViewport, setHasEnteredViewport] = useState(isFirst);
+  const router = useRouter();
+  const videoPageHref = useMemo(() => `/video/${encodeURIComponent(video.id)}`, [video.id]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -158,28 +161,44 @@ function ExampleCard({ video, isFirst }: { video: ExampleGalleryVideo; isFirst: 
     return () => observer.disconnect();
   }, [isFirst]);
 
+  const handleNavigate = useCallback(() => {
+    router.push(videoPageHref);
+  }, [router, videoPageHref]);
+
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        handleNavigate();
+      }
+    },
+    [handleNavigate]
+  );
+
   return (
-    <Link
-      href={`/video/${encodeURIComponent(video.id)}`}
-      locale={false}
-      className="group relative mb-[2px] block break-inside-avoid overflow-hidden bg-neutral-900/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
-      aria-label={`Open video ${video.engineLabel}`}
-    >
-      <div className="relative">
-        <div ref={containerRef} className="relative w-full overflow-hidden" style={{ aspectRatio: aspectValue }}>
-          <MediaPreview
-            videoUrl={video.videoUrl ?? null}
-            posterUrl={posterSrc}
-            prompt={video.prompt}
-            isLcp={isFirst}
-            sizes={posterSizes}
-            isActive={hasEnteredViewport}
-          />
-          {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available on playback" /> : null}
-          <CardOverlay video={video} />
-        </div>
+    <article className="relative mb-[2px] break-inside-avoid">
+      <div
+        ref={containerRef}
+        className="group relative block w-full cursor-pointer overflow-hidden bg-neutral-900/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
+        style={{ aspectRatio: aspectValue }}
+        role="link"
+        tabIndex={0}
+        aria-label={`Open video ${video.engineLabel}`}
+        onClick={handleNavigate}
+        onKeyDown={handleKeyDown}
+      >
+        <MediaPreview
+          videoUrl={video.videoUrl ?? null}
+          posterUrl={posterSrc}
+          prompt={video.prompt}
+          isLcp={isFirst}
+          sizes={posterSizes}
+          isActive={hasEnteredViewport}
+        />
+        {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available on playback" /> : null}
+        <CardOverlay video={video} />
       </div>
-    </Link>
+    </article>
   );
 }
 
@@ -235,27 +254,8 @@ function MediaPreview({
   isActive: boolean;
 }) {
   const [hasLoaded, setHasLoaded] = useState(false);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const attachedSrcRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!videoUrl || !isActive) return;
-    const node = videoRef.current;
-    if (!node) return;
-    if (attachedSrcRef.current === videoUrl) return;
-    attachedSrcRef.current = videoUrl;
-    setHasLoaded(false);
-    node.src = videoUrl;
-    node.load();
-  }, [isActive, videoUrl]);
-
-  useEffect(() => {
-    if (videoUrl) return;
-    const node = videoRef.current;
-    if (!node) return;
-    attachedSrcRef.current = null;
-    node.removeAttribute('src');
-    node.load();
     setHasLoaded(false);
   }, [videoUrl]);
 
@@ -287,6 +287,8 @@ function MediaPreview({
     );
   }
 
+  const shouldHidePoster = Boolean(isActive && hasLoaded);
+
   return (
     <>
       {posterUrl ? (
@@ -294,9 +296,9 @@ function MediaPreview({
           src={posterUrl}
           alt={prompt}
           fill
-          className={clsx('pointer-events-none absolute inset-0 h-full w-full object-cover transition duration-300', {
-            'opacity-0': hasLoaded,
-            'opacity-100': !hasLoaded,
+          className={clsx('absolute inset-0 h-full w-full object-cover transition-opacity duration-300', {
+            'opacity-0': shouldHidePoster,
+            'opacity-100': !shouldHidePoster,
           })}
           priority={isLcp}
           fetchPriority={isLcp ? 'high' : undefined}
@@ -311,11 +313,8 @@ function MediaPreview({
         </div>
       )}
       <video
-        ref={videoRef}
-        className={clsx('pointer-events-none absolute inset-0 z-10 h-full w-full object-cover transition duration-300', {
-          'opacity-100': hasLoaded,
-          'opacity-0': !hasLoaded,
-        })}
+        className="absolute inset-0 z-10 h-full w-full object-cover"
+        src={videoUrl ?? undefined}
         autoPlay
         muted
         loop
