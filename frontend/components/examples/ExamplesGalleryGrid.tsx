@@ -163,7 +163,7 @@ export function ExamplesGalleryGrid({
       visibilityRegistryRef.current.set(id, { ref: video, ratio });
       schedulePlaybackUpdate();
     },
-    [schedulePlaybackUpdate]
+    [resetVideoRef, schedulePlaybackUpdate]
   );
 
   useEffect(() => {
@@ -281,36 +281,56 @@ function ExampleCard({
   const shouldReportVisibility = Boolean(video.videoUrl);
   const videoElementRef = useRef<HTMLVideoElement | null>(null);
   const lastRatioRef = useRef(isFirst ? 1 : 0);
+  const [shouldRenderVideo, setShouldRenderVideo] = useState(() => Boolean(isFirst && video.videoUrl));
+
+  useEffect(() => {
+    if (!video.videoUrl) {
+      setShouldRenderVideo(false);
+    }
+  }, [video.videoUrl]);
 
   const emitVisibility = useCallback(
     (ratio: number, isIntersecting: boolean) => {
       lastRatioRef.current = ratio;
       if (!shouldReportVisibility || !onVisibilityChange) return;
       const meetsThreshold = isIntersecting && ratio >= VIDEO_PREPARE_THRESHOLD;
+      const nextShouldRender = Boolean(video.videoUrl) && meetsThreshold;
+      setShouldRenderVideo(nextShouldRender);
       onVisibilityChange({
         id: video.id,
-        video: meetsThreshold ? videoElementRef.current : null,
-        ratio: meetsThreshold ? ratio : 0,
-        isVisible: meetsThreshold,
+        video: nextShouldRender ? videoElementRef.current : null,
+        ratio: nextShouldRender ? ratio : 0,
+        isVisible: nextShouldRender,
       });
     },
-    [onVisibilityChange, shouldReportVisibility, video.id]
+    [onVisibilityChange, shouldReportVisibility, video.id, video.videoUrl]
   );
 
   const handleVideoRef = useCallback(
     (node: HTMLVideoElement | null) => {
       videoElementRef.current = node;
       if (!shouldReportVisibility || !onVisibilityChange) return;
-      const meetsThreshold = lastRatioRef.current >= VIDEO_PREPARE_THRESHOLD;
+      if (!shouldRenderVideo) return;
       onVisibilityChange({
         id: video.id,
-        video: meetsThreshold && node ? node : null,
-        ratio: meetsThreshold ? lastRatioRef.current : 0,
-        isVisible: meetsThreshold && Boolean(node),
+        video: node,
+        ratio: lastRatioRef.current,
+        isVisible: Boolean(node),
       });
     },
-    [onVisibilityChange, shouldReportVisibility, video.id]
+    [onVisibilityChange, shouldReportVisibility, shouldRenderVideo, video.id]
   );
+
+  useEffect(() => {
+    if (!shouldReportVisibility || !onVisibilityChange) return;
+    const node = videoElementRef.current;
+    onVisibilityChange({
+      id: video.id,
+      video: shouldRenderVideo ? node : null,
+      ratio: shouldRenderVideo ? lastRatioRef.current : 0,
+      isVisible: shouldRenderVideo && Boolean(node),
+    });
+  }, [onVisibilityChange, shouldRenderVideo, shouldReportVisibility, video.id]);
 
   useEffect(() => {
     if (!shouldReportVisibility) return undefined;
@@ -377,6 +397,7 @@ function ExampleCard({
           isLcp={isFirst}
           sizes={posterSizes}
           onVideoRef={shouldReportVisibility ? handleVideoRef : undefined}
+          shouldRenderVideo={shouldRenderVideo}
         />
         {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available on playback" /> : null}
         <CardOverlay video={video} />
@@ -428,6 +449,7 @@ function MediaPreview({
   isLcp,
   sizes,
   onVideoRef,
+  shouldRenderVideo = true,
 }: {
   videoUrl: string | null;
   posterUrl: string | null;
@@ -435,12 +457,13 @@ function MediaPreview({
   isLcp: boolean;
   sizes: string;
   onVideoRef?: (video: HTMLVideoElement | null) => void;
+  shouldRenderVideo?: boolean;
 }) {
   const [hasLoaded, setHasLoaded] = useState(false);
 
   useEffect(() => {
     setHasLoaded(false);
-  }, [videoUrl]);
+  }, [videoUrl, shouldRenderVideo]);
 
   const handleVideoReady = useCallback(() => {
     setHasLoaded(true);
@@ -453,7 +476,7 @@ function MediaPreview({
     [onVideoRef]
   );
 
-  if (!videoUrl) {
+  if (!videoUrl || !shouldRenderVideo) {
     if (!posterUrl) {
       return (
         <div className="absolute inset-0 flex items-center justify-center bg-neutral-200 text-xs font-semibold uppercase tracking-micro text-text-muted">
