@@ -120,6 +120,15 @@ function toAbsoluteUrl(url?: string | null): string | null {
   return `${SITE}/${url}`;
 }
 
+function serializeJsonLd(data: unknown): string {
+  return JSON.stringify(data)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+
 export async function generateMetadata({
   params,
   searchParams,
@@ -493,16 +502,6 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
           itemListElement: itemListElements,
         }
       : null;
-  const jsonLdChunks = (() => {
-    if (!itemListJson) return [];
-    const raw = JSON.stringify(itemListJson);
-    const chunks: string[] = [];
-    const CHUNK_SIZE = 50_000;
-    for (let i = 0; i < raw.length; i += CHUNK_SIZE) {
-      chunks.push(raw.slice(i, i + CHUNK_SIZE));
-    }
-    return chunks;
-  })();
 
   return (
     <>
@@ -612,14 +611,13 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
         </nav>
       ) : null}
 
-        {jsonLdChunks.map((chunk, index) => (
+        {itemListJson ? (
           <script
-            key={`examples-jsonld-${index}`}
             type="application/ld+json"
             suppressHydrationWarning
-            dangerouslySetInnerHTML={{ __html: chunk }}
+            dangerouslySetInnerHTML={{ __html: serializeJsonLd(itemListJson) }}
           />
-        ))}
+        ) : null}
       </main>
     </>
   );
