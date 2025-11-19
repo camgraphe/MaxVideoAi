@@ -27,7 +27,6 @@ export type ExampleGalleryVideo = {
 const BATCH_SIZE = 12;
 const LANDSCAPE_SIZES = '(min-width: 1280px) 400px, 100vw';
 const PORTRAIT_SIZES = '(min-width: 1280px) 300px, 100vw';
-const ACTIVE_ROW_NEIGHBORHOOD = 1;
 const SCROLL_THROTTLE_MS = 120;
 type ExtendedWindow = Window &
   typeof globalThis & {
@@ -253,13 +252,7 @@ export function ExamplesGalleryGrid({
       <>
         <div className="grid gap-[2px] grid-cols-1">
           {visibleVideos.map((video, index) => (
-            <ExampleCard
-              key={video.id}
-              video={video}
-              isFirst={index === 0}
-              isActiveRow={index === 0}
-              shouldMount={index === 0}
-            />
+            <ExampleCard key={video.id} video={video} isFirst={index === 0} isActiveRow={index === 0} />
           ))}
         </div>
         <div ref={sentinelRef} className="h-8 w-full" aria-hidden />
@@ -293,17 +286,12 @@ export function ExamplesGalleryGrid({
                 rowIndex !== null && activeRowIndex !== null
                   ? rowIndex === activeRowIndex
                   : columnIndex === 0 && index === 0;
-              const shouldMountRow =
-                rowIndex !== null && activeRowIndex !== null
-                  ? Math.abs(rowIndex - activeRowIndex) <= ACTIVE_ROW_NEIGHBORHOOD
-                  : columnIndex === 0 && index === 0;
               return (
                 <ExampleCard
                   key={video.id}
                   video={video}
                   isFirst={columnIndex === 0 && index === 0}
                   isActiveRow={isActive}
-                  shouldMount={shouldMountRow}
                   cardRef={registerCard(video.id)}
                 />
               );
@@ -331,13 +319,11 @@ function ExampleCard({
   video,
   isFirst,
   isActiveRow,
-  shouldMount,
   cardRef,
 }: {
   video: ExampleGalleryVideo;
   isFirst: boolean;
   isActiveRow: boolean;
-  shouldMount: boolean;
   cardRef?: (node: HTMLElement | null) => void;
 }) {
   const rawAspect = useMemo(() => (video.aspectRatio ? parseAspectRatio(video.aspectRatio) : 16 / 9), [video.aspectRatio]);
@@ -388,25 +374,26 @@ function ExampleCard({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div
-          className="relative w-full overflow-hidden bg-neutral-900/5"
-          style={{ aspectRatio: `${displayAspect} / 1` }}
-        >
-          <MediaPreview
-            videoUrl={video.videoUrl ?? null}
-            posterUrl={posterSrc}
-            prompt={video.prompt}
-            altText={`${video.engineLabel} AI video example – ${video.prompt}`}
-            isLcp={isFirst}
-            sizes={posterSizes}
-            onVideoRef={(node) => {
-              videoElementRef.current = node;
-            }}
-            onPlaybackStart={handlePlaybackStart}
-            shouldMount={Boolean(shouldMount && video.videoUrl && canAutoplay)}
-            shouldPlay={Boolean((isActiveRow || isHovered) && video.videoUrl && canAutoplay)}
-            onAutoplayError={() => setCanAutoplay(false)}
-          />
+        <div className="relative w-full overflow-hidden bg-neutral-900/5">
+          <div
+            className="relative w-full"
+            style={{ paddingBottom: `${100 / displayAspect}%` }}
+          >
+            <MediaPreview
+              videoUrl={video.videoUrl ?? null}
+              posterUrl={posterSrc}
+              prompt={video.prompt}
+              altText={`${video.engineLabel} AI video example – ${video.prompt}`}
+              isLcp={isFirst}
+              sizes={posterSizes}
+              onVideoRef={(node) => {
+                videoElementRef.current = node;
+              }}
+              onPlaybackStart={handlePlaybackStart}
+              shouldPlay={Boolean((isActiveRow || isHovered) && video.videoUrl && canAutoplay)}
+              onAutoplayError={() => setCanAutoplay(false)}
+            />
+          </div>
           {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available on playback" /> : null}
           {allowOverlay ? <CardOverlay video={video} /> : null}
         </div>
@@ -460,7 +447,6 @@ function MediaPreview({
   sizes,
   onVideoRef,
   onPlaybackStart,
-  shouldMount,
   shouldPlay,
   onAutoplayError,
 }: {
@@ -472,7 +458,6 @@ function MediaPreview({
   sizes: string;
   onVideoRef?: (video: HTMLVideoElement | null) => void;
   onPlaybackStart?: () => void;
-  shouldMount: boolean;
   shouldPlay: boolean;
   onAutoplayError?: () => void;
 }) {
@@ -499,15 +484,6 @@ function MediaPreview({
   useEffect(() => {
     const node = videoRef.current;
     if (!node) return;
-    if (!shouldMount) {
-      node.pause();
-      try {
-        node.currentTime = 0;
-      } catch {
-        // ignore
-      }
-      return;
-    }
     if (!shouldPlay) {
       node.pause();
       return;
@@ -518,7 +494,7 @@ function MediaPreview({
         onAutoplayError?.();
       });
     }
-  }, [shouldMount, shouldPlay, onAutoplayError]);
+  }, [shouldPlay, onAutoplayError]);
 
   if (!videoUrl) {
     if (!posterUrl) {
@@ -569,22 +545,20 @@ function MediaPreview({
           Preview unavailable
         </div>
       )}
-      {shouldMount ? (
-        <video
-          ref={setVideoElement}
-          className="absolute inset-0 z-10 h-full w-full object-cover"
-          src={videoUrl ?? undefined}
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          poster={posterUrl ?? undefined}
-          onLoadedData={handleVideoReady}
-          onPlaying={handleVideoReady}
-        >
-          <track kind="captions" srcLang="en" label="auto-generated" default />
-        </video>
-      ) : null}
+      <video
+        ref={setVideoElement}
+        className="absolute inset-0 z-10 h-full w-full object-cover"
+        src={videoUrl ?? undefined}
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        poster={posterUrl ?? undefined}
+        onLoadedData={handleVideoReady}
+        onPlaying={handleVideoReady}
+      >
+        <track kind="captions" srcLang="en" label="auto-generated" default />
+      </video>
     </>
   );
 }
