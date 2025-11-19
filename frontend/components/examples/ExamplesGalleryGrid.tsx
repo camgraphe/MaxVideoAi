@@ -227,7 +227,8 @@ export function ExamplesGalleryGrid({
     if (viewportWidth <= 0) return 1;
     if (viewportWidth < 768) return 1;
     if (viewportWidth < 1280) return 2;
-    return 3;
+    if (viewportWidth < 1536) return 3;
+    return 4;
   }, [viewportWidth]);
 
   const orderedVideos = useMemo(() => {
@@ -253,10 +254,7 @@ export function ExamplesGalleryGrid({
 
   return (
     <>
-      <div
-        className="grid gap-[2px] bg-white/60 p-[2px]"
-        style={{ gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))` }}
-      >
+      <div className="grid gap-[2px] bg-white/60 p-[2px] grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {orderedVideos.map((video, index) => (
           <ExampleCard
             key={video.id}
