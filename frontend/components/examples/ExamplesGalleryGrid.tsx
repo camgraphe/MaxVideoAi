@@ -89,7 +89,9 @@ export function ExamplesGalleryGrid({
   const visibilityRegistryRef = useRef<Map<string, RegistryEntry>>(new Map());
   const activeVideoIdRef = useRef<string | null>(null);
   const frameHandleRef = useRef<number | null>(null);
-  const [isMobileLayout, setIsMobileLayout] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState<number>(() =>
+    typeof window === 'undefined' ? 0 : window.innerWidth
+  );
   const resetVideoRef = useCallback((video: HTMLVideoElement) => {
     video.pause();
     if (typeof window !== 'undefined') {
@@ -213,29 +215,54 @@ export function ExamplesGalleryGrid({
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
-    const updateLayout = () => {
-      setIsMobileLayout(window.innerWidth < 768);
+    const handleResize = () => {
+      setViewportWidth(window.innerWidth);
     };
-    updateLayout();
-    window.addEventListener('resize', updateLayout);
-    return () => window.removeEventListener('resize', updateLayout);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const columnCount = useMemo(() => {
+    if (viewportWidth <= 0) return 1;
+    if (viewportWidth < 768) return 1;
+    if (viewportWidth < 1280) return 2;
+    return 3;
+  }, [viewportWidth]);
+
+  const orderedVideos = useMemo(() => {
+    if (columnCount <= 1) return visibleVideos;
+    const columns = Array.from({ length: columnCount }, () => ({
+      height: 0,
+      items: [] as ExampleGalleryVideo[],
+    }));
+    visibleVideos.forEach((video) => {
+      const aspect = video.aspectRatio ? parseAspectRatio(video.aspectRatio) : 16 / 9;
+      const estimatedHeight = aspect > 0 ? 1 / aspect : 1;
+      let targetColumn = columns[0];
+      for (const column of columns) {
+        if (column.height < targetColumn.height) {
+          targetColumn = column;
+        }
+      }
+      targetColumn.items.push(video);
+      targetColumn.height += estimatedHeight;
+    });
+    return columns.flatMap((column) => column.items);
+  }, [columnCount, visibleVideos]);
 
   return (
     <>
       <div
-        className={clsx('bg-white/60 p-[2px]', {
-          'space-y-[2px]': isMobileLayout,
-          'columns-1 gap-[2px] sm:columns-2 lg:columns-3 xl:columns-4': !isMobileLayout,
-        })}
+        className="grid gap-[2px] bg-white/60 p-[2px]"
+        style={{ gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))` }}
       >
-        {visibleVideos.map((video, index) => (
+        {orderedVideos.map((video, index) => (
           <ExampleCard
             key={video.id}
             video={video}
             isFirst={index === 0}
             onVisibilityChange={handleVisibilityChange}
-            forceFullWidth={isMobileLayout}
           />
         ))}
       </div>
@@ -259,12 +286,10 @@ function ExampleCard({
   video,
   isFirst,
   onVisibilityChange,
-  forceFullWidth,
 }: {
   video: ExampleGalleryVideo;
   isFirst: boolean;
   onVisibilityChange?: (payload: VideoVisibilityPayload) => void;
-  forceFullWidth: boolean;
 }) {
   const rawAspect = useMemo(() => (video.aspectRatio ? parseAspectRatio(video.aspectRatio) : 16 / 9), [video.aspectRatio]);
   const aspectValue = useMemo(() => {
@@ -359,7 +384,7 @@ function ExampleCard({
   );
 
   return (
-    <article className={clsx('relative mb-[2px]', { 'break-inside-avoid': !forceFullWidth })}>
+    <article className="relative mb-[2px]">
       <div
         ref={containerRef}
         className="group relative block w-full cursor-pointer overflow-hidden bg-neutral-900/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
