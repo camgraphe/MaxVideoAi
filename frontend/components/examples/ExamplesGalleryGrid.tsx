@@ -420,6 +420,7 @@ function CardOverlay({ video }: { video: ExampleGalleryVideo }) {
 function MediaPreview({
   videoUrl,
   posterUrl,
+  prompt,
   altText,
   isLcp,
   sizes,
@@ -431,7 +432,8 @@ function MediaPreview({
 }: {
   videoUrl: string | null;
   posterUrl: string | null;
-  altText: string;
+  prompt: string;
+  altText?: string;
   isLcp: boolean;
   sizes: string;
   onVideoRef?: (video: HTMLVideoElement | null) => void;
@@ -495,7 +497,7 @@ function MediaPreview({
     return (
       <Image
         src={posterUrl}
-        alt={altText}
+        alt={altText || prompt}
         fill
         className="pointer-events-none object-cover"
         priority={isLcp}
@@ -515,7 +517,7 @@ function MediaPreview({
       {posterUrl ? (
         <Image
           src={posterUrl}
-          alt={altText}
+          alt={altText || prompt}
           fill
           className={clsx('absolute inset-0 h-full w-full object-cover transition-opacity duration-300', {
             'opacity-0': shouldHidePoster,
