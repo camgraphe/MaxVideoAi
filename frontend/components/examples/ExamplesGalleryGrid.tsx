@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
@@ -266,6 +267,13 @@ function ExampleCard({
   const videoElementRef = useRef<HTMLVideoElement | null>(null);
   const lastRatioRef = useRef(isFirst ? 1 : 0);
   const [shouldRenderVideo, setShouldRenderVideo] = useState(() => Boolean(isFirst && video.videoUrl));
+  const [allowOverlay, setAllowOverlay] = useState(false);
+
+  useEffect(() => {
+    if (!shouldRenderVideo) {
+      setAllowOverlay(false);
+    }
+  }, [shouldRenderVideo]);
 
   useEffect(() => {
     if (!video.videoUrl) {
@@ -382,9 +390,10 @@ function ExampleCard({
           sizes={posterSizes}
           onVideoRef={shouldReportVisibility ? handleVideoRef : undefined}
           shouldRenderVideo={shouldRenderVideo}
+          onPlaybackStart={() => setAllowOverlay(true)}
         />
         {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available on playback" /> : null}
-        <CardOverlay video={video} />
+        {allowOverlay ? <CardOverlay video={video} /> : null}
       </div>
     </article>
   );
@@ -434,6 +443,7 @@ function MediaPreview({
   sizes,
   onVideoRef,
   shouldRenderVideo = true,
+  onPlaybackStart,
 }: {
   videoUrl: string | null;
   posterUrl: string | null;
@@ -442,12 +452,31 @@ function MediaPreview({
   sizes: string;
   onVideoRef?: (video: HTMLVideoElement | null) => void;
   shouldRenderVideo?: boolean;
+  onPlaybackStart?: () => void;
 }) {
+  const [hasLoaded, setHasLoaded] = useState(false);
   const hasPrimedRef = useRef(false);
+  const hasNotifiedPlaybackRef = useRef(false);
+
+  useEffect(() => {
+    setHasLoaded(false);
+    hasNotifiedPlaybackRef.current = false;
+  }, [videoUrl, shouldRenderVideo]);
 
   useEffect(() => {
     hasPrimedRef.current = false;
   }, [videoUrl]);
+
+  const handlePlaybackStarted = useCallback(() => {
+    if (hasNotifiedPlaybackRef.current) return;
+    hasNotifiedPlaybackRef.current = true;
+    onPlaybackStart?.();
+  }, [onPlaybackStart]);
+
+  const handleVideoReady = useCallback(() => {
+    setHasLoaded(true);
+    handlePlaybackStarted();
+  }, [handlePlaybackStarted]);
 
   const primeVideo = useCallback((node: HTMLVideoElement) => {
     if (hasPrimedRef.current) return;
@@ -486,33 +515,71 @@ function MediaPreview({
   );
 
   if (!videoUrl || !shouldRenderVideo) {
+    if (!posterUrl) {
+      return (
+        <div className="absolute inset-0 flex items-center justify-center bg-neutral-200 text-xs font-semibold uppercase tracking-micro text-text-muted">
+          Preview unavailable
+        </div>
+      );
+    }
     return (
-      <video
-        className="absolute inset-0 z-0 h-full w-full object-cover"
-        poster={posterUrl ?? undefined}
-        muted
-        playsInline
-        preload="metadata"
-        aria-label={prompt}
+      <Image
+        src={posterUrl}
+        alt={prompt}
+        fill
+        className="pointer-events-none object-cover"
+        priority={isLcp}
+        fetchPriority={isLcp ? 'high' : undefined}
+        loading={isLcp ? 'eager' : 'lazy'}
+        decoding="async"
+        quality={80}
+        sizes={sizes}
       />
     );
   }
 
+  const shouldHidePoster = hasLoaded;
+
   return (
-    <video
-      ref={setVideoElement}
-      className="absolute inset-0 z-0 h-full w-full object-cover"
-      src={videoUrl ?? undefined}
-      autoPlay
-      muted
-      loop
-      playsInline
-      preload="metadata"
-      poster={posterUrl ?? undefined}
-      aria-label={prompt}
-    >
-      <track kind="captions" srcLang="en" label="auto-generated" default />
-    </video>
+    <>
+      {posterUrl ? (
+        <Image
+          src={posterUrl}
+          alt={prompt}
+          fill
+          className={clsx('absolute inset-0 h-full w-full object-cover transition-opacity duration-300', {
+            'opacity-0': shouldHidePoster,
+            'opacity-100': !shouldHidePoster,
+          })}
+          priority={isLcp}
+          fetchPriority={isLcp ? 'high' : undefined}
+          loading={isLcp ? 'eager' : 'lazy'}
+          decoding="async"
+          quality={80}
+          sizes={sizes}
+        />
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center bg-neutral-200 text-xs font-semibold uppercase tracking-micro text-text-muted">
+          Preview unavailable
+        </div>
+      )}
+      <video
+        ref={setVideoElement}
+        className="pointer-events-none absolute inset-0 z-10 h-full w-full object-cover"
+        src={videoUrl ?? undefined}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        poster={posterUrl ?? undefined}
+        onLoadedData={handleVideoReady}
+        onPlaying={handleVideoReady}
+        aria-label={prompt}
+      >
+        <track kind="captions" srcLang="en" label="auto-generated" default />
+      </video>
+    </>
   );
 }
 
