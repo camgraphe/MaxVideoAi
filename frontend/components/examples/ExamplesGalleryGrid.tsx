@@ -138,7 +138,7 @@ function ExampleCard({ video, isFirst }: { video: ExampleGalleryVideo; isFirst: 
   const isPortrait = rawAspect < 1;
   const posterSizes = isPortrait ? PORTRAIT_SIZES : LANDSCAPE_SIZES;
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [isActive, setIsActive] = useState(isFirst);
+  const [hasEnteredViewport, setHasEnteredViewport] = useState(isFirst);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -147,12 +147,12 @@ function ExampleCard({ video, isFirst }: { video: ExampleGalleryVideo; isFirst: 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.target === node) {
-            setIsActive(entry.isIntersecting);
-          }
+          if (entry.target !== node || !entry.isIntersecting) return;
+          setHasEnteredViewport(true);
+          observer.unobserve(node);
         });
       },
-      { rootMargin: isFirst ? '0px' : '300px 0px', threshold: 0.35 }
+      { rootMargin: isFirst ? '0px' : '200px 0px', threshold: 0.3 }
     );
     observer.observe(node);
     return () => observer.disconnect();
@@ -173,7 +173,7 @@ function ExampleCard({ video, isFirst }: { video: ExampleGalleryVideo; isFirst: 
             prompt={video.prompt}
             isLcp={isFirst}
             sizes={posterSizes}
-            isActive={isActive}
+            isActive={hasEnteredViewport}
           />
           {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available on playback" /> : null}
           <CardOverlay video={video} />
@@ -236,12 +236,6 @@ function MediaPreview({
 }) {
   const [hasLoaded, setHasLoaded] = useState(() => isLcp && Boolean(videoUrl));
   const shouldRenderVideo = Boolean(videoUrl) && isActive;
-
-  useEffect(() => {
-    if (!shouldRenderVideo) {
-      setHasLoaded(false);
-    }
-  }, [shouldRenderVideo]);
 
   if (!videoUrl) {
     if (!posterUrl) {
