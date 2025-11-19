@@ -90,6 +90,24 @@ export function ExamplesGalleryGrid({
   const activeVideoIdRef = useRef<string | null>(null);
   const frameHandleRef = useRef<number | null>(null);
   const [isMobileLayout, setIsMobileLayout] = useState(false);
+  const resetVideoRef = useCallback((video: HTMLVideoElement) => {
+    video.pause();
+    if (typeof window !== 'undefined') {
+      window.setTimeout(() => {
+        try {
+          video.currentTime = 0;
+        } catch {
+          // ignore
+        }
+      }, 50);
+    } else {
+      try {
+        video.currentTime = 0;
+      } catch {
+        // ignore
+      }
+    }
+  }, []);
 
   const updatePlayback = useCallback(() => {
     frameHandleRef.current = null;
@@ -104,8 +122,7 @@ export function ExamplesGalleryGrid({
     const [nextId, nextEntry] = entries[0];
     if (!nextEntry?.ref || nextEntry.ratio <= 0) {
       entries.forEach(([, entry]) => {
-        entry.ref.pause();
-        entry.ref.currentTime = 0;
+        resetVideoRef(entry.ref);
       });
       activeVideoIdRef.current = null;
       return;
@@ -120,12 +137,11 @@ export function ExamplesGalleryGrid({
           }
         }
       } else if (!entry.ref.paused) {
-        entry.ref.pause();
-        entry.ref.currentTime = 0;
+        resetVideoRef(entry.ref);
       }
     });
     activeVideoIdRef.current = nextId;
-  }, []);
+  }, [resetVideoRef]);
 
   const schedulePlaybackUpdate = useCallback(() => {
     if (typeof window === 'undefined') return;
@@ -138,8 +154,7 @@ export function ExamplesGalleryGrid({
       if (!video || !isVisible || ratio <= 0) {
         const existing = visibilityRegistryRef.current.get(id);
         if (existing?.ref) {
-          existing.ref.pause();
-          existing.ref.currentTime = 0;
+          resetVideoRef(existing.ref);
         }
         visibilityRegistryRef.current.delete(id);
         schedulePlaybackUpdate();
@@ -158,13 +173,12 @@ export function ExamplesGalleryGrid({
         frameHandleRef.current = null;
       }
       visibilityRegistryRef.current.forEach((entry) => {
-        entry.ref.pause();
-        entry.ref.currentTime = 0;
+        resetVideoRef(entry.ref);
       });
       visibilityRegistryRef.current.clear();
       activeVideoIdRef.current = null;
     };
-  }, []);
+  }, [resetVideoRef]);
 
   useEffect(() => {
     setVisibleVideos(initialVideos);
@@ -491,6 +505,7 @@ function MediaPreview({
       <video
         ref={setVideoElement}
         className="absolute inset-0 z-10 h-full w-full object-cover"
+        src={videoUrl ?? undefined}
         autoPlay
         muted
         loop
