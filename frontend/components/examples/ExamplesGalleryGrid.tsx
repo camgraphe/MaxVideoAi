@@ -441,20 +441,54 @@ function MediaPreview({
   shouldRenderVideo?: boolean;
 }) {
   const [hasLoaded, setHasLoaded] = useState(false);
+  const hasPrimedRef = useRef(false);
 
   useEffect(() => {
     setHasLoaded(false);
   }, [videoUrl, shouldRenderVideo]);
 
+  useEffect(() => {
+    hasPrimedRef.current = false;
+  }, [videoUrl]);
+
   const handleVideoReady = useCallback(() => {
     setHasLoaded(true);
+  }, []);
+
+  const primeVideo = useCallback((node: HTMLVideoElement) => {
+    if (hasPrimedRef.current) return;
+    hasPrimedRef.current = true;
+    node.muted = true;
+    node.playsInline = true;
+    node.preload = 'auto';
+    try {
+      const playPromise = node.play();
+      if (typeof playPromise?.then === 'function') {
+        playPromise
+          .then(() => {
+            node.pause();
+            node.currentTime = 0;
+          })
+          .catch(() => {
+            hasPrimedRef.current = false;
+          });
+      } else {
+        node.pause();
+        node.currentTime = 0;
+      }
+    } catch {
+      hasPrimedRef.current = false;
+    }
   }, []);
 
   const setVideoElement = useCallback(
     (node: HTMLVideoElement | null) => {
       onVideoRef?.(node);
+      if (node) {
+        primeVideo(node);
+      }
     },
-    [onVideoRef]
+    [onVideoRef, primeVideo]
   );
 
   if (!videoUrl || !shouldRenderVideo) {
