@@ -137,6 +137,26 @@ function ExampleCard({ video, isFirst }: { video: ExampleGalleryVideo; isFirst: 
   const posterSrc = video.optimizedPosterUrl ?? video.rawPosterUrl ?? null;
   const isPortrait = rawAspect < 1;
   const posterSizes = isPortrait ? PORTRAIT_SIZES : LANDSCAPE_SIZES;
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [isActive, setIsActive] = useState(isFirst);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const node = containerRef.current;
+    if (!node) return undefined;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.target === node) {
+            setIsActive(entry.isIntersecting);
+          }
+        });
+      },
+      { rootMargin: isFirst ? '0px' : '300px 0px', threshold: 0.35 }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [isFirst]);
 
   return (
     <Link
@@ -146,13 +166,14 @@ function ExampleCard({ video, isFirst }: { video: ExampleGalleryVideo; isFirst: 
       aria-label={`Open video ${video.engineLabel}`}
     >
       <div className="relative">
-        <div className="relative w-full overflow-hidden" style={{ aspectRatio: aspectValue }}>
+        <div ref={containerRef} className="relative w-full overflow-hidden" style={{ aspectRatio: aspectValue }}>
           <MediaPreview
             videoUrl={video.videoUrl ?? null}
             posterUrl={posterSrc}
             prompt={video.prompt}
             isLcp={isFirst}
             sizes={posterSizes}
+            isActive={isActive}
           />
           {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available on playback" /> : null}
           <CardOverlay video={video} />
@@ -204,141 +225,23 @@ function MediaPreview({
   prompt,
   isLcp,
   sizes,
+  isActive,
 }: {
   videoUrl: string | null;
   posterUrl: string | null;
   prompt: string;
   isLcp: boolean;
   sizes: string;
+  isActive: boolean;
 }) {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [isActive, setIsActive] = useState(isLcp);
-  const [hasLoaded, setHasLoaded] = useState(isLcp);
-  const [preloadMode, setPreloadMode] = useState<'none' | 'metadata'>(() => {
-    if (typeof window === 'undefined') {
-      return 'none';
+  const [hasLoaded, setHasLoaded] = useState(() => isLcp && Boolean(videoUrl));
+  const shouldRenderVideo = Boolean(videoUrl) && isActive;
+
+  useEffect(() => {
+    if (!shouldRenderVideo) {
+      setHasLoaded(false);
     }
-    return window.matchMedia('(pointer: coarse) and (max-width: 1024px)').matches ? 'metadata' : 'none';
-  });
-  const retryTimeoutRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    const node = videoRef.current;
-    if (!node) return;
-    node.defaultMuted = true;
-    node.muted = true;
-    node.playsInline = true;
-    node.autoplay = true;
-    node.setAttribute('muted', '');
-    node.setAttribute('playsinline', '');
-    node.setAttribute('webkit-playsinline', 'true');
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const query = window.matchMedia('(pointer: coarse) and (max-width: 1024px)');
-    const update = () => setPreloadMode(query.matches ? 'metadata' : 'none');
-    update();
-    query.addEventListener('change', update);
-    return () => query.removeEventListener('change', update);
-  }, []);
-
-  useEffect(() => {
-    if (!videoUrl) return undefined;
-    const node = videoRef.current;
-    if (!node) return undefined;
-    return runAfterIdle(() => {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            setIsActive(entry.isIntersecting);
-          });
-        },
-        { rootMargin: isLcp ? '0px' : '300px 0px', threshold: 0.35 }
-      );
-      observer.observe(node);
-      return () => observer.disconnect();
-    });
-  }, [videoUrl, isLcp]);
-
-  useEffect(() => {
-    const node = videoRef.current;
-    if (!node || !videoUrl) return undefined;
-    const handleLoaded = () => setHasLoaded(true);
-    node.addEventListener('loadeddata', handleLoaded);
-    return () => {
-      node.removeEventListener('loadeddata', handleLoaded);
-    };
-  }, [videoUrl]);
-
-  useEffect(() => {
-    const node = videoRef.current;
-    if (!node || !videoUrl) return undefined;
-
-    node.preload = preloadMode;
-    let cancelled = false;
-
-    const clearRetry = () => {
-      if (retryTimeoutRef.current !== null) {
-        window.clearTimeout(retryTimeoutRef.current);
-        retryTimeoutRef.current = null;
-      }
-    };
-
-    const scheduleRetry = () => {
-      clearRetry();
-      retryTimeoutRef.current = window.setTimeout(() => {
-        retryTimeoutRef.current = null;
-        attemptPlay();
-      }, 200);
-    };
-
-    const attemptPlay = () => {
-      if (!node || cancelled || !isActive) return;
-      const playPromise = node.play();
-      if (playPromise && typeof playPromise.catch === 'function') {
-        playPromise.catch(() => {
-          if (cancelled || !isActive) return;
-          if (node.readyState < 2) {
-            waitForData();
-          } else {
-            scheduleRetry();
-          }
-        });
-      }
-    };
-
-    const handleCanPlay = () => {
-      node.removeEventListener('loadeddata', handleCanPlay);
-      node.removeEventListener('canplay', handleCanPlay);
-      attemptPlay();
-    };
-
-    const waitForData = () => {
-      if (!node || cancelled) return;
-      node.removeEventListener('loadeddata', handleCanPlay);
-      node.removeEventListener('canplay', handleCanPlay);
-      node.addEventListener('loadeddata', handleCanPlay, { once: true });
-      node.addEventListener('canplay', handleCanPlay, { once: true });
-    };
-
-    if (isActive) {
-      if (node.readyState >= 2) {
-        attemptPlay();
-      } else {
-        waitForData();
-      }
-    } else {
-      node.pause();
-    }
-
-    return () => {
-      cancelled = true;
-      clearRetry();
-      node.removeEventListener('loadeddata', handleCanPlay);
-      node.removeEventListener('canplay', handleCanPlay);
-    };
-  }, [isActive, videoUrl, preloadMode]);
+  }, [shouldRenderVideo]);
 
   if (!videoUrl) {
     if (!posterUrl) {
@@ -379,23 +282,29 @@ function MediaPreview({
           quality={80}
           sizes={sizes}
         />
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center bg-neutral-200 text-xs font-semibold uppercase tracking-micro text-text-muted">
+          Preview unavailable
+        </div>
+      )}
+      {shouldRenderVideo ? (
+        <video
+          className={clsx('pointer-events-none absolute inset-0 z-10 h-full w-full object-cover transition duration-300', {
+            'opacity-100': hasLoaded,
+            'opacity-0': !hasLoaded,
+          })}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster={posterUrl ?? undefined}
+          src={videoUrl ?? undefined}
+          onLoadedData={() => setHasLoaded(true)}
+        >
+          <track kind="captions" srcLang="en" label="auto-generated" default />
+        </video>
       ) : null}
-      <video
-        ref={videoRef}
-        className={clsx('pointer-events-none absolute inset-0 z-10 h-full w-full object-cover transition duration-300', {
-          'opacity-100': hasLoaded,
-          'opacity-0': !hasLoaded,
-        })}
-        autoPlay
-        playsInline
-        muted
-        loop
-        preload={preloadMode}
-        poster={posterUrl ?? undefined}
-        src={videoUrl ?? undefined}
-      >
-        <track kind="captions" srcLang="en" label="auto-generated" default />
-      </video>
     </>
   );
 }
