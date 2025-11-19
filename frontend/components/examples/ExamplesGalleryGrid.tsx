@@ -93,6 +93,7 @@ export function ExamplesGalleryGrid({
   const preparedIdsRef = useRef<string[]>([]);
   const [preparedVideoIds, setPreparedVideoIds] = useState<string[]>([]);
   const preparedNeedsPlaybackRef = useRef(false);
+  const [isMobileLayout, setIsMobileLayout] = useState(false);
 
   const commitPreparedIds = useCallback((next: string[]) => {
     const prev = preparedIdsRef.current;
@@ -221,11 +222,26 @@ export function ExamplesGalleryGrid({
     });
   }, [appendBatch, pendingVideos.length]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const updateLayout = () => {
+      setIsMobileLayout(window.innerWidth < 768);
+    };
+    updateLayout();
+    window.addEventListener('resize', updateLayout);
+    return () => window.removeEventListener('resize', updateLayout);
+  }, []);
+
   const preparedSet = useMemo(() => new Set(preparedVideoIds), [preparedVideoIds]);
 
   return (
     <>
-      <div className="columns-1 gap-[2px] bg-white/60 p-[2px] sm:columns-2 lg:columns-3 xl:columns-4">
+      <div
+        className={clsx('bg-white/60 p-[2px]', {
+          'space-y-[2px]': isMobileLayout,
+          'columns-1 gap-[2px] sm:columns-2 lg:columns-3 xl:columns-4': !isMobileLayout,
+        })}
+      >
         {visibleVideos.map((video, index) => (
           <ExampleCard
             key={video.id}
@@ -233,6 +249,7 @@ export function ExamplesGalleryGrid({
             isFirst={index === 0}
             onVisibilityChange={handleVisibilityChange}
             shouldAttachSource={preparedSet.has(video.id)}
+            forceFullWidth={isMobileLayout}
           />
         ))}
       </div>
@@ -257,11 +274,13 @@ function ExampleCard({
   isFirst,
   onVisibilityChange,
   shouldAttachSource,
+  forceFullWidth,
 }: {
   video: ExampleGalleryVideo;
   isFirst: boolean;
   onVisibilityChange?: (payload: VideoVisibilityPayload) => void;
   shouldAttachSource: boolean;
+  forceFullWidth: boolean;
 }) {
   const rawAspect = useMemo(() => (video.aspectRatio ? parseAspectRatio(video.aspectRatio) : 16 / 9), [video.aspectRatio]);
   const aspectValue = useMemo(() => {
@@ -360,7 +379,7 @@ function ExampleCard({
   const canAttachSource = Boolean(shouldAttachSource && currentRatio >= VIDEO_PREPARE_THRESHOLD && video.videoUrl);
 
   return (
-    <article className="relative mb-[2px] break-inside-avoid">
+    <article className={clsx('relative mb-[2px]', { 'break-inside-avoid': !forceFullWidth })}>
       <div
         ref={containerRef}
         className="group relative block w-full cursor-pointer overflow-hidden bg-neutral-900/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
