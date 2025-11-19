@@ -251,7 +251,7 @@ export function ExamplesGalleryGrid({
   if (!isClient) {
     return (
       <>
-        <div className="grid gap-[2px] bg-white/60 p-[2px] grid-cols-1">
+        <div className="grid gap-[2px] grid-cols-1">
           {visibleVideos.map((video, index) => (
             <ExampleCard
               key={video.id}
@@ -280,7 +280,7 @@ export function ExamplesGalleryGrid({
 
   return (
     <>
-      <div className="flex gap-[2px] bg-white/60 p-[2px]" style={{ minHeight: 0 }}>
+      <div className="flex gap-[2px]" style={{ minHeight: 0 }}>
         {masonryColumns.map((column, columnIndex) => (
           <div
             key={`masonry-column-${columnIndex}`}
