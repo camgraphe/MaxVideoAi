@@ -261,10 +261,6 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
                   if (itemStatusRaw === 'pending' || itemStatusRaw === 'loading' || !item.url) return 'pending';
                   return 'completed';
                 })();
-                const itemProgress =
-                  typeof item.meta?.progress === 'number'
-                    ? Math.max(0, Math.min(100, Math.round(Number(item.meta.progress))))
-                    : undefined;
                 const itemMessage = typeof item.meta?.message === 'string' ? (item.meta.message as string) : undefined;
 
                 const hasAudio =

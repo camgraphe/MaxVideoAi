@@ -2690,7 +2690,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     } else {
       setCfgScale(null);
     }
-  }, [selectedEngine?.id, form?.mode]);
+  }, [selectedEngine, form?.mode]);
 
   const composerAssets = useMemo<Record<string, (ComposerAttachment | null)[]>>(() => {
     const map: Record<string, (ComposerAttachment | null)[]> = {};

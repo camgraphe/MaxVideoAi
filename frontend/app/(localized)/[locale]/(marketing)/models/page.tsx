@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Head from 'next/head';
 import { Link } from '@/i18n/navigation';
 import { getTranslations } from 'next-intl/server';
@@ -136,7 +135,6 @@ export default async function ModelsPage() {
     after: introContent?.cta?.after ?? DEFAULT_INTRO.cta.after,
   };
   const cardCtaLabel = content.cardCtaLabel ?? 'Explore →';
-  const cardAriaPrefix = content.cardAriaPrefix ?? 'Explore';
   const engineTypeLabels = {
     ...DEFAULT_ENGINE_TYPE_LABELS,
     ...(content.engineTypeLabels ?? {}),
