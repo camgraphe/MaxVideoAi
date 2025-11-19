@@ -130,10 +130,14 @@ export function ExamplesGalleryGrid({
       if (!entry.ref) return;
       if (id === nextId) {
         if (activeVideoIdRef.current !== id || entry.ref.paused) {
-          const playPromise = entry.ref.play();
-          if (typeof playPromise?.catch === 'function') {
-            playPromise.catch(() => {});
-          }
+          window.setTimeout(() => {
+            window.requestAnimationFrame(() => {
+              const playPromise = entry.ref.play();
+              if (typeof playPromise?.catch === 'function') {
+                playPromise.catch(() => {});
+              }
+            });
+          }, 30);
         }
       } else if (!entry.ref.paused) {
         resetVideoRef(entry.ref);
