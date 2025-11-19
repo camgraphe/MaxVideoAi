@@ -83,15 +83,14 @@ export function ExamplesGalleryGrid({
   remainingVideos: ExampleGalleryVideo[];
   loadMoreLabel?: string;
 }) {
-  const [visibleVideos, setVisibleVideos] = useState<ExampleGalleryVideo[]>(initialVideos);
-  const [pendingVideos, setPendingVideos] = useState<ExampleGalleryVideo[]>(remainingVideos);
+  const [visibleVideos, setVisibleVideos] = useState<ExampleGalleryVideo[]>(dedupeVideos(initialVideos));
+  const [pendingVideos, setPendingVideos] = useState<ExampleGalleryVideo[]>(dedupeVideos(remainingVideos));
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const visibilityRegistryRef = useRef<Map<string, RegistryEntry>>(new Map());
   const activeVideoIdRef = useRef<string | null>(null);
   const frameHandleRef = useRef<number | null>(null);
-  const [viewportWidth, setViewportWidth] = useState<number>(() =>
-    typeof window === 'undefined' ? 0 : window.innerWidth
-  );
+  const [viewportWidth, setViewportWidth] = useState<number>(0);
+  const [isClient, setIsClient] = useState(false);
   const resetVideoRef = useCallback((video: HTMLVideoElement) => {
     video.pause();
     if (typeof window !== 'undefined') {
@@ -121,6 +120,29 @@ export function ExamplesGalleryGrid({
       return;
     }
     entries.sort((a, b) => b[1].ratio - a[1].ratio);
+    const isMobileViewport = typeof window !== 'undefined' ? window.innerWidth < 768 : true;
+
+    if (!isMobileViewport) {
+      // Desktop/tablet: allow all visible videos to play, still reset when removed via visibility handler.
+      entries.forEach(([, entry]) => {
+        const node = entry.ref;
+        if (!node || entry.ratio <= 0) return;
+        if (node.paused) {
+          window.setTimeout(() => {
+            window.requestAnimationFrame(() => {
+              const playPromise = node.play();
+              if (typeof playPromise?.catch === 'function') {
+                playPromise.catch(() => {});
+              }
+            });
+          }, 30);
+        }
+      });
+      activeVideoIdRef.current = null;
+      return;
+    }
+
+    // Mobile: single active video to avoid autoplay throttling.
     const [nextId, nextEntry] = entries[0];
     if (!nextEntry?.ref || nextEntry.ratio <= 0) {
       entries.forEach(([, entry]) => {
@@ -133,10 +155,14 @@ export function ExamplesGalleryGrid({
       if (!entry.ref) return;
       if (id === nextId) {
         if (activeVideoIdRef.current !== id || entry.ref.paused) {
-          const playPromise = entry.ref.play();
-          if (typeof playPromise?.catch === 'function') {
-            playPromise.catch(() => {});
-          }
+          window.setTimeout(() => {
+            window.requestAnimationFrame(() => {
+              const playPromise = entry.ref.play();
+              if (typeof playPromise?.catch === 'function') {
+                playPromise.catch(() => {});
+              }
+            });
+          }, 30);
         }
       } else if (!entry.ref.paused) {
         resetVideoRef(entry.ref);
@@ -183,14 +209,14 @@ export function ExamplesGalleryGrid({
   }, [resetVideoRef]);
 
   useEffect(() => {
-    setVisibleVideos(initialVideos);
-    setPendingVideos(remainingVideos);
+    setVisibleVideos(dedupeVideos(initialVideos));
+    setPendingVideos(dedupeVideos(remainingVideos));
   }, [initialVideos, remainingVideos]);
 
   const appendBatch = useCallback(() => {
     setPendingVideos((current) => {
       if (!current.length) return current;
-      setVisibleVideos((prev) => [...prev, ...current.slice(0, BATCH_SIZE)]);
+      setVisibleVideos((prev) => dedupeVideos([...prev, ...current.slice(0, BATCH_SIZE)]));
       return current.slice(BATCH_SIZE);
     });
   }, []);
@@ -223,6 +249,11 @@ export function ExamplesGalleryGrid({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    setIsClient(true);
+  }, []);
+
   const columnCount = useMemo(() => {
     if (viewportWidth <= 0) return 1;
     if (viewportWidth < 768) return 1;
@@ -231,9 +262,9 @@ export function ExamplesGalleryGrid({
     return 4;
   }, [viewportWidth]);
 
-  const orderedVideos = useMemo(() => {
-    if (columnCount <= 1) return visibleVideos;
-    const columns = Array.from({ length: columnCount }, () => ({
+  const masonryColumns = useMemo(() => {
+    const count = Math.max(1, columnCount);
+    const columns = Array.from({ length: count }, () => ({
       height: 0,
       items: [] as ExampleGalleryVideo[],
     }));
@@ -249,19 +280,56 @@ export function ExamplesGalleryGrid({
       targetColumn.items.push(video);
       targetColumn.height += estimatedHeight;
     });
-    return columns.flatMap((column) => column.items);
+    return columns;
   }, [columnCount, visibleVideos]);
+
+  if (!isClient) {
+    return (
+      <>
+        <div className="grid gap-4 bg-white/60 p-4 grid-cols-1">
+          {visibleVideos.map((video, index) => (
+            <ExampleCard
+              key={video.id}
+              video={video}
+              isFirst={index === 0}
+              onVisibilityChange={handleVisibilityChange}
+            />
+          ))}
+        </div>
+        <div ref={sentinelRef} className="h-8 w-full" aria-hidden />
+        {pendingVideos.length ? (
+          <div className="mt-4 flex justify-center">
+            <button
+              type="button"
+              className="rounded-full border border-border bg-white px-4 py-2 text-sm font-semibold text-text-primary shadow-card transition hover:border-accent hover:text-accent"
+              onClick={appendBatch}
+            >
+              {loadMoreLabel}
+            </button>
+          </div>
+        ) : null}
+      </>
+    );
+  }
 
   return (
     <>
-      <div className="grid gap-[2px] bg-white/60 p-[2px] grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-        {orderedVideos.map((video, index) => (
-          <ExampleCard
-            key={video.id}
-            video={video}
-            isFirst={index === 0}
-            onVisibilityChange={handleVisibilityChange}
-          />
+      <div className="flex gap-4 bg-white/60 p-4" style={{ minHeight: 0 }}>
+        {masonryColumns.map((column, columnIndex) => (
+          <div
+            key={`masonry-column-${columnIndex}`}
+            className="flex min-w-0 flex-1 flex-col gap-4"
+            style={{ width: `${100 / columnCount}%` }}
+          >
+            {column.items.map((video, index) => (
+              <ExampleCard
+                key={video.id}
+                video={video}
+                isFirst={columnIndex === 0 && index === 0}
+                onVisibilityChange={handleVisibilityChange}
+              />
+            ))}
+          </div>
         ))}
       </div>
       <div ref={sentinelRef} className="h-8 w-full" aria-hidden />
@@ -290,11 +358,7 @@ function ExampleCard({
   onVisibilityChange?: (payload: VideoVisibilityPayload) => void;
 }) {
   const rawAspect = useMemo(() => (video.aspectRatio ? parseAspectRatio(video.aspectRatio) : 16 / 9), [video.aspectRatio]);
-  const aspectValue = useMemo(() => {
-    const raw = rawAspect;
-    const clamped = Math.min(Math.max(raw, 0.68), 1.35);
-    return `${clamped} / 1`;
-  }, [rawAspect]);
+  const cssAspectRatio = useMemo(() => formatCssAspectRatio(video.aspectRatio), [video.aspectRatio]);
   const posterSrc = video.optimizedPosterUrl ?? video.rawPosterUrl ?? null;
   const isPortrait = rawAspect < 1;
   const posterSizes = isPortrait ? PORTRAIT_SIZES : LANDSCAPE_SIZES;
@@ -304,6 +368,7 @@ function ExampleCard({
   const shouldReportVisibility = Boolean(video.videoUrl);
   const videoElementRef = useRef<HTMLVideoElement | null>(null);
   const lastRatioRef = useRef(isFirst ? 1 : 0);
+  const [allowOverlay, setAllowOverlay] = useState(false);
 
   const emitVisibility = useCallback(
     (ratio: number, isIntersecting: boolean) => {
@@ -356,8 +421,8 @@ function ExampleCard({
   }, [emitVisibility, shouldReportVisibility]);
 
   useEffect(() => {
+    if (!onVisibilityChange || !shouldReportVisibility) return undefined;
     return () => {
-      if (!onVisibilityChange || !shouldReportVisibility) return;
       onVisibilityChange({
         id: video.id,
         video: null,
@@ -370,6 +435,10 @@ function ExampleCard({
   const handleNavigate = useCallback(() => {
     router.push(videoPageHref);
   }, [router, videoPageHref]);
+
+  const handlePlaybackStart = useCallback(() => {
+    setAllowOverlay(true);
+  }, []);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLDivElement>) => {
@@ -384,25 +453,30 @@ function ExampleCard({
   return (
     <article className="relative mb-[2px]">
       <div
-        ref={containerRef}
-        className="group relative block w-full cursor-pointer overflow-hidden bg-neutral-900/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
-        style={{ aspectRatio: aspectValue }}
+        className="group block w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
         role="link"
         tabIndex={0}
         aria-label={`Open video ${video.engineLabel}`}
         onClick={handleNavigate}
         onKeyDown={handleKeyDown}
       >
-        <MediaPreview
-          videoUrl={video.videoUrl ?? null}
-          posterUrl={posterSrc}
-          prompt={video.prompt}
-          isLcp={isFirst}
-          sizes={posterSizes}
-          onVideoRef={shouldReportVisibility ? handleVideoRef : undefined}
-        />
-        {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available on playback" /> : null}
-        <CardOverlay video={video} />
+        <div
+          ref={containerRef}
+          className="relative w-full overflow-hidden rounded-lg bg-neutral-900/5"
+          style={{ aspectRatio: cssAspectRatio }}
+        >
+          <MediaPreview
+            videoUrl={video.videoUrl ?? null}
+            posterUrl={posterSrc}
+            prompt={video.prompt}
+            isLcp={isFirst}
+            sizes={posterSizes}
+            onVideoRef={shouldReportVisibility ? handleVideoRef : undefined}
+            onPlaybackStart={handlePlaybackStart}
+          />
+          {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available on playback" /> : null}
+          {allowOverlay ? <CardOverlay video={video} /> : null}
+        </div>
       </div>
     </article>
   );
@@ -451,6 +525,7 @@ function MediaPreview({
   isLcp,
   sizes,
   onVideoRef,
+  onPlaybackStart,
 }: {
   videoUrl: string | null;
   posterUrl: string | null;
@@ -458,6 +533,7 @@ function MediaPreview({
   isLcp: boolean;
   sizes: string;
   onVideoRef?: (video: HTMLVideoElement | null) => void;
+  onPlaybackStart?: () => void;
 }) {
   const [hasLoaded, setHasLoaded] = useState(false);
 
@@ -467,7 +543,8 @@ function MediaPreview({
 
   const handleVideoReady = useCallback(() => {
     setHasLoaded(true);
-  }, []);
+    onPlaybackStart?.();
+  }, [onPlaybackStart]);
 
   const setVideoElement = useCallback(
     (node: HTMLVideoElement | null) => {
@@ -553,4 +630,28 @@ function parseAspectRatio(value: string): number {
     }
   }
   return Number.parseFloat(value) || 16 / 9;
+}
+
+function formatCssAspectRatio(value: string | null | undefined): string {
+  if (!value) return '16 / 9';
+  if (value.includes(':')) {
+    const [w, h] = value.split(':').map(Number);
+    if (Number.isFinite(w) && Number.isFinite(h) && h !== 0) {
+      return `${w} / ${h}`;
+    }
+  }
+  const numeric = Number.parseFloat(value);
+  if (Number.isFinite(numeric) && numeric > 0) {
+    return `${numeric} / 1`;
+  }
+  return '16 / 9';
+}
+
+function dedupeVideos(videos: ExampleGalleryVideo[]): ExampleGalleryVideo[] {
+  const seen = new Set<string>();
+  return videos.filter((video) => {
+    if (seen.has(video.id)) return false;
+    seen.add(video.id);
+    return true;
+  });
 }

@@ -17,7 +17,12 @@ type LocalizedLinkHref =
     };
 
 type LocalizedLinkProps = PropsWithChildren<
-  Omit<NextLinkProps, 'href'> & { href: LocalizedLinkHref; className?: string; rel?: string }
+  Omit<NextLinkProps, 'href' | 'hrefLang'> & {
+    href: LocalizedLinkHref;
+    className?: string;
+    rel?: string;
+    hrefLang?: string | null | false;
+  }
 >;
 
 function extractHref(href: LocalizedLinkHref): string | null {
@@ -41,10 +46,18 @@ function shouldBypassLocalization(href: LocalizedLinkHref): boolean {
   return BYPASS_PREFIXES.some((prefix) => value.startsWith(prefix));
 }
 
-export function Link({ children, className, rel, ...rest }: LocalizedLinkProps): ReactElement {
+export function Link({ children, className, rel, hrefLang, ...rest }: LocalizedLinkProps): ReactElement {
+  const normalizedHrefLang =
+    typeof hrefLang === 'string' && hrefLang.trim().length ? hrefLang : undefined;
+
   if (shouldBypassLocalization(rest.href)) {
     return (
-      <NextLink {...(rest as unknown as NextLinkProps)} className={className} rel={rel}>
+      <NextLink
+        {...(rest as unknown as NextLinkProps)}
+        className={className}
+        rel={rel}
+        hrefLang={normalizedHrefLang}
+      >
         {children}
       </NextLink>
     );
@@ -59,6 +72,7 @@ export function Link({ children, className, rel, ...rest }: LocalizedLinkProps):
       {...(rest as unknown as ComponentProps<typeof LocalizedLink>)}
       className={className}
       rel={rel}
+      hrefLang={normalizedHrefLang}
     >
       {children}
     </Localized>
