@@ -512,16 +512,32 @@ function MediaPreview({
   shouldPlay: boolean;
 }) {
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     setHasLoaded(false);
   }, [videoUrl]);
 
+  useEffect(() => {
+    setAutoplayBlocked(false);
+  }, [videoUrl]);
+
   const handleVideoReady = useCallback(() => {
     setHasLoaded(true);
     onPlaybackStart?.();
   }, [onPlaybackStart]);
+
+  const handleVideoError = useCallback(() => {
+    const node = videoRef.current;
+    const error = node?.error;
+    if (error && isLikelyAutoplayBlock(error)) {
+      setAutoplayBlocked(true);
+      return;
+    }
+    // Safari sometimes reports MediaError 163 without a readable message.
+    setAutoplayBlocked(true);
+  }, []);
 
   const setVideoElement = useCallback(
     (node: HTMLVideoElement | null) => {
@@ -549,20 +565,32 @@ function MediaPreview({
       node.pause();
       return;
     }
+    if (autoplayBlocked) {
+      return;
+    }
     const tryPlay = async () => {
       try {
         await node.play();
-      } catch {
+        setAutoplayBlocked(false);
+      } catch (error) {
+        if (isLikelyAutoplayBlock(error)) {
+          setAutoplayBlocked(true);
+          return;
+        }
         const handleLoadedData = () => {
-          node.play().catch(() => {
-            // ignore autoplay failures, especially on Safari
+          node.play().catch((playError) => {
+            if (isLikelyAutoplayBlock(playError)) {
+              setAutoplayBlocked(true);
+            }
           });
         };
         node.addEventListener('loadeddata', handleLoadedData, { once: true });
 
         window.setTimeout(() => {
-          node.play().catch(() => {
-            // ignore
+          node.play().catch((playError) => {
+            if (isLikelyAutoplayBlock(playError)) {
+              setAutoplayBlocked(true);
+            }
           });
         }, 120);
       }
@@ -570,7 +598,21 @@ function MediaPreview({
     window.requestAnimationFrame(() => {
       void tryPlay();
     });
-  }, [shouldPlay]);
+  }, [autoplayBlocked, shouldPlay]);
+
+  useEffect(() => {
+    if (!shouldPlay || autoplayBlocked) return;
+    const detectionTimeout = window.setTimeout(() => {
+      const node = videoRef.current;
+      if (!node) return;
+      const readyState = node.readyState ?? 0;
+      const isPaused = node.paused ?? true;
+      if (isPaused || readyState < 3) {
+        setAutoplayBlocked(true);
+      }
+    }, 1400);
+    return () => window.clearTimeout(detectionTimeout);
+  }, [autoplayBlocked, shouldPlay]);
 
   if (!videoUrl) {
     if (!posterUrl) {
@@ -621,21 +663,24 @@ function MediaPreview({
           Preview unavailable
         </div>
       )}
-      <video
-        ref={setVideoElement}
-        className="absolute inset-0 z-10 h-full w-full object-cover"
-        src={videoUrl ?? undefined}
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        poster={posterUrl ?? undefined}
-        onLoadedData={handleVideoReady}
-        onPlaying={handleVideoReady}
-      >
-        <track kind="captions" srcLang="en" label="auto-generated" default />
-      </video>
+      {!autoplayBlocked ? (
+        <video
+          ref={setVideoElement}
+          className="absolute inset-0 z-10 h-full w-full object-cover"
+          src={videoUrl ?? undefined}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster={posterUrl ?? undefined}
+          onLoadedData={handleVideoReady}
+          onPlaying={handleVideoReady}
+          onError={handleVideoError}
+        >
+          <track kind="captions" srcLang="en" label="auto-generated" default />
+        </video>
+      ) : null}
     </>
   );
 }
@@ -668,4 +713,25 @@ function dedupeVideos(videos: ExampleGalleryVideo[]): ExampleGalleryVideo[] {
     seen.add(video.id);
     return true;
   });
+}
+
+function isLikelyAutoplayBlock(error: unknown): boolean {
+  if (!error) {
+    return false;
+  }
+  const domError = error as { name?: string; message?: string; code?: number };
+  if (typeof domError?.name === 'string') {
+    if (/NotAllowedError|SecurityError/i.test(domError.name)) {
+      return true;
+    }
+  }
+  if (typeof domError?.message === 'string') {
+    if (/autoplay|gesture|interaction|NotAllowedError|user activation/i.test(domError.message)) {
+      return true;
+    }
+  }
+  if (typeof domError?.code === 'number' && domError.code === 0 && domError.name === 'NotAllowedError') {
+    return true;
+  }
+  return false;
 }
