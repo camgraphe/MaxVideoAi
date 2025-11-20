@@ -423,6 +423,12 @@ function ExampleCard({
         tabIndex={0}
         aria-label={`Open video ${video.engineLabel}`}
         onClick={(event) => {
+          if (!allowOverlay && video.videoUrl) {
+            event.preventDefault();
+            event.stopPropagation();
+            manualPlayRef.current?.();
+            return;
+          }
           if (isAutoplayBlocked) {
             event.preventDefault();
             event.stopPropagation();
@@ -531,6 +537,7 @@ function MediaPreview({
 }) {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [autoplayBlocked, setAutoplayBlocked] = useState(false);
+  const [userRequestedPlay, setUserRequestedPlay] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const pendingPlayRef = useRef<number | null>(null);
 
@@ -540,6 +547,7 @@ function MediaPreview({
 
   useEffect(() => {
     setAutoplayBlocked(false);
+    setUserRequestedPlay(false);
   }, [videoUrl]);
   useEffect(() => {
     onAutoplayBlockedChange?.(autoplayBlocked);
@@ -584,7 +592,8 @@ function MediaPreview({
   useEffect(() => {
     const node = videoRef.current;
     if (!node) return;
-    if (!shouldPlay) {
+    const wantsPlay = (shouldPlay || userRequestedPlay) && Boolean(videoUrl);
+    if (!wantsPlay) {
       node.pause();
       return;
     }
@@ -628,9 +637,10 @@ function MediaPreview({
         pendingPlayRef.current = null;
       }
     };
-  }, [autoplayBlocked, shouldPlay]);
+  }, [autoplayBlocked, shouldPlay, userRequestedPlay, videoUrl]);
 
   const handleManualPlay = useCallback(() => {
+    setUserRequestedPlay(true);
     setAutoplayBlocked(false);
     const node = videoRef.current;
     if (!node) return;
