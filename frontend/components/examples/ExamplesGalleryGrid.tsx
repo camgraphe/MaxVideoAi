@@ -346,7 +346,6 @@ function ExampleCard({
   const videoPageHref = useMemo(() => `/video/${encodeURIComponent(video.id)}`, [video.id]);
   const videoElementRef = useRef<HTMLVideoElement | null>(null);
   const [allowOverlay, setAllowOverlay] = useState(false);
-  const [canAutoplay, setCanAutoplay] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
 
   const handleNavigate = useCallback(() => {
@@ -402,8 +401,7 @@ function ExampleCard({
                   videoElementRef.current = node;
                 }}
                 onPlaybackStart={handlePlaybackStart}
-                shouldPlay={Boolean((isActiveRow || isHovered) && video.videoUrl && canAutoplay)}
-                onAutoplayError={() => setCanAutoplay(false)}
+                shouldPlay={Boolean((isActiveRow || isHovered) && video.videoUrl)}
               />
             </div>
           </div>
@@ -461,7 +459,6 @@ function MediaPreview({
   onVideoRef,
   onPlaybackStart,
   shouldPlay,
-  onAutoplayError,
 }: {
   videoUrl: string | null;
   posterUrl: string | null;
@@ -472,7 +469,6 @@ function MediaPreview({
   onVideoRef?: (video: HTMLVideoElement | null) => void;
   onPlaybackStart?: () => void;
   shouldPlay: boolean;
-  onAutoplayError?: () => void;
 }) {
   const [hasLoaded, setHasLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -489,6 +485,11 @@ function MediaPreview({
   const setVideoElement = useCallback(
     (node: HTMLVideoElement | null) => {
       videoRef.current = node;
+      if (node) {
+        node.muted = true;
+        (node as HTMLVideoElement & { playsInline?: boolean }).playsInline = true;
+        node.autoplay = true;
+      }
       onVideoRef?.(node);
     },
     [onVideoRef]
@@ -506,20 +507,15 @@ function MediaPreview({
         await node.play();
       } catch {
         const handleLoadedData = () => {
-          node
-            .play()
-            .catch(() => {
-              onAutoplayError?.();
-            })
-            .finally(() => {
-              node.removeEventListener('loadeddata', handleLoadedData);
-            });
+          node.play().catch(() => {
+            // ignore autoplay failures, especially on Safari
+          });
         };
         node.addEventListener('loadeddata', handleLoadedData, { once: true });
       }
     };
     void tryPlay();
-  }, [shouldPlay, onAutoplayError]);
+  }, [shouldPlay]);
 
   if (!videoUrl) {
     if (!posterUrl) {
@@ -574,6 +570,7 @@ function MediaPreview({
         ref={setVideoElement}
         className="absolute inset-0 z-10 h-full w-full object-cover"
         src={videoUrl ?? undefined}
+        autoPlay
         muted
         loop
         playsInline
