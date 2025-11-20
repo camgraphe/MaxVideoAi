@@ -37,7 +37,6 @@ function wantsJson(req: NextRequest) {
 
 function safeRedirectUrl(req: NextRequest, locale?: string | null, success = true): string {
   const defaultPath = locale ? `/${locale}/contact` : '/contact';
-  const searchParam = success ? 'submitted=1' : 'error=1';
   // Prefer referer if it is same-origin and points to contact.
   const referer = req.headers.get('referer');
   if (referer) {

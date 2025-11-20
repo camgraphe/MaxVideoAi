@@ -85,6 +85,11 @@ export default async function ContactPage({
   const statusHref = buildLocalizedPath(locale, STATUS_SLUG_MAP[locale] ?? STATUS_SLUG_MAP.en);
   const isSubmitted = isFlagged(searchParams.submitted);
   const hasError = isFlagged(searchParams.error);
+  const successText =
+    (content.form as { success?: string }).success ?? 'Message sent. We will get back to you shortly.';
+  const errorText =
+    (content.form as { error?: string }).error ??
+    'We could not send your message. Please try again or email support@maxvideo.ai.';
 
   return (
     <div className="mx-auto max-w-4xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
@@ -125,12 +130,12 @@ export default async function ContactPage({
       <section className="mt-12 rounded-card border border-hairline bg-white p-6 shadow-card">
         {isSubmitted ? (
           <div className="mb-4 rounded-input border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
-            {content.form.success ?? 'Message sent. We will get back to you shortly.'}
+            {successText}
           </div>
         ) : null}
         {hasError ? (
           <div className="mb-4 rounded-input border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-            {content.form.error ?? 'We could not send your message. Please try again or email support@maxvideo.ai.'}
+            {errorText}
           </div>
         ) : null}
         <form className="space-y-4" method="post" action="/api/contact" aria-label={content.hero.title}>
