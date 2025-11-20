@@ -388,6 +388,8 @@ function ExampleCard({
   const [allowOverlay, setAllowOverlay] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const isBootAutoplay = forcePlayId === video.id;
+  const [isAutoplayBlocked, setIsAutoplayBlocked] = useState(false);
+  const manualPlayRef = useRef<(() => void) | null>(null);
 
   const handleNavigate = useCallback(() => {
     router.push(videoPageHref);
@@ -420,7 +422,15 @@ function ExampleCard({
         role="link"
         tabIndex={0}
         aria-label={`Open video ${video.engineLabel}`}
-        onClick={handleNavigate}
+        onClick={(event) => {
+          if (isAutoplayBlocked) {
+            event.preventDefault();
+            event.stopPropagation();
+            manualPlayRef.current?.();
+            return;
+          }
+          handleNavigate();
+        }}
         onKeyDown={handleKeyDown}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -443,6 +453,10 @@ function ExampleCard({
                 }}
                 onPlaybackStart={handlePlaybackStart}
                 shouldPlay={Boolean((isActiveRow || isHovered || isBootAutoplay) && video.videoUrl)}
+                onAutoplayBlockedChange={setIsAutoplayBlocked}
+                onManualPlayRef={(fn) => {
+                  manualPlayRef.current = fn;
+                }}
               />
             </div>
           </div>
@@ -500,6 +514,8 @@ function MediaPreview({
   onVideoRef,
   onPlaybackStart,
   shouldPlay,
+  onAutoplayBlockedChange,
+  onManualPlayRef,
 }: {
   videoUrl: string | null;
   posterUrl: string | null;
@@ -510,6 +526,8 @@ function MediaPreview({
   onVideoRef?: (video: HTMLVideoElement | null) => void;
   onPlaybackStart?: () => void;
   shouldPlay: boolean;
+  onAutoplayBlockedChange?: (blocked: boolean) => void;
+  onManualPlayRef?: (play: (() => void) | null) => void;
 }) {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [autoplayBlocked, setAutoplayBlocked] = useState(false);
@@ -523,6 +541,9 @@ function MediaPreview({
   useEffect(() => {
     setAutoplayBlocked(false);
   }, [videoUrl]);
+  useEffect(() => {
+    onAutoplayBlockedChange?.(autoplayBlocked);
+  }, [autoplayBlocked, onAutoplayBlockedChange]);
 
   const handleVideoReady = useCallback(() => {
     setHasLoaded(true);
@@ -609,21 +630,21 @@ function MediaPreview({
     };
   }, [autoplayBlocked, shouldPlay]);
 
-  const handleManualPlay = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
-      setAutoplayBlocked(false);
-      const node = videoRef.current;
-      if (!node) return;
-      void node.play().catch((error) => {
-        if (isLikelyAutoplayBlock(error)) {
-          setAutoplayBlocked(true);
-        }
-      });
-    },
-    []
-  );
+  const handleManualPlay = useCallback(() => {
+    setAutoplayBlocked(false);
+    const node = videoRef.current;
+    if (!node) return;
+    void node.play().catch((error) => {
+      if (isLikelyAutoplayBlock(error)) {
+        setAutoplayBlocked(true);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    onManualPlayRef?.(handleManualPlay);
+    return () => onManualPlayRef?.(null);
+  }, [handleManualPlay, onManualPlayRef]);
 
   if (!videoUrl) {
     if (!posterUrl) {
@@ -688,19 +709,24 @@ function MediaPreview({
         onLoadedData={handleVideoReady}
         onPlaying={handleVideoReady}
         onError={handleVideoError}
+        controls={autoplayBlocked}
       >
         <track kind="captions" srcLang="en" label="auto-generated" default />
       </video>
       {autoplayBlocked ? (
-        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-black/35">
-          <button
-            type="button"
-            className="pointer-events-auto rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-neutral-900 shadow-sm transition hover:bg-white"
-            onClick={handleManualPlay}
-          >
+        <button
+          type="button"
+          className="absolute inset-0 z-20 flex items-center justify-center bg-black/35 text-white"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            handleManualPlay();
+          }}
+        >
+          <span className="rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-neutral-900 shadow-sm transition hover:bg-white">
             Play preview
-          </button>
-        </div>
+          </span>
+        </button>
       ) : null}
     </>
   );
