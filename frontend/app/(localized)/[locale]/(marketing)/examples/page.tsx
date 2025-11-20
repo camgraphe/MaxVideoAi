@@ -477,11 +477,13 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
       const engineLabel = engineMeta?.label ?? video.engineLabel ?? canonicalEngineId ?? 'Engine';
       const detailPath = `/video/${encodeURIComponent(video.id)}`;
       const absoluteUrl = `https://maxvideoai.com${detailPath}`;
+      const fallbackLabel = `MaxVideoAI example ${video.id}`;
+      const name = video.promptExcerpt || video.prompt || engineLabel || fallbackLabel;
       const description =
-        video.promptExcerpt || video.prompt || `AI video example generated with ${engineLabel} in MaxVideo AI.`;
+        video.promptExcerpt || video.prompt || `AI video example generated with ${engineLabel} in MaxVideoAI.`;
       const item: Record<string, unknown> = {
         '@type': 'VideoObject',
-        name: video.promptExcerpt || video.prompt || `${engineLabel} example`,
+        name: name || fallbackLabel,
         description,
         thumbnailUrl: video.thumbUrl!,
         uploadDate: toISODate(video.createdAt),
@@ -493,9 +495,6 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
           name: 'MaxVideo AI',
         },
       };
-      if (video.videoUrl) {
-        item.contentUrl = video.videoUrl;
-      }
       return {
         '@type': 'ListItem',
         position: index + 1,
@@ -638,26 +637,31 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
         </section>
 
         {videoLinkEntries.length ? (
-          <section className="mt-10 rounded-[16px] border border-hairline bg-white/70 px-4 py-5 text-sm text-text-secondary/90">
-            <h2 className="text-base font-semibold text-text-primary">
-              Direct access to recent renders
-            </h2>
-            <p className="mt-1 text-xs text-text-muted">
-              These links ensure every public example listed in our sitemap is also reachable through standard HTML so search engines can explore them without JavaScript.
-            </p>
-            <ul className="mt-4 grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
-              {videoLinkEntries.map((entry) => (
-                <li key={entry.id}>
-                  <Link
-                    href={`/video/${encodeURIComponent(entry.id)}`}
-                    className="text-text-secondary transition hover:text-text-primary"
-                  >
-                    {entry.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
+          <details className="mt-10 rounded-[16px] border border-hairline bg-white/70 px-4 py-5 text-sm text-text-secondary/90">
+            <summary className="flex cursor-pointer items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50">
+              <span className="text-base font-semibold text-text-primary">
+                Direct access to recent renders
+              </span>
+              <span className="text-xs uppercase tracking-micro text-text-muted">Show</span>
+            </summary>
+            <div className="mt-3">
+              <p className="text-xs text-text-muted">
+                These links ensure every public example listed in our sitemap is also reachable through standard HTML so search engines can explore them without JavaScript.
+              </p>
+              <ul className="mt-4 grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
+                {videoLinkEntries.map((entry) => (
+                  <li key={entry.id}>
+                    <Link
+                      href={`/video/${encodeURIComponent(entry.id)}`}
+                      className="text-text-secondary transition hover:text-text-primary"
+                    >
+                      {entry.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </details>
         ) : null}
 
         {itemListJson ? (
