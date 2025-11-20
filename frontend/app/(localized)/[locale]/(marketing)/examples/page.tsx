@@ -470,7 +470,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
 
   const itemListElements = videos
     .filter((video) => Boolean(video.thumbUrl))
-    .map((video, index) => {
+    .map((video) => {
       const canonicalEngineId = resolveEngineLinkId(video.engineId);
       const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
       const engineMeta = engineKey ? ENGINE_META.get(engineKey) : null;
@@ -481,7 +481,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
       const name = video.promptExcerpt || video.prompt || engineLabel || fallbackLabel;
       const description =
         video.promptExcerpt || video.prompt || `AI video example generated with ${engineLabel} in MaxVideoAI.`;
-      const item: Record<string, unknown> = {
+      return {
         '@type': 'VideoObject',
         name: name || fallbackLabel,
         description,
@@ -495,12 +495,6 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
           '@type': 'Organization',
           name: 'MaxVideo AI',
         },
-      };
-      return {
-        '@type': 'ListItem',
-        position: index + 1,
-        url: absoluteUrl,
-        item,
       };
     });
   const itemListJson =
