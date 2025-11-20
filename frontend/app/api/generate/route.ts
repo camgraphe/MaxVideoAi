@@ -799,163 +799,30 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
   }
 }
 
+async function rollbackPendingPayment(params: {
+  pendingReceipt: PendingReceipt | null;
+  walletChargeReserved: boolean;
+  refundDescription: string;
+}): Promise<void> {
+  const { pendingReceipt, walletChargeReserved, refundDescription } = params;
+  if (!pendingReceipt) return;
+  try {
+    if (walletChargeReserved) {
+      await recordRefundReceipt(pendingReceipt, refundDescription, null);
+      return;
+    }
+    const refundId = await issueStripeRefund(pendingReceipt);
+    await recordRefundReceipt(pendingReceipt, refundDescription, refundId);
+  } catch (error) {
+    console.warn('[payments] failed to rollback pending payment', error);
+  }
+}
+
   let pendingReceipt: PendingReceipt | null = null;
   let paymentStatus: string = 'platform';
   let stripePaymentIntentId: string | null = null;
   let stripeChargeId: string | null = null;
   let walletChargeReserved = false;
-
-  if (paymentMode === 'wallet') {
-    const walletUserId = userId ? String(userId) : null;
-    if (!walletUserId) {
-      return NextResponse.json({ ok: false, error: 'Wallet payment requires authentication' }, { status: 401 });
-    }
-
-    const reserveResult = await reserveWalletCharge({
-      userId: walletUserId,
-      amountCents: pricing.totalCents,
-      currency: DISPLAY_CURRENCY,
-      description: `Run ${engine.label} - ${durationSec}s`,
-      jobId,
-      pricingSnapshotJson,
-      applicationFeeCents: priceOnlyReceipts ? null : applicationFeeCents,
-      vendorAccountId,
-      stripePaymentIntentId: null,
-      stripeChargeId: null,
-    });
-
-    if (!reserveResult.ok) {
-      if (reserveResult.errorCode === 'currency_mismatch') {
-        const lockedCurrency = (reserveResult.preferredCurrency ?? resolvedCurrencyLower).toUpperCase();
-        console.warn('[wallet] currency mismatch during reserve', {
-          userId: walletUserId,
-          expected: lockedCurrency,
-          requested: resolvedCurrencyUpper,
-        });
-        return NextResponse.json(
-          {
-            ok: false,
-            error: `Wallet currency locked to ${lockedCurrency}. Contact support to request a change.`,
-          },
-          { status: 409 }
-        );
-      }
-      const balanceCents = reserveResult.balanceCents;
-      return NextResponse.json(
-        {
-          ok: false,
-          error: 'INSUFFICIENT_WALLET_FUNDS',
-          requiredCents: Math.max(0, pricing.totalCents - balanceCents),
-          balanceCents,
-        },
-        { status: 402 }
-      );
-    }
-
-    walletChargeReserved = true;
-
-    if (!preferredCurrency) {
-      await ensureUserPreferredCurrency(walletUserId, resolvedCurrencyLower);
-      preferredCurrency = resolvedCurrencyLower;
-    }
-
-    pendingReceipt = {
-      userId: walletUserId,
-      amountCents: pricing.totalCents,
-      currency: DISPLAY_CURRENCY,
-      description: `Run ${engine.label} - ${durationSec}s`,
-      jobId,
-      snapshot: receiptSnapshot,
-      applicationFeeCents: priceOnlyReceipts ? null : applicationFeeCents,
-      vendorAccountId,
-    };
-    paymentStatus = 'paid_wallet';
-  } else if (paymentMode === 'direct') {
-    if (!ENV.STRIPE_SECRET_KEY) {
-      return NextResponse.json({ ok: false, error: 'Stripe not configured' }, { status: 501 });
-    }
-    if (!userId) {
-      return NextResponse.json({ ok: false, error: 'Direct payment requires authentication' }, { status: 401 });
-    }
-    if (!payment.paymentIntentId) {
-      return NextResponse.json({ ok: false, error: 'PaymentIntent required for direct mode' }, { status: 400 });
-    }
-    if (connectMode && !vendorAccountId) {
-      return NextResponse.json({ ok: false, error: 'Vendor account missing for this engine' }, { status: 400 });
-    }
-
-    const stripe = new Stripe(ENV.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' });
-    const intent = await stripe.paymentIntents.retrieve(payment.paymentIntentId, { expand: ['latest_charge'] });
-
-    const receivedSettlementCents = intent.amount_received ?? intent.amount ?? 0;
-    const metadataSettlementCents = intent.metadata?.settlement_amount_cents
-      ? Number(intent.metadata.settlement_amount_cents)
-      : null;
-    const expectedSettlementCents = metadataSettlementCents && metadataSettlementCents > 0
-      ? metadataSettlementCents
-      : (await convertCents(pricing.totalCents, DISPLAY_CURRENCY_LOWER, resolvedCurrencyLower)).cents;
-    if (intent.status !== 'succeeded' || receivedSettlementCents < expectedSettlementCents) {
-      return NextResponse.json({ ok: false, error: 'Payment not captured yet' }, { status: 402 });
-    }
-    const intentCurrency = intent.currency?.toUpperCase() ?? resolvedCurrencyUpper;
-    if (intentCurrency !== resolvedCurrencyUpper) {
-      console.warn('[payments] payment intent currency mismatch', {
-        expected: resolvedCurrencyUpper,
-        received: intentCurrency,
-        userId,
-        paymentIntentId: intent.id,
-      });
-      return NextResponse.json(
-        {
-          ok: false,
-          error: `Wallet currency locked to ${resolvedCurrencyUpper}. Contact support to request a change.`,
-        },
-        { status: 409 }
-      );
-    }
-    if (connectMode && intent.transfer_data?.destination && intent.transfer_data.destination !== vendorAccountId) {
-      return NextResponse.json({ ok: false, error: 'Payment vendor mismatch' }, { status: 409 });
-    }
-
-    if (!preferredCurrency) {
-      await ensureUserPreferredCurrency(String(userId), resolvedCurrencyLower);
-      preferredCurrency = resolvedCurrencyLower;
-    }
-
-    stripePaymentIntentId = intent.id;
-    const latestCharge = typeof intent.latest_charge === 'string' ? intent.latest_charge : intent.latest_charge?.id ?? null;
-    stripeChargeId = latestCharge;
-    const intentJobId = typeof intent.metadata?.job_id === 'string' ? intent.metadata.job_id : null;
-    if (intentJobId && intentJobId !== jobId) {
-      return NextResponse.json({ ok: false, error: 'Payment job mismatch' }, { status: 409 });
-    }
-
-    const metadataWalletAmountCents = intent.metadata?.wallet_amount_cents
-      ? Number(intent.metadata.wallet_amount_cents)
-      : pricing.totalCents;
-
-    pendingReceipt = {
-      userId: String(userId),
-      amountCents: metadataWalletAmountCents,
-      currency: DISPLAY_CURRENCY,
-      description: `Run ${engine.label} - ${durationSec}s`,
-      jobId,
-      snapshot: receiptSnapshot,
-      applicationFeeCents: priceOnlyReceipts
-        ? null
-        : connectMode
-            ? Number(intent.metadata?.platform_fee_cents_usd ?? applicationFeeCents)
-            : null,
-      vendorAccountId,
-      stripePaymentIntentId,
-      stripeChargeId,
-    };
-    paymentStatus = 'paid_direct';
-  } else if (paymentMode === 'platform') {
-    paymentStatus = 'platform';
-  } else {
-    return NextResponse.json({ ok: false, error: 'Unsupported payment mode' }, { status: 400 });
-  }
 
   let generationResult: Awaited<ReturnType<typeof generateVideo>> | null = null;
   type NormalizedAttachment = {
@@ -1129,6 +996,158 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
       },
       { status: 400 }
     );
+  }
+
+  if (paymentMode === 'wallet') {
+    const walletUserId = userId ? String(userId) : null;
+    if (!walletUserId) {
+      return NextResponse.json({ ok: false, error: 'Wallet payment requires authentication' }, { status: 401 });
+    }
+
+    const reserveResult = await reserveWalletCharge({
+      userId: walletUserId,
+      amountCents: pricing.totalCents,
+      currency: DISPLAY_CURRENCY,
+      description: `Run ${engine.label} - ${durationSec}s`,
+      jobId,
+      pricingSnapshotJson,
+      applicationFeeCents: priceOnlyReceipts ? null : applicationFeeCents,
+      vendorAccountId,
+      stripePaymentIntentId: null,
+      stripeChargeId: null,
+    });
+
+    if (!reserveResult.ok) {
+      if (reserveResult.errorCode === 'currency_mismatch') {
+        const lockedCurrency = (reserveResult.preferredCurrency ?? resolvedCurrencyLower).toUpperCase();
+        console.warn('[wallet] currency mismatch during reserve', {
+          userId: walletUserId,
+          expected: lockedCurrency,
+          requested: resolvedCurrencyUpper,
+        });
+        return NextResponse.json(
+          {
+            ok: false,
+            error: `Wallet currency locked to ${lockedCurrency}. Contact support to request a change.`,
+          },
+          { status: 409 }
+        );
+      }
+      const balanceCents = reserveResult.balanceCents;
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'INSUFFICIENT_WALLET_FUNDS',
+          requiredCents: Math.max(0, pricing.totalCents - balanceCents),
+          balanceCents,
+        },
+        { status: 402 }
+      );
+    }
+
+    walletChargeReserved = true;
+
+    if (!preferredCurrency) {
+      await ensureUserPreferredCurrency(walletUserId, resolvedCurrencyLower);
+      preferredCurrency = resolvedCurrencyLower;
+    }
+
+    pendingReceipt = {
+      userId: walletUserId,
+      amountCents: pricing.totalCents,
+      currency: DISPLAY_CURRENCY,
+      description: `Run ${engine.label} - ${durationSec}s`,
+      jobId,
+      snapshot: receiptSnapshot,
+      applicationFeeCents: priceOnlyReceipts ? null : applicationFeeCents,
+      vendorAccountId,
+    };
+    paymentStatus = 'paid_wallet';
+  } else if (paymentMode === 'direct') {
+    if (!ENV.STRIPE_SECRET_KEY) {
+      return NextResponse.json({ ok: false, error: 'Stripe not configured' }, { status: 501 });
+    }
+    if (!userId) {
+      return NextResponse.json({ ok: false, error: 'Direct payment requires authentication' }, { status: 401 });
+    }
+    if (!payment.paymentIntentId) {
+      return NextResponse.json({ ok: false, error: 'PaymentIntent required for direct mode' }, { status: 400 });
+    }
+    if (connectMode && !vendorAccountId) {
+      return NextResponse.json({ ok: false, error: 'Vendor account missing for this engine' }, { status: 400 });
+    }
+
+    const stripe = new Stripe(ENV.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' });
+    const intent = await stripe.paymentIntents.retrieve(payment.paymentIntentId, { expand: ['latest_charge'] });
+
+    const receivedSettlementCents = intent.amount_received ?? intent.amount ?? 0;
+    const metadataSettlementCents = intent.metadata?.settlement_amount_cents
+      ? Number(intent.metadata.settlement_amount_cents)
+      : null;
+    const expectedSettlementCents = metadataSettlementCents && metadataSettlementCents > 0
+      ? metadataSettlementCents
+      : (await convertCents(pricing.totalCents, DISPLAY_CURRENCY_LOWER, resolvedCurrencyLower)).cents;
+    if (intent.status !== 'succeeded' || receivedSettlementCents < expectedSettlementCents) {
+      return NextResponse.json({ ok: false, error: 'Payment not captured yet' }, { status: 402 });
+    }
+    const intentCurrency = intent.currency?.toUpperCase() ?? resolvedCurrencyUpper;
+    if (intentCurrency !== resolvedCurrencyUpper) {
+      console.warn('[payments] payment intent currency mismatch', {
+        expected: resolvedCurrencyUpper,
+        received: intentCurrency,
+        userId,
+        paymentIntentId: intent.id,
+      });
+      return NextResponse.json(
+        {
+          ok: false,
+          error: `Wallet currency locked to ${resolvedCurrencyUpper}. Contact support to request a change.`,
+        },
+        { status: 409 }
+      );
+    }
+    if (connectMode && intent.transfer_data?.destination && intent.transfer_data.destination !== vendorAccountId) {
+      return NextResponse.json({ ok: false, error: 'Payment vendor mismatch' }, { status: 409 });
+    }
+
+    if (!preferredCurrency) {
+      await ensureUserPreferredCurrency(String(userId), resolvedCurrencyLower);
+      preferredCurrency = resolvedCurrencyLower;
+    }
+
+    stripePaymentIntentId = intent.id;
+    const latestCharge = typeof intent.latest_charge === 'string' ? intent.latest_charge : intent.latest_charge?.id ?? null;
+    stripeChargeId = latestCharge;
+    const intentJobId = typeof intent.metadata?.job_id === 'string' ? intent.metadata.job_id : null;
+    if (intentJobId && intentJobId !== jobId) {
+      return NextResponse.json({ ok: false, error: 'Payment job mismatch' }, { status: 409 });
+    }
+
+    const metadataWalletAmountCents = intent.metadata?.wallet_amount_cents
+      ? Number(intent.metadata.wallet_amount_cents)
+      : pricing.totalCents;
+
+    pendingReceipt = {
+      userId: String(userId),
+      amountCents: metadataWalletAmountCents,
+      currency: DISPLAY_CURRENCY,
+      description: `Run ${engine.label} - ${durationSec}s`,
+      jobId,
+      snapshot: receiptSnapshot,
+      applicationFeeCents: priceOnlyReceipts
+        ? null
+        : connectMode
+            ? Number(intent.metadata?.platform_fee_cents_usd ?? applicationFeeCents)
+            : null,
+      vendorAccountId,
+      stripePaymentIntentId,
+      stripeChargeId,
+    };
+    paymentStatus = 'paid_direct';
+  } else if (paymentMode === 'platform') {
+    paymentStatus = 'platform';
+  } else {
+    return NextResponse.json({ ok: false, error: 'Unsupported payment mode' }, { status: 400 });
   }
 
   const placeholderThumb =
@@ -1315,29 +1334,12 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     jobInserted = true;
   } catch (error) {
     console.error('[api/generate] failed to persist provisional job record', error);
-    if (walletChargeReserved && pendingReceipt && !jobInserted) {
-      try {
-        await query(
-          `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct)
-           VALUES ($1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12)`,
-          [
-            pendingReceipt.userId,
-            pendingReceipt.amountCents,
-            pendingReceipt.currency,
-            `Refund ${engine.label} - ${durationSec}s`,
-            pendingReceipt.jobId,
-            JSON.stringify(pendingReceipt.snapshot),
-            priceOnlyReceipts ? null : 0,
-            priceOnlyReceipts ? null : pendingReceipt.vendorAccountId,
-            pendingReceipt.stripePaymentIntentId ?? null,
-            pendingReceipt.stripeChargeId ?? null,
-            priceOnlyReceipts ? null : 0,
-            priceOnlyReceipts ? null : pendingReceipt.vendorAccountId,
-          ]
-        );
-      } catch (refundError) {
-        console.warn('[wallet] failed to record refund after provisional persistence error', refundError);
-      }
+    if (pendingReceipt && !jobInserted) {
+      await rollbackPendingPayment({
+        pendingReceipt,
+        walletChargeReserved,
+        refundDescription: `Refund ${engine.label} - ${durationSec}s`,
+      });
     }
     return NextResponse.json({ ok: false, error: 'Failed to persist job record' }, { status: 500 });
   }
@@ -1352,7 +1354,10 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
         const promise = generateVideo(
           { ...falPayload },
           {
-            onRequestId: persistProviderJobId,
+            onRequestId: (requestId) => {
+              console.info('[fal] request id received', { jobId, engineId: engine.id, requestId });
+              persistProviderJobId(requestId);
+            },
             onQueueUpdate: (status) => {
               if (!status) return;
               const requestId =
@@ -1390,6 +1395,22 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
           extractFalProviderMessage(error) ??
           (error instanceof Error ? error.message : null);
         const providerMessage = condenseFalErrorMessage(providerMessageRaw);
+        if (!lastProviderJobId) {
+          const errorBody =
+            detail && typeof detail === 'string'
+              ? detail.slice(0, 1024)
+              : detail && typeof detail === 'object'
+                ? JSON.stringify(detail).slice(0, 1024)
+                : null;
+          console.error('[fal] no provider_job_id returned', {
+            jobId,
+            engineId: engine.id,
+            status,
+            attempt,
+            providerMessage: providerMessage ?? null,
+            errorBody,
+          });
+        }
         const providerJobId: string | null =
           falError?.providerJobId ??
           (typeof (error as { providerJobId?: string } | undefined)?.providerJobId === 'string'
@@ -1684,6 +1705,46 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
   const status = generationResult.status ?? (video ? 'completed' : 'queued');
   const progress = typeof generationResult.progress === 'number' ? generationResult.progress : video ? 100 : 0;
   const providerJobId = generationResult.providerJobId ?? batchId ?? null;
+
+  // Safety net: if Fal didn’t return a provider job id and we have no video result, treat as failed and refund.
+  if (!providerJobId && !video) {
+    const failureMessage = 'We could not start your render. Please retry.';
+    console.error('[api/generate] missing provider_job_id and no result', { jobId, engineId: engine.id, generationResult });
+    try {
+      await query(
+        `UPDATE app_jobs
+         SET status = 'failed',
+             progress = 0,
+             message = $2,
+             provisional = FALSE,
+             updated_at = NOW()
+         WHERE job_id = $1`,
+        [jobId, failureMessage]
+      );
+    } catch (updateError) {
+      console.error('[api/generate] failed to mark job as failed after missing provider_job_id', updateError);
+    }
+
+    if (pendingReceipt) {
+      const refundDescription = `Refund ${engine.label} - ${durationSec}s - missing provider_job_id`;
+      if (walletChargeReserved) {
+        await recordRefundReceipt(pendingReceipt, refundDescription, null);
+      } else {
+        const refundId = await issueStripeRefund(pendingReceipt);
+        await recordRefundReceipt(pendingReceipt, refundDescription, refundId);
+      }
+    }
+
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'FAL_NO_PROVIDER_JOB_ID',
+        message: failureMessage,
+      },
+      { status: 502 }
+    );
+  }
+
   if (isLumaRay2) {
     console.info('[fal] lumaRay2 generation', {
       jobId,
@@ -1769,29 +1830,12 @@ async function issueStripeRefund(receipt: PendingReceipt): Promise<string | null
     );
   } catch (error) {
     console.error('[api/generate] failed to update job record', error);
-    if (walletChargeReserved && pendingReceipt) {
-      try {
-        await query(
-          `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct)
-           VALUES ($1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12)`,
-          [
-            pendingReceipt.userId,
-            pendingReceipt.amountCents,
-            pendingReceipt.currency,
-            `Refund ${engine.label} - ${durationSec}s`,
-            pendingReceipt.jobId,
-            JSON.stringify(pendingReceipt.snapshot),
-            priceOnlyReceipts ? null : 0,
-            priceOnlyReceipts ? null : pendingReceipt.vendorAccountId,
-            pendingReceipt.stripePaymentIntentId ?? null,
-            pendingReceipt.stripeChargeId ?? null,
-            priceOnlyReceipts ? null : 0,
-            priceOnlyReceipts ? null : pendingReceipt.vendorAccountId,
-          ]
-        );
-      } catch (refundError) {
-        console.warn('[wallet] failed to record refund after persistence error', refundError);
-      }
+    if (pendingReceipt) {
+      await rollbackPendingPayment({
+        pendingReceipt,
+        walletChargeReserved,
+        refundDescription: `Refund ${engine.label} - ${durationSec}s`,
+      });
     }
     return NextResponse.json({ ok: false, error: 'Failed to update job record' }, { status: 500 });
   }

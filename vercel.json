@@ -13,6 +13,7 @@
   ],
   "crons": [
     { "path": "/api/stripe/batch-transfers", "schedule": "0 3 * * *" },
-    { "path": "/api/cron/fal-poll", "schedule": "* * * * *" }
+    { "path": "/api/cron/fal-poll", "schedule": "* * * * *" },
+    { "path": "/api/cron/reconcile-missing-jobs", "schedule": "*/10 * * * *" }
   ]
 }
