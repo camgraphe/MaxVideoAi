@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -514,6 +514,7 @@ function MediaPreview({
   const [hasLoaded, setHasLoaded] = useState(false);
   const [autoplayBlocked, setAutoplayBlocked] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const pendingPlayRef = useRef<number | null>(null);
 
   useEffect(() => {
     setHasLoaded(false);
@@ -525,6 +526,7 @@ function MediaPreview({
 
   const handleVideoReady = useCallback(() => {
     setHasLoaded(true);
+    setAutoplayBlocked(false);
     onPlaybackStart?.();
   }, [onPlaybackStart]);
 
@@ -568,7 +570,7 @@ function MediaPreview({
     if (autoplayBlocked) {
       return;
     }
-    const tryPlay = async () => {
+    const attemptPlay = async () => {
       try {
         await node.play();
         setAutoplayBlocked(false);
@@ -585,8 +587,7 @@ function MediaPreview({
           });
         };
         node.addEventListener('loadeddata', handleLoadedData, { once: true });
-
-        window.setTimeout(() => {
+        pendingPlayRef.current = window.setTimeout(() => {
           node.play().catch((playError) => {
             if (isLikelyAutoplayBlock(playError)) {
               setAutoplayBlocked(true);
@@ -595,24 +596,34 @@ function MediaPreview({
         }, 120);
       }
     };
+
     window.requestAnimationFrame(() => {
-      void tryPlay();
+      void attemptPlay();
     });
+
+    return () => {
+      if (pendingPlayRef.current !== null) {
+        window.clearTimeout(pendingPlayRef.current);
+        pendingPlayRef.current = null;
+      }
+    };
   }, [autoplayBlocked, shouldPlay]);
 
-  useEffect(() => {
-    if (!shouldPlay || autoplayBlocked) return;
-    const detectionTimeout = window.setTimeout(() => {
+  const handleManualPlay = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setAutoplayBlocked(false);
       const node = videoRef.current;
       if (!node) return;
-      const readyState = node.readyState ?? 0;
-      const isPaused = node.paused ?? true;
-      if (isPaused || readyState < 3) {
-        setAutoplayBlocked(true);
-      }
-    }, 1400);
-    return () => window.clearTimeout(detectionTimeout);
-  }, [autoplayBlocked, shouldPlay]);
+      void node.play().catch((error) => {
+        if (isLikelyAutoplayBlock(error)) {
+          setAutoplayBlocked(true);
+        }
+      });
+    },
+    []
+  );
 
   if (!videoUrl) {
     if (!posterUrl) {
@@ -663,23 +674,33 @@ function MediaPreview({
           Preview unavailable
         </div>
       )}
-      {!autoplayBlocked ? (
-        <video
-          ref={setVideoElement}
-          className="absolute inset-0 z-10 h-full w-full object-cover"
-          src={videoUrl ?? undefined}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          poster={posterUrl ?? undefined}
-          onLoadedData={handleVideoReady}
-          onPlaying={handleVideoReady}
-          onError={handleVideoError}
-        >
-          <track kind="captions" srcLang="en" label="auto-generated" default />
-        </video>
+      <video
+        ref={setVideoElement}
+        className="absolute inset-0 z-10 h-full w-full object-cover"
+        src={videoUrl ?? undefined}
+        autoPlay={shouldPlay && !autoplayBlocked}
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        poster={posterUrl ?? undefined}
+        data-autoplay-blocked={autoplayBlocked || undefined}
+        onLoadedData={handleVideoReady}
+        onPlaying={handleVideoReady}
+        onError={handleVideoError}
+      >
+        <track kind="captions" srcLang="en" label="auto-generated" default />
+      </video>
+      {autoplayBlocked ? (
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-black/35">
+          <button
+            type="button"
+            className="pointer-events-auto rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-neutral-900 shadow-sm transition hover:bg-white"
+            onClick={handleManualPlay}
+          >
+            Play preview
+          </button>
+        </div>
       ) : null}
     </>
   );
