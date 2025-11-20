@@ -79,6 +79,7 @@ export function ExamplesGalleryGrid({
   const [isClient, setIsClient] = useState(false);
   const [activeRowIndex, setActiveRowIndex] = useState<number | null>(null);
   const [cardRowIndex, setCardRowIndex] = useState<Map<string, number>>(new Map());
+  const [forcePlayId, setForcePlayId] = useState<string | null>(null);
   const cardRefs = useRef<Map<string, HTMLElement | null>>(new Map());
   const lastScrollYRef = useRef(0);
   const activeRowTimeoutRef = useRef<number | null>(null);
@@ -87,6 +88,18 @@ export function ExamplesGalleryGrid({
     setVisibleVideos(dedupeVideos(initialVideos));
     setPendingVideos(dedupeVideos(remainingVideos));
   }, [initialVideos, remainingVideos]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    if (!visibleVideos.length || forcePlayId) return undefined;
+    const bootVideo = visibleVideos.find((video) => Boolean(video.videoUrl)) ?? visibleVideos[0];
+    if (!bootVideo) return undefined;
+    setForcePlayId(bootVideo.id);
+    const timeoutId = window.setTimeout(() => {
+      setForcePlayId((current) => (current === bootVideo.id ? null : current));
+    }, 600);
+    return () => window.clearTimeout(timeoutId);
+  }, [visibleVideos, forcePlayId]);
 
   const appendBatch = useCallback(() => {
     setPendingVideos((current) => {
@@ -327,6 +340,7 @@ export function ExamplesGalleryGrid({
                   video={video}
                   isFirst={columnIndex === 0 && index === 0}
                   isActiveRow={isActive}
+                  forcePlayId={forcePlayId}
                   cardRef={registerCard(video.id)}
                 />
               );
@@ -354,11 +368,13 @@ function ExampleCard({
   video,
   isFirst,
   isActiveRow,
+  forcePlayId,
   cardRef,
 }: {
   video: ExampleGalleryVideo;
   isFirst: boolean;
   isActiveRow: boolean;
+  forcePlayId?: string | null;
   cardRef?: (node: HTMLElement | null) => void;
 }) {
   const rawAspect = useMemo(() => (video.aspectRatio ? parseAspectRatio(video.aspectRatio) : 16 / 9), [video.aspectRatio]);
@@ -371,6 +387,7 @@ function ExampleCard({
   const videoElementRef = useRef<HTMLVideoElement | null>(null);
   const [allowOverlay, setAllowOverlay] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const isBootAutoplay = forcePlayId === video.id;
 
   const handleNavigate = useCallback(() => {
     router.push(videoPageHref);
@@ -425,7 +442,7 @@ function ExampleCard({
                   videoElementRef.current = node;
                 }}
                 onPlaybackStart={handlePlaybackStart}
-                shouldPlay={Boolean((isActiveRow || isHovered) && video.videoUrl)}
+                shouldPlay={Boolean((isActiveRow || isHovered || isBootAutoplay) && video.videoUrl)}
               />
             </div>
           </div>
