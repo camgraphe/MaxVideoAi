@@ -19,11 +19,21 @@ export function OPTIONS() {
 }
 
 const contactSchema = z.object({
-  name: z.string().trim().min(2).max(120),
+  name: z.string().trim().min(1).max(120),
   email: z.string().trim().email().max(200),
-  topic: z.string().trim().max(120).optional(),
-  message: z.string().trim().min(10).max(2000),
-  locale: z.string().trim().max(12).optional(),
+  topic: z
+    .string()
+    .trim()
+    .max(120)
+    .transform((value) => (value === '' ? undefined : value))
+    .optional(),
+  message: z.string().trim().min(5).max(2000),
+  locale: z
+    .string()
+    .trim()
+    .max(12)
+    .transform((value) => (value === '' ? undefined : value))
+    .optional(),
 });
 
 async function parseBody(req: NextRequest) {
@@ -87,6 +97,7 @@ export async function POST(req: NextRequest) {
 
   const result = contactSchema.safeParse(parsed);
   if (!result.success) {
+    console.warn('[contact] invalid_input', result.error.flatten());
     return wantsJson(req)
       ? NextResponse.json({ ok: false, error: 'invalid_input', detail: result.error.flatten() }, { status: 400 })
       : NextResponse.redirect(safeRedirectUrl(req, (parsed.locale as string) || null, false, 'invalid_input'));
