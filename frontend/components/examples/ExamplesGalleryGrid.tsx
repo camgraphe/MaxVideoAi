@@ -370,7 +370,7 @@ function ExampleCard({
   return (
     <article
       className={clsx(
-        'relative mb-[2px] flex-1',
+        'relative mb-[2px]',
         isActiveRow ? 'brightness-105' : 'brightness-100'
       )}
       ref={cardRef}
@@ -385,25 +385,27 @@ function ExampleCard({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div className="relative w-full overflow-hidden bg-neutral-900/5">
+        <div className="examples-media-outer relative w-full overflow-hidden bg-neutral-900/5">
           <div
-            className="relative w-full"
+            className="examples-media-ratio relative w-full"
             style={{ paddingBottom: `${100 / displayAspect}%` }}
           >
-            <MediaPreview
-              videoUrl={video.videoUrl ?? null}
-              posterUrl={posterSrc}
-              prompt={video.prompt}
-              altText={`${video.engineLabel} AI video example – ${video.prompt}`}
-              isLcp={isFirst}
-              sizes={posterSizes}
-              onVideoRef={(node) => {
-                videoElementRef.current = node;
-              }}
-              onPlaybackStart={handlePlaybackStart}
-              shouldPlay={Boolean((isActiveRow || isHovered) && video.videoUrl && canAutoplay)}
-              onAutoplayError={() => setCanAutoplay(false)}
-            />
+            <div className="examples-media-inner absolute inset-0">
+              <MediaPreview
+                videoUrl={video.videoUrl ?? null}
+                posterUrl={posterSrc}
+                prompt={video.prompt}
+                altText={`${video.engineLabel} AI video example – ${video.prompt}`}
+                isLcp={isFirst}
+                sizes={posterSizes}
+                onVideoRef={(node) => {
+                  videoElementRef.current = node;
+                }}
+                onPlaybackStart={handlePlaybackStart}
+                shouldPlay={Boolean((isActiveRow || isHovered) && video.videoUrl && canAutoplay)}
+                onAutoplayError={() => setCanAutoplay(false)}
+              />
+            </div>
           </div>
           {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available on playback" /> : null}
           {allowOverlay ? <CardOverlay video={video} /> : null}
