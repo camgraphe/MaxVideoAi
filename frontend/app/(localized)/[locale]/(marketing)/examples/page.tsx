@@ -475,11 +475,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
       const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
       const engineMeta = engineKey ? ENGINE_META.get(engineKey) : null;
       const engineLabel = engineMeta?.label ?? video.engineLabel ?? canonicalEngineId ?? 'Engine';
-      const engineSlug = ENGINE_META.get(engineKey)?.modelSlug ?? canonicalEngineId ?? video.engineId ?? 'engine';
-      const detailPath =
-        engineSlug && engineSlug.length
-          ? `/generate?from=${encodeURIComponent(video.id)}&engine=${encodeURIComponent(engineSlug)}`
-          : `/generate?from=${encodeURIComponent(video.id)}`;
+      const detailPath = `/video/${encodeURIComponent(video.id)}`;
       const absoluteUrl = `https://maxvideoai.com${detailPath}`;
       const description =
         video.promptExcerpt || video.prompt || `AI video example generated with ${engineLabel} in MaxVideo AI.`;
