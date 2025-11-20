@@ -106,9 +106,17 @@ export async function POST(req: NextRequest) {
     await mailer.sendMail({
       to: contactRecipient,
       from,
+      sender: from,
+      envelope: { from, to: contactRecipient },
       replyTo: email,
       subject,
       text: lines.join('\n'),
+      html: `<p><strong>Name:</strong> ${name}</p>
+<p><strong>Email:</strong> ${email}</p>
+<p><strong>Topic:</strong> ${topic || 'n/a'}</p>
+<p><strong>Locale:</strong> ${locale || 'unknown'}</p>
+<p><strong>Message:</strong></p>
+<pre style="white-space:pre-wrap;">${message}</pre>`,
     });
   } catch (error) {
     console.warn('[contact] failed to send email', error instanceof Error ? error.message : error);
