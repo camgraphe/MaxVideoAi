@@ -170,16 +170,6 @@ const nextConfig = {
         permanent: true,
       },
       {
-        source: '/blog/express-case-study',
-        destination: '/blog/compare-ai-video-engines',
-        permanent: true,
-      },
-      {
-        source: '/blog/veo-v2-arrives',
-        destination: '/blog/veo-3-updates',
-        permanent: true,
-      },
-      {
         source: '/blog/storyboard-sora-pro',
         destination: '/blog',
         permanent: true,
