@@ -221,10 +221,16 @@ main {
   }
 
   @supports (aspect-ratio: 16 / 9) {
-    .blog-prose iframe,
-    .blog-prose video {
-      aspect-ratio: 16 / 9;
-    }
+  .blog-prose iframe,
+  .blog-prose video {
+    aspect-ratio: 16 / 9;
+  }
+
+  .examples-media-outer video,
+  .examples-media-outer img {
+    width: 100% !important;
+    height: 100% !important;
+  }
   }
 
   .orbit-field {
