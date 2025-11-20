@@ -486,6 +486,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
         name: name || fallbackLabel,
         description,
         thumbnailUrl: video.thumbUrl!,
+        url: absoluteUrl,
         uploadDate: toISODate(video.createdAt),
         duration: toISODuration(video.durationSec),
         inLanguage: 'en',
