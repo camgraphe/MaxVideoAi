@@ -409,6 +409,15 @@ const videos = selectedEngine
       return descriptor.id.toLowerCase() === selectedEngine.toLowerCase();
     })
   : allVideos;
+const videoLinkEntries = videos.slice(0, 120).map((video) => {
+  const excerpt = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render', 12);
+  const suffix = video.id.replace(/^[^a-z0-9]+/gi, '').slice(-6).toUpperCase();
+  return {
+    id: video.id,
+    label: excerpt.length ? excerpt : `MaxVideoAI render ${suffix}`,
+  };
+});
+
 const clientVideos: ExampleGalleryVideo[] = videos.map((video) => {
   const canonicalEngineId = resolveEngineLinkId(video.engineId);
   const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
@@ -625,12 +634,35 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
         <section className="mt-10 max-w-4xl text-sm leading-relaxed text-text-secondary/90">
           <p>
             These AI video renders cover a range of formats including selfie talking heads, cinematic establishing shots,
-            product close‑ups, mobile‑first ads and social‑ready loops. Explore how each engine handles motion, lighting
-            and composition for storytelling, performance marketing, product launches or UGC‑style content. MaxVideoAI
-            routes your prompts to the best engines for your use case, with transparent pricing and pro‑grade controls so
+            product close-ups, mobile-first ads and social-ready loops. Explore how each engine handles motion, lighting
+            and composition for storytelling, performance marketing, product launches or UGC-style content. MaxVideoAI
+            routes your prompts to the best engines for your use case, with transparent pricing and pro-grade controls so
             creatives, studios and growth teams can move from concept to final export in a single workspace.
           </p>
         </section>
+
+        {videoLinkEntries.length ? (
+          <section className="mt-10 rounded-[16px] border border-hairline bg-white/70 px-4 py-5 text-sm text-text-secondary/90">
+            <h2 className="text-base font-semibold text-text-primary">
+              Direct access to recent renders
+            </h2>
+            <p className="mt-1 text-xs text-text-muted">
+              These links ensure every public example listed in our sitemap is also reachable through standard HTML so search engines can explore them without JavaScript.
+            </p>
+            <ul className="mt-4 grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
+              {videoLinkEntries.map((entry) => (
+                <li key={entry.id}>
+                  <Link
+                    href={`/video/${encodeURIComponent(entry.id)}`}
+                    className="text-text-secondary transition hover:text-text-primary"
+                  >
+                    {entry.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
         {itemListJson ? (
           <script
