@@ -7,7 +7,7 @@ export const generateMetadata = () => generateLocalizedMetadata({ params: { loca
 export default function ContactDefaultPage() {
   return (
     <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
-      <ContactPage params={{ locale: DEFAULT_LOCALE }} />
+      <ContactPage params={{ locale: DEFAULT_LOCALE }} searchParams={{}} />
     </LocaleLayout>
   );
 }
