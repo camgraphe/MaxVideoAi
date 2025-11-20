@@ -4,37 +4,39 @@ import { ENV } from '@/lib/env';
 
 let cachedTransport: nodemailer.Transporter<SMTPTransport.SentMessageInfo> | null = null;
 
-function isSmtpConfigured(): boolean {
+function isBrevoConfigured(): boolean {
   return Boolean(
-    ENV.SMTP_HOST &&
-      ENV.SMTP_PORT &&
-      ENV.SMTP_USERNAME &&
-      ENV.SMTP_PASSWORD &&
-      ENV.SMTP_FROM
+    ENV.BREVO_SMTP_HOST &&
+      ENV.BREVO_SMTP_PORT &&
+      ENV.BREVO_SMTP_USERNAME &&
+      ENV.BREVO_SMTP_PASSWORD &&
+      ENV.CONTACT_SENDER_EMAIL
   );
 }
 
 export function getMailer():
   | nodemailer.Transporter<SMTPTransport.SentMessageInfo>
   | null {
-  if (!isSmtpConfigured()) {
+  if (!isBrevoConfigured()) {
     return null;
   }
   if (cachedTransport) {
     return cachedTransport;
   }
+  const host = ENV.BREVO_SMTP_HOST || 'smtp-relay.sendinblue.com';
+  const port = Number(ENV.BREVO_SMTP_PORT || 587);
   cachedTransport = nodemailer.createTransport({
-    host: ENV.SMTP_HOST,
-    port: Number(ENV.SMTP_PORT),
-    secure: Number(ENV.SMTP_PORT) === 465,
+    host,
+    port,
+    secure: port === 465,
     auth: {
-      user: ENV.SMTP_USERNAME,
-      pass: ENV.SMTP_PASSWORD,
+      user: ENV.BREVO_SMTP_USERNAME!,
+      pass: ENV.BREVO_SMTP_PASSWORD!,
     },
   });
   return cachedTransport;
 }
 
 export function getDefaultFromAddress(): string | undefined {
-  return ENV.SMTP_FROM ?? ENV.EMAIL_FROM;
+  return ENV.CONTACT_SENDER_EMAIL ?? ENV.EMAIL_FROM ?? ENV.BREVO_SMTP_USERNAME;
 }
