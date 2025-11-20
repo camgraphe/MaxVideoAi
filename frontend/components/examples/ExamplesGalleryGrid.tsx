@@ -28,6 +28,7 @@ const BATCH_SIZE = 12;
 const LANDSCAPE_SIZES = '(min-width: 1280px) 400px, 100vw';
 const PORTRAIT_SIZES = '(min-width: 1280px) 300px, 100vw';
 const SCROLL_THROTTLE_MS = 120;
+const ACTIVE_ROW_DEBOUNCE_MS = 180;
 type ExtendedWindow = Window &
   typeof globalThis & {
     requestIdleCallback?: (callback: IdleRequestCallback) => number;
@@ -80,6 +81,7 @@ export function ExamplesGalleryGrid({
   const [cardRowIndex, setCardRowIndex] = useState<Map<string, number>>(new Map());
   const cardRefs = useRef<Map<string, HTMLElement | null>>(new Map());
   const lastScrollYRef = useRef(0);
+  const activeRowTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     setVisibleVideos(dedupeVideos(initialVideos));
@@ -218,8 +220,21 @@ export function ExamplesGalleryGrid({
     });
 
     setCardRowIndex(nextMap);
-    setActiveRowIndex(bestIndex);
-  }, []);
+
+    if (bestIndex === activeRowIndex) {
+      return;
+    }
+
+    if (activeRowTimeoutRef.current !== null) {
+      window.clearTimeout(activeRowTimeoutRef.current);
+      activeRowTimeoutRef.current = null;
+    }
+
+    activeRowTimeoutRef.current = window.setTimeout(() => {
+      setActiveRowIndex(bestIndex);
+      activeRowTimeoutRef.current = null;
+    }, ACTIVE_ROW_DEBOUNCE_MS);
+  }, [activeRowIndex]);
 
   const throttledScrollHandler = useMemo(() => {
     if (typeof window === 'undefined') return null;
@@ -257,6 +272,15 @@ export function ExamplesGalleryGrid({
       window.removeEventListener('load', handleLoad);
     };
   }, [computeRowsAndActive]);
+
+  useEffect(() => {
+    return () => {
+      if (activeRowTimeoutRef.current !== null) {
+        window.clearTimeout(activeRowTimeoutRef.current);
+        activeRowTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   if (!isClient) {
     return (
@@ -487,8 +511,14 @@ function MediaPreview({
       videoRef.current = node;
       if (node) {
         node.muted = true;
+        node.defaultMuted = true;
+        node.volume = 0;
         (node as HTMLVideoElement & { playsInline?: boolean }).playsInline = true;
         node.autoplay = true;
+        node.setAttribute('muted', '');
+        node.setAttribute('playsinline', '');
+        node.setAttribute('webkit-playsinline', 'true');
+        node.setAttribute('x5-playsinline', 'true');
       }
       onVideoRef?.(node);
     },
@@ -512,9 +542,17 @@ function MediaPreview({
           });
         };
         node.addEventListener('loadeddata', handleLoadedData, { once: true });
+
+        window.setTimeout(() => {
+          node.play().catch(() => {
+            // ignore
+          });
+        }, 120);
       }
     };
-    void tryPlay();
+    window.requestAnimationFrame(() => {
+      void tryPlay();
+    });
   }, [shouldPlay]);
 
   if (!videoUrl) {
