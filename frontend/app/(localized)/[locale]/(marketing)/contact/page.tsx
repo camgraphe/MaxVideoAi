@@ -66,11 +66,25 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   };
 }
 
-export default async function ContactPage({ params }: { params: { locale: AppLocale } }) {
+function isFlagged(value: string | string[] | undefined, target = '1') {
+  if (!value) return false;
+  if (Array.isArray(value)) return value.some((entry) => entry === target);
+  return value === target;
+}
+
+export default async function ContactPage({
+  params,
+  searchParams,
+}: {
+  params: { locale: AppLocale };
+  searchParams: Record<string, string | string[] | undefined>;
+}) {
   const locale = params.locale;
   const { dictionary } = await resolveDictionary();
   const content = dictionary.contact;
   const statusHref = buildLocalizedPath(locale, STATUS_SLUG_MAP[locale] ?? STATUS_SLUG_MAP.en);
+  const isSubmitted = isFlagged(searchParams.submitted);
+  const hasError = isFlagged(searchParams.error);
 
   return (
     <div className="mx-auto max-w-4xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
@@ -109,7 +123,18 @@ export default async function ContactPage({ params }: { params: { locale: AppLoc
         </div>
       </section>
       <section className="mt-12 rounded-card border border-hairline bg-white p-6 shadow-card">
-        <form className="space-y-4" method="post" action="#" aria-label={content.hero.title}>
+        {isSubmitted ? (
+          <div className="mb-4 rounded-input border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+            {content.form.success ?? 'Message sent. We will get back to you shortly.'}
+          </div>
+        ) : null}
+        {hasError ? (
+          <div className="mb-4 rounded-input border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            {content.form.error ?? 'We could not send your message. Please try again or email support@maxvideo.ai.'}
+          </div>
+        ) : null}
+        <form className="space-y-4" method="post" action="/api/contact" aria-label={content.hero.title}>
+          <input type="hidden" name="locale" value={locale} />
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-text-secondary">
               {content.form.name}
