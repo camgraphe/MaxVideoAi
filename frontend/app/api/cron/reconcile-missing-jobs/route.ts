@@ -16,6 +16,12 @@ type ChargeRow = {
   created_at: string;
 };
 
+const isEnabled = (process.env.CRON_RECONCILE_ORPHANS_ENABLED ?? '').trim().toLowerCase() === 'true';
+const minAgeMinutes = Math.max(5, Number.parseInt(process.env.CRON_RECONCILE_MIN_AGE_MINUTES ?? '25', 10) || 25);
+const maxLookbackMinutesRaw = Number.parseInt(process.env.CRON_RECONCILE_MAX_LOOKBACK_MINUTES ?? '180', 10);
+const maxLookbackMinutes = Math.max(minAgeMinutes + 1, Number.isFinite(maxLookbackMinutesRaw) ? maxLookbackMinutesRaw : 180);
+const allowStripeRefunds = (process.env.CRON_RECONCILE_ALLOW_STRIPE_REFUNDS ?? '').trim().toLowerCase() === 'true';
+
 async function issueStripeRefund(row: ChargeRow, stripe: Stripe): Promise<string | null> {
   const reference = row.stripe_payment_intent_id ?? row.stripe_charge_id;
   if (!reference) return null;
@@ -63,6 +69,13 @@ async function recordRefund(row: ChargeRow, stripeRefundId: string | null) {
 }
 
 export async function GET() {
+  if (!isEnabled) {
+    return NextResponse.json(
+      { ok: false, refunded: 0, stripeRefunds: 0, disabled: true, reason: 'CRON_RECONCILE_ORPHANS_ENABLED is not true' },
+      { status: 503 }
+    );
+  }
+
   // Find charges older than 25 minutes that have no matching job and no refund.
   const candidates = await query<ChargeRow>(
     `
@@ -79,13 +92,15 @@ export async function GET() {
       FROM app_receipts r
       WHERE r.type = 'charge'
         AND r.job_id IS NOT NULL
-        AND r.created_at < NOW() - INTERVAL '25 minutes'
+        AND r.created_at < NOW() - ($1 * INTERVAL '1 minute')
+        AND r.created_at >= NOW() - ($2 * INTERVAL '1 minute')
         AND NOT EXISTS (SELECT 1 FROM app_receipts rf WHERE rf.job_id = r.job_id AND rf.type = 'refund')
         AND NOT EXISTS (SELECT 1 FROM app_jobs j WHERE j.job_id = r.job_id)
         AND NOT EXISTS (SELECT 1 FROM fal_queue_log f WHERE f.job_id = r.job_id)
       ORDER BY r.created_at ASC
       LIMIT 50
-    `
+    `,
+    [minAgeMinutes, maxLookbackMinutes]
   );
 
   if (!candidates.length) {
@@ -93,7 +108,7 @@ export async function GET() {
   }
 
   const stripe =
-    process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.trim().length
+    allowStripeRefunds && process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.trim().length
       ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' })
       : null;
 
@@ -124,4 +139,3 @@ export async function GET() {
     note: 'Charges with missing jobs after 25 minutes were refunded.',
   });
 }
-
