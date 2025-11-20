@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { postSlackMessage } from '@/server/slack';
+import { getDefaultFromAddress, getMailer } from '@/server/mailer';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -76,13 +77,57 @@ export async function POST(req: NextRequest) {
 
   const { name, email, topic, message, locale } = result.data;
 
-  await postSlackMessage('Contact form submission', {
+  const contactRecipient = (process.env.CONTACT_RECIPIENT_EMAIL ?? '').trim();
+  const mailer = getMailer();
+  if (!contactRecipient || !mailer) {
+    const reason = !contactRecipient ? 'missing_contact_recipient' : 'mailer_not_configured';
+    console.warn('[contact] unable to send email', {
+      reason,
+      contactRecipientPresent: Boolean(contactRecipient),
+      mailerConfigured: Boolean(mailer),
+    });
+    return wantsJson(req)
+      ? NextResponse.json({ ok: false, error: reason }, { status: 500 })
+      : NextResponse.redirect(safeRedirectUrl(req, locale, false));
+  }
+
+  const from = getDefaultFromAddress() || 'no-reply@maxvideoai.com';
+  const subject = 'New contact form message';
+  const lines = [
+    `Name: ${name}`,
+    `Email: ${email}`,
+    `Topic: ${topic || 'n/a'}`,
+    `Locale: ${locale || 'unknown'}`,
+    '',
+    'Message:',
+    message,
+  ];
+
+  try {
+    await mailer.sendMail({
+      to: contactRecipient,
+      from,
+      replyTo: email,
+      subject,
+      text: lines.join('\n'),
+    });
+  } catch (error) {
+    console.warn('[contact] failed to send email', error instanceof Error ? error.message : error);
+    return wantsJson(req)
+      ? NextResponse.json({ ok: false, error: 'send_failed' }, { status: 500 })
+      : NextResponse.redirect(safeRedirectUrl(req, locale, false));
+  }
+
+  // Slack is optional; failure should not block the form.
+  void postSlackMessage('Contact form submission', {
     name,
     email,
     topic: topic || 'not specified',
     message,
     locale: locale || 'unknown',
     userAgent: req.headers.get('user-agent') || 'n/a',
+  }).catch((error) => {
+    console.warn('[contact] failed to post slack message', error instanceof Error ? error.message : error);
   });
 
   if (wantsJson(req)) {
