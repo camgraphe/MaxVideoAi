@@ -100,6 +100,16 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/fr/modeles/veo-3-fast',
+        destination: '/fr/modeles/veo-3-1-fast',
+        permanent: true,
+      },
+      {
+        source: '/es/modelos/veo-3-fast',
+        destination: '/es/modelos/veo-3-1-fast',
+        permanent: true,
+      },
+      {
         source: '/models/minimax-video-01',
         destination: '/models/minimax-hailuo-02-text',
         permanent: true,
@@ -125,6 +135,16 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/fr/modeles/minimax-hailuo-02-image',
+        destination: '/fr/modeles/minimax-hailuo-02-text',
+        permanent: true,
+      },
+      {
+        source: '/es/modelos/minimax-hailuo-02-image',
+        destination: '/es/modelos/minimax-hailuo-02-text',
+        permanent: true,
+      },
+      {
         source: '/models/hailuo-2-pro',
         destination: '/models/minimax-hailuo-02-text',
         permanent: true,
@@ -142,6 +162,26 @@ const nextConfig = {
       {
         source: '/models/luma-ray-2-flash',
         destination: '/models',
+        permanent: true,
+      },
+      {
+        source: '/models/hunyuan-video',
+        destination: '/models',
+        permanent: true,
+      },
+      {
+        source: '/blog/express-case-study',
+        destination: '/blog/compare-ai-video-engines',
+        permanent: true,
+      },
+      {
+        source: '/blog/veo-v2-arrives',
+        destination: '/blog/veo-3-updates',
+        permanent: true,
+      },
+      {
+        source: '/blog/storyboard-sora-pro',
+        destination: '/blog',
         permanent: true,
       },
       {
