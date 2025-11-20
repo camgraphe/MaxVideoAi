@@ -6,6 +6,18 @@ import { getDefaultFromAddress, getMailer } from '@/server/mailer';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+export function GET() {
+  return NextResponse.json({ ok: false, error: 'method_not_allowed' }, { status: 405 });
+}
+
+export function HEAD() {
+  return new Response(null, { status: 405 });
+}
+
+export function OPTIONS() {
+  return new Response(null, { status: 204 });
+}
+
 const contactSchema = z.object({
   name: z.string().trim().min(2).max(120),
   email: z.string().trim().email().max(200),
