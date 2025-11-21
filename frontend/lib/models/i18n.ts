@@ -31,6 +31,7 @@ type OverlayHero = {
   intro?: string;
   ctaPrimary?: OverlayLink;
   secondaryLinks?: OverlayLink[];
+  badge?: string;
 };
 
 type OverlayBestUseCases = {
@@ -75,6 +76,7 @@ type EngineOverlay = {
   compareLink?: OverlayLink;
   prompts?: EngineOverlayPrompt[];
   faqs?: EngineOverlayFaq[];
+  custom?: Record<string, unknown>;
 };
 
 export type LocalizedPrompt = {
@@ -107,6 +109,7 @@ export type EngineLocalizedContent = {
   compareLink?: OverlayLink;
   prompts: LocalizedPrompt[];
   faqs: LocalizedFaq[];
+  custom?: Record<string, unknown>;
 };
 
 const FRONTEND_ROOT = process.cwd();
@@ -227,6 +230,7 @@ export async function getEngineLocalized(slug: string, locale: AppLocale): Promi
     compareLink: overlay.compareLink ?? base.compareLink,
     prompts: resolvedPrompts,
     faqs: resolvedFaqs,
+    custom: overlay.custom ?? base.custom,
   };
 }
 
@@ -235,6 +239,7 @@ function mergeHero(base?: OverlayHero, overlay?: OverlayHero): OverlayHero | und
   return {
     title: overlay?.title ?? base?.title,
     intro: overlay?.intro ?? base?.intro,
+    badge: overlay?.badge ?? base?.badge,
     ctaPrimary: overlay?.ctaPrimary ?? base?.ctaPrimary,
     secondaryLinks: overlay?.secondaryLinks ?? base?.secondaryLinks,
   };

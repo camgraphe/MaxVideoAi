@@ -7,16 +7,18 @@ import { resolveDictionary } from '@/lib/i18n/server';
 import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
 import { listFalEngines, getFalEngineBySlug, type FalEngineEntry } from '@/config/falEngines';
 import type { AppLocale } from '@/i18n/locales';
-import { locales, localePathnames } from '@/i18n/locales';
+import { locales, localePathnames, localeRegions } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
-import { getEngineLocalized } from '@/lib/models/i18n';
+import { getEngineLocalized, type EngineLocalizedContent } from '@/lib/models/i18n';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { listExamples, type GalleryVideo } from '@/server/videos';
 import { serializeJsonLd } from '../model-jsonld';
+import type { EngineLocalizedContent } from '@/lib/models/i18n';
+import { localeRegions } from '@/i18n/locales';
 
 type PageParams = {
   params: {
@@ -36,6 +38,70 @@ const SORA2_SEO = {
 
 const PREFERRED_SORA_HERO_ID = 'job_74677d4f-9f28-4e47-b230-64accef8e239';
 const PREFERRED_SORA_DEMO_ID = 'job_7fbd6334-8535-438a-98a2-880205744b6b';
+
+type SpecSection = { title: string; items: string[] };
+
+type SoraCopy = {
+  heroTitle: string | null;
+  heroSubtitle: string | null;
+  heroBadge: string | null;
+  heroDesc1: string | null;
+  heroDesc2: string | null;
+  primaryCta: string | null;
+  secondaryCta: string | null;
+  whyTitle: string | null;
+  heroHighlights: string[];
+  bestUseCasesTitle: string | null;
+  bestUseCases: string[];
+  whatTitle: string | null;
+  whatIntro1: string | null;
+  whatIntro2: string | null;
+  whatFlowTitle: string | null;
+  whatFlowSteps: string[];
+  specTitle: string | null;
+  specNote: string | null;
+  specSections: SpecSection[];
+  specValueProp: string | null;
+  microCta: string | null;
+  galleryTitle: string | null;
+  galleryIntro: string | null;
+  gallerySceneCta: string | null;
+  galleryAllCta: string | null;
+  recreateLabel: string | null;
+  promptTitle: string | null;
+  promptIntro: string | null;
+  promptPatternSteps: string[];
+  promptSkeleton: string | null;
+  promptSkeletonNote: string | null;
+  imageTitle: string | null;
+  imageIntro: string | null;
+  imageFlow: string[];
+  imageWhy: string[];
+  multishotTitle: string | null;
+  multishotIntro1: string | null;
+  multishotIntro2: string | null;
+  multishotTips: string[];
+  demoTitle: string | null;
+  demoPromptLabel: string | null;
+  demoPrompt: string[];
+  demoNotes: string[];
+  tipsTitle: string | null;
+  strengths: string[];
+  boundaries: string[];
+  tipsFooter: string | null;
+  safetyTitle: string | null;
+  safetyRules: string[];
+  safetyInterpretation: string[];
+  safetyNote: string | null;
+  comparisonTitle: string | null;
+  comparisonPoints: string[];
+  comparisonCta: string | null;
+  relatedTitle: string | null;
+  relatedSubtitle: string | null;
+  finalPara1: string | null;
+  finalPara2: string | null;
+  finalButton: string | null;
+};
 
 export function generateStaticParams() {
   const engines = listFalEngines();
@@ -122,6 +188,103 @@ function toAbsoluteUrl(url?: string | null): string {
   if (url.startsWith('//')) return `https:${url}`;
   if (url.startsWith('/')) return `${SITE}${url}`;
   return `${SITE}/${url}`;
+}
+
+function buildSoraCopy(localized: EngineLocalizedContent): SoraCopy {
+  const custom = (localized.custom ?? {}) as Record<string, unknown>;
+  const getString = (key: string): string | null => {
+    const value = custom[key];
+    return typeof value === 'string' && value.trim().length ? value : null;
+  };
+  const getStringArray = (key: string): string[] => {
+    const value = custom[key];
+    if (Array.isArray(value)) {
+      return value.map((item) => (typeof item === 'string' ? item : '')).filter(Boolean);
+    }
+    return [];
+  };
+  const getSpecSections = (): SpecSection[] => {
+    const value = custom['specSections'];
+    if (!Array.isArray(value)) return [];
+    return value
+      .map((entry) => {
+        if (!entry || typeof entry !== 'object') return null;
+        const obj = entry as Record<string, unknown>;
+        const title = typeof obj.title === 'string' ? obj.title : null;
+        const itemsRaw = obj.items;
+        const items = Array.isArray(itemsRaw)
+          ? itemsRaw.map((item) => (typeof item === 'string' ? item : '')).filter(Boolean)
+          : [];
+        if (!title || !items.length) return null;
+        return { title, items };
+      })
+      .filter((section): section is SpecSection => Boolean(section));
+  };
+
+  const bestUseCasesTitle = localized.bestUseCases?.title ?? getString('bestUseCasesTitle');
+  const bestUseCases = localized.bestUseCases?.items ?? getStringArray('bestUseCases');
+
+  return {
+    heroTitle: localized.hero?.title ?? getString('heroTitle'),
+    heroSubtitle: localized.hero?.intro ?? getString('heroSubtitle'),
+    heroBadge: localized.hero?.badge ?? getString('heroBadge'),
+    heroDesc1: getString('heroDesc1'),
+    heroDesc2: getString('heroDesc2'),
+    primaryCta: localized.hero?.ctaPrimary?.label ?? getString('primaryCta'),
+    secondaryCta: (localized.hero?.secondaryLinks?.[0]?.label as string | undefined) ?? getString('secondaryCta'),
+    whyTitle: getString('whyTitle'),
+    heroHighlights: getStringArray('heroHighlights'),
+    bestUseCasesTitle,
+    bestUseCases,
+    whatTitle: getString('whatTitle'),
+    whatIntro1: getString('whatIntro1'),
+    whatIntro2: getString('whatIntro2'),
+    whatFlowTitle: getString('whatFlowTitle'),
+    whatFlowSteps: getStringArray('whatFlowSteps'),
+    specTitle: getString('specTitle'),
+    specNote: getString('specNote'),
+    specSections: getSpecSections(),
+    specValueProp: getString('specValueProp'),
+    microCta: getString('microCta'),
+    galleryTitle: getString('galleryTitle'),
+    galleryIntro: getString('galleryIntro'),
+    gallerySceneCta: getString('gallerySceneCta'),
+    galleryAllCta: getString('galleryAllCta'),
+    recreateLabel: getString('recreateLabel'),
+    promptTitle: getString('promptTitle'),
+    promptIntro: getString('promptIntro'),
+    promptPatternSteps: getStringArray('promptPatternSteps'),
+    promptSkeleton: getString('promptSkeleton'),
+    promptSkeletonNote: getString('promptSkeletonNote'),
+    imageTitle: getString('imageTitle'),
+    imageIntro: getString('imageIntro'),
+    imageFlow: getStringArray('imageFlow'),
+    imageWhy: getStringArray('imageWhy'),
+    multishotTitle: getString('multishotTitle'),
+    multishotIntro1: getString('multishotIntro1'),
+    multishotIntro2: getString('multishotIntro2'),
+    multishotTips: getStringArray('multishotTips'),
+    demoTitle: getString('demoTitle'),
+    demoPromptLabel: getString('demoPromptLabel'),
+    demoPrompt: getStringArray('demoPrompt'),
+    demoNotes: getStringArray('demoNotes'),
+    tipsTitle: getString('tipsTitle'),
+    strengths: getStringArray('strengths'),
+    boundaries: getStringArray('boundaries'),
+    tipsFooter: getString('tipsFooter'),
+    safetyTitle: getString('safetyTitle'),
+    safetyRules: getStringArray('safetyRules'),
+    safetyInterpretation: getStringArray('safetyInterpretation'),
+    safetyNote: getString('safetyNote'),
+    comparisonTitle: getString('comparisonTitle'),
+    comparisonPoints: getStringArray('comparisonPoints'),
+    comparisonCta: getString('comparisonCta'),
+    relatedTitle: getString('relatedTitle'),
+    relatedSubtitle: getString('relatedSubtitle'),
+    finalPara1: getString('finalPara1'),
+    finalPara2: getString('finalPara2'),
+    finalButton: getString('finalButton'),
+  };
 }
 
 export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
@@ -297,11 +460,19 @@ function pickDemoMedia(
 async function renderSora2ModelPage({
   engine,
   backLabel,
+  localizedContent,
+  locale,
 }: {
   engine: FalEngineEntry;
   backLabel: string;
+  localizedContent: EngineLocalizedContent;
   locale: AppLocale;
 }) {
+  const detailSlugMap = buildDetailSlugMap(engine.modelSlug);
+  const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${engine.modelSlug}`));
+  const metadataUrls = buildMetadataUrls(locale, detailSlugMap, { availableLocales: publishableLocales });
+  const canonicalUrl = metadataUrls.canonical;
+  const copy = buildSoraCopy(localizedContent);
   let examples: GalleryVideo[] = [];
   try {
     examples = await listExamples('date-desc', 60);
@@ -333,141 +504,196 @@ async function renderSora2ModelPage({
     .filter((entry) => entry.modelSlug !== 'sora-2')
     .sort((a, b) => (a.family === engine.family ? -1 : 0) - (b.family === engine.family ? -1 : 0))
     .slice(0, 3);
+  const faqEntries = localizedContent.faqs ?? copy.faqs ?? [];
 
   return (
     <Sora2PageLayout
       backLabel={backLabel}
+      localizedContent={localizedContent}
+      copy={copy}
       heroMedia={heroMedia}
       demoMedia={demoMedia}
       galleryVideos={galleryVideos}
       galleryCtaHref={galleryCtaHref}
       relatedEngines={relatedEngines}
+      faqEntries={faqEntries}
+      locale={locale}
+      canonicalUrl={canonicalUrl}
     />
   );
 }
 
 function Sora2PageLayout({
   backLabel,
+  localizedContent,
+  copy,
   heroMedia,
   demoMedia,
   galleryVideos,
   galleryCtaHref,
   relatedEngines,
+  faqEntries,
+  locale,
+  canonicalUrl,
 }: {
   backLabel: string;
+  localizedContent: EngineLocalizedContent;
+  copy: SoraCopy;
   heroMedia: FeaturedMedia;
   demoMedia: FeaturedMedia | null;
   galleryVideos: ExampleGalleryVideo[];
   galleryCtaHref: string;
   relatedEngines: FalEngineEntry[];
+  faqEntries: { q: string; a: string }[];
+  locale: AppLocale;
+  canonicalUrl: string;
 }) {
-  const heroPosterPreload = heroMedia.posterUrl ? buildOptimizedPosterUrl(heroMedia.posterUrl) ?? heroMedia.posterUrl : null;
-
-  const heroHighlights = [
+  const inLanguage = localeRegions[locale] ?? 'en-US';
+  const fallbackHeroHighlights = [
     'Text → Video and Image → Video in one place',
     'Multi-shot / sequenced prompts for mini-stories in a single clip',
     'Pay-as-you-go pricing – you only pay for the seconds you generate',
     'Available in Europe, UK and worldwide, no invite required',
     'Designed to sit alongside Veo, Pika, Kling, Wan, MiniMax Hailuo, etc.',
   ];
+  const heroHighlights = copy.heroHighlights.length ? copy.heroHighlights : fallbackHeroHighlights;
+  const heroTitle = copy.heroTitle ?? localizedContent.hero?.title ?? localizedContent.marketingName ?? 'Sora 2';
+  const heroSubtitle =
+    copy.heroSubtitle ?? localizedContent.hero?.intro ?? localizedContent.overview ?? 'AI text-to-video and image-to-video';
+  const heroBadge = copy.heroBadge ?? localizedContent.hero?.badge ?? '720p · 4–12s · Text or Image input';
+  const heroDesc1 =
+    copy.heroDesc1 ??
+    'Create short, cinematic videos with Sora 2 straight from your browser. Transparent per-second pricing and a workspace built for testing and prototyping.';
+  const heroDesc2 =
+    copy.heroDesc2 ??
+    'Describe your scene, pick duration and aspect ratio, and let Sora 2 generate polished footage you can use in ads, content or client work.';
+  const primaryCta = copy.primaryCta ?? localizedContent.hero?.ctaPrimary?.label ?? 'Start generating with Sora 2';
+  const secondaryCta = copy.secondaryCta ?? localizedContent.hero?.secondaryLinks?.[0]?.label ?? 'Compare Sora 2 vs Sora 2 Pro (1080p) →';
 
-  const specSections = [
-    {
-      title: 'Duration & Output',
-      items: ['Durations: 4 s, 8 s, 12 s (you choose)', 'Output resolution: 720p (1280×720)', 'If you need 1080p for higher-end delivery, you can switch to Sora 2 Pro in the same interface.'],
-    },
-    {
-      title: 'Aspect Ratios',
-      items: ['16:9 – classic horizontal / YouTube / web video', '9:16 – vertical / TikTok / Reels / Shorts', 'Both are supported in Text→Video and Image→Video.'],
-    },
-    {
-      title: 'Inputs & File Types',
-      items: [
-        'Text prompts – short, cinematic descriptions in one to three sentences',
-        'Reference images – PNG, JPG, WebP, GIF, AVIF up to ~50 MB',
-        'No video input in this configuration: you start either from text or from a still image.',
-      ],
-    },
-    {
-      title: 'Audio',
-      items: [
-        'Sora 2 returns a video with audio – useful if you want a self-contained clip straight out of the engine.',
-        'If you want to control or replace the sound: you can mute or swap the track in your editor, or use Sora 2 Pro, which exposes an audio toggle in the UI.',
-      ],
-    },
-    {
-      title: 'Pricing',
-      items: [
-        'Sora 2 uses a simple per-second pricing model:',
-        'Internal config: perSecondCents = 12',
-        'That’s $0.12 per second of video, for example: 4 seconds ≈ $0.48; 8 seconds ≈ $0.96; 12 seconds ≈ $1.44',
-        'No monthly subscription is required: you top up a wallet and only pay for what you generate.',
-      ],
-    },
-  ];
+  const heroPosterPreload = heroMedia.posterUrl ? buildOptimizedPosterUrl(heroMedia.posterUrl) ?? heroMedia.posterUrl : null;
+  const specSections =
+    copy.specSections.length
+      ? copy.specSections
+      : [
+        {
+          title: 'Duration & Output',
+          items: ['Durations: 4 s, 8 s, 12 s (you choose)', 'Output resolution: 720p (1280×720)', 'Need 1080p? Switch to Sora 2 Pro in the same interface.'],
+        },
+        {
+          title: 'Aspect Ratios',
+          items: ['16:9 – classic horizontal / YouTube / web video', '9:16 – vertical / TikTok / Reels / Shorts', 'Both are supported in Text→Video and Image→Video.'],
+        },
+        {
+          title: 'Inputs & File Types',
+          items: [
+            'Text prompts – short, cinematic descriptions in one to three sentences',
+            'Reference images – PNG, JPG, WebP, GIF, AVIF up to ~50 MB',
+            'No video input in this configuration: you start either from text or from a still image.',
+          ],
+        },
+        {
+          title: 'Audio',
+          items: [
+            'Sora 2 returns a video with audio – useful if you want a self-contained clip straight out of the engine.',
+            'If you want to control or replace the sound: mute or swap the track in your editor, or use Sora 2 Pro, which exposes an audio toggle in the UI.',
+          ],
+        },
+        {
+          title: 'Pricing',
+          items: [
+            'Sora 2 uses a simple per-second pricing model:',
+            'Internal config: perSecondCents = 12',
+            'That’s $0.12 per second of video: 4s ≈ $0.48; 8s ≈ $0.96; 12s ≈ $1.44',
+            'No monthly subscription: top up a wallet and only pay for what you generate.',
+          ],
+        },
+      ];
 
-  const promptPatternSteps = [
-    'Subject and action – who/what and what they’re doing',
-    'Environment – where it happens (office, street, café, studio…)',
-    'Camera – how we see it (wide shot, medium shot, close-up, over-the-shoulder…)',
-    'Movement – how the camera moves (slow dolly-in, handheld, pan, drone-like…)',
-    'Light & mood – golden hour, soft daylight, neon night, high contrast, moody…',
-    'Format & duration – mention 16:9 or 9:16 and whether it’s a 4, 8 or 12 second moment',
-  ];
+  const promptPatternSteps =
+    copy.promptPatternSteps.length
+      ? copy.promptPatternSteps
+      : [
+          'Subject and action – who/what and what they’re doing',
+          'Environment – where it happens (office, street, café, studio…)',
+          'Camera – how we see it (wide shot, medium shot, close-up, over-the-shoulder…)',
+          'Movement – how the camera moves (slow dolly-in, handheld, pan, drone-like…)',
+          'Light & mood – golden hour, soft daylight, neon night, high contrast, moody…',
+          'Format & duration – mention 16:9 or 9:16 and whether it’s a 4, 8 or 12 second moment',
+        ];
 
-  const imageToVideoSteps = [
-    'Generate a reference frame in Nano Banana that matches your brand style or idea.',
-    'Send that still into Sora 2 as Image → Video.',
-    'Give Sora a prompt that focuses on motion and timing: how the camera should move, what the subject should do, how the shot should end at 4/8/12 seconds.',
-    'Generate, review, tweak just the motion language if needed, regenerate.',
-  ];
+  const imageToVideoSteps =
+    copy.imageFlow.length
+      ? copy.imageFlow
+      : [
+          'Generate a reference frame in Nano Banana that matches your brand style or idea.',
+          'Send that still into Sora 2 as Image → Video.',
+          'Give Sora a prompt that focuses on motion and timing: how the camera should move, what the subject should do, how the shot should end at 4/8/12 seconds.',
+          'Generate, review, tweak just the motion language if needed, regenerate.',
+        ];
 
-  const imageToVideoUseCases = [
-    'product shots that must stay on-brand',
-    'hero visuals for landing pages',
-    'short looping scenes you might use in ads or UI backgrounds',
-  ];
+  const imageToVideoUseCases =
+    copy.imageWhy.length
+      ? copy.imageWhy
+      : ['product shots that must stay on-brand', 'hero visuals for landing pages', 'short looping scenes for ads or UI backgrounds'];
 
-  const miniFilmTips = [
-    'Aim for 2–3 shots maximum in one clip (beyond that, things can get noisy).',
-    'Give each shot one main action and one clear camera move.',
-    'Reuse key elements (“same woman in a blue blazer”, “same kitchen”, “same lighting”) so Sora understands continuity.',
-    'Avoid trying to jump through five radically different locations in 8 seconds – Sora is good, but it’s still constrained by the clip length.',
-  ];
+  const miniFilmTips =
+    copy.multishotTips.length
+      ? copy.multishotTips
+      : [
+          'Aim for 2–3 shots maximum in one clip (beyond that, things can get noisy).',
+          'Give each shot one main action and one clear camera move.',
+          'Reuse key elements (“same woman in a blue blazer”, “same kitchen”, “same lighting”) so Sora understands continuity.',
+          'Avoid trying to jump through five radically different locations in 8 seconds – Sora is good, but it’s still constrained by the clip length.',
+        ];
 
-  const strengths = [
-    'Short, vivid moments',
-    'Clear subject and action',
-    'Simple environments (office, street, café, home…)',
-    'Film-like camera behavior (dolly, pan, handheld, etc.)',
-    'Great for UGC-feeling footage and cinematic inserts',
-  ];
+  const strengths =
+    copy.strengths.length
+      ? copy.strengths
+      : [
+          'Short, vivid moments',
+          'Clear subject and action',
+          'Simple environments (office, street, café, home…)',
+          'Film-like camera behavior (dolly, pan, handheld, etc.)',
+          'Great for UGC-feeling footage and cinematic inserts',
+        ];
 
-  const boundaries = [
-    'Outputs are 720p, not 1080p – Sora 2 Pro covers higher resolution.',
-    'It’s 4–12 seconds, not long-form. You stitch multiple clips if you want something longer.',
-    'It doesn’t take video input; you start from text or image.',
-    'It doesn’t expose seeds – you iterate by refining the prompt and re-running.',
-    'Like all current models, it can struggle with very small or detailed text.',
-  ];
+  const boundaries =
+    copy.boundaries.length
+      ? copy.boundaries
+      : [
+          'Outputs are 720p, not 1080p – Sora 2 Pro covers higher resolution.',
+          'It’s 4–12 seconds, not long-form. You stitch multiple clips if you want something longer.',
+          'It doesn’t take video input; you start from text or image.',
+          'It doesn’t expose seeds – you iterate by refining the prompt and re-running.',
+          'Like all current models, it can struggle with very small or detailed text.',
+        ];
 
-  const safetyRules = [
-    'You should not generate real people or public figures (no celebrities, politicians, etc.).',
-    'No minors, sexual content, hateful content or graphic violence.',
-    'Don’t use another person’s likeness without their consent.',
-    'Some prompts and input images will be blocked if they violate these principles.',
-  ];
+  const safetyRules =
+    copy.safetyRules.length
+      ? copy.safetyRules
+      : [
+          'You should not generate real people or public figures (no celebrities, politicians, etc.).',
+          'No minors, sexual content, hateful content or graphic violence.',
+          'Don’t use another person’s likeness without their consent.',
+          'Some prompts and input images will be blocked if they violate these principles.',
+        ];
 
-  const safetyInterpretation = [
-    'if you describe a generic user, model, character → fine',
-    'if you try “make it look like [famous person]” or anything sensitive → it may fail or be filtered',
-  ];
+  const safetyInterpretation =
+    copy.safetyInterpretation.length
+      ? copy.safetyInterpretation
+      : [
+          'if you describe a generic user, model, character → fine',
+          'if you try “make it look like [famous person]” or anything sensitive → it may fail or be filtered',
+        ];
 
-  const comparisonPoints = [
-    'Sora 2 is your fast 720p idea machine.',
-    'Sora 2 Pro is your higher-resolution, more controllable sibling.',
-    'You might explore ideas and storyboard with Sora 2, then switch to Sora 2 Pro to regenerate your final picks in 1080p, with more control over audio and quality.',
-  ];
+  const comparisonPoints =
+    copy.comparisonPoints.length
+      ? copy.comparisonPoints
+      : [
+          'Sora 2 is your fast 720p idea machine.',
+          'Sora 2 Pro is your higher-resolution, more controllable sibling.',
+          'You might explore ideas and storyboard with Sora 2, then switch to Sora 2 Pro to regenerate your final picks in 1080p, with more control over audio and quality.',
+        ];
 
   const faqEntries = [
     {
@@ -508,31 +734,39 @@ function Sora2PageLayout({
           <div className="space-y-6">
             <div className="space-y-3 text-center">
               <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">
-                Sora 2 – AI Text-to-Video &amp; Image-to-Video in MaxVideoAI
+                {heroTitle}
               </h1>
               <p className="text-lg font-semibold text-text-primary">
-                Sora 2 – Cinematic AI Video, Directly in MaxVideoAI (4–12s, 720p)
+                {heroSubtitle}
               </p>
-              <p className="text-base text-text-secondary">
-                Create short, cinematic videos with Sora 2 straight from your browser. MaxVideoAI gives you instant access to Sora 2 text-to-video and image-to-video, with transparent per-second pricing and a workspace built for testing, prototyping and producing social-ready clips.
-              </p>
-              <p className="text-base text-text-secondary">
-                Describe your scene, choose a duration (4, 8 or 12 seconds), pick 16:9 or 9:16, and let Sora 2 generate polished footage you can use in ads, content or client work.
-              </p>
+              {heroBadge ? (
+                <div className="mx-auto inline-flex items-center gap-2 rounded-full bg-black/5 px-3 py-1 text-[12px] font-semibold uppercase tracking-micro text-text-secondary">
+                  {heroBadge.split('·').map((chunk, index, arr) => (
+                    <span key={`${chunk}-${index}`} className="flex items-center gap-2">
+                      <span>{chunk.trim()}</span>
+                      {index < arr.length - 1 ? <span aria-hidden>·</span> : null}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              {heroDesc1 ? <p className="text-base text-text-secondary">{heroDesc1}</p> : null}
+              {heroDesc2 ? <p className="text-base text-text-secondary">{heroDesc2}</p> : null}
             </div>
             <div className="flex flex-wrap justify-center gap-3">
               <Link
                 href="/app?engine=sora-2"
                 className="inline-flex items-center rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft"
               >
-                Start generating with Sora 2
+                {primaryCta}
               </Link>
-              <Link
-                href="/models/sora-2-pro"
-                className="inline-flex items-center rounded-full border border-hairline px-5 py-2 text-sm font-semibold text-text-primary transition hover:border-accent hover:text-accent"
-              >
-                Compare Sora 2 vs Sora 2 Pro (1080p) →
-              </Link>
+              {secondaryCta ? (
+                <Link
+                  href="/models/sora-2-pro"
+                  className="inline-flex items-center rounded-full border border-hairline px-5 py-2 text-sm font-semibold text-text-primary transition hover:border-accent hover:text-accent"
+                >
+                  {secondaryCta}
+                </Link>
+              ) : null}
             </div>
             <div className="flex justify-center">
               <div className="w-full max-w-5xl">
@@ -540,7 +774,7 @@ function Sora2PageLayout({
               </div>
             </div>
             <div className="space-y-3 rounded-2xl border border-hairline bg-bg px-4 py-3">
-              <p className="text-sm font-semibold text-text-primary">Why Sora 2 is powerful inside MaxVideoAI:</p>
+              {copy.whyTitle ? <p className="text-sm font-semibold text-text-primary">{copy.whyTitle}</p> : null}
               <ul className="grid gap-2 text-sm text-text-secondary sm:grid-cols-2">
                 {heroHighlights.map((item) => (
                   <li key={item} className="flex items-start gap-2">
@@ -550,6 +784,18 @@ function Sora2PageLayout({
                 ))}
               </ul>
             </div>
+            {copy.bestUseCases.length ? (
+              <div className="space-y-2 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+                {copy.bestUseCasesTitle ? (
+                  <p className="text-sm font-semibold text-text-primary">{copy.bestUseCasesTitle}</p>
+                ) : null}
+                <ul className="grid gap-1 text-sm text-text-secondary sm:grid-cols-2">
+                  {copy.bestUseCases.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </div>
         </section>
 
@@ -991,9 +1237,11 @@ export default async function ModelDetailPage({ params }: PageParams) {
       ...(dictionary.models.detail ?? {}),
       breadcrumb: { ...DEFAULT_DETAIL_COPY.breadcrumb, ...(dictionary.models.detail?.breadcrumb ?? {}) },
     };
+    const localizedContent = await getEngineLocalized(slug, activeLocale);
     return await renderSora2ModelPage({
       engine,
       backLabel: detailCopy.backLabel,
+      localizedContent,
       locale: activeLocale,
     });
   }
