@@ -24,6 +24,7 @@ export type ExampleGalleryVideo = {
   videoUrl?: string | null;
 };
 
+const INITIAL_BATCH = 8;
 const BATCH_SIZE = 8;
 const LANDSCAPE_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 60vw, 40vw';
 const PORTRAIT_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 60vw, 40vw';
@@ -35,24 +36,23 @@ const LH_PLACEHOLDER =
 const LH_POSTER_SRC = '/examples/lcp-poster.webp';
 
 export default function ExamplesGalleryGridClient({
-  initialVideos,
-  remainingVideos,
+  examples,
   loadMoreLabel = 'Load more examples',
 }: {
-  initialVideos: ExampleGalleryVideo[];
-  remainingVideos: ExampleGalleryVideo[];
+  examples: ExampleGalleryVideo[];
   loadMoreLabel?: string;
 }) {
   const isLighthouse = useMemo(() => detectLighthouse(), []);
-  const baseInitial = useMemo(() => dedupe(initialVideos), [initialVideos]);
-  const baseRemaining = useMemo(() => dedupe(remainingVideos), [remainingVideos]);
+  const baseAll = useMemo(() => dedupe(examples), [examples]);
 
-  const [visibleVideos, setVisibleVideos] = useState<ExampleGalleryVideo[]>(() =>
-    isLighthouse ? baseInitial.slice(0, 1) : baseInitial
-  );
-  const [pendingVideos, setPendingVideos] = useState<ExampleGalleryVideo[]>(() =>
-    isLighthouse ? dedupe([...baseInitial.slice(1), ...baseRemaining]) : baseRemaining
-  );
+  const [visibleVideos, setVisibleVideos] = useState<ExampleGalleryVideo[]>(() => {
+    if (isLighthouse) return baseAll.slice(0, 1);
+    return baseAll.slice(0, INITIAL_BATCH);
+  });
+  const [pendingVideos, setPendingVideos] = useState<ExampleGalleryVideo[]>(() => {
+    if (isLighthouse) return baseAll.slice(1);
+    return baseAll.slice(INITIAL_BATCH);
+  });
 
   useEffect(() => {
     if (!isLighthouse) return;

@@ -3,13 +3,11 @@ import ExamplesGalleryGridClient, { type ExampleGalleryVideo } from './ExamplesG
 export type { ExampleGalleryVideo } from './ExamplesGalleryGrid.client';
 
 export function ExamplesGalleryGrid({
-  initialVideos,
-  remainingVideos,
+  examples,
   loadMoreLabel = 'Load more examples',
 }: {
-  initialVideos: ExampleGalleryVideo[];
-  remainingVideos: ExampleGalleryVideo[];
+  examples: ExampleGalleryVideo[];
   loadMoreLabel?: string;
 }) {
-  return <ExamplesGalleryGridClient initialVideos={initialVideos} remainingVideos={remainingVideos} loadMoreLabel={loadMoreLabel} />;
+  return <ExamplesGalleryGridClient examples={examples} loadMoreLabel={loadMoreLabel} />;
 }

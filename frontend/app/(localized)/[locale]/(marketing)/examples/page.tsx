@@ -422,16 +422,11 @@ const clientVideos: ExampleGalleryVideo[] = videos.map((video) => {
   const canonicalEngineId = resolveEngineLinkId(video.engineId);
   const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
   const engineMeta = engineKey ? ENGINE_META.get(engineKey) : null;
-  const engineSlug = engineMeta?.modelSlug ?? canonicalEngineId ?? video.engineId ?? null;
-  const href =
-    engineSlug && engineSlug.length
-      ? `/models/${encodeURIComponent(engineSlug)}?ref=examples`
-      : '/models?ref=examples';
   const priceLabel = formatPrice(video.finalPriceCents ?? null, video.currency ?? null);
   const promptDisplay = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render');
   return {
     id: video.id,
-    href,
+    href: `/video/${encodeURIComponent(video.id)}`,
     engineLabel: engineMeta?.label ?? video.engineLabel ?? 'Engine',
     engineIconId: engineMeta?.id ?? canonicalEngineId ?? video.engineId ?? 'engine',
     engineBrandId: engineMeta?.brandId,
@@ -446,7 +441,6 @@ const clientVideos: ExampleGalleryVideo[] = videos.map((video) => {
   };
 });
 const initialClientVideos = clientVideos.slice(0, EXAMPLES_INITIAL_BATCH);
-const remainingClientVideos = clientVideos.slice(EXAMPLES_INITIAL_BATCH);
 const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClientVideos[0]?.rawPosterUrl ?? null;
   const hasPreviousPage = currentPage > 1;
   const hasNextPage = currentPage < totalPages;
@@ -571,8 +565,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
 
       <section className="mt-8 overflow-hidden rounded-[12px] border border-hairline bg-white/80 shadow-card">
         <ExamplesGalleryGrid
-          initialVideos={initialClientVideos}
-          remainingVideos={remainingClientVideos}
+          examples={clientVideos}
           loadMoreLabel={loadMoreLabel}
         />
       </section>
