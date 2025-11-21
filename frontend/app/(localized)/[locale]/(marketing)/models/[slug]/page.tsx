@@ -323,6 +323,7 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
   const detailSlugMap = buildDetailSlugMap(slug);
   const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${slug}`));
   const metadataUrls = buildMetadataUrls(locale, detailSlugMap, { availableLocales: publishableLocales });
+  const canonical = metadataUrls.canonical.replace(/\/+$/, '') || metadataUrls.canonical;
   const fallbackTitle = engine.seo.title ?? `${engine.marketingName} — MaxVideo AI`;
   const title = localized.seo.title ?? fallbackTitle;
   const description =
@@ -336,12 +337,12 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
     title,
     description,
     alternates: {
-      canonical: metadataUrls.canonical,
+      canonical,
       languages: metadataUrls.languages,
     },
     openGraph: {
       type: 'article',
-      url: metadataUrls.canonical,
+      url: canonical,
       siteName: 'MaxVideo AI',
       title,
       description,
@@ -491,7 +492,7 @@ async function renderSora2ModelPage({
   const detailSlugMap = buildDetailSlugMap(engine.modelSlug);
   const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${engine.modelSlug}`));
   const metadataUrls = buildMetadataUrls(locale, detailSlugMap, { availableLocales: publishableLocales });
-  const canonicalUrl = metadataUrls.canonical;
+  const canonicalUrl = metadataUrls.canonical.replace(/\/+$/, '') || metadataUrls.canonical;
   const copy = buildSoraCopy(localizedContent);
   let examples: GalleryVideo[] = [];
   try {
@@ -569,6 +570,16 @@ function Sora2PageLayout({
   canonicalUrl: string;
 }) {
   const inLanguage = localeRegions[locale] ?? 'en-US';
+  const canonical = canonicalUrl.replace(/\/+$/, '') || canonicalUrl;
+  const localePathPrefix = localePathnames[locale] ? `/${localePathnames[locale].replace(/^\/+/, '')}` : '';
+  const homePathname = localePathPrefix || '/';
+  const localizedHomeUrl = homePathname === '/' ? `${SITE}/` : `${SITE}${homePathname}`;
+  const localizedModelsSlug = (MODELS_BASE_PATH_MAP[locale] ?? 'models').replace(/^\/+/, '');
+  const modelsPathname =
+    homePathname === '/'
+      ? `/${localizedModelsSlug}`
+      : `${homePathname.replace(/\/+$/, '')}/${localizedModelsSlug}`.replace(/\/{2,}/g, '/');
+  const localizedModelsUrl = `${SITE}${modelsPathname}`;
   const heroTitle = copy.heroTitle ?? localizedContent.hero?.title ?? localizedContent.marketingName ?? 'Sora 2';
   const heroSubtitle = copy.heroSubtitle ?? localizedContent.hero?.intro ?? localizedContent.overview ?? '';
   const heroBadge = copy.heroBadge ?? localizedContent.hero?.badge ?? null;
@@ -611,7 +622,7 @@ function Sora2PageLayout({
       '@type': 'WebPage',
       name: heroTitle,
       description: pageDescription,
-      url: canonicalUrl,
+      url: canonical,
       inLanguage,
     },
     {
@@ -627,7 +638,7 @@ function Sora2PageLayout({
       },
       offers: {
         '@type': 'Offer',
-        url: canonicalUrl,
+        url: canonical,
         availability: 'https://schema.org/InStock',
       },
     },
@@ -644,6 +655,30 @@ function Sora2PageLayout({
           inLanguage,
         }
       : null,
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Home',
+          item: localizedHomeUrl,
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: copy.relatedTitle ?? 'Models',
+          item: localizedModelsUrl,
+        },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          name: heroTitle,
+          item: canonical,
+        },
+      ],
+    },
     faqList.length
       ? {
           '@context': 'https://schema.org',
@@ -688,7 +723,7 @@ function Sora2PageLayout({
                 {heroSubtitle}
               </p>
               {heroBadge ? (
-                <div className="mx-auto inline-flex items-center gap-2 rounded-full bg-black/5 px-3 py-1 text-[12px] font-semibold uppercase tracking-micro text-text-secondary">
+                <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-hairline bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary shadow-card">
                   {heroBadge.split('·').map((chunk, index, arr) => (
                     <span key={`${chunk}-${index}`} className="flex items-center gap-2">
                       <span>{chunk.trim()}</span>
@@ -750,7 +785,7 @@ function Sora2PageLayout({
         </section>
 
         <section className="mt-14 space-y-4">
-          {copy.whatTitle ? <h2 className="text-2xl font-semibold text-text-primary">{copy.whatTitle}</h2> : null}
+          {copy.whatTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.whatTitle}</h2> : null}
           {copy.whatIntro1 ? <p className="text-base text-text-secondary">{copy.whatIntro1}</p> : null}
           {copy.whatIntro2 ? <p className="text-base text-text-secondary">{copy.whatIntro2}</p> : null}
           {whatFlowSteps.length ? (
@@ -769,7 +804,7 @@ function Sora2PageLayout({
 
         {specSections.length ? (
           <section className="mt-14 space-y-4">
-            {copy.specTitle ? <h2 className="text-2xl font-semibold text-text-primary">{copy.specTitle}</h2> : null}
+            {copy.specTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.specTitle}</h2> : null}
             {copy.specNote ? (
               <blockquote className="rounded-2xl border border-accent/30 bg-accent/5 px-4 py-3 text-sm text-text-secondary">
                 {copy.specNote}
@@ -800,7 +835,7 @@ function Sora2PageLayout({
           <div className="mt-10 flex justify-center">
             <Link
               href={primaryCtaHref}
-              className="inline-flex items-center rounded-full border border-accent/40 bg-accent/10 px-5 py-2 text-sm font-semibold text-accent transition hover:border-accent hover:bg-accent/15"
+              className="text-sm font-semibold text-accent transition hover:text-accentSoft"
             >
               {copy.microCta}
             </Link>
@@ -808,7 +843,7 @@ function Sora2PageLayout({
         ) : null}
 
         <section className="mt-14 space-y-4">
-          {copy.galleryTitle ? <h2 className="text-2xl font-semibold text-text-primary">{copy.galleryTitle}</h2> : null}
+          {copy.galleryTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.galleryTitle}</h2> : null}
           {copy.galleryIntro ? <p className="text-base text-text-secondary">{copy.galleryIntro}</p> : null}
           {copy.galleryAllCta ? (
             <p className="text-base text-text-secondary">
@@ -830,7 +865,11 @@ function Sora2PageLayout({
                         {video.optimizedPosterUrl || video.rawPosterUrl ? (
                           <Image
                             src={video.optimizedPosterUrl ?? video.rawPosterUrl ?? ''}
-                            alt={`${video.engineLabel} – ${video.prompt}`}
+                            alt={
+                              video.prompt
+                                ? `MaxVideoAI ${video.engineLabel} example – ${video.prompt}`
+                                : `MaxVideoAI ${video.engineLabel} example`
+                            }
                             fill
                             className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
                             sizes="256px"
@@ -882,7 +921,7 @@ function Sora2PageLayout({
         </section>
 
         <section className="mt-14 space-y-4">
-          {copy.promptTitle ? <h2 className="text-2xl font-semibold text-text-primary">{copy.promptTitle}</h2> : null}
+          {copy.promptTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.promptTitle}</h2> : null}
           {copy.promptIntro ? <p className="text-base text-text-secondary">{copy.promptIntro}</p> : null}
           <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
             {promptPatternSteps.length ? (
@@ -909,7 +948,7 @@ function Sora2PageLayout({
         </section>
 
         <section className="mt-14 space-y-4">
-          {copy.imageTitle ? <h2 className="text-2xl font-semibold text-text-primary">{copy.imageTitle}</h2> : null}
+          {copy.imageTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.imageTitle}</h2> : null}
           {copy.imageIntro ? <p className="text-base text-text-secondary">{copy.imageIntro}</p> : null}
           <div className="grid gap-4 lg:grid-cols-2">
             {imageToVideoSteps.length ? (
@@ -934,7 +973,7 @@ function Sora2PageLayout({
         </section>
 
         <section className="mt-14 space-y-4">
-          {copy.multishotTitle ? <h2 className="text-2xl font-semibold text-text-primary">{copy.multishotTitle}</h2> : null}
+          {copy.multishotTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.multishotTitle}</h2> : null}
           {copy.multishotIntro1 ? <p className="text-base text-text-secondary">{copy.multishotIntro1}</p> : null}
           {copy.multishotIntro2 ? <p className="text-base text-text-secondary">{copy.multishotIntro2}</p> : null}
           <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
@@ -948,7 +987,7 @@ function Sora2PageLayout({
 
         {copy.demoTitle || copy.demoPrompt.length || copy.demoNotes.length ? (
           <section className="mt-14 space-y-6">
-            {copy.demoTitle ? <h2 className="text-2xl font-semibold text-text-primary">{copy.demoTitle}</h2> : null}
+            {copy.demoTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.demoTitle}</h2> : null}
             <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
               <div className="space-y-4 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
                 {copy.demoPromptLabel ? (
@@ -986,7 +1025,7 @@ function Sora2PageLayout({
 
         {copy.tipsTitle || strengths.length || boundaries.length ? (
           <section className="mt-14 space-y-6">
-            {copy.tipsTitle ? <h2 className="text-2xl font-semibold text-text-primary">{copy.tipsTitle}</h2> : null}
+            {copy.tipsTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.tipsTitle}</h2> : null}
             <div className="grid gap-4 lg:grid-cols-2">
               {strengths.length ? (
                 <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
@@ -1013,7 +1052,7 @@ function Sora2PageLayout({
 
         {copy.safetyTitle || safetyRules.length ? (
           <section className="mt-14 space-y-4">
-            {copy.safetyTitle ? <h2 className="text-2xl font-semibold text-text-primary">{copy.safetyTitle}</h2> : null}
+            {copy.safetyTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.safetyTitle}</h2> : null}
             <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
               {safetyRules.length ? (
                 <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
@@ -1037,7 +1076,7 @@ function Sora2PageLayout({
         {copy.comparisonTitle || comparisonPoints.length ? (
           <section className="mt-14 space-y-4">
             {copy.comparisonTitle ? (
-              <h2 className="text-2xl font-semibold text-text-primary">{copy.comparisonTitle}</h2>
+              <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.comparisonTitle}</h2>
             ) : null}
             <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
               {comparisonPoints.length ? (
@@ -1061,7 +1100,7 @@ function Sora2PageLayout({
 
         {faqList.length ? (
           <section className="mt-14 space-y-4">
-            {faqTitle ? <h2 className="text-2xl font-semibold text-text-primary">{faqTitle}</h2> : null}
+            {faqTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{faqTitle}</h2> : null}
             <div className="grid gap-3 md:grid-cols-2">
               {faqList.map((entry) => (
                 <article
@@ -1286,7 +1325,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       ? localizedContent.faqs
       : (engine.faqs ?? []).map(({ question, answer }) => ({ question, answer }));
   const pricingNotes = localizedContent.pricingNotes ?? null;
-  const canonicalUrl = metadataUrls.canonical;
+  const canonicalUrl = metadataUrls.canonical.replace(/\/+$/, '') || metadataUrls.canonical;
   const breadcrumbTitleBase = localizedContent.seo.title ?? marketingName ?? slug;
   const breadcrumbTitle = breadcrumbTitleBase.replace(/ —.*$/, '');
   const localePathPrefix = localePathnames[activeLocale] ? `/${localePathnames[activeLocale].replace(/^\/+/, '')}` : '';
@@ -1376,9 +1415,9 @@ export default async function ModelDetailPage({ params }: PageParams) {
             </span>
           ) : null}
           <div>
-            <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">
+            <h2 className="text-3xl font-semibold text-text-primary sm:text-4xl">
               {heroContent?.title ?? marketingName}
-            </h1>
+            </h2>
             {versionLabel ? (
               <p className="text-sm uppercase tracking-micro text-text-muted">{versionLabel}</p>
             ) : null}
