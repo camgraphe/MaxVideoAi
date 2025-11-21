@@ -6,6 +6,7 @@ import Link from 'next/link';
 import clsx from 'clsx';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import mediaStyles from './examples-media.module.css';
+import masonryStyles from './examples-masonry.module.css';
 
 export type ExampleGalleryVideo = {
   id: string;
@@ -82,9 +83,11 @@ export default function ExamplesGalleryGridClient({
 
   return (
     <div className="space-y-4 p-4 sm:p-6">
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      <div className={masonryStyles.masonry}>
         {visibleVideos.map((video, index) => (
-          <ExampleCard key={video.id} video={video} isFirst={index === 0} isLighthouse={isLighthouse} />
+          <div key={video.id} className={masonryStyles.item}>
+            <ExampleCard video={video} isFirst={index === 0} isLighthouse={isLighthouse} />
+          </div>
         ))}
       </div>
       {pendingVideos.length && !isLighthouse ? (
@@ -156,7 +159,7 @@ function ExampleCard({ video, isFirst, isLighthouse }: { video: ExampleGalleryVi
   return (
     <Link
       ref={cardRef}
-      href={video.href}
+      href={`/video/${encodeURIComponent(video.id)}`}
       className="group relative block overflow-hidden rounded-[18px] border border-hairline bg-white shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
