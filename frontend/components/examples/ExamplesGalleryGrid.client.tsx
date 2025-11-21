@@ -43,14 +43,15 @@ export default function ExamplesGalleryGridClient({
   loadMoreLabel?: string;
 }) {
   const isLighthouse = useMemo(() => detectLighthouse(), []);
-  const [visibleVideos, setVisibleVideos] = useState<ExampleGalleryVideo[]>(() => {
-    const unique = dedupe(initialVideos);
-    return unique.length ? [unique[0]] : [];
-  });
-  const [pendingVideos, setPendingVideos] = useState<ExampleGalleryVideo[]>(() => {
-    const unique = dedupe(initialVideos).slice(1);
-    return dedupe([...unique, ...remainingVideos]);
-  });
+  const baseInitial = useMemo(() => dedupe(initialVideos), [initialVideos]);
+  const baseRemaining = useMemo(() => dedupe(remainingVideos), [remainingVideos]);
+
+  const [visibleVideos, setVisibleVideos] = useState<ExampleGalleryVideo[]>(() =>
+    isLighthouse ? baseInitial.slice(0, 1) : baseInitial
+  );
+  const [pendingVideos, setPendingVideos] = useState<ExampleGalleryVideo[]>(() =>
+    isLighthouse ? dedupe([...baseInitial.slice(1), ...baseRemaining]) : baseRemaining
+  );
 
   useEffect(() => {
     if (!isLighthouse) return;
