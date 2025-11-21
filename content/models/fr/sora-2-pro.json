@@ -9,6 +9,7 @@
   "hero": {
     "title": "Sora 2 Pro – Génération vidéo étendue avec audio et contrôle de scène",
     "intro": "Sora 2 Pro s'appuie sur le moteur Sora 2 pour débloquer des durées plus longues, l'enchaînement multi-scènes et un contrôle accru de la continuité audio/visuelle. Chaînez des scènes, dirigez les mouvements de caméra ou animez des références pour des histoires pleinement maîtrisées.",
+    "badge": "720p/1080p · 4–12s · Entrée texte ou image · Bascule audio",
     "ctaPrimary": {
       "label": "Générer avec Sora 2 Pro",
       "href": "/app?engine=sora-2-pro"
@@ -29,6 +30,175 @@
     ]
   },
   "overview": "Générez des vidéos IA plus longues avec son et contrôle des scènes grâce à Sora 2 Pro. Parfait pour la narration, les vidéos explicatives et le motion design de marque — à partir d'images ou d'invites textuelles.",
+  "custom": {
+    "heroDesc1": "Sora 2 Pro est le grand frère 720p/1080p de Sora 2. Vous obtenez des clips plus cinématographiques, un contrôle explicite de l'audio et un chaînage de prompts plus riche pour des séquences multi-temps — idéal pour des publicités, bandes-annonces et livrables clients.",
+    "heroDesc2": "Prototypage rapide avec Sora 2, puis passage à Sora 2 Pro pour régénérer vos plans gagnants en 1080p avec plus de contrôle sur le rythme, le mouvement et le son.",
+    "secondaryCta": "Comparer avec Sora 2 (720p) →",
+    "whyTitle": "Pourquoi Sora 2 Pro dans MaxVideoAI :",
+    "heroHighlights": [
+      "Sortie 720p ou 1080p prête pour les clients",
+      "Rendus 4–12s avec contrôle cinématographique renforcé",
+      "Bascule audio + gestion précise des signaux sonores",
+      "Chaînage de prompts pour une continuité multi-scènes",
+      "Parcours Sora 2 (proto) → Sora 2 Pro (finalisation)"
+    ],
+    "specTitle": "Specs réelles – Sora 2 Pro dans MaxVideoAI (720p/1080p, 4–12s)",
+    "specNote": "Ces specs reflètent Sora 2 Pro tel qu'exposé dans MaxVideoAI—config production, pas de démo théorique.",
+    "specSections": [
+      {
+        "title": "Durée & sortie",
+        "items": [
+          "Durées : 4 s, 8 s, 12 s (au choix)",
+          "Résolution : 720p ou 1080p",
+          "Utilisez Sora 2 (720p) pour itérer, puis finalisez en Sora 2 Pro avec bascule audio."
+        ]
+      },
+      {
+        "title": "Formats",
+        "items": [
+          "16:9 – paysage premium",
+          "9:16 – vertical social"
+        ]
+      },
+      {
+        "title": "Entrées & fichiers",
+        "items": [
+          "Prompts texte avec beats de scène clairs",
+          "Images de référence / keyframes pour la continuité",
+          "PNG, JPG, WebP, GIF, AVIF jusqu'à ~50 Mo"
+        ]
+      },
+      {
+        "title": "Audio",
+        "items": [
+          "Bascule audio dans MaxVideoAI (on/off)",
+          "Voix off + couches d'ambiance prises en charge",
+          "Écrivez vos repères audio dans le prompt"
+        ]
+      },
+      {
+        "title": "Tarifs",
+        "items": [
+          "Coût/seconde plus élevé que Sora 2 (taux affiché dans Generate inclut la marge MaxVideoAI)",
+          "Facturation transparente au temps généré",
+          "Vérifiez le tarif en direct dans Generate avant de lancer"
+        ]
+      }
+    ],
+    "specValueProp": "Sora 2 Pro sert les sorties 1080p polies avec contrôle audio et continuité multi-scènes—parfait une fois vos explorations Sora 2 validées.",
+    "microCta": "Commencer avec Sora 2 Pro →",
+    "galleryTitle": "Galerie d'exemples : rendus Sora 2 Pro",
+    "galleryIntro": "Découvrez des clips 1080p multi-beats réalisés avec Sora 2 Pro dans MaxVideoAI.",
+    "gallerySceneCta": "Ouvrir cette scène dans Generate et l'adapter à votre marque →",
+    "galleryAllCta": "Voir tous les exemples Sora 2 Pro →",
+    "recreateLabel": "Recréer ce plan Pro →",
+    "promptTitle": "Prompter Sora 2 Pro pour un contrôle ciné",
+    "promptIntro": "Avec Sora 2 Pro, écrivez vos prompts comme un mini storyboard avec repères audio et temporels.",
+    "promptPatternSteps": [
+      "Beats de scène avec durées",
+      "Sujet, tenue et continuité",
+      "Langage caméra par scène (push, dolly, tilt, handheld)",
+      "Repères audio (voix off, ambiance, FX, musique)",
+      "Transitions (match cut, whip pan, fondu)",
+      "Format + durée + ratio"
+    ],
+    "promptSkeleton": "Scène 1 (4s): [sujet/action], [mouvement caméra], [lumière], [repère audio]. Scène 2 (4s): [sujet/action], [mouvement caméra], [transition], [repère audio], 1080p, 16:9.",
+    "promptSkeletonNote": "Détaillez beat par beat ; Sora 2 Pro exécutera avec plus de fidélité.",
+    "imageTitle": "Image→Vidéo avec Sora 2 Pro",
+    "imageIntro": "Verrouillez le style avec un visuel, puis animez avec un mouvement précis et des repères audio.",
+    "imageFlow": [
+      "Créez ou importez un keyframe brandé (style verrouillé).",
+      "Envoyez-le à Sora 2 Pro en Image → Vidéo.",
+      "Décrivez le mouvement par beat et le son attendu (VO, ambiance, FX).",
+      "Régénérez pour polir le timing tout en gardant le look."
+    ],
+    "imageWhy": [
+      "Plans produit premium",
+      "Intros de campagne qui doivent rester on-brand",
+      "Vidéos explicatives haute fidélité avec lumière cohérente"
+    ],
+    "multishotTitle": "Clips multi-shots dans Sora 2 Pro",
+    "multishotIntro1": "Chaînez 2–3 scènes avec timing explicite pour garder la cohérence.",
+    "multishotIntro2": "Utilisez la bascule audio et les repères pour aligner voix off, FX et musique.",
+    "multishotTips": [
+      "Limitez à 3 scènes max en 12 secondes.",
+      "Répétez les descripteurs clés (tenue, décor, lumière) à chaque scène.",
+      "Spécifiez la caméra par beat : push-in, crane up, glide handheld.",
+      "Écrivez la transition dans le prompt (match cut, whip pan, fondu)."
+    ],
+    "demoTitle": "Démo : film produit 12s en 1080p",
+    "demoPromptLabel": "Prompt – Lancement wearable (16:9, audio on)",
+    "demoPrompt": [
+      "Scène 1 (4s) : macro du smartwatch titane sur plateau tournant glossy, lumière studio douce, voix off : « Voici Aurum Pro. »",
+      "Scène 2 (4s) : plan lifestyle d'un coureur vérifiant la montre à l'heure bleue sur un rooftop, dolly-in, ambiance urbaine + pulsation synthé légère.",
+      "Scène 3 (4s) : close-up UI de l'écran qui s'anime, interaction main, match cut vers produit flottant sur fond noir, montée audio puis résolution.",
+      "Transitions : match cut entre scènes, léger fondu sur les couches audio.",
+      "Audio : voix off + ambiance + nappe synthé légère.",
+      "Format : 1080p, 16:9."
+    ],
+    "demoNotes": [
+      "Montre le contrôle caméra, les repères audio et la cohérence produit + lifestyle + UI.",
+      "Réutilisez la même structure pour des formats clients : intro, contexte, hero close."
+    ],
+    "tipsTitle": "Astuces & limites",
+    "strengths": [
+      "Sortie 1080p premium",
+      "Bascule audio avec gestion des repères",
+      "Chaînage multi-scènes plus cohérent",
+      "Idéal pour pubs, trailers, explainers, présentations client",
+      "Fonctionne avec Sora 2 pour proto → final Pro"
+    ],
+    "boundaries": [
+      "Coût/seconde plus élevé que Sora 2",
+      "Cap à 12s — gardez des beats serrés",
+      "Pas de long format : assemblez plusieurs rendus",
+      "Nécessite des notes de continuité claires pour éviter les dérives",
+      "Le tout petit texte à l'écran reste délicat"
+    ],
+    "tipsFooter": "Écrivez comme un plan de tournage. Déclarez beats, caméras et audio—Sora 2 Pro respecte ces repères avec plus de fidélité que Sora 2.",
+    "safetyTitle": "Sécurité & identité",
+    "safetyRules": [
+      "Pas de personnes réelles, de figures publiques, de mineurs, de contenus haineux ou violents.",
+      "N'utilisez pas de ressemblance sans consentement.",
+      "Les prompts sensibles peuvent être bloqués."
+    ],
+    "safetyInterpretation": [
+      "Personnages génériques : OK.",
+      "Personnalités célèbres ou sujets sensibles : peuvent être filtrés."
+    ],
+    "safetyNote": "Restez dans l'usage sûr pour garder Sora 2 Pro fiable en production.",
+    "comparisonTitle": "Sora 2 vs Sora 2 Pro",
+    "comparisonPoints": [
+      "Prototypage en Sora 2 (720p) pour la vitesse et le coût.",
+      "Finalisation en Sora 2 Pro (1080p) pour le polish, l'audio et la continuité.",
+      "Même workflow : changez d'engin dans la même interface pour upscaler."
+    ],
+    "comparisonCta": "Comparer Sora 2 et Sora 2 Pro →",
+    "faqTitle": "FAQ – Sora 2 Pro dans MaxVideoAI",
+    "faqs": [
+      {
+        "q": "Sora 2 Pro propose-t-il un contrôle audio ?",
+        "a": "Oui. Activez/désactivez l'audio dans MaxVideoAI et écrivez vos repères (voix, ambiance, FX) dans le prompt."
+      },
+      {
+        "q": "Est-ce plus cher que Sora 2 ?",
+        "a": "Oui—Sora 2 Pro est tarifé plus haut à la seconde. Vérifiez le tarif en direct dans Generate avant de lancer un job."
+      },
+      {
+        "q": "Dois-je prototyper d'abord en Sora 2 ?",
+        "a": "Souvent oui : explorez à moindre coût en Sora 2, puis régénérez vos sélections en Pro en 1080p avec contrôle audio."
+      },
+      {
+        "q": "Puis-je faire de l'image→vidéo avec Sora 2 Pro ?",
+        "a": "Oui. Téléversez une image (PNG/JPG/WEBP/GIF/AVIF) jusqu'à ~50 Mo, puis décrivez le mouvement et l'audio par beat."
+      }
+    ],
+    "relatedTitle": "Explorer d'autres modèles",
+    "relatedSubtitle": "Comparez tarifs, latence et options de sortie sur les autres moteurs MaxVideoAI.",
+    "finalPara1": "Sora 2 Pro dans MaxVideoAI sert les sorties premium, prêtes pour les clients, avec contrôle du mouvement, de l'audio et de la continuité.",
+    "finalPara2": "Prototypage en Sora 2, puis passage à Sora 2 Pro pour polir et livrer en 1080p.",
+    "finalButton": "Générer avec Sora 2 Pro →"
+  },
   "bestUseCases": {
     "title": "Cas d'usage clés",
     "items": [

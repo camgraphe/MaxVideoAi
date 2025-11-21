@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
 import type { CSSProperties } from 'react';
-import Image from 'next/image';
 import Head from 'next/head';
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Script from 'next/script';
+import { headers } from 'next/headers';
 import { getVideoById, type GalleryVideo } from '@/server/videos';
 import { PromptPreview } from '@/components/video/PromptPreview';
+import { BackLink } from '@/components/video/BackLink';
 import { resolveDictionary } from '@/lib/i18n/server';
 import type { Dictionary } from '@/lib/i18n/types';
 import { localeRegions, type AppLocale } from '@/i18n/locales';
@@ -17,6 +19,7 @@ import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 
 type PageProps = {
   params: { id: string };
+  searchParams?: { from?: string };
 };
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://maxvideoai.com').replace(/\/$/, '');
@@ -28,7 +31,7 @@ const META_TITLE_LIMIT = 60;
 export const revalidate = 60 * 30; // 30 minutes
 
 const DEFAULT_VIDEO_COPY = {
-  backLink: '← Back to examples',
+  backLink: '← Back',
   hero: {
     titleFallback: 'MaxVideoAI render',
     intro: 'This video was generated with {engine} on MaxVideoAI — discover how to create similar renders below.',
@@ -416,7 +419,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function VideoPage({ params }: PageProps) {
+export default async function VideoPage({ params, searchParams }: PageProps) {
   const video = await fetchVideo(params.id);
   if (!video) {
     notFound();
@@ -454,6 +457,25 @@ export default async function VideoPage({ params }: PageProps) {
   const aspectDisplay = formatAspectDisplay(video.aspectRatio, copy);
   const createdDisplay = formatDateDisplay(video.createdAt, locale);
   const audioDisplay = describeAudio(video.hasAudio, copy);
+  const referer = headers().get('referer');
+  let backHref = examplesPath;
+  const fromParam = searchParams?.from;
+  const candidateFrom = fromParam && fromParam.startsWith('/') ? fromParam : null;
+  if (candidateFrom) {
+    backHref = candidateFrom;
+  } else if (referer) {
+    try {
+      const url = referer.startsWith('http') ? new URL(referer) : new URL(referer, SITE);
+      const candidatePath = `${url.pathname}${url.search}${url.hash}`;
+      const canonicalPath = new URL(canonical).pathname;
+      const isSamePage = candidatePath.replace(/\/+$/, '') === canonicalPath.replace(/\/+$/, '');
+      if (!isSamePage && !candidatePath.startsWith('/api') && candidatePath.startsWith('/')) {
+        backHref = candidatePath || examplesPath;
+      }
+    } catch {
+      // ignore bad referer values
+    }
+  }
 
   const containerStyle: CSSProperties = {};
   if (aspect) {
@@ -495,9 +517,7 @@ export default async function VideoPage({ params }: PageProps) {
         <link rel="preload" as="image" href={playbackPoster} fetchPriority="high" />
       </Head>
       <div className="mb-6 text-xs uppercase tracking-micro text-text-muted">
-        <Link href={examplesPath} className="transition hover:text-text-secondary">
-          {copy.backLink}
-        </Link>
+        <BackLink href={backHref} label={copy.backLink} className="transition hover:text-text-secondary" />
       </div>
       <article className="space-y-12">
         <section className="grid gap-8 lg:grid-cols-2 lg:items-start">

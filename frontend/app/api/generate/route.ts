@@ -504,7 +504,6 @@ export async function POST(req: NextRequest) {
       : null;
   const heroRenderId =
     typeof body.heroRenderId === 'string' && body.heroRenderId.trim().length ? body.heroRenderId.trim() : null;
-  const localKey = typeof body.localKey === 'string' && body.localKey.trim().length ? body.localKey.trim() : null;
   const message = typeof body.message === 'string' && body.message.trim().length ? body.message.trim() : null;
   const etaSeconds =
     typeof body.etaSeconds === 'number' && Number.isFinite(body.etaSeconds)
@@ -612,6 +611,56 @@ export async function POST(req: NextRequest) {
   const explicitUserId = typeof body.userId === 'string' && body.userId.trim().length ? body.userId.trim() : null;
   const authenticatedUserId = await getUserIdFromRequest(req);
   const userId = explicitUserId ?? authenticatedUserId ?? null;
+  const localKey = typeof body.localKey === 'string' && body.localKey.trim().length ? body.localKey.trim() : null;
+  if (localKey && userId) {
+    const existingJobs = await query<{
+      job_id: string;
+      status: string | null;
+      video_url: string | null;
+      thumb_url: string | null;
+      provider_job_id: string | null;
+      progress: number | null;
+      message: string | null;
+      batch_id: string | null;
+      group_id: string | null;
+      iteration_index: number | null;
+      iteration_count: number | null;
+      render_ids: unknown;
+      hero_render_id: string | null;
+    }>(
+      `
+        SELECT job_id, status, video_url, thumb_url, provider_job_id, progress, message,
+               batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id
+          FROM app_jobs
+         WHERE user_id = $1
+           AND local_key = $2
+           AND created_at > NOW() - INTERVAL '30 minutes'
+         ORDER BY created_at DESC
+         LIMIT 1
+      `,
+      [userId, localKey]
+    );
+    const existing = existingJobs[0];
+    if (existing) {
+      return NextResponse.json({
+        ok: true,
+        jobId: existing.job_id,
+        status: existing.status ?? 'pending',
+        videoUrl: existing.video_url,
+        thumbUrl: existing.thumb_url,
+        providerJobId: existing.provider_job_id,
+        progress: existing.progress ?? 0,
+        message: existing.message,
+        batchId: existing.batch_id,
+        groupId: existing.group_id,
+        iterationIndex: existing.iteration_index,
+        iterationCount: existing.iteration_count,
+        renderIds: existing.render_ids,
+        heroRenderId: existing.hero_render_id,
+        localKey,
+      });
+    }
+  }
   const paymentMode: PaymentMode = payment.mode ?? (userId ? 'wallet' : 'platform');
   const connectMode = isConnectPayments();
 
@@ -1345,131 +1394,27 @@ async function rollbackPendingPayment(params: {
   }
 
   try {
-    const maxAttempts = isLumaRay2 ? 4 : 3;
-    let attempt = 0;
-    let lastError: unknown;
-    while (attempt < maxAttempts) {
-      attempt += 1;
-      try {
-        const promise = generateVideo(
-          { ...falPayload },
-          {
-            onRequestId: (requestId) => {
-              console.info('[fal] request id received', { jobId, engineId: engine.id, requestId });
-              persistProviderJobId(requestId);
-            },
-            onQueueUpdate: (status) => {
-              if (!status) return;
-              const requestId =
-                (status as { request_id?: string }).request_id ?? lastProviderJobId ?? null;
-              if (requestId) {
-                lastProviderJobId = requestId;
-              }
-            },
+    const promise = generateVideo(
+      { ...falPayload },
+      {
+        onRequestId: (requestId) => {
+          console.info('[fal] request id received', { jobId, engineId: engine.id, requestId });
+          persistProviderJobId(requestId);
+        },
+        onQueueUpdate: (status) => {
+          if (!status) return;
+          const requestId =
+            (status as { request_id?: string }).request_id ?? lastProviderJobId ?? null;
+          if (requestId) {
+            lastProviderJobId = requestId;
           }
-        );
-        generationResult = await withFalTimeout(
-          promise,
-          isLumaRay2 ? LUMA_RAY2_TIMEOUT_MS : FAL_HARD_TIMEOUT_MS
-        );
-        break;
-      } catch (error) {
-        lastError = error;
-        const falError = error instanceof FalGenerationError ? error : null;
-        const rawStatus =
-          error && typeof error === 'object' && 'status' in error ? (error as { status?: number }).status : undefined;
-        const metadataStatus =
-          error && typeof error === 'object' && '$metadata' in error
-            ? ((error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode)
-            : undefined;
-        const status = rawStatus ?? metadataStatus ?? falError?.status ?? null;
-        const detail =
-          (falError && falError.body != null ? falError.body : null) ??
-          ((error && typeof error === 'object' && 'body' in error ? (error as { body?: unknown }).body : null) ?? null);
-        const providerMessageRaw =
-          extractFalProviderMessage(detail) ??
-          (falError?.body ? extractFalProviderMessage(falError.body) : null) ??
-          (error && typeof error === 'object' && 'response' in error
-            ? extractFalProviderMessage((error as { response?: unknown }).response)
-            : null) ??
-          extractFalProviderMessage(error) ??
-          (error instanceof Error ? error.message : null);
-        const providerMessage = condenseFalErrorMessage(providerMessageRaw);
-        if (!lastProviderJobId) {
-          const errorBody =
-            detail && typeof detail === 'string'
-              ? detail.slice(0, 1024)
-              : detail && typeof detail === 'object'
-                ? JSON.stringify(detail).slice(0, 1024)
-                : null;
-          console.error('[fal] no provider_job_id returned', {
-            jobId,
-            engineId: engine.id,
-            status,
-            attempt,
-            providerMessage: providerMessage ?? null,
-            errorBody,
-          });
-        }
-        const providerJobId: string | null =
-          falError?.providerJobId ??
-          (typeof (error as { providerJobId?: string } | undefined)?.providerJobId === 'string'
-            ? (error as { providerJobId?: string }).providerJobId
-            : null) ??
-          lastProviderJobId ??
-          batchId ??
-          null;
-
-        const retryable = shouldRetryFalError({
-          error,
-          status,
-          detail,
-          providerMessage,
-          providerJobId,
-          attempt,
-          maxAttempts,
-        });
-
-        if (retryable) {
-          lastProviderJobId = providerJobId;
-          if (isLumaRay2 && error instanceof FalTimeoutError) {
-            console.warn('[fal] lumaRay2 timeout', { jobId, attempt });
-          }
-
-          const waitMsRaw = FAL_RETRY_DELAYS_MS[Math.min(attempt - 1, FAL_RETRY_DELAYS_MS.length - 1)] ?? 5_000;
-          const waitMs = Number.isFinite(waitMsRaw) ? waitMsRaw : 5_000;
-          const progressFloor = Math.min(95, FAL_PROGRESS_FLOOR + attempt * 5);
-          const retryMessage =
-            providerMessage && providerMessage.toLowerCase() !== 'fal request failed'
-              ? `The service reported "${providerMessage}". Retrying...`
-              : 'A temporary error occurred. Retrying...';
-
-          await markJobAwaitingFal({
-            jobId,
-            engineId: engine.id,
-            providerJobId,
-            message: retryMessage,
-            statusLabel: 'retry-scheduled',
-            attempt,
-            context: {
-              status,
-              waitMs,
-            },
-            progressFloor,
-          });
-
-          if (waitMs > 0) {
-            await delay(waitMs);
-          }
-          continue;
-        }
-
-        throw error;
+        },
       }
-    }
-    if (!generationResult) {
-      throw lastError ?? new Error('Fal generation failed');
-    }
+    );
+    generationResult = await withFalTimeout(
+      promise,
+      isLumaRay2 ? LUMA_RAY2_TIMEOUT_MS : FAL_HARD_TIMEOUT_MS
+    );
   } catch (error) {
     const rawStatus =
       error && typeof error === 'object' && 'status' in error ? (error as { status?: number }).status : undefined;

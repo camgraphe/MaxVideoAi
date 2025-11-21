@@ -15,7 +15,7 @@ import { getEngineLocalized, type EngineLocalizedContent } from '@/lib/models/i1
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
-import { listExamples, type GalleryVideo } from '@/server/videos';
+import { listExamples, getVideosByIds, type GalleryVideo } from '@/server/videos';
 import { serializeJsonLd } from '../model-jsonld';
 
 type PageParams = {
@@ -28,8 +28,16 @@ type PageParams = {
 export const dynamicParams = false;
 export const revalidate = 300;
 
-const PREFERRED_SORA_HERO_ID = 'job_74677d4f-9f28-4e47-b230-64accef8e239';
-const PREFERRED_SORA_DEMO_ID = 'job_7fbd6334-8535-438a-98a2-880205744b6b';
+const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null }> = {
+  'sora-2': {
+    hero: 'job_74677d4f-9f28-4e47-b230-64accef8e239',
+    demo: 'job_7fbd6334-8535-438a-98a2-880205744b6b',
+  },
+  'sora-2-pro': {
+    hero: 'job_4d97a93f-1582-4a50-bff1-72894c302164',
+    demo: null,
+  },
+};
 
 type SpecSection = { title: string; items: string[] };
 type LocalizedFaqEntry = { question: string; answer: string };
@@ -187,7 +195,7 @@ function toAbsoluteUrl(url?: string | null): string {
   return `${SITE}/${url}`;
 }
 
-function buildSoraCopy(localized: EngineLocalizedContent): SoraCopy {
+function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCopy {
   const custom = (localized.custom ?? {}) as Record<string, unknown>;
   const getString = (key: string): string | null => {
     const value = custom[key];
@@ -242,7 +250,7 @@ function buildSoraCopy(localized: EngineLocalizedContent): SoraCopy {
     heroDesc1: getString('heroDesc1'),
     heroDesc2: getString('heroDesc2'),
     primaryCta: localized.hero?.ctaPrimary?.label ?? getString('primaryCta'),
-    primaryCtaHref: localized.hero?.ctaPrimary?.href ?? '/app?engine=sora-2',
+    primaryCtaHref: localized.hero?.ctaPrimary?.href ?? `/app?engine=${slug}`,
     secondaryCta:
       (localized.hero?.secondaryLinks?.[0]?.label as string | undefined) ??
       getString('secondaryCta') ??
@@ -251,7 +259,7 @@ function buildSoraCopy(localized: EngineLocalizedContent): SoraCopy {
     secondaryCtaHref:
       (localized.hero?.secondaryLinks?.[0]?.href as string | undefined) ??
       localized.compareLink?.href ??
-      '/models/sora-2-pro',
+      (slug === 'sora-2' ? '/models/sora-2-pro' : '/models/sora-2'),
     whyTitle: getString('whyTitle'),
     heroHighlights: getStringArray('heroHighlights'),
     bestUseCasesTitle,
@@ -403,13 +411,21 @@ function formatPromptExcerpt(prompt: string, maxWords = 22): string {
   return `${words.slice(0, maxWords).join(' ')}…`;
 }
 
-function toGalleryCard(video: GalleryVideo, brandId?: string): ExampleGalleryVideo {
+function toGalleryCard(
+  video: GalleryVideo,
+  brandId?: string,
+  fallbackLabel?: string,
+  iconId?: string,
+  fromPath?: string
+): ExampleGalleryVideo {
   const promptExcerpt = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render');
+  const videoHrefBase = `/video/${encodeURIComponent(video.id)}`;
+  const videoHref = fromPath ? `${videoHrefBase}?from=${encodeURIComponent(fromPath)}` : videoHrefBase;
   return {
     id: video.id,
-    href: `/video/${encodeURIComponent(video.id)}`,
-    engineLabel: video.engineLabel || 'Sora 2',
-    engineIconId: 'sora-2',
+    href: videoHref,
+    engineLabel: video.engineLabel || fallbackLabel || 'Sora 2',
+    engineIconId: iconId ?? 'sora-2',
     engineBrandId: brandId,
     priceLabel: formatPriceLabel(video.finalPriceCents ?? null, video.currency ?? null),
     prompt: promptExcerpt,
@@ -478,51 +494,82 @@ function pickDemoMedia(
   return null;
 }
 
-async function renderSora2ModelPage({
+async function renderSoraModelPage({
   engine,
   backLabel,
   localizedContent,
   locale,
+  breadcrumb,
 }: {
   engine: FalEngineEntry;
   backLabel: string;
   localizedContent: EngineLocalizedContent;
   locale: AppLocale;
+  breadcrumb: DetailCopy['breadcrumb'];
 }) {
   const detailSlugMap = buildDetailSlugMap(engine.modelSlug);
   const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${engine.modelSlug}`));
   const metadataUrls = buildMetadataUrls(locale, detailSlugMap, { availableLocales: publishableLocales });
   const canonicalUrl = metadataUrls.canonical.replace(/\/+$/, '') || metadataUrls.canonical;
-  const copy = buildSoraCopy(localizedContent);
+  const copy = buildSoraCopy(localizedContent, engine.modelSlug);
+  const backPath = (() => {
+    try {
+      const url = new URL(canonicalUrl);
+      return url.pathname || `/models/${engine.modelSlug}`;
+    } catch {
+      return `/models/${engine.modelSlug}`;
+    }
+  })();
   let examples: GalleryVideo[] = [];
   try {
     examples = await listExamples('date-desc', 60);
   } catch (error) {
     console.warn('[models/sora-2] failed to load examples', error);
   }
-  const soraExamples = examples.filter(
-    (video) => normalizeEngineId(video.engineId)?.trim().toLowerCase() === 'sora-2'
-  );
-  const galleryVideos = soraExamples.map((video) => toGalleryCard(video, engine.brandId));
+  const normalizedSlug = normalizeEngineId(engine.modelSlug) ?? engine.modelSlug;
+  const allowedEngineIds = new Set([
+    normalizedSlug,
+    engine.modelSlug,
+    engine.id,
+    ...(engine.modelSlug === 'sora-2-pro' ? ['sora-2', 'sora2'] : []),
+    ...(engine.modelSlug === 'sora-2' ? ['sora-2', 'sora2'] : []),
+  ].map((id) => (id ? id.toString().trim().toLowerCase() : '')).filter(Boolean));
+  const soraExamples = examples.filter((video) => {
+    const normalized = normalizeEngineId(video.engineId)?.trim().toLowerCase();
+    return normalized ? allowedEngineIds.has(normalized) : false;
+  });
+  const validatedMap = await getVideosByIds(soraExamples.map((video) => video.id));
+  const galleryVideos = soraExamples
+    .filter((video) => validatedMap.has(video.id))
+    .map((video) =>
+      toGalleryCard(
+        video,
+        engine.brandId,
+        localizedContent.marketingName ?? engine.marketingName,
+        engine.modelSlug,
+        backPath
+      )
+    );
 
   const fallbackMedia: FeaturedMedia = {
-    id: 'sora-hero-fallback',
-    prompt: 'Sora 2 demo clip from MaxVideoAI',
+    id: `${engine.modelSlug}-hero-fallback`,
+    prompt: `${localizedContent.marketingName ?? engine.marketingName} demo clip from MaxVideoAI`,
     videoUrl: engine.media?.videoUrl ?? engine.demoUrl ?? null,
     posterUrl: buildOptimizedPosterUrl(engine.media?.imagePath) ?? engine.media?.imagePath ?? null,
     durationSec: null,
     hasAudio: true,
     href: null,
-    label: 'Sora 2',
+    label: localizedContent.marketingName ?? engine.marketingName ?? 'Sora',
   };
 
-  const heroMedia = pickHeroMedia(galleryVideos, PREFERRED_SORA_HERO_ID, fallbackMedia);
-  const demoMedia = pickDemoMedia(galleryVideos, heroMedia?.id ?? null, PREFERRED_SORA_DEMO_ID, fallbackMedia);
+  const preferredIds = PREFERRED_MEDIA[engine.modelSlug] ?? { hero: null, demo: null };
+  const heroMedia = pickHeroMedia(galleryVideos, preferredIds.hero, fallbackMedia);
+  const demoMedia = pickDemoMedia(galleryVideos, heroMedia?.id ?? null, preferredIds.demo, fallbackMedia);
   const galleryCtaHref = heroMedia?.id
-    ? `/app?engine=sora-2&from=${encodeURIComponent(heroMedia.id)}`
-    : '/app?engine=sora-2';
+    ? `/app?engine=${engine.modelSlug}&from=${encodeURIComponent(heroMedia.id)}`
+    : `/app?engine=${engine.modelSlug}`;
   const relatedEngines = listFalEngines()
-    .filter((entry) => entry.modelSlug !== 'sora-2')
+    .filter((entry) => entry.modelSlug !== engine.modelSlug)
     .sort((a, b) => (a.family === engine.family ? -1 : 0) - (b.family === engine.family ? -1 : 0))
     .slice(0, 3);
   const faqEntries = localizedContent.faqs.length ? localizedContent.faqs : copy.faqs;
@@ -535,12 +582,13 @@ async function renderSora2ModelPage({
       heroMedia={heroMedia}
       demoMedia={demoMedia}
       galleryVideos={galleryVideos}
-      galleryCtaHref={galleryCtaHref}
-      relatedEngines={relatedEngines}
-      faqEntries={faqEntries}
-      locale={locale}
-      canonicalUrl={canonicalUrl}
-    />
+    galleryCtaHref={galleryCtaHref}
+    relatedEngines={relatedEngines}
+    faqEntries={faqEntries}
+    locale={locale}
+    canonicalUrl={canonicalUrl}
+    breadcrumb={breadcrumb}
+  />
   );
 }
 
@@ -556,6 +604,7 @@ function Sora2PageLayout({
   faqEntries,
   locale,
   canonicalUrl,
+  breadcrumb,
 }: {
   backLabel: string;
   localizedContent: EngineLocalizedContent;
@@ -568,8 +617,10 @@ function Sora2PageLayout({
   faqEntries: LocalizedFaqEntry[];
   locale: AppLocale;
   canonicalUrl: string;
+  breadcrumb: DetailCopy['breadcrumb'];
 }) {
   const inLanguage = localeRegions[locale] ?? 'en-US';
+  const resolvedBreadcrumb = breadcrumb ?? DEFAULT_DETAIL_COPY.breadcrumb;
   const canonical = canonicalUrl.replace(/\/+$/, '') || canonicalUrl;
   const localePathPrefix = localePathnames[locale] ? `/${localePathnames[locale].replace(/^\/+/, '')}` : '';
   const homePathname = localePathPrefix || '/';
@@ -662,13 +713,13 @@ function Sora2PageLayout({
         {
           '@type': 'ListItem',
           position: 1,
-          name: 'Home',
+          name: resolvedBreadcrumb.home,
           item: localizedHomeUrl,
         },
         {
           '@type': 'ListItem',
           position: 2,
-          name: copy.relatedTitle ?? 'Models',
+          name: resolvedBreadcrumb.models,
           item: localizedModelsUrl,
         },
         {
@@ -1232,7 +1283,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
     notFound();
   }
 
-  if (slug === 'sora-2') {
+  if (slug === 'sora-2' || slug === 'sora-2-pro') {
     const activeLocale = routeLocale ?? 'en';
     const { dictionary } = await resolveDictionary();
     const detailCopy: DetailCopy = {
@@ -1241,11 +1292,12 @@ export default async function ModelDetailPage({ params }: PageParams) {
       breadcrumb: { ...DEFAULT_DETAIL_COPY.breadcrumb, ...(dictionary.models.detail?.breadcrumb ?? {}) },
     };
     const localizedContent = await getEngineLocalized(slug, activeLocale);
-    return await renderSora2ModelPage({
+    return await renderSoraModelPage({
       engine,
       backLabel: detailCopy.backLabel,
       localizedContent,
       locale: activeLocale,
+      breadcrumb: detailCopy.breadcrumb,
     });
   }
 

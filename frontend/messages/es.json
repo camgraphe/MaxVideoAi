@@ -1009,7 +1009,7 @@
     }
   },
   "videoPage": {
-    "backLink": "← Volver a la galería",
+    "backLink": "← Volver",
     "hero": {
       "titleFallback": "Render MaxVideoAI",
       "intro": "Este video se generó con {engine} en MaxVideoAI — descubre cómo producir renders similares a continuación.",

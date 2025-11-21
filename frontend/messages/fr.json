@@ -1016,7 +1016,7 @@
     }
   },
   "videoPage": {
-    "backLink": "← Retour aux exemples",
+    "backLink": "← Retour",
     "hero": {
       "titleFallback": "Rendu MaxVideoAI",
       "intro": "Cette vidéo a été générée avec {engine} sur MaxVideoAI — découvrez ci-dessous comment produire des rendus similaires.",
