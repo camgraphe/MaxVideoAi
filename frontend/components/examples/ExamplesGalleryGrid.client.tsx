@@ -22,6 +22,7 @@ export type ExampleGalleryVideo = {
   optimizedPosterUrl?: string | null;
   rawPosterUrl?: string | null;
   videoUrl?: string | null;
+  recreateHref?: string | null;
 };
 
 const INITIAL_BATCH = 8;
@@ -281,6 +282,17 @@ function ExampleCard({
         <p className="text-[11px] text-text-secondary">
           {video.aspectRatio ?? 'Auto'} · {video.durationSec}s {videoReady ? '· Playing' : ''}
         </p>
+        {video.recreateHref ? (
+          <div className="pt-1">
+            <Link
+              href={video.recreateHref}
+              className="text-[11px] font-semibold text-accent transition hover:text-accentSoft"
+              prefetch={false}
+            >
+              Recreate this shot →
+            </Link>
+          </div>
+        ) : null}
       </div>
     </Link>
   );
