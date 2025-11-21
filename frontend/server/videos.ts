@@ -222,7 +222,7 @@ function sortVideosByPreference(videos: GalleryVideo[], sort: ExampleSort): Gall
 }
 
 export async function listExamplesPage(options: ListExamplesPageOptions): Promise<ListExamplesPageResult> {
-  const { sort, limit = 60, offset = 0 } = options;
+  const { sort, limit = 100, offset = 0 } = options;
   const slugs = getIndexablePlaylistSlugs();
   if (!slugs.length) {
     return { items: [], total: 0, limit, offset, hasMore: false };
@@ -271,7 +271,7 @@ export async function listExamplesPage(options: ListExamplesPageOptions): Promis
   };
 }
 
-export async function listExamples(sort: ExampleSort, limit = 60): Promise<GalleryVideo[]> {
+export async function listExamples(sort: ExampleSort, limit = 100): Promise<GalleryVideo[]> {
   const result = await listExamplesPage({ sort, limit, offset: 0 });
   return result.items;
 }
