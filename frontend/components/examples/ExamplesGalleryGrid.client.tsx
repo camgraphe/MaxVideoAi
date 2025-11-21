@@ -43,6 +43,7 @@ export default function ExamplesGalleryGridClient({
   loadMoreLabel?: string;
 }) {
   const isLighthouse = useMemo(() => detectLighthouse(), []);
+  const [isMobile, setIsMobile] = useState(false);
   const baseAll = useMemo(() => dedupe(examples), [examples]);
 
   const [visibleVideos, setVisibleVideos] = useState<ExampleGalleryVideo[]>(() => {
@@ -66,6 +67,10 @@ export default function ExamplesGalleryGridClient({
   }, [baseAll, isLighthouse]);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsMobile(window.matchMedia('(max-width: 639px)').matches);
+    }
+
     if (!isLighthouse) return;
     if (typeof PerformanceObserver === 'undefined') return;
     const observer = new PerformanceObserver((list) => {
@@ -94,13 +99,32 @@ export default function ExamplesGalleryGridClient({
 
   return (
     <div className="space-y-4 p-4 sm:p-6">
-      <div className={masonryStyles.masonry}>
-        {visibleVideos.map((video, index) => (
-          <div key={video.id} className={masonryStyles.item}>
-            <ExampleCard video={video} isFirst={index === 0} isLighthouse={isLighthouse} />
-          </div>
-        ))}
-      </div>
+      {isMobile ? (
+        <div className="flex flex-col gap-3">
+          {visibleVideos.map((video, index) => (
+            <ExampleCard
+              key={video.id}
+              video={video}
+              isFirst={index === 0}
+              isLighthouse={isLighthouse}
+              forceExclusivePlay
+            />
+          ))}
+        </div>
+      ) : (
+        <div className={masonryStyles.masonry}>
+          {visibleVideos.map((video, index) => (
+            <div key={video.id} className={masonryStyles.item}>
+              <ExampleCard
+                video={video}
+                isFirst={index === 0}
+                isLighthouse={isLighthouse}
+                forceExclusivePlay={false}
+              />
+            </div>
+          ))}
+        </div>
+      )}
       {pendingVideos.length && !isLighthouse ? (
         <div className="flex justify-center">
           <button
@@ -116,19 +140,31 @@ export default function ExamplesGalleryGridClient({
   );
 }
 
-function ExampleCard({ video, isFirst, isLighthouse }: { video: ExampleGalleryVideo; isFirst: boolean; isLighthouse: boolean }) {
+function ExampleCard({
+  video,
+  isFirst,
+  isLighthouse,
+  forceExclusivePlay,
+}: {
+  video: ExampleGalleryVideo;
+  isFirst: boolean;
+  isLighthouse: boolean;
+  forceExclusivePlay: boolean;
+}) {
   const [isHovered, setIsHovered] = useState(false);
   const [inView, setInView] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
   const [posterLoaded, setPosterLoaded] = useState(false);
   const cardRef = useRef<HTMLAnchorElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const lastPlayRef = useRef<() => void>();
+  const lastPauseRef = useRef<() => void>();
 
   const rawAspect = useMemo(() => (video.aspectRatio ? parseAspectRatio(video.aspectRatio) : 16 / 9), [video.aspectRatio]);
   const isPortrait = rawAspect < 1;
   const posterSizes = isPortrait ? PORTRAIT_SIZES : LANDSCAPE_SIZES;
   const shouldLoadVideo = !isLighthouse && inView && posterLoaded && Boolean(video.videoUrl);
-  const shouldPlay = shouldLoadVideo && (isHovered || isFirst);
+  const shouldPlay = shouldLoadVideo && (isHovered || isFirst || forceExclusivePlay);
 
   useEffect(() => {
     if (isLighthouse) {
@@ -151,8 +187,22 @@ function ExampleCard({ video, isFirst, isLighthouse }: { video: ExampleGalleryVi
   useEffect(() => {
     const node = videoRef.current;
     if (!node || !shouldPlay) return;
+    const pauseOthers = () => {
+      if (!forceExclusivePlay) return;
+      try {
+        document.querySelectorAll('video[data-examples-card]').forEach((el) => {
+          if (el !== node) {
+            (el as HTMLVideoElement).pause();
+          }
+        });
+      } catch {
+        /* ignore */
+      }
+    };
+
     const play = async () => {
       try {
+        pauseOthers();
         await node.play();
         setVideoReady(true);
       } catch {
@@ -160,6 +210,12 @@ function ExampleCard({ video, isFirst, isLighthouse }: { video: ExampleGalleryVi
       }
     };
     void play();
+    lastPlayRef.current = () => {
+      void play();
+    };
+    lastPauseRef.current = () => {
+      node.pause();
+    };
     return () => {
       node.pause();
     };
@@ -188,6 +244,7 @@ function ExampleCard({ video, isFirst, isLighthouse }: { video: ExampleGalleryVi
                 loop
                 playsInline
                 poster={posterSrc ?? undefined}
+                data-examples-card
                 className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
               >
                 <source src={video.videoUrl} type="video/mp4" />
