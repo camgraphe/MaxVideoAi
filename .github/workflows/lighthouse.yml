@@ -29,6 +29,18 @@ jobs:
       - name: Run Lighthouse (examples)
         run: pnpm --dir frontend run lighthouse:examples
 
+      - name: Run Lighthouse (models-veo)
+        run: pnpm --dir frontend run lighthouse:models-veo
+
+      - name: Run Lighthouse (pricing)
+        run: pnpm --dir frontend run lighthouse:pricing
+
+      - name: Run Lighthouse (blog)
+        run: pnpm --dir frontend run lighthouse:blog
+
+      - name: Run Lighthouse (contact)
+        run: pnpm --dir frontend run lighthouse:contact
+
       - name: Upload Lighthouse reports
         uses: actions/upload-artifact@v4
         with:
