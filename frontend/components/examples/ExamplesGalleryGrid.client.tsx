@@ -54,6 +54,17 @@ export default function ExamplesGalleryGridClient({
     return baseAll.slice(INITIAL_BATCH);
   });
 
+  // Reset batches when the filtered dataset changes (e.g., engine filter navigation).
+  useEffect(() => {
+    if (isLighthouse) {
+      setVisibleVideos(baseAll.slice(0, 1));
+      setPendingVideos(baseAll.slice(1));
+      return;
+    }
+    setVisibleVideos(baseAll.slice(0, INITIAL_BATCH));
+    setPendingVideos(baseAll.slice(INITIAL_BATCH));
+  }, [baseAll, isLighthouse]);
+
   useEffect(() => {
     if (!isLighthouse) return;
     if (typeof PerformanceObserver === 'undefined') return;
