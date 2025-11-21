@@ -29,6 +29,8 @@ pnpm-debug.log*
 # Generated test assets
 frontend/public/test-videos/
 video-gallery-dist/
+frontend/lighthouse-reports/
+frontend/.lighthouseci/
 
 # Private modules extracted from public repo
 private/

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { EngineIcon } from '@/components/ui/EngineIcon';
+import mediaStyles from './examples-media.module.css';
 
 export type ExampleGalleryVideo = {
   id: string;
@@ -441,12 +442,12 @@ function ExampleCard({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div className="examples-media-outer relative w-full overflow-hidden bg-neutral-900/5">
+        <div className={clsx(mediaStyles.mediaOuter, 'relative w-full overflow-hidden bg-neutral-900/5')}>
           <div
-            className="examples-media-ratio relative w-full"
+            className="relative w-full"
             style={{ paddingBottom: `${100 / displayAspect}%` }}
           >
-            <div className="examples-media-inner absolute inset-0">
+            <div className="absolute inset-0">
               <MediaPreview
                 videoUrl={video.videoUrl ?? null}
                 posterUrl={posterSrc}

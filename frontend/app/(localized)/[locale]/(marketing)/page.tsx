@@ -10,7 +10,6 @@ import { resolveDictionary } from '@/lib/i18n/server';
 import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
 import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
 import { MosaicBackdrop } from '@/components/marketing/MosaicBackdrop';
-import { ExamplesOrbitCallout } from '@/components/marketing/ExamplesOrbitCallout';
 import type { CompareEngineCard } from '@/components/marketing/CompareEnginesCarousel';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { CURRENCY_LOCALE } from '@/lib/intl';
@@ -43,6 +42,21 @@ const CompareEnginesCarousel = dynamic(
     ssr: false,
     loading: () => (
       <div className="mx-auto mt-10 h-64 w-full max-w-6xl animate-pulse rounded-card bg-white/40" aria-hidden />
+    ),
+  }
+);
+
+const ExamplesOrbitCallout = dynamic(
+  () =>
+    import('@/components/marketing/ExamplesOrbitCallout').then((mod) => ({
+      default: mod.ExamplesOrbitCallout,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <section className="mx-auto mt-16 w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="h-[380px] animate-pulse rounded-[40px] border border-hairline bg-white/70 shadow-card" aria-hidden />
+      </section>
     ),
   }
 );

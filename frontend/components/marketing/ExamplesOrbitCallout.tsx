@@ -1,6 +1,10 @@
+'use client';
+
+import clsx from 'clsx';
 import { Link } from '@/i18n/navigation';
 import { type CSSProperties, type SVGProps } from 'react';
-import { EngineIcon } from '@/components/ui/EngineIcon';
+import { getEnginePictogram } from '@/lib/engine-branding';
+import styles from './examples-orbit.module.css';
 
 type OrbitEngine = {
   id: string;
@@ -57,7 +61,7 @@ export function ExamplesOrbitCallout({ heading, description, ctaLabel, eyebrow, 
           <div className="relative mx-auto aspect-square w-full max-w-xs sm:max-w-sm">
             <div className="absolute inset-0 rounded-full border border-accent/10" aria-hidden />
             <div className="absolute inset-8 rounded-full border border-accent/10" aria-hidden />
-            <div className="orbit-field absolute inset-0">
+            <div className={clsx(styles.orbitField, 'absolute inset-0')}>
               {orbitEngines.map((engine, index) => {
                 const angleRad = (index / orbitEngines.length) * Math.PI * 2;
                 const angleDeg = (angleRad * 180) / Math.PI;
@@ -82,11 +86,15 @@ export function ExamplesOrbitCallout({ heading, description, ctaLabel, eyebrow, 
                 const driftDuration = 5.4 + chaos * 3.6;
                 const lineDuration = driftDuration * (0.92 + chaos * 0.18);
                 const delay = `${driftDelaySeconds}s`;
+                const pictogram = getEnginePictogram({ id: engine.id, label: engine.label, brandId: engine.brandId });
 
                 return (
                   <div key={engine.id} className="absolute left-1/2 top-1/2">
                     <span
-                      className="orbit-line absolute left-1/2 top-1/2 w-px origin-top bg-gradient-to-b from-accent/45 via-white/20 to-transparent"
+                      className={clsx(
+                        styles.orbitLine,
+                        'absolute left-1/2 top-1/2 w-px origin-top bg-gradient-to-b from-accent/45 via-white/20 to-transparent'
+                      )}
                       style={
                         {
                           '--orbit-angle': `${angleDeg}deg`,
@@ -99,7 +107,10 @@ export function ExamplesOrbitCallout({ heading, description, ctaLabel, eyebrow, 
                       }
                     />
                     <div
-                      className="orbit-icon absolute left-1/2 top-1/2 flex h-14 w-14 items-center justify-center rounded-3xl border border-white/60 bg-white/95 shadow-[0_18px_45px_-24px_rgba(64,73,105,0.55)] backdrop-blur"
+                      className={clsx(
+                        styles.orbitIcon,
+                        'absolute left-1/2 top-1/2 flex h-14 w-14 items-center justify-center rounded-3xl border border-white/60 bg-white/95 shadow-[0_18px_45px_-24px_rgba(64,73,105,0.55)] backdrop-blur'
+                      )}
                       style={
                         {
                           '--orbit-x': `${x}px`,
@@ -113,11 +124,15 @@ export function ExamplesOrbitCallout({ heading, description, ctaLabel, eyebrow, 
                         } as CSSProperties
                       }
                     >
-                      <EngineIcon
-                        engine={{ id: engine.id, label: engine.label, brandId: engine.brandId }}
-                        size={32}
-                        rounded="full"
-                      />
+                      <span
+                        aria-label={`${engine.label} engine`}
+                        role="img"
+                        className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold leading-none text-opacity-90 shadow-sm"
+                        style={{ backgroundColor: pictogram.backgroundColor, color: pictogram.textColor }}
+                        title={engine.label}
+                      >
+                        {pictogram.code}
+                      </span>
                     </div>
                   </div>
                 );
@@ -125,7 +140,10 @@ export function ExamplesOrbitCallout({ heading, description, ctaLabel, eyebrow, 
             </div>
             <Link
               href="/examples"
-              className="portal-button group absolute left-1/2 top-1/2 z-20 flex h-28 w-28 items-center justify-center rounded-full text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-white"
+              className={clsx(
+                styles.portalButton,
+                'group absolute left-1/2 top-1/2 z-20 flex h-28 w-28 items-center justify-center rounded-full text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-white'
+              )}
               aria-label={ctaLabel}
             >
               <span className="sr-only">{ctaLabel}</span>

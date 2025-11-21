@@ -19,7 +19,9 @@
     "i18n:models": "tsx scripts/translate-models.ts",
     "sitemap:ping": "tsx scripts/ping-sitemaps.ts",
     "qa:hreflang": "tsx scripts/qa/hreflang-check.ts",
-    "qa:compare-en": "tsx scripts/qa/compare-en-prod.ts"
+    "qa:compare-en": "tsx scripts/qa/compare-en-prod.ts",
+    "lighthouse:home": "rm -rf .lighthouseci && rm -rf ./lighthouse-reports/home && lhci collect --url=https://maxvideoai.com/ --collect.preset=lighthouse:default && mkdir -p ./lighthouse-reports/home && cp -R .lighthouseci/* ./lighthouse-reports/home/ && rm -rf .lighthouseci",
+    "lighthouse:examples": "rm -rf .lighthouseci && rm -rf ./lighthouse-reports/examples && lhci collect --url=https://maxvideoai.com/examples --collect.preset=lighthouse:default && mkdir -p ./lighthouse-reports/examples && cp -R .lighthouseci/* ./lighthouse-reports/examples/ && rm -rf .lighthouseci"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.911.0",
@@ -70,6 +72,7 @@
     ]
   },
   "devDependencies": {
+    "@lhci/cli": "^0.15.1",
     "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^20.12.7",
     "@types/nodemailer": "^7.0.2",
