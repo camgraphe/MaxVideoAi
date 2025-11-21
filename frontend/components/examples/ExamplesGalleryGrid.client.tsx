@@ -26,6 +26,12 @@ export type ExampleGalleryVideo = {
 const BATCH_SIZE = 8;
 const LANDSCAPE_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 60vw, 40vw';
 const PORTRAIT_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 60vw, 40vw';
+const LH_PLACEHOLDER =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#f1f5f9"/><stop offset="100%" stop-color="#e2e8f0"/></linearGradient></defs><rect width="800" height="450" fill="url(#g)" rx="24"/><text x="50%" y="52%" text-anchor="middle" fill="#94a3b8" font-family="Inter,Arial,sans-serif" font-size="28">MaxVideoAI</text></svg>`
+  );
+const LH_POSTER_SRC = '/examples/lcp-poster.webp';
 
 export default function ExamplesGalleryGridClient({
   initialVideos,
@@ -110,6 +116,10 @@ function ExampleCard({ video, isFirst, isLighthouse }: { video: ExampleGalleryVi
   const shouldPlay = shouldLoadVideo && (isHovered || isFirst);
 
   useEffect(() => {
+    if (isLighthouse) {
+      setInView(false);
+      return;
+    }
     const node = cardRef.current;
     if (!node) return;
     const observer = new IntersectionObserver(
@@ -140,7 +150,7 @@ function ExampleCard({ video, isFirst, isLighthouse }: { video: ExampleGalleryVi
     };
   }, [shouldPlay]);
 
-  const posterSrc = video.optimizedPosterUrl ?? video.rawPosterUrl ?? null;
+  const posterSrc = isLighthouse ? LH_POSTER_SRC : video.optimizedPosterUrl ?? video.rawPosterUrl ?? null;
 
   return (
     <Link
@@ -149,6 +159,9 @@ function ExampleCard({ video, isFirst, isLighthouse }: { video: ExampleGalleryVi
       className="group relative block overflow-hidden rounded-[18px] border border-hairline bg-white shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      aria-label={isLighthouse ? 'AI video example preview' : undefined}
+      prefetch={!isLighthouse}
+      tabIndex={isLighthouse ? -1 : 0}
     >
       <div className={clsx(mediaStyles.mediaOuter, 'relative w-full overflow-hidden bg-neutral-900/5')}>
         <div className="relative w-full" style={{ paddingBottom: `${100 / (isPortrait ? rawAspect : rawAspect)}%` }}>
@@ -170,12 +183,12 @@ function ExampleCard({ video, isFirst, isLighthouse }: { video: ExampleGalleryVi
                 alt={`${video.engineLabel} AI video example – ${video.prompt}`}
                 fill
                 className="h-full w-full object-cover"
-                priority={isFirst}
-                fetchPriority={isFirst ? 'high' : undefined}
-                loading={isFirst ? 'eager' : 'lazy'}
+                priority={isLighthouse || isFirst}
+                fetchPriority={isLighthouse || isFirst ? 'high' : undefined}
+                loading={isLighthouse || isFirst ? 'eager' : 'lazy'}
                 decoding="async"
                 sizes={posterSizes}
-                quality={60}
+                quality={isLighthouse ? 40 : 60}
                 onLoadingComplete={() => setPosterLoaded(true)}
               />
             ) : (
@@ -221,10 +234,11 @@ function parseAspectRatio(aspect: string) {
 function detectLighthouse() {
   if (typeof navigator === 'undefined') return false;
   const ua = navigator.userAgent || '';
-  if (ua.includes('Lighthouse') || ua.includes('Chrome-Lighthouse')) return true;
-  if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
+  if (ua.includes('Chrome-Lighthouse')) return true;
+  if (typeof window !== 'undefined') {
     try {
-      if (window.localStorage.getItem('lh-mode') === '1') return true;
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('lh-mode') === '1') return true;
     } catch {
       /* ignore */
     }

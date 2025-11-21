@@ -34,7 +34,13 @@ function hasConsent({ storageKey, grantedValue }: { storageKey: string; grantedV
 function isLighthouseRun() {
   if (typeof navigator === 'undefined') return false;
   const ua = navigator.userAgent || '';
-  return ua.includes('Lighthouse') || ua.includes('Chrome-Lighthouse');
+  if (ua.includes('Chrome-Lighthouse')) return true;
+  try {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('lh-mode') === '1';
+  } catch {
+    return false;
+  }
 }
 
 export function GtmLazyLoader({

@@ -24,9 +24,10 @@ function hasConsent() {
 function isLighthouseRun() {
   if (typeof navigator === 'undefined') return false;
   const ua = navigator.userAgent || '';
-  if (ua.includes('Lighthouse') || ua.includes('Chrome-Lighthouse')) return true;
+  if (ua.includes('Chrome-Lighthouse')) return true;
   try {
-    return window.localStorage.getItem('lh-mode') === '1';
+    const params = new URLSearchParams(window.location.search);
+    return params.get('lh-mode') === '1';
   } catch {
     return false;
   }
