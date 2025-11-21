@@ -399,8 +399,21 @@ const selectedOption =
       : null;
   const selectedEngine = selectedOption?.id ?? null;
 
+function sortExamples(examples: typeof allVideos) {
+  return [...examples].sort((a, b) => {
+    const aCreated = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const bCreated = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    if (aCreated !== bCreated) {
+      return bCreated - aCreated; // newest first
+    }
+    return String(a.id ?? '').localeCompare(String(b.id ?? ''));
+  });
+}
+
+const sortedVideos = sortExamples(allVideos);
+
 const videos = selectedEngine
-  ? allVideos.filter((video) => {
+  ? sortedVideos.filter((video) => {
       const canonicalEngineId = resolveEngineLinkId(video.engineId);
       if (!canonicalEngineId) return false;
       const engineMeta = ENGINE_META.get(canonicalEngineId.toLowerCase()) ?? null;
@@ -408,7 +421,7 @@ const videos = selectedEngine
       if (!descriptor) return false;
       return descriptor.id.toLowerCase() === selectedEngine.toLowerCase();
     })
-  : allVideos;
+  : sortedVideos;
 const videoLinkEntries = videos.slice(0, 120).map((video) => {
   const excerpt = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render', 12);
   const suffix = video.id.replace(/^[^a-z0-9]+/gi, '').slice(-6).toUpperCase();
