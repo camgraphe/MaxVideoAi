@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import styles from './audio-badge.module.css';
 
 type AudioEqualizerBadgeProps = {
   className?: string;
@@ -20,18 +21,19 @@ export function AudioEqualizerBadge({
   return (
     <span
       className={clsx(
-        'audio-badge absolute bottom-3 right-3',
-        tone === 'light' ? 'audio-badge--light' : 'audio-badge--dark',
-        size === 'sm' ? 'audio-badge--sm' : 'audio-badge--md',
+        styles.badge,
+        'absolute bottom-3 right-3',
+        tone === 'light' ? styles.light : styles.dark,
+        size === 'sm' ? styles.sm : styles.md,
         className
       )}
     >
-      <span className="audio-badge__icon" aria-hidden>
-        <span className="audio-badge__bar audio-badge__bar--a" />
-        <span className="audio-badge__bar audio-badge__bar--b" />
-        <span className="audio-badge__bar audio-badge__bar--c" />
-        <span className="audio-badge__bar audio-badge__bar--d" />
-        <span className="audio-badge__bar audio-badge__bar--e" />
+      <span className={styles.icon} aria-hidden>
+        <span className={clsx(styles.bar, styles.barA)} />
+        <span className={clsx(styles.bar, styles.barB)} />
+        <span className={clsx(styles.bar, styles.barC)} />
+        <span className={clsx(styles.bar, styles.barD)} />
+        <span className={clsx(styles.bar, styles.barE)} />
       </span>
       <span className="sr-only">{label}</span>
     </span>

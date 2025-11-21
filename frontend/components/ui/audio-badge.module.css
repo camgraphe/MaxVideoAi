@@ -1,0 +1,89 @@
+.badge {
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0;
+  color: rgba(255, 255, 255, 0.96);
+  filter: drop-shadow(0 1px 3px rgba(5, 7, 16, 0.45));
+  transition: opacity 180ms ease;
+  z-index: 30;
+}
+
+.light {
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.dark {
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.sm,
+.md {
+  width: auto;
+  height: auto;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+  width: 18px;
+  height: 16px;
+}
+
+.bar {
+  width: 2px;
+  border-radius: 9999px;
+  background: currentColor;
+  transform-origin: center bottom;
+  animation: equalizerPulse 1400ms ease-in-out infinite;
+  opacity: 0.9;
+}
+
+.barA {
+  height: 8px;
+  --equalizer-min: 0.42;
+  --equalizer-max: 1.08;
+  animation-delay: 40ms;
+}
+
+.barB {
+  height: 13px;
+  --equalizer-min: 0.32;
+  --equalizer-max: 1.2;
+  animation-delay: 180ms;
+}
+
+.barC {
+  height: 6px;
+  --equalizer-min: 0.38;
+  --equalizer-max: 1.06;
+  animation-delay: 320ms;
+}
+
+.barD {
+  height: 10px;
+  --equalizer-min: 0.36;
+  --equalizer-max: 1.14;
+  animation-delay: 460ms;
+}
+
+.barE {
+  height: 7px;
+  --equalizer-min: 0.4;
+  --equalizer-max: 1.04;
+  animation-delay: 600ms;
+}
+
+@keyframes equalizerPulse {
+  0%,
+  100% {
+    transform: scaleY(var(--equalizer-min, 0.45));
+  }
+  50% {
+    transform: scaleY(var(--equalizer-max, 1));
+  }
+}

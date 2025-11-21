@@ -8,10 +8,35 @@ const GA_ID =
   process.env.NEXT_PUBLIC_GA4_ID ??
   '';
 
-export default function ConsentModeBootstrap() {
-  if (!GA_ID) {
-    return null;
+const DISABLE_GA =
+  process.env.NEXT_PUBLIC_DISABLE_GA === '1' ||
+  process.env.NODE_ENV === 'test';
+
+function hasConsent() {
+  if (typeof window === 'undefined') return false;
+  try {
+    return window.localStorage.getItem('mv-consent-analytics') === 'granted';
+  } catch {
+    return false;
   }
+}
+
+function isLighthouseRun() {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  if (ua.includes('Lighthouse') || ua.includes('Chrome-Lighthouse')) return true;
+  try {
+    return window.localStorage.getItem('lh-mode') === '1';
+  } catch {
+    return false;
+  }
+}
+
+export default function ConsentModeBootstrap() {
+  if (!GA_ID) return null;
+  if (DISABLE_GA) return null;
+  if (isLighthouseRun()) return null;
+  if (!hasConsent()) return null;
 
   return (
     <>

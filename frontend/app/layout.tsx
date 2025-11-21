@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import Script from 'next/script';
 import './globals.css';
 import { GtmLazyLoader } from '@/components/analytics/GtmLazyLoader';
 
@@ -13,19 +14,17 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://maxvideoai.com" />
-        <link rel="preconnect" href="https://www.googletagmanager.com" />
-        <link rel="preconnect" href="https://www.google-analytics.com" />
-        <link rel="preload" as="style" href="/_next/static/css/0adc2c0a11629e9f.css" />
         {GTM_ID ? (
-          <script
+          <Script
+            id="gtm-consent-bootstrap"
+            strategy="lazyOnload"
             dangerouslySetInnerHTML={{
               __html: `
                 window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('consent', 'default', {
+                window.dataLayer.push({
+                  'event': 'consent_initialised',
                   'ad_storage': 'denied',
-                  'analytics_storage': 'denied',
-                  'wait_for_update': 500
+                  'analytics_storage': 'denied'
                 });
               `,
             }}
@@ -33,18 +32,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         ) : null}
       </head>
       <body>
-        {GTM_ID ? <GtmLazyLoader /> : null}
-        {GTM_ID ? (
-          <noscript>
-            <iframe
-              src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
-              height="0"
-              width="0"
-              title="gtm"
-              style={{ display: 'none', visibility: 'hidden' }}
-            />
-          </noscript>
-        ) : null}
+        {GTM_ID ? <GtmLazyLoader consentStorageKey="mv-consent-analytics" consentGrantedValue="granted" /> : null}
         {children}
       </body>
     </html>

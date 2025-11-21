@@ -3,6 +3,7 @@ import type { AppLocale } from '@/i18n/locales';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
+import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 const STATUS_SLUG_MAP = buildSlugMap('status');
 const STATUS_META: Record<AppLocale, { title: string; description: string }> = {
@@ -97,9 +98,7 @@ export default async function StatusPage() {
             </li>
             <li>
               <span className="font-semibold text-text-primary">Support</span> — email{' '}
-              <a href="mailto:support@maxvideo.ai" className="font-semibold text-accent hover:text-accentSoft">
-                support@maxvideo.ai
-              </a>{' '}
+              <ObfuscatedEmailLink user="support" domain="maxvideo.ai" label="support@maxvideo.ai" />{' '}
               with incident code + job ID for a priority response.
             </li>
           </ul>

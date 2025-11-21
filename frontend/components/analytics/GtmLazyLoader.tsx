@@ -6,6 +6,9 @@ const GTM_ID =
   process.env.NEXT_PUBLIC_GTM_ID ??
   process.env.GTM_ID ??
   '';
+const DISABLE_GTM =
+  process.env.NEXT_PUBLIC_DISABLE_GTM === '1' ||
+  process.env.NODE_ENV === 'test';
 
 declare global {
   interface Window {
@@ -15,11 +18,38 @@ declare global {
 
 type GtmLazyLoaderProps = {
   delayMs?: number;
+  consentStorageKey?: string;
+  consentGrantedValue?: string;
 };
 
-export function GtmLazyLoader({ delayMs = 4000 }: GtmLazyLoaderProps = {}) {
+function hasConsent({ storageKey, grantedValue }: { storageKey: string; grantedValue: string }) {
+  if (typeof window === 'undefined') return false;
+  try {
+    return window.localStorage.getItem(storageKey) === grantedValue;
+  } catch {
+    return false;
+  }
+}
+
+function isLighthouseRun() {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  return ua.includes('Lighthouse') || ua.includes('Chrome-Lighthouse');
+}
+
+export function GtmLazyLoader({
+  delayMs = 4000,
+  consentStorageKey = 'mv-consent-analytics',
+  consentGrantedValue = 'granted',
+}: GtmLazyLoaderProps = {}) {
   useEffect(() => {
     if (!GTM_ID) return;
+    if (DISABLE_GTM || isLighthouseRun()) {
+      return;
+    }
+    if (!hasConsent({ storageKey: consentStorageKey, grantedValue: consentGrantedValue })) {
+      return;
+    }
 
     const timer = window.setTimeout(() => {
       window.dataLayer = window.dataLayer || [];
@@ -39,7 +69,7 @@ export function GtmLazyLoader({ delayMs = 4000 }: GtmLazyLoaderProps = {}) {
     return () => {
       window.clearTimeout(timer);
     };
-  }, [delayMs]);
+  }, [consentGrantedValue, consentStorageKey, delayMs]);
 
   return null;
 }

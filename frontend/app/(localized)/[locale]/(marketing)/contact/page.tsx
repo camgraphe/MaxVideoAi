@@ -5,6 +5,7 @@ import { Link } from '@/i18n/navigation';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
+import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 const CONTACT_SLUG_MAP = buildSlugMap('contact');
 const STATUS_SLUG_MAP = buildSlugMap('status');
@@ -89,7 +90,7 @@ export default async function ContactPage({
     (content.form as { success?: string }).success ?? 'Message sent. We will get back to you shortly.';
   const errorText =
     (content.form as { error?: string }).error ??
-    'We could not send your message. Please try again or email support@maxvideo.ai.';
+    'We could not send your message. Please try again or reach out via email.';
 
   return (
     <div className="mx-auto max-w-4xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
@@ -115,7 +116,9 @@ export default async function ContactPage({
             <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">Partnerships</h2>
             <p className="mt-2">
               Agencies and studios can request custom SLAs, shared wallets, or white-label docs through this form or by
-              emailing <a href="mailto:partners@maxvideo.ai" className="font-semibold text-accent hover:text-accentSoft">partners@maxvideo.ai</a>.
+              emailing{' '}
+              <ObfuscatedEmailLink user="partners" domain="maxvideo.ai" label="partners@maxvideo.ai" />
+              .
             </p>
           </div>
           <div>
@@ -206,9 +209,7 @@ export default async function ContactPage({
         </form>
         <div className="mt-6 rounded-card border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
           {content.form.alt.split('{email}')[0]}
-          <a href="mailto:support@maxvideo.ai" className="font-semibold text-accent hover:text-accentSoft">
-            support@maxvideo.ai
-          </a>
+          <ObfuscatedEmailLink user="support" domain="maxvideo.ai" label="support@maxvideo.ai" />
           {content.form.alt.split('{email}')[1] ?? ''}
         </div>
       </section>
