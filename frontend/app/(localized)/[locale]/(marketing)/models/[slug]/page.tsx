@@ -17,8 +17,6 @@ import { normalizeEngineId } from '@/lib/engine-alias';
 import { type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { listExamples, type GalleryVideo } from '@/server/videos';
 import { serializeJsonLd } from '../model-jsonld';
-import type { EngineLocalizedContent } from '@/lib/models/i18n';
-import { localeRegions } from '@/i18n/locales';
 
 type PageParams = {
   params: {
@@ -30,16 +28,11 @@ type PageParams = {
 export const dynamicParams = false;
 export const revalidate = 300;
 
-const SORA2_SEO = {
-  title: 'Sora 2 – AI Text-to-Video & Image-to-Video in MaxVideoAI (720p, 4–12s)',
-  description:
-    'Create short, cinematic 4–12 second 720p videos with Sora 2 inside MaxVideoAI. Text-to-video and image-to-video with audio, 16:9 or 9:16, transparent per-second pricing.',
-};
-
 const PREFERRED_SORA_HERO_ID = 'job_74677d4f-9f28-4e47-b230-64accef8e239';
 const PREFERRED_SORA_DEMO_ID = 'job_7fbd6334-8535-438a-98a2-880205744b6b';
 
 type SpecSection = { title: string; items: string[] };
+type LocalizedFaqEntry = { question: string; answer: string };
 
 type SoraCopy = {
   heroTitle: string | null;
@@ -48,7 +41,9 @@ type SoraCopy = {
   heroDesc1: string | null;
   heroDesc2: string | null;
   primaryCta: string | null;
+  primaryCtaHref: string | null;
   secondaryCta: string | null;
+  secondaryCtaHref: string | null;
   whyTitle: string | null;
   heroHighlights: string[];
   bestUseCasesTitle: string | null;
@@ -101,6 +96,8 @@ type SoraCopy = {
   finalPara1: string | null;
   finalPara2: string | null;
   finalButton: string | null;
+  faqTitle: string | null;
+  faqs: LocalizedFaqEntry[];
 };
 
 export function generateStaticParams() {
@@ -203,6 +200,20 @@ function buildSoraCopy(localized: EngineLocalizedContent): SoraCopy {
     }
     return [];
   };
+  const getFaqs = (): LocalizedFaqEntry[] => {
+    const value = custom['faqs'];
+    if (!Array.isArray(value)) return [];
+    return value
+      .map((entry) => {
+        if (!entry || typeof entry !== 'object') return null;
+        const obj = entry as Record<string, unknown>;
+        const question = typeof obj.q === 'string' ? obj.q : typeof obj.question === 'string' ? obj.question : null;
+        const answer = typeof obj.a === 'string' ? obj.a : typeof obj.answer === 'string' ? obj.answer : null;
+        if (!question || !answer) return null;
+        return { question, answer };
+      })
+      .filter((faq): faq is LocalizedFaqEntry => Boolean(faq));
+  };
   const getSpecSections = (): SpecSection[] => {
     const value = custom['specSections'];
     if (!Array.isArray(value)) return [];
@@ -231,7 +242,16 @@ function buildSoraCopy(localized: EngineLocalizedContent): SoraCopy {
     heroDesc1: getString('heroDesc1'),
     heroDesc2: getString('heroDesc2'),
     primaryCta: localized.hero?.ctaPrimary?.label ?? getString('primaryCta'),
-    secondaryCta: (localized.hero?.secondaryLinks?.[0]?.label as string | undefined) ?? getString('secondaryCta'),
+    primaryCtaHref: localized.hero?.ctaPrimary?.href ?? '/app?engine=sora-2',
+    secondaryCta:
+      (localized.hero?.secondaryLinks?.[0]?.label as string | undefined) ??
+      getString('secondaryCta') ??
+      localized.compareLink?.label ??
+      null,
+    secondaryCtaHref:
+      (localized.hero?.secondaryLinks?.[0]?.href as string | undefined) ??
+      localized.compareLink?.href ??
+      '/models/sora-2-pro',
     whyTitle: getString('whyTitle'),
     heroHighlights: getStringArray('heroHighlights'),
     bestUseCasesTitle,
@@ -284,6 +304,8 @@ function buildSoraCopy(localized: EngineLocalizedContent): SoraCopy {
     finalPara1: getString('finalPara1'),
     finalPara2: getString('finalPara2'),
     finalButton: getString('finalButton'),
+    faqTitle: getString('faqTitle'),
+    faqs: getFaqs(),
   };
 }
 
@@ -302,13 +324,11 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
   const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${slug}`));
   const metadataUrls = buildMetadataUrls(locale, detailSlugMap, { availableLocales: publishableLocales });
   const fallbackTitle = engine.seo.title ?? `${engine.marketingName} — MaxVideo AI`;
-  const isSora2 = slug === 'sora-2';
-  const title = isSora2 ? SORA2_SEO.title : localized.seo.title ?? fallbackTitle;
-  const description = isSora2
-    ? SORA2_SEO.description
-    : localized.seo.description ??
-      engine.seo.description ??
-      'Explore availability, prompts, pricing, and render policies for this model on MaxVideoAI.';
+  const title = localized.seo.title ?? fallbackTitle;
+  const description =
+    localized.seo.description ??
+    engine.seo.description ??
+    'Explore availability, prompts, pricing, and render policies for this model on MaxVideoAI.';
   const ogImagePath = localized.seo.image ?? MODEL_OG_IMAGE_MAP[slug] ?? engine.media?.imagePath ?? '/og/price-before.png';
   const ogImage = toAbsoluteUrl(ogImagePath);
 
@@ -504,7 +524,7 @@ async function renderSora2ModelPage({
     .filter((entry) => entry.modelSlug !== 'sora-2')
     .sort((a, b) => (a.family === engine.family ? -1 : 0) - (b.family === engine.family ? -1 : 0))
     .slice(0, 3);
-  const faqEntries = localizedContent.faqs ?? copy.faqs ?? [];
+  const faqEntries = localizedContent.faqs.length ? localizedContent.faqs : copy.faqs;
 
   return (
     <Sora2PageLayout
@@ -544,187 +564,115 @@ function Sora2PageLayout({
   galleryVideos: ExampleGalleryVideo[];
   galleryCtaHref: string;
   relatedEngines: FalEngineEntry[];
-  faqEntries: { q: string; a: string }[];
+  faqEntries: LocalizedFaqEntry[];
   locale: AppLocale;
   canonicalUrl: string;
 }) {
   const inLanguage = localeRegions[locale] ?? 'en-US';
-  const fallbackHeroHighlights = [
-    'Text → Video and Image → Video in one place',
-    'Multi-shot / sequenced prompts for mini-stories in a single clip',
-    'Pay-as-you-go pricing – you only pay for the seconds you generate',
-    'Available in Europe, UK and worldwide, no invite required',
-    'Designed to sit alongside Veo, Pika, Kling, Wan, MiniMax Hailuo, etc.',
-  ];
-  const heroHighlights = copy.heroHighlights.length ? copy.heroHighlights : fallbackHeroHighlights;
   const heroTitle = copy.heroTitle ?? localizedContent.hero?.title ?? localizedContent.marketingName ?? 'Sora 2';
-  const heroSubtitle =
-    copy.heroSubtitle ?? localizedContent.hero?.intro ?? localizedContent.overview ?? 'AI text-to-video and image-to-video';
-  const heroBadge = copy.heroBadge ?? localizedContent.hero?.badge ?? '720p · 4–12s · Text or Image input';
-  const heroDesc1 =
-    copy.heroDesc1 ??
-    'Create short, cinematic videos with Sora 2 straight from your browser. Transparent per-second pricing and a workspace built for testing and prototyping.';
-  const heroDesc2 =
-    copy.heroDesc2 ??
-    'Describe your scene, pick duration and aspect ratio, and let Sora 2 generate polished footage you can use in ads, content or client work.';
-  const primaryCta = copy.primaryCta ?? localizedContent.hero?.ctaPrimary?.label ?? 'Start generating with Sora 2';
-  const secondaryCta = copy.secondaryCta ?? localizedContent.hero?.secondaryLinks?.[0]?.label ?? 'Compare Sora 2 vs Sora 2 Pro (1080p) →';
-
+  const heroSubtitle = copy.heroSubtitle ?? localizedContent.hero?.intro ?? localizedContent.overview ?? '';
+  const heroBadge = copy.heroBadge ?? localizedContent.hero?.badge ?? null;
+  const heroDesc1 = copy.heroDesc1 ?? localizedContent.overview ?? localizedContent.seo.description ?? null;
+  const heroDesc2 = copy.heroDesc2;
+  const primaryCta = copy.primaryCta ?? localizedContent.hero?.ctaPrimary?.label ?? 'Start generating';
+  const primaryCtaHref = copy.primaryCtaHref ?? localizedContent.hero?.ctaPrimary?.href ?? '/app?engine=sora-2';
+  const secondaryCta = copy.secondaryCta;
+  const secondaryCtaHref = copy.secondaryCtaHref ?? '/models/sora-2-pro';
   const heroPosterPreload = heroMedia.posterUrl ? buildOptimizedPosterUrl(heroMedia.posterUrl) ?? heroMedia.posterUrl : null;
-  const specSections =
-    copy.specSections.length
-      ? copy.specSections
-      : [
-        {
-          title: 'Duration & Output',
-          items: ['Durations: 4 s, 8 s, 12 s (you choose)', 'Output resolution: 720p (1280×720)', 'Need 1080p? Switch to Sora 2 Pro in the same interface.'],
-        },
-        {
-          title: 'Aspect Ratios',
-          items: ['16:9 – classic horizontal / YouTube / web video', '9:16 – vertical / TikTok / Reels / Shorts', 'Both are supported in Text→Video and Image→Video.'],
-        },
-        {
-          title: 'Inputs & File Types',
-          items: [
-            'Text prompts – short, cinematic descriptions in one to three sentences',
-            'Reference images – PNG, JPG, WebP, GIF, AVIF up to ~50 MB',
-            'No video input in this configuration: you start either from text or from a still image.',
-          ],
-        },
-        {
-          title: 'Audio',
-          items: [
-            'Sora 2 returns a video with audio – useful if you want a self-contained clip straight out of the engine.',
-            'If you want to control or replace the sound: mute or swap the track in your editor, or use Sora 2 Pro, which exposes an audio toggle in the UI.',
-          ],
-        },
-        {
-          title: 'Pricing',
-          items: [
-            'Sora 2 uses a simple per-second pricing model:',
-            'Internal config: perSecondCents = 12',
-            'That’s $0.12 per second of video: 4s ≈ $0.48; 8s ≈ $0.96; 12s ≈ $1.44',
-            'No monthly subscription: top up a wallet and only pay for what you generate.',
-          ],
-        },
-      ];
 
-  const promptPatternSteps =
-    copy.promptPatternSteps.length
-      ? copy.promptPatternSteps
-      : [
-          'Subject and action – who/what and what they’re doing',
-          'Environment – where it happens (office, street, café, studio…)',
-          'Camera – how we see it (wide shot, medium shot, close-up, over-the-shoulder…)',
-          'Movement – how the camera moves (slow dolly-in, handheld, pan, drone-like…)',
-          'Light & mood – golden hour, soft daylight, neon night, high contrast, moody…',
-          'Format & duration – mention 16:9 or 9:16 and whether it’s a 4, 8 or 12 second moment',
-        ];
-
-  const imageToVideoSteps =
-    copy.imageFlow.length
-      ? copy.imageFlow
-      : [
-          'Generate a reference frame in Nano Banana that matches your brand style or idea.',
-          'Send that still into Sora 2 as Image → Video.',
-          'Give Sora a prompt that focuses on motion and timing: how the camera should move, what the subject should do, how the shot should end at 4/8/12 seconds.',
-          'Generate, review, tweak just the motion language if needed, regenerate.',
-        ];
-
-  const imageToVideoUseCases =
-    copy.imageWhy.length
-      ? copy.imageWhy
-      : ['product shots that must stay on-brand', 'hero visuals for landing pages', 'short looping scenes for ads or UI backgrounds'];
-
-  const miniFilmTips =
-    copy.multishotTips.length
-      ? copy.multishotTips
-      : [
-          'Aim for 2–3 shots maximum in one clip (beyond that, things can get noisy).',
-          'Give each shot one main action and one clear camera move.',
-          'Reuse key elements (“same woman in a blue blazer”, “same kitchen”, “same lighting”) so Sora understands continuity.',
-          'Avoid trying to jump through five radically different locations in 8 seconds – Sora is good, but it’s still constrained by the clip length.',
-        ];
-
-  const strengths =
-    copy.strengths.length
-      ? copy.strengths
-      : [
-          'Short, vivid moments',
-          'Clear subject and action',
-          'Simple environments (office, street, café, home…)',
-          'Film-like camera behavior (dolly, pan, handheld, etc.)',
-          'Great for UGC-feeling footage and cinematic inserts',
-        ];
-
-  const boundaries =
-    copy.boundaries.length
-      ? copy.boundaries
-      : [
-          'Outputs are 720p, not 1080p – Sora 2 Pro covers higher resolution.',
-          'It’s 4–12 seconds, not long-form. You stitch multiple clips if you want something longer.',
-          'It doesn’t take video input; you start from text or image.',
-          'It doesn’t expose seeds – you iterate by refining the prompt and re-running.',
-          'Like all current models, it can struggle with very small or detailed text.',
-        ];
-
-  const safetyRules =
-    copy.safetyRules.length
-      ? copy.safetyRules
-      : [
-          'You should not generate real people or public figures (no celebrities, politicians, etc.).',
-          'No minors, sexual content, hateful content or graphic violence.',
-          'Don’t use another person’s likeness without their consent.',
-          'Some prompts and input images will be blocked if they violate these principles.',
-        ];
-
-  const safetyInterpretation =
-    copy.safetyInterpretation.length
-      ? copy.safetyInterpretation
-      : [
-          'if you describe a generic user, model, character → fine',
-          'if you try “make it look like [famous person]” or anything sensitive → it may fail or be filtered',
-        ];
-
-  const comparisonPoints =
-    copy.comparisonPoints.length
-      ? copy.comparisonPoints
-      : [
-          'Sora 2 is your fast 720p idea machine.',
-          'Sora 2 Pro is your higher-resolution, more controllable sibling.',
-          'You might explore ideas and storyboard with Sora 2, then switch to Sora 2 Pro to regenerate your final picks in 1080p, with more control over audio and quality.',
-        ];
-
-  const faqEntries = [
+  const heroHighlights = copy.heroHighlights;
+  const bestUseCasesTitle = copy.bestUseCasesTitle ?? localizedContent.bestUseCases?.title ?? null;
+  const bestUseCases = copy.bestUseCases.length ? copy.bestUseCases : localizedContent.bestUseCases?.items ?? [];
+  const whatFlowSteps = copy.whatFlowSteps;
+  const specSections = copy.specSections;
+  const promptPatternSteps = copy.promptPatternSteps.length
+    ? copy.promptPatternSteps
+    : localizedContent.promptStructure?.steps ?? [];
+  const imageToVideoSteps = copy.imageFlow;
+  const imageToVideoUseCases = copy.imageWhy;
+  const miniFilmTips = copy.multishotTips;
+  const strengths = copy.strengths;
+  const boundaries = copy.boundaries;
+  const safetyRules = copy.safetyRules;
+  const safetyInterpretation = copy.safetyInterpretation;
+  const comparisonPoints = copy.comparisonPoints;
+  const faqTitle = copy.faqTitle ?? 'FAQ';
+  const faqList = faqEntries.map((entry) => ({
+    question: entry.question,
+    answer: entry.answer,
+  }));
+  const pageDescription = heroDesc1 ?? heroSubtitle ?? localizedContent.seo.description ?? heroTitle;
+  const heroPosterAbsolute = toAbsoluteUrl(heroMedia.posterUrl ?? localizedContent.seo.image ?? null);
+  const heroVideoAbsolute = heroMedia.videoUrl ? toAbsoluteUrl(heroMedia.videoUrl) : null;
+  const durationIso = heroMedia.durationSec ? `PT${Math.round(heroMedia.durationSec)}S` : undefined;
+  const schemaPayloads = [
     {
-      q: 'Is Sora 2 available in Europe / the UK?',
-      a: 'Yes. Through MaxVideoAI you can use Sora 2 from Europe, the UK and most locations where our service is available, without needing a direct invite or separate OpenAI account.',
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: heroTitle,
+      description: pageDescription,
+      url: canonicalUrl,
+      inLanguage,
     },
     {
-      q: 'Can Sora 2 generate 1080p videos?',
-      a: 'In this integration, Sora 2 outputs 720p. If you need 1080p, use Sora 2 Pro.',
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: heroTitle,
+      description: pageDescription,
+      image: heroPosterAbsolute,
+      brand: {
+        '@type': 'Organization',
+        name: 'MaxVideoAI',
+        url: SITE,
+      },
+      offers: {
+        '@type': 'Offer',
+        url: canonicalUrl,
+        availability: 'https://schema.org/InStock',
+      },
     },
-    {
-      q: 'Does Sora 2 support image-to-video?',
-      a: 'Yes. You can upload a PNG/JPG/WEBP/GIF/AVIF frame (up to ~50 MB) and Sora 2 will animate it based on your motion-focused prompt.',
-    },
-    {
-      q: 'Can I remix or extend existing videos with Sora 2?',
-      a: 'Not in this configuration. Sora 2 here is for text→video and image→video only. For advanced workflows, you can combine multiple short clips and edit them together.',
-    },
-    {
-      q: 'How do I keep Sora 2 on-brand?',
-      a: 'Use image references from Nano Banana or your own design system, mention your brand colors, and control the mood ("clean tech", "warm lifestyle", "dark cinematic") in your prompts. Once you’ve found a look you like, use it as a template and only change one variable at a time.',
-    },
-  ];
+    heroVideoAbsolute
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'VideoObject',
+          name: heroTitle,
+          description: heroMedia.prompt ?? pageDescription,
+          thumbnailUrl: heroPosterAbsolute ? [heroPosterAbsolute] : undefined,
+          contentUrl: heroVideoAbsolute,
+          uploadDate: new Date().toISOString(),
+          duration: durationIso,
+          inLanguage,
+        }
+      : null,
+    faqList.length
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: faqList.map((entry) => ({
+            '@type': 'Question',
+            name: entry.question,
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: entry.answer,
+            },
+          })),
+        }
+      : null,
+  ].filter(Boolean) as object[];
 
   return (
     <>
-      {heroPosterPreload ? (
-        <Head>
-          <link rel="preload" as="image" href={heroPosterPreload} fetchPriority="high" />
-        </Head>
-      ) : null}
+      <Head>
+        {heroPosterPreload ? <link rel="preload" as="image" href={heroPosterPreload} fetchPriority="high" /> : null}
+        {schemaPayloads.map((schema, index) => (
+          <script
+            key={`schema-${index}`}
+            type="application/ld+json"
+            suppressHydrationWarning
+            dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
+          />
+        ))}
+      </Head>
       <main className="mx-auto max-w-6xl px-4 pb-20 pt-14 sm:px-6 lg:px-8">
         <Link href="/models" className="text-sm font-semibold text-accent hover:text-accentSoft">
           {backLabel}
@@ -754,14 +702,14 @@ function Sora2PageLayout({
             </div>
             <div className="flex flex-wrap justify-center gap-3">
               <Link
-                href="/app?engine=sora-2"
+                href={primaryCtaHref}
                 className="inline-flex items-center rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft"
               >
                 {primaryCta}
               </Link>
-              {secondaryCta ? (
+              {secondaryCta && secondaryCtaHref ? (
                 <Link
-                  href="/models/sora-2-pro"
+                  href={secondaryCtaHref}
                   className="inline-flex items-center rounded-full border border-hairline px-5 py-2 text-sm font-semibold text-text-primary transition hover:border-accent hover:text-accent"
                 >
                   {secondaryCta}
@@ -770,27 +718,29 @@ function Sora2PageLayout({
             </div>
             <div className="flex justify-center">
               <div className="w-full max-w-5xl">
-                <MediaPreview media={heroMedia} label="Featured Sora 2 clip" />
+                <MediaPreview media={heroMedia} label={heroTitle} />
               </div>
             </div>
             <div className="space-y-3 rounded-2xl border border-hairline bg-bg px-4 py-3">
               {copy.whyTitle ? <p className="text-sm font-semibold text-text-primary">{copy.whyTitle}</p> : null}
-              <ul className="grid gap-2 text-sm text-text-secondary sm:grid-cols-2">
-                {heroHighlights.map((item) => (
-                  <li key={item} className="flex items-start gap-2">
-                    <span className="mt-[6px] h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
+              {heroHighlights.length ? (
+                <ul className="grid gap-2 text-sm text-text-secondary sm:grid-cols-2">
+                  {heroHighlights.map((item) => (
+                    <li key={item} className="flex items-start gap-2">
+                      <span className="mt-[6px] h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </div>
-            {copy.bestUseCases.length ? (
+            {bestUseCases.length ? (
               <div className="space-y-2 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
                 {copy.bestUseCasesTitle ? (
                   <p className="text-sm font-semibold text-text-primary">{copy.bestUseCasesTitle}</p>
                 ) : null}
                 <ul className="grid gap-1 text-sm text-text-secondary sm:grid-cols-2">
-                  {copy.bestUseCases.map((item) => (
+                  {bestUseCases.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
                 </ul>
@@ -800,77 +750,73 @@ function Sora2PageLayout({
         </section>
 
         <section className="mt-14 space-y-4">
-          <h2 className="text-2xl font-semibold text-text-primary">What Sora 2 Actually Is in MaxVideoAI</h2>
-          <p className="text-base text-text-secondary">
-            On paper, OpenAI Sora 2 is OpenAI’s short-form text-to-video engine. In practice, the way it behaves for you depends on how it’s integrated.
-          </p>
-          <p className="text-base text-text-secondary">
-            In MaxVideoAI, Sora 2 is exposed as a focused, production-ready engine:
-          </p>
-          <ul className="grid gap-2 rounded-2xl border border-hairline bg-white/70 p-4 text-sm text-text-secondary sm:grid-cols-2">
-            <li><strong className="text-text-primary">Clip length:</strong> 4, 8 or 12 seconds (single generation)</li>
-            <li><strong className="text-text-primary">Output:</strong> 720p, ideal for social and concepting</li>
-            <li><strong className="text-text-primary">Formats:</strong> 16:9 (landscape) and 9:16 (vertical)</li>
-            <li>
-              <strong className="text-text-primary">Inputs:</strong>
-              <ul className="ml-4 list-disc space-y-1">
-                <li>Text → Video (T2V)</li>
-                <li>Image → Video (I2V) with PNG, JPG/JPEG, WebP, GIF or AVIF (up to ~50 MB)</li>
-              </ul>
-            </li>
-            <li><strong className="text-text-primary">Audio:</strong> always on in this engine; Sora 2 generates sound with the video</li>
-            <li><strong className="text-text-primary">Focus:</strong> short, high-impact clips rather than long-form sequences or video-to-video</li>
-          </ul>
-          <p className="text-base text-text-secondary">
-            MaxVideoAI wraps all of this in a simple flow:
-          </p>
-          <ol className="space-y-2 rounded-2xl border border-hairline bg-white/70 p-4 text-sm text-text-secondary">
-            <li>1. Pick Sora 2 as the engine.</li>
-            <li>2. Choose Text → Video or Image → Video.</li>
-            <li>3. Set duration and aspect ratio.</li>
-            <li>4. Paste a structured prompt.</li>
-            <li>5. See the final price per clip before you generate.</li>
-            <li>6. Compare against other engines in the same GUI.</li>
-          </ol>
-          <p className="text-base text-text-secondary">
-            This turns Sora 2 into a fast idea machine: you can get from “rough concept in your head” to “visually convincing clip” in a few minutes.
-          </p>
+          {copy.whatTitle ? <h2 className="text-2xl font-semibold text-text-primary">{copy.whatTitle}</h2> : null}
+          {copy.whatIntro1 ? <p className="text-base text-text-secondary">{copy.whatIntro1}</p> : null}
+          {copy.whatIntro2 ? <p className="text-base text-text-secondary">{copy.whatIntro2}</p> : null}
+          {whatFlowSteps.length ? (
+            <>
+              {copy.whatFlowTitle ? (
+                <p className="text-base font-semibold text-text-primary">{copy.whatFlowTitle}</p>
+              ) : null}
+              <ol className="space-y-2 rounded-2xl border border-hairline bg-white/70 p-4 text-sm text-text-secondary">
+                {whatFlowSteps.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ol>
+            </>
+          ) : null}
         </section>
 
-        <section className="mt-14 space-y-4">
-          <h2 className="text-2xl font-semibold text-text-primary">Real Specs – Sora 2 in MaxVideoAI</h2>
-          <blockquote className="rounded-2xl border border-accent/30 bg-accent/5 px-4 py-3 text-sm text-text-secondary">
-            These specs describe Sora 2 exactly as you can use it today via MaxVideoAI – not theoretical capabilities.
-          </blockquote>
-          <div className="grid gap-4 md:grid-cols-2">
-            {specSections.map((section) => (
-              <article key={section.title} className="space-y-2 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
-                <h3 className="text-lg font-semibold text-text-primary">{section.title}</h3>
-                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                  {section.items.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </article>
-            ))}
-          </div>
-          <p className="text-sm font-semibold text-text-primary">
-            Key value proposition: Sora 2 in MaxVideoAI is the fastest way to test ideas, prototypes and social concepts – you get studio-style motion &amp; sound at a predictable cost per second.
-          </p>
-        </section>
+        {specSections.length ? (
+          <section className="mt-14 space-y-4">
+            {copy.specTitle ? <h2 className="text-2xl font-semibold text-text-primary">{copy.specTitle}</h2> : null}
+            {copy.specNote ? (
+              <blockquote className="rounded-2xl border border-accent/30 bg-accent/5 px-4 py-3 text-sm text-text-secondary">
+                {copy.specNote}
+              </blockquote>
+            ) : null}
+            <div className="grid gap-4 md:grid-cols-2">
+              {specSections.map((section) => (
+                <article
+                  key={section.title}
+                  className="space-y-2 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card"
+                >
+                  <h3 className="text-lg font-semibold text-text-primary">{section.title}</h3>
+                  <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                    {section.items.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
+            </div>
+            {copy.specValueProp ? (
+              <p className="text-sm font-semibold text-text-primary">{copy.specValueProp}</p>
+            ) : null}
+          </section>
+        ) : null}
 
-        <section className="mt-14 space-y-4">
-          <h2 className="text-2xl font-semibold text-text-primary">Sora 2 Example Gallery</h2>
-          <p className="text-base text-text-secondary">
-            Below on this page, you’ll see a live gallery of Sora 2 examples powered by MaxVideoAI – real outputs rendered using the same engine and settings you have access to.
-          </p>
-          <p className="text-base text-text-secondary">
-            You can also explore more clips in the main{' '}
-            <Link href="/examples?engine=sora-2" className="font-semibold text-accent hover:text-accentSoft">
-              Examples gallery
+        {copy.microCta ? (
+          <div className="mt-10 flex justify-center">
+            <Link
+              href={primaryCtaHref}
+              className="inline-flex items-center rounded-full border border-accent/40 bg-accent/10 px-5 py-2 text-sm font-semibold text-accent transition hover:border-accent hover:bg-accent/15"
+            >
+              {copy.microCta}
             </Link>
-            .
-          </p>
+          </div>
+        ) : null}
+
+        <section className="mt-14 space-y-4">
+          {copy.galleryTitle ? <h2 className="text-2xl font-semibold text-text-primary">{copy.galleryTitle}</h2> : null}
+          {copy.galleryIntro ? <p className="text-base text-text-secondary">{copy.galleryIntro}</p> : null}
+          {copy.galleryAllCta ? (
+            <p className="text-base text-text-secondary">
+              <Link href="/examples?engine=sora-2" className="font-semibold text-accent hover:text-accentSoft">
+                {copy.galleryAllCta}
+              </Link>
+            </p>
+          ) : null}
           {galleryVideos.length ? (
             <div className="mt-6 space-y-4">
               <div className="overflow-x-auto pb-2">
@@ -901,12 +847,12 @@ function Sora2PageLayout({
                           {video.engineLabel} · {video.durationSec}s
                         </p>
                         <p className="text-sm font-semibold leading-snug text-text-primary line-clamp-2">{video.prompt}</p>
-                        {video.recreateHref ? (
+                        {video.recreateHref && copy.recreateLabel ? (
                           <Link
                             href={video.recreateHref}
                             className="inline-flex items-center text-[11px] font-semibold text-accent transition hover:text-accentSoft"
                           >
-                            Recreate this shot →
+                            {copy.recreateLabel}
                           </Link>
                         ) : null}
                       </div>
@@ -917,11 +863,12 @@ function Sora2PageLayout({
             </div>
           ) : (
             <div className="mt-4 rounded-2xl border border-dashed border-hairline bg-white/60 px-4 py-4 text-sm text-text-secondary">
-              No public Sora 2 examples yet. Visit the{' '}
-              <Link href="/examples?engine=sora-2" className="font-semibold text-accent hover:text-accentSoft">
-                examples gallery
-              </Link>{' '}
-              to see live renders as they publish.
+              {copy.galleryIntro ?? 'Sora 2 examples will appear here soon.'}{' '}
+              {copy.galleryAllCta ? (
+                <Link href="/examples?engine=sora-2" className="font-semibold text-accent hover:text-accentSoft">
+                  {copy.galleryAllCta}
+                </Link>
+              ) : null}
             </div>
           )}
           <div className="mt-4">
@@ -929,74 +876,68 @@ function Sora2PageLayout({
               href={galleryCtaHref}
               className="inline-flex items-center rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white shadow-card transition hover:bg-neutral-800"
             >
-              Open this scene in Generate and adapt it with your own brand →
+              {copy.gallerySceneCta ?? 'Open this scene in Generate →'}
             </Link>
           </div>
         </section>
 
         <section className="mt-14 space-y-4">
-          <h2 className="text-2xl font-semibold text-text-primary">Text-to-Video with Sora 2</h2>
-          <p className="text-base text-text-secondary">
-            Sora 2 works best when you treat your prompt like a concise shot list rather than a random wishlist of adjectives.
-          </p>
+          {copy.promptTitle ? <h2 className="text-2xl font-semibold text-text-primary">{copy.promptTitle}</h2> : null}
+          {copy.promptIntro ? <p className="text-base text-text-secondary">{copy.promptIntro}</p> : null}
           <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
-            <h3 className="text-lg font-semibold text-text-primary">A simple pattern that works</h3>
-            <p className="text-sm text-text-secondary">In MaxVideoAI, prompts that follow this structure tend to behave well:</p>
-            <ol className="list-decimal space-y-1 pl-5 text-sm text-text-secondary">
-              {promptPatternSteps.map((step) => (
-                <li key={step}>{step}</li>
-              ))}
-            </ol>
-            <div className="rounded-xl border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
-              <p className="font-semibold text-text-primary">Example skeleton:</p>
-              <p className="mt-2 italic">
-                Wide shot of [subject] in [environment], lit by [lighting], camera [movement], 8 seconds, 16:9, cinematic, natural colors.
-              </p>
-              <p className="mt-2">
-                Drop that into MaxVideoAI, choose Sora 2, and you’re off.
-              </p>
-            </div>
+            {promptPatternSteps.length ? (
+              <div className="space-y-2">
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {promptPatternSteps.map((step, index) => (
+                    <div key={step} className="flex items-start gap-3 rounded-xl bg-bg px-3 py-2 text-sm text-text-secondary">
+                      <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-accent/10 text-[11px] font-semibold text-accent">
+                        {index + 1}
+                      </span>
+                      <span>{step}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            {copy.promptSkeleton || copy.promptSkeletonNote ? (
+              <div className="rounded-xl border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
+                {copy.promptSkeleton ? <p className="mt-2 italic">{copy.promptSkeleton}</p> : null}
+                {copy.promptSkeletonNote ? <p className="mt-2">{copy.promptSkeletonNote}</p> : null}
+              </div>
+            ) : null}
           </div>
         </section>
 
         <section className="mt-14 space-y-4">
-          <h2 className="text-2xl font-semibold text-text-primary">Image-to-Video with Sora 2 + Nano Banana</h2>
-          <p className="text-base text-text-secondary">
-            One of the advantages of using Sora via MaxVideoAI is that you can pair it with an image engine like Nano Banana.
-          </p>
+          {copy.imageTitle ? <h2 className="text-2xl font-semibold text-text-primary">{copy.imageTitle}</h2> : null}
+          {copy.imageIntro ? <p className="text-base text-text-secondary">{copy.imageIntro}</p> : null}
           <div className="grid gap-4 lg:grid-cols-2">
-            <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
-              <h3 className="text-lg font-semibold text-text-primary">Typical flow:</h3>
-              <ol className="list-decimal space-y-2 pl-5 text-sm text-text-secondary">
-                {imageToVideoSteps.map((step) => (
-                  <li key={step}>{step}</li>
-                ))}
-              </ol>
-            </div>
-            <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
-              <h3 className="text-lg font-semibold text-text-primary">Why this matters:</h3>
-              <p className="text-sm text-text-secondary">
-                Because the look is anchored by your reference image, you can iterate on movement and timing while keeping style and composition consistent. That’s extremely useful for:
-              </p>
-              <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                {imageToVideoUseCases.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
+            {imageToVideoSteps.length ? (
+              <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+                <ol className="list-decimal space-y-2 pl-5 text-sm text-text-secondary">
+                  {imageToVideoSteps.map((step) => (
+                    <li key={step}>{step}</li>
+                  ))}
+                </ol>
+              </div>
+            ) : null}
+            {imageToVideoUseCases.length ? (
+              <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                  {imageToVideoUseCases.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </div>
         </section>
 
         <section className="mt-14 space-y-4">
-          <h2 className="text-2xl font-semibold text-text-primary">Multi-Shot &amp; Sequenced Clips – The Sora 2 “Mini-Film” Trick</h2>
-          <p className="text-base text-text-secondary">
-            This is one of the most exciting capabilities of Sora 2: it can interpret multi-step prompts and compress several shots into a single 8 or 12 second clip.
-          </p>
-          <p className="text-base text-text-secondary">
-            If you give Sora 2 a prompt like “First… then… finally…” or clearly separate Shot 1, Shot 2, Shot 3, it tries to stage the clip as a sequence of beats, with changes in framing and subject action.
-          </p>
+          {copy.multishotTitle ? <h2 className="text-2xl font-semibold text-text-primary">{copy.multishotTitle}</h2> : null}
+          {copy.multishotIntro1 ? <p className="text-base text-text-secondary">{copy.multishotIntro1}</p> : null}
+          {copy.multishotIntro2 ? <p className="text-base text-text-secondary">{copy.multishotIntro2}</p> : null}
           <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
-            <h3 className="text-lg font-semibold text-text-primary">How we recommend doing it</h3>
             <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
               {miniFilmTips.map((tip) => (
                 <li key={tip}>{tip}</li>
@@ -1005,114 +946,142 @@ function Sora2PageLayout({
           </div>
         </section>
 
-        <section className="mt-14 space-y-6">
-          <h2 className="text-2xl font-semibold text-text-primary">Demo: One Sequenced Prompt</h2>
-          <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-            <div className="space-y-4 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
-              <p className="text-sm font-semibold text-text-primary">Prompt – 8 second cinematic lifestyle commercial (16:9)</p>
-              <div className="rounded-xl border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
-                <p>8 second cinematic lifestyle commercial of a man in his 30s using a sleek smartwatch while jogging at sunrise in an urban park.</p>
-                <p className="mt-2"><strong>Shot 1 (2 s):</strong> close-up of the watch on his wrist, sunlight reflecting off the glass as he adjusts the strap.</p>
-                <p className="mt-2"><strong>Shot 2 (4 s):</strong> side-angle tracking shot as he runs along the path, warm light flaring behind skyscrapers.</p>
-                <p className="mt-2"><strong>Shot 3 (2 s):</strong> close-up of him glancing at the screen, subtle smile, breath visible in cool morning air.</p>
-                <p className="mt-2"><strong>Lighting:</strong> golden hour, cinematic natural tones.</p>
-                <p className="mt-2"><strong>Audio:</strong> rhythmic ambient footsteps + faint upbeat music.</p>
-                <p className="mt-2"><strong>Camera:</strong> dynamic handheld tracking, 50 mm lens look.</p>
-                <p className="mt-2"><strong>Negative:</strong> no logos, no slow-motion, no text overlays.</p>
+        {copy.demoTitle || copy.demoPrompt.length || copy.demoNotes.length ? (
+          <section className="mt-14 space-y-6">
+            {copy.demoTitle ? <h2 className="text-2xl font-semibold text-text-primary">{copy.demoTitle}</h2> : null}
+            <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+              <div className="space-y-4 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+                {copy.demoPromptLabel ? (
+                  <p className="text-sm font-semibold text-text-primary">{copy.demoPromptLabel}</p>
+                ) : null}
+                {copy.demoPrompt.length ? (
+                  <div className="rounded-xl border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
+                    {copy.demoPrompt.map((line) => (
+                      <p key={line} className="mt-2 first:mt-0">
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+                ) : null}
+                {copy.demoNotes.length ? (
+                  <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                    {copy.demoNotes.map((note) => (
+                      <li key={note}>{note}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+              <div className="rounded-2xl border border-hairline bg-white/80 p-3 shadow-card">
+                {demoMedia ? (
+                  <MediaPreview media={demoMedia} label={copy.demoTitle ?? 'Sora 2 demo'} />
+                ) : (
+                  <div className="flex h-full min-h-[280px] items-center justify-center rounded-xl border border-dashed border-hairline bg-bg text-sm text-text-secondary">
+                    {copy.galleryIntro ?? 'Demo clip coming soon.'}
+                  </div>
+                )}
               </div>
             </div>
-            <div className="rounded-2xl border border-hairline bg-white/80 p-3 shadow-card">
-              {demoMedia ? (
-                <MediaPreview media={demoMedia} label="Sora 2 sequenced demo" />
-              ) : (
-                <div className="flex h-full min-h-[280px] items-center justify-center rounded-xl border border-dashed border-hairline bg-bg text-sm text-text-secondary">
-                  Demo clip coming soon.
+          </section>
+        ) : null}
+
+        {copy.tipsTitle || strengths.length || boundaries.length ? (
+          <section className="mt-14 space-y-6">
+            {copy.tipsTitle ? <h2 className="text-2xl font-semibold text-text-primary">{copy.tipsTitle}</h2> : null}
+            <div className="grid gap-4 lg:grid-cols-2">
+              {strengths.length ? (
+                <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+                  <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                    {strengths.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
                 </div>
-              )}
+              ) : null}
+              {boundaries.length ? (
+                <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+                  <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                    {boundaries.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
             </div>
-          </div>
-        </section>
+            {copy.tipsFooter ? <p className="text-sm text-text-secondary">{copy.tipsFooter}</p> : null}
+          </section>
+        ) : null}
 
-        <section className="mt-14 space-y-6">
-          <h2 className="text-2xl font-semibold text-text-primary">Tips &amp; Limitations in Plain English</h2>
-          <div className="grid gap-4 lg:grid-cols-2">
+        {copy.safetyTitle || safetyRules.length ? (
+          <section className="mt-14 space-y-4">
+            {copy.safetyTitle ? <h2 className="text-2xl font-semibold text-text-primary">{copy.safetyTitle}</h2> : null}
             <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
-              <h3 className="text-lg font-semibold text-text-primary">Play to its strengths:</h3>
-              <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                {strengths.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
+              {safetyRules.length ? (
+                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                  {safetyRules.map((rule) => (
+                    <li key={rule}>{rule}</li>
+                  ))}
+                </ul>
+              ) : null}
+              {safetyInterpretation.length ? (
+                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                  {safetyInterpretation.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              ) : null}
             </div>
+            {copy.safetyNote ? <p className="text-sm text-text-secondary">{copy.safetyNote}</p> : null}
+          </section>
+        ) : null}
+
+        {copy.comparisonTitle || comparisonPoints.length ? (
+          <section className="mt-14 space-y-4">
+            {copy.comparisonTitle ? (
+              <h2 className="text-2xl font-semibold text-text-primary">{copy.comparisonTitle}</h2>
+            ) : null}
             <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
-              <h3 className="text-lg font-semibold text-text-primary">Know its boundaries:</h3>
-              <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                {boundaries.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
+              {comparisonPoints.length ? (
+                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                  {comparisonPoints.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              ) : null}
+              {copy.comparisonCta ? (
+                <Link
+                  href={secondaryCtaHref}
+                  className="inline-flex items-center rounded-full bg-neutral-900 px-4 py-2 text-sm font-semibold text-white shadow-card transition hover:bg-neutral-800"
+                >
+                  {copy.comparisonCta}
+                </Link>
+              ) : null}
             </div>
-          </div>
-          <p className="text-sm text-text-secondary">
-            When you understand this and write prompts accordingly, Sora 2 becomes a predictable tool instead of a slot machine.
-          </p>
-        </section>
+          </section>
+        ) : null}
 
-        <section className="mt-14 space-y-4">
-          <h2 className="text-2xl font-semibold text-text-primary">Safety &amp; People / Likeness</h2>
-          <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
-            <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-              {safetyRules.map((rule) => (
-                <li key={rule}>{rule}</li>
+        {faqList.length ? (
+          <section className="mt-14 space-y-4">
+            {faqTitle ? <h2 className="text-2xl font-semibold text-text-primary">{faqTitle}</h2> : null}
+            <div className="grid gap-3 md:grid-cols-2">
+              {faqList.map((entry) => (
+                <article
+                  key={entry.question}
+                  className="rounded-2xl border border-hairline bg-white/80 p-4 shadow-card"
+                >
+                  <h3 className="text-sm font-semibold text-text-primary">{entry.question}</h3>
+                  <p className="mt-2 text-sm text-text-secondary">{entry.answer}</p>
+                </article>
               ))}
-            </ul>
-            <p className="text-sm text-text-secondary">From a user point of view, that means:</p>
-            <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-              {safetyInterpretation.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </div>
-          <p className="text-sm text-text-secondary">
-            This is how both MaxVideoAI and Sora 2 stay usable and safe for professionals.
-          </p>
-        </section>
-
-        <section className="mt-14 space-y-4">
-          <h2 className="text-2xl font-semibold text-text-primary">Sora 2 vs Sora 2 Pro – Quick Overview</h2>
-          <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
-            <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-              {comparisonPoints.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-            <Link
-              href="/models/sora-2-pro"
-              className="inline-flex items-center rounded-full bg-neutral-900 px-4 py-2 text-sm font-semibold text-white shadow-card transition hover:bg-neutral-800"
-            >
-              Start with Sora 2, move to Sora 2 Pro when you’re ready for 1080p →
-            </Link>
-          </div>
-        </section>
-
-        <section className="mt-14 space-y-4">
-          <h2 className="text-2xl font-semibold text-text-primary">FAQ – Sora 2 in MaxVideoAI</h2>
-          <div className="grid gap-3 md:grid-cols-2">
-            {faqEntries.map((entry) => (
-              <article key={entry.q} className="rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
-                <h3 className="text-sm font-semibold text-text-primary">{entry.q}</h3>
-                <p className="mt-2 text-sm text-text-secondary">{entry.a}</p>
-              </article>
-            ))}
-          </div>
-        </section>
+            </div>
+          </section>
+        ) : null}
 
         {relatedEngines.length ? (
           <section className="mt-14 space-y-4">
-            <h2 className="text-2xl font-semibold text-text-primary">Explore other models</h2>
-            <p className="text-sm text-text-secondary">
-              Compare pricing, latency, and output options across other engines available in MaxVideoAI.
-            </p>
+            <h2 className="text-2xl font-semibold text-text-primary">
+              {copy.relatedTitle ?? 'Explore other models'}
+            </h2>
+            {copy.relatedSubtitle ? <p className="text-sm text-text-secondary">{copy.relatedSubtitle}</p> : null}
             <div className="grid gap-4 md:grid-cols-3">
               {relatedEngines.map((entry) => (
                 <article
@@ -1124,14 +1093,13 @@ function Sora2PageLayout({
                     {entry.marketingName ?? entry.engine.label}
                   </h3>
                   <p className="mt-2 text-sm text-text-secondary line-clamp-3">
-                    {entry.seo?.description ??
-                      'See technical specs, prompts, and live availability for this engine.'}
+                    {entry.seo?.description ?? localizedContent.overview ?? ''}
                   </p>
                   <Link
                     href={{ pathname: '/models/[slug]', params: { slug: entry.modelSlug } }}
                     className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accentSoft"
                   >
-                    View model →
+                    {copy.comparisonCta ?? 'View model →'}
                   </Link>
                 </article>
               ))}
@@ -1140,17 +1108,13 @@ function Sora2PageLayout({
         ) : null}
 
         <section className="mt-14 space-y-3 rounded-3xl border border-hairline bg-white/90 px-6 py-6 text-text-primary shadow-card sm:px-8">
-          <p className="text-base text-text-secondary">
-            Sora 2 in MaxVideoAI gives you a direct, pay-as-you-go way to use one of the most impressive short-form video models available – without infrastructure setup or guesswork.
-          </p>
-          <p className="text-base text-text-secondary">
-            Use it to explore ideas, build mini-sequences, and test creative directions fast. When you need more resolution or control, you can always step up to Sora 2 Pro.
-          </p>
+          {copy.finalPara1 ? <p className="text-base text-text-secondary">{copy.finalPara1}</p> : null}
+          {copy.finalPara2 ? <p className="text-base text-text-secondary">{copy.finalPara2}</p> : null}
           <Link
-            href="/app?engine=sora-2"
+            href={primaryCtaHref}
             className="inline-flex w-fit items-center rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft"
           >
-            Start generating with Sora 2 now →
+            {copy.finalButton ?? primaryCta}
           </Link>
         </section>
       </main>
