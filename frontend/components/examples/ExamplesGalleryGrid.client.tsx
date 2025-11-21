@@ -235,13 +235,11 @@ function detectLighthouse() {
   if (typeof navigator === 'undefined') return false;
   const ua = navigator.userAgent || '';
   if (ua.includes('Chrome-Lighthouse')) return true;
-  if (typeof window !== 'undefined') {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('lh-mode') === '1') return true;
-    } catch {
-      /* ignore */
-    }
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('lh-mode') === '1') return true;
+  } catch {
+    /* ignore */
   }
   return false;
 }
