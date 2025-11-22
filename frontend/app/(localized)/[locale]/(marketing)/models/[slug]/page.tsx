@@ -646,6 +646,7 @@ function Sora2PageLayout({
   const heroDesc1 = copy.heroDesc1 ?? localizedContent.overview ?? localizedContent.seo.description ?? null;
   const heroDesc2 = copy.heroDesc2;
   const isEsLocale = locale === 'es';
+  const supportedLocale = locale as SupportedLocale;
   const localizeModelsPath = (targetSlug?: string) =>
     localizePathFromEnglish(supportedLocale, targetSlug ? `/models/${targetSlug.replace(/^\/+/, '')}` : '/models');
   const primaryCta = copy.primaryCta ?? localizedContent.hero?.ctaPrimary?.label ?? 'Start generating';
