@@ -6,7 +6,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 
 export function MarketingFooter() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   type FooterLink = { label: string; href: string; locale?: boolean };
 
   const dedupeLinks = (...lists: FooterLink[][]): FooterLink[] => {
@@ -59,14 +59,33 @@ export function MarketingFooter() {
     'MaxVideoAI allows AI crawlers (GPTBot, OAI-SearchBot, Google-Extended, and CCBot) to index public model pages and documentation for educational and research visibility.';
   const brandLabel = t('nav.brand', 'MaxVideo AI') ?? 'MaxVideo AI';
   const languageLabel = t('footer.languageLabel', 'Language') ?? 'Language';
-  const localeShortcutLinks: Array<{ label: string; href: string }> = [
-    { label: '🇫🇷 Accueil', href: '/fr' },
-    { label: '🇫🇷 Galerie', href: '/fr/galerie' },
-    { label: '🇫🇷 About', href: '/fr/about' },
-    { label: '🇪🇸 Inicio', href: '/es' },
-    { label: '🇪🇸 Galería', href: '/es/galeria' },
-    { label: '🇪🇸 About', href: '/es/about' },
-  ];
+  const localeShortcutLinks: Array<{ label: string; href: string }> =
+    locale === 'fr'
+      ? [
+          { label: '🇺🇸 Home', href: '/' },
+          { label: '🇺🇸 Examples', href: '/examples' },
+          { label: '🇺🇸 About', href: '/about' },
+          { label: '🇪🇸 Inicio', href: '/es' },
+          { label: '🇪🇸 Galería', href: '/es/galeria' },
+          { label: '🇪🇸 About', href: '/es/about' },
+        ]
+      : locale === 'es'
+        ? [
+            { label: '🇺🇸 Home', href: '/' },
+            { label: '🇺🇸 Examples', href: '/examples' },
+            { label: '🇺🇸 About', href: '/about' },
+            { label: '🇫🇷 Accueil', href: '/fr' },
+            { label: '🇫🇷 Galerie', href: '/fr/galerie' },
+            { label: '🇫🇷 About', href: '/fr/about' },
+          ]
+        : [
+            { label: '🇫🇷 Accueil', href: '/fr' },
+            { label: '🇫🇷 Galerie', href: '/fr/galerie' },
+            { label: '🇫🇷 About', href: '/fr/about' },
+            { label: '🇪🇸 Inicio', href: '/es' },
+            { label: '🇪🇸 Galería', href: '/es/galeria' },
+            { label: '🇪🇸 About', href: '/es/about' },
+          ];
 
   return (
     <footer className="border-t border-hairline bg-white">
