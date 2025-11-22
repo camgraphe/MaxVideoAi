@@ -17,6 +17,7 @@ import { normalizeEngineId } from '@/lib/engine-alias';
 import { type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { listExamples, getVideosByIds, type GalleryVideo } from '@/server/videos';
 import { serializeJsonLd } from '../model-jsonld';
+import { localizePathFromEnglish } from '@/lib/i18n/paths';
 
 type PageParams = {
   params: {
