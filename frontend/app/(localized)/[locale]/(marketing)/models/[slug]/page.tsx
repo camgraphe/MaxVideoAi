@@ -644,6 +644,7 @@ function Sora2PageLayout({
   const heroBadge = copy.heroBadge ?? localizedContent.hero?.badge ?? null;
   const heroDesc1 = copy.heroDesc1 ?? localizedContent.overview ?? localizedContent.seo.description ?? null;
   const heroDesc2 = copy.heroDesc2;
+  const isEsLocale = locale === 'es';
   const primaryCta = copy.primaryCta ?? localizedContent.hero?.ctaPrimary?.label ?? 'Start generating';
   const primaryCtaHref = copy.primaryCtaHref ?? localizedContent.hero?.ctaPrimary?.href ?? '/app?engine=sora-2';
   const secondaryCta = copy.secondaryCta;
@@ -651,7 +652,6 @@ function Sora2PageLayout({
   const heroPosterPreload = heroMedia.posterUrl ? buildOptimizedPosterUrl(heroMedia.posterUrl) ?? heroMedia.posterUrl : null;
 
   const heroHighlights = copy.heroHighlights;
-  const bestUseCasesTitle = copy.bestUseCasesTitle ?? localizedContent.bestUseCases?.title ?? null;
   const bestUseCases = copy.bestUseCases.length ? copy.bestUseCases : localizedContent.bestUseCases?.items ?? [];
   const whatFlowSteps = copy.whatFlowSteps;
   const howToLatamTitle = copy.howToLatamTitle;
