@@ -423,6 +423,7 @@ function toGalleryCard(
   brandId?: string,
   fallbackLabel?: string,
   iconId?: string,
+  engineSlug = 'sora-2',
   fromPath?: string
 ): ExampleGalleryVideo {
   const promptExcerpt = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render');
@@ -442,7 +443,7 @@ function toGalleryCard(
     optimizedPosterUrl: buildOptimizedPosterUrl(video.thumbUrl),
     rawPosterUrl: video.thumbUrl ?? null,
     videoUrl: video.videoUrl ?? null,
-    recreateHref: `/app?engine=sora-2&from=${encodeURIComponent(video.id)}`,
+    recreateHref: `/app?engine=${encodeURIComponent(engineSlug)}&from=${encodeURIComponent(video.id)}`,
   };
 }
 
@@ -553,6 +554,7 @@ async function renderSoraModelPage({
         video,
         engine.brandId,
         localizedContent.marketingName ?? engine.marketingName,
+        engine.modelSlug,
         engine.modelSlug,
         backPath
       )
@@ -938,7 +940,7 @@ function Sora2PageLayout({
           {copy.galleryIntro ? <p className="text-base text-text-secondary">{copy.galleryIntro}</p> : null}
           {copy.galleryAllCta ? (
             <p className="text-base text-text-secondary">
-              <Link href="/examples?engine=sora-2" className="font-semibold text-accent hover:text-accentSoft">
+              <Link href={`/examples?engine=${encodeURIComponent(engine.modelSlug)}`} className="font-semibold text-accent hover:text-accentSoft">
                 {copy.galleryAllCta}
               </Link>
             </p>
