@@ -16,7 +16,6 @@ import { normalizeEngineId } from '@/lib/engine-alias';
 import { type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { listExamples, getVideosByIds, type GalleryVideo } from '@/server/videos';
 import { serializeJsonLd } from '../model-jsonld';
-import { localizePathFromEnglish } from '@/lib/i18n/paths';
 
 type PageParams = {
   params: {
@@ -645,9 +644,11 @@ function Sora2PageLayout({
   const heroDesc1 = copy.heroDesc1 ?? localizedContent.overview ?? localizedContent.seo.description ?? null;
   const heroDesc2 = copy.heroDesc2;
   const isEsLocale = locale === 'es';
-  const supportedLocale: AppLocale = locale;
-  const localizeModelsPath = (targetSlug?: string) =>
-    localizePathFromEnglish(supportedLocale, targetSlug ? `/models/${targetSlug.replace(/^\/+/, '')}` : '/models');
+  const modelsBase = (MODELS_BASE_PATH_MAP[locale] ?? 'models').replace(/^\/+|\/+$/g, '');
+  const localizeModelsPath = (targetSlug?: string) => {
+    const slugPart = targetSlug ? `/${targetSlug.replace(/^\/+/, '')}` : '';
+    return `/${modelsBase}${slugPart}`.replace(/\/{2,}/g, '/');
+  };
   const primaryCta = copy.primaryCta ?? localizedContent.hero?.ctaPrimary?.label ?? 'Start generating';
   const primaryCtaHref = copy.primaryCtaHref ?? localizedContent.hero?.ctaPrimary?.href ?? '/app?engine=sora-2';
   const secondaryCta = copy.secondaryCta;
@@ -1345,8 +1346,11 @@ export default async function ModelDetailPage({ params }: PageParams) {
   if (process.env.NODE_ENV === 'development') {
     console.info('[models/page] locale debug', { slug, routeLocale, activeLocale });
   }
-  const localizeModelsPath = (targetSlug?: string) =>
-    localizePathFromEnglish(activeLocale as AppLocale, targetSlug ? `/models/${targetSlug.replace(/^\/+/, '')}` : '/models');
+  const modelsBase = (MODELS_BASE_PATH_MAP[activeLocale as AppLocale] ?? 'models').replace(/^\/+|\/+$/g, '');
+  const localizeModelsPath = (targetSlug?: string) => {
+    const slugPart = targetSlug ? `/${targetSlug.replace(/^\/+/, '')}` : '';
+    return `/${modelsBase}${slugPart}`.replace(/\/{2,}/g, '/');
+  };
   const localizedContent = await getEngineLocalized(slug, activeLocale);
   const detailSlugMap = buildDetailSlugMap(slug);
   const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${slug}`));
