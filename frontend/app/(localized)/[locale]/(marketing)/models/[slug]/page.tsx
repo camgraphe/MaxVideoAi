@@ -588,12 +588,13 @@ async function renderSoraModelPage({
       backLabel={backLabel}
       localizedContent={localizedContent}
       copy={copy}
-      heroMedia={heroMedia}
-      demoMedia={demoMedia}
-      galleryVideos={galleryVideos}
+    heroMedia={heroMedia}
+    demoMedia={demoMedia}
+    galleryVideos={galleryVideos}
     galleryCtaHref={galleryCtaHref}
     relatedEngines={relatedEngines}
     faqEntries={faqEntries}
+    engineSlug={engine.modelSlug}
     locale={locale}
     canonicalUrl={canonicalUrl}
     breadcrumb={breadcrumb}
@@ -611,6 +612,7 @@ function Sora2PageLayout({
   galleryCtaHref,
   relatedEngines,
   faqEntries,
+  engineSlug,
   locale,
   canonicalUrl,
   breadcrumb,
@@ -624,6 +626,7 @@ function Sora2PageLayout({
   galleryCtaHref: string;
   relatedEngines: FalEngineEntry[];
   faqEntries: LocalizedFaqEntry[];
+  engineSlug: string;
   locale: AppLocale;
   canonicalUrl: string;
   breadcrumb: DetailCopy['breadcrumb'];
@@ -651,7 +654,7 @@ function Sora2PageLayout({
     const slugPart = targetSlug ? `/${targetSlug.replace(/^\/+/, '')}` : '';
     return `/${modelsBase}${slugPart}`.replace(/\/{2,}/g, '/');
   };
-  const galleryEngineSlug = engine.modelSlug;
+  const galleryEngineSlug = engineSlug;
   const primaryCta = copy.primaryCta ?? localizedContent.hero?.ctaPrimary?.label ?? 'Start generating';
   const primaryCtaHref = copy.primaryCtaHref ?? localizedContent.hero?.ctaPrimary?.href ?? '/app?engine=sora-2';
   const secondaryCta = copy.secondaryCta;
