@@ -495,6 +495,8 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
       const engineLabel = engineMeta?.label ?? video.engineLabel ?? canonicalEngineId ?? 'Engine';
       const detailPath = `/video/${encodeURIComponent(video.id)}`;
       const absoluteUrl = `https://maxvideoai.com${detailPath}`;
+      const embedUrl = absoluteUrl;
+      const contentUrl = video.videoUrl ? toAbsoluteUrl(video.videoUrl) ?? video.videoUrl : undefined;
       const fallbackLabel = `MaxVideoAI example ${video.id}`;
       const name = video.promptExcerpt || video.prompt || engineLabel || fallbackLabel;
       const description =
@@ -505,6 +507,8 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
         description,
         thumbnailUrl: video.thumbUrl!,
         url: absoluteUrl,
+        embedUrl,
+        contentUrl,
         uploadDate: toISODate(video.createdAt),
         duration: toISODuration(video.durationSec),
         inLanguage: 'en',
