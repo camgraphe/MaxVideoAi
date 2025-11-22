@@ -2,128 +2,228 @@
   "marketingName": "Google Veo 3.1",
   "versionLabel": "3.1",
   "seo": {
-    "title": "Veo 3.1 – motor avanzado de texto a video con audio nativo",
-    "description": "Genera videos cinemáticos de 8 segundos con audio nativo usando Veo 3.1 de Google DeepMind en MaxVideoAI. Guía referencia→video, identidad consistente y pago por uso.",
+    "title": "Veo 3.1 – Texto→video e imagen→video con audio nativo",
+    "description": "Genera videos cinemáticos de 4–8 s en 720p/1080p con Veo 3.1. Entrada de texto o imagen, presets de encuadre, audio nativo con interruptor, seeds, extend y pago por uso en MaxVideoAI.",
     "image": "/hero/veo3.jpg"
   },
   "hero": {
-    "title": "Veo 3.1 – motor texto→video con audio nativo",
-    "intro": "Veo 3.1 es el motor premium de DeepMind, enrutado por MaxVideoAI tanto para prompts de texto como para referencia→video. Cambia de un brief escrito a animar hasta cuatro imágenes sin salir de la misma cola, con secuencias de 8 segundos, audio nativo y movimiento sincronizado.",
+    "title": "Veo 3.1 – Texto→video e imagen→video en MaxVideoAI (720p/1080p, 4–8 s)",
+    "intro": "Veo 3.1 – Video cinemático con audio nativo y control de encuadre (4–8 s, 720p/1080p)",
+    "badge": "720p/1080p · 4–8 s · Entrada de texto o imagen",
     "ctaPrimary": {
-      "label": "Generar con Veo 3.1",
+      "label": "Empieza con Veo 3.1",
       "href": "/app?engine=veo-3-1"
     },
     "secondaryLinks": [
       {
-        "label": "Ver todos los motores",
-        "href": "/modelos"
+        "label": "Comparar Veo 3.1 vs Veo 3.1 Fast →",
+        "href": "/models/veo-3-1-fast"
+      }
+    ]
+  },
+  "custom": {
+    "heroDesc1": "Genera videos cortos y cinemáticos con Veo 3.1 de Google DeepMind directamente en MaxVideoAI. Texto→video, imagen→video, presets de encuadre y audio nativo con precio por segundo transparente.",
+    "heroDesc2": "Describe la escena, elige 4, 6 u 8 segundos, selecciona 16:9, 9:16 o 1:1, decide si quieres audio nativo y deja que Veo 3.1 entregue material pulido para anuncios, explicativos, campañas y proyectos clientes.",
+    "whyTitle": "Por qué Veo 3.1 es potente en MaxVideoAI:",
+    "heroHighlights": [
+      "Texto → Video, Imagen → Video y referencia multi-imagen en un mismo lugar",
+      "Controles cinemáticos para encuadre, tono y movimiento antes de renderizar",
+      "Audio nativo (diálogo, ambiente, SFX) con interruptor on/off",
+      "Seeds y Extend para mantener encuadre y alargar secuencias de 4–8 s",
+      "Pago por uso: solo pagas los segundos que generas",
+      "Disponible en Europa, UK y global vía endpoints licenciados de DeepMind",
+      "Diseñado junto a Sora 2, Sora 2 Pro, Pika 2.2, Kling, Wan, MiniMax Hailuo, Nano Banana"
+    ],
+    "bestUseCasesTitle": "Casos de uso",
+    "bestUseCases": [
+      "Tomas hero de marca y reveals de producto",
+      "Campañas que requieren encuadre y tono consistentes",
+      "Anuncios sociales en 9:16, 16:9 o 1:1",
+      "Explicativos cortos, educación y B-roll cinemático",
+      "Pre-viz y tests de concepto donde importa el lenguaje de cámara"
+    ],
+    "whatTitle": "Qué es Veo 3.1 en MaxVideoAI",
+    "whatIntro1": "Veo 3.1 es el modelo de video de DeepMind con audio mejorado y mayor fidelidad de prompt.",
+    "whatIntro2": "En MaxVideoAI se expone como un motor controlado y listo para producción:",
+    "whatFlowTitle": "Flujo en MaxVideoAI:",
+    "whatFlowSteps": [
+      "1. Elige Veo 3.1 como motor.",
+      "2. Selecciona Texto → Video o Imagen → Video.",
+      "3. Ajusta duración (4/6/8 s), relación y resolución (720p o 1080p).",
+      "4. Elige presets de encuadre/tono y pega un prompt estructurado.",
+      "5. Ve el precio final antes de renderizar.",
+      "6. Compáralo con otros motores en la misma interfaz."
+    ],
+    "specTitle": "Especificaciones reales – Veo 3.1 en MaxVideoAI (720p/1080p, 4–8 s)",
+    "specNote": "Así funciona Veo 3.1 hoy en MaxVideoAI, no demos teóricas.",
+    "specSections": [
+      {
+        "title": "Duración y salida",
+        "items": [
+          "Duraciones: 4 s, 6 s, 8 s",
+          "Resoluciones: 720p (1280x720) o 1080p (1920x1080)",
+          "24 fps de cadencia cinemática"
+        ]
       },
       {
-        "label": "Explorar flujos de trabajo",
-        "href": "/workflows"
+        "title": "Relaciones",
+        "items": [
+          "16:9 horizontal",
+          "9:16 vertical",
+          "1:1 cuadrado"
+        ]
       },
       {
-        "label": "Consultar precios en vivo",
-        "href": "/generate"
+        "title": "Entradas y archivos",
+        "items": [
+          "Prompts de texto estilo shot list (1–3 frases; Shot 1/2/3 para 8 s)",
+          "Imágenes de referencia: PNG, JPG, WebP; hasta 4 para fijar identidad, vestuario e iluminación",
+          "Imagen → Video: anima un solo frame (de Nano Banana o assets propios) en 4–8 s",
+          "Sin entrada de video en esta configuración; usa Extend y secuencias para arcos largos"
+        ]
+      },
+      {
+        "title": "Audio",
+        "items": [
+          "Audio nativo activado por defecto (VO, ambiente, SFX)",
+          "Interruptor de audio para renders silenciosos más baratos",
+          "Úsalo como borrador y pule timing/volumen en post"
+        ]
+      },
+      {
+        "title": "Precio",
+        "items": [
+          "Modelo por segundo en MaxVideoAI",
+          "Ejemplo: perSecondCentsAudioOn = 40; perSecondCentsAudioOff = 20",
+          "Audio on (~$0.40/s): 4s ≈ $1.60; 6s ≈ $2.40; 8s ≈ $3.20",
+          "Audio off (~$0.20/s): 4s ≈ $0.80; 6s ≈ $1.20; 8s ≈ $1.60",
+          "Sin suscripción: carga tu wallet y previsualiza el precio antes de renderizar"
+        ]
+      },
+      {
+        "title": "Tiempo de render (placeholder)",
+        "items": [
+          "Añade aquí el tiempo observado (la app muestra estimaciones de cola en vivo)"
+        ]
       }
-    ]
-  },
-  "overview": "Enruta Veo 3.1 mediante MaxVideoAI para entregar tomas hero pulidas con audio nativo. Arranca desde un prompt de texto o sube imágenes para fijar vestuario e iluminación: el mismo motor cubre ambos modos mientras encadenas clips de 8 segundos para ediciones más largas.",
-  "bestUseCases": {
-    "title": "Casos de uso ideales",
-    "items": [
-      "Tomas hero de marca y lanzamientos de producto con acabado cinematográfico",
-      "Contenido social en bucles cortos 9:16, 16:9 o 1:1",
-      "Visuales conceptuales, moodboards y prototipos fílmicos con identidad consistente",
-      "Extensión de planos: une múltiples clips de 8 segundos para narrativas más largas"
-    ]
-  },
-  "technicalOverviewTitle": "Resumen técnico",
-  "technicalOverview": [
-    {
-      "label": "Duración",
-      "body": "Renders de 8 segundos (encadena o haz bucles para ediciones más largas)"
-    },
-    {
-      "label": "Resolución",
-      "body": "Full HD 1080p en relaciones 16:9, 9:16 o 1:1",
-      "link": {
-        "label": "Fliki",
-        "href": "https://fliki.ai/blog/google-veo-3-and-imagen-4?utm_source=chatgpt.com"
+    ],
+    "specValueProp": "Veo 3.1 en MaxVideoAI ofrece presets de encuadre, control de audio, seeds y Extend: se siente como una cámara dirigible, no una caja negra.",
+    "galleryTitle": "Galería: renders reales de Veo 3.1",
+    "galleryIntro": "Ejemplos en vivo con la misma configuración que tienes en MaxVideoAI.",
+    "gallerySceneCta": "Abrir esta escena en Generate y adaptarla a tu marca →",
+    "galleryAllCta": "Ver todos los ejemplos de Veo 3.1 →",
+    "recreateLabel": "Recrear esta toma →",
+    "promptTitle": "Texto→Video con Veo 3.1",
+    "promptIntro": "Escribe prompts como una nota de dirección: cinematografía, sujeto, acción, contexto y estilo.",
+    "promptPatternSteps": [
+      "Cinematografía y encuadre",
+      "Sujeto",
+      "Acción en 4–8 s",
+      "Contexto / entorno",
+      "Estilo y ambiente; luz y gradación",
+      "Pistas de audio; VO corta y sin subtítulos si no los quieres",
+      "Formato y duración (p. ej., 8 s, 16:9)"
+    ],
+    "promptSkeleton": "Plano medio de [sujeto] en [entorno], [acción] durante 8 s. Cámara [movimiento], 16:9 a 1080p, look cinematográfico con [luz y color]. Audio: [ambiente] + [música/VO], sin subtítulos.",
+    "promptSkeletonNote": "Pégalo en MaxVideoAI, elige Veo 3.1, define duración/orientación y renderiza.",
+    "imageTitle": "Imagen→Video con Veo 3.1 (+ Nano Banana)",
+    "imageIntro": "Combina Veo 3.1 con Nano Banana para fijar estilo y iterar en movimiento.",
+    "imageFlow": [
+      "Genera 1–4 imágenes en Nano Banana (o usa tus stills).",
+      "Cárgalas como referencia en Texto→Video o parte de una sola en Imagen→Video.",
+      "Enfoca el prompt en movimiento, timing y audio: cámara, sujeto y cierre a 4/6/8 s.",
+      "Repite con las mismas referencias para mantener identidad."
+    ],
+    "imageWhy": [
+      "Productos on-brand",
+      "Animaciones de logo/títulos con fondos consistentes",
+      "Explainers breves basados en diagramas o UI"
+    ],
+    "multishotTitle": "Multi-Shot y secuencias dirigidas en 8 s",
+    "multishotIntro1": "Veo 3.1 puede comprimir una minisecuencia en 6–8 s con un prompt estructurado.",
+    "multishotIntro2": "Usa seeds y Extend para mantener encuadre entre beats.",
+    "multishotTips": [
+      "Apunta a 2–3 planos en 8 s.",
+      "Una acción y un movimiento de cámara por beat.",
+      "Sujeto/vestuario/entorno constantes; referencias para fijarlos.",
+      "Trátalo como una escena con varios ángulos, no muchos lugares.",
+      "Extiende tomas fuertes para llegar a 12–24 s."
+    ],
+    "demoTitle": "Demo: prompt secuenciado con audio nativo",
+    "demoPromptLabel": "Historia de producto en 8 s para auriculares (16:9, 1080p)",
+    "demoPrompt": [
+      "Shot 1 (0–3 s): macro de un auricular girando en un escritorio de madera, poca profundidad de campo, luz cálida de lámpara.",
+      "Shot 2 (3–6 s): plano medio de una profesional poniéndose los auriculares antes de salir a una calle concurrida, bokeh suave.",
+      "Shot 3 (6–8 s): close-up del estuche cerrándose junto a un portátil, reflejo suave del logo.",
+      "Cámara: travellings suaves entre tomas, handheld estable.",
+      "Luz: interior cálido que pasa a luz de calle fría; grano sutil.",
+      "Audio: ambiente de ciudad bajo, música electrónica suave, VO corta: “Bloquea el ruido, mantén el foco.” Sin subtítulos.",
+      "Negative: sin marcas, sin texto en pantalla, sin angulares extremos."
+    ],
+    "demoNotes": [
+      "Estructura clara de 3 beats con ambiente coherente y cinematografía definida.",
+      "VO realista que cabe en 8 s; sin subtítulos para evitar texto no deseado."
+    ],
+    "tipsTitle": "Consejos y límites",
+    "strengths": [
+      "Control de cámara con presets de encuadre y movimiento",
+      "Ideal para anuncios y campañas con variantes consistentes",
+      "Audio nativo útil como primer borrador",
+      "Prefiere secuencias cortas y enfocadas"
+    ],
+    "boundaries": [
+      "Clips de 4–8 s; usa Extend y edición para más duración",
+      "1080p máximo en esta configuración (sin 4K)",
+      "Texto diminuto/UI detallada es irregular; pon copy crítico en post",
+      "Si deriva, acota sujeto/cámara y reduce acciones"
+    ],
+    "tipsFooter": "Con estas pautas, Veo 3.1 se vuelve una herramienta repetible y dirigible.",
+    "safetyTitle": "Seguridad, personas y semejanza",
+    "safetyRules": [
+      "No generes figuras públicas o celebridades.",
+      "Sin menores en contextos de riesgo; nada sexual explícito ni odio/violencia.",
+      "No uses la imagen de personas reales sin consentimiento.",
+      "Algunos prompts/imágenes pueden bloquearse o ajustarse según políticas; es normal."
+    ],
+    "safetyInterpretation": [
+      "Personajes genéricos están bien.",
+      "Políticas del proveedor y marcas de procedencia aplican; MaxVideoAI suma sus filtros."
+    ],
+    "safetyNote": "Estos límites mantienen Veo 3.1 usable y conforme para trabajo profesional.",
+    "comparisonTitle": "Veo 3.1 vs Veo 3.1 Fast",
+    "comparisonPoints": [
+      "Veo 3.1 es el nivel premium con mejor audio y movimiento.",
+      "Veo 3.1 Fast es más barato y rápido para borradores y social.",
+      "Boceta en Fast y regenera ganadores en Veo 3.1 a 1080p con audio nativo."
+    ],
+    "comparisonCta": "Comparar Veo 3.1 vs Veo 3.1 Fast →",
+    "faqTitle": "FAQ – Veo 3.1 en MaxVideoAI",
+    "faqs": [
+      {
+        "q": "¿Está disponible Veo 3.1 en Europa o UK?",
+        "a": "Sí. MaxVideoAI enruta Veo vía endpoints licenciados de DeepMind, sin contratos separados."
+      },
+      {
+        "q": "¿Puede generar video vertical?",
+        "a": "Sí: 16:9, 9:16 y 1:1. Usa 9:16 para Reels/TikTok/Shorts y centra la acción."
+      },
+      {
+        "q": "¿Admite imagen→video?",
+        "a": "Sí. Empieza con una imagen (Imagen→Video) o usa 1–4 referencias en Texto→Video."
+      },
+      {
+        "q": "¿Se puede pasar de 8 segundos?",
+        "a": "Las bases son 4/6/8 s. Usa Extend y encadena clips en timelines como bloques de 4–8 s."
+      },
+      {
+        "q": "¿Cómo mantenerlo on-brand?",
+        "a": "Referencia de Nano Banana o librería de marca, descripciones consistentes de personajes/escenarios y paleta/luz claras."
       }
-    },
-    {
-      "label": "Audio",
-      "body": "Voz en off nativa, ambiente, FX sincronizados y lip-sync",
-      "link": {
-        "label": "TechCrunch",
-        "href": "https://techcrunch.com/2025/05/20/googles-veo-3-can-generate-videos-and-soundtracks-to-go-along-with-them/?utm_source=chatgpt.com"
-      }
-    },
-    {
-      "label": "Entradas",
-      "body": "Prompt de texto solamente o 1–4 imágenes de referencia para mantener identidad y luz",
-      "link": {
-        "label": "Google DeepMind",
-        "href": "https://deepmind.google/models/veo/?utm_source=chatgpt.com"
-      }
-    },
-    {
-      "label": "Bloqueo de identidad",
-      "body": "La guía multi-imagen mantiene vestuario, luz y parecido"
-    },
-    {
-      "label": "Precio",
-      "body": "Precios dinámicos basados en tu wallet — abre la página Generate para ver la tarifa actual."
-    }
-  ],
-  "promptStructure": {
-    "title": "Estructura de prompt",
-    "quote": "“Un auto eléctrico elegante recorre calles neón al anochecer; toma con grúa drone, zoom out lento reflejado en charcos; synthwave ambiental + VO: ‘El futuro es poder silencioso.’ Stills de referencia: tres cuartos frontal, cabina, luces traseras. Formato vertical 9:16.”",
-    "description": "Estructura cada ejecución para preservar claridad y fidelidad:",
-    "steps": [
-      "Define escena y estado de ánimo (sujeto, entorno, emoción)",
-      "Añade indicaciones de cámara / lente / movimiento (grúa drone, handheld, dolly lento, etc.)",
-      "Especifica elementos de audio (voz en off, textura ambiental, Foley)",
-      "Indica cómo usar referencias: “Animar desde stills”, “mantener vestuario y luz”",
-      "Declara duración y salida: “loop de 8 s”, “1080p vertical”, “bucle continuo”"
-    ]
-  },
-  "tips": {
-    "title": "Consejos",
-    "items": [
-      "🎬 Previsualiza el arco de 8 segundos antes de redactar",
-      "🔊 El sonido vende realismo: menciona música, Foley o tono de VO",
-      "📱 Para social-first, prioriza prompts 9:16 y señala el nivel de audio en celular",
-      "🖼️ Usa 3–4 stills complementarios para fijar personaje, luz y vestuario",
-      "🔄 Encadena renders, itera rápido y luego une clips para ediciones largas"
-    ]
-  },
-  "compareLink": {
-    "label": "guía de motores",
-    "href": "/comparativa",
-    "before": "Compara Veo 3.1 con Sora y Pika en nuestra ",
-    "after": "."
-  },
-  "prompts": [
-    {
-      "title": "Hero eléctrico insignia",
-      "prompt": "Un auto eléctrico elegante atraviesa avenidas neón al anochecer, toma con grúa drone y zoom out lento mientras los reflejos vibran en charcos, synthwave ambiental con voz en off firme: “El futuro es poder silencioso”. Adjunta tres stills (frontal tres cuartos, cabina, luces traseras)."
-    }
-  ],
-  "faqs": [
-    {
-      "q": "¿En qué se diferencia Veo 3.1 de Veo 3 Fast?",
-      "a": "Veo 3.1 ofrece mayor fidelidad, movimiento más fluido y previews Dolby Vision. Fast reduce la latencia para borradores rápidos pero sacrifica detalle—usa 3.1 para pulir entregas finales."
-    },
-    {
-      "q": "¿Cómo mantengo el encuadre consistente en una campaña?",
-      "a": "Activa los presets cinematográficos (primer plano, medio, abierto) y bloquea el estilo de tono. Duplica los renders en la cola para reutilizar cámara y solo cambiar el guion."
-    },
-    {
-      "q": "¿Puedo mezclar Veo con Sora?",
-      "a": "Sí. Bloquea las secuencias con Veo 3.1 y vuelve a lanzar los planos hero en Sora 2 Pro. Sube el fotograma de Veo como referencia en Sora para mantener la continuidad visual."
-    }
-  ],
-  "pricingNotes": "Los precios se actualizan dentro de Generate. Comprueba la tarifa en vivo antes de lanzar un render."
+    ],
+    "relatedTitle": "Explora otros modelos",
+    "relatedSubtitle": "Compara precio, latencia y salidas con otros motores en MaxVideoAI.",
+    "finalPara1": "Veo 3.1 en MaxVideoAI te da acceso directo y por uso al motor de video más controlable de DeepMind.",
+    "finalPara2": "Los controles de encuadre y audio lo hacen sentir como una cámara virtual, no una caja negra.",
+    "finalButton": "Abrir Generate"
+  }
 }
