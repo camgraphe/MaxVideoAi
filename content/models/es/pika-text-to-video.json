@@ -1,130 +1,270 @@
 {
-  "marketingName": "Pika 2.2 Texto e Imagen→Video",
+  "marketingName": "Pika 2.2",
   "versionLabel": "2.2",
   "seo": {
-    "title": "Pika 2.2 – Texto e Imagen→Video",
-    "description": "Genera videos IA creativos a partir de prompts o anima un fotograma de referencia con Pika. Ideal para loops cortos, ganchos visuales y contenido social: silencioso, rápido y económico vía MaxVideoAI.",
+    "title": "Pika 2.2 – Texto→video e Imagen→video (720p/1080p, 5–8 s, silencioso)",
+    "description": "Clips estilizados y silenciosos de 5–8 s en 720p/1080p. Entrada de texto o imagen, looks anime/cómic/pixel, seeds y prompts negativos, pago por segundo en MaxVideoAI.",
     "image": "/hero/pika-22.jpg"
   },
+  "overview": "Pika 2.2 en MaxVideoAI: clips cortos y silenciosos (5–8 s) en 720p/1080p desde texto o una sola imagen, en 1:1, 16:9 o 9:16. Pensado para anime, cómic, pixel y 3D lúdico para feeds sociales.",
   "hero": {
-    "title": "Pika 2.2 – Texto e Imagen→Video (sin audio)",
-    "intro": "Lanza Pika desde un prompt o sube un frame para animarlo. Produce clips estilizados con looks de animación audaces y movimientos expresivos, ideales para visuales social-first en minutos.",
+    "title": "Pika 2.2 – Texto→video e Imagen→video en MaxVideoAI (720p/1080p, 5–8 s)",
+    "intro": "Pika 2.2 – Video IA estilizado para clips social-first (5–8 s, 720p/1080p, sin audio)",
+    "badge": "720p/1080p · 5–8 s · Entrada texto o imagen · Sin audio",
     "ctaPrimary": {
-      "label": "Probar Pika 2.2",
+      "label": "Empieza con Pika 2.2",
       "href": "/app?engine=pika-text-to-video"
     },
     "secondaryLinks": [
       {
-        "label": "Ver todos los motores",
-        "href": "/modelos"
-      },
-      {
-        "label": "Explorar flujos de trabajo",
-        "href": "/workflows"
-      },
-      {
-        "label": "Consultar precios en vivo",
-        "href": "/generate"
+        "label": "Comparar Pika 2.2 vs Sora 2 / Veo 3.1 →",
+        "href": "/models/veo-3-1"
       }
     ]
   },
-  "overview": "Crea clips estilizados de 5–8 segundos con Pika. Lanza loops, reels o bocetos de motion desde texto o anima tus moodboards sin tocar la línea de tiempo.",
   "bestUseCases": {
-    "title": "Casos de uso ideales",
+    "title": "Casos de uso",
     "items": [
-      "Videos cortos tipo TikTok/Reels con animación estilizada",
-      "Animar moodboards, keyframes o styleframes para presentar conceptos",
-      "Loops o recursos de corte para editores y motion designers",
-      "Visuales lúdicos para gaming, moda o beats de cultura pop"
+      "Clips cortos tipo TikTok/Reels con animación estilizada",
+      "Animar moodboards, styleframes o portadas",
+      "Loops y recursos de corte para editores y motion designers",
+      "Visuales lúdicos para gaming, moda, fandom y campañas pop",
+      "Fondos y motion de UI detrás de títulos y capturas"
     ]
   },
   "technicalOverviewTitle": "Resumen técnico",
   "technicalOverview": [
-    {
-      "label": "Duración",
-      "body": "Clips de 5 u 8 segundos optimizados para loops sociales",
-      "link": {
-        "label": "FAQ Pika Labs",
-        "href": "https://www.pika.art/faq"
-      }
-    },
-    {
-      "label": "Resolución",
-      "body": "720p o 1080p en 1:1, 16:9 o 9:16",
-      "link": {
-        "label": "Discord Pika",
-        "href": "https://discord.gg/pika"
-      }
-    },
-    {
-      "label": "Audio",
-      "body": "Salida silenciosa: añade música o VO en la edición"
-    },
-    {
-      "label": "Entradas",
-      "body": "Prompts de texto y una imagen de referencia opcional (PNG/JPG/WEBP/GIF/AVIF)"
-    },
-    {
-      "label": "Modos",
-      "body": "Texto→video e Imagen→video en una sola tarjeta"
-    },
+    { "label": "Duración", "body": "5 s u 8 s por render" },
+    { "label": "Resolución", "body": "720p o 1080p" },
+    { "label": "Relaciones", "body": "1:1, 16:9, 9:16" },
+    { "label": "Entradas", "body": "Texto → Video; Imagen → Video desde un solo still" },
+    { "label": "Audio", "body": "No se genera pista de audio (silencioso por diseño)" },
+    { "label": "Controles", "body": "Seeds y prompts negativos para mantener estilo y evitar artefactos" },
     {
       "label": "Precio",
-      "body": "Precios dinámicos basados en tu wallet — abre la página Generate para ver la tarifa actual."
+      "body": "Por segundo; ejemplo: ~0,04 $/s en 720p, ~0,09 $/s en 1080p; wallet prepago"
     }
   ],
   "promptStructure": {
-    "title": "Estructura de prompt",
-    "quote": "“Un gato de pixel-art salta entre portales, fondo arcade retro, cámara con paneo rápido, efectos glitch arcoíris, animación 2D estilizada.”",
-    "description": "Mantén los prompts vivos y concisos:",
+    "title": "Texto→Video con Pika 2.2",
+    "quote": "Animación estilizada [estilo] de [sujeto] en [entorno]. Cámara [movimiento] mientras [acción] ocurre en [5/8] segundos, [relación], con [efectos]. Sin audio.",
+    "description": "Escribe el prompt como un brief de animación: sujeto + estilo, entorno, movimiento, efectos, encuadre y duración.",
     "steps": [
-      "Comienza con un sujeto fuerte y un verbo de movimiento",
-      "Nombra el estilo de animación: anime, pixel-art, cómic, cel-shading",
-      "Añade efectos: glitch, motion blur, zoom, smear frames",
-      "Define el fondo o la vibra — arcade, skyline, estudio, espacio",
-      "Sé breve y contundente para conservar el control visual"
+      "Sujeto y estilo (anime, pixel-art, cómic, 3D cel-shaded, etc.)",
+      "Entorno (una sola escena)",
+      "Movimiento (sujeto/cámara/fondo)",
+      "Efectos (trails, glitch, smear frames, partículas)",
+      "Encuadre y duración (5/8 s; relación de aspecto)"
     ]
   },
   "tips": {
-    "title": "Consejos",
+    "title": "Consejos y límites",
     "items": [
-      "⚡ Ideal para loops rápidos y punchlines visuales",
-      "🎨 Superpone pistas de estilo — anime, vintage, pixel, CG",
-      "🖼️ Sube frames de storyboard para mantener colores y composición",
-      "🔁 Prompts simples = loops limpios de 3–5 s",
-      "📱 Los formatos 9:16 brillan en Reels, Stories y Shorts",
-      "❌ Sin audio: agrega tu pista en post o rerun en Sora si requieres narración"
+      "Aprovecha looks estilizados (anime, cómic, pixel, toon, 3D estilizado)",
+      "Clips cortos y enérgicos para feeds y overlays",
+      "Usa seeds y negativos para refinar movimiento y limpiar artefactos",
+      "Salida silenciosa: añade tu música/VO en post o usa un motor con audio",
+      "Un sujeto, un entorno y un efecto principal por clip para claridad"
     ]
   },
   "compareLink": {
-    "label": "guía de motores",
-    "href": "/comparativa",
-    "before": "Compara Pika con Sora, Veo y MiniMax en nuestra ",
-    "after": "."
+    "label": "Comparar Pika 2.2 vs Sora 2 / Veo 3.1 →",
+    "href": "/models/veo-3-1"
   },
   "prompts": [
     {
-      "title": "Gato píxel entre portales",
-      "prompt": "Gato pixel-art saltando entre portales, fondo arcade retro, estelas glitch arcoíris, animación 2D enérgica"
+      "title": "Repartidor anime en azoteas (8s, 9:16)",
+      "prompt": "Plano vertical estilo anime de un repartidor corriendo por azoteas de neón al atardecer, 8s, 9:16. Cámara en paralelo mientras pasas por carteles holográficos, trails de smear-frame en extremidades rápidas, nubes en parallax suave, sin logos ni texto."
     },
     {
-      "title": "Intro pop cómic",
-      "prompt": "Pantalla splash estilo cómic con explosiones de texto en negrita, zoom de cámara, texturas de semitono brillantes"
+      "title": "Loop píxel mago (5s, 1:1)",
+      "prompt": "Loop de 5s en pixel-art de un pequeño mago revolviendo un caldero brillante en una cabaña 1:1. Cámara fija en plano medio. Burbujas en patrón repetido, libros flotan suavemente, vela cálida, píxeles retro, sin texto ni logos."
     }
   ],
   "faqs": [
-    {
-      "q": "¿Qué estilos maneja mejor Pika?",
-      "a": "Pika brilla en motion estilizado: anime, ilustración, 3D juguetón y cortes social-first. Para briefs fotorrealistas combínalo con Veo o Sora en las tomas hero."
-    },
-    {
-      "q": "¿Cuál es la duración mínima útil?",
-      "a": "Loops de dos segundos funcionan perfecto. Encadénalos con el modo imagen→video para carousels o fondos animados."
-    },
-    {
-      "q": "¿Incluye audio?",
-      "a": "Los renders son silenciosos para mantenerlos livianos. Agrega tu propia banda sonora en MaxVideoAI o repite el prompt en Sora 2 Pro si necesitas narración nativa."
-    }
+    { "q": "¿Pika 2.2 genera audio?", "a": "No. Siempre entrega clips silenciosos; añade sonido en post o usa un motor con audio si lo necesitas." },
+    { "q": "¿Qué duración elijo: 5 u 8 segundos?", "a": "5s para hooks y loops rápidos; 8s cuando necesitas un poco más de recorrido o parallax." },
+    { "q": "¿Puede hacer video vertical?", "a": "Sí. Selecciona 9:16 para TikTok/Reels/Shorts; centra el sujeto para recortes seguros." },
+    { "q": "¿Cómo ayudan seeds y prompts negativos?", "a": "Usa el mismo seed para iteraciones relacionadas; prompts negativos para bloquear texto/logos/personajes extra/marcas de agua." },
+    { "q": "¿Cuándo usar otro motor?", "a": "Para fotorrealismo o audio nativo, usa Sora 2 o Veo 3.1; para audio listo en cortos, considera Wan 2.5." }
   ],
-  "pricingNotes": "Los precios se actualizan dentro de Generate. Comprueba la tarifa en vivo antes de lanzar un render."
+  "custom": {
+    "heroDesc1": "Usa Pika 2.2 para convertir prompts o imágenes en animaciones estilizadas pensadas para TikTok, Reels y gaming.",
+    "heroDesc2": "Elige 5 u 8 segundos, 1:1/16:9/9:16, parte de texto o referencia y obtén un clip silencioso listo para tu edición.",
+    "whyTitle": "Por qué Pika 2.2 es potente en MaxVideoAI",
+    "heroHighlights": [
+      "Texto → Video e Imagen → Video en una sola tarjeta",
+      "Motion estilizado (anime, cómic, look gamer, experimental) que resalta en feeds",
+      "Múltiples relaciones: 1:1, 16:9, 9:16",
+      "Sin audio: exports ligeros para sonorizar a tu gusto",
+      "Seeds y negativos para consistencia y limpieza de artefactos",
+      "Pago por uso; sin suscripción a Pika Labs",
+      "Disponible en Europa/UK/global con tu wallet MaxVideoAI",
+      "Convive con Sora, Veo, Kling, Wan, MiniMax Hailuo, Nano Banana"
+    ],
+    "bestUseCasesTitle": "Casos de uso",
+    "bestUseCases": [
+      "Clips estilizados cortos para TikTok/Reels/Shorts",
+      "Animar moodboards, styleframes o portadas",
+      "Loops y cutaways para editores y motion",
+      "Visuales lúdicos para gaming, moda, fandom, cultura pop",
+      "Fondos y motion de UI detrás de títulos y capturas"
+    ],
+    "whatTitle": "Qué es Pika 2.2 en MaxVideoAI",
+    "whatIntro1": "Modelo de video corto y estilizado pensado para animación social-first.",
+    "whatIntro2": "En MaxVideoAI está cableado como motor silencioso con control de duración, resolución y relación.",
+    "whatFlowTitle": "Flujo en app",
+    "whatFlowSteps": [
+      "1. Elige Pika 2.2.",
+      "2. Texto → Video o Imagen → Video.",
+      "3. Define duración (5/8 s), relación y resolución (720p/1080p).",
+      "4. (Opcional) Fija seed y añade prompt negativo.",
+      "5. Pega un prompt de estilo y movimiento.",
+      "6. Mira el precio por clip antes de lanzar."
+    ],
+    "specTitle": "Specs reales – Pika 2.2 en MaxVideoAI (720p/1080p, 5–8 s)",
+    "specNote": "Specs tal como las usas hoy en MaxVideoAI.",
+    "specSections": [
+      {
+        "title": "Duración y salida",
+        "items": [
+          "Duraciones: 5 s y 8 s",
+          "Salida: 720p (1280×720) o 1080p (1920×1080)",
+          "Afinado para clips cortos de alto impacto"
+        ]
+      },
+      {
+        "title": "Relaciones",
+        "items": [
+          "16:9 – horizontal web/YouTube",
+          "9:16 – vertical para TikTok/Reels/Shorts",
+          "1:1 – cuadrado para feed y perfiles"
+        ]
+      },
+      {
+        "title": "Entradas y archivos",
+        "items": [
+          "Prompts de texto con lenguaje visual y conciso",
+          "Imagen de referencia: PNG/JPG/JPEG/WebP/GIF/AVIF; ~25 MB; un solo still animado a 5–8 s",
+          "Sin entrada de video; parte de stills o texto"
+        ]
+      },
+      {
+        "title": "Audio",
+        "items": [
+          "Sin pista de audio (clips silenciosos)",
+          "Añade música/VO/SFX en tu editor o usa un motor con audio si lo necesitas"
+        ]
+      },
+      {
+        "title": "Precio",
+        "items": [
+          "Modelo por segundo en MaxVideoAI",
+          "Ejemplo: perSecondCents720 = 4; perSecondCents1080 = 9",
+          "720p (~0,04 $/s): 5s ≈ 0,20 $; 8s ≈ 0,32 $",
+          "1080p (~0,09 $/s): 5s ≈ 0,45 $; 8s ≈ 0,72 $",
+          "Wallet compartido; compara precio en vivo antes de lanzar"
+        ]
+      }
+    ],
+    "specValueProp": "Pika 2.2 es el motor estilizado y silencioso de clips cortos: itera rápido con seeds/negativos, perfecto para feeds y motion inserts.",
+    "galleryTitle": "Galería de Pika 2.2",
+    "galleryIntro": "Clips curados generados con la misma configuración que tienes en MaxVideoAI.",
+    "gallerySceneCta": "Abrir esta escena en Generate y adaptarla a tu marca →",
+    "galleryAllCta": "Ver todos los ejemplos de Pika 2.2 →",
+    "recreateLabel": "Recrear esta toma →",
+    "promptTitle": "Texto→Video con Pika 2.2",
+    "promptIntro": "Haz prompts como un brief de animación: una escena, estilo fuerte, movimiento y efectos claros.",
+    "promptPatternSteps": [
+      "Sujeto y estilo",
+      "Entorno (una locación)",
+      "Movimiento (sujeto/cámara/fondo)",
+      "Efectos (glitch, trails, partículas, smear)",
+      "Encuadre y duración (5/8 s; relación)"
+    ],
+    "promptSkeleton": "Animación estilizada [estilo] de [sujeto] en [entorno]. Cámara [movimiento] mientras [acción] sucede en [5/8] s, [relación], con [efectos]. Sin audio.",
+    "promptSkeletonNote": "Mantén el wording conciso y cambia estilo/sujeto para A/B rápido.",
+    "imageTitle": "Imagen→Video con Pika 2.2 (+ Nano Banana)",
+    "imageIntro": "Fija estilo con un still y itera solo en movimiento y efectos.",
+    "imageFlow": [
+      "Genera stills de referencia en Nano Banana (pose, keyframe, ilustración).",
+      "Sube un still en Imagen → Video con Pika 2.2.",
+      "Describe movimiento de cámara, movimiento secundario y efectos en vez de restilizar.",
+      "Usa seeds y negativos para mantener composición estable."
+    ],
+    "imageWhy": [
+      "Mantener paletas/maquetación de marca mientras exploras movimiento",
+      "Convertir póster/arte en teasers animados",
+      "Crear fondos en loop para streams o secciones de UI"
+    ],
+    "multishotTitle": "Loops y clips de una sola escena: el fuerte de Pika",
+    "multishotIntro1": "Pika 2.2 destaca en loops y beats de una escena.",
+    "multishotIntro2": "Diseña loops limpios y rutas de cámara simples.",
+    "multishotTips": [
+      "Haz que el último frame conecte con el primero (órbita, rebote, parallax)",
+      "Rutas de cámara simples (pan/órbita/dolly) vs movimientos caóticos",
+      "Un sujeto, un entorno y un efecto principal por clip",
+      "5s para momentos contundentes; 8s para algo de build-up/payoff",
+      "Encadena loops en timeline para animaciones más largas o carruseles"
+    ],
+    "demoTitle": "Demo: un prompt para Pika 2.2",
+    "demoPromptLabel": "Loop pixel-art 5 s (1:1, 1080p)",
+    "demoPrompt": [
+      "Loop de 5 s en pixel-art de un pequeño mago revolviendo un caldero brillante en una cabaña 1:1.",
+      "Cámara fija en plano medio encuadrando la mesa.",
+      "Burbujas en patrón repetido, libros flotan suave, parallax en estantes.",
+      "Luz cálida de velas, píxeles retro, paleta de 16 colores, sin texto/logos/UI."
+    ],
+    "demoNotes": [
+      "Sujeto claro en un solo entorno",
+      "Dirección de estilo fuerte (pixel-art, paleta retro)",
+      "Movimiento simple y repetible para un loop limpio",
+      "Sin instrucciones conflictivas de cámara o múltiples locaciones"
+    ],
+    "tipsTitle": "Consejos y límites en claro",
+    "strengths": [
+      "Animación estilizada (anime, ilustración, pixel, cómic, toon, 3D estilizado)",
+      "Clips cortos y enérgicos para feeds y overlays",
+      "Salida silenciosa, ligera y lista para editar",
+      "Seeds + negativos ayudan a refinar movimiento y limpiar artefactos"
+    ],
+    "boundaries": [
+      "Enfoque en 5–8 s; no para narrativas largas",
+      "Mejor en motion estilizado que en fotorrealismo estricto",
+      "Texto/UI pequeños pueden verse suaves; coloca el copy crítico en post",
+      "Sin secuencias multi-imagen; para mini-films usa Sora/Veo y Pika para inserts estilizados"
+    ],
+    "tipsFooter": "Pika 2.2 es tu caballo de batalla estilizado y silencioso: perfecto para loops rápidos y visuales social-first.",
+    "safetyTitle": "Seguridad y semejanza",
+    "safetyRules": [
+      "No recrees personas reales, celebridades o políticos.",
+      "Nada explícito, pornográfico o fetichista; sin menores sexualizados; sin gore gráfico.",
+      "Evita contenido de odio o acoso, o que busque engañar o dañar.",
+      "Algunos prompts/imágenes pueden bloquearse o ajustarse por políticas del proveedor y MaxVideoAI."
+    ],
+    "safetyInterpretation": [
+      "Usa personajes ficticios, mundos estilizados y contenido brand-safe."
+    ],
+    "safetyNote": "Estos límites mantienen Pika 2.2 usable y conforme en MaxVideoAI.",
+    "comparisonTitle": "Pika 2.2 vs Sora 2 / Veo 3.1 – Resumen",
+    "comparisonPoints": [
+      "Pika 2.2: clips cortos, estilizados y silenciosos para looks de animación y loops.",
+      "Sora 2: cine 720p con audio para escenas realistas.",
+      "Veo 3.1: 720p/1080p con audio, lenguaje de cámara y presets de encuadre fuertes."
+    ],
+    "comparisonCta": "Comparar Pika 2.2 vs Sora 2 / Veo 3.1 →",
+    "faqTitle": "FAQ – Pika 2.2 en MaxVideoAI",
+    "faqs": [
+      { "q": "¿Pika 2.2 genera audio?", "a": "No. Clips silenciosos; añade soundtrack o usa un motor con audio." },
+      { "q": "¿Qué duración elijo?", "a": "5s para hooks/loops; 8s para algo más de narrativa o parallax." },
+      { "q": "¿Puede hacer vertical?", "a": "Sí, elige 9:16 y centra el sujeto para recortes seguros." },
+      { "q": "¿Cómo ayudan seeds y negativos?", "a": "Seeds mantienen iteraciones relacionadas; negativos bloquean texto/logos/personajes extra/marcas de agua." },
+      { "q": "¿Cuándo cambiar de motor?", "a": "Para fotorrealismo/audio usa Sora/Veo; para audio listo en cortos, Wan 2.5; para hero shots, Sora 2 Pro o Veo 3.1." }
+    ],
+    "relatedTitle": "Explora otros modelos",
+    "relatedSubtitle": "Compara precio, latencia y salidas en el catálogo de MaxVideoAI.",
+    "finalPara1": "Pika 2.2 en MaxVideoAI es tu caballo de batalla estilizado y silencioso para loops y animación expresiva.",
+    "finalPara2": "Redacta hooks aquí y pasa los ganadores a Sora o Veo cuando necesites realismo o audio nativo.",
+    "finalButton": "Abrir Generate"
+  }
 }
