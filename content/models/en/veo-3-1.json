@@ -6,6 +6,7 @@
     "description": "Generate 4–8s cinematic videos in 720p/1080p with Veo 3.1. Text or image input, framing presets, native audio toggle, seeds, extend, and pay-as-you-go pricing in MaxVideoAI.",
     "image": "/hero/veo3.jpg"
   },
+  "overview": "Veo 3.1 in MaxVideoAI: 4–8s clips at 720p/1080p, text or image input, framing and tone presets, native audio on/off, seeds and Extend, pay-per-second pricing.",
   "hero": {
     "title": "Veo 3.1 – AI Text-to-Video & Image-to-Video in MaxVideoAI (720p/1080p, 4–8s)",
     "intro": "Veo 3.1 – Cinematic AI Video with Native Audio & Framing Control (4–8s, 720p/1080p)",
@@ -21,6 +22,106 @@
       }
     ]
   },
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      "High-end brand hero shots and product reveals",
+      "Campaign assets that need consistent framing and tone over many variants",
+      "Social ads in 9:16, 16:9 or 1:1",
+      "Short explainers, education clips and cinematic B-roll",
+      "Film pre-viz and concept tests where camera language matters"
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    {
+      "label": "Duration",
+      "body": "4 s, 6 s or 8 s per render"
+    },
+    {
+      "label": "Resolution",
+      "body": "720p or 1080p at 24 fps"
+    },
+    {
+      "label": "Formats",
+      "body": "16:9, 9:16 or 1:1; all supported in Text→Video and Image→Video"
+    },
+    {
+      "label": "Inputs",
+      "body": "Text prompts; up to 4 reference stills (PNG/JPG/WebP); Image→Video from a single still"
+    },
+    {
+      "label": "Audio",
+      "body": "Native audio on by default; toggle off for silent runs"
+    },
+    {
+      "label": "Pricing",
+      "body": "Per-second; example: audio on ≈$0.40/s, audio off ≈$0.20/s"
+    },
+    {
+      "label": "Render timing",
+      "body": "Add observed render-time note (queue shows live estimates in-app)"
+    }
+  ],
+  "promptStructure": {
+    "title": "Text-to-Video with Veo 3.1",
+    "quote": "Medium shot of [subject] in [environment], [clear action] over 8 seconds. Camera [movement], 16:9 at 1080p, cinematic look with [lighting and color]. Audio: [ambience] + [music/VO cue], no subtitles.",
+    "description": "Write prompts like a concise director’s note: cinematography, subject, action, context, style, audio, format and duration.",
+    "steps": [
+      "Cinematography and framing (medium, wide, macro, tracking)",
+      "Subject and action in 4–8 seconds",
+      "Context / environment",
+      "Style and ambiance (lighting, grade)",
+      "Audio cues (ambience, music, VO) and “no subtitles” if desired",
+      "Format and duration (16:9, 9:16 or 1:1; 4/6/8 s)"
+    ]
+  },
+  "tips": {
+    "title": "Tips & limits",
+    "items": [
+      "Use framing presets and motion cues to keep Veo predictable",
+      "Leverage native audio for first-pass sound; toggle off for cheap silent drafts",
+      "Keep sequences focused (2–3 beats) and reuse references for identity",
+      "Extend strong shots for longer arcs; stitch clips in your editor",
+      "Avoid tiny UI/text; overlay critical copy in post"
+    ]
+  },
+  "compareLink": {
+    "label": "Compare Veo 3.1 vs Veo 3.1 Fast →",
+    "href": "/models/veo-3-1-fast"
+  },
+  "prompts": [
+    {
+      "title": "Cinematic product hero (16:9, 1080p, audio on)",
+      "prompt": "8s hero shot of a premium product on a tabletop, slow dolly, branded grade, clean sonic logo on the final frame."
+    },
+    {
+      "title": "Wireless earbuds micro-story",
+      "prompt": "Shot 1 (0–3 s): macro close-up of one earbud rotating on a wooden desk, shallow depth, warm lamp glow. Shot 2 (3–6 s): medium shot of a professional putting the earbuds in before stepping onto a city street, soft bokeh. Shot 3 (6–8 s): close-up of the charging case clicking shut near a laptop, soft logo reflection. Camera: smooth dollies, handheld feel. Lighting: warm interior → cool street. Audio: city ambience + soft electronic bed + VO: “Block the noise, keep the focus.” No subtitles. Negative: no brands, no on-screen text, no extreme wides."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Is Veo 3.1 available in Europe or the UK?",
+      "a": "Yes. MaxVideoAI routes Veo jobs through licensed DeepMind endpoints, so you can render from Europe, the UK and most supported regions without separate Veo contracts."
+    },
+    {
+      "q": "Can Veo 3.1 generate vertical videos?",
+      "a": "Yes. Veo 3.1 supports 16:9, 9:16 and 1:1. Choose 9:16 for Reels/TikTok/Shorts and keep key action centered."
+    },
+    {
+      "q": "Does Veo 3.1 support image-to-video?",
+      "a": "Yes. Start from a single still (Image→Video) or use 1–4 reference images to guide a Text→Video clip."
+    },
+    {
+      "q": "Can I go beyond 8 seconds?",
+      "a": "Base clips are 4/6/8 s. Use Extend and chain clips in timelines; treat each extension as another 4–8 s block."
+    },
+    {
+      "q": "How do I keep Veo 3.1 on-brand?",
+      "a": "Use reference stills (Nano Banana or your brand library), keep character/setting descriptions consistent, and call out palette/lighting."
+    }
+  ],
   "custom": {
     "heroDesc1": "Generate short, cinematic videos with Google DeepMind's Veo 3.1 directly inside your MaxVideoAI workspace. Text-to-video, image-to-video, framing presets, and native audio with transparent per-second pricing.",
     "heroDesc2": "Describe the scene, choose 4, 6 or 8 seconds, pick 16:9, 9:16 or 1:1, decide whether you want native audio, and let Veo 3.1 deliver polished footage for ads, explainers, campaigns, and client work.",
@@ -173,7 +274,7 @@
     ],
     "boundaries": [
       "Clips are 4–8 seconds; use Extend and editing to go longer",
-      "1080p max in this configuration (no 4K)",
+      "1080p max – no 4K outputs in this configuration",
       "Tiny text and detailed UI are hit-or-miss; overlay critical copy in post",
       "If it drifts, tighten subject and camera instructions and reduce actions"
     ],
@@ -205,7 +306,7 @@
       },
       {
         "q": "Can Veo 3.1 generate vertical videos?",
-        "a": "Yes. Veo 3.1 supports 16:9, 9:16 and 1:1. Choose 9:16 for Reels/TikTok/Shorts and keep key action centered for safe crops."
+        "a": "Yes. Veo 3.1 supports 16:9, 9:16 and 1:1. Choose 9:16 for Reels/TikTok/Shorts and keep key action centered."
       },
       {
         "q": "Does Veo 3.1 support image-to-video?",
@@ -217,7 +318,7 @@
       },
       {
         "q": "How do I keep Veo 3.1 on-brand?",
-        "a": "Use reference stills from Nano Banana or your brand library, keep character and setting descriptions consistent, and call out palette/lighting (e.g., clean neutral corporate vs warm golden-hour lifestyle)."
+        "a": "Use reference stills from Nano Banana or your brand library, keep character and setting descriptions consistent, and call out palette/lighting."
       }
     ],
     "relatedTitle": "Explore other models",
