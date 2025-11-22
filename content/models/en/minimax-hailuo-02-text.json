@@ -1,130 +1,264 @@
 {
-  "marketingName": "MiniMax Hailuo 02 (Text & Image to Video)",
+  "marketingName": "MiniMax Hailuo 02",
   "versionLabel": "02",
   "seo": {
-    "title": "MiniMax Hailuo 02 Text-to-Video – Fast, Stylized Drafts",
-    "description": "Generate stylized AI video from text-only prompts with MiniMax Hailuo 02. Perfect for quick loops, motion tests, and experimental visuals—silent and budget-friendly on MaxVideoAI.",
+    "title": "MiniMax Hailuo 02 – Text & Image-to-Video (512p/768p, 6–10s, Silent)",
+    "description": "Fast, physics-aware 6–10s clips at 512p/768p from text or one image. Reference + end frame support, silent output, budget-friendly pricing in MaxVideoAI.",
     "image": "/hero/minimax-video01.jpg"
   },
+  "overview": "MiniMax Hailuo 02 in MaxVideoAI: short, cheap, physics-aware clips at 512p/768p in 6 or 10 seconds. Text or image input, optional end frame, silent output, and wallet-based pricing for rapid drafts and loops.",
   "hero": {
-    "title": "MiniMax Hailuo 02 – Text & Image-to-Video Engine",
-    "intro": "MiniMax’s Hailuo 02 engine outputs short, stylized clips from a prompt alone or by animating a still frame. Sketch motion, experiment with transitions, or build mood-driven loops at a fraction of premium-engine costs.",
+    "title": "MiniMax Hailuo 02 – Text & Image-to-Video in MaxVideoAI (512p/768p, 6–10s)",
+    "intro": "MiniMax Hailuo 02 – Fast, Stylized Drafts with Strong Physics (6–10s, Silent)",
+    "badge": "512p/768p · 6–10s · Text or Image input · Silent output",
     "ctaPrimary": {
       "label": "Try MiniMax Hailuo 02",
       "href": "/app?engine=minimax-hailuo-02-text"
     },
     "secondaryLinks": [
       {
-        "label": "See all engines",
-        "href": "/models"
-      },
-      {
-        "label": "Explore workflows",
-        "href": "/workflows"
-      },
-      {
-        "label": "Check live pricing in-app",
-        "href": "/generate"
+        "label": "Compare MiniMax vs Pika vs Veo →",
+        "href": "/models/veo-3-1"
       }
     ]
   },
-  "overview": "Spin up stylized 6–10 second clips from text or upload a key frame to guide the motion. Hailuo 02 is silent, fast, and ideal for storyboards, transitions, and proof-of-motion explorations.",
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      "Create stylized visual sketches straight from text",
-      "Animate storyboards, renders, or style frames into motion",
-      "Test transitions, mood, or motion structures before polishing",
-      "Produce experimental loops for reels, openers, or background plates"
+      "Draft motion ideas before Sora/Veo/Kling/Wan finals",
+      "Animate storyboards, renders or styleframes into quick clips",
+      "Test transitions, camera moves or physics-heavy moments",
+      "Build experimental loops and background plates for reels/openers",
+      "Budget-friendly multi-variant campaigns with dozens of clips"
     ]
   },
   "technicalOverviewTitle": "Technical overview",
   "technicalOverview": [
-    {
-      "label": "Duration",
-      "body": "6 or 10-second clips for rapid iteration",
-      "link": {
-        "label": "Model reference",
-        "href": "https://fal.ai/models/fal-ai/minimax-hailuo-02-text"
-      }
-    },
-    {
-      "label": "Resolution",
-      "body": "512P or 768P in landscape, square, or portrait formats",
-      "link": {
-        "label": "MiniMax API Docs",
-        "href": "https://www.minimax.chat/developer/docs/video"
-      }
-    },
-    {
-      "label": "Audio",
-      "body": "Silent output—built for visual exploration only"
-    },
-    {
-      "label": "Inputs",
-      "body": "Text prompts plus optional reference image and end frame"
-    },
-    {
-      "label": "Modes",
-      "body": "Text-to-video drafts and image-to-video animation in one engine"
-    },
+    { "label": "Duration", "body": "6 s or 10 s per clip" },
+    { "label": "Resolution", "body": "512p or 768p" },
+    { "label": "Aspect ratios", "body": "16:9, 9:16, 1:1" },
+    { "label": "Inputs", "body": "Text prompts; optional reference image; optional end frame" },
+    { "label": "Modes", "body": "Text-to-video and Image-to-video" },
+    { "label": "Audio", "body": "Silent output (no native or uploaded audio)" },
     {
       "label": "Pricing",
-      "body": "Live wallet-based pricing — open the Generate workspace for current rates."
+      "body": "Budget-friendly; wallet-based live pricing in Generate"
     }
   ],
   "promptStructure": {
-    "title": "Prompt structure",
-    "quote": "“Stylized fox sprinting through a windy forest, camera follows from behind, swirling leaves, cinematic depth of field.”",
-    "description": "Keep prompts short and motion-driven:",
+    "title": "Text-to-Video with MiniMax Hailuo 02",
+    "quote": "[Duration] second [aspect ratio] shot of [subject] moving through [environment]. Camera [movement] while [secondary motion] reacts naturally (wind/fur/debris). Style: [realistic/stylized]. No text or logos.",
+    "description": "Keep prompts short and motion-forward: subject in motion, environment, camera, physics, style, and a negative prompt.",
     "steps": [
-      "Describe a clear subject in motion with a strong verb",
-      "Layer environmental movement—wind, fog, leaves, shadows",
-      "Call out cinematic camera cues: pan, follow, tracking, zoom",
-      "Mention if you’re uploading a reference or end frame for image-to-video",
-      "Use two to three sentences maximum for consistent output"
+      "Subject in motion + style",
+      "Environment & atmosphere",
+      "Camera move (follow/orbit/pan/push/tilt/crane)",
+      "Physics/secondary motion (wind, cloth, particles, fur)",
+      "Aspect & duration (6 or 10 s) plus negative prompt"
     ]
   },
   "tips": {
-    "title": "Tips & tricks",
-      "items": [
-      "🦊 Perfect for sketching motion ideas or animating uploaded stills",
-      "⚡ Build short creative loops or story beats quickly",
-      "📷 Think like a DoP—mention lenses, tracking, and lighting cues",
-      "🎨 Layer stylistic texture: foggy, glowing, inked, sketch, neon",
-      "🖼️ Add an end frame to land the shot on a specific layout",
-      "❌ Silent output—overlay your own soundtrack or VO later"
+    "title": "Tips & limits",
+    "items": [
+      "Use 1–3 sentences; overlong prompts can introduce artifacts",
+      "One main subject/environment/effect per clip for clarity",
+      "Upload reference + end frame to lock composition and landing",
+      "512p for fastest/cheapest drafts; 768p for social-ready output",
+      "Plan to add audio in post or pair with Wan/Sora/Veo clips"
     ]
   },
   "compareLink": {
-    "label": "engine guide",
-    "href": "/ai-video-engines",
-    "before": "See how MiniMax stacks up against Pika and Veo in our ",
-    "after": "."
+    "label": "Compare MiniMax vs Pika vs Veo →",
+    "href": "/models/veo-3-1"
   },
   "prompts": [
     {
-      "title": "Cinematic fox run",
-      "prompt": "A stylized fox running through a windy forest, camera follows from behind, swirling leaves, cinematic depth of field"
+      "title": "Windy rooftop drift (10s, 16:9)",
+      "prompt": "10s 16:9 glide across a stylized city rooftop at night; coat and hair react to gusts, camera floats past neon signs, puddle reflections, no text/logos/UI."
     },
     {
-      "title": "Control room drift",
-      "prompt": "Zoom slowly across a sci-fi spaceship control room, blinking lights and flickering screens, low-poly animation style. Upload the key frame as reference."
+      "title": "Fox sprint physics sketch (6s, 16:9)",
+      "prompt": "6s 16:9 shot of a red fox sprinting through a dense forest on a windy day. Camera follows low behind; leaves/dust swirl; realistic fur motion; stylized colors; no text/logos."
     }
   ],
   "faqs": [
-    {
-      "q": "Why choose MiniMax over premium engines?",
-      "a": "Hailuo 02 offers a strong price-to-quality ratio for volume campaigns. It’s excellent for social ads, explainers, and iterative concepting where you need dozens of clips without draining credits."
-    },
-    {
-      "q": "What prompt style works best?",
-      "a": "Keep prompts structured but concise—two to three sentences covering setting, motion, and tone. Overly long descriptions can introduce artifacts, while focused cues stay consistent."
-    },
-    {
-      "q": "How do I handle upscales?",
-      "a": "Route the resulting clip through the MaxVideoAI upscaler or rerun the same prompt in Veo 3 Fast for a sharper pass. Pricing transparency helps you compare before committing credits."
-    }
+    { "q": "Why choose MiniMax over premium engines?", "a": "Great motion/physics at lower per-second cost, ideal for volume ads, explainers and experiments without burning budget." },
+    { "q": "What prompt style works best?", "a": "2–3 sentences covering subject, environment, camera and physics; one main idea per clip." },
+    { "q": "Does it support vertical video?", "a": "Yes—16:9, 9:16, 1:1 are available in MaxVideoAI." },
+    { "q": "Does it support audio?", "a": "No. Hailuo 02 outputs silent video; add sound in post or pair with audio-capable engines." },
+    { "q": "What if I need 1080p?", "a": "Use Hailuo 02 for drafts at 512p/768p, then upscale or rerun the prompt in 1080p engines (Veo, Kling, Wan, Sora 2 Pro)." }
   ],
-  "pricingNotes": "Live pricing updates inside the Generate workspace. Check the current rate before you run a job."
+  "custom": {
+    "heroDesc1": "Generate fast, physics-aware drafts at 512p/768p from text or a single image, with optional end frame to lock the landing.",
+    "heroDesc2": "Pick 6 or 10 seconds, choose 16:9/9:16/1:1, and get silent clips ready for storyboards, loops and motion tests.",
+    "whyTitle": "Why MiniMax Hailuo 02 is powerful inside MaxVideoAI",
+    "heroHighlights": [
+      "Text → Video & Image → Video in one engine",
+      "6 or 10 second clips tuned for social intros and motion tests",
+      "512p/768p output for fast, cheap iterations",
+      "Reference image + end frame to guide motion and landing",
+      "Silent output so you can score in your own stack",
+      "Optimized for physics, motion and camera control",
+      "Budget-friendly tier next to Pika 2.2 for volume campaigns"
+    ],
+    "bestUseCasesTitle": "Best use cases",
+    "bestUseCases": [
+      "Motion drafts before Sora/Veo/Kling/Wan finals",
+      "Animating storyboards, renders or styleframes",
+      "Testing transitions/camera/physics (wind, cloth, particles)",
+      "Experimental loops and background plates",
+      "Budget-friendly multi-variant campaigns"
+    ],
+    "whatTitle": "What MiniMax Hailuo 02 Actually Is in MaxVideoAI",
+    "whatIntro1": "MiniMax’s headline model for short sequences with strong physics and prompt adherence.",
+    "whatIntro2": "In MaxVideoAI it’s wired as a fast, silent draft engine at 512p/768p.",
+    "whatFlowTitle": "MaxVideoAI flow",
+    "whatFlowSteps": [
+      "1. Choose MiniMax Hailuo 02.",
+      "2. Select Text → Video or Image → Video.",
+      "3. Pick 6 or 10 seconds, resolution (512p/768p) and aspect ratio.",
+      "4. Optionally upload a reference image and/or end frame.",
+      "5. Paste a short, motion-focused prompt (add physics if needed).",
+      "6. Check wallet-based pricing before render."
+    ],
+    "specTitle": "Real Specs – MiniMax Hailuo 02 in MaxVideoAI (512p/768p, 6–10s)",
+    "specNote": "Specs as used today in MaxVideoAI.",
+    "specSections": [
+      {
+        "title": "Duration & Output",
+        "items": [
+          "Durations: 6 s or 10 s",
+          "Resolutions: 512p or 768p",
+          "Routes tuned for speed and cost"
+        ]
+      },
+      {
+        "title": "Aspect Ratios",
+        "items": [
+          "16:9 – horizontal",
+          "9:16 – vertical",
+          "1:1 – square"
+        ]
+      },
+      {
+        "title": "Inputs & File Types",
+        "items": [
+          "Text prompts (English, Chinese, etc.)",
+          "Reference image: PNG/JPG/JPEG/WebP/GIF/AVIF (~25 MB)",
+          "Optional end frame to land on a specific layout"
+        ]
+      },
+      {
+        "title": "Audio",
+        "items": [
+          "Silent-only output",
+          "Plan to add audio in post or pair with audio engines"
+        ]
+      },
+      {
+        "title": "Pricing",
+        "items": [
+          "Budget-friendly; live per-job prices visible in Generate",
+          "Compare against Pika, Veo Fast, Wan 2.5 before rendering"
+        ]
+      }
+    ],
+    "specValueProp": "MiniMax Hailuo 02 is a fast, physics-savvy draft engine for cheap, silent motion tests.",
+    "galleryTitle": "MiniMax Hailuo 02 Example Gallery",
+    "galleryIntro": "See text and image runs rendered with the same configuration you have.",
+    "gallerySceneCta": "Open this scene in Generate and adapt it with your own brand →",
+    "galleryAllCta": "View all MiniMax Hailuo 02 examples →",
+    "recreateLabel": "Recreate this shot →",
+    "promptTitle": "Text-to-Video with MiniMax Hailuo 02",
+    "promptIntro": "Short, motion-driven prompts: subject, environment, camera, physics, style, negative prompt.",
+    "promptPatternSteps": [
+      "Subject in motion",
+      "Environment & atmosphere",
+      "Camera move",
+      "Physics/secondary motion",
+      "Style + negative prompt"
+    ],
+    "promptSkeleton": "[Duration] second [aspect ratio] shot of [subject] moving through [environment]. Camera [movement]; [secondary motion] reacts naturally. Style: [realistic/stylized]. No text/logos/UI.",
+    "promptSkeletonNote": "One idea per clip; keep wording tight.",
+    "imageTitle": "Image-to-Video with MiniMax Hailuo 02 (+ End Frames)",
+    "imageIntro": "Animate boards/renders/concepts quickly with optional end frame.",
+    "imageFlow": [
+      "Upload a keyframe or render.",
+      "Optionally upload an end frame.",
+      "Choose 6/10 s, 512p/768p and aspect.",
+      "Prompt for camera + physics; specify landing on the end frame."
+    ],
+    "imageWhy": [
+      "UX/UI boards into quick explainers",
+      "Concept posters into teasers",
+      "Looping backgrounds for streams or hero sections"
+    ],
+    "multishotTitle": "Multi-Beat Clips & Loops",
+    "multishotIntro1": "6s: 1–2 beats; 10s: 2–3 beats max in one environment.",
+    "multishotIntro2": "Focus on physics-driven transitions in a single setting.",
+    "multishotTips": [
+      "Beat 1: establish; Beat 2: motion/transition; Beat 3: hero frame",
+      "Keep to one environment/style per clip"
+    ],
+    "demoTitle": "Demo Prompt – 10s city drift (9:16)",
+    "demoPromptLabel": "10s city drift",
+    "demoPrompt": [
+      "10s vertical shot drifting through a neon-soaked city street at night, stylized but grounded in real physics.",
+      "Camera floats forward above puddles, reflections rippling as people/umbrellas pass in soft focus.",
+      "Wind gusts send trash and steam swirling; painterly look, saturated colors, no text/logos."
+    ],
+    "demoNotes": [
+      "Single environment with physics cues",
+      "Easy to loop as a background",
+      "Silent output ready for your own track"
+    ],
+    "tipsTitle": "Tips & Limitations in Plain English",
+    "strengths": [
+      "Strong physics/motion for short clips",
+      "Good instruction following",
+      "Excellent price-to-quality for volume runs",
+      "Reference + end-frame support to lock composition"
+    ],
+    "boundaries": [
+      "512p/768p draft/social tiers, not broadcast 1080p",
+      "6 or 10 s max; stitch for longer edits",
+      "Always silent; add sound in post or via audio engines",
+      "Tiny on-screen text/UI unreliable—overlay critical copy"
+    ],
+    "tipsFooter": "Hailuo 02 is your fast, physics-savvy sketch engine—use it to explore motion before finalizing in higher-end models.",
+    "safetyTitle": "Safety & People / Likeness",
+    "safetyRules": [
+      "No real public figures or celebrities",
+      "No explicit sexual content or sexualized minors",
+      "Avoid hateful, harassing or extremist content",
+      "Don’t impersonate real people without consent",
+      "Provider + MaxVideoAI moderation may block or alter outputs"
+    ],
+    "safetyInterpretation": [
+      "Use for fictional, brand-safe stories and stylized worlds"
+    ],
+    "safetyNote": "Respect guardrails; Hailuo is for professional, ethical use.",
+    "comparisonTitle": "MiniMax Hailuo 02 vs Pika / Veo / Kling / Wan",
+    "comparisonPoints": [
+      "MiniMax Hailuo 02: silent 6–10s at 512p/768p, strong physics, low cost",
+      "Pika 2.2: stylized, silent 5–8s at 720p/1080p",
+      "Veo 3.1 Fast: 4–8s with optional audio at 720p/1080p",
+      "Kling 2.5 Turbo: silent 1080p hero shots, 5–10s",
+      "Wan 2.5: 5–10s with native/uploaded audio and multiple tiers"
+    ],
+    "comparisonCta": "Compare MiniMax vs Pika vs Veo →",
+    "faqTitle": "FAQ – MiniMax Hailuo 02 in MaxVideoAI",
+    "faqs": [
+      { "q": "Why choose MiniMax instead of premium engines?", "a": "Strong motion/physics at lower cost; ideal for volume ads and experiments." },
+      { "q": "What prompt style works best?", "a": "Short, motion-forward: subject, environment, camera, physics; one idea per clip." },
+      { "q": "Can it do vertical video?", "a": "Yes—16:9, 9:16, 1:1 available in MaxVideoAI." },
+      { "q": "Does it support audio?", "a": "No. Outputs are silent; add sound in post or via audio engines." },
+      { "q": "What if I need 1080p?", "a": "Draft in Hailuo 02 (512p/768p), then upscale or rerun in 1080p engines like Veo/Kling/Wan/Sora 2 Pro." }
+    ],
+    "relatedTitle": "Explore other models",
+    "relatedSubtitle": "Compare pricing, latency, and output options across MaxVideoAI.",
+    "finalPara1": "MiniMax Hailuo 02 is your fast, physics-savvy sketch engine for testing motion and transitions cheaply.",
+    "finalPara2": "Use it to explore ideas, then promote winners to higher-end models for audio and 1080p finals.",
+    "finalButton": "Open Generate"
+  }
 }
