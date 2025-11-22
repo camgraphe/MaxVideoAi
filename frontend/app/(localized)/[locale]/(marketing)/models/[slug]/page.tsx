@@ -1332,7 +1332,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
     notFound();
   }
 
-  if (slug === 'sora-2' || slug === 'sora-2-pro' || slug === 'veo-3-1') {
+  if (slug === 'sora-2' || slug === 'sora-2-pro' || slug === 'veo-3-1' || slug === 'veo-3-1-fast') {
     const activeLocale = routeLocale ?? 'en';
     const { dictionary } = await resolveDictionary();
     const detailCopy: DetailCopy = {

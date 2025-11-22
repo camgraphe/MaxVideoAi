@@ -2,134 +2,294 @@
   "marketingName": "Google Veo 3.1 Fast",
   "versionLabel": "3.1 Fast",
   "seo": {
-    "title": "Veo 3.1 Fast – génération vidéo rapide avec audio optionnel",
-    "description": "Utilisez Veo 3.1 Fast pour créer rapidement des clips IA de 8 secondes avec audio natif optionnel. Idéal pour les formats sociaux et l’itération agile via MaxVideoAI.",
+    "title": "Veo 3.1 Fast – Texte→vidéo & image→vidéo (720p/1080p, 4–8 s)",
+    "description": "Veo 3.1 Fast pour des clips rapides et moins chers (4–8 s) en 720p/1080p. Entrée texte ou image, presets de cadrage, audio natif optionnel et facturation à la seconde dans MaxVideoAI.",
     "image": "/hero/veo3.jpg"
   },
+  "overview": "Veo 3.1 Fast est le niveau vitesse/coût de la famille Veo : clips de 4–8 s, 720p/1080p, entrée texte ou image, presets de cadrage/ton, audio natif optionnel et prix à la seconde pour tester vite.",
   "hero": {
-    "title": "Veo 3.1 Fast – moteur rapide avec audio optionnel",
-    "intro": "Veo 3.1 Fast apporte les contrôles ciné de DeepMind à un coût réduit. Démarrez par un simple prompt texte ou fournissez une image de référence unique, gardez des clips jusqu’à 8 secondes et activez ou non l’audio natif pour tester plus vite.",
+    "title": "Veo 3.1 Fast – Texte→vidéo & image→vidéo dans MaxVideoAI (720p/1080p, 4–8 s)",
+    "intro": "Veo 3.1 Fast – Vidéo rapide avec audio optionnel (4–8 s, 720p/1080p)",
+    "badge": "720p/1080p · 4–8 s · Entrée texte ou image",
     "ctaPrimary": {
-      "label": "Tester Veo 3.1 Fast",
+      "label": "Essayer Veo 3.1 Fast",
       "href": "/app?engine=veo-3-1-fast"
     },
     "secondaryLinks": [
       {
-        "label": "Voir tous les moteurs",
-        "href": "/modeles"
-      },
-      {
-        "label": "Explorer les workflows",
-        "href": "/workflows"
-      },
-      {
-        "label": "Consulter les prix en direct",
-        "href": "/generate"
+        "label": "Comparer Veo 3.1 Fast vs Veo 3.1 →",
+        "href": "/models/veo-3-1"
       }
     ]
   },
-  "overview": "Équilibrez qualité et vitesse avec Veo 3.1 Fast. Utilisez-le comme moteur texte→vidéo ou pour animer une image unique : vous gardez les contrôles DeepMind tout en réduisant latence et coût, avec audio natif optionnel.",
   "bestUseCases": {
-    "title": "Cas d'usage clés",
+    "title": "Meilleurs usages",
     "items": [
-      "Clips courts (jusqu’à 8 s) avec audio natif optionnel",
-      "Loops rapides pour contenus sociaux en 9:16 ou 16:9",
-      "Tester des prompts narratifs avant des runs plus longs ou plus chers",
-      "Trouver le juste milieu entre qualité et vitesse pour itérer"
+      "Tests de concept rapides avant Veo 3.1 ou Sora 2 Pro",
+      "Clips courts 9:16 ou 16:9 pour TikTok, Reels, Shorts, intros YouTube",
+      "B-roll et loops mood pour landing pages et sections produit",
+      "Comms internes légères, annonces et snippets de formation"
     ]
   },
-  "technicalOverviewTitle": "Vue technique",
+  "technicalOverviewTitle": "Résumé technique",
   "technicalOverview": [
-    {
-      "label": "Durée",
-      "body": "Clips jusqu’à 8 s pour itérations rapides",
-      "link": {
-        "label": "Fiche modèle",
-        "href": "https://fal.ai/models/fal-ai/veo3.1/fast"
-      }
-    },
-    {
-      "label": "Résolution",
-      "body": "Sortie 1080p en 16:9 et 9:16",
-      "link": {
-        "label": "DeepMind Veo",
-        "href": "https://deepmind.google/models/veo"
-      }
-    },
-    {
-      "label": "Audio",
-      "body": "Audio natif optionnel — activez voix et ambiance selon vos besoins",
-      "link": {
-        "label": "Fiche modèle",
-        "href": "https://fal.ai/models/fal-ai/veo3.1/fast"
-      }
-    },
-    {
-      "label": "Entrées",
-      "body": "Prompt texte seul ou image de référence unique à animer"
-    },
-    {
-      "label": "Modes",
-      "body": "Texte→vidéo + image→vidéo"
-    },
-    {
-      "label": "Tarification",
-      "body": "Tarification dynamique via le wallet MaxVideoAI — ouvrez la page Generate pour connaître le tarif actuel."
-    }
+    { "label": "Durée", "body": "4 s, 6 s, 8 s par rendu" },
+    { "label": "Résolution", "body": "720p ou 1080p à 24 fps" },
+    { "label": "Formats", "body": "16:9 et 9:16 (pas de 1:1 dans ce niveau)" },
+    { "label": "Entrées", "body": "Texte → Vidéo ; Image → Vidéo depuis un seul still" },
+    { "label": "Audio", "body": "Audio natif optionnel (VO, ambiance, SFX) avec interrupteur par job" },
+    { "label": "Tarifs", "body": "À la seconde ; ex. audio on ≈0,15 $/s, audio off ≈0,10 $/s ; wallet prépayé" },
+    { "label": "Temps de rendu", "body": "File courte ; estimations live dans le rail de jobs" }
   ],
   "promptStructure": {
-    "title": "Structure de prompt",
-    "quote": "« Forêt brumeuse à l’aube, la caméra zoome lentement sur un rocher moussu, rayons de soleil entre les arbres, ambiance oiseaux, sans dialogue. »",
-    "description": "Gardez des prompts concis et sensoriels :",
+    "title": "Texte→Vidéo avec Veo 3.1 Fast",
+    "quote": "Forêt brumeuse à l’aube, plan moyen sur un rocher moussu. Caméra avance lentement pendant que les rayons filtrent, 6 secondes, 16:9 en 1080p. Audio : oiseaux doux et vent, pas de dialogue.",
+    "description": "Prompts courts, mono-scène et sensoriels. A/B rapide avec peu de changements entre variantes.",
     "steps": [
-      "Décrivez clairement lumière, texture et sujet focal",
-      "Indiquez mouvements caméra et moment de la journée",
-      "Ajoutez des repères sonores lorsque l’audio est activé",
-      "Restez sous ~25 mots pour préserver la vitesse",
-      "Privilégiez les scènes uniques — Fast excelle sur les plans focalisés"
+      "Sujet + point focal (une idée pour tout le clip)",
+      "Un seul environnement",
+      "Mouvement caméra sur 4–8 s",
+      "Lumière et mood",
+      "Audio optionnel : ambiance + VO courte, ou “sans dialogue”",
+      "Format et durée (16:9 ou 9:16 ; 4/6/8 s)"
     ]
   },
   "tips": {
-    "title": "Astuces",
+    "title": "Conseils & limites",
     "items": [
-      "⚡ Idéal pour des sorties rapides avec design sonore optionnel",
-      "🎧 Activez l’audio pour l’ambiance ou coupez-le pour prototyper en silence",
-      "🪶 Excelle sur les paysages naturels, rêves et coupes mood",
-      "🧪 Servez-vous-en comme banc d’essai avant de passer sur Veo 3.1 complet",
-      "📱 Exportez en 9:16 pour les reels ou 16:9 pour YouTube Shorts"
+      "⚡ Utilisez Fast comme sandbox pour A/B et tweaks de prompt",
+      "🎚️ Audio on pour un mix rapide, off pour des runs économiques",
+      "📱 Optimisé pour les formats sociaux où 4–8 s font l’histoire",
+      "🖼️ Mono-scène ; évitez les narrations multi-lieux ici",
+      "🔁 Passez les gagnants à Veo 3.1 pour le polish 1080p et audio"
     ]
   },
   "compareLink": {
-    "label": "guide moteurs",
-    "href": "/comparatif",
-    "before": "Comparez les niveaux Veo, Sora et Pika dans notre ",
-    "after": "."
+    "label": "Comparer Veo 3.1 Fast vs Veo 3.1 →",
+    "href": "/models/veo-3-1"
   },
   "prompts": [
     {
-      "title": "Zoom forêt brumeuse",
-      "prompt": "Forêt brumeuse à l’aube, zoom lent vers un rocher couvert de mousse tandis que des rayons traversent les arbres, ambiance oiseaux, sans dialogue.",
-      "notes": "Activez l’audio pour l’ambiance subtile ou coupez-le pour une boucle silencieuse."
+      "title": "Push lent en forêt brumeuse",
+      "prompt": "Forêt brumeuse à l’aube, push-in lent vers un rocher moussu tandis que les rayons filtrent, oiseaux subtils, sans dialogue, 8s, 16:9 en 1080p."
     },
     {
-      "title": "Animation d’un visuel fixe",
-      "prompt": "Faites vivre une photo produit lifestyle en huit secondes, travelling avant doux, VO confiante : « Veo 3.1 Fast ».",
-      "notes": "Téléversez une seule image de référence et guidez le mouvement avec le prompt."
+      "title": "Loop vertical bureau de nuit",
+      "prompt": "Loop 6s 9:16 d’une jeune femme travaillant tard à un bureau minimaliste, lumières de ville floues derrière. Drift handheld lent, lumière bleue froide + lampe chaude, tapotement doux + rumeur de ville, sans dialogue."
     }
   ],
   "faqs": [
     {
-      "q": "Où se situe Veo 3.1 Fast dans la gamme ?",
-      "a": "Il fait le lien entre Veo 3 Fast et Veo 3.1. Vous conservez les contrôles de cadrage et previews Dolby de 3.1 avec un délai plus court—parfait pour des revues exigeantes."
+      "q": "Quand utiliser Veo 3.1 Fast plutôt que Veo 3.1 ?",
+      "a": "Pour explorer idées, variantes sociales et revues internes ; passez à Veo 3.1 pour les plans finaux et paid media."
     },
     {
-      "q": "Puis-je réutiliser mes presets Veo 3.1 ?",
-      "a": "Oui. Clonez un rendu Veo 3.1 et basculez le moteur sur 3.1 Fast. Les presets caméra et ton sont conservés pour comparer les sorties en un clin d’œil."
+      "q": "Supporte-t-il le vertical ?",
+      "a": "Oui. Veo 3.1 Fast supporte 16:9 et 9:16 en 720p ou 1080p ; choisissez 9:16 pour le mobile-first."
     },
     {
-      "q": "Comment se positionne le prix ?",
-      "a": "La tarification est dynamique. Ouvrez Generate pour consulter la valeur en direct — c’est généralement inférieur à un run Veo 3.1 complet tout en gardant les réglages caméra."
+      "q": "Puis-je réutiliser des prompts Veo 3.1 en Fast ?",
+      "a": "Oui. Clonez un rendu Veo 3.1, basculez sur Veo 3.1 Fast, gardez cadrage/ton, ajustez durée/résolution."
+    },
+    {
+      "q": "Comparaison de prix avec Veo 3.1 ?",
+      "a": "Fast est moins cher par seconde (ex. ~0,15 $/s on, ~0,10 $/s off). Servez-vous-en pour tester avant d’upgrader."
+    },
+    {
+      "q": "Puis-je utiliser Veo 3.1 Fast depuis Europe / LATAM ?",
+      "a": "Oui. Même wallet/workspace MaxVideoAI et routage DeepMind sous licence, sans facturation séparée."
     }
   ],
-  "pricingNotes": "Les prix évoluent directement dans Generate. Vérifiez le tarif en direct avant de lancer un rendu."
+  "custom": {
+    "heroDesc1": "Veo 3.1 Fast réduit coût et latence du moteur Veo : parfait pour tests rapides et loops sociaux.",
+    "heroDesc2": "Brief court ou image unique, 4/6/8 s, 16:9 ou 9:16, audio on/off, et plusieurs A/B en une session.",
+    "whyTitle": "Pourquoi Veo 3.1 Fast est puissant dans MaxVideoAI :",
+    "heroHighlights": [
+      "Clips rapides et abordables de 4–8 s pour social et expérimentation",
+      "Texte → Vidéo et Image → Vidéo dans le même compositeur",
+      "Controles cinématiques (cadrage, ton, caméra) partagés avec Veo 3.1",
+      "Audio on/off : natif si besoin, silence sinon",
+      "Pay-as-you-go pour itérer et montrer aux clients",
+      "Disponible Europe/UK/monde via le même wallet MaxVideoAI",
+      "À côté de Sora 2, Veo 3.1, Pika 2.2, Kling, Wan, MiniMax Hailuo, Nano Banana pour des A/B faciles"
+    ],
+    "bestUseCasesTitle": "Meilleurs usages",
+    "bestUseCases": [
+      "Tests rapides avant Veo 3.1 ou Sora 2 Pro",
+      "Clips courts 9:16 ou 16:9 pour TikTok/Reels/Shorts/YouTube",
+      "B-roll et loops mood pour landings et sections produit",
+      "Comms internes légères et snippets de formation"
+    ],
+    "whatTitle": "Ce qu’est Veo 3.1 Fast dans MaxVideoAI",
+    "whatIntro1": "Veo 3.1 Fast est réglé pour vitesse et efficacité dans la famille Veo.",
+    "whatIntro2": "Vous gardez presets de cadrage/ton, avec coûts/délais optimisés.",
+    "whatFlowTitle": "Flux MaxVideoAI :",
+    "whatFlowSteps": [
+      "1. Choisir Veo 3.1 Fast.",
+      "2. Texte → Vidéo ou Image → Vidéo.",
+      "3. Régler durée, orientation, résolution.",
+      "4. Activer/désactiver l’audio.",
+      "5. Coller un prompt concis et sensoriel.",
+      "6. Vérifier le prix live et lancer."
+    ],
+    "specTitle": "Specs réelles – Veo 3.1 Fast dans MaxVideoAI (720p/1080p, 4–8 s)",
+    "specNote": "Specs telles qu’utilisées aujourd’hui dans MaxVideoAI.",
+    "specSections": [
+      {
+        "title": "Durée & sortie",
+        "items": [
+          "Durées : 4 s, 6 s, 8 s",
+          "Résolution : 720p ou 1080p",
+          "Cadence : 24 fps"
+        ]
+      },
+      {
+        "title": "Ratios",
+        "items": [
+          "16:9 – horizontal web/video",
+          "9:16 – vertical pour feeds, stories, paid social"
+        ]
+      },
+      {
+        "title": "Entrées & fichiers",
+        "items": [
+          "Prompts texte : mono-scène, description sensorielle courte",
+          "Image de référence : PNG/JPG/WebP ; ~10 MB ; une image animée en clip court",
+          "Pas de référence multi-image ni first/last frame ici"
+        ]
+      },
+      {
+        "title": "Audio",
+        "items": [
+          "Audio on : ambiance, SFX légers, dialogues courts",
+          "Audio off : runs moins chers si vous ajoutez le son en post",
+          "Mix préliminaire suffisant pour le social"
+        ]
+      },
+      {
+        "title": "Tarifs",
+        "items": [
+          "À la seconde ; ex. audio on ≈0,15 $/s ; audio off ≈0,10 $/s",
+          "Sans abonnement : wallet MaxVideoAI et chip prix live pour comparer"
+        ]
+      },
+      {
+        "title": "Temps de rendu",
+        "items": [
+          "File rapide ; estimations live dans le rail pour A/B rapide"
+        ]
+      }
+    ],
+    "specValueProp": "Veo 3.1 Fast est votre banc d’essai rapide : même langage ciné que Veo 3.1, coût réduit, délai court.",
+    "galleryTitle": "Galerie : rendus réels Veo 3.1 Fast",
+    "galleryIntro": "Clips générés avec Veo 3.1 Fast via les mêmes presets que vous avez.",
+    "gallerySceneCta": "Ouvrir cette scène dans Generate et l’adapter à votre script →",
+    "galleryAllCta": "Voir tous les exemples Veo 3.1 Fast →",
+    "recreateLabel": "Recréer ce plan →",
+    "promptTitle": "Texte→Vidéo avec Veo 3.1 Fast",
+    "promptIntro": "Fast sert aux A/B rapides. Prompts focalisés, mono-scène, faciles à itérer.",
+    "promptPatternSteps": [
+      "Sujet + point focal unique",
+      "Un environnement",
+      "Mouvement caméra sur 4–8 s",
+      "Lumière et mood",
+      "Audio optionnel : ambiance + VO courte, ou sans dialogue",
+      "Format et durée (16:9 ou 9:16 ; 4/6/8 s)"
+    ],
+    "promptSkeleton": "Forêt brumeuse à l’aube, plan moyen sur rocher moussu, push lent, 6 s, 16:9 en 1080p. Audio : oiseaux et vent doux, sans dialogue.",
+    "promptSkeletonNote": "Gardez un wording cohérent entre variantes pour mesurer les écarts.",
+    "imageTitle": "Image→Vidéo avec Veo 3.1 Fast",
+    "imageIntro": "Animez un still en loop rapide ou hero shot.",
+    "imageFlow": [
+      "Chargez une photo lifestyle ou produit.",
+      "Choisissez Image → Vidéo, durée (4/6/8 s), ratio et résolution.",
+      "Demandez un mouvement subtil caméra/sujet ; audio léger ou silence.",
+      "Générez des variantes en changeant un élément (vitesse, VO, heure)."
+    ],
+    "imageWhy": [
+      "Heroes rapides pour landing ou ecommerce",
+      "Posts animés depuis photos de marque",
+      "Loops mood derrière titres ou UI"
+    ],
+    "multishotTitle": "Veo 3.1 Fast comme banc d’essai",
+    "multishotIntro1": "Testez à bas coût en Fast puis passez les gagnants à Veo 3.1.",
+    "multishotIntro2": "Presets de cadrage/ton partagés, migration fluide.",
+    "multishotTips": [
+      "Rendez 2–4 variantes en Fast avec petits ajustements.",
+      "Promouvez les meilleures en Veo 3.1 pour plus de fidélité/audio.",
+      "Restez mono-scène en Fast ; d’autres niveaux Veo pour contrôle multi-beat."
+    ],
+    "demoTitle": "Démo : pattern de prompt pour Veo 3.1 Fast",
+    "demoPromptLabel": "Loop vertical 6 s (9:16, 1080p)",
+    "demoPrompt": [
+      "Loop 6 s 9:16 d’une jeune femme travaillant tard à un bureau minimaliste devant une grande fenêtre, lumières de ville floues.",
+      "Caméra : drift handheld lent gauche/droite, centrée sur son visage et laptop.",
+      "Lumière : bleu froid extérieur + lampe chaude sur les mains.",
+      "Audio : frappe douce, rumeur de ville, pas de dialogue."
+    ],
+    "demoNotes": [
+      "Un sujet clair et un seul environnement.",
+      "Mouvement simple qui boucle proprement.",
+      "Audio soutient le mood sans complexifier."
+    ],
+    "tipsTitle": "Conseils & limites en clair",
+    "strengths": [
+      "Vitesse et coût pour A/B et exploration",
+      "Solide sur scènes d’ambiance et produits clairs",
+      "Toggle audio pour mix rapide ou run silencieux",
+      "Idéal social où 4–8 s suffisent"
+    ],
+    "boundaries": [
+      "Mono-scène ; pas de narrations multi-lieux ici",
+      "Pas de référence multi-image ni first/last frame",
+      "Moins de détail que Veo 3.1 (vitesse vs fidélité)",
+      "Texte/UI minuscules peuvent être flous ; mettez le copy critique en post"
+    ],
+    "tipsFooter": "Servez-vous de Fast pour explorer, puis passez les prompts gagnants en Veo 3.1 pour le polish final.",
+    "safetyTitle": "Sécurité, personnes & ressemblance",
+    "safetyRules": [
+      "Évitez figures publiques, politique, contenu explicite ou mineurs.",
+      "Certains rendus peuvent être bloqués/ajustés par les politiques.",
+      "Sorties marquées (type SynthID) pour la provenance."
+    ],
+    "safetyInterpretation": [
+      "La sécurité fournisseur s’applique ; MaxVideoAI ajoute ses contrôles."
+    ],
+    "safetyNote": "Ces garde-fous gardent Veo 3.1 Fast adapté aux environnements pros.",
+    "comparisonTitle": "Veo 3.1 Fast vs Veo 3.1 – Résumé",
+    "comparisonPoints": [
+      "Veo 3.1 Fast : moins cher et plus rapide ; idéal pour tests, loops sociaux, revues internes.",
+      "Veo 3.1 : plus de fidélité et d’audio ; idéal pour livrables finaux et paid media.",
+      "Workflow : prototyper en Fast, régénérer les gagnants en Veo 3.1."
+    ],
+    "comparisonCta": "Comparer Veo 3.1 Fast vs Veo 3.1 →",
+    "faqTitle": "FAQ – Veo 3.1 Fast dans MaxVideoAI",
+    "faqs": [
+      {
+        "q": "Quand utiliser Veo 3.1 Fast plutôt que Veo 3.1 ?",
+        "a": "Pour explorer idées, social et revues internes ; Veo 3.1 pour héros finaux et paid media."
+      },
+      {
+        "q": "Support vertical ?",
+        "a": "Oui — 16:9 et 9:16 en 720p ou 1080p ; choisissez 9:16 pour mobile-first."
+      },
+      {
+        "q": "Réutiliser des prompts Veo 3.1 en Fast ?",
+        "a": "Oui. Clonez un rendu Veo 3.1, passez à Veo 3.1 Fast, gardez cadrage/ton, ajustez durée/résolution."
+      },
+      {
+        "q": "Comparaison de prix ?",
+        "a": "Fast est moins cher par seconde (ex. ~0,15 $/s on, ~0,10 $/s off). Testez avant d’upgrader."
+      },
+      {
+        "q": "Utilisable depuis Europe / LATAM ?",
+        "a": "Oui. Même wallet/workspace MaxVideoAI et routage DeepMind sous licence, sans facturation séparée."
+      }
+    ],
+    "relatedTitle": "Explorer d’autres modèles",
+    "relatedSubtitle": "Comparez prix, latence et presets avec le reste du catalogue.",
+    "finalPara1": "Veo 3.1 Fast dans MaxVideoAI est votre banc d’essai rapide pour les prompts Veo.",
+    "finalPara2": "Même langage ciné, moins de risques, et une qualité prête pour le social.",
+    "finalButton": "Ouvrir Generate"
+  }
 }
