@@ -1,6 +1,5 @@
+import { DEFAULT_INDEXABLE_PLAYLIST_SLUGS } from '@/config/playlists';
 import { query } from '@/lib/db';
-
-const DEFAULT_INDEXABLE_PLAYLIST_SLUG = 'examples';
 
 function parseSlugList(raw: string | null | undefined): string[] {
   if (!raw) {
@@ -31,12 +30,11 @@ export function getIndexablePlaylistSlugs(): string[] {
   if (multi.length) {
     return multi;
   }
-  const fallback = (process.env.EXAMPLES_PLAYLIST_SLUG ?? DEFAULT_INDEXABLE_PLAYLIST_SLUG).trim();
-  if (!fallback) {
-    return [];
+  const fallbackList = parseSlugList(process.env.EXAMPLES_PLAYLIST_SLUG);
+  if (fallbackList.length) {
+    return fallbackList;
   }
-  const fallbackList = parseSlugList(fallback);
-  return fallbackList.length ? fallbackList : [fallback];
+  return Array.from(new Set(DEFAULT_INDEXABLE_PLAYLIST_SLUGS));
 }
 
 export async function removeVideosFromIndexablePlaylists(videoIds: string[]): Promise<number> {

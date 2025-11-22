@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import clsx from 'clsx';
 import Image from 'next/image';
+import { TARGET_MODERATION_PLAYLIST_SLUGS } from '@/config/playlists';
 import { isPlaceholderMediaUrl, normalizeMediaUrl } from '@/lib/media';
 
 export type ModerationVideo = {
@@ -41,7 +42,7 @@ type PlaylistTag = {
   name: string;
 };
 
-const TARGET_PLAYLIST_SLUGS = new Set(['marketing-examples', 'starter']);
+const TARGET_PLAYLIST_SLUGS = new Set(TARGET_MODERATION_PLAYLIST_SLUGS);
 
 function formatDate(value: string) {
   try {

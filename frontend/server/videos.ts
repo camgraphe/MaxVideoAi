@@ -132,7 +132,7 @@ export async function listPlaylistVideos(slug: string, limit: number): Promise<G
         AND p.is_public = TRUE
         AND aj.visibility = 'public'
         AND COALESCE(aj.indexable, TRUE)
-      ORDER BY pi.order_index ASC, aj.created_at DESC
+      ORDER BY aj.created_at DESC, pi.order_index ASC
       LIMIT $2
     `,
     [slug, limit]

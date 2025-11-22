@@ -95,6 +95,11 @@ const DEFAULT_VIDEO_COPY = {
     message: 'Learn more about AI video creation — visit our blog for tips, engine comparisons, and creative use cases.',
     cta: 'Visit the blog',
   },
+  unavailable: {
+    title: 'Video unavailable',
+    message: 'This video is no longer available. It may have been removed or set to private.',
+    cta: 'Back to gallery',
+  },
 };
 
 type VideoPageCopy = typeof DEFAULT_VIDEO_COPY;
@@ -147,12 +152,15 @@ function parseAspectRatio(value?: string | null): AspectRatio {
 }
 
 async function fetchVideo(id: string) {
-  const video = await getVideoById(id);
-  if (!video) return null;
-  if (video.visibility !== 'public') return null;
-  if (!video.indexable) return null;
-  if (!video.videoUrl) return null;
-  return video;
+  return getVideoById(id);
+}
+
+function isRenderable(video: GalleryVideo | null): video is GalleryVideo {
+  if (!video) return false;
+  if (video.visibility !== 'public') return false;
+  if (!video.indexable) return false;
+  if (!video.videoUrl) return false;
+  return true;
 }
 
 function truncateForMeta(title: string, limit: number) {
@@ -365,16 +373,17 @@ function buildSeoContent(video: GalleryVideo, copy: VideoPageCopy, locale: AppLo
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const video = await fetchVideo(params.id);
-  if (!video) {
-    return {
-      title: 'Video not found — MaxVideoAI',
-      description: 'The requested video is unavailable.',
-      robots: { index: false, follow: false },
-    };
-  }
-
   const { locale, dictionary } = await resolveDictionary();
   const copy = resolveVideoCopy(dictionary);
+  if (!isRenderable(video)) {
+    const canonical = `${SITE}/video/${encodeURIComponent(params.id)}`;
+    return {
+      title: `${copy.unavailable.title} — MaxVideoAI`,
+      description: copy.unavailable.message,
+      robots: { index: false, follow: false },
+      alternates: { canonical },
+    };
+  }
   const seoContent = buildSeoContent(video, copy, locale);
 
   const engineLabel = video.engineLabel ?? 'MaxVideoAI';
@@ -421,16 +430,56 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function VideoPage({ params, searchParams }: PageProps) {
   const video = await fetchVideo(params.id);
-  if (!video) {
-    notFound();
-  }
+  if (!video) notFound();
 
   const { locale, dictionary } = await resolveDictionary();
   const copy = resolveVideoCopy(dictionary);
-  const seoContent = buildSeoContent(video, copy, locale);
   const supportedLocale = locale as SupportedLocale;
-
+  const examplesPath = localizePathFromEnglish(supportedLocale, '/examples');
+  const referer = headers().get('referer');
   const canonical = `${SITE}/video/${encodeURIComponent(video.id)}`;
+  const fromParam = searchParams?.from;
+  let backHref = examplesPath;
+  const candidateFrom = fromParam && fromParam.startsWith('/') ? fromParam : null;
+  if (candidateFrom) {
+    backHref = candidateFrom;
+  } else if (referer) {
+    try {
+      const url = referer.startsWith('http') ? new URL(referer) : new URL(referer, SITE);
+      const candidatePath = `${url.pathname}${url.search}${url.hash}`;
+      const canonicalPath = new URL(canonical).pathname;
+      const isSamePage = candidatePath.replace(/\/+$/, '') === canonicalPath.replace(/\/+$/, '');
+      if (!isSamePage && !candidatePath.startsWith('/api') && candidatePath.startsWith('/')) {
+        backHref = candidatePath || examplesPath;
+      }
+    } catch {
+      // ignore bad referer values
+    }
+  }
+
+  if (!isRenderable(video)) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
+        <div className="mb-6 text-xs uppercase tracking-micro text-text-muted">
+          <BackLink href={backHref} label={copy.backLink} className="transition hover:text-text-secondary" />
+        </div>
+        <div className="rounded-card border border-border bg-white px-6 py-10 text-center shadow-sm">
+          <h1 className="text-2xl font-semibold text-text-primary">{copy.unavailable.title}</h1>
+          <p className="mt-4 text-base text-text-secondary">{copy.unavailable.message}</p>
+          <div className="mt-6 flex justify-center">
+            <Link
+              href={backHref}
+              className="inline-flex items-center gap-2 rounded-full bg-text-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-text-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {copy.unavailable.cta}
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  const seoContent = buildSeoContent(video, copy, locale);
+
   const prompt = video.prompt ?? video.promptExcerpt ?? '';
   const videoUrl = toAbsoluteUrl(video.videoUrl) ?? video.videoUrl ?? canonical;
   const thumbnailUrl = toAbsoluteUrl(video.thumbUrl) ?? FALLBACK_THUMB;
@@ -448,7 +497,6 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
   const engineLink = engineSlug
     ? localizePathFromEnglish(supportedLocale, `/models/${engineSlug}`)
     : null;
-  const examplesPath = localizePathFromEnglish(supportedLocale, '/examples');
   const pricingPath = localizePathFromEnglish(supportedLocale, '/pricing');
   const blogPath = localizePathFromEnglish(supportedLocale, '/blog');
   const totalPriceDisplay = formatTotalPriceDisplay(video, copy, locale);
@@ -457,25 +505,6 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
   const aspectDisplay = formatAspectDisplay(video.aspectRatio, copy);
   const createdDisplay = formatDateDisplay(video.createdAt, locale);
   const audioDisplay = describeAudio(video.hasAudio, copy);
-  const referer = headers().get('referer');
-  let backHref = examplesPath;
-  const fromParam = searchParams?.from;
-  const candidateFrom = fromParam && fromParam.startsWith('/') ? fromParam : null;
-  if (candidateFrom) {
-    backHref = candidateFrom;
-  } else if (referer) {
-    try {
-      const url = referer.startsWith('http') ? new URL(referer) : new URL(referer, SITE);
-      const candidatePath = `${url.pathname}${url.search}${url.hash}`;
-      const canonicalPath = new URL(canonical).pathname;
-      const isSamePage = candidatePath.replace(/\/+$/, '') === canonicalPath.replace(/\/+$/, '');
-      if (!isSamePage && !candidatePath.startsWith('/api') && candidatePath.startsWith('/')) {
-        backHref = candidatePath || examplesPath;
-      }
-    } catch {
-      // ignore bad referer values
-    }
-  }
 
   const containerStyle: CSSProperties = {};
   if (aspect) {
