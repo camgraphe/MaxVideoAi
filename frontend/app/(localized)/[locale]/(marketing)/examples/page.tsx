@@ -78,6 +78,17 @@ const GALLERY_SLUG_MAP = buildSlugMap('gallery');
 const DEFAULT_SORT: ExampleSort = 'date-desc';
 const ALLOWED_QUERY_KEYS = new Set(['sort', 'engine', 'page']);
 const EXAMPLES_PAGE_SIZE = 60;
+const POSTER_PLACEHOLDERS: Record<string, string> = {
+  '9:16': '/assets/frames/thumb-9x16.svg',
+  '16:9': '/assets/frames/thumb-16x9.svg',
+  '1:1': '/assets/frames/thumb-1x1.svg',
+};
+
+function getPlaceholderPoster(aspect?: string | null): string {
+  if (!aspect) return POSTER_PLACEHOLDERS['16:9'];
+  const normalized = aspect.trim();
+  return POSTER_PLACEHOLDERS[normalized] ?? POSTER_PLACEHOLDERS['16:9'];
+}
 const EXAMPLES_INITIAL_BATCH = 12;
 
 export const dynamic = 'force-dynamic';
@@ -448,8 +459,8 @@ const clientVideos: ExampleGalleryVideo[] = videos.map((video) => {
     aspectRatio: video.aspectRatio ?? null,
     durationSec: video.durationSec,
     hasAudio: video.hasAudio,
-    optimizedPosterUrl: buildOptimizedPosterUrl(video.thumbUrl),
-    rawPosterUrl: video.thumbUrl ?? null,
+    optimizedPosterUrl: video.thumbUrl ? buildOptimizedPosterUrl(video.thumbUrl) : null,
+    rawPosterUrl: video.thumbUrl ?? getPlaceholderPoster(video.aspectRatio),
     videoUrl: video.videoUrl ?? null,
   };
 });
