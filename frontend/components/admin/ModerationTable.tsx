@@ -42,7 +42,7 @@ type PlaylistTag = {
   name: string;
 };
 
-const TARGET_PLAYLIST_SLUGS = new Set(TARGET_MODERATION_PLAYLIST_SLUGS);
+const TARGET_PLAYLIST_SLUGS = new Set<string>(TARGET_MODERATION_PLAYLIST_SLUGS as readonly string[]);
 
 function formatDate(value: string) {
   try {
