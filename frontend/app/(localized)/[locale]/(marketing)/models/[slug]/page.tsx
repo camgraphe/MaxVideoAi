@@ -61,10 +61,14 @@ type SoraCopy = {
   whatIntro2: string | null;
   whatFlowTitle: string | null;
   whatFlowSteps: string[];
+  howToLatamTitle: string | null;
+  howToLatamSteps: string[];
   specTitle: string | null;
   specNote: string | null;
   specSections: SpecSection[];
   specValueProp: string | null;
+  quickPricingTitle: string | null;
+  quickPricingItems: string[];
   microCta: string | null;
   galleryTitle: string | null;
   galleryIntro: string | null;
@@ -269,10 +273,14 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
     whatIntro2: getString('whatIntro2'),
     whatFlowTitle: getString('whatFlowTitle'),
     whatFlowSteps: getStringArray('whatFlowSteps'),
+    howToLatamTitle: getString('howToLatamTitle'),
+    howToLatamSteps: getStringArray('howToLatamSteps'),
     specTitle: getString('specTitle'),
     specNote: getString('specNote'),
     specSections: getSpecSections(),
     specValueProp: getString('specValueProp'),
+    quickPricingTitle: getString('quickPricingTitle'),
+    quickPricingItems: getStringArray('quickPricingItems'),
     microCta: getString('microCta'),
     galleryTitle: getString('galleryTitle'),
     galleryIntro: getString('galleryIntro'),
@@ -646,7 +654,11 @@ function Sora2PageLayout({
   const bestUseCasesTitle = copy.bestUseCasesTitle ?? localizedContent.bestUseCases?.title ?? null;
   const bestUseCases = copy.bestUseCases.length ? copy.bestUseCases : localizedContent.bestUseCases?.items ?? [];
   const whatFlowSteps = copy.whatFlowSteps;
+  const howToLatamTitle = copy.howToLatamTitle;
+  const howToLatamSteps = copy.howToLatamSteps;
   const specSections = copy.specSections;
+  const quickPricingTitle = copy.quickPricingTitle;
+  const quickPricingItems = copy.quickPricingItems;
   const promptPatternSteps = copy.promptPatternSteps.length
     ? copy.promptPatternSteps
     : localizedContent.promptStructure?.steps ?? [];
@@ -802,6 +814,16 @@ function Sora2PageLayout({
                 </Link>
               ) : null}
             </div>
+            {isEsLocale && howToLatamTitle && howToLatamSteps.length ? (
+              <section className="rounded-2xl border border-hairline bg-white/70 p-5 shadow-card">
+                <h2 className="text-xl font-semibold text-text-primary">{howToLatamTitle}</h2>
+                <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-text-secondary">
+                  {howToLatamSteps.map((step) => (
+                    <li key={step}>{step}</li>
+                  ))}
+                </ol>
+              </section>
+            ) : null}
             <div className="flex justify-center">
               <div className="w-full max-w-5xl">
                 <MediaPreview media={heroMedia} label={heroTitle} />
@@ -891,6 +913,17 @@ function Sora2PageLayout({
               {copy.microCta}
             </Link>
           </div>
+        ) : null}
+
+        {quickPricingTitle && quickPricingItems.length ? (
+          <section className="mt-10 space-y-3 rounded-2xl border border-hairline bg-white/80 p-5 shadow-card">
+            <h3 className="text-lg font-semibold text-text-primary">{quickPricingTitle}</h3>
+            <ul className="space-y-1 text-sm text-text-secondary">
+              {quickPricingItems.map((item) => (
+                <li key={item}>• {item}</li>
+              ))}
+            </ul>
+          </section>
         ) : null}
 
         <section className="mt-14 space-y-4">
@@ -1380,6 +1413,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
   const canonicalUrl = metadataUrls.canonical.replace(/\/+$/, '') || metadataUrls.canonical;
   const breadcrumbTitleBase = localizedContent.seo.title ?? marketingName ?? slug;
   const breadcrumbTitle = breadcrumbTitleBase.replace(/ —.*$/, '');
+  const isEsLocale = activeLocale === 'es';
   const localePathPrefix = localePathnames[activeLocale] ? `/${localePathnames[activeLocale].replace(/^\/+/, '')}` : '';
   const homePathname = localePathPrefix || '/';
   const localizedHomeUrl = homePathname === '/' ? `${SITE}/` : `${SITE}${homePathname}`;

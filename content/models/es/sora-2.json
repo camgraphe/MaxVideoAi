@@ -2,14 +2,14 @@
   "marketingName": "OpenAI Sora 2",
   "versionLabel": "2",
   "seo": {
-    "title": "Sora 2 – Texto o imagen a video en MaxVideoAI (720p, 4–12 s)",
-    "description": "Crea videos IA cinemáticos de 4–12 segundos en 720p con Sora 2 en MaxVideoAI. Texto→video e imagen→video con audio, formatos 16:9 o 9:16, precio transparente por segundo.",
+    "title": "Sora 2 – Generador de video IA (Texto a Video / Imagen a Video) | Sin invitación – MaxVideoAI",
+    "description": "Genera videos con Sora 2 desde Latinoamérica o España, sin invitación. Texto a video y imagen a video en 4–12 s, 720p, con precio transparente por segundo.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg"
   },
   "hero": {
-    "title": "Sora 2 – Texto o imagen a video en MaxVideoAI",
+    "title": "Sora 2 – Generador de video IA (texto a video / imagen a video)",
     "intro": "Sora 2 – Video cinematográfico (4–12 s, 720p) directo en MaxVideoAI",
-    "badge": "720p · 4–12 s · Entrada de texto o imagen",
+    "badge": "720p · 4–12 s · Texto o imagen de entrada",
     "ctaPrimary": {
       "label": "Empezar con Sora 2",
       "href": "/app?engine=sora-2"
@@ -22,15 +22,15 @@
     ]
   },
   "custom": {
-    "heroDesc1": "Crea videos cortos y cinematográficos con Sora 2 directamente en el navegador. MaxVideoAI te da acceso instantáneo a texto→video e imagen→video de Sora 2, con precio transparente por segundo y un espacio de trabajo listo para probar, iterar y producir clips para redes.",
-    "heroDesc2": "Describe la escena, elige duración (4, 8 o 12 segundos), selecciona 16:9 o 9:16 y deja que Sora 2 genere planos listos para anuncios, contenido o clientes.",
+    "heroDesc1": "Crea videos cortos y cinematográficos con Sora 2 directamente en el navegador. MaxVideoAI te da acceso instantáneo al generador de video IA (texto→video e imagen→video), con precio transparente por segundo y un espacio de trabajo listo para iterar y producir clips sociales.",
+    "heroDesc2": "Describe la escena, elige duración (4, 8 o 12 segundos), selecciona 16:9 o 9:16 y deja que Sora 2 genere planos listos para anuncios, contenido o clientes. Funciona en toda Latinoamérica sin invitación.",
     "secondaryCta": "Comparar Sora 2 vs Sora 2 Pro (1080p) →",
     "whyTitle": "Por qué Sora 2 es potente en MaxVideoAI:",
     "heroHighlights": [
-      "Texto → Video e Imagen → Video en un solo lugar",
+      "Texto → Video e Imagen → Video en un solo lugar (crear videos con IA)",
       "Prompts secuenciados para 2–3 planos en un clip",
       "Pago por segundo: solo pagas lo que generas",
-      "Disponible en Europa, Reino Unido y más, sin invitación",
+      "Disponible en Latinoamérica y España, sin invitación",
       "Pensado para convivir con Veo, Pika, Kling, Wan, MiniMax Hailuo, etc."
     ],
     "bestUseCasesTitle": "Mejores casos de uso",
@@ -51,6 +51,15 @@
       "4. Pega un prompt estructurado.",
       "5. Ve el precio final por clip antes de generar.",
       "6. Compara con otros motores en la misma interfaz."
+    ],
+    "howToLatamTitle": "Cómo usar Sora 2 paso a paso (LatAm)",
+    "howToLatamSteps": [
+      "Selecciona Sora 2 como motor.",
+      "Elige Texto → Video o Imagen → Video.",
+      "Escoge duración (4, 8 o 12 s) y formato (16:9 o 9:16).",
+      "Escribe un prompt claro: sujeto, acción, entorno, cámara, luz y movimiento.",
+      "Revisa el precio final antes de generar.",
+      "Funciona desde toda Latinoamérica sin invitación."
     ],
     "specTitle": "Especificaciones reales – Sora 2 en MaxVideoAI (720p, 4–12 s)",
     "specNote": "Estas especificaciones describen Sora 2 tal como lo usas hoy en MaxVideoAI, no capacidades teóricas.",
@@ -98,13 +107,20 @@
     ],
     "specValueProp": "Propuesta clave: Sora 2 en MaxVideoAI es la forma más rápida de probar ideas, prototipos y conceptos sociales, con movimiento y audio de estilo cine y un coste predecible por segundo.",
     "microCta": "Empieza a generar con Sora 2 →",
+    "quickPricingTitle": "Precios rápidos (sin suscripción)",
+    "quickPricingItems": [
+      "4 segundos: 0,48 US$",
+      "8 segundos: 0,96 US$",
+      "12 segundos: 1,44 US$",
+      "Pagas solo lo que generas. Ideal para creadores, agencias y freelancers en Latinoamérica."
+    ],
     "galleryTitle": "Galería de ejemplos: salidas reales de Sora 2",
-    "galleryIntro": "Mira algunos renders reales de Sora 2 con los mismos ajustes disponibles en MaxVideoAI.",
+    "galleryIntro": "Mira algunos renders reales de Sora 2 con los mismos ajustes disponibles en MaxVideoAI. Perfecto para ver cómo responde el generador de video IA a distintos prompts.",
     "gallerySceneCta": "Abrir esta escena en Generate y adaptarla a tu marca →",
     "galleryAllCta": "Ver todos los ejemplos de Sora 2 →",
     "recreateLabel": "Recrear este plano →",
     "promptTitle": "Cómo escribir un buen prompt para Sora 2",
-    "promptIntro": "Sora 2 funciona mejor cuando el prompt parece una mini lista de planos, no una lista de adjetivos.",
+    "promptIntro": "Sora 2 funciona mejor cuando el prompt parece una mini lista de planos, no una lista de adjetivos. Así creas videos con IA que se ven coherentes.",
     "promptPatternSteps": [
       "Sujeto y acción: quién y qué hace",
       "Entorno: dónde ocurre (oficina, calle, café, estudio…)",
@@ -188,7 +204,7 @@
       "Haz storyboards con Sora 2 y finaliza en Sora 2 Pro para más calidad y control de audio."
     ],
     "comparisonCta": "Empieza con Sora 2 y pasa a Sora 2 Pro para 1080p →",
-    "faqTitle": "FAQ – Sora 2 en MaxVideoAI",
+    "faqTitle": "Preguntas comunes en Latinoamérica sobre Sora 2",
     "faqs": [
       {
         "q": "¿Sora 2 está disponible en Europa / Reino Unido?",
@@ -209,6 +225,14 @@
       {
         "q": "¿Cómo mantengo el estilo de mi marca?",
         "a": "Usa referencias de Nano Banana o tus assets, indica colores de marca y conserva el mismo mood en tus prompts."
+      },
+      {
+        "q": "¿Puedo usar Sora 2 desde Latinoamérica?",
+        "a": "Sí. MaxVideoAI funciona en toda Latinoamérica sin invitación directa. Solo necesitas una cuenta y saldo en tu monedero."
+      },
+      {
+        "q": "¿Sora 2 convierte texto a video o imagen a video?",
+        "a": "Ambos. Puedes usar texto o subir una imagen para generar un clip de 4, 8 o 12 segundos en estilo cinematográfico."
       }
     ],
     "relatedTitle": "Explorar otros modelos",
