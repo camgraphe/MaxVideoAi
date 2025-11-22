@@ -1,95 +1,296 @@
 {
-  "marketingName": "Wan 2.5 Text & Image to Video",
-  "versionLabel": "Preview",
+  "marketingName": "Wan 2.5",
+  "versionLabel": "2.5",
   "seo": {
-    "title": "Wan 2.5 – Audio-Ready Text & Image to Video",
-    "description": "Generate 5 or 10 second Wan 2.5 clips from prompts or single reference stills, complete with optional background audio and prompt expansion.",
+    "title": "Wan 2.5 – Text or Image to Video with Optional Audio (480p–1080p, 5–10s)",
+    "description": "Audio-ready 5–10s clips at 480p/720p/1080p. Text or image input, optional WAV/MP3 upload, native audio, prompt expansion toggle, and pay-as-you-go pricing in MaxVideoAI.",
     "image": "/hero/wan-25.jpg"
   },
+  "overview": "Wan 2.5 in MaxVideoAI: audio-ready 5–10s clips from text or a single image, at 480p/720p/1080p. Optional WAV/MP3 upload, native audio when no track is provided, prompt expansion toggle, and per-second pricing by resolution.",
   "hero": {
-    "title": "Wan 2.5 – Text or Image to Video with Optional Audio",
-    "intro": "Storyboard cinematic beats with Wan 2.5. Draft 5 or 10 second clips straight from a prompt, animate one polished still, then drop in background music for faster reviews—no manual sync required.",
+    "title": "Wan 2.5 – Text or Image to Video with Optional Audio in MaxVideoAI (480p–1080p, 5–10s)",
+    "intro": "Wan 2.5 – Audio-Ready AI Video for Cinematic 5–10s Clips (480p/720p/1080p)",
+    "badge": "480p/720p/1080p · 5–10s · Text or Image input · Optional audio",
     "ctaPrimary": {
-      "label": "Try Wan 2.5",
+      "label": "Start generating with Wan 2.5",
       "href": "/app?engine=wan-2-5"
     },
     "secondaryLinks": [
-      { "label": "See all engines", "href": "/models" },
-      { "label": "Explore workflows", "href": "/workflows" },
-      { "label": "Check live pricing in-app", "href": "/generate" }
+      {
+        "label": "Compare Wan 2.5 vs Sora 2 / Veo 3.1 →",
+        "href": "/models/veo-3-1"
+      }
     ]
   },
-  "overview": "Wan 2.5 brings Wan’s preview model into MaxVideoAI so you can iterate alongside Sora, Veo, and Kling. Swap between text-to-video and image-to-video inside one card, adjust the resolution from 480p through 1080p, and keep optional audio synced without touching an editor.",
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      "5 or 10 second hero beats with built-in soundtrack cues",
-      "Animating brand portraits or concept art via the image mode",
-      "Low-cost ideation at 480p before committing to 1080p renders",
-      "Localized motion tests with prompt expansion in English or Chinese"
+      "5 or 10 second hero beats with synchronized sound",
+      "Animating portraits, concept art or product stills with audio-backed motion",
+      "Cheap 480p look-dev before committing to 1080p finals",
+      "Localized story beats (English or Chinese prompts) with prompt expansion help",
+      "Sound-led concepts where music hits, SFX or VO define the moment"
     ]
   },
   "technicalOverviewTitle": "Technical overview",
   "technicalOverview": [
-    { "label": "Duration", "body": "5 or 10 second clips" },
-    { "label": "Aspect ratios", "body": "16:9, 9:16, or 1:1" },
-    { "label": "Resolutions", "body": "480p, 720p, or 1080p tiers" },
-    { "label": "Audio", "body": "Optional WAV/MP3 (3–30 s, ≤15 MB) auto-trims to the clip length" },
-    { "label": "Inputs", "body": "Text prompt plus optional image (required for image-to-video)" },
-    { "label": "Prompt expansion", "body": "Toggle LLM rewriting to add detail to short briefs" }
+    { "label": "Duration", "body": "5 s or 10 s per render" },
+    { "label": "Resolutions", "body": "480p, 720p, 1080p at 24 fps" },
+    { "label": "Aspect ratios", "body": "16:9, 9:16, 1:1" },
+    { "label": "Inputs", "body": "Text → Video; Image → Video from a single still" },
+    { "label": "Audio", "body": "Native audio if no track; optional WAV/MP3 upload (3–30 s, ~15 MB) trimmed/looped to 5 or 10 s" },
+    { "label": "Controls", "body": "Prompt expansion toggle; optional seed; safety toggles" },
+    {
+      "label": "Pricing",
+      "body": "Per-second by resolution; example: $0.05/s (480p), $0.10/s (720p), $0.15/s (1080p)"
+    }
   ],
   "promptStructure": {
-    "title": "Prompt structure",
-    "quote": "The white dragon warrior stands still as mist swirls, camera dolly-forward with a slow arc, cinematic backlighting, triumphant strings.",
-    "description": "Keep prompts concise but descriptive:",
+    "title": "Text-to-Video with Wan 2.5",
+    "quote": "[Duration] second [aspect ratio] cinematic shot of [subject] in [environment]. Camera [movement] while [main action] happens. Lighting [style], [grade] look. Audio: [ambience + music/SFX], optional dialogue: “[…]”.",
+    "description": "Write prompts like a shot description plus sound notes: subject/tone, environment, camera, timing, lighting/look, and audio cues.",
     "steps": [
-      "Lead with the subject and emotional tone",
-      "Describe the camera move or pacing (slow dolly, whip-pan, loop)",
-      "Highlight key lighting or environmental cues",
-      "Call out soundtrack mood if you’re attaching audio",
-      "For image-to-video, mention what aspects must stay untouched"
+      "Subject and emotional tone",
+      "Environment (one scene)",
+      "Camera language (dolly, pan, crane, POV, orbit)",
+      "Timing over 5 or 10 seconds",
+      "Lighting and look (golden hour, moody, neon, etc.)",
+      "Audio: ambience, SFX, music, optional short dialogue"
     ]
   },
   "tips": {
-    "title": "Tips & tricks",
+    "title": "Tips & limits",
     "items": [
-      "🎧 Trim your WAV/MP3 to 5 or 10 seconds so Wan doesn’t discard the tail",
-      "🖼️ Upload a 360–2000px still to avoid upscaling artifacts in image mode",
-      "📝 Disable prompt expansion when you already have a detailed brief",
-      "🌀 Keep prompts under ~800 characters for best rewrite results",
-      "⚙️ Use 480p for cheap look-dev then rerun final shots at 1080p",
-      "🌐 Wan handles English and Chinese prompts equally well"
+      "Attach a trimmed 5–10s WAV/MP3 when you need visuals synced to beats",
+      "Use native audio (no upload) for quick ideation",
+      "Toggle Prompt expansion on for exploration, off for precise briefs",
+      "Iterate cheap at 480p, finish at 1080p once approved",
+      "Keep copy as overlays; tiny text/UI can be unreliable"
     ]
   },
   "compareLink": {
-    "label": "engine guide",
-    "href": "/ai-video-engines",
-    "before": "See how Wan stacks up against Sora, Veo, Kling, and Pika in our ",
-    "after": "."
+    "label": "Compare Wan 2.5 vs Sora 2 / Veo 3.1 →",
+    "href": "/models/veo-3-1"
   },
   "prompts": [
     {
-      "title": "Hero reveal",
-      "prompt": "Gimbal push-in on a chrome concept car under soft rain, neon reflections on wet pavement, synth score swelling, 10 second runtime"
+      "title": "Chrome concept car on downbeats (10s, 16:9)",
+      "prompt": "10s 16:9 cinematic shot of a chrome concept car emerging from foggy light pulses on synth downbeats. Wide to low-angle push, rain streaks, cool blue rim light, subtle flares. Audio: uploaded track as main music, add low rumble, thunder, raindrops, no dialogue."
     },
     {
-      "title": "Portrait briefing",
-      "prompt": "Animate the uploaded executive portrait into a confident walk toward camera, golden hour backlight, handheld camera sway, gentle piano track"
+      "title": "Vertical fitness watch story (10s, 9:16)",
+      "prompt": "10s vertical shot of a fitness smartwatch on a runner’s wrist synced to an energetic electronic track: close-up on beat one with raindrops on glass; pull back on the first big hit as the runner sprints in slow motion on a neon-lit bridge; final beat swings to profile close-up with breath in cold air, watch display glowing. Audio: uploaded track + subtle footsteps, rain, breathing; no VO."
     }
   ],
   "faqs": [
     {
-      "q": "Does Wan 2.5 include background audio?",
-      "a": "You can attach a WAV or MP3 up to 30 seconds. Wan trims or loops it to match the 5 or 10 second video while leaving the remainder silent."
+      "q": "Does Wan 2.5 always generate audio?",
+      "a": "Yes. If you don’t upload a track, Wan generates native audio. If you upload WAV/MP3, your track is trimmed/looped to 5 or 10 seconds and used as the main audio."
     },
     {
-      "q": "Can I disable prompt expansion or the safety checker?",
-      "a": "Yes. Toggle both options off when you need literal control, or leave them on for exploratory runs that benefit from additional detail."
+      "q": "What resolutions and durations should I use?",
+      "a": "480p/5s for fastest look-dev; 720p/5–10s for internal reviews and social; 1080p/10s for hero beats and client-ready shots."
     },
     {
-      "q": "Which resolution should I choose?",
-      "a": "Use 480p or 720p for cheap ideation, then rerun final clips at 1080p (billed at $0.15/s) once you’ve locked the direction."
+      "q": "Can Wan 2.5 handle vertical and square videos?",
+      "a": "Yes. Choose 16:9, 9:16 or 1:1 before rendering; 9:16 is best for mobile-first placements."
+    },
+    {
+      "q": "Does Wan 2.5 support Image → Video?",
+      "a": "Yes. Upload one still (portrait, product, concept art) and focus the prompt on motion, camera and audio."
+    },
+    {
+      "q": "How is Wan 2.5 priced versus other engines?",
+      "a": "Per-second by resolution (0.05/0.10/0.15 $/s). It’s mid-tier: cheaper than premium long-form, more capable than ultra-budget silent engines."
     }
   ],
-  "pricingNotes": "Wan 2.5 bills at $0.05/s (480p), $0.10/s (720p) or $0.15/s (1080p). A 5-second 1080p render is $0.75; double it for 10 seconds."
+  "custom": {
+    "heroDesc1": "Wan 2.5 lets you storyboard cinematic beats with built-in audio: prompt or image input, optional WAV/MP3, 5 or 10 seconds at 480p/720p/1080p.",
+    "heroDesc2": "Use it for hero beats and reveals where music, ambience or dialogue matter. Upload a track for tight sync or let Wan score the scene natively.",
+    "whyTitle": "Why Wan 2.5 is powerful inside MaxVideoAI",
+    "heroHighlights": [
+      "Text → Video and Image → Video in one engine",
+      "Optional audio upload (WAV/MP3) to lock timing to music or VO",
+      "Native audio generation when no track is attached",
+      "Flexible resolution tiers: 480p, 720p, 1080p",
+      "5 or 10 second beats that feel like finished shots",
+      "Prompt expansion toggle to enrich short briefs",
+      "Pay-as-you-go pricing with clear per-second rates",
+      "Available in Europe, UK and worldwide via the MaxVideoAI wallet",
+      "Fits alongside Sora, Veo, Pika, Kling, MiniMax Hailuo for cross-engine tests"
+    ],
+    "bestUseCasesTitle": "Best use cases",
+    "bestUseCases": [
+      "Hero beats with synchronized sound",
+      "Portraits, concept art or product stills animated with audio",
+      "480p look-dev, 1080p finals",
+      "English/Chinese prompts with optional expansion",
+      "Sound-led ideas where music hits or VO matter"
+    ],
+    "whatTitle": "What Wan 2.5 Actually Is in MaxVideoAI",
+    "whatIntro1": "Wan 2.5 is a text-and-image-to-video model built for short cinematic clips with native audio.",
+    "whatIntro2": "In MaxVideoAI it’s a flexible, audio-ready engine with tiered pricing by resolution.",
+    "whatFlowTitle": "In-app flow",
+    "whatFlowSteps": [
+      "1. Pick Wan 2.5.",
+      "2. Choose Text → Video or Image → Video.",
+      "3. Set duration (5/10 s), resolution (480p/720p/1080p) and aspect ratio.",
+      "4. (Optional) Attach WAV/MP3.",
+      "5. Decide if Prompt expansion stays on.",
+      "6. Paste a clear, cinematic prompt with subject, camera and sound.",
+      "7. Check live pricing and render."
+    ],
+    "specTitle": "Real Specs – Wan 2.5 in MaxVideoAI (480p–1080p, 5–10s)",
+    "specNote": "These specs describe Wan 2.5 exactly as you can use it today via MaxVideoAI.",
+    "specSections": [
+      {
+        "title": "Duration & Output",
+        "items": [
+          "Durations: 5 s and 10 s",
+          "Resolutions: 480p, 720p, 1080p (24 fps)"
+        ]
+      },
+      {
+        "title": "Aspect Ratios",
+        "items": [
+          "16:9 – horizontal for web/YouTube",
+          "9:16 – vertical for TikTok/Reels/Shorts",
+          "1:1 – square for feeds and profiles"
+        ]
+      },
+      {
+        "title": "Inputs & File Types",
+        "items": [
+          "Text prompts (single scene or short mini-sequence)",
+          "Image → Video: one still (PNG/JPG/JPEG/WebP/GIF/AVIF), ~25 MB, animated into 5/10 s",
+          "Audio input: WAV/MP3, 3–30 s, ~15 MB; trimmed/looped to match the clip"
+        ]
+      },
+      {
+        "title": "Audio",
+        "items": [
+          "Native audio if no track is uploaded",
+          "Uploaded audio becomes the main soundtrack, trimmed or looped",
+          "Use uploads for beat-accurate timing; use native for quick drafts"
+        ]
+      },
+      {
+        "title": "Prompt Expansion",
+        "items": [
+          "Optional LLM rewrite of short prompts",
+          "Enable for exploration; disable for literal control"
+        ]
+      },
+      {
+        "title": "Pricing",
+        "items": [
+          "$0.05/s (480p), $0.10/s (720p), $0.15/s (1080p)",
+          "Examples: 5s @1080p ≈ $0.75; 10s ≈ $1.50",
+          "Runs from the shared MaxVideoAI wallet with live rates shown"
+        ]
+      }
+    ],
+    "specValueProp": "Wan 2.5 is the audio-ready short-form engine for 5–10s beats where visuals and sound need to land together.",
+    "galleryTitle": "Wan 2.5 Example Gallery",
+    "galleryIntro": "Clips generated with the exact configuration you have access to in MaxVideoAI.",
+    "gallerySceneCta": "Open this scene in Generate and adapt it with your own script →",
+    "galleryAllCta": "View all Wan 2.5 examples →",
+    "recreateLabel": "Recreate this shot →",
+    "promptTitle": "Text-to-Video with Wan 2.5",
+    "promptIntro": "Use shot-style prompts with camera and audio notes.",
+    "promptPatternSteps": [
+      "Subject and tone",
+      "Environment",
+      "Camera language",
+      "Timing over 5 or 10 seconds",
+      "Lighting and look",
+      "Audio: ambience, SFX, music, short dialogue"
+    ],
+    "promptSkeleton": "[Duration] second [aspect ratio] cinematic shot of [subject] in [environment]. Camera [movement] while [main action] happens. Lighting [style], [grade] look. Audio: [ambience + music/SFX], optional line: “[…]”.",
+    "promptSkeletonNote": "Keep it concise; add or remove audio cues depending on whether you upload a track.",
+    "imageTitle": "Image-to-Video Flow with Wan 2.5",
+    "imageIntro": "Animate a single still into an audio-backed beat.",
+    "imageFlow": [
+      "Upload a portrait, product shot or concept art still.",
+      "Choose Image → Video, duration, resolution and aspect ratio.",
+      "Attach audio or let Wan generate it.",
+      "Prompt for motion (camera/subject) and how the beat ends at 5 or 10 s."
+    ],
+    "imageWhy": [
+      "Subtle animated intros for portraits",
+      "Product renders that feel alive",
+      "Concept art turned into audio-backed intro beats"
+    ],
+    "multishotTitle": "Audio-Guided Beats & Music Sync",
+    "multishotIntro1": "Wan 2.5 can tie visual movement to a specific track.",
+    "multishotIntro2": "Use downbeats and transitions as anchors in your prompt.",
+    "multishotTips": [
+      "Trim audio to 5 or 10 s for precise beat placement",
+      "Call out when visuals should hit specific beats",
+      "Keep dialogue short and natural within 5–10 s",
+      "Draft with native audio; upload polished tracks for finals"
+    ],
+    "demoTitle": "Demo: One Prompt for Wan 2.5",
+    "demoPromptLabel": "10 second 9:16 product story synced to uploaded track",
+    "demoPrompt": [
+      "10s vertical shot of a fitness smartwatch on a runner’s wrist, timed to an energetic electronic track.",
+      "Start: close-up on beat one with raindrops on glass.",
+      "Beat change: pull back to the runner sprinting in slow motion on a neon-lit bridge.",
+      "Final beat: swing to profile close-up with visible breath, display glowing.",
+      "Lighting: blue hour, bright highlights on metal.",
+      "Audio: uploaded track as main music + subtle footsteps, rain, breathing; no dialogue."
+    ],
+    "demoNotes": [
+      "Audio anchors the visual transitions.",
+      "Single subject/environment with clear camera path.",
+      "Explicit cues for when hits land."
+    ],
+    "tipsTitle": "Tips & Limitations in Plain English",
+    "strengths": [
+      "Short 5–10 s beats that feel complete",
+      "Audio + video together for trailers, intros and reveals",
+      "Flexible resolution tiers for cheap drafts and polished finals",
+      "Handles realistic or stylized content with clear prompts"
+    ],
+    "boundaries": [
+      "Max 10 s per render; stitch clips for longer stories",
+      "Plan a light sound pass in your editor for client work",
+      "Tiny text/UI may be unreliable; keep critical copy as overlays",
+      "Prompt expansion can change nuance; disable for literal control"
+    ],
+    "tipsFooter": "Use Wan 2.5 when visuals and sound must land together—ideate cheap, finish in HD with your track.",
+    "safetyTitle": "Safety & People / Likeness",
+    "safetyRules": [
+      "No explicit sexual content or sexualized minors",
+      "No graphic/shocking or glorified violence",
+      "Avoid hateful, harassing or extremist material",
+      "Don’t use real likeness without consent; avoid public figures",
+      "Prompts/images/audio may be blocked or modified by moderation layers"
+    ],
+    "safetyInterpretation": [
+      "Use Wan 2.5 for brand-safe, legal and ethical content"
+    ],
+    "safetyNote": "Wan 2.5 outputs run through provider and MaxVideoAI safeguards.",
+    "comparisonTitle": "Wan 2.5 vs Sora 2 / Veo 3.1 / Pika – Quick Overview",
+    "comparisonPoints": [
+      "Wan 2.5: audio-ready short beats with optional track upload and flexible resolution tiers",
+      "Sora 2: 720p with audio for realistic UGC-style and product scenes",
+      "Veo 3.1: controllable 720p/1080p with strong camera language and audio",
+      "Pika 2.2: stylized, silent animation for loops and playful visuals"
+    ],
+    "comparisonCta": "Compare Wan 2.5 vs Sora 2 / Veo 3.1 →",
+    "faqTitle": "FAQ – Wan 2.5 in MaxVideoAI",
+    "faqs": [
+      { "q": "Does Wan 2.5 always generate audio?", "a": "Yes. Native audio if no track is uploaded; uploaded WAV/MP3 becomes the main soundtrack, trimmed or looped to 5/10 s." },
+      { "q": "What resolutions and durations should I use?", "a": "480p/5s for fastest and cheapest tests; 720p/5–10s for internal and social; 1080p/10s for hero beats and client delivery." },
+      { "q": "Can Wan 2.5 handle vertical and square videos?", "a": "Yes—16:9, 9:16 or 1:1. Pick 9:16 for mobile-first placements." },
+      { "q": "Does Wan 2.5 support Image → Video?", "a": "Yes. Upload one still and focus the prompt on motion, camera and audio." },
+      { "q": "How is Wan 2.5 priced versus other engines?", "a": "Per-second by resolution (0.05/0.10/0.15 $/s); mid-tier compared to premium long-form and ultra-budget silent engines." }
+    ],
+    "relatedTitle": "Explore other models",
+    "relatedSubtitle": "Compare price, latency and output options across the MaxVideoAI catalog.",
+    "finalPara1": "Wan 2.5 in MaxVideoAI is your audio-ready short-form engine for 5–10 second beats.",
+    "finalPara2": "Use native or uploaded audio, iterate cheap, and finish in HD when visuals and sound must land together.",
+    "finalButton": "Open Generate"
+  }
 }

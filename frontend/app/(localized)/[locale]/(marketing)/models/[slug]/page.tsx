@@ -1337,7 +1337,8 @@ export default async function ModelDetailPage({ params }: PageParams) {
     slug === 'sora-2-pro' ||
     slug === 'veo-3-1' ||
     slug === 'veo-3-1-fast' ||
-    slug === 'pika-text-to-video'
+    slug === 'pika-text-to-video' ||
+    slug === 'wan-2-5'
   ) {
     const activeLocale = routeLocale ?? 'en';
     const { dictionary } = await resolveDictionary();
