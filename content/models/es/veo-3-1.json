@@ -85,8 +85,5 @@
     { "q": "¿Admite imagen→video?", "a": "Sí. Empieza con un still (Imagen→Video) o usa 1–4 imágenes de referencia en Texto→Video." },
     { "q": "¿Puedo pasar de 8 segundos?", "a": "Bases de 4/6/8 s. Usa Extend y encadena clips; cada extensión es otro bloque de 4–8 s." },
     { "q": "¿Cómo lo mantengo on-brand?", "a": "Usa stills de referencia (Nano Banana o librería de marca), descripciones consistentes y paleta/luz explícitas." }
-  ],
-  "custom": {
-    "finalButton": "Abrir Generate"
-  }
+  ]
 }

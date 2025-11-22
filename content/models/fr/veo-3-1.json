@@ -85,8 +85,5 @@
     { "q": "Image→vidéo pris en charge ?", "a": "Oui. Partez d’un still (Image→Vidéo) ou utilisez 1–4 références en Texte→Vidéo." },
     { "q": "Au-delà de 8 secondes ?", "a": "Bases 4/6/8 s. Utilisez Extend et enchaînez les clips comme blocs de 4–8 s." },
     { "q": "Comment rester on-brand ?", "a": "Références Nano Banana ou bibliothèque de marque, descriptions cohérentes et palette/lumière explicites." }
-  ],
-  "custom": {
-    "finalButton": "Ouvrir Generate"
-  }
+  ]
 }
