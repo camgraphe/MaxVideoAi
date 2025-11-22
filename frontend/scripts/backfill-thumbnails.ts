@@ -7,11 +7,6 @@ import 'tsconfig-paths/register.js';
 loadEnv({ path: path.resolve(process.cwd(), '.env.local'), override: true });
 loadEnv({ path: path.resolve(process.cwd(), '.env'), override: false });
 
-import { query } from '../src/lib/db';
-import { ensureBillingSchema } from '../src/lib/schema';
-import { ensureJobThumbnail, isPlaceholderThumbnail } from '../server/thumbnails';
-import { normalizeMediaUrl } from '../lib/media';
-
 type BackfillRow = {
   job_id: string;
   user_id: string | null;
@@ -23,6 +18,11 @@ type BackfillRow = {
 };
 
 async function main(): Promise<void> {
+  const { query } = await import('../src/lib/db');
+  const { ensureBillingSchema } = await import('../src/lib/schema');
+  const { ensureJobThumbnail, isPlaceholderThumbnail } = await import('../server/thumbnails');
+  const { normalizeMediaUrl } = await import('../lib/media');
+
   const batchSize = Number(process.env.THUMBNAIL_BACKFILL_BATCH ?? '25');
 
   try {
