@@ -7,7 +7,7 @@ import { resolveDictionary } from '@/lib/i18n/server';
 import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
 import { listFalEngines, getFalEngineBySlug, type FalEngineEntry } from '@/config/falEngines';
 import type { AppLocale } from '@/i18n/locales';
-import { locales, localePathnames, localeRegions } from '@/i18n/locales';
+import { locales, localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
@@ -646,7 +646,7 @@ function Sora2PageLayout({
   const heroDesc1 = copy.heroDesc1 ?? localizedContent.overview ?? localizedContent.seo.description ?? null;
   const heroDesc2 = copy.heroDesc2;
   const isEsLocale = locale === 'es';
-  const supportedLocale = locale as SupportedLocale;
+  const supportedLocale: AppLocale = locale;
   const localizeModelsPath = (targetSlug?: string) =>
     localizePathFromEnglish(supportedLocale, targetSlug ? `/models/${targetSlug.replace(/^\/+/, '')}` : '/models');
   const primaryCta = copy.primaryCta ?? localizedContent.hero?.ctaPrimary?.label ?? 'Start generating';
