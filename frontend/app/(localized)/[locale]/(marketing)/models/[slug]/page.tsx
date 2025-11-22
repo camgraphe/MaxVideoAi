@@ -1338,7 +1338,8 @@ export default async function ModelDetailPage({ params }: PageParams) {
     slug === 'veo-3-1' ||
     slug === 'veo-3-1-fast' ||
     slug === 'pika-text-to-video' ||
-    slug === 'wan-2-5'
+    slug === 'wan-2-5' ||
+    slug === 'kling-2-5-turbo'
   ) {
     const activeLocale = routeLocale ?? 'en';
     const { dictionary } = await resolveDictionary();

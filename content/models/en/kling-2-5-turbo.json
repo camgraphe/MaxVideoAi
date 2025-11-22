@@ -2,93 +2,281 @@
   "marketingName": "Kling 2.5 Turbo",
   "versionLabel": "2.5 Turbo",
   "seo": {
-    "title": "Kling 2.5 Turbo – Text & Image to Video",
-    "description": "Route Kling 2.5 Turbo through MaxVideoAI and switch between Pro text, Pro image, or Standard image-to-video tiers without leaving the workspace.",
+    "title": "Kling 2.5 Turbo – AI Text-to-Video & Image-to-Video (1080p, 5–10s, Silent)",
+    "description": "Cinematic, silent 1080p clips in 5–10 seconds from text or a single image. Pro Text / Pro Image / Standard tiers, 16:9/9:16/1:1, price-before-render in MaxVideoAI.",
     "image": "/hero/kling-25.jpg"
   },
+  "overview": "Kling 2.5 Turbo in MaxVideoAI: cinematic, silent 1080p clips from text or one image, 5–10 seconds, 16:9/9:16/1:1. Choose Pro Text, Pro Image or Standard per render to balance quality and cost.",
   "hero": {
-    "title": "Kling 2.5 Turbo – Text or Image to Video",
-    "intro": "Draft cinematic clips from a prompt, animate a single still, or drop to the Standard tier for budget-friendly loops. One card exposes every Kling 2.5 Turbo variant so you can decide per render without juggling endpoints.",
+    "title": "Kling 2.5 Turbo – AI Text-to-Video & Image-to-Video in MaxVideoAI (1080p, 5–10s)",
+    "intro": "Kling 2.5 Turbo – Cinematic, Silent 1080p AI Video (5–10s, Text or Image Input)",
+    "badge": "1080p · 5–10s · Text or Image input · Silent output",
     "ctaPrimary": {
-      "label": "Try Kling 2.5 Turbo",
+      "label": "Start generating with Kling 2.5 Turbo",
       "href": "/app?engine=kling-2-5-turbo"
     },
     "secondaryLinks": [
-      { "label": "See all engines", "href": "/models" },
-      { "label": "Explore workflows", "href": "/workflows" },
-      { "label": "Check live pricing in-app", "href": "/generate" }
+      {
+        "label": "Compare Kling vs Sora vs Veo vs Wan →",
+        "href": "/models/veo-3-1"
+      }
     ]
   },
-  "overview": "Kling 2.5 Turbo brings Kuaishou's realistic motion system into the same prompt lab as Sora and Veo. Spin up 5–10 second hero shots, animate uploaded portraits with the Pro image tier, or switch to the Standard mode when you need dozens of social loops without blowing the budget.",
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      "Hero product beats that need camera polish without Sora timing",
-      "Reference-driven portrait animation for founders or talent",
-      "Budget-friendly B-roll or mood loops using the Standard tier",
-      "Cinematic teasers for TikTok/Reels where 5–10s cadence matters"
+      "Hero product beats needing camera polish without Sora-level cost/latency",
+      "High-intensity action sequences and dynamic movement in 5–10 seconds",
+      "Portrait/selfie-style animation from a single still",
+      "Budget-friendly B-roll and loops via Standard image tier",
+      "Reels/Shorts intros where 10 seconds is the whole story"
     ]
   },
   "technicalOverviewTitle": "Technical overview",
   "technicalOverview": [
-    { "label": "Duration", "body": "5 or 10 second renders with fixed timing" },
-    { "label": "Aspect ratios", "body": "16:9, 9:16, or 1:1 across text and image runs" },
-    { "label": "Inputs", "body": "Freeform prompt or a single JPG/PNG/WEBP reference for Pro/Standard image-to-video" },
-    { "label": "Pricing", "body": "$0.35 per 5s in Pro, $0.21 per 5s in Standard image mode" }
+    { "label": "Duration", "body": "5 s or 10 s per clip" },
+    { "label": "Resolution", "body": "1080p Full HD (1920×1080)" },
+    { "label": "Aspect ratios", "body": "16:9, 9:16, 1:1" },
+    { "label": "Inputs", "body": "Text → Video (Pro Text); Image → Video (Pro Image / Standard) with one still" },
+    { "label": "Audio", "body": "Silent output (no baked audio)" },
+    {
+      "label": "Controls",
+      "body": "Negative prompt; CFG scale (~0.5–0.7 sweet spot); tier selector (Pro Text / Pro Image / Standard)"
+    },
+    {
+      "label": "Pricing",
+      "body": "Shown per 5 seconds in-app; example: Pro 5s ≈ $0.35, 10s ≈ $0.70; Standard cheaper (≈$0.21 / $0.42)"
+    }
   ],
   "promptStructure": {
-    "title": "Prompt structure",
-    "quote": "Cinematic dolly shot of two cars launching off the line at dusk, volumetric haze, dramatic lighting, shallow depth of field, 24fps.",
-    "description": "Keep the directions cinematic and structured:",
+    "title": "Text-to-Video with Kling 2.5 Turbo",
+    "quote": "10 second [aspect ratio] cinematic shot of [subject] in [environment]. Camera [movement] while [main action] plays out, realistic motion and detailed lighting. Style: [gritty / glossy / cinematic]. No text, no logos, no extra characters.",
+    "description": "Write prompts like a short DoP note: subject/framing, environment, camera move, pacing, lighting/look, plus a clear negative prompt.",
     "steps": [
-      "Spell out the primary camera move (dolly, handheld sway, drone arc)",
-      "Call out lens or lighting cues to lock the mood",
-      "Set the pacing (slow motion, whip-pan, seamless loop)",
-      "For image→video, remind Kling what needs to stay untouched"
+      "Subject & framing (who/what and how close)",
+      "Environment (one setting)",
+      "Camera move (dolly, tracking, handheld sway, orbit, etc.)",
+      "Motion & pacing over 5/10 seconds",
+      "Lighting & look (gritty, glossy, neon, commercial, etc.)",
+      "Negative prompt to block text/logos/extra characters"
     ]
   },
   "tips": {
-    "title": "Tips & tricks",
+    "title": "Tips & limits",
     "items": [
-      "⭐ Use Pro Image when every stitch of wardrobe needs to hold up on a hero shot",
-      "💸 Drop to Standard image mode for batch runs of mood loops or TikTok hooks",
-      "🖼️ Upload a straight-on portrait to keep face structure and styling intact",
-      "🎚️ Sweep CFG scale between 0.4–0.7 to balance fidelity vs exploration",
-      "🔁 Keep prompts to two sentences max to avoid wandering camera paths",
-      "📼 Default to 9:16 when the deliverable is reels/stories-only"
+      "Keep prompts to 1–2 tight sentences; very long prompts can wander",
+      "Use a strong negative prompt: “no text, no logos, no extra people”",
+      "Pro Text for highest fidelity; Pro Image for portrait/product from a still; Standard for cheaper loops",
+      "Stick to one scene; stitch multiple clips for longer stories",
+      "Add your own audio in the edit or pair with Wan/Sora/Veo clips"
     ]
   },
   "compareLink": {
-    "label": "engine guide",
-    "href": "/ai-video-engines",
-    "before": "Compare Kling with Sora, Veo, and Pika in our ",
-    "after": "."
+    "label": "Compare Kling vs Sora vs Veo vs Wan →",
+    "href": "/models/veo-3-1"
   },
   "prompts": [
     {
-      "title": "Fashion hero",
-      "prompt": "Slow push-in on a model in a mirrored set, neon rim lights, fabric billowing in gentle wind, 35mm lens.",
-      "mode": "t2v"
+      "title": "Alley action (10s, 16:9)",
+      "prompt": "10s 16:9 handheld tracking shot of a man sprinting through a narrow city alley at night. Camera runs behind and to the side, breathing with footsteps as neon signs and wet cobblestones streak past. High contrast, reflections, realistic motion blur, film grain. No text, no logos, no police cars, no explosions."
     },
     {
-      "title": "Portrait remix",
-      "prompt": "Animate the uploaded founder portrait into a confident walk-and-talk moment, golden hour backlight, handheld sway.",
-      "mode": "i2v"
+      "title": "Founder portrait drift (5s, 9:16)",
+      "prompt": "5s vertical 9:16 shot of a founder standing by a window at golden hour. Slow handheld drift from chest-up to closer on the face, shallow depth of field, city lights softly blurred. Realistic skin, crisp shirt details, gentle flares. No text, no logos, no extra people."
     }
   ],
   "faqs": [
-    {
-      "q": "What’s the difference between Pro and Standard?",
-      "a": "Pro modes (text and image) prioritise fidelity and motion nuance. Standard image-to-video runs inside the same card but lowers cost and render time for higher volume loops."
-    },
-    {
-      "q": "Can I upload more than one image?",
-      "a": "Kling accepts one image per render. Merge reference angles into a single board if you need more context and describe the camera path clearly."
-    },
-    {
-      "q": "Does Kling output audio?",
-      "a": "No. Renders are silent so they fit any edit. Layer music/VO in MaxVideoAI or pair the brief with Sora 2 Pro when you need native dialogue."
-    }
+    { "q": "Does Kling 2.5 Turbo output audio?", "a": "No. It is video-only and produces silent 1080p clips; add sound in your editor or pair with audio-capable engines." },
+    { "q": "What durations and formats are supported?", "a": "5 or 10 seconds in 16:9, 9:16 or 1:1 for both text and image runs." },
+    { "q": "Can I upload more than one reference image?", "a": "No. One image per render. Combine references into one board if needed and describe the camera path clearly." },
+    { "q": "How is Kling priced?", "a": "Per 5s/10s shown in-app. Pro tiers ~ $0.35 / $0.70; Standard image cheaper. Confirm live price in the chip before rendering." },
+    { "q": "When should I use another engine?", "a": "Use Sora/Veo/Wan for native audio or multi-beat stories; use Pika for stylized animation or pixel looks." }
   ],
-  "pricingNotes": "Check the Price-Before chip before each run: $0.35 per 5s on Pro tiers and $0.21 per 5s on Standard image-to-video."
+  "custom": {
+    "heroDesc1": "Generate cinematic, silent 1080p clips from text or a single still. Choose Pro Text, Pro Image or Standard per render to balance fidelity and cost.",
+    "heroDesc2": "Pick 5 or 10 seconds, 16:9/9:16/1:1, upload one image or write a focused prompt, and get crisp footage ready for editors and social teams.",
+    "whyTitle": "Why Kling 2.5 Turbo is powerful inside MaxVideoAI",
+    "heroHighlights": [
+      "1080p by default for sharp, broadcast-style footage",
+      "5 or 10 second clips tuned for cinematic beats",
+      "Text → Video and Image → Video in one card",
+      "Pro Text / Pro Image / Standard tiers exposed together",
+      "Aspect ratios: 16:9, 9:16, 1:1 per render",
+      "Silent exports ready to score however you like",
+      "Strong motion & physics with consistent style",
+      "Price-before-render and live timing via MaxVideoAI wallet/queue"
+    ],
+    "bestUseCasesTitle": "Best use cases",
+    "bestUseCases": [
+      "Hero product beats with polished camera work",
+      "Action/dynamic movement in 5–10 seconds",
+      "Portrait/selfie animation from a single still",
+      "Budget B-roll/mood loops using Standard image tier",
+      "Short social intros where 10s is the whole story"
+    ],
+    "whatTitle": "What Kling 2.5 Turbo Actually Is in MaxVideoAI",
+    "whatIntro1": "Kling 2.5 Turbo is a high-performance short-form video model for cinematic motion, strong prompt adherence and consistent style.",
+    "whatIntro2": "In MaxVideoAI it is a single, multi-tier engine you can switch per render.",
+    "whatFlowTitle": "MaxVideoAI flow",
+    "whatFlowSteps": [
+      "1. Choose Kling 2.5 Turbo.",
+      "2. Pick Text → Video (Pro Text) or Image → Video (Pro Image / Standard).",
+      "3. Set duration (5/10 s), aspect ratio, 1080p.",
+      "4. Choose Pro vs Standard for quality vs budget.",
+      "5. Paste a cinematic, camera-focused prompt and optional negative prompt.",
+      "6. Check exact price before you render.",
+      "7. Compare against Sora, Veo, Wan, MiniMax in the same workspace."
+    ],
+    "specTitle": "Real Specs – Kling 2.5 Turbo in MaxVideoAI (1080p, 5–10s)",
+    "specNote": "This describes Kling 2.5 Turbo as used in MaxVideoAI.",
+    "specSections": [
+      {
+        "title": "Duration & Output",
+        "items": [
+          "5 s or 10 s per clip",
+          "1080p Full HD (1920×1080)",
+          "Short, high-impact beats"
+        ]
+      },
+      {
+        "title": "Aspect Ratios",
+        "items": [
+          "16:9 – landscape",
+          "9:16 – vertical",
+          "1:1 – square"
+        ]
+      },
+      {
+        "title": "Inputs & File Types",
+        "items": [
+          "Text prompts (1–2 focused sentences; include camera/subject/environment/style)",
+          "Image input: one still (PNG/JPG/WEBP), merge refs if needed",
+          "Negative prompt optional to block text/logos/extra people"
+        ]
+      },
+      {
+        "title": "Audio",
+        "items": [
+          "Video-only, silent output",
+          "Add music/VO/SFX in your editor or pair with audio engines"
+        ]
+      },
+      {
+        "title": "Quality Tiers",
+        "items": [
+          "Pro Text: highest fidelity text→video",
+          "Pro Image: full 1080p image→video",
+          "Standard Image: cheaper image→video for loops and bulk variants"
+        ]
+      },
+      {
+        "title": "Pricing",
+        "items": [
+          "Shown per 5s/10s in the UI",
+          "Examples: Pro ~ $0.35 / $0.70; Standard ~ $0.21 / $0.42",
+          "Price-before-render chip in Generate shows live rate"
+        ]
+      }
+    ],
+    "specValueProp": "Kling 2.5 Turbo is a silent 1080p engine for cinematic short beats with strong motion and physics.",
+    "galleryTitle": "Example Gallery: Kling 2.5 Turbo",
+    "galleryIntro": "Actual runs from the current Kling route in MaxVideoAI.",
+    "gallerySceneCta": "Open this scene in Generate and adapt it with your own script →",
+    "galleryAllCta": "View all Kling 2.5 Turbo examples →",
+    "recreateLabel": "Recreate this shot →",
+    "promptTitle": "Text-to-Video with Kling 2.5 Turbo",
+    "promptIntro": "Write like a DoP: subject/framing, environment, camera, pacing, look, and negatives.",
+    "promptPatternSteps": [
+      "Subject & framing",
+      "Environment",
+      "Camera move",
+      "Motion & pacing over 5/10 s",
+      "Lighting/look",
+      "Negative prompt"
+    ],
+    "promptSkeleton": "10 second [aspect ratio] cinematic shot of [subject] in [environment]. Camera [movement] while [main action] plays out. Lighting [style], [grade] look. No text, no logos, no extra characters.",
+    "promptSkeletonNote": "Keep it concise; avoid overlong briefs to prevent wandering cameras.",
+    "imageTitle": "Image-to-Video Flow with Kling 2.5 Turbo",
+    "imageIntro": "Animate one still via Pro Image or Standard tiers.",
+    "imageFlow": [
+      "Upload a portrait, product shot or keyframe (PNG/JPG/WEBP).",
+      "Pick Pro Image for max fidelity or Standard for cheaper loops.",
+      "Set duration, aspect ratio and 1080p output.",
+      "Describe motion (camera/subject) and add a negative prompt to prevent overlays."
+    ],
+    "imageWhy": [
+      "Founder portraits to subtle walk-and-talk shots",
+      "Product hero stills with parallax & camera drift",
+      "Cinematic loops from 3D renders or concept frames"
+    ],
+    "multishotTitle": "Loops, Mini-Sequences & 10s Stories",
+    "multishotIntro1": "Kling excels at focused 5 or 10 second beats.",
+    "multishotIntro2": "Treat 5s as one gesture; 10s as 2–3 mini beats with a coherent camera path.",
+    "multishotTips": [
+      "One scene, one style; stitch clips for longer edits",
+      "Use Beats 1/2/3 to plan a 10s arc (establish, tension, hero frame)",
+      "Use Recreate-from-gallery to see pacing patterns"
+    ],
+    "demoTitle": "Demo Prompt – 5s Founder Portrait (9:16)",
+    "demoPromptLabel": "5 second founder portrait drift",
+    "demoPrompt": [
+      "5s vertical 9:16 clip of a startup founder by a window at golden hour.",
+      "Camera: slow handheld drift from chest-up to closer on the face, shallow depth.",
+      "City lights blurred in the background, realistic skin and fabric, gentle flares.",
+      "No text, no logos, no extra people."
+    ],
+    "demoNotes": [
+      "Single subject/environment, clear camera path",
+      "Room for VO/graphics in post",
+      "Use Pro Image for maximum fidelity from a portrait still"
+    ],
+    "tipsTitle": "Tips & Limitations in Plain English",
+    "strengths": [
+      "Top-tier cinematic motion and realism in short clips",
+      "Default 1080p makes it hero-ready",
+      "Great for action, handheld, tracking, and “shot on phone” looks",
+      "Tier selector simplifies cost/fidelity trade-offs"
+    ],
+    "boundaries": [
+      "5 or 10 seconds max; stitch for longer stories",
+      "No native audio; add sound in post or pair with audio engines",
+      "Very verbose prompts can wander; keep it tight",
+      "Tiny on-screen text/UI is unreliable—overlay critical copy"
+    ],
+    "tipsFooter": "Respect these constraints and Kling becomes a predictable 1080p workhorse.",
+    "safetyTitle": "Safety & People / Likeness",
+    "safetyRules": [
+      "No real celebrities/politicians/public figures",
+      "No explicit sexual content or sexualized minors",
+      "Avoid hateful, harassing or extremist content",
+      "Don’t use real likeness without consent; avoid IP infringement",
+      "Provider and MaxVideoAI moderation may block/adjust content"
+    ],
+    "safetyInterpretation": [
+      "Use Kling for brand-safe, legal, ethical content"
+    ],
+    "safetyNote": "Treat Kling as a professional, compliant tool.",
+    "comparisonTitle": "Kling vs Sora / Veo / Wan / Pika – Quick Overview",
+    "comparisonPoints": [
+      "Kling 2.5 Turbo: 1080p, silent, cinematic; great for action and hero shots",
+      "Sora 2 / Sora 2 Pro: 720p/1080p with audio for physics-heavy mini-films",
+      "Veo 3.1: controllable framing presets, audio on/off, 4–8 s beats",
+      "Wan 2.5: 5–10 s with native or uploaded audio for music/VO sync",
+      "Pika 2.2: stylized, silent animation for loops and playful visuals"
+    ],
+    "comparisonCta": "Compare Kling vs Sora vs Veo vs Wan →",
+    "faqTitle": "FAQ – Kling 2.5 Turbo in MaxVideoAI",
+    "faqs": [
+      { "q": "Does Kling 2.5 Turbo output audio?", "a": "No. It is video-only and silent; add sound in your editor or via audio-capable engines." },
+      { "q": "What durations and formats are supported?", "a": "5 or 10 seconds; 16:9, 9:16, 1:1 for text and image runs." },
+      { "q": "Can I upload multiple images?", "a": "One image per render. Merge references into a single board if needed." },
+      { "q": "How is Kling priced?", "a": "Per 5s/10s shown in-app. Pro ~ $0.35/$0.70; Standard cheaper. Use the price chip before rendering." },
+      { "q": "When should I choose another engine?", "a": "Use Sora/Veo/Wan for native audio; Pika for stylized/pixel looks; Sora/Veo for multi-beat audio stories." }
+    ],
+    "relatedTitle": "Explore other models",
+    "relatedSubtitle": "Compare pricing, latency, and outputs across the MaxVideoAI catalog.",
+    "finalPara1": "Kling 2.5 Turbo in MaxVideoAI is your 1080p, silent, cinematic engine for short, punchy beats.",
+    "finalPara2": "Use it when camera work and motion carry the story, then layer audio in post or pair with audio engines.",
+    "finalButton": "Open Generate"
+  }
 }
