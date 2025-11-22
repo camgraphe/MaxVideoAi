@@ -569,7 +569,7 @@ async function renderSoraModelPage({
     return normalized ? allowedEngineIds.has(normalized) : false;
   });
   const validatedMap = await getVideosByIds(soraExamples.map((video) => video.id));
-  const galleryVideos = soraExamples
+  let galleryVideos = soraExamples
     .filter((video) => validatedMap.has(video.id))
     .map((video) =>
       toGalleryCard(
@@ -582,6 +582,28 @@ async function renderSoraModelPage({
       )
     );
 
+  const preferredIds = PREFERRED_MEDIA[engine.modelSlug] ?? { hero: null, demo: null };
+  const preferredList = [preferredIds.hero, preferredIds.demo].filter((id): id is string => Boolean(id));
+  const missingPreferred = preferredList.filter((id) => !galleryVideos.some((video) => video.id === id));
+  if (missingPreferred.length) {
+    const preferredMap = await getVideosByIds(missingPreferred);
+    for (const id of preferredList) {
+      if (!preferredMap.has(id) || galleryVideos.some((video) => video.id === id)) continue;
+      const video = preferredMap.get(id)!;
+      galleryVideos = [
+        ...galleryVideos,
+        toGalleryCard(
+          video,
+          engine.brandId,
+          localizedContent.marketingName ?? engine.marketingName,
+          engine.modelSlug,
+          engine.modelSlug,
+          backPath
+        ),
+      ];
+    }
+  }
+
   const fallbackMedia: FeaturedMedia = {
     id: `${engine.modelSlug}-hero-fallback`,
     prompt: `${localizedContent.marketingName ?? engine.marketingName} demo clip from MaxVideoAI`,
@@ -593,7 +615,6 @@ async function renderSoraModelPage({
     label: localizedContent.marketingName ?? engine.marketingName ?? 'Sora',
   };
 
-  const preferredIds = PREFERRED_MEDIA[engine.modelSlug] ?? { hero: null, demo: null };
   const heroMedia = pickHeroMedia(galleryVideos, preferredIds.hero, fallbackMedia);
   const demoMedia = pickDemoMedia(galleryVideos, heroMedia?.id ?? null, preferredIds.demo, fallbackMedia);
   if (engine.modelSlug === 'minimax-hailuo-02-text' && demoMedia) {
