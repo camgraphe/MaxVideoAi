@@ -18,7 +18,7 @@
     "secondaryLinks": [
       {
         "label": "Comparer Pika 2.2 vs Sora 2 / Veo 3.1 →",
-        "href": "/models/veo-3-1"
+        "href": "/modeles/veo-3-1"
       }
     ]
   },
@@ -69,7 +69,7 @@
   },
   "compareLink": {
     "label": "Comparer Pika 2.2 vs Sora 2 / Veo 3.1 →",
-    "href": "/models/veo-3-1"
+    "href": "/modeles/veo-3-1"
   },
   "prompts": [
     {

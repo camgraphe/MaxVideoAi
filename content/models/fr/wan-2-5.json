@@ -18,7 +18,7 @@
     "secondaryLinks": [
       {
         "label": "Comparer Wan 2.5 vs Sora 2 / Veo 3.1 →",
-        "href": "/models/veo-3-1"
+        "href": "/modeles/veo-3-1"
       }
     ]
   },
@@ -67,7 +67,7 @@
   },
   "compareLink": {
     "label": "Comparer Wan 2.5 vs Sora 2 / Veo 3.1 →",
-    "href": "/models/veo-3-1"
+    "href": "/modeles/veo-3-1"
   },
   "prompts": [
     {

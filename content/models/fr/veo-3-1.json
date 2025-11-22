@@ -18,7 +18,7 @@
     "secondaryLinks": [
       {
         "label": "Comparer Veo 3.1 vs Veo 3.1 Fast →",
-        "href": "/models/veo-3-1-fast"
+        "href": "/modeles/veo-3-1-fast"
       }
     ]
   },
@@ -67,7 +67,7 @@
   },
   "compareLink": {
     "label": "Comparer Veo 3.1 vs Veo 3.1 Fast →",
-    "href": "/models/veo-3-1-fast"
+    "href": "/modeles/veo-3-1-fast"
   },
   "prompts": [
     {

@@ -18,7 +18,7 @@
     "secondaryLinks": [
       {
         "label": "Comparar MiniMax vs Pika vs Veo →",
-        "href": "/models/veo-3-1"
+        "href": "/modelos/veo-3-1"
       }
     ]
   },
@@ -66,7 +66,7 @@
   },
   "compareLink": {
     "label": "Comparar MiniMax vs Pika vs Veo →",
-    "href": "/models/veo-3-1"
+    "href": "/modelos/veo-3-1"
   },
   "prompts": [
     {

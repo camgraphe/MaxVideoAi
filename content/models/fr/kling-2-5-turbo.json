@@ -18,7 +18,7 @@
     "secondaryLinks": [
       {
         "label": "Comparer Kling vs Sora vs Veo vs Wan →",
-        "href": "/models/veo-3-1"
+        "href": "/modeles/veo-3-1"
       }
     ]
   },
@@ -70,7 +70,7 @@
   },
   "compareLink": {
     "label": "Comparer Kling vs Sora vs Veo vs Wan →",
-    "href": "/models/veo-3-1"
+    "href": "/modeles/veo-3-1"
   },
   "prompts": [
     {
