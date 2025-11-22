@@ -633,11 +633,12 @@ async function renderSoraModelPage({
 
   return (
     <Sora2PageLayout
+      engine={engine}
       backLabel={backLabel}
       localizedContent={localizedContent}
       copy={copy}
-    heroMedia={heroMedia}
-    demoMedia={demoMedia}
+      heroMedia={heroMedia}
+      demoMedia={demoMedia}
     galleryVideos={galleryVideos}
     galleryCtaHref={galleryCtaHref}
     relatedEngines={relatedEngines}
@@ -651,6 +652,7 @@ async function renderSoraModelPage({
 }
 
 function Sora2PageLayout({
+  engine,
   backLabel,
   localizedContent,
   copy,
@@ -665,6 +667,7 @@ function Sora2PageLayout({
   canonicalUrl,
   breadcrumb,
 }: {
+  engine: FalEngineEntry;
   backLabel: string;
   localizedContent: EngineLocalizedContent;
   copy: SoraCopy;
@@ -711,6 +714,9 @@ function Sora2PageLayout({
     ? localizeModelsPath(secondaryCtaHref.replace(/^\/models\/?/, ''))
     : secondaryCtaHref;
   const heroPosterPreload = heroMedia.posterUrl ? buildOptimizedPosterUrl(heroMedia.posterUrl) ?? heroMedia.posterUrl : null;
+  const engineCards = [engine, ...relatedEngines].filter(
+    (entry, index, arr) => arr.findIndex((e) => e.modelSlug === entry.modelSlug) === index
+  );
   const engineCards = [
     engine,
     ...relatedEngines,
@@ -1635,7 +1641,40 @@ export default async function ModelDetailPage({ params }: PageParams) {
             >
               {cta.label}
             </Link>
-          ))}
+          ))} 
+        </div>
+      ) : null}
+
+      {engineCards.length ? (
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+          {engineCards.map((entry) => {
+            const pictogram = getEnginePictogram({
+              id: entry.engineId ?? entry.engine.id,
+              brandId: entry.brandId ?? entry.engine.brandId,
+              label: entry.marketingName ?? entry.engine.label,
+            });
+            return (
+              <article
+                key={entry.modelSlug}
+                className="rounded-2xl border border-hairline p-3 shadow-card"
+                style={{ backgroundColor: pictogram.backgroundColor, color: pictogram.textColor }}
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{entry.brandId}</p>
+                <h3 className="mt-1 text-lg font-semibold leading-tight text-text-primary">
+                  {entry.marketingName ?? entry.engine.label}
+                </h3>
+                {entry.versionLabel ? (
+                  <p className="text-xs font-semibold text-text-secondary">Version: {entry.versionLabel}</p>
+                ) : null}
+                <Link
+                  href={localizeModelsPath(entry.modelSlug)}
+                  className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accentSoft"
+                >
+                  View model →
+                </Link>
+              </article>
+            );
+          })}
         </div>
       ) : null}
 
