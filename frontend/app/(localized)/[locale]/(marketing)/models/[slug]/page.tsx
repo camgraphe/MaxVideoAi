@@ -1345,6 +1345,8 @@ export default async function ModelDetailPage({ params }: PageParams) {
   if (process.env.NODE_ENV === 'development') {
     console.info('[models/page] locale debug', { slug, routeLocale, activeLocale });
   }
+  const localizeModelsPath = (targetSlug?: string) =>
+    localizePathFromEnglish(activeLocale as AppLocale, targetSlug ? `/models/${targetSlug.replace(/^\/+/, '')}` : '/models');
   const localizedContent = await getEngineLocalized(slug, activeLocale);
   const detailSlugMap = buildDetailSlugMap(slug);
   const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${slug}`));
