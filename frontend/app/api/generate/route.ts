@@ -1463,7 +1463,7 @@ async function rollbackPendingPayment(params: {
         : typeof (error as { providerJobId?: string } | undefined)?.providerJobId === 'string'
           ? (error as { providerJobId?: string }).providerJobId!
           : lastProviderJobId ?? batchId ?? null;
-    const paymentStatusOverride =
+  const paymentStatusOverride =
       pendingReceipt && paymentMode === 'wallet'
         ? 'refunded_wallet'
         : pendingReceipt && paymentMode !== 'wallet'
@@ -1500,6 +1500,57 @@ async function rollbackPendingPayment(params: {
         providerMessage: effectiveProviderMessage ?? providerMessage ?? fallbackMessage,
         providerJobId,
       });
+
+    if (isTimeoutError) {
+      const progressFloor = Math.min(95, FAL_PROGRESS_FLOOR + FAL_RETRY_DELAYS_MS.length * 5);
+      const waitingMessage =
+        effectiveProviderMessage && effectiveProviderMessage !== fallbackMessage
+          ? `Still processing: ${effectiveProviderMessage}. Your request is in progress; we will update you shortly.`
+          : 'Rendering in progress; awaiting provider after timeout. We will refresh as soon as the next status arrives.';
+
+      if (providerJobId) {
+        await markJobAwaitingFal({
+          jobId,
+          engineId: engine.id,
+          providerJobId,
+          message: waitingMessage,
+          statusLabel: 'deferred',
+          attempt: FAL_RETRY_DELAYS_MS.length + 1,
+          context: {
+            status,
+            deferred: true,
+            timeout: true,
+          },
+          progressFloor,
+        });
+      } else {
+        await query(
+          `UPDATE app_jobs
+             SET status = 'running',
+                 progress = $2,
+                 message = $3,
+                 provisional = FALSE,
+                 updated_at = NOW()
+           WHERE job_id = $1`,
+          [jobId, progressFloor, waitingMessage]
+        ).catch((updateError) => {
+          console.error('[api/generate] failed to mark timeout job awaiting provider', updateError);
+        });
+      }
+
+      return NextResponse.json(
+        {
+          ok: true,
+          jobId,
+          status: 'running',
+          progress: progressFloor,
+          providerJobId,
+          deferred: true,
+          message: waitingMessage,
+        },
+        { status: 202 }
+      );
+    }
 
     if (deferable && providerJobId) {
       const progressFloor = Math.min(95, FAL_PROGRESS_FLOOR + FAL_RETRY_DELAYS_MS.length * 5);
@@ -1553,7 +1604,7 @@ async function rollbackPendingPayment(params: {
       console.error('[api/generate] failed to update provisional job after Fal error', updateError);
     }
 
-    if (pendingReceipt) {
+    if (pendingReceipt && !isTimeoutError) {
       if (walletChargeReserved) {
         await recordRefundReceipt(pendingReceipt, refundDescription, null);
       } else {
