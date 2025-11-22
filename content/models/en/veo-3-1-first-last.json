@@ -14,7 +14,7 @@
       "href": "/app?engine=veo-3-1-first-last"
     },
     "secondaryLinks": [
-      { "label": "See all engines", "href": "/models" },
+      { "label": "Compare with Veo 3.1 →", "href": "/models/veo-3-1" },
       { "label": "Explore workflows", "href": "/workflows" },
       { "label": "Check live pricing", "href": "/generate" }
     ]
@@ -69,10 +69,8 @@
     ]
   },
   "compareLink": {
-    "label": "engine guide",
-    "href": "/ai-video-engines",
-    "before": "Compare Veo variants alongside Sora and Pika in our ",
-    "after": "."
+    "label": "Compare with Veo 3.1 →",
+    "href": "/models/veo-3-1"
   },
   "prompts": [
     {

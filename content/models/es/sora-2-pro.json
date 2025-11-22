@@ -16,8 +16,8 @@
     },
     "secondaryLinks": [
       {
-        "label": "Ver todos los motores",
-        "href": "/modelos"
+        "label": "Comparar Sora 2 vs Sora 2 Pro (1080p) →",
+        "href": "/modelos/sora-2"
       },
       {
         "label": "Explorar flujos de trabajo",
@@ -294,10 +294,8 @@
     ]
   },
   "compareLink": {
-    "label": "guía de motores",
-    "href": "/comparativa",
-    "before": "Compara Sora Pro con Veo 3 y Pika en nuestra ",
-    "after": "."
+    "label": "Comparar Sora 2 vs Sora 2 Pro →",
+    "href": "/modelos/sora-2"
   },
   "prompts": [
     {

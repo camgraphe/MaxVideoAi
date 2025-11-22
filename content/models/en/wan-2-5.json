@@ -17,8 +17,8 @@
     },
     "secondaryLinks": [
       {
-        "label": "Compare Wan 2.5 vs Sora 2 / Veo 3.1 →",
-        "href": "/models/veo-3-1"
+        "label": "Compare Wan 2.5 vs Sora 2 →",
+        "href": "/models/sora-2"
       }
     ]
   },
@@ -69,8 +69,8 @@
     ]
   },
   "compareLink": {
-    "label": "Compare Wan 2.5 vs Sora 2 / Veo 3.1 →",
-    "href": "/models/veo-3-1"
+    "label": "Compare Wan 2.5 vs Sora 2 →",
+    "href": "/models/sora-2"
   },
   "prompts": [
     {
@@ -271,14 +271,13 @@
       "Use Wan 2.5 for brand-safe, legal and ethical content"
     ],
     "safetyNote": "Wan 2.5 outputs run through provider and MaxVideoAI safeguards.",
-    "comparisonTitle": "Wan 2.5 vs Sora 2 / Veo 3.1 / Pika – Quick Overview",
+    "comparisonTitle": "Wan 2.5 vs Sora 2 – Quick Overview",
     "comparisonPoints": [
-      "Wan 2.5: audio-ready short beats with optional track upload and flexible resolution tiers",
-      "Sora 2: 720p with audio for realistic UGC-style and product scenes",
-      "Veo 3.1: controllable 720p/1080p with strong camera language and audio",
-      "Pika 2.2: stylized, silent animation for loops and playful visuals"
+      "Wan 2.5: audio-ready 5–10s beats with optional track upload and flexible resolution tiers",
+      "Sora 2: 720p with native audio for realistic UGC/product shots when you want OpenAI-style motion",
+      "Veo 3.1 / Kling / Pika: pick these for framing presets, silent 1080p realism, or stylized loops"
     ],
-    "comparisonCta": "Compare Wan 2.5 vs Sora 2 / Veo 3.1 →",
+    "comparisonCta": "Compare Wan 2.5 vs Sora 2 →",
     "faqTitle": "FAQ – Wan 2.5 in MaxVideoAI",
     "faqs": [
       { "q": "Does Wan 2.5 always generate audio?", "a": "Yes. Native audio if no track is uploaded; uploaded WAV/MP3 becomes the main soundtrack, trimmed or looped to 5/10 s." },

@@ -14,7 +14,7 @@
       "href": "/app?engine=veo-3-1-first-last"
     },
     "secondaryLinks": [
-      { "label": "Ver todos los motores", "href": "/modelos" },
+      { "label": "Comparar con Veo 3.1 →", "href": "/modelos/veo-3-1" },
       { "label": "Explorar flujos de trabajo", "href": "/workflows" },
       { "label": "Consultar precios en vivo", "href": "/generate" }
     ]
@@ -57,10 +57,8 @@
     ]
   },
   "compareLink": {
-    "label": "guía de motores",
-    "href": "/comparativa",
-    "before": "Compara Veo con Sora y Pika en nuestra ",
-    "after": "."
+    "label": "Comparar con Veo 3.1 →",
+    "href": "/modelos/veo-3-1"
   },
   "prompts": [
     {

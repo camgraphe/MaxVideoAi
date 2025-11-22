@@ -17,8 +17,8 @@
     },
     "secondaryLinks": [
       {
-        "label": "Comparar Pika 2.2 vs Sora 2 / Veo 3.1 →",
-        "href": "/modelos/veo-3-1"
+        "label": "Comparar Pika 2.2 vs MiniMax Hailuo 02 →",
+        "href": "/modelos/minimax-hailuo-02-text"
       }
     ]
   },
@@ -68,8 +68,8 @@
     ]
   },
   "compareLink": {
-    "label": "Comparar Pika 2.2 vs Sora 2 / Veo 3.1 →",
-    "href": "/modelos/veo-3-1"
+    "label": "Comparar Pika 2.2 vs MiniMax Hailuo 02 →",
+    "href": "/modelos/minimax-hailuo-02-text"
   },
   "prompts": [
     {
@@ -246,13 +246,13 @@
       "Usa personajes ficticios, mundos estilizados y contenido brand-safe."
     ],
     "safetyNote": "Estos límites mantienen Pika 2.2 usable y conforme en MaxVideoAI.",
-    "comparisonTitle": "Pika 2.2 vs Sora 2 / Veo 3.1 – Resumen",
+    "comparisonTitle": "Pika 2.2 vs MiniMax Hailuo 02 – Resumen",
     "comparisonPoints": [
-      "Pika 2.2: clips cortos, estilizados y silenciosos para looks de animación y loops.",
-      "Sora 2: cine 720p con audio para escenas realistas.",
-      "Veo 3.1: 720p/1080p con audio, lenguaje de cámara y presets de encuadre fuertes."
+      "Pika 2.2: clips cortos, estilizados y silenciosos en 720p/1080p para animación y loops.",
+      "MiniMax Hailuo 02: bocetos silenciosos con buena física en 512p/768p para beats de 6–10 s.",
+      "Sora 2 / Wan 2.5 / Veo 3.1: úsalos cuando necesites audio nativo o más realismo."
     ],
-    "comparisonCta": "Comparar Pika 2.2 vs Sora 2 / Veo 3.1 →",
+    "comparisonCta": "Comparar Pika 2.2 vs MiniMax Hailuo 02 →",
     "faqTitle": "FAQ – Pika 2.2 en MaxVideoAI",
     "faqs": [
       { "q": "¿Pika 2.2 genera audio?", "a": "No. Clips silenciosos; añade soundtrack o usa un motor con audio." },

@@ -17,8 +17,8 @@
     },
     "secondaryLinks": [
       {
-        "label": "Comparer Kling vs Sora vs Veo vs Wan →",
-        "href": "/modeles/veo-3-1"
+        "label": "Comparer Kling vs Sora 2 Pro →",
+        "href": "/modeles/sora-2-pro"
       }
     ]
   },
@@ -69,8 +69,8 @@
     ]
   },
   "compareLink": {
-    "label": "Comparer Kling vs Sora vs Veo vs Wan →",
-    "href": "/modeles/veo-3-1"
+    "label": "Comparer Kling vs Sora 2 Pro →",
+    "href": "/modeles/sora-2-pro"
   },
   "prompts": [
     {
@@ -261,7 +261,7 @@
       "Wan 2.5 : 5–10 s avec audio natif ou piste upload",
       "Pika 2.2 : animation stylisée et silencieuse pour loops et visuels ludiques"
     ],
-    "comparisonCta": "Comparer Kling vs Sora vs Veo vs Wan →",
+    "comparisonCta": "Comparer Kling vs Sora 2 Pro →",
     "faqTitle": "FAQ – Kling 2.5 Turbo dans MaxVideoAI",
     "faqs": [
       { "q": "Kling 2.5 Turbo génère-t-il de l’audio ?", "a": "Non. Vidéo seule et silencieuse; ajoutez le son en post ou via des moteurs audio." },

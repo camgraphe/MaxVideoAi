@@ -17,8 +17,8 @@
     },
     "secondaryLinks": [
       {
-        "label": "Comparer MiniMax vs Pika vs Veo →",
-        "href": "/modeles/veo-3-1"
+        "label": "Comparer MiniMax vs Pika 2.2 →",
+        "href": "/modeles/pika-text-to-video"
       }
     ]
   },
@@ -41,7 +41,7 @@
     { "label": "Modes", "body": "Texte→vidéo et Image→vidéo" },
     { "label": "Audio", "body": "Sortie silencieuse (pas d’audio natif ou uploadé)" },
     { "label": "Tarifs", "body": "Économique; pricing live par wallet dans Generate" }
-  },
+  ],
   "promptStructure": {
     "title": "Texte→vidéo avec MiniMax Hailuo 02",
     "quote": "Clip [durée] [ratio] de [sujet] en mouvement dans [environnement]. Caméra [mouvement] pendant que [mouvement secondaire] réagit (vent/fur/debris). Style : [réaliste/stylisé]. Sans texte/logos.",
@@ -65,8 +65,8 @@
     ]
   },
   "compareLink": {
-    "label": "Comparer MiniMax vs Pika vs Veo →",
-    "href": "/modeles/veo-3-1"
+    "label": "Comparer MiniMax vs Pika 2.2 →",
+    "href": "/modeles/pika-text-to-video"
   },
   "prompts": [
     {
@@ -243,7 +243,7 @@
       "Kling 2.5 Turbo : 1080p silencieux pour hero shots 5–10 s",
       "Wan 2.5 : 5–10 s avec audio natif ou piste upload et multiples tiers"
     ],
-    "comparisonCta": "Comparer MiniMax vs Pika vs Veo →",
+    "comparisonCta": "Comparer MiniMax vs Pika 2.2 →",
     "faqTitle": "FAQ – MiniMax Hailuo 02 dans MaxVideoAI",
     "faqs": [
       { "q": "Pourquoi choisir MiniMax plutôt qu’un moteur premium ?", "a": "Motion/physique solide à moindre coût; idéal pour pubs volumineuses et tests." },

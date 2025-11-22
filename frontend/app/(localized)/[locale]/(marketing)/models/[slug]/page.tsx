@@ -36,6 +36,26 @@ const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null
     hero: 'job_4d97a93f-1582-4a50-bff1-72894c302164',
     demo: null,
   },
+  'veo-3-1': {
+    hero: 'job_a3e088db-b1e2-430f-83b3-2efce518c282',
+    demo: 'job_8547a19e-ebad-4376-8889-1d88355c0f52',
+  },
+  'veo-3-1-fast': {
+    hero: 'job_4db2339c-000a-4b81-a68c-9314dd7940b2',
+    demo: 'job_e34e8979-9056-4564-bbfd-27e8d886fa26',
+  },
+  'pika-text-to-video': {
+    hero: 'job_2452ca2e-66dd-49b7-b660-d17441449fae',
+    demo: 'job_f5992c71-a197-482f-8d0f-028f261ed27b',
+  },
+  'wan-2-5': {
+    hero: 'job_4b882003-b595-4d4e-b62c-1ae22f002bcf',
+    demo: 'job_f77a31c6-1549-471a-8fb1-1eb44c523390',
+  },
+  'kling-2-5-turbo': {
+    hero: null,
+    demo: 'job_b8db408a-7b09-4268-ad10-48e9cb8fc4a7',
+  },
 };
 
 type SpecSection = { title: string; items: string[] };
@@ -394,6 +414,7 @@ type FeaturedMedia = {
   hasAudio?: boolean;
   href?: string | null;
   label?: string | null;
+  aspectRatio?: string | null;
 };
 
 function formatPriceLabel(priceCents: number | null | undefined, currency: string | null | undefined): string | null {
@@ -458,6 +479,7 @@ function toFeaturedMedia(entry?: ExampleGalleryVideo | null): FeaturedMedia | nu
     hasAudio: entry.hasAudio,
     href: entry.href,
     label: entry.engineLabel,
+    aspectRatio: entry.aspectRatio,
   };
 }
 
@@ -574,6 +596,10 @@ async function renderSoraModelPage({
   const preferredIds = PREFERRED_MEDIA[engine.modelSlug] ?? { hero: null, demo: null };
   const heroMedia = pickHeroMedia(galleryVideos, preferredIds.hero, fallbackMedia);
   const demoMedia = pickDemoMedia(galleryVideos, heroMedia?.id ?? null, preferredIds.demo, fallbackMedia);
+  if (engine.modelSlug === 'minimax-hailuo-02-text' && demoMedia) {
+    demoMedia.prompt =
+      'A cinematic 10-second shot in 16:9. At night, the camera flies smoothly through a modern city full of soft neon lights and warm windows, then glides towards a single bright window high on a building. Without cutting, the camera passes through the glass into a cozy creator studio with a large desk and an ultra-wide monitor glowing in the dark. The room is lit by the screen and a warm desk lamp. The camera continues to push in until the monitor fills most of the frame. On the screen there is a clean AI video workspace UI (generic, no real logos) showing four small video previews playing at the same time: one realistic city street shot, one colourful animation, one product hero shot and one abstract motion-graphics scene. The overall style is cinematic, with smooth camera motion, gentle depth of field and rich contrast.';
+  }
   const galleryCtaHref = heroMedia?.id
     ? `/app?engine=${engine.modelSlug}&from=${encodeURIComponent(heroMedia.id)}`
     : `/app?engine=${engine.modelSlug}`;
@@ -795,9 +821,9 @@ function Sora2PageLayout({
               <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">
                 {heroTitle}
               </h1>
-              <p className="text-lg font-semibold text-text-primary">
+              <h2 className="text-lg font-semibold text-text-primary">
                 {heroSubtitle}
-              </p>
+              </h2>
               {heroBadge ? (
                 <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-hairline bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary shadow-card">
                   {heroBadge.split('·').map((chunk, index, arr) => (
@@ -1263,10 +1289,14 @@ function Sora2PageLayout({
 
 function MediaPreview({ media, label }: { media: FeaturedMedia; label: string }) {
   const posterSrc = media.posterUrl ?? null;
+  const aspect = media.aspectRatio ?? '16:9';
+  const [w, h] = aspect.split(':').map(Number);
+  const isValidAspect = Number.isFinite(w) && Number.isFinite(h) && h > 0 && w > 0;
+  const paddingBottom = isValidAspect ? `${(h / w) * 100}%` : '56.25%';
   return (
     <figure className="group relative overflow-hidden rounded-[22px] border border-hairline bg-white shadow-card">
       <div className="relative w-full overflow-hidden rounded-t-[22px] bg-neutral-100">
-        <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+        <div className="relative w-full" style={{ paddingBottom }}>
           <div className="absolute inset-0">
             {media.videoUrl ? (
               <video

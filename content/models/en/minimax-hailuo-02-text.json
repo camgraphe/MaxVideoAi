@@ -17,8 +17,8 @@
     },
     "secondaryLinks": [
       {
-        "label": "Compare MiniMax vs Pika vs Veo →",
-        "href": "/models/veo-3-1"
+        "label": "Compare MiniMax vs Pika 2.2 →",
+        "href": "/models/pika-text-to-video"
       }
     ]
   },
@@ -68,8 +68,8 @@
     ]
   },
   "compareLink": {
-    "label": "Compare MiniMax vs Pika vs Veo →",
-    "href": "/models/veo-3-1"
+    "label": "Compare MiniMax vs Pika 2.2 →",
+    "href": "/models/pika-text-to-video"
   },
   "prompts": [
     {
@@ -246,7 +246,7 @@
       "Kling 2.5 Turbo: silent 1080p hero shots, 5–10s",
       "Wan 2.5: 5–10s with native/uploaded audio and multiple tiers"
     ],
-    "comparisonCta": "Compare MiniMax vs Pika vs Veo →",
+    "comparisonCta": "Compare MiniMax vs Pika 2.2 →",
     "faqTitle": "FAQ – MiniMax Hailuo 02 in MaxVideoAI",
     "faqs": [
       { "q": "Why choose MiniMax instead of premium engines?", "a": "Strong motion/physics at lower cost; ideal for volume ads and experiments." },

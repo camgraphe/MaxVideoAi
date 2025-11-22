@@ -17,8 +17,8 @@
     },
     "secondaryLinks": [
       {
-        "label": "Comparar Wan 2.5 vs Sora 2 / Veo 3.1 →",
-        "href": "/modelos/veo-3-1"
+        "label": "Comparar Wan 2.5 vs Sora 2 →",
+        "href": "/modelos/sora-2"
       }
     ]
   },
@@ -66,8 +66,8 @@
     ]
   },
   "compareLink": {
-    "label": "Comparar Wan 2.5 vs Sora 2 / Veo 3.1 →",
-    "href": "/modelos/veo-3-1"
+    "label": "Comparar Wan 2.5 vs Sora 2 →",
+    "href": "/modelos/sora-2"
   },
   "prompts": [
     {
@@ -253,14 +253,13 @@
       "Usa Wan 2.5 para contenido legal, ético y brand-safe"
     ],
     "safetyNote": "Wan 2.5 pasa por filtros del proveedor y de MaxVideoAI.",
-    "comparisonTitle": "Wan 2.5 vs Sora 2 / Veo 3.1 / Pika – Resumen",
+    "comparisonTitle": "Wan 2.5 vs Sora 2 – Resumen",
     "comparisonPoints": [
-      "Wan 2.5: beats cortos con audio nativo + pista opcional y tiers de resolución",
-      "Sora 2: 720p con audio para escenas realistas",
-      "Veo 3.1: 720p/1080p controlable con lenguaje de cámara y audio",
-      "Pika 2.2: animación estilizada y silenciosa para loops y visuales lúdicos"
+      "Wan 2.5: beats de 5–10 s con audio nativo, pista opcional y tiers de resolución",
+      "Sora 2: 720p con audio nativo para tomas realistas tipo UGC/producto",
+      "Veo 3.1 / Kling / Pika: elige estos para presets de framing, realismo silencioso 1080p o animación estilizada"
     ],
-    "comparisonCta": "Comparar Wan 2.5 vs Sora 2 / Veo 3.1 →",
+    "comparisonCta": "Comparar Wan 2.5 vs Sora 2 →",
     "faqTitle": "FAQ – Wan 2.5 en MaxVideoAI",
     "faqs": [
       { "q": "¿Wan 2.5 siempre genera audio?", "a": "Sí. Audio nativo si no subes pista; si subes WAV/MP3 se recorta/loopea a 5/10 s y es la banda principal." },
