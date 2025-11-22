@@ -651,6 +651,7 @@ function Sora2PageLayout({
     const slugPart = targetSlug ? `/${targetSlug.replace(/^\/+/, '')}` : '';
     return `/${modelsBase}${slugPart}`.replace(/\/{2,}/g, '/');
   };
+  const galleryEngineSlug = engine.modelSlug;
   const primaryCta = copy.primaryCta ?? localizedContent.hero?.ctaPrimary?.label ?? 'Start generating';
   const primaryCtaHref = copy.primaryCtaHref ?? localizedContent.hero?.ctaPrimary?.href ?? '/app?engine=sora-2';
   const secondaryCta = copy.secondaryCta;
@@ -940,7 +941,10 @@ function Sora2PageLayout({
           {copy.galleryIntro ? <p className="text-base text-text-secondary">{copy.galleryIntro}</p> : null}
           {copy.galleryAllCta ? (
             <p className="text-base text-text-secondary">
-              <Link href={`/examples?engine=${encodeURIComponent(engine.modelSlug)}`} className="font-semibold text-accent hover:text-accentSoft">
+              <Link
+                href={`/examples?engine=${encodeURIComponent(galleryEngineSlug)}`}
+                className="font-semibold text-accent hover:text-accentSoft"
+              >
                 {copy.galleryAllCta}
               </Link>
             </p>
