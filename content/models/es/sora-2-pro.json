@@ -2,14 +2,14 @@
   "marketingName": "OpenAI Sora 2 Pro",
   "versionLabel": "Pro",
   "seo": {
-    "title": "Sora 2 Pro – Videos de IA más largos con audio y control de prompts mejorado",
-    "description": "Crea videos de IA más largos e inmersivos a partir de texto o imágenes con Sora 2 Pro. Voz nativa, sonido ambiental, encadenamiento de prompts y control avanzado mediante MaxVideoAI.",
+    "title": "Sora 2 Pro – Generador de video IA 1080p con audio nativo y control de escenas | MaxVideoAI",
+    "description": "Genera videos IA de 4–12 s en 720p/1080p con Sora 2 Pro. Funciona desde Latinoamérica sin invitación. Control de audio, multiescena y prompts precisos para anuncios y entregas premium.",
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg"
   },
   "hero": {
-    "title": "Sora 2 Pro – Video extendido con audio nativo y control de escenas",
-    "intro": "Sora 2 Pro amplía el motor de Sora 2 para desbloquear duraciones mayores, prompts multiescena y un control más fino sobre la continuidad audiovisual. Encadena escenas, dirige los movimientos de cámara o anima referencias para contar historias que se mantengan fieles a la marca.",
-    "badge": "720p/1080p · 4–12s · Texto o imagen · Audio conmutador",
+    "title": "Sora 2 Pro – Generador de video IA 1080p (texto a video / imagen a video)",
+    "intro": "Video cinematográfico 1080p con audio nativo, multiescena y pricing claro. Sin invitación y disponible en Latinoamérica.",
+    "badge": "720p/1080p · 4–12 s · Texto o imagen · Audio conmutador",
     "ctaPrimary": {
       "label": "Generar con Sora 2 Pro",
       "href": "/app?engine=sora-2-pro"
@@ -31,16 +31,25 @@
   },
   "overview": "Genera videos de IA más largos con sonido y control de escenas usando Sora 2 Pro. Perfecto para narración, videos explicativos y diseño de motion para marcas — partiendo de prompts de imagen o texto.",
   "custom": {
-    "heroDesc1": "Sora 2 Pro es el hermano premium 720p/1080p de Sora 2. Obtienes clips más cinematográficos, control explícito de audio y un encadenamiento de prompts más rico para secuencias con varios beats—ideal para anuncios, tráilers y entregables para clientes.",
+    "heroDesc1": "Sora 2 Pro es el hermano premium 720p/1080p de Sora 2. Obtienes clips más cinematográficos, control explícito de audio y un encadenamiento de prompts más rico para secuencias con varios beats—ideal para anuncios, tráilers y entregables premium. Funciona en Latinoamérica sin invitación.",
     "heroDesc2": "Prototipa rápido con Sora 2 y luego pasa a Sora 2 Pro para regenerar tus mejores tomas en 1080p con más control sobre tiempo, movimiento y sonido.",
     "secondaryCta": "Comparar con Sora 2 (720p) →",
     "whyTitle": "Por qué Sora 2 Pro en MaxVideoAI:",
     "heroHighlights": [
-      "Salida 720p o 1080p lista para clientes",
+      "Salida 720p o 1080p lista para clientes (crear videos con IA premium)",
       "Tomas de 4–12s con control cinematográfico",
       "Conmutador de audio + cues sonoros explícitos",
       "Encadenamiento de prompts para continuidad multiescena",
       "Ruta Sora 2 (prototipo) → Sora 2 Pro (final)"
+    ],
+    "howToLatamTitle": "Cómo usar Sora 2 Pro paso a paso (LatAm)",
+    "howToLatamSteps": [
+      "Elige Sora 2 Pro como motor.",
+      "Selecciona Texto → Video o Imagen → Video.",
+      "Define duración (4, 8 o 12 s) y formato (16:9 o 9:16).",
+      "Añade beats de escena: sujeto, acción, cámara, luz, audio.",
+      "Review del precio por segundo antes de generar.",
+      "Funciona desde toda Latinoamérica sin invitación."
     ],
     "specTitle": "Specs reales – Sora 2 Pro en MaxVideoAI (720p/1080p, 4–12s)",
     "specNote": "Estas specs reflejan Sora 2 Pro tal como existe en MaxVideoAI—config de producción, no demos.",
@@ -87,8 +96,15 @@
     ],
     "specValueProp": "Sora 2 Pro sirve salidas 1080p pulidas con control de audio y continuidad multiescena—ideal cuando tus exploraciones en Sora 2 ya están validadas.",
     "microCta": "Empieza con Sora 2 Pro →",
+    "quickPricingTitle": "Precios rápidos (1080p)",
+    "quickPricingItems": [
+      "4 segundos: tarifa visible en Generate",
+      "8 segundos: tarifa visible en Generate",
+      "12 segundos: tarifa visible en Generate",
+      "Pagas solo lo que generas. Sin suscripción. Adecuado para freelancers y agencias en Latinoamérica."
+    ],
     "galleryTitle": "Galería de ejemplos: Sora 2 Pro",
-    "galleryIntro": "Mira clips 1080p con varios beats generados con Sora 2 Pro en MaxVideoAI.",
+    "galleryIntro": "Mira clips 1080p con varios beats generados con Sora 2 Pro en MaxVideoAI con el generador de video IA.",
     "gallerySceneCta": "Abrir esta escena en Generate y adaptarla a tu marca →",
     "galleryAllCta": "Ver todos los ejemplos de Sora 2 Pro →",
     "recreateLabel": "Recrear este plano Pro →",
@@ -174,7 +190,7 @@
       "Mismo flujo: cambia de motor en la misma interfaz cuando quieras escalar."
     ],
     "comparisonCta": "Comparar Sora 2 y Sora 2 Pro →",
-    "faqTitle": "FAQ – Sora 2 Pro en MaxVideoAI",
+    "faqTitle": "Preguntas comunes en Latinoamérica sobre Sora 2 Pro",
     "faqs": [
       {
         "q": "¿Sora 2 Pro permite controlar el audio?",
@@ -191,6 +207,14 @@
       {
         "q": "¿Puedo hacer imagen→video con Sora 2 Pro?",
         "a": "Sí. Sube un still (PNG/JPG/WEBP/GIF/AVIF) hasta ~50 MB, luego describe el movimiento y audio por beat."
+      },
+      {
+        "q": "¿Puedo usar Sora 2 Pro desde Latinoamérica?",
+        "a": "Sí. MaxVideoAI funciona en toda Latinoamérica sin invitación. Solo necesitas una cuenta y saldo en tu monedero."
+      },
+      {
+        "q": "¿Sora 2 Pro genera video en 1080p con audio nativo?",
+        "a": "Sí. Sora 2 Pro entrega videos de 4–12 segundos en 720p y 1080p con control de audio, cues sonoros y continuidad de escenas."
       }
     ],
     "relatedTitle": "Explora otros modelos",
