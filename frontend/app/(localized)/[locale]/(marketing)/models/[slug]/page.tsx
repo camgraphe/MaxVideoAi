@@ -681,10 +681,6 @@ function Sora2PageLayout({
     question: entry.question,
     answer: entry.answer,
   }));
-  const compareLinkHref =
-    compareLink?.href && compareLink.href.startsWith('/models')
-      ? localizeModelsPath(compareLink.href.replace(/^\/models\/?/, ''))
-      : compareLink?.href ?? null;
   const pageDescription = heroDesc1 ?? heroSubtitle ?? localizedContent.seo.description ?? heroTitle;
   const heroPosterAbsolute = toAbsoluteUrl(heroMedia.posterUrl ?? localizedContent.seo.image ?? null);
   const heroVideoAbsolute = heroMedia.videoUrl ? toAbsoluteUrl(heroMedia.videoUrl) : null;
@@ -1407,6 +1403,10 @@ export default async function ModelDetailPage({ params }: PageParams) {
   const promptStructure = localizedContent.promptStructure;
   const tips = localizedContent.tips;
   const compareLink = localizedContent.compareLink;
+  const compareLinkHref =
+    compareLink?.href && compareLink.href.startsWith('/models')
+      ? localizeModelsPath(compareLink.href.replace(/^\/models\/?/, ''))
+      : compareLink?.href ?? null;
   const heroPrimaryCta = heroContent?.ctaPrimary;
   const secondaryCtas = heroContent?.secondaryLinks ?? [];
   const brand = PARTNER_BRAND_MAP.get(engine.brandId);
