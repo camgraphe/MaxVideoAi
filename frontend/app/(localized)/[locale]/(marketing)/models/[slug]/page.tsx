@@ -645,10 +645,15 @@ function Sora2PageLayout({
   const heroDesc1 = copy.heroDesc1 ?? localizedContent.overview ?? localizedContent.seo.description ?? null;
   const heroDesc2 = copy.heroDesc2;
   const isEsLocale = locale === 'es';
+  const localizeModelsPath = (targetSlug?: string) =>
+    localizePathFromEnglish(supportedLocale, targetSlug ? `/models/${targetSlug.replace(/^\/+/, '')}` : '/models');
   const primaryCta = copy.primaryCta ?? localizedContent.hero?.ctaPrimary?.label ?? 'Start generating';
   const primaryCtaHref = copy.primaryCtaHref ?? localizedContent.hero?.ctaPrimary?.href ?? '/app?engine=sora-2';
   const secondaryCta = copy.secondaryCta;
   const secondaryCtaHref = copy.secondaryCtaHref ?? '/models/sora-2-pro';
+  const localizedSecondaryCtaHref = secondaryCtaHref?.startsWith('/models')
+    ? localizeModelsPath(secondaryCtaHref.replace(/^\/models\/?/, ''))
+    : secondaryCtaHref;
   const heroPosterPreload = heroMedia.posterUrl ? buildOptimizedPosterUrl(heroMedia.posterUrl) ?? heroMedia.posterUrl : null;
 
   const heroHighlights = copy.heroHighlights;
@@ -675,6 +680,10 @@ function Sora2PageLayout({
     question: entry.question,
     answer: entry.answer,
   }));
+  const compareLinkHref =
+    compareLink?.href && compareLink.href.startsWith('/models')
+      ? localizeModelsPath(compareLink.href.replace(/^\/models\/?/, ''))
+      : compareLink?.href ?? null;
   const pageDescription = heroDesc1 ?? heroSubtitle ?? localizedContent.seo.description ?? heroTitle;
   const heroPosterAbsolute = toAbsoluteUrl(heroMedia.posterUrl ?? localizedContent.seo.image ?? null);
   const heroVideoAbsolute = heroMedia.videoUrl ? toAbsoluteUrl(heroMedia.videoUrl) : null;
@@ -772,7 +781,7 @@ function Sora2PageLayout({
         ))}
       </Head>
       <main className="mx-auto max-w-6xl px-4 pb-20 pt-14 sm:px-6 lg:px-8">
-        <Link href="/models" className="text-sm font-semibold text-accent hover:text-accentSoft">
+        <Link href={localizeModelsPath()} className="text-sm font-semibold text-accent hover:text-accentSoft">
           {backLabel}
         </Link>
 
@@ -805,9 +814,9 @@ function Sora2PageLayout({
               >
                 {primaryCta}
               </Link>
-              {secondaryCta && secondaryCtaHref ? (
+              {secondaryCta && localizedSecondaryCtaHref ? (
                 <Link
-                  href={secondaryCtaHref}
+                  href={localizedSecondaryCtaHref}
                   className="inline-flex items-center rounded-full border border-hairline px-5 py-2 text-sm font-semibold text-text-primary transition hover:border-accent hover:text-accent"
                 >
                   {secondaryCta}
@@ -1219,7 +1228,7 @@ function Sora2PageLayout({
                     {entry.seo?.description ?? localizedContent.overview ?? ''}
                   </p>
                   <Link
-                    href={{ pathname: '/models/[slug]', params: { slug: entry.modelSlug } }}
+                    href={localizeModelsPath(entry.modelSlug)}
                     className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accentSoft"
                   >
                     {copy.comparisonCta ?? 'View model →'}
@@ -1489,7 +1498,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
         />
       ))}
-      <Link href="/models" className="text-sm font-semibold text-accent hover:text-accentSoft">
+      <Link href={localizeModelsPath()} className="text-sm font-semibold text-accent hover:text-accentSoft">
         {detailCopy.backLabel}
       </Link>
       <header className="mt-6 space-y-3">
@@ -1609,7 +1618,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       {compareLink?.href && compareLink.label ? (
         <p className="mt-6 text-sm text-text-secondary">
           {compareLink.before ?? ''}
-          <Link href={compareLink.href} className="font-semibold text-accent hover:text-accentSoft">
+          <Link href={compareLinkHref ?? compareLink.href} className="font-semibold text-accent hover:text-accentSoft">
             {compareLink.label}
           </Link>
           {compareLink.after ?? ''}
@@ -1630,7 +1639,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
             </div>
             <div>
               <dt className="text-xs uppercase tracking-micro text-text-muted">{detailCopy.overview.slug}</dt>
-              <dd>/models/{engine.modelSlug}</dd>
+              <dd>{localizeModelsPath(engine.modelSlug)}</dd>
             </div>
             <div>
               <dt className="text-xs uppercase tracking-micro text-text-muted">{detailCopy.overview.logoPolicy}</dt>
@@ -1697,7 +1706,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
                     {candidate.seo?.description ?? 'Latency, pricing, and prompt guides are documented on the detail page.'}
                   </p>
                   <Link
-                    href={{ pathname: '/models/[slug]', params: { slug: candidate.modelSlug } }}
+                    href={localizeModelsPath(candidate.modelSlug)}
                     className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accentSoft"
                   >
                     {relatedCopy.cta} <span aria-hidden>→</span>
