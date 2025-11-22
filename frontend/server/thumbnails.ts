@@ -42,7 +42,7 @@ const isThumbnailCaptureDisabled = process.env.DISABLE_THUMBNAIL_CAPTURE === '1'
 function isCaptureEnabled(): boolean {
   if (isBuildPhase || isThumbnailCaptureDisabled) return false;
   const flag = process.env.NEXT_PUBLIC_ENABLE_THUMBNAILS;
-  if (!flag) return false;
+  if (!flag) return true; // default to enabled for live environments
   const normalized = flag.trim().toLowerCase();
   return normalized === 'true' || normalized === '1' || normalized === 'yes' || normalized === 'enabled';
 }
