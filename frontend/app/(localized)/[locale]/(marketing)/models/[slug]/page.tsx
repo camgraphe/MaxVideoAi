@@ -13,6 +13,7 @@ import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
 import { getEngineLocalized, type EngineLocalizedContent } from '@/lib/models/i18n';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { normalizeEngineId } from '@/lib/engine-alias';
+import { getEnginePictogram } from '@/lib/engine-branding';
 import { type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { listExamples, getVideosByIds, type GalleryVideo } from '@/server/videos';
 import { serializeJsonLd } from '../model-jsonld';
@@ -710,6 +711,10 @@ function Sora2PageLayout({
     ? localizeModelsPath(secondaryCtaHref.replace(/^\/models\/?/, ''))
     : secondaryCtaHref;
   const heroPosterPreload = heroMedia.posterUrl ? buildOptimizedPosterUrl(heroMedia.posterUrl) ?? heroMedia.posterUrl : null;
+  const engineCards = [
+    engine,
+    ...relatedEngines,
+  ].filter((entry, index, arr) => arr.findIndex((e) => e.modelSlug === entry.modelSlug) === index);
 
   const heroHighlights = copy.heroHighlights;
   const bestUseCases = copy.bestUseCases.length ? copy.bestUseCases : localizedContent.bestUseCases?.items ?? [];
@@ -874,6 +879,40 @@ function Sora2PageLayout({
                 </Link>
               ) : null}
             </div>
+            {engineCards.length ? (
+              <div className="mt-2 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+                {engineCards.map((entry) => {
+                  const pictogram = getEnginePictogram({
+                    id: entry.engineId ?? entry.engine.id,
+                    brandId: entry.brandId ?? entry.engine.brandId,
+                    label: entry.marketingName ?? entry.engine.label,
+                  });
+                  return (
+                    <article
+                      key={entry.modelSlug}
+                      className="rounded-2xl border border-hairline p-4 shadow-card"
+                      style={{ backgroundColor: pictogram.backgroundColor, color: pictogram.textColor }}
+                    >
+                      <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+                        {entry.brandId}
+                      </p>
+                      <h3 className="mt-1 text-lg font-semibold leading-tight text-text-primary">
+                        {entry.marketingName ?? entry.engine.label}
+                      </h3>
+                      {entry.versionLabel ? (
+                        <p className="text-xs font-semibold text-text-secondary">Version: {entry.versionLabel}</p>
+                      ) : null}
+                      <Link
+                        href={localizeModelsPath(entry.modelSlug)}
+                        className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accentSoft"
+                      >
+                        View model →
+                      </Link>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : null}
             {isEsLocale && howToLatamTitle && howToLatamSteps.length ? (
               <section className="rounded-2xl border border-hairline bg-white/70 p-5 shadow-card">
                 <h2 className="text-xl font-semibold text-text-primary">{howToLatamTitle}</h2>
@@ -1262,37 +1301,6 @@ function Sora2PageLayout({
           </section>
         ) : null}
 
-        {relatedEngines.length ? (
-          <section className="mt-14 space-y-4">
-            <h2 className="text-2xl font-semibold text-text-primary">
-              {copy.relatedTitle ?? 'Explore other models'}
-            </h2>
-            {copy.relatedSubtitle ? <p className="text-sm text-text-secondary">{copy.relatedSubtitle}</p> : null}
-            <div className="grid gap-4 md:grid-cols-3">
-              {relatedEngines.map((entry) => (
-                <article
-                  key={entry.modelSlug}
-                  className="rounded-2xl border border-hairline bg-white/90 p-4 shadow-card transition hover:-translate-y-1 hover:border-accent/60"
-                >
-                  <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{entry.brandId}</p>
-                  <h3 className="mt-2 text-lg font-semibold text-text-primary">
-                    {entry.marketingName ?? entry.engine.label}
-                  </h3>
-                  <p className="mt-2 text-sm text-text-secondary line-clamp-3">
-                    {entry.seo?.description ?? localizedContent.overview ?? ''}
-                  </p>
-                  <Link
-                    href={localizeModelsPath(entry.modelSlug)}
-                    className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accentSoft"
-                  >
-                    {copy.comparisonCta ?? 'View model →'}
-                  </Link>
-                </article>
-              ))}
-            </div>
-          </section>
-        ) : null}
-
         <section className="mt-14 space-y-3 rounded-3xl border border-hairline bg-white/90 px-6 py-6 text-text-primary shadow-card sm:px-8">
           {copy.finalPara1 ? <p className="text-base text-text-secondary">{copy.finalPara1}</p> : null}
           {copy.finalPara2 ? <p className="text-base text-text-secondary">{copy.finalPara2}</p> : null}
@@ -1428,7 +1436,11 @@ export default async function ModelDetailPage({ params }: PageParams) {
   const rankEngine = (entry: FalEngineEntry) => (entry.family === engine.family ? 0 : 1);
   type RelatedCopyContent = { title?: string; subtitle?: string; cta?: string };
   const relatedContent = (dictionary.models as typeof dictionary.models & { related?: RelatedCopyContent }).related ?? {};
-  const relatedEngines = allEngines
+  const ensureSlugs = ['veo-3-1-first-last'];
+  const ensureEngines = ensureSlugs
+    .map((target) => allEngines.find((entry) => entry.modelSlug === target))
+    .filter((entry): entry is FalEngineEntry => Boolean(entry) && entry.modelSlug !== slug);
+  const relatedEnginesBase = allEngines
     .filter((entry) => entry.modelSlug !== slug)
     .sort((a, b) => {
       const familyDiff = rankEngine(a) - rankEngine(b);
@@ -1436,8 +1448,13 @@ export default async function ModelDetailPage({ params }: PageParams) {
         return familyDiff;
       }
       return (a.marketingName ?? a.engine.label).localeCompare(b.marketingName ?? b.engine.label);
-    })
-    .slice(0, 3);
+    });
+  const seenSlugs = new Set<string>();
+  const relatedEngines = [...ensureEngines, ...relatedEnginesBase].filter((entry) => {
+    if (seenSlugs.has(entry.modelSlug)) return false;
+    seenSlugs.add(entry.modelSlug);
+    return true;
+  }).slice(0, 6);
   const relatedCopy = {
     title: relatedContent.title ?? 'Explore other engines',
     subtitle:
@@ -1615,10 +1632,43 @@ export default async function ModelDetailPage({ params }: PageParams) {
                 key={`${cta.href}-${cta.label}`}
                 href={cta.href!}
                 className="inline-flex items-center rounded-pill border border-hairline px-5 py-2 text-sm font-semibold text-text-primary transition hover:border-accent hover:text-accent"
+            >
+              {cta.label}
+            </Link>
+          ))}
+        </div>
+      ) : null}
+
+      {engineCards.length ? (
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+          {engineCards.map((entry) => {
+            const pictogram = getEnginePictogram({
+              id: entry.engineId ?? entry.engine.id,
+              brandId: entry.brandId ?? entry.engine.brandId,
+              label: entry.marketingName ?? entry.engine.label,
+            });
+            return (
+              <article
+                key={entry.modelSlug}
+                className="rounded-2xl border border-hairline p-4 shadow-card"
+                style={{ backgroundColor: pictogram.backgroundColor, color: pictogram.textColor }}
               >
-                {cta.label}
-              </Link>
-            ))}
+                <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{entry.brandId}</p>
+                <h3 className="mt-1 text-lg font-semibold leading-tight text-text-primary">
+                  {entry.marketingName ?? entry.engine.label}
+                </h3>
+                {entry.versionLabel ? (
+                  <p className="text-xs font-semibold text-text-secondary">Version: {entry.versionLabel}</p>
+                ) : null}
+                <Link
+                  href={localizeModelsPath(entry.modelSlug)}
+                  className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accentSoft"
+                >
+                  View model →
+                </Link>
+              </article>
+            );
+          })}
         </div>
       ) : null}
 
@@ -1764,35 +1814,6 @@ export default async function ModelDetailPage({ params }: PageParams) {
           </div>
         </section>
       )}
-
-      {relatedEngines.length ? (
-        <section className="mt-12">
-          <div className="mb-6 space-y-2">
-            <h2 className="text-xl font-semibold text-text-primary">{relatedCopy.title}</h2>
-            <p className="text-sm text-text-secondary">{relatedCopy.subtitle}</p>
-          </div>
-          <div className="grid gap-4 md:grid-cols-3">
-            {relatedEngines.map((candidate) => {
-              const label = candidate.marketingName ?? candidate.engine.label;
-              return (
-                <article key={candidate.modelSlug} className="rounded-2xl border border-hairline bg-white/90 p-5 shadow-card">
-                  <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{candidate.brandId}</p>
-                  <h3 className="mt-2 text-lg font-semibold text-text-primary">{label}</h3>
-                  <p className="mt-2 text-sm text-text-secondary">
-                    {candidate.seo?.description ?? 'Latency, pricing, and prompt guides are documented on the detail page.'}
-                  </p>
-                  <Link
-                    href={localizeModelsPath(candidate.modelSlug)}
-                    className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accentSoft"
-                  >
-                    {relatedCopy.cta} <span aria-hidden>→</span>
-                  </Link>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-      ) : null}
 
       <footer className="mt-10 flex flex-wrap gap-3">
         <Link
