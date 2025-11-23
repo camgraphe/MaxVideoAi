@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 
 export type ModelGalleryCard = {
   id: string;
@@ -59,8 +58,8 @@ export function ModelsGallery({
   return (
     <>
       <div className="mt-12 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-        {visibleCards.map((card, index) => (
-          <ModelCard key={card.id} card={card} isLcp={index === 0} ctaLabel={ctaLabel} />
+        {visibleCards.map((card) => (
+          <ModelCard key={card.id} card={card} ctaLabel={ctaLabel} />
         ))}
       </div>
       <div ref={observerRef} className="h-4 w-full" aria-hidden />
@@ -68,7 +67,7 @@ export function ModelsGallery({
   );
 }
 
-function ModelCard({ card, isLcp, ctaLabel }: { card: ModelGalleryCard; isLcp: boolean; ctaLabel: string }) {
+function ModelCard({ card, ctaLabel }: { card: ModelGalleryCard; ctaLabel: string }) {
   const background = card.backgroundColor ?? '#F5F7FB';
   const textColor = card.textColor ?? '#1F2633';
   return (

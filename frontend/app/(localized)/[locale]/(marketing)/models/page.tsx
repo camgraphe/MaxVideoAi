@@ -187,7 +187,7 @@ export default async function ModelsPage() {
     const description = meta?.description ?? engineType;
     const priceNote = meta?.priceBefore ?? null;
     const pictogram = getEnginePictogram({
-      id: engine.engineId ?? engine.engine.id,
+      id: engine.engine.id,
       brandId: engine.brandId ?? engine.engine.brandId,
       label: displayName,
     });
