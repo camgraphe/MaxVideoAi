@@ -306,6 +306,7 @@ export function HeaderBar() {
                     } catch {
                       // ignore logout errors
                     }
+                    await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' }).catch(() => undefined);
                     window.location.href = '/';
                   }}
                 >
