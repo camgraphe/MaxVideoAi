@@ -49,7 +49,12 @@ export function AuthCallbackHandler() {
       finalize(data.session ?? null);
     });
 
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      void fetch('/api/auth/callback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event, session }),
+      });
       finalize(session ?? null);
     });
 
