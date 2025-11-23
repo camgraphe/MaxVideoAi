@@ -79,14 +79,15 @@ export function ModelsGallery({
 
 function ModelCard({ card, ctaLabel }: { card: ModelGalleryCard; ctaLabel: string }) {
   const router = useRouter();
+  type RouterPushInput = Parameters<typeof router.push>[0];
   const background = card.backgroundColor ?? '#F5F7FB';
   const textColor = card.textColor ?? '#1F2633';
   const normalizedCtaLabel = normalizeCtaLabel(ctaLabel);
-  const handleClick = () => router.push(card.href);
+  const handleClick = () => router.push(card.href as RouterPushInput);
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      router.push(card.href);
+      router.push(card.href as RouterPushInput);
     }
   };
   return (
