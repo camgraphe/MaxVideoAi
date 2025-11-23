@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { cookies as readServerCookies } from 'next/headers';
 import { getUserIdFromSupabase } from '@/lib/supabase';
+import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
 import { ACCESS_TOKEN_COOKIE_NAMES } from '@/lib/supabase-cookie-keys';
 
 function decodeUserIdFromToken(token: string): string | null {
@@ -19,6 +20,18 @@ function decodeUserIdFromToken(token: string): string | null {
 
 // Resolve user from Supabase; fallback to headers/cookies when invoked in server components
 export async function getUserIdFromRequest(req?: NextRequest): Promise<string | null> {
+  try {
+    const supabase = createSupabaseRouteClient();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (session?.user?.id) {
+      return session.user.id;
+    }
+  } catch {
+    // ignore helper errors and fall back
+  }
+
   if (req) {
     const uid = await getUserIdFromSupabase(req);
     if (uid) return uid;

@@ -5,6 +5,7 @@ import { query } from '@/lib/db';
 import { getUserIdFromRequest } from '@/lib/user';
 import { getSupabaseServer } from '@/lib/supabase';
 import { ACCESS_TOKEN_COOKIE_NAMES } from '@/lib/supabase-cookie-keys';
+import { createSupabaseServerClient } from '@/lib/supabase-ssr';
 
 let adminCache: Map<string, boolean> | null = null;
 let cacheExpiry = 0;
@@ -96,6 +97,18 @@ function getTokenFromCookies(): string | null {
 }
 
 export async function getUserIdFromCookies(): Promise<string | null> {
+  try {
+    const supabase = createSupabaseServerClient();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (session?.user?.id) {
+      return session.user.id;
+    }
+  } catch {
+    // ignore helper errors and fall back
+  }
+
   const token = getTokenFromCookies();
   if (!token) return null;
 
