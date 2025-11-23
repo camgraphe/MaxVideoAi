@@ -12,11 +12,8 @@ export type ModelGalleryCard = {
   priceNote?: string | null;
   priceNoteHref?: string | null;
   href: string;
-  media: {
-    videoUrl?: string | null;
-    optimizedPosterUrl?: string | null;
-    posterUrl?: string | null;
-  };
+  backgroundColor?: string | null;
+  textColor?: string | null;
 };
 
 const INITIAL_COUNT = 6;
@@ -72,118 +69,36 @@ export function ModelsGallery({
 }
 
 function ModelCard({ card, isLcp, ctaLabel }: { card: ModelGalleryCard; isLcp: boolean; ctaLabel: string }) {
-  const { videoUrl, optimizedPosterUrl, posterUrl } = card.media;
-  const poster = optimizedPosterUrl ?? posterUrl ?? null;
-  const [shouldLoadVideo, setShouldLoadVideo] = useState(isLcp);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-
-  useEffect(() => {
-    if (!videoUrl) return undefined;
-    const node = videoRef.current;
-    if (!node) return undefined;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setShouldLoadVideo(true);
-          }
-        });
-      },
-      { rootMargin: isLcp ? '0px' : '300px' }
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [videoUrl, isLcp]);
-
-  useEffect(() => {
-    if (!videoUrl) return;
-    const node = videoRef.current;
-    if (!node) return;
-    if (shouldLoadVideo && !node.src) {
-      node.src = videoUrl;
-      node.load();
-    }
-    if (shouldLoadVideo) {
-      const playPromise = node.play();
-      if (playPromise && typeof playPromise.catch === 'function') {
-        playPromise.catch(() => undefined);
-      }
-    } else {
-      node.pause();
-    }
-  }, [videoUrl, shouldLoadVideo]);
-
+  const background = card.backgroundColor ?? '#F5F7FB';
+  const textColor = card.textColor ?? '#1F2633';
   return (
-    <article className="group relative min-h-[26rem] overflow-hidden rounded-3xl border border-black/5 bg-white text-neutral-900 shadow-lg transition hover:border-black/10 hover:shadow-xl">
-      <div className="relative aspect-video overflow-hidden">
-        {videoUrl ? (
-          <>
-            {poster ? (
-              <Image
-                src={poster}
-                alt=""
-                fill
-                className="absolute inset-0 h-full w-full object-cover opacity-10"
-                priority={isLcp}
-                fetchPriority={isLcp ? 'high' : undefined}
-                loading={isLcp ? 'eager' : 'lazy'}
-                quality={80}
-                sizes="(min-width: 1280px) 32rem, (min-width: 640px) 50vw, 100vw"
-              />
-            ) : null}
-            <video
-              ref={videoRef}
-              className="h-full w-full object-cover opacity-0 transition duration-500 group-hover:scale-105 group-hover:opacity-15"
-              playsInline
-              muted
-              loop
-              preload="none"
-            />
-          </>
-        ) : poster ? (
-          <Image
-            src={poster}
-            alt=""
-            fill
-            className="object-cover opacity-10"
-            priority={isLcp}
-            fetchPriority={isLcp ? 'high' : undefined}
-            loading={isLcp ? 'eager' : 'lazy'}
-            quality={80}
-            sizes="(min-width: 1280px) 32rem, (min-width: 640px) 50vw, 100vw"
-          />
+    <article
+      className="flex min-h-[11rem] flex-col justify-between rounded-2xl border border-black/5 p-4 text-neutral-900 shadow-lg transition hover:border-black/10 hover:shadow-xl"
+      style={{ backgroundColor: background, color: textColor }}
+    >
+      <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-micro text-neutral-600">
+        <span>{card.versionLabel}</span>
+        <span className="rounded-full border border-black/10 px-2 py-1 text-[10px] font-semibold text-neutral-600">MaxVideoAI</span>
+      </div>
+      <div className="mt-3">
+        <h2 className="text-xl font-semibold leading-snug text-neutral-900">{card.label}</h2>
+        <p className="mt-1 text-sm text-neutral-600">{card.description}</p>
+        {card.priceNote ? (
+          card.priceNoteHref ? (
+            <Link href={card.priceNoteHref} className="mt-2 inline-flex text-xs font-semibold text-accent hover:text-accentSoft">
+              {card.priceNote}
+            </Link>
+          ) : (
+            <span className="mt-2 inline-flex text-xs font-semibold text-accent">{card.priceNote}</span>
+          )
         ) : null}
-        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/70 to-white/50 opacity-95 transition group-hover:opacity-80" />
       </div>
-      <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-6 pb-24">
-        <div className="flex items-center justify-between text-xs uppercase tracking-[0.18em] text-neutral-500">
-          <span>{card.versionLabel}</span>
-          <span className="rounded-full border border-black/10 px-2 py-1 text-[10px] font-semibold text-neutral-500">MaxVideoAI</span>
-        </div>
-        <div>
-          <h2 className="text-2xl font-semibold text-neutral-900 transition group-hover:text-neutral-800">{card.label}</h2>
-          <p className="mt-1 text-sm text-neutral-500">{card.description}</p>
-        </div>
-        <span className="inline-flex items-center gap-1 text-sm font-semibold text-neutral-900/70 transition group-hover:translate-x-1 group-hover:text-neutral-900">
-          {ctaLabel}
-        </span>
-      </div>
-      {card.priceNote ? (
-        card.priceNoteHref ? (
-          <Link
-            href={card.priceNoteHref}
-            className="absolute left-6 bottom-6 z-20 inline-flex text-xs font-semibold text-accent transition hover:text-accentSoft"
-          >
-            {card.priceNote}
-          </Link>
-        ) : (
-          <span className="absolute left-6 bottom-6 z-20 inline-flex text-xs font-semibold text-accent transition group-hover:text-accentSoft">
-            {card.priceNote}
-          </span>
-        )
-      ) : null}
-      <Link href={card.href} className="absolute inset-0 z-10" aria-label={`${ctaLabel} ${card.label}`}>
-        <span className="sr-only">{ctaLabel}</span>
+      <Link
+        href={card.href}
+        className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-neutral-900/80 transition hover:translate-x-1 hover:text-neutral-900"
+        aria-label={`${ctaLabel} ${card.label}`}
+      >
+        {ctaLabel} <span aria-hidden>→</span>
       </Link>
     </article>
   );

@@ -1,15 +1,13 @@
 import type { Metadata } from 'next';
-import Head from 'next/head';
 import { Link } from '@/i18n/navigation';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
-import { getExampleDemos } from '@/server/engine-demos';
 import type { AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { ModelsGallery } from '@/components/marketing/ModelsGallery';
-import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
+import { getEnginePictogram } from '@/lib/engine-branding';
 
 const MODELS_SLUG_MAP = buildSlugMap('models');
 const DEFAULT_INTRO = {
@@ -154,6 +152,7 @@ export default async function ModelsPage() {
     'sora-2-pro',
     'veo-3-1',
     'veo-3-1-fast',
+    'veo-3-1-first-last',
     'pika-text-to-video',
     'wan-2-5',
     'kling-2-5-turbo',
@@ -162,7 +161,6 @@ export default async function ModelsPage() {
   ];
 
   const engineIndex = new Map<string, FalEngineEntry>(listFalEngines().map((entry) => [entry.modelSlug, entry]));
-  const demos = await getExampleDemos();
   const engines = priorityOrder
     .map((slug) => engineIndex.get(slug))
     .filter((entry): entry is FalEngineEntry => Boolean(entry));
@@ -170,6 +168,7 @@ export default async function ModelsPage() {
     'sora-2',
     'sora-2-pro',
     'veo-3-1',
+    'veo-3-1-first-last',
     'pika-text-to-video',
     'kling-2-5-turbo',
     'wan-2-5',
@@ -180,11 +179,6 @@ export default async function ModelsPage() {
     .map((slug) => engineIndex.get(slug))
     .filter((entry): entry is FalEngineEntry => Boolean(entry));
   const modelCards = engines.map((engine) => {
-    const media = engine.media;
-    const example = demos.get(engine.id);
-    const videoUrl = example?.videoUrl ?? media?.videoUrl ?? null;
-    const poster = example?.posterUrl ?? media?.imagePath ?? '/hero/veo3.jpg';
-    const optimizedPosterUrl = buildOptimizedPosterUrl(poster);
     const meta = engineMetaCopy[engine.modelSlug] ?? engineMetaCopy[engine.id] ?? null;
     const engineTypeKey = getEngineTypeKey(engine);
     const engineType = engineTypeLabels[engineTypeKey] ?? DEFAULT_ENGINE_TYPE_LABELS[engineTypeKey];
@@ -192,6 +186,11 @@ export default async function ModelsPage() {
     const displayName = meta?.displayName ?? engine.cardTitle ?? getEngineDisplayName(engine);
     const description = meta?.description ?? engineType;
     const priceNote = meta?.priceBefore ?? null;
+    const pictogram = getEnginePictogram({
+      id: engine.engineId ?? engine.engine.id,
+      brandId: engine.brandId ?? engine.engine.brandId,
+      label: displayName,
+    });
 
     return {
       id: engine.modelSlug,
@@ -201,20 +200,13 @@ export default async function ModelsPage() {
       priceNote,
       priceNoteHref: priceNote ? '/generate' : null,
       href: `/models/${encodeURIComponent(engine.modelSlug)}`,
-      media: {
-        videoUrl,
-        optimizedPosterUrl,
-        posterUrl: poster,
-      },
+      backgroundColor: pictogram.backgroundColor,
+      textColor: pictogram.textColor,
     };
   });
-  const lcpPosterSrc = modelCards[0]?.media.optimizedPosterUrl ?? modelCards[0]?.media.posterUrl ?? null;
 
 return (
   <>
-    <Head>
-      {lcpPosterSrc ? <link rel="preload" as="image" href={lcpPosterSrc} fetchPriority="high" /> : null}
-    </Head>
     <div className="mx-auto max-w-5xl px-4 pb-6 pt-16 sm:px-6 lg:px-8">
       <header className="space-y-3">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
@@ -224,6 +216,7 @@ return (
         {introParagraphs.map((paragraph) => (
           <p key={paragraph}>{paragraph}</p>
         ))}
+        <ModelsGallery cards={modelCards} ctaLabel={cardCtaLabel} />
         <div className="grid gap-4 lg:grid-cols-3">
           {introCards.map((card) => (
             <div
@@ -273,7 +266,6 @@ return (
           </div>
         ) : null}
       </section>
-      <ModelsGallery cards={modelCards} ctaLabel={cardCtaLabel} />
       {content.note ? (
         <p className="mt-10 rounded-3xl border border-dashed border-hairline bg-bg/70 px-6 py-4 text-sm text-text-secondary">
           {content.note}
