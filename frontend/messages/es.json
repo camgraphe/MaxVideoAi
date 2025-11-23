@@ -1732,7 +1732,8 @@
         "emptyDescription": "Ejecuta una generación para ver aquí la última imagen.",
         "download": "Descargar",
         "copy": "Copiar enlace",
-        "copied": "Copiado"
+        "copied": "Copiado",
+        "cta": "Generar imagen"
       },
       "engine": {
         "eyebrow": "Motor",
@@ -1740,7 +1741,7 @@
         "priceLabel": "{amount} / ejecución"
       },
       "modeTabs": {
-        "generate": "Generar",
+        "generate": "Crear",
         "edit": "Editar"
       },
       "composer": {

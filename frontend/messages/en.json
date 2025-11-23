@@ -1535,7 +1535,8 @@
         "emptyDescription": "Run a generation to see the latest image here.",
         "download": "Download",
         "copy": "Copy link",
-        "copied": "Copied"
+        "copied": "Copied",
+        "cta": "Generate image"
       },
       "engine": {
         "eyebrow": "Engine",
@@ -1543,7 +1544,7 @@
         "priceLabel": "{amount} / run"
       },
       "modeTabs": {
-        "generate": "Generate",
+        "generate": "Create",
         "edit": "Edit"
       },
       "composer": {

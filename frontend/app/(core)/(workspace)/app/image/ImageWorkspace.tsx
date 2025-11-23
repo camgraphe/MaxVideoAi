@@ -44,6 +44,7 @@ interface ImageWorkspaceCopy {
     download: string;
     copy: string;
     copied: string;
+    cta: string;
   };
   engine: {
     eyebrow: string;
@@ -141,6 +142,7 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
     download: 'Download',
     copy: 'Copy link',
     copied: 'Copied',
+    cta: 'Generate image',
   },
   engine: {
     eyebrow: 'Engine',
@@ -148,7 +150,7 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
     priceLabel: '{amount} / run',
   },
   modeTabs: {
-    generate: 'Generate',
+    generate: 'Create',
     edit: 'Edit',
   },
   composer: {
@@ -379,6 +381,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     slotIndex: null,
   });
   const fileInputRefs = useRef<Array<HTMLInputElement | null>>([]);
+  const formRef = useRef<HTMLFormElement | null>(null);
   const [
     priceEstimateKey,
     setPriceEstimateKey,
@@ -753,6 +756,10 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     []
   );
 
+  const submitFromPreview = useCallback(() => {
+    formRef.current?.requestSubmit();
+  }, []);
+
   const handleRun = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -955,9 +962,23 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                   </div>
                 )}
               </div>
+              <div className="mt-4 flex justify-end">
+                <button
+                  type="button"
+                  disabled={isGenerating}
+                  onClick={submitFromPreview}
+                  className={clsx(
+                    'inline-flex items-center rounded-full bg-text-primary px-4 py-2 text-sm font-semibold text-white shadow-card transition',
+                    isGenerating ? 'opacity-60' : 'hover:bg-text-secondary'
+                  )}
+                >
+                  {isGenerating ? resolvedCopy.runButton.running : resolvedCopy.preview.cta}
+                </button>
+              </div>
             </section>
 
             <form
+              ref={formRef}
               className="order-2 rounded-[24px] border border-white/10 bg-white/70 p-6 shadow-card backdrop-blur xl:col-start-1 xl:row-span-2"
               onSubmit={handleRun}
             >
