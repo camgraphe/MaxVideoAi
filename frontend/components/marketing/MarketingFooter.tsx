@@ -6,7 +6,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 
 export function MarketingFooter() {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   type FooterLink = { label: string; href: string; locale?: boolean };
 
   const dedupeLinks = (...lists: FooterLink[][]): FooterLink[] => {
@@ -59,40 +59,6 @@ export function MarketingFooter() {
     'MaxVideoAI allows AI crawlers (GPTBot, OAI-SearchBot, Google-Extended, and CCBot) to index public model pages and documentation for educational and research visibility.';
   const brandLabel = t('nav.brand', 'MaxVideo AI') ?? 'MaxVideo AI';
   const languageLabel = t('footer.languageLabel', 'Language') ?? 'Language';
-  const localeShortcutMap: Record<
-    string,
-    Array<{
-      label: string;
-      href: string;
-    }>
-  > = {
-    en: [
-      { label: '🇫🇷 Accueil', href: '/fr' },
-      { label: '🇫🇷 Galerie', href: '/fr/galerie' },
-      { label: '🇫🇷 About', href: '/fr/about' },
-      { label: '🇪🇸 Inicio', href: '/es' },
-      { label: '🇪🇸 Galería', href: '/es/galeria' },
-      { label: '🇪🇸 About', href: '/es/about' },
-    ],
-    fr: [
-      { label: '🇺🇸 Home', href: '/' },
-      { label: '🇺🇸 Examples', href: '/examples' },
-      { label: '🇺🇸 About', href: '/about' },
-      { label: '🇪🇸 Inicio', href: '/es' },
-      { label: '🇪🇸 Galería', href: '/es/galeria' },
-      { label: '🇪🇸 About', href: '/es/about' },
-    ],
-    es: [
-      { label: '🇺🇸 Home', href: '/' },
-      { label: '🇺🇸 Examples', href: '/examples' },
-      { label: '🇺🇸 About', href: '/about' },
-      { label: '🇫🇷 Accueil', href: '/fr' },
-      { label: '🇫🇷 Galerie', href: '/fr/galerie' },
-      { label: '🇫🇷 About', href: '/fr/about' },
-    ],
-  };
-  const localeShortcutLinks = localeShortcutMap[locale] ?? localeShortcutMap.en;
-
   return (
     <footer className="border-t border-hairline bg-white">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:px-6 lg:px-8">
@@ -107,7 +73,7 @@ export function MarketingFooter() {
             </div>
           </div>
         </div>
-        <div className="grid gap-4 text-sm text-text-secondary sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 text-sm text-text-secondary sm:grid-cols-2 lg:grid-cols-2">
           <div>
             <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Explore MaxVideoAI</p>
             <nav className="mt-3 flex flex-wrap gap-3" aria-label="Key pages">
@@ -134,21 +100,6 @@ export function MarketingFooter() {
                   key={`policy-${item.href}`}
                   href={item.href}
                   locale={item.locale === true ? undefined : false}
-                  className="text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Locales rapides</p>
-            <nav className="mt-3 flex flex-wrap gap-3" aria-label="Locale shortcuts">
-              {localeShortcutLinks.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  locale={false}
                   className="text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   {item.label}
