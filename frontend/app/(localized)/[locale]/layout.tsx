@@ -6,7 +6,6 @@ import { getMessages, setRequestLocale } from 'next-intl/server';
 import { AnalyticsScripts } from '@/components/analytics/AnalyticsScripts';
 import ConsentModeBootstrap from '@/components/analytics/ConsentModeBootstrap';
 import GA4RouteTracker from '@/components/analytics/GA4RouteTracker';
-import { AuthCallbackHandler } from '@/components/AuthCallbackHandler';
 import { CookieBanner } from '@/components/legal/CookieBanner';
 import { JsonLd } from '@/components/SeoJsonLd';
 import { I18nProvider } from '@/lib/i18n/I18nProvider';
@@ -101,7 +100,6 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
     <>
       <ConsentModeBootstrap />
       <GA4RouteTracker />
-      <AuthCallbackHandler />
       <I18nProvider locale={locale} dictionary={messages} fallback={fallbackMessages}>
         {children}
       </I18nProvider>

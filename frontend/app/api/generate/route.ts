@@ -35,7 +35,6 @@ import { convertCents } from '@/lib/exchange';
 import { applyEngineVariantPricing } from '@/lib/pricing-addons';
 import { recordGenerateMetric } from '@/server/generate-metrics';
 import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
-import { getUserIdFromSupabase } from '@/lib/supabase';
 
 const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER = 'usd';
@@ -92,7 +91,7 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function resolveUserId(req: NextRequest): Promise<string | null> {
+async function resolveUserId(): Promise<string | null> {
   try {
     const supabase = createSupabaseRouteClient();
     const {
@@ -104,7 +103,7 @@ async function resolveUserId(req: NextRequest): Promise<string | null> {
   } catch {
     // swallow helper errors
   }
-  return getUserIdFromSupabase(req);
+  return null;
 }
 
 const FAL_ERROR_FIELDS = [
@@ -694,7 +693,7 @@ export async function POST(req: NextRequest) {
       ? { mode: body.payment.mode, paymentIntentId: body.payment.paymentIntentId }
       : {};
   const explicitUserId = typeof body.userId === 'string' && body.userId.trim().length ? body.userId.trim() : null;
-  const authenticatedUserId = await resolveUserId(req);
+  const authenticatedUserId = await resolveUserId();
   const userId = explicitUserId ?? authenticatedUserId ?? null;
   if (userId) {
     metricState.userId = userId;

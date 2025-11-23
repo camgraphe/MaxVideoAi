@@ -3,7 +3,6 @@ import type { ReactNode } from 'react';
 import { Analytics as VercelAnalytics } from '@vercel/analytics/react';
 import { AnalyticsScripts } from '@/components/analytics/AnalyticsScripts';
 import ConsentModeBootstrap from '@/components/analytics/ConsentModeBootstrap';
-import { AuthCallbackHandler } from '@/components/AuthCallbackHandler';
 import { CookieBanner } from '@/components/legal/CookieBanner';
 import { JsonLd } from '@/components/SeoJsonLd';
 import { I18nProvider } from '@/lib/i18n/I18nProvider';
@@ -77,7 +76,6 @@ export default async function CoreLayout({ children }: { children: ReactNode }) 
   return (
     <>
       <ConsentModeBootstrap />
-      <AuthCallbackHandler />
       <I18nProvider locale={locale} dictionary={dictionary} fallback={fallback}>
         {children}
       </I18nProvider>

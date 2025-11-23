@@ -1,6 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
+'use client';
 
-const url = (process.env.NEXT_PUBLIC_SUPABASE_URL as string | undefined)?.trim() || '';
-const anon = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string | undefined)?.trim() || '';
+import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
 
-export const supabase = createClient(url, anon);
+export const supabase = createBrowserSupabaseClient();

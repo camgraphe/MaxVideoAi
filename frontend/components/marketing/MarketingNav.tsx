@@ -323,21 +323,15 @@ export function MarketingNav() {
                       className="flex w-full items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     onClick={async () => {
                       setAccountMenuOpen(false);
-                      setLogoutIntent();
-                      try {
-                        await supabase.auth.signOut();
-                      } catch {
-                        // ignore logout errors
-                      }
-                    await fetch('/api/auth/callback', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      credentials: 'include',
-                      body: JSON.stringify({ event: 'SIGNED_OUT', session: null }),
-                    }).catch(() => undefined);
-                      window.location.href = '/';
-                    }}
-                  >
+                    setLogoutIntent();
+                    try {
+                      await supabase.auth.signOut();
+                    } catch {
+                      // ignore logout errors
+                    }
+                    window.location.href = '/';
+                  }}
+                >
                       {t('workspace.header.signOut', 'Sign out')}
                       <span className="text-[11px] uppercase tracking-micro text-text-muted">⌘⇧Q</span>
                     </button>
@@ -432,18 +426,12 @@ export function MarketingNav() {
                       className="w-full rounded-2xl border border-hairline px-4 py-3 text-base font-semibold text-text-primary shadow-card"
                       onClick={async () => {
                         setMobileMenuOpen(false);
-                        setLogoutIntent();
-                        try {
-                          await supabase.auth.signOut();
-                        } catch {
-                          // ignore logout errors
-                        }
-                        await fetch('/api/auth/callback', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          credentials: 'include',
-                          body: JSON.stringify({ event: 'SIGNED_OUT', session: null }),
-                        }).catch(() => undefined);
+                      setLogoutIntent();
+                      try {
+                        await supabase.auth.signOut();
+                      } catch {
+                        // ignore logout errors
+                      }
                         window.location.href = '/';
                       }}
                     >

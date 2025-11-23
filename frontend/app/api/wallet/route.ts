@@ -19,12 +19,11 @@ import type { Currency } from '@/lib/currency';
 import type { Mode } from '@/types/engines';
 import { applyEngineVariantPricing } from '@/lib/pricing-addons';
 import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
-import { getUserIdFromSupabase } from '@/lib/supabase';
 
 const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
 
-async function resolveAuthenticatedUser(req: NextRequest): Promise<string | null> {
+async function resolveAuthenticatedUser(): Promise<string | null> {
   try {
     const supabase = createSupabaseRouteClient();
     const {
@@ -36,11 +35,11 @@ async function resolveAuthenticatedUser(req: NextRequest): Promise<string | null
   } catch {
     // ignore helper errors and fall back
   }
-  return getUserIdFromSupabase(req);
+  return null;
 }
 
 export async function GET(req: NextRequest) {
-  const userId = await resolveAuthenticatedUser(req);
+  const userId = await resolveAuthenticatedUser();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   let useMock = false;
@@ -136,7 +135,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const userId = await resolveAuthenticatedUser(req);
+  const userId = await resolveAuthenticatedUser();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   let useMock = false;

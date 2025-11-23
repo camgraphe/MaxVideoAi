@@ -1,10 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { query } from '@/lib/db';
 import { getUserIdFromRequest } from '@/lib/user';
-import { getSupabaseServer } from '@/lib/supabase';
-import { ACCESS_TOKEN_COOKIE_NAMES } from '@/lib/supabase-cookie-keys';
 import { createSupabaseServerClient } from '@/lib/supabase-ssr';
 
 let adminCache: Map<string, boolean> | null = null;
@@ -71,31 +68,6 @@ export async function requireAdmin(req?: NextRequest): Promise<string> {
   return userId;
 }
 
-function decodeUserIdFromToken(token: string): string | null {
-  try {
-    const parts = token.split('.');
-    if (parts.length < 2) return null;
-    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
-    const json = Buffer.from(padded, 'base64').toString('utf8');
-    const payload = JSON.parse(json) as { sub?: unknown };
-    return typeof payload.sub === 'string' ? payload.sub : null;
-  } catch {
-    return null;
-  }
-}
-
-function getTokenFromCookies(): string | null {
-  const jar = cookies();
-  for (const cookieName of ACCESS_TOKEN_COOKIE_NAMES) {
-    const value = jar.get(cookieName)?.value;
-    if (value) {
-      return value;
-    }
-  }
-  return null;
-}
-
 export async function getUserIdFromCookies(): Promise<string | null> {
   try {
     const supabase = createSupabaseServerClient();
@@ -106,26 +78,8 @@ export async function getUserIdFromCookies(): Promise<string | null> {
       return session.user.id;
     }
   } catch {
-    // ignore helper errors and fall back
+    return null;
   }
-
-  const token = getTokenFromCookies();
-  if (!token) return null;
-
-  try {
-    const supabase = getSupabaseServer();
-    const { data, error } = await supabase.auth.getUser(token);
-    if (!error && data?.user?.id) {
-      return data.user.id;
-    }
-  } catch {
-    // ignore and fall back to decoding below
-  }
-
-  if (process.env.NODE_ENV !== 'production') {
-    return decodeUserIdFromToken(token);
-  }
-
   return null;
 }
 

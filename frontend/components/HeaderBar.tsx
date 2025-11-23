@@ -306,12 +306,6 @@ export function HeaderBar() {
                     } catch {
                       // ignore logout errors
                     }
-                    await fetch('/api/auth/callback', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      credentials: 'include',
-                      body: JSON.stringify({ event: 'SIGNED_OUT', session: null }),
-                    }).catch(() => undefined);
                     window.location.href = '/';
                   }}
                 >

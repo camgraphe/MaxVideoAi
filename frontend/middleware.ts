@@ -9,7 +9,7 @@ import localizedSlugConfig from '@/config/localized-slugs.json';
 import { createSupabaseMiddlewareClient } from '@/lib/supabase-ssr';
 
 const LOGIN_PATH = '/login';
-const PROTECTED_PREFIXES = ['/app', '/dashboard', '/jobs', '/billing', '/settings'];
+const PROTECTED_PREFIXES = ['/app', '/dashboard', '/jobs', '/billing', '/settings', '/admin'];
 const NON_LOCALIZED_PREFIXES = [
   '/api',
   '/trpc',
