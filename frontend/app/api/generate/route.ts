@@ -428,7 +428,13 @@ async function markJobAwaitingFal(params: {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json().catch(() => null);
+  const body = await req
+    .json()
+    .catch((error) => {
+      console.error('[DEBUG generate] error:', error);
+      return null;
+    });
+  console.log('[DEBUG generate] raw body:', JSON.stringify(body, null, 2));
   if (!body) return NextResponse.json({ ok: false, error: 'Invalid JSON' }, { status: 400 });
 
   const engine = await getConfiguredEngine(String(body.engineId || ''));
