@@ -111,16 +111,19 @@ export function MarketingFooter() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Explore MaxVideoAI</p>
             <nav className="mt-3 flex flex-wrap gap-3" aria-label="Key pages">
-              {exploreLinks.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  locale={item.locale === false ? false : undefined}
-                  className="text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-                >
-                  {item.label}
-                </Link>
-              ))}
+              {exploreLinks.map((item) => {
+                const linkLocale = item.locale === true ? undefined : false;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    locale={linkLocale}
+                    className="text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
             </nav>
           </div>
           <div>
@@ -130,7 +133,7 @@ export function MarketingFooter() {
                 <Link
                   key={`policy-${item.href}`}
                   href={item.href}
-                  locale={item.locale === false ? false : undefined}
+                  locale={item.locale === true ? undefined : false}
                   className="text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   {item.label}
