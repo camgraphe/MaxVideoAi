@@ -7,6 +7,7 @@ import type { AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { ModelsGallery } from '@/components/marketing/ModelsGallery';
+import { MarketingFooter } from '@/components/marketing/MarketingFooter';
 import { getEnginePictogram } from '@/lib/engine-branding';
 
 const MODELS_SLUG_MAP = buildSlugMap('models');
@@ -276,6 +277,7 @@ return (
         </p>
       ) : null}
     </div>
+    <MarketingFooter />
   </>
 );
 }

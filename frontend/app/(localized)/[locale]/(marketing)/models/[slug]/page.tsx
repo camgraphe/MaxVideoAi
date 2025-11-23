@@ -16,6 +16,7 @@ import { normalizeEngineId } from '@/lib/engine-alias';
 import { type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { listExamples, getVideosByIds, type GalleryVideo } from '@/server/videos';
 import { serializeJsonLd } from '../model-jsonld';
+import { MarketingFooter } from '@/components/marketing/MarketingFooter';
 
 type PageParams = {
   params: {
@@ -1560,7 +1561,8 @@ export default async function ModelDetailPage({ params }: PageParams) {
   const heroPosterPreload = heroPosterSrc ? buildOptimizedPosterUrl(heroPosterSrc) ?? heroPosterSrc : null;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
+    <>
+      <div className="mx-auto max-w-4xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
       {heroPosterPreload ? (
         <Head>
           <link rel="preload" as="image" href={heroPosterPreload} fetchPriority="high" />
@@ -1794,7 +1796,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
         </section>
       ) : null}
 
-      <footer className="mt-10 flex flex-wrap gap-3">
+      <div className="mt-10 flex flex-wrap gap-3">
         <Link
           href="/generate"
           className="inline-flex items-center rounded-pill border border-hairline px-4 py-2 text-sm font-semibold text-text-primary transition hover:border-accent hover:text-accent"
@@ -1807,7 +1809,9 @@ export default async function ModelDetailPage({ params }: PageParams) {
         >
           {detailCopy.buttons.launch}
         </Link>
-      </footer>
+      </div>
     </div>
+    <MarketingFooter />
+    </>
   );
 }
