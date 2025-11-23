@@ -36,26 +36,27 @@ export function AuthCallbackHandler() {
 
     let handled = false;
 
-    const finalize = (session: Session | null) => {
+    const finalize = async (session: Session | null, authEvent: string) => {
       if (!session?.user || handled) return;
       handled = true;
+      await fetch('/api/auth/callback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: authEvent, session }),
+      });
       const target = resolveNextTarget();
       clearNextTarget();
       cleanupAuthHash();
       router.replace(target);
+      router.refresh();
     };
 
     void supabase.auth.getSession().then(({ data }) => {
-      finalize(data.session ?? null);
+      void finalize(data.session ?? null, 'SIGNED_IN');
     });
 
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
-      void fetch('/api/auth/callback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ event, session }),
-      });
-      finalize(session ?? null);
+      void finalize(session ?? null, event);
     });
 
     return () => {
