@@ -132,7 +132,7 @@ export default async function ModelsPage() {
     examplesLabel: introContent?.cta?.examplesLabel ?? DEFAULT_INTRO.cta.examplesLabel,
     after: introContent?.cta?.after ?? DEFAULT_INTRO.cta.after,
   };
-  const cardCtaLabel = content.cardCtaLabel ?? 'Explore →';
+  const cardCtaLabel = content.cardCtaLabel ?? 'Explore model';
   const engineTypeLabels = {
     ...DEFAULT_ENGINE_TYPE_LABELS,
     ...(content.engineTypeLabels ?? {}),
@@ -210,6 +210,9 @@ return (
     <div className="mx-auto max-w-5xl px-4 pb-6 pt-16 sm:px-6 lg:px-8">
       <header className="space-y-3">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
+        <h2 className="text-xl font-semibold text-text-primary sm:text-2xl">
+          Compare all AI video models available in MaxVideoAI
+        </h2>
         <p className="max-w-2xl text-base text-text-secondary">{content.hero.subtitle}</p>
       </header>
       <section className="mt-8 space-y-5 rounded-3xl border border-hairline bg-white/90 p-6 text-sm text-text-secondary shadow-card sm:p-8">
