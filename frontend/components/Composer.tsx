@@ -13,6 +13,8 @@ import { CURRENCY_LOCALE } from '@/lib/intl';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
+const VEO_REFERENCE_WARNING_ENGINES = new Set(['veo-3-1', 'veo-3-1-fast']);
+
 export type ComposerAttachment = {
   kind: 'image' | 'video';
   name: string;
@@ -83,6 +85,8 @@ const DEFAULT_COMPOSER_COPY = {
   assetSlots: {
     imageCtaLabel: 'Generate reference images',
     imageCtaHref: '/app/image',
+    referenceWarning:
+      'Veo 3.1 models treat this image as art direction and may reshape faces/outfits. For stricter face fidelity, try Pika 2.2 Image→Video or Kling 2.5 Turbo.',
   },
   shortcuts: {
     generate: 'Cmd+Enter • Generate',
@@ -310,6 +314,7 @@ export function Composer({
                 ? { href: composerCopy.assetSlots.imageCtaHref, label: composerCopy.assetSlots.imageCtaLabel }
                 : undefined
             }
+            referenceWarning={composerCopy.assetSlots.referenceWarning}
           />
         ))}
       </div>
@@ -373,6 +378,7 @@ interface AssetDropzoneProps {
   onError?: (message: string) => void;
   onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;
   assetSlotCta?: { href: string; label: string };
+  referenceWarning?: string;
 }
 
 function AssetDropzone({
@@ -387,6 +393,7 @@ function AssetDropzone({
   onError,
   onOpenLibrary,
   assetSlotCta,
+  referenceWarning,
 }: AssetDropzoneProps) {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const maxCount = field.maxCount ?? 0;
@@ -515,11 +522,14 @@ function AssetDropzone({
                   ? 'This still drives the image-to-video motion.'
                   : role === 'reference'
                     ? 'Optional supporting stills to guide style or lighting.'
-                    : role === 'frame'
-                      ? 'Defines the transition frame for this engine.'
-                      : null}
+                  : role === 'frame'
+                    ? 'Defines the transition frame for this engine.'
+                    : null}
                 {field.description ? ` ${field.description}` : ''}
               </p>
+            )}
+            {referenceWarning && role !== 'frame' && VEO_REFERENCE_WARNING_ENGINES.has(engine.id) && (
+              <p className="mt-1 text-[11px] text-state-warning">{referenceWarning}</p>
             )}
           </div>
           <span className={clsx('rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-micro', required ? 'border-accent text-accent' : 'border-border text-text-muted')}>
