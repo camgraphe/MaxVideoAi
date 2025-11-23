@@ -111,6 +111,7 @@ function ModelCard({ card, ctaLabel }: { card: ModelGalleryCard; ctaLabel: strin
           card.priceNoteHref ? (
             <Link
               href={card.priceNoteHref}
+              prefetch={false}
               className="mt-2 inline-flex text-xs font-semibold text-accent hover:text-accentSoft"
               onClick={(event) => event.stopPropagation()}
             >
@@ -123,6 +124,7 @@ function ModelCard({ card, ctaLabel }: { card: ModelGalleryCard; ctaLabel: strin
       </div>
       <Link
         href={card.href}
+        prefetch={false}
         className="mt-3 inline-flex text-sm font-semibold text-neutral-900/80 underline decoration-transparent underline-offset-4 transition hover:decoration-current"
         onClick={(event) => event.stopPropagation()}
       >

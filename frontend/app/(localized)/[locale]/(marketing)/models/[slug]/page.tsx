@@ -1272,43 +1272,43 @@ function Sora2PageLayout({
           </div>
         </section>
 
-        {copy.demoTitle || copy.demoPrompt.length || copy.demoNotes.length ? (
-          <section className="mt-14 space-y-6">
-            {copy.demoTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.demoTitle}</h2> : null}
-            <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-              <div className="space-y-4 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
-                {copy.demoPromptLabel ? (
-                  <p className="text-sm font-semibold text-text-primary">{copy.demoPromptLabel}</p>
-                ) : null}
-                {copy.demoPrompt.length ? (
-                  <div className="rounded-xl border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
-                    {copy.demoPrompt.map((line) => (
-                      <p key={line} className="mt-2 first:mt-0">
-                        {line}
-                      </p>
-                    ))}
-                  </div>
-                ) : null}
-                {copy.demoNotes.length ? (
-                  <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                    {copy.demoNotes.map((note) => (
-                      <li key={note}>{note}</li>
-                    ))}
-                  </ul>
-                ) : null}
-              </div>
-              <div className="rounded-2xl border border-hairline bg-white/80 p-3 shadow-card">
-                {demoMedia ? (
-                  <MediaPreview media={demoMedia} label={copy.demoTitle ?? 'Sora 2 demo'} />
-                ) : (
-                  <div className="flex h-full min-h-[280px] items-center justify-center rounded-xl border border-dashed border-hairline bg-bg text-sm text-text-secondary">
-                    {copy.galleryIntro ?? 'Demo clip coming soon.'}
-                  </div>
-                )}
-              </div>
+      {copy.demoTitle || copy.demoPrompt.length || copy.demoNotes.length ? (
+        <section className="mt-14 space-y-6">
+          {copy.demoTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.demoTitle}</h2> : null}
+          <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+            <div className="rounded-2xl border border-hairline bg-white/80 p-3 shadow-card lg:order-2">
+              {demoMedia ? (
+                <MediaPreview media={demoMedia} label={copy.demoTitle ?? 'Sora 2 demo'} />
+              ) : (
+                <div className="flex h-full min-h-[280px] items-center justify-center rounded-xl border border-dashed border-hairline bg-bg text-sm text-text-secondary">
+                  {copy.galleryIntro ?? 'Demo clip coming soon.'}
+                </div>
+              )}
             </div>
-          </section>
-        ) : null}
+            <div className="space-y-4 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card lg:order-1">
+              {copy.demoPromptLabel ? (
+                <p className="text-sm font-semibold text-text-primary">{copy.demoPromptLabel}</p>
+              ) : null}
+              {copy.demoPrompt.length ? (
+                <div className="rounded-xl border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
+                  {copy.demoPrompt.map((line) => (
+                    <p key={line} className="mt-2 first:mt-0">
+                      {line}
+                    </p>
+                  ))}
+                </div>
+              ) : null}
+              {copy.demoNotes.length ? (
+                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                  {copy.demoNotes.map((note) => (
+                    <li key={note}>{note}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
         {copy.tipsTitle || strengths.length || boundaries.length ? (
           <section id="tips" className="mt-14 space-y-6">
@@ -1454,8 +1454,15 @@ function MediaPreview({ media, label }: { media: FeaturedMedia; label: string })
   const [w, h] = aspect.split(':').map(Number);
   const isValidAspect = Number.isFinite(w) && Number.isFinite(h) && h > 0 && w > 0;
   const paddingBottom = isValidAspect ? `${(h / w) * 100}%` : '56.25%';
+  const isVertical = isValidAspect ? w < h : false;
+  const figureClassName = [
+    'group relative overflow-hidden rounded-[22px] border border-hairline bg-white shadow-card',
+    isVertical ? 'mx-auto max-w-sm' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
   return (
-    <figure className="group relative overflow-hidden rounded-[22px] border border-hairline bg-white shadow-card">
+    <figure className={figureClassName}>
       <div className="relative w-full overflow-hidden rounded-t-[22px] bg-neutral-100">
         <div className="relative w-full" style={{ paddingBottom }}>
           <div className="absolute inset-0">

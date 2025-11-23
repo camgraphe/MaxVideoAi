@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import clsx from 'clsx';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Link, usePathname } from '@/i18n/navigation';
@@ -176,7 +175,12 @@ export function MarketingNav() {
           className="flex items-center gap-2 font-display text-base font-semibold tracking-tight text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           aria-label={brand}
         >
-          <Image src="/assets/branding/logo-mark.svg" alt={brand} width={28} height={28} />
+          <span
+            aria-hidden
+            className="flex h-7 w-7 items-center justify-center rounded-2xl bg-gradient-to-br from-[#111827] via-[#1f2937] to-[#111827] text-[13px] font-semibold uppercase tracking-tight text-white shadow-sm"
+          >
+            MV
+          </span>
           <span>{brand}</span>
         </Link>
         <button
