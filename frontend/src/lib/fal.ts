@@ -375,6 +375,10 @@ async function generateViaFal(
       requestBody[slotId] = urlCandidate;
       continue;
     }
+    if (slotId === 'first_frame_url' || slotId === 'last_frame_url') {
+      requestBody[slotId] = urlCandidate;
+      continue;
+    }
   }
 
   const referenceImages = payload.referenceImages ?? [];

@@ -1000,6 +1000,10 @@ async function rollbackPendingPayment(params: {
 
   const maxUploadedBytes =
     processedAttachments.reduce((max, attachment) => Math.max(max, attachment.size ?? 0), 0) ?? 0;
+  const firstFrameUrl =
+    processedAttachments.find((attachment) => attachment.slotId === 'first_frame_url')?.url?.trim() ?? undefined;
+  const lastFrameUrl =
+    processedAttachments.find((attachment) => attachment.slotId === 'last_frame_url')?.url?.trim() ?? undefined;
   const initialImageUrl =
     soraRequest?.mode === 'i2v'
       ? soraRequest.image_url
@@ -1023,6 +1027,13 @@ async function rollbackPendingPayment(params: {
 
   if (maxUploadedBytes > 0) {
     validationPayload._uploadedFileMB = maxUploadedBytes / (1024 * 1024);
+  }
+
+  if (firstFrameUrl) {
+    validationPayload.first_frame_url = firstFrameUrl;
+  }
+  if (lastFrameUrl) {
+    validationPayload.last_frame_url = lastFrameUrl;
   }
 
   if (isLumaRay2 && mode === 'i2v') {
