@@ -14,7 +14,7 @@ import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { EngineSelect } from '@/components/ui/EngineSelect';
 import { SettingsControls } from '@/components/SettingsControls';
-import { Composer, type ComposerAttachment, type AssetFieldConfig } from '@/components/Composer';
+import { Composer, type ComposerAttachment, type AssetFieldConfig, type AssetFieldRole } from '@/components/Composer';
 import type { QuadPreviewTile, QuadTileAction } from '@/components/QuadPreviewPanel';
 import { GalleryRail } from '@/components/GalleryRail';
 import type { GroupSummary, GroupMemberSummary } from '@/types/groups';
@@ -2574,6 +2574,16 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     });
   }, []);
 
+  const resolveAssetFieldRole = (field: EngineInputField, required: boolean): AssetFieldRole => {
+    const id = (field.id ?? '').toLowerCase();
+    if (id.includes('first_frame') || id.includes('last_frame')) return 'frame';
+    if (id.includes('reference')) return 'reference';
+    if (id === 'image_url' || id === 'input_image') return 'primary';
+    if (required && field.type === 'image') return 'primary';
+    if (field.type === 'image') return 'reference';
+    return 'generic';
+  };
+
   const inputSchemaSummary = useMemo(() => {
     const schema = selectedEngine?.inputSchema;
     if (!schema) {
@@ -2633,7 +2643,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           return;
         }
         if (field.type === 'image' || field.type === 'video') {
-          assetFields.push({ field, required: isRequired(field, origin) });
+          const required = isRequired(field, origin);
+          const role = resolveAssetFieldRole(field, required);
+          assetFields.push({ field, required, role });
         }
       });
     };
@@ -2677,6 +2689,34 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       });
       return changed ? next : previous;
     });
+  }, [inputSchemaSummary.assetFields]);
+
+  const primaryAssetFieldIds = useMemo(() => {
+    const ids = inputSchemaSummary.assetFields
+      .filter((entry) => entry.role === 'primary' && typeof entry.field.id === 'string')
+      .map((entry) => entry.field.id as string);
+    return new Set(ids);
+  }, [inputSchemaSummary.assetFields]);
+
+  const referenceAssetFieldIds = useMemo(() => {
+    const ids = inputSchemaSummary.assetFields
+      .filter((entry) => entry.role === 'reference' && typeof entry.field.id === 'string')
+      .map((entry) => entry.field.id as string);
+    return new Set(ids);
+  }, [inputSchemaSummary.assetFields]);
+
+  const genericImageFieldIds = useMemo(() => {
+    const ids = inputSchemaSummary.assetFields
+      .filter((entry) => entry.role === 'generic' && entry.field.type === 'image' && typeof entry.field.id === 'string')
+      .map((entry) => entry.field.id as string);
+    return new Set(ids);
+  }, [inputSchemaSummary.assetFields]);
+
+  const frameAssetFieldIds = useMemo(() => {
+    const ids = inputSchemaSummary.assetFields
+      .filter((entry) => entry.role === 'frame' && typeof entry.field.id === 'string')
+      .map((entry) => entry.field.id as string);
+    return new Set(ids);
   }, [inputSchemaSummary.assetFields]);
 
   useEffect(() => {
@@ -2908,21 +2948,36 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       }
     }
 
+    const referenceSlots = referenceAssetFieldIds.size > 0 ? referenceAssetFieldIds : genericImageFieldIds;
+    const primaryAttachment =
+      inputsPayload?.find(
+        (attachment) => typeof attachment.slotId === 'string' && primaryAssetFieldIds.has(attachment.slotId)
+      ) ?? null;
     const referenceImageUrls = inputsPayload
       ? inputsPayload
-          .filter((attachment) => attachment.kind === 'image' && typeof attachment.url === 'string')
+          .filter((attachment) => {
+            if (attachment.kind !== 'image' || typeof attachment.url !== 'string') return false;
+            const slotId = attachment.slotId;
+            if (slotId && primaryAssetFieldIds.has(slotId)) return false;
+            if (slotId && frameAssetFieldIds.has(slotId)) return false;
+            if (!slotId) return referenceSlots.size === 0;
+            if (referenceSlots.size === 0) {
+              return !primaryAssetFieldIds.has(slotId);
+            }
+            return referenceSlots.has(slotId);
+          })
           .map((attachment) => attachment.url)
           .filter((url, index, self) => self.indexOf(url) === index)
       : [];
 
-    const primaryImageUrl = referenceImageUrls[0];
+    const primaryImageUrl = primaryAttachment?.url ?? referenceImageUrls[0];
 
     const allowIndex = defaultAllowIndex ?? true;
     const visibilityPreference: 'public' | 'private' = allowIndex ? 'public' : 'private';
 
     const runIteration = async (iterationIndex: number) => {
       const isImageDrivenMode = form.mode === 'i2v' || form.mode === 'i2i';
-      if (isImageDrivenMode && referenceImageUrls.length === 0) {
+      if (isImageDrivenMode && !primaryImageUrl) {
         const guardMessage = selectedEngine.id.startsWith('sora-2')
           ? 'Ajoutez une image (URL ou fichier) pour lancer Image → Video avec Sora.'
           : 'Add at least one reference image (URL or upload) before running this mode.';
@@ -3366,6 +3421,10 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     workspaceCopy.wallet.insufficientWithAmount,
     cfgScale,
     formatTakeLabel,
+    primaryAssetFieldIds,
+    referenceAssetFieldIds,
+    genericImageFieldIds,
+    frameAssetFieldIds,
   ]);
 
   useEffect(() => {

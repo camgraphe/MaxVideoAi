@@ -1363,6 +1363,18 @@ async function rollbackPendingPayment(params: {
           assetId: attachment.assetId,
         }))
       : undefined;
+  const falInputSummary = {
+    primaryImageUrl: initialImageUrl ?? null,
+    referenceImageCount: Array.isArray(normalizedReferenceImages) ? normalizedReferenceImages.length : 0,
+    hasFirstFrame: Boolean(firstFrameUrl),
+    hasLastFrame: Boolean(lastFrameUrl),
+    inputSlots:
+      falInputs?.map((attachment) => ({
+        slotId: attachment.slotId ?? null,
+        kind: attachment.kind ?? null,
+        hasUrl: Boolean(attachment.url),
+      })) ?? [],
+  };
 
   const falDurationOption = lumaDurationInfo?.label ?? rawDurationLabel ?? rawDurationOption ?? null;
   const falPayload: Parameters<typeof generateVideo>[0] = {
@@ -1420,6 +1432,7 @@ async function rollbackPendingPayment(params: {
             at: new Date().toISOString(),
             engineId: engine.id,
             promptLength: prompt.length,
+            inputSummary: falInputSummary,
           }),
         ]
       );
@@ -1515,7 +1528,7 @@ async function rollbackPendingPayment(params: {
     logMetric('accepted', {
       jobId,
       durationMs: Date.now() - requestStartedAt,
-      meta: { paymentMode },
+      meta: { paymentMode, inputSummary: falInputSummary },
     });
   } catch (error) {
     console.error('[api/generate] failed to persist provisional job record', error);
@@ -2035,6 +2048,7 @@ async function rollbackPendingPayment(params: {
             resolution: effectiveResolution,
             loop: isLumaRay2 ? loop : undefined,
           },
+          inputSummary: falInputSummary,
           pricing: {
             totalCents: pricing.totalCents,
             currency: pricing.currency,
@@ -2082,6 +2096,7 @@ async function rollbackPendingPayment(params: {
       providerJobId,
       provider: providerMode,
       paymentStatus: responsePaymentStatus,
+      inputSummary: falInputSummary,
     },
   });
 

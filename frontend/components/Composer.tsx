@@ -23,9 +23,12 @@ export type ComposerAttachment = {
   error?: string;
 };
 
+export type AssetFieldRole = 'primary' | 'reference' | 'frame' | 'generic';
+
 export type AssetFieldConfig = {
   field: EngineInputField;
   required: boolean;
+  role?: AssetFieldRole;
 };
 
 interface Props {
@@ -289,13 +292,14 @@ export function Composer({
 
         {assetFields.length > 0 && (
       <div className="flex flex-wrap gap-3 text-sm">
-        {assetFields.map(({ field, required }) => (
+        {assetFields.map(({ field, required, role }) => (
           <AssetDropzone
             key={field.id}
             engine={engine}
             caps={caps}
             field={field}
             required={required}
+            role={role}
             assets={assets[field.id] ?? []}
             onSelect={onAssetAdd}
             onRemove={onAssetRemove}
@@ -362,6 +366,7 @@ interface AssetDropzoneProps {
   caps?: CapabilityCaps;
   field: EngineInputField;
   required: boolean;
+  role?: AssetFieldRole;
   assets: (ComposerAttachment | null)[];
   onSelect?: (field: EngineInputField, file: File, slotIndex: number) => void;
   onRemove?: (field: EngineInputField, index: number) => void;
@@ -375,6 +380,7 @@ function AssetDropzone({
   caps,
   field,
   required,
+  role = 'generic',
   assets,
   onSelect,
   onRemove,
@@ -494,8 +500,27 @@ function AssetDropzone({
       <div className="flex w-full flex-col gap-3 rounded-input border border-dashed border-border bg-white/80 p-4 text-text-secondary">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <span className="text-sm font-medium text-text-primary">{field.label}</span>
-            {field.description && <p className="text-[11px] text-text-muted">{field.description}</p>}
+            <span className="text-sm font-medium text-text-primary">
+              {role === 'primary'
+                ? field.label ?? 'Primary reference image'
+                : role === 'reference'
+                  ? field.label ?? 'Additional references'
+                  : role === 'frame'
+                    ? field.label ?? 'Frame'
+                    : field.label}
+            </span>
+            {(role === 'primary' || role === 'reference' || role === 'frame' || field.description) && (
+              <p className="text-[11px] text-text-muted">
+                {role === 'primary'
+                  ? 'This still drives the image-to-video motion.'
+                  : role === 'reference'
+                    ? 'Optional supporting stills to guide style or lighting.'
+                    : role === 'frame'
+                      ? 'Defines the transition frame for this engine.'
+                      : null}
+                {field.description ? ` ${field.description}` : ''}
+              </p>
+            )}
           </div>
           <span className={clsx('rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-micro', required ? 'border-accent text-accent' : 'border-border text-text-muted')}>
             {required ? 'Required' : 'Optional'}
