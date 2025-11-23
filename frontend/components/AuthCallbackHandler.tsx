@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
-import { syncSupabaseCookies } from '@/lib/supabase-cookies';
 import { LOGIN_NEXT_STORAGE_KEY } from '@/lib/auth-storage';
 
 function resolveNextTarget(): string {
@@ -40,7 +39,6 @@ export function AuthCallbackHandler() {
     const finalize = (session: Session | null) => {
       if (!session?.user || handled) return;
       handled = true;
-      syncSupabaseCookies(session);
       const target = resolveNextTarget();
       clearNextTarget();
       cleanupAuthHash();

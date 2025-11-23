@@ -11,7 +11,6 @@ import {
   isClarityEnabledForRuntime,
   queueClarityCommand,
 } from '@/lib/clarity-client';
-import { clearSupabaseCookies, syncSupabaseCookies } from '@/lib/supabase-cookies';
 import { consumeLogoutIntent } from '@/lib/logout-intent';
 
 type RequireAuthResult = {
@@ -63,18 +62,15 @@ export function useRequireAuth(): RequireAuthResult {
         if (!current?.user?.id) {
           setSession(null);
           setLoading(false);
-          clearSupabaseCookies();
           redirectToLogin();
           return;
         }
         setSession(current);
         setLoading(false);
-        syncSupabaseCookies(current);
       } catch {
         if (cancelled) return;
         setSession(null);
         setLoading(false);
-        clearSupabaseCookies();
         redirectToLogin();
       }
     }
@@ -85,11 +81,9 @@ export function useRequireAuth(): RequireAuthResult {
       if (cancelled) return;
       if (!newSession?.user?.id) {
         setSession(null);
-        clearSupabaseCookies();
         redirectToLogin();
       } else {
         setSession(newSession);
-        syncSupabaseCookies(newSession);
       }
     });
 

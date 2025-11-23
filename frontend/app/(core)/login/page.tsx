@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AuthApiError } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
-import { syncSupabaseCookies, clearSupabaseCookies } from '@/lib/supabase-cookies';
 import { LOGIN_NEXT_STORAGE_KEY, LOGIN_LAST_TARGET_KEY, LOGIN_SKIP_ONBOARDING_KEY } from '@/lib/auth-storage';
 import { ACCESS_TOKEN_COOKIE_NAMES } from '@/lib/supabase-cookie-keys';
 import clsx from 'clsx';
@@ -309,7 +308,6 @@ export default function LoginPage() {
           return;
         }
         if (data.session) {
-          syncSupabaseCookies(data.session);
         }
       })
       .catch((err) => {
@@ -341,12 +339,10 @@ export default function LoginPage() {
       if (cancelled) return;
       const session = data.session ?? null;
       if (session?.user && nextPath) {
-        syncSupabaseCookies(session);
         const safeTarget = sanitizeNextPath(nextPath);
         persistNextTarget(safeTarget);
         router.replace(safeTarget);
       } else if (!session?.user) {
-        clearSupabaseCookies();
       }
     }
 
@@ -355,12 +351,10 @@ export default function LoginPage() {
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (cancelled) return;
       if (session?.user && nextPath) {
-        syncSupabaseCookies(session);
         const safeTarget = sanitizeNextPath(nextPath);
         persistNextTarget(safeTarget);
         router.replace(safeTarget);
       } else if (!session?.user) {
-        clearSupabaseCookies();
       }
     });
 
@@ -376,7 +370,7 @@ export default function LoginPage() {
     setStatus('Signing in…');
     setError(null);
     setSignupSuggestion(null);
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       if (error instanceof AuthApiError && error.status === 400) {
         setSignupSuggestion({ email, password });
@@ -394,8 +388,6 @@ export default function LoginPage() {
     setStatusTone('info');
     setStatus('Signed in. Redirecting…');
 
-    const session = data.session ?? (await supabase.auth.getSession().then(({ data: sessionData }) => sessionData.session ?? null));
-    syncSupabaseCookies(session);
     const safeTarget = sanitizeNextPath(nextPath);
     if (typeof window !== 'undefined') {
       persistNextTarget(safeTarget);
@@ -491,7 +483,6 @@ export default function LoginPage() {
     if (data.session) {
       setStatusTone('success');
       setStatus('Account created. Redirecting…');
-      syncSupabaseCookies(data.session);
       const target = sanitizeNextPath('/generate');
       if (typeof window !== 'undefined') {
         persistNextTarget(target);
@@ -560,12 +551,10 @@ export default function LoginPage() {
       const session = data.session ?? null;
       if (cancelled) return;
       if (session?.access_token) {
-        syncSupabaseCookies(session);
         const safeTarget = sanitizeNextPath(nextPath);
         persistNextTarget(safeTarget);
         router.replace(safeTarget);
       } else {
-        clearSupabaseCookies();
       }
     });
     return () => {
