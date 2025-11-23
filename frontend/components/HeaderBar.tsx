@@ -306,6 +306,15 @@ export function HeaderBar() {
                     } catch {
                       // ignore logout errors
                     }
+                    try {
+                      await fetch('/api/auth/callback', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ event: 'SIGNED_OUT', session: null }),
+                      });
+                    } catch {
+                      // ignore callback errors
+                    }
                     window.location.href = '/';
                   }}
                 >

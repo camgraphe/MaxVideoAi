@@ -329,6 +329,15 @@ export function MarketingNav() {
                       } catch {
                         // ignore logout errors
                       }
+                      try {
+                        await fetch('/api/auth/callback', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ event: 'SIGNED_OUT', session: null }),
+                        });
+                      } catch {
+                        // ignore callback errors
+                      }
                       window.location.href = '/';
                     }}
                   >
@@ -421,20 +430,29 @@ export function MarketingNav() {
                 >
                   {generateLabel}
                 </Link>
-                <button
-                  type="button"
-                  className="w-full rounded-2xl border border-hairline px-4 py-3 text-base font-semibold text-text-primary shadow-card"
-                  onClick={async () => {
-                    setMobileMenuOpen(false);
-                    setLogoutIntent();
-                    try {
-                      await supabase.auth.signOut();
-                    } catch {
-                      // ignore logout errors
-                    }
-                    window.location.href = '/';
-                  }}
-                >
+                    <button
+                      type="button"
+                      className="w-full rounded-2xl border border-hairline px-4 py-3 text-base font-semibold text-text-primary shadow-card"
+                      onClick={async () => {
+                        setMobileMenuOpen(false);
+                        setLogoutIntent();
+                        try {
+                          await supabase.auth.signOut();
+                        } catch {
+                          // ignore logout errors
+                        }
+                        try {
+                          await fetch('/api/auth/callback', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ event: 'SIGNED_OUT', session: null }),
+                          });
+                        } catch {
+                          // ignore callback errors
+                        }
+                        window.location.href = '/';
+                      }}
+                    >
                   {t('workspace.header.signOut', 'Sign out')}
                 </button>
               </div>
