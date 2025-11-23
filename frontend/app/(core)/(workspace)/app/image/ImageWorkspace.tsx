@@ -29,6 +29,7 @@ import {
   getNanoBananaDefaultAspectRatio,
 } from '@/lib/image/aspectRatios';
 import { resolveCssAspectRatio } from '@/lib/aspect';
+import { authFetch } from '@/lib/authFetch';
 
 interface ImageWorkspaceCopy {
   hero: {
@@ -433,12 +434,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   } = useSWR(
     priceEstimateKey,
     async ([, engineId, requestMode, count]) => {
-      const response = await fetch('/api/images/estimate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ engineId, mode: requestMode, numImages: count }),
-      });
+        const response = await authFetch('/api/images/estimate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ engineId, mode: requestMode, numImages: count }),
+        });
       const payload = (await response.json().catch(() => null)) as PricingEstimateResponse | null;
       if (!response.ok || !payload?.ok) {
         throw new Error((payload as { error?: string } | null)?.error ?? 'Unable to estimate price');
@@ -607,7 +607,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       try {
         const formData = new FormData();
         formData.append('file', file, file.name);
-        const response = await fetch('/api/uploads/image', {
+        const response = await authFetch('/api/uploads/image', {
           method: 'POST',
           body: formData,
         });
@@ -1408,7 +1408,7 @@ function ImageLibraryModal({
   copy: ImageWorkspaceCopy['library'];
 }) {
   const { data, error, isLoading } = useSWR(open ? '/api/user-assets?limit=60' : null, async (url: string) => {
-    const response = await fetch(url, { credentials: 'include' });
+    const response = await authFetch(url);
     const payload = (await response.json().catch(() => null)) as AssetsResponse | null;
     if (!response.ok || !payload?.ok) {
       let message: string | undefined;

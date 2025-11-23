@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { query } from '@/lib/db';
 import { getUserIdFromRequest } from '@/lib/user';
 import { getSupabaseServer } from '@/lib/supabase';
+import { ACCESS_TOKEN_COOKIE_NAMES } from '@/lib/supabase-cookie-keys';
 
 let adminCache: Map<string, boolean> | null = null;
 let cacheExpiry = 0;
@@ -85,7 +86,13 @@ function decodeUserIdFromToken(token: string): string | null {
 
 function getTokenFromCookies(): string | null {
   const jar = cookies();
-  return jar.get('sb-access-token')?.value ?? jar.get('supabase-access-token')?.value ?? null;
+  for (const cookieName of ACCESS_TOKEN_COOKIE_NAMES) {
+    const value = jar.get(cookieName)?.value;
+    if (value) {
+      return value;
+    }
+  }
+  return null;
 }
 
 export async function getUserIdFromCookies(): Promise<string | null> {

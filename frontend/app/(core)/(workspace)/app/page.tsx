@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useEngines, useInfiniteJobs, runPreflight, runGenerate, getJobStatus } from '@/lib/api';
+import { authFetch } from '@/lib/authFetch';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
@@ -1877,7 +1878,7 @@ const showNotice = useCallback((message: string) => {
     setIsAssetLibraryLoading(true);
     setAssetLibraryError(null);
     try {
-      const response = await fetch('/api/user-assets', { credentials: 'include' });
+      const response = await authFetch('/api/user-assets');
       if (response.status === 401) {
         setAssetLibrary([]);
         setAssetLibraryError('Sign in to access your image library.');
@@ -1914,10 +1915,9 @@ const showNotice = useCallback((message: string) => {
       if (!asset?.id) return;
       setAssetDeletePendingId(asset.id);
       try {
-        const response = await fetch('/api/user-assets', {
+        const response = await authFetch('/api/user-assets', {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
           body: JSON.stringify({ id: asset.id }),
         });
         const payload = await response.json().catch(() => null);
@@ -2102,7 +2102,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         try {
           const formData = new FormData();
           formData.append('file', file, file.name);
-          const response = await fetch('/api/uploads/image', {
+          const response = await authFetch('/api/uploads/image', {
             method: 'POST',
             body: formData,
           });
@@ -2210,14 +2210,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     setIsTopUpLoading(true);
     setTopUpError(null);
     try {
-      const { data } = await supabase.auth.getSession();
-      const token = data.session?.access_token;
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
-      const res = await fetch('/api/wallet', {
+      const res = await authFetch('/api/wallet', {
         method: 'POST',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amountCents }),
       });
       const json = await res.json();
@@ -2250,10 +2245,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     let mounted = true;
     (async () => {
       try {
-        const { data } = await supabase.auth.getSession();
-        const token = data.session?.access_token;
-        const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-        const res = await fetch('/api/member-status', { headers });
+        const res = await authFetch('/api/member-status');
         if (!res.ok) return;
         const json = await res.json();
         if (mounted) {
@@ -2277,10 +2269,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     let cancelled = false;
     (async () => {
       try {
-        const { data } = await supabase.auth.getSession();
-        const token = data.session?.access_token;
-        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-        const res = await fetch('/api/user/exports/summary', { headers });
+        const res = await authFetch('/api/user/exports/summary');
         if (!res.ok) return;
         const json = await res.json();
         if (!json?.ok) return;
@@ -2289,10 +2278,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           const params: Record<string, string> = { tab: 'starter', first: '1' };
           const search = new URLSearchParams(params).toString();
           router.replace(`/gallery?${search}`);
-          await fetch('/api/user/preferences', {
+          await authFetch('/api/user/preferences', {
             method: 'PATCH',
             headers: {
-              ...headers,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({ onboardingDone: true }),
@@ -2313,7 +2301,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     (async () => {
       let shouldStripParam = false;
       try {
-        const res = await fetch(`/api/videos/${encodeURIComponent(fromVideoId)}`, { cache: 'no-store' });
+        const res = await authFetch(`/api/videos/${encodeURIComponent(fromVideoId)}`, { cache: 'no-store' });
         if (!res.ok) return;
         const json = await res.json();
         if (!json?.ok || !json.video || cancelled) return;
@@ -2852,8 +2840,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       if (typeof unitCostCents === 'number' && unitCostCents > 0) {
         const requiredCents = unitCostCents * iterationCount;
         try {
-          const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-          const res = await fetch('/api/wallet', { headers });
+          const res = await authFetch('/api/wallet');
           if (res.ok) {
             const walletJson = await res.json();
             const balanceCents =

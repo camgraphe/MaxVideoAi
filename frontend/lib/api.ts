@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import { supabase } from '@/lib/supabaseClient';
+import { authFetch } from '@/lib/authFetch';
 import type { EnginesResponse, PreflightRequest, PreflightResponse } from '@/types/engines';
 import type { Job, JobsPage } from '@/types/jobs';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
@@ -185,7 +186,7 @@ export function useEngines() {
   return useSWR<EnginesResponse>(
     'static-engines',
     async () => {
-      const response = await fetch('/api/engines', { credentials: 'include' });
+      const response = await authFetch('/api/engines');
       const data = (await response.json().catch(() => null)) as { engines?: EnginesResponse['engines'] } | null;
       return { engines: data?.engines ?? [] };
     },
@@ -203,24 +204,12 @@ async function fetchJobsPage(
   cursor?: string | null,
   options?: { type?: JobFeedType }
 ): Promise<JobsPage> {
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token ?? null;
-
   const params = new URLSearchParams({ limit: String(limit) });
   if (cursor) params.set('cursor', cursor);
   if (options?.type && options.type !== 'all') {
     params.set('type', options.type);
   }
-
-  const headers: Record<string, string> = {};
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  const response = await fetch(`/api/jobs?${params.toString()}`, {
-    credentials: 'include',
-    headers: Object.keys(headers).length ? headers : undefined,
-  });
+  const response = await authFetch(`/api/jobs?${params.toString()}`);
 
   const payload = (await response.json().catch(() => null)) as (Partial<JobsPage> & { error?: string }) | null;
 
@@ -410,10 +399,9 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType })
 }
 
 export async function runPreflight(payload: PreflightRequest): Promise<PreflightResponse> {
-  const response = await fetch('/api/preflight', {
+  const response = await authFetch('/api/preflight', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
     body: JSON.stringify(payload),
   });
   const data = (await response.json().catch(() => null)) as PreflightResponse | null;
@@ -439,10 +427,9 @@ export async function runGenerate(
     headers.Authorization = `Bearer ${options.token}`;
   }
 
-  const response = await fetch('/api/generate', {
+  const response = await authFetch('/api/generate', {
     method: 'POST',
     headers,
-    credentials: 'include',
     body: JSON.stringify(payload),
   });
 
@@ -489,10 +476,9 @@ export async function runGenerate(
 }
 
 export async function runImageGeneration(payload: ImageGenerationRequest): Promise<ImageGenerationResponse> {
-  const response = await fetch('/api/images/generate', {
+  const response = await authFetch('/api/images/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
     body: JSON.stringify(payload),
   });
   const data = (await response.json().catch(() => null)) as ImageGenerationResponse | null;
@@ -512,20 +498,9 @@ export async function runImageGeneration(payload: ImageGenerationRequest): Promi
 }
 
 export async function getJobStatus(jobId: string): Promise<JobStatusResult> {
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token ?? null;
-
-  const headers: Record<string, string> = {};
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
   let response: Response;
   try {
-    response = await fetch(`/api/jobs/${encodeURIComponent(jobId)}`, {
-      credentials: 'include',
-      headers: Object.keys(headers).length ? headers : undefined,
-    });
+    response = await authFetch(`/api/jobs/${encodeURIComponent(jobId)}`);
   } catch (error) {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('jobs:status-error', { detail: { jobId } }));
@@ -609,10 +584,9 @@ type SavedAsset = {
 };
 
 export async function saveImageToLibrary(payload: { url: string; jobId?: string | null; label?: string | null }) {
-  const response = await fetch('/api/user-assets', {
+  const response = await authFetch('/api/user-assets', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
     body: JSON.stringify(payload),
   });
   const data = (await response.json().catch(() => null)) as { ok?: boolean; error?: string; asset?: SavedAsset } | null;

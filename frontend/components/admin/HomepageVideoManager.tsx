@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react';
 import Image from 'next/image';
 import clsx from 'clsx';
+import { authFetch } from '@/lib/authFetch';
 
 type SlotVideo = {
   id: string;
@@ -51,9 +52,8 @@ function prepareSlotState(slot: HomepageSlotState): SlotCardState {
 }
 
 async function fetchVideoPreview(videoId: string): Promise<SlotVideo | null> {
-  const res = await fetch(`/api/videos/${encodeURIComponent(videoId)}`, {
+  const res = await authFetch(`/api/videos/${encodeURIComponent(videoId)}`, {
     cache: 'no-store',
-    credentials: 'include',
   }).catch(() => null);
   if (!res || !res.ok) return null;
   const json = await res.json().catch(() => null);
@@ -138,17 +138,15 @@ export function HomepageVideoManager({ initialHero }: HomepageVideoManagerProps)
 
         let response: Response | null = null;
         if (slot.sectionId) {
-          response = await fetch(`/api/admin/homepage/${slot.sectionId}`, {
+          response = await authFetch(`/api/admin/homepage/${slot.sectionId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
             body: JSON.stringify(payload),
           });
         } else {
-          response = await fetch('/api/admin/homepage', {
+          response = await authFetch('/api/admin/homepage', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
             body: JSON.stringify({
               key: slot.key,
               type: 'hero',

@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import Image from 'next/image';
 import { TARGET_MODERATION_PLAYLIST_SLUGS } from '@/config/playlists';
 import { isPlaceholderMediaUrl, normalizeMediaUrl } from '@/lib/media';
+import { authFetch } from '@/lib/authFetch';
 
 export type ModerationVideo = {
   id: string;
@@ -106,7 +107,7 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
       setError(null);
       mutateVideo(video.id, { visibility, indexable, archived: false });
       try {
-        const res = await fetch(`/api/admin/videos/${video.id}/visibility`, {
+        const res = await authFetch(`/api/admin/videos/${video.id}/visibility`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ visibility, indexable }),
@@ -135,9 +136,8 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
     setError(null);
     try {
       const params = new URLSearchParams({ cursor: nextCursor, limit: '50' });
-      const res = await fetch(`/api/admin/videos/pending?${params.toString()}`, {
+      const res = await authFetch(`/api/admin/videos/pending?${params.toString()}`, {
         cache: 'no-store',
-        credentials: 'include',
       });
       const json = await res.json().catch(() => ({ ok: false }));
       if (!res.ok || !json?.ok) {
@@ -176,7 +176,7 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
       setPlaylistsLoading(true);
       setPlaylistFetchError(null);
       try {
-        const res = await fetch('/api/admin/playlists', { cache: 'no-store', credentials: 'include' });
+        const res = await authFetch('/api/admin/playlists', { cache: 'no-store' });
         const json = await res.json().catch(() => null);
         if (!res.ok || !json?.ok || !Array.isArray(json.playlists)) {
           throw new Error(json?.error ?? `Failed to load playlists (${res.status})`);
@@ -215,7 +215,7 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
       const collected: Record<string, PlaylistTag[]> = {};
       for (const playlist of targetPlaylists) {
         try {
-          const res = await fetch(`/api/admin/playlists/${playlist.id}`, { cache: 'no-store', credentials: 'include' });
+          const res = await authFetch(`/api/admin/playlists/${playlist.id}`, { cache: 'no-store' });
           const json = await res.json().catch(() => null);
           if (!res.ok || !json?.ok || !Array.isArray(json.items)) continue;
           (json.items as Array<{ videoId: string }>).forEach((entry) => {
@@ -316,10 +316,9 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
       const playlistName = getPlaylistName(playlistId);
       updateStatusMessage(video.id, { loading: true, message: null, error: null });
       try {
-        const res = await fetch(`/api/admin/playlists/${playlistId}/items`, {
+        const res = await authFetch(`/api/admin/playlists/${playlistId}/items`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
           body: JSON.stringify({ videoId: video.id }),
         });
         const json = await res.json().catch(() => null);
@@ -360,9 +359,8 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
       setDeletingId(video.id);
       setError(null);
       try {
-        const res = await fetch(`/api/admin/videos/${video.id}`, {
+        const res = await authFetch(`/api/admin/videos/${video.id}`, {
           method: 'DELETE',
-          credentials: 'include',
         });
         const json = await res.json().catch(() => ({ ok: false }));
         if (!res.ok || !json?.ok) {
@@ -398,9 +396,8 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
       updateStatusMessage(video.id, { loading: true, error: null, message: null });
       try {
         const url = `/api/admin/playlists/${playlistId}/items?videoId=${encodeURIComponent(video.id)}`;
-        const res = await fetch(url, {
+        const res = await authFetch(url, {
           method: 'DELETE',
-          credentials: 'include',
         });
         const json = await res.json().catch(() => null);
         if (!res.ok || !json?.ok) {

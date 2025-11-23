@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { MediaLightbox, type MediaLightboxEntry } from '@/components/MediaLightbox';
+import { authFetch } from '@/lib/authFetch';
 import type { VideoGroup, VideoItem } from '@/types/video-groups';
 
 interface GroupViewerModalProps {
@@ -96,10 +97,9 @@ export function GroupViewerModal({ group, onClose, onRefreshJob, defaultAllowInd
       if (!jobId) {
         throw new Error('Missing video identifier');
       }
-      const res = await fetch(`/api/videos/${encodeURIComponent(jobId)}`, {
+      const res = await authFetch(`/api/videos/${encodeURIComponent(jobId)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ indexable: nextIndexable }),
       });
       const json = await res.json().catch(() => null);

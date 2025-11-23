@@ -11,6 +11,7 @@ import { FEATURES } from '@/content/feature-flags';
 import type { Session } from '@supabase/supabase-js';
 import deepmerge from 'deepmerge';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { authFetch } from '@/lib/authFetch';
 
 type Tab = 'account' | 'team' | 'privacy' | 'notifications';
 
@@ -101,10 +102,9 @@ export default function SettingsPage() {
       setPrefSaving(true);
       setPrefError(null);
       try {
-        const res = await fetch('/api/user/preferences', {
+        const res = await authFetch('/api/user/preferences', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
           body: JSON.stringify({ defaultAllowIndex: next }),
         });
         const json = await res.json().catch(() => null);
@@ -391,10 +391,9 @@ function NotificationsTab({ live, copy }: { live: boolean; copy: SettingsCopy['n
     setSaving(true);
     setPrefError(null);
     try {
-      const res = await fetch('/api/account/marketing', {
+      const res = await authFetch('/api/account/marketing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ optIn: !(marketingPref?.optIn ?? false) }),
       });
       const json = await res.json().catch(() => null);

@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import clsx from 'clsx';
+import { authFetch } from '@/lib/authFetch';
 type PlaylistSummary = {
   id: string;
   slug: string;
@@ -66,7 +67,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
   const refreshPlaylistItems = useCallback((playlistId: string) => {
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/admin/playlists/${playlistId}`, { credentials: 'include' });
+        const res = await authFetch(`/api/admin/playlists/${playlistId}`);
         if (!res.ok) throw new Error(`Failed to load items (${res.status})`);
         const json = await res.json().catch(() => ({ ok: false }));
         if (!json?.ok) throw new Error(json?.error ?? 'Unable to load playlist items');
@@ -123,7 +124,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
           setPlaylists((current) =>
             current.map((p) => (p.id === playlistId ? { ...p, loading: true } : p))
           );
-          const res = await fetch(`/api/admin/playlists/${playlistId}`, {
+          const res = await authFetch(`/api/admin/playlists/${playlistId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -132,7 +133,6 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
               description: playlist.description,
               isPublic: playlist.isPublic,
             }),
-            credentials: 'include',
           });
           if (!res.ok) throw new Error(`Failed to save playlist (${res.status})`);
           const json = await res.json().catch(() => ({ ok: false }));
@@ -165,11 +165,10 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
       try {
         setFeedback(null);
         setError(null);
-        const res = await fetch('/api/admin/playlists', {
+        const res = await authFetch('/api/admin/playlists', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ slug, name }),
-          credentials: 'include',
         });
         if (!res.ok) throw new Error(`Failed to create playlist (${res.status})`);
         const json = await res.json().catch(() => ({ ok: false }));
@@ -194,7 +193,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
         try {
           setFeedback(null);
           setError(null);
-        const res = await fetch(`/api/admin/playlists/${playlistId}`, { method: 'DELETE', credentials: 'include' });
+        const res = await authFetch(`/api/admin/playlists/${playlistId}`, { method: 'DELETE' });
           if (!res.ok) throw new Error(`Failed to delete playlist (${res.status})`);
           const json = await res.json().catch(() => ({ ok: false }));
           if (!json?.ok) throw new Error(json?.error ?? 'Delete failed');
@@ -233,11 +232,10 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
       startTransition(async () => {
         try {
           setError(null);
-          const res = await fetch(`/api/admin/playlists/${selectedId}/items`, {
+          const res = await authFetch(`/api/admin/playlists/${selectedId}/items`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ videoId }),
-            credentials: 'include',
           });
           if (!res.ok) throw new Error(`Failed to add video (${res.status})`);
           const json = await res.json().catch(() => ({ ok: false }));
@@ -259,11 +257,10 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
       startTransition(async () => {
         try {
           setError(null);
-          const res = await fetch(`/api/admin/playlists/${selectedId}/items`, {
+          const res = await authFetch(`/api/admin/playlists/${selectedId}/items`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ videoId }),
-            credentials: 'include',
           });
           if (!res.ok) throw new Error(`Failed to remove video (${res.status})`);
           const json = await res.json().catch(() => ({ ok: false }));
@@ -302,11 +299,10 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
       try {
         setError(null);
         const payload = items.map((item) => ({ videoId: item.videoId, pinned: item.pinned }));
-        const res = await fetch(`/api/admin/playlists/${selectedId}/items`, {
+        const res = await authFetch(`/api/admin/playlists/${selectedId}/items`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
-          credentials: 'include',
         });
         if (!res.ok) throw new Error(`Failed to save order (${res.status})`);
         const json = await res.json().catch(() => ({ ok: false }));

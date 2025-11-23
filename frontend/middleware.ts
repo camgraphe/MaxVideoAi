@@ -5,8 +5,8 @@ import { isbot as detectBot } from 'isbot';
 import { routing } from '@/i18n/routing';
 import { defaultLocale, localePathnames, locales } from '@/i18n/locales';
 import { LOCALE_COOKIE } from '@/lib/i18n/constants';
-import { getUserIdFromSupabase } from '@/lib/supabase';
 import localizedSlugConfig from '@/config/localized-slugs.json';
+import { createSupabaseMiddlewareClient } from '@/lib/supabase-ssr';
 
 const LOGIN_PATH = '/login';
 const PROTECTED_PREFIXES = ['/app', '/dashboard', '/jobs', '/billing', '/settings'];
@@ -164,11 +164,9 @@ export async function middleware(req: NextRequest) {
   const isMarketingPath = shouldHandleLocale(pathname);
   const isBotRequest = detectBot(req.headers.get('user-agent') ?? '');
 
-  if (isMarketingPath) {
-    const marketingResponse = handleMarketingSlug(req, pathname);
-    if (marketingResponse) {
-      return marketingResponse;
-    }
+  const marketingResponse = isMarketingPath ? handleMarketingSlug(req, pathname) : null;
+  if (marketingResponse) {
+    return marketingResponse;
   }
 
   let response: NextResponse;
@@ -205,18 +203,18 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  const supabase = createSupabaseMiddlewareClient(req, response);
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
   const isProtectedRoute = PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
   if (!isProtectedRoute) {
     return response;
   }
 
-  try {
-    const userId = await getUserIdFromSupabase(req);
-    if (userId) {
-      return response;
-    }
-  } catch {
-    // ignore and fall through to redirect
+  if (session?.user?.id) {
+    return response;
   }
 
   const redirectUrl = req.nextUrl.clone();
@@ -229,7 +227,9 @@ export async function middleware(req: NextRequest) {
     redirectUrl.searchParams.set('next', target);
   }
 
-  return NextResponse.redirect(redirectUrl);
+  const loginResponse = NextResponse.redirect(redirectUrl);
+  mergeResponseCookies(loginResponse, response);
+  return loginResponse;
 }
 
 export const config = {
@@ -396,6 +396,12 @@ function getFuzzyThreshold(length: number) {
     return 2;
   }
   return 3;
+}
+
+function mergeResponseCookies(target: NextResponse, source: NextResponse) {
+  source.cookies.getAll().forEach((cookie) => {
+    target.cookies.set(cookie);
+  });
 }
 
 function levenshtein(a: string, b: string) {

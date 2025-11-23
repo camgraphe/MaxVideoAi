@@ -8,7 +8,6 @@ import { computePricingSnapshot, getPlatformFeeCents } from '@/lib/pricing';
 import { getConfiguredEngine } from '@/server/engines';
 import Stripe from 'stripe';
 import { ENV, isConnectPayments, receiptsPriceOnlyEnabled } from '@/lib/env';
-import { getUserIdFromRequest } from '@/lib/user';
 import type { PricingSnapshot } from '@/types/engines';
 import { ensureBillingSchema } from '@/lib/schema';
 import { reserveWalletCharge } from '@/lib/wallet';
@@ -35,6 +34,8 @@ import type { Currency } from '@/lib/currency';
 import { convertCents } from '@/lib/exchange';
 import { applyEngineVariantPricing } from '@/lib/pricing-addons';
 import { recordGenerateMetric } from '@/server/generate-metrics';
+import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
+import { getUserIdFromSupabase } from '@/lib/supabase';
 
 const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER = 'usd';
@@ -89,6 +90,21 @@ function isVideoMode(value: unknown): value is VideoMode {
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function resolveUserId(req: NextRequest): Promise<string | null> {
+  try {
+    const supabase = createSupabaseRouteClient();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (session?.user?.id) {
+      return session.user.id;
+    }
+  } catch {
+    // swallow helper errors
+  }
+  return getUserIdFromSupabase(req);
 }
 
 const FAL_ERROR_FIELDS = [
@@ -678,7 +694,7 @@ export async function POST(req: NextRequest) {
       ? { mode: body.payment.mode, paymentIntentId: body.payment.paymentIntentId }
       : {};
   const explicitUserId = typeof body.userId === 'string' && body.userId.trim().length ? body.userId.trim() : null;
-  const authenticatedUserId = await getUserIdFromRequest(req);
+  const authenticatedUserId = await resolveUserId(req);
   const userId = explicitUserId ?? authenticatedUserId ?? null;
   if (userId) {
     metricState.userId = userId;

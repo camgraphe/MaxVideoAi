@@ -10,6 +10,7 @@ import { Download, Trash2 } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { authFetch } from '@/lib/authFetch';
 
 type UserAsset = {
   id: string;
@@ -77,7 +78,7 @@ function formatTemplate(template: string, values: Record<string, string | number
 }
 
 const fetcher = async (url: string): Promise<AssetsResponse> => {
-  const res = await fetch(url, { credentials: 'include' });
+  const res = await authFetch(url);
   const json = (await res.json().catch(() => null)) as AssetsResponse | null;
   if (!res.ok || !json) {
     let message: string | undefined;
@@ -121,10 +122,9 @@ export default function LibraryPage() {
       setDeletingId(assetId);
       setDeleteError(null);
       try {
-        const response = await fetch('/api/user-assets', {
+        const response = await authFetch('/api/user-assets', {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
           body: JSON.stringify({ id: assetId }),
         });
         const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;

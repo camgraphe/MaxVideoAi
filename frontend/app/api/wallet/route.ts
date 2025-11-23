@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
-import { getUserIdFromRequest } from '@/lib/user';
 import Stripe from 'stripe';
 import { ENV, isConnectPayments } from '@/lib/env';
 import { computePricingSnapshot, getPlatformFeeCents, getVendorShareCents } from '@/lib/pricing';
@@ -19,12 +18,29 @@ import { convertCents } from '@/lib/exchange';
 import type { Currency } from '@/lib/currency';
 import type { Mode } from '@/types/engines';
 import { applyEngineVariantPricing } from '@/lib/pricing-addons';
+import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
+import { getUserIdFromSupabase } from '@/lib/supabase';
 
 const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
 
+async function resolveAuthenticatedUser(req: NextRequest): Promise<string | null> {
+  try {
+    const supabase = createSupabaseRouteClient();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (session?.user?.id) {
+      return session.user.id;
+    }
+  } catch {
+    // ignore helper errors and fall back
+  }
+  return getUserIdFromSupabase(req);
+}
+
 export async function GET(req: NextRequest) {
-  const userId = await getUserIdFromRequest(req);
+  const userId = await resolveAuthenticatedUser(req);
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   let useMock = false;
@@ -120,7 +136,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const userId = await getUserIdFromRequest(req);
+  const userId = await resolveAuthenticatedUser(req);
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   let useMock = false;

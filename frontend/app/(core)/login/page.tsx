@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { syncSupabaseCookies, clearSupabaseCookies } from '@/lib/supabase-cookies';
 import { LOGIN_NEXT_STORAGE_KEY, LOGIN_LAST_TARGET_KEY, LOGIN_SKIP_ONBOARDING_KEY } from '@/lib/auth-storage';
+import { ACCESS_TOKEN_COOKIE_NAMES } from '@/lib/supabase-cookie-keys';
 import clsx from 'clsx';
 import enMessages from '@/messages/en.json';
 import frMessages from '@/messages/fr.json';
@@ -30,6 +31,7 @@ const AUTH_COPY = {
 type Locale = keyof typeof AUTH_COPY;
 
 const LOCALE_OPTIONS: Locale[] = ['en', 'fr', 'es'];
+const PRIMARY_ACCESS_COOKIE = ACCESS_TOKEN_COOKIE_NAMES[0];
 
 function detectLocale(): Locale {
   if (typeof document !== 'undefined') {
@@ -218,11 +220,12 @@ export default function LoginPage() {
     setNextPathReady(true);
     if (process.env.NODE_ENV !== 'production') {
       console.log('[login] resolved next path', { value, resolved, source });
+      const cookiePrefix = `${PRIMARY_ACCESS_COOKIE}=`;
       console.log('[login] cookie snapshot', {
         nextCookie: document?.cookie
           ?.split('; ')
-          ?.find((entry) => entry.startsWith('sb-access-token='))
-          ?.slice('sb-access-token='.length, 'sb-access-token='.length + 12),
+          ?.find((entry) => entry.startsWith(cookiePrefix))
+          ?.slice(cookiePrefix.length, cookiePrefix.length + 12),
         storageSnapshot: {
           next: window.sessionStorage.getItem(LOGIN_NEXT_STORAGE_KEY),
           last: window.sessionStorage.getItem(LOGIN_LAST_TARGET_KEY),

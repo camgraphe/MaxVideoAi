@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { cookies as readServerCookies } from 'next/headers';
 import { getUserIdFromSupabase } from '@/lib/supabase';
+import { ACCESS_TOKEN_COOKIE_NAMES } from '@/lib/supabase-cookie-keys';
 
 function decodeUserIdFromToken(token: string): string | null {
   try {
@@ -28,10 +29,14 @@ export async function getUserIdFromRequest(req?: NextRequest): Promise<string | 
 
   try {
     const store = readServerCookies();
-    const token =
-      store.get('sb-access-token')?.value ??
-      store.get('supabase-access-token')?.value ??
-      null;
+    let token: string | null = null;
+    for (const cookieName of ACCESS_TOKEN_COOKIE_NAMES) {
+      const value = store.get(cookieName)?.value ?? null;
+      if (value) {
+        token = value;
+        break;
+      }
+    }
     if (!token) return null;
     return decodeUserIdFromToken(token);
   } catch {

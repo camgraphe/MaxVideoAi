@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import type { NextRequest } from 'next/server';
+import { ACCESS_TOKEN_COOKIE_NAMES } from '@/lib/supabase-cookie-keys';
 
 const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
 const anonKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim();
@@ -14,10 +15,12 @@ export function getSupabaseServer() {
 function readAccessToken(req: NextRequest): string | null {
   const auth = req.headers.get('authorization') || req.headers.get('Authorization');
   if (auth && auth.startsWith('Bearer ')) return auth.slice('Bearer '.length).trim();
-  const cookie1 = req.cookies.get('sb-access-token')?.value;
-  if (cookie1) return cookie1;
-  const cookie2 = req.cookies.get('supabase-access-token')?.value;
-  if (cookie2) return cookie2;
+  for (const cookieName of ACCESS_TOKEN_COOKIE_NAMES) {
+    const cookieValue = req.cookies.get(cookieName)?.value;
+    if (cookieValue) {
+      return cookieValue;
+    }
+  }
   return null;
 }
 
