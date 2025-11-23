@@ -115,6 +115,7 @@ export function MarketingFooter() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  locale={item.locale ?? false}
                   className="text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   {item.label}
@@ -129,7 +130,7 @@ export function MarketingFooter() {
                 <Link
                   key={`policy-${item.href}`}
                   href={item.href}
-                  locale={item.locale === false ? false : undefined}
+                  locale={item.locale ?? false}
                   className="text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   {item.label}

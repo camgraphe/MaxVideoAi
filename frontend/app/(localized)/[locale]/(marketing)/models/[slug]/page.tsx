@@ -16,7 +16,6 @@ import { normalizeEngineId } from '@/lib/engine-alias';
 import { type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { listExamples, getVideosByIds, type GalleryVideo } from '@/server/videos';
 import { serializeJsonLd } from '../model-jsonld';
-import { MarketingFooter } from '@/components/marketing/MarketingFooter';
 
 type PageParams = {
   params: {
@@ -1811,7 +1810,6 @@ export default async function ModelDetailPage({ params }: PageParams) {
         </Link>
       </div>
     </div>
-    <MarketingFooter />
-    </>
-  );
+  </>
+);
 }

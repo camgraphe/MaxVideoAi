@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
+import type { LocalizedLinkHref } from '@/i18n/navigation';
 
 export type ModelGalleryCard = {
   id: string;
@@ -11,13 +11,22 @@ export type ModelGalleryCard = {
   versionLabel?: string;
   priceNote?: string | null;
   priceNoteHref?: string | null;
-  href: string;
+  href: LocalizedLinkHref;
   backgroundColor?: string | null;
   textColor?: string | null;
 };
 
 const INITIAL_COUNT = 6;
 const LOAD_COUNT = 6;
+const CTA_ARROW = '→';
+
+function normalizeCtaLabel(label: string): string {
+  const trimmed = label.trim();
+  if (!trimmed.length) {
+    return `Explore model ${CTA_ARROW}`;
+  }
+  return trimmed.endsWith(CTA_ARROW) ? trimmed : `${trimmed} ${CTA_ARROW}`;
+}
 
 export function ModelsGallery({
   cards,
@@ -72,6 +81,7 @@ function ModelCard({ card, ctaLabel }: { card: ModelGalleryCard; ctaLabel: strin
   const router = useRouter();
   const background = card.backgroundColor ?? '#F5F7FB';
   const textColor = card.textColor ?? '#1F2633';
+  const normalizedCtaLabel = normalizeCtaLabel(ctaLabel);
   const handleClick = () => router.push(card.href);
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -87,7 +97,7 @@ function ModelCard({ card, ctaLabel }: { card: ModelGalleryCard; ctaLabel: strin
       onKeyDown={handleKeyDown}
       className="flex min-h-[11rem] cursor-pointer flex-col justify-between rounded-2xl border border-black/5 p-4 text-neutral-900 shadow-lg transition hover:border-black/10 hover:shadow-xl"
       style={{ backgroundColor: background, color: textColor }}
-      aria-label={`${ctaLabel} ${card.label}`}
+      aria-label={`${normalizedCtaLabel} ${card.label}`}
     >
       <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-micro text-neutral-600">
         <span>{card.versionLabel}</span>
@@ -110,9 +120,13 @@ function ModelCard({ card, ctaLabel }: { card: ModelGalleryCard; ctaLabel: strin
           )
         ) : null}
       </div>
-      <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-neutral-900/80">
-        {ctaLabel} <span aria-hidden>→</span>
-      </span>
+      <Link
+        href={card.href}
+        className="mt-3 inline-flex text-sm font-semibold text-neutral-900/80 underline decoration-transparent underline-offset-4 transition hover:decoration-current"
+        onClick={(event) => event.stopPropagation()}
+      >
+        {normalizedCtaLabel}
+      </Link>
     </article>
   );
 }

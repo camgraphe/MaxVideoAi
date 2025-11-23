@@ -8,7 +8,7 @@ const EXTERNAL_HREF_PATTERN = /^(?:[a-z][a-z0-9+\-.]*:|\/\/)/i;
 
 const { Link: LocalizedLink, redirect, usePathname, useRouter, getPathname } = createNavigation(routing);
 
-type LocalizedLinkHref =
+export type LocalizedLinkHref =
   | NextLinkProps['href']
   | {
       pathname: string;
