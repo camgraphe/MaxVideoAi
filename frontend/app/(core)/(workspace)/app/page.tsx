@@ -2921,9 +2921,29 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     const visibilityPreference: 'public' | 'private' = allowIndex ? 'public' : 'private';
 
     const runIteration = async (iterationIndex: number) => {
-      if (selectedEngine.id.startsWith('sora-2') && form.mode === 'i2v' && !primaryImageUrl) {
-        showNotice('Ajoutez une image (URL ou fichier) pour lancer Image → Video avec Sora.');
+      const isImageDrivenMode = form.mode === 'i2v' || form.mode === 'i2i';
+      if (isImageDrivenMode && referenceImageUrls.length === 0) {
+        const guardMessage = selectedEngine.id.startsWith('sora-2')
+          ? 'Ajoutez une image (URL ou fichier) pour lancer Image → Video avec Sora.'
+          : 'Add at least one reference image (URL or upload) before running this mode.';
+        showNotice(guardMessage);
         return;
+      }
+      if (isImageDrivenMode && selectedEngine.id === 'veo-3-1-first-last') {
+        const firstFrameAttachment = inputsPayload?.find((attachment) => attachment.slotId === 'first_frame_url');
+        const lastFrameAttachment = inputsPayload?.find((attachment) => attachment.slotId === 'last_frame_url');
+        if (!firstFrameAttachment || !lastFrameAttachment) {
+          showNotice('Upload both a first and last frame before generating with Veo First/Last.');
+          return;
+        }
+        const sameSource =
+          firstFrameAttachment.assetId && lastFrameAttachment.assetId
+            ? firstFrameAttachment.assetId === lastFrameAttachment.assetId
+            : firstFrameAttachment.url === lastFrameAttachment.url;
+        if (sameSource) {
+          showNotice('First and last frames must be two different images for this engine.');
+          return;
+        }
       }
 
       const localKey = `local_${batchId}_${iterationIndex + 1}`;
@@ -3310,7 +3330,16 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           setPreflightError(composed);
           return;
         }
-        const fallbackMessage = error instanceof Error ? error.message : 'Generate failed';
+        const enrichedError = typeof error === 'object' && error !== null ? (error as Record<string, unknown>) : null;
+        const apiMessage =
+          typeof enrichedError?.originalMessage === 'string' && enrichedError.originalMessage.trim().length
+            ? enrichedError.originalMessage.trim()
+            : undefined;
+        const fallbackMessage =
+          apiMessage ??
+          (error instanceof Error && typeof error.message === 'string' && error.message.trim().length
+            ? error.message
+            : 'Generate failed');
         showNotice(fallbackMessage);
         setPreflightError(fallbackMessage);
       }

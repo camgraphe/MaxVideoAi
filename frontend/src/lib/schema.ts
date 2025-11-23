@@ -426,6 +426,33 @@ export async function ensureBillingSchema(): Promise<void> {
       await query(`
         CREATE INDEX IF NOT EXISTS fal_queue_log_job_idx ON fal_queue_log (job_id, created_at DESC);
       `);
+
+      await query(`
+        CREATE TABLE IF NOT EXISTS app_generate_metrics (
+          id BIGSERIAL PRIMARY KEY,
+          job_id TEXT,
+          user_id TEXT,
+          engine_id TEXT NOT NULL,
+          engine_label TEXT,
+          mode TEXT,
+          attempt_status TEXT NOT NULL,
+          error_code TEXT,
+          duration_ms INTEGER,
+          payload JSONB,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+      `);
+
+      await query(`
+        CREATE INDEX IF NOT EXISTS app_generate_metrics_engine_idx
+          ON app_generate_metrics (engine_id, created_at DESC);
+      `);
+
+      await query(`
+        CREATE INDEX IF NOT EXISTS app_generate_metrics_job_idx
+          ON app_generate_metrics (job_id)
+          WHERE job_id IS NOT NULL;
+      `);
   };
 
   ensurePromise = ensure().catch((error) => {

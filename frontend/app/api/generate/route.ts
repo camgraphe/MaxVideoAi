@@ -34,6 +34,7 @@ import { ensureUserPreferredCurrency, getUserPreferredCurrency, resolveCurrency 
 import type { Currency } from '@/lib/currency';
 import { convertCents } from '@/lib/exchange';
 import { applyEngineVariantPricing } from '@/lib/pricing-addons';
+import { recordGenerateMetric } from '@/server/generate-metrics';
 
 const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER = 'usd';
@@ -428,6 +429,48 @@ async function markJobAwaitingFal(params: {
 }
 
 export async function POST(req: NextRequest) {
+  const requestStartedAt = Date.now();
+  const metricState: {
+    engineId: string | null;
+    engineLabel: string | null;
+    mode: Mode | null;
+    userId: string | null;
+    jobId: string | null;
+    durationSec: number | null;
+    resolution: string | null;
+  } = {
+    engineId: null,
+    engineLabel: null,
+    mode: null,
+    userId: null,
+    jobId: null,
+    durationSec: null,
+    resolution: null,
+  };
+  const logMetric = (
+    status: 'accepted' | 'rejected' | 'completed' | 'failed',
+    options?: { errorCode?: string; meta?: Record<string, unknown>; durationMs?: number; jobId?: string | null }
+  ) => {
+    if (!metricState.engineId) return;
+    const durationMs = options?.durationMs ?? Date.now() - requestStartedAt;
+    const meta = {
+      durationSec: metricState.durationSec,
+      resolution: metricState.resolution,
+      ...(options?.meta ?? {}),
+    };
+    void recordGenerateMetric({
+      jobId: options?.jobId ?? metricState.jobId,
+      userId: metricState.userId,
+      engineId: metricState.engineId,
+      engineLabel: metricState.engineLabel ?? undefined,
+      mode: metricState.mode ?? undefined,
+      status,
+      durationMs,
+      errorCode: options?.errorCode,
+      meta,
+    });
+  };
+
   const body = await req
     .json()
     .catch((error) => {
@@ -439,6 +482,8 @@ export async function POST(req: NextRequest) {
 
   const engine = await getConfiguredEngine(String(body.engineId || ''));
   if (!engine) return NextResponse.json({ ok: false, error: 'Unknown engine' }, { status: 400 });
+  metricState.engineId = engine.id;
+  metricState.engineLabel = engine.label;
 
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
@@ -452,12 +497,14 @@ export async function POST(req: NextRequest) {
 
   const requestedJobId = typeof body.jobId === 'string' && body.jobId.trim() ? String(body.jobId).trim() : null;
   const jobId = requestedJobId ?? `job_${randomUUID()}`;
+  metricState.jobId = jobId;
   const rawMode = typeof body.mode === 'string' ? body.mode.trim().toLowerCase() : '';
   const mode: Mode = isVideoMode(rawMode)
     ? rawMode
     : engine.modes.includes('t2v')
       ? 't2v'
       : engine.modes[0] ?? 't2v';
+  metricState.mode = mode;
 
   const prompt = String(body.prompt || '');
   const isLumaRay2 = engine.id === 'lumaRay2';
@@ -466,6 +513,10 @@ export async function POST(req: NextRequest) {
   let durationSec = Number(body.durationSec || 4);
   const lumaDurationInfo = isLumaRay2 ? getLumaRay2DurationInfo(rawDurationOption ?? durationSec) : null;
   if (isLumaRay2 && !lumaDurationInfo) {
+    logMetric('rejected', {
+      errorCode: 'LUMA_DURATION_UNSUPPORTED',
+      meta: { durationOption: rawDurationOption, durationSec: body.durationSec },
+    });
     return NextResponse.json({ ok: false, error: LUMA_RAY2_ERROR_UNSUPPORTED }, { status: 400 });
   }
   if (lumaDurationInfo) {
@@ -488,6 +539,10 @@ export async function POST(req: NextRequest) {
       : rawAspectRatio ?? fallbackAspectRatio ?? null;
   if (isLumaRay2) {
     if (aspectRatio && !isLumaRay2AspectRatio(aspectRatio)) {
+      logMetric('rejected', {
+        errorCode: 'LUMA_ASPECT_UNSUPPORTED',
+        meta: { aspectRatio },
+      });
       return NextResponse.json({ ok: false, error: LUMA_RAY2_ERROR_UNSUPPORTED }, { status: 400 });
     }
     if (!aspectRatio) {
@@ -539,6 +594,8 @@ export async function POST(req: NextRequest) {
     effectiveResolution = lumaResolutionInfo.value;
     requestedResolution = lumaResolutionInfo.value;
   }
+  metricState.durationSec = durationSec;
+  metricState.resolution = effectiveResolution;
 
   const rawNumFrames =
     typeof body.numFrames === 'number'
@@ -576,6 +633,10 @@ export async function POST(req: NextRequest) {
             ? body.image_url.trim()
             : undefined;
       if (!imageUrl) {
+        logMetric('rejected', {
+          errorCode: 'IMAGE_URL_REQUIRED',
+          meta: { engineId: engine.id, mode },
+        });
         return NextResponse.json({ ok: false, error: 'Image URL is required for Sora image-to-video' }, { status: 400 });
       }
       candidate.image_url = imageUrl;
@@ -608,6 +669,8 @@ export async function POST(req: NextRequest) {
         : soraRequest.aspect_ratio === 'auto'
           ? fallbackAspectNormalized
           : soraRequest.aspect_ratio;
+    metricState.durationSec = durationSec;
+    metricState.resolution = effectiveResolution;
   }
 
   const payment: { mode?: PaymentMode; paymentIntentId?: string | null } =
@@ -617,6 +680,9 @@ export async function POST(req: NextRequest) {
   const explicitUserId = typeof body.userId === 'string' && body.userId.trim().length ? body.userId.trim() : null;
   const authenticatedUserId = await getUserIdFromRequest(req);
   const userId = explicitUserId ?? authenticatedUserId ?? null;
+  if (userId) {
+    metricState.userId = userId;
+  }
   const localKey = typeof body.localKey === 'string' && body.localKey.trim().length ? body.localKey.trim() : null;
   if (localKey && userId) {
     const existingJobs = await query<{
@@ -1042,15 +1108,39 @@ async function rollbackPendingPayment(params: {
     validationPayload.last_frame_url = lastFrameUrl;
   }
 
+  const needsImage = mode === 'i2v' || mode === 'i2i';
   if (isLumaRay2 && mode === 'i2v') {
     if (!initialImageUrl) {
+      logMetric('rejected', {
+        errorCode: 'IMAGE_URL_REQUIRED',
+        meta: { engineId: engine.id, mode },
+      });
       return NextResponse.json({ ok: false, error: 'Image URL is required for Luma Ray 2 image-to-video' }, { status: 400 });
     }
     validationPayload.image_url = initialImageUrl;
+  } else if (needsImage) {
+    if (!initialImageUrl && !firstFrameUrl && !lastFrameUrl) {
+      logMetric('rejected', {
+        errorCode: 'IMAGE_URL_REQUIRED',
+        meta: { engineId: engine.id, mode },
+      });
+      return NextResponse.json({ ok: false, error: 'Image URL is required for this engine mode' }, { status: 400 });
+    }
+    if (initialImageUrl) {
+      validationPayload.image_url = initialImageUrl;
+    }
   }
 
   const validationResult = validateRequest(engine.id, mode, validationPayload);
   if (!validationResult.ok) {
+    logMetric('rejected', {
+      errorCode: validationResult.error.code ?? 'ENGINE_CONSTRAINT',
+      meta: {
+        field: validationResult.error.field,
+        allowed: validationResult.error.allowed,
+        value: validationResult.error.value,
+      },
+    });
     return NextResponse.json(
       {
         ok: false,
@@ -1067,6 +1157,10 @@ async function rollbackPendingPayment(params: {
   if (paymentMode === 'wallet') {
     const walletUserId = userId ? String(userId) : null;
     if (!walletUserId) {
+      logMetric('rejected', {
+        errorCode: 'WALLET_AUTH_REQUIRED',
+        meta: { paymentMode },
+      });
       return NextResponse.json({ ok: false, error: 'Wallet payment requires authentication' }, { status: 401 });
     }
 
@@ -1091,6 +1185,10 @@ async function rollbackPendingPayment(params: {
           expected: lockedCurrency,
           requested: resolvedCurrencyUpper,
         });
+        logMetric('rejected', {
+          errorCode: 'WALLET_CURRENCY_MISMATCH',
+          meta: { lockedCurrency },
+        });
         return NextResponse.json(
           {
             ok: false,
@@ -1100,6 +1198,10 @@ async function rollbackPendingPayment(params: {
         );
       }
       const balanceCents = reserveResult.balanceCents;
+      logMetric('rejected', {
+        errorCode: 'INSUFFICIENT_WALLET_FUNDS',
+        meta: { balanceCents },
+      });
       return NextResponse.json(
         {
           ok: false,
@@ -1131,15 +1233,19 @@ async function rollbackPendingPayment(params: {
     paymentStatus = 'paid_wallet';
   } else if (paymentMode === 'direct') {
     if (!ENV.STRIPE_SECRET_KEY) {
+      logMetric('rejected', { errorCode: 'STRIPE_NOT_CONFIGURED', meta: { paymentMode } });
       return NextResponse.json({ ok: false, error: 'Stripe not configured' }, { status: 501 });
     }
     if (!userId) {
+      logMetric('rejected', { errorCode: 'DIRECT_AUTH_REQUIRED', meta: { paymentMode } });
       return NextResponse.json({ ok: false, error: 'Direct payment requires authentication' }, { status: 401 });
     }
     if (!payment.paymentIntentId) {
+      logMetric('rejected', { errorCode: 'PAYMENT_INTENT_MISSING', meta: { paymentMode } });
       return NextResponse.json({ ok: false, error: 'PaymentIntent required for direct mode' }, { status: 400 });
     }
     if (connectMode && !vendorAccountId) {
+      logMetric('rejected', { errorCode: 'VENDOR_ACCOUNT_MISSING', meta: { paymentMode } });
       return NextResponse.json({ ok: false, error: 'Vendor account missing for this engine' }, { status: 400 });
     }
 
@@ -1154,6 +1260,10 @@ async function rollbackPendingPayment(params: {
       ? metadataSettlementCents
       : (await convertCents(pricing.totalCents, DISPLAY_CURRENCY_LOWER, resolvedCurrencyLower)).cents;
     if (intent.status !== 'succeeded' || receivedSettlementCents < expectedSettlementCents) {
+      logMetric('rejected', {
+        errorCode: 'PAYMENT_NOT_CAPTURED',
+        meta: { paymentIntentId: intent.id },
+      });
       return NextResponse.json({ ok: false, error: 'Payment not captured yet' }, { status: 402 });
     }
     const intentCurrency = intent.currency?.toUpperCase() ?? resolvedCurrencyUpper;
@@ -1163,6 +1273,10 @@ async function rollbackPendingPayment(params: {
         received: intentCurrency,
         userId,
         paymentIntentId: intent.id,
+      });
+      logMetric('rejected', {
+        errorCode: 'PAYMENT_CURRENCY_MISMATCH',
+        meta: { expected: resolvedCurrencyUpper, received: intentCurrency },
       });
       return NextResponse.json(
         {
@@ -1398,8 +1512,17 @@ async function rollbackPendingPayment(params: {
       ]
     );
     jobInserted = true;
+    logMetric('accepted', {
+      jobId,
+      durationMs: Date.now() - requestStartedAt,
+      meta: { paymentMode },
+    });
   } catch (error) {
     console.error('[api/generate] failed to persist provisional job record', error);
+    logMetric('failed', {
+      errorCode: 'JOB_PERSIST_FAILED',
+      meta: { stage: 'persist_provisional' },
+    });
     if (pendingReceipt && !jobInserted) {
       await rollbackPendingPayment({
         pendingReceipt,
@@ -1677,6 +1800,10 @@ async function rollbackPendingPayment(params: {
         ? LUMA_RAY2_ERROR_UNSUPPORTED
         : translatedMessage ?? 'This request cannot be processed for this engine. Please adjust your inputs and try again.';
 
+      logMetric('failed', {
+        errorCode: translatedErrorCode ?? 'FAL_UNPROCESSABLE_ENTITY',
+        meta: { stage: 'provider_422', providerJobId },
+      });
       return NextResponse.json(
         {
           ok: false,
@@ -1689,6 +1816,14 @@ async function rollbackPendingPayment(params: {
       );
     }
 
+    logMetric('failed', {
+      errorCode,
+      meta: {
+        stage: 'provider_error',
+        providerJobId,
+        providerStatus: status ?? metadataStatus ?? null,
+      },
+    });
     return NextResponse.json(
       {
         ok: false,
@@ -1723,6 +1858,10 @@ async function rollbackPendingPayment(params: {
   if (!providerJobId && !video) {
     const failureMessage = 'We could not start your render. Please retry.';
     console.error('[api/generate] missing provider_job_id and no result', { jobId, engineId: engine.id, generationResult });
+    logMetric('failed', {
+      errorCode: 'FAL_NO_PROVIDER_JOB_ID',
+      meta: { stage: 'provider_missing_id' },
+    });
     try {
       await query(
         `UPDATE app_jobs
@@ -1936,6 +2075,15 @@ async function rollbackPendingPayment(params: {
 
   const responsePaymentStatus =
     status === 'failed' && pendingReceipt && paymentMode === 'wallet' ? 'refunded_wallet' : paymentStatus;
+
+  logMetric(status === 'failed' ? 'failed' : 'completed', {
+    jobId,
+    meta: {
+      providerJobId,
+      provider: providerMode,
+      paymentStatus: responsePaymentStatus,
+    },
+  });
 
   return NextResponse.json({
     ok: true,
