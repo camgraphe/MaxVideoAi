@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
-import { getUserIdFromRequest } from '@/lib/user';
 import { getVideoById, updateVideoIndexableForUser } from '@/server/videos';
+import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
 type RouteParams = {
   params: {
@@ -43,7 +43,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ ok: false, error: 'Missing video id' }, { status: 400 });
   }
 
-  const userId = await getUserIdFromRequest(req);
+  const { userId } = await getRouteAuthContext(req);
   if (!userId) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }

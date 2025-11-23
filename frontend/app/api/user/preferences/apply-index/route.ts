@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
-import { getUserIdFromRequest } from '@/lib/user';
 import { applyIndexOptOut } from '@/server/preferences';
+import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
 export async function POST(req: NextRequest) {
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }
 
-  const userId = await getUserIdFromRequest(req);
+  const { userId } = await getRouteAuthContext(req);
   if (!userId) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }

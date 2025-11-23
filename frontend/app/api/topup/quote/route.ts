@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { USD_TOPUP_TIERS } from '@/config/topupTiers';
 import { convertUsdToCurrencyAmount } from '@/lib/fxQuote';
 import { normalizeCurrencyCode, resolveCurrency } from '@/lib/currency';
-import { getUserIdFromRequest } from '@/lib/user';
+import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
 export async function POST(req: NextRequest) {
-  const userId = await getUserIdFromRequest(req).catch(() => null);
+  const { userId } = await getRouteAuthContext(req);
   const body = (await req.json().catch(() => null)) ?? {};
   const requestedCurrency = normalizeCurrencyCode(typeof body.currency === 'string' ? body.currency : null);
 

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ensureAssetSchema } from '@/lib/schema';
 import { query } from '@/lib/db';
-import { getUserIdFromRequest } from '@/lib/user';
 import { deleteUserAsset, uploadImageToStorage, recordUserAsset } from '@/server/storage';
+import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
 export const runtime = 'nodejs';
 
 export async function GET(req: NextRequest) {
-  const userId = await getUserIdFromRequest(req);
+  const { userId } = await getRouteAuthContext(req);
   if (!userId) {
     return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
   }
@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const userId = await getUserIdFromRequest(req);
+  const { userId } = await getRouteAuthContext(req);
   if (!userId) {
     return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
   }
@@ -76,7 +76,7 @@ export async function DELETE(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const userId = await getUserIdFromRequest(req);
+  const { userId } = await getRouteAuthContext(req);
   if (!userId) {
     return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
   }

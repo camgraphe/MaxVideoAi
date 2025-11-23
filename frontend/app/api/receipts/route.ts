@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured, query } from '@/lib/db';
-import { getUserIdFromRequest } from '@/lib/user';
 import { ensureBillingSchema } from '@/lib/schema';
+import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
 export async function GET(req: NextRequest) {
   const databaseConfigured = isDatabaseConfigured();
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(100, Math.max(1, Number(url.searchParams.get('limit') ?? '50')));
   const cursor = url.searchParams.get('cursor');
 
-  const userId = await getUserIdFromRequest(req);
+  const { userId } = await getRouteAuthContext(req);
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const params: Array<string | number> = [userId];

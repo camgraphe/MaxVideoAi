@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
-import { getUserIdFromRequest } from '@/lib/user';
 import {
   getUserPreferredCurrency,
   normalizeCurrencyCode,
@@ -11,6 +10,7 @@ import {
   type Currency,
 } from '@/lib/currency';
 import { getWalletBalancesByCurrency } from '@/lib/wallet';
+import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
 type CurrencySummaryResponse = {
   ok: boolean;
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const userId = await getUserIdFromRequest(req);
+  const { userId } = await getRouteAuthContext(req);
   if (!userId) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' } satisfies CurrencySummaryResponse, { status: 401 });
   }
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const userId = await getUserIdFromRequest(req);
+  const { userId } = await getRouteAuthContext(req);
   if (!userId) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' } satisfies CurrencySummaryResponse, { status: 401 });
   }

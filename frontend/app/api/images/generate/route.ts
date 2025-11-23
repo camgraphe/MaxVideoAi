@@ -10,7 +10,6 @@ import type {
   ImageGenerationResponse,
 } from '@/types/image-generation';
 import { getFalClient } from '@/lib/fal-client';
-import { getUserIdFromRequest } from '@/lib/user';
 import { isDatabaseConfigured, query } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { computePricingSnapshot, getPlatformFeeCents } from '@/lib/pricing';
@@ -25,6 +24,7 @@ import {
   getNanoBananaDefaultAspectRatio,
   normalizeNanoBananaAspectRatio,
 } from '@/lib/image/aspectRatios';
+import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
 const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER: Currency = 'usd';
@@ -245,7 +245,7 @@ export async function POST(req: NextRequest) {
     return respondError('t2i', 'invalid_payload', 'Payload must be valid JSON.', 400);
   }
 
-  const userId = await getUserIdFromRequest(req);
+  const { userId } = await getRouteAuthContext(req);
   if (!userId) {
     return respondError('t2i', 'auth_required', 'Authentication required.', 401);
   }

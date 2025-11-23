@@ -1,10 +1,10 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { getUserIdFromRequest } from '@/lib/user';
 import { getLegalDocumentUncached, type LegalDocumentKey } from '@/lib/legal';
 import { recordUserConsents, type ConsentSource } from '@/server/legal-consents';
 import { getProfileSnapshot } from '@/server/profile';
 import { query } from '@/lib/db';
+import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
 export const runtime = 'nodejs';
 
@@ -163,7 +163,7 @@ function serializeStatus(status: RawStatus) {
 }
 
 export async function GET(req: NextRequest) {
-  const userId = await getUserIdFromRequest(req);
+  const { userId } = await getRouteAuthContext(req);
   if (!userId) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
@@ -183,7 +183,7 @@ type PostBody = {
 };
 
 export async function POST(req: NextRequest) {
-  const userId = await getUserIdFromRequest(req);
+  const { userId } = await getRouteAuthContext(req);
   if (!userId) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }

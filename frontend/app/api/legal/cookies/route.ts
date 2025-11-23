@@ -1,8 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { getUserIdFromRequest } from '@/lib/user';
 import { getLegalDocumentUncached } from '@/lib/legal';
 import { recordUserConsents } from '@/server/legal-consents';
+import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
 export const runtime = 'nodejs';
 
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   };
 
   try {
-    const userId = await getUserIdFromRequest(req);
+    const { userId } = await getRouteAuthContext(req);
     if (userId) {
       await recordUserConsents({
         userId,

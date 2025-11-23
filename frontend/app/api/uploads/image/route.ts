@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadImageToStorage, recordUserAsset } from '@/server/storage';
-import { getUserIdFromRequest } from '@/lib/user';
+import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
 export const runtime = 'nodejs';
 
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'EMPTY_FILE' }, { status: 400 });
   }
 
-  const userId = await getUserIdFromRequest(req);
+  const { userId } = await getRouteAuthContext(req);
   if (!userId) {
     return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
   }

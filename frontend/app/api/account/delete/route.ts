@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { isDatabaseConfigured, query } from '@/lib/db';
-import { getUserIdFromRequest } from '@/lib/user';
+import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
 export const runtime = 'nodejs';
 
@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }
 
-  const userId = await getUserIdFromRequest(req);
+  const { userId } = await getRouteAuthContext(req);
   if (!userId) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }

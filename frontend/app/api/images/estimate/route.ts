@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserIdFromRequest } from '@/lib/user';
 import { listFalEngines } from '@/config/falEngines';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { computePricingSnapshot } from '@/lib/pricing';
+import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
-  const userId = await getUserIdFromRequest(req);
+  const { userId } = await getRouteAuthContext(req);
   if (!userId) {
     return NextResponse.json({ ok: false, error: 'auth_required' }, { status: 401 });
   }

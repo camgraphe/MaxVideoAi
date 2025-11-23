@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured, query } from '@/lib/db';
-import { getUserIdFromRequest } from '@/lib/user';
 import { ensureBillingSchema } from '@/lib/schema';
 import { getMembershipTiers } from '@/lib/membership';
+import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
 const FALLBACK_TIERS = [
   { tier: 'member', spendThresholdCents: 0, discountPercent: 0 },
@@ -11,7 +11,7 @@ const FALLBACK_TIERS = [
 ];
 
 export async function GET(req: NextRequest) {
-  const userId = await getUserIdFromRequest(req);
+  const { userId } = await getRouteAuthContext(req);
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const includeTiers = (() => {

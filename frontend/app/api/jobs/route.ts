@@ -3,12 +3,12 @@ import { isDatabaseConfigured, query } from '@/lib/db';
 import type { PricingSnapshot } from '@/types/engines';
 import { normalizeMediaUrl } from '@/lib/media';
 import { ensureBillingSchema } from '@/lib/schema';
-import { getUserIdFromRequest } from '@/lib/user';
 import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { updateJobFromFalWebhook } from '@/server/fal-webhook-handler';
 import { listStarterPlaylistVideos } from '@/server/videos';
 import { getEngineAliases, listFalEngines } from '@/config/falEngines';
+import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
 function parseCursorParam(value: string | null): { createdAt: Date | null; id: number | null } {
   if (!value) {
@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
   const cursor = url.searchParams.get('cursor');
   const typeParam = url.searchParams.get('type');
   const feedType = typeParam === 'image' || typeParam === 'video' ? typeParam : 'all';
-  const userId = await getUserIdFromRequest(req);
+  const { userId } = await getRouteAuthContext(req);
 
   if (!userId) {
     return NextResponse.json({ ok: false, jobs: [], nextCursor: null, error: 'Unauthorized' }, { status: 401 });
