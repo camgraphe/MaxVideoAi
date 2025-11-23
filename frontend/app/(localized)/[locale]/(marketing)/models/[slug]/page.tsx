@@ -1785,7 +1785,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
                     href={localizeModelsPath(candidate.modelSlug)}
                     className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accentSoft"
                   >
-                    {relatedCopy.cta} <span aria-hidden>→</span>
+                    {`Try ${label}`} <span aria-hidden>→</span>
                   </Link>
                 </article>
               );

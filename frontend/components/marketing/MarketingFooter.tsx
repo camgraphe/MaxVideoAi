@@ -59,33 +59,39 @@ export function MarketingFooter() {
     'MaxVideoAI allows AI crawlers (GPTBot, OAI-SearchBot, Google-Extended, and CCBot) to index public model pages and documentation for educational and research visibility.';
   const brandLabel = t('nav.brand', 'MaxVideo AI') ?? 'MaxVideo AI';
   const languageLabel = t('footer.languageLabel', 'Language') ?? 'Language';
-  const localeShortcutLinks: Array<{ label: string; href: string }> =
-    locale === 'fr'
-      ? [
-          { label: '🇺🇸 Home', href: '/' },
-          { label: '🇺🇸 Examples', href: '/examples' },
-          { label: '🇺🇸 About', href: '/about' },
-          { label: '🇪🇸 Inicio', href: '/es' },
-          { label: '🇪🇸 Galería', href: '/es/galeria' },
-          { label: '🇪🇸 About', href: '/es/about' },
-        ]
-      : locale === 'es'
-        ? [
-            { label: '🇺🇸 Home', href: '/' },
-            { label: '🇺🇸 Examples', href: '/examples' },
-            { label: '🇺🇸 About', href: '/about' },
-            { label: '🇫🇷 Accueil', href: '/fr' },
-            { label: '🇫🇷 Galerie', href: '/fr/galerie' },
-            { label: '🇫🇷 About', href: '/fr/about' },
-          ]
-        : [
-            { label: '🇫🇷 Accueil', href: '/fr' },
-            { label: '🇫🇷 Galerie', href: '/fr/galerie' },
-            { label: '🇫🇷 About', href: '/fr/about' },
-            { label: '🇪🇸 Inicio', href: '/es' },
-            { label: '🇪🇸 Galería', href: '/es/galeria' },
-            { label: '🇪🇸 About', href: '/es/about' },
-          ];
+  const localeShortcutMap: Record<
+    string,
+    Array<{
+      label: string;
+      href: string;
+    }>
+  > = {
+    en: [
+      { label: '🇫🇷 Accueil', href: '/fr' },
+      { label: '🇫🇷 Galerie', href: '/fr/galerie' },
+      { label: '🇫🇷 About', href: '/fr/about' },
+      { label: '🇪🇸 Inicio', href: '/es' },
+      { label: '🇪🇸 Galería', href: '/es/galeria' },
+      { label: '🇪🇸 About', href: '/es/about' },
+    ],
+    fr: [
+      { label: '🇺🇸 Home', href: '/' },
+      { label: '🇺🇸 Examples', href: '/examples' },
+      { label: '🇺🇸 About', href: '/about' },
+      { label: '🇪🇸 Inicio', href: '/es' },
+      { label: '🇪🇸 Galería', href: '/es/galeria' },
+      { label: '🇪🇸 About', href: '/es/about' },
+    ],
+    es: [
+      { label: '🇺🇸 Home', href: '/' },
+      { label: '🇺🇸 Examples', href: '/examples' },
+      { label: '🇺🇸 About', href: '/about' },
+      { label: '🇫🇷 Accueil', href: '/fr' },
+      { label: '🇫🇷 Galerie', href: '/fr/galerie' },
+      { label: '🇫🇷 About', href: '/fr/about' },
+    ],
+  };
+  const localeShortcutLinks = localeShortcutMap[locale] ?? localeShortcutMap.en;
 
   return (
     <footer className="border-t border-hairline bg-white">

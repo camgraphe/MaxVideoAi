@@ -117,6 +117,7 @@ function getEngineDisplayName(entry: FalEngineEntry): string {
 export default async function ModelsPage() {
   const { dictionary } = await resolveDictionary();
   const content = dictionary.models;
+  const heroTitle = content.hero?.title ?? 'AI Video Engines – Sora, Veo, Pika & More';
   const introContent = content.intro ?? null;
   const introParagraphs =
     Array.isArray(introContent?.paragraphs) && introContent.paragraphs.length
@@ -209,7 +210,7 @@ return (
   <>
     <div className="mx-auto max-w-5xl px-4 pb-6 pt-16 sm:px-6 lg:px-8">
       <header className="space-y-3">
-        <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
+        <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{heroTitle}</h1>
         <h2 className="text-xl font-semibold text-text-primary sm:text-2xl">
           Compare all AI video models available in MaxVideoAI
         </h2>
