@@ -21,6 +21,8 @@ const DEFAULT_CHOICES: Record<ConsentCategory, boolean> = {
 };
 
 const PUBLIC_GOOGLE_CONSENT_MODE = (process.env.NEXT_PUBLIC_GOOGLE_CONSENT_MODE ?? 'auto').toLowerCase();
+const ANALYTICS_STORAGE_KEY = 'mv-consent-analytics';
+const ANALYTICS_GRANTED_VALUE = 'granted';
 
 function readCookie(): string | null {
   if (typeof document === 'undefined') return null;
@@ -51,6 +53,19 @@ function broadcastConsent(record: ConsentRecord) {
       },
     })
   );
+}
+
+function setLocalAnalyticsFlag(granted: boolean) {
+  if (typeof window === 'undefined') return;
+  try {
+    if (granted) {
+      window.localStorage.setItem(ANALYTICS_STORAGE_KEY, ANALYTICS_GRANTED_VALUE);
+    } else {
+      window.localStorage.removeItem(ANALYTICS_STORAGE_KEY);
+    }
+  } catch {
+    // ignore storage errors
+  }
 }
 
 function updateGoogleConsent(categories: ConsentRecord['categories']) {
@@ -127,10 +142,12 @@ export function CookieBanner() {
         setState({ ready: true, version: json.version, consent: stored });
         broadcastConsent(stored);
         setAnalyticsConsentCookie(Boolean(stored.categories.analytics));
+        setLocalAnalyticsFlag(Boolean(stored.categories.analytics));
         setClarityConsent(Boolean(stored.categories.analytics));
         updateGoogleConsent(stored.categories);
       } else {
         setState({ ready: true, version: json.version, consent: null });
+        setLocalAnalyticsFlag(false);
       }
     } catch (err) {
       console.warn('[cookie-consent] bootstrap failed', err);
@@ -140,10 +157,12 @@ export function CookieBanner() {
         setState({ ready: true, version: fallbackVersion, consent: stored });
         broadcastConsent(stored);
         setAnalyticsConsentCookie(Boolean(stored.categories.analytics));
+        setLocalAnalyticsFlag(Boolean(stored.categories.analytics));
         setClarityConsent(Boolean(stored.categories.analytics));
         updateGoogleConsent(stored.categories);
       } else {
         setState({ ready: true, version: fallbackVersion, consent: null });
+        setLocalAnalyticsFlag(false);
       }
     }
   }, []);
@@ -175,6 +194,7 @@ export function CookieBanner() {
         setState({ ready: true, version, consent: next });
         broadcastConsent(next);
         setAnalyticsConsentCookie(Boolean(next.categories.analytics));
+        setLocalAnalyticsFlag(Boolean(next.categories.analytics));
         setClarityConsent(Boolean(next.categories.analytics));
         updateGoogleConsent(next.categories);
         await persistToServer(next.categories);
