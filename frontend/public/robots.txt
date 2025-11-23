@@ -1,4 +1,4 @@
-# robots.txt — SEO friendly
+# robots.txt — SEO + AI friendly
 
 User-agent: *
 # Allow assets required for rendering
@@ -8,7 +8,7 @@ Allow: /assets/
 Allow: /hero/
 Allow: /favicon.ico
 
-# Block only sensitive areas
+# Sensitive areas
 Disallow: /api/
 Disallow: /admin/
 Disallow: /draft
@@ -17,4 +17,8 @@ Disallow: /private/
 
 # Sitemaps
 Sitemap: https://maxvideoai.com/sitemap.xml
+Sitemap: https://maxvideoai.com/sitemap-en.xml
+Sitemap: https://maxvideoai.com/sitemap-fr.xml
+Sitemap: https://maxvideoai.com/sitemap-es.xml
+Sitemap: https://maxvideoai.com/sitemap-models.xml
 Sitemap: https://maxvideoai.com/sitemap-video.xml
