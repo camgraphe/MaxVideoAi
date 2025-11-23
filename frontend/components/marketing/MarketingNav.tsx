@@ -231,7 +231,7 @@ export function MarketingNav() {
                     className="flex items-center gap-2 rounded-pill border border-hairline bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary transition hover:border-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     aria-describedby={walletPromptOpen ? walletPromptId : undefined}
                   >
-                    <Image src="/assets/icons/wallet.svg" alt="Wallet balance" width={16} height={16} />
+                    <WalletGlyph size={16} className="text-text-primary" />
                     <span className="text-sm font-semibold tracking-normal text-text-primary">
                       ${(wallet?.balance ?? 0).toFixed(2)}
                     </span>
@@ -367,7 +367,12 @@ export function MarketingNav() {
               aria-label={brand}
               onClick={() => setMobileMenuOpen(false)}
             >
-              <Image src="/assets/branding/logo-mark.svg" alt={brand} width={24} height={24} />
+              <span
+                aria-hidden
+                className="flex h-6 w-6 items-center justify-center rounded-xl bg-gradient-to-br from-[#111827] via-[#1f2937] to-[#111827] text-[11px] font-semibold uppercase tracking-tight text-white shadow-sm"
+              >
+                MV
+              </span>
               <span>{brand}</span>
             </Link>
             <button
@@ -405,7 +410,7 @@ export function MarketingNav() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between rounded-2xl border border-hairline bg-white px-4 py-3">
                   <span className="flex items-center gap-2 text-base font-semibold text-text-primary">
-                    <Image src="/assets/icons/wallet.svg" alt="Wallet balance" width={18} height={18} />
+                    <WalletGlyph size={18} className="text-text-primary" />
                     ${(wallet?.balance ?? 0).toFixed(2)}
                   </span>
                 </div>
@@ -455,5 +460,26 @@ export function MarketingNav() {
         </div>
       ) : null}
     </>
+  );
+}
+
+function WalletGlyph({ size = 16, className }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M3.5 7.75c0-1.1.9-2 2-2h12.25a1.5 1.5 0 0 1 0 3H4.5a1 1 0 0 1-1-1Z" />
+      <rect x="3.5" y="9.5" width="17" height="8.5" rx="2.25" />
+      <circle cx="16.25" cy="13.75" r="1" />
+    </svg>
   );
 }
