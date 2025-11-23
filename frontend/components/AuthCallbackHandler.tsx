@@ -42,6 +42,7 @@ export function AuthCallbackHandler() {
       await fetch('/api/auth/callback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ event: authEvent, session }),
       });
       const target = resolveNextTarget();
