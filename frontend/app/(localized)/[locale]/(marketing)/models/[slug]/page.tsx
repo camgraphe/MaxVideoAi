@@ -6,7 +6,7 @@ import type { Metadata } from 'next';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
 import { listFalEngines, getFalEngineBySlug, type FalEngineEntry } from '@/config/falEngines';
-import { locales, localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
+import { locales, localePathnames, localeRegions, defaultLocale, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
@@ -15,6 +15,7 @@ import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { listExamples, getVideosByIds, type GalleryVideo } from '@/server/videos';
+import { FAQSchema } from '@/components/seo/FAQSchema';
 import { serializeJsonLd } from '../model-jsonld';
 
 type PageParams = {
@@ -137,6 +138,117 @@ export function generateStaticParams() {
 }
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://maxvideoai.com';
+const PROVIDER_INFO_MAP: Record<string, { name: string; url: string }> = {
+  openai: { name: 'OpenAI', url: 'https://openai.com' },
+  'google-veo': { name: 'Google DeepMind', url: 'https://deepmind.google/technologies/veo/' },
+  pika: { name: 'Pika Labs', url: 'https://pika.art' },
+  minimax: { name: 'MiniMax', url: 'https://www.minimaxi.com' },
+  kling: { name: 'Kling by Kuaishou', url: 'https://www.kuaishou.com/en' },
+  wan: { name: 'Wan AI', url: 'https://www.wan-ai.com' },
+};
+const AVAILABILITY_SCHEMA_MAP: Record<string, string> = {
+  available: 'https://schema.org/InStock',
+  limited: 'https://schema.org/LimitedAvailability',
+  waitlist: 'https://schema.org/PreOrder',
+  paused: 'https://schema.org/Discontinued',
+};
+
+function resolveProviderInfo(engine: FalEngineEntry) {
+  const fallback = PARTNER_BRAND_MAP.get(engine.brandId);
+  const override = PROVIDER_INFO_MAP[engine.brandId];
+  return {
+    name: override?.name ?? fallback?.label ?? engine.brandId,
+    url: override?.url ?? fallback?.availabilityLink ?? SITE,
+  };
+}
+
+function buildOfferSchema(canonical: string, engine: FalEngineEntry) {
+  return {
+    '@type': 'Offer',
+    url: canonical,
+    priceCurrency: 'USD',
+    price: '0',
+    availability: AVAILABILITY_SCHEMA_MAP[engine.availability] ?? AVAILABILITY_SCHEMA_MAP.limited,
+    description: 'Pay-as-you-go pricing (varies by provider and duration).',
+    priceSpecification: {
+      '@type': 'UnitPriceSpecification',
+      price: 0,
+      priceCurrency: 'USD',
+      referenceQuantity: {
+        '@type': 'QuantitativeValue',
+        value: 1,
+        unitCode: 'SEC',
+      },
+    },
+  };
+}
+
+function buildProductSchema({
+  engine,
+  canonical,
+  description,
+  heroTitle,
+  heroPosterAbsolute,
+}: {
+  engine: FalEngineEntry;
+  canonical: string;
+  description: string;
+  heroTitle: string;
+  heroPosterAbsolute: string | null;
+}) {
+  const provider = resolveProviderInfo(engine);
+  const offer = buildOfferSchema(canonical, engine);
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: heroTitle,
+    description,
+    category: 'AI Video Generator',
+    url: canonical,
+    image: heroPosterAbsolute ? [heroPosterAbsolute] : undefined,
+    brand: {
+      '@type': 'Brand',
+      name: provider.name,
+      url: provider.url,
+    },
+    manufacturer: {
+      '@type': 'Organization',
+      name: provider.name,
+      url: provider.url,
+    },
+    offers: offer,
+  };
+}
+
+function buildSoftwareSchema({
+  engine,
+  canonical,
+  description,
+  heroTitle,
+}: {
+  engine: FalEngineEntry;
+  canonical: string;
+  description: string;
+  heroTitle: string;
+}) {
+  const provider = resolveProviderInfo(engine);
+  const offer = buildOfferSchema(canonical, engine);
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: heroTitle,
+    description,
+    applicationCategory: 'VideoGenerationApplication',
+    operatingSystem: 'Web',
+    url: canonical,
+    provider: {
+      '@type': 'Organization',
+      name: provider.name,
+      url: provider.url,
+    },
+    offers: offer,
+  };
+}
 const MODELS_BASE_PATH_MAP = buildSlugMap('models');
 
 function buildDetailSlugMap(slug: string) {
@@ -358,7 +470,8 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
   const detailSlugMap = buildDetailSlugMap(slug);
   const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${slug}`));
   const metadataUrls = buildMetadataUrls(locale, detailSlugMap, { availableLocales: publishableLocales });
-  const canonical = metadataUrls.canonical.replace(/\/+$/, '') || metadataUrls.canonical;
+  const englishCanonical = metadataUrls.urls[defaultLocale] ?? metadataUrls.canonical;
+  const canonical = englishCanonical.replace(/\/+$/, '') || englishCanonical;
   const fallbackTitle = engine.seo.title ?? `${engine.marketingName} — MaxVideo AI`;
   const title = localized.seo.title ?? fallbackTitle;
   const description =
@@ -540,7 +653,10 @@ async function renderSoraModelPage({
   const detailSlugMap = buildDetailSlugMap(engine.modelSlug);
   const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${engine.modelSlug}`));
   const metadataUrls = buildMetadataUrls(locale, detailSlugMap, { availableLocales: publishableLocales });
-  const canonicalUrl = metadataUrls.canonical.replace(/\/+$/, '') || metadataUrls.canonical;
+  const localizedCanonicalRaw = metadataUrls.canonical;
+  const localizedCanonicalUrl = localizedCanonicalRaw.replace(/\/+$/, '') || localizedCanonicalRaw;
+  const englishCanonicalRaw = metadataUrls.urls[defaultLocale] ?? metadataUrls.canonical;
+  const canonicalUrl = englishCanonicalRaw.replace(/\/+$/, '') || englishCanonicalRaw;
   const copy = buildSoraCopy(localizedContent, engine.modelSlug);
   const backPath = (() => {
     try {
@@ -635,21 +751,24 @@ async function renderSoraModelPage({
       backLabel={backLabel}
       localizedContent={localizedContent}
       copy={copy}
-    heroMedia={heroMedia}
-    demoMedia={demoMedia}
-    galleryVideos={galleryVideos}
-    galleryCtaHref={galleryCtaHref}
-    relatedEngines={relatedEngines}
-    faqEntries={faqEntries}
-    engineSlug={engine.modelSlug}
-    locale={locale}
-    canonicalUrl={canonicalUrl}
-    breadcrumb={breadcrumb}
-  />
+      engine={engine}
+      heroMedia={heroMedia}
+      demoMedia={demoMedia}
+      galleryVideos={galleryVideos}
+      galleryCtaHref={galleryCtaHref}
+      relatedEngines={relatedEngines}
+      faqEntries={faqEntries}
+      engineSlug={engine.modelSlug}
+      locale={locale}
+      canonicalUrl={canonicalUrl}
+      localizedCanonicalUrl={localizedCanonicalUrl}
+      breadcrumb={breadcrumb}
+    />
   );
 }
 
 function Sora2PageLayout({
+  engine,
   backLabel,
   localizedContent,
   copy,
@@ -662,8 +781,10 @@ function Sora2PageLayout({
   engineSlug,
   locale,
   canonicalUrl,
+  localizedCanonicalUrl,
   breadcrumb,
 }: {
+  engine: FalEngineEntry;
   backLabel: string;
   localizedContent: EngineLocalizedContent;
   copy: SoraCopy;
@@ -676,11 +797,13 @@ function Sora2PageLayout({
   engineSlug: string;
   locale: AppLocale;
   canonicalUrl: string;
+  localizedCanonicalUrl: string;
   breadcrumb: DetailCopy['breadcrumb'];
 }) {
   const inLanguage = localeRegions[locale] ?? 'en-US';
   const resolvedBreadcrumb = breadcrumb ?? DEFAULT_DETAIL_COPY.breadcrumb;
   const canonical = canonicalUrl.replace(/\/+$/, '') || canonicalUrl;
+  const localizedCanonical = localizedCanonicalUrl.replace(/\/+$/, '') || localizedCanonicalUrl;
   const localePathPrefix = localePathnames[locale] ? `/${localePathnames[locale].replace(/^\/+/, '')}` : '';
   const homePathname = localePathPrefix || '/';
   const localizedHomeUrl = homePathname === '/' ? `${SITE}/` : `${SITE}${homePathname}`;
@@ -739,6 +862,30 @@ function Sora2PageLayout({
   const heroPosterAbsolute = toAbsoluteUrl(heroMedia.posterUrl ?? localizedContent.seo.image ?? null);
   const heroVideoAbsolute = heroMedia.videoUrl ? toAbsoluteUrl(heroMedia.videoUrl) : null;
   const durationIso = heroMedia.durationSec ? `PT${Math.round(heroMedia.durationSec)}S` : undefined;
+  const hasSpecs = specSections.length > 0;
+  const hasExamples = galleryVideos.length > 0;
+  const hasTextSection = promptPatternSteps.length > 0 || Boolean(copy.promptSkeleton || copy.promptSkeletonNote);
+  const hasImageSection = imageToVideoSteps.length > 0 || imageToVideoUseCases.length > 0;
+  const hasTipsSection = strengths.length > 0 || boundaries.length > 0 || Boolean(copy.tipsTitle);
+  const hasSafetySection = safetyRules.length > 0 || safetyInterpretation.length > 0 || Boolean(copy.safetyTitle);
+  const hasFaqSection = faqList.length > 0;
+  const tocItems = [
+    { id: 'specs', label: 'Specs', visible: hasSpecs },
+    { id: 'examples', label: 'Examples', visible: hasExamples },
+    { id: 'text-to-video', label: 'Text to Video', visible: hasTextSection },
+    { id: 'image-to-video', label: 'Image to Video', visible: hasImageSection },
+    { id: 'tips', label: 'Tips', visible: hasTipsSection },
+    { id: 'safety', label: 'Safety', visible: hasSafetySection },
+    { id: 'faq', label: 'FAQ', visible: hasFaqSection },
+  ].filter((item) => item.visible);
+  const productSchema = buildProductSchema({
+    engine,
+    canonical,
+    description: pageDescription,
+    heroTitle,
+    heroPosterAbsolute,
+  });
+  const softwareSchema = buildSoftwareSchema({ engine, canonical, description: pageDescription, heroTitle });
   const schemaPayloads = [
     {
       '@context': 'https://schema.org',
@@ -748,23 +895,8 @@ function Sora2PageLayout({
       url: canonical,
       inLanguage,
     },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'Product',
-      name: heroTitle,
-      description: pageDescription,
-      image: heroPosterAbsolute,
-      brand: {
-        '@type': 'Organization',
-        name: 'MaxVideoAI',
-        url: SITE,
-      },
-      offers: {
-        '@type': 'Offer',
-        url: canonical,
-        availability: 'https://schema.org/InStock',
-      },
-    },
+    productSchema,
+    softwareSchema,
     heroVideoAbsolute
       ? {
           '@context': 'https://schema.org',
@@ -780,47 +912,34 @@ function Sora2PageLayout({
       : null,
     {
       '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        {
-          '@type': 'ListItem',
-          position: 1,
-          name: resolvedBreadcrumb.home,
-          item: localizedHomeUrl,
-        },
-        {
-          '@type': 'ListItem',
-          position: 2,
-          name: resolvedBreadcrumb.models,
-          item: localizedModelsUrl,
-        },
-        {
-          '@type': 'ListItem',
-          position: 3,
-          name: heroTitle,
-          item: canonical,
-        },
-      ],
-    },
-    faqList.length
-      ? {
-          '@context': 'https://schema.org',
-          '@type': 'FAQPage',
-          mainEntity: faqList.map((entry) => ({
-            '@type': 'Question',
-            name: entry.question,
-            acceptedAnswer: {
-              '@type': 'Answer',
-              text: entry.answer,
-            },
-          })),
-        }
-      : null,
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: resolvedBreadcrumb.home,
+            item: localizedHomeUrl,
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: resolvedBreadcrumb.models,
+            item: localizedModelsUrl,
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: heroTitle,
+            item: localizedCanonical,
+          },
+        ],
+      },
   ].filter(Boolean) as object[];
 
   return (
     <>
       <Head>
+        <link rel="canonical" href={canonical} />
         {heroPosterPreload ? <link rel="preload" as="image" href={heroPosterPreload} fetchPriority="high" /> : null}
         {schemaPayloads.map((schema, index) => (
           <script
@@ -830,6 +949,7 @@ function Sora2PageLayout({
             dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
           />
         ))}
+        <FAQSchema questions={faqList} />
       </Head>
       <main className="mx-auto max-w-6xl px-4 pb-20 pt-14 sm:px-6 lg:px-8">
         <Link href={localizeModelsPath()} className="text-sm font-semibold text-accent hover:text-accentSoft">
@@ -917,7 +1037,27 @@ function Sora2PageLayout({
           </div>
         </section>
 
-        <section className="mt-14 space-y-4">
+        {tocItems.length ? (
+          <nav
+            className="mt-10 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card"
+            aria-label="Model page navigation"
+          >
+            <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Jump to section</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {tocItems.map((item) => (
+                <a
+                  key={item.id}
+                  href={`#${item.id}`}
+                  className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-sm font-semibold text-text-secondary transition hover:border-accent hover:text-accent"
+                >
+                  {item.label}
+                </a>
+              ))}
+            </div>
+          </nav>
+        ) : null}
+
+        <section id="examples" className="mt-14 space-y-4">
           {copy.whatTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.whatTitle}</h2> : null}
           {copy.whatIntro1 ? <p className="text-base text-text-secondary">{copy.whatIntro1}</p> : null}
           {copy.whatIntro2 ? <p className="text-base text-text-secondary">{copy.whatIntro2}</p> : null}
@@ -936,7 +1076,7 @@ function Sora2PageLayout({
         </section>
 
         {specSections.length ? (
-          <section className="mt-14 space-y-4">
+          <section id="specs" className="mt-14 space-y-4">
             {copy.specTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.specTitle}</h2> : null}
             {copy.specNote ? (
               <blockquote className="rounded-2xl border border-accent/30 bg-accent/5 px-4 py-3 text-sm text-text-secondary">
@@ -986,7 +1126,7 @@ function Sora2PageLayout({
           </section>
         ) : null}
 
-        <section className="mt-14 space-y-4">
+        <section id="text-to-video" className="mt-14 space-y-4">
           {copy.galleryTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.galleryTitle}</h2> : null}
           {copy.galleryIntro ? <p className="text-base text-text-secondary">{copy.galleryIntro}</p> : null}
           {copy.galleryAllCta ? (
@@ -1067,7 +1207,7 @@ function Sora2PageLayout({
           </div>
         </section>
 
-        <section className="mt-14 space-y-4">
+        <section id="image-to-video" className="mt-14 space-y-4">
           {copy.promptTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.promptTitle}</h2> : null}
           {copy.promptIntro ? <p className="text-base text-text-secondary">{copy.promptIntro}</p> : null}
           <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
@@ -1171,7 +1311,7 @@ function Sora2PageLayout({
         ) : null}
 
         {copy.tipsTitle || strengths.length || boundaries.length ? (
-          <section className="mt-14 space-y-6">
+          <section id="tips" className="mt-14 space-y-6">
             {copy.tipsTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.tipsTitle}</h2> : null}
             <div className="grid gap-4 lg:grid-cols-2">
               {strengths.length ? (
@@ -1198,7 +1338,7 @@ function Sora2PageLayout({
         ) : null}
 
         {copy.safetyTitle || safetyRules.length ? (
-          <section className="mt-14 space-y-4">
+          <section id="safety" className="mt-14 space-y-4">
             {copy.safetyTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.safetyTitle}</h2> : null}
             <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
               {safetyRules.length ? (
@@ -1246,7 +1386,7 @@ function Sora2PageLayout({
         ) : null}
 
         {faqList.length ? (
-          <section className="mt-14 space-y-4">
+          <section id="faq" className="mt-14 space-y-4">
             {faqTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{faqTitle}</h2> : null}
             <div className="grid gap-3 md:grid-cols-2">
               {faqList.map((entry) => (
@@ -1495,10 +1635,14 @@ export default async function ModelDetailPage({ params }: PageParams) {
       ? localizedContent.faqs
       : (engine.faqs ?? []).map(({ question, answer }) => ({ question, answer }));
   const pricingNotes = localizedContent.pricingNotes ?? null;
-  const canonicalUrl = metadataUrls.canonical.replace(/\/+$/, '') || metadataUrls.canonical;
+  const localizedCanonicalRaw = metadataUrls.canonical;
+  const localizedCanonicalUrl = localizedCanonicalRaw.replace(/\/+$/, '') || localizedCanonicalRaw;
+  const englishCanonicalRaw = metadataUrls.urls[defaultLocale] ?? metadataUrls.canonical;
+  const canonicalUrl = englishCanonicalRaw.replace(/\/+$/, '') || englishCanonicalRaw;
   const breadcrumbTitleBase = localizedContent.seo.title ?? marketingName ?? slug;
   const breadcrumbTitle = breadcrumbTitleBase.replace(/ —.*$/, '');
   const isEsLocale = activeLocale === 'es';
+  const inLanguage = localeRegions[activeLocale] ?? 'en-US';
   const localePathPrefix = localePathnames[activeLocale] ? `/${localePathnames[activeLocale].replace(/^\/+/, '')}` : '';
   const homePathname = localePathPrefix || '/';
   const localizedHomeUrl = homePathname === '/' ? `${SITE}/` : `${SITE}${homePathname}`;
@@ -1528,7 +1672,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
         '@type': 'ListItem',
         position: 3,
         name: breadcrumbTitle,
-        item: canonicalUrl,
+        item: localizedCanonicalUrl,
       },
     ],
   };
@@ -1539,42 +1683,66 @@ export default async function ModelDetailPage({ params }: PageParams) {
       }
     : null;
 
-  const soraSoftwareSchema = showSoraSeo
-    ? {
-        '@context': 'https://schema.org',
-        '@type': 'SoftwareApplication',
-        name: 'OpenAI Sora 2 via MaxVideo AI',
-        applicationCategory: 'VideoGenerationApplication',
-        operatingSystem: 'Web',
-        provider: {
-          '@type': 'Organization',
-          name: 'MaxVideo AI',
-          url: 'https://maxvideoai.com',
-        },
-        description: seoDescription ?? undefined,
-        isAccessibleForFree: false,
-      }
-    : null;
-  const schemaPayloads = [showSoraSeo && soraSoftwareSchema, breadcrumbLd].filter(Boolean) as object[];
   const heroPosterSrc = localizedContent.seo.image ?? engine.media?.imagePath ?? null;
   const heroPosterPreload = heroPosterSrc ? buildOptimizedPosterUrl(heroPosterSrc) ?? heroPosterSrc : null;
+  const heroPosterAbsolute = toAbsoluteUrl(heroPosterSrc);
+  const heroTitle = heroContent?.title ?? marketingName ?? slug;
+  const pageDescription = introText ?? seoDescription ?? heroTitle;
+  const productSchema = buildProductSchema({
+    engine,
+    canonical: canonicalUrl,
+    description: pageDescription ?? breadcrumbTitle,
+    heroTitle,
+    heroPosterAbsolute,
+  });
+  const softwareSchema = buildSoftwareSchema({
+    engine,
+    canonical: canonicalUrl,
+    description: pageDescription ?? breadcrumbTitle,
+    heroTitle,
+  });
+  const schemaPayloads = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: heroTitle,
+      description: pageDescription ?? breadcrumbTitle,
+      url: canonicalUrl,
+      inLanguage,
+    },
+    productSchema,
+    softwareSchema,
+    breadcrumbLd,
+  ].filter(Boolean) as object[];
+  const hasSpecs = true;
+  const hasTextSection = Boolean(promptStructure) || promptEntries.length > 0;
+  const hasTipsSection = Boolean(tips?.items && tips.items.length);
+  const hasFaqSection = faqEntries.length > 0;
+  const tocItems = [
+    { id: 'specs', label: 'Specs', visible: hasSpecs },
+    { id: 'text-to-video', label: 'Text to Video', visible: hasTextSection },
+    { id: 'tips', label: 'Tips', visible: hasTipsSection },
+    { id: 'faq', label: 'FAQ', visible: hasFaqSection },
+  ].filter((item) => item.visible);
+  const textAnchorId = 'text-to-video';
+  const attachTextIdToPromptStructure = Boolean(promptStructure);
 
   return (
     <>
       <div className="mx-auto max-w-4xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
-      {heroPosterPreload ? (
-        <Head>
-          <link rel="preload" as="image" href={heroPosterPreload} fetchPriority="high" />
-        </Head>
-      ) : null}
-      {schemaPayloads.map((schema, index) => (
-        <script
-          key={`schema-${index}`}
-          type="application/ld+json"
-          suppressHydrationWarning
-          dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
-        />
-      ))}
+      <Head>
+        <link rel="canonical" href={canonicalUrl} />
+        {heroPosterPreload ? <link rel="preload" as="image" href={heroPosterPreload} fetchPriority="high" /> : null}
+        {schemaPayloads.map((schema, index) => (
+          <script
+            key={`schema-${index}`}
+            type="application/ld+json"
+            suppressHydrationWarning
+            dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
+          />
+        ))}
+        <FAQSchema questions={faqEntries} />
+      </Head>
       <Link href={localizeModelsPath()} className="text-sm font-semibold text-accent hover:text-accentSoft">
         {detailCopy.backLabel}
       </Link>
@@ -1623,6 +1791,26 @@ export default async function ModelDetailPage({ params }: PageParams) {
         </div>
       ) : null}
 
+      {tocItems.length ? (
+        <nav
+          className="mt-10 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card"
+          aria-label="Model page navigation"
+        >
+          <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Jump to section</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {tocItems.map((item) => (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-sm font-semibold text-text-secondary transition hover:border-accent hover:text-accent"
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
+        </nav>
+      ) : null}
+
       {bestUseCases?.items && bestUseCases.items.length ? (
         <section className="mt-10 rounded-card border border-hairline bg-white p-6 shadow-card">
           <h2 className="text-lg font-semibold text-text-primary">
@@ -1661,7 +1849,10 @@ export default async function ModelDetailPage({ params }: PageParams) {
       ) : null}
 
       {promptStructure ? (
-        <section className="mt-10 rounded-card border border-hairline bg-white p-6 shadow-card">
+        <section
+          id={attachTextIdToPromptStructure ? textAnchorId : undefined}
+          className="mt-10 rounded-card border border-hairline bg-white p-6 shadow-card"
+        >
           <h2 className="text-lg font-semibold text-text-primary">{promptStructure.title ?? 'Prompt structure'}</h2>
           {promptStructure.quote ? (
             <blockquote className="mt-3 border-l-2 border-accent pl-3 text-sm text-text-secondary italic">
@@ -1682,7 +1873,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       ) : null}
 
       {tips?.items && tips.items.length ? (
-        <section className="mt-10 rounded-card border border-hairline bg-white p-6 shadow-card">
+        <section id="tips" className="mt-10 rounded-card border border-hairline bg-white p-6 shadow-card">
           <h2 className="text-lg font-semibold text-text-primary">{tips.title ?? 'Tips & tricks'}</h2>
           <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-text-secondary">
             {tips.items.map((tip) => (
@@ -1702,7 +1893,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
         </p>
       ) : null}
 
-      <section className="mt-10 space-y-4">
+      <section id="specs" className="mt-10 space-y-4">
         <div className="rounded-card border border-hairline bg-white p-6 shadow-card">
           <h2 className="text-lg font-semibold text-text-primary">{detailCopy.overviewTitle}</h2>
           <dl className="mt-4 grid gap-3 text-sm text-text-secondary sm:grid-cols-2">
@@ -1738,7 +1929,10 @@ export default async function ModelDetailPage({ params }: PageParams) {
       </section>
 
       {promptEntries.length > 0 && (
-        <section className="mt-10 space-y-4">
+        <section
+          id={!attachTextIdToPromptStructure ? textAnchorId : undefined}
+          className="mt-10 space-y-4"
+        >
           <h2 className="text-lg font-semibold text-text-primary">{detailCopy.promptsTitle}</h2>
           <div className="grid gap-3 sm:grid-cols-2">
             {promptEntries.map((entry) => (
@@ -1753,7 +1947,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       )}
 
       {faqEntries.length > 0 && (
-        <section className="mt-10 space-y-4">
+        <section id="faq" className="mt-10 space-y-4">
           <h2 className="text-lg font-semibold text-text-primary">{detailCopy.faqTitle}</h2>
           <div className="space-y-3 text-sm text-text-secondary">
             {faqEntries.map(({ question, answer }) => (

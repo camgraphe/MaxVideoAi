@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { AppLocale } from '@/i18n/locales';
+import { defaultLocale, type AppLocale } from '@/i18n/locales';
 import modelRoster from '@/config/model-roster.json';
 import {
   BLOG_ENTRIES,
@@ -123,7 +123,8 @@ export async function buildLocaleSitemapXml(locale: AppLocale): Promise<string> 
 
 export function buildSitemapIndexXml(): string {
   const sitemapUrls = LOCALES.map((locale) => buildAbsoluteUrl(LOCALE_SITEMAP_PATHS[locale])).concat(
-    `${SITE_URL}/sitemap-video.xml`
+    `${SITE_URL}/sitemap-video.xml`,
+    `${SITE_URL}/sitemap-models.xml`
   );
 
   const body = sitemapUrls
@@ -131,6 +132,42 @@ export function buildSitemapIndexXml(): string {
     .join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</sitemapindex>`;
+}
+
+export async function buildModelsSitemapXml(): Promise<string> {
+  const entries: string[] = [];
+
+  modelRoster.forEach((model) => {
+    if (!model?.modelSlug) {
+      return;
+    }
+    const englishPath = `/models/${model.modelSlug}`;
+    const localizedEntries = LOCALES.filter((locale) => hasModelLocale(model.modelSlug, locale)).map((locale) => ({
+      locale,
+      url: buildAbsoluteUrl(localizePathFromEnglish(locale, englishPath)),
+    }));
+    if (!localizedEntries.some((entry) => entry.locale === 'en')) {
+      localizedEntries.push({ locale: 'en', url: buildAbsoluteUrl(englishPath) });
+    }
+    const xDefaultHref =
+      localizedEntries.find((entry) => entry.locale === defaultLocale)?.url ?? localizedEntries[0]?.url ?? buildAbsoluteUrl(englishPath);
+    localizedEntries.forEach((record) => {
+      const alternateLinks = localizedEntries
+        .map(
+          (alt) =>
+            `<xhtml:link rel="alternate" hreflang="${escapeXml(alt.locale)}" href="${escapeXml(alt.url)}" />`
+        )
+        .concat(
+          xDefaultHref ? [`<xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(xDefaultHref)}" />`] : []
+        )
+        .join('\n    ');
+      entries.push(`  <url>\n    <loc>${escapeXml(record.url)}</loc>\n    ${alternateLinks}\n  </url>`);
+    });
+  });
+
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${entries.join(
+    '\n'
+  )}\n</urlset>`;
 }
 
 export { LOCALES, LOCALE_SITEMAP_PATHS };
