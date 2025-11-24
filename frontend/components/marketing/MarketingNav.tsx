@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import clsx from 'clsx';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Link, usePathname } from '@/i18n/navigation';
@@ -172,15 +173,17 @@ export function MarketingNav() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="flex items-center gap-2 font-display text-base font-semibold tracking-tight text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+          className="flex items-center gap-3 font-display text-base font-semibold tracking-tight text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           aria-label={brand}
         >
-          <span
-            aria-hidden
-            className="flex h-7 w-7 items-center justify-center rounded-2xl bg-gradient-to-br from-[#111827] via-[#1f2937] to-[#111827] text-[13px] font-semibold uppercase tracking-tight text-white shadow-sm"
-          >
-            MV
-          </span>
+          <Image
+            src="/assets/branding/logo-mark.svg"
+            alt={brand}
+            width={32}
+            height={32}
+            className="h-8 w-8"
+            priority
+          />
           <span>{brand}</span>
         </Link>
         <button
@@ -364,16 +367,18 @@ export function MarketingNav() {
           <div className="mx-auto flex max-w-sm items-center justify-between">
             <Link
               href="/"
-              className="flex items-center gap-2 font-display text-base font-semibold text-text-primary"
+              className="flex items-center gap-3 font-display text-base font-semibold text-text-primary"
               aria-label={brand}
               onClick={() => setMobileMenuOpen(false)}
             >
-              <span
-                aria-hidden
-                className="flex h-6 w-6 items-center justify-center rounded-xl bg-gradient-to-br from-[#111827] via-[#1f2937] to-[#111827] text-[11px] font-semibold uppercase tracking-tight text-white shadow-sm"
-              >
-                MV
-              </span>
+              <Image
+                src="/assets/branding/logo-mark.svg"
+                alt={brand}
+                width={28}
+                height={28}
+                className="h-7 w-7"
+                priority
+              />
               <span>{brand}</span>
             </Link>
             <button
