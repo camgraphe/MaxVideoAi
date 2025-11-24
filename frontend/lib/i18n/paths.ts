@@ -36,7 +36,28 @@ LOCALES.forEach((locale) => {
   REVERSE_SEGMENT_MAP.set(locale, reverse);
 });
 
-export const CONTENT_ROOT = path.join(process.cwd(), 'content');
+function resolveContentRoot(): string {
+  const cwd = process.cwd();
+  const candidates = [
+    path.join(cwd, 'content'),
+    path.join(cwd, '..', 'content'),
+    path.join(cwd, '..', '..', 'content'),
+    path.join(__dirname, '..', '..', '..', 'content'),
+  ];
+  for (const candidate of candidates) {
+    if (!fs.existsSync(candidate)) {
+      continue;
+    }
+    const hasContent = ['models', 'en', 'fr', 'es', 'docs'].some((segment) => fs.existsSync(path.join(candidate, segment)));
+    if (hasContent) {
+      return candidate;
+    }
+  }
+  const fallback = candidates.find((candidate) => fs.existsSync(candidate));
+  return fallback ?? candidates[0];
+}
+
+export const CONTENT_ROOT = resolveContentRoot();
 
 type BlogSlugMap = Map<string, Record<SupportedLocale, string>>;
 
