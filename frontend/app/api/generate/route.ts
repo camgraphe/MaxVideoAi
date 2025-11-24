@@ -1638,7 +1638,7 @@ async function rollbackPendingPayment(params: {
           ? 'refunded'
           : null;
     const baseRefundDescription = `Refund ${engine.label} - ${durationSec}s`;
-    const refundNote = effectiveProviderMessage ? `Fal error: ${effectiveProviderMessage}` : null;
+    const refundNote = failureMessage ?? null;
     const refundDescription = refundNote ? `${baseRefundDescription} - ${refundNote}` : baseRefundDescription;
 
     if (error instanceof FalGenerationError) {
