@@ -191,6 +191,7 @@ export function Composer({
     isLoading ||
     (promptRequired && !prompt.trim()) ||
     (negativePromptField && negativePromptRequired && !negativePromptValue);
+  const showSoraImageWarning = engine.id.startsWith('sora-2') && assetFields.some((entry) => entry.field.type === 'image');
 
   const triggerButtonAnimation = useCallback(() => {
     if (animationTimeoutRef.current) {
@@ -295,29 +296,37 @@ export function Composer({
         )}
 
         {assetFields.length > 0 && (
-      <div className="flex flex-wrap gap-3 text-sm">
-        {assetFields.map(({ field, required, role }) => (
-          <AssetDropzone
-            key={field.id}
-            engine={engine}
-            caps={caps}
-            field={field}
-            required={required}
-            role={role}
-            assets={assets[field.id] ?? []}
-            onSelect={onAssetAdd}
-            onRemove={onAssetRemove}
-            onError={onNotice}
-            onOpenLibrary={onOpenLibrary}
-            assetSlotCta={
-              field.type === 'image'
-                ? { href: composerCopy.assetSlots.imageCtaHref, label: composerCopy.assetSlots.imageCtaLabel }
-                : undefined
-            }
-            referenceWarning={composerCopy.assetSlots.referenceWarning}
-          />
-        ))}
-      </div>
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-3 text-sm">
+              {assetFields.map(({ field, required, role }) => (
+                <AssetDropzone
+                  key={field.id}
+                  engine={engine}
+                  caps={caps}
+                  field={field}
+                  required={required}
+                  role={role}
+                  assets={assets[field.id] ?? []}
+                  onSelect={onAssetAdd}
+                  onRemove={onAssetRemove}
+                  onError={onNotice}
+                  onOpenLibrary={onOpenLibrary}
+                  assetSlotCta={
+                    field.type === 'image'
+                      ? { href: composerCopy.assetSlots.imageCtaHref, label: composerCopy.assetSlots.imageCtaLabel }
+                      : undefined
+                  }
+                  referenceWarning={composerCopy.assetSlots.referenceWarning}
+                />
+              ))}
+            </div>
+            {showSoraImageWarning ? (
+              <p className="text-[12px] text-text-muted" role="note">
+                Real people — including public figures — cannot be generated. Input images with faces of humans are currently rejected.{' '}
+                <span className="font-semibold uppercase tracking-micro text-[11px] text-text-muted">OpenAI</span>
+              </p>
+            ) : null}
+          </div>
         )}
       </div>
 
