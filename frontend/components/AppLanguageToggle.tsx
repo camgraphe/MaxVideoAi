@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { LOCALE_COOKIE } from '@/lib/i18n/constants';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -20,26 +20,16 @@ const OPTIONS: Array<{ locale: Locale; label: string }> = [
   { locale: 'es', label: 'Español' },
 ];
 
-function detectInitialLocale(): Locale {
-  if (typeof document !== 'undefined') {
-    const langAttr = document.documentElement.lang?.slice(0, 2).toLowerCase();
-    if (LOCALES.includes(langAttr as Locale)) {
-      return langAttr as Locale;
-    }
-    const match = document.cookie.match(/(?:NEXT_LOCALE|mvid_locale)=([a-z]{2})/i);
-    if (match && LOCALES.includes(match[1].toLowerCase() as Locale)) {
-      return match[1].toLowerCase() as Locale;
-    }
-  }
-  return 'en';
-}
-
 export function AppLanguageToggle() {
   const router = useRouter();
   const pathname = usePathname();
-  const { t } = useI18n();
-  const [pendingLocale, setPendingLocale] = useState<Locale>(() => detectInitialLocale());
+  const { locale, t } = useI18n();
+  const [pendingLocale, setPendingLocale] = useState<Locale>(locale);
   const [, startTransition] = useTransition();
+
+  useEffect(() => {
+    setPendingLocale((current) => (current === locale ? current : locale));
+  }, [locale]);
 
   const options = useMemo(() => OPTIONS, []);
 

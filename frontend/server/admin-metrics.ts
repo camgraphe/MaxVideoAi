@@ -3,7 +3,7 @@ import { ensureBillingSchema } from '@/lib/schema';
 
 type CountRow = {
   bucket: Date | string;
-  count: number | string;
+  count: number | string | null;
 };
 
 type AmountRow = CountRow & {
@@ -12,6 +12,53 @@ type AmountRow = CountRow & {
 
 type SummaryRow = {
   total: number | string | null;
+};
+
+type EngineAggRow = {
+  engine_id: string | null;
+  engine_label: string | null;
+  render_count: number | string | null;
+  user_count: number | string | null;
+  amount_cents: number | string | null;
+};
+
+type FunnelRow = {
+  total_topup_users: number | string | null;
+  converted_within_30d: number | string | null;
+};
+
+type DurationRow = {
+  avg_days: number | string | null;
+};
+
+type BehaviorRow = {
+  avg_renders: number | string | null;
+  median_renders: number | string | null;
+};
+
+type ReturningRow = {
+  returning_count: number | string | null;
+};
+
+type WhaleRow = {
+  user_id: string;
+  lifetime_topup_cents: number | string | null;
+  lifetime_charge_cents: number | string | null;
+  render_count: number | string | null;
+  first_seen_at: Date | string | null;
+  last_active_at: Date | string | null;
+};
+
+type HealthRow = {
+  failed_count: number | string | null;
+  total_count: number | string | null;
+};
+
+type FailedEngineRow = {
+  engine_id: string | null;
+  engine_label: string | null;
+  failed_count: number | string | null;
+  total_count: number | string | null;
 };
 
 export type TimeSeriesPoint = {
@@ -25,35 +72,151 @@ export type AmountSeriesPoint = {
   amountCents: number;
 };
 
-export type AdminMetrics = {
-  signupDaily: TimeSeriesPoint[];
-  signupMonthly: TimeSeriesPoint[];
-  topupDaily: AmountSeriesPoint[];
-  topupMonthly: AmountSeriesPoint[];
-  chargeDaily: AmountSeriesPoint[];
-  summary: {
-    totalUsers: number;
-    totalTopupVolumeCents: number;
-    totalTopupCount: number;
-    totalChargeVolumeCents: number;
-    totalChargeCount: number;
-  };
+export type MonthlyPoint = TimeSeriesPoint;
+export type MonthlyAmountPoint = AmountSeriesPoint;
+
+export type MetricsRangeLabel = '7d' | '30d' | '90d';
+
+type MetricsRange = {
+  label: MetricsRangeLabel;
+  days: number;
+  from: string;
+  to: string;
 };
 
-const EMPTY_METRICS: AdminMetrics = {
-  signupDaily: [],
-  signupMonthly: [],
-  topupDaily: [],
-  topupMonthly: [],
-  chargeDaily: [],
-  summary: {
-    totalUsers: 0,
-    totalTopupVolumeCents: 0,
-    totalTopupCount: 0,
-    totalChargeVolumeCents: 0,
-    totalChargeCount: 0,
-  },
+const RANGE_DAYS: Record<MetricsRangeLabel, number> = {
+  '7d': 7,
+  '30d': 30,
+  '90d': 90,
 };
+
+export const METRIC_RANGE_OPTIONS: MetricsRangeLabel[] = ['7d', '30d', '90d'];
+export const DEFAULT_METRIC_RANGE: MetricsRangeLabel = '30d';
+
+export type EngineUsage = {
+  engineId: string;
+  engineLabel: string;
+  rendersCount30d: number;
+  rendersAmount30dUsd: number;
+  distinctUsers30d: number;
+  shareOfTotalRenders30d: number;
+  shareOfTotalRevenue30d: number;
+  avgSpendPerUser30d: number;
+};
+
+export type WhaleUser = {
+  userId: string;
+  identifier: string;
+  lifetimeTopupUsd: number;
+  lifetimeChargeUsd: number;
+  renderCount: number;
+  firstSeenAt: string | null;
+  lastActiveAt: string | null;
+};
+
+export type FailedEngineStat = {
+  engineId: string;
+  engineLabel: string;
+  failedCount30d: number;
+  failureRate30d: number;
+};
+
+export type FunnelMetrics = {
+  signupToTopUpConversion: number;
+  topUpToRenderConversion30d: number;
+  avgTimeSignupToFirstTopUpDays: number | null;
+  avgTimeTopUpToFirstRenderDays: number | null;
+};
+
+export type BehaviorMetrics = {
+  avgRendersPerPayingUser30d: number;
+  medianRendersPerPayingUser30d: number;
+  returningUsers7d: number;
+  whalesTop10: WhaleUser[];
+};
+
+export type HealthMetrics = {
+  failedRenders30d: number;
+  failedRendersRate30d: number;
+  failedByEngine30d: FailedEngineStat[];
+};
+
+export type AdminMetrics = {
+  totals: {
+    totalAccounts: number;
+    payingAccounts: number;
+    activeAccounts30d: number;
+    allTimeTopUpsUsd: number;
+    allTimeRenderChargesUsd: number;
+  };
+  range: MetricsRange;
+  timeseries: {
+    signupsDaily: TimeSeriesPoint[];
+    activeAccountsDaily: TimeSeriesPoint[];
+    topupsDaily: AmountSeriesPoint[];
+    chargesDaily: AmountSeriesPoint[];
+  };
+  monthly: {
+    signupsMonthly: MonthlyPoint[];
+    topupsMonthly: MonthlyAmountPoint[];
+    chargesMonthly: MonthlyAmountPoint[];
+  };
+  engines: EngineUsage[];
+  funnels: FunnelMetrics;
+  behavior: BehaviorMetrics;
+  health: HealthMetrics;
+};
+
+export function normalizeMetricsRange(candidate?: string | null): MetricsRangeLabel {
+  if (!candidate) {
+    return DEFAULT_METRIC_RANGE;
+  }
+  const normalized = candidate.trim().toLowerCase();
+  if (normalized.startsWith('7')) {
+    return '7d';
+  }
+  if (normalized.startsWith('9')) {
+    return '90d';
+  }
+  if (normalized.startsWith('30')) {
+    return '30d';
+  }
+  return DEFAULT_METRIC_RANGE;
+}
+
+function resolveRange(candidate?: string | null): MetricsRange {
+  const label = normalizeMetricsRange(candidate);
+  const days = RANGE_DAYS[label];
+  const now = new Date();
+  const todayStart = startOfUtcDay(now);
+  const rangeStart = new Date(todayStart);
+  rangeStart.setUTCDate(rangeStart.getUTCDate() - (days - 1));
+  return {
+    label,
+    days,
+    from: rangeStart.toISOString(),
+    to: now.toISOString(),
+  };
+}
+
+function startOfUtcDay(date: Date): Date {
+  const copy = new Date(date);
+  copy.setUTCHours(0, 0, 0, 0);
+  return copy;
+}
+
+function buildDailyBuckets(range: MetricsRange): string[] {
+  const buckets: string[] = [];
+  const todayStart = startOfUtcDay(new Date());
+  const start = new Date(todayStart);
+  start.setUTCDate(start.getUTCDate() - (range.days - 1));
+  for (let i = 0; i < range.days; i += 1) {
+    const current = new Date(start);
+    current.setUTCDate(start.getUTCDate() + i);
+    buckets.push(current.toISOString());
+  }
+  return buckets;
+}
 
 function toISO(value: Date | string): string {
   if (value instanceof Date) {
@@ -102,37 +265,121 @@ function mapAmountRows(rows: AmountRow[]): AmountSeriesPoint[] {
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
-export async function fetchAdminMetrics(): Promise<AdminMetrics> {
+function fillDailySeries(points: TimeSeriesPoint[], range: MetricsRange): TimeSeriesPoint[] {
+  const buckets = buildDailyBuckets(range);
+  const map = new Map(points.map((point) => [point.date.slice(0, 10), point.value]));
+  return buckets.map((iso) => {
+    const key = iso.slice(0, 10);
+    return {
+      date: iso,
+      value: map.get(key) ?? 0,
+    };
+  });
+}
+
+function fillAmountSeries(points: AmountSeriesPoint[], range: MetricsRange): AmountSeriesPoint[] {
+  const buckets = buildDailyBuckets(range);
+  const map = new Map(points.map((point) => [point.date.slice(0, 10), point]));
+  return buckets.map((iso) => {
+    const key = iso.slice(0, 10);
+    const entry = map.get(key);
+    if (entry) {
+      return { date: iso, count: entry.count, amountCents: entry.amountCents };
+    }
+    return { date: iso, count: 0, amountCents: 0 };
+  });
+}
+
+function buildEmptyMetrics(range: MetricsRange): AdminMetrics {
+  return {
+    totals: {
+      totalAccounts: 0,
+      payingAccounts: 0,
+      activeAccounts30d: 0,
+      allTimeTopUpsUsd: 0,
+      allTimeRenderChargesUsd: 0,
+    },
+    range,
+    timeseries: {
+      signupsDaily: fillDailySeries([], range),
+      activeAccountsDaily: fillDailySeries([], range),
+      topupsDaily: fillAmountSeries([], range),
+      chargesDaily: fillAmountSeries([], range),
+    },
+    monthly: {
+      signupsMonthly: [],
+      topupsMonthly: [],
+      chargesMonthly: [],
+    },
+    engines: [],
+    funnels: {
+      signupToTopUpConversion: 0,
+      topUpToRenderConversion30d: 0,
+      avgTimeSignupToFirstTopUpDays: null,
+      avgTimeTopUpToFirstRenderDays: null,
+    },
+    behavior: {
+      avgRendersPerPayingUser30d: 0,
+      medianRendersPerPayingUser30d: 0,
+      returningUsers7d: 0,
+      whalesTop10: [],
+    },
+    health: {
+      failedRenders30d: 0,
+      failedRendersRate30d: 0,
+      failedByEngine30d: [],
+    },
+  };
+}
+
+export async function fetchAdminMetrics(rangeParam?: string | null): Promise<AdminMetrics> {
+  const range = resolveRange(rangeParam);
+
   if (!isDatabaseConfigured()) {
-    return EMPTY_METRICS;
+    return buildEmptyMetrics(range);
   }
 
   await ensureBillingSchema();
 
   const [
     signupDailyRows,
-    signupMonthlyRows,
+    activeDailyRows,
     topupDailyRows,
-    topupMonthlyRows,
     chargeDailyRows,
+    signupMonthlyRows,
+    topupMonthlyRows,
+    chargeMonthlyRows,
     totalUsersRow,
+    payingAccountsRow,
+    activeAccountsRow,
     topupSummaryRow,
     chargeSummaryRow,
+    engineRows,
+    funnelRows,
+    signupTopupDurationRow,
+    topupRenderDurationRow,
+    behaviorStatsRow,
+    returningRow,
+    whalesRows,
+    healthRow,
+    failedByEngineRows,
   ] = await Promise.all([
     safeQuery<CountRow>(
       `
         SELECT date_trunc('day', created_at) AS bucket, COUNT(*)::bigint AS count
         FROM profiles
-        WHERE created_at >= NOW() - INTERVAL '30 days'
+        WHERE created_at >= NOW() - INTERVAL '${range.days} days'
         GROUP BY bucket
         ORDER BY bucket ASC
       `
     ),
     safeQuery<CountRow>(
       `
-        SELECT date_trunc('month', created_at) AS bucket, COUNT(*)::bigint AS count
-        FROM profiles
-        WHERE created_at >= NOW() - INTERVAL '12 months'
+        SELECT date_trunc('day', created_at) AS bucket, COUNT(DISTINCT user_id)::bigint AS count
+        FROM app_jobs
+        WHERE created_at >= NOW() - INTERVAL '${range.days} days'
+          AND status = 'completed'
+          AND user_id IS NOT NULL
         GROUP BY bucket
         ORDER BY bucket ASC
       `
@@ -145,7 +392,29 @@ export async function fetchAdminMetrics(): Promise<AdminMetrics> {
           COALESCE(SUM(amount_cents), 0)::bigint AS amount_cents
         FROM app_receipts
         WHERE type = 'topup'
-          AND created_at >= NOW() - INTERVAL '30 days'
+          AND created_at >= NOW() - INTERVAL '${range.days} days'
+        GROUP BY bucket
+        ORDER BY bucket ASC
+      `
+    ),
+    safeQuery<AmountRow>(
+      `
+        SELECT
+          date_trunc('day', created_at) AS bucket,
+          COUNT(*)::bigint AS count,
+          COALESCE(SUM(amount_cents), 0)::bigint AS amount_cents
+        FROM app_receipts
+        WHERE type = 'charge'
+          AND created_at >= NOW() - INTERVAL '${range.days} days'
+        GROUP BY bucket
+        ORDER BY bucket ASC
+      `
+    ),
+    safeQuery<CountRow>(
+      `
+        SELECT date_trunc('month', created_at) AS bucket, COUNT(*)::bigint AS count
+        FROM profiles
+        WHERE created_at >= NOW() - INTERVAL '12 months'
         GROUP BY bucket
         ORDER BY bucket ASC
       `
@@ -166,12 +435,12 @@ export async function fetchAdminMetrics(): Promise<AdminMetrics> {
     safeQuery<AmountRow>(
       `
         SELECT
-          date_trunc('day', created_at) AS bucket,
+          date_trunc('month', created_at) AS bucket,
           COUNT(*)::bigint AS count,
           COALESCE(SUM(amount_cents), 0)::bigint AS amount_cents
         FROM app_receipts
         WHERE type = 'charge'
-          AND created_at >= NOW() - INTERVAL '30 days'
+          AND created_at >= NOW() - INTERVAL '12 months'
         GROUP BY bucket
         ORDER BY bucket ASC
       `
@@ -179,41 +448,351 @@ export async function fetchAdminMetrics(): Promise<AdminMetrics> {
     safeQuery<SummaryRow>(`SELECT COUNT(*)::bigint AS total FROM profiles LIMIT 1`),
     safeQuery<SummaryRow>(
       `
-        SELECT
-          COALESCE(SUM(amount_cents), 0)::bigint AS total
+        SELECT COUNT(DISTINCT user_id)::bigint AS total
         FROM app_receipts
         WHERE type = 'topup'
       `
     ),
     safeQuery<SummaryRow>(
       `
-        SELECT
-          COALESCE(SUM(amount_cents), 0)::bigint AS total
+        SELECT COUNT(DISTINCT user_id)::bigint AS total
+        FROM app_jobs
+        WHERE status = 'completed'
+          AND created_at >= NOW() - INTERVAL '30 days'
+          AND user_id IS NOT NULL
+      `
+    ),
+    safeQuery<SummaryRow>(
+      `
+        SELECT COALESCE(SUM(amount_cents), 0)::bigint AS total
+        FROM app_receipts
+        WHERE type = 'topup'
+      `
+    ),
+    safeQuery<SummaryRow>(
+      `
+        SELECT COALESCE(SUM(amount_cents), 0)::bigint AS total
         FROM app_receipts
         WHERE type = 'charge'
       `
     ),
+    safeQuery<EngineAggRow>(
+      `
+        WITH recent_jobs AS (
+          SELECT
+            job_id,
+            COALESCE(NULLIF(engine_id, ''), 'unknown') AS engine_id,
+            COALESCE(NULLIF(engine_label, ''), COALESCE(NULLIF(engine_id, ''), 'unknown')) AS engine_label,
+            user_id
+          FROM app_jobs
+          WHERE status = 'completed'
+            AND created_at >= NOW() - INTERVAL '30 days'
+            AND user_id IS NOT NULL
+        ),
+        charge_window AS (
+          SELECT job_id, COALESCE(SUM(amount_cents), 0)::bigint AS amount_cents
+          FROM app_receipts
+          WHERE type = 'charge'
+            AND created_at >= NOW() - INTERVAL '30 days'
+          GROUP BY job_id
+        )
+        SELECT
+          r.engine_id,
+          r.engine_label,
+          COUNT(*)::bigint AS render_count,
+          COUNT(DISTINCT r.user_id)::bigint AS user_count,
+          COALESCE(SUM(c.amount_cents), 0)::bigint AS amount_cents
+        FROM recent_jobs r
+        LEFT JOIN charge_window c ON c.job_id = r.job_id
+        GROUP BY r.engine_id, r.engine_label
+        ORDER BY amount_cents DESC NULLS LAST
+      `
+    ),
+    safeQuery<FunnelRow>(
+      `
+        WITH first_topups AS (
+          SELECT user_id, MIN(created_at) AS first_topup_at
+          FROM app_receipts
+          WHERE type = 'topup'
+          GROUP BY user_id
+        ),
+        first_renders AS (
+          SELECT user_id, MIN(created_at) AS first_render_at
+          FROM app_jobs
+          WHERE status = 'completed'
+          GROUP BY user_id
+        )
+        SELECT
+          COUNT(*)::bigint AS total_topup_users,
+          COUNT(*) FILTER (
+            WHERE fr.first_render_at IS NOT NULL
+              AND fr.first_render_at >= ft.first_topup_at
+              AND fr.first_render_at <= ft.first_topup_at + INTERVAL '30 days'
+          )::bigint AS converted_within_30d
+        FROM first_topups ft
+        LEFT JOIN first_renders fr ON fr.user_id = ft.user_id
+      `
+    ),
+    safeQuery<DurationRow>(
+      `
+        WITH first_topups AS (
+          SELECT user_id, MIN(created_at) AS first_topup_at
+          FROM app_receipts
+          WHERE type = 'topup'
+          GROUP BY user_id
+        )
+        SELECT
+          AVG(EXTRACT(EPOCH FROM (ft.first_topup_at - p.created_at)) / 86400)::numeric AS avg_days
+        FROM first_topups ft
+        JOIN profiles p ON p.id = ft.user_id
+        WHERE p.created_at IS NOT NULL
+          AND ft.first_topup_at >= p.created_at
+      `
+    ),
+    safeQuery<DurationRow>(
+      `
+        WITH first_topups AS (
+          SELECT user_id, MIN(created_at) AS first_topup_at
+          FROM app_receipts
+          WHERE type = 'topup'
+          GROUP BY user_id
+        ),
+        first_renders AS (
+          SELECT user_id, MIN(created_at) AS first_render_at
+          FROM app_jobs
+          WHERE status = 'completed'
+          GROUP BY user_id
+        )
+        SELECT
+          AVG(EXTRACT(EPOCH FROM (fr.first_render_at - ft.first_topup_at)) / 86400)::numeric AS avg_days
+        FROM first_topups ft
+        JOIN first_renders fr ON fr.user_id = ft.user_id
+        WHERE fr.first_render_at >= ft.first_topup_at
+      `
+    ),
+    safeQuery<BehaviorRow>(
+      `
+        WITH paying_users AS (
+          SELECT DISTINCT user_id
+          FROM app_receipts
+          WHERE type = 'topup'
+        ),
+        render_counts AS (
+          SELECT j.user_id, COUNT(*)::bigint AS render_count
+          FROM app_jobs j
+          JOIN paying_users p ON p.user_id = j.user_id
+          WHERE j.status = 'completed'
+            AND j.created_at >= NOW() - INTERVAL '30 days'
+          GROUP BY j.user_id
+        )
+        SELECT
+          AVG(render_count)::numeric AS avg_renders,
+          PERCENTILE_DISC(0.5) WITHIN GROUP (ORDER BY render_count) AS median_renders
+        FROM render_counts
+      `
+    ),
+    safeQuery<ReturningRow>(
+      `
+        WITH current_window AS (
+          SELECT DISTINCT user_id
+          FROM app_jobs
+          WHERE status = 'completed'
+            AND user_id IS NOT NULL
+            AND created_at >= NOW() - INTERVAL '7 days'
+        ),
+        previous_window AS (
+          SELECT DISTINCT user_id
+          FROM app_jobs
+          WHERE status = 'completed'
+            AND user_id IS NOT NULL
+            AND created_at >= NOW() - INTERVAL '14 days'
+            AND created_at < NOW() - INTERVAL '7 days'
+        )
+        SELECT COUNT(*)::bigint AS returning_count
+        FROM (
+          SELECT user_id FROM current_window
+          INTERSECT
+          SELECT user_id FROM previous_window
+        ) overlap
+      `
+    ),
+    safeQuery<WhaleRow>(
+      `
+        WITH topup_totals AS (
+          SELECT user_id, SUM(amount_cents)::bigint AS lifetime_topup_cents, MIN(created_at) AS first_topup_at
+          FROM app_receipts
+          WHERE type = 'topup'
+          GROUP BY user_id
+        ),
+        charge_totals AS (
+          SELECT user_id, SUM(amount_cents)::bigint AS lifetime_charge_cents
+          FROM app_receipts
+          WHERE type = 'charge'
+          GROUP BY user_id
+        ),
+        job_stats AS (
+          SELECT
+            user_id,
+            COUNT(*)::bigint AS render_count,
+            MIN(created_at) AS first_render_at,
+            MAX(created_at) AS last_render_at
+          FROM app_jobs
+          WHERE status = 'completed'
+          GROUP BY user_id
+        )
+        SELECT
+          t.user_id,
+          t.lifetime_topup_cents,
+          COALESCE(c.lifetime_charge_cents, 0)::bigint AS lifetime_charge_cents,
+          COALESCE(j.render_count, 0)::bigint AS render_count,
+          (
+            SELECT MIN(val)
+            FROM (VALUES (p.created_at), (t.first_topup_at), (j.first_render_at)) AS v(val)
+            WHERE val IS NOT NULL
+          ) AS first_seen_at,
+          (
+            SELECT MAX(val)
+            FROM (VALUES (p.created_at), (t.first_topup_at), (j.last_render_at)) AS v(val)
+            WHERE val IS NOT NULL
+          ) AS last_active_at
+        FROM topup_totals t
+        LEFT JOIN charge_totals c ON c.user_id = t.user_id
+        LEFT JOIN job_stats j ON j.user_id = t.user_id
+        LEFT JOIN profiles p ON p.id = t.user_id
+        ORDER BY t.lifetime_topup_cents DESC
+        LIMIT 10
+      `
+    ),
+    safeQuery<HealthRow>(
+      `
+        SELECT
+          COUNT(*) FILTER (WHERE status = 'failed')::bigint AS failed_count,
+          COUNT(*) FILTER (WHERE status IN ('failed', 'completed'))::bigint AS total_count
+        FROM app_jobs
+        WHERE created_at >= NOW() - INTERVAL '30 days'
+      `
+    ),
+    safeQuery<FailedEngineRow>(
+      `
+        SELECT
+          COALESCE(NULLIF(engine_id, ''), 'unknown') AS engine_id,
+          COALESCE(NULLIF(engine_label, ''), COALESCE(NULLIF(engine_id, ''), 'unknown')) AS engine_label,
+          COUNT(*) FILTER (WHERE status = 'failed')::bigint AS failed_count,
+          COUNT(*) FILTER (WHERE status IN ('failed', 'completed'))::bigint AS total_count
+        FROM app_jobs
+        WHERE created_at >= NOW() - INTERVAL '30 days'
+        GROUP BY engine_id, engine_label
+        HAVING COUNT(*) FILTER (WHERE status IN ('failed', 'completed')) > 0
+        ORDER BY failed_count DESC
+      `
+    ),
   ]);
 
-  const topupCountRow = await safeQuery<SummaryRow>(
-    `SELECT COUNT(*)::bigint AS total FROM app_receipts WHERE type = 'topup'`
-  );
-  const chargeCountRow = await safeQuery<SummaryRow>(
-    `SELECT COUNT(*)::bigint AS total FROM app_receipts WHERE type = 'charge'`
-  );
+  const signupDaily = fillDailySeries(mapCountRows(signupDailyRows), range);
+  const activeDaily = fillDailySeries(mapCountRows(activeDailyRows), range);
+  const topupsDaily = fillAmountSeries(mapAmountRows(topupDailyRows), range);
+  const chargesDaily = fillAmountSeries(mapAmountRows(chargeDailyRows), range);
+
+  const totalAccounts = coerceNumber(totalUsersRow[0]?.total ?? 0);
+  const payingAccounts = coerceNumber(payingAccountsRow[0]?.total ?? 0);
+  const activeAccounts30d = coerceNumber(activeAccountsRow[0]?.total ?? 0);
+  const allTimeTopUpsUsd = coerceNumber(topupSummaryRow[0]?.total ?? 0) / 100;
+  const allTimeRenderChargesUsd = coerceNumber(chargeSummaryRow[0]?.total ?? 0) / 100;
+
+  const engineRenderTotal = engineRows.reduce((sum, row) => sum + coerceNumber(row.render_count), 0);
+  const engineRevenueTotalCents = engineRows.reduce((sum, row) => sum + coerceNumber(row.amount_cents), 0);
+
+  const engines: EngineUsage[] = engineRows.map((row) => {
+    const renderCount = coerceNumber(row.render_count);
+    const distinctUsers = coerceNumber(row.user_count);
+    const amountCents = coerceNumber(row.amount_cents);
+    const amountUsd = amountCents / 100;
+    const engineId = row.engine_id ?? 'unknown';
+    const engineLabel = row.engine_label ?? engineId;
+    return {
+      engineId,
+      engineLabel,
+      rendersCount30d: renderCount,
+      rendersAmount30dUsd: amountUsd,
+      distinctUsers30d: distinctUsers,
+      shareOfTotalRenders30d: engineRenderTotal ? renderCount / engineRenderTotal : 0,
+      shareOfTotalRevenue30d: engineRevenueTotalCents ? amountCents / engineRevenueTotalCents : 0,
+      avgSpendPerUser30d: distinctUsers ? amountUsd / distinctUsers : 0,
+    };
+  });
+
+  const funnelRow = funnelRows[0];
+  const totalTopupUsers = coerceNumber(funnelRow?.total_topup_users ?? 0);
+  const convertedWithin30d = coerceNumber(funnelRow?.converted_within_30d ?? 0);
+
+  const funnels: FunnelMetrics = {
+    signupToTopUpConversion: totalAccounts ? payingAccounts / totalAccounts : 0,
+    topUpToRenderConversion30d: totalTopupUsers ? convertedWithin30d / totalTopupUsers : 0,
+    avgTimeSignupToFirstTopUpDays:
+      signupTopupDurationRow[0]?.avg_days != null ? Number(signupTopupDurationRow[0].avg_days) : null,
+    avgTimeTopUpToFirstRenderDays:
+      topupRenderDurationRow[0]?.avg_days != null ? Number(topupRenderDurationRow[0].avg_days) : null,
+  };
+
+  const behavior: BehaviorMetrics = {
+    avgRendersPerPayingUser30d: behaviorStatsRow[0]?.avg_renders != null ? Number(behaviorStatsRow[0].avg_renders) : 0,
+    medianRendersPerPayingUser30d:
+      behaviorStatsRow[0]?.median_renders != null ? Number(behaviorStatsRow[0].median_renders) : 0,
+    returningUsers7d: coerceNumber(returningRow[0]?.returning_count ?? 0),
+    whalesTop10: whalesRows.map((row) => ({
+      userId: row.user_id,
+      identifier: row.user_id ? row.user_id.slice(0, 8) : 'unknown',
+      lifetimeTopupUsd: coerceNumber(row.lifetime_topup_cents) / 100,
+      lifetimeChargeUsd: coerceNumber(row.lifetime_charge_cents) / 100,
+      renderCount: coerceNumber(row.render_count ?? 0),
+      firstSeenAt: row.first_seen_at ? toISO(row.first_seen_at) : null,
+      lastActiveAt: row.last_active_at ? toISO(row.last_active_at) : null,
+    })),
+  };
+
+  const failedCount = coerceNumber(healthRow[0]?.failed_count ?? 0);
+  const totalFailuresConsidered = coerceNumber(healthRow[0]?.total_count ?? 0);
+
+  const health: HealthMetrics = {
+    failedRenders30d: failedCount,
+    failedRendersRate30d: totalFailuresConsidered ? failedCount / totalFailuresConsidered : 0,
+    failedByEngine30d: failedByEngineRows.map((row) => {
+      const failed = coerceNumber(row.failed_count);
+      const total = coerceNumber(row.total_count);
+      const engineId = row.engine_id ?? 'unknown';
+      const engineLabel = row.engine_label ?? engineId;
+      return {
+        engineId,
+        engineLabel,
+        failedCount30d: failed,
+        failureRate30d: total ? failed / total : 0,
+      };
+    }),
+  };
 
   return {
-    signupDaily: mapCountRows(signupDailyRows),
-    signupMonthly: mapCountRows(signupMonthlyRows),
-    topupDaily: mapAmountRows(topupDailyRows),
-    topupMonthly: mapAmountRows(topupMonthlyRows),
-    chargeDaily: mapAmountRows(chargeDailyRows),
-    summary: {
-      totalUsers: coerceNumber(totalUsersRow[0]?.total ?? 0),
-      totalTopupVolumeCents: coerceNumber(topupSummaryRow[0]?.total ?? 0),
-      totalTopupCount: coerceNumber(topupCountRow[0]?.total ?? 0),
-      totalChargeVolumeCents: coerceNumber(chargeSummaryRow[0]?.total ?? 0),
-      totalChargeCount: coerceNumber(chargeCountRow[0]?.total ?? 0),
+    totals: {
+      totalAccounts,
+      payingAccounts,
+      activeAccounts30d,
+      allTimeTopUpsUsd,
+      allTimeRenderChargesUsd,
     },
+    range,
+    timeseries: {
+      signupsDaily,
+      activeAccountsDaily: activeDaily,
+      topupsDaily,
+      chargesDaily,
+    },
+    monthly: {
+      signupsMonthly: mapCountRows(signupMonthlyRows),
+      topupsMonthly: mapAmountRows(topupMonthlyRows),
+      chargesMonthly: mapAmountRows(chargeMonthlyRows),
+    },
+    engines,
+    funnels,
+    behavior,
+    health,
   };
 }
