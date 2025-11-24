@@ -238,6 +238,7 @@ const MAX_REFERENCE_SLOTS = 4;
 const MIN_IMAGE_COUNT = 1;
 const MAX_IMAGE_COUNT = 8;
 const QUICK_IMAGE_COUNT_OPTIONS = [1, 2, 4, 6, 8] as const;
+const HISTORY_VISIBLE_CHUNK = 9;
 
 const clampImageCount = (value: number) => Math.min(MAX_IMAGE_COUNT, Math.max(MIN_IMAGE_COUNT, Math.round(value)));
 
@@ -520,6 +521,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     });
     return Array.from(map.values()).sort((a, b) => b.createdAt - a.createdAt);
   }, [localHistory, remoteHistory]);
+
+  const [visibleHistoryCount, setVisibleHistoryCount] = useState(HISTORY_VISIBLE_CHUNK);
 
   const readyReferenceUrls = useMemo(
     () => referenceSlots.filter((slot): slot is ReferenceSlotValue => Boolean(slot && slot.status === 'ready')).map((slot) => slot.url),
@@ -858,6 +861,31 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     document.body.removeChild(anchor);
   }, []);
 
+  const historyEntries = combinedHistory;
+  const visibleHistoryEntries = historyEntries.slice(0, visibleHistoryCount);
+  const hasLocalHistoryMore = historyEntries.length > visibleHistoryCount;
+  const handleLoadMoreHistory = useCallback(() => {
+    if (hasLocalHistoryMore) {
+      setVisibleHistoryCount((prev) => prev + HISTORY_VISIBLE_CHUNK);
+      return;
+    }
+    if (jobPages && jobPages[jobPages.length - 1]?.nextCursor) {
+      setVisibleHistoryCount((prev) => prev + HISTORY_VISIBLE_CHUNK);
+      setJobsSize(jobsSize + 1);
+    }
+  }, [hasLocalHistoryMore, jobPages, jobsSize, setJobsSize]);
+  const hasRemoteNextPage = Boolean(jobPages && jobPages[jobPages.length - 1]?.nextCursor);
+  const shouldShowLoadMore = hasLocalHistoryMore || hasRemoteNextPage;
+
+  useEffect(() => {
+    setVisibleHistoryCount((prev) => {
+      if (historyEntries.length < prev) {
+        return Math.max(HISTORY_VISIBLE_CHUNK, historyEntries.length);
+      }
+      return prev;
+    });
+  }, [historyEntries.length]);
+
   if (!selectedEngine || !selectedEngineCaps) {
     return (
       <main className="flex flex-1 items-center justify-center bg-bg text-text-secondary">
@@ -865,8 +893,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       </main>
     );
   }
-
-  const historyEntries = combinedHistory;
   const previewEntry = historyEntries[0];
   const numImagesUnit =
     numImages === 1 ? resolvedCopy.composer.numImagesUnit.singular : resolvedCopy.composer.numImagesUnit.plural;
@@ -1277,7 +1303,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                 </div>
               ) : (
                 <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {historyEntries.map((entry) => {
+                  {visibleHistoryEntries.map((entry) => {
                     const displayImages = entry.images.slice(0, 4);
                     const entryAspectRatioLabel = formatAspectRatioLabel(entry.aspectRatio ?? null);
                     return (
@@ -1361,12 +1387,18 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
               {jobsValidating && historyEntries.length > 0 && (
                 <div className="mt-4 text-center text-xs text-text-secondary">{resolvedCopy.history.refreshing}</div>
               )}
-              {jobPages && jobPages[jobPages.length - 1]?.nextCursor && (
+              {shouldShowLoadMore && (
                 <div className="mt-4 flex justify-center">
                   <button
                     type="button"
-                    onClick={() => setJobsSize(jobsSize + 1)}
-                    className="rounded-full border border-white/60 px-4 py-2 text-xs font-semibold text-text-primary hover:bg-white/80"
+                    onClick={handleLoadMoreHistory}
+                    disabled={!hasLocalHistoryMore && hasRemoteNextPage && jobsValidating}
+                    className={clsx(
+                      'rounded-full border border-white/60 px-4 py-2 text-xs font-semibold text-text-primary',
+                      !hasLocalHistoryMore && hasRemoteNextPage && jobsValidating
+                        ? 'opacity-60'
+                        : 'hover:bg-white/80'
+                    )}
                   >
                     {resolvedCopy.history.loadMore}
                   </button>
