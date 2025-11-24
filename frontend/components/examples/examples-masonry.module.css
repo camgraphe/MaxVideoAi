@@ -1,12 +1,14 @@
 .masonry {
   column-count: 1;
   column-gap: 8px;
+  --examples-grid-row-gap: 8px;
 }
 
 @media (min-width: 640px) {
   .masonry {
     column-count: 2;
     column-gap: 10px;
+    --examples-grid-row-gap: 10px;
   }
 }
 
@@ -14,6 +16,7 @@
   .masonry {
     column-count: 3;
     column-gap: 12px;
+    --examples-grid-row-gap: 12px;
   }
 }
 
@@ -21,5 +24,5 @@
   display: inline-block;
   width: 100%;
   break-inside: avoid;
-  margin-bottom: 10px;
+  margin-bottom: var(--examples-grid-row-gap);
 }

@@ -29,6 +29,9 @@ const INITIAL_BATCH = 8;
 const BATCH_SIZE = 8;
 const LANDSCAPE_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 60vw, 40vw';
 const PORTRAIT_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 60vw, 40vw';
+const DEFAULT_LANDSCAPE_RATIO = 16 / 9;
+const DEFAULT_LANDSCAPE_HEIGHT_PERCENT = 100 / DEFAULT_LANDSCAPE_RATIO;
+const TALL_CARD_MEDIA_PERCENT = Number((DEFAULT_LANDSCAPE_HEIGHT_PERCENT * 2).toFixed(3));
 const LH_PLACEHOLDER =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
@@ -98,6 +101,8 @@ export default function ExamplesGalleryGridClient({
     });
   };
 
+  const shouldUseTallCardLayout = !isMobile;
+
   return (
     <div className="space-y-4 p-4 sm:p-6">
       {isMobile ? (
@@ -109,6 +114,7 @@ export default function ExamplesGalleryGridClient({
               isFirst={index === 0}
               isLighthouse={isLighthouse}
               forceExclusivePlay
+              enableTallCardLayout={false}
             />
           ))}
         </div>
@@ -121,6 +127,7 @@ export default function ExamplesGalleryGridClient({
                 isFirst={index === 0}
                 isLighthouse={isLighthouse}
                 forceExclusivePlay={false}
+                enableTallCardLayout={shouldUseTallCardLayout}
               />
             </div>
           ))}
@@ -146,11 +153,13 @@ function ExampleCard({
   isFirst,
   isLighthouse,
   forceExclusivePlay,
+  enableTallCardLayout,
 }: {
   video: ExampleGalleryVideo;
   isFirst: boolean;
   isLighthouse: boolean;
   forceExclusivePlay: boolean;
+  enableTallCardLayout: boolean;
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [inView, setInView] = useState(false);
@@ -166,6 +175,11 @@ function ExampleCard({
   const posterSizes = isPortrait ? PORTRAIT_SIZES : LANDSCAPE_SIZES;
   const shouldLoadVideo = !isLighthouse && inView && posterLoaded && Boolean(video.videoUrl);
   const shouldPlay = shouldLoadVideo && (isHovered || isFirst || forceExclusivePlay);
+  const mediaPaddingPercent = Number((100 / rawAspect).toFixed(3));
+  const tallCardEnabled = enableTallCardLayout && isPortrait;
+  const mediaPadding = tallCardEnabled
+    ? `calc(${TALL_CARD_MEDIA_PERCENT}% + var(--examples-grid-row-gap, 10px))`
+    : `${mediaPaddingPercent}%`;
 
   useEffect(() => {
     if (isLighthouse) {
@@ -236,7 +250,7 @@ function ExampleCard({
       tabIndex={isLighthouse ? -1 : 0}
     >
       <div className={clsx(mediaStyles.mediaOuter, 'relative w-full overflow-hidden bg-neutral-900/5')}>
-        <div className="relative w-full" style={{ paddingBottom: `${100 / (isPortrait ? rawAspect : rawAspect)}%` }}>
+        <div className="relative w-full" style={{ paddingBottom: mediaPadding }}>
           <div className="absolute inset-0">
             {shouldLoadVideo && video.videoUrl ? (
               <video
