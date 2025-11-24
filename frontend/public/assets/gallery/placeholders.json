@@ -16,12 +16,12 @@
     "pricingSnapshot": null
   },
   {
-    "jobId": "placeholder-aerial-road",
+    "jobId": "placeholder-minimax-hero",
     "engineLabel": "Sample Engine",
     "durationSec": 6,
     "prompt": "Sample prompt for demonstration",
-    "thumbUrl": "/assets/gallery/aerial-road.mp4",
-    "videoUrl": "/assets/gallery/aerial-road.mp4",
+    "thumbUrl": "/hero/minimax-video01.jpg",
+    "videoUrl": "/hero/minimax-video01.mp4",
     "createdAt": "2025-10-07T13:11:11.844Z",
     "engineId": "sample-engine",
     "aspectRatio": "16:9",

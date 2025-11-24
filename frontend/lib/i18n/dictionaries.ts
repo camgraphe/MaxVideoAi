@@ -443,7 +443,7 @@ const en: Dictionary = {
             pricing: { engineId: 'minimax-hailuo-02-text', durationSec: 6, resolution: '768P', memberTier: 'member' },
           },
           media: {
-            videoSrc: '/assets/gallery/aerial-road.mp4',
+            videoSrc: '/hero/minimax-video01.mp4',
             posterSrc: '/hero/minimax-video01.jpg',
             hasAudio: true,
           },

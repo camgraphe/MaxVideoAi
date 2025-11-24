@@ -124,7 +124,7 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     id: 'minimax-hailuo-02',
     engineId: 'minimax-hailuo-02-text',
     label: 'MiniMax Hailuo 02',
-    videoSrc: '/assets/gallery/aerial-road.mp4',
+    videoSrc: '/hero/minimax-video01.mp4',
     posterSrc: '/hero/minimax-video01.jpg',
     durationSec: 6,
     resolution: '768P',
