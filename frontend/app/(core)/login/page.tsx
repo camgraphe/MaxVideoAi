@@ -507,6 +507,7 @@ export default function LoginPage() {
       options: {
         redirectTo,
         skipBrowserRedirect: true,
+        flowType: 'implicit',
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',
