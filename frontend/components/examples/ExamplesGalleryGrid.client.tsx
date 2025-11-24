@@ -113,8 +113,9 @@ export default function ExamplesGalleryGridClient({
               video={video}
               isFirst={index === 0}
               isLighthouse={isLighthouse}
-              forceExclusivePlay
+              forceExclusivePlay={false}
               enableTallCardLayout={false}
+              enableInlineVideo={index === 0}
             />
           ))}
         </div>
@@ -128,6 +129,7 @@ export default function ExamplesGalleryGridClient({
                 isLighthouse={isLighthouse}
                 forceExclusivePlay={false}
                 enableTallCardLayout={shouldUseTallCardLayout}
+                enableInlineVideo
               />
             </div>
           ))}
@@ -154,12 +156,14 @@ function ExampleCard({
   isLighthouse,
   forceExclusivePlay,
   enableTallCardLayout,
+  enableInlineVideo,
 }: {
   video: ExampleGalleryVideo;
   isFirst: boolean;
   isLighthouse: boolean;
   forceExclusivePlay: boolean;
   enableTallCardLayout: boolean;
+  enableInlineVideo: boolean;
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [inView, setInView] = useState(false);
@@ -173,7 +177,7 @@ function ExampleCard({
   const rawAspect = useMemo(() => (video.aspectRatio ? parseAspectRatio(video.aspectRatio) : 16 / 9), [video.aspectRatio]);
   const isPortrait = rawAspect < 1;
   const posterSizes = isPortrait ? PORTRAIT_SIZES : LANDSCAPE_SIZES;
-  const shouldLoadVideo = !isLighthouse && inView && posterLoaded && Boolean(video.videoUrl);
+  const shouldLoadVideo = enableInlineVideo && !isLighthouse && inView && posterLoaded && Boolean(video.videoUrl);
   const shouldPlay = shouldLoadVideo && (isHovered || isFirst || forceExclusivePlay);
   const mediaPaddingPercent = Number((100 / rawAspect).toFixed(3));
   const tallCardEnabled = enableTallCardLayout && isPortrait;
