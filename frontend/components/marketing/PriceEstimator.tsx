@@ -505,7 +505,12 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
             <div className="grid gap-6">
               <div className="rounded-[24px] border border-white/60 bg-white/85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">{fields.engine}</span>
+                  <label
+                    htmlFor={engineId}
+                    className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted"
+                  >
+                    {fields.engine}
+                  </label>
                   {selectedEngine && (
                     <span
                       className={clsx(
@@ -564,7 +569,12 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
               <div className="grid gap-6 sm:grid-cols-2">
                 {selectedEngine?.showResolution !== false ? (
                   <div className="rounded-[24px] border border-white/60 bg-white/85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
-                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">{fields.resolution}</span>
+                    <label
+                      htmlFor={resolutionId}
+                      className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted"
+                    >
+                      {fields.resolution}
+                    </label>
                     <div className="relative mt-3">
                       <select
                         id={resolutionId}
