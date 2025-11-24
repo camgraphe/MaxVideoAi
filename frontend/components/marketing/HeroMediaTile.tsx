@@ -221,7 +221,7 @@ export function HeroMediaTile({
         onClick={(event) => {
           event.stopPropagation();
         }}
-        className="pointer-events-auto absolute bottom-2 left-1/2 z-10 -translate-x-1/2 text-xs font-medium text-white/90 transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
+        className="pointer-events-auto absolute bottom-2 left-1/2 z-10 -translate-x-1/2 inline-flex min-h-[48px] min-w-[48px] items-center justify-center rounded-full px-3 py-2 text-xs font-medium text-white/90 transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
       >
         {overlayLabel ?? 'Clone these settings'}
       </Link>

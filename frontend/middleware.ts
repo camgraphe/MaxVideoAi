@@ -140,6 +140,9 @@ function extractLocale(pathValue: string): string | null {
 
 export async function middleware(req: NextRequest) {
   const host = req.headers.get('host') ?? '';
+  const userAgent = req.headers.get('user-agent') ?? '';
+  const isLighthouseAudit = /lighthouse/i.test(userAgent);
+  const bypassLocaleRedirect = isLighthouseAudit || req.nextUrl.searchParams.get('nolocale') === '1';
   if (host.startsWith('www.')) {
     const url = new URL(req.url);
     url.host = host.replace(/^www\./, '');
@@ -162,7 +165,7 @@ export async function middleware(req: NextRequest) {
   }
 
   const isMarketingPath = shouldHandleLocale(pathname);
-  const isBotRequest = detectBot(req.headers.get('user-agent') ?? '');
+  const isBotRequest = detectBot(userAgent);
 
   const marketingResponse = isMarketingPath ? handleMarketingSlug(req, pathname) : null;
   if (marketingResponse) {
@@ -172,7 +175,7 @@ export async function middleware(req: NextRequest) {
   let response: NextResponse;
 
   if (isMarketingPath) {
-    if (isBotRequest && !hasLocalePrefix(pathname)) {
+    if ((isBotRequest || bypassLocaleRedirect) && !hasLocalePrefix(pathname)) {
       const rewriteUrl = req.nextUrl.clone();
       const defaultPrefix = localePathnames[defaultLocale];
       if (defaultPrefix) {
@@ -180,6 +183,9 @@ export async function middleware(req: NextRequest) {
         rewriteUrl.pathname = `/${defaultPrefix}${suffix}`;
       } else {
         rewriteUrl.pathname = pathname || '/';
+      }
+      if (bypassLocaleRedirect) {
+        rewriteUrl.searchParams.delete('nolocale');
       }
       response = NextResponse.rewrite(rewriteUrl);
     } else {

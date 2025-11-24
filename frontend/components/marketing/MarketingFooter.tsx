@@ -66,11 +66,11 @@ export function MarketingFooter() {
           <Link
             href="/"
             className="inline-flex items-center gap-3 font-display text-lg font-semibold tracking-tight text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-            aria-label={brandLabel}
           >
             <Image
               src="/assets/branding/logo-mark.svg"
-              alt={brandLabel}
+              alt=""
+              aria-hidden
               width={32}
               height={32}
               className="h-8 w-8"

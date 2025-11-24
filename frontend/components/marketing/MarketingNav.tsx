@@ -41,7 +41,13 @@ export function MarketingNav() {
   useEffect(() => {
     let mounted = true;
     const fetchAccountState = async (token?: string | null) => {
-      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+      if (!token) {
+        if (mounted) {
+          setWallet(null);
+        }
+        return;
+      }
+      const headers = { Authorization: `Bearer ${token}` };
       try {
         const walletRes = await fetch('/api/wallet', { headers }).then((response) => response.json());
         if (!mounted) return;
@@ -174,11 +180,11 @@ export function MarketingNav() {
         <Link
           href="/"
           className="flex items-center gap-3 font-display text-base font-semibold tracking-tight text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-          aria-label={brand}
         >
           <Image
             src="/assets/branding/logo-mark.svg"
-            alt={brand}
+            alt=""
+            aria-hidden
             width={32}
             height={32}
             className="h-8 w-8"
@@ -368,12 +374,12 @@ export function MarketingNav() {
             <Link
               href="/"
               className="flex items-center gap-3 font-display text-base font-semibold text-text-primary"
-              aria-label={brand}
               onClick={() => setMobileMenuOpen(false)}
             >
               <Image
                 src="/assets/branding/logo-mark.svg"
-                alt={brand}
+                alt=""
+                aria-hidden
                 width={28}
                 height={28}
                 className="h-7 w-7"
