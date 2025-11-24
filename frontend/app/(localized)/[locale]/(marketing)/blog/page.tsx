@@ -33,6 +33,17 @@ async function getBlogPosts(locale: AppLocale) {
   return getContentEntries('content/en/blog');
 }
 
+function normalizeImageSrc(src?: string | null) {
+  const trimmed = typeof src === 'string' ? src.trim() : '';
+  if (!trimmed) {
+    return '/og/price-before.png';
+  }
+  if (trimmed.startsWith('http')) {
+    return trimmed;
+  }
+  return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+}
+
 const localeDateMap: Record<AppLocale, string> = {
   en: 'en-US',
   fr: 'fr-FR',
@@ -105,6 +116,8 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
   const content = dictionary.blog;
   const faq = content.faq ?? DEFAULT_BLOG_FAQ;
   const metadataUrls = buildMetadataUrls(locale, BLOG_SLUG_MAP);
+  const baseReadMore = content.cta ?? 'Read more';
+  const formatReadMoreLabel = (title: string) => `${baseReadMore} — ${title}`;
 
   const articleListSchema = {
     '@context': 'https://schema.org',
@@ -120,17 +133,17 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
 
   if (posts.length === 0) {
     return (
-      <div className="mx-auto max-w-3xl px-4 pb-24 pt-16 text-center sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-3xl px-4 pb-24 pt-16 text-center sm:px-6 lg:px-8">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
         <p className="mt-4 text-base text-text-secondary">{content.empty}</p>
-      </div>
+      </main>
     );
   }
 
   const [featured, ...rest] = posts;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
+    <main className="mx-auto max-w-6xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
       <header className="rounded-[32px] border border-hairline bg-white/80 p-8 shadow-card backdrop-blur sm:p-12">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl space-y-4">
@@ -167,7 +180,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
         <article className="group relative overflow-hidden rounded-[28px] border border-hairline bg-white/90 shadow-card transition hover:-translate-y-1 hover:shadow-float">
           <div className="relative h-64 w-full overflow-hidden sm:h-80">
             <Image
-              src={featured.image ?? '/og/price-before.png'}
+              src={normalizeImageSrc(featured.image)}
               alt={featured.title}
               fill
               priority
@@ -206,7 +219,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
               href={{ pathname: '/blog/[slug]', params: { slug: featured.slug } }}
               className="inline-flex items-center gap-2 text-sm font-semibold text-accent transition hover:text-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             >
-              {dictionary.blog.cta ?? 'Read more'}
+              {formatReadMoreLabel(featured.title)}
               <span aria-hidden>→</span>
             </Link>
           </div>
@@ -223,7 +236,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
             >
               <div className="relative h-32 w-full overflow-hidden rounded-2xl bg-bg sm:h-28 sm:w-40">
                 <Image
-                  src={post.image ?? '/og/price-before.png'}
+                  src={normalizeImageSrc(post.image)}
                   alt={post.title ?? 'MaxVideoAI blog cover'}
                   fill
                   loading="lazy"
@@ -255,7 +268,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
                   href={{ pathname: '/blog/[slug]', params: { slug: post.slug } }}
                   className="inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
-                  {dictionary.blog.cta ?? 'Read more'}
+                  {formatReadMoreLabel(post.title ?? post.slug)}
                   <span aria-hidden>→</span>
                 </Link>
               </div>
@@ -280,6 +293,6 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
       <Script id="blog-list-jsonld" type="application/ld+json">
         {JSON.stringify(articleListSchema)}
       </Script>
-    </div>
+    </main>
   );
 }
