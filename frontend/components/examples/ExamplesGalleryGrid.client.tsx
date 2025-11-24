@@ -32,6 +32,7 @@ const PORTRAIT_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 60vw, 40vw
 const DEFAULT_LANDSCAPE_RATIO = 16 / 9;
 const DEFAULT_LANDSCAPE_HEIGHT_PERCENT = 100 / DEFAULT_LANDSCAPE_RATIO;
 const TALL_CARD_MEDIA_PERCENT = Number((DEFAULT_LANDSCAPE_HEIGHT_PERCENT * 2).toFixed(3));
+const FULLY_VISIBLE_THRESHOLD = 0.98;
 const LH_PLACEHOLDER =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
@@ -115,7 +116,8 @@ export default function ExamplesGalleryGridClient({
               isLighthouse={isLighthouse}
               forceExclusivePlay={false}
               enableTallCardLayout={false}
-              enableInlineVideo={index === 0}
+              enableInlineVideo
+              requireFullViewportAutoplay
             />
           ))}
         </div>
@@ -130,6 +132,7 @@ export default function ExamplesGalleryGridClient({
                 forceExclusivePlay={false}
                 enableTallCardLayout={shouldUseTallCardLayout}
                 enableInlineVideo
+                requireFullViewportAutoplay={false}
               />
             </div>
           ))}
@@ -157,6 +160,7 @@ function ExampleCard({
   forceExclusivePlay,
   enableTallCardLayout,
   enableInlineVideo,
+  requireFullViewportAutoplay,
 }: {
   video: ExampleGalleryVideo;
   isFirst: boolean;
@@ -164,11 +168,13 @@ function ExampleCard({
   forceExclusivePlay: boolean;
   enableTallCardLayout: boolean;
   enableInlineVideo: boolean;
+  requireFullViewportAutoplay: boolean;
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [inView, setInView] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
   const [posterLoaded, setPosterLoaded] = useState(false);
+  const [isFullyVisible, setIsFullyVisible] = useState(false);
   const cardRef = useRef<HTMLAnchorElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const lastPlayRef = useRef<() => void>();
@@ -178,7 +184,9 @@ function ExampleCard({
   const isPortrait = rawAspect < 1;
   const posterSizes = isPortrait ? PORTRAIT_SIZES : LANDSCAPE_SIZES;
   const shouldLoadVideo = enableInlineVideo && !isLighthouse && inView && posterLoaded && Boolean(video.videoUrl);
-  const shouldPlay = shouldLoadVideo && (isHovered || isFirst || forceExclusivePlay);
+  const autoPlayFromViewport = enableInlineVideo && requireFullViewportAutoplay ? isFullyVisible : false;
+  const firstAutoPlayAllowed = isFirst && !requireFullViewportAutoplay;
+  const shouldPlay = shouldLoadVideo && (isHovered || firstAutoPlayAllowed || forceExclusivePlay || autoPlayFromViewport);
   const mediaPaddingPercent = Number((100 / rawAspect).toFixed(3));
   const tallCardEnabled = enableTallCardLayout && isPortrait;
   const mediaPadding = tallCardEnabled
@@ -188,6 +196,7 @@ function ExampleCard({
   useEffect(() => {
     if (isLighthouse) {
       setInView(false);
+      setIsFullyVisible(false);
       return;
     }
     const node = cardRef.current;
@@ -196,12 +205,25 @@ function ExampleCard({
       (entries) => {
         const entry = entries[0];
         setInView(entry.isIntersecting);
+        if (requireFullViewportAutoplay && typeof window !== 'undefined') {
+          const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+          const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+          const fullyVisible =
+            entry.intersectionRatio >= FULLY_VISIBLE_THRESHOLD &&
+            entry.boundingClientRect.top >= 0 &&
+            entry.boundingClientRect.bottom <= viewportHeight &&
+            entry.boundingClientRect.left >= 0 &&
+            entry.boundingClientRect.right <= viewportWidth;
+          setIsFullyVisible(fullyVisible);
+        } else if (!requireFullViewportAutoplay) {
+          setIsFullyVisible(false);
+        }
       },
-      { rootMargin: '120px 0px 120px 0px', threshold: 0.25 }
+      { rootMargin: '120px 0px 120px 0px', threshold: [0, 0.25, 0.5, FULLY_VISIBLE_THRESHOLD, 1] }
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, []);
+  }, [isLighthouse, requireFullViewportAutoplay]);
 
   useEffect(() => {
     const node = videoRef.current;
