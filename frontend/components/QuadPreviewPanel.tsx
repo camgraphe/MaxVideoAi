@@ -316,7 +316,7 @@ export function QuadPreviewPanel({
                     {showFailedOverlay && (
                       <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-1 rounded-[10px] bg-red-50 px-3 text-center text-[10px] text-red-700">
                         <span className="font-semibold uppercase tracking-micro text-red-600">Failed</span>
-                        {failureMessage && <span className="line-clamp-4 text-[10px] leading-tight text-red-700">{`Fal error: ${failureMessage}`}</span>}
+                        {failureMessage && <span className="line-clamp-4 text-[10px] leading-tight text-red-700">{failureMessage}</span>}
                       </div>
                     )}
                   </div>
@@ -434,9 +434,8 @@ export function QuadPreviewPanel({
                     <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 bg-red-50/95 px-4 text-center text-[12px] text-red-700 backdrop-blur-sm">
                       <span className="font-semibold uppercase tracking-micro text-red-600">Generation failed</span>
                       <span className="text-[11px] leading-snug text-red-700">
-                        {failureMessage
-                          ? `Fal error: ${failureMessage}`
-                          : 'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'}
+                        {failureMessage ??
+                          'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'}
                       </span>
                     </div>
                   ) : tile.status !== 'completed' ? (
@@ -451,7 +450,7 @@ export function QuadPreviewPanel({
                 <div className="flex flex-col gap-2 border-t border-hairline bg-white px-3 py-2 text-[12px] text-text-secondary">
                   {isFailed && (
                     <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-left">
-                      <p className="text-[10px] font-semibold uppercase tracking-micro text-red-600">Fal error</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-micro text-red-600">Refund note</p>
                       <p className="mt-1 text-[11px] leading-snug text-red-700">
                         {failureMessage ??
                           'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'}
