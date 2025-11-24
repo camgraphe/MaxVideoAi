@@ -507,6 +507,8 @@ export default function LoginPage() {
       options: {
         redirectTo,
         skipBrowserRedirect: true,
+        // Supabase auth-js supports flowType but types in helpers lag behind.
+        // @ts-expect-error flowType is consumed at runtime to disable PKCE temporarily.
         flowType: 'implicit',
         queryParams: {
           access_type: 'offline',
