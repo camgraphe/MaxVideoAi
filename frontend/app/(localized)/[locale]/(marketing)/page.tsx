@@ -9,7 +9,7 @@ import { PriceChip } from '@/components/marketing/PriceChip';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
 import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
-import { MosaicBackdrop } from '@/components/marketing/MosaicBackdrop';
+import { MosaicBackdrop, type MosaicBackdropMedia } from '@/components/marketing/MosaicBackdrop';
 import type { CompareEngineCard } from '@/components/marketing/CompareEnginesCarousel';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { CURRENCY_LOCALE } from '@/lib/intl';
@@ -362,13 +362,18 @@ export default async function HomePage() {
   })
     .filter(Boolean)
     .map((item) => item as CompareEngineCard);
-  const proofBackgroundMedia = (await listExamples('date-desc', 20))
+  const BACKDROP_EXAMPLE_LIMIT = 72;
+  const proofBackgroundMedia: MosaicBackdropMedia[] = (await listExamples('date-desc', BACKDROP_EXAMPLE_LIMIT))
     .map((video) => {
-      const videoUrl = video.videoUrl ?? null;
       const posterUrl = video.thumbUrl ?? null;
-      return { videoUrl, posterUrl };
+      if (!posterUrl) return null;
+      return {
+        posterUrl,
+        videoUrl: video.videoUrl ?? null,
+        alt: video.promptExcerpt ?? video.prompt ?? null,
+      };
     })
-    .filter((item): item is { videoUrl: string | null; posterUrl: string | null } => Boolean(item.videoUrl || item.posterUrl));
+    .filter((item): item is MosaicBackdropMedia => Boolean(item?.posterUrl));
 
   const heroTileConfigs = HERO_SLOT_KEYS.map((key, index) => {
     const slot = homepageSlots.hero.find((entry) => entry.key === key);
