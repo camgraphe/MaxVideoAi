@@ -363,17 +363,19 @@ export default async function HomePage() {
     .filter(Boolean)
     .map((item) => item as CompareEngineCard);
   const BACKDROP_EXAMPLE_LIMIT = 72;
-  const proofBackgroundMedia: MosaicBackdropMedia[] = (await listExamples('date-desc', BACKDROP_EXAMPLE_LIMIT))
-    .map((video) => {
-      const posterUrl = video.thumbUrl ?? null;
-      if (!posterUrl) return null;
-      return {
+  const proofBackgroundMedia = (await listExamples('date-desc', BACKDROP_EXAMPLE_LIMIT)).flatMap<MosaicBackdropMedia>((video) => {
+    const posterUrl = video.thumbUrl ?? null;
+    if (!posterUrl) {
+      return [];
+    }
+    return [
+      {
         posterUrl,
         videoUrl: video.videoUrl ?? null,
         alt: video.promptExcerpt ?? video.prompt ?? null,
-      };
-    })
-    .filter((item): item is MosaicBackdropMedia => Boolean(item?.posterUrl));
+      },
+    ];
+  });
 
   const heroTileConfigs = HERO_SLOT_KEYS.map((key, index) => {
     const slot = homepageSlots.hero.find((entry) => entry.key === key);
