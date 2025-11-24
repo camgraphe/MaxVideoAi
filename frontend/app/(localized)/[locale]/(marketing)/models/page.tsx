@@ -219,7 +219,7 @@ return (
     <Head>
       <link rel="canonical" href={MODELS_CANONICAL} />
     </Head>
-    <div className="mx-auto max-w-5xl px-4 pb-6 pt-16 sm:px-6 lg:px-8">
+    <main className="mx-auto max-w-5xl px-4 pb-6 pt-16 sm:px-6 lg:px-8">
       <header className="space-y-3">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{heroTitle}</h1>
         <h2 className="text-xl font-semibold text-text-primary sm:text-2xl">
@@ -287,7 +287,7 @@ return (
           {content.note}
         </p>
       ) : null}
-    </div>
+    </main>
   </>
 );
 }

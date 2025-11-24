@@ -92,7 +92,6 @@ function ModelCard({ card, ctaLabel }: { card: ModelGalleryCard; ctaLabel: strin
   };
   return (
     <article
-      role="button"
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
@@ -125,7 +124,8 @@ function ModelCard({ card, ctaLabel }: { card: ModelGalleryCard; ctaLabel: strin
       <Link
         href={card.href}
         prefetch={false}
-        className="mt-3 inline-flex text-sm font-semibold text-neutral-900/80 underline decoration-transparent underline-offset-4 transition hover:decoration-current"
+        className="mt-3 inline-flex items-center rounded-full px-2 py-1 text-sm font-semibold text-neutral-900/80 underline decoration-transparent underline-offset-4 transition hover:decoration-current focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+        aria-label={`Explore ${card.label}`}
         onClick={(event) => event.stopPropagation()}
       >
         {normalizedCtaLabel}
