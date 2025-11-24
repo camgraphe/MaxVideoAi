@@ -63,15 +63,20 @@ export function MarketingFooter() {
     <footer className="border-t border-hairline bg-white">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 text-sm text-text-muted md:flex-row md:items-center md:justify-between">
-          <span className="inline-flex items-center gap-3">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-3 font-display text-lg font-semibold tracking-tight text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            aria-label={brandLabel}
+          >
             <Image
-              src="/assets/branding/logo-wordmark.svg"
+              src="/assets/branding/logo-mark.svg"
               alt={brandLabel}
-              width={160}
+              width={32}
               height={32}
-              className="h-6 w-auto"
+              className="h-8 w-8"
             />
-          </span>
+            <span>{brandLabel}</span>
+          </Link>
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-5">
             <div className="inline-flex items-center gap-2 rounded-full border border-hairline px-3 py-1.5 text-[11px] font-semibold uppercase tracking-micro text-text-muted shadow-sm">
               <span>{languageLabel}</span>
