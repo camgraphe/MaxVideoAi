@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { fetchRecentJobAudits } from '@/server/admin-job-audit';
 import { AdminJobAuditTable } from '@/components/admin/JobAuditTable';
 
@@ -175,12 +176,12 @@ function JobFilters({ filters }: { filters: UiFilters }) {
         >
           Apply filters
         </button>
-        <a
+        <Link
           href="/admin/jobs"
           className="text-xs font-semibold uppercase tracking-[0.2em] text-text-secondary transition hover:text-text-primary"
         >
           Reset
-        </a>
+        </Link>
       </div>
     </form>
   );
