@@ -591,18 +591,6 @@
       "description": "Créditos recargables: paga solo por las renderizaciones que apruebes. Tarifas claras por motor, Sin suscripción, Reescalado 4K y opciones de audio."
     }
   },
-  "calculator": {
-    "hero": {
-      "title": "Calcula el coste de tu video con IA antes de generar.",
-      "subtitle": "Este calculador público refleja el estimador dentro de MaxVideo AI. Elige un motor, duración y resolución para previsualizar la ficha de coste sin necesidad de iniciar sesión."
-    },
-    "lite": {
-      "title": "Calculadora Lite",
-      "subtitle": "Ideal para las partes interesadas que necesitan una estimación rápida antes de compartir indicaciones o recursos.",
-      "footer": "¿Listo para ejecutar el trabajo? {link} para financiar tu billetera y generar dentro del espacio de trabajo.",
-      "footerLinkText": "Ir a Precios"
-    }
-  },
   "workflows": {
     "meta": {
       "title": "Workflows — Presets y tomas repetibles",

@@ -18,7 +18,7 @@
 - Maintain the same slug once published; any rename requires a permanent (301) redirect and sitemap update.
 
 ## Collection Conventions
-- **Marketing index pages:** `/`, `/models`, `/examples`, `/workflows`, `/pricing`, `/pricing-calculator`, `/about`, `/contact`, `/changelog`, `/status`, `/partners`, `/affiliates`.
+- **Marketing index pages:** `/`, `/models`, `/examples`, `/workflows`, `/pricing`, `/about`, `/contact`, `/changelog`, `/status`, `/partners`, `/affiliates`.
 - **Model detail pages:** `/models/{slug}` where `{slug}` follows the model registry (see `slug-map.yaml`). All aliases redirect to the canonical entry.
 - **Workflow detail pages:** `/workflows/{slug}` using descriptive task names (`prompt-director`).
 - **Documentation:** `/docs/{slug}` with topic nouns (`get-started`, `wallet-credits`, `engines`, `pricing-policy`, `faqs`).

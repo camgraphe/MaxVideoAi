@@ -7,6 +7,5 @@
   "workflows": { "en": "workflows", "fr": "workflows", "es": "workflows" },
   "about": { "en": "about", "fr": "about", "es": "about" },
   "contact": { "en": "contact", "fr": "contact", "es": "contact" },
-  "status": { "en": "status", "fr": "status", "es": "status" },
-  "pricing-calculator": { "en": "pricing-calculator", "fr": "simulateur-prix", "es": "calculadora-precio" }
+  "status": { "en": "status", "fr": "status", "es": "status" }
 }

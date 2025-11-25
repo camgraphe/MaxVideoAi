@@ -507,18 +507,6 @@
       "description": "Top up credits and pay only for renders you approve. Clear per-engine rates, no subscription, 4K upscaling and audio options."
     }
   },
-  "calculator": {
-    "hero": {
-      "title": "Estimate your AI video cost before you generate.",
-      "subtitle": "This public calculator mirrors the estimator inside MaxVideo AI. Pick an engine, duration, and resolution to preview the cost chip with no login required."
-    },
-    "lite": {
-      "title": "Lite calculator",
-      "subtitle": "Great for stakeholders who need a quick estimate before sharing prompts or assets.",
-      "footer": "Ready to run the job? {link} to fund your wallet and generate inside the workspace.",
-      "footerLinkText": "Head to Pricing"
-    }
-  },
   "workflows": {
     "meta": {
       "title": "Workflows — Presets and repeatable shots",

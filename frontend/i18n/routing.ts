@@ -27,11 +27,6 @@ export const routing = defineRouting({
       fr: '/galerie',
       es: '/galeria',
     },
-    '/pricing-calculator': {
-      en: '/pricing-calculator',
-      fr: '/simulateur-prix',
-      es: '/calculadora-precio',
-    },
     '/ai-video-engines': {
       en: '/ai-video-engines',
       fr: '/comparatif',

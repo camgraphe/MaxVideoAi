@@ -51,7 +51,6 @@ const KNOWN_MARKETING_SEGMENTS = new Set(
     'legal',
     'models',
     'pricing',
-    'pricing-calculator',
     'status',
     'video',
     'workflows',

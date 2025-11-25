@@ -591,18 +591,6 @@
       "description": "Rechargez des crédits et ne payez que pour les rendus que vous approuvez. Tarifs clairs par moteur, Sans abonnement, Upscaling 4K 4K et options audio."
     }
   },
-  "calculator": {
-    "hero": {
-      "title": "Estimez le coût de votre vidéo IA avant de la générer.",
-      "subtitle": "Ce calculateur public reflète l'estimateur intégré à MaxVideo AI. Choisissez un moteur, une durée et une résolution pour prévisualiser la pastille de coût sans nécessiter de connexion."
-    },
-    "lite": {
-      "title": "Calculateur Lite",
-      "subtitle": "Idéal pour les parties prenantes qui ont besoin d'une estimation rapide avant de partager des prompts ou des ressources.",
-      "footer": "Prêt à lancer la tâche ? {link} pour approvisionner votre portefeuille et générer dans l'espace de travail.",
-      "footerLinkText": "Voir les tarifs"
-    }
-  },
   "workflows": {
     "meta": {
       "title": "Workflows — Préréglages et plans reproductibles",

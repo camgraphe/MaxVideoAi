@@ -61,7 +61,8 @@ collections:
       status: live
     - id: pricing-calculator
       path: /pricing-calculator
-      status: live
+      status: redirected
+      redirect: /pricing
       aliases:
         - /calculator
     - id: about

@@ -45,18 +45,23 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: '/pricing-calculator',
+        destination: '/pricing',
+        permanent: true,
+      },
+      {
         source: '/calculator',
-        destination: '/pricing-calculator',
+        destination: '/pricing',
         permanent: true,
       },
       {
         source: '/fr/simulateur-prix',
-        destination: '/pricing-calculator?lang=fr',
+        destination: '/pricing?lang=fr',
         permanent: true,
       },
       {
         source: '/es/calculadora-precio',
-        destination: '/pricing-calculator?lang=es',
+        destination: '/pricing?lang=es',
         permanent: true,
       },
       {

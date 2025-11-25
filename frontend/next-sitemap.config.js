@@ -17,7 +17,6 @@ const MARKETING_CORE_PATHS = [
   '/sitemap-video.xml',
   '/workflows',
   '/pricing',
-  '/pricing-calculator',
   '/docs',
   '/blog',
   '/about',

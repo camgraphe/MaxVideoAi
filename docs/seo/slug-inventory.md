@@ -17,7 +17,7 @@ This table covers current public routes (and near-term additions), the recommend
 | (planned) /workflows/prompt-director | /workflows/prompt-director | /workflows/prompt-engine | /workflows/prompt-production | Guide to using Prompt Director workflow. |
 | (planned) /workflows/price-before-you-generate | /workflows/price-before-you-generate | /workflows/pricing-preview | /workflows/pre-price | Workflow for estimating video pricing before runs. |
 | /pricing | /pricing | /ai-video-pricing | /pricing-plans | Pricing overview and plan comparison. |
-| /calculator | /pricing-calculator | /ai-video-pricing-calculator | /video-generation-pricing | Interactive calculator for AI video run costs. |
+| (301) /pricing-calculator | /pricing | /ai-video-pricing | /video-generation-pricing | Calculator experience consolidated under the primary pricing hub. |
 | /docs | /docs | /documentation | /help-center | Documentation index for MaxVideoAI. |
 | /docs/get-started | /docs/get-started | /docs/start | /docs/onboarding | Onboarding instructions for new users (redirect legacy `/docs/getting-started`). |
 | /docs/brand-safety | /docs/brand-safety | /docs/brand-policy | /docs/creative-safety | Brand safety guidelines for generated outputs. |

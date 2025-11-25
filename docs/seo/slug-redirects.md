@@ -12,7 +12,8 @@
 | /sora-2 | /models/sora-2 | Promote canonical Sora page |
 | /pika | /models/pika-text-to-video | Map shorthand Pika slug |
 | /pikavideo | /models/pika-text-to-video | Capture manual Pika tests |
-| /calculator | /pricing-calculator | Keyword-rich pricing calculator slug |
+| /pricing-calculator | /pricing | Consolidate calculator content into main pricing hub |
+| /calculator | /pricing | Legacy keyword slug routed to canonical pricing page |
 | /docs/getting-started | /docs/get-started | Shorten onboarding slug |
 | /models/pika-2-2 | /models/pika-text-to-video | Consolidate legacy Pika slug |
 | /models/pika-image-video | /models/pika-text-to-video | Align Pika image-to-video slug |
