@@ -1,5 +1,23 @@
 import { isDatabaseConfigured, query } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
+import { getServiceNoticeSetting } from '@/server/app-settings';
+import type {
+  AdminHealthSnapshot,
+  AdminMetrics,
+  AmountSeriesPoint,
+  BehaviorMetrics,
+  EngineHealthStat,
+  EngineUsage,
+  FunnelMetrics,
+  HealthMetrics,
+  MetricsRange,
+  MetricsRangeLabel,
+  MonthlyAmountPoint,
+  MonthlyPoint,
+  TimeSeriesPoint,
+  WhaleUser,
+} from '@/lib/admin/types';
+export type { AdminMetrics, MetricsRangeLabel } from '@/lib/admin/types';
 
 type CountRow = {
   bucket: Date | string;
@@ -40,6 +58,10 @@ type ReturningRow = {
   returning_count: number | string | null;
 };
 
+type CountValueRow = {
+  count: number | string | null;
+};
+
 type WhaleRow = {
   user_id: string;
   lifetime_topup_cents: number | string | null;
@@ -61,111 +83,18 @@ type FailedEngineRow = {
   total_count: number | string | null;
 };
 
-export type TimeSeriesPoint = {
-  date: string;
-  value: number;
-};
-
-export type AmountSeriesPoint = {
-  date: string;
-  count: number;
-  amountCents: number;
-};
-
-export type MonthlyPoint = TimeSeriesPoint;
-export type MonthlyAmountPoint = AmountSeriesPoint;
-
-export type MetricsRangeLabel = '7d' | '30d' | '90d';
-
-type MetricsRange = {
-  label: MetricsRangeLabel;
-  days: number;
-  from: string;
-  to: string;
-};
-
 const RANGE_DAYS: Record<MetricsRangeLabel, number> = {
   '7d': 7,
   '30d': 30,
   '90d': 90,
 };
 
+const HEALTH_WINDOW_HOURS = 24;
+const PENDING_STALE_MINUTES = 15;
+const ENGINE_USAGE_WINDOW_DAYS = 30;
+
 export const METRIC_RANGE_OPTIONS: MetricsRangeLabel[] = ['7d', '30d', '90d'];
 export const DEFAULT_METRIC_RANGE: MetricsRangeLabel = '30d';
-
-export type EngineUsage = {
-  engineId: string;
-  engineLabel: string;
-  rendersCount30d: number;
-  rendersAmount30dUsd: number;
-  distinctUsers30d: number;
-  shareOfTotalRenders30d: number;
-  shareOfTotalRevenue30d: number;
-  avgSpendPerUser30d: number;
-};
-
-export type WhaleUser = {
-  userId: string;
-  identifier: string;
-  lifetimeTopupUsd: number;
-  lifetimeChargeUsd: number;
-  renderCount: number;
-  firstSeenAt: string | null;
-  lastActiveAt: string | null;
-};
-
-export type FailedEngineStat = {
-  engineId: string;
-  engineLabel: string;
-  failedCount30d: number;
-  failureRate30d: number;
-};
-
-export type FunnelMetrics = {
-  signupToTopUpConversion: number;
-  topUpToRenderConversion30d: number;
-  avgTimeSignupToFirstTopUpDays: number | null;
-  avgTimeTopUpToFirstRenderDays: number | null;
-};
-
-export type BehaviorMetrics = {
-  avgRendersPerPayingUser30d: number;
-  medianRendersPerPayingUser30d: number;
-  returningUsers7d: number;
-  whalesTop10: WhaleUser[];
-};
-
-export type HealthMetrics = {
-  failedRenders30d: number;
-  failedRendersRate30d: number;
-  failedByEngine30d: FailedEngineStat[];
-};
-
-export type AdminMetrics = {
-  totals: {
-    totalAccounts: number;
-    payingAccounts: number;
-    activeAccounts30d: number;
-    allTimeTopUpsUsd: number;
-    allTimeRenderChargesUsd: number;
-  };
-  range: MetricsRange;
-  timeseries: {
-    signupsDaily: TimeSeriesPoint[];
-    activeAccountsDaily: TimeSeriesPoint[];
-    topupsDaily: AmountSeriesPoint[];
-    chargesDaily: AmountSeriesPoint[];
-  };
-  monthly: {
-    signupsMonthly: MonthlyPoint[];
-    topupsMonthly: MonthlyAmountPoint[];
-    chargesMonthly: MonthlyAmountPoint[];
-  };
-  engines: EngineUsage[];
-  funnels: FunnelMetrics;
-  behavior: BehaviorMetrics;
-  health: HealthMetrics;
-};
 
 export function normalizeMetricsRange(candidate?: string | null): MetricsRangeLabel {
   if (!candidate) {
@@ -332,6 +261,65 @@ function buildEmptyMetrics(range: MetricsRange): AdminMetrics {
   };
 }
 
+async function loadEngineUsageRows(): Promise<EngineAggRow[]> {
+  return safeQuery<EngineAggRow>(
+    `
+      WITH recent_jobs AS (
+        SELECT
+          job_id,
+          COALESCE(NULLIF(engine_id, ''), 'unknown') AS engine_id,
+          COALESCE(NULLIF(engine_label, ''), COALESCE(NULLIF(engine_id, ''), 'unknown')) AS engine_label,
+          user_id
+        FROM app_jobs
+        WHERE status = 'completed'
+          AND created_at >= NOW() - INTERVAL '${ENGINE_USAGE_WINDOW_DAYS} days'
+          AND user_id IS NOT NULL
+      ),
+      charge_window AS (
+        SELECT job_id, COALESCE(SUM(amount_cents), 0)::bigint AS amount_cents
+        FROM app_receipts
+        WHERE type = 'charge'
+          AND created_at >= NOW() - INTERVAL '${ENGINE_USAGE_WINDOW_DAYS} days'
+        GROUP BY job_id
+      )
+      SELECT
+        r.engine_id,
+        r.engine_label,
+        COUNT(*)::bigint AS render_count,
+        COUNT(DISTINCT r.user_id)::bigint AS user_count,
+        COALESCE(SUM(c.amount_cents), 0)::bigint AS amount_cents
+      FROM recent_jobs r
+      LEFT JOIN charge_window c ON c.job_id = r.job_id
+      GROUP BY r.engine_id, r.engine_label
+      ORDER BY amount_cents DESC NULLS LAST
+    `
+  );
+}
+
+function mapEngineUsage(rows: EngineAggRow[]): EngineUsage[] {
+  const renderTotal = rows.reduce((sum, row) => sum + coerceNumber(row.render_count), 0);
+  const revenueTotalCents = rows.reduce((sum, row) => sum + coerceNumber(row.amount_cents), 0);
+
+  return rows.map((row) => {
+    const renderCount = coerceNumber(row.render_count);
+    const distinctUsers = coerceNumber(row.user_count);
+    const amountCents = coerceNumber(row.amount_cents);
+    const amountUsd = amountCents / 100;
+    const engineId = row.engine_id ?? 'unknown';
+    const engineLabel = row.engine_label ?? engineId;
+    return {
+      engineId,
+      engineLabel,
+      rendersCount30d: renderCount,
+      rendersAmount30dUsd: amountUsd,
+      distinctUsers30d: distinctUsers,
+      shareOfTotalRenders30d: renderTotal ? renderCount / renderTotal : 0,
+      shareOfTotalRevenue30d: revenueTotalCents ? amountCents / revenueTotalCents : 0,
+      avgSpendPerUser30d: distinctUsers ? amountUsd / distinctUsers : 0,
+    };
+  });
+}
+
 export async function fetchAdminMetrics(rangeParam?: string | null): Promise<AdminMetrics> {
   const range = resolveRange(rangeParam);
 
@@ -476,38 +464,7 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
         WHERE type = 'charge'
       `
     ),
-    safeQuery<EngineAggRow>(
-      `
-        WITH recent_jobs AS (
-          SELECT
-            job_id,
-            COALESCE(NULLIF(engine_id, ''), 'unknown') AS engine_id,
-            COALESCE(NULLIF(engine_label, ''), COALESCE(NULLIF(engine_id, ''), 'unknown')) AS engine_label,
-            user_id
-          FROM app_jobs
-          WHERE status = 'completed'
-            AND created_at >= NOW() - INTERVAL '30 days'
-            AND user_id IS NOT NULL
-        ),
-        charge_window AS (
-          SELECT job_id, COALESCE(SUM(amount_cents), 0)::bigint AS amount_cents
-          FROM app_receipts
-          WHERE type = 'charge'
-            AND created_at >= NOW() - INTERVAL '30 days'
-          GROUP BY job_id
-        )
-        SELECT
-          r.engine_id,
-          r.engine_label,
-          COUNT(*)::bigint AS render_count,
-          COUNT(DISTINCT r.user_id)::bigint AS user_count,
-          COALESCE(SUM(c.amount_cents), 0)::bigint AS amount_cents
-        FROM recent_jobs r
-        LEFT JOIN charge_window c ON c.job_id = r.job_id
-        GROUP BY r.engine_id, r.engine_label
-        ORDER BY amount_cents DESC NULLS LAST
-      `
-    ),
+    loadEngineUsageRows(),
     safeQuery<FunnelRow>(
       `
         WITH first_topups AS (
@@ -699,27 +656,7 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
   const allTimeTopUpsUsd = coerceNumber(topupSummaryRow[0]?.total ?? 0) / 100;
   const allTimeRenderChargesUsd = coerceNumber(chargeSummaryRow[0]?.total ?? 0) / 100;
 
-  const engineRenderTotal = engineRows.reduce((sum, row) => sum + coerceNumber(row.render_count), 0);
-  const engineRevenueTotalCents = engineRows.reduce((sum, row) => sum + coerceNumber(row.amount_cents), 0);
-
-  const engines: EngineUsage[] = engineRows.map((row) => {
-    const renderCount = coerceNumber(row.render_count);
-    const distinctUsers = coerceNumber(row.user_count);
-    const amountCents = coerceNumber(row.amount_cents);
-    const amountUsd = amountCents / 100;
-    const engineId = row.engine_id ?? 'unknown';
-    const engineLabel = row.engine_label ?? engineId;
-    return {
-      engineId,
-      engineLabel,
-      rendersCount30d: renderCount,
-      rendersAmount30dUsd: amountUsd,
-      distinctUsers30d: distinctUsers,
-      shareOfTotalRenders30d: engineRenderTotal ? renderCount / engineRenderTotal : 0,
-      shareOfTotalRevenue30d: engineRevenueTotalCents ? amountCents / engineRevenueTotalCents : 0,
-      avgSpendPerUser30d: distinctUsers ? amountUsd / distinctUsers : 0,
-    };
-  });
+  const engines = mapEngineUsage(engineRows);
 
   const funnelRow = funnelRows[0];
   const totalTopupUsers = coerceNumber(funnelRow?.total_topup_users ?? 0);
@@ -795,4 +732,89 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
     behavior,
     health,
   };
+}
+
+export async function fetchAdminHealth(): Promise<AdminHealthSnapshot> {
+  const notice = await getServiceNoticeSetting();
+  const message = notice.message?.trim() ?? '';
+  const serviceNotice = {
+    active: Boolean(notice.enabled && message.length),
+    message: notice.enabled && message.length ? message : null,
+  };
+
+  if (!isDatabaseConfigured()) {
+    return {
+      failedRenders24h: 0,
+      stalePendingJobs: 0,
+      serviceNotice,
+      engineStats: [],
+    };
+  }
+
+  const [failedRows, pendingRows, engineRows] = await Promise.all([
+    safeQuery<CountValueRow>(
+      `
+        SELECT COUNT(*)::bigint AS count
+        FROM app_jobs
+        WHERE status = 'failed'
+          AND created_at >= NOW() - INTERVAL '${HEALTH_WINDOW_HOURS} hours'
+      `
+    ),
+    safeQuery<CountValueRow>(
+      `
+        SELECT COUNT(*)::bigint AS count
+        FROM app_jobs
+        WHERE status = 'pending'
+          AND created_at <= NOW() - INTERVAL '${PENDING_STALE_MINUTES} minutes'
+      `
+    ),
+    safeQuery<FailedEngineRow>(
+      `
+        SELECT
+          COALESCE(NULLIF(engine_id, ''), 'unknown') AS engine_id,
+          COALESCE(NULLIF(engine_label, ''), COALESCE(NULLIF(engine_id, ''), 'unknown')) AS engine_label,
+          COUNT(*) FILTER (WHERE status = 'failed')::bigint AS failed_count,
+          COUNT(*) FILTER (WHERE status IN ('failed', 'completed'))::bigint AS total_count
+        FROM app_jobs
+        WHERE created_at >= NOW() - INTERVAL '${HEALTH_WINDOW_HOURS} hours'
+        GROUP BY engine_id, engine_label
+        HAVING COUNT(*) FILTER (WHERE status IN ('failed', 'completed')) > 0
+      `
+    ),
+  ]);
+
+  const failedRenders24h = coerceNumber(failedRows[0]?.count ?? 0);
+  const stalePendingJobs = coerceNumber(pendingRows[0]?.count ?? 0);
+
+  const engineStats: EngineHealthStat[] = engineRows
+    .map((row) => {
+      const failed = coerceNumber(row.failed_count);
+      const total = coerceNumber(row.total_count);
+      const engineId = row.engine_id ?? 'unknown';
+      const engineLabel = row.engine_label ?? engineId;
+      return {
+        engineId,
+        engineLabel,
+        failedCount: failed,
+        totalCount: total,
+        failureRate: total ? failed / total : 0,
+      };
+    })
+    .sort((a, b) => b.failureRate - a.failureRate);
+
+  return {
+    failedRenders24h,
+    stalePendingJobs,
+    serviceNotice,
+    engineStats,
+  };
+}
+
+export async function fetchEngineUsageMetrics(): Promise<EngineUsage[]> {
+  if (!isDatabaseConfigured()) {
+    return [];
+  }
+  await ensureBillingSchema();
+  const rows = await loadEngineUsageRows();
+  return mapEngineUsage(rows);
 }

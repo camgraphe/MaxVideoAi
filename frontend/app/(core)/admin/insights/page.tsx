@@ -1,11 +1,7 @@
 import type { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
-import {
-  fetchAdminMetrics,
-  METRIC_RANGE_OPTIONS,
-  type AdminMetrics,
-  type MetricsRangeLabel,
-} from '@/server/admin-metrics';
+import { fetchAdminMetrics, METRIC_RANGE_OPTIONS } from '@/server/admin-metrics';
+import type { AdminMetrics, MetricsRangeLabel } from '@/lib/admin/types';
 import { requireAdmin } from '@/server/admin';
 
 const dayFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });

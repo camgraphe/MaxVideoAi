@@ -57,6 +57,35 @@ export type AdminTransactionRecord = {
 };
 
 const REFUNDABLE_PAYMENT_STATUSES = new Set(['paid_wallet']);
+const LARGE_REFUND_THRESHOLD_CENTS = 50_000;
+const FREQUENT_REFUND_WINDOW_DAYS = 30;
+const FREQUENT_REFUND_MIN_COUNT = 3;
+
+export type TransactionAnomalies = {
+  largeRefunds: Array<{
+    receiptId: number;
+    userId: string | null;
+    amountCents: number;
+    currency: string;
+    jobId: string | null;
+    createdAt: string;
+    description: string | null;
+  }>;
+  frequentRefundUsers: Array<{
+    userId: string | null;
+    refundCount: number;
+    totalCents: number;
+    lastRefundAt: string | null;
+  }>;
+  invalidCharges: Array<{
+    receiptId: number;
+    userId: string | null;
+    amountCents: number;
+    jobId: string | null;
+    createdAt: string;
+    description: string | null;
+  }>;
+};
 
 function coerceNumber(value: number | string | null | undefined): number {
   if (typeof value === 'number') return value;
@@ -191,6 +220,101 @@ export async function fetchAdminTransactions(limit = 100): Promise<AdminTransact
       canRefund,
     };
   });
+}
+
+export async function fetchTransactionAnomalies(): Promise<TransactionAnomalies> {
+  if (!process.env.DATABASE_URL) {
+    return { largeRefunds: [], frequentRefundUsers: [], invalidCharges: [] };
+  }
+
+  await ensureBillingSchema();
+
+  const [largeRefundRows, frequentRefundRows, invalidChargeRows] = await Promise.all([
+    query<{
+      id: number;
+      user_id: string | null;
+      job_id: string | null;
+      amount_cents: number | string | null;
+      currency: string | null;
+      description: string | null;
+      created_at: string;
+    }>(
+      `
+        SELECT id, user_id, job_id, amount_cents, currency, description, created_at
+        FROM app_receipts
+        WHERE type = 'refund'
+          AND amount_cents >= $1
+        ORDER BY amount_cents DESC
+        LIMIT 10
+      `,
+      [LARGE_REFUND_THRESHOLD_CENTS]
+    ),
+    query<{
+      user_id: string | null;
+      refund_count: number | string | null;
+      total_cents: number | string | null;
+      last_refund_at: string | null;
+    }>(
+      `
+        SELECT
+          user_id,
+          COUNT(*)::bigint AS refund_count,
+          COALESCE(SUM(amount_cents), 0)::bigint AS total_cents,
+          MAX(created_at) AS last_refund_at
+        FROM app_receipts
+        WHERE type = 'refund'
+          AND created_at >= NOW() - INTERVAL '${FREQUENT_REFUND_WINDOW_DAYS} days'
+        GROUP BY user_id
+        HAVING COUNT(*) >= $1
+        ORDER BY refund_count DESC, total_cents DESC
+        LIMIT 10
+      `,
+      [FREQUENT_REFUND_MIN_COUNT]
+    ),
+    query<{
+      id: number;
+      user_id: string | null;
+      job_id: string | null;
+      amount_cents: number | string | null;
+      created_at: string;
+      description: string | null;
+    }>(
+      `
+        SELECT id, user_id, job_id, amount_cents, created_at, description
+        FROM app_receipts
+        WHERE type = 'charge'
+          AND amount_cents <= 0
+        ORDER BY created_at DESC
+        LIMIT 10
+      `
+    ),
+  ]);
+
+  return {
+    largeRefunds: largeRefundRows.map((row) => ({
+      receiptId: row.id,
+      userId: row.user_id,
+      amountCents: coerceNumber(row.amount_cents),
+      currency: normalizeCurrency(row.currency),
+      jobId: row.job_id,
+      createdAt: row.created_at,
+      description: row.description,
+    })),
+    frequentRefundUsers: frequentRefundRows.map((row) => ({
+      userId: row.user_id,
+      refundCount: coerceNumber(row.refund_count),
+      totalCents: coerceNumber(row.total_cents),
+      lastRefundAt: row.last_refund_at,
+    })),
+    invalidCharges: invalidChargeRows.map((row) => ({
+      receiptId: row.id,
+      userId: row.user_id,
+      amountCents: coerceNumber(row.amount_cents),
+      jobId: row.job_id,
+      createdAt: row.created_at,
+      description: row.description,
+    })),
+  };
 }
 
 type JobChargeContext = {

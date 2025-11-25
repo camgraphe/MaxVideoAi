@@ -136,7 +136,16 @@ function formatCursorValue(row: { created_at: string; id: number }): string {
   return `${createdAt.toISOString()}|${row.id}`;
 }
 
-type FetchJobAuditParams = {
+type FetchJobAuditFilters = {
+  jobId?: string | null;
+  userId?: string | null;
+  engineId?: string | null;
+  status?: string | null;
+  from?: Date | null;
+  to?: Date | null;
+};
+
+type FetchJobAuditParams = FetchJobAuditFilters & {
   limit?: number;
   cursor?: string | null;
 };
@@ -149,6 +158,12 @@ type FetchJobAuditResult = {
 export async function fetchRecentJobAudits({
   limit = 30,
   cursor = null,
+  jobId = null,
+  userId = null,
+  engineId = null,
+  status = null,
+  from = null,
+  to = null,
 }: FetchJobAuditParams = {}): Promise<FetchJobAuditResult> {
   if (!process.env.DATABASE_URL) return { jobs: [], nextCursor: null };
 
@@ -157,6 +172,42 @@ export async function fetchRecentJobAudits({
   const cursorInfo = parseCursorParam(cursor);
   const params: Array<string | number | Date> = [];
   const conditions: string[] = [];
+
+  if (jobId && jobId.trim().length) {
+    params.push(`%${jobId.trim()}%`);
+    const index = params.length;
+    conditions.push(`j.job_id ILIKE $${index}`);
+  }
+
+  if (userId && userId.trim().length) {
+    params.push(`%${userId.trim()}%`);
+    const index = params.length;
+    conditions.push(`j.user_id::text ILIKE $${index}`);
+  }
+
+  if (engineId && engineId.trim().length) {
+    params.push(`%${engineId.trim()}%`);
+    const index = params.length;
+    conditions.push(`(j.engine_id ILIKE $${index} OR j.engine_label ILIKE $${index})`);
+  }
+
+  if (status && status.trim().length) {
+    params.push(status.trim().toLowerCase());
+    const index = params.length;
+    conditions.push(`LOWER(j.status) = $${index}`);
+  }
+
+  if (from instanceof Date && !Number.isNaN(from.getTime())) {
+    params.push(from);
+    const index = params.length;
+    conditions.push(`j.created_at >= $${index}`);
+  }
+
+  if (to instanceof Date && !Number.isNaN(to.getTime())) {
+    params.push(to);
+    const index = params.length;
+    conditions.push(`j.created_at <= $${index}`);
+  }
 
   if (cursorInfo.createdAt) {
     params.push(cursorInfo.createdAt);

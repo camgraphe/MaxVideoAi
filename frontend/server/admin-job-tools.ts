@@ -15,6 +15,7 @@ type LinkFalJobResult = {
   jobId: string;
   providerJobId: string;
   engineId: string | null;
+  userId: string | null;
   videoUrl: string | null;
   thumbUrl: string | null;
 };
@@ -72,6 +73,7 @@ export async function linkFalJob(options: {
     jobId: job.job_id,
     providerJobId,
     engineId: job.engine_id,
+    userId: job.user_id,
     videoUrl,
     thumbUrl,
   };

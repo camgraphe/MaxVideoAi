@@ -7,6 +7,7 @@ import type { AdminJobAuditRecord } from '@/server/admin-job-audit';
 interface JobAuditTableProps {
   initialJobs: AdminJobAuditRecord[];
   initialCursor: string | null;
+  filtersQuery: string;
 }
 
 function formatCurrency(amountCents: number, currency: string) {
@@ -39,7 +40,7 @@ function statusBadge(status?: string | null) {
   return <span className={clsx(base, 'border-slate-200 bg-slate-50 text-slate-700')}>{status}</span>;
 }
 
-export function AdminJobAuditTable({ initialJobs, initialCursor }: JobAuditTableProps) {
+export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }: JobAuditTableProps) {
   const [jobs, setJobs] = useState<AdminJobAuditRecord[]>(initialJobs);
   const [nextCursor, setNextCursor] = useState<string | null>(initialCursor);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -50,6 +51,29 @@ export function AdminJobAuditTable({ initialJobs, initialCursor }: JobAuditTable
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [syncingJobId, setSyncingJobId] = useState<string | null>(null);
 
+  const buildSearchParams = useCallback(
+    (overrides: Record<string, string | null | undefined>) => {
+      const params = new URLSearchParams(filtersQuery);
+      Object.entries(overrides).forEach(([key, value]) => {
+        if (value === null || value === undefined) {
+          params.delete(key);
+        } else {
+          params.set(key, value);
+        }
+      });
+      return params.toString();
+    },
+    [filtersQuery]
+  );
+
+  const buildUrl = useCallback(
+    (overrides: Record<string, string | null | undefined>) => {
+      const search = buildSearchParams(overrides);
+      return search.length ? `/api/admin/jobs/audit?${search}` : '/api/admin/jobs/audit';
+    },
+    [buildSearchParams]
+  );
+
   const sortedJobs = useMemo(() => {
     const base = [...jobs].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     if (showArchived) return base;
@@ -59,7 +83,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor }: JobAuditTable
   const refresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      const response = await fetch('/api/admin/jobs/audit?limit=30', { cache: 'no-store' });
+      const response = await fetch(buildUrl({ limit: '30', cursor: null }), { cache: 'no-store' });
       const payload = await response.json().catch(() => null);
       if (!response.ok || !payload?.ok) {
         throw new Error(payload?.error ?? 'Unable to refresh job audit data.');
@@ -75,7 +99,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor }: JobAuditTable
     } finally {
       setIsRefreshing(false);
     }
-  }, []);
+  }, [buildUrl]);
 
   const handleRefund = useCallback(
     async (jobId: string) => {
@@ -128,29 +152,22 @@ export function AdminJobAuditTable({ initialJobs, initialCursor }: JobAuditTable
     [refresh]
   );
 
-  const handleRelink = useCallback(
+  const handleResync = useCallback(
     async (jobId: string) => {
-      const confirmLink = window.confirm(
-        'Re-synchroniser ce job avec Fal ? Cela mettra à jour les URL vidéo et miniature.'
-      );
+      const confirmLink = window.confirm('Force Fal to refresh media and billing for this job?');
       if (!confirmLink) return;
       setSyncingJobId(jobId);
       try {
-        const response = await fetch('/api/admin/jobs/link', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ jobId }),
-        });
+        const response = await fetch(`/api/admin/jobs/${jobId}/resync`, { method: 'POST' });
         const payload = await response.json().catch(() => null);
         if (!response.ok || !payload?.ok) {
-          throw new Error(payload?.error ?? 'Impossible de synchroniser ce job avec Fal.');
+          throw new Error(payload?.error ?? 'Unable to resync job.');
         }
         setStatusVariant('success');
-        setStatusMessage('Job synchronisé avec Fal.');
+        setStatusMessage('Job resynced with Fal.');
         await refresh();
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : 'Impossible de synchroniser ce job avec Fal.';
+        const message = error instanceof Error ? error.message : 'Unable to resync this job.';
         setStatusVariant('error');
         setStatusMessage(message);
       } finally {
@@ -164,10 +181,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor }: JobAuditTable
     if (!nextCursor || isLoadingMore) return;
     setIsLoadingMore(true);
     try {
-      const response = await fetch(
-        `/api/admin/jobs/audit?limit=30&cursor=${encodeURIComponent(nextCursor)}`,
-        { cache: 'no-store' }
-      );
+      const response = await fetch(buildUrl({ limit: '30', cursor: nextCursor }), { cache: 'no-store' });
       const payload = await response.json().catch(() => null);
       if (!response.ok || !payload?.ok) {
         throw new Error(payload?.error ?? 'Unable to load more jobs.');
@@ -189,7 +203,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor }: JobAuditTable
     } finally {
       setIsLoadingMore(false);
     }
-  }, [isLoadingMore, nextCursor]);
+  }, [buildUrl, isLoadingMore, nextCursor]);
 
   useEffect(() => {
     if (!nextCursor) return;
@@ -332,7 +346,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor }: JobAuditTable
                         {job.providerJobId && (!job.videoUrl || job.status !== 'completed') ? (
                           <button
                             type="button"
-                            onClick={() => void handleRelink(job.jobId)}
+                            onClick={() => void handleResync(job.jobId)}
                             disabled={syncingJobId === job.jobId}
                             className={clsx(
                               'inline-flex items-center justify-center rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-text-primary transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',

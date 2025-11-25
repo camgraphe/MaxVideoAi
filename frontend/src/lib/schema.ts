@@ -297,6 +297,22 @@ export async function ensureBillingSchema(): Promise<void> {
       `);
 
       await query(`
+        CREATE TABLE IF NOT EXISTS admin_audit (
+          id BIGSERIAL PRIMARY KEY,
+          admin_id UUID NOT NULL,
+          target_user_id UUID,
+          action TEXT NOT NULL,
+          route TEXT,
+          metadata JSONB,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+      `);
+
+      await query(`
+        CREATE INDEX IF NOT EXISTS admin_audit_admin_idx ON admin_audit (admin_id, created_at DESC);
+      `);
+
+      await query(`
         ALTER TABLE IF EXISTS profiles
         ADD COLUMN IF NOT EXISTS preferred_currency TEXT CHECK (preferred_currency IN ('eur','usd','gbp','chf'));
       `);
