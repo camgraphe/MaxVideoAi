@@ -56,7 +56,20 @@ const NAV_SECTIONS: Array<{
   },
   {
     title: 'Site',
-    items: [{ label: 'Marketing homepage', href: '/' }],
+    items: [
+      { label: 'Marketing homepage', href: '/' },
+      { label: 'Pricing', href: '/pricing' },
+      { label: 'Examples gallery', href: '/examples' },
+      { label: 'Workflows', href: '/workflows' },
+      { label: 'Models catalog', href: '/models' },
+      { label: 'Docs', href: '/docs' },
+      { label: 'Blog', href: '/blog' },
+      { label: 'Changelog', href: '/changelog' },
+      { label: 'AI video engines', href: '/ai-video-engines' },
+      { label: 'About', href: '/about' },
+      { label: 'Contact', href: '/contact' },
+      { label: 'Status page', href: '/status' },
+    ],
   },
 ];
 

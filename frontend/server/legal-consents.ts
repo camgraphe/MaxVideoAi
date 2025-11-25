@@ -169,11 +169,18 @@ export async function recordUserConsents(input: RecordConsentsInput): Promise<vo
     paramIndex += 1;
   }
 
+  const insertColumns = [...updateColumns, 'synced_from_supabase'];
+  const insertValues = [...insertPlaceholders, 'TRUE'];
+  const conflictAssignments =
+    updateAssignments.length > 0
+      ? `${updateAssignments.join(', ')}, synced_from_supabase = TRUE`
+      : 'synced_from_supabase = TRUE';
+
   const insertSql = `
-    INSERT INTO profiles (${updateColumns.join(', ')})
-    VALUES (${insertPlaceholders.join(', ')})
+    INSERT INTO profiles (${insertColumns.join(', ')})
+    VALUES (${insertValues.join(', ')})
     ON CONFLICT (id)
-    DO UPDATE SET ${updateAssignments.join(', ')};
+    DO UPDATE SET ${conflictAssignments};
   `;
 
   await query(insertSql, updateParams);

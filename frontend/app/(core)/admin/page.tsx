@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { fetchAdminHealth } from '@/server/admin-metrics';
 import type { AdminHealthSnapshot } from '@/lib/admin/types';
@@ -131,13 +132,26 @@ export default async function AdminIndexPage() {
 
 function HealthStrip({ health }: { health: AdminHealthSnapshot }) {
   const atRisk = health.engineStats.filter((stat) => stat.failureRate >= 0.15 && stat.failedCount >= 3);
-  const engineHelper =
+  const engineHelper: ReactNode =
     atRisk.length === 0
       ? 'No elevated failure rates detected in the past 24h.'
-      : `${atRisk
-          .slice(0, 3)
-          .map((stat) => `${stat.engineLabel} (${formatPercent(stat.failureRate)})`)
-          .join(', ')}${atRisk.length > 3 ? ` +${atRisk.length - 3} more` : ''}`;
+      : (
+          <>
+            {atRisk.slice(0, 3).map((stat, index) => (
+              <span key={stat.engineId}>
+                {index > 0 ? ', ' : null}
+                <Link
+                  href={buildJobsHref({ status: 'failed', engineId: stat.engineId })}
+                  className="font-medium text-text-primary underline-offset-2 hover:underline"
+                >
+                  {stat.engineLabel}
+                </Link>{' '}
+                <span className="text-text-muted">({formatPercent(stat.failureRate)})</span>
+              </span>
+            ))}
+            {atRisk.length > 3 ? ` +${atRisk.length - 3} more` : null}
+          </>
+        );
 
   return (
     <section className="rounded-[32px] border border-border/80 bg-white/95 p-5 shadow-card">
@@ -153,12 +167,14 @@ function HealthStrip({ health }: { health: AdminHealthSnapshot }) {
           value={formatNumber(health.failedRenders24h)}
           helper="Aggregated across all engines"
           variant={health.failedRenders24h > 0 ? 'warn' : 'ok'}
+          href={buildJobsHref({ status: 'failed' })}
         />
         <HealthTile
           label="Pending jobs (stuck)"
           value={formatNumber(health.stalePendingJobs)}
           helper="Status = pending for 15+ minutes"
           variant={health.stalePendingJobs > 0 ? 'warn' : 'ok'}
+          href={buildJobsHref({ status: 'pending' })}
         />
         <HealthTile
           label="Service notice"
@@ -180,20 +196,34 @@ function HealthTile({
   value,
   helper,
   variant = 'ok',
+  href,
 }: {
   label: string;
   value: string;
-  helper?: string;
+  helper?: ReactNode;
   variant?: 'ok' | 'warn';
+  href?: string;
 }) {
   const intentClasses = variant === 'warn' ? 'text-rose-600' : 'text-text-primary';
-  return (
-    <div className="rounded-2xl border border-border/70 bg-white px-5 py-4">
+  const baseClasses = 'block rounded-2xl border border-border/70 bg-white px-5 py-4';
+  const interactiveClasses = href ? 'transition hover:-translate-y-0.5 hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40' : '';
+  const content = (
+    <>
       <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-text-muted">{label}</p>
       <p className={`mt-2 text-2xl font-semibold ${intentClasses}`}>{value}</p>
       {helper ? <p className="mt-1 text-xs text-text-secondary">{helper}</p> : null}
-    </div>
+    </>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className={`${baseClasses} ${interactiveClasses}`}>
+        {content}
+      </Link>
+    );
+  }
+
+  return <div className={baseClasses}>{content}</div>;
 }
 
 function QuickToolsCard() {
@@ -277,4 +307,12 @@ function formatPercent(value: number) {
     return '0%';
   }
   return percentFormatter.format(value);
+}
+
+function buildJobsHref(filters: { status?: string; engineId?: string }) {
+  const params = new URLSearchParams();
+  if (filters.status) params.set('status', filters.status);
+  if (filters.engineId) params.set('engineId', filters.engineId);
+  const query = params.toString();
+  return query.length ? `/admin/jobs?${query}` : '/admin/jobs';
 }

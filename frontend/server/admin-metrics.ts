@@ -356,7 +356,8 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
       `
         SELECT date_trunc('day', created_at) AS bucket, COUNT(*)::bigint AS count
         FROM profiles
-        WHERE created_at >= NOW() - INTERVAL '${range.days} days'
+        WHERE synced_from_supabase
+          AND created_at >= NOW() - INTERVAL '${range.days} days'
         GROUP BY bucket
         ORDER BY bucket ASC
       `
@@ -402,7 +403,8 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
       `
         SELECT date_trunc('month', created_at) AS bucket, COUNT(*)::bigint AS count
         FROM profiles
-        WHERE created_at >= NOW() - INTERVAL '12 months'
+        WHERE synced_from_supabase
+          AND created_at >= NOW() - INTERVAL '12 months'
         GROUP BY bucket
         ORDER BY bucket ASC
       `
@@ -433,7 +435,7 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
         ORDER BY bucket ASC
       `
     ),
-    safeQuery<SummaryRow>(`SELECT COUNT(*)::bigint AS total FROM profiles LIMIT 1`),
+    safeQuery<SummaryRow>(`SELECT COUNT(*)::bigint AS total FROM profiles WHERE synced_from_supabase LIMIT 1`),
     safeQuery<SummaryRow>(
       `
         SELECT COUNT(DISTINCT user_id)::bigint AS total
@@ -502,7 +504,8 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
           AVG(EXTRACT(EPOCH FROM (ft.first_topup_at - p.created_at)) / 86400)::numeric AS avg_days
         FROM first_topups ft
         JOIN profiles p ON p.id = ft.user_id
-        WHERE p.created_at IS NOT NULL
+        WHERE p.synced_from_supabase
+          AND p.created_at IS NOT NULL
           AND ft.first_topup_at >= p.created_at
       `
     ),
@@ -615,7 +618,7 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
         FROM topup_totals t
         LEFT JOIN charge_totals c ON c.user_id = t.user_id
         LEFT JOIN job_stats j ON j.user_id = t.user_id
-        LEFT JOIN profiles p ON p.id = t.user_id
+        LEFT JOIN profiles p ON p.id = t.user_id AND p.synced_from_supabase
         ORDER BY t.lifetime_topup_cents DESC
         LIMIT 10
       `

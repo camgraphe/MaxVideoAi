@@ -167,10 +167,12 @@ export async function setUserPreferredCurrency(userId: string, currency: Currenc
   try {
     await query(
       `
-        INSERT INTO profiles (id, preferred_currency)
-        VALUES ($1, $2)
+        INSERT INTO profiles (id, preferred_currency, synced_from_supabase)
+        VALUES ($1, $2, TRUE)
         ON CONFLICT (id)
-        DO UPDATE SET preferred_currency = EXCLUDED.preferred_currency
+        DO UPDATE SET
+          preferred_currency = EXCLUDED.preferred_currency,
+          synced_from_supabase = TRUE
       `,
       [userId, currency]
     );

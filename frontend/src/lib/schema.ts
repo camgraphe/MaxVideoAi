@@ -314,7 +314,10 @@ export async function ensureBillingSchema(): Promise<void> {
 
       await query(`
         ALTER TABLE IF EXISTS profiles
-        ADD COLUMN IF NOT EXISTS preferred_currency TEXT CHECK (preferred_currency IN ('eur','usd','gbp','chf'));
+        ADD COLUMN IF NOT EXISTS preferred_currency TEXT CHECK (preferred_currency IN ('eur','usd','gbp','chf')),
+        ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        ADD COLUMN IF NOT EXISTS synced_from_supabase BOOLEAN NOT NULL DEFAULT FALSE;
       `);
 
       try {
