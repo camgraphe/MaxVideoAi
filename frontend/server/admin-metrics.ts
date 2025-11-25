@@ -503,7 +503,7 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
         SELECT
           AVG(EXTRACT(EPOCH FROM (ft.first_topup_at - p.created_at)) / 86400)::numeric AS avg_days
         FROM first_topups ft
-        JOIN profiles p ON p.id = ft.user_id
+        JOIN profiles p ON p.id::text = ft.user_id
         WHERE p.synced_from_supabase
           AND p.created_at IS NOT NULL
           AND ft.first_topup_at >= p.created_at
@@ -618,7 +618,7 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
         FROM topup_totals t
         LEFT JOIN charge_totals c ON c.user_id = t.user_id
         LEFT JOIN job_stats j ON j.user_id = t.user_id
-        LEFT JOIN profiles p ON p.id = t.user_id AND p.synced_from_supabase
+        LEFT JOIN profiles p ON p.id::text = t.user_id AND p.synced_from_supabase
         ORDER BY t.lifetime_topup_cents DESC
         LIMIT 10
       `

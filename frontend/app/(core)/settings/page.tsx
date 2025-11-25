@@ -8,7 +8,7 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useMarketingPreference } from '@/hooks/useMarketingPreference';
 import { FEATURES } from '@/content/feature-flags';
-import type { Session } from '@supabase/supabase-js';
+import type { User } from '@supabase/supabase-js';
 import deepmerge from 'deepmerge';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { authFetch } from '@/lib/authFetch';
@@ -80,7 +80,7 @@ type SettingsCopy = typeof DEFAULT_SETTINGS_COPY;
 
 export default function SettingsPage() {
   const [tab, setTab] = useState<Tab>('account');
-  const { loading: authLoading, session } = useRequireAuth();
+  const { loading: authLoading, user } = useRequireAuth();
   const { t } = useI18n();
   const rawCopy = t('workspace.settings', DEFAULT_SETTINGS_COPY);
   const copy = useMemo<SettingsCopy>(() => {
@@ -92,7 +92,7 @@ export default function SettingsPage() {
     isLoading: prefsLoading,
     error: preferencesError,
     mutate: mutatePreferences,
-  } = useUserPreferences(!authLoading && Boolean(session));
+  } = useUserPreferences(!authLoading && Boolean(user));
   const [prefSaving, setPrefSaving] = useState(false);
   const [prefError, setPrefError] = useState<string | null>(null);
 
@@ -126,7 +126,7 @@ export default function SettingsPage() {
     [prefSaving, mutatePreferences, copy.privacy.preferenceError]
   );
 
-  if (authLoading || !session) {
+  if (authLoading || !user) {
     return null;
   }
 
@@ -165,7 +165,7 @@ export default function SettingsPage() {
             />
           </nav>
 
-          {tab === 'account' && <AccountTab session={session} copy={copy.account} />}
+          {tab === 'account' && <AccountTab user={user} copy={copy.account} />}
           {tab === 'team' && <TeamTab live={teamsLive} copy={copy.team} />}
           {tab === 'privacy' && (
             <PrivacyTab
@@ -226,16 +226,16 @@ function TabLink({
 }
 
 type AccountTabProps = {
-  session: Session | null;
+  user: User | null;
   copy: SettingsCopy['account'];
 };
 
-function AccountTab({ session, copy }: AccountTabProps) {
+function AccountTab({ user, copy }: AccountTabProps) {
   const nameDefault =
-    typeof session?.user?.user_metadata?.full_name === 'string'
-      ? session?.user?.user_metadata?.full_name
-      : session?.user?.user_metadata?.name ?? '';
-  const emailDefault = session?.user?.email ?? '';
+    typeof user?.user_metadata?.full_name === 'string'
+      ? user?.user_metadata?.full_name
+      : user?.user_metadata?.name ?? '';
+  const emailDefault = user?.email ?? '';
 
   return (
     <section className="rounded-card border border-border bg-white p-4 shadow-card">

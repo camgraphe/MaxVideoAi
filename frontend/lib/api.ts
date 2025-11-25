@@ -241,15 +241,16 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType })
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     let cancelled = false;
-    void supabase.auth.getSession().then(({ data }) => {
+    const updateCacheKey = async () => {
+      const { data } = await supabase.auth.getUser();
       if (!cancelled) {
-        setCacheKey(data.session?.user?.id ?? 'anonymous');
+        setCacheKey(data.user?.id ?? 'anonymous');
       }
-    });
-    const subscription = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!cancelled) {
-        setCacheKey(session?.user?.id ?? 'anonymous');
-      }
+    };
+    void updateCacheKey();
+    const subscription = supabase.auth.onAuthStateChange(async () => {
+      if (cancelled) return;
+      await updateCacheKey();
     });
     return () => {
       cancelled = true;

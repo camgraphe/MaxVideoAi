@@ -59,13 +59,27 @@ export function MarketingNav() {
       }
     };
 
-    supabase.auth.getSession().then(({ data }) => {
+    const updateEmailFromServer = async () => {
+      const { data } = await supabase.auth.getUser();
       if (!mounted) return;
-      setEmail(data.session?.user?.email ?? null);
-      void fetchAccountState(data.session?.access_token);
-    });
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      setEmail(session?.user?.email ?? null);
+      setEmail(data.user?.email ?? null);
+    };
+
+    supabase.auth
+      .getSession()
+      .then(async ({ data }) => {
+        await updateEmailFromServer();
+        if (!mounted) return;
+        void fetchAccountState(data.session?.access_token);
+      })
+      .catch(() => {
+        if (mounted) {
+          setEmail(null);
+        }
+      });
+
+    const { data: subscription } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      await updateEmailFromServer();
       void fetchAccountState(session?.access_token);
     });
     const handleInvalidate = async () => {

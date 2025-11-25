@@ -58,13 +58,25 @@ export function HeaderBar() {
         }
       }
     };
-    supabase.auth.getSession().then(({ data }) => {
+    const updateEmailFromServer = async () => {
+      const { data } = await supabase.auth.getUser();
       if (!mounted) return;
-      setEmail(data.session?.user?.email ?? null);
-      void fetchAccountState(data.session?.access_token);
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      setEmail(session?.user?.email ?? null);
+      setEmail(data.user?.email ?? null);
+    };
+    supabase.auth
+      .getSession()
+      .then(async ({ data }) => {
+        await updateEmailFromServer();
+        if (!mounted) return;
+        void fetchAccountState(data.session?.access_token);
+      })
+      .catch(() => {
+        if (mounted) {
+          setEmail(null);
+        }
+      });
+    const { data: sub } = supabase.auth.onAuthStateChange(async (_e, session) => {
+      await updateEmailFromServer();
       void fetchAccountState(session?.access_token);
     });
     const handleInvalidate = async () => {

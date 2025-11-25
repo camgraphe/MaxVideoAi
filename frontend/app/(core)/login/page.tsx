@@ -318,27 +318,32 @@ export default function LoginPage() {
     let cancelled = false;
 
     async function redirectIfAuthenticated() {
-      const { data } = await supabase.auth.getSession();
+      const { data } = await supabase.auth.getUser();
       if (cancelled) return;
-      const session = data.session ?? null;
-      if (session?.user && nextPath) {
+      const user = data.user ?? null;
+      if (user && nextPath) {
         const safeTarget = sanitizeNextPath(nextPath);
         persistNextTarget(safeTarget);
         router.replace(safeTarget);
-      } else if (!session?.user) {
+      } else if (!user) {
+        // stay on page
       }
     }
 
     void redirectIfAuthenticated();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (cancelled) return;
-      if (session?.user && nextPath) {
-        const safeTarget = sanitizeNextPath(nextPath);
-        persistNextTarget(safeTarget);
-        router.replace(safeTarget);
-      } else if (!session?.user) {
-      }
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event) => {
+      void supabase.auth.getUser().then(({ data }) => {
+        if (cancelled) return;
+        const user = data.user ?? null;
+        if (user && nextPath) {
+          const safeTarget = sanitizeNextPath(nextPath);
+          persistNextTarget(safeTarget);
+          router.replace(safeTarget);
+        } else if (!user) {
+          // remain unauthenticated
+        }
+      });
     });
 
     return () => {

@@ -1172,16 +1172,20 @@ useEffect(() => {
     let cancelled = false;
 
     const ensureSession = async () => {
-      const { data } = await supabase.auth.getSession();
+      const [{ data: sessionData }, { data: userData }] = await Promise.all([
+        supabase.auth.getSession(),
+        supabase.auth.getUser(),
+      ]);
       if (cancelled) return;
-      const session = data.session;
-      if (!session?.access_token || !session.user?.id) {
+      const session = sessionData.session;
+      const user = userData.user ?? null;
+      if (!session?.access_token || !user?.id) {
         clearUserState();
         const target = nextPath && nextPath !== '/login' ? `/login?next=${encodeURIComponent(nextPath)}` : '/login';
         router.replace(target);
         return;
       }
-      setUserId(session.user.id);
+      setUserId(user.id);
       setAuthChecked(true);
     };
 
@@ -1191,14 +1195,17 @@ useEffect(() => {
       router.replace(target);
     });
 
-    const { data: authSubscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session?.access_token || !session.user?.id) {
+    const { data: authSubscription } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!session?.access_token || !user?.id) {
         clearUserState();
         const target = nextPath && nextPath !== '/login' ? `/login?next=${encodeURIComponent(nextPath)}` : '/login';
         router.replace(target);
         return;
       }
-      setUserId(session.user.id);
+      setUserId(user.id);
       setAuthChecked(true);
     });
 

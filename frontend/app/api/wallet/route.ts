@@ -27,10 +27,10 @@ async function resolveAuthenticatedUser(): Promise<string | null> {
   try {
     const supabase = createSupabaseRouteClient();
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (session?.user?.id) {
-      return session.user.id;
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user?.id) {
+      return user.id;
     }
   } catch {
     // ignore helper errors and fall back

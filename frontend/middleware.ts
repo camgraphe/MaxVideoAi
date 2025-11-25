@@ -210,15 +210,15 @@ export async function middleware(req: NextRequest) {
 
   const supabase = createSupabaseMiddlewareClient(req, response);
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const isProtectedRoute = PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
   if (!isProtectedRoute) {
     return response;
   }
 
-  if (session?.user?.id) {
+  if (user?.id) {
     return response;
   }
 

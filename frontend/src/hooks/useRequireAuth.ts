@@ -1,6 +1,6 @@
 'use client';
 
-import type { Session } from '@supabase/supabase-js';
+import type { Session, User } from '@supabase/supabase-js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
@@ -15,6 +15,7 @@ import { consumeLogoutIntent } from '@/lib/logout-intent';
 
 type RequireAuthResult = {
   userId: string | null;
+  user: User | null;
   session: Session | null;
   loading: boolean;
 };
@@ -24,6 +25,7 @@ export function useRequireAuth(): RequireAuthResult {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const redirectingRef = useRef(false);
   const identifiedRef = useRef<string | null>(null);
@@ -56,34 +58,42 @@ export function useRequireAuth(): RequireAuthResult {
 
     async function ensureSession() {
       try {
-        const { data } = await supabase.auth.getSession();
+        const [sessionResult, userResult] = await Promise.all([
+          supabase.auth.getSession(),
+          supabase.auth.getUser(),
+        ]);
         if (cancelled) return;
-        const current = data.session ?? null;
-        if (!current?.user?.id) {
-          setSession(null);
-          setLoading(false);
+        const nextSession = sessionResult.data.session ?? null;
+        const nextUser = userResult.data.user ?? null;
+        setSession(nextSession);
+        setUser(nextUser);
+        if (!nextUser) {
           redirectToLogin();
-          return;
         }
-        setSession(current);
-        setLoading(false);
       } catch {
         if (cancelled) return;
         setSession(null);
-        setLoading(false);
+        setUser(null);
         redirectToLogin();
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
     ensureSession();
 
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    const { data: subscription } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
       if (cancelled) return;
-      if (!newSession?.user?.id) {
-        setSession(null);
+      setSession(newSession ?? null);
+      const {
+        data: { user: refreshedUser },
+      } = await supabase.auth.getUser();
+      if (cancelled) return;
+      setUser(refreshedUser ?? null);
+      if (!refreshedUser) {
         redirectToLogin();
-      } else {
-        setSession(newSession);
       }
     });
 
@@ -94,13 +104,13 @@ export function useRequireAuth(): RequireAuthResult {
   }, [redirectToLogin]);
 
   useEffect(() => {
-    const userId = session?.user?.id ?? null;
+    const userId = user?.id ?? null;
     if (!userId) {
       identifiedRef.current = null;
       tagsSignatureRef.current = null;
       return;
     }
-    const supaUser = session?.user ?? null;
+    const supaUser = user ?? null;
     if (!supaUser) return;
 
     const appMeta = (supaUser.app_metadata ?? {}) as Record<string, unknown>;
@@ -183,10 +193,11 @@ export function useRequireAuth(): RequireAuthResult {
         queueClarityCommand('set', key, value);
       });
     }
-  }, [session]);
+  }, [user]);
 
   return {
-    userId: session?.user?.id ?? null,
+    userId: user?.id ?? null,
+    user,
     session,
     loading,
   };

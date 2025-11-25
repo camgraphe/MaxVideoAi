@@ -6,9 +6,9 @@ export async function getUserIdFromRequest(_req?: NextRequest): Promise<string |
   try {
     const supabase = createSupabaseRouteClient();
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    return session?.user?.id ?? null;
+      data: { user },
+    } = await supabase.auth.getUser();
+    return user?.id ?? null;
   } catch {
     return null;
   }

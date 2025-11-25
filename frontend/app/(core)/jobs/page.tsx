@@ -73,8 +73,8 @@ export default function JobsPage() {
   }, [rawCopy]);
   const { data: enginesData } = useEngines();
   const { data, error, isLoading, setSize, isValidating, mutate } = useInfiniteJobs(24);
-  const { loading: authLoading, session } = useRequireAuth();
-  const { data: preferences } = useUserPreferences(!authLoading && Boolean(session));
+  const { loading: authLoading, user } = useRequireAuth();
+  const { data: preferences } = useUserPreferences(!authLoading && Boolean(user));
   const defaultAllowIndex = preferences?.defaultAllowIndex ?? true;
 
   const pages = data ?? [];

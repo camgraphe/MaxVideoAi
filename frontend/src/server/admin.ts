@@ -72,10 +72,10 @@ export async function getUserIdFromCookies(): Promise<string | null> {
   try {
     const supabase = createSupabaseServerClient();
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (session?.user?.id) {
-      return session.user.id;
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user?.id) {
+      return user.id;
     }
   } catch {
     return null;

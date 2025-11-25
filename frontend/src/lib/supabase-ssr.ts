@@ -17,9 +17,11 @@ export function createSupabaseMiddlewareClient(req: NextRequest, res: NextRespon
 export async function getRouteAuthContext(_req?: NextRequest) {
   void _req;
   const supabase = createSupabaseRouteClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const sessionUserId = session?.user?.id ?? null;
+  const [{ data: sessionData }, { data: userData }] = await Promise.all([
+    supabase.auth.getSession(),
+    supabase.auth.getUser(),
+  ]);
+  const session = sessionData.session ?? null;
+  const sessionUserId = userData.user?.id ?? null;
   return { supabase, session, userId: sessionUserId };
 }
