@@ -126,9 +126,9 @@ async function fetchProfile(userId: string): Promise<AdminUserProfile | null> {
     const isAdminUser = await isUserAdmin(user.id);
     return {
       id: user.id,
-      email: user.email,
-      createdAt: user.created_at,
-      lastSignInAt: user.last_sign_in_at,
+      email: user.email ?? null,
+      createdAt: user.created_at ?? null,
+      lastSignInAt: user.last_sign_in_at ?? null,
       appMetadata: user.app_metadata,
       userMetadata: user.user_metadata,
       isAdmin: isAdminUser,
