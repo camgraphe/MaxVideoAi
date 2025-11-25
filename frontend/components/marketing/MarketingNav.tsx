@@ -9,10 +9,12 @@ import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 import { supabase } from '@/lib/supabaseClient';
 import { NAV_ITEMS } from '@/components/AppSidebar';
 import { setLogoutIntent } from '@/lib/logout-intent';
+import { useRouter } from 'next/navigation';
 
 export function MarketingNav() {
   const pathname = usePathname();
   const { t } = useI18n();
+  const router = useRouter();
   const [email, setEmail] = useState<string | null>(null);
   const [wallet, setWallet] = useState<{ balance: number } | null>(null);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
@@ -344,18 +346,21 @@ export function MarketingNav() {
                     <button
                       type="button"
                       className="flex w-full items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    onClick={async () => {
-                      setAccountMenuOpen(false);
-                      setLogoutIntent();
-                      try {
-                        await supabase.auth.signOut();
-                      } catch {
-                        // ignore logout errors
-                      }
-                      await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' }).catch(() => undefined);
-                      window.location.href = '/';
-                    }}
-                  >
+                      onClick={async () => {
+                        setAccountMenuOpen(false);
+                        setLogoutIntent();
+                        try {
+                          await supabase.auth.signOut();
+                        } catch {
+                          // ignore logout errors
+                        }
+                        await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' }).catch(() => undefined);
+                        setEmail(null);
+                        setWallet(null);
+                        router.replace('/');
+                        router.refresh();
+                      }}
+                    >
                       {t('workspace.header.signOut', 'Sign out')}
                       <span className="text-[11px] uppercase tracking-micro text-text-muted">⌘⇧Q</span>
                     </button>
@@ -447,21 +452,24 @@ export function MarketingNav() {
                 >
                   {generateLabel}
                 </Link>
-                    <button
-                      type="button"
-                      className="w-full rounded-2xl border border-hairline px-4 py-3 text-base font-semibold text-text-primary shadow-card"
-                      onClick={async () => {
-                        setMobileMenuOpen(false);
-                        setLogoutIntent();
-                        try {
-                          await supabase.auth.signOut();
-                        } catch {
-                          // ignore logout errors
-                        }
-                        await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' }).catch(() => undefined);
-                        window.location.href = '/';
-                      }}
-                    >
+                <button
+                  type="button"
+                  className="w-full rounded-2xl border border-hairline px-4 py-3 text-base font-semibold text-text-primary shadow-card"
+                  onClick={async () => {
+                    setMobileMenuOpen(false);
+                    setLogoutIntent();
+                    try {
+                      await supabase.auth.signOut();
+                    } catch {
+                      // ignore logout errors
+                    }
+                    await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' }).catch(() => undefined);
+                    setEmail(null);
+                    setWallet(null);
+                    router.replace('/');
+                    router.refresh();
+                  }}
+                >
                   {t('workspace.header.signOut', 'Sign out')}
                 </button>
               </div>

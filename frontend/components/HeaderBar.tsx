@@ -6,6 +6,7 @@ import { Chip } from '@/components/ui/Chip';
 import { NAV_ITEMS } from '@/components/AppSidebar';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, useId } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
@@ -14,6 +15,7 @@ import { setLogoutIntent } from '@/lib/logout-intent';
 
 export function HeaderBar() {
   const { t } = useI18n();
+  const router = useRouter();
   const [email, setEmail] = useState<string | null>(null);
   const [wallet, setWallet] = useState<{ balance: number } | null>(null);
   const [member, setMember] = useState<{ tier: string } | null>(null);
@@ -319,7 +321,11 @@ export function HeaderBar() {
                       // ignore logout errors
                     }
                     await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' }).catch(() => undefined);
-                    window.location.href = '/';
+                    setEmail(null);
+                    setWallet(null);
+                    setMember(null);
+                    router.replace('/');
+                    router.refresh();
                   }}
                 >
                   {t('workspace.header.signOut', 'Sign out')}
