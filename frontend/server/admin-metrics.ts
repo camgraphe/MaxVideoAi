@@ -717,7 +717,7 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
     },
     range,
     timeseries: {
-      signupsDaily,
+      signupsDaily: signupDaily,
       activeAccountsDaily: activeDaily,
       topupsDaily,
       chargesDaily,
