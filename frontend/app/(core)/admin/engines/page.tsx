@@ -208,8 +208,15 @@ function buildInitialForm(entry: ConfigEntry) {
   const maxDuration =
     options?.maxDurationSec && Number.isFinite(options.maxDurationSec) ? String(options.maxDurationSec) : '';
   const resolvedResolutions = Array.isArray(options?.resolutions)
-    ? (options?.resolutions as unknown[])
-        .filter((value): value is string => typeof value === 'string' && value.trim().length)
+    ? (options?.resolutions as unknown[]).reduce<string[]>((acc, value) => {
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          if (trimmed.length) {
+            acc.push(trimmed);
+          }
+        }
+        return acc;
+      }, [])
     : Array.isArray(engine.resolutions)
       ? engine.resolutions
       : [];
