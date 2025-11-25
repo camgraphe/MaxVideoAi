@@ -193,15 +193,27 @@ async function loadEngineConfigEntries() {
 
 function buildInitialForm(entry: ConfigEntry) {
   const { engine, override, settings } = entry;
-  const options = settings?.options ?? null;
+  const options = (settings?.options ?? null) as
+    | {
+        maxDurationSec?: number;
+        resolutions?: unknown;
+      }
+    | null;
   const pricing = settings?.pricing ?? null;
 
   const active = !(override?.active === false);
   const availability = (override?.availability ?? engine.availability).toLowerCase();
   const status = (override?.status ?? engine.status ?? 'live').toLowerCase();
   const latencyTier = (override?.latency_tier ?? engine.latencyTier ?? 'standard').toLowerCase();
-  const maxDuration = options?.maxDurationSec ? String(options.maxDurationSec) : '';
-  const resolutions = (options?.resolutions ?? engine.resolutions ?? []).join(', ');
+  const maxDuration =
+    options?.maxDurationSec && Number.isFinite(options.maxDurationSec) ? String(options.maxDurationSec) : '';
+  const resolvedResolutions = Array.isArray(options?.resolutions)
+    ? (options?.resolutions as unknown[])
+        .filter((value): value is string => typeof value === 'string' && value.trim().length)
+    : Array.isArray(engine.resolutions)
+      ? engine.resolutions
+      : [];
+  const resolutions = resolvedResolutions.join(', ');
   const currency = pricing?.currency ?? engine.pricingDetails?.currency ?? 'USD';
   const perSecond = pricing?.perSecondCents?.default ?? engine.pricingDetails?.perSecondCents?.default ?? '';
   const flat = pricing?.flatCents?.default ?? engine.pricingDetails?.flatCents?.default ?? '';
