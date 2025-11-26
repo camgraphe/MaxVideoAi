@@ -98,6 +98,23 @@ export function MarketingNav() {
     };
   }, []);
 
+  const signOut = async ({ closeAccountMenu, closeMobileMenu }: { closeAccountMenu?: boolean; closeMobileMenu?: boolean } = {}) => {
+    if (closeAccountMenu) {
+      setAccountMenuOpen(false);
+    }
+    if (closeMobileMenu) {
+      setMobileMenuOpen(false);
+    }
+    setLogoutIntent();
+    setEmail(null);
+    setWallet(null);
+    await Promise.all([
+      supabase.auth.signOut().catch(() => undefined),
+      fetch('/api/auth/signout', { method: 'POST', credentials: 'include' }).catch(() => undefined),
+    ]);
+    window.location.href = '/';
+  };
+
   useEffect(() => {
     if (!accountMenuOpen) {
       return;
@@ -344,19 +361,7 @@ export function MarketingNav() {
                     <button
                       type="button"
                       className="flex w-full items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      onClick={async () => {
-                        setAccountMenuOpen(false);
-                        setLogoutIntent();
-                        try {
-                          await supabase.auth.signOut();
-                        } catch {
-                          // ignore logout errors
-                        }
-                        await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' }).catch(() => undefined);
-                        setEmail(null);
-                        setWallet(null);
-                        window.location.href = '/';
-                      }}
+                      onClick={() => signOut({ closeAccountMenu: true })}
                     >
                       {t('workspace.header.signOut', 'Sign out')}
                       <span className="text-[11px] uppercase tracking-micro text-text-muted">⌘⇧Q</span>
@@ -452,19 +457,7 @@ export function MarketingNav() {
                       <button
                         type="button"
                         className="w-full rounded-2xl border border-hairline px-4 py-3 text-base font-semibold text-text-primary shadow-card"
-                        onClick={async () => {
-                          setMobileMenuOpen(false);
-                          setLogoutIntent();
-                          try {
-                            await supabase.auth.signOut();
-                          } catch {
-                            // ignore logout errors
-                          }
-                          await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' }).catch(() => undefined);
-                          setEmail(null);
-                          setWallet(null);
-                          window.location.href = '/';
-                        }}
+                        onClick={() => signOut({ closeMobileMenu: true })}
                       >
                   {t('workspace.header.signOut', 'Sign out')}
                 </button>

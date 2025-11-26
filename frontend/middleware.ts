@@ -7,6 +7,7 @@ import { defaultLocale, localePathnames, locales } from '@/i18n/locales';
 import { LOCALE_COOKIE } from '@/lib/i18n/constants';
 import localizedSlugConfig from '@/config/localized-slugs.json';
 import { createSupabaseMiddlewareClient } from '@/lib/supabase-ssr';
+import { LOGOUT_INTENT_COOKIE } from '@/lib/logout-intent-cookie';
 
 const LOGIN_PATH = '/login';
 const PROTECTED_PREFIXES = ['/app', '/dashboard', '/jobs', '/billing', '/settings', '/admin'];
@@ -142,17 +143,19 @@ export async function middleware(req: NextRequest) {
   const userAgent = req.headers.get('user-agent') ?? '';
   const isLighthouseAudit = /lighthouse/i.test(userAgent);
   const bypassLocaleRedirect = isLighthouseAudit || req.nextUrl.searchParams.get('nolocale') === '1';
+  const logoutIntentCookieValue = req.cookies.get(LOGOUT_INTENT_COOKIE)?.value;
+  const hasLogoutIntentCookie = logoutIntentCookieValue === '1';
   if (host.startsWith('www.')) {
     const url = new URL(req.url);
     url.host = host.replace(/^www\./, '');
-    return NextResponse.redirect(url, 308);
+    return finalizeResponse(NextResponse.redirect(url, 308), hasLogoutIntentCookie);
   }
 
   const pathname = req.nextUrl.pathname;
 
   if (containsLocalePlaceholder(pathname)) {
     const { localePrefix } = splitLocaleFromPath(pathname);
-    return rewriteToNotFound(req, localePrefix);
+    return finalizeResponse(rewriteToNotFound(req, localePrefix), hasLogoutIntentCookie);
   }
 
   const sanitizedLocalePath = dropDuplicateLocaleSegments(pathname);
@@ -160,7 +163,7 @@ export async function middleware(req: NextRequest) {
     const redirectUrl = req.nextUrl.clone();
     redirectUrl.pathname = sanitizedLocalePath;
     redirectUrl.search = req.nextUrl.search;
-    return NextResponse.redirect(redirectUrl, 301);
+    return finalizeResponse(NextResponse.redirect(redirectUrl, 301), hasLogoutIntentCookie);
   }
 
   const isMarketingPath = shouldHandleLocale(pathname);
@@ -168,7 +171,7 @@ export async function middleware(req: NextRequest) {
 
   const marketingResponse = isMarketingPath ? handleMarketingSlug(req, pathname) : null;
   if (marketingResponse) {
-    return marketingResponse;
+    return finalizeResponse(marketingResponse, hasLogoutIntentCookie);
   }
 
   let response: NextResponse;
@@ -215,11 +218,20 @@ export async function middleware(req: NextRequest) {
 
   const isProtectedRoute = PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
   if (!isProtectedRoute) {
-    return response;
+    return finalizeResponse(response, hasLogoutIntentCookie);
   }
 
   if (user?.id) {
-    return response;
+    return finalizeResponse(response, hasLogoutIntentCookie);
+  }
+
+  if (hasLogoutIntentCookie) {
+    const redirectUrl = req.nextUrl.clone();
+    redirectUrl.pathname = '/';
+    redirectUrl.search = '';
+    const logoutResponse = NextResponse.redirect(redirectUrl);
+    mergeResponseCookies(logoutResponse, response);
+    return finalizeResponse(logoutResponse, true);
   }
 
   const redirectUrl = req.nextUrl.clone();
@@ -234,12 +246,19 @@ export async function middleware(req: NextRequest) {
 
   const loginResponse = NextResponse.redirect(redirectUrl);
   mergeResponseCookies(loginResponse, response);
-  return loginResponse;
+  return finalizeResponse(loginResponse, false);
 }
 
 export const config = {
   matcher: ['/((?!_next|.*\\..*|api).*)'],
 };
+
+function finalizeResponse(res: NextResponse, clearLogoutIntent: boolean) {
+  if (clearLogoutIntent) {
+    res.cookies.set(LOGOUT_INTENT_COOKIE, '', { path: '/', maxAge: 0 });
+  }
+  return res;
+}
 
 function handleMarketingSlug(req: NextRequest, pathname: string): NextResponse | null {
   const { localePrefix, pathWithoutLocale } = splitLocaleFromPath(pathname);
