@@ -91,16 +91,30 @@ export function HeaderBar() {
     };
   }, []);
 
-  const handleSignOut = async () => {
+  const sendSignOutRequest = () => {
+    void supabase.auth.signOut().catch(() => undefined);
+    const payload = JSON.stringify({});
+    if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+      const blob = new Blob([payload], { type: 'application/json' });
+      navigator.sendBeacon('/api/auth/signout', blob);
+    } else {
+      void fetch('/api/auth/signout', {
+        method: 'POST',
+        credentials: 'include',
+        keepalive: true,
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+      }).catch(() => undefined);
+    }
+  };
+
+  const handleSignOut = () => {
     setAccountMenuOpen(false);
     setLogoutIntent();
     setEmail(null);
     setWallet(null);
     setMember(null);
-    await Promise.all([
-      supabase.auth.signOut().catch(() => undefined),
-      fetch('/api/auth/signout', { method: 'POST', credentials: 'include' }).catch(() => undefined),
-    ]);
+    sendSignOutRequest();
     window.location.href = '/';
   };
 
