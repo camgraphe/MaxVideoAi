@@ -7,7 +7,6 @@ export const dynamic = 'force-dynamic';
 
 function parseSort(raw: string | null): ExampleSort {
   switch (raw) {
-    case 'playlist':
     case 'date-asc':
     case 'duration-asc':
     case 'duration-desc':
