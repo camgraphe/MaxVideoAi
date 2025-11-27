@@ -54,6 +54,7 @@ export function Link({ children, className, rel, hrefLang, ...rest }: LocalizedL
     return (
       <NextLink
         {...(rest as unknown as NextLinkProps)}
+        locale={false}
         className={className}
         rel={rel}
         hrefLang={normalizedHrefLang}
