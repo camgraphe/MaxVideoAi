@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { defaultLocale, type AppLocale } from '@/i18n/locales';
 import modelRoster from '@/config/model-roster.json';
 import {
@@ -9,6 +10,7 @@ import {
   localizePathFromEnglish,
 } from '@/lib/i18n/paths';
 import { getContentEntries } from '@/lib/content/markdown';
+import { SITEMAP_MANUAL_TIMESTAMPS } from '@/config/sitemap-timestamps';
 
 export type SitemapEntry = {
   url: string;
@@ -33,6 +35,9 @@ const APP_ROOT = path.join(process.cwd(), 'app');
 const LOCALIZED_APP_ROOT = path.join(APP_ROOT, '(localized)', '[locale]');
 const PAGE_FILE_PATTERN = /^page\.(?:mdx|tsx?|ts|jsx?|js)$/i;
 const IGNORED_ROUTE_TEMPLATES = new Set(['/404', '/video/[videoId]', '/v/[videoId]']);
+const MANUAL_ROUTE_DATES = new Map<string, string>(Object.entries(SITEMAP_MANUAL_TIMESTAMPS.routes ?? {}));
+const MANUAL_SITEMAP_DATES = new Map<string, string>(Object.entries(SITEMAP_MANUAL_TIMESTAMPS.sitemaps ?? {}));
+const GIT_LASTMOD_CACHE = new Map<string, string | null>();
 
 type CanonicalPathEntry = {
   englishPath: string;
@@ -43,6 +48,7 @@ type CanonicalPathEntry = {
 type RouteTemplate = {
   template: string;
   isDynamic: boolean;
+  sourceFile?: string;
 };
 
 type DynamicRouteGenerator = () => Promise<CanonicalPathEntry[]>;
@@ -69,6 +75,11 @@ function buildAbsoluteUrl(pathname: string): string {
   return `${SITE_URL}${normalized}`;
 }
 
+function getSitemapFileName(pathname: string): string {
+  const trimmed = pathname.replace(/^\/+/, '');
+  return trimmed || 'sitemap.xml';
+}
+
 function hasModelLocale(slug: string, locale: AppLocale): boolean {
   if (locale === 'en') {
     return true;
@@ -93,7 +104,66 @@ function formatLastModified(value?: string): string | undefined {
   if (Number.isNaN(date.getTime())) {
     return undefined;
   }
-  return date.toISOString();
+  return date.toISOString().slice(0, 10);
+}
+
+function getManualRouteLastModified(englishPath: string): string | undefined {
+  return formatLastModified(MANUAL_ROUTE_DATES.get(englishPath));
+}
+
+function getManualSitemapLastModified(name: string): string | undefined {
+  return formatLastModified(MANUAL_SITEMAP_DATES.get(name));
+}
+
+function getGitLastModified(sourceFile?: string): string | undefined {
+  if (!sourceFile || !fs.existsSync(sourceFile)) {
+    return undefined;
+  }
+  const cached = GIT_LASTMOD_CACHE.get(sourceFile);
+  if (cached !== undefined) {
+    return cached ?? undefined;
+  }
+  const relative = path.relative(process.cwd(), sourceFile);
+  const result = spawnSync('git', ['log', '-1', '--pretty=format:%cs', '--', relative], {
+    encoding: 'utf8',
+  });
+  if (result.error || result.status !== 0) {
+    GIT_LASTMOD_CACHE.set(sourceFile, null);
+    return undefined;
+  }
+  const formatted = formatLastModified(result.stdout.trim());
+  GIT_LASTMOD_CACHE.set(sourceFile, formatted ?? null);
+  return formatted;
+}
+
+function getRouteLastModified(englishPath: string, sourceFile?: string): string | undefined {
+  return getManualRouteLastModified(englishPath) ?? getGitLastModified(sourceFile);
+}
+
+function getModelLastModified(slug: string): string | undefined {
+  if (!slug) {
+    return undefined;
+  }
+  const englishPath = `/models/${slug}`;
+  const manual = getManualRouteLastModified(englishPath);
+  if (manual) {
+    return manual;
+  }
+  const candidate = path.join(MODEL_CONTENT_ROOT, 'en', `${slug}.json`);
+  return getGitLastModified(candidate);
+}
+
+function getLatestEntryDate(entries: { lastModified?: string }[]): string | undefined {
+  let latest: string | undefined;
+  entries.forEach((entry) => {
+    if (!entry.lastModified) {
+      return;
+    }
+    if (!latest || entry.lastModified > latest) {
+      latest = entry.lastModified;
+    }
+  });
+  return latest;
 }
 
 export async function getLocaleSitemapEntries(locale: AppLocale): Promise<SitemapEntry[]> {
@@ -125,22 +195,51 @@ export async function buildLocaleSitemapXml(locale: AppLocale): Promise<string> 
   const entries = await getLocaleSitemapEntries(locale);
   const body = entries
     .map((entry) => {
-      const lastmod = entry.lastModified ? `<lastmod>${escapeXml(entry.lastModified)}</lastmod>` : '';
-      return `  <url>\n    <loc>${escapeXml(entry.url)}</loc>\n${lastmod ? `    ${lastmod}\n` : ''}  </url>`;
+      const lines = [`  <url>`, `    <loc>${escapeXml(entry.url)}</loc>`];
+      if (entry.lastModified) {
+        lines.push(`    <lastmod>${escapeXml(entry.lastModified)}</lastmod>`);
+      }
+      lines.push('  </url>');
+      return lines.join('\n');
     })
     .join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>`;
 }
 
-export function buildSitemapIndexXml(): string {
-  const sitemapUrls = LOCALES.map((locale) => buildAbsoluteUrl(LOCALE_SITEMAP_PATHS[locale])).concat(
-    `${SITE_URL}/sitemap-video.xml`,
-    `${SITE_URL}/sitemap-models.xml`
-  );
+export async function buildSitemapIndexXml(): Promise<string> {
+  const entries: Array<{ loc: string; lastModified?: string }> = [];
 
-  const body = sitemapUrls
-    .map((url) => `  <sitemap>\n    <loc>${escapeXml(url)}</loc>\n  </sitemap>`)
+  for (const locale of LOCALES) {
+    const localeEntries = await getLocaleSitemapEntries(locale);
+    const sitemapPath = LOCALE_SITEMAP_PATHS[locale];
+    const fileName = getSitemapFileName(sitemapPath);
+    const computedLastMod = getLatestEntryDate(localeEntries);
+    entries.push({
+      loc: buildAbsoluteUrl(sitemapPath),
+      lastModified: getManualSitemapLastModified(fileName) ?? computedLastMod,
+    });
+  }
+
+  const modelsPath = '/sitemap-models.xml';
+  const modelsFileName = getSitemapFileName(modelsPath);
+  const modelsLastMod = getManualSitemapLastModified(modelsFileName) ?? getModelsSitemapLastModified();
+  entries.push({
+    loc: buildAbsoluteUrl(modelsPath),
+    lastModified: modelsLastMod,
+  });
+
+  const videoPath = '/sitemap-video.xml';
+  entries.push({
+    loc: buildAbsoluteUrl(videoPath),
+    lastModified: getManualSitemapLastModified(getSitemapFileName(videoPath)),
+  });
+
+  const body = entries
+    .map(({ loc, lastModified }) => {
+      const lastmodLine = lastModified ? `    <lastmod>${escapeXml(lastModified)}</lastmod>\n` : '';
+      return `  <sitemap>\n    <loc>${escapeXml(loc)}</loc>\n${lastmodLine}  </sitemap>`;
+    })
     .join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</sitemapindex>`;
@@ -154,6 +253,7 @@ export async function buildModelsSitemapXml(): Promise<string> {
       return;
     }
     const englishPath = `/models/${model.modelSlug}`;
+    const lastModified = getModelLastModified(model.modelSlug);
     const localizedEntries = LOCALES.filter((locale) => hasModelLocale(model.modelSlug, locale)).map((locale) => ({
       locale,
       url: buildAbsoluteUrl(localizePathFromEnglish(locale, englishPath)),
@@ -173,13 +273,35 @@ export async function buildModelsSitemapXml(): Promise<string> {
           xDefaultHref ? [`<xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(xDefaultHref)}" />`] : []
         )
         .join('\n    ');
-      entries.push(`  <url>\n    <loc>${escapeXml(record.url)}</loc>\n    ${alternateLinks}\n  </url>`);
+      const lines = [`  <url>`, `    <loc>${escapeXml(record.url)}</loc>`];
+      if (lastModified) {
+        lines.push(`    <lastmod>${escapeXml(lastModified)}</lastmod>`);
+      }
+      lines.push(`    ${alternateLinks}`, '  </url>');
+      entries.push(lines.join('\n'));
     });
   });
 
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${entries.join(
     '\n'
   )}\n</urlset>`;
+}
+
+function getModelsSitemapLastModified(): string | undefined {
+  let latest: string | undefined;
+  modelRoster.forEach((model) => {
+    if (!model?.modelSlug) {
+      return;
+    }
+    const lastModified = getModelLastModified(model.modelSlug);
+    if (!lastModified) {
+      return;
+    }
+    if (!latest || lastModified > latest) {
+      latest = lastModified;
+    }
+  });
+  return latest;
 }
 
 export { LOCALES, LOCALE_SITEMAP_PATHS };
@@ -206,7 +328,8 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
       return;
     }
     seen.add(template.template);
-    entries.push({ englishPath: template.template });
+    const lastModified = getRouteLastModified(template.template, template.sourceFile);
+    entries.push({ englishPath: template.template, lastModified });
   });
 
   for (const template of Array.from(dynamicTemplates)) {
@@ -259,7 +382,7 @@ function discoverLocalizedRouteTemplates(): RouteTemplate[] {
       if (!normalized || IGNORED_ROUTE_TEMPLATES.has(normalized)) {
         return;
       }
-      map.set(normalized, { template: normalized, isDynamic: normalized.includes('[') });
+      map.set(normalized, { template: normalized, isDynamic: normalized.includes('['), sourceFile: fullPath });
     });
   }
 
@@ -327,6 +450,7 @@ const DYNAMIC_ROUTE_GENERATORS: Record<string, DynamicRouteGenerator> = {
       .filter((model) => Boolean(model?.modelSlug))
       .map((model) => ({
         englishPath: `/models/${model.modelSlug}`,
+        lastModified: getModelLastModified(model.modelSlug),
         locales: LOCALES.filter((locale) => hasModelLocale(model.modelSlug, locale)),
       })),
 };
