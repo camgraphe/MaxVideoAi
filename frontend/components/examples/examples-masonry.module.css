@@ -1,48 +1,41 @@
 .masonry {
-  column-width: 320px;
-  column-gap: 16px;
-  --examples-grid-row-gap: 16px;
-  margin-left: auto;
-  margin-right: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  align-items: start;
 }
 
 @media (max-width: 1279px) {
   .masonry {
-    column-width: 280px;
-    column-gap: 14px;
-    --examples-grid-row-gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
   }
 }
 
 @media (max-width: 1023px) {
   .masonry {
-    column-width: 240px;
-    column-gap: 12px;
-    --examples-grid-row-gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
   }
 }
 
 @media (max-width: 767px) {
   .masonry {
-    column-width: 220px;
-    column-gap: 10px;
-    --examples-grid-row-gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
   }
 }
 
 @media (max-width: 640px) {
   .masonry {
-    column-width: 100%;
-    column-gap: 8px;
-    --examples-grid-row-gap: 8px;
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
 }
 
 .item {
-  display: inline-flex;
+  display: flex;
   width: 100%;
-  break-inside: avoid;
-  margin-bottom: var(--examples-grid-row-gap);
   justify-content: center;
 }
 
