@@ -55,7 +55,9 @@ export function LanguageToggle() {
 
   const handleChange = (value: Locale) => {
     setPendingLocale(value);
-    document.cookie = `${LOCALE_COOKIE}=${value}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+    const maxAge = 60 * 60 * 24 * 365;
+    document.cookie = `${LOCALE_COOKIE}=${value}; path=/; max-age=${maxAge}; SameSite=Lax`;
+    document.cookie = `NEXT_LOCALE=${value}; path=/; max-age=${maxAge}; SameSite=Lax`;
     startTransition(() => {
       const slugParam = params?.slug;
       let slugValue = Array.isArray(slugParam) ? slugParam[0] : slugParam;
