@@ -1,28 +1,56 @@
 .masonry {
-  column-count: 1;
-  column-gap: 8px;
-  --examples-grid-row-gap: 8px;
+  column-width: 320px;
+  column-gap: 16px;
+  --examples-grid-row-gap: 16px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-@media (min-width: 640px) {
+@media (max-width: 1279px) {
   .masonry {
-    column-count: 2;
-    column-gap: 10px;
-    --examples-grid-row-gap: 10px;
+    column-width: 280px;
+    column-gap: 14px;
+    --examples-grid-row-gap: 14px;
   }
 }
 
-@media (min-width: 1024px) {
+@media (max-width: 1023px) {
   .masonry {
-    column-count: 3;
+    column-width: 240px;
     column-gap: 12px;
     --examples-grid-row-gap: 12px;
   }
 }
 
+@media (max-width: 767px) {
+  .masonry {
+    column-width: 220px;
+    column-gap: 10px;
+    --examples-grid-row-gap: 10px;
+  }
+}
+
+@media (max-width: 640px) {
+  .masonry {
+    column-width: 100%;
+    column-gap: 8px;
+    --examples-grid-row-gap: 8px;
+  }
+}
+
 .item {
-  display: inline-block;
+  display: inline-flex;
   width: 100%;
   break-inside: avoid;
   margin-bottom: var(--examples-grid-row-gap);
+  justify-content: center;
+}
+
+.item > * {
+  width: 100%;
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.item > *:hover {
+  transform: translateY(-4px);
 }

@@ -264,7 +264,7 @@ function ExampleCard({
                 playsInline
                 poster={posterSrc ?? undefined}
                 data-examples-card
-                className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
+                className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-[1.02]"
               >
                 <source src={video.videoUrl} type="video/mp4" />
               </video>
@@ -273,7 +273,7 @@ function ExampleCard({
                 src={posterSrc}
                 alt={`${video.engineLabel} AI video example – ${video.prompt}`}
                 fill
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover object-center"
                 priority={isLighthouse || isFirst}
                 fetchPriority={isLighthouse || isFirst ? 'high' : undefined}
                 loading={isLighthouse || isFirst ? 'eager' : 'lazy'}

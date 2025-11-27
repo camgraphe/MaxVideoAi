@@ -23,6 +23,7 @@ type VideoRow = {
   final_price_cents: number | null;
   currency: string | null;
   pricing_snapshot: PricingSnapshot | null;
+  order_index?: number | null;
 };
 
 export type GalleryVideo = {
@@ -44,6 +45,7 @@ export type GalleryVideo = {
   finalPriceCents?: number | null;
   currency?: string | null;
   pricingSnapshot?: PricingSnapshot;
+  playlistOrder?: number | null;
 };
 
 function formatPromptExcerpt(prompt: string, maxLength = 160): string {
@@ -72,6 +74,7 @@ function mapRow(row: VideoRow): GalleryVideo {
     finalPriceCents: row.final_price_cents ?? undefined,
     currency: row.currency ?? undefined,
     pricingSnapshot: row.pricing_snapshot ?? undefined,
+    playlistOrder: typeof row.order_index === 'number' ? row.order_index : null,
   };
 }
 
@@ -132,7 +135,10 @@ export async function listPlaylistVideos(slug: string, limit: number): Promise<G
         AND p.is_public = TRUE
         AND aj.visibility = 'public'
         AND COALESCE(aj.indexable, TRUE)
-      ORDER BY aj.created_at DESC, pi.order_index ASC
+      ORDER BY
+        CASE WHEN pi.order_index IS NULL THEN 1 ELSE 0 END,
+        pi.order_index DESC,
+        aj.created_at DESC
       LIMIT $2
     `,
     [slug, limit]
@@ -186,7 +192,7 @@ export async function listStarterPlaylistVideos(limit: number): Promise<GalleryV
   return listPlaylistVideos(getStarterPlaylistSlug(), limit);
 }
 
-export type ExampleSort = 'date-desc' | 'date-asc' | 'duration-desc' | 'duration-asc' | 'engine-asc';
+export type ExampleSort = 'playlist' | 'date-desc' | 'date-asc' | 'duration-desc' | 'duration-asc' | 'engine-asc';
 
 export type ListExamplesPageOptions = {
   sort: ExampleSort;
@@ -203,6 +209,9 @@ export type ListExamplesPageResult = {
 };
 
 function sortVideosByPreference(videos: GalleryVideo[], sort: ExampleSort): GalleryVideo[] {
+  if (sort === 'playlist') {
+    return [...videos];
+  }
   const copy = [...videos];
   switch (sort) {
     case 'date-asc':

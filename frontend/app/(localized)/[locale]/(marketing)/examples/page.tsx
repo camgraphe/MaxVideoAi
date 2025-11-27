@@ -75,7 +75,7 @@ const ENGINE_META = (() => {
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || SITE_BASE_URL;
 const GALLERY_SLUG_MAP = buildSlugMap('gallery');
-const DEFAULT_SORT: ExampleSort = 'date-desc';
+const DEFAULT_SORT: ExampleSort = 'playlist';
 const ALLOWED_QUERY_KEYS = new Set(['sort', 'engine', 'page']);
 const EXAMPLES_PAGE_SIZE = 60;
 const POSTER_PLACEHOLDERS: Record<string, string> = {
@@ -206,10 +206,17 @@ type ExamplesPageProps = {
 export const revalidate = 60;
 
 function getSort(value: string | undefined): ExampleSort {
-  if (value === 'date-asc' || value === 'duration-asc' || value === 'duration-desc' || value === 'engine-asc') {
+  if (
+    value === 'playlist' ||
+    value === 'date-asc' ||
+    value === 'date-desc' ||
+    value === 'duration-asc' ||
+    value === 'duration-desc' ||
+    value === 'engine-asc'
+  ) {
     return value;
   }
-  return 'date-desc';
+  return DEFAULT_SORT;
 }
 
 function formatPromptExcerpt(prompt: string, maxWords = 18): string {
@@ -410,21 +417,8 @@ const selectedOption =
       : null;
   const selectedEngine = selectedOption?.id ?? null;
 
-function sortExamples(examples: typeof allVideos) {
-  return [...examples].sort((a, b) => {
-    const aCreated = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-    const bCreated = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-    if (aCreated !== bCreated) {
-      return bCreated - aCreated; // newest first
-    }
-    return String(a.id ?? '').localeCompare(String(b.id ?? ''));
-  });
-}
-
-const sortedVideos = sortExamples(allVideos);
-
 const videos = selectedEngine
-  ? sortedVideos.filter((video) => {
+  ? allVideos.filter((video) => {
       const canonicalEngineId = resolveEngineLinkId(video.engineId);
       if (!canonicalEngineId) return false;
       const engineMeta = ENGINE_META.get(canonicalEngineId.toLowerCase()) ?? null;
@@ -432,7 +426,7 @@ const videos = selectedEngine
       if (!descriptor) return false;
       return descriptor.id.toLowerCase() === selectedEngine.toLowerCase();
     })
-  : sortedVideos;
+  : allVideos;
 const videoLinkEntries = videos.slice(0, 120).map((video) => {
   const excerpt = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render', 12);
   const suffix = video.id.replace(/^[^a-z0-9]+/gi, '').slice(-6).toUpperCase();
