@@ -1,46 +1,34 @@
 .masonry {
-  --examples-grid-row-gap: 12px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 12px;
-  grid-auto-rows: 10px;
+  column-count: 3;
+  column-gap: 0;
+  margin: 0 auto;
+  width: 100%;
 }
 
 @media (max-width: 1279px) {
   .masonry {
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  }
-}
-
-@media (max-width: 1023px) {
-  .masonry {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    column-count: 2;
   }
 }
 
 @media (max-width: 767px) {
   .masonry {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  }
-}
-
-@media (max-width: 640px) {
-  .masonry {
-    grid-template-columns: 1fr;
-    gap: 8px;
-    --examples-grid-row-gap: 8px;
+    column-count: 1;
   }
 }
 
 .item {
-  display: block;
+  display: inline-block;
+  width: 100%;
+  break-inside: avoid;
+  padding-bottom: 12px;
 }
 
-.card {
+.item > * {
   width: 100%;
   transition: transform 200ms ease, box-shadow 200ms ease;
 }
 
-.card:hover {
+.item > *:hover {
   transform: translateY(-4px);
 }

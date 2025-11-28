@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import clsx from 'clsx';
@@ -32,8 +32,6 @@ const PORTRAIT_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 60vw, 40vw
 const DEFAULT_LANDSCAPE_RATIO = 16 / 9;
 const DEFAULT_LANDSCAPE_HEIGHT_PERCENT = 100 / DEFAULT_LANDSCAPE_RATIO;
 const TALL_CARD_MEDIA_PERCENT = Number((DEFAULT_LANDSCAPE_HEIGHT_PERCENT * 2).toFixed(3));
-const MASONRY_ROW_UNIT = 10;
-const MASONRY_GAP = 12;
 const LH_PLACEHOLDER =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
@@ -107,20 +105,36 @@ export default function ExamplesGalleryGridClient({
 
   return (
     <div className="space-y-4 p-4 sm:p-6">
-      <div className={masonryStyles.masonry}>
-        {visibleVideos.map((video, index) => (
-          <MasonryItem key={video.id}>
+      {isMobile ? (
+        <div className="flex flex-col gap-3">
+          {visibleVideos.map((video, index) => (
             <ExampleCard
+              key={video.id}
               video={video}
               isFirst={index === 0}
               isLighthouse={isLighthouse}
               forceExclusivePlay={false}
-              enableTallCardLayout={shouldUseTallCardLayout}
-              enableInlineVideo={isMobile ? index === 0 : true}
+              enableTallCardLayout={false}
+              enableInlineVideo={index === 0}
             />
-          </MasonryItem>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className={masonryStyles.masonry}>
+          {visibleVideos.map((video, index) => (
+            <div key={video.id} className={masonryStyles.item}>
+              <ExampleCard
+                video={video}
+                isFirst={index === 0}
+                isLighthouse={isLighthouse}
+                forceExclusivePlay={false}
+                enableTallCardLayout={shouldUseTallCardLayout}
+                enableInlineVideo
+              />
+            </div>
+          ))}
+        </div>
+      )}
       {pendingVideos.length && !isLighthouse ? (
         <div className="flex justify-center">
           <button
@@ -313,33 +327,6 @@ function dedupe(videos: ExampleGalleryVideo[]) {
   return out;
 }
 
-function MasonryItem({ children }: { children: ReactNode }) {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const [span, setSpan] = useState(1);
-
-  useLayoutEffect(() => {
-    if (typeof ResizeObserver === 'undefined') {
-      return;
-    }
-    const node = ref.current;
-    if (!node) return;
-
-    const updateSpan = () => {
-      setSpan(computeGridRowSpan(node));
-    };
-    updateSpan();
-    const observer = new ResizeObserver(updateSpan);
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div ref={ref} className={masonryStyles.item} style={{ gridRowEnd: `span ${span}` }}>
-      <div className={masonryStyles.card}>{children}</div>
-    </div>
-  );
-}
-
 function parseAspectRatio(aspect: string) {
   const [w, h] = aspect.split(':').map(Number);
   if (!Number.isFinite(w) || !Number.isFinite(h) || h === 0) return 16 / 9;
@@ -357,16 +344,4 @@ function detectLighthouse() {
     /* ignore */
   }
   return false;
-}
-
-function computeGridRowSpan(node: HTMLDivElement): number {
-  if (typeof window === 'undefined') {
-    return 1;
-  }
-  const parent = node.parentElement;
-  const styles = parent ? window.getComputedStyle(parent) : window.getComputedStyle(node);
-  const rowGap = Number.parseFloat(styles.getPropertyValue('row-gap')) || MASONRY_GAP;
-  const autoRowHeight = Number.parseFloat(styles.getPropertyValue('grid-auto-rows')) || MASONRY_ROW_UNIT;
-  const height = node.getBoundingClientRect().height;
-  return Math.max(1, Math.ceil((height + rowGap) / (autoRowHeight + rowGap)));
 }
