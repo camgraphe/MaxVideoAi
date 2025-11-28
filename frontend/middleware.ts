@@ -9,6 +9,7 @@ import localizedSlugConfig from '@/config/localized-slugs.json';
 import { createSupabaseMiddlewareClient } from '@/lib/supabase-ssr';
 import { LOGOUT_INTENT_COOKIE } from '@/lib/logout-intent-cookie';
 
+const NEXT_LOCALE_COOKIE = 'NEXT_LOCALE';
 const LOGIN_PATH = '/login';
 const PROTECTED_PREFIXES = ['/app', '/dashboard', '/jobs', '/billing', '/settings', '/admin'];
 const NON_LOCALIZED_PREFIXES = [
@@ -93,6 +94,13 @@ const handleI18nRouting = createMiddleware({
 const LOCALIZED_PREFIXES = locales
   .map((locale) => localePathnames[locale])
   .filter((prefix): prefix is string => Boolean(prefix && prefix.length));
+const PREFIX_TO_LOCALE = new Map<string, (typeof locales)[number]>();
+locales.forEach((locale) => {
+  const prefix = localePathnames[locale];
+  if (prefix) {
+    PREFIX_TO_LOCALE.set(prefix.toLowerCase(), locale);
+  }
+});
 const LOCALIZED_PREFIX_SET = new Set(LOCALIZED_PREFIXES.map((value) => value.toLowerCase()));
 const LOCALE_PREFIX_REGEX = LOCALIZED_PREFIXES.length
   ? new RegExp(`^/(${LOCALIZED_PREFIXES.join('|')})(/|$)`)
@@ -138,6 +146,31 @@ function extractLocale(pathValue: string): string | null {
   return null;
 }
 
+function extractLocaleFromPathname(pathname: string): string | null {
+  if (!LOCALE_PREFIX_REGEX) return null;
+  const match = LOCALE_PREFIX_REGEX.exec(pathname);
+  if (!match) {
+    return null;
+  }
+  const prefix = match[1]?.toLowerCase();
+  if (!prefix) return null;
+  return PREFIX_TO_LOCALE.get(prefix) ?? null;
+}
+
+function setLocaleCookies(response: NextResponse, locale: string) {
+  const maxAge = 60 * 60 * 24 * 365;
+  response.cookies.set(LOCALE_COOKIE, locale, {
+    path: '/',
+    maxAge,
+    sameSite: 'lax',
+  });
+  response.cookies.set(NEXT_LOCALE_COOKIE, locale, {
+    path: '/',
+    maxAge,
+    sameSite: 'lax',
+  });
+}
+
 export async function middleware(req: NextRequest) {
   const host = req.headers.get('host') ?? '';
   const userAgent = req.headers.get('user-agent') ?? '';
@@ -152,6 +185,7 @@ export async function middleware(req: NextRequest) {
   }
 
   const pathname = req.nextUrl.pathname;
+  const localeFromPath = extractLocaleFromPathname(pathname);
 
   if (containsLocalePlaceholder(pathname)) {
     const { localePrefix } = splitLocaleFromPath(pathname);
@@ -199,15 +233,11 @@ export async function middleware(req: NextRequest) {
 
   if (isMarketingPath) {
     const resolvedLocale =
+      localeFromPath ??
       extractLocale(response.headers.get('location') ?? '') ??
-      extractLocale(req.nextUrl.toString()) ??
-      (hasLocalePrefix(pathname) ? pathname.split('/')[1] : null);
+      extractLocale(req.nextUrl.toString());
     if (resolvedLocale) {
-      response.cookies.set(LOCALE_COOKIE, resolvedLocale, {
-        path: '/',
-        maxAge: 60 * 60 * 24 * 365,
-        sameSite: 'lax',
-      });
+      setLocaleCookies(response, resolvedLocale);
     }
   }
 
