@@ -105,36 +105,20 @@ export default function ExamplesGalleryGridClient({
 
   return (
     <div className="space-y-4 p-4 sm:p-6">
-      {isMobile ? (
-        <div className="flex flex-col gap-3">
-          {visibleVideos.map((video, index) => (
+      <div className={masonryStyles.masonry}>
+        {visibleVideos.map((video, index) => (
+          <div key={video.id} className={masonryStyles.item}>
             <ExampleCard
-              key={video.id}
               video={video}
               isFirst={index === 0}
               isLighthouse={isLighthouse}
               forceExclusivePlay={false}
-              enableTallCardLayout={false}
-              enableInlineVideo={index === 0}
+              enableTallCardLayout={shouldUseTallCardLayout}
+              enableInlineVideo={isMobile ? index === 0 : true}
             />
-          ))}
-        </div>
-      ) : (
-        <div className={masonryStyles.masonry}>
-          {visibleVideos.map((video, index) => (
-            <div key={video.id} className={masonryStyles.item}>
-              <ExampleCard
-                video={video}
-                isFirst={index === 0}
-                isLighthouse={isLighthouse}
-                forceExclusivePlay={false}
-                enableTallCardLayout={shouldUseTallCardLayout}
-                enableInlineVideo
-              />
-            </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
       {pendingVideos.length && !isLighthouse ? (
         <div className="flex justify-center">
           <button
