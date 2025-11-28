@@ -126,8 +126,10 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
             </thead>
             <tbody>
               {growthRows.map((row) => (
-                <tr key={row.date} className="border-t border-white/40 text-text-secondary">
-                  <td className="py-2">{formatDay(row.date)}</td>
+                <tr key={`${row.kind ?? 'day'}-${row.date}`} className="border-t border-white/40 text-text-secondary">
+                  <td className="py-2">
+                    {row.kind === 'month' ? `${formatMonth(row.date)} total` : formatDay(row.date)}
+                  </td>
                   <td className="py-2 font-semibold text-text-primary">{formatNumber(row.signups)}</td>
                   <td className="py-2 font-semibold text-text-primary">{formatNumber(row.active)}</td>
                 </tr>
@@ -455,6 +457,7 @@ type DailyAmountRow = {
   date: string;
   amountUsd: number;
   count: number;
+  kind?: 'day' | 'month';
 };
 
 function DailyAmountTable({ rows, countLabel }: { rows: DailyAmountRow[]; countLabel: string }) {
@@ -470,8 +473,10 @@ function DailyAmountTable({ rows, countLabel }: { rows: DailyAmountRow[]; countL
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={row.date} className="border-t border-white/40 text-text-secondary">
-              <td className="py-2">{formatDay(row.date)}</td>
+            <tr key={`${row.kind ?? 'day'}-${row.date}`} className="border-t border-white/40 text-text-secondary">
+              <td className="py-2">
+                {row.kind === 'month' ? `${formatMonth(row.date)} total` : formatDay(row.date)}
+              </td>
               <td className="py-2 font-semibold text-text-primary">{formatCurrency(row.amountUsd)}</td>
               <td className="py-2 font-semibold text-text-primary">{formatNumber(row.count)}</td>
             </tr>
@@ -549,23 +554,85 @@ function buildQuickInsights(metrics: AdminMetrics): string[] {
   return insights;
 }
 
-function buildGrowthRows(metrics: AdminMetrics) {
+type GrowthRow = {
+  date: string;
+  signups: number;
+  active: number;
+  kind?: 'day' | 'month';
+};
+
+function buildGrowthRows(metrics: AdminMetrics): GrowthRow[] {
   const activeMap = new Map(
     metrics.timeseries.activeAccountsDaily.map((point) => [point.date.slice(0, 10), point.value])
   );
-  return metrics.timeseries.signupsDaily.slice(-10).map((point) => ({
-    date: point.date,
-    signups: point.value,
-    active: activeMap.get(point.date.slice(0, 10)) ?? 0,
-  }));
+  const dailyRows = metrics.timeseries.signupsDaily
+    .slice(-10)
+    .map((point) => ({
+      date: point.date,
+      signups: point.value,
+      active: activeMap.get(point.date.slice(0, 10)) ?? 0,
+      kind: 'day' as const,
+    }))
+    .reverse();
+
+  const monthlyTotals = new Map<string, { signups: number; active: number }>();
+  metrics.timeseries.signupsDaily.forEach((point) => {
+    const key = point.date.slice(0, 7);
+    const bucket = monthlyTotals.get(key) ?? { signups: 0, active: 0 };
+    bucket.signups += point.value;
+    monthlyTotals.set(key, bucket);
+  });
+  metrics.timeseries.activeAccountsDaily.forEach((point) => {
+    const key = point.date.slice(0, 7);
+    const bucket = monthlyTotals.get(key) ?? { signups: 0, active: 0 };
+    bucket.active += point.value;
+    monthlyTotals.set(key, bucket);
+  });
+
+  const monthlyRows = Array.from(monthlyTotals.entries())
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .slice(0, 2)
+    .map(([month, totals]) => ({
+      date: `${month}-01`,
+      signups: totals.signups,
+      active: totals.active,
+      kind: 'month' as const,
+    }));
+
+  return [...dailyRows, ...monthlyRows];
 }
 
 function buildAmountRows(points: AdminMetrics['timeseries']['topupsDaily']): DailyAmountRow[] {
-  return points.slice(-10).map((point) => ({
-    date: point.date,
-    amountUsd: point.amountCents / 100,
-    count: point.count,
-  }));
+  const dailyRows = points
+    .slice(-10)
+    .map((point) => ({
+      date: point.date,
+      amountUsd: point.amountCents / 100,
+      count: point.count,
+      kind: 'day' as const,
+    }))
+    .reverse();
+
+  const monthlyTotals = new Map<string, { amountUsd: number; count: number }>();
+  points.forEach((point) => {
+    const key = point.date.slice(0, 7);
+    const bucket = monthlyTotals.get(key) ?? { amountUsd: 0, count: 0 };
+    bucket.amountUsd += point.amountCents / 100;
+    bucket.count += point.count;
+    monthlyTotals.set(key, bucket);
+  });
+
+  const monthlyRows = Array.from(monthlyTotals.entries())
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .slice(0, 2)
+    .map(([month, totals]) => ({
+      date: `${month}-01`,
+      amountUsd: totals.amountUsd,
+      count: totals.count,
+      kind: 'month' as const,
+    }));
+
+  return [...dailyRows, ...monthlyRows];
 }
 
 function buildMonthlyRows(metrics: AdminMetrics) {
