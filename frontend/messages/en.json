@@ -579,7 +579,8 @@
   "models": {
     "hero": {
       "title": "One workspace, every video engine that matters.",
-      "subtitle": "Fal.ai drops new endpoints weekly — we pull them in automatically so your pricing and model catalog stay fresh across Sora, Veo, Pika, MiniMax, Kling, Wan, and Nano Banana."
+      "subtitle": "Fal.ai drops new endpoints weekly — we pull them in automatically so your pricing and model catalog stay fresh across Sora, Veo, Pika, MiniMax, Kling, Wan, and Nano Banana.",
+      "context": "Browse every AI video engine available in MaxVideoAI, including Sora 2, Veo 3.1, Pika 2.2, Kling, Luma, Wan and MiniMax Hailuo. Each model page includes real examples, specs, pricing and prompt tips so you can choose the right engine for your shot."
     },
     "intro": {
       "paragraphs": [
@@ -674,8 +675,8 @@
         "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "Standard"
       },
-      "title": "AI video engines — Compare Sora, Veo, Pika | MaxVideoAI",
-      "description": "Choose the best engine for every shot. Compare capabilities, costs and live examples in a single workspace."
+      "title": "AI Video Models – Compare Sora, Veo 3.1, Pika, Kling | MaxVideoAI",
+      "description": "Compare today’s top AI video engines in one place: Sora 2, Veo 3.1, Pika 2.2, Kling, Luma, Wan and more. Specs, pricing, examples and prompt tips for each model."
     },
     "note": "",
     "detail": {
@@ -791,7 +792,8 @@
     "engineFilterAllLabel": "All",
     "hero": {
       "title": "Engine showcases.",
-      "subtitle": "Hover to loop, click to expand. Each clip previews the motion and style you can route in MaxVideo AI."
+      "subtitle": "Hover to loop, click to expand. Each clip previews the motion and style you can route in MaxVideo AI.",
+      "context": "Explore hundreds of real AI video renders from Sora 2, Veo 3.1, Pika 2.2, Kling, Wan and other engines, and compare motion, framing, lighting and storytelling styles in one gallery."
     },
     "items": [
       {
@@ -1223,8 +1225,8 @@
   },
   "gallery": {
     "meta": {
-      "title": "Gallery — AI video prompts and renders | MaxVideoAI",
-      "description": "Explore real AI renders with prompts and settings. Get inspired and recreate results in a few clicks."
+      "title": "AI Video Examples – Sora, Veo, Pika, Kling | MaxVideoAI",
+      "description": "Explore real AI video examples generated with Sora 2, Veo 3.1, Pika 2.2, Kling and more. Cinematic shots, product ads, social loops and 4–12s renders with prompts."
     }
   },
   "workspace": {

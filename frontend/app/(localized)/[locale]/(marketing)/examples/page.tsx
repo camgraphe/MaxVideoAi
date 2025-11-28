@@ -303,6 +303,8 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   const paginationNextLabel = paginationContent.next ?? 'Next';
   const paginationPageLabel = paginationContent.page ?? 'Page';
   const loadMoreLabel = paginationContent.loadMore ?? 'Load more examples';
+  const heroContext =
+    typeof content.hero?.context === 'string' && content.hero.context.trim().length ? content.hero.context : null;
   const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
   const sort = getSort(sortParam);
   const engineParam = Array.isArray(searchParams.engine) ? searchParams.engine[0] : searchParams.engine;
@@ -540,6 +542,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
             and match engines, styles and formats on a simple pay‑as‑you‑go model, so professional creators and teams can
             test ideas, compare quality and ship production‑ready videos without committing to a single vendor.
           </p>
+          {heroContext ? <p className="text-sm leading-relaxed text-text-secondary/90">{heroContext}</p> : null}
         </header>
 
       <section className="mt-8 flex flex-wrap items-center gap-3 text-xs text-text-secondary">

@@ -126,6 +126,8 @@ export default async function ModelsPage() {
   const { dictionary } = await resolveDictionary();
   const content = dictionary.models;
   const heroTitle = content.hero?.title ?? 'AI Video Engines – Sora, Veo, Pika & More';
+  const heroContext =
+    typeof content.hero?.context === 'string' && content.hero.context.trim().length ? content.hero.context : null;
   const introContent = content.intro ?? null;
   const introParagraphs =
     Array.isArray(introContent?.paragraphs) && introContent.paragraphs.length
@@ -226,6 +228,7 @@ return (
           Compare all AI video models available in MaxVideoAI
         </h2>
         <p className="max-w-2xl text-base text-text-secondary">{content.hero.subtitle}</p>
+        {heroContext ? <p className="max-w-2xl text-sm text-text-secondary">{heroContext}</p> : null}
       </header>
       <section className="mt-8 space-y-5 rounded-3xl border border-hairline bg-white/90 p-6 text-sm text-text-secondary shadow-card sm:p-8">
         {introParagraphs.map((paragraph) => (
