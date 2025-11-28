@@ -91,6 +91,7 @@ const handleI18nRouting = createMiddleware({
   alternateLinks: true,
 });
 
+const LOCALE_SET = new Set(locales);
 const LOCALIZED_PREFIXES = locales
   .map((locale) => localePathnames[locale])
   .filter((prefix): prefix is string => Boolean(prefix && prefix.length));
@@ -171,6 +172,18 @@ function setLocaleCookies(response: NextResponse, locale: string) {
   });
 }
 
+function getPreferredLocale(req: NextRequest): (typeof locales)[number] {
+  const cookieLocale = req.cookies.get(LOCALE_COOKIE)?.value;
+  if (cookieLocale && LOCALE_SET.has(cookieLocale as (typeof locales)[number])) {
+    return cookieLocale as (typeof locales)[number];
+  }
+  const nextLocale = req.cookies.get(NEXT_LOCALE_COOKIE)?.value;
+  if (nextLocale && LOCALE_SET.has(nextLocale as (typeof locales)[number])) {
+    return nextLocale as (typeof locales)[number];
+  }
+  return defaultLocale;
+}
+
 export async function middleware(req: NextRequest) {
   const host = req.headers.get('host') ?? '';
   const userAgent = req.headers.get('user-agent') ?? '';
@@ -206,6 +219,21 @@ export async function middleware(req: NextRequest) {
   const marketingResponse = isMarketingPath ? handleMarketingSlug(req, pathname) : null;
   if (marketingResponse) {
     return finalizeResponse(marketingResponse, hasLogoutIntentCookie);
+  }
+
+  if (isMarketingPath && !localeFromPath && !isBotRequest && !bypassLocaleRedirect) {
+    const preferredLocale = getPreferredLocale(req);
+    const prefix = localePathnames[preferredLocale];
+    if (typeof prefix === 'string') {
+      const suffix = pathname === '/' ? '' : pathname;
+      const targetPath = prefix.length ? `/${prefix}${suffix}` : suffix || '/';
+      const normalizedTarget = targetPath.replace(/\/{2,}/g, '/') || '/';
+      if (normalizedTarget !== pathname) {
+        const redirectUrl = req.nextUrl.clone();
+        redirectUrl.pathname = normalizedTarget;
+        return finalizeResponse(NextResponse.redirect(redirectUrl, 307), hasLogoutIntentCookie);
+      }
+    }
   }
 
   let response: NextResponse;
