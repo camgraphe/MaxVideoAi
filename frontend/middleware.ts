@@ -198,6 +198,10 @@ export async function middleware(req: NextRequest) {
   }
 
   const pathname = req.nextUrl.pathname;
+  const detectedLocale =
+    req.nextUrl.locale && LOCALE_SET.has(req.nextUrl.locale as (typeof locales)[number])
+      ? (req.nextUrl.locale as (typeof locales)[number])
+      : null;
   const localeFromPath = extractLocaleFromPathname(pathname);
 
   if (containsLocalePlaceholder(pathname)) {
@@ -222,7 +226,7 @@ export async function middleware(req: NextRequest) {
   }
 
   if (isMarketingPath && !localeFromPath && !isBotRequest && !bypassLocaleRedirect) {
-    const preferredLocale = getPreferredLocale(req);
+    const preferredLocale = detectedLocale ?? getPreferredLocale(req);
     const prefix = localePathnames[preferredLocale];
     if (typeof prefix === 'string') {
       const suffix = pathname === '/' ? '' : pathname;
@@ -262,6 +266,7 @@ export async function middleware(req: NextRequest) {
   if (isMarketingPath) {
     const resolvedLocale =
       localeFromPath ??
+      detectedLocale ??
       extractLocale(response.headers.get('location') ?? '') ??
       extractLocale(req.nextUrl.toString());
     if (resolvedLocale) {
