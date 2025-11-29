@@ -307,8 +307,6 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     'Browse AI video examples generated with Sora 2, Veo 3.1, Pika 2.2, Kling, Wan and more. Each clip shows the prompt, format and duration so you can compare how different engines handle camera moves, product shots, selfies and cinematic storytelling in one gallery.';
   const heroBody =
     typeof content.hero?.body === 'string' && content.hero.body.trim().length ? content.hero.body : HERO_BODY_FALLBACK;
-  const heroContext =
-    typeof content.hero?.context === 'string' && content.hero.context.trim().length ? content.hero.context : null;
   const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
   const sort = getSort(sortParam);
   const engineParam = Array.isArray(searchParams.engine) ? searchParams.engine[0] : searchParams.engine;
@@ -540,7 +538,6 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
           <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
           <p className="text-base text-text-secondary">{content.hero.subtitle}</p>
           <p className="text-sm leading-relaxed text-text-secondary/90">{heroBody}</p>
-          {heroContext ? <p className="text-sm leading-relaxed text-text-secondary/90">{heroContext}</p> : null}
         </header>
 
       <section className="mt-8 flex flex-wrap items-center gap-3 text-xs text-text-secondary">
