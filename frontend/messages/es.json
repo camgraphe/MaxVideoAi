@@ -664,6 +664,7 @@
     "hero": {
       "title": "Un solo workspace para todos los motores que importan.",
       "subtitle": "Compara todos los modelos de vídeo IA disponibles en MaxVideoAI.",
+      "body": "MaxVideoAI conecta nuevos endpoints de vídeo IA cada semana para que tu catálogo de modelos —Sora 2, Veo 3.1, Pika 2.2, Kling, Luma, Wan, MiniMax Hailuo, etc.— esté siempre actualizado. Cada página de motor incluye ejemplos reales, especificaciones, precios y consejos de prompt para ayudarte a elegir el motor adecuado para cada plano."
     },
     "intro": {
       "paragraphs": [
