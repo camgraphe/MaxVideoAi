@@ -804,7 +804,7 @@
     "hero": {
       "title": "Démonstrations des moteurs.",
       "subtitle": "Survolez pour boucler, cliquez pour agrandir. Chaque clip prévisualise le mouvement et le style que vous pouvez utiliser dans MaxVideo AI.",
-      "body": "Parcourez une galerie d’exemples vidéo IA générés avec Sora 2, Veo 3.1, Pika 2.2, Kling, Wan et d’autres moteurs. Chaque clip affiche le prompt, le format et la durée pour comparer en un coup d’œil la façon dont chaque modèle gère mouvement, cadrage et narration."
+      "body": "Parcourez des exemples vidéo IA générés avec Sora 2, Veo 3.1, Pika 2.2, Kling, Wan et d’autres moteurs. Chaque clip affiche le prompt, le format et la durée pour comparer en un coup d’œil la façon dont chaque modèle gère mouvement, cadrage et narration."
     },
     "items": [
       {
