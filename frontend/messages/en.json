@@ -580,7 +580,7 @@
     "hero": {
       "title": "One workspace, every video engine that matters.",
       "subtitle": "Fal.ai drops new endpoints weekly — we pull them in automatically so your pricing and model catalog stay fresh across Sora, Veo, Pika, MiniMax, Kling, Wan, and Nano Banana.",
-      "context": "Browse every AI video engine available in MaxVideoAI, including Sora 2, Veo 3.1, Pika 2.2, Kling, Luma, Wan and MiniMax Hailuo. Each model page includes real examples, specs, pricing and prompt tips so you can choose the right engine for your shot."
+      "body": "Browse every AI video engine available in MaxVideoAI, including Sora 2, Veo 3.1, Pika 2.2, Kling, Luma, Wan and MiniMax Hailuo. Each model page includes real examples, specs, pricing and prompt tips so you can choose the right engine for your shot."
     },
     "intro": {
       "paragraphs": [
@@ -793,7 +793,7 @@
     "hero": {
       "title": "Engine showcases.",
       "subtitle": "Hover to loop, click to expand. Each clip previews the motion and style you can route in MaxVideo AI.",
-      "context": "Explore hundreds of real AI video renders from Sora 2, Veo 3.1, Pika 2.2, Kling, Wan and other engines, and compare motion, framing, lighting and storytelling styles in one gallery."
+      "body": "Browse AI video examples generated with Sora 2, Veo 3.1, Pika 2.2, Kling, Wan and more. Each clip shows the prompt, format and duration so you can compare how different engines handle camera moves, product shots, selfies and cinematic storytelling in one gallery."
     },
     "items": [
       {

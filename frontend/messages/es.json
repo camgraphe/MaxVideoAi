@@ -664,7 +664,7 @@
     "hero": {
       "title": "Un solo workspace para todos los motores que importan.",
       "subtitle": "Fal.ai publica endpoints nuevos cada semana; los integramos al instante para que tu precio y catálogo sigan frescos en Sora, Veo, Pika, MiniMax, Kling, Wan y Nano Banana.",
-      "context": "Explora cada motor de video IA disponible en MaxVideoAI, incluidos Sora 2, Veo 3.1, Pika 2.2, Kling, Luma, Wan y MiniMax Hailuo. Cada página incluye ejemplos reales, especificaciones, precios y consejos de prompt para elegir el motor adecuado para cada plano."
+      "body": "Fal.ai publica endpoints nuevos cada semana y los integramos en MaxVideoAI en cuanto están listos, para que tu catálogo de modelos de vídeo IA —Sora 2, Veo 3.1, Pika 2.2, Kling, Luma, Wan, MiniMax Hailuo, etc.— esté siempre actualizado. Cada página de motor incluye ejemplos reales, especificaciones, precios y consejos de prompt para ayudarte a elegir el motor adecuado para cada plano."
     },
     "intro": {
       "paragraphs": [
@@ -797,7 +797,7 @@
     "hero": {
       "title": "Muestras de motores.",
       "subtitle": "Pasa el cursor para reproducir en bucle, haz clic para ampliar. Cada clip previsualiza el movimiento y el estilo que puedes dirigir en MaxVideoAI.",
-      "context": "Explora cientos de renders reales de video IA de Sora 2, Veo 3.1, Pika 2.2, Kling, Wan y otros motores, y compara movimiento, encuadre, iluminación y narrativa en una sola galería."
+      "body": "Explora ejemplos de vídeo IA generados con Sora 2, Veo 3.1, Pika 2.2, Kling, Wan y otros motores. Cada clip muestra el prompt, el formato y la duración para comparar rápidamente cómo cada modelo maneja el movimiento, el encuadre y la narrativa."
     },
     "items": [
       {

@@ -303,6 +303,10 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   const paginationNextLabel = paginationContent.next ?? 'Next';
   const paginationPageLabel = paginationContent.page ?? 'Page';
   const loadMoreLabel = paginationContent.loadMore ?? 'Load more examples';
+  const HERO_BODY_FALLBACK =
+    'Browse AI video examples generated with Sora 2, Veo 3.1, Pika 2.2, Kling, Wan and more. Each clip shows the prompt, format and duration so you can compare how different engines handle camera moves, product shots, selfies and cinematic storytelling in one gallery.';
+  const heroBody =
+    typeof content.hero?.body === 'string' && content.hero.body.trim().length ? content.hero.body : HERO_BODY_FALLBACK;
   const heroContext =
     typeof content.hero?.context === 'string' && content.hero.context.trim().length ? content.hero.context : null;
   const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
@@ -535,13 +539,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
         <header className="max-w-3xl space-y-4">
           <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
           <p className="text-base text-text-secondary">{content.hero.subtitle}</p>
-          <p className="text-sm leading-relaxed text-text-secondary/90">
-            Browse a curated gallery of AI video examples generated with engines like Sora 2, Veo, Pika, Kling, Wan and
-            more. Each clip shows the prompt, aspect ratio and duration so you can quickly understand how different
-            models handle camera moves, product shots, selfie framing or cinematic storytelling. MaxVideoAI lets you mix
-            and match engines, styles and formats on a simple pay‑as‑you‑go model, so professional creators and teams can
-            test ideas, compare quality and ship production‑ready videos without committing to a single vendor.
-          </p>
+          <p className="text-sm leading-relaxed text-text-secondary/90">{heroBody}</p>
           {heroContext ? <p className="text-sm leading-relaxed text-text-secondary/90">{heroContext}</p> : null}
         </header>
 
