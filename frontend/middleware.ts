@@ -29,6 +29,7 @@ const NON_LOCALIZED_PREFIXES = [
   '/app',
   '/_next',
   '/_vercel',
+  '/apple-app-site-association',
 ];
 const PLACEHOLDER_SEGMENTS = new Set(['[locale]', '[lang]', '[language]']);
 const LOCALIZED_SEGMENT_VALUES = Array.from(
