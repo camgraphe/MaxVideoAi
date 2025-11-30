@@ -4,7 +4,24 @@ import { useState } from 'react';
 
 type Reason = 'copyright' | 'privacy' | 'defamation' | 'trademark' | 'other';
 
-export function TakedownForm() {
+export type TakedownFormCopy = {
+  emailLabel: string;
+  urlLabel: string;
+  urlPlaceholder: string;
+  reasonLabel: string;
+  reasons: Record<Reason, string>;
+  detailsLabel: string;
+  detailsPlaceholder: string;
+  detailsHint: string;
+  attachmentLabel: string;
+  attachmentError: string;
+  errors: { submit: string };
+  success: string;
+  submitLabel: string;
+  submittingLabel: string;
+};
+
+export function TakedownForm({ copy }: { copy: TakedownFormCopy }) {
   const [email, setEmail] = useState('');
   const [url, setUrl] = useState('');
   const [reason, setReason] = useState<Reason>('copyright');
@@ -24,7 +41,7 @@ export function TakedownForm() {
     let attachmentName: string | undefined;
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        setError('Attachments must be smaller than 2 MB.');
+        setError(copy.attachmentError);
         setStatus('idle');
         return;
       }
@@ -56,7 +73,7 @@ export function TakedownForm() {
 
       if (!res.ok) {
         const payload = await res.json().catch(() => null);
-        throw new Error(payload?.error ?? 'Unable to submit report.');
+        throw new Error(payload?.error ?? copy.errors.submit);
       }
 
       setStatus('success');
@@ -66,7 +83,7 @@ export function TakedownForm() {
       setDetails('');
       setFile(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to submit report.');
+      setError(err instanceof Error ? err.message : copy.errors.submit);
       setStatus('error');
     }
   }
@@ -75,7 +92,7 @@ export function TakedownForm() {
     <form onSubmit={handleSubmit} className="space-y-5 rounded-card border border-border bg-white p-6 shadow-card">
       <div className="space-y-2">
         <label htmlFor="email" className="block text-sm font-medium text-text-primary">
-          Contact email
+          {copy.emailLabel}
         </label>
         <input
           id="email"
@@ -89,7 +106,7 @@ export function TakedownForm() {
 
       <div className="space-y-2">
         <label htmlFor="url" className="block text-sm font-medium text-text-primary">
-          URL of the content
+          {copy.urlLabel}
         </label>
         <input
           id="url"
@@ -97,14 +114,14 @@ export function TakedownForm() {
           required
           value={url}
           onChange={(event) => setUrl(event.target.value)}
-          placeholder="https://maxvideoai.com/video/..."
+          placeholder={copy.urlPlaceholder}
           className="w-full rounded border border-border bg-input px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/40"
         />
       </div>
 
       <div className="space-y-2">
         <label htmlFor="reason" className="block text-sm font-medium text-text-primary">
-          Reason
+          {copy.reasonLabel}
         </label>
         <select
           id="reason"
@@ -112,17 +129,25 @@ export function TakedownForm() {
           onChange={(event) => setReason(event.target.value as Reason)}
           className="w-full rounded border border-border bg-input px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/40"
         >
-          <option value="copyright">Copyright / IP infringement</option>
-          <option value="privacy">Privacy / Personal data</option>
-          <option value="defamation">Defamation</option>
-          <option value="trademark">Trademark violation</option>
-          <option value="other">Other unlawful content</option>
+          {(
+            [
+              ['copyright', copy.reasons.copyright],
+              ['privacy', copy.reasons.privacy],
+              ['defamation', copy.reasons.defamation],
+              ['trademark', copy.reasons.trademark],
+              ['other', copy.reasons.other],
+            ] as Array<[Reason, string]>
+          ).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
         </select>
       </div>
 
       <div className="space-y-2">
         <label htmlFor="details" className="block text-sm font-medium text-text-primary">
-          Details
+          {copy.detailsLabel}
         </label>
         <textarea
           id="details"
@@ -132,14 +157,14 @@ export function TakedownForm() {
           onChange={(event) => setDetails(event.target.value)}
           rows={5}
           className="w-full rounded border border-border bg-input px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/40"
-          placeholder="Describe the issue and why it breaches your rights or the law."
+          placeholder={copy.detailsPlaceholder}
         />
-        <p className="text-xs text-text-muted">Provide enough information for us to locate and assess the content.</p>
+        <p className="text-xs text-text-muted">{copy.detailsHint}</p>
       </div>
 
       <div className="space-y-2">
         <label htmlFor="attachment" className="block text-sm font-medium text-text-primary">
-          Supporting file (optional, max 2&nbsp;MB)
+          {copy.attachmentLabel}
         </label>
         <input
           id="attachment"
@@ -154,16 +179,14 @@ export function TakedownForm() {
       </div>
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
-      {status === 'success' ? (
-        <p className="text-sm text-green-600">Thank you. We have received your report and will follow up shortly.</p>
-      ) : null}
+      {status === 'success' ? <p className="text-sm text-green-600">{copy.success}</p> : null}
 
       <button
         type="submit"
         disabled={status === 'submitting'}
         className="inline-flex items-center justify-center rounded bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accentSoft disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {status === 'submitting' ? 'Sending…' : 'Submit report'}
+        {status === 'submitting' ? copy.submittingLabel : copy.submitLabel}
       </button>
     </form>
   );
