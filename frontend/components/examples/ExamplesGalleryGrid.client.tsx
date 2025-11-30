@@ -49,6 +49,7 @@ export default function ExamplesGalleryGridClient({
   const isLighthouse = useMemo(() => detectLighthouse(), []);
   const [isMobile, setIsMobile] = useState(false);
   const baseAll = useMemo(() => dedupe(examples), [examples]);
+  const columnCount = useColumnCount();
 
   const [visibleVideos, setVisibleVideos] = useState<ExampleGalleryVideo[]>(() => {
     if (isLighthouse) return baseAll.slice(0, 1);
@@ -101,36 +102,47 @@ export default function ExamplesGalleryGridClient({
     });
   };
 
+  const columns = useMemo(() => splitIntoColumns(visibleVideos, columnCount), [visibleVideos, columnCount]);
   const shouldUseTallCardLayout = !isMobile;
+  const firstVisibleId = visibleVideos[0]?.id;
 
   return (
     <div className="space-y-4 p-4 sm:p-6">
       {isMobile ? (
         <div className="flex flex-col gap-3">
-          {visibleVideos.map((video, index) => (
-            <ExampleCard
-              key={video.id}
-              video={video}
-              isFirst={index === 0}
-              isLighthouse={isLighthouse}
-              forceExclusivePlay={false}
-              enableTallCardLayout={false}
-              enableInlineVideo={index === 0}
-            />
-          ))}
+          {visibleVideos.map((video) => {
+            const isFirstVideo = video.id === firstVisibleId;
+            return (
+              <ExampleCard
+                key={video.id}
+                video={video}
+                isFirst={isFirstVideo}
+                isLighthouse={isLighthouse}
+                forceExclusivePlay={false}
+                enableTallCardLayout={false}
+                enableInlineVideo={isFirstVideo}
+              />
+            );
+          })}
         </div>
       ) : (
         <div className={masonryStyles.masonry}>
-          {visibleVideos.map((video, index) => (
-            <div key={video.id} className={masonryStyles.item}>
-              <ExampleCard
-                video={video}
-                isFirst={index === 0}
-                isLighthouse={isLighthouse}
-                forceExclusivePlay={false}
-                enableTallCardLayout={shouldUseTallCardLayout}
-                enableInlineVideo
-              />
+          {columns.map((column, columnIndex) => (
+            <div key={columnIndex} className={masonryStyles.column}>
+              {column.map((video) => {
+                const isFirstVideo = video.id === firstVisibleId;
+                return (
+                  <ExampleCard
+                    key={video.id}
+                    video={video}
+                    isFirst={isFirstVideo}
+                    isLighthouse={isLighthouse}
+                    forceExclusivePlay={false}
+                    enableTallCardLayout={shouldUseTallCardLayout}
+                    enableInlineVideo
+                  />
+                );
+              })}
             </div>
           ))}
         </div>
@@ -331,6 +343,67 @@ function parseAspectRatio(aspect: string) {
   const [w, h] = aspect.split(':').map(Number);
   if (!Number.isFinite(w) || !Number.isFinite(h) || h === 0) return 16 / 9;
   return w / h;
+}
+
+function estimateCardHeightWeight(aspectRatio: string | null) {
+  const ratio = aspectRatio ? parseAspectRatio(aspectRatio) : DEFAULT_LANDSCAPE_RATIO;
+  if (ratio < 0.9) return 1.8;
+  if (ratio < 1.1) return 1;
+  return 0.6;
+}
+
+function splitIntoColumns(videos: ExampleGalleryVideo[], columnCount: number): ExampleGalleryVideo[][] {
+  if (!videos.length) return [];
+  const safeCount = Math.max(1, Math.floor(columnCount) || 1);
+  const count = Math.min(safeCount, videos.length);
+  const columns: ExampleGalleryVideo[][] = Array.from({ length: count }, () => []);
+  const heights = Array.from({ length: count }, () => 0);
+
+  for (const video of videos) {
+    const targetHeight = Math.min(...heights);
+    const targetIndex = heights.indexOf(targetHeight);
+    columns[targetIndex].push(video);
+    heights[targetIndex] += estimateCardHeightWeight(video.aspectRatio);
+  }
+
+  return columns;
+}
+
+function useColumnCount() {
+  const [count, setCount] = useState(3);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const twoColumns = window.matchMedia('(max-width: 1279px)');
+    const oneColumn = window.matchMedia('(max-width: 767px)');
+
+    const update = () => {
+      if (oneColumn.matches) {
+        setCount(1);
+      } else if (twoColumns.matches) {
+        setCount(2);
+      } else {
+        setCount(3);
+      }
+    };
+
+    update();
+    const unsubscribers = [twoColumns, oneColumn].map((query) => {
+      if (typeof query.addEventListener === 'function') {
+        query.addEventListener('change', update);
+        return () => query.removeEventListener('change', update);
+      }
+      query.addListener(update);
+      return () => query.removeListener(update);
+    });
+
+    return () => {
+      unsubscribers.forEach((unsubscribe) => unsubscribe());
+    };
+  }, []);
+
+  return count;
 }
 
 function detectLighthouse() {
