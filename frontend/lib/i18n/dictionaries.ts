@@ -858,13 +858,34 @@ const en: Dictionary = {
   legal: {
     terms: {
       title: 'Terms of service',
-      intro: 'This overview will be replaced by the final legal document. Contact legal@maxvideo.ai for questions.',
+      intro: 'These terms constitute the current valid User Agreement.',
       sections: [
-        { heading: '1. Overview', body: 'These Terms govern your use of MaxVideo AI. By accessing the service you agree to the obligations below.' },
-        { heading: '2. Accounts', body: 'You are responsible for maintaining account security and ensuring teammates comply with these Terms.' },
-        { heading: '3. Usage', body: 'Use MaxVideo AI in compliance with all applicable laws, respect licensing limits, and avoid prohibited content.' },
-        { heading: '4. Billing', body: 'Wallet charges apply only to successful renders. Refunds are issued automatically for failed jobs.' },
-        { heading: '5. Liability', body: 'MaxVideo AI is provided as-is. We limit liability to the maximum extent permitted by law.' },
+        {
+          heading: '1. Overview',
+          body: 'These Terms govern your use of MaxVideo AI. By accessing the service you agree to the obligations below.',
+        },
+        {
+          heading: '2. Accounts',
+          body: 'You are responsible for maintaining account security and ensuring teammates comply with these Terms.',
+        },
+        {
+          heading: '3. Usage & Compliance',
+          body:
+            'Use MaxVideo AI only in compliance with applicable laws, respect licensing limits, never upload illegal or infringing assets, and do not attempt to generate prohibited or unsafe content. We may review, block, or remove renders and suspend access when videos violate these Terms or our policies.',
+        },
+        {
+          heading: '4. User Content & Generated Media',
+          body:
+            'User uploads (photos, logos, reference footage, prompts) remain your property. We may store, process, and display uploaded assets solely to produce the requested text-to-video or image-to-video render and to deliver the workspace features you enable. For every piece of generated media, you grant MaxVideoAI a worldwide, non-exclusive, royalty-free, transferable, and sublicensable license to host, reproduce, index, display, and otherwise use the videos to operate the service, improve routing and models, run safety reviews, and showcase Examples galleries, template pages, or other marketing placements. You may mark renders as private inside your workspace or request delisting by contacting support if a privacy toggle is unavailable, and we will honor the request.',
+        },
+        {
+          heading: '5. Billing',
+          body: 'Wallet charges apply only to successful renders. Refunds are issued automatically for failed jobs.',
+        },
+        {
+          heading: '6. Liability',
+          body: 'MaxVideo AI is provided as-is. We limit liability to the maximum extent permitted by law.',
+        },
       ],
     },
     privacy: {

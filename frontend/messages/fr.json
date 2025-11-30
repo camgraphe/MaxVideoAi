@@ -1119,7 +1119,7 @@
   "legal": {
     "terms": {
       "title": "Conditions d'utilisation",
-      "intro": "Ce résumé sera remplacé par le document légal final. Pour toute question, contactez legal@maxvideo.ai.",
+      "intro": "Ces Conditions constituent l'accord utilisateur actuellement en vigueur.",
       "sections": [
         {
           "heading": "1. Vue d'ensemble",
@@ -1130,15 +1130,19 @@
           "body": "Vous êtes responsable de la sécurité du compte et veillez à ce que vos coéquipiers respectent ces Conditions."
         },
         {
-          "heading": "3. Utilisation",
-          "body": "Utilisez MaxVideo AI dans le respect des lois applicables, des limites de licence et évitez tout contenu interdit."
+          "heading": "3. Utilisation & conformité",
+          "body": "Utilisez MaxVideo AI conformément aux lois applicables, respectez les limites de licence, n'importez jamais de ressources illégales ou contrefaites et n'essayez pas de générer du contenu interdit ou dangereux. Nous pouvons examiner, bloquer ou supprimer des rendus et suspendre l'accès lorsque les vidéos enfreignent les présentes Conditions ou nos politiques."
         },
         {
-          "heading": "4. Facturation",
+          "heading": "4. Contenus utilisateur & médias générés",
+          "body": "Vos uploads (photos, logos, vidéos de référence, prompts) restent votre propriété. Nous pouvons stocker, traiter et afficher ces éléments uniquement pour produire le rendu texte-vers-vidéo ou image-vers-vidéo demandé et pour fournir les fonctionnalités que vous activez dans votre workspace. Pour chaque média généré, vous accordez à MaxVideoAI une licence mondiale, non exclusive, gratuite, transférable et sous-licenciable afin d'héberger, reproduire, indexer, afficher et utiliser les vidéos pour faire fonctionner le service, améliorer le routage et les modèles, réaliser les revues de sécurité et présenter la galerie Examples, les pages de modèles ou d'autres activations marketing. Vous pouvez marquer un rendu comme privé depuis votre workspace ou demander sa désindexation auprès du support si l'option de confidentialité n'est pas disponible, et nous honorerons cette demande. Vous conservez la propriété de vos prompts, uploads, descriptions et éléments de marque, tandis que MaxVideoAI conserve celle de la plateforme, de l'interface, des transformations et des améliorations techniques construites dessus."
+        },
+        {
+          "heading": "5. Facturation",
           "body": "Les débits du wallet ne s'appliquent qu'aux rendus réussis. Les échecs sont remboursés automatiquement."
         },
         {
-          "heading": "5. Responsabilité",
+          "heading": "6. Responsabilité",
           "body": "MaxVideo AI est fourni en l'état. Notre responsabilité est limitée au maximum autorisé par la loi."
         }
       ]

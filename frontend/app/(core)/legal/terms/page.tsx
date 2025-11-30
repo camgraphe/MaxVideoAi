@@ -94,19 +94,42 @@ export default async function TermsPage() {
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-lg font-semibold text-text-primary">6. Your content &amp; licence to us</h3>
+          <h3 className="text-lg font-semibold text-text-primary">6. User content &amp; generated media</h3>
           <p>
-            You retain ownership of the content you upload. To operate the Service, you grant us a worldwide, non-exclusive, royalty-free
-            licence to host, process, and display your content and generated outputs solely to provide and improve the Service
-            (including storage, backups, abuse detection, and diagnostics). You may delete your content, subject to legal retention and backup windows.
+            You own your prompts, uploads, reference frames, captions, and other assets you provide to the Service. We may store, process,
+            and display uploaded assets solely to deliver the requested text-to-video or image-to-video renders, route jobs, provide
+            workspace features you enable (such as galleries or version history), and meet security obligations. We do not claim ownership
+            of uploaded inputs.
           </p>
+          <ul className="ml-5 list-disc space-y-2">
+            <li>
+              <strong>Generated media licence.</strong> For every output created with MaxVideoAI, you grant us a worldwide, non-exclusive,
+              royalty-free, transferable, and sublicensable licence to host, reproduce, index, display, and otherwise use that media to
+              (a) operate the Service, (b) improve routing, safeguards, and underlying models, (c) run security and abuse investigations,
+              and (d) showcase Examples galleries, template pages, case studies, or other marketing placements.
+            </li>
+            <li>
+              <strong>Privacy controls.</strong> You can mark renders as private within your workspace to limit distribution. If a privacy
+              toggle is not available for a specific feature, you may request delisting or deletion by emailing support@maxvideo.ai and we
+              will honour reasonable requests unless legal obligations prevent removal.
+            </li>
+            <li>
+              <strong>Uploads vs. generated content.</strong> Uploaded logos, footage, and other inputs remain your property; we only use
+              them to fulfill the requested generation or diagnose quality issues. Generated media remains yours subject to the licence
+              above, and you are responsible for any third-party rights contained in your inputs or outputs.
+            </li>
+            <li>
+              <strong>Our IP.</strong> MaxVideoAI retains ownership of the platform, interfaces, pipelines, model improvements, safety
+              systems, and other technology used to render or transform content. These Terms do not transfer any of that IP to you.
+            </li>
+          </ul>
         </section>
 
         <section className="space-y-3">
           <h3 className="text-lg font-semibold text-text-primary">7. Service IP</h3>
           <p>
-            We and our licensors own the Service, including software, models, UI, and brand assets. Except for rights granted in these Terms,
-            no intellectual property rights transfer to you.
+            We and our licensors own the Service, including software, models, safety tooling, UI, documentation, and brand assets. Except for
+            the limited rights granted in these Terms, no intellectual property rights in the Service transfer to you.
           </p>
         </section>
 

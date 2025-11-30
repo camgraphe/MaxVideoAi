@@ -1112,7 +1112,7 @@
   "legal": {
     "terms": {
       "title": "Términos del servicio",
-      "intro": "Este resumen será reemplazado por el documento legal definitivo. Contacte con legal@maxvideo.ai para consultas.",
+      "intro": "Estos términos constituyen el Acuerdo de Usuario actualmente vigente.",
       "sections": [
         {
           "heading": "1. Panorama general",
@@ -1123,15 +1123,19 @@
           "body": "Eres responsable de la seguridad de tu cuenta y de que tu equipo cumpla estas Condiciones."
         },
         {
-          "heading": "3. Uso",
-          "body": "Usa MaxVideo AI conforme a las leyes aplicables, respeta los límites de licencia y evita contenido prohibido."
+          "heading": "3. Uso y cumplimiento",
+          "body": "Usa MaxVideo AI solo cumpliendo las leyes aplicables, respeta los límites de licencia, no subas recursos ilegales o que infrinjan derechos y no intentes generar contenido prohibido o inseguro. Podemos revisar, bloquear o eliminar renders y suspender el acceso cuando las piezas violen estos Términos o nuestras políticas."
         },
         {
-          "heading": "4. Facturación",
+          "heading": "4. Contenido del usuario y medios generados",
+          "body": "Tus cargas (fotos, logotipos, material de referencia, prompts) siguen siendo de tu propiedad. Podemos almacenar, procesar y mostrar esos elementos únicamente para producir el render texto-a-video o imagen-a-video solicitado y para entregar las funciones del workspace que habilites. Para cada medio generado, otorgas a MaxVideoAI una licencia mundial, no exclusiva, libre de regalías, transferible y sublicenciable para alojar, reproducir, indexar, exhibir y usar los videos con el fin de operar el servicio, mejorar el enrutamiento y los modelos, realizar revisiones de seguridad y presentar la galería de Examples, las páginas de modelos u otras activaciones de marketing. Puedes marcar un render como privado dentro de tu workspace o solicitar su desindexación contactando al soporte si no existe un interruptor de privacidad, y atenderemos esa solicitud. Conservas la propiedad de tus prompts, cargas, descripciones y activos de marca, mientras que MaxVideoAI mantiene la propiedad de la plataforma, las interfaces, las transformaciones y las mejoras técnicas construidas sobre el servicio."
+        },
+        {
+          "heading": "5. Facturación",
           "body": "El wallet solo se carga cuando el render se completa con éxito. Los fallos se reembolsan automáticamente."
         },
         {
-          "heading": "5. Responsabilidad",
+          "heading": "6. Responsabilidad",
           "body": "MaxVideo AI se proporciona tal cual. Limitamos la responsabilidad al máximo permitido por ley."
         }
       ]
