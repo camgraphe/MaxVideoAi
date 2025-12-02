@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import Script from 'next/script';
 import './globals.css';
 import { GtmLazyLoader } from '@/components/analytics/GtmLazyLoader';
+import { resolveLocale } from '@/lib/i18n/server';
 
 type RootLayoutProps = {
   children: ReactNode;
@@ -9,9 +10,11 @@ type RootLayoutProps = {
 
 const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID ?? process.env.GTM_ID ?? '';
 
-export default function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({ children }: RootLayoutProps) {
+  const locale = await resolveLocale();
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://maxvideoai.com" />
         {GTM_ID ? (

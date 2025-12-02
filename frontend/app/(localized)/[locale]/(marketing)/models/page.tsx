@@ -4,18 +4,13 @@ import { Link } from '@/i18n/navigation';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
-import { defaultLocale, type AppLocale } from '@/i18n/locales';
+import { type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { ModelsGallery } from '@/components/marketing/ModelsGallery';
 import { getEnginePictogram } from '@/lib/engine-branding';
 
 const MODELS_SLUG_MAP = buildSlugMap('models');
-const MODELS_CANONICAL = (() => {
-  const urls = buildMetadataUrls(defaultLocale, MODELS_SLUG_MAP);
-  const href = urls.canonical.replace(/\/+$/, '') || urls.canonical;
-  return href;
-})();
 const DEFAULT_INTRO = {
   paragraphs: [
     'Each engine in this catalog is wired into the MaxVideoAI workspace with monitored latency, price tracking, and fallbacks. We add models as soon as providers open real capacity—not waitlist demos—so you know what can ship to production today.',
@@ -64,8 +59,8 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   const locale = params.locale;
   const t = await getTranslations({ locale, namespace: 'models.meta' });
   const metadataUrls = buildMetadataUrls(locale, MODELS_SLUG_MAP);
-  const englishCanonical = metadataUrls.urls[defaultLocale] ?? metadataUrls.canonical;
-  const canonical = englishCanonical.replace(/\/+$/, '') || englishCanonical;
+  const canonicalRaw = metadataUrls.canonical;
+  const canonical = canonicalRaw.replace(/\/+$/, '') || canonicalRaw;
 
   return {
     title: t('title'),
@@ -123,7 +118,10 @@ function getEngineDisplayName(entry: FalEngineEntry): string {
 }
 
 export default async function ModelsPage() {
-  const { dictionary } = await resolveDictionary();
+  const { locale, dictionary } = await resolveDictionary();
+  const activeLocale = locale as AppLocale;
+  const metadataUrls = buildMetadataUrls(activeLocale, MODELS_SLUG_MAP);
+  const canonicalUrl = metadataUrls.canonical.replace(/\/+$/, '') || metadataUrls.canonical;
   const content = dictionary.models;
   const heroTitle = content.hero?.title ?? 'AI Video Engines – Sora, Veo, Pika & More';
   const HERO_BODY_FALLBACK =
@@ -221,7 +219,7 @@ export default async function ModelsPage() {
 return (
   <>
     <Head>
-      <link rel="canonical" href={MODELS_CANONICAL} />
+      <link rel="canonical" href={canonicalUrl} />
     </Head>
     <main className="mx-auto max-w-5xl px-4 pb-6 pt-16 sm:px-6 lg:px-8">
       <header className="space-y-3">

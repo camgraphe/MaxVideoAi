@@ -470,8 +470,8 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
   const detailSlugMap = buildDetailSlugMap(slug);
   const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${slug}`));
   const metadataUrls = buildMetadataUrls(locale, detailSlugMap, { availableLocales: publishableLocales });
-  const englishCanonical = metadataUrls.urls[defaultLocale] ?? metadataUrls.canonical;
-  const canonical = englishCanonical.replace(/\/+$/, '') || englishCanonical;
+  const canonicalRaw = metadataUrls.canonical;
+  const canonical = canonicalRaw.replace(/\/+$/, '') || canonicalRaw;
   const fallbackTitle = engine.seo.title ?? `${engine.marketingName} — MaxVideo AI`;
   const title = localized.seo.title ?? fallbackTitle;
   const description =
@@ -653,10 +653,9 @@ async function renderSoraModelPage({
   const detailSlugMap = buildDetailSlugMap(engine.modelSlug);
   const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${engine.modelSlug}`));
   const metadataUrls = buildMetadataUrls(locale, detailSlugMap, { availableLocales: publishableLocales });
-  const localizedCanonicalRaw = metadataUrls.canonical;
-  const localizedCanonicalUrl = localizedCanonicalRaw.replace(/\/+$/, '') || localizedCanonicalRaw;
-  const englishCanonicalRaw = metadataUrls.urls[defaultLocale] ?? metadataUrls.canonical;
-  const canonicalUrl = englishCanonicalRaw.replace(/\/+$/, '') || englishCanonicalRaw;
+  const canonicalRaw = metadataUrls.canonical;
+  const canonicalUrl = canonicalRaw.replace(/\/+$/, '') || canonicalRaw;
+  const localizedCanonicalUrl = canonicalUrl;
   const copy = buildSoraCopy(localizedContent, engine.modelSlug);
   const backPath = (() => {
     try {
@@ -1644,8 +1643,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
   const pricingNotes = localizedContent.pricingNotes ?? null;
   const localizedCanonicalRaw = metadataUrls.canonical;
   const localizedCanonicalUrl = localizedCanonicalRaw.replace(/\/+$/, '') || localizedCanonicalRaw;
-  const englishCanonicalRaw = metadataUrls.urls[defaultLocale] ?? metadataUrls.canonical;
-  const canonicalUrl = englishCanonicalRaw.replace(/\/+$/, '') || englishCanonicalRaw;
+  const canonicalUrl = localizedCanonicalUrl;
   const breadcrumbTitleBase = localizedContent.seo.title ?? marketingName ?? slug;
   const breadcrumbTitle = breadcrumbTitleBase.replace(/ —.*$/, '');
   const isEsLocale = activeLocale === 'es';

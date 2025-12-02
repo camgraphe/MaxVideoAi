@@ -86,6 +86,35 @@ const FUZZY_REDIRECT_TARGETS: Array<{ slug: string; destination: string }> = [
   { slug: 'pika-text-to-video', destination: '/models/pika-text-to-video' },
 ];
 
+const EXACT_LOCALE_REDIRECTS: Record<string, string> = {
+  // Compare AI video engines
+  '/fr/blog/como-comparar-motores-de-video-con-ia-sora-vs-veo-vs-pika':
+    '/blog/comment-comparer-les-moteurs-video-dia-sora-vs-veo-vs-pika',
+  '/es/blog/comment-comparer-les-moteurs-video-dia-sora-vs-veo-vs-pika':
+    '/blog/como-comparar-motores-de-video-con-ia-sora-vs-veo-vs-pika',
+  '/blog/comment-comparer-les-moteurs-video-dia-sora-vs-veo-vs-pika': '/blog/compare-ai-video-engines',
+  '/blog/como-comparar-motores-de-video-con-ia-sora-vs-veo-vs-pika': '/blog/compare-ai-video-engines',
+  // Sora 2 sequenced prompts
+  '/es/blog/invites-sequencees-sora-2-avec-son-et-image-de-marque':
+    '/blog/indicaciones-secuenciadas-de-sora-2-con-sonido-e-identidad-de-marca',
+  '/blog/invites-sequencees-sora-2-avec-son-et-image-de-marque': '/blog/sora-2-sequenced-prompts',
+  '/fr/blog/indicaciones-secuenciadas-de-sora-2-con-sonido-e-identidad-de-marca':
+    '/blog/invites-sequencees-sora-2-avec-son-et-image-de-marque',
+  '/blog/indicaciones-secuenciadas-de-sora-2-con-sonido-e-identidad-de-marca': '/blog/sora-2-sequenced-prompts',
+  // Access Sora 2 without invite
+  '/blog/accede-a-sora-2-sin-invitacion': '/blog/access-sora-2-without-invite',
+  '/es/blog/acceder-a-sora-2-sans-invitation': '/blog/accede-a-sora-2-sin-invitacion',
+  '/fr/blog/accede-a-sora-2-sin-invitacion': '/blog/acceder-a-sora-2-sans-invitation',
+  '/blog/acceder-a-sora-2-sans-invitation': '/blog/access-sora-2-without-invite',
+  // Veo 3 updates
+  '/blog/les-mises-a-jour-de-veo-3-apportent-des-controles-cinematographiques': '/blog/veo-3-updates',
+  '/es/blog/les-mises-a-jour-de-veo-3-apportent-des-controles-cinematographiques':
+    '/blog/las-actualizaciones-de-veo-3-traen-controles-cinematograficos',
+  '/fr/blog/las-actualizaciones-de-veo-3-traen-controles-cinematograficos':
+    '/blog/les-mises-a-jour-de-veo-3-apportent-des-controles-cinematographiques',
+  '/blog/las-actualizaciones-de-veo-3-traen-controles-cinematograficos': '/blog/veo-3-updates',
+};
+
 const handleI18nRouting = createMiddleware({
   ...routing,
   localeDetection: true,
@@ -327,6 +356,11 @@ function finalizeResponse(res: NextResponse, clearLogoutIntent: boolean) {
 function handleMarketingSlug(req: NextRequest, pathname: string): NextResponse | null {
   const { localePrefix, pathWithoutLocale } = splitLocaleFromPath(pathname);
   const normalizedPath = normalizePath(pathWithoutLocale);
+  const localeAwareKey = `${(localePrefix || '').toLowerCase()}${normalizedPath}`;
+  const localeAwareRedirect = resolveExactLocaleRedirect(req, localeAwareKey, localePrefix);
+  if (localeAwareRedirect) {
+    return localeAwareRedirect;
+  }
   const exactRedirect = resolveExactRedirect(req, normalizedPath, localePrefix);
   if (exactRedirect) {
     return exactRedirect;
@@ -462,6 +496,15 @@ function buildRedirectResponse(req: NextRequest, destinationPath: string) {
   redirectUrl.pathname = destinationPath || '/';
   redirectUrl.search = '';
   return NextResponse.redirect(redirectUrl, 301);
+}
+
+function resolveExactLocaleRedirect(req: NextRequest, key: string, localePrefix: string) {
+  const destination = EXACT_LOCALE_REDIRECTS[key];
+  if (!destination) {
+    return null;
+  }
+  const destinationPath = withLocalePrefix(destination, localePrefix);
+  return buildRedirectResponse(req, destinationPath);
 }
 
 function rewriteToNotFound(req: NextRequest, localePrefix: string) {
