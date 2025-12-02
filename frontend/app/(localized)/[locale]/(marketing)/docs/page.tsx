@@ -312,13 +312,13 @@ export default async function DocsIndexPage() {
             <p className="text-sm text-text-muted">Was this page helpful?</p>
             <div className="flex items-center gap-2">
               <a
-                href="mailto:support@maxvideoai.com?subject=Docs%20feedback&body=What%20worked%20well%3F%0AWhat%20was%20missing%20or%20unclear%3F"
+                href="/contact"
                 className="rounded-md border border-hairline px-3 py-1.5 text-sm hover:shadow-sm"
               >
                 Yes
               </a>
               <a
-                href="mailto:support@maxvideoai.com?subject=Docs%20feedback&body=Tell%20us%20what%20we%20should%20improve%3A%0A"
+                href="/contact"
                 className="rounded-md border border-hairline px-3 py-1.5 text-sm hover:shadow-sm"
               >
                 No

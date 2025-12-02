@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 
@@ -19,9 +20,9 @@ export default function LegalReconsentPage() {
         <ReconsentPrompt />
         <p className="text-sm text-text-muted">
           Need help? Contact{' '}
-          <a href="mailto:legal@maxvideoai.com" className="text-accent underline">
+          <Link href="/contact" className="text-accent underline">
             legal@maxvideoai.com
-          </a>
+          </Link>
           .
         </p>
       </div>

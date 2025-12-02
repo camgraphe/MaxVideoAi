@@ -30,13 +30,13 @@ export default function MentionsLegalesPage() {
           </p>
           <p>
             <strong>Contact&nbsp;:</strong>{' '}
-            <a href="mailto:support@maxvideoai.com" className="text-accent underline">
+            <Link href="/contact" className="text-accent underline">
               support@maxvideoai.com
-            </a>{' '}
+            </Link>{' '}
             ·{' '}
-            <a href="mailto:legal@maxvideoai.com" className="text-accent underline">
+            <Link href="/contact" className="text-accent underline">
               legal@maxvideoai.com
-            </a>
+            </Link>
           </p>
           <p>
             <strong>SIREN&nbsp;:</strong> en cours d’attribution · <strong>TVA intracommunautaire&nbsp;:</strong> en cours d’attribution
@@ -72,9 +72,9 @@ export default function MentionsLegalesPage() {
               Politique de confidentialité
             </Link>
             . Pour exercer vos droits RGPD (accès, rectification, suppression, opposition, portabilité), contactez{' '}
-            <a href="mailto:privacy@maxvideoai.com" className="text-accent underline">
+            <Link href="/contact" className="text-accent underline">
               privacy@maxvideoai.com
-            </a>
+            </Link>
             .
           </p>
         </section>

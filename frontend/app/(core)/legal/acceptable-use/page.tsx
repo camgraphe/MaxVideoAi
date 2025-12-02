@@ -53,9 +53,9 @@ export default async function AcceptableUsePage() {
         <p className="text-sm text-text-secondary">{header.companyLine}</p>
         <p className="text-sm text-text-secondary">
           {header.contactLabel}{' '}
-          <a href="mailto:legal@maxvideoai.com" className="text-accent underline">
+          <Link href="/contact" className="text-accent underline">
             legal@maxvideoai.com
-          </a>
+          </Link>
         </p>
       </header>
 
@@ -101,7 +101,7 @@ function AupArticleEn() {
           <Link href="/legal/takedown" className="text-accent underline">
             Notice &amp; Takedown form
           </Link>{' '}
-          or email <a href="mailto:legal@maxvideoai.com" className="text-accent underline">legal@maxvideoai.com</a>. We review reports promptly and take appropriate action.
+          or email <Link href="/contact" className="text-accent underline">legal@maxvideoai.com</Link>. We review reports promptly and take appropriate action.
         </p>
       </section>
     </article>
@@ -149,7 +149,7 @@ function AupArticleFr() {
           <Link href="/legal/takedown" className="text-accent underline">
             formulaire Notification &amp; retrait
           </Link>{' '}
-          ou écrivez à <a href="mailto:legal@maxvideoai.com" className="text-accent underline">legal@maxvideoai.com</a>. Nous examinons chaque signalement et agissons rapidement.
+          ou écrivez à <Link href="/contact" className="text-accent underline">legal@maxvideoai.com</Link>. Nous examinons chaque signalement et agissons rapidement.
         </p>
       </section>
     </article>
@@ -197,7 +197,7 @@ function AupArticleEs() {
           <Link href="/legal/takedown" className="text-accent underline">
             formulario de Notificación y retirada
           </Link>{' '}
-          o escribe a <a href="mailto:legal@maxvideoai.com" className="text-accent underline">legal@maxvideoai.com</a>. Revisamos cada informe y actuamos con rapidez.
+          o escribe a <Link href="/contact" className="text-accent underline">legal@maxvideoai.com</Link>. Revisamos cada informe y actuamos con rapidez.
         </p>
       </section>
     </article>

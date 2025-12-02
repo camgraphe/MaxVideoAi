@@ -2,6 +2,7 @@
 
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { loadStripe, type Stripe } from '@stripe/stripe-js';
+import Link from 'next/link';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { FlagPill } from '@/components/FlagPill';
@@ -702,9 +703,9 @@ export default function BillingPage() {
             ) : (
               <div className="mt-2 rounded-input border border-border bg-bg px-4 py-3 text-sm text-text-secondary">
                 {copy.teams.comingSoon.replace('{email}', copy.teams.contactEmail)}{' '}
-                <a className="underline underline-offset-2" href={`mailto:${copy.teams.contactEmail}`}>
+                <Link className="underline underline-offset-2" href="/contact">
                   {copy.teams.contactEmail}
-                </a>
+                </Link>
                 .
               </div>
             )}

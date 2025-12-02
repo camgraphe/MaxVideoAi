@@ -93,7 +93,7 @@ export default async function CookiePolicyPage() {
         <section className="space-y-3">
           <h3 className="text-lg font-semibold text-text-primary">7. Contact</h3>
           <p>
-            Questions about cookies? Email <a href="mailto:privacy@maxvideoai.com" className="text-accent underline">privacy@maxvideoai.com</a>.
+            Questions about cookies? <Link href="/contact" className="text-accent underline">privacy@maxvideoai.com</Link>.
           </p>
           <p className="text-sm text-text-muted">Last updated: {effective ?? version}</p>
         </section>

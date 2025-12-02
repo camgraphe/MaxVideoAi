@@ -229,7 +229,7 @@ function PrivacyArticleEn({ version, effective }: { version: string; effective: 
         <h3 className="text-lg font-semibold text-text-primary">9. Your rights (EU/EEA/UK)</h3>
         <p>
           Subject to conditions and applicable law, you may request access, rectification, erasure, restriction, objection, and data portability. You may also withdraw consent at any time. To exercise
-          rights, email <a href="mailto:privacy@maxvideoai.com" className="text-accent underline">privacy@maxvideoai.com</a>. You can lodge a complaint with your local data protection authority; in France, contact the CNIL.
+          rights, email <Link href="/contact" className="text-accent underline">privacy@maxvideoai.com</Link>. You can lodge a complaint with your local data protection authority; in France, contact the CNIL.
         </p>
       </section>
 
@@ -248,7 +248,7 @@ function PrivacyArticleEn({ version, effective }: { version: string; effective: 
       <section className="space-y-3">
         <h3 className="text-lg font-semibold text-text-primary">12. Contact</h3>
         <p>
-          Questions about privacy? Email <a href="mailto:privacy@maxvideoai.com" className="text-accent underline">privacy@maxvideoai.com</a>.
+          Questions about privacy? <Link href="/contact" className="text-accent underline">privacy@maxvideoai.com</Link>.
         </p>
         <p className="text-sm text-text-muted">Last updated: {effective ?? version}</p>
       </section>
@@ -383,7 +383,7 @@ function PrivacyArticleFr({ version, effective }: { version: string; effective: 
         <h3 className="text-lg font-semibold text-text-primary">9. Vos droits (UE/EEE/R.-U.)</h3>
         <p>
           Selon la loi applicable, vous pouvez demander l’accès, la rectification, l’effacement, la limitation, l’opposition ou la portabilité. Vous pouvez retirer votre consentement à tout moment en
-          écrivant à <a href="mailto:privacy@maxvideoai.com" className="text-accent underline">privacy@maxvideoai.com</a>. Vous pouvez introduire une plainte auprès de votre autorité locale (en France : CNIL).
+          écrivant à <Link href="/contact" className="text-accent underline">privacy@maxvideoai.com</Link>. Vous pouvez introduire une plainte auprès de votre autorité locale (en France : CNIL).
         </p>
       </section>
 
@@ -403,7 +403,7 @@ function PrivacyArticleFr({ version, effective }: { version: string; effective: 
       <section className="space-y-3">
         <h3 className="text-lg font-semibold text-text-primary">12. Contact</h3>
         <p>
-          Question sur la confidentialité ? Écrivez à <a href="mailto:privacy@maxvideoai.com" className="text-accent underline">privacy@maxvideoai.com</a>.
+          Question sur la confidentialité ? Écrivez à <Link href="/contact" className="text-accent underline">privacy@maxvideoai.com</Link>.
         </p>
         <p className="text-sm text-text-muted">Dernière mise à jour : {effective ?? version}</p>
       </section>
@@ -537,7 +537,7 @@ function PrivacyArticleEs({ version, effective }: { version: string; effective: 
         <h3 className="text-lg font-semibold text-text-primary">9. Tus derechos (UE/EEE/R.-U.)</h3>
         <p>
           Según la ley aplicable puedes ejercer acceso, rectificación, supresión, restricción, portabilidad u oposición. También puedes retirar tu consentimiento escribiendo a{' '}
-          <a href="mailto:privacy@maxvideoai.com" className="text-accent underline">privacy@maxvideoai.com</a>. Puedes presentar reclamaciones ante tu autoridad local (por ejemplo, la AEPD o la CNIL).
+          <Link href="/contact" className="text-accent underline">privacy@maxvideoai.com</Link>. Puedes presentar reclamaciones ante tu autoridad local (por ejemplo, la AEPD o la CNIL).
         </p>
       </section>
 
@@ -556,7 +556,7 @@ function PrivacyArticleEs({ version, effective }: { version: string; effective: 
       <section className="space-y-3">
         <h3 className="text-lg font-semibold text-text-primary">12. Contacto</h3>
         <p>
-          ¿Dudas sobre privacidad? Escribe a <a href="mailto:privacy@maxvideoai.com" className="text-accent underline">privacy@maxvideoai.com</a>.
+          ¿Dudas sobre privacidad? Escribe a <Link href="/contact" className="text-accent underline">privacy@maxvideoai.com</Link>.
         </p>
         <p className="text-sm text-text-muted">Última actualización: {effective ?? version}</p>
       </section>

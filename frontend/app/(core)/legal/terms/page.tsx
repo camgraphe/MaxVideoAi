@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import { LegalVersionBadge } from '@/components/legal/LegalVersionBadge';
 import { formatLegalDate, getLegalDocument } from '@/lib/legal';
@@ -262,7 +263,7 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
       <section className="space-y-3">
         <h3 className="text-lg font-semibold text-text-primary">18. Contact</h3>
         <p>
-          Questions about these Terms? Email <a href="mailto:legal@maxvideoai.com" className="text-accent underline">legal@maxvideoai.com</a>.
+          Questions about these Terms? <Link href="/contact" className="text-accent underline">legal@maxvideoai.com</Link>.
         </p>
         <p className="text-sm text-text-muted">Last updated: {effective ?? version}</p>
       </section>
@@ -435,7 +436,7 @@ function TermsArticleFr({ version, effective }: { version: string; effective: st
       <section className="space-y-3">
         <h3 className="text-lg font-semibold text-text-primary">18. Contact</h3>
         <p>
-          Questions sur ces Conditions ? Écrivez à <a href="mailto:legal@maxvideoai.com" className="text-accent underline">legal@maxvideoai.com</a>.
+          Questions sur ces Conditions ? Écrivez à <Link href="/contact" className="text-accent underline">legal@maxvideoai.com</Link>.
         </p>
         <p className="text-sm text-text-muted">Dernière mise à jour : {effective ?? version}</p>
       </section>
@@ -619,7 +620,7 @@ function TermsArticleEs({ version, effective }: { version: string; effective: st
       <section className="space-y-3">
         <h3 className="text-lg font-semibold text-text-primary">18. Contacto</h3>
         <p>
-          ¿Dudas sobre estos Términos? Escribe a <a href="mailto:legal@maxvideoai.com" className="text-accent underline">legal@maxvideoai.com</a>.
+          ¿Dudas sobre estos Términos? Escribe a <Link href="/contact" className="text-accent underline">legal@maxvideoai.com</Link>.
         </p>
         <p className="text-sm text-text-muted">Última actualización: {effective ?? version}</p>
       </section>

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Metadata } from 'next';
 
 type CookieRow = {
@@ -109,11 +110,11 @@ export default function CookiesListPage() {
               </div>
             ) : null}
           </section>
-        ))}
+        ))} 
 
         <p className="text-sm text-text-secondary">
           Have questions or found an inconsistency? Contact{' '}
-          <a href="mailto:privacy@maxvideoai.com" className="text-accent underline">privacy@maxvideoai.com</a>.
+          <Link href="/contact" className="text-accent underline">privacy@maxvideoai.com</Link>.
         </p>
       </article>
     </div>

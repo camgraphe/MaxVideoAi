@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -351,9 +352,9 @@ export default function JobsPage() {
             ) : (
               <p className="mt-2 text-sm text-text-secondary">
                 {copy.teams.beta.split('{email}')[0]}
-                <a className="underline underline-offset-2" href="mailto:support@maxvideoai.com">
+                <Link className="underline underline-offset-2" href="/contact">
                   {copy.teams.email}
-                </a>
+                </Link>
                 {copy.teams.beta.split('{email}')[1] ?? ''}
               </p>
             )}

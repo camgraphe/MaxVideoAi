@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import { TakedownForm, type TakedownFormCopy } from './TakedownForm';
 import { resolveLocale } from '@/lib/i18n/server';
@@ -109,9 +110,9 @@ function TakedownArticle({ locale }: { locale: AppLocale }) {
           </p>
           <p>
             Pour les urgences (sécurité personnelle ou demandes officielles), écrivez à{' '}
-            <a href="mailto:legal@maxvideoai.com" className="text-accent underline">
+            <Link href="/contact" className="text-accent underline">
               legal@maxvideoai.com
-            </a>{' '}
+            </Link>{' '}
             avec « URGENT » dans l’objet.
           </p>
         </article>
@@ -125,9 +126,9 @@ function TakedownArticle({ locale }: { locale: AppLocale }) {
           </p>
           <p>
             Para casos urgentes (seguridad personal o solicitudes policiales), escribe a{' '}
-            <a href="mailto:legal@maxvideoai.com" className="text-accent underline">
+            <Link href="/contact" className="text-accent underline">
               legal@maxvideoai.com
-            </a>{' '}
+            </Link>{' '}
             con “URGENT” en el asunto.
           </p>
         </article>
@@ -141,9 +142,9 @@ function TakedownArticle({ locale }: { locale: AppLocale }) {
           </p>
           <p>
             For urgent reports (personal safety or law-enforcement matters), email{' '}
-            <a href="mailto:legal@maxvideoai.com" className="text-accent underline">
+            <Link href="/contact" className="text-accent underline">
               legal@maxvideoai.com
-            </a>{' '}
+            </Link>{' '}
             with “URGENT” in the subject line.
           </p>
         </article>
@@ -164,9 +165,9 @@ export default async function TakedownPage() {
         <p className="text-sm text-text-secondary">{header.companyLine}</p>
         <p className="text-sm text-text-secondary">
           {header.contactLabel}{' '}
-          <a href="mailto:legal@maxvideoai.com" className="text-accent underline">
+          <Link href="/contact" className="text-accent underline">
             legal@maxvideoai.com
-          </a>
+          </Link>
         </p>
       </header>
 

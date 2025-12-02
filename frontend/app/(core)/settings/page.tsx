@@ -1,5 +1,6 @@
 "use client";
 
+import Link from 'next/link';
 import { useCallback, useMemo, useState } from 'react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -308,9 +309,9 @@ function TeamTab({ live, copy }: { live: boolean; copy: SettingsCopy['team'] }) 
       ) : (
         <div className="mt-2 rounded-xl border border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
           {copy.upcomingPrefix}
-          <a className="underline underline-offset-2" href={`mailto:${copy.upcomingEmail}`}>
+          <Link className="underline underline-offset-2" href="/contact">
             {copy.upcomingEmail}
-          </a>
+          </Link>
           {copy.upcomingSuffix}
         </div>
       )}

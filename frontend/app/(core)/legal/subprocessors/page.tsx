@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Metadata } from 'next';
 
 type Subprocessor = {
@@ -97,7 +98,7 @@ export default function SubprocessorsPage() {
 
       <p className="text-sm text-text-secondary">
         Need more information or a signed copy of our Data Processing Agreement? Contact{' '}
-        <a href="mailto:privacy@maxvideoai.com" className="text-accent underline">privacy@maxvideoai.com</a>.
+        <Link href="/contact" className="text-accent underline">privacy@maxvideoai.com</Link>.
       </p>
     </div>
   );

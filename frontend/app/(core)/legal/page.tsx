@@ -145,9 +145,9 @@ export default async function LegalIndexPage() {
       <span key={`${part}-${index}`}>
         {part}
         {index < parts.length - 1 ? (
-          <a href="mailto:legal@maxvideo.ai" className="font-semibold text-accent hover:text-accentSoft">
+          <Link href="/contact" className="font-semibold text-accent hover:text-accentSoft">
             legal@maxvideo.ai
-          </a>
+          </Link>
         ) : null}
       </span>
     ));

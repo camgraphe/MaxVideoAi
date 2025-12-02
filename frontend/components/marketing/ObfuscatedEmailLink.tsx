@@ -22,7 +22,7 @@ export function ObfuscatedEmailLink({ user, domain, label, className }: Obfuscat
   }, [user, domain]);
 
   const display = label ?? (email ? email : `${user} [at] ${domain}`);
-  const href = email ? `mailto:${email}` : undefined;
+  const href = '/contact';
 
   return (
     <a
