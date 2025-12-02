@@ -87,10 +87,6 @@ function isVideoMode(value: unknown): value is VideoMode {
   return value === 't2v' || value === 'i2v';
 }
 
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 async function resolveUserId(): Promise<string | null> {
   try {
     const supabase = createSupabaseRouteClient();
@@ -293,57 +289,6 @@ type FalErrorMetadata = {
   attempt?: number;
   maxAttempts?: number;
 };
-
-function shouldRetryFalError(meta: FalErrorMetadata): boolean {
-  const attempt = meta.attempt ?? 1;
-  const maxAttempts = meta.maxAttempts ?? 1;
-  if (attempt >= maxAttempts) return false;
-
-  if (meta.error instanceof FalTimeoutError) {
-    return true;
-  }
-
-  if (!(meta.error instanceof FalGenerationError)) {
-    return false;
-  }
-
-  const providerJobId = meta.providerJobId ?? meta.error.providerJobId ?? null;
-  if (!providerJobId) return false;
-
-  const status = typeof meta.status === 'number' ? meta.status : meta.error.status;
-  if (status === 429 || status === 401 || status === 403) {
-    return false;
-  }
-
-  const fallbackProviderMessage =
-    meta.providerMessage ?? (meta.error instanceof Error ? meta.error.message : null);
-  const message = condenseFalErrorMessage(normalizeFalErrorValue(fallbackProviderMessage));
-  if (isSafetyMessage(message)) {
-    return false;
-  }
-
-  if (status === 422) {
-    if (isConstraintDetail(meta.detail) || isConstraintMessage(message)) {
-      return false;
-    }
-    if (message && /timeout|timed out|try again|queued|in progress|pending|not ready|still processing|rate limited/i.test(message)) {
-      return true;
-    }
-    return false;
-  }
-
-  if (typeof status === 'number' && (TRANSIENT_FAL_STATUS_CODES.has(status) || status === 422 || status === 404)) {
-    return true;
-  }
-
-  if (message) {
-    return /timeout|timed out|try again|queued|in progress|pending|not ready|still processing|rate limited/i.test(
-      message
-    );
-  }
-
-  return false;
-}
 
 function shouldDeferFalError(meta: FalErrorMetadata): boolean {
   if (!(meta.error instanceof FalGenerationError)) {

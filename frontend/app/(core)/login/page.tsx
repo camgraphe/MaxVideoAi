@@ -332,7 +332,7 @@ export default function LoginPage() {
 
     void redirectIfAuthenticated();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(() => {
       void supabase.auth.getUser().then(({ data }) => {
         if (cancelled) return;
         const user = data.user ?? null;

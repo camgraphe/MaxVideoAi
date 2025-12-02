@@ -5,8 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { LOCALE_COOKIE } from '@/lib/i18n/constants';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
-const LOCALES = ['en', 'fr', 'es'] as const;
-type Locale = (typeof LOCALES)[number];
+type Locale = 'en' | 'fr' | 'es';
 
 const FLAG_MAP: Record<Locale, string> = {
   en: '🇺🇸',

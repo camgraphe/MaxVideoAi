@@ -32,11 +32,6 @@ const PORTRAIT_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 60vw, 40vw
 const DEFAULT_LANDSCAPE_RATIO = 16 / 9;
 const DEFAULT_LANDSCAPE_HEIGHT_PERCENT = 100 / DEFAULT_LANDSCAPE_RATIO;
 const TALL_CARD_MEDIA_PERCENT = Number((DEFAULT_LANDSCAPE_HEIGHT_PERCENT * 2).toFixed(3));
-const LH_PLACEHOLDER =
-  'data:image/svg+xml;utf8,' +
-  encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#f1f5f9"/><stop offset="100%" stop-color="#e2e8f0"/></linearGradient></defs><rect width="800" height="450" fill="url(#g)" rx="24"/><text x="50%" y="52%" text-anchor="middle" fill="#94a3b8" font-family="Inter,Arial,sans-serif" font-size="28">MaxVideoAI</text></svg>`
-  );
 const LH_POSTER_SRC = '/examples/lcp-poster.webp';
 
 export default function ExamplesGalleryGridClient({
@@ -213,7 +208,7 @@ function ExampleCard({
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, []);
+  }, [isLighthouse]);
 
   useEffect(() => {
     const node = videoRef.current;
@@ -250,7 +245,7 @@ function ExampleCard({
     return () => {
       node.pause();
     };
-  }, [shouldPlay]);
+  }, [shouldPlay, forceExclusivePlay]);
 
   const posterSrc = isLighthouse ? LH_POSTER_SRC : video.optimizedPosterUrl ?? video.rawPosterUrl ?? null;
 

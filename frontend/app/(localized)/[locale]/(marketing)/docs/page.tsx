@@ -311,18 +311,12 @@ export default async function DocsIndexPage() {
           <div className="flex flex-col gap-3 rounded-xl border border-hairline bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-text-muted">Was this page helpful?</p>
             <div className="flex items-center gap-2">
-              <a
-                href="/contact"
-                className="rounded-md border border-hairline px-3 py-1.5 text-sm hover:shadow-sm"
-              >
+              <Link href="/contact" className="rounded-md border border-hairline px-3 py-1.5 text-sm hover:shadow-sm">
                 Yes
-              </a>
-              <a
-                href="/contact"
-                className="rounded-md border border-hairline px-3 py-1.5 text-sm hover:shadow-sm"
-              >
+              </Link>
+              <Link href="/contact" className="rounded-md border border-hairline px-3 py-1.5 text-sm hover:shadow-sm">
                 No
-              </a>
+              </Link>
               <a href="#top" className="ml-2 text-sm underline underline-offset-2">
                 Back to top
               </a>

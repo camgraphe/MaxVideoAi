@@ -6,7 +6,7 @@ import type { Metadata } from 'next';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
 import { listFalEngines, getFalEngineBySlug, type FalEngineEntry } from '@/config/falEngines';
-import { locales, localePathnames, localeRegions, defaultLocale, type AppLocale } from '@/i18n/locales';
+import { locales, localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
@@ -1631,7 +1631,6 @@ export default async function ModelDetailPage({ params }: PageParams) {
   const heroPrimaryCta = heroContent?.ctaPrimary;
   const secondaryCtas = heroContent?.secondaryLinks ?? [];
   const brand = PARTNER_BRAND_MAP.get(engine.brandId);
-  const showSoraSeo = engine.modelSlug.startsWith('sora-2');
   const promptEntries =
     localizedContent.prompts.length > 0
       ? localizedContent.prompts
@@ -1646,7 +1645,6 @@ export default async function ModelDetailPage({ params }: PageParams) {
   const canonicalUrl = localizedCanonicalUrl;
   const breadcrumbTitleBase = localizedContent.seo.title ?? marketingName ?? slug;
   const breadcrumbTitle = breadcrumbTitleBase.replace(/ —.*$/, '');
-  const isEsLocale = activeLocale === 'es';
   const inLanguage = localeRegions[activeLocale] ?? 'en-US';
   const localePathPrefix = localePathnames[activeLocale] ? `/${localePathnames[activeLocale].replace(/^\/+/, '')}` : '';
   const homePathname = localePathPrefix || '/';
