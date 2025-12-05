@@ -32,6 +32,7 @@ import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCa
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import type { Job } from '@/types/jobs';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 import {
   getLumaRay2DurationInfo,
   getLumaRay2ResolutionInfo,
@@ -814,7 +815,8 @@ const DEBOUNCE_MS = 200;
 export default function Page() {
   const { data, error: enginesError, isLoading } = useEngines();
   const engines = useMemo(() => data?.engines ?? [], [data]);
-  const { data: latestJobsPages } = useInfiniteJobs(1, { type: 'video' });
+  const { data: latestJobsPages, mutate: mutateLatestJobs } = useInfiniteJobs(1, { type: 'video' });
+  const { user, loading: authLoading } = useRequireAuth();
   const engineIdByLabel = useMemo(() => {
     const map = new Map<string, string>();
     engines.forEach((engine) => {
@@ -1169,51 +1171,15 @@ useEffect(() => {
   }, [writeStorage]);
 
   useEffect(() => {
-    let cancelled = false;
-
-    const ensureSession = async () => {
-      const [{ data: sessionData }, { data: userData }] = await Promise.all([
-        supabase.auth.getSession(),
-        supabase.auth.getUser(),
-      ]);
-      if (cancelled) return;
-      const session = sessionData.session;
-      const user = userData.user ?? null;
-      if (!session?.access_token || !user?.id) {
-        clearUserState();
-        const target = nextPath && nextPath !== '/login' ? `/login?next=${encodeURIComponent(nextPath)}` : '/login';
-        router.replace(target);
-        return;
-      }
-      setUserId(user.id);
+    if (authLoading) return;
+    if (!user?.id) {
+      setUserId(null);
       setAuthChecked(true);
-    };
-
-    ensureSession().catch(() => {
-      clearUserState();
-      const target = nextPath && nextPath !== '/login' ? `/login?next=${encodeURIComponent(nextPath)}` : '/login';
-      router.replace(target);
-    });
-
-    const { data: authSubscription } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!session?.access_token || !user?.id) {
-        clearUserState();
-        const target = nextPath && nextPath !== '/login' ? `/login?next=${encodeURIComponent(nextPath)}` : '/login';
-        router.replace(target);
-        return;
-      }
-      setUserId(user.id);
-      setAuthChecked(true);
-    });
-
-    return () => {
-      cancelled = true;
-      authSubscription?.subscription.unsubscribe();
-    };
-  }, [nextPath, router, clearUserState]);
+      return;
+    }
+    setUserId(user.id);
+    setAuthChecked(true);
+  }, [authLoading, user]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -3261,6 +3227,35 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         if (resolvedVideoUrl || resolvedStatus === 'completed') {
           stopProgressTracking();
         }
+
+        if (typeof window !== 'undefined') {
+          const detail = {
+            ok: true,
+            jobId: resolvedJobId,
+            status: resolvedStatus ?? 'pending',
+            progress: resolvedProgress,
+            videoUrl: resolvedVideoUrl ?? null,
+            thumbUrl: resolvedThumb ?? null,
+            aspectRatio: form.aspectRatio ?? null,
+            pricing: resolvedPricingSnapshot,
+            finalPriceCents: resolvedPriceCents ?? null,
+            currency: resolvedCurrency,
+            paymentStatus: resolvedPaymentStatus ?? 'platform',
+            batchId: resolvedBatchId ?? null,
+            groupId: resolvedGroupId ?? null,
+            iterationIndex: resolvedIterationIndex ?? null,
+            iterationCount: resolvedIterationCount ?? null,
+            renderIds: resolvedRenderIds ?? null,
+            heroRenderId: resolvedHeroRenderId ?? null,
+            localKey,
+            message: resolvedMessage ?? null,
+            etaSeconds: resolvedEtaSeconds ?? null,
+            etaLabel: resolvedEtaLabel ?? null,
+          };
+          window.dispatchEvent(new CustomEvent('jobs:status', { detail }));
+        }
+
+        void mutateLatestJobs(undefined, { revalidate: true });
 
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new Event('wallet:invalidate'));

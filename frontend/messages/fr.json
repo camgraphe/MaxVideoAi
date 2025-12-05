@@ -176,6 +176,9 @@
       "brands": [
         "Sora 2",
         "Veo 3.1",
+        "LTX-2 Fast",
+        "LTX-2 Pro",
+        "Kling 2.6 Pro",
         "Pika 2.2",
         "MiniMax Hailuo 02",
         "Kling 2.5",
@@ -707,8 +710,8 @@
     "engineTypeLabels": {
       "textImage": "Texte + image vers vidéo",
       "text": "Texte vers vidéo",
-      "image": "Image vers vidéo",
-      "default": "Moteur vidéo IA"
+      "image": "Moteur d’images IA (Texte & Image→Image)",
+      "default": "Moteur IA"
     },
     "availabilityLabels": {
       "available": "Disponible",
@@ -758,6 +761,24 @@
         "description": "Brouillons avec optimiseur ou animation de références dans un seul moteur.",
         "priceBefore": "Tarifs en direct dans le workspace Generate.",
         "versionLabel": "Standard"
+      },
+      "ltx-2-fast": {
+        "displayName": "LTX-2 Fast",
+        "description": "Clips 6–20 s texte ou image avec audio natif, jusqu’en 4K.",
+        "priceBefore": "Tarifs en direct dans le workspace Generate.",
+        "versionLabel": "Fast"
+      },
+      "ltx-2": {
+        "displayName": "LTX-2 Pro",
+        "description": "Clips 6–10 s haute fidélité avec audio, jusqu’en 4K à 25/50 i/s.",
+        "priceBefore": "Tarifs en direct dans le workspace Generate.",
+        "versionLabel": "Pro"
+      },
+      "kling-2-6-pro": {
+        "displayName": "Kling 2.6 Pro",
+        "description": "Clips ciné courts avec dialogue et ambiance natifs.",
+        "priceBefore": "Tarifs en direct dans le workspace Generate.",
+        "versionLabel": "v2.6 Pro"
       },
       "title": "Moteurs vidéo IA – Comparez Sora, Veo 3.1, Pika, Kling | MaxVideoAI",
       "description": "Comparez les principaux moteurs vidéo IA en un seul endroit : Sora 2, Veo 3.1, Pika 2.2, Kling, Luma, Wan et plus. Specs, prix, exemples et astuces de prompt pour chaque modèle."

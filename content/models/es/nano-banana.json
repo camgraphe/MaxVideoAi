@@ -1,121 +1,163 @@
 {
   "marketingName": "Nano Banana",
-  "versionLabel": "Imagen + Edición",
+  "versionLabel": "Imagen",
   "seo": {
-    "title": "Nano Banana – Generador y editor de imágenes en MaxVideoAI",
-    "description": "Usa Nano Banana de Google (Fal.ai) para generar o editar imágenes con precios de wallet que se actualizan en vivo en Generate.",
-    "image": "/hero/nano-banana.jpg"
+    "title": "Nano Banana – Generación de imágenes fotorrealistas | MaxVideoAI",
+    "description": "Genera imágenes y ediciones fotorrealistas con Nano Banana. Texto→Imagen e Imagen→Imagen para keyframes, miniaturas y referencias antes de animar en Sora, Veo o Kling.",
+    "image": "/hero/pika-22.jpg"
   },
+  "overview": "Nano Banana es tu copiloto de imagen en MaxVideoAI. Fija estilo, iluminación y encuadre antes de renderizar video: texto→imagen y edición de imagen con la misma billetera y laboratorio de prompts.",
   "hero": {
-    "title": "Nano Banana – Texto→Imagen y edición precisa",
-    "intro": "Nano Banana incluye dos endpoints Fal: texto→imagen ultrarrápido y edición imagen→imagen muy controlable. Comparte wallet, registros y prompt lab con nuestros motores de video, así que puedes preparar frames, moodboards o shot plates sin salir de MaxVideoAI.",
+    "title": "Nano Banana – Generación de imágenes fotorrealistas",
+    "intro": "Genera imágenes, keyframes y product shots coherentes antes de pulsar Render. Nano Banana es tu copiloto de imagen para Sora, Veo, Kling y el resto del stack.",
+    "badge": "Texto → Imagen · Imagen → Imagen · 1–8 salidas",
     "ctaPrimary": {
-      "label": "Generar imagen",
-      "href": "/app/image?engine=nano-banana"
+      "label": "Generar una imagen",
+      "href": "/es/app/image?engine=nano-banana"
     },
     "secondaryLinks": [
       {
-        "label": "Motores de imagen",
-        "href": "/modelos"
+        "label": "Abrir el laboratorio de imagen",
+        "href": "/es/app/image"
       },
       {
-        "label": "Abrir prompt lab",
-        "href": "/app/image"
+        "label": "Ver precio en vivo",
+        "href": "/es/generate"
       },
       {
-        "label": "Consultar precios en vivo",
-        "href": "/generate"
+        "label": "Ver ejemplos de imagen",
+        "href": "/es/examples?engine=nano-banana"
       }
     ]
   },
-  "overview": "Nano Banana entrega renders limpios con control de prompt, seed, lotes y uploads. Ideal para concept frames antes de Veo/Sora, campañas de marketing o retoques detallados sobre frames existentes.",
   "bestUseCases": {
     "title": "Mejores casos de uso",
     "items": [
-      "Concept art e imágenes hero fotorrealistas",
-      "Exploración de variantes antes de animar",
-      "Assets de marketing sin salir de MaxVideoAI",
-      "Ediciones precisas de props, vestuario o iluminación"
+      "Product shots y miniaturas",
+      "Keyframes con estilo de marca para Sora y Veo",
+      "Limpieza y estandarización de visuales de cliente"
     ]
   },
-  "technicalOverviewTitle": "Ficha técnica",
+  "technicalOverviewTitle": "Resumen técnico",
   "technicalOverview": [
     {
-      "label": "Modos",
-      "body": "Endpoints: `fal-ai/nano-banana` (texto→imagen) y `fal-ai/nano-banana/edit` (imagen→imagen).",
-      "link": {
-        "label": "Docs Fal.ai",
-        "href": "https://fal.ai/models/fal-ai/nano-banana"
-      }
-    },
-    {
-      "label": "Entradas",
-      "body": "`prompt` (obligatorio), `num_images` (1–8). En modo edición añade `image_urls` con tus fuentes."
+      "label": "Tipos de entrada",
+      "body": "Prompts de texto, imágenes de referencia (JPG/PNG/WebP) y modo edición para restyle o cleanup."
     },
     {
       "label": "Salidas",
-      "body": "URLs JPEG/PNG de alta resolución + metadatos. Cada imagen queda registrada (Recent Runs + Library)."
+      "body": "Imágenes de alta resolución optimizadas para fotorealismo y legibilidad de texto."
     },
     {
-      "label": "Precio",
-      "body": "Precios dinámicos basados en tu wallet — abre la página Generate para ver la tarifa actual."
+      "label": "Modos",
+      "body": "Texto→Imagen; Imagen→Imagen para restyle, limpieza y reemplazo de fondo."
     },
     {
-      "label": "Seed y lotes",
-      "body": "Usa seed fijo para repetir estilos. `num_images` permite lotes multi-variante."
+      "label": "Uso típico",
+      "body": "Prepara 1–4 keyframes antes de animar en Sora, Veo, Kling o Wan."
     }
   ],
   "promptStructure": {
-    "title": "Estructura de prompt",
-    "quote": "“Retrato editorial de una mujer con gabardina cromada bajo luces de neón, lente 85 mm, profundidad de campo corta, gradación cinematográfica.”",
-    "description": "Sugerencia de estructura:",
+    "title": "Mini guía de prompts",
+    "quote": "Cinemático [sujeto] en [entorno], [iluminación/color], [lente], keyframe para [motor de video].",
+    "description": "Sé descriptivo y concreto. Menciona sujeto, entorno, lente, iluminación y cómo usarás el frame.",
     "steps": [
-      "Define sujeto + escenario (“retrato… en un bar jazz de Tokio”).",
-      "Añade pista de cámara/lente (film stock, apertura, color).",
-      "Describe el mood o la acción para evitar poses genéricas.",
-      "En edición, explica la transformación (“cambia la chaqueta por tejido holográfico…”).",
-      "Para comparar, genera lotes de 4 imágenes y reutiliza el seed favorito."
+      "Sujeto y entorno (producto, persona, habitación)",
+      "Luz y lente (luz de estudio, 50mm, grade suave)",
+      "Estado de ánimo y composición (toma hero, fondo limpio)",
+      "Intención (keyframe para Sora/Veo/Kling)",
+      "En edición, describe la transformación"
     ]
   },
   "tips": {
-    "title": "Consejos",
+    "title": "Consejos y límites",
     "items": [
-      "🖼 Úsalo para keyframes antes de pasar a Veo/Sora.",
-      "🎨 Edición = “re-roll” localizado para props o luces.",
-      "📚 Organiza resultados en Library → Images.",
-      "⚡ `num_images = 4` facilita comparar estilos en segundos.",
-      "🔁 Consulta la vista Jobs (Images) para auditar gasto por concepto."
+      "Genera 2–4 keyframes y anímalos en Veo/Sora/Kling.",
+      "Usa el modo edición para limpiar, nivelar luz o cambiar el fondo.",
+      "Fija seeds para coherencia en una serie.",
+      "Haz batch (`num_images`) para explorar variaciones rápido."
     ]
-  },
-  "compareLink": {
-    "label": "guía de motores",
-    "href": "/comparativa",
-    "before": "Compara Nano Banana con AuraFlow, Flux y otros en la ",
-    "after": "."
   },
   "prompts": [
     {
-      "title": "Hero lifestyle",
-      "prompt": "Foto golden hour de una corredora salpicando una piscina en Los Ángeles, obturador rápido, gotas nítidas, Leica 50 mm."
+      "title": "Product shot (texto → imagen)",
+      "prompt": "Foto de estudio fotorrealista de un auricular inalámbrico sobre una superficie oscura y brillante, luz de contorno suave, fondo minimalista, 8K, fotografía de producto."
     },
     {
-      "title": "Prompt de edición",
-      "prompt": "Haz el salón más luminoso, cambia la mesa por cristal y coloca un rótulo de neón “BANANA” al fondo."
+      "title": "Keyframe lifestyle (texto → imagen)",
+      "prompt": "Escena lifestyle cálida de una joven profesional trabajando en un portátil junto a una gran ventana al atardecer, bokeh suave de luces de ciudad fuera, colores realistas, iluminación cinematográfica."
+    },
+    {
+      "title": "Limpieza (imagen → imagen)",
+      "prompt": "Limpia este mockup de producto: nivela la iluminación, elimina polvo y huellas, y colócalo sobre un fondo degradado suave apto para e-commerce."
+    },
+    {
+      "title": "Restyle revista (imagen → imagen)",
+      "prompt": "Con esta foto de retrato, consigue un look de portada de revista: piel más suave, contraste ligeramente más intenso, gradación sutil y fondo de estudio neutro."
     }
   ],
   "faqs": [
     {
+      "q": "¿Nano Banana es para imágenes o video?",
+      "a": "Imágenes. Úsalo para preparar referencias fotorrealistas, miniaturas y keyframes antes de pasar los planos a motores de video como Sora o Veo."
+    },
+    {
       "q": "¿Cuántas imágenes por ejecución?",
-      "a": "`num_images` permite 1–8. Cada salida queda registrada y puede descargarse o copiarse desde Library."
+      "a": "Configura `num_images` entre 1 y 8. Genera varias variantes y reutiliza un seed para mantener la coherencia."
     },
     {
-      "q": "¿Necesito máscaras para editar?",
-      "a": "No, describe el cambio en lenguaje natural. Para zonas muy concretas, recorta la imagen o itera en varias pasadas."
-    },
-    {
-      "q": "¿Dónde quedan almacenadas?",
-      "a": "En Recent Runs y en Library → Images. Allí puedes descargar o copiar el enlace CDN."
+      "q": "¿El modo edición necesita máscaras?",
+      "a": "No necesitas máscaras. Sube una imagen limpia y describe la transformación (cleanup, cambio de fondo, relight)."
     }
   ],
-  "pricingNotes": "Los precios se actualizan dentro de Generate. Comprueba la tarifa en vivo antes de lanzar un render."
+  "pricingNotes": "El precio se muestra en vivo en el workspace. Revisa el chip antes de lanzar un job.",
+  "custom": {
+    "whyTitle": "Por qué Nano Banana en MaxVideoAI",
+    "heroDesc1": "Genera stills y ediciones fotorrealistas para fijar estilo, luz y encuadre antes de animar en Sora, Veo o Kling.",
+    "heroDesc2": "Texto→imagen e imagen→imagen comparten el mismo wallet y prompt lab que los motores de video, con 1–8 salidas por ejecución.",
+    "heroHighlights": [
+      "Texto → Imagen e Imagen → Imagen en el mismo lab",
+      "Prepara keyframes fotorrealistas antes de Sora/Veo/Kling",
+      "Ideal para ediciones locales: cleanup, relight, reemplazo de fondo y pequeños retoques de props",
+      "1–8 salidas por ejecución con seed para consistencia",
+      "Pricing de wallet compartido con los motores de video; sin cuenta Nano Banana aparte"
+    ],
+    "whatTitle": "Cómo funciona Nano Banana",
+    "whatIntro1": "Elige texto→imagen o imagen→imagen, define el batch (1–8), escribe el prompt o las instrucciones de edición y genera.",
+    "whatIntro2": "Fija estilo, luz y encuadre antes de animar en motores de video.",
+    "whatFlowTitle": "Flujo",
+    "whatFlowSteps": [
+      "Abre el lab de Imagen con Nano Banana seleccionado",
+      "Elige Texto → Imagen o Imagen → Imagen",
+      "Configura num_images (1–8) y un seed si necesitas coherencia",
+      "Añade el prompt; en edición, sube una referencia limpia",
+      "Revisa el precio en vivo y lanza"
+    ],
+    "galleryTitle": "Ejemplos Nano Banana",
+    "galleryIntro": "Stills y ediciones fotorrealistas usados como keyframes en flujos de video.",
+    "galleryAllCta": "Ver ejemplos de imagen →",
+    "recreateLabel": "Recrear este still →",
+    "promptTitle": "Ideas de prompt Nano Banana",
+    "promptIntro": "Describe sujeto, iluminación, lente y uso del frame. En edición, explica la transformación.",
+    "promptPatternSteps": [
+      "Sujeto y entorno (producto/persona/escena)",
+      "Luz y lente (studio/soft/50mm/grade)",
+      "Mood y composición (ángulo hero, fondo limpio)",
+      "Uso (keyframe/miniatura/referencia)",
+      "Instrucciones de edición si aplica"
+    ],
+    "promptSkeleton": "Imagen fotorrealista de [sujeto] en/sobre [entorno/superficie], iluminado por [luz], lente [óptica/estilo], fondo limpio para [uso].",
+    "promptSkeletonNote": "En edición: “Limpia / restylea esta imagen: [instrucciones].”",
+    "tipsTitle": "Consejos y límites",
+    "strengths": [
+      "Stills fotorrealistas rápidos para keyframes y miniaturas",
+      "Modo edición para cleanup, relight y cambio de fondo",
+      "Batch 1–8 salidas, seeds para coherencia"
+    ],
+    "boundaries": [
+      "Solo imagen; usa motores de video para movimiento",
+      "Un prompt por batch; sé conciso",
+      "Sin audio ni video en esta ruta"
+    ]
+  }
 }

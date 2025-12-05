@@ -120,7 +120,20 @@ const ENGINE_FILTER_GROUPS: Record<
   'pika-2-2': { id: 'pika', label: 'Pika', brandId: 'pika' },
   pika: { id: 'pika', label: 'Pika', brandId: 'pika' },
   'kling-2-5-turbo': { id: 'kling', label: 'Kling', brandId: 'kling' },
+  'kling-2-6-pro': { id: 'kling', label: 'Kling', brandId: 'kling' },
   kling: { id: 'kling', label: 'Kling', brandId: 'kling' },
+  'kling-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
+  'fal-ai/kling-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
+  'fal-ai/kling-video/v2.5-turbo/pro/text-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
+  'fal-ai/kling-video/v2.5-turbo/pro/image-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
+  'fal-ai/kling-video/v2.6/pro/text-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
+  'fal-ai/kling-video/v2.6/pro/image-to-video': { id: 'kling', label: 'Kling', brandId: 'kling' },
+  'ltx-2-fast': { id: 'ltx-2', label: 'LTX-2', brandId: 'lightricks' },
+  'ltx-2': { id: 'ltx-2', label: 'LTX-2', brandId: 'lightricks' },
+  'fal-ai/ltx-2/text-to-video': { id: 'ltx-2', label: 'LTX-2', brandId: 'lightricks' },
+  'fal-ai/ltx-2/image-to-video': { id: 'ltx-2', label: 'LTX-2', brandId: 'lightricks' },
+  'fal-ai/ltx-2/text-to-video/fast': { id: 'ltx-2', label: 'LTX-2', brandId: 'lightricks' },
+  'fal-ai/ltx-2/image-to-video/fast': { id: 'ltx-2', label: 'LTX-2', brandId: 'lightricks' },
   'wan-2-5': { id: 'wan', label: 'Wan 2.5', brandId: 'wan' },
   wan: { id: 'wan', label: 'Wan 2.5', brandId: 'wan' },
 };
@@ -388,7 +401,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     return acc;
   }, new Map());
 
-const PREFERRED_ENGINE_ORDER = ['sora-2', 'veo', 'kling', 'wan', 'pika', 'hailuo'];
+const PREFERRED_ENGINE_ORDER = ['sora-2', 'veo', 'kling', 'wan', 'pika', 'hailuo', 'ltx-2'];
 const normalizeFilterId = (value: string) => value.trim().toLowerCase();
 
 const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
@@ -398,6 +411,7 @@ const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
   hailuo: { bg: 'bg-[#FFF4E6]', text: 'text-[#B05600]' },
   kling: { bg: 'bg-[#E6F4FF]', text: 'text-[#0F4C81]' },
   wan: { bg: 'bg-[#F2EAFE]', text: 'text-[#6B2BAA]' },
+  'ltx-2': { bg: 'bg-[#E6F9FF]', text: 'text-[#0A6C80]' },
 };
 
   const engineFilterOptions = PREFERRED_ENGINE_ORDER.map((preferredId) => {

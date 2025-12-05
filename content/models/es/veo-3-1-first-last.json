@@ -137,7 +137,7 @@
         "items": [
           "Sigue la config por segundo de Veo 3.1 (~$0.20/s sin audio, ~$0.40/s con audio)",
           "Ejemplos: 4 s ≈ $0.80–$1.60, 6 s ≈ $1.20–$2.40, 8 s ≈ $1.60–$3.20",
-          "El chip de precio muestra el monto exacto"
+          "El chip de precio muestra el monto exacto — revisa el chip en Generate antes de lanzar."
         ]
       }
     ],
@@ -163,7 +163,6 @@
     "demoPromptLabel": "6s oficina → azotea",
     "demoPrompt": [
       "Transición 6s 16:9 de escritorio luminoso a azotea nocturna con la misma persona.",
-      "Dolly lento que se convierte en arco; se disuelve el fondo de oficina, aparece la ciudad.",
       "Luz: día cálido → azul/neón.",
       "Audio: oficina → tráfico distante, viento y música electrónica suave, sin diálogo."
     ],

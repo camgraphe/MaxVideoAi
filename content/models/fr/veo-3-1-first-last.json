@@ -137,7 +137,7 @@
         "items": [
           "Suit la config au second de Veo 3.1 (~$0.20/s sans audio, ~$0.40/s avec audio)",
           "Exemples : 4 s ≈ $0.80–$1.60, 6 s ≈ $1.20–$2.40, 8 s ≈ $1.60–$3.20",
-          "Le chip prix affiche le montant exact"
+          "Le chip prix affiche le montant exact — vérifiez le chip live dans Generate avant de lancer."
         ]
       }
     ],
@@ -163,7 +163,6 @@
     "demoPromptLabel": "6s bureau → rooftop",
     "demoPrompt": [
       "Transition 6s 16:9 d’un bureau lumineux vers un rooftop de nuit avec la même personne.",
-      "Dolly lent qui devient arc; le décor bureau se dissout, la ville apparaît.",
       "Lumière : jour chaud → bleu/neon.",
       "Audio : bureau → trafic lointain, vent et musique électronique douce, pas de dialogue."
     ],

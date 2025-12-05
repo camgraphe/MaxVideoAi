@@ -39,9 +39,38 @@ interface PriceEstimatorProps {
 }
 
 const MEMBER_ORDER: MemberTier[] = ['Member', 'Plus', 'Pro'];
+const MIN_DURATION_SEC = 2;
 const FAL_ENGINE_REGISTRY = listFalEngines();
 const FAL_ENGINE_ORDER = new Map<string, number>(FAL_ENGINE_REGISTRY.map((entry, index) => [entry.id, index]));
 const SUPPORTED_MODES = new Set<Mode>(['t2v', 'i2v', 't2i', 'i2i']);
+const PER_IMAGE_ENGINE_CONFIG = new Map<
+  string,
+  { rates: Array<{ value: string; label: string; rate: number }> }
+>([
+  [
+    'nano-banana',
+    {
+      rates: [
+        {
+          value: 'per-image',
+          label: 'Per image',
+          rate: 0.05,
+        },
+      ],
+    },
+  ],
+  [
+    'nano-banana-pro',
+    {
+      rates: [
+        { value: '1k', label: '1K', rate: 0.15 },
+        { value: '2k', label: '2K', rate: 0.15 },
+        { value: '4k', label: '4K', rate: 0.3 },
+      ],
+    },
+  ],
+]);
+const PER_IMAGE_ENGINE_IDS = new Set<string>(Array.from(PER_IMAGE_ENGINE_CONFIG.keys()));
 type EngineOptionOverrides = {
   idOverride?: string;
   labelOverride?: string;
@@ -162,53 +191,49 @@ function buildEngineOption(
         ? Object.keys(definition.resolutionMultipliers)
         : [];
 
-  const isNanoBanana = entry.id === 'nano-banana';
+  const perImageConfig = PER_IMAGE_ENGINE_CONFIG.get(entry.id);
 
-  let rates = resolutionSources
-    .map((resolution) => {
-      if (definition) {
-        const multiplier =
-          definition.resolutionMultipliers[resolution] ?? definition.resolutionMultipliers.default ?? 1;
-        const rate = (definition.baseUnitPriceCents * multiplier) / 100;
+  let rates: Array<{ value: string; label: string; rate: number }>;
+
+  if (perImageConfig) {
+    rates = perImageConfig.rates;
+  } else {
+    rates = resolutionSources
+      .map((resolution) => {
+        if (definition) {
+          const multiplier =
+            definition.resolutionMultipliers[resolution] ?? definition.resolutionMultipliers.default ?? 1;
+          const rate = (definition.baseUnitPriceCents * multiplier) / 100;
+          if (!rate) return null;
+          return { value: resolution, label: resolution.toUpperCase(), rate: rate * platformMultiplier };
+        }
+        const cents = perSecond?.byResolution?.[resolution] ?? perSecond?.default;
+        const rate = centsToDollars(cents) ?? perSecondDefault;
         if (!rate) return null;
         return { value: resolution, label: resolution.toUpperCase(), rate: rate * platformMultiplier };
-      }
-      const cents = perSecond?.byResolution?.[resolution] ?? perSecond?.default;
-      const rate = centsToDollars(cents) ?? perSecondDefault;
-      if (!rate) return null;
-      return { value: resolution, label: resolution.toUpperCase(), rate: rate * platformMultiplier };
-    })
-    .filter((rate): rate is { value: string; label: string; rate: number } => Boolean(rate));
+      })
+      .filter((rate): rate is { value: string; label: string; rate: number } => Boolean(rate));
 
-  if (!rates.length && definition) {
-    const fallbackRate = definition.baseUnitPriceCents / 100;
-    rates = [
-      {
-        value: 'default',
-        label: 'DEFAULT',
-        rate: fallbackRate * platformMultiplier,
-      },
-    ];
-  }
+    if (!rates.length && definition) {
+      const fallbackRate = definition.baseUnitPriceCents / 100;
+      rates = [
+        {
+          value: 'default',
+          label: 'DEFAULT',
+          rate: fallbackRate * platformMultiplier,
+        },
+      ];
+    }
 
-  if (!rates.length) {
-    return null;
-  }
-
-  if (isNanoBanana) {
-    rates = [
-      {
-        value: 'per-image',
-        label: 'Per image',
-        rate: 0.05,
-      },
-    ];
+    if (!rates.length) {
+      return null;
+    }
   }
 
   const durationField = getDurationField(engineCaps);
   const defaultMin = typeof durationField?.min === 'number' ? durationField.min : engineCaps.maxDurationSec || 4;
   const defaultMax = typeof durationField?.max === 'number' ? durationField.max : engineCaps.maxDurationSec || defaultMin;
-  const fallbackMin = definition?.durationSteps?.min ?? defaultMin ?? 4;
+  const fallbackMin = Math.max(definition?.durationSteps?.min ?? defaultMin ?? 4, MIN_DURATION_SEC);
   let fallbackMax = definition?.durationSteps?.max ?? defaultMax ?? fallbackMin;
   if (fallbackMax < fallbackMin) {
     fallbackMax = fallbackMin;
@@ -221,11 +246,12 @@ function buildEngineOption(
   const maxDuration = rawDurationOptions.length ? rawDurationOptions[rawDurationOptions.length - 1].value : fallbackMax;
   const durationOptions = rawDurationOptions;
 
-  const defaultDuration =
+  const defaultDurationRaw =
     parseDurationValue(definition?.durationSteps?.default as number | string | undefined)?.value ??
     parseDurationValue(durationField?.default)?.value ??
     durationOptions[Math.floor(durationOptions.length / 2)]?.value ??
     Math.round((minDuration + maxDuration) / 2);
+  const defaultDuration = Math.min(Math.max(defaultDurationRaw ?? minDuration, minDuration), maxDuration);
 
   const brand = getPartnerByEngineId(entry.id);
   const availabilityLink =
@@ -250,13 +276,13 @@ function buildEngineOption(
     currency: definition?.currency ?? engineCaps.pricingDetails?.currency ?? 'USD',
     availability: entry.availability,
     availabilityLink,
-    showResolution: !isNanoBanana,
-    rateUnit: isNanoBanana ? '/image' : '/s',
+    showResolution: !perImageConfig,
+    rateUnit: perImageConfig ? '/image' : '/s',
     audioIncluded: Boolean(engineCaps.audio),
     pricingEngineId,
     sortIndex,
     baseEngineId: entry.id,
-    showDuration: overrides?.showDuration ?? entry.id !== 'nano-banana',
+    showDuration: overrides?.showDuration ?? !perImageConfig,
   };
 }
 
@@ -331,6 +357,7 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
       'pika-text-to-video',
       'minimax-hailuo-02-text',
       'nano-banana',
+      'nano-banana-pro',
     ];
     const preferredIndex = new Map<string, number>(preferredOrder.map((id, index) => [id, index]));
 
@@ -374,18 +401,28 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
 
   useEffect(() => {
     if (!selectedEngine) return;
-    if (selectedEngine.durationOptions.length) {
-      if (!selectedEngine.durationOptions.some((option) => option.value === duration)) {
-        setDuration(selectedEngine.defaultDuration);
+    const cap =
+      selectedEngine.id === 'ltx-2-fast' && selectedResolution === '4k' ? 10 : null;
+    const allowedOptions = selectedEngine.durationOptions.length
+      ? selectedEngine.durationOptions.filter((option) => (cap ? option.value <= cap : true))
+      : [];
+    if (allowedOptions.length) {
+      const isAllowed = allowedOptions.some((option) => option.value === duration);
+      if (!isAllowed) {
+        const fallback =
+          allowedOptions.find((option) => option.value === selectedEngine.defaultDuration) ??
+          allowedOptions[0];
+        setDuration(fallback?.value ?? allowedOptions[0]?.value ?? duration);
       }
       return;
     }
     if (duration < selectedEngine.minDuration) {
       setDuration(selectedEngine.minDuration);
     } else if (duration > selectedEngine.maxDuration) {
-      setDuration(selectedEngine.maxDuration);
+      const clampedMax = cap ? Math.min(selectedEngine.maxDuration, cap) : selectedEngine.maxDuration;
+      setDuration(clampedMax);
     }
-  }, [selectedEngine, duration]);
+  }, [selectedEngine, duration, selectedResolution]);
 
   const [memberTier, setMemberTier] = useState<MemberTier>('Member');
 
@@ -393,7 +430,15 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
     selectedEngine?.resolutions.find((resolution) => resolution.value === selectedResolution) ??
     selectedEngine?.resolutions[0];
   const rate = activeResolution?.rate ?? 0;
-  const bypassPricing = selectedEngine?.id === 'nano-banana';
+  const bypassPricing = selectedEngine ? PER_IMAGE_ENGINE_IDS.has(selectedEngine.id) : false;
+  const filteredDurationOptions = useMemo(() => {
+    if (!selectedEngine) return [];
+    const cap =
+      selectedEngine.id === 'ltx-2-fast' && selectedResolution === '4k' ? 10 : null;
+    return cap
+      ? selectedEngine.durationOptions.filter((option) => option.value <= cap)
+      : selectedEngine.durationOptions;
+  }, [selectedEngine, selectedResolution]);
 
   const pricingMemberTier = (memberTier.toLowerCase() as PricingMemberTier);
 
@@ -413,7 +458,7 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
 
   const pricingSnapshot = bypassPricing ? null : pricingQuote?.snapshot ?? null;
   const manualPricing = useMemo(() => {
-    if (!selectedEngine || selectedEngine.id !== 'nano-banana') return null;
+    if (!selectedEngine || !PER_IMAGE_ENGINE_IDS.has(selectedEngine.id)) return null;
     return {
       base: rate,
       discountRate: 0,
@@ -469,7 +514,7 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
   const priceChipSuffix = t('pricing.priceChipSuffix', dictionary.pricing.priceChipSuffix);
 
   const isLite = variant === 'lite';
-  const activeDurationOption = selectedEngine?.durationOptions.find((option) => option.value === duration) ?? null;
+  const activeDurationOption = filteredDurationOptions.find((option) => option.value === duration) ?? null;
   const durationDisplay = activeDurationOption?.label ?? `${duration}s`;
   const discountPercent = Math.round(pricing.discountRate * 100);
   const memberBenefitCopy = memberBenefits.get(memberTier);
@@ -620,9 +665,9 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
                 {selectedEngine?.showDuration !== false ? (
                   <div className="rounded-[24px] border border-white/60 bg-white/85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
                     <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">{fields.duration}</span>
-                    {selectedEngine.durationOptions.length ? (
+                    {filteredDurationOptions.length ? (
                       <div className="mt-3 flex flex-wrap gap-2">
-                        {selectedEngine.durationOptions.map((option) => {
+                        {filteredDurationOptions.map((option) => {
                           const selected = option.value === duration;
                           return (
                             <button
@@ -664,10 +709,10 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
                         </div>
                       </div>
                     )}
-                    {selectedEngine.durationOptions.length ? (
+                    {filteredDurationOptions.length ? (
                       <p className="mt-3 text-xs text-text-muted">
                         {t('pricing.estimator.durationRangeLabel', 'Available')} •{' '}
-                        {selectedEngine.durationOptions.map((option) => option.label).join(' · ')}
+                        {filteredDurationOptions.map((option) => option.label).join(' · ')}
                       </p>
                     ) : (
                       <p className="mt-3 text-xs text-text-muted">

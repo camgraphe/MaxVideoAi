@@ -135,7 +135,18 @@ const HERO_TILES: readonly HeroTileConfig[] = [
   },
 ] as const;
 
-const WORKS_WITH_BRANDS = ['Sora 2', 'Veo 3.1', 'Pika 2.2', 'MiniMax Hailuo 02', 'Kling 2.5', 'Wan 2.5', 'Nano Banana'] as const;
+const WORKS_WITH_BRANDS = [
+  'Sora 2',
+  'Veo 3.1',
+  'LTX-2 Fast',
+  'LTX-2 Pro',
+  'Kling 2.6 Pro',
+  'Pika 2.2',
+  'MiniMax Hailuo 02',
+  'Kling 2.5',
+  'Wan 2.5',
+  'Nano Banana',
+] as const;
 
 const HERO_TILE_EXAMPLE_SLUGS: Record<string, string> = {
   'sora-2': 'sora-2',
@@ -153,6 +164,9 @@ const COMPARE_ENGINE_PRIORITY: readonly string[] = [
   'sora-2-pro',
   'veo-3-1',
   'veo-3-1-fast',
+  'ltx-2-fast',
+  'ltx-2',
+  'kling-2-6-pro',
   'pika-text-to-video',
   'minimax-hailuo-02-text',
 ];
@@ -169,6 +183,9 @@ const COMPARE_ENGINE_META: Record<
   'sora-2-pro': { maxDuration: '6–8s', audio: 'Yes', bestFor: 'Studio-grade Sora renders' },
   'veo-3-1': { maxDuration: '8–12s', audio: 'Yes', bestFor: 'Ads & B-roll' },
   'veo-3-1-fast': { maxDuration: '4–8s', audio: 'Yes', bestFor: 'Frame-to-frame bridges' },
+  'ltx-2-fast': { maxDuration: '6–20s', audio: 'Yes', bestFor: 'Rapid social clips' },
+  'ltx-2': { maxDuration: '6–10s', audio: 'Yes', bestFor: 'Premium product stories' },
+  'kling-2-6-pro': { maxDuration: '5–10s', audio: 'Yes', bestFor: 'Cinematic dialogue' },
   'pika-text-to-video': { maxDuration: '3–6s', audio: 'No', bestFor: 'Prompts or image loops' },
   'minimax-hailuo-02-text': { maxDuration: '6–8s', audio: 'No', bestFor: 'Stylised text/image motion' },
 };
@@ -726,7 +743,7 @@ export default async function HomePage() {
             logo: 'https://maxvideoai.com/logo-wordmark.svg',
             sameAs: [],
             description:
-              'Independent hub for AI video generation. Price before you generate. Works with Sora, Veo, Pika, MiniMax, Kling, Wan, Nano Banana.',
+              'Independent hub for AI video generation. Price before you generate. Works with Sora, Veo, LTX-2, Kling, Pika, MiniMax, Wan, Nano Banana.',
           }),
         }}
       />
@@ -749,7 +766,7 @@ export default async function HomePage() {
               description: 'Pay-as-you-go. Load credits to render; no subscription.',
             },
             featureList: [
-              'Multi-engine routing (Sora, Veo, Pika, MiniMax, Kling, Wan, Nano Banana)',
+              'Multi-engine routing (Sora, Veo, LTX-2, Kling, Pika, MiniMax, Wan, Nano Banana)',
               'Live pricing before render',
               'Wallet-first billing with automatic refunds',
               'Composer, gallery, and job tracking in one workspace',

@@ -137,7 +137,7 @@
         "items": [
           "Follows Veo 3.1 per-second config (e.g., ~ $0.20/s audio off, ~$0.40/s audio on)",
           "Examples: 4 s ≈ $0.80–$1.60, 6 s ≈ $1.20–$2.40, 8 s ≈ $1.60–$3.20",
-          "Live wallet chip shows exact price before render"
+          "Live wallet chip shows exact price before render — always check the live price chip in Generate for the current rate."
         ]
       }
     ],
@@ -163,7 +163,6 @@
     "demoPromptLabel": "6s office → rooftop",
     "demoPrompt": [
       "Animate a 6 second 16:9 cinematic transition from a bright office desk still to a night rooftop still with the same person.",
-      "Start with a slow push-in on the desk, then let the environment subtly shift: daylight fades, the office background dissolves, the rooftop cityscape appears while keeping the character’s position consistent.",
       "Camera: continuous dolly forward that becomes a gentle arc around the character.",
       "Lighting: warm daylight blending into cool blue/neon highlights.",
       "Audio: office ambience fading into distant traffic, wind and subtle electronic music, no dialogue."

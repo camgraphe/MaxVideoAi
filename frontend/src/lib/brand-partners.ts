@@ -185,7 +185,7 @@ export const PARTNER_BRANDS: PartnerBrand[] = [
       light: 'Kling by Kuaishou wordmark',
       dark: 'Kling by Kuaishou wordmark (inverse)',
     },
-    engineIds: ['kling25', 'kling-2-5', 'kling25_turbo', 'kling-2-5-turbo'],
+    engineIds: ['kling25', 'kling-2-5', 'kling25_turbo', 'kling-2-5-turbo', 'kling-2-6-pro'],
   },
   {
     id: 'openai',

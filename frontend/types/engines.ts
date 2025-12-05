@@ -8,6 +8,7 @@ export type Resolution =
   | '480p'
   | '720p'
   | '1080p'
+  | '1440p'
   | '4k'
   | '512P'
   | '768P'

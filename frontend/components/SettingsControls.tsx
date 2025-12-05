@@ -200,6 +200,7 @@ export function SettingsControls({
   const durationOptionsContainerRef = useRef<HTMLDivElement | null>(null);
   const durationSliderRef = useRef<HTMLInputElement | null>(null);
   const frameOptionsContainerRef = useRef<HTMLDivElement | null>(null);
+  const isLtx2FastLong = engine.id === 'ltx-2-fast' && durationSec > 10;
 
   useEffect(() => {
     const target = focusRefs?.duration;
@@ -220,9 +221,10 @@ export function SettingsControls({
   }, [focusRefs?.duration, frameOptions, enumeratedDurationOptions, durationRange]);
 
   const resolutionOptions = useMemo(() => {
-    if (caps?.resolution && caps.resolution.length) return caps.resolution;
-    return engine.resolutions;
-  }, [caps?.resolution, engine.resolutions]);
+    const base = caps?.resolution && caps.resolution.length ? caps.resolution : engine.resolutions;
+    if (isLtx2FastLong) return base.filter((value) => value === '1080p');
+    return base;
+  }, [caps?.resolution, engine.resolutions, isLtx2FastLong]);
 
   const aspectOptions = useMemo(() => {
     if (caps) {
@@ -383,6 +385,11 @@ export function SettingsControls({
             }}
           />
         )}
+        {isLtx2FastLong ? (
+          <p className="text-[11px] text-text-muted">
+            LTX-2 Fast: durations above 10s run at 1080p / 25 fps (Fal constraint).
+          </p>
+        ) : null}
 
         {showAspectControl && (
           <FieldGroup
@@ -492,7 +499,7 @@ export function SettingsControls({
 
             {engine.fps.length > 1 && (
               <div className="flex flex-wrap gap-2">
-                {engine.fps.map((option) => (
+                {(isLtx2FastLong ? engine.fps.filter((value) => value === 25) : engine.fps).map((option) => (
                 <button
                   key={option}
                   type="button"

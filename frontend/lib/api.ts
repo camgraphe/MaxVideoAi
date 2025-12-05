@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import { supabase } from '@/lib/supabaseClient';
@@ -237,6 +237,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType })
   const [cacheKey, setCacheKey] = useState<string | null>(() => (typeof window === 'undefined' ? 'server' : null));
   const feedType: JobFeedType =
     options?.type === 'image' || options?.type === 'video' ? options.type : 'all';
+  const lastRevalidateRef = useRef<number>(0);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -348,7 +349,11 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType })
       );
 
       if (!jobFound) {
-        void mutate(undefined, { revalidate: true });
+        const now = Date.now();
+        if (now - lastRevalidateRef.current > 1500) {
+          lastRevalidateRef.current = now;
+          void mutate(undefined, { revalidate: true });
+        }
       }
     };
 

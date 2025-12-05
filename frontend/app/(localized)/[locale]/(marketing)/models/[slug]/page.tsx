@@ -145,6 +145,7 @@ const PROVIDER_INFO_MAP: Record<string, { name: string; url: string }> = {
   minimax: { name: 'MiniMax', url: 'https://www.minimaxi.com' },
   kling: { name: 'Kling by Kuaishou', url: 'https://www.kuaishou.com/en' },
   wan: { name: 'Wan AI', url: 'https://www.wan-ai.com' },
+  lightricks: { name: 'Lightricks', url: 'https://www.lightricks.com' },
 };
 const AVAILABILITY_SCHEMA_MAP: Record<string, string> = {
   available: 'https://schema.org/InStock',
@@ -375,8 +376,44 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
       .filter((section): section is SpecSection => Boolean(section));
   };
 
-  const bestUseCasesTitle = localized.bestUseCases?.title ?? getString('bestUseCasesTitle');
+  const fallbackSpecSections = (): SpecSection[] => {
+    if (!localized.technicalOverview || !localized.technicalOverview.length) return [];
+    const items = localized.technicalOverview
+      .map((entry) => {
+        if (!entry?.body) return entry?.label ?? null;
+        if (entry.label) return `${entry.label}: ${entry.body}`;
+        return entry.body;
+      })
+      .filter((item): item is string => Boolean(item && item.trim().length));
+    if (!items.length) return [];
+    return [
+      {
+        title: localized.technicalOverviewTitle ?? 'Specs',
+        items,
+      },
+    ];
+  };
+
+  const bestUseCasesTitle = localized.bestUseCases?.title ?? getString('bestUseCasesTitle') ?? 'Best use cases';
   const bestUseCases = localized.bestUseCases?.items ?? getStringArray('bestUseCases');
+  const heroHighlights = getStringArray('heroHighlights').length
+    ? getStringArray('heroHighlights')
+    : (bestUseCases ?? []).slice(0, 4);
+  const specSections = (() => {
+    const sections = getSpecSections();
+    if (sections.length) return sections;
+    return fallbackSpecSections();
+  })();
+  const specTitle = getString('specTitle') ?? localized.technicalOverviewTitle ?? 'Specs';
+  const specNote = getString('specNote') ?? localized.pricingNotes ?? null;
+  const promptTitle = getString('promptTitle') ?? localized.promptStructure?.title ?? 'Prompt ideas';
+  const promptIntro = getString('promptIntro') ?? localized.promptStructure?.description ?? null;
+  const promptPatternSteps =
+    getStringArray('promptPatternSteps').length > 0
+      ? getStringArray('promptPatternSteps')
+      : localized.promptStructure?.steps ?? [];
+  const promptSkeleton = getString('promptSkeleton') ?? localized.promptStructure?.quote ?? null;
+  const promptSkeletonNote = getString('promptSkeletonNote') ?? localized.promptStructure?.description ?? null;
 
   return {
     heroTitle: localized.hero?.title ?? getString('heroTitle'),
@@ -396,7 +433,7 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
       localized.compareLink?.href ??
       (slug === 'sora-2' ? '/models/sora-2-pro' : '/models/sora-2'),
     whyTitle: getString('whyTitle'),
-    heroHighlights: getStringArray('heroHighlights'),
+    heroHighlights,
     bestUseCasesTitle,
     bestUseCases,
     whatTitle: getString('whatTitle'),
@@ -406,9 +443,9 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
     whatFlowSteps: getStringArray('whatFlowSteps'),
     howToLatamTitle: getString('howToLatamTitle'),
     howToLatamSteps: getStringArray('howToLatamSteps'),
-    specTitle: getString('specTitle'),
-    specNote: getString('specNote'),
-    specSections: getSpecSections(),
+    specTitle,
+    specNote,
+    specSections,
     specValueProp: getString('specValueProp'),
     quickPricingTitle: getString('quickPricingTitle'),
     quickPricingItems: getStringArray('quickPricingItems'),
@@ -418,11 +455,11 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
     gallerySceneCta: getString('gallerySceneCta'),
     galleryAllCta: getString('galleryAllCta'),
     recreateLabel: getString('recreateLabel'),
-    promptTitle: getString('promptTitle'),
-    promptIntro: getString('promptIntro'),
-    promptPatternSteps: getStringArray('promptPatternSteps'),
-    promptSkeleton: getString('promptSkeleton'),
-    promptSkeletonNote: getString('promptSkeletonNote'),
+    promptTitle,
+    promptIntro,
+    promptPatternSteps,
+    promptSkeleton,
+    promptSkeletonNote,
     imageTitle: getString('imageTitle'),
     imageIntro: getString('imageIntro'),
     imageFlow: getStringArray('imageFlow'),
@@ -721,11 +758,14 @@ async function renderSoraModelPage({
 
   const fallbackMedia: FeaturedMedia = {
     id: `${engine.modelSlug}-hero-fallback`,
-    prompt: `${localizedContent.marketingName ?? engine.marketingName} demo clip from MaxVideoAI`,
-    videoUrl: engine.media?.videoUrl ?? engine.demoUrl ?? null,
+    prompt:
+      engine.type === 'image'
+        ? `${localizedContent.marketingName ?? engine.marketingName} demo still from MaxVideoAI`
+        : `${localizedContent.marketingName ?? engine.marketingName} demo clip from MaxVideoAI`,
+    videoUrl: engine.type === 'image' ? null : engine.media?.videoUrl ?? engine.demoUrl ?? null,
     posterUrl: buildOptimizedPosterUrl(engine.media?.imagePath) ?? engine.media?.imagePath ?? null,
     durationSec: null,
-    hasAudio: true,
+    hasAudio: engine.type === 'image' ? false : true,
     href: null,
     label: localizedContent.marketingName ?? engine.marketingName ?? 'Sora',
   };
@@ -736,9 +776,10 @@ async function renderSoraModelPage({
     demoMedia.prompt =
       'A cinematic 10-second shot in 16:9. At night, the camera flies smoothly through a modern city full of soft neon lights and warm windows, then glides towards a single bright window high on a building. Without cutting, the camera passes through the glass into a cozy creator studio with a large desk and an ultra-wide monitor glowing in the dark. The room is lit by the screen and a warm desk lamp. The camera continues to push in until the monitor fills most of the frame. On the screen there is a clean AI video workspace UI (generic, no real logos) showing four small video previews playing at the same time: one realistic city street shot, one colourful animation, one product hero shot and one abstract motion-graphics scene. The overall style is cinematic, with smooth camera motion, gentle depth of field and rich contrast.';
   }
+  const isImageEngine = engine.type === 'image';
   const galleryCtaHref = heroMedia?.id
-    ? `/app?engine=${engine.modelSlug}&from=${encodeURIComponent(heroMedia.id)}`
-    : `/app?engine=${engine.modelSlug}`;
+    ? `${isImageEngine ? '/app/image' : '/app'}?engine=${engine.modelSlug}&from=${encodeURIComponent(heroMedia.id)}`
+    : `${isImageEngine ? '/app/image' : '/app'}?engine=${engine.modelSlug}`;
   const relatedEngines = listFalEngines()
     .filter((entry) => entry.modelSlug !== engine.modelSlug)
     .sort((a, b) => (a.family === engine.family ? -1 : 0) - (b.family === engine.family ? -1 : 0))
@@ -868,11 +909,14 @@ function Sora2PageLayout({
   const hasTipsSection = strengths.length > 0 || boundaries.length > 0 || Boolean(copy.tipsTitle);
   const hasSafetySection = safetyRules.length > 0 || safetyInterpretation.length > 0 || Boolean(copy.safetyTitle);
   const hasFaqSection = faqList.length > 0;
+  const isImageEngine = engine.type === 'image';
+  const textAnchorId = isImageEngine ? 'text-to-image' : 'text-to-video';
+  const imageAnchorId = isImageEngine ? 'image-to-image' : 'image-to-video';
   const tocItems = [
     { id: 'specs', label: 'Specs', visible: hasSpecs },
     { id: 'examples', label: 'Examples', visible: hasExamples },
-    { id: 'text-to-video', label: 'Text to Video', visible: hasTextSection },
-    { id: 'image-to-video', label: 'Image to Video', visible: hasImageSection },
+    { id: textAnchorId, label: isImageEngine ? 'Text to Image' : 'Text to Video', visible: hasTextSection },
+    { id: imageAnchorId, label: isImageEngine ? 'Image to Image' : 'Image to Video', visible: hasImageSection },
     { id: 'tips', label: 'Tips', visible: hasTipsSection },
     { id: 'safety', label: 'Safety', visible: hasSafetySection },
     { id: 'faq', label: 'FAQ', visible: hasFaqSection },
@@ -1125,20 +1169,21 @@ function Sora2PageLayout({
           </section>
         ) : null}
 
-        <section id="text-to-video" className="mt-14 space-y-4">
+        <section id={textAnchorId} className="mt-14 space-y-4">
           {copy.galleryTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.galleryTitle}</h2> : null}
-          {copy.galleryIntro ? <p className="text-base text-text-secondary">{copy.galleryIntro}</p> : null}
-          {copy.galleryAllCta ? (
-            <p className="text-base text-text-secondary">
-              <Link
-                href={`/examples?engine=${encodeURIComponent(galleryEngineSlug)}`}
-                className="font-semibold text-accent hover:text-accentSoft"
-              >
-                {copy.galleryAllCta}
-              </Link>
-            </p>
-          ) : null}
           {galleryVideos.length ? (
+            <>
+              {copy.galleryIntro ? <p className="text-base text-text-secondary">{copy.galleryIntro}</p> : null}
+              {copy.galleryAllCta ? (
+                <p className="text-base text-text-secondary">
+                  <Link
+                    href={`/examples?engine=${encodeURIComponent(galleryEngineSlug)}`}
+                    className="font-semibold text-accent hover:text-accentSoft"
+                  >
+                    {copy.galleryAllCta}
+                  </Link>
+                </p>
+              ) : null}
             <div className="mt-6 space-y-4">
               <div className="overflow-x-auto pb-2">
                 <div className="flex min-w-full gap-4">
@@ -1186,11 +1231,15 @@ function Sora2PageLayout({
                 </div>
               </div>
             </div>
+            </>
           ) : (
             <div className="mt-4 rounded-2xl border border-dashed border-hairline bg-white/60 px-4 py-4 text-sm text-text-secondary">
               {copy.galleryIntro ?? 'Sora 2 examples will appear here soon.'}{' '}
               {copy.galleryAllCta ? (
-                <Link href="/examples?engine=sora-2" className="font-semibold text-accent hover:text-accentSoft">
+                <Link
+                  href={`/examples?engine=${encodeURIComponent(galleryEngineSlug)}`}
+                  className="font-semibold text-accent hover:text-accentSoft"
+                >
                   {copy.galleryAllCta}
                 </Link>
               ) : null}
@@ -1201,12 +1250,12 @@ function Sora2PageLayout({
               href={galleryCtaHref}
               className="inline-flex items-center rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white shadow-card transition hover:bg-neutral-800"
             >
-              {copy.gallerySceneCta ?? 'Open this scene in Generate →'}
+              {copy.gallerySceneCta ?? (isImageEngine ? 'Open this still in the Image lab →' : 'Open this scene in Generate →')}
             </Link>
           </div>
         </section>
 
-        <section id="image-to-video" className="mt-14 space-y-4">
+        <section id={imageAnchorId} className="mt-14 space-y-4">
           {copy.promptTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.promptTitle}</h2> : null}
           {copy.promptIntro ? <p className="text-base text-text-secondary">{copy.promptIntro}</p> : null}
           <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
@@ -1407,15 +1456,27 @@ function Sora2PageLayout({
               {copy.relatedTitle ?? 'Explore other models'}
             </h2>
             {copy.relatedSubtitle ? <p className="text-sm text-text-secondary">{copy.relatedSubtitle}</p> : null}
-            <div className="grid gap-4 md:grid-cols-3">
-              {relatedEngines.map((entry) => (
+          <div className="grid gap-4 md:grid-cols-3">
+            {relatedEngines.map((entry) => {
+              const label = entry.marketingName ?? entry.engine.label;
+                const ctaLabel =
+                  engineSlug === 'veo-3-1-first-last'
+                    ? entry.modelSlug === 'veo-3-1'
+                      ? 'Explore Veo 3.1 →'
+                      : entry.modelSlug === 'veo-3-1-fast'
+                        ? 'Explore Veo 3.1 Fast →'
+                      : entry.modelSlug === 'sora-2'
+                        ? 'Explore Sora 2 →'
+                        : copy.comparisonCta ?? 'View model →'
+                  : copy.comparisonCta ?? 'View model →';
+              return (
                 <article
                   key={entry.modelSlug}
                   className="rounded-2xl border border-hairline bg-white/90 p-4 shadow-card transition hover:-translate-y-1 hover:border-accent/60"
                 >
                   <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{entry.brandId}</p>
                   <h3 className="mt-2 text-lg font-semibold text-text-primary">
-                    {entry.marketingName ?? entry.engine.label}
+                    {label}
                   </h3>
                   <p className="mt-2 text-sm text-text-secondary line-clamp-3">
                     {entry.seo?.description ?? localizedContent.overview ?? ''}
@@ -1424,13 +1485,14 @@ function Sora2PageLayout({
                     href={localizeModelsPath(entry.modelSlug)}
                     className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accentSoft"
                   >
-                    {copy.comparisonCta ?? 'View model →'}
+                    {ctaLabel}
                   </Link>
                 </article>
-              ))}
-            </div>
-          </section>
-        ) : null}
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
 
         <section className="mt-14 space-y-3 rounded-3xl border border-hairline bg-white/90 px-6 py-6 text-text-primary shadow-card sm:px-8">
           {copy.finalPara1 ? <p className="text-base text-text-secondary">{copy.finalPara1}</p> : null}
@@ -1442,6 +1504,7 @@ function Sora2PageLayout({
             {copy.finalButton ?? primaryCta}
           </Link>
         </section>
+
       </main>
     </>
   );
@@ -1534,10 +1597,16 @@ export default async function ModelDetailPage({ params }: PageParams) {
     slug === 'sora-2-pro' ||
     slug === 'veo-3-1' ||
     slug === 'veo-3-1-fast' ||
+    slug === 'veo-3-1-first-last' ||
     slug === 'pika-text-to-video' ||
     slug === 'wan-2-5' ||
     slug === 'kling-2-5-turbo' ||
-    slug === 'minimax-hailuo-02-text'
+    slug === 'minimax-hailuo-02-text' ||
+    slug === 'ltx-2' ||
+    slug === 'ltx-2-fast' ||
+    slug === 'kling-2-6-pro' ||
+    slug === 'nano-banana' ||
+    slug === 'nano-banana-pro'
   ) {
     const activeLocale = routeLocale ?? 'en';
     const { dictionary } = await resolveDictionary();
@@ -1612,6 +1681,9 @@ export default async function ModelDetailPage({ params }: PageParams) {
     },
   };
 
+  if (engine.modelSlug === 'nano-banana' || engine.modelSlug === 'nano-banana-pro') {
+    detailCopy.overviewTitle = 'Overview';
+  }
   const marketingName = localizedContent.marketingName ?? engine.marketingName;
   const versionLabel = localizedContent.versionLabel ?? engine.versionLabel;
   const seoDescription = localizedContent.seo.description ?? engine.seo.description ?? null;
@@ -1972,6 +2044,14 @@ export default async function ModelDetailPage({ params }: PageParams) {
           <div className="grid gap-4 md:grid-cols-3">
             {relatedEngines.map((candidate) => {
               const label = candidate.marketingName ?? candidate.engine.label;
+              const ctaLabel = (() => {
+                if (slug === 'ltx-2') {
+                  if (candidate.modelSlug === 'ltx-2-fast') return 'Compare LTX-2 Pro vs Fast';
+                  if (candidate.modelSlug === 'sora-2') return 'Explore Sora 2';
+                  if (candidate.modelSlug === 'sora-2-pro') return 'Explore Sora 2 Pro';
+                }
+                return `Try ${label}`;
+              })();
               return (
                 <article key={candidate.modelSlug} className="rounded-2xl border border-hairline bg-white/90 p-5 shadow-card">
                   <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{candidate.brandId}</p>
@@ -1983,7 +2063,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
                     href={localizeModelsPath(candidate.modelSlug)}
                     className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accentSoft"
                   >
-                    {`Try ${label}`} <span aria-hidden>→</span>
+                    {ctaLabel} <span aria-hidden>→</span>
                   </Link>
                 </article>
               );
@@ -2000,12 +2080,13 @@ export default async function ModelDetailPage({ params }: PageParams) {
           {detailCopy.buttons.pricing}
         </Link>
         <Link
-          href="/app"
+          href={isImageEngine ? '/app/image' : '/app'}
           className="inline-flex items-center rounded-pill bg-accent px-4 py-2 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft"
         >
           {detailCopy.buttons.launch}
         </Link>
       </div>
+
     </div>
   </>
 );

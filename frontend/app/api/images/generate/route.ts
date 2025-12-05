@@ -30,6 +30,7 @@ const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER: Currency = 'usd';
 const MAX_IMAGES = 8;
 const PLACEHOLDER_THUMB = '/assets/frames/thumb-1x1.svg';
+const NANO_BANANA_IMAGE_ENGINE_IDS = new Set(['nano-banana', 'nano-banana-pro']);
 
 type PendingReceipt = {
   userId: string;
@@ -276,7 +277,7 @@ export async function POST(req: NextRequest) {
       engineLabel: engineEntry.marketingName,
     });
   }
-  const isNanoBanana = engineEntry.id === 'nano-banana';
+  const isNanoBanana = NANO_BANANA_IMAGE_ENGINE_IDS.has(engineEntry.id);
   const resolvedAspectRatio = isNanoBanana
     ? normalizeNanoBananaAspectRatio(mode, body?.aspectRatio) ?? getNanoBananaDefaultAspectRatio(mode)
     : null;

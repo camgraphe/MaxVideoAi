@@ -79,5 +79,32 @@
     "versionLabel": "2.5 Preview",
     "availability": "available",
     "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "ltx-2-fast",
+    "marketingName": "LTX Video 2.0 Fast",
+    "brandId": "lightricks",
+    "modelSlug": "ltx-2-fast",
+    "versionLabel": "Fast",
+    "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "ltx-2",
+    "marketingName": "LTX Video 2.0 Pro",
+    "brandId": "lightricks",
+    "modelSlug": "ltx-2",
+    "versionLabel": "Pro",
+    "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "kling-2-6-pro",
+    "marketingName": "Kling 2.6 Pro",
+    "brandId": "kling",
+    "modelSlug": "kling-2-6-pro",
+    "versionLabel": "v2.6 Pro",
+    "availability": "available",
+    "logoPolicy": "textOnly"
   }
 ]

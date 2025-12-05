@@ -31,6 +31,9 @@ import {
 import { resolveCssAspectRatio } from '@/lib/aspect';
 import { authFetch } from '@/lib/authFetch';
 
+const NANO_BANANA_ENGINE_IDS = new Set(['nano-banana', 'nano-banana-pro']);
+const NANO_BANANA_ALIAS_PREFIXES = ['fal-ai/nano-banana'];
+
 interface ImageWorkspaceCopy {
   hero: {
     eyebrow: string;
@@ -397,9 +400,22 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     [engineId, engines]
   );
   const selectedEngineCaps = selectedEngine?.engineCaps ?? engines[0]?.engineCaps;
-  const isNanoBanana =
-    selectedEngine?.id === 'nano-banana' ||
-    Boolean(selectedEngine?.aliases?.some((alias) => alias === 'nano-banana' || alias === 'fal-ai/nano-banana'));
+  const isNanoBanana = useMemo(() => {
+    if (!selectedEngine) return false;
+    if (NANO_BANANA_ENGINE_IDS.has(selectedEngine.id)) {
+      return true;
+    }
+    const aliases = selectedEngine.aliases ?? [];
+    return aliases.some((alias) => {
+      if (typeof alias !== 'string' || !alias.length) {
+        return false;
+      }
+      if (NANO_BANANA_ENGINE_IDS.has(alias)) {
+        return true;
+      }
+      return NANO_BANANA_ALIAS_PREFIXES.some((prefix) => alias.startsWith(prefix));
+    });
+  }, [selectedEngine]);
 
   useEffect(() => {
     if (!selectedEngine) return;

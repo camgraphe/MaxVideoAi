@@ -9,6 +9,7 @@ import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { ModelsGallery } from '@/components/marketing/ModelsGallery';
 import { getEnginePictogram } from '@/lib/engine-branding';
+import { getEngineLocalized } from '@/lib/models/i18n';
 
 const MODELS_SLUG_MAP = buildSlugMap('models');
 const DEFAULT_INTRO = {
@@ -102,9 +103,10 @@ function getEngineTypeKey(entry: FalEngineEntry): EngineTypeKey {
   const modes = new Set(entry.engine.modes);
   const hasText = modes.has('t2v');
   const hasImage = modes.has('i2v');
+  const hasImageGen = modes.has('t2i') || modes.has('i2i');
   if (hasText && hasImage) return 'textImage';
   if (hasText) return 'text';
-  if (hasImage) return 'image';
+  if (hasImage || hasImageGen) return 'image';
   return 'default';
 }
 
@@ -167,14 +169,32 @@ export default async function ModelsPage() {
     'pika-text-to-video',
     'wan-2-5',
     'kling-2-5-turbo',
+    'kling-2-6-pro',
+    'ltx-2-fast',
+    'ltx-2',
     'minimax-hailuo-02-text',
     'nano-banana',
+    'nano-banana-pro',
   ];
 
   const engineIndex = new Map<string, FalEngineEntry>(listFalEngines().map((entry) => [entry.modelSlug, entry]));
-  const engines = priorityOrder
+  const priorityEngines = priorityOrder
     .map((slug) => engineIndex.get(slug))
     .filter((entry): entry is FalEngineEntry => Boolean(entry));
+  const remainingEngines = listFalEngines()
+    .filter((entry) => !priorityOrder.includes(entry.modelSlug))
+    .sort((a, b) => getEngineDisplayName(a).localeCompare(getEngineDisplayName(b)));
+  const engines = [...priorityEngines, ...remainingEngines];
+
+  const localizedMap = new Map<string, Awaited<ReturnType<typeof getEngineLocalized>>>(
+    await Promise.all(
+      engines.map(async (engine) => {
+        const localized = await getEngineLocalized(engine.modelSlug, activeLocale);
+        return [engine.modelSlug, localized] as const;
+      })
+    )
+  );
+
   const quickLinkSlugs = [
     'sora-2',
     'sora-2-pro',
@@ -182,21 +202,28 @@ export default async function ModelsPage() {
     'veo-3-1-first-last',
     'pika-text-to-video',
     'kling-2-5-turbo',
+    'kling-2-6-pro',
     'wan-2-5',
+    'ltx-2-fast',
+    'ltx-2',
     'minimax-hailuo-02-text',
     'nano-banana',
+    'nano-banana-pro',
   ];
   const quickLinks = quickLinkSlugs
     .map((slug) => engineIndex.get(slug))
     .filter((entry): entry is FalEngineEntry => Boolean(entry));
+
   const modelCards = engines.map((engine) => {
     const meta = engineMetaCopy[engine.modelSlug] ?? engineMetaCopy[engine.id] ?? null;
+    const localized = localizedMap.get(engine.modelSlug);
     const engineTypeKey = getEngineTypeKey(engine);
     const engineType = engineTypeLabels[engineTypeKey] ?? DEFAULT_ENGINE_TYPE_LABELS[engineTypeKey];
-    const versionLabel = meta?.versionLabel ?? engine.versionLabel ?? '';
-    const displayName = meta?.displayName ?? engine.cardTitle ?? getEngineDisplayName(engine);
-    const description = meta?.description ?? engineType;
-    const priceNote = meta?.priceBefore ?? null;
+    const versionLabel = localized?.versionLabel ?? meta?.versionLabel ?? engine.versionLabel ?? '';
+    const displayName =
+      localized?.marketingName ?? meta?.displayName ?? engine.cardTitle ?? getEngineDisplayName(engine);
+    const description = localized?.hero?.intro ?? localized?.overview ?? meta?.description ?? engineType;
+    const priceNote = meta?.priceBefore ?? localized?.pricingNotes ?? null;
     const pictogram = getEnginePictogram({
       id: engine.engine.id,
       brandId: engine.brandId ?? engine.engine.brandId,

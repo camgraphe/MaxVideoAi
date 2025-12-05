@@ -78,6 +78,7 @@ function normaliseResolution(value: string): string {
   const lower = value.trim().toLowerCase();
   if (lower === '1080' || lower === '1080p') return '1080p';
   if (lower === '720' || lower === '720p') return '720p';
+  if (lower === '1440' || lower === '1440p') return '1440p';
   if (lower === '4k' || lower === '2160' || lower === '2160p') return '4k';
   if (lower === '512' || lower === '512p') return '512P';
   if (lower === '768' || lower === '768p') return '768P';

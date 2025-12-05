@@ -264,5 +264,199 @@
         }
       }
     ]
+  },
+  {
+    "engine": "LTX-2 Fast Text to Video",
+    "catalogSlug": "ltx-2-fast",
+    "falSlug": "fal-ai/ltx-2/text-to-video/fast",
+    "source_url": "https://fal.ai/models/fal-ai/ltx-2/text-to-video/fast",
+    "last_checked_at": "2025-03-05T00:00:00",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      {
+        "variant": { "resolution": "1080p" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.04
+        }
+      },
+      {
+        "variant": { "resolution": "1440p" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.08
+        }
+      },
+      {
+        "variant": { "resolution": "4k" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.16
+        }
+      }
+    ]
+  },
+  {
+    "engine": "LTX-2 Fast Image to Video",
+    "catalogSlug": "ltx-2-fast",
+    "falSlug": "fal-ai/ltx-2/image-to-video/fast",
+    "source_url": "https://fal.ai/models/fal-ai/ltx-2/image-to-video/fast",
+    "last_checked_at": "2025-03-05T00:00:00",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      {
+        "variant": { "resolution": "1080p" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.04
+        }
+      },
+      {
+        "variant": { "resolution": "1440p" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.08
+        }
+      },
+      {
+        "variant": { "resolution": "4k" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.16
+        }
+      }
+    ]
+  },
+  {
+    "engine": "LTX-2 Pro Text to Video",
+    "catalogSlug": "ltx-2",
+    "falSlug": "fal-ai/ltx-2/text-to-video",
+    "source_url": "https://fal.ai/models/fal-ai/ltx-2/text-to-video",
+    "last_checked_at": "2025-03-05T00:00:00",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      {
+        "variant": { "resolution": "1080p" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.06
+        }
+      },
+      {
+        "variant": { "resolution": "1440p" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.12
+        }
+      },
+      {
+        "variant": { "resolution": "4k" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.24
+        }
+      }
+    ]
+  },
+  {
+    "engine": "LTX-2 Pro Image to Video",
+    "catalogSlug": "ltx-2",
+    "falSlug": "fal-ai/ltx-2/image-to-video",
+    "source_url": "https://fal.ai/models/fal-ai/ltx-2/image-to-video",
+    "last_checked_at": "2025-03-05T00:00:00",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      {
+        "variant": { "resolution": "1080p" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.06
+        }
+      },
+      {
+        "variant": { "resolution": "1440p" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.12
+        }
+      },
+      {
+        "variant": { "resolution": "4k" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.24
+        }
+      }
+    ]
+  },
+  {
+    "engine": "Kling 2.6 Pro Text to Video",
+    "catalogSlug": "kling-2-6-pro",
+    "falSlug": "fal-ai/kling-video/v2.6/pro/text-to-video",
+    "source_url": "https://fal.ai/models/fal-ai/kling-video/v2.6/pro/text-to-video",
+    "last_checked_at": "2025-03-05T00:00:00",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      {
+        "variant": { "audio": "off" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.07
+        }
+      },
+      {
+        "variant": { "audio": "on" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.14
+        }
+      }
+    ]
+  },
+  {
+    "engine": "Kling 2.6 Pro Image to Video",
+    "catalogSlug": "kling-2-6-pro",
+    "falSlug": "fal-ai/kling-video/v2.6/pro/image-to-video",
+    "source_url": "https://fal.ai/models/fal-ai/kling-video/v2.6/pro/image-to-video",
+    "last_checked_at": "2025-03-05T00:00:00",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      {
+        "variant": { "audio": "off" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.07
+        }
+      },
+      {
+        "variant": { "audio": "on" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.14
+        }
+      }
+    ]
   }
 ]

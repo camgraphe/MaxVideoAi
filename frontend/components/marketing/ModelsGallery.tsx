@@ -35,22 +35,22 @@ export function ModelsGallery({
   cards: ModelGalleryCard[];
   ctaLabel: string;
 }) {
-  const initial = cards.slice(0, INITIAL_COUNT);
-  const remaining = cards.slice(INITIAL_COUNT);
-  const [visibleCards, setVisibleCards] = useState<ModelGalleryCard[]>(initial);
-  const [pendingCards, setPendingCards] = useState<ModelGalleryCard[]>(remaining);
+  const [visibleCount, setVisibleCount] = useState(Math.min(INITIAL_COUNT, cards.length));
   const observerRef = useRef<HTMLDivElement | null>(null);
 
   const appendCards = useCallback(() => {
-    setPendingCards((current) => {
-      if (!current.length) return current;
-      setVisibleCards((prev) => [...prev, ...current.slice(0, LOAD_COUNT)]);
-      return current.slice(LOAD_COUNT);
+    setVisibleCount((current) => {
+      if (current >= cards.length) return current;
+      return Math.min(cards.length, current + LOAD_COUNT);
     });
-  }, []);
+  }, [cards.length]);
 
   useEffect(() => {
-    if (!pendingCards.length) return undefined;
+    setVisibleCount(Math.min(INITIAL_COUNT, cards.length));
+  }, [cards]);
+
+  useEffect(() => {
+    if (visibleCount >= cards.length) return undefined;
     const node = observerRef.current;
     if (!node) return undefined;
     const observer = new IntersectionObserver(
@@ -63,16 +63,16 @@ export function ModelsGallery({
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, [appendCards, pendingCards.length]);
+  }, [appendCards, cards.length, visibleCount]);
 
   return (
     <>
       <div className="mt-12 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-        {visibleCards.map((card) => (
+        {cards.slice(0, visibleCount).map((card) => (
           <ModelCard key={card.id} card={card} ctaLabel={ctaLabel} />
         ))}
       </div>
-      <div ref={observerRef} className="h-4 w-full" aria-hidden />
+      {visibleCount < cards.length ? <div ref={observerRef} className="h-4 w-full" aria-hidden /> : null}
     </>
   );
 }

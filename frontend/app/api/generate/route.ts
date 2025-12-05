@@ -44,7 +44,7 @@ type VideoMode = Extract<Mode, 't2v' | 'i2v' | 'i2i'>;
 
 const LUMA_RAY2_TIMEOUT_MS = 180_000;
 const FAL_RETRY_DELAYS_MS = [5_000, 15_000, 30_000];
-const FAL_HARD_TIMEOUT_MS = 120_000;
+const FAL_HARD_TIMEOUT_MS = 400_000;
 const FAL_PROGRESS_FLOOR = 10;
 
 const TRANSIENT_FAL_STATUS_CODES = new Set([404, 408, 409, 410, 412, 425, 500, 502, 503, 504, 522, 524, 598]);
@@ -553,6 +553,12 @@ export async function POST(req: NextRequest) {
     pricingResolution = lumaResolutionInfo.value;
     effectiveResolution = lumaResolutionInfo.value;
     requestedResolution = lumaResolutionInfo.value;
+  }
+  if (engine.id === 'ltx-2-fast' && durationSec > 10) {
+    // Fal requirement: 12–20s clips must run at 1080p/25fps on LTX-2 Fast.
+    requestedResolution = '1080p';
+    pricingResolution = '1080p';
+    effectiveResolution = '1080p';
   }
   metricState.durationSec = durationSec;
   metricState.resolution = effectiveResolution;
@@ -1337,6 +1343,12 @@ async function rollbackPendingPayment(params: {
   };
 
   const falDurationOption = lumaDurationInfo?.label ?? rawDurationLabel ?? rawDurationOption ?? null;
+  const isLtx2FastLong = engine.id === 'ltx-2-fast' && durationSec > 10;
+  let clampedFps =
+    typeof body.fps === 'number' && Number.isFinite(body.fps) && body.fps > 0 ? Math.trunc(body.fps) : undefined;
+  if (isLtx2FastLong) {
+    clampedFps = 25;
+  }
   const falPayload: Parameters<typeof generateVideo>[0] = {
     engineId: engine.id,
     prompt,
@@ -1356,8 +1368,8 @@ async function rollbackPendingPayment(params: {
     localKey,
     loop: isLumaRay2 ? loop : undefined,
   };
-  if (typeof body.fps === 'number' && Number.isFinite(body.fps) && body.fps > 0) {
-    falPayload.fps = body.fps;
+  if (typeof clampedFps === 'number') {
+    falPayload.fps = clampedFps;
   }
   if (typeof body.cfgScale === 'number' && Number.isFinite(body.cfgScale)) {
     falPayload.cfgScale = body.cfgScale;
