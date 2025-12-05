@@ -1,0 +1,175 @@
+{
+  "marketingName": "Kling 2.6 Pro",
+  "versionLabel": "v2.6 Pro",
+  "seo": {
+    "title": "Kling 2.6 Pro – Vídeo IA de texto e imagen con audio nativo | MaxVideoAI",
+    "description": "Genera vídeos IA cinematográficos con Kling 2.6 Pro en MaxVideoAI. Convierte texto o imágenes en clips cortos con diálogos, ambiente y efectos de sonido nativos, ideal para storytelling, anuncios de producto, vídeos sociales y previsualización de VFX.",
+    "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/4db8923c-6762-47af-a0bd-5d50c28842f6-job_45f1fe48-ed93-452d-819b-9b956cd2d489.jpg"
+  },
+  "overview": "Kling 2.6 Pro en MaxVideoAI: clips cortos con audio nativo, entrada de texto o imagen, 1080p, 5–10 s, audio on/off.",
+  "hero": {
+    "title": "Kling 2.6 Pro – Vídeo IA cinematográfico con audio nativo",
+    "intro": "Vídeo IA cinematográfico con audio nativo, perfecto para historias emocionales, anuncios de producto y VFX.",
+    "badge": "1080p · 5–10s · Audio on/off",
+    "ctaPrimary": {
+      "label": "Usar Kling 2.6 Pro",
+      "href": "/app?engine=kling-2-6-pro"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Ver Kling 2.5 Turbo",
+        "href": "/es/modelos/kling-2-5-turbo"
+      },
+      {
+        "label": "Ver ejemplos Kling",
+        "href": "/es/examples?engine=kling-2-6-pro"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Mejores usos",
+    "items": [
+      "Anuncios de producto con diálogo y ambiente",
+      "Storytelling emocional en formatos cortos",
+      "Clips sociales con motion y sonido",
+      "Previz de VFX y motion design"
+    ]
+  },
+  "technicalOverviewTitle": "Ficha técnica",
+  "technicalOverview": [
+    { "label": "Duración", "body": "5–10 s" },
+    { "label": "Resolución", "body": "1080p" },
+    { "label": "Aspectos", "body": "16:9, 9:16, 1:1" },
+    { "label": "FPS", "body": "24 fps (Fal)" },
+    { "label": "Entradas", "body": "Texto → Vídeo; Imagen → Vídeo (PNG/JPG/WebP), negative + seed" },
+    { "label": "Audio", "body": "Audio nativo activado por defecto; se puede desactivar" },
+    { "label": "Precios", "body": "~$0.07/s audio off; ~$0.14/s audio on" }
+  ],
+  "promptStructure": {
+    "title": "Cómo pedir a Kling 2.6 Pro",
+    "quote": "Plano cinemático de [sujeto] en [escenario], [movimiento de cámara], [luz/grade], [5–10s], aspecto [16:9/9:16/1:1], audio con [diálogo/ambiente/SFX].",
+    "description": "Prompt corto tipo shotlist: sujeto, movimiento, estilo, duración y audio.",
+    "steps": [
+      "Sujeto y acción",
+      "Movimiento de cámara",
+      "Luz/grade",
+      "Duración y aspecto",
+      "Audio on/off"
+    ]
+  },
+  "tips": {
+    "title": "Consejos",
+    "items": [
+      "Mantén 5–10 s y una acción clara.",
+      "9:16 para vertical social; 16:9 para landscape.",
+      "Diálogo corto; usa negative para evitar sujetos extra.",
+      "Audio on por defecto; off si harás sound design propio."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Diálogo en callejón neón",
+      "prompt": "Dos amigos caminan por un callejón neón bajo la lluvia, cámara al hombro, charcos reflectantes, trueno suave, diálogo: “¿Tienes la toma?” “Sí, Kling 2.6 la clavó.”"
+    },
+    {
+      "title": "Hero vertical de producto",
+      "prompt": "Primer plano vertical de un smartwatch girando sobre un fondo degradado neón, dolly suave con paralaje, reflejos nítidos, 1080p, ambiente electrónico sutil."
+    }
+  ],
+  "faqs": [
+    { "q": "¿Incluye audio?", "a": "Sí, audio nativo activado por defecto. Puedes desactivarlo para exportes mudos." },
+    { "q": "¿Qué modos hay?", "a": "Texto → Vídeo e Imagen → Vídeo. No hay first/last frame en esta ruta." },
+    { "q": "¿Qué duraciones funcionan mejor?", "a": "5–10 s. Une varios renders para historias más largas." }
+  ],
+  "custom": {
+    "whyTitle": "Por qué Kling 2.6 Pro en MaxVideoAI",
+    "heroDesc1": "Clips cinemáticos de 5–10 s donde vídeo, diálogos, ambiente, SFX y música se generan juntos en 1080p. Texto o imagen en una sola tarjeta, con audio nativo en inglés y chino incluido.",
+    "heroDesc2": "Úsalo cuando necesites motion emocional con sonido totalmente sincronizado; apaga el audio para versiones mudas o diseño de sonido manual.",
+    "heroHighlights": [
+      "Texto → Vídeo e Imagen → Vídeo en una tarjeta",
+      "Audio extremo a extremo: diálogo/narración, SFX, ambiente y música en un solo pase",
+      "Clips 5–10 s en 1080p con fuerte adherencia al prompt",
+      "Toggle audio para previs o renders con sonido",
+      "Voces nativas en inglés y chino",
+      "Pago por segundo a través del wallet MaxVideoAI"
+    ],
+    "specTitle": "Specs reales – Kling 2.6 Pro",
+    "specNote": "Según el routing Fal actual.",
+    "specSections": [
+      {
+        "title": "Duración y salida",
+        "items": [
+          "5 o 10 s",
+          "1080p"
+        ]
+      },
+      {
+        "title": "Aspectos",
+        "items": [
+          "16:9 paisaje",
+          "9:16 vertical social",
+          "1:1 cuadrado"
+        ]
+      },
+      {
+        "title": "Entradas",
+        "items": [
+          "Prompt de texto",
+          "Imagen única (PNG/JPG/WebP)"
+        ]
+      },
+      {
+        "title": "Audio",
+        "items": [
+          "Audio nativo activado por defecto: diálogo/narración, SFX, ambiente y cama musical generados junto a la imagen",
+          "Desactiva el audio si quieres mezclar en post o necesitas previs mudas",
+          "Idiomas: inglés y chino en esta ruta"
+        ]
+      },
+      {
+        "title": "Precios",
+        "items": [
+          "~$0.07/s audio off; ~$0.14/s audio on",
+          "Pago por segundo"
+        ]
+      }
+    ],
+    "whatTitle": "Cómo usar Kling 2.6 Pro en MaxVideoAI",
+    "whatIntro1": "Elige texto o imagen, 5 o 10 s en 1080p, aspecto 16:9 / 9:16 / 1:1, toggle audio y prompt.",
+    "whatIntro2": "Úsalo cuando necesites diálogos y ambiente sincronizados en clips cortos.",
+    "whatFlowTitle": "Flujo",
+    "whatFlowSteps": [
+      "Selecciona Kling 2.6 Pro (Texto → Video o Imagen → Video)",
+      "Duración 5 o 10 s, aspecto 16:9 / 9:16 / 1:1",
+      "Audio on/off, prompt + negative/seed",
+      "Sube una imagen de referencia para I2V si hace falta",
+      "Revisa el precio en vivo y genera"
+    ],
+    "galleryTitle": "Ejemplos Kling 2.6 Pro",
+    "galleryIntro": "Renders Kling 2.6 Pro con audio nativo para diálogos, ambiente y storytelling.",
+    "galleryAllCta": "Ver todos los ejemplos Kling 2.6 →",
+    "recreateLabel": "Recrear esta toma →",
+    "promptTitle": "Ideas de prompt Kling 2.6 Pro",
+    "promptIntro": "Prompt breve pero para imagen y sonido: sujeto, acción, cámara, luz, 5–10 s, aspecto, luego una nota de audio clara.",
+    "promptPatternSteps": [
+      "Sujeto y acción (1–2 beats que se ven y se escuchan)",
+      "Movimiento de cámara y ritmo",
+      "Luz/grade y mood",
+      "Aspecto (16:9/9:16/1:1) y duración 5–10 s",
+      "Nota de audio: línea corta de diálogo + ambiente/SFX/música, o «mudo»"
+    ],
+    "promptSkeleton": "Toma cinemática de [sujeto] en [entorno], [movimiento de cámara], [luz/grade], [duración 5–10s], [aspecto], audio [on/off] con [línea corta de diálogo + ambiente/SFX/música].",
+    "promptSkeletonNote": "Mantén diálogos cortos; usa negatives para evitar sujetos extra.",
+    "tipsTitle": "Consejos y límites",
+    "strengths": [
+      "Audio nativo para diálogo, ambiente, SFX y una cama musical ligera",
+      "Mejores resultados entre 5–10 s con 1–2 acciones claras; encadena clips para arcos más largos",
+      "Solo 1080p en esta ruta; usa Kling 2.5, Wan o Veo para 4K"
+    ],
+    "boundaries": [
+      "Voces solo en inglés y chino; desactiva audio y dobla en post para otros idiomas",
+      "Máx. 10 s por render",
+      "Una imagen de referencia en I2V; sin multi-imagen ni control de voz por personaje aún"
+    ]
+  }
+}

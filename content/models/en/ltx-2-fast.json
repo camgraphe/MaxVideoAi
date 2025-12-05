@@ -1,0 +1,244 @@
+{
+  "marketingName": "LTX-2 Fast",
+  "versionLabel": "Fast",
+  "seo": {
+    "title": "LTX-2 Fast AI Video – Text & Image to Video with Audio | MaxVideoAI",
+    "description": "Generate fast cinematic AI videos with LTX-2 Fast. Turn text or images into 6–20 second clips with synchronized audio, up to 4K and 25–50 fps, ideal for social content and rapid iteration.",
+    "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1bd62e34-0e55-4f49-b434-295276b991d4-job_d895c3b0-562a-4e36-ae06-4ce083a47126.jpg"
+  },
+  "overview": "LTX-2 Fast in MaxVideoAI: 6–20s renders, 1080p/1440p/4K, 25 or 50 fps, text or image input, native audio on/off, priced per second.",
+  "hero": {
+    "title": "LTX-2 Fast – AI Video with Native Audio",
+    "intro": "Fast 20-second AI video with native audio. Perfect for tests, social clips, and quick iterations.",
+    "badge": "1080p/1440p/4K · 6–20s · Audio on/off · 25/50 fps",
+    "ctaPrimary": {
+      "label": "Start generating with LTX-2 Fast",
+      "href": "/app?engine=ltx-2-fast"
+    },
+    "secondaryLinks": [
+      {
+        "label": "See LTX-2 Pro",
+        "href": "/models/ltx-2"
+      },
+      {
+        "label": "View LTX-2 Fast examples",
+        "href": "/examples?engine=ltx-2-fast"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      "Rapid social clips and ads with synced audio",
+      "Concept tests before premium renders",
+      "Story beats and mood pieces up to 20 seconds",
+      "Vertical reels that need quick iteration"
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    { "label": "Duration", "body": "6–20 s (12–20 s require 1080p at 25 fps)" },
+    { "label": "Resolution", "body": "1080p, 1440p, 2160p (4K)" },
+    { "label": "Aspect ratios", "body": "16:9" },
+    { "label": "Frame rate", "body": "25 fps or 50 fps" },
+    { "label": "Inputs", "body": "Text → Video; Image → Video (PNG/JPG/WebP, ~25 MB), prompt + seed/negatives" },
+    { "label": "Audio", "body": "Native audio on by default; toggle off for silent runs" },
+    { "label": "Pricing", "body": "Per-second; example: $0.04/s @1080p, $0.08/s @1440p, $0.16/s @4K" }
+  ],
+  "promptStructure": {
+    "title": "Prompting LTX-2 Fast",
+    "quote": "Cinematic [subject] in [environment], [camera move], [lighting/style], [duration 6–20s], 16:9, audio on with [ambience/dialogue/music].",
+    "description": "Keep it concise: subject + environment + motion + style + duration + audio cue.",
+    "steps": [
+      "Subject & setting",
+      "Camera move and pacing (fast, slow, tracking, dolly)",
+      "Lighting/grade and mood",
+      "Duration and resolution (note 12–20s = 1080p/25fps)",
+      "Audio cue (ambience/dialogue/music) or disable audio"
+    ]
+  },
+  "tips": {
+    "title": "Tips & limits",
+    "items": [
+      "For 12–20s, stay at 1080p/25 fps (Fal constraint).",
+      "Use 50 fps for crisper motion on 6–10s runs.",
+      "Keep one clear action; use seeds/negative prompts to refine.",
+      "Audio is on by default—toggle off for cheaper silent drafts."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "T2V cinematic test",
+      "prompt": "A cowboy walking through a dusty western town at high noon, tracking shot from behind, cinematic depth, realistic lighting, 4K film grain, native ambience."
+    },
+    {
+      "title": "I2V neon portrait",
+      "prompt": "A woman stands still amid a busy neon-lit street at night. The camera slowly dollies in toward her face as people blur past, their motion emphasizing her calm presence. City lights flicker and reflections shift across her denim jacket.",
+      "notes": "Set duration 6–10s or 12–20s depending on pace; keep 16:9."
+    },
+    {
+      "title": "Example prompt – 8s city crosswalk",
+      "prompt": "A young woman crosses a busy city street at golden hour, camera tracking her from a low side angle as she steps onto the crosswalk and walks toward the opposite sidewalk. Warm sunlight hits the side of her face, gentle lens flares appear on the edges of the frame, and cars roll past in the background. Audio: soft city ambience (cars, footsteps, distant voices) plus a light upbeat music bed, no dialogue, no on-screen text."
+    },
+    {
+      "title": "Example prompt – 18–20s office walkthrough",
+      "prompt": "One continuous 18–20 second 16:9 shot inside a bright startup office during the day. The camera starts at the entrance as the glass door opens, then walks forward in one smooth motion behind a team lead. We glide past desks with people working on laptops, a whiteboard covered in sketches, and a lounge corner where two colleagues laugh over a prototype. The camera never cuts and finally settles into a medium shot of the team lead stopping by a large window, turning to camera with a relaxed smile. Audio: natural office ambience (typing, low chatter, distant coffee machine) with a gentle motivational music track underneath, no dialogue, no on-screen text."
+    }
+  ],
+  "faqs": [
+    { "q": "How long can LTX-2 Fast run?", "a": "6–20 seconds. Durations above 10 seconds must run at 1080p and 25 fps per Fal constraints." },
+    { "q": "Does LTX-2 Fast include audio?", "a": "Yes, native audio is on by default. You can toggle it off for silent exports." },
+    { "q": "Which aspect ratios are supported?", "a": "16:9 only in the current Fast routing. Use Wan or Pika for flexible ratios." }
+  ],
+  "custom": {
+    "whyTitle": "Why LTX-2 Fast inside MaxVideoAI",
+    "heroDesc1": "Create 6–20 second clips with native audio, 1080p–4K and 25/50 fps in one card. LTX-2 Fast is the “instant” tier of the LTX-2 family: perfect for rapid social cuts, drafts, storyboards and mood pieces when you want 4K quality without waiting.",
+    "heroDesc2": "Above 10 seconds we automatically keep runs at 1080p/25 fps to match the Fal routing and keep turnarounds reliable.",
+    "heroHighlights": [
+      "6–20s renders with audio on/off in a single card",
+      "1080p, 1440p or 4K with 25/50 fps for crisp motion",
+      "Text → Video and Image → Video using the same prompt lab",
+      "“Fast” tier of the LTX-2 family — lowest cost and quickest turnaround for drafts and social clips",
+      "Native audio (dialogue/ambience/SFX/music) included by default",
+      "Wallet-based per-second pricing; no extra contracts or LTX Studio account needed"
+    ],
+    "specTitle": "Real Specs – LTX-2 Fast in MaxVideoAI",
+    "specNote": "Specs reflect the live routing via Fal today.",
+    "specSections": [
+      {
+        "title": "Duration & Output",
+        "items": [
+          "Durations: 6, 8, 10, 12, 14, 16, 18, 20 seconds",
+          "12–20s: constrained to 1080p at 25 fps",
+          "Frame rate options: 25 or 50 fps",
+          "Best balance at 6–10s for full 4K/50 fps; use 12–20s when you’re fine with 1080p/25"
+        ]
+      },
+      {
+        "title": "Resolution",
+        "items": [
+          "1080p (1920×1080)",
+          "1440p (2560×1440)",
+          "2160p / 4K (3840×2160)"
+        ]
+      },
+      {
+        "title": "Aspect Ratio",
+        "items": [
+          "16:9 (horizontal); best for social landscape or widescreen crops"
+        ]
+      },
+      {
+        "title": "Inputs & File Types",
+        "items": [
+          "Text prompts (shot-level instructions)",
+          "Image → Video: single still (PNG/JPG/WebP), ~25 MB",
+          "Negative prompt and seed supported"
+        ]
+      },
+      {
+        "title": "Audio",
+        "items": [
+          "Native audio enabled by default",
+          "Toggle off for silent drafts"
+        ]
+      },
+      {
+        "title": "Pricing",
+        "items": [
+          "$0.04/s @1080p; $0.08/s @1440p; $0.16/s @4K",
+          "Wallet-based pay-as-you-go inside MaxVideoAI"
+        ]
+      }
+    ],
+    "whatTitle": "How LTX-2 Fast works in MaxVideoAI",
+    "whatIntro1": "Pick text or image mode, set 6–20 seconds, choose resolution and fps, then prompt. Audio is on by default and can be toggled off.",
+    "whatIntro2": "For 12–20s runs we automatically constrain to 1080p/25 fps to keep routes stable.",
+    "whatFlowTitle": "Workflow",
+    "whatFlowSteps": [
+      "Select LTX-2 Fast, choose Text → Video or Image → Video",
+      "Set duration (6–20s) and aspect ratio 16:9",
+      "Pick resolution/fps (12–20s = 1080p/25)",
+      "Toggle audio on/off, add prompt and optional seed/negative",
+      "Upload one reference still for I2V",
+      "See live price, then generate"
+    ],
+    "galleryTitle": "LTX-2 Fast examples",
+    "galleryIntro": "Recent LTX-2 Fast renders with audio on/off for social clips and quick iterations.",
+    "gallerySceneCta": "Open this scene in Generate →",
+    "galleryAllCta": "View all LTX-2 Fast examples →",
+    "recreateLabel": "Recreate this shot →",
+    "promptTitle": "Prompt ideas for LTX-2 Fast",
+    "promptIntro": "Stay concise but write for picture and sound: subject/action, camera, lighting, duration, aspect, then a clear audio note.",
+    "promptPatternSteps": [
+      "Subject + setting (1–2 beats you can see and hear)",
+      "Camera move and pacing",
+      "Lighting/grade and mood",
+      "Duration & resolution (note 12–20s = 1080p/25)",
+      "Audio on/off with ambience/dialogue/SFX/music, or “mute”"
+    ],
+    "promptSkeleton": "Cinematic [subject] in [environment], [camera move], [lighting/style], [duration 6–20s], 16:9, audio [on/off] with [short ambience/dialogue/SFX/music note].",
+    "promptSkeletonNote": "Use 50 fps for 6–10s when you want crisper motion.",
+    "tipsTitle": "Tips & limitations",
+    "strengths": [
+      "Fast 6–20s renders with native audio",
+      "Up to 4K, 25 or 50 fps for quick iteration",
+      "Simple per-second pricing with live chip"
+    ],
+    "boundaries": [
+      "12–20s runs are locked to 1080p/25 fps",
+      "Only 16:9 in this routing",
+      "One reference image for I2V; no multi-image control"
+    ],
+    "safetyTitle": "Safety & suitability",
+    "safetyRules": [
+      "Avoid harmful, hateful, or violent prompts",
+      "No sexual content or exploitation",
+      "Do not mimic real public figures without rights"
+    ],
+    "safetyInterpretation": [
+      "Keep prompts brand-safe; borderline content may be blocked"
+    ],
+    "safetyNote": "Best for brand-safe social/ads; keep dialogue short and clean.",
+    "demoTitle": "Demo prompt – fast social clip",
+    "demoPromptLabel": "8s landscape social",
+    "demoPrompt": [
+      "Tracking shot of a runner at golden hour on a boardwalk, camera follows from low angle, warm lens flare, gentle ocean ambience, audio on."
+    ],
+    "demoNotes": [
+      "Single-beat action",
+      "Clear camera move and mood",
+      "Audio cue baked in"
+    ],
+    "multishotTitle": "Sequenced clips",
+    "multishotIntro1": "Chain multiple 6–10s renders to build longer beats.",
+    "multishotIntro2": "Use seeds to keep look consistency across clips.",
+    "multishotTips": [
+      "Keep one subject; reuse the same prompt backbone",
+      "Stitch in your editor; add VO/music there"
+    ],
+    "imageTitle": "Image-to-Video tips",
+    "imageIntro": "Upload a single sharp still and direct the motion and audio.",
+    "imageFlow": [
+      "Upload 1 still (PNG/JPG/WebP, ~25 MB)",
+      "Set duration and fps; 12–20s lock to 1080p/25",
+      "Describe the camera move, pacing, and audio"
+    ],
+    "imageWhy": [
+      "Great for quick animatics from reference frames",
+      "Keeps brand/product framing consistent"
+    ],
+    "comparisonTitle": "When to pick LTX-2 Fast",
+    "comparisonPoints": [
+      "Use Fast for rapid social clips; switch to LTX-2 Pro for premium polish",
+      "For multi-aspect needs, pair with Wan or Veo; Fast is 16:9 only",
+      "For silent drafts, toggle audio off to reduce cost"
+    ],
+    "comparisonCta": "Compare LTX-2 Fast vs Pro →",
+    "relatedTitle": "Explore other engines",
+    "relatedSubtitle": "Try a premium or vertical-first alternative next.",
+    "finalPara1": "Ready to try LTX-2 Fast? Load your wallet and see the live price chip before you run.",
+    "finalPara2": "Swap to LTX-2 Pro when you need maximum fidelity and synced audio.",
+    "finalButton": "Open LTX-2 Fast in Generate →"
+  }
+}

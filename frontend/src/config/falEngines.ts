@@ -878,6 +878,136 @@ const KLING_2_5_TURBO_ENGINE: EngineCaps = {
   brandId: 'kling',
 };
 
+const KLING_2_6_PRO_ENGINE: EngineCaps = {
+  id: 'kling-2-6-pro',
+  label: 'Kling 2.6 Pro',
+  provider: 'Kling by Kuaishou',
+  version: '2.6 Pro',
+  status: 'live',
+  latencyTier: 'standard',
+  queueDepth: 0,
+  region: 'global',
+  modes: ['t2v', 'i2v'],
+  maxDurationSec: 10,
+  resolutions: ['1080p'],
+  aspectRatios: ['16:9', '9:16', '1:1'],
+  fps: [24],
+  audio: true,
+  upscale4k: false,
+  extend: false,
+  motionControls: false,
+  keyframes: false,
+  params: {
+    cfg_scale: {
+      min: 0,
+      max: 1,
+      default: 0.5,
+      step: 0.05,
+    },
+  },
+  inputLimits: {
+    imageMaxMB: 25,
+  },
+  inputSchema: {
+    required: [
+      {
+        id: 'prompt',
+        type: 'text',
+        label: 'Prompt',
+      },
+      {
+        id: 'image_url',
+        type: 'image',
+        label: 'Reference image',
+        modes: ['i2v'],
+        requiredInModes: ['i2v'],
+        minCount: 1,
+        maxCount: 1,
+        source: 'either',
+      },
+    ],
+    optional: [
+      {
+        id: 'duration',
+        type: 'enum',
+        label: 'Duration (seconds)',
+        values: ['5', '10'],
+        default: '5',
+      },
+      {
+        id: 'aspect_ratio',
+        type: 'enum',
+        label: 'Aspect ratio',
+        values: ['16:9', '9:16', '1:1'],
+        default: '16:9',
+      },
+      {
+        id: 'resolution',
+        type: 'enum',
+        label: 'Resolution',
+        values: ['1080p'],
+        default: '1080p',
+      },
+      {
+        id: 'negative_prompt',
+        type: 'text',
+        label: 'Negative prompt',
+        default: 'blur, distort, and low quality',
+      },
+      {
+        id: 'generate_audio',
+        type: 'enum',
+        label: 'Audio',
+        values: ['true', 'false'],
+        default: 'true',
+      },
+      {
+        id: 'cfg_scale',
+        type: 'number',
+        label: 'CFG scale',
+        min: 0,
+        max: 1,
+        step: 0.05,
+        default: 0.5,
+      },
+      {
+        id: 'seed',
+        type: 'number',
+        label: 'Seed',
+      },
+    ],
+    constraints: {
+      supportedFormats: ['jpg', 'jpeg', 'png', 'webp'],
+      maxImageSizeMB: 25,
+    },
+  },
+  pricingDetails: {
+    currency: 'USD',
+    perSecondCents: {
+      default: 14,
+    },
+    addons: {
+      audio_off: {
+        perSecondCents: -7,
+      },
+    },
+  },
+  pricing: {
+    unit: 'USD/s',
+    base: 0.14,
+    currency: 'USD',
+    notes: '$0.14/s with audio on; $0.07/s audio off',
+  },
+  updatedAt: '2025-03-05T00:00:00Z',
+  ttlSec: 600,
+  providerMeta: {
+    provider: 'kling',
+    modelSlug: 'fal-ai/kling-video/v2.6/pro/text-to-video',
+  },
+  availability: 'available',
+  brandId: 'kling',
+};
+
 const WAN_2_5_ENGINE: EngineCaps = {
   id: 'wan-2-5',
   label: 'Wan 2.5 Text & Image to Video',
@@ -1007,6 +1137,240 @@ const WAN_2_5_ENGINE: EngineCaps = {
   },
   availability: 'available',
   brandId: 'wan',
+};
+
+const LTX_2_FAST_ENGINE: EngineCaps = {
+  id: 'ltx-2-fast',
+  label: 'LTX Video 2.0 Fast',
+  provider: 'Lightricks',
+  version: '2.0 Fast',
+  status: 'live',
+  latencyTier: 'fast',
+  queueDepth: 0,
+  region: 'global',
+  modes: ['t2v', 'i2v'],
+  maxDurationSec: 20,
+  resolutions: ['1080p', '1440p', '4k'],
+  aspectRatios: ['16:9'],
+  fps: [25, 50],
+  audio: true,
+  upscale4k: false,
+  extend: false,
+  motionControls: false,
+  keyframes: false,
+  params: {},
+  inputLimits: {
+    imageMaxMB: 25,
+  },
+  inputSchema: {
+    required: [
+      {
+        id: 'prompt',
+        type: 'text',
+        label: 'Prompt',
+      },
+      {
+        id: 'image_url',
+        type: 'image',
+        label: 'Reference image',
+        modes: ['i2v'],
+        requiredInModes: ['i2v'],
+        minCount: 1,
+        maxCount: 1,
+        source: 'either',
+      },
+    ],
+    optional: [
+      {
+        id: 'duration',
+        type: 'enum',
+        label: 'Duration (seconds)',
+        values: ['6', '8', '10', '12', '14', '16', '18', '20'],
+        default: '6',
+      },
+      {
+        id: 'aspect_ratio',
+        type: 'enum',
+        label: 'Aspect ratio',
+        values: ['16:9'],
+        default: '16:9',
+      },
+      {
+        id: 'resolution',
+        type: 'enum',
+        label: 'Resolution',
+        values: ['1080p', '1440p', '4k'],
+        default: '1080p',
+      },
+      {
+        id: 'fps',
+        type: 'enum',
+        label: 'Frames per second',
+        values: ['25', '50'],
+        default: '25',
+      },
+      {
+        id: 'negative_prompt',
+        type: 'text',
+        label: 'Negative prompt',
+      },
+      {
+        id: 'seed',
+        type: 'number',
+        label: 'Seed',
+      },
+    ],
+    constraints: {
+      supportedFormats: ['jpg', 'jpeg', 'png', 'webp'],
+    },
+  },
+  pricingDetails: {
+    currency: 'USD',
+    perSecondCents: {
+      default: 4,
+      byResolution: {
+        '1080p': 4,
+        '1440p': 8,
+        '4k': 16,
+      },
+    },
+  },
+  pricing: {
+    unit: 'USD/s',
+    base: 0.04,
+    byResolution: {
+      '1080p': 0.04,
+      '1440p': 0.08,
+      '4k': 0.16,
+    },
+    currency: 'USD',
+    notes: '$0.20 per 5s @1080p, $0.40 @1440p, $0.80 @4K',
+  },
+  updatedAt: '2025-03-05T00:00:00Z',
+  ttlSec: 600,
+  providerMeta: {
+    provider: 'lightricks',
+    modelSlug: 'fal-ai/ltx-2/text-to-video/fast',
+  },
+  availability: 'available',
+  brandId: 'lightricks',
+};
+
+const LTX_2_ENGINE: EngineCaps = {
+  id: 'ltx-2',
+  label: 'LTX Video 2.0 Pro',
+  provider: 'Lightricks',
+  version: '2.0 Pro',
+  status: 'live',
+  latencyTier: 'standard',
+  queueDepth: 0,
+  region: 'global',
+  modes: ['t2v', 'i2v'],
+  maxDurationSec: 10,
+  resolutions: ['1080p', '1440p', '4k'],
+  aspectRatios: ['16:9'],
+  fps: [25, 50],
+  audio: true,
+  upscale4k: false,
+  extend: false,
+  motionControls: false,
+  keyframes: false,
+  params: {},
+  inputLimits: {
+    imageMaxMB: 25,
+  },
+  inputSchema: {
+    required: [
+      {
+        id: 'prompt',
+        type: 'text',
+        label: 'Prompt',
+      },
+      {
+        id: 'image_url',
+        type: 'image',
+        label: 'Reference image',
+        modes: ['i2v'],
+        requiredInModes: ['i2v'],
+        minCount: 1,
+        maxCount: 1,
+        source: 'either',
+      },
+    ],
+    optional: [
+      {
+        id: 'duration',
+        type: 'enum',
+        label: 'Duration (seconds)',
+        values: ['6', '8', '10'],
+        default: '6',
+      },
+      {
+        id: 'aspect_ratio',
+        type: 'enum',
+        label: 'Aspect ratio',
+        values: ['16:9'],
+        default: '16:9',
+      },
+      {
+        id: 'resolution',
+        type: 'enum',
+        label: 'Resolution',
+        values: ['1080p', '1440p', '4k'],
+        default: '1080p',
+      },
+      {
+        id: 'fps',
+        type: 'enum',
+        label: 'Frames per second',
+        values: ['25', '50'],
+        default: '25',
+      },
+      {
+        id: 'negative_prompt',
+        type: 'text',
+        label: 'Negative prompt',
+      },
+      {
+        id: 'seed',
+        type: 'number',
+        label: 'Seed',
+      },
+    ],
+    constraints: {
+      supportedFormats: ['jpg', 'jpeg', 'png', 'webp'],
+    },
+  },
+  pricingDetails: {
+    currency: 'USD',
+    perSecondCents: {
+      default: 6,
+      byResolution: {
+        '1080p': 6,
+        '1440p': 12,
+        '4k': 24,
+      },
+    },
+  },
+  pricing: {
+    unit: 'USD/s',
+    base: 0.06,
+    byResolution: {
+      '1080p': 0.06,
+      '1440p': 0.12,
+      '4k': 0.24,
+    },
+    currency: 'USD',
+    notes: '$0.30 per 5s @1080p, $0.60 @1440p, $1.20 @4K',
+  },
+  updatedAt: '2025-03-05T00:00:00Z',
+  ttlSec: 600,
+  providerMeta: {
+    provider: 'lightricks',
+    modelSlug: 'fal-ai/ltx-2/text-to-video',
+  },
+  availability: 'available',
+  brandId: 'lightricks',
 };
 
 const HAILUO_ENGINE: EngineCaps = {
@@ -1192,6 +1556,114 @@ const NANO_BANANA_ENGINE: EngineCaps = {
   providerMeta: {
     provider: 'fal.ai',
     modelSlug: 'fal-ai/nano-banana',
+  },
+  availability: 'available',
+  brandId: 'google',
+};
+
+const NANO_BANANA_PRO_ENGINE: EngineCaps = {
+  id: 'nano-banana-pro',
+  label: 'Nano Banana Pro',
+  provider: 'Google',
+  version: 'Pro',
+  status: 'live',
+  latencyTier: 'standard',
+  queueDepth: 0,
+  region: 'global',
+  modes: ['t2i', 'i2i'],
+  maxDurationSec: 8,
+  resolutions: ['1k', '2k', '4k'],
+  aspectRatios: ['auto', '9:16', '16:9', '1:1', '4:5', '5:4', '4:3', '3:4', '3:2', '2:3', '21:9'],
+  fps: [1],
+  audio: false,
+  upscale4k: true,
+  extend: false,
+  motionControls: false,
+  keyframes: false,
+  params: {},
+  inputLimits: {
+    imageMaxMB: 25,
+  },
+  inputSchema: {
+    required: [
+      {
+        id: 'prompt',
+        type: 'text',
+        label: 'Prompt',
+        description: 'Describe the scene, subject, lighting, and any typography you need rendered.',
+      },
+    ],
+    optional: [
+      {
+        id: 'num_images',
+        type: 'number',
+        label: 'Number of images',
+        min: 1,
+        max: 8,
+        step: 1,
+        default: 1,
+        description: 'Batch studio-quality outputs (max 8 per run).',
+      },
+      {
+        id: 'image_urls',
+        type: 'image',
+        label: 'Reference images',
+        description: 'Upload reference stills when using edit or multi-image workflows.',
+        modes: ['i2i'],
+        requiredInModes: ['i2i'],
+        minCount: 1,
+        maxCount: 4,
+        source: 'either',
+      },
+      {
+        id: 'resolution',
+        type: 'enum',
+        label: 'Resolution',
+        values: ['1k', '2k', '4k'],
+        default: '2k',
+        description: '1K/2K render at base price; 4K doubles the per-image cost.',
+      },
+      {
+        id: 'aspect_ratio',
+        type: 'enum',
+        label: 'Aspect ratio',
+        values: ['auto', '9:16', '16:9', '1:1', '4:5', '5:4', '4:3', '3:4', '3:2', '2:3', '21:9'],
+        default: '1:1',
+      },
+      {
+        id: 'seed',
+        type: 'number',
+        label: 'Seed',
+        description: 'Lock randomness to iterate on the same framing.',
+      },
+    ],
+    constraints: {
+      supportedFormats: ['jpg', 'jpeg', 'png', 'webp'],
+      maxImageSizeMB: 25,
+    },
+  },
+  pricingDetails: {
+    currency: 'USD',
+    flatCents: {
+      default: 15,
+      byResolution: {
+        '1k': 15,
+        '2k': 15,
+        '4k': 30,
+      },
+    },
+  },
+  pricing: {
+    unit: 'image',
+    base: 0.15,
+    currency: 'USD',
+    notes: '$0.15 per 1K/2K image, $0.30 at 4K',
+  },
+  updatedAt: '2025-03-05T00:00:00Z',
+  ttlSec: 600,
+  providerMeta: {
+    provider: 'fal.ai',
+    modelSlug: 'fal-ai/nano-banana-pro',
   },
   availability: 'available',
   brandId: 'google',
@@ -1840,6 +2312,90 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
       'Gimbal push-in on a dancer under warm spotlight, fog in the air, 24fps, cinematic depth-of-field, shimmering wardrobe.',
   },
   {
+    id: 'kling-2-6-pro',
+    modelSlug: 'kling-2-6-pro',
+    marketingName: 'Kling 2.6 Pro',
+    cardTitle: 'Kling 2.6 Pro – Cinematic video with native audio',
+    provider: 'Kling by Kuaishou',
+    brandId: 'kling',
+    family: 'kling',
+    versionLabel: 'v2.6 Pro',
+    availability: 'available',
+    logoPolicy: 'textOnly',
+    engine: KLING_2_6_PRO_ENGINE,
+    modes: [
+      {
+        mode: 't2v',
+        falModelId: 'fal-ai/kling-video/v2.6/pro/text-to-video',
+        ui: {
+          modes: ['t2v'],
+          duration: { options: [5, 10], default: 5 },
+          resolution: ['1080p'],
+          aspectRatio: ['16:9', '9:16', '1:1'],
+          audioToggle: true,
+          notes: 'Native audio on by default; toggle off if you need silent renders.',
+        },
+      },
+      {
+        mode: 'i2v',
+        falModelId: 'fal-ai/kling-video/v2.6/pro/image-to-video',
+        ui: {
+          modes: ['i2v'],
+          duration: { options: [5, 10], default: 5 },
+          resolution: ['1080p'],
+          aspectRatio: ['16:9', '9:16', '1:1'],
+          acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
+          maxUploadMB: 25,
+          audioToggle: true,
+          notes: 'Upload one reference still; Kling keeps detail and syncs audio.',
+        },
+      },
+    ],
+    defaultFalModelId: 'fal-ai/kling-video/v2.6/pro/text-to-video',
+    seo: {
+      title: 'Kling 2.6 Pro AI Video – Text & Image to Video with Native Audio | MaxVideoAI',
+      description:
+        'Generate cinematic AI videos with Kling 2.6 Pro. Text and image to video with fluid motion, rich details, and native audio, ideal for social content, ads, and storytelling.',
+      canonicalPath: '/models/kling-2-6-pro',
+    },
+    type: 'textImage',
+    media: {
+      videoUrl: 'https://v3b.fal.media/files/b/0a8500c6/RZ0L5FqW2FFFnCnpcYYDV_output.mp4',
+      imagePath:
+        'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/4db8923c-6762-47af-a0bd-5d50c28842f6-job_45f1fe48-ed93-452d-819b-9b956cd2d489.jpg',
+      altText: 'Kling 2.6 Pro render: futuristic duel with glowing energy blades',
+    },
+    prompts: [
+      {
+        title: 'Hangar duel with native dialogue',
+        prompt:
+          '10-second 16:9 cinematic shot in a futuristic hangar. Two armored fighters wield glowing blades, camera circles them on a wet metal floor, sparks fly at each clash, alarm + engine rumble underscore the exchange “You don’t have to do this.” / “You left me behind.”',
+        mode: 't2v',
+      },
+      {
+        title: 'Frontline laughter – WWI truck',
+        prompt:
+          '8–10s shot of two young soldiers riding the back of a muddy World War I truck, laughing as the camera bumps from a wide rear view into a medium close. Soft overcast light, distant artillery booms, truck rumble, heartfelt dialogue about opening a café after the war.',
+        mode: 't2v',
+      },
+      {
+        title: 'Rainy café moment (vertical)',
+        prompt:
+          '9:16 cozy coffee shop scene at night. Medium push-in over a laptop as a woman looks up, takes a breath, and says “Okay… let’s do this.” Soft lo-fi music, gentle rain on the window, warm tungsten interior vs cool street reflections.',
+        mode: 't2v',
+      },
+    ],
+    pricingHint: {
+      currency: 'USD',
+      amountCents: 70,
+      durationSeconds: 5,
+      resolution: '1080p',
+      label: 'Audio on',
+    },
+    promptExample:
+      'Two friends walk through a rain-soaked neon alley, camera tracks at shoulder height, reflective puddles, soft thunder, quiet dialogue: “Did you get the shot?” “Yeah, Kling 2.6 nailed it.”',
+  },
+  {
     id: 'wan-2-5',
     modelSlug: 'wan-2-5',
     marketingName: 'Wan 2.5 Text & Image to Video',
@@ -2027,12 +2583,178 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
       'A glowing butterfly flying across a dark cave, dust particles in the air, camera slowly zooms out',
   },
   {
+    id: 'ltx-2-fast',
+    modelSlug: 'ltx-2-fast',
+    marketingName: 'LTX Video 2.0 Fast',
+    cardTitle: 'LTX-2 Fast – Quick cinematic video with audio',
+    provider: 'Lightricks',
+    brandId: 'lightricks',
+    family: 'ltx',
+    versionLabel: 'Fast',
+    availability: 'available',
+    logoPolicy: 'textOnly',
+    engine: LTX_2_FAST_ENGINE,
+    modes: [
+      {
+        mode: 't2v',
+        falModelId: 'fal-ai/ltx-2/text-to-video/fast',
+        ui: {
+          modes: ['t2v'],
+          duration: { options: [6, 8, 10, 12, 14, 16, 18, 20], default: 6 },
+          resolution: ['1080p', '1440p', '4k'],
+          aspectRatio: ['16:9'],
+          audioToggle: true,
+          notes: 'Native audio is on by default; 12–20s runs require 1080p at 25fps per Fal.',
+        },
+      },
+      {
+        mode: 'i2v',
+        falModelId: 'fal-ai/ltx-2/image-to-video/fast',
+        ui: {
+          modes: ['i2v'],
+          duration: { options: [6, 8, 10, 12, 14, 16, 18, 20], default: 6 },
+          resolution: ['1080p', '1440p', '4k'],
+          aspectRatio: ['16:9'],
+          acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
+          maxUploadMB: 25,
+          audioToggle: true,
+          notes: 'Upload one reference still; 12–20s runs require 1080p at 25fps per Fal.',
+        },
+      },
+    ],
+    defaultFalModelId: 'fal-ai/ltx-2/text-to-video/fast',
+    seo: {
+      title: 'LTX-2 Fast AI Video – Text & Image to Video with Audio | MaxVideoAI',
+      description:
+        'Generate fast cinematic AI videos with LTX-2 Fast. Text and image to video with synchronized audio, up to 4K, ideal for rapid iteration and social content.',
+      canonicalPath: '/models/ltx-2-fast',
+    },
+    type: 'textImage',
+    demoUrl: 'https://v3b.fal.media/files/b/0a8501d4/SE6zisjirfg6tK2zuAAHP_tXFRe5pl.mp4',
+    media: {
+      videoUrl: 'https://v3b.fal.media/files/b/0a8501d4/SE6zisjirfg6tK2zuAAHP_tXFRe5pl.mp4',
+      imagePath:
+        'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1bd62e34-0e55-4f49-b434-295276b991d4-job_d895c3b0-562a-4e36-ae06-4ce083a47126.jpg',
+      altText: 'LTX-2 Fast sample: continuous walkthrough in a modern office',
+    },
+    prompts: [
+      {
+        title: 'Office walkthrough (one take)',
+        prompt:
+          '18–20 second 16:9 continuous shot that follows a team lead through a startup office. Camera glides from entrance to window, passing collaborators, plants and whiteboards under warm daylight with soft office ambience + light score.',
+        mode: 't2v',
+      },
+      {
+        title: 'Golden-hour crosswalk (8s)',
+        prompt:
+          'Handheld-style tracking shot at a busy crosswalk. Camera starts behind a woman with a backpack, then steps onto the street as warm sunlight flares across her face and cars pass in the background. Soft city ambience + upbeat music bed.',
+        mode: 't2v',
+      },
+    ],
+    pricingHint: {
+      currency: 'USD',
+      amountCents: 24,
+      durationSeconds: 6,
+      resolution: '1080p',
+      label: 'Audio on',
+    },
+    promptExample:
+      'A cowboy walking through a dusty town at high noon, camera following from behind, cinematic depth, realistic lighting, western mood, 4K film grain.',
+  },
+  {
+    id: 'ltx-2',
+    modelSlug: 'ltx-2',
+    marketingName: 'LTX Video 2.0 Pro',
+    cardTitle: 'LTX-2 Pro – 4K cinematic video with audio',
+    provider: 'Lightricks',
+    brandId: 'lightricks',
+    family: 'ltx',
+    versionLabel: 'Pro',
+    availability: 'available',
+    logoPolicy: 'textOnly',
+    engine: LTX_2_ENGINE,
+    modes: [
+      {
+        mode: 't2v',
+        falModelId: 'fal-ai/ltx-2/text-to-video',
+        ui: {
+          modes: ['t2v'],
+          duration: { options: [6, 8, 10], default: 6 },
+          resolution: ['1080p', '1440p', '4k'],
+          aspectRatio: ['16:9'],
+          audioToggle: true,
+          notes: 'Higher fidelity, audio on by default; toggle off for silent renders.',
+        },
+      },
+      {
+        mode: 'i2v',
+        falModelId: 'fal-ai/ltx-2/image-to-video',
+        ui: {
+          modes: ['i2v'],
+          duration: { options: [6, 8, 10], default: 6 },
+          resolution: ['1080p', '1440p', '4k'],
+          aspectRatio: ['16:9'],
+          acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
+          maxUploadMB: 25,
+          audioToggle: true,
+          notes: 'Upload a crisp still; Pro maintains lip-sync and ambience.',
+        },
+      },
+    ],
+    defaultFalModelId: 'fal-ai/ltx-2/text-to-video',
+    seo: {
+      title: 'LTX-2 Pro AI Video – High-Fidelity Text & Image to Video with Audio | MaxVideoAI',
+      description:
+        'Create high-fidelity cinematic AI videos with LTX-2 Pro. Text and image to video with synchronized audio, up to 4K and 50 fps, ideal for premium campaigns and production work.',
+      canonicalPath: '/models/ltx-2',
+    },
+    type: 'textImage',
+    demoUrl: 'https://v3b.fal.media/files/b/0a85021e/wplTIb8GxgfjsJLL29RMu_SPGFhmiY.mp4',
+    media: {
+      videoUrl: 'https://v3b.fal.media/files/b/0a85021e/wplTIb8GxgfjsJLL29RMu_SPGFhmiY.mp4',
+      imagePath:
+        'https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/f397ab6d-d0ef-44eb-977a-3419f494d17e-job_cda079d3-9895-45a0-866c-2dbf57593463.jpg',
+      altText: 'LTX-2 Pro sample: dreamlike city street folding overhead',
+    },
+    prompts: [
+      {
+        title: 'City street folds upward (8s)',
+        prompt:
+          '8-second 16:9 4K shot of a modern avenue lifting into the sky—cars, streetlights and pedestrians bend upward while the camera arcs overhead through volumetric dust and reflections.',
+        mode: 't2v',
+        notes: 'Matches the hero clip; includes layered trailer whooshes and rumble.',
+      },
+      {
+        title: 'Souk jewel chase',
+        prompt:
+          '8–10s chase through a golden-hour Middle Eastern souk. Camera dives from rooftops into tight alleys as a thief dodges hanging fabrics and fruit carts bursting into slow-motion oranges.',
+        mode: 't2v',
+      },
+      {
+        title: 'Orbital ring collapse',
+        prompt:
+          '10s aerial glide over a futuristic coastal city as an orbital ring fractures overhead, debris raining through clouds before an energy shield freezes the shards mid-air.',
+        mode: 't2v',
+      },
+    ],
+    pricingHint: {
+      currency: 'USD',
+      amountCents: 36,
+      durationSeconds: 6,
+      resolution: '1080p',
+      label: 'Audio on',
+    },
+    promptExample:
+      'A cowboy walking through a dusty town at high noon, camera following from behind, cinematic depth, realistic lighting, western mood, 4K film grain.',
+  },
+  {
     id: 'nano-banana',
     modelSlug: 'nano-banana',
     marketingName: 'Nano Banana (Image Generation)',
     cardTitle: 'Nano Banana',
     provider: 'Google',
     brandId: 'google',
+    family: 'nano-banana',
     versionLabel: 'Nano',
     availability: 'available',
     logoPolicy: 'textOnly',
@@ -2067,9 +2789,14 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
         'Generate photoreal stills or remix reference shots with Nano Banana, the Google-powered image model available via Fal.ai and MaxVideoAI credits.',
       canonicalPath: '/models/nano-banana',
     },
-    type: 'Image · Text & Edit',
+    type: 'image',
     seoText:
       'Bring your existing MaxVideoAI workflow to still imagery. Nano Banana covers both text-to-image runs and prompt-driven edits from the same prompt lab, wallet, and logging stack.',
+    media: {
+      videoUrl: '/hero/pika-22.mp4',
+      imagePath: '/hero/pika-22.jpg',
+      altText: 'Nano Banana photoreal product still placeholder',
+    },
     prompts: [
       {
         title: 'Stylized action still',
@@ -2092,19 +2819,111 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
         answer:
           'Yes. Switch to the Edit mode, upload one or more images, then describe the transformation—Nano Banana preserves structure while applying the new look.',
       },
+  {
+    question: 'How does pricing work for Nano Banana?',
+    answer:
+      'Each image costs $0.039 from your MaxVideoAI wallet. Running 4 outputs in a batch equals $0.156, so you always know the spend up front.',
+  },
+],
+pricingHint: {
+  currency: 'USD',
+  amountCents: 4,
+  label: 'Per generated image',
+},
+promptExample:
+      'Macro photo of a dew-covered leaf with neon reflections, depth-of-field bokeh, studio lighting',
+    category: 'image',
+  },
+  {
+    id: 'nano-banana-pro',
+    modelSlug: 'nano-banana-pro',
+    marketingName: 'Nano Banana Pro',
+    cardTitle: 'Nano Banana Pro',
+    provider: 'Google',
+    brandId: 'google',
+    family: 'nano-banana',
+    versionLabel: 'Pro',
+    availability: 'available',
+    logoPolicy: 'textOnly',
+    billingNote: '$0.15 per 1K/2K image · $0.30 at 4K via Fal queue',
+    engine: NANO_BANANA_PRO_ENGINE,
+    modes: [
       {
-        question: 'How does pricing work for Nano Banana?',
+        mode: 't2i',
+        falModelId: 'fal-ai/nano-banana-pro',
+        ui: {
+          modes: ['t2i'],
+          aspectRatio: ['9:16', '16:9', '1:1', '4:5', '5:4', '4:3', '3:4', '3:2', '2:3', '21:9'],
+          resolution: ['1k', '2k', '4k'],
+          notes: 'Studio-grade text rendering, character consistency, and optional 4K outputs.',
+        },
+      },
+      {
+        mode: 'i2i',
+        falModelId: 'fal-ai/nano-banana-pro/edit',
+        ui: {
+          modes: ['i2i'],
+          aspectRatio: ['auto', '9:16', '16:9', '1:1', '4:5', '5:4', '4:3', '3:4', '3:2', '2:3', '21:9'],
+          resolution: ['1k', '2k', '4k'],
+          acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
+          maxUploadMB: 25,
+          notes: 'Upload 1–4 references; Fal handles up to 14 sources without manual masks.',
+        },
+      },
+    ],
+    defaultFalModelId: 'fal-ai/nano-banana-pro',
+    seo: {
+      title: 'Nano Banana Pro – 4K Text-to-Image & Editing | MaxVideoAI',
+      description:
+        'Generate studio-quality stills with Google’s Gemini 3-powered Nano Banana Pro. 1K, 2K, and 4K outputs, multi-image reference editing, and razor-sharp typography in MaxVideoAI.',
+      canonicalPath: '/models/nano-banana-pro',
+    },
+    type: 'image',
+    seoText:
+      'Nano Banana Pro brings Google’s Gemini 3 Pro image stack into MaxVideoAI. Render 1K/2K explorations, upgrade to 4K finals, or upload references for precise edits—without leaving the workspace.',
+    media: {
+      videoUrl: 'https://v3b.fal.media/files/b/0a851821/XWMX6UdfAGFISJGdOLus4.png',
+      imagePath: 'https://v3b.fal.media/files/b/0a851821/XWMX6UdfAGFISJGdOLus4.png',
+      altText: 'Nano Banana Pro sample: video editor lit by blue and orange LEDs at triple monitors',
+    },
+    prompts: [
+      {
+        title: 'Editing suite portrait (16:9)',
+        prompt:
+          'Ultra-realistic cinematic portrait of a video creator in a modern editing studio at night with three ultra-wide monitors glowing with colorful timelines, blue/orange LED spill, rim light on the hair, shallow depth (85mm f/1.4), crisp eyes, natural skin and subtle film grain. 4K, no watermark or stray text.',
+        mode: 't2i',
+      },
+      {
+        title: 'Square avatar variant',
+        prompt:
+          'Reframe the same scene as a 1:1 avatar: keep the glowing monitors, dark background, and rim light while centering the creator’s face with clean bokeh and zero text artifacts.',
+        mode: 't2i',
+      },
+    ],
+    faqs: [
+      {
+        question: 'Does Nano Banana Pro support 4K renders?',
         answer:
-          'Each image costs $0.039 from your MaxVideoAI wallet. Running 4 outputs in a batch equals $0.156, so you always know the spend up front.',
+          'Yes. Choose 4K in the composer for the sharpest output. Pricing doubles versus 1K/2K, so iterate at lower res before locking finals.',
+      },
+      {
+        question: 'How many reference images can I use for edits?',
+        answer:
+          'The Fal endpoint accepts up to 14 images via API. The MaxVideoAI composer lets you upload 1–4 refs to keep wardrobe, layout, or people consistent across edits.',
+      },
+      {
+        question: 'Is Nano Banana Pro licensed for commercial projects?',
+        answer:
+          'Yes. Jobs run through Fal with commercial-use rights, so you can export campaign stills, packaging renders, and product imagery for client deliverables.',
       },
     ],
     pricingHint: {
       currency: 'USD',
-      amountCents: 4,
-      label: 'Per generated image',
+      amountCents: 15,
+      label: 'Per 1K/2K image (4K doubles)',
     },
     promptExample:
-      'Macro photo of a dew-covered leaf with neon reflections, depth-of-field bokeh, studio lighting',
+      '2K cinematic portrait of a founder delivering a keynote on stage, accurate LED wall text “NEXT QUARTER IS NOW”, shallow depth of field.',
     category: 'image',
   },
 ];

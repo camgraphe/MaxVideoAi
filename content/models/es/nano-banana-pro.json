@@ -1,0 +1,164 @@
+{
+  "marketingName": "Nano Banana Pro",
+  "versionLabel": "Pro",
+  "seo": {
+    "title": "Nano Banana Pro – Texto a imagen 4K y edición | MaxVideoAI",
+    "description": "Genera imágenes en 1K, 2K y 4K con Nano Banana Pro. Fidelidad basada en Gemini 3, referencias múltiples y licencia comercial directamente en MaxVideoAI.",
+    "image": "https://v3b.fal.media/files/b/0a851821/XWMX6UdfAGFISJGdOLus4.png"
+  },
+  "overview": "Nano Banana Pro es la actualización con motor Gemini 3 para marcas que necesitan texto legible, personajes consistentes y stills listos para exportar. Borradores en 1K/2K y finales en 4K sin salir del laboratorio de imagen de MaxVideoAI.",
+  "hero": {
+    "title": "Nano Banana Pro – Texto→Imagen 4K y edición",
+    "intro": "Stills de calidad de estudio con salidas 1K/2K/4K, tipografía precisa y edición multi-imagen. Diseñado para campañas, lanzamientos de producto y referencias premium.",
+    "badge": "Texto → Imagen · Imagen → Imagen · 1K / 2K / 4K",
+    "ctaPrimary": {
+      "label": "Abrir Nano Banana Pro",
+      "href": "/es/app/image?engine=nano-banana-pro"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Abrir el laboratorio de imagen",
+        "href": "/es/app/image"
+      },
+      {
+        "label": "Ver precio en vivo",
+        "href": "/es/generate"
+      },
+      {
+        "label": "Ver ejemplos de imagen",
+        "href": "/es/examples?engine=nano-banana-pro"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Mejores casos de uso",
+    "items": [
+      "Stills de campaña 4K con tipografía legible",
+      "Ediciones multi-imagen para familias de producto",
+      "Boards de referencia antes de animar en Veo, Sora, Kling o Wan"
+    ]
+  },
+  "technicalOverviewTitle": "Resumen técnico",
+  "technicalOverview": [
+    {
+      "label": "Tipos de entrada",
+      "body": "Prompts de texto, hasta 4 imágenes de referencia en la UI (Fal acepta hasta 14), subidas JPG/PNG/WebP e instrucciones de edición sin máscaras."
+    },
+    {
+      "label": "Salidas",
+      "body": "Imágenes 1K, 2K o 4K con detalle Gemini 3, tipografía limpia y color de marca fiel."
+    },
+    {
+      "label": "Modos",
+      "body": "Texto→Imagen para renders nuevos; Imagen→Imagen para restyle, relight y cambios de producto."
+    },
+    {
+      "label": "Precio",
+      "body": "$0.15 por imagen 1K/2K, $0.30 en 4K. Hasta 8 salidas por ejecución usando la misma billetera que tus motores de video."
+    }
+  ],
+  "promptStructure": {
+    "title": "Mini guía de prompts",
+    "quote": "4K [sujeto] en [entorno], [iluminación/lente], incluye texto \"[copy]\" con estilo [tipografía], paleta de marca [colores].",
+    "description": "Describe sujeto, setting, luz, lente, tipografía y uso final. En edición, aclara qué debe mantenerse y qué puede cambiar.",
+    "steps": [
+      "Sujeto y foco principal",
+      "Entorno e iluminación",
+      "Lente/estética (35mm, macro, film grain)",
+      "Tipografía o logos (copys exactos, ubicación)",
+      "Intención + resolución (2K borrador, 4K final)",
+      "Instrucciones de edición si partes de referencias"
+    ]
+  },
+  "tips": {
+    "title": "Consejos y límites",
+    "items": [
+      "Haz borradores en 1K/2K para velocidad; ejecuta la aprobación final en 4K.",
+      "Usa seeds para fijar encuadre entre variaciones.",
+      "Sube 1–4 referencias cuando necesites mantener caras, vestuario o props.",
+      "Para cartelería, incluye el copy exacto y la alineación deseada."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Product hero 4K (texto → imagen)",
+      "prompt": "Hero editorial 4K de una moto eléctrica negra mate sobre una azotea mojada de noche, skyline neón reflejado, incluye el texto \"FULL TORQUE\" en tipografía sans luminosa en el billboard trasero, profundidad de campo cinematográfica."
+    },
+    {
+      "title": "Poster de lanzamiento (texto → imagen)",
+      "prompt": "Poster vertical para summit fintech, layout suizo limpio, paleta teal y charcoal, texto exacto: \"NEO CAPITAL LIVE\" + subtítulo \"PARIS 2025\", backlight volumétrico suave."
+    },
+    {
+      "title": "Cleanup de referencia (imagen → imagen)",
+      "prompt": "Con este product shot de estudio, suaviza gradientes, elimina polvo y huellas, añade reflejo ligero y fondo neutro 4K apto para packaging."
+    },
+    {
+      "title": "Consistencia multi-imagen (imagen → imagen)",
+      "prompt": "Mezcla estos retratos de marca en una campaña otoñal coherente: rim light cálido, paleta de vestuario alineada, hojas cayendo sutiles y mantén cada identidad intacta."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "¿Nano Banana Pro genera en 4K?",
+      "a": "Sí. Selecciona 4K cuando necesites stills listos para exportar. Cuesta el doble que 1K/2K, así que itera en menor resolución antes del final."
+    },
+    {
+      "q": "¿Cuántas referencias puedo subir?",
+      "a": "Hasta 4 imágenes directamente en la interfaz. El endpoint de Fal soporta hasta 14 referencias vía API para escenas complejas."
+    },
+    {
+      "q": "¿Tiene licencia comercial?",
+      "a": "Sí. Todos los jobs corren en Fal con uso comercial autorizado, así que puedes entregar campañas, packaging y miniaturas al cliente."
+    }
+  ],
+  "pricingNotes": "$0.15 por imagen 1K/2K, $0.30 en 4K. El chip de precio se actualiza en vivo antes de renderizar.",
+  "custom": {
+    "whyTitle": "Por qué Nano Banana Pro en MaxVideoAI",
+    "heroDesc1": "Genera stills 1K/2K/4K con texto preciso justo al lado de tus motores de video.",
+    "heroDesc2": "Misma billetera, mismo prompt lab y logging completo—sin cuenta Fal aparte.",
+    "heroHighlights": [
+      "Texto→Imagen e Imagen→Imagen de nivel estudio",
+      "Borradores rápidos 1K/2K + finales 4K",
+      "Tipografía legible gracias a Gemini 3",
+      "Referencias para mantener personas y productos",
+      "Licencia comercial incluida con créditos MaxVideoAI"
+    ],
+    "whatTitle": "Cómo funciona Nano Banana Pro aquí",
+    "whatIntro1": "Elige Generar o Editar, define num_images (1–8), selecciona el aspecto y decide si necesitas 1K/2K o 4K.",
+    "whatIntro2": "Redacta el prompt, añade referencias si aplican, revisa el precio en vivo y lanza.",
+    "whatFlowTitle": "Flujo",
+    "whatFlowSteps": [
+      "Selecciona Nano Banana Pro en el Image Lab",
+      "Escoge Texto → Imagen o Imagen → Imagen",
+      "Define batch y seed si quieres consistencia",
+      "Sube referencias o stills de marca en modo edición",
+      "Revisa el chip ($0.15 imagen, $0.30 en 4K) y ejecuta"
+    ],
+    "galleryTitle": "Ejemplos Nano Banana Pro",
+    "galleryIntro": "Stills 2K/4K usados en boards de campaña y product reveals.",
+    "galleryAllCta": "Ver ejemplos de imagen →",
+    "recreateLabel": "Recrear este still →",
+    "promptTitle": "Ideas de prompt para Nano Banana Pro",
+    "promptIntro": "Describe sujeto, luz, tipografía e intención. Menciona 4K cuando sea necesario.",
+    "promptPatternSteps": [
+      "Sujeto + foco",
+      "Entorno + lighting",
+      "Lente/look + acabados",
+      "Copy o logos requeridos",
+      "Resolución + uso (borrador vs final)"
+    ],
+    "promptSkeleton": "[Resolución] [sujeto] en [entorno], iluminado por [luz], lente [look], incluye texto \"[copy]\" en [estilo], still final para [usos].",
+    "promptSkeletonNote": "En edición: \"Transforma este still haciendo [cambios] y mantén [elementos].\"",
+    "tipsTitle": "Consejos y límites",
+    "strengths": [
+      "Tipografía y UI nítidas",
+      "Consistencia entre personas con referencias",
+      "Salida 4K directa para impresión y packaging"
+    ],
+    "boundaries": [
+      "Solo imagen; usa motores de video para movimiento",
+      "4K cuesta más; itera en baja antes del final",
+      "Upload limitado a 4 referencias en la UI"
+    ]
+  }
+}

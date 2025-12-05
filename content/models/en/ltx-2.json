@@ -1,0 +1,233 @@
+{
+  "marketingName": "LTX-2 Pro",
+  "versionLabel": "Pro",
+  "seo": {
+    "title": "LTX-2 Pro AI Video – High-Fidelity Text & Image to Video with Audio | MaxVideoAI",
+    "description": "Create high-fidelity cinematic AI videos with LTX-2 Pro. Turn text or images into 6–10 second clips with synchronized audio, 1080p–4K resolution and 25–50 fps, ideal for premium campaigns and production workflows.",
+    "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/f397ab6d-d0ef-44eb-977a-3419f494d17e-job_cda079d3-9895-45a0-866c-2dbf57593463.jpg"
+  },
+  "overview": "LTX-2 Pro in MaxVideoAI: 6–10s cinematic clips, 1080p/1440p/4K, 25 or 50 fps, text or image input, native audio toggle, priced per second.",
+  "hero": {
+    "title": "LTX-2 Pro – High-Fidelity AI Video with Audio",
+    "intro": "High-fidelity cinematic AI video with synchronized audio, up to 4K and 50 fps for production work.",
+    "badge": "1080p/1440p/4K · 6–10s · Audio on/off · 25/50 fps",
+    "ctaPrimary": {
+      "label": "Start generating with LTX-2 Pro",
+      "href": "/app?engine=ltx-2"
+    },
+    "secondaryLinks": [
+      {
+        "label": "See LTX-2 Fast",
+        "href": "/models/ltx-2-fast"
+      },
+      {
+        "label": "View LTX-2 examples",
+        "href": "/examples?engine=ltx-2"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      "Premium product spots with synced sound design",
+      "Cinematic brand stories and hero shots",
+      "Short ads and social cutdowns that need polish",
+      "Production previz with audio timing intact"
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    { "label": "Duration", "body": "6–10 s per render" },
+    { "label": "Resolution", "body": "1080p, 1440p, 2160p (4K)" },
+    { "label": "Aspect ratio", "body": "16:9" },
+    { "label": "Frame rate", "body": "25 fps or 50 fps" },
+    { "label": "Inputs", "body": "Text → Video; Image → Video (PNG/JPG/WebP, ~25 MB), seed and negative prompt supported" },
+    { "label": "Audio", "body": "Native audio on by default; toggle off for silent runs" },
+    { "label": "Pricing", "body": "Per-second; example: $0.06/s @1080p, $0.12/s @1440p, $0.24/s @4K" }
+  ],
+  "promptStructure": {
+    "title": "Prompting LTX-2 Pro",
+    "quote": "High-fidelity [subject] in [environment], [camera move], [lighting/grade], [duration 6–10s], 16:9, audio with [ambience/music/dialogue].",
+    "description": "Write like a polished storyboard: subject, camera, style, duration, and audio cue.",
+    "steps": [
+      "Subject & scene (product/character)",
+      "Camera move and pace",
+      "Lighting/grade and atmosphere",
+      "Duration (6–10 s) and resolution",
+      "Audio cue (ambience/music/dialogue) or disable audio"
+    ]
+  },
+  "tips": {
+    "title": "Tips & limits",
+    "items": [
+      "Use 50 fps for premium fluidity; 25 fps for softer cadence.",
+      "Stay 6–10s for punchy arcs; stitch sequences in edit for longer beats.",
+      "Keep prompts focused on one hero subject and 1–2 actions.",
+      "Audio on by default—toggle off when you plan full post sound."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Premium product hero",
+      "prompt": "Ultra-cinematic beauty shot of a perfume bottle on a glossy black table, soft spotlight and drifting particles in the air, slow 180° camera orbit, shallow depth of field, 4K, 50 fps, subtle atmospheric soundtrack."
+    },
+    {
+      "title": "I2V travel aerial",
+      "prompt": "From this coastline photo, turn it into a dynamic aerial shot: the camera glides low over the ocean, then rises smoothly above the cliffs toward a warm sunset, cinematic lighting, gentle ocean waves and ambient sound."
+    }
+  ],
+  "faqs": [
+    { "q": "What durations does LTX-2 Pro support?", "a": "6–10 seconds per render in the current Pro routing." },
+    { "q": "Is audio included?", "a": "Yes, native audio is on by default. Toggle it off for silent outputs if you’ll score in post." },
+    { "q": "Which aspect ratios are supported?", "a": "16:9 in this configuration. Use Wan or other engines for multi-AR needs." }
+  ],
+  "custom": {
+    "whyTitle": "Why LTX-2 Pro inside MaxVideoAI",
+    "heroDesc1": "High-fidelity 6–10 second renders with native audio, up to 4K/50 fps, for premium stories and hero shots. LTX-2 Pro is the highest-quality tier of the LTX-2 family, built for final-quality campaigns rather than drafts.",
+    "heroDesc2": "Use Pro when you need the cleanest detail, the most stable motion, and nuanced sound design. Toggle audio off for silent scoring in post.",
+    "heroHighlights": [
+      "High-fidelity 6–10s renders with audio on/off in one card",
+      "1080p, 1440p or 4K at 25/50 fps for production-ready motion",
+      "Text → Video and Image → Video using the same prompt lab as LTX-2 Fast",
+      "Tuned for premium campaigns: sharper detail, smoother motion, more nuanced audio than Fast",
+      "Wallet-based per-second pricing through MaxVideoAI — no extra LTX account required"
+    ],
+    "specTitle": "Real Specs – LTX-2 Pro in MaxVideoAI",
+    "specNote": "Specs reflect the live Fal routing today.",
+    "specSections": [
+      {
+        "title": "Duration & Output",
+        "items": [
+          "Durations: 6, 8, 10 seconds",
+          "Frame rate: 25 or 50 fps",
+          "For the best balance, treat 6–10s as the hero-shot range; stitch multiple clips for longer arcs."
+        ]
+      },
+      {
+        "title": "Resolution",
+        "items": [
+          "1080p (1920×1080)",
+          "1440p (2560×1440)",
+          "2160p / 4K (3840×2160)"
+        ]
+      },
+      {
+        "title": "Aspect Ratio",
+        "items": [
+          "16:9 (horizontal) for widescreen and social crops"
+        ]
+      },
+      {
+        "title": "Inputs & File Types",
+        "items": [
+          "Text prompts (director-style instructions)",
+          "Image → Video: single still (PNG/JPG/WebP), ~25 MB",
+          "Supports seed and negative prompts"
+        ]
+      },
+      {
+        "title": "Audio",
+        "items": [
+          "Native audio on by default – dialogue/narration, SFX, ambience and a subtle music bed generated in one pass",
+          "Toggle off for silent drafts or bespoke sound design"
+        ]
+      },
+      {
+        "title": "Pricing",
+        "items": [
+          "$0.06/s @1080p; $0.12/s @1440p; $0.24/s @4K",
+          "Wallet-based pay-as-you-go"
+        ]
+      }
+    ],
+    "whatTitle": "How LTX-2 Pro works in MaxVideoAI",
+    "whatIntro1": "Choose text or image mode, set 6–10 seconds, pick resolution and fps, then prompt. Audio is on by default and can be toggled off.",
+    "whatIntro2": "Use Pro when you need the cleanest detail and synced sound for premium work.",
+    "whatFlowTitle": "Workflow",
+    "whatFlowSteps": [
+      "Select LTX-2 Pro, then Text → Video or Image → Video",
+      "Set duration (6–10s) and 16:9",
+      "Pick resolution (1080p/1440p/4K) and fps (25/50)",
+      "Toggle audio on/off, add prompt and optional seed/negative",
+      "Upload one reference still for I2V",
+      "Check live price and generate"
+    ],
+    "galleryTitle": "LTX-2 Pro examples",
+    "galleryIntro": "Recent high-fidelity LTX-2 Pro renders with audio for premium spots and hero shots.",
+    "gallerySceneCta": "Open this scene in Generate →",
+    "galleryAllCta": "View all LTX-2 Pro examples →",
+    "recreateLabel": "Recreate this shot →",
+    "promptTitle": "Prompt ideas for LTX-2 Pro",
+    "promptIntro": "Write it like a storyboard: subject, camera, lighting, duration, audio.",
+    "promptPatternSteps": [
+      "Subject & scene (product/character)",
+      "Camera move and pace",
+      "Lighting/grade and mood",
+      "Duration (6–10s) and resolution/fps",
+      "Audio cue on/off with ambience/dialogue/music"
+    ],
+    "promptSkeleton": "High-fidelity [subject] in [environment], [camera move] over 6–10 seconds, [lighting/grade], 16:9 at [1080p/4K, 25/50 fps], audio [on/off] with [short dialogue line and/or ambience + music].",
+    "promptSkeletonNote": "Use 50 fps for the most polished motion; 25 fps for a softer cadence.",
+    "tipsTitle": "Tips & limitations",
+    "strengths": [
+      "Premium 6–10s renders with synced audio",
+      "Up to 4K at 25/50 fps",
+      "Great for hero product shots and polished social cutdowns"
+    ],
+    "boundaries": [
+      "16:9 only in this routing",
+      "One reference still for I2V; no multi-image control",
+      "Stay within 6–10s; stitch clips for longer beats"
+    ],
+    "safetyTitle": "Safety & suitability",
+    "safetyRules": [
+      "Avoid harmful or hateful content",
+      "No sexual content or exploitation",
+      "Do not mimic public figures without rights"
+    ],
+    "safetyInterpretation": [
+      "Keep dialogue and scenes brand-safe; questionable prompts may be blocked"
+    ],
+    "safetyNote": "Use Pro for premium, brand-safe work; keep VO brief and clean.",
+    "demoTitle": "Demo prompt – premium product hero",
+    "demoPromptLabel": "6s hero product",
+    "demoPrompt": [
+      "Ultra-cinematic beauty shot of a perfume bottle on a glossy black table, soft spotlight and drifting particles in the air, slow 180° camera orbit, shallow depth of field, 4K, 50 fps, subtle atmospheric soundtrack."
+    ],
+    "demoNotes": [
+      "Single hero subject",
+      "Defined camera move and lighting",
+      "Audio included"
+    ],
+    "multishotTitle": "Sequenced clips",
+    "multishotIntro1": "Stitch multiple 6–10s shots for longer narratives.",
+    "multishotIntro2": "Reuse seeds and style cues to stay consistent.",
+    "multishotTips": [
+      "Plan 2–3 beats and render each as a separate clip",
+      "Align aspect and fps across shots"
+    ],
+    "imageTitle": "Image-to-Video tips",
+    "imageIntro": "Animate a single high-quality still into a premium motion beat.",
+    "imageFlow": [
+      "Upload 1 still (PNG/JPG/WebP, ~25 MB)",
+      "Set duration (6–10s) and resolution/fps",
+      "Describe the camera move, lighting, and audio"
+    ],
+    "imageWhy": [
+      "Ideal for hero portraits or product stills you already trust",
+      "Keeps framing consistent with brand guidelines"
+    ],
+    "comparisonTitle": "When to pick LTX-2 Pro",
+    "comparisonPoints": [
+      "Use Pro for polished spots; use Fast for quick ideation",
+      "Choose Pro when you need 4K/50 fps and highest fidelity",
+      "Pair with Nano Banana to prep photoreal keyframes"
+    ],
+    "comparisonCta": "Compare LTX-2 Pro vs Fast →",
+    "relatedTitle": "Explore other engines",
+    "relatedSubtitle": "Try a different quality tier or aspect-ratio friendly model next.",
+    "finalPara1": "Ready to render in LTX-2 Pro? Check the live price chip before you queue.",
+    "finalPara2": "Use LTX-2 Fast to iterate, then switch to Pro to finalize.",
+    "finalButton": "Open LTX-2 Pro in Generate →"
+  }
+}
