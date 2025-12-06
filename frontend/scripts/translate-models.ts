@@ -7,6 +7,9 @@ import dotenv from 'dotenv';
 import fg from 'fast-glob';
 import OpenAI from 'openai';
 import pLimit from 'p-limit';
+import { locales as APP_LOCALES, localePathnames, type AppLocale } from '@/i18n/locales';
+import { buildSlugMap } from '@/lib/i18nSlugs';
+import { submitToIndexNow } from '@/lib/indexnow';
 
 const FRONTEND_ROOT = process.cwd();
 const REPO_ROOT = path.resolve(FRONTEND_ROOT, '..');
@@ -18,6 +21,8 @@ const TARGET_DIRS = {
 } as const;
 const CACHE_DIR = path.join(FRONTEND_ROOT, '.cache');
 const CACHE_FILE = path.join(CACHE_DIR, 'models-i18n.json');
+const MODELS_SLUG_MAP = buildSlugMap('models');
+const INDEXNOW_LOCALES = APP_LOCALES as AppLocale[];
 
 dotenv.config({ path: path.join(FRONTEND_ROOT, '.env.local'), override: true });
 dotenv.config();
@@ -142,6 +147,19 @@ function chunkEntries(entries: FlatRecord, size: number) {
   return chunks;
 }
 
+function buildModelPath(locale: AppLocale, slug: string) {
+  const segments = [
+    localePathnames[locale] ?? '',
+    MODELS_SLUG_MAP[locale] ?? MODELS_SLUG_MAP.en ?? 'models',
+    slug,
+  ].filter((segment) => segment && segment.trim().length);
+  return `/${segments.map((segment) => segment.replace(/^\/+|\/+$/g, '')).join('/')}`;
+}
+
+async function submitModelIndex(slug: string) {
+  await Promise.all(INDEXNOW_LOCALES.map((locale) => submitToIndexNow(buildModelPath(locale, slug))));
+}
+
 function buildMessages(locale: TargetLocale, entries: FlatRecord): OpenAI.Chat.ChatCompletionMessageParam[] {
   const localeLabel = TARGET_LABELS[locale];
   return [
@@ -263,6 +281,7 @@ async function main() {
       )
     );
     cache[entry.slug] = entry.hash;
+    await submitModelIndex(entry.slug);
   }
 
   await fs.writeFile(CACHE_FILE, `${JSON.stringify(cache, null, 2)}\n`, 'utf8');

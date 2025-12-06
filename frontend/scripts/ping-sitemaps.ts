@@ -1,4 +1,5 @@
 import process from 'node:process';
+import { submitToIndexNow } from '@/lib/indexnow';
 
 function normalizeSiteUrl(value?: string | null): string {
   if (!value) {
@@ -51,6 +52,7 @@ async function pingEndpoints() {
         console.error(`[sitemap:ping] ${engine.name} failed for ${sitemap}`, error);
       }
     }
+    await submitToIndexNow(sitemap);
   }
   if (hadError) {
     process.exitCode = 1;
