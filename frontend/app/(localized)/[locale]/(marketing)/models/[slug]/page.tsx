@@ -1802,6 +1802,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
   ].filter((item) => item.visible);
   const textAnchorId = 'text-to-video';
   const attachTextIdToPromptStructure = Boolean(promptStructure);
+  const launchHref = engine.type === 'image' ? '/app/image' : '/app';
 
   return (
     <>
