@@ -8,6 +8,7 @@ import { resolveDictionary } from '@/lib/i18n/server';
 import type { AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
+import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 const BLOG_SLUG_MAP = buildSlugMap('blog');
 const BLOG_META = {
@@ -72,6 +73,28 @@ const DEFAULT_BLOG_FAQ = {
   footnote:
     'Need more detail? Email press@maxvideo.ai with your request and we’ll route it to the right producer.',
 };
+
+const PRESS_EMAIL = 'press@maxvideo.ai';
+
+function renderPressEmail(text?: string) {
+  if (typeof text !== 'string' || !text.includes(PRESS_EMAIL)) {
+    return text;
+  }
+  const parts = text.split(PRESS_EMAIL);
+  return parts.map((part, index) => (
+    <span key={`press-email-${index}`}>
+      {part}
+      {index < parts.length - 1 ? (
+        <ObfuscatedEmailLink
+          user="press"
+          domain="maxvideo.ai"
+          label="press@maxvideo.ai"
+          placeholder="press [at] maxvideo.ai"
+        />
+      ) : null}
+    </span>
+  ));
+}
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
@@ -283,11 +306,11 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
           {faq.items.map((item) => (
             <div key={item.question}>
               <dt className="font-semibold text-text-primary">{item.question}</dt>
-              <dd className="mt-2">{item.answer}</dd>
+              <dd className="mt-2">{renderPressEmail(item.answer)}</dd>
             </div>
           ))}
         </dl>
-        {faq.footnote ? <p className="mt-4 text-xs text-text-muted">{faq.footnote}</p> : null}
+        {faq.footnote ? <p className="mt-4 text-xs text-text-muted">{renderPressEmail(faq.footnote)}</p> : null}
       </section>
 
       <Script id="blog-list-jsonld" type="application/ld+json">

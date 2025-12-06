@@ -2,7 +2,6 @@
 
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { loadStripe, type Stripe } from '@stripe/stripe-js';
-import Link from 'next/link';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { FlagPill } from '@/components/FlagPill';
@@ -11,6 +10,7 @@ import { CURRENCY_LOCALE } from '@/lib/intl';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { USD_TOPUP_TIERS } from '@/config/topupTiers';
+import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 type ReceiptItem = {
   id: number;
@@ -703,9 +703,13 @@ export default function BillingPage() {
             ) : (
               <div className="mt-2 rounded-input border border-border bg-bg px-4 py-3 text-sm text-text-secondary">
                 {copy.teams.comingSoon.replace('{email}', copy.teams.contactEmail)}{' '}
-                <Link className="underline underline-offset-2" href="/contact">
-                  {copy.teams.contactEmail}
-                </Link>
+                <ObfuscatedEmailLink
+                  user="support"
+                  domain="maxvideoai.com"
+                  label={copy.teams.contactEmail}
+                  placeholder="support [at] maxvideo.ai"
+                  className="underline underline-offset-2"
+                />
                 .
               </div>
             )}

@@ -5,6 +5,7 @@ import { formatLegalDate, getLegalDocument } from '@/lib/legal';
 import { SITE_BASE_URL } from '@/lib/metadataUrls';
 import type { AppLocale } from '@/i18n/locales';
 import { resolveLocale } from '@/lib/i18n/server';
+import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 const TERMS_URL = `${SITE_BASE_URL}/legal/terms`;
 
@@ -16,27 +17,27 @@ export const metadata: Metadata = {
   },
 };
 
-const HEADER_COPY: Record<AppLocale, { title: string; versionLabel: string; effectiveLabel: string; companyLine: string; contactLine: string }> = {
+const HEADER_COPY: Record<AppLocale, { title: string; versionLabel: string; effectiveLabel: string; companyLine: string; contactLabel: string }> = {
   en: {
     title: 'Terms of Service',
     versionLabel: 'Version',
     effectiveLabel: 'Effective date',
     companyLine: 'Company: MaxVideoAI (sole proprietorship in formation) · Governing law: France (Paris courts)',
-    contactLine: 'Contact: legal@maxvideoai.com · support@maxvideoai.com',
+    contactLabel: 'Contact:',
   },
   fr: {
     title: "Conditions d’utilisation",
     versionLabel: 'Version',
     effectiveLabel: "Date d’entrée en vigueur",
     companyLine: "Société : MaxVideoAI (entreprise individuelle en cours de constitution) · Droit applicable : France (tribunaux de Paris)",
-    contactLine: 'Contact : legal@maxvideoai.com · support@maxvideoai.com',
+    contactLabel: 'Contact :',
   },
   es: {
     title: 'Términos del servicio',
     versionLabel: 'Versión',
     effectiveLabel: 'Fecha de entrada en vigor',
     companyLine: 'Empresa: MaxVideoAI (empresa individual en constitución) · Ley aplicable: Francia (tribunales de París)',
-    contactLine: 'Contacto: legal@maxvideoai.com · support@maxvideoai.com',
+    contactLabel: 'Contacto:',
   },
 };
 
@@ -72,7 +73,26 @@ export default async function TermsPage() {
           {header.versionLabel}: {version} · {header.effectiveLabel}: {effective ?? version}
         </p>
         <p className="text-sm text-text-secondary">{header.companyLine}</p>
-        <p className="text-sm text-text-secondary">{header.contactLine}</p>
+        <p className="text-sm text-text-secondary">
+          {header.contactLabel}{' '}
+          <ObfuscatedEmailLink
+            user="legal"
+            domain="maxvideoai.com"
+            label="legal@maxvideoai.com"
+            placeholder="legal [at] maxvideoai.com"
+            unstyled
+            className="font-medium"
+          />{' '}
+          ·{' '}
+          <ObfuscatedEmailLink
+            user="support"
+            domain="maxvideoai.com"
+            label="support@maxvideoai.com"
+            placeholder="support [at] maxvideoai.com"
+            unstyled
+            className="font-medium"
+          />
+        </p>
         <LegalVersionBadge docKey="terms" doc={document} />
       </header>
       <TermsArticle locale={locale} version={version} effective={effective ?? version} />
@@ -159,8 +179,16 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
           </li>
           <li>
             <strong>Privacy controls.</strong> You can mark renders as private within your workspace to limit distribution. If a privacy toggle is not
-            available for a specific feature, you may request delisting or deletion by emailing support@maxvideo.ai and we will honour reasonable
-            requests unless legal obligations prevent removal.
+            available for a specific feature, you may request delisting or deletion by emailing{' '}
+            <ObfuscatedEmailLink
+              user="support"
+              domain="maxvideoai.com"
+              label="support@maxvideoai.com"
+              placeholder="support [at] maxvideoai.com"
+              unstyled
+              className="font-medium"
+            />{' '}
+            and we will honour reasonable requests unless legal obligations prevent removal.
           </li>
           <li>
             <strong>Uploads vs. generated content.</strong> Uploaded logos, footage, and other inputs remain your property; we only use them to fulfil the
@@ -263,7 +291,14 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
       <section className="space-y-3">
         <h3 className="text-lg font-semibold text-text-primary">18. Contact</h3>
         <p>
-          Questions about these Terms? <Link href="/contact" className="text-accent underline">legal@maxvideoai.com</Link>.
+          Questions about these Terms?{' '}
+          <ObfuscatedEmailLink
+            user="legal"
+            domain="maxvideoai.com"
+            label="legal@maxvideoai.com"
+            placeholder="legal [at] maxvideoai.com"
+          />
+          .
         </p>
         <p className="text-sm text-text-muted">Last updated: {effective ?? version}</p>
       </section>
@@ -343,7 +378,16 @@ function TermsArticleFr({ version, effective }: { version: string; effective: st
             <strong>Licence sur les médias générés.</strong> Pour chaque sortie produite via MaxVideoAI, vous nous accordez une licence mondiale, non exclusive, gratuite, transférable et sous-licenciable pour héberger, reproduire, indexer, afficher et utiliser ces vidéos afin (a) d’exploiter le Service, (b) d’améliorer le routage, les protections et les modèles, (c) de mener des enquêtes sécurité/abus et (d) de présenter la galerie Examples, les pages modèles, études de cas ou supports marketing.
           </li>
           <li>
-            <strong>Contrôles de confidentialité.</strong> Vous pouvez marquer un rendu comme privé afin de limiter sa diffusion. Si aucune option n’est disponible pour une fonctionnalité donnée, vous pouvez demander la désindexation ou la suppression par e-mail à support@maxvideo.ai ; nous honorerons votre demande sauf obligation légale contraire.
+            <strong>Contrôles de confidentialité.</strong> Vous pouvez marquer un rendu comme privé afin de limiter sa diffusion. Si aucune option n’est disponible pour une fonctionnalité donnée, vous pouvez demander la désindexation ou la suppression par e-mail à{' '}
+            <ObfuscatedEmailLink
+              user="support"
+              domain="maxvideoai.com"
+              label="support@maxvideoai.com"
+              placeholder="support [at] maxvideoai.com"
+              unstyled
+              className="font-medium"
+            />{' '}
+            ; nous honorerons votre demande sauf obligation légale contraire.
           </li>
           <li>
             <strong>Uploads vs. médias générés.</strong> Les logos, images ou vidéos importés restent votre propriété ; nous ne les utilisons que pour produire le rendu demandé ou diagnostiquer la qualité. Les rendus vous appartiennent sous réserve de la licence ci-dessus et vous êtes responsable des droits de tiers incorporés.
@@ -436,7 +480,14 @@ function TermsArticleFr({ version, effective }: { version: string; effective: st
       <section className="space-y-3">
         <h3 className="text-lg font-semibold text-text-primary">18. Contact</h3>
         <p>
-          Questions sur ces Conditions ? Écrivez à <Link href="/contact" className="text-accent underline">legal@maxvideoai.com</Link>.
+          Questions sur ces Conditions ? Écrivez à{' '}
+          <ObfuscatedEmailLink
+            user="legal"
+            domain="maxvideoai.com"
+            label="legal@maxvideoai.com"
+            placeholder="legal [at] maxvideoai.com"
+          />
+          .
         </p>
         <p className="text-sm text-text-muted">Dernière mise à jour : {effective ?? version}</p>
       </section>
@@ -521,7 +572,16 @@ function TermsArticleEs({ version, effective }: { version: string; effective: st
           </li>
           <li>
             <strong>Controles de privacidad.</strong> Puedes marcar los renders como privados para limitar su difusión. Si no existe un control de privacidad para cierta
-            función, puedes solicitar la desindexación o eliminación enviando un correo a support@maxvideo.ai; atenderemos la solicitud salvo obligación legal en contrario.
+            función, puedes solicitar la desindexación o eliminación enviando un correo a{' '}
+            <ObfuscatedEmailLink
+              user="support"
+              domain="maxvideoai.com"
+              label="support@maxvideoai.com"
+              placeholder="support [at] maxvideoai.com"
+              unstyled
+              className="font-medium"
+            />
+            ; atenderemos la solicitud salvo obligación legal en contrario.
           </li>
           <li>
             <strong>Cargas vs. contenido generado.</strong> Los logotipos, imágenes o vídeos que cargas siguen siendo tuyos; solo los usamos para producir el render o resolver
@@ -620,7 +680,14 @@ function TermsArticleEs({ version, effective }: { version: string; effective: st
       <section className="space-y-3">
         <h3 className="text-lg font-semibold text-text-primary">18. Contacto</h3>
         <p>
-          ¿Dudas sobre estos Términos? Escribe a <Link href="/contact" className="text-accent underline">legal@maxvideoai.com</Link>.
+          ¿Dudas sobre estos Términos? Escribe a{' '}
+          <ObfuscatedEmailLink
+            user="legal"
+            domain="maxvideoai.com"
+            label="legal@maxvideoai.com"
+            placeholder="legal [at] maxvideoai.com"
+          />
+          .
         </p>
         <p className="text-sm text-text-muted">Última actualización: {effective ?? version}</p>
       </section>

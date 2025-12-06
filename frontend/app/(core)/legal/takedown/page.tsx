@@ -1,8 +1,8 @@
-import Link from 'next/link';
 import type { Metadata } from 'next';
 import { TakedownForm, type TakedownFormCopy } from './TakedownForm';
 import { resolveLocale } from '@/lib/i18n/server';
 import type { AppLocale } from '@/i18n/locales';
+import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 export const metadata: Metadata = {
   title: 'Notice & Takedown',
@@ -110,9 +110,12 @@ function TakedownArticle({ locale }: { locale: AppLocale }) {
           </p>
           <p>
             Pour les urgences (sécurité personnelle ou demandes officielles), écrivez à{' '}
-            <Link href="/contact" className="text-accent underline">
-              legal@maxvideoai.com
-            </Link>{' '}
+            <ObfuscatedEmailLink
+              user="legal"
+              domain="maxvideoai.com"
+              label="legal@maxvideoai.com"
+              placeholder="legal [at] maxvideoai.com"
+            />{' '}
             avec « URGENT » dans l’objet.
           </p>
         </article>
@@ -126,9 +129,12 @@ function TakedownArticle({ locale }: { locale: AppLocale }) {
           </p>
           <p>
             Para casos urgentes (seguridad personal o solicitudes policiales), escribe a{' '}
-            <Link href="/contact" className="text-accent underline">
-              legal@maxvideoai.com
-            </Link>{' '}
+            <ObfuscatedEmailLink
+              user="legal"
+              domain="maxvideoai.com"
+              label="legal@maxvideoai.com"
+              placeholder="legal [at] maxvideoai.com"
+            />{' '}
             con “URGENT” en el asunto.
           </p>
         </article>
@@ -142,9 +148,12 @@ function TakedownArticle({ locale }: { locale: AppLocale }) {
           </p>
           <p>
             For urgent reports (personal safety or law-enforcement matters), email{' '}
-            <Link href="/contact" className="text-accent underline">
-              legal@maxvideoai.com
-            </Link>{' '}
+            <ObfuscatedEmailLink
+              user="legal"
+              domain="maxvideoai.com"
+              label="legal@maxvideoai.com"
+              placeholder="legal [at] maxvideoai.com"
+            />{' '}
             with “URGENT” in the subject line.
           </p>
         </article>
@@ -165,9 +174,12 @@ export default async function TakedownPage() {
         <p className="text-sm text-text-secondary">{header.companyLine}</p>
         <p className="text-sm text-text-secondary">
           {header.contactLabel}{' '}
-          <Link href="/contact" className="text-accent underline">
-            legal@maxvideoai.com
-          </Link>
+          <ObfuscatedEmailLink
+            user="legal"
+            domain="maxvideoai.com"
+            label="legal@maxvideoai.com"
+            placeholder="legal [at] maxvideoai.com"
+          />
         </p>
       </header>
 

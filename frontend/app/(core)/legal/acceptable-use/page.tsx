@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { resolveLocale } from '@/lib/i18n/server';
 import type { AppLocale } from '@/i18n/locales';
+import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 export const metadata: Metadata = {
   title: 'Acceptable Use Policy',
@@ -53,9 +54,12 @@ export default async function AcceptableUsePage() {
         <p className="text-sm text-text-secondary">{header.companyLine}</p>
         <p className="text-sm text-text-secondary">
           {header.contactLabel}{' '}
-          <Link href="/contact" className="text-accent underline">
-            legal@maxvideoai.com
-          </Link>
+          <ObfuscatedEmailLink
+            user="legal"
+            domain="maxvideoai.com"
+            label="legal@maxvideoai.com"
+            placeholder="legal [at] maxvideoai.com"
+          />
         </p>
       </header>
 
@@ -101,7 +105,14 @@ function AupArticleEn() {
           <Link href="/legal/takedown" className="text-accent underline">
             Notice &amp; Takedown form
           </Link>{' '}
-          or email <Link href="/contact" className="text-accent underline">legal@maxvideoai.com</Link>. We review reports promptly and take appropriate action.
+          or email{' '}
+          <ObfuscatedEmailLink
+            user="legal"
+            domain="maxvideoai.com"
+            label="legal@maxvideoai.com"
+            placeholder="legal [at] maxvideoai.com"
+          />
+          . We review reports promptly and take appropriate action.
         </p>
       </section>
     </article>
@@ -149,7 +160,14 @@ function AupArticleFr() {
           <Link href="/legal/takedown" className="text-accent underline">
             formulaire Notification &amp; retrait
           </Link>{' '}
-          ou écrivez à <Link href="/contact" className="text-accent underline">legal@maxvideoai.com</Link>. Nous examinons chaque signalement et agissons rapidement.
+          ou écrivez à{' '}
+          <ObfuscatedEmailLink
+            user="legal"
+            domain="maxvideoai.com"
+            label="legal@maxvideoai.com"
+            placeholder="legal [at] maxvideoai.com"
+          />
+          . Nous examinons chaque signalement et agissons rapidement.
         </p>
       </section>
     </article>
@@ -197,7 +215,14 @@ function AupArticleEs() {
           <Link href="/legal/takedown" className="text-accent underline">
             formulario de Notificación y retirada
           </Link>{' '}
-          o escribe a <Link href="/contact" className="text-accent underline">legal@maxvideoai.com</Link>. Revisamos cada informe y actuamos con rapidez.
+          o escribe a{' '}
+          <ObfuscatedEmailLink
+            user="legal"
+            domain="maxvideoai.com"
+            label="legal@maxvideoai.com"
+            placeholder="legal [at] maxvideoai.com"
+          />
+          . Revisamos cada informe y actuamos con rapidez.
         </p>
       </section>
     </article>

@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -19,6 +18,7 @@ import { FEATURES } from '@/content/feature-flags';
 import { FlagPill } from '@/components/FlagPill';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getEngineAliases, listFalEngines } from '@/config/falEngines';
+import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 const DEFAULT_JOBS_COPY = {
   title: 'Jobs',
@@ -352,9 +352,13 @@ export default function JobsPage() {
             ) : (
               <p className="mt-2 text-sm text-text-secondary">
                 {copy.teams.beta.split('{email}')[0]}
-                <Link className="underline underline-offset-2" href="/contact">
-                  {copy.teams.email}
-                </Link>
+                <ObfuscatedEmailLink
+                  user="support"
+                  domain="maxvideo.ai"
+                  label={copy.teams.email}
+                  placeholder="support [at] maxvideo.ai"
+                  className="underline underline-offset-2"
+                />
                 {copy.teams.beta.split('{email}')[1] ?? ''}
               </p>
             )}

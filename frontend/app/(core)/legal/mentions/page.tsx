@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 export const metadata: Metadata = {
   title: 'Mentions légales',
@@ -30,13 +31,19 @@ export default function MentionsLegalesPage() {
           </p>
           <p>
             <strong>Contact&nbsp;:</strong>{' '}
-            <Link href="/contact" className="text-accent underline">
-              support@maxvideoai.com
-            </Link>{' '}
+            <ObfuscatedEmailLink
+              user="support"
+              domain="maxvideoai.com"
+              label="support@maxvideoai.com"
+              placeholder="support [at] maxvideoai.com"
+            />{' '}
             ·{' '}
-            <Link href="/contact" className="text-accent underline">
-              legal@maxvideoai.com
-            </Link>
+            <ObfuscatedEmailLink
+              user="legal"
+              domain="maxvideoai.com"
+              label="legal@maxvideoai.com"
+              placeholder="legal [at] maxvideoai.com"
+            />
           </p>
           <p>
             <strong>SIREN&nbsp;:</strong> en cours d’attribution · <strong>TVA intracommunautaire&nbsp;:</strong> en cours d’attribution
@@ -72,9 +79,12 @@ export default function MentionsLegalesPage() {
               Politique de confidentialité
             </Link>
             . Pour exercer vos droits RGPD (accès, rectification, suppression, opposition, portabilité), contactez{' '}
-            <Link href="/contact" className="text-accent underline">
-              privacy@maxvideoai.com
-            </Link>
+            <ObfuscatedEmailLink
+              user="privacy"
+              domain="maxvideoai.com"
+              label="privacy@maxvideoai.com"
+              placeholder="privacy [at] maxvideoai.com"
+            />
             .
           </p>
         </section>

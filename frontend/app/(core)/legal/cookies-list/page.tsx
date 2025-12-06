@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import type { Metadata } from 'next';
+import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 type CookieRow = {
   name: string;
@@ -114,7 +114,13 @@ export default function CookiesListPage() {
 
         <p className="text-sm text-text-secondary">
           Have questions or found an inconsistency? Contact{' '}
-          <Link href="/contact" className="text-accent underline">privacy@maxvideoai.com</Link>.
+          <ObfuscatedEmailLink
+            user="privacy"
+            domain="maxvideoai.com"
+            label="privacy@maxvideoai.com"
+            placeholder="privacy [at] maxvideoai.com"
+          />
+          .
         </p>
       </article>
     </div>

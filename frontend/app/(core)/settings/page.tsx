@@ -1,6 +1,5 @@
 "use client";
 
-import Link from 'next/link';
 import { useCallback, useMemo, useState } from 'react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -13,6 +12,7 @@ import type { User } from '@supabase/supabase-js';
 import deepmerge from 'deepmerge';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { authFetch } from '@/lib/authFetch';
+import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 type Tab = 'account' | 'team' | 'privacy' | 'notifications';
 
@@ -309,9 +309,13 @@ function TeamTab({ live, copy }: { live: boolean; copy: SettingsCopy['team'] }) 
       ) : (
         <div className="mt-2 rounded-xl border border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
           {copy.upcomingPrefix}
-          <Link className="underline underline-offset-2" href="/contact">
-            {copy.upcomingEmail}
-          </Link>
+          <ObfuscatedEmailLink
+            user="support"
+            domain="maxvideoai.com"
+            label={copy.upcomingEmail}
+            placeholder="support [at] maxvideoai.com"
+            className="underline underline-offset-2"
+          />
           {copy.upcomingSuffix}
         </div>
       )}

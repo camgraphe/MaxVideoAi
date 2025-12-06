@@ -4,6 +4,7 @@ import { getLegalDocuments } from '@/lib/legal';
 import { SITE_BASE_URL } from '@/lib/metadataUrls';
 import { resolveLocale } from '@/lib/i18n/server';
 import type { AppLocale } from '@/i18n/locales';
+import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 const LEGAL_INDEX_URL = `${SITE_BASE_URL}/legal`;
 
@@ -145,9 +146,13 @@ export default async function LegalIndexPage() {
       <span key={`${part}-${index}`}>
         {part}
         {index < parts.length - 1 ? (
-          <Link href="/contact" className="font-semibold text-accent hover:text-accentSoft">
-            legal@maxvideo.ai
-          </Link>
+          <ObfuscatedEmailLink
+            user="legal"
+            domain="maxvideoai.com"
+            label="legal@maxvideoai.com"
+            placeholder="legal [at] maxvideoai.com"
+            className="font-semibold text-accent hover:text-accentSoft"
+          />
         ) : null}
       </span>
     ));

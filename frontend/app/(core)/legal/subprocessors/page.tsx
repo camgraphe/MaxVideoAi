@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import type { Metadata } from 'next';
+import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 type Subprocessor = {
   provider: string;
@@ -98,7 +98,13 @@ export default function SubprocessorsPage() {
 
       <p className="text-sm text-text-secondary">
         Need more information or a signed copy of our Data Processing Agreement? Contact{' '}
-        <Link href="/contact" className="text-accent underline">privacy@maxvideoai.com</Link>.
+        <ObfuscatedEmailLink
+          user="privacy"
+          domain="maxvideoai.com"
+          label="privacy@maxvideoai.com"
+          placeholder="privacy [at] maxvideoai.com"
+        />
+        .
       </p>
     </div>
   );

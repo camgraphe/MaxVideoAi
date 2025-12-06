@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LegalVersionBadge } from '@/components/legal/LegalVersionBadge';
 import { formatLegalDate, getLegalDocument } from '@/lib/legal';
+import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 export const metadata: Metadata = {
   title: 'Cookie Policy',
@@ -21,7 +22,15 @@ export default async function CookiePolicyPage() {
           Version: {version} · Effective date: {effective ?? version}
         </p>
         <p className="text-sm text-text-secondary">
-          Contact: privacy@maxvideoai.com
+          Contact:{' '}
+          <ObfuscatedEmailLink
+            user="privacy"
+            domain="maxvideoai.com"
+            label="privacy@maxvideoai.com"
+            placeholder="privacy [at] maxvideoai.com"
+            unstyled
+            className="font-medium underline underline-offset-2"
+          />
         </p>
         <LegalVersionBadge docKey="cookies" doc={document} />
       </header>
@@ -93,7 +102,14 @@ export default async function CookiePolicyPage() {
         <section className="space-y-3">
           <h3 className="text-lg font-semibold text-text-primary">7. Contact</h3>
           <p>
-            Questions about cookies? <Link href="/contact" className="text-accent underline">privacy@maxvideoai.com</Link>.
+            Questions about cookies?{' '}
+            <ObfuscatedEmailLink
+              user="privacy"
+              domain="maxvideoai.com"
+              label="privacy@maxvideoai.com"
+              placeholder="privacy [at] maxvideoai.com"
+            />
+            .
           </p>
           <p className="text-sm text-text-muted">Last updated: {effective ?? version}</p>
         </section>

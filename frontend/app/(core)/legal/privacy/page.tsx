@@ -5,6 +5,7 @@ import { formatLegalDate, getLegalDocument } from '@/lib/legal';
 import { SITE_BASE_URL } from '@/lib/metadataUrls';
 import type { AppLocale } from '@/i18n/locales';
 import { resolveLocale } from '@/lib/i18n/server';
+import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 const PRIVACY_URL = `${SITE_BASE_URL}/legal/privacy`;
 
@@ -16,24 +17,24 @@ export const metadata: Metadata = {
   },
 };
 
-const HEADER_COPY: Record<AppLocale, { title: string; versionLabel: string; effectiveLabel: string; contactLine: string }> = {
+const HEADER_COPY: Record<AppLocale, { title: string; versionLabel: string; effectiveLabel: string; contactLabel: string }> = {
   en: {
     title: 'Privacy Policy',
     versionLabel: 'Version',
     effectiveLabel: 'Effective date',
-    contactLine: 'Contact: privacy@maxvideoai.com · legal@maxvideoai.com',
+    contactLabel: 'Contact:',
   },
   fr: {
     title: 'Politique de confidentialité',
     versionLabel: 'Version',
     effectiveLabel: "Date d’entrée en vigueur",
-    contactLine: 'Contact : privacy@maxvideoai.com · legal@maxvideoai.com',
+    contactLabel: 'Contact :',
   },
   es: {
     title: 'Política de privacidad',
     versionLabel: 'Versión',
     effectiveLabel: 'Fecha de entrada en vigor',
-    contactLine: 'Contacto: privacy@maxvideoai.com · legal@maxvideoai.com',
+    contactLabel: 'Contacto:',
   },
 };
 
@@ -95,7 +96,26 @@ export default async function PrivacyPage() {
             </>
           )}
         </p>
-        <p className="text-sm text-text-secondary">{header.contactLine}</p>
+        <p className="text-sm text-text-secondary">
+          {header.contactLabel}{' '}
+          <ObfuscatedEmailLink
+            user="privacy"
+            domain="maxvideoai.com"
+            label="privacy@maxvideoai.com"
+            placeholder="privacy [at] maxvideoai.com"
+            unstyled
+            className="font-medium"
+          />{' '}
+          ·{' '}
+          <ObfuscatedEmailLink
+            user="legal"
+            domain="maxvideoai.com"
+            label="legal@maxvideoai.com"
+            placeholder="legal [at] maxvideoai.com"
+            unstyled
+            className="font-medium"
+          />
+        </p>
         <LegalVersionBadge docKey="privacy" doc={document} />
       </header>
       <PrivacyArticle locale={locale} version={version} effective={effective ?? version} />
@@ -229,7 +249,14 @@ function PrivacyArticleEn({ version, effective }: { version: string; effective: 
         <h3 className="text-lg font-semibold text-text-primary">9. Your rights (EU/EEA/UK)</h3>
         <p>
           Subject to conditions and applicable law, you may request access, rectification, erasure, restriction, objection, and data portability. You may also withdraw consent at any time. To exercise
-          rights, email <Link href="/contact" className="text-accent underline">privacy@maxvideoai.com</Link>. You can lodge a complaint with your local data protection authority; in France, contact the CNIL.
+          rights, email{' '}
+          <ObfuscatedEmailLink
+            user="privacy"
+            domain="maxvideoai.com"
+            label="privacy@maxvideoai.com"
+            placeholder="privacy [at] maxvideoai.com"
+          />
+          . You can lodge a complaint with your local data protection authority; in France, contact the CNIL.
         </p>
       </section>
 
@@ -248,7 +275,14 @@ function PrivacyArticleEn({ version, effective }: { version: string; effective: 
       <section className="space-y-3">
         <h3 className="text-lg font-semibold text-text-primary">12. Contact</h3>
         <p>
-          Questions about privacy? <Link href="/contact" className="text-accent underline">privacy@maxvideoai.com</Link>.
+          Questions about privacy?{' '}
+          <ObfuscatedEmailLink
+            user="privacy"
+            domain="maxvideoai.com"
+            label="privacy@maxvideoai.com"
+            placeholder="privacy [at] maxvideoai.com"
+          />
+          .
         </p>
         <p className="text-sm text-text-muted">Last updated: {effective ?? version}</p>
       </section>
@@ -383,7 +417,14 @@ function PrivacyArticleFr({ version, effective }: { version: string; effective: 
         <h3 className="text-lg font-semibold text-text-primary">9. Vos droits (UE/EEE/R.-U.)</h3>
         <p>
           Selon la loi applicable, vous pouvez demander l’accès, la rectification, l’effacement, la limitation, l’opposition ou la portabilité. Vous pouvez retirer votre consentement à tout moment en
-          écrivant à <Link href="/contact" className="text-accent underline">privacy@maxvideoai.com</Link>. Vous pouvez introduire une plainte auprès de votre autorité locale (en France : CNIL).
+          écrivant à{' '}
+          <ObfuscatedEmailLink
+            user="privacy"
+            domain="maxvideoai.com"
+            label="privacy@maxvideoai.com"
+            placeholder="privacy [at] maxvideoai.com"
+          />
+          . Vous pouvez introduire une plainte auprès de votre autorité locale (en France : CNIL).
         </p>
       </section>
 
@@ -403,7 +444,14 @@ function PrivacyArticleFr({ version, effective }: { version: string; effective: 
       <section className="space-y-3">
         <h3 className="text-lg font-semibold text-text-primary">12. Contact</h3>
         <p>
-          Question sur la confidentialité ? Écrivez à <Link href="/contact" className="text-accent underline">privacy@maxvideoai.com</Link>.
+          Question sur la confidentialité ? Écrivez à{' '}
+          <ObfuscatedEmailLink
+            user="privacy"
+            domain="maxvideoai.com"
+            label="privacy@maxvideoai.com"
+            placeholder="privacy [at] maxvideoai.com"
+          />
+          .
         </p>
         <p className="text-sm text-text-muted">Dernière mise à jour : {effective ?? version}</p>
       </section>
@@ -537,7 +585,13 @@ function PrivacyArticleEs({ version, effective }: { version: string; effective: 
         <h3 className="text-lg font-semibold text-text-primary">9. Tus derechos (UE/EEE/R.-U.)</h3>
         <p>
           Según la ley aplicable puedes ejercer acceso, rectificación, supresión, restricción, portabilidad u oposición. También puedes retirar tu consentimiento escribiendo a{' '}
-          <Link href="/contact" className="text-accent underline">privacy@maxvideoai.com</Link>. Puedes presentar reclamaciones ante tu autoridad local (por ejemplo, la AEPD o la CNIL).
+          <ObfuscatedEmailLink
+            user="privacy"
+            domain="maxvideoai.com"
+            label="privacy@maxvideoai.com"
+            placeholder="privacy [at] maxvideoai.com"
+          />
+          . Puedes presentar reclamaciones ante tu autoridad local (por ejemplo, la AEPD o la CNIL).
         </p>
       </section>
 
@@ -556,7 +610,14 @@ function PrivacyArticleEs({ version, effective }: { version: string; effective: 
       <section className="space-y-3">
         <h3 className="text-lg font-semibold text-text-primary">12. Contacto</h3>
         <p>
-          ¿Dudas sobre privacidad? Escribe a <Link href="/contact" className="text-accent underline">privacy@maxvideoai.com</Link>.
+          ¿Dudas sobre privacidad? Escribe a{' '}
+          <ObfuscatedEmailLink
+            user="privacy"
+            domain="maxvideoai.com"
+            label="privacy@maxvideoai.com"
+            placeholder="privacy [at] maxvideoai.com"
+          />
+          .
         </p>
         <p className="text-sm text-text-muted">Última actualización: {effective ?? version}</p>
       </section>
