@@ -10,6 +10,8 @@ export type Resolution =
   | '1080p'
   | '1440p'
   | '4k'
+  | '1k'
+  | '2k'
   | '512P'
   | '768P'
   | 'square_hd'
