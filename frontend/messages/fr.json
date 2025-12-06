@@ -364,8 +364,8 @@
     },
     "priceChipSuffix": "Sans abonnement. Paiement à l’usage.",
     "meta": {
-      "title": "Générateur vidéo IA multi-moteurs – Paiement à l’usage | MaxVideoAI",
-      "description": "Créez des vidéos IA avec Sora 2, Veo 3, Pika et d'autres depuis un seul espace de travail. Tarification transparente, portefeuilles Paiement à l’usage, Upscaling 4K 4K, Rendus itératifs x1-x4."
+      "title": "Tarifs – Crédits pay-as-you-go pour Sora, Veo, Pika & Kling | MaxVideoAI",
+      "description": "Rechargez votre wallet MaxVideoAI en USD et ne payez que les vidéos IA que vous générez. Tarifs pay-as-you-go simples pour Sora 2, Veo 3.1, Pika, Kling, Wan et d’autres moteurs."
     },
     "compare": {
       "title": "Comparer les moteurs en un coup d’œil",
@@ -665,9 +665,9 @@
   },
   "models": {
     "hero": {
-      "title": "Un seul workspace pour tous les moteurs vidéo qui comptent.",
+      "title": "Comparez tous les modèles vidéo IA dans un seul workspace",
       "subtitle": "Comparez tous les moteurs vidéo IA disponibles dans MaxVideoAI.",
-      "body": "MaxVideoAI met en ligne de nouveaux endpoints de vidéo IA chaque semaine pour que votre catalogue de modèles — Sora 2, Veo 3.1, Pika 2.2, Kling, Luma, Wan, MiniMax Hailuo, etc. — reste toujours à jour. Chaque page moteur présente des exemples réels, des spécifications, des prix et des conseils de prompt pour vous aider à choisir le bon moteur pour chaque plan."
+      "body": "MaxVideoAI vous permet de comparer chaque moteur vidéo IA sérieux côte à côte : Sora 2, Veo 3.1, Pika 2.2, Kling, Wan, MiniMax et d’autres encore. Consultez des exemples réels, les spécifications et les prix live pour choisir le bon modèle pour chaque plan plutôt que de parier sur une démo en liste d’attente."
     },
     "intro": {
       "paragraphs": [
@@ -780,8 +780,8 @@
         "priceBefore": "Tarifs en direct dans le workspace Generate.",
         "versionLabel": "v2.6 Pro"
       },
-      "title": "Moteurs vidéo IA – Comparez Sora, Veo 3.1, Pika, Kling | MaxVideoAI",
-      "description": "Comparez les principaux moteurs vidéo IA en un seul endroit : Sora 2, Veo 3.1, Pika 2.2, Kling, Luma, Wan et plus. Specs, prix, exemples et astuces de prompt pour chaque modèle."
+      "title": "Modèles vidéo IA – Comparez Sora 2, Veo 3.1, Pika & Kling | MaxVideoAI",
+      "description": "Parcourez tous les modèles vidéo IA au même endroit : Sora 2, Veo 3.1, Pika 2.2, Kling, Wan, MiniMax et plus encore. Comparez prix, qualité et limites avant de générer."
     },
     "note": "Les tarifs Fal évoluent vite : vérifiez la pastille Prix-Avant ou votre clé directe avant chaque lancement.",
     "detail": {
@@ -823,7 +823,7 @@
       "engineAZ": "Moteur A→Z"
     },
     "hero": {
-      "title": "Démonstrations des moteurs.",
+      "title": "Exemples de vidéo IA que vous pouvez cloner.",
       "subtitle": "Survolez pour boucler, cliquez pour agrandir. Chaque clip prévisualise le mouvement et le style que vous pouvez utiliser dans MaxVideo AI.",
       "body": "Parcourez des exemples vidéo IA générés avec Sora 2, Veo 3.1, Pika 2.2, Kling, Wan et d’autres moteurs. Chaque clip affiche le prompt, le format et la durée pour comparer en un coup d’œil la façon dont chaque modèle gère mouvement, cadrage et narration."
     },
@@ -1261,8 +1261,8 @@
   },
   "gallery": {
     "meta": {
-      "title": "Exemples vidéo IA – Sora, Veo 3.1, Pika, Kling | MaxVideoAI",
-      "description": "Explorez de vrais exemples vidéo IA générés avec Sora 2, Veo 3.1, Pika 2.2, Kling et plus. Plans cinématographiques, pubs produits, loops sociales et rendus de 4–12 s avec prompts."
+      "title": "Exemples vidéo IA – Sora 2, Veo 3.1, Pika & Kling | MaxVideoAI",
+      "description": "Découvrez des exemples vidéo IA générés avec Sora 2, Veo 3.1, Pika, Kling, Wan et plus encore. Prévisualisez mouvement, style, prompts et durée puis clonez chaque prise dans votre propre workspace MaxVideoAI."
     }
   },
   "workspace": {
