@@ -1,7 +1,7 @@
 "use client";
 
 import Image from 'next/image';
-import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useState, useTransition, type DragEvent } from 'react';
 import clsx from 'clsx';
 import { authFetch } from '@/lib/authFetch';
 type PlaylistSummary = {
@@ -51,6 +51,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
   const [selectedId, setSelectedId] = useState<string | null>(initialPlaylistId);
   const [items, setItems] = useState<PlaylistItemRecord[]>(initialItems);
   const [isItemsDirty, setItemsDirty] = useState(false);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +63,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
     setSelectedId(initialPlaylistId);
     setItems(initialItems);
     setItemsDirty(false);
+    setDraggingId(null);
   }, [initialPlaylists, initialPlaylistId, initialItems]);
 
   const refreshPlaylistItems = useCallback((playlistId: string) => {
@@ -293,6 +295,62 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
     []
   );
 
+  const commitDragMove = useCallback((fromId: string, toId: string | null) => {
+    setItems((current) => {
+      const fromIndex = current.findIndex((item) => item.videoId === fromId);
+      if (fromIndex === -1) return current;
+      const next = [...current];
+      const [moved] = next.splice(fromIndex, 1);
+      const insertIndex =
+        toId !== null ? next.findIndex((item) => item.videoId === toId) : next.length;
+      const targetIndex = insertIndex === -1 ? next.length : insertIndex;
+      next.splice(targetIndex, 0, moved);
+      return next.map((item, idx) => ({ ...item, orderIndex: idx }));
+    });
+    setItemsDirty(true);
+  }, []);
+
+  const handleDragStart = useCallback((event: DragEvent<HTMLTableRowElement>, videoId: string) => {
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', videoId);
+    setDraggingId(videoId);
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    setDraggingId(null);
+  }, []);
+
+  const handleRowDragOver = useCallback((event: DragEvent<HTMLTableRowElement>) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const handleDropOnRow = useCallback(
+    (event: DragEvent<HTMLTableRowElement>, targetVideoId: string) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (!draggingId || draggingId === targetVideoId) return;
+      commitDragMove(draggingId, targetVideoId);
+      setDraggingId(null);
+    },
+    [commitDragMove, draggingId]
+  );
+
+  const handleTableDragOver = useCallback((event: DragEvent<HTMLTableSectionElement>) => {
+    event.preventDefault();
+  }, []);
+
+  const handleDropAtEnd = useCallback(
+    (event: DragEvent<HTMLTableSectionElement>) => {
+      if (event.target !== event.currentTarget) return;
+      event.preventDefault();
+      if (!draggingId) return;
+      commitDragMove(draggingId, null);
+      setDraggingId(null);
+    },
+    [commitDragMove, draggingId]
+  );
+
   const handleSaveItems = useCallback(() => {
     if (!selectedId) return;
     startTransition(async () => {
@@ -456,7 +514,10 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h2 className="text-lg font-semibold text-text-primary">Playlist items</h2>
-                  <p className="text-sm text-text-secondary">Add videos by job ID and arrange their order as displayed in the gallery.</p>
+                  <p className="text-sm text-text-secondary">
+                    Add videos by job ID and arrange their order as displayed in the gallery.
+                  </p>
+                  <p className="text-xs text-text-muted">Drag rows or use the arrow buttons, then save the order.</p>
                 </div>
                 <button
                   type="button"
@@ -494,10 +555,35 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
               <th className="px-4 py-3" aria-label="Actions" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody
+            className="divide-y divide-border"
+            onDragOver={handleTableDragOver}
+            onDrop={handleDropAtEnd}
+          >
             {items.map((item, index) => (
-              <tr key={item.videoId} className={clsx(isPending && 'opacity-90')}>
-                <td className="px-4 py-3 text-xs text-text-secondary">{index + 1}</td>
+              <tr
+                key={item.videoId}
+                draggable
+                onDragStart={(event) => handleDragStart(event, item.videoId)}
+                onDragOver={handleRowDragOver}
+                onDrop={(event) => handleDropOnRow(event, item.videoId)}
+                onDragEnd={handleDragEnd}
+                className={clsx(
+                  'cursor-grab transition',
+                  isPending && 'opacity-90',
+                  draggingId === item.videoId && 'cursor-grabbing opacity-60'
+                )}
+                aria-grabbed={draggingId === item.videoId}
+              >
+                <td className="px-4 py-3 text-xs text-text-secondary">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base leading-none text-text-muted" aria-hidden>
+                      ⋮⋮
+                    </span>
+                    <span>{index + 1}</span>
+                    <span className="sr-only">Drag to reorder</span>
+                  </div>
+                </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                     <div className="h-16 w-28 overflow-hidden rounded border border-border bg-neutral-100">
