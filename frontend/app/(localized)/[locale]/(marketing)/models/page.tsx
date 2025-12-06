@@ -223,7 +223,6 @@ export default async function ModelsPage() {
     const displayName =
       localized?.marketingName ?? meta?.displayName ?? engine.cardTitle ?? getEngineDisplayName(engine);
     const description = localized?.hero?.intro ?? localized?.overview ?? meta?.description ?? engineType;
-    const priceNote = meta?.priceBefore ?? localized?.pricingNotes ?? null;
     const pictogram = getEnginePictogram({
       id: engine.engine.id,
       brandId: engine.brandId ?? engine.engine.brandId,
@@ -235,8 +234,8 @@ export default async function ModelsPage() {
       label: displayName,
       description,
       versionLabel,
-      priceNote,
-      priceNoteHref: priceNote ? '/generate' : null,
+      priceNote: null,
+      priceNoteHref: null,
       href: { pathname: '/models/[slug]', params: { slug: engine.modelSlug } },
       backgroundColor: pictogram.backgroundColor,
       textColor: pictogram.textColor,
