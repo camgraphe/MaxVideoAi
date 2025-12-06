@@ -506,8 +506,8 @@
     "priceChipSuffix": "Price before you generate.",
     "priceChipPrefix": "This render",
     "meta": {
-      "title": "Pricing — Pay-as-you-go AI video generator | MaxVideoAI",
-      "description": "Top up credits and pay only for renders you approve. Clear per-engine rates, no subscription, 4K upscaling and audio options."
+      "title": "Pricing – Pay-as-you-go Credits for Sora, Veo, Pika & Kling | MaxVideoAI",
+      "description": "Top up your MaxVideoAI wallet in USD and only pay for the AI video you generate. Simple pay-as-you-go pricing across Sora 2, Veo 3.1, Pika, Kling, Wan and more."
     }
   },
   "workflows": {
@@ -581,9 +581,9 @@
   },
   "models": {
     "hero": {
-      "title": "One workspace, every video engine that matters.",
+      "title": "Compare all AI video models in one workspace",
       "subtitle": "Compare every AI video engine available in MaxVideoAI.",
-      "body": "MaxVideoAI keeps every AI video engine — Sora 2, Veo 3.1, Pika 2.2, Kling, Luma, Wan, MiniMax Hailuo and more — up to date so your model catalog is always production-ready. Each model page includes real examples, specs, pricing and prompt tips so you can choose the right engine for every shot."
+      "body": "MaxVideoAI lets you compare every serious AI video engine side-by-side: Sora 2, Veo 3.1, Pika 2.2, Kling, Wan, MiniMax and more. Check real examples, specs and live pricing so you can pick the right model for each shot, not guess from a waitlist demo."
     },
     "intro": {
       "paragraphs": [
@@ -696,8 +696,8 @@
         "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "v2.6 Pro"
       },
-      "title": "AI Video Models – Compare Sora, Veo 3.1, Pika, Kling | MaxVideoAI",
-      "description": "Compare today’s top AI video engines in one place: Sora 2, Veo 3.1, Pika 2.2, Kling, Luma, Wan and more. Specs, pricing, examples and prompt tips for each model."
+      "title": "AI Video Models – Compare Sora 2, Veo 3.1, Pika & Kling | MaxVideoAI",
+      "description": "Browse all AI video models in one place: Sora 2, Veo 3.1, Pika 2.2, Kling, Wan, MiniMax and more. Compare pricing, quality and limits before you generate."
     },
     "note": "",
     "detail": {
