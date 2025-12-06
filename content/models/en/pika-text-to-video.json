@@ -2,13 +2,13 @@
   "marketingName": "Pika 2.2",
   "versionLabel": "2.2",
   "seo": {
-    "title": "Pika 2.2 – AI Text-to-Video & Image-to-Video (720p/1080p, 5–8s, Silent)",
-    "description": "Stylized, silent 5–8s clips at 720p/1080p. Text or image input, anime/comic/pixel looks, seeds & negative prompts, and pay-as-you-go pricing in MaxVideoAI.",
+    "title": "Pika Labs 2.2 – Text-to-Video & Image-to-Video (Free Access via MaxVideoAI)",
+    "description": "Generate Pika Labs 2.2 videos without a subscription. Text-to-video and image-to-video in 5–8 seconds, 720p/1080p. Pay only per clip with MaxVideoAI.",
     "image": "/hero/pika-22.jpg"
   },
   "overview": "Pika 2.2 in MaxVideoAI: silent, stylized 5–8s clips at 720p/1080p, from text or a single image, across 1:1, 16:9 or 9:16. Ideal for anime, comic, pixel and playful 3D looks built for social feeds.",
   "hero": {
-    "title": "Pika 2.2 – AI Text-to-Video & Image-to-Video in MaxVideoAI (720p/1080p, 5–8s)",
+    "title": "Pika Labs 2.2 – Text-to-Video & Image-to-Video",
     "intro": "Pika 2.2 – Stylized AI Video for Social-First Clips (5–8s, 720p/1080p, No Audio)",
     "badge": "720p/1080p · 5–8s · Text or Image input · No audio",
     "ctaPrimary": {
