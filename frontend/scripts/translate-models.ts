@@ -22,7 +22,7 @@ const TARGET_DIRS = {
 const CACHE_DIR = path.join(FRONTEND_ROOT, '.cache');
 const CACHE_FILE = path.join(CACHE_DIR, 'models-i18n.json');
 const MODELS_SLUG_MAP = buildSlugMap('models');
-const INDEXNOW_LOCALES = APP_LOCALES as AppLocale[];
+const INDEXNOW_LOCALES: AppLocale[] = [...APP_LOCALES];
 
 dotenv.config({ path: path.join(FRONTEND_ROOT, '.env.local'), override: true });
 dotenv.config();
