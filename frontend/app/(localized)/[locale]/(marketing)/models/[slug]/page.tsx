@@ -912,6 +912,7 @@ function Sora2PageLayout({
   const isImageEngine = engine.type === 'image';
   const textAnchorId = isImageEngine ? 'text-to-image' : 'text-to-video';
   const imageAnchorId = isImageEngine ? 'image-to-image' : 'image-to-video';
+  const launchHref = isImageEngine ? '/app/image' : '/app';
   const tocItems = [
     { id: 'specs', label: 'Specs', visible: hasSpecs },
     { id: 'examples', label: 'Examples', visible: hasExamples },
@@ -2080,7 +2081,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
           {detailCopy.buttons.pricing}
         </Link>
         <Link
-          href={isImageEngine ? '/app/image' : '/app'}
+          href={launchHref}
           className="inline-flex items-center rounded-pill bg-accent px-4 py-2 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft"
         >
           {detailCopy.buttons.launch}
