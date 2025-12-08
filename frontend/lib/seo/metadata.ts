@@ -9,11 +9,7 @@ const SITE_NAME = 'MaxVideoAI';
 const TWITTER_HANDLE = '@MaxVideoAI';
 
 type OpenGraphMetadata = NonNullable<Metadata['openGraph']>;
-type OgType = OpenGraphMetadata extends { type?: infer T }
-  ? T extends string
-    ? T
-    : string
-  : string;
+type OgType = string;
 
 type BuildSeoMetadataOptions = {
   locale: AppLocale;
@@ -81,7 +77,7 @@ export function buildSeoMetadata({
     siteName: SITE_NAME,
     locale: metadataUrls.ogLocale,
     alternateLocale: metadataUrls.alternateOg,
-    type: ogType,
+    type: ogType as unknown as OpenGraphMetadata['type'],
     images: defaultImageEntry,
   };
   const mergedOpenGraph = {
