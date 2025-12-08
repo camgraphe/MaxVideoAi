@@ -259,11 +259,12 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
       startTransition(async () => {
         try {
           setError(null);
-          const res = await authFetch(`/api/admin/playlists/${selectedId}/items`, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ videoId }),
-          });
+          const res = await authFetch(
+            `/api/admin/playlists/${selectedId}/items?videoId=${encodeURIComponent(videoId)}`,
+            {
+              method: 'DELETE',
+            }
+          );
           if (!res.ok) throw new Error(`Failed to remove video (${res.status})`);
           const json = await res.json().catch(() => ({ ok: false }));
           if (!json?.ok) throw new Error(json?.error ?? 'Remove failed');
