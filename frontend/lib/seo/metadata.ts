@@ -84,9 +84,9 @@ export function buildSeoMetadata({
     ...baseOpenGraph,
     ...openGraphOverrides,
   };
-  if (!mergedOpenGraph.images || mergedOpenGraph.images.length === 0) {
-    mergedOpenGraph.images = defaultImageEntry;
-  }
+  const mergedImages = mergedOpenGraph.images;
+  const normalizedImages = Array.isArray(mergedImages) ? mergedImages : mergedImages ? [mergedImages] : [];
+  mergedOpenGraph.images = normalizedImages.length ? normalizedImages : defaultImageEntry;
 
   const baseTwitter: NonNullable<Metadata['twitter']> = {
     card: 'summary_large_image',
