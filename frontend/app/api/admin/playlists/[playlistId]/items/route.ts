@@ -73,6 +73,9 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ ok: false, error: 'Missing playlist id' }, { status: 400 });
   }
 
+  const url = new URL(req.url);
+  const queryVideoId = url.searchParams.get('videoId');
+
   let body: unknown;
   try {
     body = await req.json();
@@ -80,7 +83,8 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     body = undefined;
   }
   const payload = parseJson<{ videoId?: string }>(body);
-  const videoId = payload?.videoId?.trim();
+  const bodyVideoId = payload?.videoId?.trim();
+  const videoId = (bodyVideoId || queryVideoId || '').trim();
   if (!videoId) {
     return NextResponse.json({ ok: false, error: 'Missing videoId' }, { status: 400 });
   }
