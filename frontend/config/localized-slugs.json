@@ -8,5 +8,6 @@
   "about": { "en": "about", "fr": "about", "es": "about" },
   "contact": { "en": "contact", "fr": "contact", "es": "contact" },
   "status": { "en": "status", "fr": "status", "es": "status" },
-  "changelog": { "en": "changelog", "fr": "changelog", "es": "changelog" }
+  "changelog": { "en": "changelog", "fr": "changelog", "es": "changelog" },
+  "docs": { "en": "docs", "fr": "docs", "es": "docs" }
 }
