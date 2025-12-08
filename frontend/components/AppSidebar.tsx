@@ -227,7 +227,7 @@ export function AppSidebar() {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className={clsx(
-        'relative hidden h-[calc(100vh-var(--header-height))] lg:flex flex-col border-r border-hairline bg-white/70 backdrop-blur-md transition-[width] duration-300 ease-in-out',
+        'relative hidden min-h-[calc(100vh-var(--header-height))] lg:flex flex-col border-r border-hairline bg-white/70 backdrop-blur-md transition-[width] duration-300 ease-in-out',
         collapsed ? 'w-[78px]' : 'w-64'
       )}
     >
@@ -270,38 +270,40 @@ export function AppSidebar() {
         </button>
       </div>
 
-      <nav
-        aria-label={t('workspace.sidebar.aria.menu', 'App menu')}
-        className={clsx(
-          'flex flex-1 items-start justify-start overflow-y-auto px-2 pb-6',
-          collapsed && 'pt-2'
-        )}
-      >
-        <ul
+      <div className="flex flex-1 flex-col">
+        <nav
+          aria-label={t('workspace.sidebar.aria.menu', 'App menu')}
           className={clsx(
-            'w-full',
-            collapsed ? 'flex flex-col items-center gap-1.5' : 'mt-4 flex flex-col gap-1.5'
+            'flex flex-1 items-start justify-start overflow-y-auto px-2 pb-6',
+            collapsed && 'pt-2'
           )}
         >
-          {navigationItems.map((item) => renderNavItem(item, collapsed, tooltipBaseId))}
-        </ul>
-      </nav>
-      <div className="px-4 pb-5">
-        <Link
-          href="/"
-          aria-label={t('workspace.sidebar.aria.home', 'Go to home')}
-          className={clsx(
-            'flex items-center justify-center rounded-card border border-hairline bg-white/80 shadow-card transition',
-            collapsed ? 'mx-auto h-11 w-11' : 'h-12'
-          )}
-        >
-          <Image
-            src="/assets/branding/logo-mark.svg"
-            alt="MaxVideoAI logo mark"
-            width={collapsed ? 22 : 26}
-            height={collapsed ? 22 : 26}
-          />
-        </Link>
+          <ul
+            className={clsx(
+              'w-full',
+              collapsed ? 'flex flex-col items-center gap-1.5' : 'mt-4 flex flex-col gap-1.5'
+            )}
+          >
+            {navigationItems.map((item) => renderNavItem(item, collapsed, tooltipBaseId))}
+          </ul>
+        </nav>
+        <div className="mt-auto px-4 pb-5">
+          <Link
+            href="/"
+            aria-label={t('workspace.sidebar.aria.home', 'Go to home')}
+            className={clsx(
+              'flex items-center justify-center rounded-card border border-hairline bg-white/80 shadow-card transition',
+              collapsed ? 'mx-auto h-11 w-11' : 'h-12'
+            )}
+          >
+            <Image
+              src="/assets/branding/logo-mark.svg"
+              alt="MaxVideoAI logo mark"
+              width={collapsed ? 22 : 26}
+              height={collapsed ? 22 : 26}
+            />
+          </Link>
+        </div>
       </div>
     </aside>
   );
