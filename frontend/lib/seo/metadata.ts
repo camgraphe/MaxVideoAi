@@ -8,7 +8,12 @@ const DEFAULT_OG_HEIGHT = 630;
 const SITE_NAME = 'MaxVideoAI';
 const TWITTER_HANDLE = '@MaxVideoAI';
 
-type OgType = NonNullable<NonNullable<Metadata['openGraph']>['type']>;
+type OpenGraphMetadata = NonNullable<Metadata['openGraph']>;
+type OgType = OpenGraphMetadata extends { type?: infer T }
+  ? T extends string
+    ? T
+    : string
+  : string;
 
 type BuildSeoMetadataOptions = {
   locale: AppLocale;
