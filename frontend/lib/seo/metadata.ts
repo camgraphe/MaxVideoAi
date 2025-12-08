@@ -100,9 +100,13 @@ export function buildSeoMetadata({
     ...baseTwitter,
     ...twitterOverrides,
   };
-  if (!mergedTwitter.images || mergedTwitter.images.length === 0) {
-    mergedTwitter.images = baseTwitter.images;
-  }
+  const mergedTwitterImages = mergedTwitter.images;
+  const normalizedTwitterImages = Array.isArray(mergedTwitterImages)
+    ? mergedTwitterImages
+    : mergedTwitterImages
+      ? [mergedTwitterImages]
+      : [];
+  mergedTwitter.images = normalizedTwitterImages.length ? normalizedTwitterImages : baseTwitter.images;
 
   const meta: Metadata = {
     title,
