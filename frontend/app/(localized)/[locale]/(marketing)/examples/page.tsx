@@ -12,6 +12,7 @@ import { ExamplesGalleryGrid, type ExampleGalleryVideo } from '@/components/exam
 import type { AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls, SITE_BASE_URL } from '@/lib/metadataUrls';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 
@@ -173,41 +174,19 @@ export async function generateMetadata({
   const ogImage = toAbsoluteUrl(firstWithThumb?.thumbUrl) ?? `${SITE}/og/price-before.png`;
   const canonical = normalizedPage ? `${metadataUrls.canonical}?page=${normalizedPage}` : metadataUrls.canonical;
 
-  return {
+  return buildSeoMetadata({
+    locale,
     title: t('title'),
     description: t('description'),
-    alternates: {
-      canonical,
-      languages: metadataUrls.languages,
-    },
-    openGraph: {
-      type: 'website',
-      url: canonical,
-      siteName: 'MaxVideoAI',
-      title: t('title'),
-      description: t('description'),
-      locale: metadataUrls.ogLocale,
-      alternateLocale: metadataUrls.alternateOg,
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: 'MaxVideo AI — Examples gallery preview',
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: t('title'),
-      description: t('description'),
-      images: [ogImage],
-    },
+    slugMap: GALLERY_SLUG_MAP,
+    image: ogImage,
+    imageAlt: 'MaxVideo AI — Examples gallery preview',
+    canonicalOverride: canonical,
     robots: {
       index: true,
       follow: true,
     },
-  };
+  });
 }
 
 type ExamplesPageProps = {

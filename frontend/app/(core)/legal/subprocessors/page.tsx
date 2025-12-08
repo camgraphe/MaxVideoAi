@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
+import { resolveLocale } from '@/lib/i18n/server';
+import type { AppLocale } from '@/i18n/locales';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 
 type Subprocessor = {
   provider: string;
@@ -54,10 +57,18 @@ const SUBPROCESSORS: Subprocessor[] = [
   },
 ];
 
-export const metadata: Metadata = {
-  title: 'Sub-processors',
-  description: 'Third-party providers used by MaxVideoAI to deliver the Service.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await resolveLocale()) as AppLocale;
+  return buildSeoMetadata({
+    locale,
+    title: 'Sub-processors',
+    description: 'Third-party providers used by MaxVideoAI to deliver the Service.',
+    englishPath: '/legal/subprocessors',
+    availableLocales: ['en', 'fr', 'es'] as AppLocale[],
+    ogType: 'article',
+    imageAlt: 'Sub-processors list',
+  });
+}
 
 export default function SubprocessorsPage() {
   return (

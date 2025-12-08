@@ -5,7 +5,7 @@ import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import FaqJsonLd from '@/components/FaqJsonLd';
 import { buildSlugMap } from '@/lib/i18nSlugs';
-import { buildMetadataUrls } from '@/lib/metadataUrls';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveDictionary } from '@/lib/i18n/server';
 
 const COMPARE_SLUG_MAP = buildSlugMap('compare');
@@ -162,39 +162,18 @@ function renderRichText(text: string | undefined, keyPrefix: string): ReactNode 
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
-  const metadataUrls = buildMetadataUrls(locale, COMPARE_SLUG_MAP);
   const t = await getTranslations({ locale, namespace: 'aiVideoEngines.meta' });
 
-  return {
+  return buildSeoMetadata({
+    locale,
     title: t('title'),
     description: t('description'),
-    alternates: {
-      canonical: metadataUrls.canonical,
-      languages: metadataUrls.languages,
-    },
-    openGraph: {
-      title: t('title'),
-      description: t('description'),
-      url: metadataUrls.canonical,
-      siteName: 'MaxVideoAI',
-      images: [
-        {
-          url: '/og/price-before.png',
-          width: 1200,
-          height: 630,
-          alt: t('title'),
-        },
-      ],
-      locale: metadataUrls.ogLocale,
-      alternateLocale: metadataUrls.alternateOg,
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: t('title'),
-      description: t('description'),
-      images: ['/og/price-before.png'],
-    },
-  };
+    slugMap: COMPARE_SLUG_MAP,
+    imageAlt: t('title'),
+    ogType: 'article',
+    keywords: ['AI video generator', 'Sora 2', 'Veo 3', 'Pika 2.2', 'text-to-video Europe', 'Fal.ai', 'MaxVideoAI'],
+    other: { 'og:topic': 'AI video generator comparison' },
+  });
 }
 
 export default async function AiVideoEnginesPage() {

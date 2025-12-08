@@ -3,11 +3,20 @@ import Link from 'next/link';
 import { resolveLocale } from '@/lib/i18n/server';
 import type { AppLocale } from '@/i18n/locales';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-  title: 'Acceptable Use Policy',
-  description: 'Rules that govern how MaxVideoAI may be used, including restrictions on abusive or illegal content.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await resolveLocale()) as AppLocale;
+  return buildSeoMetadata({
+    locale,
+    title: 'Acceptable Use Policy',
+    description: 'Rules that govern how MaxVideoAI may be used, including restrictions on abusive or illegal content.',
+    englishPath: '/legal/acceptable-use',
+    availableLocales: ['en', 'fr', 'es'] as AppLocale[],
+    ogType: 'article',
+    imageAlt: 'Acceptable Use Policy',
+  });
+}
 
 const HEADER_COPY: Record<AppLocale, { title: string; effective: string; companyLine: string; contactLabel: string }> = {
   en: {

@@ -2,20 +2,23 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LegalVersionBadge } from '@/components/legal/LegalVersionBadge';
 import { formatLegalDate, getLegalDocument } from '@/lib/legal';
-import { SITE_BASE_URL } from '@/lib/metadataUrls';
 import type { AppLocale } from '@/i18n/locales';
 import { resolveLocale } from '@/lib/i18n/server';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 
-const PRIVACY_URL = `${SITE_BASE_URL}/legal/privacy`;
-
-export const metadata: Metadata = {
-  title: 'Privacy Policy',
-  description: 'How MaxVideoAI collects, uses, stores, and protects personal data.',
-  alternates: {
-    canonical: PRIVACY_URL,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await resolveLocale()) as AppLocale;
+  return buildSeoMetadata({
+    locale,
+    title: 'Privacy Policy',
+    description: 'How MaxVideoAI collects, uses, stores, and protects personal data.',
+    englishPath: '/legal/privacy',
+    availableLocales: ['en', 'fr', 'es'] as AppLocale[],
+    ogType: 'article',
+    imageAlt: 'Privacy Policy overview.',
+  });
+}
 
 const HEADER_COPY: Record<AppLocale, { title: string; versionLabel: string; effectiveLabel: string; contactLabel: string }> = {
   en: {

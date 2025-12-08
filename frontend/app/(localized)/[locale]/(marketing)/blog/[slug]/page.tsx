@@ -7,6 +7,7 @@ import { getContentEntries, getEntryBySlug } from '@/lib/content/markdown';
 import type { AppLocale } from '@/i18n/locales';
 import { localePathnames, localeRegions, locales } from '@/i18n/locales';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 
 interface Params {
   locale: AppLocale;
@@ -100,44 +101,23 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   publishableLocales.forEach(ensureSlugFor);
   ensureSlugFor(params.locale);
 
-  const metadataUrls = buildMetadataUrls(params.locale, slugMap, {
-    availableLocales: Array.from(publishableLocales),
-  });
-  const ogLocale = localeRegions[params.locale].replace('-', '_');
-
-  return {
+  const metadata = buildSeoMetadata({
+    locale: params.locale,
     title: `${post.title} — MaxVideo AI`,
     description: post.description,
-    alternates: {
-      canonical: metadataUrls.canonical,
-      languages: metadataUrls.languages,
-    },
+    slugMap,
+    availableLocales: Array.from(publishableLocales),
+    image: post.image ?? '/og/price-before.png',
+    imageAlt: post.title,
+    ogType: 'article',
     openGraph: {
-      title: `${post.title} — MaxVideo AI`,
-      description: post.description,
-      url: metadataUrls.canonical,
-      locale: ogLocale,
-      siteName: 'MaxVideoAI',
-      alternateLocale: metadataUrls.alternateOg,
       ...(published ? { publishedTime: published } : {}),
       ...(lastModified ? { modifiedTime: lastModified, updatedTime: lastModified } : {}),
-      images: [
-        {
-          url: post.image ?? '/og/price-before.png',
-          width: 1200,
-          height: 630,
-          alt: post.title,
-        },
-      ],
     },
-    twitter: {
-      card: 'summary_large_image',
-      title: `${post.title} — MaxVideo AI`,
-      description: post.description,
-      images: [post.image ?? '/og/price-before.png'],
-    },
-    ...(lastModified ? { other: { 'last-modified': lastModified } } : {}),
-  };
+    other: lastModified ? { 'last-modified': lastModified } : undefined,
+  });
+
+  return metadata;
 }
 
 export default async function BlogPostPage({ params }: { params: Params }) {

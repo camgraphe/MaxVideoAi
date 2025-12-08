@@ -1,8 +1,11 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getContentEntries, getEntryBySlug } from '@/lib/content/markdown';
+import type { AppLocale } from '@/i18n/locales';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 
 interface Params {
+  locale?: AppLocale;
   slug: string;
 }
 
@@ -20,30 +23,18 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       title: 'Doc not found — MaxVideo AI',
     };
   }
-  const canonical = `https://maxvideoai.com/docs/${doc.slug}`;
-  return {
+  const locale = params.locale ?? 'en';
+  return buildSeoMetadata({
+    locale,
     title: `${doc.title} — MaxVideo AI Docs`,
     description: doc.description,
+    image: doc.image ?? '/og/price-before.png',
+    imageAlt: doc.title,
+    ogType: 'article',
+    englishPath: `/docs/${doc.slug}`,
+    availableLocales: ['en'] as AppLocale[],
     keywords: doc.keywords,
-    openGraph: {
-      title: `${doc.title} — MaxVideo AI Docs`,
-      description: doc.description,
-      images: [
-        {
-          url: doc.image ?? '/og/price-before.png',
-          width: 1200,
-          height: 630,
-          alt: doc.title,
-        },
-      ],
-    },
-    alternates: {
-      canonical,
-      languages: {
-        en: canonical,
-      },
-    },
-  };
+  });
 }
 
 export default async function DocPage({ params }: { params: Params }) {

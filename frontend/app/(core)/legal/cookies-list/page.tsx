@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
+import { resolveLocale } from '@/lib/i18n/server';
+import type { AppLocale } from '@/i18n/locales';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 
 type CookieRow = {
   name: string;
@@ -40,10 +43,18 @@ const CATEGORY_LABEL: Record<CookieRow['category'], string> = {
   advertising: 'Advertising',
 };
 
-export const metadata: Metadata = {
-  title: 'Cookie list',
-  description: 'Inventory of cookies and SDKs used by MaxVideoAI.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await resolveLocale()) as AppLocale;
+  return buildSeoMetadata({
+    locale,
+    title: 'Cookie list',
+    description: 'Inventory of cookies and SDKs used by MaxVideoAI.',
+    englishPath: '/legal/cookies-list',
+    availableLocales: ['en', 'fr', 'es'] as AppLocale[],
+    ogType: 'article',
+    imageAlt: 'Cookie inventory table.',
+  });
+}
 
 export default function CookiesListPage() {
   const grouped = COOKIES.reduce<Record<CookieRow['category'], CookieRow[]>>(

@@ -1,20 +1,22 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getLegalDocuments } from '@/lib/legal';
-import { SITE_BASE_URL } from '@/lib/metadataUrls';
 import { resolveLocale } from '@/lib/i18n/server';
 import type { AppLocale } from '@/i18n/locales';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 
-const LEGAL_INDEX_URL = `${SITE_BASE_URL}/legal`;
-
-export const metadata: Metadata = {
-  title: 'Legal Center',
-  description: 'Access the latest MaxVideoAI legal documents and compliance resources.',
-  alternates: {
-    canonical: LEGAL_INDEX_URL,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await resolveLocale()) as AppLocale;
+  return buildSeoMetadata({
+    locale,
+    title: 'Legal Center',
+    description: 'Access the latest MaxVideoAI legal documents and compliance resources.',
+    englishPath: '/legal',
+    availableLocales: ['en', 'fr', 'es'] as AppLocale[],
+    imageAlt: 'Legal resources overview.',
+  });
+}
 
 type LinkKey =
   | 'terms'

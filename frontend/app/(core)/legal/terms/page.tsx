@@ -1,20 +1,23 @@
 import type { Metadata } from 'next';
 import { LegalVersionBadge } from '@/components/legal/LegalVersionBadge';
 import { formatLegalDate, getLegalDocument } from '@/lib/legal';
-import { SITE_BASE_URL } from '@/lib/metadataUrls';
 import type { AppLocale } from '@/i18n/locales';
 import { resolveLocale } from '@/lib/i18n/server';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 
-const TERMS_URL = `${SITE_BASE_URL}/legal/terms`;
-
-export const metadata: Metadata = {
-  title: 'Terms of Service',
-  description: 'MaxVideoAI Terms of Service governing access to the platform and AI-assisted video generation tools.',
-  alternates: {
-    canonical: TERMS_URL,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await resolveLocale()) as AppLocale;
+  return buildSeoMetadata({
+    locale,
+    title: 'Terms of Service',
+    description: 'MaxVideoAI Terms of Service governing access to the platform and AI-assisted video generation tools.',
+    englishPath: '/legal/terms',
+    availableLocales: ['en', 'fr', 'es'] as AppLocale[],
+    ogType: 'article',
+    imageAlt: 'Terms of Service document.',
+  });
+}
 
 const HEADER_COPY: Record<AppLocale, { title: string; versionLabel: string; effectiveLabel: string; companyLine: string; contactLabel: string }> = {
   en: {

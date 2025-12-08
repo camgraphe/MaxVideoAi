@@ -1,11 +1,22 @@
 import type { Metadata } from 'next';
 import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
+import { resolveLocale } from '@/lib/i18n/server';
+import type { AppLocale } from '@/i18n/locales';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-  title: 'Legal re-consent',
-  description: 'Review and accept the updated MaxVideoAI legal documents.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await resolveLocale()) as AppLocale;
+  return buildSeoMetadata({
+    locale,
+    title: 'Legal re-consent',
+    description: 'Review and accept the updated MaxVideoAI legal documents.',
+    englishPath: '/legal/reconsent',
+    availableLocales: ['en', 'fr', 'es'] as AppLocale[],
+    ogType: 'article',
+    imageAlt: 'Legal re-consent',
+  });
+}
 
 export default function LegalReconsentPage() {
   return (

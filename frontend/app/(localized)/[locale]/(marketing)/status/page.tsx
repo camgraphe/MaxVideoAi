@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import type { AppLocale } from '@/i18n/locales';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { buildSlugMap } from '@/lib/i18nSlugs';
-import { buildMetadataUrls } from '@/lib/metadataUrls';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 const STATUS_SLUG_MAP = buildSlugMap('status');
@@ -23,39 +23,15 @@ const STATUS_META: Record<AppLocale, { title: string; description: string }> = {
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
-  const metadataUrls = buildMetadataUrls(locale, STATUS_SLUG_MAP);
   const metaCopy = STATUS_META[locale] ?? STATUS_META.en;
-  return {
+  return buildSeoMetadata({
+    locale,
     title: metaCopy.title,
     description: metaCopy.description,
+    slugMap: STATUS_SLUG_MAP,
     keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
-    alternates: {
-      canonical: metadataUrls.canonical,
-      languages: metadataUrls.languages,
-    },
-    openGraph: {
-      title: metaCopy.title,
-      description: metaCopy.description,
-      url: metadataUrls.canonical,
-      siteName: 'MaxVideoAI',
-      images: [
-        {
-          url: '/og/price-before.png',
-          width: 1200,
-          height: 630,
-          alt: 'Status indicators.',
-        },
-      ],
-      locale: metadataUrls.ogLocale,
-      alternateLocale: metadataUrls.alternateOg,
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: metaCopy.title,
-      description: metaCopy.description,
-      images: ['/og/price-before.png'],
-    },
-  };
+    imageAlt: 'Status indicators.',
+  });
 }
 
 const STATUS_BADGE_CLASSES: Record<string, string> = {

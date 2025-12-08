@@ -3,11 +3,22 @@ import Link from 'next/link';
 import { LegalVersionBadge } from '@/components/legal/LegalVersionBadge';
 import { formatLegalDate, getLegalDocument } from '@/lib/legal';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
+import { resolveLocale } from '@/lib/i18n/server';
+import type { AppLocale } from '@/i18n/locales';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-  title: 'Cookie Policy',
-  description: 'Overview of cookies and similar technologies used by MaxVideoAI.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await resolveLocale()) as AppLocale;
+  return buildSeoMetadata({
+    locale,
+    title: 'Cookie Policy',
+    description: 'Overview of cookies and similar technologies used by MaxVideoAI.',
+    englishPath: '/legal/cookies',
+    availableLocales: ['en', 'fr', 'es'] as AppLocale[],
+    ogType: 'article',
+    imageAlt: 'Cookie Policy',
+  });
+}
 
 export default async function CookiePolicyPage() {
   const document = await getLegalDocument('cookies');

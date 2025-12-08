@@ -3,11 +3,20 @@ import { TakedownForm, type TakedownFormCopy } from './TakedownForm';
 import { resolveLocale } from '@/lib/i18n/server';
 import type { AppLocale } from '@/i18n/locales';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-  title: 'Notice & Takedown',
-  description: 'Report abusive or unlawful content generated through MaxVideoAI.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await resolveLocale()) as AppLocale;
+  return buildSeoMetadata({
+    locale,
+    title: 'Notice & Takedown',
+    description: 'Report abusive or unlawful content generated through MaxVideoAI.',
+    englishPath: '/legal/takedown',
+    availableLocales: ['en', 'fr', 'es'] as AppLocale[],
+    ogType: 'article',
+    imageAlt: 'Notice and takedown policy',
+  });
+}
 
 const HEADER_COPY: Record<AppLocale, { title: string; effective: string; companyLine: string; contactLabel: string }> = {
   en: {

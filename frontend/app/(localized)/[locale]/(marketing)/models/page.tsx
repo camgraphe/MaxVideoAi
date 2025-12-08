@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
-import Head from 'next/head';
 import { Link } from '@/i18n/navigation';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import { type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
-import { buildMetadataUrls } from '@/lib/metadataUrls';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { ModelsGallery } from '@/components/marketing/ModelsGallery';
 import { getEnginePictogram } from '@/lib/engine-branding';
 import { getEngineLocalized } from '@/lib/models/i18n';
@@ -59,39 +58,13 @@ const DEFAULT_ENGINE_TYPE_LABELS = {
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
   const t = await getTranslations({ locale, namespace: 'models.meta' });
-  const metadataUrls = buildMetadataUrls(locale, MODELS_SLUG_MAP);
-  const canonicalRaw = metadataUrls.canonical;
-  const canonical = canonicalRaw.replace(/\/+$/, '') || canonicalRaw;
-
-  return {
+  return buildSeoMetadata({
+    locale,
     title: t('title'),
     description: t('description'),
-    alternates: {
-      canonical,
-      languages: metadataUrls.languages,
-    },
-    openGraph: {
-      title: t('title'),
-      description: t('description'),
-      url: canonical,
-      siteName: 'MaxVideoAI',
-      locale: metadataUrls.ogLocale,
-      alternateLocale: metadataUrls.alternateOg,
-      images: [
-        {
-          url: '/og/price-before.png',
-          width: 1200,
-          height: 630,
-          alt: 'Model lineup overview with Price-Before chip.',
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: t('title'),
-      description: t('description'),
-    },
-  };
+    slugMap: MODELS_SLUG_MAP,
+    imageAlt: 'Model lineup overview with Price-Before chip.',
+  });
 }
 
 type EngineTypeKey = 'textImage' | 'text' | 'image' | 'default';
@@ -122,8 +95,6 @@ function getEngineDisplayName(entry: FalEngineEntry): string {
 export default async function ModelsPage() {
   const { locale, dictionary } = await resolveDictionary();
   const activeLocale = locale as AppLocale;
-  const metadataUrls = buildMetadataUrls(activeLocale, MODELS_SLUG_MAP);
-  const canonicalUrl = metadataUrls.canonical.replace(/\/+$/, '') || metadataUrls.canonical;
   const content = dictionary.models;
   const heroTitle = content.hero?.title ?? 'AI Video Engines – Sora, Veo, Pika & More';
   const HERO_BODY_FALLBACK =
@@ -242,11 +213,7 @@ export default async function ModelsPage() {
     };
   });
 
-return (
-  <>
-    <Head>
-      <link rel="canonical" href={canonicalUrl} />
-    </Head>
+  return (
     <main className="mx-auto max-w-5xl px-4 pb-6 pt-16 sm:px-6 lg:px-8">
       <header className="space-y-3">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{heroTitle}</h1>
@@ -317,6 +284,5 @@ return (
         </p>
       ) : null}
     </main>
-  </>
-);
+  );
 }

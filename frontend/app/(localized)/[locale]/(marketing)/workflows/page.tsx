@@ -10,7 +10,7 @@ import { FlagPill } from '@/components/FlagPill';
 import type { AppLocale } from '@/i18n/locales';
 import { localePathnames } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
-import { buildMetadataUrls } from '@/lib/metadataUrls';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { getTranslations } from 'next-intl/server';
 
 const WORKFLOWS_SLUG_MAP = buildSlugMap('workflows');
@@ -25,40 +25,17 @@ function buildModelPath(locale: AppLocale, slug: string) {
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
   const t = await getTranslations({ locale, namespace: 'workflows.meta' });
-  const metadataUrls = buildMetadataUrls(locale, WORKFLOWS_SLUG_MAP);
-
-  return {
+  return buildSeoMetadata({
+    locale,
     title: t('title'),
     description: t('description'),
-    alternates: {
-      canonical: metadataUrls.canonical,
-      languages: metadataUrls.languages,
-    },
-    openGraph: {
-      type: 'website',
-      url: metadataUrls.canonical,
-      siteName: 'MaxVideoAI',
-      title: t('title'),
-      description: t('description'),
-      images: [
-        {
-          url: '/og/price-before.png',
-          width: 1200,
-          height: 630,
-          alt: 'Workflows — MaxVideo AI',
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: t('title'),
-      description: t('description'),
-    },
+    slugMap: WORKFLOWS_SLUG_MAP,
+    imageAlt: 'Workflows — MaxVideo AI',
     robots: {
       index: true,
       follow: true,
     },
-  };
+  });
 }
 
 export default async function WorkflowsPage() {

@@ -8,6 +8,7 @@ import { resolveDictionary } from '@/lib/i18n/server';
 import type { AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 const BLOG_SLUG_MAP = buildSlugMap('blog');
@@ -98,38 +99,15 @@ function renderPressEmail(text?: string) {
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
-  const metadataUrls = buildMetadataUrls(locale, BLOG_SLUG_MAP);
   const metaCopy = BLOG_META[locale];
 
-  return {
+  return buildSeoMetadata({
+    locale,
     title: metaCopy.title,
     description: metaCopy.description,
-    alternates: {
-      canonical: metadataUrls.canonical,
-      languages: metadataUrls.languages,
-    },
-    openGraph: {
-      title: metaCopy.title,
-      description: metaCopy.description,
-      url: metadataUrls.canonical,
-      siteName: 'MaxVideoAI',
-      locale: metadataUrls.ogLocale,
-      alternateLocale: metadataUrls.alternateOg,
-      images: [
-        {
-          url: '/og/price-before.png',
-          width: 1200,
-          height: 630,
-          alt: 'Blog overview.',
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: metaCopy.title,
-      description: metaCopy.description,
-    },
-  };
+    slugMap: BLOG_SLUG_MAP,
+    imageAlt: 'Blog overview.',
+  });
 }
 
 export default async function BlogIndexPage({ params }: { params: { locale: AppLocale } }) {

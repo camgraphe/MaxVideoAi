@@ -18,7 +18,7 @@ import { normalizeEngineId } from '@/lib/engine-alias';
 import { listExamples } from '@/server/videos';
 import { listFalEngines } from '@/config/falEngines';
 import type { AppLocale } from '@/i18n/locales';
-import { buildMetadataUrls } from '@/lib/metadataUrls';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 
 const ProofTabs = dynamic(
   () =>
@@ -193,29 +193,12 @@ const COMPARE_ENGINE_META: Record<
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
   const t = await getTranslations({ locale, namespace: 'home.meta' });
-  const metadataUrls = buildMetadataUrls(locale);
-
-  return {
+  return buildSeoMetadata({
+    locale,
     title: t('title'),
     description: t('description'),
-    alternates: {
-      canonical: metadataUrls.canonical,
-      languages: metadataUrls.languages,
-    },
-    openGraph: {
-      title: t('title'),
-      description: t('description'),
-      url: metadataUrls.canonical,
-      siteName: 'MaxVideoAI',
-      locale: metadataUrls.ogLocale,
-      alternateLocale: metadataUrls.alternateOg,
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: t('title'),
-      description: t('description'),
-    },
-  };
+    imageAlt: t('title'),
+  });
 }
 
 type MiniFaqProps = {

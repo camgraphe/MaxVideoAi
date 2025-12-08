@@ -6,52 +6,32 @@ import { FEATURES } from '@/content/feature-flags';
 import { FlagPill } from '@/components/FlagPill';
 import { Callout } from '@/components/Callout';
 import DocsTocActive from './components/DocsTocActive';
+import type { AppLocale } from '@/i18n/locales';
+import { buildSlugMap } from '@/lib/i18nSlugs';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://maxvideoai.com';
+const DOCS_SLUG_MAP = buildSlugMap('docs');
 
-export async function generateMetadata(): Promise<Metadata> {
-  const url = `${SITE}/docs`;
+export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
+  const locale = params.locale;
   const title = 'Docs — Onboarding, Brand Safety, Refunds & API Webhooks';
   const description =
     'Start here for onboarding, price system and refunds. Learn about brand-safe filters and see webhook/API references. Deeper guides live in the authenticated workspace.';
   const ogImage = `${SITE}/og/price-before.png`;
 
-  return {
-    title: `${title} — MaxVideo AI`,
+  return buildSeoMetadata({
+    locale,
+    title: `${title} — MaxVideoAI`,
     description,
-    alternates: {
-      canonical: url,
-      languages: {
-        en: url,
-        fr: `${url}?lang=fr`,
-      },
-    },
-    openGraph: {
-      type: 'website',
-      url,
-      siteName: 'MaxVideo AI',
-      title: `${title} — MaxVideo AI`,
-      description,
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: 'Docs — MaxVideo AI',
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: `${title} — MaxVideo AI`,
-      description,
-      images: [ogImage],
-    },
+    slugMap: DOCS_SLUG_MAP,
+    image: ogImage,
+    imageAlt: 'Docs — MaxVideoAI',
     robots: {
       index: true,
       follow: true,
     },
-  };
+  });
 }
 
 export default async function DocsIndexPage() {

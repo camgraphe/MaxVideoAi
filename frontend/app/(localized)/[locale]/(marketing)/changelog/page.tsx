@@ -1,30 +1,25 @@
 import type { Metadata } from 'next';
 import { resolveDictionary } from '@/lib/i18n/server';
+import type { AppLocale } from '@/i18n/locales';
+import { buildSlugMap } from '@/lib/i18nSlugs';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-  title: 'Changelog — MaxVideo AI',
-  description: 'Transparent updates on engines, workflows, and queue performance.',
-  keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
-  openGraph: {
-    title: 'Changelog — MaxVideo AI',
-    description: 'Follow every improvement to engines, queue speeds, and pricing.',
-    images: [
-      {
-        url: '/og/price-before.png',
-        width: 1200,
-        height: 630,
-        alt: 'Changelog timeline.',
-      },
-    ],
-  },
-  alternates: {
-    canonical: 'https://maxvideoai.com/changelog',
-    languages: {
-      en: 'https://maxvideoai.com/changelog',
-      fr: 'https://maxvideoai.com/changelog?lang=fr',
-    },
-  },
-};
+const CHANGELOG_SLUG_MAP = buildSlugMap('changelog');
+
+export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
+  const locale = params.locale;
+  const title = 'Changelog — MaxVideo AI';
+  const description = 'Transparent updates on engines, workflows, and queue performance.';
+
+  return buildSeoMetadata({
+    locale,
+    title,
+    description,
+    slugMap: CHANGELOG_SLUG_MAP,
+    keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
+    imageAlt: 'Changelog timeline.',
+  });
+}
 
 export default async function ChangelogPage() {
   const { dictionary } = await resolveDictionary();

@@ -9,6 +9,7 @@ import { listFalEngines, getFalEngineBySlug, type FalEngineEntry } from '@/confi
 import { locales, localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
 import { getEngineLocalized, type EngineLocalizedContent } from '@/lib/models/i18n';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
@@ -506,9 +507,6 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
   const localized = await getEngineLocalized(slug, locale);
   const detailSlugMap = buildDetailSlugMap(slug);
   const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${slug}`));
-  const metadataUrls = buildMetadataUrls(locale, detailSlugMap, { availableLocales: publishableLocales });
-  const canonicalRaw = metadataUrls.canonical;
-  const canonical = canonicalRaw.replace(/\/+$/, '') || canonicalRaw;
   const fallbackTitle = engine.seo.title ?? `${engine.marketingName} — MaxVideo AI`;
   const title = localized.seo.title ?? fallbackTitle;
   const description =
@@ -516,43 +514,20 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
     engine.seo.description ??
     'Explore availability, prompts, pricing, and render policies for this model on MaxVideoAI.';
   const ogImagePath = localized.seo.image ?? MODEL_OG_IMAGE_MAP[slug] ?? engine.media?.imagePath ?? '/og/price-before.png';
-  const ogImage = toAbsoluteUrl(ogImagePath);
-
-  return {
+  return buildSeoMetadata({
+    locale,
     title,
     description,
-    alternates: {
-      canonical,
-      languages: metadataUrls.languages,
-    },
-    openGraph: {
-      type: 'article',
-      url: canonical,
-      siteName: 'MaxVideo AI',
-      title,
-      description,
-      locale: metadataUrls.ogLocale,
-      alternateLocale: metadataUrls.alternateOg,
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: title,
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: [ogImage],
-    },
+    slugMap: detailSlugMap,
+    availableLocales: publishableLocales,
+    image: ogImagePath,
+    imageAlt: title,
+    ogType: 'article',
     robots: {
       index: true,
       follow: true,
     },
-  };
+  });
 }
 
 type FeaturedMedia = {
@@ -912,7 +887,6 @@ function Sora2PageLayout({
   const isImageEngine = engine.type === 'image';
   const textAnchorId = isImageEngine ? 'text-to-image' : 'text-to-video';
   const imageAnchorId = isImageEngine ? 'image-to-image' : 'image-to-video';
-  const launchHref = isImageEngine ? '/app/image' : '/app';
   const tocItems = [
     { id: 'specs', label: 'Specs', visible: hasSpecs },
     { id: 'examples', label: 'Examples', visible: hasExamples },
@@ -983,7 +957,6 @@ function Sora2PageLayout({
   return (
     <>
       <Head>
-        <link rel="canonical" href={canonical} />
         {heroPosterPreload ? <link rel="preload" as="image" href={heroPosterPreload} fetchPriority="high" /> : null}
         {schemaPayloads.map((schema, index) => (
           <script
@@ -1808,7 +1781,6 @@ export default async function ModelDetailPage({ params }: PageParams) {
     <>
       <div className="mx-auto max-w-4xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
       <Head>
-        <link rel="canonical" href={canonicalUrl} />
         {heroPosterPreload ? <link rel="preload" as="image" href={heroPosterPreload} fetchPriority="high" /> : null}
         {schemaPayloads.map((schema, index) => (
           <script

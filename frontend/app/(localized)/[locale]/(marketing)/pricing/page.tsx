@@ -13,6 +13,7 @@ import FaqJsonLd from '@/components/FaqJsonLd';
 import { localeRegions, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 
 const PRICING_SLUG_MAP = buildSlugMap('pricing');
 
@@ -128,37 +129,13 @@ const DEFAULT_SUPPLEMENTAL_FAQ = [
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
   const t = await getTranslations({ locale, namespace: 'pricing.meta' });
-  const metadataUrls = buildMetadataUrls(locale, PRICING_SLUG_MAP);
-
-  return {
+  return buildSeoMetadata({
+    locale,
     title: t('title'),
     description: t('description'),
-    alternates: {
-      canonical: metadataUrls.canonical,
-      languages: metadataUrls.languages,
-    },
-    openGraph: {
-      title: t('title'),
-      description: t('description'),
-      url: metadataUrls.canonical,
-      siteName: 'MaxVideoAI',
-      locale: metadataUrls.ogLocale,
-      alternateLocale: metadataUrls.alternateOg,
-      images: [
-        {
-          url: '/og/price-before.png',
-          width: 1200,
-          height: 630,
-          alt: 'Pricing estimator interface.',
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: t('title'),
-      description: t('description'),
-    },
-  };
+    slugMap: PRICING_SLUG_MAP,
+    imageAlt: 'Pricing estimator interface.',
+  });
 }
 
 export default async function PricingPage() {

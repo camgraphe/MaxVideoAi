@@ -1,11 +1,22 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
+import { resolveLocale } from '@/lib/i18n/server';
+import type { AppLocale } from '@/i18n/locales';
+import { buildSeoMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-  title: 'Mentions légales',
-  description: 'Informations légales obligatoires pour MaxVideoAI.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await resolveLocale()) as AppLocale;
+  return buildSeoMetadata({
+    locale,
+    title: 'Mentions légales',
+    description: 'Informations légales obligatoires pour MaxVideoAI.',
+    englishPath: '/legal/mentions',
+    availableLocales: ['en', 'fr', 'es'] as AppLocale[],
+    ogType: 'article',
+    imageAlt: 'Mentions légales',
+  });
+}
 
 export default function MentionsLegalesPage() {
   return (

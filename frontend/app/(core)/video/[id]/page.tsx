@@ -424,6 +424,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: metaTitle,
       description,
       images: [thumbnail],
+      site: '@MaxVideoAI',
+      creator: '@MaxVideoAI',
     },
   };
 }
