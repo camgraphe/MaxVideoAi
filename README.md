@@ -1,5 +1,10 @@
 # MaxVideoAI — Generate Page Mock & Frontend
 
+## 🌐 Live App
+👉 https://maxvideoai.com
+
+MaxVideoAI is a fully deployed multi-engine AI video generator running on Next.js + Vercel + Fal.ai.  
+
 This repo contains:
 
 - Product & UX spec (`max_video_ai_generate_page_spec_v_1.md`).
