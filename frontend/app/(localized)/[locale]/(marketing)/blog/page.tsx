@@ -15,15 +15,18 @@ const BLOG_SLUG_MAP = buildSlugMap('blog');
 const BLOG_META = {
   en: {
     title: 'Blog — MaxVideoAI',
-    description: 'News on new engines, case studies, prompt guides, and price-before best practices.',
+    description:
+      'The MaxVideoAI blog covers Sora, Veo and Pika updates, prompt guides, pricing changes, and workflow tactics from real production teams using AI video engines.',
   },
   fr: {
     title: 'Blog MaxVideoAI (FR)',
-    description: 'Actualités moteurs, études de cas et guides prix-avant dédiés aux équipes francophones.',
+    description:
+      'Le blog MaxVideoAI suit l’actu Sora, Veo et Pika, partage des guides de prompts, des ajustements tarifaires et tactiques workflow d’équipes de production IA.',
   },
   es: {
     title: 'Blog MaxVideoAI (ES)',
-    description: 'Novedades de motores, casos de uso y guías de prompts en español.',
+    description:
+      'El blog de MaxVideoAI cubre Sora, Veo y Pika con guías de prompts, avisos de precios y tácticas de flujo usadas por equipos que operan motores de video IA.',
   },
 } satisfies Record<AppLocale, { title: string; description: string }>;
 

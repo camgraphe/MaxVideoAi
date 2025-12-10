@@ -22,6 +22,14 @@ const localeDateMap: Record<AppLocale, string> = {
   es: 'es-ES',
 };
 
+const BLOG_TITLE_OVERRIDES: Partial<Record<string, Partial<Record<AppLocale, string>>>> = {
+  'sora-2-sequenced-prompts': {
+    en: 'Sora 2 sequenced prompts for AI video – MaxVideoAI blog',
+    fr: 'Sora 2 prompts séquencés vidéo IA – Blog MaxVideoAI',
+    es: 'Sora 2 prompts secuenciales para video IA – Blog MaxVideoAI',
+  },
+};
+
 function toIsoDate(value?: string | null): string | undefined {
   if (!value) return undefined;
   const date = new Date(value);
@@ -101,9 +109,14 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   publishableLocales.forEach(ensureSlugFor);
   ensureSlugFor(params.locale);
 
+  const overrideTitle =
+    BLOG_TITLE_OVERRIDES[canonicalSlug]?.[params.locale] ?? BLOG_TITLE_OVERRIDES[canonicalSlug]?.en ?? null;
+  const defaultTitle = `${post.title} — MaxVideo AI`;
+  const pageTitle = overrideTitle ?? defaultTitle;
+
   const metadata = buildSeoMetadata({
     locale: params.locale,
-    title: `${post.title} — MaxVideo AI`,
+    title: pageTitle,
     description: post.description,
     slugMap,
     availableLocales: Array.from(publishableLocales),
