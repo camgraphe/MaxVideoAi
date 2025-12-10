@@ -1810,6 +1810,8 @@
       "errors": {
         "onlyImages": "Seuls les fichiers image sont pris en charge.",
         "uploadFailed": "Impossible de téléverser cette image. Réessayez.",
+        "fileTooLarge": "L’image dépasse la limite de {maxMB} Mo. Compressez-la ou choisissez un fichier plus léger.",
+        "unauthorized": "Session expirée — reconnectez-vous puis retentez le téléversement.",
         "promptMissing": "Le prompt est obligatoire.",
         "referenceMissing": "Ajoutez au moins une image source pour le mode Édition.",
         "generic": "La génération d’image a échoué."
@@ -1819,6 +1821,7 @@
       },
       "general": {
         "uploading": "Téléversement…",
+        "cancelUpload": "Annuler le téléversement",
         "emptyEngines": "Aucun moteur image disponible."
       },
       "library": {

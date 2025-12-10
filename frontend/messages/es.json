@@ -1803,6 +1803,8 @@
       "errors": {
         "onlyImages": "Solo se aceptan archivos de imagen.",
         "uploadFailed": "No se pudo subir la imagen. Intenta de nuevo.",
+        "fileTooLarge": "La imagen supera el límite de {maxMB} MB. Comprime o elige un archivo más ligero.",
+        "unauthorized": "Sesión expirada — inicia sesión de nuevo y reintenta la carga.",
         "promptMissing": "El prompt es obligatorio.",
         "referenceMissing": "Agrega al menos una imagen de referencia para el modo Edición.",
         "generic": "La generación de imagen falló."
@@ -1812,6 +1814,7 @@
       },
       "general": {
         "uploading": "Subiendo…",
+        "cancelUpload": "Cancelar carga",
         "emptyEngines": "No hay motores de imagen disponibles."
       },
       "library": {

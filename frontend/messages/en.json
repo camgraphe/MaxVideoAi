@@ -1606,6 +1606,8 @@
       "errors": {
         "onlyImages": "Only image files are supported.",
         "uploadFailed": "Unable to upload the selected image. Try again.",
+        "fileTooLarge": "Image exceeds {maxMB} MB. Compress it or choose a smaller file.",
+        "unauthorized": "Session expired — please sign in again and retry the upload.",
         "promptMissing": "Prompt is required.",
         "referenceMissing": "Provide at least one source image for edit mode.",
         "generic": "Image generation failed."
@@ -1615,6 +1617,7 @@
       },
       "general": {
         "uploading": "Uploading…",
+        "cancelUpload": "Cancel upload",
         "emptyEngines": "No image engines available."
       },
       "library": {

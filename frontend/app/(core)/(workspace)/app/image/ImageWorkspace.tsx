@@ -106,6 +106,8 @@ interface ImageWorkspaceCopy {
   errors: {
     onlyImages: string;
     uploadFailed: string;
+    fileTooLarge: string;
+    unauthorized: string;
     promptMissing: string;
     referenceMissing: string;
     generic: string;
@@ -115,6 +117,7 @@ interface ImageWorkspaceCopy {
   };
   general: {
     uploading: string;
+    cancelUpload: string;
     emptyEngines: string;
   };
   library: {
@@ -205,6 +208,8 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
   errors: {
     onlyImages: 'Only image files are supported.',
     uploadFailed: 'Unable to upload the selected image. Try again.',
+    fileTooLarge: 'Image exceeds {maxMB} MB. Compress it or choose a smaller file.',
+    unauthorized: 'Session expired — please sign in again and retry the upload.',
     promptMissing: 'Prompt is required.',
     referenceMissing: 'Provide at least one source image for edit mode.',
     generic: 'Image generation failed.',
@@ -214,6 +219,7 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
   },
   general: {
     uploading: 'Uploading…',
+    cancelUpload: 'Cancel upload',
     emptyEngines: 'No image engines available.',
   },
   library: {
@@ -242,6 +248,9 @@ const MIN_IMAGE_COUNT = 1;
 const MAX_IMAGE_COUNT = 8;
 const QUICK_IMAGE_COUNT_OPTIONS = [1, 2, 4, 6, 8] as const;
 const HISTORY_VISIBLE_CHUNK = 9;
+const DEFAULT_UPLOAD_LIMIT_MB = Number.isFinite(Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25'))
+  ? Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25')
+  : 25;
 
 const clampImageCount = (value: number) => Math.min(MAX_IMAGE_COUNT, Math.max(MIN_IMAGE_COUNT, Math.round(value)));
 
@@ -276,6 +285,8 @@ type HistoryEntry = {
   jobId?: string | null;
   aspectRatio?: string | null;
 };
+
+type UploadFailure = Error & { code?: string; maxMB?: number };
 
 type ReferenceSlotValue = {
   id: string;
@@ -632,7 +643,14 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         });
         const payload = await response.json().catch(() => null);
         if (!response.ok || !payload?.ok) {
-          throw new Error(typeof payload?.error === 'string' ? payload.error : 'UPLOAD_FAILED');
+          const uploadError = new Error(
+            typeof payload?.error === 'string' ? payload.error : 'UPLOAD_FAILED'
+          ) as UploadFailure;
+          uploadError.code = typeof payload?.error === 'string' ? payload.error : 'UPLOAD_FAILED';
+          if (typeof payload?.maxMB === 'number') {
+            uploadError.maxMB = payload.maxMB;
+          }
+          throw uploadError;
         }
         const asset = payload.asset as {
           id: string;
@@ -672,10 +690,28 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           next[index] = null;
           return next;
         });
-        setError(resolvedCopy.errors.uploadFailed);
+        const failure = uploadError as UploadFailure;
+        const code = failure?.code;
+        if (code === 'FILE_TOO_LARGE') {
+          const limit =
+            typeof failure?.maxMB === 'number' && Number.isFinite(failure.maxMB)
+              ? failure.maxMB
+              : DEFAULT_UPLOAD_LIMIT_MB;
+          setError(formatTemplate(resolvedCopy.errors.fileTooLarge, { maxMB: limit }));
+        } else if (code === 'UNAUTHORIZED') {
+          setError(resolvedCopy.errors.unauthorized);
+        } else {
+          setError(resolvedCopy.errors.uploadFailed);
+        }
       }
     },
-    [cleanupSlotPreview, resolvedCopy.errors.onlyImages, resolvedCopy.errors.uploadFailed]
+    [
+      cleanupSlotPreview,
+      resolvedCopy.errors.onlyImages,
+      resolvedCopy.errors.uploadFailed,
+      resolvedCopy.errors.fileTooLarge,
+      resolvedCopy.errors.unauthorized,
+    ]
   );
 
   const handleReferenceUrl = useCallback(
@@ -1245,8 +1281,15 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                             </div>
                           </div>
                           {slot.status === 'uploading' ? (
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-xs font-semibold text-white">
-                              {resolvedCopy.general.uploading}
+                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50 px-3 text-center text-xs font-semibold text-white">
+                              <span>{resolvedCopy.general.uploading}</span>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveReferenceSlot(index)}
+                                className="rounded-full bg-white/25 px-3 py-1 text-[11px] font-semibold text-white transition hover:bg-white/40"
+                              >
+                                {resolvedCopy.general.cancelUpload}
+                              </button>
                             </div>
                           ) : null}
                         </>
