@@ -9,7 +9,7 @@ import { resolveDictionary } from '@/lib/i18n/server';
 import { listExamples, listExamplesPage, type ExampleSort } from '@/server/videos';
 import { listFalEngines } from '@/config/falEngines';
 import { ExamplesGalleryGrid, type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
-import type { AppLocale } from '@/i18n/locales';
+import { localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls, SITE_BASE_URL } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
@@ -480,20 +480,20 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
 
   const itemListElements = videos
     .filter((video) => Boolean(video.thumbUrl))
-    .map((video) => {
+    .map((video, index) => {
       const canonicalEngineId = resolveEngineLinkId(video.engineId);
       const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
       const engineMeta = engineKey ? ENGINE_META.get(engineKey) : null;
       const engineLabel = engineMeta?.label ?? video.engineLabel ?? canonicalEngineId ?? 'Engine';
       const detailPath = `/video/${encodeURIComponent(video.id)}`;
-      const absoluteUrl = `https://maxvideoai.com${detailPath}`;
+      const absoluteUrl = `${SITE}${detailPath}`;
       const embedUrl = absoluteUrl;
       const contentUrl = video.videoUrl ? toAbsoluteUrl(video.videoUrl) ?? video.videoUrl : undefined;
       const fallbackLabel = `MaxVideoAI example ${video.id}`;
       const name = video.promptExcerpt || video.prompt || engineLabel || fallbackLabel;
       const description =
         video.promptExcerpt || video.prompt || `AI video example generated with ${engineLabel} in MaxVideoAI.`;
-      return {
+      const videoObject = {
         '@type': 'VideoObject',
         name: name || fallbackLabel,
         description,
@@ -503,19 +503,35 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
         contentUrl,
         uploadDate: toISODate(video.createdAt),
         duration: toISODuration(video.durationSec),
-        inLanguage: 'en',
-        engine: engineLabel,
+        inLanguage: localeRegions[locale] ?? 'en-US',
         publisher: {
           '@type': 'Organization',
           name: 'MaxVideo AI',
+          url: SITE,
+          logo: `${SITE}/favicon-512.png`,
         },
       };
+      return {
+        '@type': 'ListItem',
+        position: index + 1,
+        url: absoluteUrl,
+        item: videoObject,
+      };
     });
+
+  const localePrefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
+  const canonicalPath = `${localePrefix}/${GALLERY_SLUG_MAP[locale] ?? GALLERY_SLUG_MAP.en ?? 'examples'}`.replace(
+    /\/{2,}/g,
+    '/'
+  );
+  const canonicalUrl = `${SITE}${canonicalPath}`;
+
   const itemListJson =
     itemListElements.length > 0
       ? {
           '@context': 'https://schema.org',
           '@type': 'ItemList',
+          url: canonicalUrl,
           itemListElement: itemListElements,
         }
       : null;
