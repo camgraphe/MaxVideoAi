@@ -16,7 +16,7 @@ import type { PricingSnapshot } from '@maxvideoai/pricing';
 import { EngineSelect } from '@/components/ui/EngineSelect';
 import { runImageGeneration, useInfiniteJobs, saveImageToLibrary } from '@/lib/api';
 import type { ImageGenerationMode, GeneratedImage } from '@/types/image-generation';
-import type { EngineCaps } from '@/types/engines';
+import type { EngineCaps, EngineInputField } from '@/types/engines';
 import type { Job } from '@/types/jobs';
 import type { VideoGroup } from '@/types/video-groups';
 import type { MediaLightboxEntry } from '@/components/MediaLightbox';
@@ -73,6 +73,9 @@ interface ImageWorkspaceCopy {
     aspectRatioLabel: string;
     aspectRatioHint: string;
     aspectRatioAutoNote: string;
+    resolutionLabel: string;
+    resolutionHint: string;
+    resolutionLockedLabel: string;
     estimatedCost: string;
     referenceLabel: string;
     referenceHelper: string;
@@ -174,9 +177,12 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
     aspectRatioLabel: 'Aspect ratio',
     aspectRatioHint: 'Choose a preset to match your frame.',
     aspectRatioAutoNote: 'Auto lets Nano Banana decide the final crop.',
+    resolutionLabel: 'Resolution',
+    resolutionHint: 'Draft in 1K/2K, then switch to 4K for finals (pricing updates automatically).',
+    resolutionLockedLabel: 'Resolution locked by this engine.',
     estimatedCost: 'Estimated cost: {amount}',
     referenceLabel: 'Reference images',
-    referenceHelper: 'Optional · up to 4 images',
+    referenceHelper: 'Optional · up to {count} images',
     referenceNote:
       'Drag & drop, paste, upload from your device, or pull from your Library. These references are required for Edit mode.',
     referenceButton: 'Library',
@@ -243,7 +249,8 @@ function formatTemplate(template: string, values: Record<string, string | number
   }, template);
 }
 
-const MAX_REFERENCE_SLOTS = 4;
+const MAX_REFERENCE_SLOTS = 8;
+const DEFAULT_REFERENCE_LIMIT = 4;
 const MIN_IMAGE_COUNT = 1;
 const MAX_IMAGE_COUNT = 8;
 const QUICK_IMAGE_COUNT_OPTIONS = [1, 2, 4, 6, 8] as const;
@@ -383,6 +390,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [prompt, setPrompt] = useState('');
   const [numImages, setNumImages] = useState(1);
   const [aspectRatio, setAspectRatio] = useState<string | null>(null);
+  const [resolution, setResolution] = useState<string | null>(null);
   const [referenceSlots, setReferenceSlots] = useState<(ReferenceSlotValue | null)[]>(
     Array(MAX_REFERENCE_SLOTS).fill(null)
   );
@@ -401,8 +409,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [
     priceEstimateKey,
     setPriceEstimateKey,
-  ] = useState<[string, string, ImageGenerationMode, number] | null>(() =>
-    engines[0] ? ['image-pricing', engines[0].id, 't2i', 1] : null
+  ] = useState<[string, string, ImageGenerationMode, number, string] | null>(() =>
+    engines[0] ? ['image-pricing', engines[0].id, 't2i', 1, ''] : null
   );
 
   const engineCapsList = useMemo(() => engines.map((engine) => engine.engineCaps), [engines]);
@@ -411,6 +419,83 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     [engineId, engines]
   );
   const selectedEngineCaps = selectedEngine?.engineCaps ?? engines[0]?.engineCaps;
+  const engineInputFields = useMemo<EngineInputField[]>(() => {
+    const schema = selectedEngineCaps?.inputSchema;
+    if (!schema) {
+      return [];
+    }
+    return [...(schema.required ?? []), ...(schema.optional ?? [])];
+  }, [selectedEngineCaps]);
+  const resolutionField = useMemo<EngineInputField | null>(() => {
+    if (!engineInputFields.length) return null;
+    const byMode =
+      engineInputFields.find(
+        (field) =>
+          field.id === 'resolution' &&
+          (field.modes?.includes(mode) || field.requiredInModes?.includes(mode))
+      ) ?? null;
+    if (byMode) return byMode;
+    return engineInputFields.find((field) => field.id === 'resolution') ?? null;
+  }, [engineInputFields, mode]);
+  const resolutionOptions = useMemo(() => {
+    if (!resolutionField?.values?.length) return null;
+    return resolutionField.values;
+  }, [resolutionField]);
+  const hasResolutionOptions = Boolean(resolutionOptions && resolutionOptions.length > 0);
+  const isResolutionLocked = hasResolutionOptions && !!resolutionOptions && resolutionOptions.length === 1;
+  useEffect(() => {
+    if (!hasResolutionOptions) {
+      setResolution(null);
+      return;
+    }
+    const defaultValue =
+      (typeof resolutionField?.default === 'string' && resolutionField.default.length
+        ? resolutionField.default
+        : null) ?? resolutionOptions?.[0] ?? null;
+    setResolution((previous) => {
+      if (previous && resolutionOptions?.includes(previous)) {
+        return previous;
+      }
+      return defaultValue;
+    });
+  }, [hasResolutionOptions, resolutionField, resolutionOptions]);
+  const referenceField = useMemo<EngineInputField | null>(() => {
+    if (!engineInputFields.length) return null;
+    const byMode =
+      engineInputFields.find(
+        (field) =>
+          field.id === 'image_urls' &&
+          (field.modes?.includes(mode) || field.requiredInModes?.includes(mode))
+      ) ?? null;
+    if (byMode) return byMode;
+    return engineInputFields.find((field) => field.id === 'image_urls') ?? null;
+  }, [engineInputFields, mode]);
+  const referenceMinRequired = useMemo(() => {
+    const requiresReferences =
+      mode === 'i2i' || Boolean(referenceField?.requiredInModes?.includes(mode));
+    if (!requiresReferences) {
+      return 0;
+    }
+    const rawMin =
+      typeof referenceField?.minCount === 'number' && Number.isFinite(referenceField.minCount)
+        ? Math.round(referenceField.minCount)
+        : null;
+    return Math.max(1, rawMin ?? 1);
+  }, [mode, referenceField]);
+  const referenceSlotLimit = useMemo(() => {
+    const desiredMax = referenceField?.maxCount ?? DEFAULT_REFERENCE_LIMIT;
+    const requiredMin = referenceField?.minCount ?? 1;
+    const next = Math.max(requiredMin, desiredMax, 1);
+    return Math.min(MAX_REFERENCE_SLOTS, next);
+  }, [referenceField]);
+  const visibleReferenceSlots = useMemo(
+    () => referenceSlots.slice(0, referenceSlotLimit),
+    [referenceSlots, referenceSlotLimit]
+  );
+  const referenceHelperText = useMemo(
+    () => formatTemplate(resolvedCopy.composer.referenceHelper, { count: referenceSlotLimit }),
+    [referenceSlotLimit, resolvedCopy.composer.referenceHelper]
+  );
   const isNanoBanana = useMemo(() => {
     if (!selectedEngine) return false;
     if (NANO_BANANA_ENGINE_IDS.has(selectedEngine.id)) {
@@ -452,8 +537,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
 
   useEffect(() => {
     if (!selectedEngine) return;
-    setPriceEstimateKey(['image-pricing', selectedEngine.id, mode, numImages]);
-  }, [selectedEngine, mode, numImages]);
+    setPriceEstimateKey(['image-pricing', selectedEngine.id, mode, numImages, resolution ?? '']);
+  }, [selectedEngine, mode, numImages, resolution]);
 
   const {
     data: pricingData,
@@ -461,12 +546,17 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     isValidating: pricingValidating,
   } = useSWR(
     priceEstimateKey,
-    async ([, engineId, requestMode, count]) => {
-        const response = await authFetch('/api/images/estimate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ engineId, mode: requestMode, numImages: count }),
-        });
+    async ([, engineId, requestMode, count, requestResolution]) => {
+      const response = await authFetch('/api/images/estimate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          engineId,
+          mode: requestMode,
+          numImages: count,
+          resolution: requestResolution || undefined,
+        }),
+      });
       const payload = (await response.json().catch(() => null)) as PricingEstimateResponse | null;
       if (!response.ok || !payload?.ok) {
         throw new Error((payload as { error?: string } | null)?.error ?? 'Unable to estimate price');
@@ -552,8 +642,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [visibleHistoryCount, setVisibleHistoryCount] = useState(HISTORY_VISIBLE_CHUNK);
 
   const readyReferenceUrls = useMemo(
-    () => referenceSlots.filter((slot): slot is ReferenceSlotValue => Boolean(slot && slot.status === 'ready')).map((slot) => slot.url),
-    [referenceSlots]
+    () =>
+      visibleReferenceSlots
+        .filter((slot): slot is ReferenceSlotValue => Boolean(slot && slot.status === 'ready'))
+        .map((slot) => slot.url),
+    [visibleReferenceSlots]
   );
 
   const handleOpenHistoryEntry = useCallback((entry: HistoryEntry) => {
@@ -596,6 +689,21 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       } catch {}
     }
   }, []);
+
+  useEffect(() => {
+    setReferenceSlots((previous) => {
+      let mutated = false;
+      const next = previous.slice();
+      for (let index = referenceSlotLimit; index < next.length; index += 1) {
+        if (next[index]) {
+          cleanupSlotPreview(next[index]);
+          next[index] = null;
+          mutated = true;
+        }
+      }
+      return mutated ? next : previous;
+    });
+  }, [cleanupSlotPreview, referenceSlotLimit]);
 
   const setNumImagesPreset = useCallback((value: number) => {
     setNumImages(clampImageCount(value));
@@ -776,10 +884,14 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     (asset: LibraryAsset) => {
       let slotIndex = libraryModal.slotIndex;
       if (slotIndex == null) {
-        slotIndex = referenceSlots.findIndex((slot) => slot === null);
+        slotIndex = visibleReferenceSlots.findIndex((slot) => slot === null);
         if (slotIndex < 0) {
-          slotIndex = 0;
+          slotIndex = Math.max(0, referenceSlotLimit - 1);
         }
+      }
+      if (slotIndex >= referenceSlotLimit) {
+        setLibraryModal({ open: false, slotIndex: null });
+        return;
       }
       const index = slotIndex;
       setReferenceSlots((previous) => {
@@ -796,7 +908,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       });
       setLibraryModal({ open: false, slotIndex: null });
     },
-    [cleanupSlotPreview, libraryModal.slotIndex, referenceSlots]
+    [cleanupSlotPreview, libraryModal.slotIndex, referenceSlotLimit, visibleReferenceSlots]
   );
 
   const triggerFileDialog = useCallback((index: number) => {
@@ -823,7 +935,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         setError(resolvedCopy.errors.promptMissing);
         return;
       }
-      if (mode === 'i2i' && readyReferenceUrls.length === 0) {
+      if (referenceMinRequired > 0 && readyReferenceUrls.length < referenceMinRequired) {
         setError(resolvedCopy.errors.referenceMissing);
         return;
       }
@@ -844,6 +956,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           numImages,
           imageUrls: mode === 'i2i' ? readyReferenceUrls : undefined,
           aspectRatio: appliedAspectRatio,
+          resolution: resolution ?? undefined,
         });
         const entry: HistoryEntry = {
           id: response.jobId ?? response.requestId ?? crypto.randomUUID(),
@@ -879,6 +992,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       resolvedCopy.messages.success,
       aspectRatio,
       isNanoBanana,
+      referenceMinRequired,
+      resolution,
       selectedEngine,
     ]
   );
@@ -1190,6 +1305,48 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                 </>
               ) : null}
 
+              {hasResolutionOptions ? (
+                <>
+                  <SectionDivider />
+                  <section className="space-y-3">
+                    <div className="flex flex-wrap items-baseline justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
+                          {resolvedCopy.composer.resolutionLabel}
+                        </p>
+                        <p className="text-xs text-text-secondary">
+                          {isResolutionLocked
+                            ? resolvedCopy.composer.resolutionLockedLabel
+                            : resolvedCopy.composer.resolutionHint}
+                        </p>
+                      </div>
+                      {resolution ? (
+                        <p className="text-sm font-semibold text-text-primary">{resolution.toUpperCase()}</p>
+                      ) : null}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {resolutionOptions?.map((option) => (
+                        <button
+                          key={`resolution-${option}`}
+                          type="button"
+                          onClick={() => setResolution(option)}
+                          disabled={isResolutionLocked}
+                          className={clsx(
+                            'rounded-full border px-3 py-1 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                            resolution === option
+                              ? 'border-accent bg-accent text-white'
+                              : 'border-border bg-white text-text-secondary hover:border-accentSoft/60 hover:text-text-primary',
+                            isResolutionLocked && 'cursor-not-allowed opacity-70'
+                          )}
+                        >
+                          {option.toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                </>
+              ) : null}
+
               <SectionDivider />
 
               <section className="space-y-3">
@@ -1198,7 +1355,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                     <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
                       {resolvedCopy.composer.referenceLabel}
                     </p>
-                    <p className="text-[10px] text-text-secondary">{resolvedCopy.composer.referenceHelper}</p>
+                    <p className="text-[10px] text-text-secondary">{referenceHelperText}</p>
                   </div>
                   <button
                     type="button"
@@ -1209,7 +1366,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                   </button>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {referenceSlots.map((slot, index) => (
+                  {visibleReferenceSlots.map((slot, index) => (
                     <div
                       key={`slot-${index}`}
                       onDragOver={(event) => {

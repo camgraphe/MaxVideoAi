@@ -20,11 +20,9 @@ import { ensureUserPreferences } from '@/server/preferences';
 import { ensureUserPreferredCurrency, type Currency } from '@/lib/currency';
 import { normalizeMediaUrl } from '@/lib/media';
 import { getResultProviderMode } from '@/lib/result-provider';
-import {
-  getNanoBananaDefaultAspectRatio,
-  normalizeNanoBananaAspectRatio,
-} from '@/lib/image/aspectRatios';
+import { getNanoBananaDefaultAspectRatio, normalizeNanoBananaAspectRatio } from '@/lib/image/aspectRatios';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
+import { getReferenceConstraints, resolveRequestedResolution } from '../utils';
 
 const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER: Currency = 'usd';
@@ -298,19 +296,55 @@ export async function POST(req: NextRequest) {
   const imageUrls = rawImageUrls
     .map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
     .filter((entry) => entry.length);
-  if (mode === 'i2i' && !imageUrls.length) {
-    return respondError(mode, 'missing_image_urls', 'Edit mode requires at least one source image URL.', 400, null, {
+  const referenceConstraints = getReferenceConstraints(engine, mode);
+  if (referenceConstraints.min > 0 && imageUrls.length < referenceConstraints.min) {
+    const message =
+      referenceConstraints.min === 1
+        ? 'At least one reference image is required for this request.'
+        : `Provide at least ${referenceConstraints.min} reference images for this request.`;
+    return respondError(mode, 'missing_image_urls', message, 400, { minRequired: referenceConstraints.min }, {
       engineId: engineEntry.id,
       engineLabel: engineEntry.marketingName,
     });
+  }
+  if (imageUrls.length > referenceConstraints.max) {
+    return respondError(
+      mode,
+      'too_many_image_urls',
+      `You can attach up to ${referenceConstraints.max} reference images.`,
+      400,
+      { maxAllowed: referenceConstraints.max },
+      {
+        engineId: engineEntry.id,
+        engineLabel: engineEntry.marketingName,
+      }
+    );
   }
 
   const requestId = typeof body?.jobId === 'string' && body.jobId.trim().length ? body.jobId.trim() : null;
   const jobId = requestId ?? `img_${randomUUID()}`;
 
   const durationSec = numImages;
-  const resolution =
-    engine.resolutions.find((value) => value === 'square_hd') ?? engine.resolutions[0] ?? 'square_hd';
+  const resolutionResult = resolveRequestedResolution(
+    engine,
+    mode,
+    typeof body?.resolution === 'string' ? body.resolution : null
+  );
+  if (!resolutionResult.ok) {
+    return respondError(
+      mode,
+      'resolution_invalid',
+      'Selected resolution is not available for this engine.',
+      400,
+      { allowed: resolutionResult.allowed },
+      {
+        engineId: engineEntry.id,
+        engineLabel: engineEntry.marketingName,
+      }
+    );
+  }
+  const resolution = resolutionResult.resolution;
+  const shouldSendResolution = resolutionResult.configurable;
 
   let pricing: PricingSnapshot;
   try {
@@ -512,6 +546,7 @@ export async function POST(req: NextRequest) {
         num_images: numImages,
         ...(mode === 'i2i' ? { image_urls: imageUrls } : {}),
         ...(resolvedAspectRatio ? { aspect_ratio: resolvedAspectRatio } : {}),
+        ...(shouldSendResolution ? { resolution } : {}),
       },
       mode: 'polling',
       onEnqueue(requestId) {
@@ -619,6 +654,7 @@ export async function POST(req: NextRequest) {
       paymentStatus: 'paid_wallet',
       thumbUrl: hero,
       aspectRatio: resolvedAspectRatio,
+      resolution,
     } satisfies ImageGenerationResponse);
   } catch (error) {
     console.error('[images] Fal generation failed', error);

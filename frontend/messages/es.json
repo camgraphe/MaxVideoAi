@@ -1770,9 +1770,12 @@
           "singular": "imagen",
           "plural": "imágenes"
         },
+        "resolutionLabel": "Resolución",
+        "resolutionHint": "Itera en 1K/2K y pasa a 4K para el final (el precio se ajusta automáticamente).",
+        "resolutionLockedLabel": "Resolución bloqueada por este motor.",
         "estimatedCost": "Costo estimado: {amount}",
         "referenceLabel": "Imágenes de referencia",
-        "referenceHelper": "Opcional · hasta 4 imágenes",
+        "referenceHelper": "Opcional · hasta {count} imágenes",
         "referenceNote": "Arrastra y suelta, pega, sube desde tu dispositivo o abre la biblioteca. Obligatorio en modo Edición.",
         "referenceButton": "Biblioteca",
         "referenceSlotLabel": "Ranura {index}",

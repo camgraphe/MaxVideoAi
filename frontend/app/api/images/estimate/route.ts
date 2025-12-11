@@ -3,6 +3,7 @@ import { listFalEngines } from '@/config/falEngines';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { computePricingSnapshot } from '@/lib/pricing';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
+import { resolveRequestedResolution } from '../utils';
 
 export const runtime = 'nodejs';
 
@@ -12,9 +13,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'auth_required' }, { status: 401 });
   }
 
-  let body: { engineId?: string; mode?: ImageGenerationMode; numImages?: number } | null = null;
+  let body: { engineId?: string; mode?: ImageGenerationMode; numImages?: number; resolution?: string } | null = null;
   try {
-    body = (await req.json()) as { engineId?: string; mode?: ImageGenerationMode; numImages?: number } | null;
+    body = (await req.json()) as {
+      engineId?: string;
+      mode?: ImageGenerationMode;
+      numImages?: number;
+      resolution?: string;
+    } | null;
   } catch {
     return NextResponse.json({ ok: false, error: 'invalid_payload' }, { status: 400 });
   }
@@ -37,13 +43,21 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const resolutionResult = resolveRequestedResolution(
+      engineCaps,
+      mode,
+      typeof body?.resolution === 'string' ? body.resolution : null
+    );
+    if (!resolutionResult.ok) {
+      return NextResponse.json(
+        { ok: false, error: 'resolution_invalid', allowed: resolutionResult.allowed },
+        { status: 400 }
+      );
+    }
     const pricing = await computePricingSnapshot({
       engine: engineCaps,
       durationSec: numImages,
-      resolution:
-        engineCaps.resolutions.find((resolution) => resolution === 'square_hd') ??
-        engineCaps.resolutions[0] ??
-        'square_hd',
+      resolution: resolutionResult.resolution,
       currency: engineCaps.pricing?.currency ?? 'USD',
     });
 

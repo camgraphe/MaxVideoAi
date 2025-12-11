@@ -1777,9 +1777,12 @@
           "singular": "image",
           "plural": "images"
         },
+        "resolutionLabel": "Résolution",
+        "resolutionHint": "Prévisualisez en 1K/2K puis passez en 4K pour le final (prix mis à jour automatiquement).",
+        "resolutionLockedLabel": "Résolution verrouillée par ce moteur.",
         "estimatedCost": "Coût estimé : {amount}",
         "referenceLabel": "Images de référence",
-        "referenceHelper": "Optionnel · jusqu’à 4 images",
+        "referenceHelper": "Optionnel · jusqu’à {count} images",
         "referenceNote": "Glissez-déposez, collez, importez depuis votre appareil ou ouvrez votre Bibliothèque. Requis pour le mode Édition.",
         "referenceButton": "Bibliothèque",
         "referenceSlotLabel": "Emplacement {index}",

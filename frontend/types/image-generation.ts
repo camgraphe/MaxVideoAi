@@ -15,6 +15,7 @@ export interface ImageGenerationRequest {
   membershipTier?: string;
   jobId?: string;
   aspectRatio?: string;
+  resolution?: string;
 }
 
 export interface GeneratedImage {
@@ -41,6 +42,7 @@ export interface ImageGenerationResponse {
   paymentStatus?: string;
   thumbUrl?: string | null;
   aspectRatio?: string | null;
+  resolution?: string | null;
   error?: {
     code: string;
     message: string;

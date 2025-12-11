@@ -1573,9 +1573,12 @@
           "singular": "image",
           "plural": "images"
         },
+        "resolutionLabel": "Resolution",
+        "resolutionHint": "Draft in 1K/2K, then switch to 4K for finals (pricing updates automatically).",
+        "resolutionLockedLabel": "Resolution locked by this engine.",
         "estimatedCost": "Estimated cost: {amount}",
         "referenceLabel": "Reference images",
-        "referenceHelper": "Optional · up to 4 images",
+        "referenceHelper": "Optional · up to {count} images",
         "referenceNote": "Drag & drop, paste, upload from your device, or pull from your Library. These references are required for Edit mode.",
         "referenceButton": "Library",
         "referenceSlotLabel": "Slot {index}",
