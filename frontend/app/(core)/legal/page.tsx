@@ -12,6 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     title: 'Legal Center',
     description: 'Access the latest MaxVideoAI legal documents and compliance resources.',
+    hreflangGroup: 'legal',
     englishPath: '/legal',
     availableLocales: ['en', 'fr', 'es'] as AppLocale[],
     imageAlt: 'Legal resources overview.',

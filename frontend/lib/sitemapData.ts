@@ -59,6 +59,13 @@ const FAIL_ON_LOCALE_MISMATCH = process.env.SITEMAP_LOCALE_FAIL_ON_MISMATCH === 
 
 let canonicalEntryPromise: Promise<CanonicalPathEntry[]> | null = null;
 
+const EXTRA_CANONICAL_PATHS: CanonicalPathEntry[] = [
+  { englishPath: '/legal/cookies', locales: ['en', 'fr', 'es'] },
+  { englishPath: '/legal/cookies-list', locales: ['en', 'fr', 'es'] },
+  { englishPath: '/legal/mentions', locales: ['en', 'fr', 'es'] },
+  { englishPath: '/legal/subprocessors', locales: ['en', 'fr', 'es'] },
+];
+
 export const escapeXml = (value: string) =>
   value
     .replace(/&/g, '&amp;')
@@ -353,6 +360,17 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
       entries.push(entry);
     });
   }
+
+  EXTRA_CANONICAL_PATHS.forEach((extra) => {
+    if (!extra?.englishPath || seen.has(extra.englishPath)) {
+      return;
+    }
+    seen.add(extra.englishPath);
+    entries.push({
+      ...extra,
+      lastModified: extra.lastModified ?? getRouteLastModified(extra.englishPath),
+    });
+  });
 
   entries.sort((a, b) => comparePaths(a.englishPath, b.englishPath));
   validateLocaleCounts(entries);

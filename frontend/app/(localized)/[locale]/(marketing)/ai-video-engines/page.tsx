@@ -168,6 +168,7 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     locale,
     title: t('title'),
     description: t('description'),
+    hreflangGroup: 'compare',
     slugMap: COMPARE_SLUG_MAP,
     imageAlt: t('title'),
     ogType: 'article',

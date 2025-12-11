@@ -11,6 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     title: 'Notice & Takedown',
     description: 'Report abusive or unlawful content generated through MaxVideoAI.',
+    hreflangGroup: 'legalTakedown',
     englishPath: '/legal/takedown',
     availableLocales: ['en', 'fr', 'es'] as AppLocale[],
     ogType: 'article',

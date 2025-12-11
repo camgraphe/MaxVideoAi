@@ -49,6 +49,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     title: 'Cookie list',
     description: 'Inventory of cookies and SDKs used by MaxVideoAI.',
+    hreflangGroup: 'legalCookiesList',
     englishPath: '/legal/cookies-list',
     availableLocales: ['en', 'fr', 'es'] as AppLocale[],
     ogType: 'article',

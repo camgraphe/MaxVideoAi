@@ -29,6 +29,7 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     locale,
     title: t('title'),
     description: t('description'),
+    hreflangGroup: 'workflows',
     slugMap: WORKFLOWS_SLUG_MAP,
     imageAlt: 'Workflows — MaxVideo AI',
     robots: {

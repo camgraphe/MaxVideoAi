@@ -11,6 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     title: 'Mentions légales',
     description: 'Informations légales obligatoires pour MaxVideoAI.',
+    hreflangGroup: 'legalMentions',
     englishPath: '/legal/mentions',
     availableLocales: ['en', 'fr', 'es'] as AppLocale[],
     ogType: 'article',

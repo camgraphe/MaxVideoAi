@@ -63,6 +63,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     title: 'Sub-processors',
     description: 'Third-party providers used by MaxVideoAI to deliver the Service.',
+    hreflangGroup: 'legalSubprocessors',
     englishPath: '/legal/subprocessors',
     availableLocales: ['en', 'fr', 'es'] as AppLocale[],
     ogType: 'article',

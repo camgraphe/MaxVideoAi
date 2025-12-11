@@ -197,6 +197,7 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     locale,
     title: t('title'),
     description: t('description'),
+    hreflangGroup: 'home',
     imageAlt: t('title'),
   });
 }

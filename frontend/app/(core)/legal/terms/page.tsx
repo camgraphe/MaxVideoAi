@@ -12,6 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     title: 'Terms of Service',
     description: 'MaxVideoAI Terms of Service governing access to the platform and AI-assisted video generation tools.',
+    hreflangGroup: 'legalTerms',
     englishPath: '/legal/terms',
     availableLocales: ['en', 'fr', 'es'] as AppLocale[],
     ogType: 'article',

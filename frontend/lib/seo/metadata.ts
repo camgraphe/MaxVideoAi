@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { AppLocale } from '@/i18n/locales';
 import { buildMetadataUrls, SITE_BASE_URL, type LocaleSlugMap } from '@/lib/metadataUrls';
+import { getHreflangEnglishPath, type HreflangGroupKey } from '@/lib/seo/hreflang';
 
 const DEFAULT_OG_IMAGE = '/og/price-before.png';
 const DEFAULT_OG_WIDTH = 1200;
@@ -19,6 +20,7 @@ type BuildSeoMetadataOptions = {
   imageAlt?: string;
   ogType?: OgType;
   slugMap?: LocaleSlugMap;
+  hreflangGroup?: HreflangGroupKey;
   englishPath?: string;
   availableLocales?: AppLocale[];
   canonicalOverride?: string;
@@ -49,6 +51,7 @@ export function buildSeoMetadata({
   imageAlt,
   ogType = 'website',
   slugMap,
+  hreflangGroup,
   englishPath,
   availableLocales,
   canonicalOverride,
@@ -58,7 +61,11 @@ export function buildSeoMetadata({
   openGraph: openGraphOverrides,
   twitter: twitterOverrides,
 }: BuildSeoMetadataOptions): Metadata {
-  const metadataUrls = buildMetadataUrls(locale, slugMap, { englishPath, availableLocales });
+  const resolvedEnglishPath = englishPath ?? (hreflangGroup ? getHreflangEnglishPath(hreflangGroup) : undefined);
+  const metadataUrls = buildMetadataUrls(locale, slugMap, {
+    englishPath: resolvedEnglishPath,
+    availableLocales,
+  });
   const canonical = canonicalOverride ?? metadataUrls.canonical;
   const imageUrl = resolveImageUrl(image);
   const defaultImageEntry = [

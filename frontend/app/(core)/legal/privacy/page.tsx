@@ -13,6 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     title: 'Privacy Policy',
     description: 'How MaxVideoAI collects, uses, stores, and protects personal data.',
+    hreflangGroup: 'legalPrivacy',
     englishPath: '/legal/privacy',
     availableLocales: ['en', 'fr', 'es'] as AppLocale[],
     ogType: 'article',

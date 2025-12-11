@@ -62,6 +62,7 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     locale,
     title: t('title'),
     description: t('description'),
+    hreflangGroup: 'models',
     slugMap: MODELS_SLUG_MAP,
     imageAlt: 'Model lineup overview with Price-Before chip.',
   });

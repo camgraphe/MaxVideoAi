@@ -69,8 +69,7 @@ export function MarketingFooter() {
           >
             <Image
               src="/assets/branding/logo-mark.svg"
-              alt=""
-              aria-hidden
+              alt="MaxVideoAI"
               width={32}
               height={32}
               className="h-8 w-8"

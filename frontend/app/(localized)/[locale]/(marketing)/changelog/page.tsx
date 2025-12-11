@@ -15,6 +15,7 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     locale,
     title,
     description,
+    hreflangGroup: 'changelog',
     slugMap: CHANGELOG_SLUG_MAP,
     keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
     imageAlt: 'Changelog timeline.',

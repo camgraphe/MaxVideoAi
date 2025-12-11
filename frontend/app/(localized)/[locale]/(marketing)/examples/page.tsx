@@ -165,7 +165,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const locale = params.locale;
   const t = await getTranslations({ locale, namespace: 'gallery.meta' });
-  const metadataUrls = buildMetadataUrls(locale, GALLERY_SLUG_MAP);
+  const metadataUrls = buildMetadataUrls(locale, GALLERY_SLUG_MAP, { englishPath: '/examples' });
   const pageParam = Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page;
   const parsedPage = pageParam ? Number.parseInt(pageParam, 10) : NaN;
   const normalizedPage = Number.isFinite(parsedPage) && parsedPage > 1 ? parsedPage : null;
@@ -178,6 +178,7 @@ export async function generateMetadata({
     locale,
     title: t('title'),
     description: t('description'),
+    hreflangGroup: 'examples',
     slugMap: GALLERY_SLUG_MAP,
     image: ogImage,
     imageAlt: 'MaxVideo AI — Examples gallery preview',

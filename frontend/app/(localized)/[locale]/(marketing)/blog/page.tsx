@@ -108,6 +108,7 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     locale,
     title: metaCopy.title,
     description: metaCopy.description,
+    hreflangGroup: 'blog',
     slugMap: BLOG_SLUG_MAP,
     imageAlt: 'Blog overview.',
   });
@@ -119,7 +120,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
   const { dictionary } = await resolveDictionary();
   const content = dictionary.blog;
   const faq = content.faq ?? DEFAULT_BLOG_FAQ;
-  const metadataUrls = buildMetadataUrls(locale, BLOG_SLUG_MAP);
+  const metadataUrls = buildMetadataUrls(locale, BLOG_SLUG_MAP, { englishPath: '/blog' });
   const baseReadMore = content.cta ?? 'Read more';
   const formatReadMoreLabel = (title: string) => `${baseReadMore} — ${title}`;
 

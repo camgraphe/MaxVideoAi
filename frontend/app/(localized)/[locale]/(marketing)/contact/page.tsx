@@ -37,6 +37,7 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     locale,
     title: metaCopy.title,
     description: metaCopy.description,
+    hreflangGroup: 'contact',
     slugMap: CONTACT_SLUG_MAP,
     keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
     imageAlt: 'Contact MaxVideo AI.',

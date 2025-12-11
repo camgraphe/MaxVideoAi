@@ -11,6 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     title: 'Acceptable Use Policy',
     description: 'Rules that govern how MaxVideoAI may be used, including restrictions on abusive or illegal content.',
+    hreflangGroup: 'legalAcceptableUse',
     englishPath: '/legal/acceptable-use',
     availableLocales: ['en', 'fr', 'es'] as AppLocale[],
     ogType: 'article',

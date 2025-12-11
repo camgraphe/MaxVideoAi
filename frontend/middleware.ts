@@ -31,6 +31,7 @@ const NON_LOCALIZED_PREFIXES = [
   '/_vercel',
   '/apple-app-site-association',
 ];
+const LOCALE_STRIPPABLE_PREFIXES = NON_LOCALIZED_PREFIXES.filter((prefix) => prefix !== '/legal');
 const PLACEHOLDER_SEGMENTS = new Set(['[locale]', '[lang]', '[language]']);
 const LOCALIZED_SEGMENT_VALUES = Array.from(
   new Set(
@@ -227,12 +228,13 @@ export async function middleware(req: NextRequest) {
     return finalizeResponse(NextResponse.redirect(url, 308), hasLogoutIntentCookie);
   }
 
-  const pathname = req.nextUrl.pathname;
+  const originalPathname = req.nextUrl.pathname;
+  let pathname = originalPathname;
   const detectedLocale =
     req.nextUrl.locale && LOCALE_SET.has(req.nextUrl.locale as (typeof locales)[number])
       ? (req.nextUrl.locale as (typeof locales)[number])
       : null;
-  const localeFromPath = extractLocaleFromPathname(pathname);
+  let localeFromPath = extractLocaleFromPathname(pathname);
 
   if (containsLocalePlaceholder(pathname)) {
     const { localePrefix } = splitLocaleFromPath(pathname);
@@ -240,12 +242,28 @@ export async function middleware(req: NextRequest) {
   }
 
   const sanitizedLocalePath = dropDuplicateLocaleSegments(pathname);
-  if (sanitizedLocalePath && sanitizedLocalePath !== pathname) {
+  if (sanitizedLocalePath) {
+    pathname = sanitizedLocalePath;
+  }
+
+  const { localePrefix, pathWithoutLocale } = splitLocaleFromPath(pathname);
+  const hasNonLocalizedPrefix =
+    Boolean(localePrefix) &&
+    Boolean(pathWithoutLocale) &&
+    LOCALE_STRIPPABLE_PREFIXES.some((prefix) => pathWithoutLocale.startsWith(prefix));
+
+  const canonicalPathname = hasNonLocalizedPrefix ? pathWithoutLocale || '/' : pathname;
+  const normalizedPathname = (canonicalPathname || '/').replace(/\/{2,}/g, '/') || '/';
+
+  if (normalizedPathname !== originalPathname) {
     const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = sanitizedLocalePath;
+    redirectUrl.pathname = normalizedPathname;
     redirectUrl.search = req.nextUrl.search;
     return finalizeResponse(NextResponse.redirect(redirectUrl, 301), hasLogoutIntentCookie);
   }
+
+  pathname = normalizedPathname;
+  localeFromPath = extractLocaleFromPathname(pathname);
 
   const isMarketingPath = shouldHandleLocale(pathname);
   const isBotRequest = detectBot(userAgent);

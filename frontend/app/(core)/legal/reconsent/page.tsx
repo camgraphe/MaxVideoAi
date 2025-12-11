@@ -11,6 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     title: 'Legal re-consent',
     description: 'Review and accept the updated MaxVideoAI legal documents.',
+    hreflangGroup: 'legalReconsent',
     englishPath: '/legal/reconsent',
     availableLocales: ['en', 'fr', 'es'] as AppLocale[],
     ogType: 'article',

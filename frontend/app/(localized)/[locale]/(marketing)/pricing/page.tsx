@@ -133,6 +133,7 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     locale,
     title: t('title'),
     description: t('description'),
+    hreflangGroup: 'pricing',
     slugMap: PRICING_SLUG_MAP,
     imageAlt: 'Pricing estimator interface.',
   });
@@ -146,7 +147,7 @@ export default async function PricingPage() {
   const refunds = content.refunds;
   const faq = content.faq;
   const heroLink = content.hero.link ?? null;
-  const canonical = buildMetadataUrls(locale as AppLocale, PRICING_SLUG_MAP).canonical;
+  const canonical = buildMetadataUrls(locale as AppLocale, PRICING_SLUG_MAP, { englishPath: '/pricing' }).canonical;
   const kernel = getPricingKernel();
   const starterQuote = kernel.quote(scenarioToPricingInput(DEFAULT_MARKETING_SCENARIO));
   const starterCurrency = starterQuote.snapshot.currency;

@@ -24,6 +24,7 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     locale,
     title: `${title} — MaxVideoAI`,
     description,
+    hreflangGroup: 'docs',
     slugMap: DOCS_SLUG_MAP,
     image: ogImage,
     imageAlt: 'Docs — MaxVideoAI',

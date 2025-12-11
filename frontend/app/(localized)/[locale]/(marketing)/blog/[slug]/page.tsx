@@ -119,6 +119,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     title: pageTitle,
     description: post.description,
     slugMap,
+    englishPath: `/blog/${canonicalSlug}`,
     availableLocales: Array.from(publishableLocales),
     image: post.image ?? '/og/price-before.png',
     imageAlt: post.title,
@@ -168,7 +169,10 @@ export default async function BlogPostPage({ params }: { params: Params }) {
   };
   publishableLocales.forEach(ensureSlugFor);
   ensureSlugFor(locale);
-  const metadataUrls = buildMetadataUrls(locale, slugMap, { availableLocales: Array.from(publishableLocales) });
+  const metadataUrls = buildMetadataUrls(locale, slugMap, {
+    englishPath: `/blog/${canonicalSlug}`,
+    availableLocales: Array.from(publishableLocales),
+  });
   const canonicalUrl = metadataUrls.canonical;
   const publishedIso = toIsoDate(post.date) ?? post.date;
   const modifiedIso = toIsoDate(post.updatedAt ?? post.date) ?? publishedIso;

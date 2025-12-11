@@ -13,6 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     title: 'Cookie Policy',
     description: 'Overview of cookies and similar technologies used by MaxVideoAI.',
+    hreflangGroup: 'legalCookies',
     englishPath: '/legal/cookies',
     availableLocales: ['en', 'fr', 'es'] as AppLocale[],
     ogType: 'article',

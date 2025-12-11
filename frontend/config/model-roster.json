@@ -81,6 +81,24 @@
     "logoPolicy": "textOnly"
   },
   {
+    "engineId": "nano-banana",
+    "marketingName": "Nano Banana",
+    "brandId": "google",
+    "modelSlug": "nano-banana",
+    "versionLabel": "Nano",
+    "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "nano-banana-pro",
+    "marketingName": "Nano Banana Pro",
+    "brandId": "google",
+    "modelSlug": "nano-banana-pro",
+    "versionLabel": "Pro",
+    "availability": "available",
+    "logoPolicy": "textOnly"
+  },
+  {
     "engineId": "ltx-2-fast",
     "marketingName": "LTX Video 2.0 Fast",
     "brandId": "lightricks",

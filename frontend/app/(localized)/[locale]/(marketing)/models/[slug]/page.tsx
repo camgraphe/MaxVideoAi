@@ -519,6 +519,7 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
     title,
     description,
     slugMap: detailSlugMap,
+    englishPath: `/models/${slug}`,
     availableLocales: publishableLocales,
     image: ogImagePath,
     imageAlt: title,
@@ -664,7 +665,10 @@ async function renderSoraModelPage({
 }) {
   const detailSlugMap = buildDetailSlugMap(engine.modelSlug);
   const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${engine.modelSlug}`));
-  const metadataUrls = buildMetadataUrls(locale, detailSlugMap, { availableLocales: publishableLocales });
+  const metadataUrls = buildMetadataUrls(locale, detailSlugMap, {
+    englishPath: `/models/${engine.modelSlug}`,
+    availableLocales: publishableLocales,
+  });
   const canonicalRaw = metadataUrls.canonical;
   const canonicalUrl = canonicalRaw.replace(/\/+$/, '') || canonicalRaw;
   const localizedCanonicalUrl = canonicalUrl;
@@ -1612,7 +1616,10 @@ export default async function ModelDetailPage({ params }: PageParams) {
   const localizedContent = await getEngineLocalized(slug, activeLocale);
   const detailSlugMap = buildDetailSlugMap(slug);
   const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${slug}`));
-  const metadataUrls = buildMetadataUrls(activeLocale, detailSlugMap, { availableLocales: publishableLocales });
+  const metadataUrls = buildMetadataUrls(activeLocale, detailSlugMap, {
+    englishPath: `/models/${slug}`,
+    availableLocales: publishableLocales,
+  });
   const allEngines = listFalEngines();
   const rankEngine = (entry: FalEngineEntry) => (entry.family === engine.family ? 0 : 1);
   type RelatedCopyContent = { title?: string; subtitle?: string; cta?: string };
