@@ -1644,6 +1644,14 @@ const NANO_BANANA_PRO_ENGINE: EngineCaps = {
   },
   pricingDetails: {
     currency: 'USD',
+    perSecondCents: {
+      default: 15,
+      byResolution: {
+        '1k': 15,
+        '2k': 15,
+        '4k': 30,
+      },
+    },
     flatCents: {
       default: 15,
       byResolution: {
