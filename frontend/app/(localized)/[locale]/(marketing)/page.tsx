@@ -398,9 +398,9 @@ export default async function HomePage() {
     const detailHref = video?.id ? `/video/${encodeURIComponent(video.id)}` : null;
     const generateHref =
       video?.id && engineId
-        ? `/generate?from=${encodeURIComponent(video.id)}&engine=${encodeURIComponent(engineId)}`
+        ? `/app?from=${encodeURIComponent(video.id)}&engine=${encodeURIComponent(engineId)}`
         : video?.id
-          ? `/generate?from=${encodeURIComponent(video.id)}`
+          ? `/app?from=${encodeURIComponent(video.id)}`
           : null;
     const modelHref = canonicalSlug ? `/models/${encodeURIComponent(canonicalSlug)}` : null;
     const detailMeta = video

@@ -663,7 +663,7 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
               <h3 className="mt-1 text-lg font-semibold text-text-primary">{copy.create.subtitle}</h3>
               <p className="mt-2 text-sm text-text-secondary">{copy.create.body}</p>
               <Link
-                href={`/generate?from=${encodeURIComponent(video.id)}`}
+                href={`/app?from=${encodeURIComponent(video.id)}`}
                 className="mt-4 inline-flex w-full items-center justify-center rounded-pill bg-accent px-5 py-3 text-sm font-semibold uppercase tracking-micro text-white transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
               >
                 {copy.create.cta}

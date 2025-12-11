@@ -2055,7 +2055,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
 
       <div className="mt-10 flex flex-wrap gap-3">
         <Link
-          href="/generate"
+          href="/app"
           className="inline-flex items-center rounded-pill border border-hairline px-4 py-2 text-sm font-semibold text-text-primary transition hover:border-accent hover:text-accent"
         >
           {detailCopy.buttons.pricing}
