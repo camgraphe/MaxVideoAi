@@ -286,7 +286,7 @@ function resolveFilterDescriptor(
 }
 
 export default async function ExamplesPage({ searchParams }: ExamplesPageProps) {
-  const { dictionary } = await resolveDictionary();
+  const { locale, dictionary } = await resolveDictionary();
   const content = dictionary.examples;
   const engineFilterLabel = (content as { engineFilterLabel?: string })?.engineFilterLabel ?? 'Engines';
   const engineFilterAllLabel = (content as { engineFilterAllLabel?: string })?.engineFilterAllLabel ?? 'All';
@@ -503,7 +503,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
         contentUrl,
         uploadDate: toISODate(video.createdAt),
         duration: toISODuration(video.durationSec),
-        inLanguage: localeRegions[locale] ?? 'en-US',
+        inLanguage: localeRegions[locale as AppLocale] ?? 'en-US',
         publisher: {
           '@type': 'Organization',
           name: 'MaxVideo AI',
