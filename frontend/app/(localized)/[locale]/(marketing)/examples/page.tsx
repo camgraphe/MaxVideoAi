@@ -591,60 +591,6 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
             </div>
           </div>
         ) : null}
-
-        <section className="mt-12">
-          <h2 className="text-xl font-semibold text-text-primary">
-            {locale === 'fr'
-              ? "Plus d'exemples vidéo IA"
-              : locale === 'es'
-                ? 'Más ejemplos de video IA'
-                : 'More AI video examples'}
-          </h2>
-          <p className="mt-2 text-sm text-text-secondary">
-            {locale === 'fr'
-              ? 'Explorez davantage de rendus publics créés avec MaxVideoAI.'
-              : locale === 'es'
-                ? 'Explora más renderizados públicos creados con MaxVideoAI.'
-                : 'Browse more public renders created with MaxVideoAI.'}
-          </p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              'job_5b9191d8-7f7c-4947-b007-c6aa384d97c1',
-              'job_1d93e1b7-e4d4-4ae3-a2f3-421ffb4615c0',
-              'job_0775869a-2386-40d4-9753-25083bf0f6b2',
-              'job_5efdec94-0818-466b-b570-9898192b4f24',
-              'job_c9abd206-c515-45f2-bb5a-dc5b18e35eeb',
-              'job_45d957eb-e943-4838-b6f0-50a1b006687d',
-              'job_71905754-c5e6-4078-864d-f17cd7f62d95',
-              'job_27680a77-1690-4856-b188-5fd6d359d2f8',
-              'job_1ecfbd83-2a68-4196-a453-a3e81e8a0623',
-              'job_17214ed3-acbc-41b5-8528-59dce5f236a5',
-              'job_3f4474d3-7481-4362-8fd9-a90d41853231',
-              'job_93c9f857-1e89-4551-ba70-4619770a6cb1',
-              'job_c1311458-e35c-4e4d-b791-488c14fc395e',
-              'job_a1662b5f-8b50-465e-9af6-aba585e1d807',
-              'job_9dda92fc-830a-41c4-88d4-44967acc8875',
-              'job_19bc2180-5d30-458c-9034-610396cb9255',
-              'job_c637ef05-1f9a-43b6-aeec-8b1bcf60e684',
-              'job_f4b0fd07-cbd8-4f48-8e7c-3145d8063a99',
-              'job_3676559d-d828-46c8-adc6-6dd0255f9e0a',
-              'job_d5a3c272-4e3d-4932-b39b-837ac8aa462b',
-              'job_948ac337-d8a4-40fe-9583-1995cdab75d1',
-            ].map((id, index) => (
-              <Link
-                key={id}
-                href={`/video/${encodeURIComponent(id)}`}
-                className="block rounded-lg border border-hairline bg-white/80 p-4 text-sm font-semibold text-text-primary shadow-card transition hover:border-accent hover:text-accent"
-              >
-                {locale === 'fr'
-                  ? `Exemple ${index + 1}`
-                  : locale === 'es'
-                    ? `Ejemplo ${index + 1}`
-                    : `Example ${index + 1}`}
-              </Link>
-            ))}
-          </div>
-        </section>
       </section>
 
       <section className="mt-8 overflow-hidden rounded-[12px] border border-hairline bg-white/80 shadow-card">
@@ -735,6 +681,60 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
             </div>
           </details>
         ) : null}
+
+        <section className="mt-10">
+          <h2 className="text-xl font-semibold text-text-primary">
+            {locale === 'fr'
+              ? "Plus d'exemples vidéo IA"
+              : locale === 'es'
+                ? 'Más ejemplos de video IA'
+                : 'More AI video examples'}
+          </h2>
+          <p className="mt-2 text-sm text-text-secondary">
+            {locale === 'fr'
+              ? 'Explorez davantage de rendus publics créés avec MaxVideoAI.'
+              : locale === 'es'
+                ? 'Explora más renderizados públicos creados con MaxVideoAI.'
+                : 'Browse more public renders created with MaxVideoAI.'}
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              'job_5b9191d8-7f7c-4947-b007-c6aa384d97c1',
+              'job_1d93e1b7-e4d4-4ae3-a2f3-421ffb4615c0',
+              'job_0775869a-2386-40d4-9753-25083bf0f6b2',
+              'job_5efdec94-0818-466b-b570-9898192b4f24',
+              'job_c9abd206-c515-45f2-bb5a-dc5b18e35eeb',
+              'job_45d957eb-e943-4838-b6f0-50a1b006687d',
+              'job_71905754-c5e6-4078-864d-f17cd7f62d95',
+              'job_27680a77-1690-4856-b188-5fd6d359d2f8',
+              'job_1ecfbd83-2a68-4196-a453-a3e81e8a0623',
+              'job_17214ed3-acbc-41b5-8528-59dce5f236a5',
+              'job_3f4474d3-7481-4362-8fd9-a90d41853231',
+              'job_93c9f857-1e89-4551-ba70-4619770a6cb1',
+              'job_c1311458-e35c-4e4d-b791-488c14fc395e',
+              'job_a1662b5f-8b50-465e-9af6-aba585e1d807',
+              'job_9dda92fc-830a-41c4-88d4-44967acc8875',
+              'job_19bc2180-5d30-458c-9034-610396cb9255',
+              'job_c637ef05-1f9a-43b6-aeec-8b1bcf60e684',
+              'job_f4b0fd07-cbd8-4f48-8e7c-3145d8063a99',
+              'job_3676559d-d828-46c8-adc6-6dd0255f9e0a',
+              'job_d5a3c272-4e3d-4932-b39b-837ac8aa462b',
+              'job_948ac337-d8a4-40fe-9583-1995cdab75d1',
+            ].map((id, index) => (
+              <Link
+                key={id}
+                href={`/video/${encodeURIComponent(id)}`}
+                className="block rounded-lg border border-hairline bg-white/80 p-4 text-sm font-semibold text-text-primary shadow-card transition hover:border-accent hover:text-accent"
+              >
+                {locale === 'fr'
+                  ? `Exemple ${index + 1}`
+                  : locale === 'es'
+                    ? `Ejemplo ${index + 1}`
+                    : `Example ${index + 1}`}
+              </Link>
+            ))}
+          </div>
+        </section>
 
         {itemListJson ? (
           <script
