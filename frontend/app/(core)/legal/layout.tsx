@@ -16,7 +16,7 @@ export default async function LegalLayout({ children }: { children: React.ReactN
     <main className="bg-bg py-10 sm:py-16">
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-5 sm:px-8">
         <header className="flex items-baseline justify-between gap-3">
-          <h1 className="text-2xl font-semibold text-text-primary">{copy.title}</h1>
+          <h2 className="text-2xl font-semibold text-text-primary">{copy.title}</h2>
           <Link
             href="/"
             className="text-sm font-medium text-accent transition hover:text-accent/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"

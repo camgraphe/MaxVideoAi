@@ -176,6 +176,7 @@ export default async function BlogPostPage({ params }: { params: Params }) {
   const canonicalUrl = metadataUrls.canonical;
   const publishedIso = toIsoDate(post.date) ?? post.date;
   const modifiedIso = toIsoDate(post.updatedAt ?? post.date) ?? publishedIso;
+  const demotedContent = post.content.replace(/<\/?h1>/gi, (match) => match.replace(/h1/i, 'h2'));
   const relatedPool = (await getContentEntries(`content/${locale}/blog`)).filter((entry) => entry.slug !== post.slug);
   const relatedPosts = relatedPool
     .sort((a, b) => Date.parse(b.date ?? '') - Date.parse(a.date ?? ''))
@@ -258,7 +259,7 @@ export default async function BlogPostPage({ params }: { params: Params }) {
           </div>
         </header>
 
-        <div className="blog-prose px-6 py-10 sm:px-10" dangerouslySetInnerHTML={{ __html: post.content }} />
+        <div className="blog-prose px-6 py-10 sm:px-10" dangerouslySetInnerHTML={{ __html: demotedContent }} />
       </article>
 
       {relatedPosts.length ? (

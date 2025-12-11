@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import type { AppLocale } from '@/i18n/locales';
 import { buildMetadataUrls, SITE_BASE_URL, type LocaleSlugMap } from '@/lib/metadataUrls';
 import { getHreflangEnglishPath, type HreflangGroupKey } from '@/lib/seo/hreflang';
+import { buildMetaDescription, buildMetaTitle } from '@/lib/seo/meta';
 
 const DEFAULT_OG_IMAGE = '/og/price-before.png';
 const DEFAULT_OG_WIDTH = 1200;
@@ -61,6 +62,8 @@ export function buildSeoMetadata({
   openGraph: openGraphOverrides,
   twitter: twitterOverrides,
 }: BuildSeoMetadataOptions): Metadata {
+  const safeTitle = buildMetaTitle(title);
+  const safeDescription = buildMetaDescription(description);
   const resolvedEnglishPath = englishPath ?? (hreflangGroup ? getHreflangEnglishPath(hreflangGroup) : undefined);
   const metadataUrls = buildMetadataUrls(locale, slugMap, {
     englishPath: resolvedEnglishPath,
@@ -78,8 +81,8 @@ export function buildSeoMetadata({
   ];
 
   const baseOpenGraph: OpenGraphMetadata = {
-    title,
-    description,
+    title: safeTitle,
+    description: safeDescription,
     url: canonical,
     siteName: SITE_NAME,
     locale: metadataUrls.ogLocale,
@@ -97,8 +100,8 @@ export function buildSeoMetadata({
 
   const baseTwitter: NonNullable<Metadata['twitter']> = {
     card: 'summary_large_image',
-    title,
-    description,
+    title: safeTitle,
+    description: safeDescription,
     images: [imageUrl],
     site: TWITTER_HANDLE,
     creator: TWITTER_HANDLE,
@@ -116,8 +119,8 @@ export function buildSeoMetadata({
   mergedTwitter.images = normalizedTwitterImages.length ? normalizedTwitterImages : baseTwitter.images;
 
   const meta: Metadata = {
-    title,
-    description,
+    title: safeTitle,
+    description: safeDescription,
     alternates: {
       canonical,
       languages: metadataUrls.languages,
