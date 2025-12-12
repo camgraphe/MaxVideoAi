@@ -3,12 +3,13 @@
 import clsx from 'clsx';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ExternalLink, Pause, Play, Repeat, Volume2, VolumeX } from 'lucide-react';
+import { Download, ExternalLink, Pause, Play, Repeat, Volume2, VolumeX } from 'lucide-react';
 import type { VideoGroup, VideoItem } from '@/types/video-groups';
 import { ProcessingOverlay } from '@/components/groups/ProcessingOverlay';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { triggerBrowserDownload } from '@/lib/download';
 
 const DEFAULT_PREVIEW_COPY = {
   title: 'Composite Preview',
@@ -21,6 +22,7 @@ const DEFAULT_PREVIEW_COPY = {
     play: { on: 'Pause', off: 'Play', ariaOn: 'Pause all previews', ariaOff: 'Play all previews' },
     mute: { on: 'Unmute', off: 'Mute', ariaOn: 'Unmute all previews', ariaOff: 'Mute all previews' },
     loop: { on: 'Loop on', off: 'Loop off', ariaOn: 'Disable looping', ariaOff: 'Enable looping' },
+    download: { label: 'Download', aria: 'Download preview' },
     modal: { label: 'Open modal', aria: 'Open preview in modal' },
     openTake: { label: 'Open', aria: 'Open this take' },
     copyPrompt: 'Copy prompt',
@@ -145,6 +147,24 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
     }
   }, [group, onOpenModal]);
 
+  const downloadTarget = useMemo(() => {
+    if (!group || group.items.length === 0) return null;
+    const hero = group.heroItemId ? group.items.find((item) => item.id === group.heroItemId) : undefined;
+    return hero ?? group.items[0] ?? null;
+  }, [group]);
+
+  const handleDownload = useCallback(() => {
+    const url = downloadTarget?.url;
+    if (!url) return;
+    const engineLabel =
+      typeof downloadTarget?.meta?.engineLabel === 'string'
+        ? downloadTarget.meta.engineLabel
+        : typeof downloadTarget?.engineId === 'string'
+          ? downloadTarget.engineId
+          : 'render';
+    void triggerBrowserDownload(url, { filename: `${engineLabel}-${group?.id ?? downloadTarget?.id ?? 'download'}` });
+  }, [downloadTarget, group?.id]);
+
   const gridClass = group ? GRID_CLASS[group.layout] ?? 'grid-cols-1' : 'grid-cols-1';
   const tileCount = group ? Math.min(group.items.length, LAYOUT_SLOT_COUNT[group.layout] ?? group.items.length) : 0;
   const showGroupError = group?.status === 'error';
@@ -168,6 +188,16 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={handleDownload}
+            disabled={!downloadTarget}
+            className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
+            aria-label={copy.controls.download.aria}
+          >
+            <UIIcon icon={Download} />
+            <span className="sr-only">{copy.controls.download.label}</span>
+          </button>
           <button
             type="button"
             onClick={() => setIsPlaying((prev) => !prev)}
