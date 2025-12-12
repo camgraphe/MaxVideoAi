@@ -1,5 +1,6 @@
 export const runtime = 'nodejs';
 
+import { ApiError, ValidationError } from '@fal-ai/client';
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { listFalEngines } from '@/config/falEngines';
@@ -22,6 +23,7 @@ import { normalizeMediaUrl } from '@/lib/media';
 import { getResultProviderMode } from '@/lib/result-provider';
 import { getNanoBananaDefaultAspectRatio, normalizeNanoBananaAspectRatio } from '@/lib/image/aspectRatios';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
+import { createSignedDownloadUrl, extractStorageKeyFromUrl, isStorageConfigured } from '@/server/storage';
 import { getReferenceConstraints, resolveRequestedResolution } from '../utils';
 
 const DISPLAY_CURRENCY = 'USD';
@@ -29,6 +31,7 @@ const DISPLAY_CURRENCY_LOWER: Currency = 'usd';
 const MAX_IMAGES = 8;
 const PLACEHOLDER_THUMB = '/assets/frames/thumb-1x1.svg';
 const NANO_BANANA_IMAGE_ENGINE_IDS = new Set(['nano-banana', 'nano-banana-pro']);
+const SIGNED_REFERENCE_URL_TTL_SECONDS = 60 * 60;
 
 type PendingReceipt = {
   userId: string;
@@ -296,6 +299,20 @@ export async function POST(req: NextRequest) {
   const imageUrls = rawImageUrls
     .map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
     .filter((entry) => entry.length);
+  const invalidImageUrl = imageUrls.find((entry) => !/^https?:\/\//i.test(entry));
+  if (invalidImageUrl) {
+    return respondError(
+      mode,
+      'invalid_image_url',
+      'Reference images must be absolute URLs (https://...).',
+      400,
+      { url: invalidImageUrl },
+      {
+        engineId: engineEntry.id,
+        engineLabel: engineEntry.marketingName,
+      }
+    );
+  }
   const referenceConstraints = getReferenceConstraints(engine, mode);
   if (referenceConstraints.min > 0 && imageUrls.length < referenceConstraints.min) {
     const message =
@@ -364,6 +381,7 @@ export async function POST(req: NextRequest) {
   }
 
   const jobAspectRatio = resolvedAspectRatio ?? null;
+  const falAspectRatio = resolvedAspectRatio && resolvedAspectRatio !== 'auto' ? resolvedAspectRatio : null;
 
   pricing.meta = {
     ...(pricing.meta ?? {}),
@@ -540,12 +558,29 @@ export async function POST(req: NextRequest) {
   let providerJobId: string | undefined;
 
   try {
+    const resolvedReferenceUrls =
+      mode === 'i2i'
+        ? await Promise.all(
+            imageUrls.map(async (url) => {
+              const key = extractStorageKeyFromUrl(url);
+              if (!key) return url;
+              if (!isStorageConfigured()) return url;
+              try {
+                return await createSignedDownloadUrl(key, { expiresInSeconds: SIGNED_REFERENCE_URL_TTL_SECONDS });
+              } catch (signError) {
+                console.warn('[images] failed to sign reference image URL', signError);
+                return url;
+              }
+            })
+          )
+        : [];
+
     const result = await falClient.subscribe(modeConfig.falModelId, {
       input: {
         prompt,
         num_images: numImages,
-        ...(mode === 'i2i' ? { image_urls: imageUrls } : {}),
-        ...(resolvedAspectRatio ? { aspect_ratio: resolvedAspectRatio } : {}),
+        ...(mode === 'i2i' ? { image_urls: resolvedReferenceUrls } : {}),
+        ...(falAspectRatio ? { aspect_ratio: falAspectRatio } : {}),
         ...(shouldSendResolution ? { resolution } : {}),
       },
       mode: 'polling',
@@ -658,7 +693,29 @@ export async function POST(req: NextRequest) {
     } satisfies ImageGenerationResponse);
   } catch (error) {
     console.error('[images] Fal generation failed', error);
-    const message = error instanceof Error ? error.message : 'Fal request failed';
+    const providerStatus =
+      error instanceof ApiError && typeof error.status === 'number' ? error.status : null;
+    const providerBody = error instanceof ApiError ? error.body : null;
+    const providerErrors =
+      error instanceof ValidationError
+        ? error.fieldErrors
+            .map((entry) => {
+              const loc = Array.isArray(entry.loc) ? entry.loc.filter((part) => part !== 'body') : [];
+              const path = loc.length ? loc.join('.') : null;
+              const msg = typeof entry.msg === 'string' ? entry.msg.trim() : '';
+              if (!msg) return null;
+              return path ? `${path}: ${msg}` : msg;
+            })
+            .filter((entry): entry is string => Boolean(entry))
+        : [];
+    const messageBase =
+      error instanceof Error && error.message ? error.message : 'Fal request failed';
+    const message =
+      providerErrors.length > 0
+        ? providerErrors.slice(0, 3).join(' · ')
+        : providerStatus === 422 && messageBase === 'Unprocessable Entity'
+          ? 'Fal rejected the input (422). Check that your reference image URLs are reachable and valid image files.'
+          : messageBase;
 
     try {
       await query(
@@ -677,9 +734,53 @@ export async function POST(req: NextRequest) {
       console.warn('[images] failed to update failed job', updateError);
     }
 
+    try {
+      const hosts = imageUrls
+        .map((url) => {
+          try {
+            return new URL(url).host;
+          } catch {
+            return null;
+          }
+        })
+        .filter((host): host is string => Boolean(host));
+      const uniqueHosts = Array.from(new Set(hosts));
+
+      await query(
+        `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
+         VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
+        [
+          jobId,
+          providerMode,
+          providerJobId ?? null,
+          engine.id,
+          'failed',
+          JSON.stringify({
+            request: {
+              mode,
+              numImages,
+              resolution,
+              ...(resolvedAspectRatio ? { aspect_ratio: resolvedAspectRatio } : {}),
+              referenceImageCount: imageUrls.length,
+              referenceImageHosts: uniqueHosts,
+              falModelId: modeConfig.falModelId,
+            },
+            error: {
+              status: providerStatus,
+              message,
+              body: providerBody,
+            },
+            pricing: { totalCents: pricing.totalCents, currency: pricing.currency },
+          }),
+        ]
+      );
+    } catch (logError) {
+      console.warn('[images] failed to record fal queue log', logError);
+    }
+
     await recordRefundReceipt(pendingReceipt, `Refund ${engine.label} - ${numImages} images`, priceOnlyReceipts);
 
-    return respondError(mode, 'fal_error', message, 502, error instanceof Error ? error.stack : error, {
+    return respondError(mode, 'fal_error', message, 502, { providerStatus, providerBody }, {
       engineId: engineEntry.id,
       engineLabel: engineEntry.marketingName,
       jobId,

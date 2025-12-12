@@ -248,6 +248,10 @@ function extractObjectKeyFromUrl(assetUrl: string): string | null {
   }
 }
 
+export function extractStorageKeyFromUrl(assetUrl: string): string | null {
+  return extractObjectKeyFromUrl(assetUrl);
+}
+
 async function deleteObjectFromStorage(key: string): Promise<void> {
   if (!S3_BUCKET) return;
   const client = getS3Client();
