@@ -121,6 +121,8 @@ interface ImageWorkspaceCopy {
   };
   messages: {
     success: string;
+    savedToLibrary: string;
+    removedFromLibrary: string;
   };
   general: {
     uploading: string;
@@ -132,12 +134,19 @@ interface ImageWorkspaceCopy {
     empty: string;
     overlay: string;
     assetFallback: string;
+    tabs: {
+      all: string;
+      upload: string;
+      generated: string;
+    };
     modal: {
       title: string;
       description: string;
       close: string;
       error: string;
       empty: string;
+      emptyUploads: string;
+      emptyGenerated: string;
     };
   };
 }
@@ -226,6 +235,8 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
   },
   messages: {
     success: 'Generated {count} image{suffix}.',
+    savedToLibrary: 'Saved to Library.',
+    removedFromLibrary: 'Removed from Library.',
   },
   general: {
     uploading: 'Uploading…',
@@ -237,12 +248,19 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
     empty: 'No assets saved yet. Upload images from the composer or the Library page.',
     overlay: 'Use this image',
     assetFallback: 'Asset',
+    tabs: {
+      all: 'All images',
+      upload: 'Uploaded images',
+      generated: 'Generated images',
+    },
     modal: {
       title: 'Select from library',
       description: 'Choose an image you previously imported.',
       close: 'Close',
       error: 'Unable to load assets. Please retry.',
       empty: 'No assets saved yet. Upload images from the composer or the Library page.',
+      emptyUploads: 'No uploaded images yet. Upload images from the composer or the Library page.',
+      emptyGenerated: 'No generated images saved yet. Save a generated image to see it here.',
     },
   },
 };
@@ -315,6 +333,7 @@ type LibraryAsset = {
   width?: number | null;
   height?: number | null;
   size?: number | null;
+  source?: string | null;
   createdAt?: string;
 };
 
@@ -404,6 +423,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [isSavingToLibrary, setIsSavingToLibrary] = useState(false);
+  const [isRemovingFromLibrary, setIsRemovingFromLibrary] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [viewerGroup, setViewerGroup] = useState<VideoGroup | null>(null);
   const [libraryModal, setLibraryModal] = useState<{ open: boolean; slotIndex: number | null }>({
@@ -1056,13 +1077,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     });
   }, [historyEntries.length]);
 
-  if (!selectedEngine || !selectedEngineCaps) {
-    return (
-      <main className="flex flex-1 items-center justify-center bg-bg text-text-secondary">
-        {resolvedCopy.general.emptyEngines}
-      </main>
-    );
-  }
   const previewEntry = (() => {
     if (selectedPreviewEntryId) {
       const match = historyEntries.find((entry) => entry.id === selectedPreviewEntryId);
@@ -1070,6 +1084,40 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     }
     return historyEntries[0];
   })();
+  const canUseWorkspace = Boolean(selectedEngine && selectedEngineCaps);
+  const selectedPreviewUrl = previewEntry?.images?.[selectedPreviewImageIndex]?.url ?? null;
+  const savedAssetKey =
+    canUseWorkspace && selectedPreviewUrl
+      ? `/api/user-assets?limit=1&source=generated&originUrl=${encodeURIComponent(selectedPreviewUrl)}`
+      : null;
+  const {
+    data: savedAssets,
+    mutate: mutateSavedAssets,
+  } = useSWR(savedAssetKey, async (url: string) => {
+    const response = await authFetch(url);
+    const payload = (await response.json().catch(() => null)) as AssetsResponse | null;
+    if (!response.ok || !payload?.ok) {
+      let message: string | undefined;
+      if (payload && typeof payload === 'object' && 'error' in payload) {
+        const maybeError = (payload as { error?: unknown }).error;
+        if (typeof maybeError === 'string') {
+          message = maybeError;
+        }
+      }
+      throw new Error(message ?? 'Failed to load library');
+    }
+    return payload.assets;
+  });
+  const savedAsset = (savedAssets?.[0] as LibraryAsset | undefined) ?? null;
+  const isInLibrary = Boolean(savedAsset?.id);
+
+  if (!selectedEngine || !selectedEngineCaps) {
+    return (
+      <main className="flex flex-1 items-center justify-center bg-bg text-text-secondary">
+        {resolvedCopy.general.emptyEngines}
+      </main>
+    );
+  }
   const numImagesUnit =
     numImages === 1 ? resolvedCopy.composer.numImagesUnit.singular : resolvedCopy.composer.numImagesUnit.plural;
   const numImagesCountLabel = formatTemplate(resolvedCopy.composer.numImagesCount, {
@@ -1113,6 +1161,67 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                 onOpenModal={previewEntry ? () => handleOpenHistoryEntry(previewEntry) : undefined}
                 onDownload={handleDownload}
                 onCopyLink={handleCopy}
+                onAddToLibrary={(url) => {
+                  if (!previewEntry?.id) return;
+                  if (isSavingToLibrary) return;
+                  if (isRemovingFromLibrary) return;
+                  setIsSavingToLibrary(true);
+                  setError(null);
+                  setStatusMessage(null);
+                  void saveImageToLibrary({
+                    url,
+                    jobId: previewEntry.jobId ?? previewEntry.id,
+                    label: previewEntry.prompt ?? undefined,
+                  })
+                    .then(() => {
+                      const savedMessage = t(
+                        'workspace.image.messages.savedToLibrary',
+                        DEFAULT_COPY.messages.savedToLibrary
+                      ) as string;
+                      setStatusMessage(savedMessage);
+                      void mutateSavedAssets();
+                    })
+                    .catch((error) => {
+                      setError(error instanceof Error ? error.message : resolvedCopy.errors.generic);
+                    })
+                    .finally(() => {
+                      setIsSavingToLibrary(false);
+                    });
+                }}
+                onRemoveFromLibrary={() => {
+                  if (!savedAsset?.id) return;
+                  if (isRemovingFromLibrary) return;
+                  if (isSavingToLibrary) return;
+                  setIsRemovingFromLibrary(true);
+                  setError(null);
+                  setStatusMessage(null);
+                  void authFetch('/api/user-assets', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: savedAsset.id }),
+                  })
+                    .then(async (response) => {
+                      const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+                      if (!response.ok || !payload?.ok) {
+                        throw new Error(payload?.error ?? 'Failed to remove from library');
+                      }
+                      const removedMessage = t(
+                        'workspace.image.messages.removedFromLibrary',
+                        DEFAULT_COPY.messages.removedFromLibrary
+                      ) as string;
+                      setStatusMessage(removedMessage);
+                      void mutateSavedAssets();
+                    })
+                    .catch((error) => {
+                      setError(error instanceof Error ? error.message : resolvedCopy.errors.generic);
+                    })
+                    .finally(() => {
+                      setIsRemovingFromLibrary(false);
+                    });
+                }}
+                isInLibrary={isInLibrary}
+                isSavingToLibrary={isSavingToLibrary}
+                isRemovingFromLibrary={isRemovingFromLibrary}
                 copiedUrl={copiedUrl}
               />
 
@@ -1637,7 +1746,13 @@ function ImageLibraryModal({
   onSelect: (asset: LibraryAsset) => void;
   copy: ImageWorkspaceCopy['library'];
 }) {
-  const { data, error, isLoading } = useSWR(open ? '/api/user-assets?limit=60' : null, async (url: string) => {
+  const [activeSource, setActiveSource] = useState<'all' | 'upload' | 'generated'>('all');
+  const swrKey = open
+    ? activeSource === 'all'
+      ? '/api/user-assets?limit=60'
+      : `/api/user-assets?limit=60&source=${encodeURIComponent(activeSource)}`
+    : null;
+  const { data, error, isLoading } = useSWR(swrKey, async (url: string) => {
     const response = await authFetch(url);
     const payload = (await response.json().catch(() => null)) as AssetsResponse | null;
     if (!response.ok || !payload?.ok) {
@@ -1658,6 +1773,12 @@ function ImageLibraryModal({
   }
 
   const assets = data ?? [];
+  const emptyLabel =
+    activeSource === 'generated'
+      ? copy.modal.emptyGenerated
+      : activeSource === 'upload'
+        ? copy.modal.emptyUploads
+        : copy.modal.empty;
 
   const handleBackdropClick = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget) {
@@ -1686,6 +1807,43 @@ function ImageLibraryModal({
             {copy.modal.close}
           </button>
         </div>
+        <div className="border-b border-border px-4 py-3 sm:px-6">
+          <div
+            role="tablist"
+            aria-label="Library image filters"
+            className="flex w-full overflow-hidden rounded-full border border-border bg-white/70 text-xs font-semibold text-text-secondary"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeSource === 'all'}
+              onClick={() => setActiveSource('all')}
+              className={`flex-1 px-4 py-2 transition ${activeSource === 'all' ? 'bg-accent text-white' : 'hover:bg-white'}`}
+            >
+              {copy.tabs.all}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeSource === 'upload'}
+              onClick={() => setActiveSource('upload')}
+              className={`flex-1 px-4 py-2 transition ${activeSource === 'upload' ? 'bg-accent text-white' : 'hover:bg-white'}`}
+            >
+              {copy.tabs.upload}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeSource === 'generated'}
+              onClick={() => setActiveSource('generated')}
+              className={`flex-1 px-4 py-2 transition ${
+                activeSource === 'generated' ? 'bg-accent text-white' : 'hover:bg-white'
+              }`}
+            >
+              {copy.tabs.generated}
+            </button>
+          </div>
+        </div>
         <div className="max-h-[70vh] overflow-y-auto px-4 py-4 sm:px-6">
           {error ? (
             <div className="rounded-card border border-state-warning/40 bg-state-warning/10 px-4 py-6 text-sm text-state-warning">
@@ -1706,7 +1864,7 @@ function ImageLibraryModal({
             </div>
           ) : assets.length === 0 ? (
             <div className="rounded-card border border-dashed border-border px-4 py-6 text-center text-sm text-text-secondary">
-              {copy.modal.empty}
+              {emptyLabel}
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

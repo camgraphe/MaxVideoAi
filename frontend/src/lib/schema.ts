@@ -506,6 +506,11 @@ export async function ensureAssetSchema(): Promise<void> {
     await query(`
       CREATE INDEX IF NOT EXISTS user_assets_user_created_idx ON user_assets (user_id, created_at DESC);
     `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS user_assets_user_source_origin_idx
+      ON user_assets (user_id, source, (metadata->>'originUrl'));
+    `);
   };
 
   ensureAssetsPromise = ensure().catch((error) => {

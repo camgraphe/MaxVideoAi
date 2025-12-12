@@ -15,6 +15,8 @@ export async function GET(req: NextRequest) {
   await ensureAssetSchema();
 
   const limit = Math.min(200, Number(req.nextUrl.searchParams.get('limit') ?? 50));
+  const source = (req.nextUrl.searchParams.get('source') ?? '').trim() || null;
+  const originUrl = (req.nextUrl.searchParams.get('originUrl') ?? '').trim() || null;
   const rows = await query<{
     asset_id: string;
     url: string;
@@ -22,14 +24,17 @@ export async function GET(req: NextRequest) {
     width: number | null;
     height: number | null;
     size_bytes: string | number | null;
+    source: string | null;
     created_at: string;
   }>(
-    `SELECT asset_id, url, mime_type, width, height, size_bytes, created_at
+    `SELECT asset_id, url, mime_type, width, height, size_bytes, source, created_at
      FROM user_assets
      WHERE user_id = $1
+       AND ($3::text IS NULL OR source = $3::text)
+       AND ($4::text IS NULL OR metadata->>'originUrl' = $4::text)
      ORDER BY created_at DESC
      LIMIT $2`,
-    [userId, limit]
+    [userId, limit, source, originUrl]
   );
 
   const assets = rows.map((row) => ({
@@ -39,6 +44,7 @@ export async function GET(req: NextRequest) {
     width: row.width,
     height: row.height,
     size: typeof row.size_bytes === 'string' ? Number(row.size_bytes) : row.size_bytes,
+    source: row.source,
     createdAt: row.created_at,
   }));
 

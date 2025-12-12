@@ -19,6 +19,7 @@ type UserAsset = {
   width?: number | null;
   height?: number | null;
   size?: number | null;
+  source?: string | null;
   createdAt?: string;
 };
 
@@ -36,11 +37,18 @@ interface LibraryCopy {
       video: string;
     };
   };
+  tabs: {
+    all: string;
+    upload: string;
+    generated: string;
+  };
   assets: {
     title: string;
     countLabel: string;
     loadError: string;
     empty: string;
+    emptyUploads: string;
+    emptyGenerated: string;
     deleteError: string;
     deleteButton: string;
     downloadButton: string;
@@ -58,11 +66,18 @@ const DEFAULT_LIBRARY_COPY: LibraryCopy = {
       video: 'Generate video',
     },
   },
+  tabs: {
+    all: 'All images',
+    upload: 'Uploaded images',
+    generated: 'Generated images',
+  },
   assets: {
     title: 'Library assets',
     countLabel: '{count}',
     loadError: 'Unable to load imported assets.',
     empty: 'No imported assets yet. Upload references from the composer or drop files here.',
+    emptyUploads: 'No uploaded images yet. Upload references from the composer or drop files here.',
+    emptyGenerated: 'No generated images saved yet. Generate an image and save it to your library.',
     deleteError: 'Unable to delete this image.',
     deleteButton: 'Delete',
     downloadButton: 'Download',
@@ -106,16 +121,28 @@ export default function LibraryPage() {
   const copy = useMemo<LibraryCopy>(() => {
     return deepmerge<LibraryCopy>(DEFAULT_LIBRARY_COPY, (rawCopy ?? {}) as Partial<LibraryCopy>);
   }, [rawCopy]);
+  const [activeSource, setActiveSource] = useState<'all' | 'upload' | 'generated'>('all');
   const {
     data: assetsData,
     error: assetsError,
     isLoading: assetsLoading,
     mutate: mutateAssets,
-  } = useSWR<AssetsResponse>('/api/user-assets', fetcher);
+  } = useSWR<AssetsResponse>(
+    activeSource === 'all'
+      ? '/api/user-assets?limit=200'
+      : `/api/user-assets?limit=200&source=${encodeURIComponent(activeSource)}`,
+    fetcher
+  );
   const assets = assetsData?.assets ?? [];
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const assetCountLabel = formatTemplate(copy.assets.countLabel, { count: assets.length });
+  const emptyLabel =
+    activeSource === 'generated'
+      ? copy.assets.emptyGenerated
+      : activeSource === 'upload'
+        ? copy.assets.emptyUploads
+        : copy.assets.empty;
 
   const handleDeleteAsset = useCallback(
     async (assetId: string) => {
@@ -163,9 +190,63 @@ export default function LibraryPage() {
           </div>
 
           <section className="rounded-card border border-border bg-white/80 p-5 shadow-card">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-text-primary">{copy.assets.title}</h2>
-              <span className="text-xs text-text-secondary">{assetCountLabel}</span>
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center justify-between gap-3 sm:justify-start">
+                <h2 className="text-lg font-semibold text-text-primary">{copy.assets.title}</h2>
+                <span className="text-xs text-text-secondary">{assetCountLabel}</span>
+              </div>
+
+              <div
+                role="tablist"
+                aria-label="Library image filters"
+                className="flex w-full overflow-hidden rounded-full border border-border bg-white/70 text-xs font-semibold text-text-secondary sm:w-auto"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeSource === 'all'}
+                  onClick={() => {
+                    setActiveSource('all');
+                    setDeleteError(null);
+                    setDeletingId(null);
+                  }}
+                  className={`flex-1 px-4 py-2 transition sm:flex-none ${
+                    activeSource === 'all' ? 'bg-accent text-white' : 'hover:bg-white'
+                  }`}
+                >
+                  {copy.tabs.all}
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeSource === 'upload'}
+                  onClick={() => {
+                    setActiveSource('upload');
+                    setDeleteError(null);
+                    setDeletingId(null);
+                  }}
+                  className={`flex-1 px-4 py-2 transition sm:flex-none ${
+                    activeSource === 'upload' ? 'bg-accent text-white' : 'hover:bg-white'
+                  }`}
+                >
+                  {copy.tabs.upload}
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeSource === 'generated'}
+                  onClick={() => {
+                    setActiveSource('generated');
+                    setDeleteError(null);
+                    setDeletingId(null);
+                  }}
+                  className={`flex-1 px-4 py-2 transition sm:flex-none ${
+                    activeSource === 'generated' ? 'bg-accent text-white' : 'hover:bg-white'
+                  }`}
+                >
+                  {copy.tabs.generated}
+                </button>
+              </div>
             </div>
 
             {deleteError ? (
@@ -193,7 +274,7 @@ export default function LibraryPage() {
               </div>
             ) : assets.length === 0 ? (
               <div className="rounded-card border border-dashed border-border px-4 py-6 text-center text-sm text-text-secondary">
-                {copy.assets.empty}
+                {emptyLabel || copy.assets.empty}
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

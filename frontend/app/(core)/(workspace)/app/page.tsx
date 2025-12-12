@@ -135,8 +135,11 @@ type UserAsset = {
   height?: number | null;
   size?: number | null;
   mime?: string | null;
+  source?: string | null;
   createdAt?: string;
 };
+
+type AssetLibrarySource = 'all' | 'upload' | 'generated';
 
 type AssetLibraryModalProps = {
   fieldLabel: string;
@@ -145,7 +148,9 @@ type AssetLibraryModalProps = {
   error: string | null;
   onClose: () => void;
   onSelect: (asset: UserAsset) => void;
-  onRefresh: () => void;
+  source: AssetLibrarySource;
+  onSourceChange: (source: AssetLibrarySource) => void;
+  onRefresh: (source?: AssetLibrarySource) => void;
   onDelete: (asset: UserAsset) => Promise<void> | void;
   deletingAssetId: string | null;
 };
@@ -178,6 +183,13 @@ const DEFAULT_WORKSPACE_COPY = {
     close: 'Close',
     fieldFallback: 'Reference image',
     empty: 'No saved images yet. Upload a reference image to see it here.',
+    emptyUploads: 'No uploaded images yet. Upload a reference image to see it here.',
+    emptyGenerated: 'No generated images saved yet. Save a generated image to see it here.',
+    tabs: {
+      all: 'All',
+      upload: 'Uploaded',
+      generated: 'Generated',
+    },
   },
 } as const;
 
@@ -202,12 +214,20 @@ function AssetLibraryModal({
   error,
   onClose,
   onSelect,
+  source,
+  onSourceChange,
   onRefresh,
   onDelete,
   deletingAssetId,
 }: AssetLibraryModalProps) {
   const { t } = useI18n();
   const copy = t('workspace.generate.assetLibrary', DEFAULT_WORKSPACE_COPY.assetLibrary) ?? DEFAULT_WORKSPACE_COPY.assetLibrary;
+  const emptyLabel =
+    source === 'generated'
+      ? (copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).emptyGenerated
+      : source === 'upload'
+        ? (copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).emptyUploads
+        : copy.empty;
   const formatSize = (bytes?: number | null) => {
     if (!bytes || bytes <= 0) return null;
     if (bytes >= 1024 * 1024) {
@@ -223,16 +243,16 @@ function AssetLibraryModal({
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 px-4">
       <div className="absolute inset-0" role="presentation" onClick={onClose} />
       <div className="relative z-10 w-full max-w-3xl rounded-[16px] border border-border bg-white p-6 shadow-2xl">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div>
             <h2 className="text-lg font-semibold text-text-primary">{copy.title}</h2>
             <p className="text-sm text-text-secondary">{fieldLabel}</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-end sm:self-auto">
             <button
               type="button"
               className="rounded-input border border-border px-3 py-1.5 text-sm text-text-secondary transition hover:border-accentSoft/60 hover:bg-accentSoft/10"
-              onClick={onRefresh}
+              onClick={() => onRefresh(source)}
             >
               {copy.refresh}
             </button>
@@ -244,6 +264,40 @@ function AssetLibraryModal({
               {copy.close}
             </button>
           </div>
+        </div>
+
+        <div
+          role="tablist"
+          aria-label="Library image filters"
+          className="mt-4 flex w-full overflow-hidden rounded-full border border-border bg-white/70 text-xs font-semibold text-text-secondary"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={source === 'all'}
+            onClick={() => onSourceChange('all')}
+            className={`flex-1 px-4 py-2 transition ${source === 'all' ? 'bg-accent text-white' : 'hover:bg-white'}`}
+          >
+            {(copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).tabs.all}
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={source === 'upload'}
+            onClick={() => onSourceChange('upload')}
+            className={`flex-1 px-4 py-2 transition ${source === 'upload' ? 'bg-accent text-white' : 'hover:bg-white'}`}
+          >
+            {(copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).tabs.upload}
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={source === 'generated'}
+            onClick={() => onSourceChange('generated')}
+            className={`flex-1 px-4 py-2 transition ${source === 'generated' ? 'bg-accent text-white' : 'hover:bg-white'}`}
+          >
+            {(copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).tabs.generated}
+          </button>
         </div>
 
         <div className="mt-4 max-h-[60vh] overflow-y-auto">
@@ -261,7 +315,7 @@ function AssetLibraryModal({
             </div>
           ) : assets.length === 0 ? (
             <div className="rounded-input border border-border bg-neutral-50 px-4 py-6 text-center text-sm text-text-secondary">
-              {copy.empty ?? 'No saved images yet. Upload a reference image to see it here.'}
+              {emptyLabel ?? copy.empty ?? 'No saved images yet. Upload a reference image to see it here.'}
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
@@ -1811,6 +1865,8 @@ useEffect(() => {
   const [isAssetLibraryLoading, setIsAssetLibraryLoading] = useState(false);
   const [assetLibraryError, setAssetLibraryError] = useState<string | null>(null);
   const [assetLibraryLoaded, setAssetLibraryLoaded] = useState(false);
+  const [assetLibrarySource, setAssetLibrarySource] = useState<AssetLibrarySource>('all');
+  const [assetLibraryLoadedSource, setAssetLibraryLoadedSource] = useState<AssetLibrarySource | null>(null);
   const [assetDeletePendingId, setAssetDeletePendingId] = useState<string | null>(null);
 
   const assetsRef = useRef<Record<string, (ReferenceAsset | null)[]>>({});
@@ -1847,11 +1903,16 @@ const showNotice = useCallback((message: string) => {
     }, 6000);
   }, []);
 
-  const fetchAssetLibrary = useCallback(async () => {
+  const fetchAssetLibrary = useCallback(async (sourceOverride?: AssetLibrarySource) => {
+    const source = sourceOverride ?? assetLibrarySource;
     setIsAssetLibraryLoading(true);
     setAssetLibraryError(null);
     try {
-      const response = await authFetch('/api/user-assets');
+      const url =
+        source === 'all'
+          ? '/api/user-assets?limit=60'
+          : `/api/user-assets?limit=60&source=${encodeURIComponent(source)}`;
+      const response = await authFetch(url);
       if (response.status === 401) {
         setAssetLibrary([]);
         setAssetLibraryError('Sign in to access your image library.');
@@ -1875,13 +1936,14 @@ const showNotice = useCallback((message: string) => {
         : [];
       setAssetLibrary(assets);
       setAssetLibraryLoaded(true);
+      setAssetLibraryLoadedSource(source);
     } catch (error) {
       console.error('[assets] failed to load library', error);
       setAssetLibraryError(error instanceof Error ? error.message : 'Failed to load images');
     } finally {
       setIsAssetLibraryLoading(false);
     }
-  }, []);
+  }, [assetLibrarySource]);
 
   const handleDeleteLibraryAsset = useCallback(
     async (asset: UserAsset) => {
@@ -1956,11 +2018,11 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   const handleOpenAssetLibrary = useCallback(
     (field: EngineInputField, slotIndex?: number) => {
       setAssetPickerTarget({ field, slotIndex });
-      if (!assetLibraryLoaded && !isAssetLibraryLoading) {
-        void fetchAssetLibrary();
+      if (!isAssetLibraryLoading && (!assetLibraryLoaded || assetLibraryLoadedSource !== assetLibrarySource)) {
+        void fetchAssetLibrary(assetLibrarySource);
       }
     },
-    [assetLibraryLoaded, fetchAssetLibrary, isAssetLibraryLoading]
+    [assetLibraryLoaded, assetLibraryLoadedSource, assetLibrarySource, fetchAssetLibrary, isAssetLibraryLoading]
   );
 
   const handleSelectLibraryAsset = useCallback(
@@ -4079,6 +4141,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           assets={assetLibrary}
           isLoading={isAssetLibraryLoading}
           error={assetLibraryError}
+          source={assetLibrarySource}
+          onSourceChange={(nextSource) => {
+            if (nextSource === assetLibrarySource) return;
+            setAssetLibrarySource(nextSource);
+            setAssetLibraryError(null);
+            setAssetLibrary([]);
+            void fetchAssetLibrary(nextSource);
+          }}
           onClose={() => setAssetPickerTarget(null)}
           onRefresh={fetchAssetLibrary}
           onSelect={(asset) => handleSelectLibraryAsset(assetPickerTarget.field, asset, assetPickerTarget.slotIndex)}

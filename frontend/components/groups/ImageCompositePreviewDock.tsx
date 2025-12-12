@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import clsx from 'clsx';
-import { Copy, Download, ExternalLink } from 'lucide-react';
+import { Copy, Download, ExternalLink, Minus, Plus } from 'lucide-react';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { resolveCssAspectRatio } from '@/lib/aspect';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -31,6 +31,11 @@ interface ImageCompositePreviewDockProps {
   onOpenModal?: () => void;
   onDownload?: (url: string) => void;
   onCopyLink?: (url: string) => void;
+  onAddToLibrary?: (url: string) => void;
+  onRemoveFromLibrary?: () => void;
+  isInLibrary?: boolean;
+  isSavingToLibrary?: boolean;
+  isRemovingFromLibrary?: boolean;
   copiedUrl?: string | null;
 }
 
@@ -44,6 +49,11 @@ export function ImageCompositePreviewDock({
   onOpenModal,
   onDownload,
   onCopyLink,
+  onAddToLibrary,
+  onRemoveFromLibrary,
+  isInLibrary = false,
+  isSavingToLibrary = false,
+  isRemovingFromLibrary = false,
   copiedUrl,
 }: ImageCompositePreviewDockProps) {
   const { t } = useI18n();
@@ -53,6 +63,10 @@ export function ImageCompositePreviewDock({
   const copiedLabel = t('workspace.image.preview.copied', 'Copied');
   const downloadLabel = t('workspace.image.preview.download', 'Download');
   const modalLabel = t('workspace.image.preview.openModal', 'Open modal');
+  const addToLibraryLabel = t('workspace.jobs.actions.addToLibrary', 'Add to Library');
+  const removeFromLibraryLabel = t('workspace.jobs.actions.removeFromLibrary', 'Remove from Library');
+  const savingLabel = t('workspace.jobs.actions.saving', 'Saving…');
+  const removingLabel = t('workspace.jobs.actions.removing', 'Removing…');
 
   const images = entry?.images ?? [];
   const safeIndex = Math.min(Math.max(0, selectedIndex), Math.max(0, images.length - 1));
@@ -67,6 +81,8 @@ export function ImageCompositePreviewDock({
   const canOpenModal = Boolean(entry && images.length && onOpenModal);
   const canDownload = Boolean(selected?.url && onDownload);
   const canCopy = Boolean(selected?.url && onCopyLink);
+  const canAddToLibrary = Boolean(selected?.url && onAddToLibrary) && !isSavingToLibrary && !isRemovingFromLibrary && !isInLibrary;
+  const canRemoveFromLibrary = Boolean(onRemoveFromLibrary) && !isSavingToLibrary && !isRemovingFromLibrary && isInLibrary;
 
   return (
     <section className="overflow-hidden rounded-card border border-border bg-white/80 shadow-card">
@@ -76,6 +92,35 @@ export function ImageCompositePreviewDock({
           <p className="text-xs text-text-muted">{images.length ? `${images.length} variant${images.length === 1 ? '' : 's'}` : empty}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {isInLibrary ? (
+            <button
+              type="button"
+              onClick={onRemoveFromLibrary}
+              disabled={!canRemoveFromLibrary}
+              className={clsx(
+                'inline-flex items-center gap-2 rounded-full border border-border bg-state-warning/10 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-state-warning transition hover:bg-state-warning/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                !canRemoveFromLibrary ? 'cursor-not-allowed opacity-50' : null
+              )}
+              aria-label={removeFromLibraryLabel}
+            >
+              <UIIcon icon={Minus} size={16} />
+              <span>{isRemovingFromLibrary ? removingLabel : removeFromLibraryLabel}</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => (selected?.url && onAddToLibrary ? onAddToLibrary(selected.url) : undefined)}
+              disabled={!canAddToLibrary}
+              className={clsx(
+                'inline-flex items-center gap-2 rounded-full border border-border bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-accent transition hover:bg-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                !canAddToLibrary ? 'cursor-not-allowed opacity-50' : null
+              )}
+              aria-label={addToLibraryLabel}
+            >
+              <UIIcon icon={Plus} size={16} />
+              <span>{isSavingToLibrary ? savingLabel : addToLibraryLabel}</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={() => (selected?.url && onDownload ? onDownload(selected.url) : undefined)}

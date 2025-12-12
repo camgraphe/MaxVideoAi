@@ -1328,7 +1328,14 @@
         "refresh": "Actualiser",
         "close": "Fermer",
         "fieldFallback": "Image de référence",
-        "empty": "Aucune image enregistrée pour l’instant. Ajoutez une référence pour la voir ici."
+        "empty": "Aucune image enregistrée pour l’instant. Ajoutez une référence pour la voir ici.",
+        "emptyUploads": "Aucune image chargée pour l’instant. Ajoutez une référence pour la voir ici.",
+        "emptyGenerated": "Aucune image générée enregistrée pour l’instant. Enregistrez une image générée pour la voir ici.",
+        "tabs": {
+          "all": "Toutes",
+          "upload": "Chargées",
+          "generated": "Générées"
+        }
       },
       "processing": {
         "title": "Traitement…",
@@ -1572,7 +1579,9 @@
       "loading": "Chargement…",
       "actions": {
         "addToLibrary": "Ajouter à la bibliothèque",
-        "saving": "Enregistrement…"
+        "removeFromLibrary": "Retirer de la bibliothèque",
+        "saving": "Enregistrement…",
+        "removing": "Suppression…"
       }
     },
     "dashboard": {
@@ -1820,7 +1829,9 @@
         "generic": "La génération d’image a échoué."
       },
       "messages": {
-        "success": "Génération terminée : {count} image(s)."
+        "success": "Génération terminée : {count} image(s).",
+        "savedToLibrary": "Enregistré dans la bibliothèque.",
+        "removedFromLibrary": "Retiré de la bibliothèque."
       },
       "general": {
         "uploading": "Téléversement…",
@@ -1832,12 +1843,19 @@
         "empty": "Aucune ressource enregistrée. Importez des références depuis le compositeur ou via cette page.",
         "overlay": "Utiliser cette image",
         "assetFallback": "Ressource",
+        "tabs": {
+          "all": "Toutes",
+          "upload": "Images chargées",
+          "generated": "Images générées"
+        },
         "modal": {
           "title": "Choisir dans la bibliothèque",
           "description": "Sélectionnez une image importée auparavant.",
           "close": "Fermer",
           "error": "Impossible de charger les ressources. Réessayez.",
-          "empty": "Aucune ressource enregistrée. Importez des références depuis le compositeur ou via cette page."
+          "empty": "Aucune ressource enregistrée. Importez des références depuis le compositeur ou via cette page.",
+          "emptyUploads": "Aucune image chargée pour l’instant. Importez des références depuis le compositeur ou via cette page.",
+          "emptyGenerated": "Aucune image générée enregistrée pour l’instant. Enregistrez une image générée pour la voir ici."
         }
       }
     },
@@ -1850,13 +1868,21 @@
           "video": "Générer une vidéo"
         }
       },
+      "tabs": {
+        "all": "Toutes",
+        "upload": "Images chargées",
+        "generated": "Images générées"
+      },
       "assets": {
         "title": "Ressources de la bibliothèque",
         "countLabel": "{count}",
         "loadError": "Impossible de charger les ressources importées.",
         "empty": "Aucune ressource importée pour l’instant. Ajoutez des références depuis le compositeur ou en les déposant ici.",
+        "emptyUploads": "Aucune image chargée pour l’instant. Ajoutez des références depuis le compositeur ou en les déposant ici.",
+        "emptyGenerated": "Aucune image générée enregistrée pour l’instant. Générez une image puis enregistrez-la dans votre bibliothèque.",
         "deleteError": "Suppression impossible pour cette image.",
         "deleteButton": "Supprimer",
+        "downloadButton": "Télécharger",
         "deleting": "Suppression…",
         "assetFallback": "Ressource"
       }
