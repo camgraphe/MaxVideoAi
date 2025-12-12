@@ -296,6 +296,21 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   const paginationNextLabel = paginationContent.next ?? 'Next';
   const paginationPageLabel = paginationContent.page ?? 'Page';
   const loadMoreLabel = paginationContent.loadMore ?? 'Load more examples';
+  const longDescription =
+    locale === 'fr'
+      ? "Ces rendus vidéo IA couvrent selfie face caméra, plans d'établissement cinématographiques, packs produit, formats mobiles et boucles sociales. Comparez comment chaque moteur gère le mouvement, la lumière et la composition pour le storytelling, le marketing de performance, les lancements ou le contenu UGC. MaxVideoAI oriente vos prompts vers les meilleurs moteurs avec des prix transparents et des contrôles pro, pour passer du concept à l'export final dans un seul workspace."
+      : locale === 'es'
+        ? 'Estos renders de video IA cubren talking heads, planos generales cinematográficos, close-ups de producto, formatos móviles y bucles listos para redes. Compara cómo cada motor maneja movimiento, iluminación y composición para storytelling, performance marketing, lanzamientos o contenido UGC. MaxVideoAI dirige tus prompts al mejor motor con precios transparentes y controles pro para pasar de concepto a exportación final en un solo workspace.'
+        : 'These AI video renders cover a range of formats including selfie talking heads, cinematic establishing shots, product close-ups, mobile-first ads and social-ready loops. Explore how each engine handles motion, lighting and composition for storytelling, performance marketing, product launches or UGC-style content. MaxVideoAI routes your prompts to the best engines for your use case, with transparent pricing and pro-grade controls so creatives, studios and growth teams can move from concept to final export in a single workspace.';
+  const recentAccessTitle =
+    locale === 'fr' ? 'Accès direct aux rendus récents' : locale === 'es' ? 'Acceso directo a los renders recientes' : 'Direct access to recent renders';
+  const recentAccessBody =
+    locale === 'fr'
+      ? 'Ces liens garantissent que chaque exemple public listé dans notre sitemap reste accessible en HTML standard pour le crawl.'
+      : locale === 'es'
+        ? 'Estos enlaces garantizan que cada ejemplo público de nuestro sitemap sea accesible en HTML estándar para el rastreo.'
+        : 'These links ensure every public example listed in our sitemap is also reachable through standard HTML so search engines can explore them without JavaScript.';
+  const showLabel = locale === 'fr' ? 'Afficher' : locale === 'es' ? 'Mostrar' : 'Show';
   const HERO_BODY_FALLBACK =
     'Browse AI video examples generated with Sora 2, Veo 3.1, Pika 2.2, Kling, Wan and more. Each clip shows the prompt, format and duration so you can compare how different engines handle camera moves, product shots, selfies and cinematic storytelling in one gallery.';
   const heroBody =
@@ -645,27 +660,17 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
       ) : null}
 
         <section className="mt-10 max-w-4xl text-sm leading-relaxed text-text-secondary/90">
-          <p>
-            These AI video renders cover a range of formats including selfie talking heads, cinematic establishing shots,
-            product close-ups, mobile-first ads and social-ready loops. Explore how each engine handles motion, lighting
-            and composition for storytelling, performance marketing, product launches or UGC-style content. MaxVideoAI
-            routes your prompts to the best engines for your use case, with transparent pricing and pro-grade controls so
-            creatives, studios and growth teams can move from concept to final export in a single workspace.
-          </p>
+          <p>{longDescription}</p>
         </section>
 
         {videoLinkEntries.length ? (
           <details className="mt-10 rounded-[16px] border border-hairline bg-white/70 px-4 py-5 text-sm text-text-secondary/90">
             <summary className="flex cursor-pointer items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50">
-              <span className="text-base font-semibold text-text-primary">
-                Direct access to recent renders
-              </span>
-              <span className="text-xs uppercase tracking-micro text-text-muted">Show</span>
+              <span className="text-base font-semibold text-text-primary">{recentAccessTitle}</span>
+              <span className="text-xs uppercase tracking-micro text-text-muted">{showLabel}</span>
             </summary>
             <div className="mt-3">
-              <p className="text-xs text-text-muted">
-                These links ensure every public example listed in our sitemap is also reachable through standard HTML so search engines can explore them without JavaScript.
-              </p>
+              <p className="text-xs text-text-muted">{recentAccessBody}</p>
               <ul className="mt-4 grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
                 {videoLinkEntries.map((entry) => (
                   <li key={entry.id}>
