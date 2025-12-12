@@ -110,12 +110,15 @@ export function ImageCompositePreviewDock({
       </header>
 
       <div className="px-4 py-4">
-        <div className="relative w-full overflow-hidden rounded-[16px] border border-hairline bg-[#f2f4f8]" style={{ aspectRatio: aspectRatioCss ?? '1 / 1' }}>
+        <div
+          className="relative w-full overflow-hidden rounded-[16px] border border-hairline bg-[#f2f4f8] max-h-[320px] sm:max-h-[420px]"
+          style={{ aspectRatio: aspectRatioCss ?? '1 / 1' }}
+        >
           {selected ? (
             <img
               src={selected.url}
               alt={entry?.prompt ?? ''}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain"
               loading="lazy"
               referrerPolicy="no-referrer"
             />
@@ -125,7 +128,7 @@ export function ImageCompositePreviewDock({
         </div>
 
         {images.length > 1 ? (
-          <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
             {images.map((image, index) => {
               const isActive = index === safeIndex;
               const buttonLabel = `Take ${index + 1}`;
@@ -135,7 +138,7 @@ export function ImageCompositePreviewDock({
                   type="button"
                   onClick={() => onSelectIndex(index)}
                   className={clsx(
-                    'relative h-16 w-16 flex-none overflow-hidden rounded-[12px] border bg-white shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    'relative h-14 w-14 flex-none overflow-hidden rounded-[12px] border bg-white shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                     isActive ? 'border-accent' : 'border-border hover:border-accentSoft/60'
                   )}
                   aria-label={buttonLabel}
@@ -155,4 +158,3 @@ export function ImageCompositePreviewDock({
     </section>
   );
 }
-
