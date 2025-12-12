@@ -33,6 +33,16 @@ const PLACEHOLDER_THUMB = '/assets/frames/thumb-1x1.svg';
 const NANO_BANANA_IMAGE_ENGINE_IDS = new Set(['nano-banana', 'nano-banana-pro']);
 const SIGNED_REFERENCE_URL_TTL_SECONDS = 60 * 60;
 
+function normalizeFalResolution(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return trimmed;
+  // Fal Nano Banana Pro expects 1K/2K/4K (uppercase).
+  if (/^\d+k$/i.test(trimmed)) {
+    return trimmed.toUpperCase();
+  }
+  return trimmed;
+}
+
 type PendingReceipt = {
   userId: string;
   amountCents: number;
@@ -382,6 +392,7 @@ export async function POST(req: NextRequest) {
 
   const jobAspectRatio = resolvedAspectRatio ?? null;
   const falAspectRatio = resolvedAspectRatio && resolvedAspectRatio !== 'auto' ? resolvedAspectRatio : null;
+  const falResolution = shouldSendResolution ? normalizeFalResolution(resolution) : null;
 
   pricing.meta = {
     ...(pricing.meta ?? {}),
@@ -581,7 +592,7 @@ export async function POST(req: NextRequest) {
         num_images: numImages,
         ...(mode === 'i2i' ? { image_urls: resolvedReferenceUrls } : {}),
         ...(falAspectRatio ? { aspect_ratio: falAspectRatio } : {}),
-        ...(shouldSendResolution ? { resolution } : {}),
+        ...(falResolution ? { resolution: falResolution } : {}),
       },
       mode: 'polling',
       onEnqueue(requestId) {
