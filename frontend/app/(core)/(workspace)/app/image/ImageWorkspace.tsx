@@ -34,7 +34,6 @@ import {
 } from '@/lib/image/aspectRatios';
 import { resolveCssAspectRatio } from '@/lib/aspect';
 import { authFetch } from '@/lib/authFetch';
-import { triggerBrowserDownload } from '@/lib/download';
 
 const NANO_BANANA_ENGINE_IDS = new Set(['nano-banana', 'nano-banana-pro']);
 const NANO_BANANA_ALIAS_PREFIXES = ['fal-ai/nano-banana'];
@@ -1022,7 +1021,14 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   }, []);
 
   const handleDownload = useCallback((url: string) => {
-    void triggerBrowserDownload(url, { defaultExtension: 'png' });
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = '';
+    anchor.target = '_blank';
+    anchor.rel = 'noreferrer';
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
   }, []);
 
   const historyEntries = combinedHistory;
