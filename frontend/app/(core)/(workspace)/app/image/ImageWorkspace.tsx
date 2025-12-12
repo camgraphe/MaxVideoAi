@@ -5,6 +5,7 @@
 import clsx from 'clsx';
 import useSWR from 'swr';
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import Link from 'next/link';
 import deepmerge from 'deepmerge';
 import type {
   FormEvent,
@@ -13,6 +14,8 @@ import type {
   MouseEvent as ReactMouseEvent,
 } from 'react';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
+import { Card } from '@/components/ui/Card';
+import { Chip } from '@/components/ui/Chip';
 import { EngineSelect } from '@/components/ui/EngineSelect';
 import { runImageGeneration, useInfiniteJobs, saveImageToLibrary } from '@/lib/api';
 import type { ImageGenerationMode, GeneratedImage } from '@/types/image-generation';
@@ -20,6 +23,7 @@ import type { EngineCaps, EngineInputField } from '@/types/engines';
 import type { Job } from '@/types/jobs';
 import type { VideoGroup } from '@/types/video-groups';
 import type { MediaLightboxEntry } from '@/components/MediaLightbox';
+import { ImageCompositePreviewDock, type ImageCompositePreviewEntry } from '@/components/groups/ImageCompositePreviewDock';
 import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 import { buildVideoGroupFromImageRun } from '@/lib/image-groups';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -395,6 +399,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     Array(MAX_REFERENCE_SLOTS).fill(null)
   );
   const [localHistory, setLocalHistory] = useState<HistoryEntry[]>([]);
+  const [selectedPreviewEntryId, setSelectedPreviewEntryId] = useState<string | null>(null);
+  const [selectedPreviewImageIndex, setSelectedPreviewImageIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -405,7 +411,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     slotIndex: null,
   });
   const fileInputRefs = useRef<Array<HTMLInputElement | null>>([]);
-  const formRef = useRef<HTMLFormElement | null>(null);
   const [
     priceEstimateKey,
     setPriceEstimateKey,
@@ -581,11 +586,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     return formatCurrency(estimate, selectedEngine.currency);
   }, [numImages, pricingSnapshot, selectedEngine]);
 
-  const priceBadgeLabel = useMemo(
-    () => formatTemplate(resolvedCopy.engine.priceLabel, { amount: estimatedCostLabel }),
-    [estimatedCostLabel, resolvedCopy.engine.priceLabel]
-  );
-
   const {
     data: jobPages,
     isLoading: jobsLoading,
@@ -666,6 +666,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       })),
     });
     setViewerGroup(group);
+  }, []);
+
+  const handleSelectHistoryEntry = useCallback((entry: HistoryEntry) => {
+    setSelectedPreviewEntryId(entry.id);
+    setSelectedPreviewImageIndex(0);
   }, []);
 
   const closeViewer = useCallback(() => setViewerGroup(null), []);
@@ -923,10 +928,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     []
   );
 
-  const submitFromPreview = useCallback(() => {
-    formRef.current?.requestSubmit();
-  }, []);
-
   const handleRun = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -971,6 +972,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           aspectRatio: response.aspectRatio ?? appliedAspectRatio ?? null,
         };
         setLocalHistory((prev) => [entry, ...prev].slice(0, 24));
+        setSelectedPreviewEntryId(entry.id);
+        setSelectedPreviewImageIndex(0);
         const suffix = response.images.length === 1 ? '' : 's';
         setStatusMessage(
           formatTemplate(resolvedCopy.messages.success, { count: response.images.length, suffix })
@@ -1060,7 +1063,13 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       </main>
     );
   }
-  const previewEntry = historyEntries[0];
+  const previewEntry = (() => {
+    if (selectedPreviewEntryId) {
+      const match = historyEntries.find((entry) => entry.id === selectedPreviewEntryId);
+      if (match) return match;
+    }
+    return historyEntries[0];
+  })();
   const numImagesUnit =
     numImages === 1 ? resolvedCopy.composer.numImagesUnit.singular : resolvedCopy.composer.numImagesUnit.plural;
   const numImagesCountLabel = formatTemplate(resolvedCopy.composer.numImagesCount, {
@@ -1068,114 +1077,133 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     unit: numImagesUnit,
   });
   const promptCharCount = formatTemplate(resolvedCopy.composer.charCount, { count: prompt.length });
-  const estimatedCostText = formatTemplate(resolvedCopy.composer.estimatedCost, { amount: estimatedCostLabel });
   const historyCountLabel =
     historyEntries.length === 0
       ? resolvedCopy.history.runsLabel.zero
       : formatTemplate(resolvedCopy.history.runsLabel.other, { count: historyEntries.length });
   const aspectRatioOptions = isNanoBanana ? getNanoBananaAspectRatios(mode) : [];
   const selectedAspectRatioLabel = formatAspectRatioLabel(aspectRatio);
-  const previewPrimaryImage = previewEntry?.images?.[0];
-  const previewAspectRatioCss = resolveCssAspectRatio({
-    value: previewEntry?.aspectRatio ?? null,
-    width: previewPrimaryImage?.width ?? null,
-    height: previewPrimaryImage?.height ?? null,
-    fallback: '1 / 1',
-  });
-  const previewAspectRatioLabel = formatAspectRatioLabel(previewEntry?.aspectRatio ?? null);
+  const compositePreviewEntry: ImageCompositePreviewEntry | null = previewEntry
+    ? {
+        id: previewEntry.id,
+        engineLabel: previewEntry.engineLabel,
+        prompt: previewEntry.prompt,
+        createdAt: previewEntry.createdAt,
+        mode: previewEntry.mode,
+        aspectRatio: previewEntry.aspectRatio ?? null,
+        images: previewEntry.images,
+      }
+    : null;
+  const composerPriceLabelTemplate = t('workspace.generate.composer.priceLabel', 'This render: {amount}') as string;
+  const composerPriceLabel = composerPriceLabelTemplate.replace('{amount}', estimatedCostLabel);
+  const galleryTitle = t('workspace.generate.galleryRail.title', 'Latest renders') as string;
+  const galleryViewAll = t('workspace.generate.galleryRail.viewAll', 'View all') as string;
+  const galleryOpen = t('workspace.image.preview.openModal', 'Open') as string;
 
   return (
     <>
       <div className="flex w-full flex-1 flex-col overflow-hidden">
         <main className="flex w-full flex-1 flex-col gap-6 p-4 sm:p-6">
-          <section className="rounded-[32px] border border-white/30 bg-white/80 p-6 shadow-card">
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">{resolvedCopy.hero.eyebrow}</p>
-            <h1 className="mt-2 text-3xl font-semibold text-text-primary">{resolvedCopy.hero.title}</h1>
-            <p className="mt-1 text-sm text-text-secondary">{resolvedCopy.hero.subtitle}</p>
-          </section>
-          <div className="grid gap-6 xl:grid-cols-[400px,1fr] xl:items-start">
-            <section className="order-1 rounded-[24px] border border-white/20 bg-white/70 p-6 shadow-card xl:col-start-2 xl:row-start-1">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">{resolvedCopy.preview.eyebrow}</p>
-                  <h2 className="text-2xl font-semibold text-text-primary">{resolvedCopy.preview.title}</h2>
-                </div>
-                {previewEntry ? <span className="text-xs text-text-secondary">{formatTimestamp(previewEntry.createdAt)}</span> : null}
-              </div>
-              <div className="mt-4 rounded-2xl border border-white/60 bg-white/80 p-4">
-                {previewEntry?.images[0] ? (
-                  <div className="flex flex-col gap-3 lg:flex-row">
-                    <div className="flex-1">
-                      <div
-                        className="relative overflow-hidden rounded-2xl bg-[#f2f4f8]"
-                        style={{ aspectRatio: previewAspectRatioCss ?? '1 / 1' }}
-                      >
-                        <img
-                          src={previewEntry.images[0].url}
-                          alt={previewEntry.prompt}
-                          className="h-full w-full object-cover"
-                          loading="lazy"
-                          referrerPolicy="no-referrer"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex-1 space-y-2 text-sm text-text-secondary">
-                      <p className="font-semibold text-text-primary">{previewEntry.engineLabel}</p>
-                      <p className="text-text-secondary">{previewEntry.prompt}</p>
-                      <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.25em] text-text-muted">
-                        <span>{previewEntry.mode === 't2i' ? resolvedCopy.modeTabs.generate : resolvedCopy.modeTabs.edit}</span>
-                        {previewAspectRatioLabel ? (
-                          <span className="rounded-full bg-text-primary/10 px-2 py-0.5 text-[9px] font-semibold text-text-primary">
-                            {previewAspectRatioLabel}
-                          </span>
-                        ) : null}
-                      </div>
-                      <div className="flex gap-2 pt-2">
-                        <button
-                          type="button"
-                          onClick={() => handleDownload(previewEntry.images[0].url)}
-                          className="rounded-full bg-text-primary/10 px-3 py-1 text-[11px] font-semibold text-text-primary"
-                        >
-                          {resolvedCopy.preview.download}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleCopy(previewEntry.images[0].url)}
-                          className="rounded-full border border-text-primary/20 px-3 py-1 text-[11px] font-semibold text-text-primary"
-                        >
-                          {copiedUrl === previewEntry.images[0].url ? resolvedCopy.preview.copied : resolvedCopy.preview.copy}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-hairline bg-white/60 px-6 py-12 text-center text-sm text-text-secondary">
-                    <p>{resolvedCopy.preview.emptyTitle}</p>
-                    <p className="text-xs text-text-muted">{resolvedCopy.preview.emptyDescription}</p>
-                  </div>
-                )}
-              </div>
-              <div className="mt-4 flex justify-end">
-                <button
-                  type="button"
-                  disabled={isGenerating}
-                  onClick={submitFromPreview}
-                  className={clsx(
-                    'inline-flex items-center rounded-full bg-text-primary px-4 py-2 text-sm font-semibold text-white shadow-card transition',
-                    isGenerating ? 'opacity-60' : 'hover:bg-text-secondary'
-                  )}
-                >
-                  {isGenerating ? resolvedCopy.runButton.running : resolvedCopy.preview.cta}
-                </button>
-              </div>
-            </section>
+	          <header className="flex flex-wrap items-end justify-between gap-3 rounded-card border border-border bg-white/80 px-5 py-4 shadow-card">
+	            <div>
+	              <p className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">{resolvedCopy.hero.eyebrow}</p>
+	              <h1 className="mt-1 text-2xl font-semibold text-text-primary">{resolvedCopy.hero.title}</h1>
+	              <p className="mt-1 text-sm text-text-secondary">{resolvedCopy.hero.subtitle}</p>
+	            </div>
+	          </header>
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr),400px] xl:items-start">
+            <div className="space-y-6">
+              <ImageCompositePreviewDock
+                entry={compositePreviewEntry}
+                selectedIndex={selectedPreviewImageIndex}
+                onSelectIndex={setSelectedPreviewImageIndex}
+                onOpenModal={previewEntry ? () => handleOpenHistoryEntry(previewEntry) : undefined}
+                onDownload={handleDownload}
+                onCopyLink={handleCopy}
+                copiedUrl={copiedUrl}
+              />
 
-            <form
-              ref={formRef}
-              className="order-2 rounded-[24px] border border-white/10 bg-white/70 p-6 shadow-card backdrop-blur xl:col-start-1 xl:row-span-2"
-              onSubmit={handleRun}
-            >
-            <div className="flex flex-col gap-6">
+	              <form onSubmit={handleRun}>
+                <Card className="space-y-4 p-5">
+                  <header className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <h2 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">
+                        {resolvedCopy.composer.promptLabel}
+                      </h2>
+                      {mode === 'i2i' && referenceMinRequired > 0 && readyReferenceUrls.length < referenceMinRequired ? (
+                        <p className="mt-1 text-[12px] text-state-warning">{resolvedCopy.errors.referenceMissing}</p>
+                      ) : null}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
+                      <Chip variant={pricingValidating ? 'ghost' : 'accent'} className="px-3 py-1.5">
+                        {pricingValidating ? resolvedCopy.engine.priceCalculating : composerPriceLabel}
+                      </Chip>
+                    </div>
+                  </header>
+
+                  {pricingError ? <p className="text-[12px] text-state-warning">{pricingError.message}</p> : null}
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-text-primary">{resolvedCopy.composer.promptLabel}</span>
+                        <span className="rounded-full border border-accent px-2 py-0.5 text-[10px] uppercase tracking-micro text-accent">
+                          {t('workspace.generate.composer.labels.required', 'Required')}
+                        </span>
+                      </div>
+                      <span className="text-xs text-text-muted">{promptCharCount}</span>
+                    </div>
+                    <textarea
+                      id="prompt"
+                      className="w-full rounded-input border border-border bg-white px-4 py-3 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      placeholder={resolvedCopy.composer.promptPlaceholder}
+                      value={prompt}
+                      onChange={(event) => setPrompt(event.target.value)}
+                      rows={6}
+                    />
+                    {selectedEngine.prompts.length ? (
+                      <div className="flex flex-wrap gap-2">
+                        {selectedEngine.prompts.map((preset) => (
+                          <button
+                            key={`${preset.title}-${preset.mode}`}
+                            type="button"
+                            onClick={() => handlePreset(preset)}
+                            className="rounded-full border border-hairline bg-white/80 px-3 py-1 text-xs font-medium text-text-secondary transition hover:border-accentSoft/60 hover:bg-accentSoft/10 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            {preset.title}
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {error ? (
+                    <p className="rounded-card border border-state-warning/40 bg-state-warning/10 px-3 py-2 text-sm text-state-warning">
+                      {error}
+                    </p>
+                  ) : null}
+
+                  {statusMessage ? (
+                    <p className="rounded-card border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                      {statusMessage}
+                    </p>
+                  ) : null}
+
+                  <button
+                    type="submit"
+                    disabled={isGenerating}
+                    className={clsx(
+                      'inline-flex w-full items-center justify-center rounded-input bg-accent px-5 py-3 text-sm font-semibold text-white shadow-card transition',
+                      isGenerating ? 'opacity-60' : 'hover:bg-accent/90'
+                    )}
+                  >
+                    {isGenerating ? resolvedCopy.runButton.running : resolvedCopy.runButton.idle}
+                  </button>
+                </Card>
+              </form>
+            </div>
+
+	            <Card className="space-y-6 p-6 xl:self-start">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">{resolvedCopy.engine.eyebrow}</p>
                 <div className="mt-2 flex flex-col gap-3">
@@ -1192,43 +1220,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                     }}
                     showBillingNote={false}
                   />
-                  <span className="inline-flex items-center gap-2 rounded-full bg-accentSoft/15 px-3 py-1 text-xs font-semibold text-accent">
-                    {pricingValidating ? resolvedCopy.engine.priceCalculating : priceBadgeLabel}
-                  </span>
-                  {pricingError ? (
-                    <p className="text-xs text-state-warning">{pricingError.message}</p>
-                  ) : null}
                 </div>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between">
-                  <label htmlFor="prompt" className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
-                    {resolvedCopy.composer.promptLabel}
-                  </label>
-                  <span className="text-xs text-text-secondary">{promptCharCount}</span>
-                </div>
-                <textarea
-                  id="prompt"
-                  className="mt-2 min-h-[140px] w-full rounded-2xl border border-hairline bg-white/80 px-4 py-3 text-sm text-text-primary outline-none focus:border-accent"
-                  placeholder={resolvedCopy.composer.promptPlaceholder}
-                  value={prompt}
-                  onChange={(event) => setPrompt(event.target.value)}
-                />
-                {selectedEngine.prompts.length ? (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {selectedEngine.prompts.map((preset) => (
-                      <button
-                        key={`${preset.title}-${preset.mode}`}
-                        type="button"
-                        onClick={() => handlePreset(preset)}
-                        className="rounded-full border border-hairline px-3 py-1 text-xs font-medium text-text-secondary transition hover:border-accent hover:text-text-primary"
-                      >
-                        {preset.title}
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
               </div>
 
               <SectionDivider />
@@ -1262,7 +1254,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-text-secondary">{estimatedCostText}</p>
               </section>
 
               {isNanoBanana ? (
@@ -1477,151 +1468,149 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                     </div>
                   ))}
                 </div>
-                <p className="mt-2 text-xs text-text-secondary">{resolvedCopy.composer.referenceNote}</p>
-              </section>
+	                <p className="mt-2 text-xs text-text-secondary">{resolvedCopy.composer.referenceNote}</p>
+	              </section>
+	            </Card>
+          </div>
 
-              {error && (
-                <p className="rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
-                  {error}
-                </p>
-              )}
-
-              {statusMessage && (
-                <p className="rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-                  {statusMessage}
-                </p>
-              )}
-
-              <button
-                type="submit"
-                disabled={isGenerating}
-                className={clsx(
-                  'inline-flex items-center justify-center rounded-2xl bg-text-primary px-5 py-3 text-sm font-semibold text-white transition',
-                  isGenerating ? 'opacity-60' : 'hover:bg-text-secondary'
-                )}
-              >
-                {isGenerating ? resolvedCopy.runButton.running : resolvedCopy.runButton.idle}
-              </button>
-            </div>
-            </form>
-
-            <div className="order-3 rounded-[24px] border border-dashed border-white/20 bg-white/60 p-6 shadow-inner xl:col-start-2 xl:row-start-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">{resolvedCopy.history.eyebrow}</p>
-                  <h2 className="text-2xl font-semibold text-text-primary">{selectedEngine.name}</h2>
-                </div>
-                <span className="text-xs text-text-secondary">{historyCountLabel}</span>
+          <Card className="p-5">
+            <header className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-text-primary">{galleryTitle}</h2>
+                <p className="mt-1 text-xs text-text-muted">{historyCountLabel}</p>
               </div>
-              {historyEntries.length === 0 ? (
-                <div className="mt-8 rounded-2xl border border-white/50 bg-white/70 p-8 text-center text-sm text-text-secondary">
-                  {resolvedCopy.history.empty}
-                </div>
-              ) : (
-                <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {visibleHistoryEntries.map((entry) => {
-                    const displayImages = entry.images.slice(0, 4);
-                    const entryAspectRatioLabel = formatAspectRatioLabel(entry.aspectRatio ?? null);
-                    return (
-                      <div
-                        key={entry.id}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => handleOpenHistoryEntry(entry)}
-                        onKeyDown={(event) => {
-                          if (event.key === 'Enter' || event.key === ' ') {
+              <Link
+                href="/jobs"
+                className="rounded-input border border-border bg-white px-4 py-2 text-sm font-semibold text-text-secondary transition hover:border-accentSoft/60 hover:bg-accentSoft/10 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {galleryViewAll}
+              </Link>
+            </header>
+
+            {historyEntries.length === 0 ? (
+              <div className="mt-4 rounded-card border border-dashed border-border bg-white/60 p-8 text-center text-sm text-text-secondary">
+                {resolvedCopy.history.empty}
+              </div>
+            ) : (
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {visibleHistoryEntries.map((entry) => {
+                  const displayImages = entry.images.slice(0, 4);
+                  const entryAspectRatioLabel = formatAspectRatioLabel(entry.aspectRatio ?? null);
+                  const isSelected = previewEntry?.id === entry.id;
+                  return (
+                    <div
+                      key={entry.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => handleSelectHistoryEntry(entry)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          handleSelectHistoryEntry(entry);
+                        }
+                      }}
+                      className={clsx(
+                        'cursor-pointer overflow-hidden rounded-card border bg-white shadow-card transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                        isSelected ? 'border-accent' : 'border-border hover:border-accentSoft/60'
+                      )}
+                    >
+                      <div className="relative bg-[#f2f4f8] p-1">
+                        <button
+                          type="button"
+                          onClick={(event) => {
                             event.preventDefault();
+                            event.stopPropagation();
                             handleOpenHistoryEntry(entry);
-                          }
-                        }}
-                        className="cursor-pointer rounded-2xl border border-white/40 bg-white/80 shadow-card transition hover:border-text-primary"
-                      >
-                        <div className="rounded-t-2xl bg-[#f2f4f8] p-1">
-                          {displayImages.length ? (
-                            <div className="grid grid-cols-2 gap-1">
-                              {displayImages.map((image, index) => (
-                                <div
-                                  key={`${entry.id}-${index}`}
-                                  className="relative overflow-hidden rounded-xl bg-neutral-900/5"
-                                  style={{
-                                    aspectRatio: resolveCssAspectRatio({
-                                      value: entry.aspectRatio ?? null,
-                                      width: image.width ?? null,
-                                      height: image.height ?? null,
-                                      fallback: '1 / 1',
-                                    }),
-                                  }}
-                                >
-                                  <img
-                                    src={image.url}
-                                    alt={entry.prompt}
-                                    className="h-full w-full object-cover"
-                                    loading="lazy"
-                                    referrerPolicy="no-referrer"
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="flex aspect-square items-center justify-center text-xs text-text-secondary">
-                              {resolvedCopy.history.noPreview}
-                            </div>
-                          )}
-                        </div>
-                        <div className="space-y-2 border-t border-white/60 px-4 py-3 text-xs text-text-secondary">
-                          <p className="font-semibold text-text-primary">{entry.engineLabel}</p>
-                          <p className="line-clamp-2 text-text-secondary">{entry.prompt}</p>
-                          <div className="flex flex-wrap items-center gap-2 text-[11px] text-text-muted">
-                            <span>{entry.mode === 't2i' ? resolvedCopy.modeTabs.generate : resolvedCopy.modeTabs.edit}</span>
-                            {entryAspectRatioLabel ? (
-                              <span className="rounded-full bg-text-primary/10 px-2 py-0.5 text-[9px] font-semibold text-text-primary">
-                                {entryAspectRatioLabel}
-                              </span>
-                            ) : null}
+                          }}
+                          className="absolute right-3 top-3 rounded-full border border-white/70 bg-white/90 px-3 py-1 text-[11px] font-semibold text-text-secondary shadow-sm transition hover:text-text-primary"
+                        >
+                          {galleryOpen}
+                        </button>
+                        {displayImages.length ? (
+                          <div className="grid grid-cols-2 gap-1">
+                            {displayImages.map((image, index) => (
+                              <div
+                                key={`${entry.id}-${index}`}
+                                className="relative overflow-hidden rounded-[12px] bg-neutral-900/5"
+                                style={{
+                                  aspectRatio: resolveCssAspectRatio({
+                                    value: entry.aspectRatio ?? null,
+                                    width: image.width ?? null,
+                                    height: image.height ?? null,
+                                    fallback: '1 / 1',
+                                  }),
+                                }}
+                              >
+                                <img
+                                  src={image.url}
+                                  alt={entry.prompt}
+                                  className="h-full w-full object-cover"
+                                  loading="lazy"
+                                  referrerPolicy="no-referrer"
+                                />
+                              </div>
+                            ))}
                           </div>
-                          <span className="block text-[11px] text-text-muted">{formatTimestamp(entry.createdAt)}</span>
+                        ) : (
+                          <div className="flex aspect-square items-center justify-center text-xs text-text-secondary">
+                            {resolvedCopy.history.noPreview}
+                          </div>
+                        )}
+                      </div>
+                      <div className="space-y-2 border-t border-border px-4 py-3 text-xs text-text-secondary">
+                        <p className="font-semibold text-text-primary">{entry.engineLabel}</p>
+                        <p className="line-clamp-2 text-text-secondary">{entry.prompt}</p>
+                        <div className="flex flex-wrap items-center gap-2 text-[11px] text-text-muted">
+                          <span>{entry.mode === 't2i' ? resolvedCopy.modeTabs.generate : resolvedCopy.modeTabs.edit}</span>
+                          {entryAspectRatioLabel ? (
+                            <span className="rounded-full bg-text-primary/10 px-2 py-0.5 text-[9px] font-semibold text-text-primary">
+                              {entryAspectRatioLabel}
+                            </span>
+                          ) : null}
                         </div>
+                        <span className="block text-[11px] text-text-muted">{formatTimestamp(entry.createdAt)}</span>
+                      </div>
                     </div>
                   );
                 })}
               </div>
-              )}
-              {jobsLoading && historyEntries.length === 0 && (
-                <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {Array.from({ length: 6 }).map((_, index) => (
-                    <div key={`history-skeleton-${index}`} className="rounded-2xl border border-white/40 bg-white/60 p-0" aria-hidden>
-                      <div className="relative aspect-square overflow-hidden rounded-t-2xl bg-neutral-100">
-                        <div className="skeleton absolute inset-0" />
-                      </div>
-                      <div className="border-t border-white/60 px-4 py-3">
-                        <div className="h-3 w-24 rounded-full bg-neutral-200" />
-                      </div>
+            )}
+
+            {jobsLoading && historyEntries.length === 0 && (
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div key={`history-skeleton-${index}`} className="rounded-card border border-border bg-white/60 p-0" aria-hidden>
+                    <div className="relative aspect-square overflow-hidden rounded-t-card bg-neutral-100">
+                      <div className="skeleton absolute inset-0" />
                     </div>
-                  ))}
-                </div>
-              )}
-              {jobsValidating && historyEntries.length > 0 && (
-                <div className="mt-4 text-center text-xs text-text-secondary">{resolvedCopy.history.refreshing}</div>
-              )}
-              {shouldShowLoadMore && (
-                <div className="mt-4 flex justify-center">
-                  <button
-                    type="button"
-                    onClick={handleLoadMoreHistory}
-                    disabled={!hasLocalHistoryMore && hasRemoteNextPage && jobsValidating}
-                    className={clsx(
-                      'rounded-full border border-white/60 px-4 py-2 text-xs font-semibold text-text-primary',
-                      !hasLocalHistoryMore && hasRemoteNextPage && jobsValidating
-                        ? 'opacity-60'
-                        : 'hover:bg-white/80'
-                    )}
-                  >
-                    {resolvedCopy.history.loadMore}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+                    <div className="border-t border-border px-4 py-3">
+                      <div className="h-3 w-24 rounded-full bg-neutral-200" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {jobsValidating && historyEntries.length > 0 && (
+              <div className="mt-4 text-center text-xs text-text-secondary">{resolvedCopy.history.refreshing}</div>
+            )}
+
+            {shouldShowLoadMore && (
+              <div className="mt-4 flex justify-center">
+                <button
+                  type="button"
+                  onClick={handleLoadMoreHistory}
+                  disabled={!hasLocalHistoryMore && hasRemoteNextPage && jobsValidating}
+                  className={clsx(
+                    'rounded-full border border-border px-4 py-2 text-xs font-semibold text-text-primary',
+                    !hasLocalHistoryMore && hasRemoteNextPage && jobsValidating ? 'opacity-60' : 'hover:bg-white/80'
+                  )}
+                >
+                  {resolvedCopy.history.loadMore}
+                </button>
+              </div>
+            )}
+          </Card>
         </main>
       </div>
     {viewerGroup ? (
