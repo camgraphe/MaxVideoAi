@@ -688,7 +688,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
               <div>
                 <h2 className="text-lg font-semibold text-text-primary">
                   {locale === 'fr'
-                    ? \"Plus d'exemples vidéo IA\"
+                    ? "Plus d'exemples vidéo IA"
                     : locale === 'es'
                       ? 'Más ejemplos de video IA'
                       : 'More AI video examples'}
