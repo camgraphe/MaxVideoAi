@@ -1104,13 +1104,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     <>
       <div className="flex w-full flex-1 flex-col overflow-hidden">
         <main className="flex w-full flex-1 flex-col gap-6 p-4 sm:p-6">
-	          <header className="flex flex-wrap items-end justify-between gap-3 rounded-card border border-border bg-white/80 px-5 py-4 shadow-card">
-	            <div>
-	              <p className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">{resolvedCopy.hero.eyebrow}</p>
-	              <h1 className="mt-1 text-2xl font-semibold text-text-primary">{resolvedCopy.hero.title}</h1>
-	              <p className="mt-1 text-sm text-text-secondary">{resolvedCopy.hero.subtitle}</p>
-	            </div>
-	          </header>
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr),400px] xl:items-start">
             <div className="space-y-6">
               <ImageCompositePreviewDock
@@ -1123,7 +1116,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                 copiedUrl={copiedUrl}
               />
 
-	              <form onSubmit={handleRun}>
+              <form onSubmit={handleRun}>
                 <Card className="space-y-4 p-5">
                   <header className="flex flex-wrap items-center justify-between gap-3">
                     <div>
