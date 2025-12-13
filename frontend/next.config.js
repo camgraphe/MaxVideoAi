@@ -55,6 +55,12 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/storyboard-sora-pro',
+        has: [{ type: 'host', value: 'blog.maxvideoai.com' }],
+        destination: 'https://maxvideoai.com/blog/sora-2-sequenced-prompts',
+        statusCode: 301,
+      },
+      {
         source: '/fr/pricing-calculator',
         destination: '/fr/tarifs',
         statusCode: 301,
