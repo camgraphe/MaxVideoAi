@@ -57,6 +57,33 @@ const DEFAULT_GALLERY_COPY = {
 type GalleryCopy = typeof DEFAULT_GALLERY_COPY;
 const DEFAULT_GROUP_PROVIDER: ResultProvider = 'fal';
 
+const PINNED_GROUPS_STORAGE_KEY = 'maxvideoai:galleryRail:pinned-groups:v1';
+const MAX_PINNED_GROUPS = 40;
+
+function stripJobsFromGroup(group: GroupSummary): GroupSummary {
+  const strippedHero = group.hero ? { ...group.hero, job: undefined } : group.hero;
+  return {
+    ...group,
+    source: 'history',
+    hero: strippedHero,
+    members: group.members.map((member) => ({ ...member, job: undefined })),
+  };
+}
+
+function safeParsePinnedGroups(raw: string | null): GroupSummary[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((entry): entry is GroupSummary => Boolean(entry && typeof entry === 'object'))
+      .map((entry) => entry as GroupSummary)
+      .filter((entry) => typeof entry.id === 'string' && entry.id.length > 0 && typeof entry.createdAt === 'string');
+  } catch {
+    return [];
+  }
+}
+
 export function GalleryRail({
   engine,
   activeGroups = [],
@@ -67,10 +94,13 @@ export function GalleryRail({
 }: Props) {
   const { t } = useI18n();
   const copy = t('workspace.generate.galleryRail', DEFAULT_GALLERY_COPY) as GalleryCopy;
-  const { data, error, isLoading, isValidating, setSize, mutate } = useInfiniteJobs(24, { type: 'video' });
+  const { data, error, isLoading, isValidating, setSize, mutate, stableJobs } = useInfiniteJobs(24, { type: 'video' });
   const { data: enginesData } = useEngines();
   const engineList = useMemo(() => enginesData?.engines ?? [], [enginesData?.engines]);
-  const jobs = useMemo(() => data?.flatMap((page) => page.jobs) ?? [], [data]);
+  const jobs = useMemo(() => {
+    if (Array.isArray(stableJobs) && stableJobs.length) return stableJobs;
+    return data?.flatMap((page) => page.jobs) ?? [];
+  }, [data, stableJobs]);
   const filteredJobs = useMemo(() => {
     if (!jobFilter) return jobs;
     return jobs.filter(jobFilter);
@@ -110,10 +140,73 @@ export function GalleryRail({
     () => normalizeGroupSummaries(historicalGroups),
     [historicalGroups]
   );
-  const combinedGroups = useMemo(
-    () => [...normalizedActiveGroups, ...normalizedHistoricalGroups],
-    [normalizedActiveGroups, normalizedHistoricalGroups]
-  );
+  const [pinnedGroups, setPinnedGroups] = useState<{
+    byId: Record<string, GroupSummary>;
+    order: string[];
+  }>({ byId: {}, order: [] });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const restored = safeParsePinnedGroups(window.sessionStorage.getItem(PINNED_GROUPS_STORAGE_KEY));
+    if (!restored.length) return;
+    setPinnedGroups(() => {
+      const byId: Record<string, GroupSummary> = {};
+      restored.forEach((group) => {
+        if (!group?.id) return;
+        byId[group.id] = stripJobsFromGroup(group);
+      });
+      const order = Object.keys(byId)
+        .sort((a, b) => {
+          const timeA = Date.parse(byId[a]?.createdAt ?? '');
+          const timeB = Date.parse(byId[b]?.createdAt ?? '');
+          return (Number.isFinite(timeB) ? timeB : 0) - (Number.isFinite(timeA) ? timeA : 0);
+        })
+        .slice(0, MAX_PINNED_GROUPS);
+      return { byId, order };
+    });
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!normalizedActiveGroups.length) return;
+    setPinnedGroups((prev) => {
+      const byId = { ...prev.byId };
+      normalizedActiveGroups.forEach((group) => {
+        if (!group?.id) return;
+        byId[group.id] = stripJobsFromGroup(group);
+      });
+      const order = Object.keys(byId)
+        .sort((a, b) => {
+          const timeA = Date.parse(byId[a]?.createdAt ?? '');
+          const timeB = Date.parse(byId[b]?.createdAt ?? '');
+          return (Number.isFinite(timeB) ? timeB : 0) - (Number.isFinite(timeA) ? timeA : 0);
+        })
+        .slice(0, MAX_PINNED_GROUPS);
+      try {
+        const payload = JSON.stringify(order.map((id) => byId[id]).filter(Boolean));
+        window.sessionStorage.setItem(PINNED_GROUPS_STORAGE_KEY, payload);
+      } catch {
+        // ignore storage errors
+      }
+      return { byId, order };
+    });
+  }, [normalizedActiveGroups]);
+
+  const pinnedGapGroups = useMemo(() => {
+    if (!pinnedGroups.order.length) return [];
+    const visible = new Set<string>([...normalizedActiveGroups, ...normalizedHistoricalGroups].map((g) => g.id));
+    return pinnedGroups.order
+      .map((id) => pinnedGroups.byId[id])
+      .filter((group): group is GroupSummary => Boolean(group && group.id && !visible.has(group.id)));
+  }, [normalizedActiveGroups, normalizedHistoricalGroups, pinnedGroups.byId, pinnedGroups.order]);
+
+  const combinedGroups = useMemo(() => {
+    const nonCurated = [...normalizedActiveGroups, ...pinnedGapGroups, ...normalizedHistoricalGroups].filter(
+      (group) => !group.hero.job?.curated
+    );
+    if (nonCurated.length) return nonCurated;
+    return [...normalizedActiveGroups, ...normalizedHistoricalGroups];
+  }, [normalizedActiveGroups, normalizedHistoricalGroups, pinnedGapGroups]);
   const [viewerGroup, setViewerGroup] = useState<VideoGroup | null>(null);
 
   const lastPage = data?.[data.length - 1];
@@ -122,6 +215,23 @@ export function GalleryRail({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [snackbar, setSnackbar] = useState<SnackbarState | null>(null);
   const isDesktopVariant = variant === 'desktop';
+  const removePinnedGroup = useCallback((groupId: string) => {
+    setPinnedGroups((prev) => {
+      if (!prev.byId[groupId]) return prev;
+      const rest = { ...prev.byId };
+      delete rest[groupId];
+      const order = prev.order.filter((id) => id !== groupId);
+      if (typeof window !== 'undefined') {
+        try {
+          const payload = JSON.stringify(order.map((id) => rest[id]).filter(Boolean));
+          window.sessionStorage.setItem(PINNED_GROUPS_STORAGE_KEY, payload);
+        } catch {
+          // ignore storage errors
+        }
+      }
+      return { byId: rest, order };
+    });
+  }, []);
   const handleRemoveJob = useCallback(
     async (job: Job) => {
       if (job.curated) {
@@ -149,18 +259,46 @@ export function GalleryRail({
     [copy.snackbar.failed, copy.snackbar.removed, copy.snackbar.samples, mutate]
   );
 
+  const handleRemoveJobId = useCallback(
+    async (jobId: string) => {
+      try {
+        await hideJob(jobId);
+        setSnackbar({ message: copy.snackbar.removed, duration: 2400 });
+        await mutate(
+          (pages) => {
+            if (!pages) return pages;
+            return pages.map((page) => ({
+              ...page,
+              jobs: page.jobs.filter((entry) => entry.jobId !== jobId),
+            }));
+          },
+          false
+        );
+      } catch (error) {
+        console.error('Failed to hide job', error);
+        setSnackbar({ message: copy.snackbar.failed, duration: 2400 });
+      }
+    },
+    [copy.snackbar.failed, copy.snackbar.removed, mutate]
+  );
+
   const handleRemoveGroup = useCallback(
     (group: GroupSummary) => {
-      if (group.source === 'active' || group.count > 1) return;
-      const job = group.hero.job;
-      if (!job) return;
-      if (job.curated) {
+      if (activeGroupIds.has(group.id) || group.count > 1) return;
+      const jobId = group.hero.job?.jobId ?? group.hero.jobId;
+      if (!jobId) return;
+      if (group.hero.job?.curated) {
         setSnackbar({ message: copy.snackbar.samples, duration: 2400 });
         return;
       }
-      void handleRemoveJob(job);
+      removePinnedGroup(group.id);
+      if (group.hero.job) {
+        void handleRemoveJob(group.hero.job);
+        return;
+      }
+      void handleRemoveJobId(jobId);
     },
-    [copy.snackbar.samples, handleRemoveJob]
+    [activeGroupIds, copy.snackbar.samples, handleRemoveJob, handleRemoveJobId, removePinnedGroup]
   );
 
   const engineMap = useMemo(() => {
@@ -206,9 +344,9 @@ export function GalleryRail({
       const original = summaryIndex.get(group.id) ?? group;
       const job = original.hero.job;
       if (job?.curated) return false;
-      return original.source !== 'active' && original.count <= 1;
+      return !activeGroupIds.has(group.id) && original.count <= 1;
     },
-    [summaryIndex]
+    [activeGroupIds, summaryIndex]
   );
 
   const loadMore = useCallback(() => {
@@ -252,13 +390,13 @@ export function GalleryRail({
 
   const cards = (
     <>
-      {combinedGroups.map((group, index) => {
+      {combinedGroups.map((group) => {
         const engineId = group.hero.engineId;
         const engineEntry = engineId ? engineMap.get(engineId) ?? null : null;
         const curated = Boolean(group.hero.job?.curated);
         return (
           <GroupedJobCard
-            key={`${group.id}-${index}`}
+            key={group.id}
             group={group}
             engine={engineEntry ?? undefined}
             onOpen={handleCardOpen}

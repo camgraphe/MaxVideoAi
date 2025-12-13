@@ -238,6 +238,10 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType })
   const feedType: JobFeedType =
     options?.type === 'image' || options?.type === 'video' ? options.type : 'all';
   const lastRevalidateRef = useRef<number>(0);
+  const [stableStore, setStableStore] = useState<{
+    byId: Record<string, Job>;
+    order: string[];
+  }>({ byId: {}, order: [] });
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -258,6 +262,10 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType })
       subscription.data?.subscription?.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    setStableStore({ byId: {}, order: [] });
+  }, [cacheKey, feedType]);
 
   const getJobsKey = (index: number, previousPage: JobsPage | null | undefined): JobsKey | null => {
     if (!cacheKey) return null;
@@ -376,6 +384,88 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType })
   }, [mutate]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<{ jobId?: string }>).detail;
+      const jobId = typeof detail?.jobId === 'string' ? detail.jobId : '';
+      if (!jobId) return;
+      setStableStore((prev) => {
+        if (!prev.byId[jobId]) return prev;
+        const rest = { ...prev.byId };
+        delete rest[jobId];
+        const order = prev.order.filter((id) => id !== jobId);
+        return { byId: rest, order };
+      });
+      void mutate(
+        (pages) => {
+          if (!pages) return pages;
+          return pages.map((page) => ({ ...page, jobs: page.jobs.filter((job) => job.jobId !== jobId) }));
+        },
+        { revalidate: false }
+      );
+    };
+    window.addEventListener('jobs:hidden', handler as EventListener);
+    return () => window.removeEventListener('jobs:hidden', handler as EventListener);
+  }, [mutate]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const jobs = swr.data?.flatMap((page) => page.jobs) ?? [];
+    if (!jobs.length) return;
+
+    setStableStore((prev) => {
+      const byId: Record<string, Job> = { ...prev.byId };
+      let sawRealJob = false;
+      jobs.forEach((job) => {
+        if (!job?.jobId) return;
+        if (!job.curated) {
+          sawRealJob = true;
+        }
+        const existing = byId[job.jobId];
+        if (!existing) {
+          byId[job.jobId] = job;
+          return;
+        }
+
+        const merged: Job = { ...existing, ...job };
+        if (job.thumbUrl == null && existing.thumbUrl != null) merged.thumbUrl = existing.thumbUrl;
+        if (job.videoUrl == null && existing.videoUrl != null) merged.videoUrl = existing.videoUrl;
+        if (job.readyVideoUrl == null && existing.readyVideoUrl != null) merged.readyVideoUrl = existing.readyVideoUrl;
+        if (job.previewFrame == null && existing.previewFrame != null) merged.previewFrame = existing.previewFrame;
+        if (job.renderIds == null && existing.renderIds != null) merged.renderIds = existing.renderIds;
+        if (job.heroRenderId == null && existing.heroRenderId != null) merged.heroRenderId = existing.heroRenderId;
+        byId[job.jobId] = merged;
+      });
+
+      const ids = Object.keys(byId);
+      if (sawRealJob) {
+        ids.forEach((id) => {
+          if (byId[id]?.curated) {
+            delete byId[id];
+          }
+        });
+      }
+
+      const MAX_STABLE_JOBS = 400;
+      const nextOrder = Object.keys(byId)
+        .sort((a, b) => {
+          const timeA = Date.parse(byId[a]?.createdAt ?? '');
+          const timeB = Date.parse(byId[b]?.createdAt ?? '');
+          return (Number.isFinite(timeB) ? timeB : 0) - (Number.isFinite(timeA) ? timeA : 0);
+        })
+        .slice(0, MAX_STABLE_JOBS);
+      if (nextOrder.length < Object.keys(byId).length) {
+        const keep = new Set(nextOrder);
+        Object.keys(byId).forEach((id) => {
+          if (!keep.has(id)) delete byId[id];
+        });
+      }
+
+      return { byId, order: nextOrder };
+    });
+  }, [swr.data]);
+
+  useEffect(() => {
     if (typeof window === 'undefined') return;
     const jobs = swr.data?.flatMap((page) => page.jobs) ?? [];
     const seen = new Set<string>();
@@ -401,7 +491,9 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType })
     });
   }, [swr.data]);
 
-  return swr;
+  const stableJobs = stableStore.order.map((id) => stableStore.byId[id]).filter(Boolean);
+
+  return { ...swr, stableJobs } as typeof swr & { stableJobs: Job[] };
 }
 
 export async function runPreflight(payload: PreflightRequest): Promise<PreflightResponse> {

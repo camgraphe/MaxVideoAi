@@ -4465,16 +4465,16 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                       </div>
                     ) : (
                       <div className="grid gap-4 sm:grid-cols-2">
-                        {normalizedPendingGroups.map((group, index) => {
-                          const engineId = group.hero.engineId;
-                          const engine = engineId ? engineMap.get(engineId) ?? null : null;
-                          return (
-                            <GroupedJobCard
-                              key={`${group.id}-${index}`}
-                              group={group}
-                              engine={engine ?? undefined}
-                              onOpen={handleActiveGroupOpen}
-                              onAction={handleActiveGroupAction}
+	                        {normalizedPendingGroups.map((group) => {
+	                          const engineId = group.hero.engineId;
+	                          const engine = engineId ? engineMap.get(engineId) ?? null : null;
+	                          return (
+	                            <GroupedJobCard
+	                              key={group.id}
+	                              group={group}
+	                              engine={engine ?? undefined}
+	                              onOpen={handleActiveGroupOpen}
+	                              onAction={handleActiveGroupAction}
                               allowRemove={false}
                             />
                           );
