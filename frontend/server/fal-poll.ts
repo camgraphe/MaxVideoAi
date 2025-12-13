@@ -24,7 +24,7 @@ export async function runFalPoll() {
     `SELECT job_id, engine_id, provider_job_id, status, updated_at, created_at
      FROM app_jobs
      WHERE provider_job_id IS NOT NULL
-       AND status IN ('queued', 'running')
+       AND status IN ('pending', 'queued', 'running', 'processing', 'in_progress')
      ORDER BY updated_at ASC
      LIMIT 10`
   );
