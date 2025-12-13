@@ -25,9 +25,10 @@ export async function GET(req: NextRequest) {
     height: number | null;
     size_bytes: string | number | null;
     source: string | null;
+    metadata: unknown;
     created_at: string;
   }>(
-    `SELECT asset_id, url, mime_type, width, height, size_bytes, source, created_at
+    `SELECT asset_id, url, mime_type, width, height, size_bytes, source, metadata, created_at
      FROM user_assets
      WHERE user_id = $1
        AND ($3::text IS NULL OR source = $3::text)
@@ -45,6 +46,13 @@ export async function GET(req: NextRequest) {
     height: row.height,
     size: typeof row.size_bytes === 'string' ? Number(row.size_bytes) : row.size_bytes,
     source: row.source,
+    jobId:
+      row.metadata &&
+      typeof row.metadata === 'object' &&
+      'jobId' in (row.metadata as Record<string, unknown>) &&
+      typeof (row.metadata as Record<string, unknown>).jobId === 'string'
+        ? (row.metadata as Record<string, unknown>).jobId
+        : null,
     createdAt: row.created_at,
   }));
 

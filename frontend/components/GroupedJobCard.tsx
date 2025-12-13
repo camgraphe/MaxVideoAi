@@ -100,6 +100,7 @@ export interface GroupedJobCardProps {
   onOpen?: (group: GroupSummary) => void;
   onAction?: (group: GroupSummary, action: GroupedJobAction) => void;
   actionMenu?: boolean;
+  menuVariant?: 'full' | 'compact';
   allowRemove?: boolean;
   isImageGroup?: boolean;
   savingToLibrary?: boolean;
@@ -108,6 +109,8 @@ export interface GroupedJobCardProps {
   imageCtaLabel?: string;
   imageLibraryLabel?: string;
   imageLibrarySavingLabel?: string;
+  recreateHref?: string;
+  recreateLabel?: string;
 }
 
 export function GroupedJobCard({
@@ -116,6 +119,7 @@ export function GroupedJobCard({
   onOpen,
   onAction,
   actionMenu = true,
+  menuVariant = 'full',
   allowRemove = true,
   isImageGroup = false,
   savingToLibrary = false,
@@ -124,6 +128,8 @@ export function GroupedJobCard({
   imageCtaLabel = 'Generate images',
   imageLibraryLabel = 'Add to Library',
   imageLibrarySavingLabel = 'Saving…',
+  recreateHref,
+  recreateLabel = 'Generate same settings',
 }: GroupedJobCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -186,6 +192,7 @@ export function GroupedJobCard({
   }, [previewCount]);
   const showMenu = Boolean(onAction) && actionMenu;
   const isCurated = Boolean(hero.job?.curated);
+  const showAdvancedMenuActions = menuVariant === 'full';
 
   const handleAction = (action: GroupedJobAction) => {
     setMenuOpen(false);
@@ -332,34 +339,47 @@ export function GroupedJobCard({
             <span>Open group</span>
             <span className="text-[11px] text-text-muted">↵</span>
           </button>
-          <button
-            type="button"
-            onClick={() => handleAction('continue')}
-            className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
-          >
-            <span>Continue (Hero)</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleAction('refine')}
-            className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
-          >
-            <span>Refine (Hero)</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleAction('branch')}
-            className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
-          >
-            <span>Branch</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleAction('compare')}
-            className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
-          >
-            <span>Compare</span>
-          </button>
+          {recreateHref ? (
+            <Link
+              href={recreateHref}
+              onClick={() => setMenuOpen(false)}
+              className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+            >
+              <span>{recreateLabel}</span>
+            </Link>
+          ) : null}
+          {showAdvancedMenuActions ? (
+            <>
+              <button
+                type="button"
+                onClick={() => handleAction('continue')}
+                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+              >
+                <span>Continue (Hero)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAction('refine')}
+                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+              >
+                <span>Refine (Hero)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAction('branch')}
+                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+              >
+                <span>Branch</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAction('compare')}
+                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+              >
+                <span>Compare</span>
+              </button>
+            </>
+          ) : null}
           {isImageGroup && (
             <button
               type="button"

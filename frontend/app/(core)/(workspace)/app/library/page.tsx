@@ -20,6 +20,7 @@ type UserAsset = {
   height?: number | null;
   size?: number | null;
   source?: string | null;
+  jobId?: string | null;
   createdAt?: string;
 };
 
@@ -52,6 +53,7 @@ interface LibraryCopy {
     deleteError: string;
     deleteButton: string;
     downloadButton: string;
+    useSettingsButton: string;
     deleting: string;
     assetFallback: string;
   };
@@ -81,6 +83,7 @@ const DEFAULT_LIBRARY_COPY: LibraryCopy = {
     deleteError: 'Unable to delete this image.',
     deleteButton: 'Delete',
     downloadButton: 'Download',
+    useSettingsButton: 'Use settings',
     deleting: 'Deleting…',
     assetFallback: 'Asset',
   },
@@ -288,6 +291,19 @@ export default function LibraryPage() {
                       <p className="text-text-secondary">{formatFileSize(asset.size)}</p>
                       {asset.createdAt ? <p className="text-text-muted">{new Date(asset.createdAt).toLocaleString()}</p> : null}
                       <div className="flex items-center gap-2">
+                        {asset.jobId ? (
+                          <Link
+                            href={
+                              asset.jobId.startsWith('img_')
+                                ? `/app/image?job=${encodeURIComponent(asset.jobId)}`
+                                : `/app?job=${encodeURIComponent(asset.jobId)}`
+                            }
+                            className="flex flex-1 items-center justify-center gap-1 rounded-input border border-border/70 bg-white py-1 text-[11px] font-semibold text-text-secondary transition hover:border-accent hover:text-accent"
+                            aria-label={copy.assets.useSettingsButton}
+                          >
+                            <span>{copy.assets.useSettingsButton}</span>
+                          </Link>
+                        ) : null}
                         <a
                           href={asset.url}
                           download

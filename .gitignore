@@ -35,3 +35,6 @@ frontend/.lighthouseci/
 # Private modules extracted from public repo
 private/
 .env*.local
+
+# TypeScript incremental builds
+*.tsbuildinfo

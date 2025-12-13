@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import useSWR from 'swr';
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import deepmerge from 'deepmerge';
 import type {
   FormEvent,
@@ -281,7 +282,47 @@ const DEFAULT_UPLOAD_LIMIT_MB = Number.isFinite(Number(process.env.NEXT_PUBLIC_A
   ? Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25')
   : 25;
 
+const IMAGE_COMPOSER_STORAGE_KEY = 'maxvideoai.image.composer.v1';
+const IMAGE_COMPOSER_STORAGE_VERSION = 1;
+const IMAGE_COMPOSER_STORAGE_DEBOUNCE_MS = 1200;
+
 const clampImageCount = (value: number) => Math.min(MAX_IMAGE_COUNT, Math.max(MIN_IMAGE_COUNT, Math.round(value)));
+
+function normalizeEngineToken(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+function isNanoBananaEngine(engine?: ImageEngineOption | null): boolean {
+  if (!engine) return false;
+  if (NANO_BANANA_ENGINE_IDS.has(engine.id)) {
+    return true;
+  }
+  const aliases = engine.aliases ?? [];
+  return aliases.some((alias) => {
+    if (typeof alias !== 'string' || !alias.length) {
+      return false;
+    }
+    if (NANO_BANANA_ENGINE_IDS.has(alias)) {
+      return true;
+    }
+    return NANO_BANANA_ALIAS_PREFIXES.some((prefix) => alias.startsWith(prefix));
+  });
+}
+
+function findImageEngine(engines: ImageEngineOption[], engineId: string): ImageEngineOption | null {
+  const trimmed = engineId.trim();
+  if (!trimmed) return null;
+  const direct = engines.find((entry) => entry.id === trimmed);
+  if (direct) return direct;
+  const token = normalizeEngineToken(trimmed);
+  if (!token) return null;
+  return (
+    engines.find((entry) => normalizeEngineToken(entry.id) === token) ??
+    engines.find((entry) => normalizeEngineToken(entry.name) === token) ??
+    engines.find((entry) => (entry.aliases ?? []).some((alias) => normalizeEngineToken(alias) === token)) ??
+    null
+  );
+}
 
 type PromptPreset = {
   title: string;
@@ -325,6 +366,62 @@ type ReferenceSlotValue = {
   status: 'ready' | 'uploading';
   source?: 'upload' | 'library' | 'paste';
 };
+
+type PersistedReferenceSlot = { url: string; source?: ReferenceSlotValue['source'] } | null;
+
+type PersistedImageComposerState = {
+  version: number;
+  engineId: string;
+  mode: ImageGenerationMode;
+  prompt: string;
+  numImages: number;
+  aspectRatio: string | null;
+  resolution: string | null;
+  referenceSlots: PersistedReferenceSlot[];
+};
+
+function parsePersistedImageComposerState(value: string): PersistedImageComposerState | null {
+  try {
+    const raw = JSON.parse(value) as Partial<PersistedImageComposerState> | null;
+    if (!raw || typeof raw !== 'object') return null;
+    if (raw.version !== IMAGE_COMPOSER_STORAGE_VERSION) return null;
+    if (typeof raw.engineId !== 'string' || raw.engineId.trim().length === 0) return null;
+    const mode = raw.mode === 't2i' || raw.mode === 'i2i' ? raw.mode : 't2i';
+    const prompt = typeof raw.prompt === 'string' ? raw.prompt : '';
+    const numImagesRaw =
+      typeof raw.numImages === 'number' && Number.isFinite(raw.numImages) ? Math.round(raw.numImages) : 1;
+    const aspectRatio = typeof raw.aspectRatio === 'string' ? raw.aspectRatio : null;
+    const resolution = typeof raw.resolution === 'string' ? raw.resolution : null;
+    const referenceSlotsRaw = Array.isArray(raw.referenceSlots) ? raw.referenceSlots : [];
+    const referenceSlots = referenceSlotsRaw
+      .slice(0, MAX_REFERENCE_SLOTS)
+      .map((entry): PersistedReferenceSlot => {
+        if (entry === null) return null;
+        if (!entry || typeof entry !== 'object') return null;
+        const record = entry as { url?: unknown; source?: unknown };
+        const url = typeof record.url === 'string' ? record.url.trim() : '';
+        if (!url || url.startsWith('blob:')) return null;
+        const source =
+          record.source === 'upload' || record.source === 'library' || record.source === 'paste'
+            ? (record.source as ReferenceSlotValue['source'])
+            : undefined;
+        return { url, source };
+      });
+
+    return {
+      version: IMAGE_COMPOSER_STORAGE_VERSION,
+      engineId: raw.engineId.trim(),
+      mode,
+      prompt,
+      numImages: numImagesRaw,
+      aspectRatio,
+      resolution,
+      referenceSlots,
+    };
+  } catch {
+    return null;
+  }
+}
 
 type LibraryAsset = {
   id: string;
@@ -404,10 +501,16 @@ function mapJobToHistoryEntry(job: Job): HistoryEntry | null {
 
 export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const { t } = useI18n();
+  const searchParams = useSearchParams();
   const rawCopy = t('workspace.image', DEFAULT_COPY);
   const resolvedCopy = useMemo<ImageWorkspaceCopy>(() => {
     return deepmerge<ImageWorkspaceCopy>(DEFAULT_COPY, (rawCopy ?? {}) as Partial<ImageWorkspaceCopy>);
   }, [rawCopy]);
+  const hasHydratedStorageRef = useRef(false);
+  const hydratedJobRef = useRef<string | null>(null);
+  const persistTimerRef = useRef<number | null>(null);
+  const persistedSignatureRef = useRef<string | null>(null);
+  const [storageHydrated, setStorageHydrated] = useState(false);
   const [engineId, setEngineId] = useState(() => engines[0]?.id ?? '');
   const [mode, setMode] = useState<ImageGenerationMode>('t2i');
   const [prompt, setPrompt] = useState('');
@@ -522,22 +625,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     () => formatTemplate(resolvedCopy.composer.referenceHelper, { count: referenceSlotLimit }),
     [referenceSlotLimit, resolvedCopy.composer.referenceHelper]
   );
-  const isNanoBanana = useMemo(() => {
-    if (!selectedEngine) return false;
-    if (NANO_BANANA_ENGINE_IDS.has(selectedEngine.id)) {
-      return true;
-    }
-    const aliases = selectedEngine.aliases ?? [];
-    return aliases.some((alias) => {
-      if (typeof alias !== 'string' || !alias.length) {
-        return false;
-      }
-      if (NANO_BANANA_ENGINE_IDS.has(alias)) {
-        return true;
-      }
-      return NANO_BANANA_ALIAS_PREFIXES.some((prefix) => alias.startsWith(prefix));
-    });
-  }, [selectedEngine]);
+  const isNanoBanana = useMemo(() => isNanoBananaEngine(selectedEngine), [selectedEngine]);
 
   useEffect(() => {
     if (!selectedEngine) return;
@@ -689,11 +777,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     setViewerGroup(group);
   }, []);
 
-  const handleSelectHistoryEntry = useCallback((entry: HistoryEntry) => {
-    setSelectedPreviewEntryId(entry.id);
-    setSelectedPreviewImageIndex(0);
-  }, []);
-
   const closeViewer = useCallback(() => setViewerGroup(null), []);
 
   const handleSaveVariantToLibrary = useCallback(async (entry: MediaLightboxEntry) => {
@@ -715,6 +798,319 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       } catch {}
     }
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!engines.length) return;
+    if (hasHydratedStorageRef.current) return;
+    hasHydratedStorageRef.current = true;
+    let parsed: PersistedImageComposerState | null = null;
+    try {
+      const stored = window.localStorage.getItem(IMAGE_COMPOSER_STORAGE_KEY);
+      if (stored) {
+        parsed = parsePersistedImageComposerState(stored);
+        if (parsed) {
+          persistedSignatureRef.current = stored;
+        }
+      }
+    } catch {
+      // ignore storage failures
+    }
+
+    if (parsed && engines.length) {
+      const engineMatch = findImageEngine(engines, parsed.engineId) ?? engines[0] ?? null;
+      if (engineMatch) {
+        setEngineId(engineMatch.id);
+        const nextMode = engineMatch.modes.includes(parsed.mode) ? parsed.mode : engineMatch.modes[0] ?? 't2i';
+        setMode(nextMode);
+        setPrompt(parsed.prompt);
+        setNumImages(clampImageCount(parsed.numImages));
+        const allowedResolutions = (engineMatch.engineCaps?.resolutions ?? []) as readonly string[];
+        setResolution(parsed.resolution && allowedResolutions.includes(parsed.resolution) ? parsed.resolution : null);
+
+        if (isNanoBananaEngine(engineMatch)) {
+          const options = getNanoBananaAspectRatios(nextMode);
+          const defaultValue = getNanoBananaDefaultAspectRatio(nextMode);
+          const nextAspectRatio = parsed.aspectRatio && options.includes(parsed.aspectRatio) ? parsed.aspectRatio : defaultValue;
+          setAspectRatio(nextAspectRatio);
+        } else {
+          setAspectRatio(null);
+        }
+      }
+
+      if (parsed.referenceSlots.length) {
+        setReferenceSlots((previous) => {
+          const next = Array(MAX_REFERENCE_SLOTS).fill(null) as Array<ReferenceSlotValue | null>;
+          parsed.referenceSlots.slice(0, MAX_REFERENCE_SLOTS).forEach((slot, index) => {
+            if (!slot) return;
+            next[index] = {
+              id: `stored-${index}`,
+              url: slot.url,
+              previewUrl: slot.url,
+              status: 'ready',
+              source: slot.source ?? 'library',
+            };
+          });
+          const changed = next.some((slot, idx) => {
+            const prior = previous[idx];
+            if (!slot && !prior) return false;
+            if (!slot || !prior) return true;
+            return slot.url !== prior.url || slot.status !== prior.status;
+          });
+          return changed ? next : previous;
+        });
+      }
+    }
+
+    setStorageHydrated(true);
+  }, [engines]);
+
+  const requestedJobId = useMemo(() => {
+    const raw = searchParams?.get('job');
+    if (!raw) return null;
+    const trimmed = raw.trim();
+    return trimmed.length ? trimmed : null;
+  }, [searchParams]);
+
+  const applyImageSettingsSnapshot = useCallback(
+    (snapshot: unknown, { selectJobId }: { selectJobId?: string } = {}) => {
+      if (!snapshot || typeof snapshot !== 'object') {
+        throw new Error('Job settings snapshot missing');
+      }
+      const record = snapshot as {
+        schemaVersion?: unknown;
+        surface?: unknown;
+        engineId?: unknown;
+        inputMode?: unknown;
+        prompt?: unknown;
+        core?: unknown;
+        refs?: unknown;
+      };
+      if (record.schemaVersion !== 1) {
+        throw new Error('Unsupported job snapshot version');
+      }
+      if (record.surface !== 'image') {
+        throw new Error('This snapshot is not for image');
+      }
+      const snapshotEngineId = typeof record.engineId === 'string' ? record.engineId : null;
+      const engineMatch = snapshotEngineId ? findImageEngine(engines, snapshotEngineId) : null;
+      const snapshotMode = record.inputMode === 't2i' || record.inputMode === 'i2i' ? record.inputMode : null;
+      if (engineMatch) {
+        setEngineId(engineMatch.id);
+        if (snapshotMode) {
+          setMode(engineMatch.modes.includes(snapshotMode) ? snapshotMode : engineMatch.modes[0] ?? 't2i');
+        }
+      } else if (snapshotMode) {
+        setMode(snapshotMode);
+      }
+      const snapshotPrompt = typeof record.prompt === 'string' ? record.prompt : null;
+      if (snapshotPrompt !== null) {
+        setPrompt(snapshotPrompt);
+      }
+
+      const core = record.core && typeof record.core === 'object' ? (record.core as Record<string, unknown>) : {};
+      const numImagesRaw = core.numImages;
+      if (typeof numImagesRaw === 'number' && Number.isFinite(numImagesRaw)) {
+        setNumImages(clampImageCount(numImagesRaw));
+      }
+      const aspectRatioRaw = typeof core.aspectRatio === 'string' ? core.aspectRatio : null;
+      const resolutionRaw = typeof core.resolution === 'string' ? core.resolution : null;
+      if (engineMatch) {
+        const allowedResolutions = (engineMatch.engineCaps?.resolutions ?? []) as readonly string[];
+        setResolution(resolutionRaw && allowedResolutions.includes(resolutionRaw) ? resolutionRaw : null);
+      } else {
+        setResolution(resolutionRaw);
+      }
+      if (engineMatch && isNanoBananaEngine(engineMatch)) {
+        const resolvedMode =
+          snapshotMode && engineMatch.modes.includes(snapshotMode) ? snapshotMode : engineMatch.modes[0] ?? 't2i';
+        const options = getNanoBananaAspectRatios(resolvedMode);
+        const defaultValue = getNanoBananaDefaultAspectRatio(resolvedMode);
+        setAspectRatio(aspectRatioRaw && options.includes(aspectRatioRaw) ? aspectRatioRaw : defaultValue);
+      }
+
+      const refs = record.refs && typeof record.refs === 'object' ? (record.refs as Record<string, unknown>) : {};
+      const imageUrlsRaw = refs.imageUrls;
+      const imageUrls = Array.isArray(imageUrlsRaw)
+        ? imageUrlsRaw.map((entry) => (typeof entry === 'string' ? entry.trim() : '')).filter((entry) => entry.length)
+        : imageUrlsRaw === null
+          ? []
+          : null;
+      if (imageUrls !== null) {
+        setReferenceSlots(() => {
+          const next = Array(MAX_REFERENCE_SLOTS).fill(null) as Array<ReferenceSlotValue | null>;
+          imageUrls.slice(0, MAX_REFERENCE_SLOTS).forEach((url, index) => {
+            next[index] = {
+              id: `snapshot-${index}`,
+              url,
+              previewUrl: url,
+              status: 'ready',
+              source: 'library',
+            };
+          });
+          return next;
+        });
+      }
+
+      if (selectJobId) {
+        setSelectedPreviewEntryId(selectJobId);
+        setSelectedPreviewImageIndex(0);
+      }
+    },
+    [engines]
+  );
+
+  const handleSelectHistoryEntry = useCallback(
+    (entry: HistoryEntry) => {
+      setSelectedPreviewEntryId(entry.id);
+      setSelectedPreviewImageIndex(0);
+      setError(null);
+      setStatusMessage(null);
+
+      const jobId = entry.jobId ?? null;
+      if (!jobId) {
+        try {
+          applyImageSettingsSnapshot({
+            schemaVersion: 1,
+            surface: 'image',
+            engineId: entry.engineId,
+            inputMode: entry.mode,
+            prompt: entry.prompt ?? '',
+            core: {
+              numImages: entry.images.length || 1,
+              aspectRatio: entry.aspectRatio ?? null,
+              resolution: null,
+            },
+            meta: { derived: true },
+          });
+        } catch (error) {
+          setError(error instanceof Error ? error.message : resolvedCopy.errors.generic);
+        }
+        return;
+      }
+
+      void authFetch(`/api/jobs/${encodeURIComponent(jobId)}`)
+        .then(async (response) => {
+          const payload = (await response.json().catch(() => null)) as
+            | {
+                ok?: boolean;
+                error?: string;
+                settingsSnapshot?: unknown;
+              }
+            | null;
+          if (!response.ok || !payload?.ok) {
+            throw new Error(payload?.error ?? `Failed to load job (${response.status})`);
+          }
+          applyImageSettingsSnapshot(payload.settingsSnapshot, { selectJobId: entry.id });
+        })
+        .catch(() => {
+          try {
+            applyImageSettingsSnapshot({
+              schemaVersion: 1,
+              surface: 'image',
+              engineId: entry.engineId,
+              inputMode: entry.mode,
+              prompt: entry.prompt ?? '',
+              core: {
+                numImages: entry.images.length || 1,
+                aspectRatio: entry.aspectRatio ?? null,
+                resolution: null,
+              },
+              meta: { derived: true },
+            });
+          } catch (error) {
+            setError(error instanceof Error ? error.message : resolvedCopy.errors.generic);
+          }
+        });
+    },
+    [applyImageSettingsSnapshot, resolvedCopy.errors.generic]
+  );
+
+  useEffect(() => {
+    if (!requestedJobId) return;
+    if (hydratedJobRef.current === requestedJobId) return;
+    hydratedJobRef.current = requestedJobId;
+    setError(null);
+    setStatusMessage(null);
+    void authFetch(`/api/jobs/${encodeURIComponent(requestedJobId)}`)
+      .then(async (response) => {
+        const payload = (await response.json().catch(() => null)) as
+          | {
+              ok?: boolean;
+              error?: string;
+              settingsSnapshot?: unknown;
+            }
+          | null;
+        if (!response.ok || !payload?.ok) {
+          throw new Error(payload?.error ?? `Failed to load job (${response.status})`);
+        }
+        applyImageSettingsSnapshot(payload.settingsSnapshot, { selectJobId: requestedJobId });
+      })
+      .catch((error) => {
+        setError(error instanceof Error ? error.message : resolvedCopy.errors.generic);
+      });
+  }, [applyImageSettingsSnapshot, requestedJobId, resolvedCopy.errors.generic]);
+
+  const persistableReferenceSlots = useMemo<PersistedReferenceSlot[]>(
+    () =>
+      referenceSlots.slice(0, MAX_REFERENCE_SLOTS).map((slot) => {
+        if (!slot || slot.status !== 'ready') return null;
+        const url = slot.url?.trim?.() ?? '';
+        if (!url || url.startsWith('blob:')) return null;
+        return { url, source: slot.source };
+      }),
+    [referenceSlots]
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!storageHydrated) return;
+    const payload: PersistedImageComposerState = {
+      version: IMAGE_COMPOSER_STORAGE_VERSION,
+      engineId: engineId || engines[0]?.id || '',
+      mode,
+      prompt,
+      numImages,
+      aspectRatio,
+      resolution,
+      referenceSlots: persistableReferenceSlots,
+    };
+    if (!payload.engineId) return;
+    let serialized: string;
+    try {
+      serialized = JSON.stringify(payload);
+    } catch {
+      return;
+    }
+    if (serialized === persistedSignatureRef.current) return;
+    if (persistTimerRef.current !== null) {
+      window.clearTimeout(persistTimerRef.current);
+    }
+    persistTimerRef.current = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(IMAGE_COMPOSER_STORAGE_KEY, serialized);
+        persistedSignatureRef.current = serialized;
+      } catch {
+        // ignore storage failures
+      }
+    }, IMAGE_COMPOSER_STORAGE_DEBOUNCE_MS);
+    return () => {
+      if (persistTimerRef.current !== null) {
+        window.clearTimeout(persistTimerRef.current);
+        persistTimerRef.current = null;
+      }
+    };
+  }, [
+    aspectRatio,
+    engineId,
+    engines,
+    mode,
+    numImages,
+    persistableReferenceSlots,
+    prompt,
+    resolution,
+    storageHydrated,
+  ]);
 
   useEffect(() => {
     setReferenceSlots((previous) => {

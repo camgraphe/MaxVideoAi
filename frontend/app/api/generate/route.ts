@@ -434,10 +434,9 @@ export async function POST(req: NextRequest) {
   const body = await req
     .json()
     .catch((error) => {
-      console.error('[DEBUG generate] error:', error);
+      console.error('[api/generate] invalid JSON', error);
       return null;
     });
-  console.log('[DEBUG generate] raw body:', JSON.stringify(body, null, 2));
   if (!body) return NextResponse.json({ ok: false, error: 'Invalid JSON' }, { status: 400 });
 
   const engine = await getConfiguredEngine(String(body.engineId || ''));
@@ -1375,6 +1374,43 @@ async function rollbackPendingPayment(params: {
     falPayload.cfgScale = body.cfgScale;
   }
 
+  const negativePrompt =
+    typeof body.negativePrompt === 'string' && body.negativePrompt.trim().length ? body.negativePrompt.trim() : null;
+  const membershipTier =
+    typeof body.membershipTier === 'string' && body.membershipTier.trim().length ? body.membershipTier.trim() : null;
+  const settingsSnapshotJson = JSON.stringify({
+    schemaVersion: 1,
+    surface: 'video',
+    engineId: engine.id,
+    engineLabel: engine.label,
+    inputMode: mode,
+    prompt,
+    negativePrompt,
+    core: {
+      durationSec,
+      durationOption: falDurationOption,
+      numFrames: numFrames ?? null,
+      aspectRatio,
+      resolution: effectiveResolution,
+      fps: typeof clampedFps === 'number' ? clampedFps : typeof body.fps === 'number' ? Math.trunc(body.fps) : null,
+      iterationCount: iterationCount ?? null,
+    },
+    advanced: {
+      cfgScale: typeof body.cfgScale === 'number' && Number.isFinite(body.cfgScale) ? body.cfgScale : null,
+      loop: isLumaRay2 ? Boolean(loop) : null,
+    },
+    refs: {
+      imageUrl: initialImageUrl ?? null,
+      referenceImages: normalizedReferenceImages ?? null,
+      firstFrameUrl: firstFrameUrl ?? null,
+      lastFrameUrl: lastFrameUrl ?? null,
+      inputs: falInputs ?? null,
+    },
+    meta: {
+      memberTier: membershipTier,
+    },
+  });
+
   let lastProviderJobId: string | null = null;
   const persistProviderJobId = async (requestId: string) => {
     if (!requestId || lastProviderJobId === requestId) return;
@@ -1445,6 +1481,7 @@ async function rollbackPendingPayment(params: {
          final_price_cents,
          pricing_snapshot,
          cost_breakdown_usd,
+         settings_snapshot,
          currency,
          vendor_account_id,
          payment_status,
@@ -1455,7 +1492,7 @@ async function rollbackPendingPayment(params: {
          provisional
        )
        VALUES (
-         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27::jsonb,$28::jsonb,$29,$30,$31,$32,$33,$34,$35,$36
+         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27::jsonb,$28::jsonb,$29::jsonb,$30,$31,$32,$33,$34,$35,$36,$37
        )`,
       [
         jobId,
@@ -1486,6 +1523,7 @@ async function rollbackPendingPayment(params: {
         pricing.totalCents,
         pricingSnapshotJson,
         costBreakdownJson,
+        settingsSnapshotJson,
         pricing.currency,
         vendorAccountId,
         paymentStatus,

@@ -1883,6 +1883,7 @@
         "deleteError": "Suppression impossible pour cette image.",
         "deleteButton": "Supprimer",
         "downloadButton": "Télécharger",
+        "useSettingsButton": "Utiliser les réglages",
         "deleting": "Suppression…",
         "assetFallback": "Ressource"
       }

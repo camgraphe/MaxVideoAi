@@ -374,12 +374,14 @@ export async function POST(req: NextRequest) {
   const shouldSendResolution = resolutionResult.configurable;
 
   let pricing: PricingSnapshot;
+  const membershipTierRaw = (body as { membershipTier?: unknown } | null)?.membershipTier;
+  const membershipTier = typeof membershipTierRaw === 'string' && membershipTierRaw.trim().length ? membershipTierRaw.trim() : undefined;
   try {
     pricing = await computePricingSnapshot({
       engine,
       durationSec,
       resolution,
-      membershipTier: body && typeof body === 'object' && 'membershipTier' in body ? (body as { membershipTier?: string }).membershipTier : undefined,
+      membershipTier,
       currency: DISPLAY_CURRENCY,
     });
   } catch (error) {
@@ -426,6 +428,28 @@ export async function POST(req: NextRequest) {
   const visibility = body?.visibility === 'public' ? 'public' : 'private';
   const indexable =
     typeof body?.allowIndex === 'boolean' ? body.allowIndex : typeof body?.indexable === 'boolean' ? body.indexable : defaultAllowIndex;
+
+  const settingsSnapshotJson = JSON.stringify({
+    schemaVersion: 1,
+    surface: 'image',
+    engineId: engineEntry.id,
+    engineLabel: engineEntry.marketingName,
+    inputMode: mode,
+    prompt,
+    core: {
+      numImages,
+      aspectRatio: resolvedAspectRatio ?? null,
+      resolution,
+    },
+    refs: {
+      imageUrls,
+    },
+    meta: {
+      memberTier: membershipTier ?? null,
+      visibility,
+      indexable,
+    },
+  });
 
   const description = `${engineEntry.marketingName} – ${numImages} image${numImages > 1 ? 's' : ''}`;
   const pendingReceipt: PendingReceipt = {
@@ -504,6 +528,7 @@ export async function POST(req: NextRequest) {
          final_price_cents,
          pricing_snapshot,
          cost_breakdown_usd,
+         settings_snapshot,
          currency,
          vendor_account_id,
          payment_status,
@@ -514,7 +539,7 @@ export async function POST(req: NextRequest) {
          provisional
        )
        VALUES (
-         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27::jsonb,$28::jsonb,$29,$30,$31,$32,$33,$34,$35,$36
+         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16::jsonb,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27::jsonb,$28::jsonb,$29::jsonb,$30,$31,$32,$33,$34,$35,$36,$37
        )`,
       [
         jobId,
@@ -545,6 +570,7 @@ export async function POST(req: NextRequest) {
         pricing.totalCents,
         pricingSnapshotJson,
         costBreakdownJson,
+        settingsSnapshotJson,
         pricing.currency,
         vendorAccountId,
         'paid_wallet',

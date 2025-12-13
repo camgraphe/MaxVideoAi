@@ -6,6 +6,8 @@ import { ensureBillingSchema } from '@/lib/schema';
 import { buildFalProxyUrl } from '@/lib/fal-proxy';
 import { normalizeMediaUrl } from '@/lib/media';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
+import { getRouteAuthContext } from '@/lib/supabase-ssr';
+import { getEngineAliases, listFalEngines } from '@/config/falEngines';
 
 type DbJobRow = {
   id: number;
@@ -16,12 +18,14 @@ type DbJobRow = {
   provider_job_id: string | null;
   video_url: string | null;
   thumb_url: string | null;
+  engine_id: string;
   engine_label: string;
   duration_sec: number;
   prompt: string;
   created_at: string;
   final_price_cents: number | null;
   pricing_snapshot: PricingSnapshot | null;
+  settings_snapshot: unknown;
   currency: string | null;
   payment_status: string | null;
   vendor_account_id: string | null;
@@ -40,11 +44,95 @@ type DbJobRow = {
   aspect_ratio: string | null;
 };
 
+const IMAGE_ENGINE_ALIASES = listFalEngines()
+  .filter((engine) => (engine.category ?? 'video') === 'image')
+  .flatMap((engine) => getEngineAliases(engine));
+const IMAGE_ENGINE_ID_SET = new Set(IMAGE_ENGINE_ALIASES);
+
+function inferJobSurface(job: Pick<DbJobRow, 'engine_id' | 'video_url' | 'render_ids'>): 'video' | 'image' {
+  if (job.video_url) return 'video';
+  const renderIds = job.render_ids;
+  if (Array.isArray(renderIds) && renderIds.some((entry) => typeof entry === 'string' && entry.length > 0)) {
+    return 'image';
+  }
+  if (job.engine_id && IMAGE_ENGINE_ID_SET.has(job.engine_id)) {
+    return 'image';
+  }
+  return 'video';
+}
+
+function buildFallbackSettingsSnapshot(job: DbJobRow): unknown {
+  const surface = inferJobSurface(job);
+  if (surface === 'image') {
+    const renderIds =
+      Array.isArray(job.render_ids) && job.render_ids.length
+        ? job.render_ids.filter((value): value is string => typeof value === 'string' && value.length > 0)
+        : [];
+    return {
+      schemaVersion: 1,
+      surface: 'image',
+      engineId: job.engine_id,
+      engineLabel: job.engine_label,
+      inputMode: 't2i',
+      prompt: job.prompt ?? '',
+      core: {
+        numImages: renderIds.length || 1,
+        aspectRatio: job.aspect_ratio ?? null,
+        resolution: null,
+      },
+      refs: {
+        imageUrls: [],
+      },
+      meta: {
+        derived: true,
+      },
+    };
+  }
+
+  return {
+    schemaVersion: 1,
+    surface: 'video',
+    engineId: job.engine_id,
+    engineLabel: job.engine_label,
+    inputMode: 't2v',
+    prompt: job.prompt ?? '',
+    negativePrompt: null,
+    core: {
+      durationSec: job.duration_sec ?? null,
+      durationOption: null,
+      numFrames: null,
+      aspectRatio: job.aspect_ratio ?? null,
+      resolution: null,
+      fps: null,
+      iterationCount: null,
+    },
+    advanced: {
+      cfgScale: null,
+      loop: null,
+    },
+    refs: {
+      imageUrl: null,
+      referenceImages: null,
+      firstFrameUrl: null,
+      lastFrameUrl: null,
+      inputs: null,
+    },
+    meta: {
+      derived: true,
+    },
+  };
+}
+
 export async function GET(_req: NextRequest, { params }: { params: { jobId: string } }) {
   const jobId = params.jobId;
 
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
+  }
+
+  const { userId } = await getRouteAuthContext(_req);
+  if (!userId) {
+    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
@@ -57,7 +145,7 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
   let rows: DbJobRow[];
   try {
     rows = await query<DbJobRow>(
-      `SELECT id, job_id, user_id, status, progress, provider_job_id, video_url, thumb_url, engine_label, duration_sec, prompt, created_at, final_price_cents, pricing_snapshot, currency, payment_status, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, aspect_ratio
+      `SELECT id, job_id, user_id, status, progress, provider_job_id, video_url, thumb_url, engine_id, engine_label, duration_sec, prompt, created_at, final_price_cents, pricing_snapshot, settings_snapshot, currency, payment_status, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, aspect_ratio
        FROM app_jobs
        WHERE job_id = $1
        LIMIT 1`,
@@ -73,6 +161,9 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
   }
 
   const job = rows[0];
+  if (job.user_id && job.user_id !== userId) {
+    return NextResponse.json({ ok: false, error: 'Not found' }, { status: 404 });
+  }
   const normalizedVideoUrl = normalizeMediaUrl(job.video_url);
   const normalizedThumbUrl = normalizeMediaUrl(job.thumb_url);
   const parsedRenderIds = Array.isArray(job.render_ids)
@@ -129,12 +220,14 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
           return NextResponse.json({
             ok: true,
             jobId,
+            createdAt: job.created_at,
             status,
             progress,
             videoUrl: videoUrl ?? undefined,
             thumbUrl: thumbUrl ?? undefined,
             aspectRatio: job.aspect_ratio ?? undefined,
             pricing: job.pricing_snapshot ?? undefined,
+            settingsSnapshot: job.settings_snapshot ?? undefined,
             finalPriceCents: job.final_price_cents ?? undefined,
             currency: job.currency ?? 'USD',
             paymentStatus: job.payment_status ?? undefined,
@@ -162,12 +255,17 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
   return NextResponse.json({
     ok: true,
     jobId,
+    createdAt: job.created_at,
     status: job.status,
     progress: job.progress,
     videoUrl: normalizedVideoUrl ?? undefined,
     thumbUrl: normalizedThumbUrl ?? undefined,
     aspectRatio: job.aspect_ratio ?? undefined,
     pricing: job.pricing_snapshot ?? undefined,
+    settingsSnapshot:
+      job.settings_snapshot && typeof job.settings_snapshot === 'object'
+        ? job.settings_snapshot
+        : buildFallbackSettingsSnapshot(job),
     finalPriceCents: job.final_price_cents ?? undefined,
     currency: job.currency ?? 'USD',
     paymentStatus: job.payment_status ?? undefined,

@@ -1872,6 +1872,7 @@
         "deleteError": "Unable to delete this image.",
         "deleteButton": "Delete",
         "downloadButton": "Download",
+        "useSettingsButton": "Use settings",
         "deleting": "Deleting…",
         "assetFallback": "Asset"
       }

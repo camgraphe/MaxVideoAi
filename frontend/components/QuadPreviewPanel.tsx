@@ -17,6 +17,7 @@ export interface QuadPreviewTile {
   localKey: string;
   batchId: string;
   id: string;
+  jobId?: string;
   iterationIndex: number;
   iterationCount: number;
   videoUrl?: string;

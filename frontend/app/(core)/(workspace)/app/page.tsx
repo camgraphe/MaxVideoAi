@@ -6,7 +6,7 @@ import type { FormEvent } from 'react';
 import { useEngines, useInfiniteJobs, runPreflight, runGenerate, getJobStatus } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { supabase } from '@/lib/supabaseClient';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import type { EngineCaps, EngineInputField, Mode, PreflightRequest, PreflightResponse } from '@/types/engines';
 import { getEngineCaps, type EngineCaps as EngineCapabilityCaps } from '@/fixtures/engineCaps';
@@ -447,7 +447,20 @@ function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | n
     const prevFrames = previous?.numFrames ?? null;
     if (capability?.frames && capability.frames.length) {
       const framesList = capability.frames;
-      const selectedFrames = prevFrames && framesList.includes(prevFrames) ? prevFrames : framesList[0];
+      let selectedFrames = prevFrames && framesList.includes(prevFrames) ? prevFrames : null;
+      if (selectedFrames === null && prevSeconds != null) {
+        const targetSeconds = Math.max(1, Math.round(prevSeconds));
+        selectedFrames = framesList.reduce((best, candidate) => {
+          const bestSeconds = framesToSeconds(best);
+          const candidateSeconds = framesToSeconds(candidate);
+          const bestDiff = Math.abs(bestSeconds - targetSeconds);
+          const candidateDiff = Math.abs(candidateSeconds - targetSeconds);
+          return candidateDiff < bestDiff ? candidate : best;
+        }, framesList[0]);
+      }
+      if (selectedFrames === null) {
+        selectedFrames = framesList[0];
+      }
       const durationSec = framesToSeconds(selectedFrames);
       return {
         durationSec,
@@ -460,7 +473,16 @@ function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | n
         const parsedOptions = capability.duration.options.map(parseDurationOptionValue).filter((entry) => entry.value > 0);
         const defaultRaw = capability.duration.default ?? parsedOptions[0]?.raw ?? engine.maxDurationSec;
         const defaultMeta = parseDurationOptionValue(defaultRaw as number | string);
+        const closestBySeconds =
+          prevSeconds != null
+            ? parsedOptions.reduce((best, candidate) => {
+                const bestDiff = Math.abs(best.value - prevSeconds);
+                const candidateDiff = Math.abs(candidate.value - prevSeconds);
+                return candidateDiff < bestDiff ? candidate : best;
+              }, parsedOptions[0])
+            : null;
         const selected = parsedOptions.find((meta) => matchesDurationOption(meta, prevOption, prevSeconds))
+          ?? closestBySeconds
           ?? parsedOptions.find((meta) => matchesDurationOption(meta, defaultRaw as number | string, defaultMeta.value))
           ?? parsedOptions[0]
           ?? defaultMeta;
@@ -594,11 +616,14 @@ const STORAGE_KEYS = {
   form: 'maxvideoai.generate.form.v1',
   memberTier: 'maxvideoai.generate.memberTier.v1',
   pendingRenders: 'maxvideoai.generate.pendingRenders.v1',
+  previewJobId: 'maxvideoai.generate.previewJobId.v1',
 } as const;
 
-function parseStoredForm(value: string): FormState | null {
+type StoredFormState = Partial<FormState> & { engineId: string; mode: Mode; updatedAt?: number };
+
+function parseStoredForm(value: string): StoredFormState | null {
   try {
-    const raw = JSON.parse(value) as Partial<FormState> | null;
+    const raw = JSON.parse(value) as StoredFormState | null;
     if (!raw || typeof raw !== 'object') return null;
 
     const {
@@ -613,23 +638,15 @@ function parseStoredForm(value: string): FormState | null {
       iterations,
       seedLocked,
       loop,
+      updatedAt,
     } = raw;
 
-    if (
-      typeof engineId !== 'string' ||
-      typeof mode !== 'string' ||
-      typeof durationSec !== 'number' ||
-      typeof resolution !== 'string' ||
-      typeof aspectRatio !== 'string' ||
-      typeof fps !== 'number'
-    ) {
-      return null;
-    }
+    if (typeof engineId !== 'string' || typeof mode !== 'string') return null;
 
     return {
       engineId,
       mode: mode as Mode,
-      durationSec,
+      durationSec: typeof durationSec === 'number' && Number.isFinite(durationSec) ? durationSec : undefined,
       durationOption:
         typeof durationOption === 'number' || typeof durationOption === 'string'
           ? durationOption
@@ -638,12 +655,13 @@ function parseStoredForm(value: string): FormState | null {
         typeof numFrames === 'number' && Number.isFinite(numFrames) && numFrames > 0
           ? Math.round(numFrames)
           : undefined,
-      resolution,
-      aspectRatio,
-      fps,
-      iterations: typeof iterations === 'number' && iterations > 0 ? iterations : 1,
+      resolution: typeof resolution === 'string' ? resolution : undefined,
+      aspectRatio: typeof aspectRatio === 'string' ? aspectRatio : undefined,
+      fps: typeof fps === 'number' && Number.isFinite(fps) ? fps : undefined,
+      iterations: typeof iterations === 'number' && iterations > 0 ? iterations : undefined,
       seedLocked: typeof seedLocked === 'boolean' ? seedLocked : undefined,
       loop: typeof loop === 'boolean' ? loop : undefined,
+      updatedAt: typeof updatedAt === 'number' && Number.isFinite(updatedAt) ? updatedAt : undefined,
     };
   } catch {
     return null;
@@ -899,10 +917,10 @@ export default function Page() {
   );
 
   const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [userId, setUserId] = useState<string | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
+  const [hydratedForScope, setHydratedForScope] = useState<string | null>(null);
   const { data: userPreferences } = useUserPreferences(Boolean(userId));
   const defaultAllowIndex = userPreferences?.defaultAllowIndex ?? true;
 
@@ -932,17 +950,23 @@ export default function Page() {
   const readStorage = useCallback(
     (base: string): string | null => {
       if (typeof window === 'undefined') return null;
+      // Prefer the unscoped "last state" to survive auth transitions and hard refreshes.
+      if (storageScope === 'anon') {
+        const baseValue = window.localStorage.getItem(base);
+        if (baseValue !== null) return baseValue;
+        return window.localStorage.getItem(storageKey(base));
+      }
+
       const scopedValue = window.localStorage.getItem(storageKey(base));
-      if (scopedValue !== null) {
-        return scopedValue;
-      }
-      if (storageScope !== 'anon') {
-        const anonValue = window.localStorage.getItem(storageKey(base, 'anon'));
-        if (anonValue !== null) {
-          return anonValue;
-        }
-      }
-      return window.localStorage.getItem(base);
+      if (scopedValue !== null) return scopedValue;
+
+      const baseValue = window.localStorage.getItem(base);
+      if (baseValue !== null) return baseValue;
+
+      const anonValue = window.localStorage.getItem(storageKey(base, 'anon'));
+      if (anonValue !== null) return anonValue;
+
+      return null;
     },
     [storageKey, storageScope]
   );
@@ -955,23 +979,22 @@ export default function Page() {
       } else {
         window.localStorage.setItem(key, value);
       }
-      if (storageScope !== 'anon') {
-        window.localStorage.removeItem(storageKey(base, 'anon'));
-        window.localStorage.removeItem(base);
-      } else if (value === null) {
+      // Always keep an unscoped fallback so the last state survives auth transitions/navigation.
+      if (value === null) {
         window.localStorage.removeItem(base);
       } else {
         window.localStorage.setItem(base, value);
       }
     },
-    [storageKey, storageScope]
+    [storageKey]
   );
-const nextPath = useMemo(() => {
-  const base = pathname || '/app';
-  const search = searchParams?.toString();
-  return search ? `${base}?${search}` : base;
-}, [pathname, searchParams]);
 const fromVideoId = useMemo(() => searchParams?.get('from') ?? null, [searchParams]);
+const requestedJobId = useMemo(() => {
+  const value = searchParams?.get('job');
+  if (!value) return null;
+  const trimmed = value.trim();
+  return trimmed.length ? trimmed : null;
+}, [searchParams]);
 const requestedEngineId = useMemo(() => {
   const value = searchParams?.get('engine');
   if (!value) return null;
@@ -1000,6 +1023,7 @@ if (typeof window !== 'undefined') {
 }
 const searchString = useMemo(() => searchParams?.toString() ?? '', [searchParams]);
 const skipOnboardingRef = useRef<boolean>(false);
+const hydratedJobRef = useRef<string | null>(null);
 
 useEffect(() => {
   if (typeof window === 'undefined') return;
@@ -1194,35 +1218,7 @@ useEffect(() => {
     [engineIdByLabel]
   );
   const hydratedScopeRef = useRef<string | null>(null);
-  const clearUserState = useCallback(() => {
-    hydratedScopeRef.current = null;
-    setUserId(null);
-    setAuthChecked(false);
-    setForm(null);
-    setPrompt(DEFAULT_PROMPT);
-    setNegativePrompt('');
-    setRenders([]);
-    setBatchHeroes({});
-    setActiveBatchId(null);
-    setSelectedPreview(null);
-    setViewMode('single');
-    setActiveGroupId(null);
-    setPreflight(null);
-    setPreflightError(undefined);
-    setPricing(false);
-    setNotice(null);
-    setTopUpModal(null);
-    setTopUpError(null);
-    setIsTopUpLoading(false);
-    setMemberTier('Member');
-    setTopUpAmount(1000);
-    writeStorage(STORAGE_KEYS.pendingRenders, null);
-    persistedRendersRef.current = null;
-    if (typeof window !== 'undefined' && pendingPollRef.current !== null) {
-      window.clearInterval(pendingPollRef.current);
-      pendingPollRef.current = null;
-    }
-  }, [writeStorage]);
+  const hasStoredFormRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -1237,8 +1233,11 @@ useEffect(() => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (!engines.length) return;
+    if (requestedJobId) return;
     if (hydratedScopeRef.current === storageScope) return;
     hydratedScopeRef.current = storageScope;
+    setHydratedForScope(null);
 
     setRenders([]);
     setBatchHeroes({});
@@ -1253,11 +1252,71 @@ useEffect(() => {
       setNegativePrompt(negativeValue ?? '');
 
       const formValue = readStorage(STORAGE_KEYS.form);
-      const storedForm = formValue ? parseStoredForm(formValue) : null;
-      let nextForm: FormState | null = storedForm;
+      const storedFormRaw = (() => {
+        try {
+          const scoped = window.localStorage.getItem(storageKey(STORAGE_KEYS.form));
+          const base = window.localStorage.getItem(STORAGE_KEYS.form);
+          const scopedParsed = scoped ? parseStoredForm(scoped) : null;
+          const baseParsed = base ? parseStoredForm(base) : null;
+          if (storageScope === 'anon') {
+            return baseParsed ?? scopedParsed ?? (formValue ? parseStoredForm(formValue) : null);
+          }
+          if (scopedParsed && baseParsed) {
+            const scopedAt = typeof scopedParsed.updatedAt === 'number' ? scopedParsed.updatedAt : 0;
+            const baseAt = typeof baseParsed.updatedAt === 'number' ? baseParsed.updatedAt : 0;
+            return baseAt > scopedAt ? baseParsed : scopedParsed;
+          }
+          return scopedParsed ?? baseParsed ?? (formValue ? parseStoredForm(formValue) : null);
+        } catch {
+          return formValue ? parseStoredForm(formValue) : null;
+        }
+      })();
+      let nextForm: FormState | null = null;
+
+      if (storedFormRaw) {
+        const storedToken = normalizeEngineToken(storedFormRaw.engineId);
+        const engine =
+          engines.find((entry) => entry.id === storedFormRaw.engineId) ??
+          (storedToken ? engines.find((entry) => matchesEngineToken(entry, storedToken)) : null) ??
+          engines[0] ??
+          null;
+        if (engine) {
+          const mode = engine.modes.includes(storedFormRaw.mode) ? storedFormRaw.mode : (engine.modes[0] ?? 't2v');
+          const base = coerceFormState(engine, mode, null);
+          const candidate: FormState = {
+            ...base,
+            engineId: engine.id,
+            mode,
+            durationSec:
+              typeof storedFormRaw.durationSec === 'number' && Number.isFinite(storedFormRaw.durationSec)
+                ? storedFormRaw.durationSec
+                : base.durationSec,
+            durationOption:
+              typeof storedFormRaw.durationOption === 'number' || typeof storedFormRaw.durationOption === 'string'
+                ? storedFormRaw.durationOption
+                : base.durationOption,
+            numFrames:
+              typeof storedFormRaw.numFrames === 'number' && Number.isFinite(storedFormRaw.numFrames)
+                ? storedFormRaw.numFrames
+                : base.numFrames,
+            resolution: typeof storedFormRaw.resolution === 'string' ? storedFormRaw.resolution : base.resolution,
+            aspectRatio: typeof storedFormRaw.aspectRatio === 'string' ? storedFormRaw.aspectRatio : base.aspectRatio,
+            fps: typeof storedFormRaw.fps === 'number' && Number.isFinite(storedFormRaw.fps) ? storedFormRaw.fps : base.fps,
+            iterations:
+              typeof storedFormRaw.iterations === 'number' && Number.isFinite(storedFormRaw.iterations)
+                ? storedFormRaw.iterations
+                : base.iterations,
+            seedLocked: typeof storedFormRaw.seedLocked === 'boolean' ? storedFormRaw.seedLocked : base.seedLocked,
+            loop: typeof storedFormRaw.loop === 'boolean' ? storedFormRaw.loop : base.loop,
+          };
+          nextForm = coerceFormState(engine, mode, candidate);
+        }
+      }
+      hasStoredFormRef.current = Boolean(nextForm);
+
       if (resolvedRequestedEngineId) {
-        if (!storedForm || storedForm.engineId !== resolvedRequestedEngineId) {
-          const base = storedForm ?? {
+        if (!storedFormRaw) {
+          const base: FormState = {
             engineId: resolvedRequestedEngineId,
             mode: 't2v' as Mode,
             durationSec: 4,
@@ -1268,11 +1327,11 @@ useEffect(() => {
             fps: 24,
             iterations: 1,
             seedLocked: false,
-          } satisfies FormState;
-          nextForm = { ...base, engineId: resolvedRequestedEngineId };
+          };
+          nextForm = base;
           if (process.env.NODE_ENV !== 'production') {
             console.log('[generate] engine override from storage hydrate', {
-              from: storedForm?.engineId,
+              from: null,
               to: nextForm.engineId,
             });
           }
@@ -1284,6 +1343,10 @@ useEffect(() => {
             }
           });
         }
+      }
+      if (!nextForm) {
+        const engine = engines[0];
+        nextForm = coerceFormState(engine, engine.modes[0] ?? 't2v', null);
       }
       setForm(nextForm);
 
@@ -1316,8 +1379,10 @@ useEffect(() => {
       setBatchHeroes({});
       setActiveBatchId(null);
       setActiveGroupId(null);
+    } finally {
+      setHydratedForScope(storageScope);
     }
-  }, [readStorage, writeStorage, setMemberTier, storageScope, resolvedRequestedEngineId]);
+  }, [engines, readStorage, storageKey, writeStorage, setMemberTier, storageScope, resolvedRequestedEngineId, requestedJobId]);
 
   useEffect(() => {
     rendersRef.current = renders;
@@ -1729,6 +1794,8 @@ useEffect(() => {
   const activeVideoGroups = useMemo(() => adaptGroupSummaries(pendingGroups, provider), [pendingGroups, provider]);
   const [compositeOverride, setCompositeOverride] = useState<VideoGroup | null>(null);
   const [compositeOverrideSummary, setCompositeOverrideSummary] = useState<GroupSummary | null>(null);
+  const restoredPreviewJobRef = useRef<string | null>(null);
+  const applyVideoSettingsSnapshotRef = useRef<(snapshot: unknown) => void>(() => undefined);
   const activeVideoGroup = useMemo<VideoGroup | null>(() => {
     if (compositeOverride) return null;
     if (!activeVideoGroups.length) return null;
@@ -1796,6 +1863,7 @@ useEffect(() => {
         localKey: render.localKey,
         batchId: render.batchId,
         id: render.id,
+        jobId: render.jobId,
         iterationIndex: render.iterationIndex,
         iterationCount: group.iterationCount,
         videoUrl,
@@ -1818,42 +1886,43 @@ useEffect(() => {
   );
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (!form) {
-      writeStorage(STORAGE_KEYS.form, null);
-      return;
-    }
+    if (hydratedForScope !== storageScope) return;
+    if (!form) return;
     try {
-      writeStorage(STORAGE_KEYS.form, JSON.stringify(form));
+      writeStorage(STORAGE_KEYS.form, JSON.stringify({ ...form, updatedAt: Date.now() }));
     } catch {
       // noop
     }
-  }, [form, writeStorage]);
+  }, [form, hydratedForScope, storageScope, writeStorage]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (hydratedForScope !== storageScope) return;
     try {
       writeStorage(STORAGE_KEYS.prompt, prompt);
     } catch {
       // noop
     }
-  }, [prompt, writeStorage]);
+  }, [prompt, hydratedForScope, storageScope, writeStorage]);
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (hydratedForScope !== storageScope) return;
     try {
       writeStorage(STORAGE_KEYS.negativePrompt, negativePrompt);
     } catch {
       // noop
     }
-  }, [negativePrompt, writeStorage]);
+  }, [negativePrompt, hydratedForScope, storageScope, writeStorage]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (hydratedForScope !== storageScope) return;
     try {
       writeStorage(STORAGE_KEYS.memberTier, memberTier);
     } catch {
       // noop
     }
-  }, [memberTier, writeStorage]);
+  }, [memberTier, hydratedForScope, storageScope, writeStorage]);
 
   const durationRef = useRef<HTMLElement | null>(null);
   const resolutionRef = useRef<HTMLDivElement>(null);
@@ -2397,6 +2466,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   useEffect(() => {
     if (selectedPreview || renders.length > 0) return;
+    if (hasStoredFormRef.current) return;
+    const storedPreviewJobId = (readStorage(STORAGE_KEYS.previewJobId) ?? '').trim();
+    if (storedPreviewJobId.startsWith('job_')) return;
     const latestJobWithMedia = recentJobs.find((job) => job.thumbUrl || job.videoUrl);
     if (!latestJobWithMedia) return;
     setSelectedPreview({
@@ -2408,17 +2480,133 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       currency: latestJobWithMedia.currency ?? latestJobWithMedia.pricingSnapshot?.currency,
       prompt: latestJobWithMedia.prompt ?? undefined,
     });
-  }, [recentJobs, renders.length, selectedPreview]);
+  }, [readStorage, recentJobs, renders.length, selectedPreview]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!authChecked) return;
+    if (!engines.length) return;
+    if (hydratedForScope !== storageScope) return;
+    if (requestedJobId) return;
+    if (fromVideoId) return;
+    if (renders.length > 0) return;
+    if (compositeOverride) return;
+    if (compositeOverrideSummary) return;
+
+    const storedJobId = (readStorage(STORAGE_KEYS.previewJobId) ?? '').trim();
+    if (!storedJobId.startsWith('job_')) return;
+    if (restoredPreviewJobRef.current === storedJobId) return;
+    restoredPreviewJobRef.current = storedJobId;
+
+    void authFetch(`/api/jobs/${encodeURIComponent(storedJobId)}`)
+      .then(async (response) => {
+        const payload = (await response.json().catch(() => null)) as
+          | {
+              ok?: boolean;
+              error?: string;
+              status?: string;
+              progress?: number;
+              videoUrl?: string;
+              thumbUrl?: string;
+              aspectRatio?: string;
+              finalPriceCents?: number;
+              currency?: string;
+              pricing?: { totalCents?: number; currency?: string } | null;
+              settingsSnapshot?: unknown;
+              createdAt?: string;
+            }
+          | null;
+        if (!response.ok || !payload?.ok) {
+          throw new Error(payload?.error ?? `Failed to load job (${response.status})`);
+        }
+
+        const snapshot = payload.settingsSnapshot as
+          | {
+              schemaVersion?: unknown;
+              surface?: unknown;
+              engineId?: unknown;
+              engineLabel?: unknown;
+              prompt?: unknown;
+              core?: unknown;
+            }
+          | null
+          | undefined;
+        if (snapshot?.schemaVersion !== 1 || snapshot?.surface !== 'video') {
+          throw new Error('Invalid settings snapshot for preview');
+        }
+
+        applyVideoSettingsSnapshotRef.current(snapshot);
+
+        const core = snapshot.core && typeof snapshot.core === 'object' ? (snapshot.core as Record<string, unknown>) : {};
+        const durationSec = typeof core.durationSec === 'number' && Number.isFinite(core.durationSec) ? core.durationSec : undefined;
+        const engineId = typeof snapshot.engineId === 'string' ? snapshot.engineId : 'unknown-engine';
+        const engineLabel = typeof snapshot.engineLabel === 'string' ? snapshot.engineLabel : engineId;
+        const promptValue = typeof snapshot.prompt === 'string' ? snapshot.prompt : '';
+        const thumbUrl = typeof payload.thumbUrl === 'string' && payload.thumbUrl.length ? payload.thumbUrl : undefined;
+        const videoUrl = typeof payload.videoUrl === 'string' && payload.videoUrl.length ? payload.videoUrl : undefined;
+        const url = videoUrl ?? thumbUrl;
+        if (!url) {
+          throw new Error('Job has no preview media');
+        }
+        const createdAt =
+          typeof payload.createdAt === 'string' && payload.createdAt.length ? payload.createdAt : new Date().toISOString();
+
+        setCompositeOverride(
+          mapSharedVideoToGroup(
+            {
+              id: storedJobId,
+              engineId,
+              engineLabel,
+              durationSec: durationSec ?? 0,
+              prompt: promptValue,
+              thumbUrl,
+              videoUrl,
+              aspectRatio: payload.aspectRatio ?? undefined,
+              createdAt,
+            },
+            provider
+          )
+        );
+        setCompositeOverrideSummary(null);
+        setSelectedPreview({
+          id: storedJobId,
+          videoUrl,
+          thumbUrl,
+          aspectRatio: payload.aspectRatio ?? undefined,
+          progress: typeof payload.progress === 'number' ? payload.progress : undefined,
+          status:
+            payload.status === 'failed' ? 'failed' : payload.status === 'completed' ? 'completed' : ('pending' as const),
+          priceCents: payload.finalPriceCents ?? payload.pricing?.totalCents ?? undefined,
+          currency: payload.currency ?? payload.pricing?.currency ?? undefined,
+          prompt: promptValue,
+        });
+      })
+      .catch(() => {
+        // ignore preview restore failures
+      });
+  }, [
+    authChecked,
+    engines.length,
+    compositeOverride,
+    compositeOverrideSummary,
+    fromVideoId,
+    hydratedForScope,
+    readStorage,
+    renders.length,
+    requestedJobId,
+    storageScope,
+    provider,
+  ]);
 
   const focusComposer = useCallback(() => {
     if (!composerRef.current) return;
     composerRef.current.focus({ preventScroll: true });
-    composerRef.current.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
   }, []);
 
   const engineOverride = useMemo<EngineCaps | null>(() => {
     if (!requestedEngineToken) return null;
     if (!engines.length) return null;
+    if (hasStoredFormRef.current) return null;
     return (
       engines.find((engine) => matchesEngineToken(engine, requestedEngineToken)) ?? null
     );
@@ -2457,6 +2645,314 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     return map;
   }, [engines]);
 
+  const applyVideoSettingsSnapshot = useCallback(
+    (snapshot: unknown) => {
+      try {
+        if (!snapshot || typeof snapshot !== 'object') {
+          throw new Error('Settings snapshot missing');
+        }
+        const record = snapshot as {
+          schemaVersion?: unknown;
+          surface?: unknown;
+          engineId?: unknown;
+          inputMode?: unknown;
+          prompt?: unknown;
+          negativePrompt?: unknown;
+          core?: unknown;
+          advanced?: unknown;
+          refs?: unknown;
+          meta?: unknown;
+        };
+        if (record.schemaVersion !== 1) {
+          throw new Error('Unsupported snapshot version');
+        }
+        if (record.surface !== 'video') {
+          throw new Error('This snapshot is not for video');
+        }
+
+        const snapshotEngineId = typeof record.engineId === 'string' ? record.engineId : null;
+        const snapshotToken = snapshotEngineId ? normalizeEngineToken(snapshotEngineId) : null;
+        const engine =
+          (snapshotEngineId ? engineMap.get(snapshotEngineId) : null) ??
+          (snapshotToken ? engines.find((candidate) => matchesEngineToken(candidate, snapshotToken)) : null) ??
+          engines[0] ??
+          null;
+        if (!engine) {
+          throw new Error('No engines available to apply this snapshot');
+        }
+        const snapshotModeRaw = typeof record.inputMode === 'string' ? record.inputMode : '';
+        const snapshotMode: Mode =
+          snapshotModeRaw === 't2v' || snapshotModeRaw === 'i2v' || snapshotModeRaw === 't2i' || snapshotModeRaw === 'i2i'
+            ? (snapshotModeRaw as Mode)
+            : (engine.modes[0] ?? 't2v');
+        const mode = engine.modes.includes(snapshotMode) ? snapshotMode : (engine.modes[0] ?? 't2v');
+
+        const promptValue = typeof record.prompt === 'string' ? record.prompt : '';
+        const negativePromptValue = typeof record.negativePrompt === 'string' ? record.negativePrompt : '';
+        setPrompt(promptValue);
+        setNegativePrompt(negativePromptValue);
+
+        const meta = record.meta && typeof record.meta === 'object' ? (record.meta as Record<string, unknown>) : {};
+        const tier = typeof meta.memberTier === 'string' ? meta.memberTier : null;
+        if (tier === 'Member' || tier === 'Plus' || tier === 'Pro') {
+          setMemberTier(tier);
+        }
+
+        const core = record.core && typeof record.core === 'object' ? (record.core as Record<string, unknown>) : {};
+        const durationSec =
+          typeof core.durationSec === 'number' && Number.isFinite(core.durationSec) ? core.durationSec : undefined;
+        const durationOption =
+          typeof core.durationOption === 'number' || typeof core.durationOption === 'string' ? core.durationOption : undefined;
+        const numFrames =
+          typeof core.numFrames === 'number' && Number.isFinite(core.numFrames) ? Math.trunc(core.numFrames) : undefined;
+        const resolution = typeof core.resolution === 'string' ? core.resolution : undefined;
+        const aspectRatio = typeof core.aspectRatio === 'string' ? core.aspectRatio : undefined;
+        const fps = typeof core.fps === 'number' && Number.isFinite(core.fps) ? Math.trunc(core.fps) : undefined;
+        const iterations =
+          typeof core.iterationCount === 'number' && Number.isFinite(core.iterationCount)
+            ? Math.max(1, Math.min(4, Math.trunc(core.iterationCount)))
+            : undefined;
+
+        const advanced =
+          record.advanced && typeof record.advanced === 'object' ? (record.advanced as Record<string, unknown>) : {};
+        const cfgScaleValue =
+          typeof advanced.cfgScale === 'number' && Number.isFinite(advanced.cfgScale) ? advanced.cfgScale : null;
+        if (cfgScaleValue !== null) {
+          setCfgScale(cfgScaleValue);
+        }
+        const loopValue = typeof advanced.loop === 'boolean' ? advanced.loop : undefined;
+
+        setForm((current) => {
+          const previous = current ?? null;
+          const candidate: FormState = {
+            engineId: engine.id,
+            mode,
+            durationSec: typeof durationSec === 'number' ? durationSec : previous?.durationSec ?? 4,
+            durationOption: durationOption ?? previous?.durationOption ?? undefined,
+            numFrames: numFrames ?? previous?.numFrames ?? undefined,
+            resolution: resolution ?? previous?.resolution ?? (engine.resolutions[0] ?? '1080p'),
+            aspectRatio: aspectRatio ?? previous?.aspectRatio ?? (engine.aspectRatios[0] ?? '16:9'),
+            fps: fps ?? previous?.fps ?? (engine.fps?.[0] ?? 24),
+            iterations: iterations ?? previous?.iterations ?? 1,
+            seedLocked: previous?.seedLocked ?? false,
+            loop: typeof loopValue === 'boolean' ? loopValue : previous?.loop,
+          };
+          return coerceFormState(engine, mode, candidate);
+        });
+
+        const refs = record.refs && typeof record.refs === 'object' ? (record.refs as Record<string, unknown>) : {};
+        const inputsRaw = refs.inputs;
+        if (inputsRaw === null || Array.isArray(inputsRaw)) {
+          setInputAssets((previous) => {
+            Object.values(previous).forEach((entries) => {
+              entries.forEach((asset) => revokeAssetPreview(asset));
+            });
+            const next: Record<string, (ReferenceAsset | null)[]> = {};
+            if (Array.isArray(inputsRaw)) {
+              inputsRaw.forEach((entry, index) => {
+                if (!entry || typeof entry !== 'object') return;
+                const attachment = entry as Record<string, unknown>;
+                const slotId = typeof attachment.slotId === 'string' ? attachment.slotId : '';
+                const url = typeof attachment.url === 'string' ? attachment.url : '';
+                if (!slotId || !url) return;
+                const kind = attachment.kind === 'video' ? 'video' : 'image';
+                const name = typeof attachment.name === 'string' ? attachment.name : `${kind}-${index + 1}`;
+                const type =
+                  typeof attachment.type === 'string' ? attachment.type : kind === 'image' ? 'image/*' : 'video/*';
+                const size =
+                  typeof attachment.size === 'number' && Number.isFinite(attachment.size) ? attachment.size : 0;
+                const width =
+                  typeof attachment.width === 'number' && Number.isFinite(attachment.width) ? attachment.width : null;
+                const height =
+                  typeof attachment.height === 'number' && Number.isFinite(attachment.height) ? attachment.height : null;
+                const assetId = typeof attachment.assetId === 'string' ? attachment.assetId : undefined;
+                const refAsset: ReferenceAsset = {
+                  id: assetId ?? `snapshot-${index}`,
+                  fieldId: slotId,
+                  previewUrl: url,
+                  kind,
+                  name,
+                  size,
+                  type,
+                  url,
+                  width,
+                  height,
+                  assetId,
+                  status: 'ready',
+                };
+                next[slotId] = [...(next[slotId] ?? []), refAsset];
+              });
+            }
+            return next;
+          });
+        }
+
+        queueMicrotask(() => {
+          focusComposer();
+        });
+      } catch (error) {
+        setNotice(error instanceof Error ? error.message : 'Failed to apply settings.');
+      }
+    },
+    [engineMap, engines, focusComposer]
+  );
+
+  useEffect(() => {
+    applyVideoSettingsSnapshotRef.current = applyVideoSettingsSnapshot;
+  }, [applyVideoSettingsSnapshot]);
+
+  const hydrateVideoSettingsFromJob = useCallback(
+    async (jobId: string | null | undefined) => {
+      if (!jobId) return;
+      try {
+        const response = await authFetch(`/api/jobs/${encodeURIComponent(jobId)}`);
+        if (!response.ok) {
+          if (response.status === 404) return;
+          return;
+        }
+        const payload = (await response.json().catch(() => null)) as
+          | { ok?: boolean; settingsSnapshot?: unknown }
+          | null;
+        if (!payload?.ok || !payload.settingsSnapshot) return;
+        applyVideoSettingsSnapshot(payload.settingsSnapshot);
+      } catch {
+        // ignore best-effort recalls from gallery
+      }
+    },
+    [applyVideoSettingsSnapshot]
+  );
+
+  const applyVideoSettingsFromTile = useCallback(
+    (tile: QuadPreviewTile) => {
+      try {
+        applyVideoSettingsSnapshot({
+          schemaVersion: 1,
+          surface: 'video',
+          engineId: tile.engineId,
+          inputMode: 't2v',
+          prompt: tile.prompt,
+          negativePrompt: null,
+          core: {
+            durationSec: tile.durationSec,
+            durationOption: null,
+            numFrames: null,
+            aspectRatio: tile.aspectRatio,
+            resolution: null,
+            fps: null,
+            iterationCount: tile.iterationCount,
+          },
+          advanced: { cfgScale: null, loop: null },
+          refs: { imageUrl: null, referenceImages: null, firstFrameUrl: null, lastFrameUrl: null, inputs: null },
+          meta: { derived: true },
+        });
+      } catch {
+        // ignore
+      }
+    },
+    [applyVideoSettingsSnapshot]
+  );
+
+  useEffect(() => {
+    if (!requestedJobId) return;
+    if (!engines.length) return;
+    if (hydratedJobRef.current === requestedJobId) return;
+    hydratedJobRef.current = requestedJobId;
+    setNotice(null);
+    void authFetch(`/api/jobs/${encodeURIComponent(requestedJobId)}`)
+      .then(async (response) => {
+        const payload = (await response.json().catch(() => null)) as
+          | {
+              ok?: boolean;
+              error?: string;
+              settingsSnapshot?: unknown;
+              videoUrl?: string;
+              thumbUrl?: string;
+              aspectRatio?: string;
+              progress?: number;
+              status?: string;
+              pricing?: { totalCents?: number; currency?: string } | null;
+              finalPriceCents?: number;
+              currency?: string;
+              createdAt?: string;
+            }
+          | null;
+        if (!response.ok || !payload?.ok) {
+          throw new Error(payload?.error ?? `Failed to load job (${response.status})`);
+        }
+        applyVideoSettingsSnapshot(payload.settingsSnapshot);
+
+        try {
+          if (requestedJobId.startsWith('job_')) {
+            writeStorage(STORAGE_KEYS.previewJobId, requestedJobId);
+          }
+        } catch {
+          // ignore storage failures
+        }
+
+        const snapshot = payload.settingsSnapshot as
+          | {
+              schemaVersion?: unknown;
+              surface?: unknown;
+              engineId?: unknown;
+              engineLabel?: unknown;
+              prompt?: unknown;
+              core?: unknown;
+            }
+          | null
+          | undefined;
+        if (snapshot?.schemaVersion === 1 && snapshot?.surface === 'video') {
+          const core = snapshot.core && typeof snapshot.core === 'object' ? (snapshot.core as Record<string, unknown>) : {};
+          const durationSec = typeof core.durationSec === 'number' && Number.isFinite(core.durationSec) ? core.durationSec : 0;
+          const engineId = typeof snapshot.engineId === 'string' ? snapshot.engineId : 'unknown-engine';
+          const engineLabel = typeof snapshot.engineLabel === 'string' ? snapshot.engineLabel : engineId;
+          const promptValue = typeof snapshot.prompt === 'string' ? snapshot.prompt : '';
+          const thumbUrl = typeof payload.thumbUrl === 'string' && payload.thumbUrl.length ? payload.thumbUrl : undefined;
+          const videoUrl = typeof payload.videoUrl === 'string' && payload.videoUrl.length ? payload.videoUrl : undefined;
+          if (thumbUrl || videoUrl) {
+            setCompositeOverride(
+              mapSharedVideoToGroup(
+                {
+                  id: requestedJobId,
+                  engineId,
+                  engineLabel,
+                  durationSec,
+                  prompt: promptValue,
+                  thumbUrl,
+                  videoUrl,
+                  aspectRatio: payload.aspectRatio ?? undefined,
+                  createdAt:
+                    typeof payload.createdAt === 'string' && payload.createdAt.length
+                      ? payload.createdAt
+                      : new Date().toISOString(),
+                },
+                provider
+              )
+            );
+            setCompositeOverrideSummary(null);
+            setSelectedPreview({
+              id: requestedJobId,
+              videoUrl,
+              thumbUrl,
+              aspectRatio: payload.aspectRatio ?? undefined,
+              progress: typeof payload.progress === 'number' ? payload.progress : undefined,
+              status:
+                payload.status === 'failed'
+                  ? 'failed'
+                  : payload.status === 'completed'
+                    ? 'completed'
+                    : ('pending' as const),
+              priceCents: payload.finalPriceCents ?? payload.pricing?.totalCents ?? undefined,
+              currency: payload.currency ?? payload.pricing?.currency ?? undefined,
+              prompt: promptValue,
+            });
+          }
+        }
+      })
+      .catch((error) => {
+        setNotice(error instanceof Error ? error.message : 'Failed to load job settings.');
+      });
+  }, [applyVideoSettingsSnapshot, engines.length, provider, requestedJobId, writeStorage]);
+
   const activeMode: Mode = form?.mode ?? (selectedEngine?.modes[0] ?? 't2v');
 
   const capability = useMemo(() => {
@@ -2480,6 +2976,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   useEffect(() => {
     if (!engineOverride) return;
+    if (hasStoredFormRef.current) return;
     setForm((current) => {
       const candidate = current ?? null;
       if (candidate?.engineId === engineOverride.id) return candidate;
@@ -2744,16 +3241,22 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   useEffect(() => {
     if (!selectedEngine) {
-      setCfgScale(null);
+      if (cfgScale !== null) {
+        setCfgScale(null);
+      }
       return;
     }
     const cfgParam = selectedEngine.params?.cfg_scale;
     if (cfgParam) {
-      setCfgScale(cfgParam.default ?? null);
+      if (cfgScale === null) {
+        setCfgScale(cfgParam.default ?? null);
+      }
     } else {
-      setCfgScale(null);
+      if (cfgScale !== null) {
+        setCfgScale(null);
+      }
     }
-  }, [selectedEngine, form?.mode]);
+  }, [cfgScale, selectedEngine, form?.mode]);
 
   const composerAssets = useMemo<Record<string, (ComposerAttachment | null)[]>>(() => {
     const map: Record<string, (ComposerAttachment | null)[]> = {};
@@ -3220,6 +3723,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         const resolvedHeroRenderId = res.heroRenderId ?? null;
         const resolvedVideoUrl = res.videoUrl ?? undefined;
 
+        try {
+          if (resolvedJobId.startsWith('job_')) {
+            writeStorage(STORAGE_KEYS.previewJobId, resolvedJobId);
+          }
+        } catch {
+          // ignore storage failures
+        }
+
         const now = Date.now();
         const gatingActive = Boolean(resolvedVideoUrl) && now < minReadyAt;
         const clampedProgress = resolvedProgress < 5 ? 5 : resolvedProgress;
@@ -3462,6 +3973,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     preflight,
     memberTier,
     showNotice,
+    writeStorage,
+    mutateLatestJobs,
     inputSchemaSummary,
     inputAssets,
     authChecked,
@@ -3482,6 +3995,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     if (!selectedEngine || !authChecked) return;
     setForm((current) => {
       const candidate = current ?? null;
+      if (!candidate) return candidate;
       const nextMode = candidate && selectedEngine.modes.includes(candidate.mode) ? candidate.mode : selectedEngine.modes[0];
       const normalizedPrevious = candidate ? { ...candidate, mode: nextMode } : null;
       const nextState = coerceFormState(selectedEngine, nextMode, normalizedPrevious);
@@ -3550,16 +4064,19 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   const handleQuadTileAction = useCallback(
     (action: QuadTileAction, tile: QuadPreviewTile) => {
       emitClientMetric('tile_action', { action, batchId: tile.batchId, version: tile.iterationIndex + 1 });
+      const jobId = tile.jobId ?? tile.id;
       switch (action) {
         case 'continue': {
+          applyVideoSettingsFromTile(tile);
+          void hydrateVideoSettingsFromJob(jobId);
           setPrompt(tile.prompt);
-          setForm((current) => (current ? { ...current, engineId: tile.engineId } : current));
           focusComposer();
           break;
         }
         case 'refine': {
+          applyVideoSettingsFromTile(tile);
+          void hydrateVideoSettingsFromJob(jobId);
           setPrompt(`${tile.prompt}\n\n// refine here`);
-          setForm((current) => (current ? { ...current, engineId: tile.engineId } : current));
           focusComposer();
           break;
         }
@@ -3579,6 +4096,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           break;
         }
         case 'open': {
+          applyVideoSettingsFromTile(tile);
+          void hydrateVideoSettingsFromJob(jobId);
           setActiveBatchId(tile.batchId);
           setViewMode('quad');
           setSelectedPreview({
@@ -3603,7 +4122,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           break;
       }
     },
-    [focusComposer, setForm, setPrompt, showNotice]
+    [applyVideoSettingsFromTile, focusComposer, hydrateVideoSettingsFromJob, setPrompt, showNotice]
   );
 
   const handleCopySharedPrompt = useCallback(() => {
@@ -3639,6 +4158,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           ? renderGroup.items.find((item) => item.localKey === preferredHeroKey) ?? renderGroup.items[0]
           : renderGroup.items[0];
         if (!heroRender) return;
+        const heroJobId = heroRender.jobId ?? heroRender.id;
         if (action === 'compare') {
           emitClientMetric('compare_used', { batchId: group.id });
           showNotice('Compare view is coming soon.');
@@ -3650,13 +4170,19 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           setCompositeOverride(null);
           setCompositeOverrideSummary(null);
           setSharedPrompt(null);
+          applyVideoSettingsFromTile(tile);
+          void hydrateVideoSettingsFromJob(heroJobId);
           return;
         }
         if (action === 'continue') {
+          applyVideoSettingsFromTile(tile);
+          void hydrateVideoSettingsFromJob(heroJobId);
           handleQuadTileAction('continue', tile);
           return;
         }
         if (action === 'refine') {
+          applyVideoSettingsFromTile(tile);
+          void hydrateVideoSettingsFromJob(heroJobId);
           handleQuadTileAction('refine', tile);
           return;
         }
@@ -3671,6 +4197,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         localKey: member.localKey ?? member.id,
         batchId: member.batchId ?? group.id,
         id: member.jobId ?? member.id,
+        jobId: member.jobId ?? undefined,
         iterationIndex: member.iterationIndex ?? 0,
         iterationCount: member.iterationCount ?? group.count,
         videoUrl: member.videoUrl ?? undefined,
@@ -3701,6 +4228,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       }
 
       const tile = memberToTile(hero);
+      const heroJobId = hero.jobId ?? tile.id;
 
       if (action === 'open') {
         const targetBatchId = tile.batchId ?? group.batchId ?? null;
@@ -3734,10 +4262,21 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         const normalizedSummary = normalizeGroupSummary(group);
         setCompositeOverride(adaptGroupSummary(normalizedSummary, provider));
         setCompositeOverrideSummary(normalizedSummary);
+        try {
+          if (heroJobId.startsWith('job_')) {
+            writeStorage(STORAGE_KEYS.previewJobId, heroJobId);
+          }
+        } catch {
+          // ignore storage failures
+        }
+        applyVideoSettingsFromTile(tile);
+        void hydrateVideoSettingsFromJob(heroJobId);
         return;
       }
 
       if (action === 'continue' || action === 'refine') {
+        applyVideoSettingsFromTile(tile);
+        void hydrateVideoSettingsFromJob(heroJobId);
         handleQuadTileAction(action, tile);
         return;
       }
@@ -3756,6 +4295,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       provider,
       setCompositeOverride,
       setCompositeOverrideSummary,
+      applyVideoSettingsFromTile,
+      hydrateVideoSettingsFromJob,
+      writeStorage,
     ]
   );
 

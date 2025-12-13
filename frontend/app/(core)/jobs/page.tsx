@@ -45,6 +45,7 @@ const DEFAULT_JOBS_COPY = {
   actions: {
     addToLibrary: 'Add to Library',
     saving: 'Saving…',
+    recreate: 'Generate same settings',
   },
 } as const;
 
@@ -294,6 +295,9 @@ export default function JobsPage() {
             const engineId = group.hero.engineId;
             const engine = engineId ? engineLookup.byId.get(engineId) ?? null : null;
             const isImageGroup = IMAGE_ENGINE_IDS.has(engineId ?? '');
+            const heroJobId = group.hero.jobId ?? group.hero.job?.jobId ?? null;
+            const recreateHref =
+              heroJobId ? `${isImageGroup || prefix === 'image' ? '/app/image' : '/app'}?job=${encodeURIComponent(heroJobId)}` : undefined;
             return (
               <GroupedJobCard
                 key={group.id}
@@ -306,6 +310,9 @@ export default function JobsPage() {
                 savingToLibrary={savingImageGroupIds.has(group.id)}
                 imageLibraryLabel={copy.actions.addToLibrary}
                 imageLibrarySavingLabel={copy.actions.saving}
+                recreateHref={recreateHref}
+                recreateLabel={copy.actions.recreate}
+                menuVariant="compact"
               />
             );
           })}
@@ -316,6 +323,7 @@ export default function JobsPage() {
     [
       allowRemove,
       copy.actions.addToLibrary,
+      copy.actions.recreate,
       copy.actions.saving,
       engineLookup.byId,
       handleGroupAction,
