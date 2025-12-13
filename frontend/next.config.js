@@ -55,14 +55,19 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/fr/pricing-calculator',
+        destination: '/fr/tarifs',
+        statusCode: 301,
+      },
+      {
         source: '/fr/simulateur-prix',
-        destination: '/pricing?lang=fr',
-        permanent: true,
+        destination: '/fr/tarifs',
+        statusCode: 301,
       },
       {
         source: '/es/calculadora-precio',
-        destination: '/pricing?lang=es',
-        permanent: true,
+        destination: '/es/precios',
+        statusCode: 301,
       },
       {
         source: '/docs/getting-started',
