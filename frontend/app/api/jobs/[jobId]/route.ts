@@ -9,6 +9,14 @@ import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails'
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { getEngineAliases, listFalEngines } from '@/config/falEngines';
 
+export const dynamic = 'force-dynamic';
+
+function json(body: unknown, init?: Parameters<typeof NextResponse.json>[1]) {
+  const response = NextResponse.json(body, init);
+  response.headers.set('Cache-Control', 'private, no-store');
+  return response;
+}
+
 type DbJobRow = {
   id: number;
   job_id: string;
@@ -127,19 +135,19 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
   const jobId = params.jobId;
 
   if (!isDatabaseConfigured()) {
-    return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
+    return json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }
 
   const { userId } = await getRouteAuthContext(_req);
   if (!userId) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+    return json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
     await ensureBillingSchema();
   } catch (error) {
     console.warn('[api/jobs] schema init failed', error);
-    return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
+    return json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }
 
   let rows: DbJobRow[];
@@ -153,16 +161,16 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
     );
   } catch (error) {
     console.warn('[api/jobs] query failed', error);
-    return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
+    return json({ ok: false, error: 'Database unavailable' }, { status: 503 });
   }
 
   if (!rows.length) {
-    return NextResponse.json({ ok: false, error: 'Not found' }, { status: 404 });
+    return json({ ok: false, error: 'Not found' }, { status: 404 });
   }
 
   const job = rows[0];
   if (job.user_id && job.user_id !== userId) {
-    return NextResponse.json({ ok: false, error: 'Not found' }, { status: 404 });
+    return json({ ok: false, error: 'Not found' }, { status: 404 });
   }
   const normalizedVideoUrl = normalizeMediaUrl(job.video_url);
   const normalizedThumbUrl = normalizeMediaUrl(job.thumb_url);
@@ -217,7 +225,7 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
             `UPDATE app_jobs SET status = $1, progress = $2, video_url = $3, thumb_url = $4, preview_frame = $5 WHERE job_id = $6`,
             [status, progress, videoUrl ?? null, thumbUrl ?? null, thumbUrl ?? null, jobId]
           );
-          return NextResponse.json({
+          return json({
             ok: true,
             jobId,
             createdAt: job.created_at,
@@ -252,7 +260,7 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
     }
   }
 
-  return NextResponse.json({
+  return json({
     ok: true,
     jobId,
     createdAt: job.created_at,

@@ -10,6 +10,14 @@ import { listStarterPlaylistVideos } from '@/server/videos';
 import { getEngineAliases, listFalEngines } from '@/config/falEngines';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
+export const dynamic = 'force-dynamic';
+
+function json(body: unknown, init?: Parameters<typeof NextResponse.json>[1]) {
+  const response = NextResponse.json(body, init);
+  response.headers.set('Cache-Control', 'private, no-store');
+  return response;
+}
+
 function parseCursorParam(value: string | null): { createdAt: Date | null; id: number | null } {
   if (!value) {
     return { createdAt: null, id: null };
@@ -54,7 +62,7 @@ const IMAGE_ENGINE_ID_SET = new Set(IMAGE_ENGINE_ALIASES);
 
 export async function GET(req: NextRequest) {
   if (!isDatabaseConfigured()) {
-    return NextResponse.json(
+    return json(
       { ok: false, jobs: [], nextCursor: null, error: 'Database unavailable' },
       { status: 503 }
     );
@@ -64,7 +72,7 @@ export async function GET(req: NextRequest) {
     await ensureBillingSchema();
   } catch (error) {
     console.warn('[api/jobs] schema init failed', error);
-    return NextResponse.json(
+    return json(
       { ok: false, jobs: [], nextCursor: null, error: 'Database unavailable' },
       { status: 503 }
     );
@@ -78,7 +86,7 @@ export async function GET(req: NextRequest) {
   const { userId } = await getRouteAuthContext(req);
 
   if (!userId) {
-    return NextResponse.json({ ok: false, jobs: [], nextCursor: null, error: 'Unauthorized' }, { status: 401 });
+    return json({ ok: false, jobs: [], nextCursor: null, error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
@@ -497,14 +505,14 @@ type JobRow = {
           indexable: video.indexable,
           curated: true,
         }));
-        return NextResponse.json({ ok: true, jobs: mapped, nextCursor: null });
+        return json({ ok: true, jobs: mapped, nextCursor: null });
       }
     }
 
-    return NextResponse.json({ ok: true, jobs: mapped, nextCursor });
+    return json({ ok: true, jobs: mapped, nextCursor });
   } catch (error) {
     console.warn('[api/jobs] query failed', error);
-    return NextResponse.json(
+    return json(
       { ok: false, jobs: [], nextCursor: null, error: 'Database unavailable' },
       { status: 503 }
     );
