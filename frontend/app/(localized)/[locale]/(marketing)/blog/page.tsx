@@ -30,6 +30,8 @@ const BLOG_META = {
   },
 } satisfies Record<AppLocale, { title: string; description: string }>;
 
+export const revalidate = 60 * 10;
+
 async function getBlogPosts(locale: AppLocale) {
   const localized = await getContentEntries(`content/${locale}/blog`);
   if (localized.length > 0 || locale === 'en') {
@@ -117,7 +119,7 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
 export default async function BlogIndexPage({ params }: { params: { locale: AppLocale } }) {
   const locale = params.locale;
   const posts = await getBlogPosts(locale);
-  const { dictionary } = await resolveDictionary();
+  const { dictionary } = await resolveDictionary({ locale });
   const content = dictionary.blog;
   const faq = content.faq ?? DEFAULT_BLOG_FAQ;
   const metadataUrls = buildMetadataUrls(locale, BLOG_SLUG_MAP, { englishPath: '/blog' });

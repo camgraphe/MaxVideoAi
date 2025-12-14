@@ -16,6 +16,8 @@ import { getTranslations } from 'next-intl/server';
 const WORKFLOWS_SLUG_MAP = buildSlugMap('workflows');
 const MODELS_BASE_SLUG_MAP = buildSlugMap('models');
 
+export const revalidate = 60 * 10;
+
 function buildModelPath(locale: AppLocale, slug: string) {
   const prefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
   const base = MODELS_BASE_SLUG_MAP[locale] ?? MODELS_BASE_SLUG_MAP.en ?? 'models';
@@ -39,9 +41,10 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   });
 }
 
-export default async function WorkflowsPage() {
-  const { locale, dictionary } = await resolveDictionary();
-  const activeLocale = locale as AppLocale;
+export default async function WorkflowsPage({ params }: { params: { locale: AppLocale } }) {
+  const locale = params.locale;
+  const { dictionary } = await resolveDictionary({ locale });
+  const activeLocale = locale;
   const content = dictionary.workflows;
   const models = listAvailableModels(true);
   const availabilityLabels = dictionary.models.availabilityLabels;

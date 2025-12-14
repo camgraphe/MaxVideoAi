@@ -16,8 +16,10 @@ export function deserializeMessages(messages: AbstractIntlMessages): Dictionary 
   return JSON.parse(JSON.stringify(messages)) as Dictionary;
 }
 
-export async function resolveDictionary(): Promise<{ locale: Locale; dictionary: Dictionary; fallback: Dictionary }> {
-  const locale = await resolveLocale();
+export async function resolveDictionary(options?: {
+  locale?: Locale;
+}): Promise<{ locale: Locale; dictionary: Dictionary; fallback: Dictionary }> {
+  const locale = options?.locale ?? (await resolveLocale());
   const dictionary = deserializeMessages(await getMessages({ locale }));
   const fallback =
     locale === defaultLocale ? dictionary : deserializeMessages(await getMessages({ locale: defaultLocale }));

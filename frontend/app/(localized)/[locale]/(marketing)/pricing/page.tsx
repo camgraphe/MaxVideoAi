@@ -17,6 +17,8 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 
 const PRICING_SLUG_MAP = buildSlugMap('pricing');
 
+export const revalidate = 60 * 10;
+
 type ExampleCardConfig = {
   title: string;
   engine: string;
@@ -139,8 +141,9 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   });
 }
 
-export default async function PricingPage() {
-  const { locale, dictionary } = await resolveDictionary();
+export default async function PricingPage({ params }: { params: { locale: AppLocale } }) {
+  const locale = params.locale;
+  const { dictionary } = await resolveDictionary({ locale });
   const content = dictionary.pricing;
   const teams = content.teams;
   const member = content.member;

@@ -13,6 +13,8 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://maxvideoai.com';
 const DOCS_SLUG_MAP = buildSlugMap('docs');
 
+export const revalidate = 60 * 10;
+
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
   const title = 'Docs — Onboarding, Brand Safety, Refunds & API Webhooks';
@@ -35,8 +37,9 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
   });
 }
 
-export default async function DocsIndexPage() {
-  const { dictionary } = await resolveDictionary();
+export default async function DocsIndexPage({ params }: { params: { locale: AppLocale } }) {
+  const locale = params.locale;
+  const { dictionary } = await resolveDictionary({ locale });
   const content = dictionary.docs;
   const sections = content.sections;
   const docs = await getContentEntries('content/docs');
