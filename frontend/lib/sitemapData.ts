@@ -32,15 +32,12 @@ const LOCALE_SITEMAP_PATHS: Record<AppLocale, string> = {
 const LOCALES: AppLocale[] = ['en', 'fr', 'es'];
 const MODEL_CONTENT_ROOT = path.join(CONTENT_ROOT, 'models');
 
-function findNextServerAppRoot(): string | null {
+function findAppPathsManifestPath(): string | null {
   let currentDir = __dirname;
   for (let depth = 0; depth < 10; depth += 1) {
     const manifestPath = path.join(currentDir, 'app-paths-manifest.json');
     if (fs.existsSync(manifestPath)) {
-      const candidate = path.join(currentDir, 'app');
-      if (fs.existsSync(candidate)) {
-        return candidate;
-      }
+      return manifestPath;
     }
     const parent = path.dirname(currentDir);
     if (parent === currentDir) {
@@ -48,41 +45,54 @@ function findNextServerAppRoot(): string | null {
     }
     currentDir = parent;
   }
-  return null;
-}
 
-function resolveAppRoot(): string {
-  const packagedAppRoot = findNextServerAppRoot();
-  if (packagedAppRoot) {
-    return packagedAppRoot;
-  }
-
-  const candidates = [
-    path.join(process.cwd(), 'app'),
-    path.join(process.cwd(), 'frontend', 'app'),
-    path.join(process.cwd(), '.next', 'server', 'app'),
-    path.join(process.cwd(), 'frontend', '.next', 'server', 'app'),
-    path.resolve(__dirname, '..', 'app'),
-    path.resolve(__dirname, '..', '..', 'app'),
-    path.resolve(__dirname, '..', '..', '..', 'app'),
+  const fallbacks = [
+    path.join(process.cwd(), '.next', 'server', 'app-paths-manifest.json'),
+    path.join(process.cwd(), 'frontend', '.next', 'server', 'app-paths-manifest.json'),
   ];
 
-  for (const candidate of candidates) {
+  for (const candidate of fallbacks) {
     if (fs.existsSync(candidate)) {
       return candidate;
     }
   }
 
-  return path.join(process.cwd(), 'app');
+  return null;
 }
 
-const APP_ROOT = resolveAppRoot();
-const LOCALIZED_APP_ROOT = path.join(APP_ROOT, '(localized)', '[locale]');
+function resolveSourceAppRoot(): string | null {
+  const candidates = [
+    path.join(process.cwd(), 'app'),
+    path.join(process.cwd(), 'frontend', 'app'),
+    path.join(process.cwd(), '..', 'app'),
+    path.join(process.cwd(), '..', 'frontend', 'app'),
+    path.resolve(__dirname, '..', '..', '..', '..', 'app'),
+    path.resolve(__dirname, '..', '..', '..', '..', '..', 'app'),
+  ];
+
+  const visited = new Set<string>();
+  for (const candidate of candidates) {
+    if (!candidate || visited.has(candidate)) {
+      continue;
+    }
+    visited.add(candidate);
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
+const APP_PATHS_MANIFEST_PATH = findAppPathsManifestPath();
+const SOURCE_APP_ROOT = resolveSourceAppRoot();
+const LOCALIZED_SOURCE_APP_ROOT = SOURCE_APP_ROOT ? path.join(SOURCE_APP_ROOT, '(localized)', '[locale]') : null;
 const PAGE_FILE_PATTERN = /^page\.(?:mdx|tsx?|ts|jsx?|js)$/i;
 const IGNORED_ROUTE_TEMPLATES = new Set(['/404', '/video/[videoId]', '/v/[videoId]']);
 const MANUAL_ROUTE_DATES = new Map<string, string>(Object.entries(SITEMAP_MANUAL_TIMESTAMPS.routes ?? {}));
 const MANUAL_SITEMAP_DATES = new Map<string, string>(Object.entries(SITEMAP_MANUAL_TIMESTAMPS.sitemaps ?? {}));
 const GIT_LASTMOD_CACHE = new Map<string, string | null>();
+let cachedAppPathsManifest: Record<string, string> | null = null;
 
 type CanonicalPathEntry = {
   englishPath: string;
@@ -110,6 +120,70 @@ const EXTRA_CANONICAL_PATHS: CanonicalPathEntry[] = [
   { englishPath: '/legal/mentions', locales: ['en', 'fr', 'es'] },
   { englishPath: '/legal/subprocessors', locales: ['en', 'fr', 'es'] },
 ];
+
+function loadAppPathsManifest(): Record<string, string> {
+  if (cachedAppPathsManifest) {
+    return cachedAppPathsManifest;
+  }
+  const manifestPath = APP_PATHS_MANIFEST_PATH;
+  if (!manifestPath) {
+    cachedAppPathsManifest = {};
+    return cachedAppPathsManifest;
+  }
+  try {
+    const raw = fs.readFileSync(manifestPath, 'utf8');
+    cachedAppPathsManifest = JSON.parse(raw) as Record<string, string>;
+  } catch (error) {
+    console.warn('[sitemap] Failed to load app-paths manifest', error);
+    cachedAppPathsManifest = {};
+  }
+  return cachedAppPathsManifest;
+}
+
+function normalizeManifestRoute(route: string): string | null {
+  const prefix = '/(localized)/[locale]';
+  if (!route.startsWith(prefix)) {
+    return null;
+  }
+  const segments = route
+    .slice(prefix.length)
+    .split('/')
+    .filter((segment) => Boolean(segment));
+  const filtered = segments.filter(
+    (segment) =>
+      segment !== 'page' &&
+      segment !== 'route' &&
+      segment !== 'default' &&
+      !isRouteGroupSegment(segment) &&
+      !isParallelRouteSegment(segment)
+  );
+  if (filtered.length === 0) {
+    return '/';
+  }
+  return `/${filtered.join('/')}`;
+}
+
+function findSourceFileForManifestEntry(relativeEntry: string): string | undefined {
+  if (!SOURCE_APP_ROOT) {
+    return undefined;
+  }
+  const trimmed = relativeEntry.startsWith('app/') ? relativeEntry.slice(4) : relativeEntry;
+  const directoryPath = path.dirname(trimmed);
+  const baseName = path.basename(trimmed, path.extname(trimmed));
+  const candidateBases = ['page', 'route', 'default', baseName];
+  const extensions = ['.tsx', '.ts', '.jsx', '.js', '.mdx', '.md'];
+
+  for (const base of candidateBases) {
+    if (!base) continue;
+    for (const ext of extensions) {
+      const candidate = path.join(SOURCE_APP_ROOT, directoryPath, `${base}${ext}`);
+      if (fs.existsSync(candidate)) {
+        return candidate;
+      }
+    }
+  }
+  return undefined;
+}
 
 export const escapeXml = (value: string) =>
   value
@@ -423,10 +497,47 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
 }
 
 function discoverLocalizedRouteTemplates(): RouteTemplate[] {
-  if (!fs.existsSync(LOCALIZED_APP_ROOT)) {
+  const manifestTemplates = discoverTemplatesFromManifest();
+  if (manifestTemplates.length > 0) {
+    return manifestTemplates;
+  }
+  return discoverTemplatesFromFilesystem();
+}
+
+function discoverTemplatesFromManifest(): RouteTemplate[] {
+  const manifest = loadAppPathsManifest();
+  const entries = Object.entries(manifest);
+  if (!entries.length) {
     return [];
   }
-  const stack = [LOCALIZED_APP_ROOT];
+
+  const map = new Map<string, RouteTemplate>();
+
+  entries.forEach(([appRoute, relativeFile]) => {
+    const normalized = normalizeManifestRoute(appRoute);
+    if (!normalized || IGNORED_ROUTE_TEMPLATES.has(normalized)) {
+      return;
+    }
+    const sourceFile = findSourceFileForManifestEntry(relativeFile);
+    const existing = map.get(normalized);
+    if (existing) {
+      if (!existing.sourceFile && sourceFile) {
+        existing.sourceFile = sourceFile;
+      }
+      return;
+    }
+    map.set(normalized, { template: normalized, isDynamic: normalized.includes('['), sourceFile });
+  });
+
+  return Array.from(map.values()).sort((a, b) => comparePaths(a.template, b.template));
+}
+
+function discoverTemplatesFromFilesystem(): RouteTemplate[] {
+  if (!LOCALIZED_SOURCE_APP_ROOT || !fs.existsSync(LOCALIZED_SOURCE_APP_ROOT)) {
+    return [];
+  }
+
+  const stack = [LOCALIZED_SOURCE_APP_ROOT];
   const map = new Map<string, RouteTemplate>();
 
   while (stack.length > 0) {
@@ -453,7 +564,10 @@ function discoverLocalizedRouteTemplates(): RouteTemplate[] {
 }
 
 function buildEnglishPathFromDir(directory: string): string | null {
-  const relative = path.relative(LOCALIZED_APP_ROOT, directory);
+  if (!LOCALIZED_SOURCE_APP_ROOT) {
+    return null;
+  }
+  const relative = path.relative(LOCALIZED_SOURCE_APP_ROOT, directory);
   if (relative.startsWith('..')) {
     return null;
   }
