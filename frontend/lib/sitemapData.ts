@@ -31,7 +31,28 @@ const LOCALE_SITEMAP_PATHS: Record<AppLocale, string> = {
 
 const LOCALES: AppLocale[] = ['en', 'fr', 'es'];
 const MODEL_CONTENT_ROOT = path.join(CONTENT_ROOT, 'models');
-const APP_ROOT = path.join(process.cwd(), 'app');
+
+function resolveAppRoot(): string {
+  const candidates = [
+    path.join(process.cwd(), 'app'),
+    path.join(process.cwd(), 'frontend', 'app'),
+    path.join(process.cwd(), '.next', 'server', 'app'),
+    path.join(process.cwd(), 'frontend', '.next', 'server', 'app'),
+    path.resolve(__dirname, '..', 'app'),
+    path.resolve(__dirname, '..', '..', 'app'),
+    path.resolve(__dirname, '..', '..', '..', 'app'),
+  ];
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return path.join(process.cwd(), 'app');
+}
+
+const APP_ROOT = resolveAppRoot();
 const LOCALIZED_APP_ROOT = path.join(APP_ROOT, '(localized)', '[locale]');
 const PAGE_FILE_PATTERN = /^page\.(?:mdx|tsx?|ts|jsx?|js)$/i;
 const IGNORED_ROUTE_TEMPLATES = new Set(['/404', '/video/[videoId]', '/v/[videoId]']);
