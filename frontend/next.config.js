@@ -8,6 +8,16 @@ const CONTENT_GLOBS = [
   '../content/docs/**/*',
   '../content/models/**/*',
 ];
+const SITEMAP_RUNTIME_GLOBS = [
+  // Ensure sitemap generation can read Next build manifests inside the deployed function bundle.
+  'frontend/.next/server/app-paths-manifest.json',
+  'frontend/.next/app-path-routes-manifest.json',
+  'frontend/.next/routes-manifest.json',
+  // Some deploys use `frontend` as the project root.
+  '.next/server/app-paths-manifest.json',
+  '.next/app-path-routes-manifest.json',
+  '.next/routes-manifest.json',
+];
 
 const withNextIntl = require('next-intl/plugin')('./i18n/request.ts');
 
@@ -39,7 +49,7 @@ const nextConfig = {
     },
     outputFileTracingRoot: repoRoot,
     outputFileTracingIncludes: {
-      '*': CONTENT_GLOBS,
+      '*': [...CONTENT_GLOBS, ...SITEMAP_RUNTIME_GLOBS],
     },
   },
   async redirects() {
