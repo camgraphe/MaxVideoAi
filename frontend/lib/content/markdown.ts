@@ -5,7 +5,6 @@ import { unstable_cache } from 'next/cache';
 import { remark } from 'remark';
 import html from 'remark-html';
 import remarkGfm from 'remark-gfm';
-import { cache } from 'react';
 
 export interface ContentFrontMatter {
   title: string;
@@ -75,6 +74,7 @@ async function parseMarkdownFile(filePath: string): Promise<ContentEntry> {
 }
 
 const MARKDOWN_CACHE_REVALIDATE_SECONDS = 60 * 60; // 1 hour
+const cachedEntriesByRoot = new Map<string, () => Promise<ContentEntry[]>>();
 
 async function getContentEntriesUncached(root: string): Promise<ContentEntry[]> {
   const candidateDirs = Array.from(
@@ -106,12 +106,18 @@ async function getContentEntriesUncached(root: string): Promise<ContentEntry[]> 
   return entries.sort((a, b) => (a.date > b.date ? -1 : a.date < b.date ? 1 : 0));
 }
 
-export const getContentEntries = cache((root: string): Promise<ContentEntry[]> => {
+export async function getContentEntries(root: string): Promise<ContentEntry[]> {
+  const existing = cachedEntriesByRoot.get(root);
+  if (existing) {
+    return existing();
+  }
+
   const cached = unstable_cache(async () => getContentEntriesUncached(root), ['contentEntries', root], {
     revalidate: MARKDOWN_CACHE_REVALIDATE_SECONDS,
   });
+  cachedEntriesByRoot.set(root, cached);
   return cached();
-});
+}
 
 export async function getEntryBySlug(root: string, slug: string): Promise<ContentEntry | null> {
   const entries = await getContentEntries(root);
