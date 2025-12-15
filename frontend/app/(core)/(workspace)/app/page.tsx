@@ -947,6 +947,13 @@ export default function Page() {
     (base: string, scope: string = storageScope) => `${base}:${scope}`,
     [storageScope]
   );
+  const readScopedStorage = useCallback(
+    (base: string): string | null => {
+      if (typeof window === 'undefined') return null;
+      return window.localStorage.getItem(storageKey(base));
+    },
+    [storageKey]
+  );
   const readStorage = useCallback(
     (base: string): string | null => {
       if (typeof window === 'undefined') return null;
@@ -969,6 +976,19 @@ export default function Page() {
       return null;
     },
     [storageKey, storageScope]
+  );
+  const writeScopedStorage = useCallback(
+    (base: string, value: string | null) => {
+      if (typeof window === 'undefined') return;
+      const key = storageKey(base);
+      if (value === null) {
+        window.localStorage.removeItem(key);
+      } else {
+        window.localStorage.setItem(key, value);
+      }
+      window.localStorage.removeItem(base);
+    },
+    [storageKey]
   );
   const writeStorage = useCallback(
     (base: string, value: string | null) => {
@@ -1125,6 +1145,7 @@ useEffect(() => {
   const rendersRef = useRef<LocalRender[]>([]);
   const persistedRendersRef = useRef<string | null>(null);
   const pendingPollRef = useRef<number | null>(null);
+  const statusErrorCountsRef = useRef<Map<string, { unauthorized: number }>>(new Map());
   const convertJobToLocalRender = useCallback(
     (job: Job): LocalRender => {
       const baseLocalKey = job.localKey ?? job.jobId;
@@ -1355,7 +1376,7 @@ useEffect(() => {
         setMemberTier(storedTier);
       }
 
-      const pendingValue = readStorage(STORAGE_KEYS.pendingRenders);
+      const pendingValue = readScopedStorage(STORAGE_KEYS.pendingRenders);
       const pendingRenders = deserializePendingRenders(pendingValue);
       if (pendingRenders.length) {
         setRenders(pendingRenders);
@@ -1382,7 +1403,17 @@ useEffect(() => {
     } finally {
       setHydratedForScope(storageScope);
     }
-  }, [engines, readStorage, storageKey, writeStorage, setMemberTier, storageScope, resolvedRequestedEngineId, requestedJobId]);
+  }, [
+    engines,
+    readScopedStorage,
+    readStorage,
+    storageKey,
+    writeStorage,
+    setMemberTier,
+    storageScope,
+    resolvedRequestedEngineId,
+    requestedJobId,
+  ]);
 
   useEffect(() => {
     rendersRef.current = renders;
@@ -1394,8 +1425,8 @@ useEffect(() => {
     const serialized = serializePendingRenders(renders);
     if (serialized === persistedRendersRef.current) return;
     persistedRendersRef.current = serialized;
-    writeStorage(STORAGE_KEYS.pendingRenders, serialized);
-  }, [renders, storageScope, writeStorage]);
+    writeScopedStorage(STORAGE_KEYS.pendingRenders, serialized);
+  }, [renders, storageScope, writeScopedStorage]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -1422,6 +1453,7 @@ useEffect(() => {
           if (!render.jobId) return;
           try {
             const status = await getJobStatus(render.jobId);
+            statusErrorCountsRef.current.delete(render.jobId);
             if (cancelled) return;
             setRenders((prev) =>
               prev.map((item) =>
@@ -1460,8 +1492,30 @@ useEffect(() => {
                   }
                 : cur
             );
-          } catch {
-            // ignore transient errors and retry on next tick
+          } catch (error) {
+            const statusCode = typeof error === 'object' && error ? (error as { status?: unknown }).status : undefined;
+            if (statusCode === 404) {
+              statusErrorCountsRef.current.delete(render.jobId);
+              if (cancelled) return;
+              setRenders((prev) => prev.filter((item) => item.jobId !== render.jobId));
+              setSelectedPreview((cur) => (cur && cur.id === render.jobId ? null : cur));
+              return;
+            }
+
+            if (statusCode === 401) {
+              const meta = statusErrorCountsRef.current.get(render.jobId) ?? { unauthorized: 0 };
+              meta.unauthorized += 1;
+              statusErrorCountsRef.current.set(render.jobId, meta);
+              if (meta.unauthorized >= 3) {
+                statusErrorCountsRef.current.delete(render.jobId);
+                if (cancelled) return;
+                setRenders((prev) => prev.filter((item) => item.jobId !== render.jobId));
+                setSelectedPreview((cur) => (cur && cur.id === render.jobId ? null : cur));
+              }
+              return;
+            }
+
+            // ignore other transient errors and retry on next tick
           }
         })
       );
@@ -2467,7 +2521,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   useEffect(() => {
     if (selectedPreview || renders.length > 0) return;
     if (hasStoredFormRef.current) return;
-    const storedPreviewJobId = (readStorage(STORAGE_KEYS.previewJobId) ?? '').trim();
+    const storedPreviewJobId = (readScopedStorage(STORAGE_KEYS.previewJobId) ?? '').trim();
     if (storedPreviewJobId.startsWith('job_')) return;
     const latestJobWithMedia = recentJobs.find((job) => job.thumbUrl || job.videoUrl);
     if (!latestJobWithMedia) return;
@@ -2480,7 +2534,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       currency: latestJobWithMedia.currency ?? latestJobWithMedia.pricingSnapshot?.currency,
       prompt: latestJobWithMedia.prompt ?? undefined,
     });
-  }, [readStorage, recentJobs, renders.length, selectedPreview]);
+  }, [readScopedStorage, recentJobs, renders.length, selectedPreview]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -2493,7 +2547,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     if (compositeOverride) return;
     if (compositeOverrideSummary) return;
 
-    const storedJobId = (readStorage(STORAGE_KEYS.previewJobId) ?? '').trim();
+    const storedJobId = (readScopedStorage(STORAGE_KEYS.previewJobId) ?? '').trim();
     if (!storedJobId.startsWith('job_')) return;
     if (restoredPreviewJobRef.current === storedJobId) return;
     restoredPreviewJobRef.current = storedJobId;
@@ -2591,7 +2645,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     compositeOverrideSummary,
     fromVideoId,
     hydratedForScope,
-    readStorage,
+    readScopedStorage,
     renders.length,
     requestedJobId,
     storageScope,
@@ -2883,7 +2937,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
         try {
           if (requestedJobId.startsWith('job_')) {
-            writeStorage(STORAGE_KEYS.previewJobId, requestedJobId);
+            writeScopedStorage(STORAGE_KEYS.previewJobId, requestedJobId);
           }
         } catch {
           // ignore storage failures
@@ -2951,7 +3005,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       .catch((error) => {
         setNotice(error instanceof Error ? error.message : 'Failed to load job settings.');
       });
-  }, [applyVideoSettingsSnapshot, engines.length, provider, requestedJobId, writeStorage]);
+  }, [applyVideoSettingsSnapshot, engines.length, provider, requestedJobId, writeScopedStorage]);
 
   const activeMode: Mode = form?.mode ?? (selectedEngine?.modes[0] ?? 't2v');
 
@@ -3725,7 +3779,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
         try {
           if (resolvedJobId.startsWith('job_')) {
-            writeStorage(STORAGE_KEYS.previewJobId, resolvedJobId);
+            writeScopedStorage(STORAGE_KEYS.previewJobId, resolvedJobId);
           }
         } catch {
           // ignore storage failures
@@ -3973,7 +4027,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     preflight,
     memberTier,
     showNotice,
-    writeStorage,
+    writeScopedStorage,
     mutateLatestJobs,
     inputSchemaSummary,
     inputAssets,
@@ -4264,7 +4318,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         setCompositeOverrideSummary(normalizedSummary);
         try {
           if (heroJobId.startsWith('job_')) {
-            writeStorage(STORAGE_KEYS.previewJobId, heroJobId);
+            writeScopedStorage(STORAGE_KEYS.previewJobId, heroJobId);
           }
         } catch {
           // ignore storage failures
@@ -4297,7 +4351,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       setCompositeOverrideSummary,
       applyVideoSettingsFromTile,
       hydrateVideoSettingsFromJob,
-      writeStorage,
+      writeScopedStorage,
     ]
   );
 
