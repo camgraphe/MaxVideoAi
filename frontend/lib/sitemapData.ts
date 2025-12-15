@@ -32,7 +32,31 @@ const LOCALE_SITEMAP_PATHS: Record<AppLocale, string> = {
 const LOCALES: AppLocale[] = ['en', 'fr', 'es'];
 const MODEL_CONTENT_ROOT = path.join(CONTENT_ROOT, 'models');
 
+function findNextServerAppRoot(): string | null {
+  let currentDir = __dirname;
+  for (let depth = 0; depth < 10; depth += 1) {
+    const manifestPath = path.join(currentDir, 'app-paths-manifest.json');
+    if (fs.existsSync(manifestPath)) {
+      const candidate = path.join(currentDir, 'app');
+      if (fs.existsSync(candidate)) {
+        return candidate;
+      }
+    }
+    const parent = path.dirname(currentDir);
+    if (parent === currentDir) {
+      break;
+    }
+    currentDir = parent;
+  }
+  return null;
+}
+
 function resolveAppRoot(): string {
+  const packagedAppRoot = findNextServerAppRoot();
+  if (packagedAppRoot) {
+    return packagedAppRoot;
+  }
+
   const candidates = [
     path.join(process.cwd(), 'app'),
     path.join(process.cwd(), 'frontend', 'app'),
