@@ -236,42 +236,31 @@ export async function buildLocaleSitemapXml(locale: AppLocale): Promise<string> 
 }
 
 export async function buildSitemapIndexXml(): Promise<string> {
-  const buildLastModified = new Date().toISOString().slice(0, 10);
   const entries: Array<{ loc: string; lastModified?: string }> = [];
-
-  const maxDate = (a?: string, b?: string) => {
-    if (!a) return b;
-    if (!b) return a;
-    return a > b ? a : b;
-  };
 
   for (const locale of LOCALES) {
     const localeEntries = await getLocaleSitemapEntries(locale);
     const sitemapPath = LOCALE_SITEMAP_PATHS[locale];
     const fileName = getSitemapFileName(sitemapPath);
     const computedLastMod = getLatestEntryDate(localeEntries);
-    const lastModified =
-      maxDate(getManualSitemapLastModified(fileName), computedLastMod) ?? buildLastModified;
     entries.push({
       loc: buildAbsoluteUrl(sitemapPath),
-      lastModified: maxDate(lastModified, buildLastModified),
+      lastModified: getManualSitemapLastModified(fileName) ?? computedLastMod,
     });
   }
 
   const modelsPath = '/sitemap-models.xml';
   const modelsFileName = getSitemapFileName(modelsPath);
-  const modelsLastMod =
-    maxDate(getManualSitemapLastModified(modelsFileName), getModelsSitemapLastModified()) ?? buildLastModified;
+  const modelsLastMod = getManualSitemapLastModified(modelsFileName) ?? getModelsSitemapLastModified();
   entries.push({
     loc: buildAbsoluteUrl(modelsPath),
-    lastModified: maxDate(modelsLastMod, buildLastModified),
+    lastModified: modelsLastMod,
   });
 
   const videoPath = '/sitemap-video.xml';
-  const videoLastMod = getManualSitemapLastModified(getSitemapFileName(videoPath)) ?? buildLastModified;
   entries.push({
     loc: buildAbsoluteUrl(videoPath),
-    lastModified: maxDate(videoLastMod, buildLastModified),
+    lastModified: getManualSitemapLastModified(getSitemapFileName(videoPath)),
   });
 
   const body = entries
