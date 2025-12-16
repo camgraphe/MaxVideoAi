@@ -887,7 +887,7 @@ const DEBOUNCE_MS = 200;
 export default function Page() {
   const { data, error: enginesError, isLoading } = useEngines();
   const engines = useMemo(() => data?.engines ?? [], [data]);
-  const { data: latestJobsPages, mutate: mutateLatestJobs } = useInfiniteJobs(1, { type: 'video' });
+  const { data: latestJobsPages, mutate: mutateLatestJobs } = useInfiniteJobs(24, { type: 'video' });
   const { user, loading: authLoading } = useRequireAuth();
   const engineIdByLabel = useMemo(() => {
     const map = new Map<string, string>();
