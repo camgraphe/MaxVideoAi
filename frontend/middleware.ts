@@ -264,6 +264,7 @@ export async function middleware(req: NextRequest) {
 
   pathname = normalizedPathname;
   localeFromPath = extractLocaleFromPathname(pathname);
+  const isAdminRoute = pathname.toLowerCase() === '/admin' || pathname.toLowerCase().startsWith('/admin/');
 
   const isMarketingPath = shouldHandleLocale(pathname);
   const isBotRequest = detectBot(userAgent);
@@ -332,8 +333,25 @@ export async function middleware(req: NextRequest) {
     return finalizeResponse(response, hasLogoutIntentCookie);
   }
 
+  if (isAdminRoute) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    response.headers.set('Cache-Control', 'private, no-store, max-age=0');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.append('Vary', 'Cookie');
+  }
+
   if (user?.id) {
     return finalizeResponse(response, hasLogoutIntentCookie);
+  }
+
+  if (isAdminRoute) {
+    const unauthorized = new NextResponse(null, { status: 401 });
+    unauthorized.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    unauthorized.headers.set('Cache-Control', 'private, no-store, max-age=0');
+    unauthorized.headers.set('Pragma', 'no-cache');
+    unauthorized.headers.append('Vary', 'Cookie');
+    mergeResponseCookies(unauthorized, response);
+    return finalizeResponse(unauthorized, hasLogoutIntentCookie);
   }
 
   if (hasLogoutIntentCookie) {
@@ -361,7 +379,7 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next|.*\\..*|api).*)'],
+  matcher: ['/admin/:path*', '/((?!_next|.*\\..*|api).*)'],
 };
 
 function finalizeResponse(res: NextResponse, clearLogoutIntent: boolean) {
