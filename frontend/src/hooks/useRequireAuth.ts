@@ -20,6 +20,24 @@ type RequireAuthResult = {
   loading: boolean;
 };
 
+const AUTH_USER_LOOKUP_TIMEOUT_MS = 4000;
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error('timeout')), timeoutMs);
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(timer);
+        reject(error);
+      }
+    );
+  });
+}
+
 export function useRequireAuth(): RequireAuthResult {
   const router = useRouter();
   const pathname = usePathname();
@@ -58,17 +76,32 @@ export function useRequireAuth(): RequireAuthResult {
 
     async function ensureSession() {
       try {
-        const [sessionResult, userResult] = await Promise.all([
-          supabase.auth.getSession(),
-          supabase.auth.getUser(),
-        ]);
+        const sessionResult = await supabase.auth.getSession();
         if (cancelled) return;
         const nextSession = sessionResult.data.session ?? null;
-        const nextUser = userResult.data.user ?? null;
+        const fallbackUser = nextSession?.user ?? null;
         setSession(nextSession);
-        setUser(nextUser);
-        if (!nextUser) {
+        setUser(fallbackUser);
+        setLoading(false);
+
+        if (!nextSession || !fallbackUser) {
           redirectToLogin();
+          return;
+        }
+
+        try {
+          const userResult = await withTimeout(supabase.auth.getUser(), AUTH_USER_LOOKUP_TIMEOUT_MS);
+          if (cancelled) return;
+          const verifiedUser = userResult.data.user ?? null;
+          if (verifiedUser) {
+            setUser(verifiedUser);
+            return;
+          }
+          setSession(null);
+          setUser(null);
+          redirectToLogin();
+        } catch {
+          // Keep the local session/user if the network validation hangs or fails.
         }
       } catch {
         if (cancelled) return;
@@ -76,23 +109,18 @@ export function useRequireAuth(): RequireAuthResult {
         setUser(null);
         redirectToLogin();
       } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       }
     }
 
     ensureSession();
 
-    const { data: subscription } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, newSession) => {
       if (cancelled) return;
       setSession(newSession ?? null);
-      const {
-        data: { user: refreshedUser },
-      } = await supabase.auth.getUser();
-      if (cancelled) return;
-      setUser(refreshedUser ?? null);
-      if (!refreshedUser) {
+      const nextUser = newSession?.user ?? null;
+      setUser(nextUser);
+      if (!nextUser) {
         redirectToLogin();
       }
     });
