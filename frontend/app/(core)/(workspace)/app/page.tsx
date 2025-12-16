@@ -826,7 +826,7 @@ function deserializePendingRenders(value: string | null): LocalRender[] {
       if (!entry || typeof entry !== 'object') return;
       if (entry.version !== PERSISTED_RENDER_VERSION) return;
       const normalized = coercePersistedRender(entry as PersistedRender);
-      if (normalized && normalized.status === 'pending') {
+      if (normalized && normalized.status === 'pending' && typeof normalized.jobId === 'string' && normalized.jobId.length > 0) {
         items.push(normalized);
       }
     });
@@ -839,7 +839,7 @@ function deserializePendingRenders(value: string | null): LocalRender[] {
 
 function serializePendingRenders(renders: LocalRender[]): string | null {
   const pending = renders
-    .filter((render) => render.status === 'pending')
+    .filter((render) => render.status === 'pending' && typeof render.jobId === 'string' && render.jobId.length > 0)
     .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
     .slice(0, MAX_PERSISTED_RENDERS)
     .map((render) => ({

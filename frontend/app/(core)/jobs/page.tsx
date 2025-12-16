@@ -338,7 +338,7 @@ export default function JobsPage() {
   );
 
   const renderCollapsedRail = useCallback(
-    (groups: GroupSummary[], emptyCopy: string, prefix: 'video' | 'image') => {
+    (groups: GroupSummary[], emptyCopy: string) => {
       if (!groups.length) {
         if (isInitialLoading) {
           return <CollapsedGroupRailSkeleton />;
@@ -353,7 +353,6 @@ export default function JobsPage() {
       return (
         <CollapsedGroupRail
           groups={groups}
-          kind={prefix}
           onOpen={handleGroupOpen}
         />
       );
@@ -433,7 +432,7 @@ export default function JobsPage() {
                   <span className="text-xs text-text-secondary">{videoGroups.length}</span>
                 </div>
                 {collapsedSections.video ? (
-                  renderCollapsedRail(videoGroups, copy.sections.videoEmpty, 'video')
+                  renderCollapsedRail(videoGroups, copy.sections.videoEmpty)
                 ) : (
                   <>
                     {renderGroupGrid(videoGroups, copy.sections.videoEmpty, 'video')}
@@ -469,7 +468,7 @@ export default function JobsPage() {
                   <span className="text-xs text-text-secondary">{imageGroups.length}</span>
                 </div>
                 {collapsedSections.image ? (
-                  renderCollapsedRail(imageGroups, copy.sections.imageEmpty, 'image')
+                  renderCollapsedRail(imageGroups, copy.sections.imageEmpty)
                 ) : (
                   <>
                     {renderGroupGrid(imageGroups, copy.sections.imageEmpty, 'image')}
@@ -524,6 +523,9 @@ const IMAGE_ENGINE_IDS = new Set(
     .flatMap((engine) => getEngineAliases(engine))
 );
 
+const COLLAPSED_RAIL_ITEM_WIDTH = 220;
+const COLLAPSED_RAIL_IMAGE_SIZES = '220px';
+
 const PLACEHOLDER_THUMBS: Record<string, string> = {
   '9:16': '/assets/frames/thumb-9x16.svg',
   '16:9': '/assets/frames/thumb-16x9.svg',
@@ -553,17 +555,17 @@ function RailThumb({ src }: { src: string }) {
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={src} alt="" className="h-full w-full object-contain" />;
   }
-  return <Image src={src} alt="" fill className="object-contain" sizes="150px" />;
+  return <Image src={src} alt="" fill className="object-contain" sizes={COLLAPSED_RAIL_IMAGE_SIZES} />;
 }
 
 function CollapsedGroupRailSkeleton() {
   return (
-    <div className="flex gap-3 overflow-x-auto pb-2">
+    <div className="flex gap-4 overflow-x-auto pb-2">
       {Array.from({ length: 8 }).map((_, index) => (
         <div
           key={`jobs-rail-skeleton-${index}`}
           className="relative shrink-0 overflow-hidden rounded-card border border-border bg-white/60"
-          style={{ width: 150 }}
+          style={{ width: COLLAPSED_RAIL_ITEM_WIDTH }}
           aria-hidden
         >
           <div className="relative" style={{ aspectRatio: '16 / 9' }}>
@@ -577,35 +579,27 @@ function CollapsedGroupRailSkeleton() {
 
 function CollapsedGroupRail({
   groups,
-  kind,
   onOpen,
 }: {
   groups: GroupSummary[];
-  kind: 'video' | 'image';
   onOpen: (group: GroupSummary) => void;
 }) {
   const items = groups.slice(0, 12);
   return (
-    <div className="flex gap-3 overflow-x-auto pb-2">
+    <div className="flex gap-4 overflow-x-auto pb-2">
       {items.map((group) => {
         const thumb = resolveGroupThumb(group);
-        const hasVideo = kind === 'video' && Boolean(group.previews.some((preview) => preview.videoUrl));
         return (
           <button
             key={group.id}
             type="button"
             onClick={() => onOpen(group)}
             className="group relative shrink-0 overflow-hidden rounded-card border border-border bg-white shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            style={{ width: 150 }}
+            style={{ width: COLLAPSED_RAIL_ITEM_WIDTH }}
             aria-label="Open render"
           >
             <div className="relative" style={{ aspectRatio: '16 / 9' }}>
               <RailThumb src={thumb} />
-              {hasVideo ? (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="rounded-full bg-black/55 px-2 py-1 text-xs font-semibold text-white">Video</div>
-                </div>
-              ) : null}
               {group.count > 1 ? (
                 <div className="absolute bottom-2 right-2 rounded-full bg-black/55 px-2 py-0.5 text-xs font-semibold text-white">
                   ×{group.count}
