@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { getJobStatus, hideJob, useEngines, useInfiniteJobs, saveImageToLibrary } from '@/lib/api';
@@ -19,6 +20,7 @@ import { FlagPill } from '@/components/FlagPill';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getEngineAliases, listFalEngines } from '@/config/falEngines';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
+import { normalizeMediaUrl } from '@/lib/media';
 
 const DEFAULT_JOBS_COPY = {
   title: 'Jobs',
@@ -335,6 +337,30 @@ export default function JobsPage() {
     ]
   );
 
+  const renderCollapsedRail = useCallback(
+    (groups: GroupSummary[], emptyCopy: string, prefix: 'video' | 'image') => {
+      if (!groups.length) {
+        if (isInitialLoading) {
+          return <CollapsedGroupRailSkeleton />;
+        }
+        return (
+          <div className="rounded-card border border-border bg-white p-4 text-center text-sm text-text-secondary">
+            {emptyCopy}
+          </div>
+        );
+      }
+
+      return (
+        <CollapsedGroupRail
+          groups={groups}
+          kind={prefix}
+          onOpen={handleGroupOpen}
+        />
+      );
+    },
+    [handleGroupOpen, isInitialLoading]
+  );
+
   if (authLoading) {
     return null;
   }
@@ -406,7 +432,9 @@ export default function JobsPage() {
                   </button>
                   <span className="text-xs text-text-secondary">{videoGroups.length}</span>
                 </div>
-                {!collapsedSections.video && (
+                {collapsedSections.video ? (
+                  renderCollapsedRail(videoGroups, copy.sections.videoEmpty, 'video')
+                ) : (
                   <>
                     {renderGroupGrid(videoGroups, copy.sections.videoEmpty, 'video')}
                     {videoGroups.length > 0 && hasMore && (
@@ -440,7 +468,9 @@ export default function JobsPage() {
                   </button>
                   <span className="text-xs text-text-secondary">{imageGroups.length}</span>
                 </div>
-                {!collapsedSections.image && (
+                {collapsedSections.image ? (
+                  renderCollapsedRail(imageGroups, copy.sections.imageEmpty, 'image')
+                ) : (
                   <>
                     {renderGroupGrid(imageGroups, copy.sections.imageEmpty, 'image')}
                     {imageGroups.length > 0 && hasMore && (
@@ -493,3 +523,98 @@ const IMAGE_ENGINE_IDS = new Set(
     .filter((engine) => (engine.category ?? 'video') === 'image')
     .flatMap((engine) => getEngineAliases(engine))
 );
+
+const PLACEHOLDER_THUMBS: Record<string, string> = {
+  '9:16': '/assets/frames/thumb-9x16.svg',
+  '16:9': '/assets/frames/thumb-16x9.svg',
+  '1:1': '/assets/frames/thumb-1x1.svg',
+};
+
+function resolvePlaceholderThumb(aspectRatio?: string | null) {
+  const key = (aspectRatio ?? '').trim();
+  return PLACEHOLDER_THUMBS[key] ?? '/assets/frames/thumb-16x9.svg';
+}
+
+function resolveGroupThumb(group: GroupSummary) {
+  const candidates: Array<string | null | undefined> = [
+    group.previews.find((preview) => preview?.thumbUrl)?.thumbUrl,
+    group.hero.thumbUrl,
+    group.hero.job?.thumbUrl,
+  ];
+  for (const candidate of candidates) {
+    const normalized = normalizeMediaUrl(candidate);
+    if (normalized) return normalized;
+  }
+  return resolvePlaceholderThumb(group.hero.aspectRatio ?? group.previews[0]?.aspectRatio ?? null);
+}
+
+function RailThumb({ src }: { src: string }) {
+  if (src.startsWith('data:')) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={src} alt="" className="h-full w-full object-contain" />;
+  }
+  return <Image src={src} alt="" fill className="object-contain" sizes="150px" />;
+}
+
+function CollapsedGroupRailSkeleton() {
+  return (
+    <div className="flex gap-3 overflow-x-auto pb-2">
+      {Array.from({ length: 8 }).map((_, index) => (
+        <div
+          key={`jobs-rail-skeleton-${index}`}
+          className="relative shrink-0 overflow-hidden rounded-card border border-border bg-white/60"
+          style={{ width: 150 }}
+          aria-hidden
+        >
+          <div className="relative" style={{ aspectRatio: '16 / 9' }}>
+            <div className="skeleton absolute inset-0" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function CollapsedGroupRail({
+  groups,
+  kind,
+  onOpen,
+}: {
+  groups: GroupSummary[];
+  kind: 'video' | 'image';
+  onOpen: (group: GroupSummary) => void;
+}) {
+  const items = groups.slice(0, 12);
+  return (
+    <div className="flex gap-3 overflow-x-auto pb-2">
+      {items.map((group) => {
+        const thumb = resolveGroupThumb(group);
+        const hasVideo = kind === 'video' && Boolean(group.previews.some((preview) => preview.videoUrl));
+        return (
+          <button
+            key={group.id}
+            type="button"
+            onClick={() => onOpen(group)}
+            className="group relative shrink-0 overflow-hidden rounded-card border border-border bg-white shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            style={{ width: 150 }}
+            aria-label="Open render"
+          >
+            <div className="relative" style={{ aspectRatio: '16 / 9' }}>
+              <RailThumb src={thumb} />
+              {hasVideo ? (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="rounded-full bg-black/55 px-2 py-1 text-xs font-semibold text-white">Video</div>
+                </div>
+              ) : null}
+              {group.count > 1 ? (
+                <div className="absolute bottom-2 right-2 rounded-full bg-black/55 px-2 py-0.5 text-xs font-semibold text-white">
+                  ×{group.count}
+                </div>
+              ) : null}
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
