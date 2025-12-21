@@ -28,6 +28,8 @@ interface EngineOption {
   showResolution: boolean;
   rateUnit?: string;
   audioIncluded: boolean;
+  audioToggle: boolean;
+  audioAddonKey?: string | null;
   pricingEngineId: string;
   sortIndex: number;
   baseEngineId: string;
@@ -83,6 +85,31 @@ type EngineOptionOverrides = {
 function centsToDollars(cents?: number | null) {
   if (typeof cents !== 'number' || Number.isNaN(cents)) return null;
   return cents / 100;
+}
+
+function resolveAudioAddonKey(
+  definition: ReturnType<PricingKernel['getDefinition']> | null,
+  engineCaps: EngineCaps
+): string | null {
+  const addons = definition?.addons ?? engineCaps.pricingDetails?.addons ?? engineCaps.pricing?.addons ?? null;
+  if (!addons) return null;
+  if ('audio_off' in addons) return 'audio_off';
+  if ('audio' in addons) return 'audio';
+  return null;
+}
+
+function buildAudioAddonPayload(
+  addonKey: string | null | undefined,
+  audioEnabled: boolean
+): Record<string, boolean> | undefined {
+  if (!addonKey) return undefined;
+  if (addonKey === 'audio_off') {
+    return audioEnabled ? undefined : { audio_off: true };
+  }
+  if (addonKey === 'audio') {
+    return audioEnabled ? { audio: true } : undefined;
+  }
+  return undefined;
 }
 
 function getDurationField(engine: EngineCaps): EngineInputField | undefined {
@@ -263,6 +290,8 @@ function buildEngineOption(
     entry.seo.description ??
     entry.marketingName;
   const sortIndex = overrides?.sortIndexOverride ?? FAL_ENGINE_ORDER.get(entry.id) ?? Number.MAX_SAFE_INTEGER;
+  const audioAddonKey = resolveAudioAddonKey(definition, engineCaps);
+  const audioToggle = Boolean(audioAddonKey);
 
   return {
     id: optionId,
@@ -278,7 +307,9 @@ function buildEngineOption(
     availabilityLink,
     showResolution: !perImageConfig,
     rateUnit: perImageConfig ? '/image' : '/s',
-    audioIncluded: Boolean(engineCaps.audio),
+    audioIncluded: Boolean(engineCaps.audio) && !audioToggle,
+    audioToggle,
+    audioAddonKey,
     pricingEngineId,
     sortIndex,
     baseEngineId: entry.id,
@@ -425,6 +456,13 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
   }, [selectedEngine, duration, selectedResolution]);
 
   const [memberTier, setMemberTier] = useState<MemberTier>('Member');
+  const [audioEnabled, setAudioEnabled] = useState(true);
+  const selectedEngineKey = selectedEngine?.id ?? null;
+
+  useEffect(() => {
+    if (!selectedEngineKey) return;
+    setAudioEnabled(true);
+  }, [selectedEngineKey]);
 
   const activeResolution =
     selectedEngine?.resolutions.find((resolution) => resolution.value === selectedResolution) ??
@@ -445,16 +483,18 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
   const pricingQuote = useMemo(() => {
     if (!selectedEngine || bypassPricing) return null;
     try {
+      const addons = buildAudioAddonPayload(selectedEngine.audioAddonKey, audioEnabled);
       return kernel.quote({
         engineId: selectedEngine.pricingEngineId,
         durationSec: duration,
         resolution: selectedResolution,
         memberTier: pricingMemberTier,
+        ...(addons ? { addons } : {}),
       });
     } catch {
       return null;
     }
-  }, [kernel, selectedEngine, duration, selectedResolution, pricingMemberTier, bypassPricing]);
+  }, [kernel, selectedEngine, duration, selectedResolution, pricingMemberTier, bypassPricing, audioEnabled]);
 
   const pricingSnapshot = bypassPricing ? null : pricingQuote?.snapshot ?? null;
   const manualPricing = useMemo(() => {
@@ -719,6 +759,41 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
                         {t('pricing.estimator.durationRangeLabel', 'Range')} {selectedEngine.minDuration}s – {selectedEngine.maxDuration}s
                       </p>
                     )}
+                  </div>
+                ) : null}
+
+                {selectedEngine?.audioToggle ? (
+                  <div className="rounded-[24px] border border-white/60 bg-white/85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
+                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
+                      {t('pricing.estimator.audioLabel', 'Audio')}
+                    </span>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {[
+                        { value: true, label: t('pricing.estimator.audioOn', 'On') },
+                        { value: false, label: t('pricing.estimator.audioOff', 'Off') },
+                      ].map((option) => {
+                        const selected = audioEnabled === option.value;
+                        return (
+                          <button
+                            key={String(option.value)}
+                            type="button"
+                            onClick={() => setAudioEnabled(option.value)}
+                            className={clsx(
+                              'rounded-full px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white',
+                              selected
+                                ? 'bg-accent text-white shadow-[0_10px_30px_-12px_rgba(0,109,255,0.7)]'
+                                : 'bg-white/70 text-text-secondary hover:bg-white'
+                            )}
+                            aria-pressed={selected}
+                          >
+                            {option.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="mt-3 text-xs text-text-muted">
+                      {t('pricing.estimator.audioHint', 'Price updates when audio is toggled.')}
+                    </p>
                   </div>
                 ) : null}
               </div>

@@ -33,6 +33,7 @@ import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-
 import type { Job } from '@/types/jobs';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { supportsAudioPricingToggle } from '@/lib/pricing-addons';
 import {
   getLumaRay2DurationInfo,
   getLumaRay2ResolutionInfo,
@@ -433,6 +434,40 @@ function matchesDurationOption(meta: DurationOptionMeta, previousOption: number 
   return false;
 }
 
+function normalizeFieldId(value: string | undefined): string {
+  return (value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function parseBooleanInput(value: unknown): boolean | null {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number' && Number.isFinite(value)) return value !== 0;
+  if (typeof value === 'string') {
+    const trimmed = value.trim().toLowerCase();
+    if (['true', '1', 'yes', 'on'].includes(trimmed)) return true;
+    if (['false', '0', 'no', 'off'].includes(trimmed)) return false;
+  }
+  return null;
+}
+
+function findGenerateAudioField(engine: EngineCaps, mode: Mode): EngineInputField | null {
+  const schema = engine.inputSchema;
+  if (!schema) return null;
+  const fields = [...(schema.required ?? []), ...(schema.optional ?? [])];
+  return (
+    fields.find((field) => {
+      const id = normalizeFieldId(field.id);
+      if (id !== 'generateaudio') return false;
+      return !field.modes || field.modes.includes(mode);
+    }) ?? null
+  );
+}
+
+function resolveAudioDefault(engine: EngineCaps, mode: Mode): boolean {
+  const field = findGenerateAudioField(engine, mode);
+  const parsed = parseBooleanInput(field?.default);
+  return parsed ?? true;
+}
+
 function framesToSeconds(frames: number): number {
   if (!Number.isFinite(frames) || frames <= 0) return 1;
   return Math.max(1, Math.round(frames / 24));
@@ -551,6 +586,11 @@ function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | n
 
   const iterations = previous?.iterations ? Math.max(1, Math.min(4, previous.iterations)) : 1;
   const loop = isLumaRay2Engine ? Boolean(previous?.loop) : undefined;
+  const audio = (() => {
+    const previousAudio = typeof previous?.audio === 'boolean' ? previous.audio : null;
+    if (previousAudio !== null) return previousAudio;
+    return resolveAudioDefault(engine, mode);
+  })();
 
   return {
     engineId: engine.id,
@@ -564,6 +604,7 @@ function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormState | n
     iterations,
     seedLocked: previous?.seedLocked ?? false,
     loop,
+    audio,
   };
 }
 
@@ -608,6 +649,7 @@ interface FormState {
   iterations: number;
   seedLocked?: boolean;
   loop?: boolean;
+  audio: boolean;
 }
 
 const DEFAULT_PROMPT = 'A quiet cinematic shot of neon-lit Tokyo streets in the rain';
@@ -639,6 +681,7 @@ function parseStoredForm(value: string): StoredFormState | null {
       iterations,
       seedLocked,
       loop,
+      audio,
       updatedAt,
     } = raw;
 
@@ -662,6 +705,7 @@ function parseStoredForm(value: string): StoredFormState | null {
       iterations: typeof iterations === 'number' && iterations > 0 ? iterations : undefined,
       seedLocked: typeof seedLocked === 'boolean' ? seedLocked : undefined,
       loop: typeof loop === 'boolean' ? loop : undefined,
+      audio: typeof audio === 'boolean' ? audio : undefined,
       updatedAt: typeof updatedAt === 'number' && Number.isFinite(updatedAt) ? updatedAt : undefined,
     };
   } catch {
@@ -1330,6 +1374,7 @@ useEffect(() => {
                 : base.iterations,
             seedLocked: typeof storedFormRaw.seedLocked === 'boolean' ? storedFormRaw.seedLocked : base.seedLocked,
             loop: typeof storedFormRaw.loop === 'boolean' ? storedFormRaw.loop : base.loop,
+            audio: typeof storedFormRaw.audio === 'boolean' ? storedFormRaw.audio : base.audio,
           };
           nextForm = coerceFormState(engine, mode, candidate);
         }
@@ -1349,6 +1394,7 @@ useEffect(() => {
             fps: 24,
             iterations: 1,
             seedLocked: false,
+            audio: true,
           };
           nextForm = base;
           if (process.env.NODE_ENV !== 'production') {
@@ -2769,6 +2815,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           typeof core.iterationCount === 'number' && Number.isFinite(core.iterationCount)
             ? Math.max(1, Math.min(4, Math.trunc(core.iterationCount)))
             : undefined;
+        const audio = typeof core.audio === 'boolean' ? core.audio : undefined;
 
         const advanced =
           record.advanced && typeof record.advanced === 'object' ? (record.advanced as Record<string, unknown>) : {};
@@ -2793,6 +2840,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             iterations: iterations ?? previous?.iterations ?? 1,
             seedLocked: previous?.seedLocked ?? false,
             loop: typeof loopValue === 'boolean' ? loopValue : previous?.loop,
+            audio: typeof audio === 'boolean' ? audio : previous?.audio ?? resolveAudioDefault(engine, mode),
           };
           return coerceFormState(engine, mode, candidate);
         });
@@ -3016,6 +3064,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     if (!selectedEngine) return undefined;
     return getEngineCaps(selectedEngine.id, activeMode) ?? undefined;
   }, [selectedEngine, activeMode]);
+
+  const generateAudioField = useMemo(() => {
+    if (!selectedEngine) return null;
+    return findGenerateAudioField(selectedEngine, activeMode);
+  }, [selectedEngine, activeMode]);
+
+  const supportsAudioToggle =
+    Boolean(selectedEngine && capability?.audioToggle && generateAudioField && supportsAudioPricingToggle(selectedEngine));
 
   const handleEngineChange = useCallback(
     (engineId: string) => {
@@ -3748,6 +3804,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             : {}),
           ...(shouldSendAspectRatio ? { aspectRatio: form.aspectRatio } : {}),
           ...(supportsNegativePrompt && trimmedNegativePrompt ? { negativePrompt: trimmedNegativePrompt } : {}),
+          ...(supportsAudioToggle ? { audio: form.audio } : {}),
           ...(inputsPayload ? { inputs: inputsPayload } : {}),
           ...(primaryImageUrl ? { imageUrl: primaryImageUrl } : {}),
           ...(referenceImageUrls.length ? { referenceImages: referenceImageUrls } : {}),
@@ -4057,6 +4114,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     referenceAssetFieldIds,
     genericImageFieldIds,
     frameAssetFieldIds,
+    supportsAudioToggle,
   ]);
 
   useEffect(() => {
@@ -4079,7 +4137,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           candidate.fps !== nextState.fps ||
           candidate.iterations !== nextState.iterations ||
           candidate.seedLocked !== nextState.seedLocked ||
-          candidate.loop !== nextState.loop;
+          candidate.loop !== nextState.loop ||
+          candidate.audio !== nextState.audio;
         return hasChanged ? nextState : candidate;
       }
       return nextState;
@@ -4099,6 +4158,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       fps: form.fps,
       seedLocked: Boolean(form.seedLocked),
       loop: form.loop,
+      ...(supportsAudioToggle ? { audio: form.audio } : {}),
       user: { memberTier },
     };
     setPricing(true);
@@ -4127,7 +4187,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       canceled = true;
       clearTimeout(timeout);
     };
-  }, [form, selectedEngine, memberTier, authChecked]);
+  }, [form, selectedEngine, memberTier, authChecked, supportsAudioToggle]);
 
   const handleQuadTileAction = useCallback(
     (action: QuadTileAction, tile: QuadPreviewTile) => {
@@ -4487,6 +4547,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                           return next;
                         })
                       }
+                      showAudioControl={supportsAudioToggle}
+                      audioEnabled={form.audio}
+                      onAudioChange={(audio) => setForm((current) => (current ? { ...current, audio } : current))}
                       showLoopControl={selectedEngine.id === 'lumaRay2'}
                       loopEnabled={selectedEngine.id === 'lumaRay2' ? Boolean(form.loop) : undefined}
                       onLoopChange={(next) =>

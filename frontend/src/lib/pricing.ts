@@ -294,6 +294,7 @@ export type PricingContext = {
   currency?: string;
   loop?: boolean;
   durationOption?: number | string | null;
+  addons?: Record<string, boolean | number | undefined>;
 };
 
 export async function computePricingSnapshot(context: PricingContext): Promise<PricingSnapshot> {
@@ -402,6 +403,7 @@ export async function computePricingSnapshot(context: PricingContext): Promise<P
       durationSec,
       resolution,
       memberTier,
+      ...(context.addons ? { addons: context.addons } : {}),
     } as const;
 
     const { quote } = computeKernelSnapshot(augmentedDefinition, kernelInput);

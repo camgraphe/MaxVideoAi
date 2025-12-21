@@ -90,6 +90,7 @@ export type GeneratePayload = {
   resolution?: string;
   fps?: number;
   mode?: string;
+  audio?: boolean;
   apiKey?: string;
   idempotencyKey?: string;
   imageUrl?: string;
@@ -337,6 +338,10 @@ async function generateViaFal(
     };
     if (payload.aspectRatio) {
       requestBody.aspect_ratio = payload.aspectRatio;
+    }
+
+    if (typeof payload.audio === 'boolean') {
+      requestBody.generate_audio = payload.audio;
     }
 
     if (typeof payload.numFrames === 'number' && Number.isFinite(payload.numFrames) && payload.numFrames > 0) {

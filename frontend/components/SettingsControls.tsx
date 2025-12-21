@@ -31,6 +31,9 @@ interface Props {
   showLoopControl?: boolean;
   loopEnabled?: boolean;
   onLoopChange?: (value: boolean) => void;
+  showAudioControl?: boolean;
+  audioEnabled?: boolean;
+  onAudioChange?: (value: boolean) => void;
   focusRefs?: {
     duration?: Ref<HTMLElement>;
     resolution?: Ref<HTMLDivElement>;
@@ -81,6 +84,11 @@ const DEFAULT_CONTROLS_COPY = {
     on: 'On',
     off: 'Off',
   },
+  audio: {
+    label: 'Audio',
+    on: 'On',
+    off: 'Off',
+  },
   advancedTitle: 'Advanced settings',
   seed: {
     label: 'Seed',
@@ -122,6 +130,9 @@ export function SettingsControls({
   showLoopControl = false,
   loopEnabled,
   onLoopChange,
+  showAudioControl = false,
+  audioEnabled,
+  onAudioChange,
   focusRefs,
   showExtendControl = true,
   cfgScale,
@@ -149,6 +160,7 @@ export function SettingsControls({
         },
       },
       loop: { ...DEFAULT_CONTROLS_COPY.loop, ...(source.loop ?? {}) },
+      audio: { ...DEFAULT_CONTROLS_COPY.audio, ...(source.audio ?? {}) },
       seed: { ...DEFAULT_CONTROLS_COPY.seed, ...(source.seed ?? {}) },
       extend: { ...DEFAULT_CONTROLS_COPY.extend, ...(source.extend ?? {}) },
     } as typeof DEFAULT_CONTROLS_COPY;
@@ -243,7 +255,8 @@ export function SettingsControls({
   const resolutionLocked = Boolean(caps?.resolutionLocked);
   const showResolutionControl = resolutionOptions.length > 0 && !resolutionLocked;
   const showAspectControl = aspectOptions.length > 0;
-  const audioIncluded = Boolean(engine.audio) && mode !== 'r2v';
+  const showAudioToggle = Boolean(showAudioControl && typeof audioEnabled === 'boolean' && onAudioChange);
+  const audioIncluded = Boolean(engine.audio) && mode !== 'r2v' && !showAudioToggle;
   const effectiveCfgScale =
     typeof cfgScale === 'number'
       ? cfgScale
@@ -442,6 +455,24 @@ export function SettingsControls({
               X{n}
             </button>
           ))}
+        </div>
+      )}
+      {showAudioToggle && (
+        <div className="-mt-1 flex items-center justify-between px-1">
+          <span className="text-[11px] uppercase tracking-micro text-text-muted">{controlsCopy.audio.label}</span>
+          <button
+            type="button"
+            onClick={() => onAudioChange?.(!audioEnabled)}
+            className={clsx(
+              'rounded-input border px-2.5 py-1 text-[12px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              audioEnabled
+                ? 'border-accent bg-accent text-white'
+                : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
+            )}
+            aria-pressed={audioEnabled}
+          >
+            {audioEnabled ? controlsCopy.audio.on : controlsCopy.audio.off}
+          </button>
         </div>
       )}
       {showLoopControl && typeof loopEnabled === 'boolean' && onLoopChange && (

@@ -151,6 +151,7 @@ export interface PreflightRequest {
   fps: number;
   seedLocked?: boolean;
   loop?: boolean;
+  audio?: boolean;
   user?: {
     memberTier?: string;
   };

@@ -2,6 +2,7 @@ import type { EngineCaps, Mode } from '@/types/engines';
 
 const FIRST_LAST_ENGINE_ID = 'veo-3-1-first-last';
 const KLING_ENGINE_ID = 'kling-2-5-turbo';
+const AUDIO_ADDON_KEYS = ['audio_off', 'audio'] as const;
 
 const FAST_FIRST_LAST_PRICING_DETAILS: EngineCaps['pricingDetails'] = {
   currency: 'USD',
@@ -51,4 +52,34 @@ export function applyEngineVariantPricing(engine: EngineCaps, mode?: Mode): Engi
     pricingDetails: FAST_FIRST_LAST_PRICING_DETAILS,
     pricing: FAST_FIRST_LAST_PRICING,
   };
+}
+
+export function resolveAudioAddonKey(engine: EngineCaps): string | null {
+  const addons = engine.pricingDetails?.addons ?? engine.pricing?.addons;
+  if (!addons) return null;
+  for (const key of AUDIO_ADDON_KEYS) {
+    if (key in addons) {
+      return key;
+    }
+  }
+  return null;
+}
+
+export function buildAudioAddonInput(
+  engine: EngineCaps,
+  audioEnabled: boolean | null | undefined
+): Record<string, boolean> | undefined {
+  const key = resolveAudioAddonKey(engine);
+  if (!key || typeof audioEnabled !== 'boolean') return undefined;
+  if (key === 'audio_off') {
+    return audioEnabled ? undefined : { audio_off: true };
+  }
+  if (key === 'audio') {
+    return audioEnabled ? { audio: true } : undefined;
+  }
+  return undefined;
+}
+
+export function supportsAudioPricingToggle(engine: EngineCaps): boolean {
+  return Boolean(resolveAudioAddonKey(engine));
 }

@@ -40,6 +40,7 @@ const ICONS: Record<string, string | undefined> = {
   base: '/assets/icons/price-before.svg',
   upscale4k: '/assets/icons/upscale.svg',
   audio: '/assets/icons/audio.svg',
+  audio_off: '/assets/icons/audio.svg',
   discount: '/assets/icons/member-plus.svg',
   margin: '/assets/icons/wallet.svg',
   tax: '/assets/icons/wallet.svg',
@@ -223,6 +224,7 @@ function sortFactors(items: PriceFactorItem[]) {
     resolution: 2,
     upscale4k: 3,
     audio: 4,
+    audio_off: 4,
     margin: 5,
     fee: 5,
     discount: 6,
@@ -290,6 +292,7 @@ function buildAddonLabel(addon: ItemizationLine) {
   const type = addon.type ?? 'Add-on';
   if (type === 'upscale4k') return 'Upscale';
   if (type === 'audio') return 'Audio';
+  if (type === 'audio_off') return 'Audio off';
   if (type === 'extend') return 'Extend';
   if (type === 'keyframes') return 'Keyframes';
   return titleCase(type);

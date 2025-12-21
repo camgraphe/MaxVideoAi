@@ -32,7 +32,7 @@ import {
 import { ensureUserPreferredCurrency, getUserPreferredCurrency, resolveCurrency } from '@/lib/currency';
 import type { Currency } from '@/lib/currency';
 import { convertCents } from '@/lib/exchange';
-import { applyEngineVariantPricing } from '@/lib/pricing-addons';
+import { applyEngineVariantPricing, buildAudioAddonInput } from '@/lib/pricing-addons';
 import { recordGenerateMetric } from '@/server/generate-metrics';
 import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
 
@@ -466,6 +466,12 @@ export async function POST(req: NextRequest) {
   metricState.mode = mode;
 
   const prompt = String(body.prompt || '');
+  const audioEnabled =
+    typeof body.audio === 'boolean'
+      ? body.audio
+      : typeof body.generate_audio === 'boolean'
+        ? body.generate_audio
+        : undefined;
   const isLumaRay2 = engine.id === 'lumaRay2';
   const rawDurationOption =
     typeof body.durationOption === 'number' || typeof body.durationOption === 'string' ? body.durationOption : null;
@@ -710,6 +716,7 @@ export async function POST(req: NextRequest) {
   const resolvedCurrencyUpper = resolvedCurrencyLower.toUpperCase();
 
   const pricingEngine = applyEngineVariantPricing(engine, mode);
+  const pricingAddons = buildAudioAddonInput(pricingEngine, audioEnabled);
   const pricing = await computePricingSnapshot({
     engine: pricingEngine,
     durationSec,
@@ -718,6 +725,7 @@ export async function POST(req: NextRequest) {
     loop: isLumaRay2 ? loop : undefined,
     durationOption: lumaDurationInfo?.label ?? rawDurationOption ?? null,
     currency: 'USD',
+    addons: pricingAddons,
   });
   const { cents: settlementAmountCents, rate: settlementFxRate, source: settlementFxSource } = await convertCents(
     pricing.totalCents,
@@ -1057,6 +1065,9 @@ async function rollbackPendingPayment(params: {
   if (aspectRatio) {
     validationPayload.aspect_ratio = aspectRatio;
   }
+  if (typeof audioEnabled === 'boolean') {
+    validationPayload.generate_audio = audioEnabled;
+  }
 
   if (numFrames != null) {
     validationPayload.num_frames = numFrames;
@@ -1384,6 +1395,9 @@ async function rollbackPendingPayment(params: {
     localKey,
     loop: isLumaRay2 ? loop : undefined,
   };
+  if (typeof audioEnabled === 'boolean') {
+    falPayload.audio = audioEnabled;
+  }
   if (typeof clampedFps === 'number') {
     falPayload.fps = clampedFps;
   }
@@ -1411,6 +1425,7 @@ async function rollbackPendingPayment(params: {
       resolution: effectiveResolution,
       fps: typeof clampedFps === 'number' ? clampedFps : typeof body.fps === 'number' ? Math.trunc(body.fps) : null,
       iterationCount: iterationCount ?? null,
+      audio: typeof audioEnabled === 'boolean' ? audioEnabled : null,
     },
     advanced: {
       cfgScale: typeof body.cfgScale === 'number' && Number.isFinite(body.cfgScale) ? body.cfgScale : null,

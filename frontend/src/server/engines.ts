@@ -12,7 +12,7 @@ import {
   normaliseLumaRay2Loop,
   LUMA_RAY2_ERROR_UNSUPPORTED,
 } from '@/lib/luma-ray2';
-import { applyEngineVariantPricing } from '@/lib/pricing-addons';
+import { applyEngineVariantPricing, buildAudioAddonInput } from '@/lib/pricing-addons';
 
 function applyPricingDetails(engine: EngineCaps, pricing: EnginePricingDetails | null): void {
   if (!pricing) return;
@@ -221,6 +221,8 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
   const durationSec = durationInfo ? durationInfo.seconds : durationSecRaw;
   const memberTier = normalizeMemberTier(request.user?.memberTier);
   const loop = isLumaRay2 ? normaliseLumaRay2Loop(request.loop) : undefined;
+  const audioEnabled = typeof request.audio === 'boolean' ? request.audio : undefined;
+  const addons = buildAudioAddonInput(pricingEngine, audioEnabled);
   let snapshot: PricingSnapshot;
   try {
     snapshot = await computePricingSnapshot({
@@ -230,6 +232,7 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
       membershipTier: memberTier,
       loop,
       durationOption: durationInfo?.label,
+      addons,
     });
   } catch (error) {
     return {
