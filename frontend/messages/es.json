@@ -1282,7 +1282,7 @@
       },
       "links": {
         "dashboard": "Panel",
-        "generate": "Generar",
+        "generate": "Generar video",
         "jobs": "Jobs",
         "billing": "Facturación",
         "settings": "Ajustes"
@@ -1484,11 +1484,12 @@
         }
       },
       "engineSelect": {
-        "latency": "Latencia {tier}",
+        "avgDuration": "Prom. {value}",
         "choose": "Elegir motor",
         "variant": "Variante",
         "browse": "Explorar motores...",
         "inputMode": "Modo de entrada",
+        "unsupportedMode": "No compatible con este motor",
         "modal": {
           "close": "Cerrar",
           "title": "Elige el motor adecuado para tu toma",
@@ -1573,38 +1574,87 @@
       }
     },
     "dashboard": {
-      "quickActions": {
-        "create": "Crear un video",
-        "jobs": "Ver los últimos renders",
-        "billing": "Añadir fondos"
+      "create": {
+        "title": "Crear",
+        "subtitle": "Inicia un nuevo render o retoma donde lo dejaste.",
+        "videoTitle": "Crear video",
+        "videoSubtitle": "Elige motor y modo, y lanza un render.",
+        "imageTitle": "Crear imagen",
+        "imageSubtitle": "Genera imágenes o ediciones con los motores de imagen.",
+        "engineLabel": "Motor",
+        "newVideo": "Nuevo video",
+        "useLastVideo": "Usar últimos ajustes de video",
+        "startVideoTemplate": "Empezar desde plantilla",
+        "newImage": "Nueva imagen",
+        "useLastImage": "Usar últimos ajustes de imagen",
+        "startImageTemplate": "Empezar desde plantilla"
       },
-      "wallet": {
-        "title": "Billetera y estado",
-        "balanceLabel": "Saldo actual",
-        "tierLabel": "Nivel de miembro",
-        "savingsLabel": "Ahorro en los últimos 30 días: {percent} %",
-        "manageCta": "Gestionar facturación",
-        "memberFallback": "Miembro"
+      "modes": {
+        "t2v": "T2V",
+        "i2v": "I2V",
+        "r2v": "Referencia",
+        "t2i": "Crear",
+        "i2i": "Editar"
       },
-      "spend": {
-        "title": "Gasto a simple vista",
-        "today": "Hoy",
-        "last30": "Últimos 30 días"
+      "inProgress": {
+        "title": "En curso",
+        "empty": "No hay renders activos ahora.",
+        "etaLabel": "ETA",
+        "progressLabel": "Progreso",
+        "open": "Abrir",
+        "remix": "Remixar"
       },
-      "latest": {
-        "title": "Últimos renders",
-        "viewAll": "Ver todo →",
-        "error": "No se pudieron cargar los últimos renders. Inténtalo de nuevo.",
-        "curatedHint": "Verás renders de ejemplo del equipo MaxVideo hasta que generes los tuyos.",
-        "emptyHint": "Inicia un render para rellenar esta sección."
+      "recent": {
+        "title": "Renders recientes",
+        "viewAll": "Abrir biblioteca",
+        "empty": "Aún no hay renders. Inicia una generación para llenar tu biblioteca.",
+        "tabs": {
+          "all": "Todos",
+          "completed": "Completados",
+          "failed": "Fallidos"
+        }
+      },
+      "insights": {
+        "title": "Insights",
+        "spendToday": "Gasto hoy",
+        "spend30": "Gasto 30d",
+        "avgCost": "Costo medio",
+        "runway": "Runway",
+        "runwayFallback": "La estimación de runway necesita renders completados.",
+        "mostUsed": "Más usado"
+      },
+      "quickStarts": {
+        "title": "Arranques rápidos",
+        "empty": "Guarda un render como plantilla para reutilizarlo aquí.",
+        "use": "Usar",
+        "manage": "Abrir biblioteca",
+        "remove": "Eliminar",
+        "meta": {
+          "engine": "Motor",
+          "format": "Formato",
+          "duration": "Duración",
+          "audio": "Audio",
+          "audioOn": "Sí",
+          "audioOff": "No",
+          "audioUnknown": "—",
+          "price": "Precio",
+          "formatAuto": "Auto"
+        },
+        "defaultTitle": "Plantilla"
       },
       "engines": {
         "title": "Estado de los motores",
+        "allOk": "Todos los motores operativos",
         "error": "No se pudieron cargar los motores.",
         "queueLabel": "cola: {count}"
       },
       "actions": {
-        "retry": "Reintentar"
+        "retry": "Reintentar",
+        "loadMore": "Cargar más",
+        "download": "Descargar",
+        "remix": "Remixar",
+        "template": "Usar como plantilla",
+        "noPreview": "Sin vista previa"
       },
       "lightbox": {
         "groupTitle": "Grupo ×{count}",
@@ -1615,7 +1665,7 @@
           "engine": "Motor",
           "duration": "Duración",
           "status": "Estado",
-          "notProvided": "Sin dato"
+          "notProvided": "Sin datos"
         },
         "statusFallback": "N/D",
         "versionLabel": "Versión {index}"
@@ -1634,8 +1684,21 @@
         "description": "Créditos iniciales (10 $). Recarga una vez y paga cada render al centavo. Cualquier saldo sin usar sigue siendo tuyo.",
         "addFunds": "Añadir {amount}",
         "quickAmount": "{amount}",
+        "customLabel": "Monto personalizado (USD)",
+        "customPlaceholder": "Introduce un monto (mín. $10)",
+        "customHint": "Recarga mínima: $10.",
+        "customCta": "Añadir monto",
+        "customInvalid": "Introduce un monto válido.",
+        "customMin": "Mínimo: $10.",
         "autoTopUp": "Activar recarga automática (opcional)",
-        "lowBalance": "Tu saldo es bajo. Recarga para seguir creando."
+        "lowBalance": "Tu saldo es bajo. Recarga para seguir creando.",
+        "currencyLabel": "Moneda de cobro",
+        "currencyLoading": "Detectando monedas…",
+        "currencyLoadError": "No se pudieron cargar las monedas. Se usará USD.",
+        "currencyDetected": "Detectado {currency}",
+        "currencyOverride": "Cobro en {selected} (auto: {detected})",
+        "quoteLoading": "Calculando totales…",
+        "quoteError": "No se pudieron obtener tasas. El monto se confirma al pagar."
       },
       "membership": {
         "title": "Estado de miembro",

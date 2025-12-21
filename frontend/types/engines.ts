@@ -106,6 +106,7 @@ export interface EngineCaps {
   isLab?: boolean;
   status: EngineStatus;
   latencyTier: LatencyTier;
+  avgDurationMs?: number | null;
   queueDepth?: number;
   region?: string;
   vendorAccountId?: string;

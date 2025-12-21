@@ -27,6 +27,12 @@ type EngineMetricRow = {
   p95_duration_ms: string | number | null;
 };
 
+type EngineAverageRow = {
+  engine_id: string;
+  completed_count: string | number | null;
+  avg_duration_ms: string | number | null;
+};
+
 export type EnginePerformanceMetric = {
   engineId: string;
   engineLabel: string;
@@ -37,6 +43,12 @@ export type EnginePerformanceMetric = {
   failedCount: number;
   averageDurationMs: number | null;
   p95DurationMs: number | null;
+};
+
+export type EngineAverageDuration = {
+  engineId: string;
+  completedCount: number;
+  averageDurationMs: number | null;
 };
 
 function coerceNumber(value: number | string | null | undefined): number {
@@ -136,5 +148,31 @@ export async function fetchEnginePerformanceMetrics(days = 30): Promise<EnginePe
     failedCount: coerceNumber(row.failed_count),
     averageDurationMs: coerceNullableNumber(row.avg_duration_ms),
     p95DurationMs: coerceNullableNumber(row.p95_duration_ms),
+  }));
+}
+
+export async function fetchEngineAverageDurations(days = 30): Promise<EngineAverageDuration[]> {
+  if (!isDatabaseConfigured()) return [];
+
+  await ensureBillingSchema();
+
+  const rows = await query<EngineAverageRow>(
+    `
+      SELECT
+        engine_id,
+        COUNT(*) FILTER (WHERE attempt_status = 'completed' AND duration_ms IS NOT NULL) AS completed_count,
+        AVG(duration_ms) FILTER (WHERE attempt_status = 'completed' AND duration_ms IS NOT NULL) AS avg_duration_ms
+      FROM app_generate_metrics
+      WHERE created_at >= NOW() - ($1::text || ' days')::interval
+      GROUP BY engine_id
+      ORDER BY engine_id ASC
+    `,
+    [String(days)]
+  );
+
+  return rows.map((row) => ({
+    engineId: row.engine_id,
+    completedCount: coerceNumber(row.completed_count),
+    averageDurationMs: coerceNullableNumber(row.avg_duration_ms),
   }));
 }

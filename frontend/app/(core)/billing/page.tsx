@@ -71,6 +71,12 @@ const DEFAULT_BILLING_COPY = {
     description: 'Starter Credits ($10). Top up once, then pay per render to the cent. Any unused balance stays yours.',
     addFunds: 'Add {amount}',
     quickAmount: '{amount}',
+    customLabel: 'Custom amount (USD)',
+    customPlaceholder: 'Enter amount (min $10)',
+    customHint: 'Minimum top-up is $10.',
+    customCta: 'Add custom amount',
+    customInvalid: 'Enter a valid amount.',
+    customMin: 'Minimum is $10.',
     autoTopUp: 'Enable auto top-up (optional)',
     lowBalance: 'Your balance is low. Top up to keep creating.',
     currencyLabel: 'Charge currency',
@@ -191,6 +197,7 @@ export default function BillingPage() {
   const [currencyError, setCurrencyError] = useState<string | null>(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [quoteError, setQuoteError] = useState<string | null>(null);
+  const [customAmountInput, setCustomAmountInput] = useState('');
   const toggleReceipts = useCallback(() => setReceiptsCollapsed((prev) => !prev), []);
   const [topupQuotes, setTopupQuotes] = useState<Record<number, { amountMinor: number; currency: string }>>({});
   const userCurrencyOverrideRef = useRef(false);
@@ -521,6 +528,15 @@ export default function BillingPage() {
     }
   };
 
+  const parseAmountToCents = (value: string): number | null => {
+    if (!value) return null;
+    const normalized = value.replace(',', '.').trim();
+    if (!normalized) return null;
+    const parsed = Number(normalized);
+    if (!Number.isFinite(parsed) || parsed <= 0) return null;
+    return Math.round(parsed * 100);
+  };
+
   const formatLocalAmount = useCallback((amountMinor: number, currency: string) => {
     const upper = (currency ?? 'USD').toUpperCase();
     const zeroDecimal = upper === 'JPY';
@@ -546,6 +562,16 @@ export default function BillingPage() {
             .replace('{selected}', normalizedChargeCurrency)
             .replace('{detected}', normalizedAutoCurrency);
   const currencyStatusClass = currencyError ? 'text-state-warning' : 'text-text-secondary';
+  const customAmountCents = parseAmountToCents(customAmountInput);
+  const customAmountError = !customAmountInput.trim()
+    ? null
+    : customAmountCents == null
+      ? copy.wallet.customInvalid
+      : customAmountCents < 1000
+        ? copy.wallet.customMin
+        : null;
+  const customAmountValid = customAmountCents != null && customAmountCents >= 1000;
+  const visibleReceipts = receiptsCollapsed ? receipts.items.slice(0, 2) : receipts.items;
 
   if (authLoading || !session) {
     return null;
@@ -634,6 +660,41 @@ export default function BillingPage() {
                     </div>
                   </button>
                 ))}
+              </div>
+              <div className="mt-4 rounded-input border border-border bg-bg px-3 py-3">
+                <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
+                  {copy.wallet.customLabel}
+                </label>
+                <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <div className="relative flex-1">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-text-muted">$</span>
+                    <input
+                      type="number"
+                      min={10}
+                      step={1}
+                      inputMode="decimal"
+                      value={customAmountInput}
+                      onChange={(event) => setCustomAmountInput(event.target.value)}
+                      placeholder={copy.wallet.customPlaceholder}
+                      className="w-full rounded-input border border-border bg-white px-7 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    disabled={!customAmountValid}
+                    onClick={() => customAmountCents && handleTopUp(customAmountCents)}
+                    className={`rounded-input px-4 py-2 text-sm font-semibold transition ${
+                      customAmountValid
+                        ? 'bg-accent text-white hover:bg-accent/90'
+                        : 'cursor-not-allowed bg-neutral-200 text-text-muted'
+                    }`}
+                  >
+                    {copy.wallet.customCta}
+                  </button>
+                </div>
+                <p className={`mt-2 text-xs ${customAmountError ? 'text-state-warning' : 'text-text-muted'}`}>
+                  {customAmountError ?? copy.wallet.customHint}
+                </p>
               </div>
               {quoteLoading && (
                 <p className="mt-2 text-xs text-text-secondary">{walletQuoteLoading}</p>
@@ -737,12 +798,11 @@ export default function BillingPage() {
                 </div>
               </button>
             {receipts.error && <p className="text-sm text-state-warning">{receipts.error}</p>}
-            {!receiptsCollapsed && (
-              <div className="mt-3 space-y-3">
-                {receipts.items.length === 0 && !receipts.loading && (
-                  <p className="text-sm text-text-secondary">{copy.receipts.empty}</p>
-                )}
-                {receipts.items.map((r) => {
+            <div className="mt-3 space-y-3">
+              {visibleReceipts.length === 0 && !receipts.loading && (
+                <p className="text-sm text-text-secondary">{copy.receipts.empty}</p>
+              )}
+              {visibleReceipts.map((r) => {
                   const signedCents = r.type === 'charge' ? -r.amount_cents : r.amount_cents;
                   const amountDisplay = formatMoney(signedCents, r.currency);
                   const typeKey = r.type === 'charge' ? 'charge' : r.type === 'refund' ? 'refund' : 'topup';
@@ -793,10 +853,11 @@ export default function BillingPage() {
                       </dl>
                     </article>
                   );
-                })}
-                {receipts.loading && (
-                  <p className="text-sm text-text-secondary">{copy.receipts.loading}</p>
-                )}
+              })}
+              {receipts.loading && (
+                <p className="text-sm text-text-secondary">{copy.receipts.loading}</p>
+              )}
+              {!receiptsCollapsed && (
                 <div className="flex items-center gap-2">
                   {receipts.nextCursor && (
                     <button onClick={loadMoreReceipts} disabled={receipts.loading} className="rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg disabled:opacity-60">
@@ -807,8 +868,8 @@ export default function BillingPage() {
                     {copy.receipts.exportCsv}
                   </button>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </section>
 
           {/* Refunds & Protections */}

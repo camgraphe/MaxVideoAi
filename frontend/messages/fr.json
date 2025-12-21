@@ -1289,7 +1289,7 @@
       },
       "links": {
         "dashboard": "Tableau de bord",
-        "generate": "Générer",
+        "generate": "Générer une vidéo",
         "jobs": "Jobs",
         "billing": "Facturation",
         "settings": "Paramètres"
@@ -1498,11 +1498,12 @@
         }
       },
       "engineSelect": {
-        "latency": "Latence {tier}",
+        "avgDuration": "Moy. {value}",
         "choose": "Choisir un moteur",
         "variant": "Variante",
         "browse": "Explorer les moteurs…",
         "inputMode": "Mode d’entrée",
+        "unsupportedMode": "Mode non pris en charge par ce moteur",
         "modal": {
           "close": "Fermer",
           "title": "Choisissez le moteur adapté à votre plan",
@@ -1589,38 +1590,87 @@
       }
     },
     "dashboard": {
-      "quickActions": {
-        "create": "Créer une vidéo",
-        "jobs": "Voir les derniers rendus",
-        "billing": "Ajouter des fonds"
+      "create": {
+        "title": "Créer",
+        "subtitle": "Lancez un nouveau rendu ou reprenez vos derniers réglages.",
+        "videoTitle": "Créer une vidéo",
+        "videoSubtitle": "Choisissez votre moteur et votre mode, puis lancez un rendu.",
+        "imageTitle": "Créer une image",
+        "imageSubtitle": "Générez des images fixes ou des retouches avec les moteurs image.",
+        "engineLabel": "Moteur",
+        "newVideo": "Nouvelle vidéo",
+        "useLastVideo": "Utiliser les réglages vidéo",
+        "startVideoTemplate": "Démarrer depuis un template",
+        "newImage": "Nouvelle image",
+        "useLastImage": "Utiliser les réglages image",
+        "startImageTemplate": "Démarrer depuis un template"
       },
-      "wallet": {
-        "title": "Portefeuille & statut",
-        "balanceLabel": "Solde actuel",
-        "tierLabel": "Niveau membre",
-        "savingsLabel": "Économies sur 30 jours glissants : {percent} %",
-        "manageCta": "Gérer la facturation",
-        "memberFallback": "Membre"
+      "modes": {
+        "t2v": "T2V",
+        "i2v": "I2V",
+        "r2v": "Référence",
+        "t2i": "Créer",
+        "i2i": "Retoucher"
       },
-      "spend": {
-        "title": "Dépenses en un coup d’œil",
-        "today": "Aujourd’hui",
-        "last30": "30 derniers jours"
+      "inProgress": {
+        "title": "En cours",
+        "empty": "Aucun rendu actif pour le moment.",
+        "etaLabel": "ETA",
+        "progressLabel": "Progression",
+        "open": "Ouvrir",
+        "remix": "Remixer"
       },
-      "latest": {
-        "title": "Derniers rendus",
-        "viewAll": "Tout voir →",
-        "error": "Impossible de charger les derniers rendus. Veuillez réessayer.",
-        "curatedHint": "Des rendus exemples apparaissent ici tant que vous n’avez pas généré les vôtres.",
-        "emptyHint": "Lancez un rendu pour peupler cette section."
+      "recent": {
+        "title": "Rendus récents",
+        "viewAll": "Ouvrir la bibliothèque",
+        "empty": "Aucun rendu pour l’instant. Lancez une génération pour remplir la bibliothèque.",
+        "tabs": {
+          "all": "Tous",
+          "completed": "Terminés",
+          "failed": "Échoués"
+        }
+      },
+      "insights": {
+        "title": "Insights",
+        "spendToday": "Dépense du jour",
+        "spend30": "Dépense 30 j",
+        "avgCost": "Coût moyen",
+        "runway": "Runway",
+        "runwayFallback": "L’estimation du runway nécessite des rendus terminés.",
+        "mostUsed": "Le plus utilisé"
+      },
+      "quickStarts": {
+        "title": "Démarrages rapides",
+        "empty": "Enregistrez un rendu comme template pour le retrouver ici.",
+        "use": "Utiliser",
+        "manage": "Ouvrir la bibliothèque",
+        "remove": "Supprimer",
+        "meta": {
+          "engine": "Moteur",
+          "format": "Format",
+          "duration": "Durée",
+          "audio": "Audio",
+          "audioOn": "Oui",
+          "audioOff": "Non",
+          "audioUnknown": "—",
+          "price": "Prix",
+          "formatAuto": "Auto"
+        },
+        "defaultTitle": "Template"
       },
       "engines": {
         "title": "Statut des moteurs",
+        "allOk": "Tous les moteurs sont opérationnels",
         "error": "Impossible de charger les moteurs.",
         "queueLabel": "file : {count}"
       },
       "actions": {
-        "retry": "Réessayer"
+        "retry": "Réessayer",
+        "loadMore": "Charger plus",
+        "download": "Télécharger",
+        "remix": "Remixer",
+        "template": "Utiliser comme template",
+        "noPreview": "Aperçu indisponible"
       },
       "lightbox": {
         "groupTitle": "Groupe ×{count}",
@@ -1650,8 +1700,21 @@
         "description": "Crédits de démarrage (10 $). Rechargez une fois, puis payez chaque rendu au centime près. Tout solde inutilisé reste à vous.",
         "addFunds": "Ajouter {amount}",
         "quickAmount": "{amount}",
+        "customLabel": "Montant personnalisé (USD)",
+        "customPlaceholder": "Saisir un montant (min 10 $)",
+        "customHint": "Recharge minimale : 10 $.",
+        "customCta": "Ajouter un montant",
+        "customInvalid": "Saisissez un montant valide.",
+        "customMin": "Minimum : 10 $.",
         "autoTopUp": "Activer la recharge auto (optionnel)",
-        "lowBalance": "Votre solde est faible. Rechargez pour continuer à créer."
+        "lowBalance": "Votre solde est faible. Rechargez pour continuer à créer.",
+        "currencyLabel": "Devise facturée",
+        "currencyLoading": "Détection des devises…",
+        "currencyLoadError": "Impossible de charger les devises. USD par défaut.",
+        "currencyDetected": "Détecté : {currency}",
+        "currencyOverride": "Facturation en {selected} (auto : {detected})",
+        "quoteLoading": "Calcul des totaux…",
+        "quoteError": "Impossible de récupérer les taux. Montant finalisé au paiement."
       },
       "membership": {
         "title": "Statut membre",

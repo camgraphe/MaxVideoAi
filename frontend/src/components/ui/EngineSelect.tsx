@@ -73,6 +73,13 @@ function getModeLabel(
   return engineOverrides?.[value] ?? MODE_LABELS[value] ?? value.toUpperCase();
 }
 
+function formatAvgDuration(value: number | null | undefined): string | null {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return null;
+  const seconds = value / 1000;
+  const precision = seconds < 10 ? 1 : 0;
+  return `${seconds.toFixed(precision)}s`;
+}
+
 interface EngineSelectProps {
   engines: EngineCaps[];
   engineId: string;
@@ -138,11 +145,12 @@ const DEFAULT_ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
 };
 
 const DEFAULT_ENGINE_SELECT_COPY = {
-  latency: 'Latency {tier}',
+  avgDuration: 'Avg {value}',
   choose: 'Choose engine',
   variant: 'Variant',
   browse: 'Browse engines...',
   inputMode: 'Input mode',
+  unsupportedMode: 'Not supported by this engine',
   modal: {
     close: 'Close',
     title: 'Choose the right engine for your shot',
@@ -221,7 +229,7 @@ export function EngineSelect({
     () => availableEngines.filter((entry) => SORA_ENGINE_SET.has(entry.id)),
     [availableEngines]
   );
-  const isSoraSelection = SORA_ENGINE_SET.has(selectedEngine.id);
+  const isSoraSelection = selectedEngine ? SORA_ENGINE_SET.has(selectedEngine.id) : false;
 
   const formatEngineShort = useCallback((engine: EngineCaps | null | undefined) => {
     if (!engine) return '';
@@ -395,15 +403,16 @@ export function EngineSelect({
       : undefined;
 
   itemRefs.current.length = visibleEngines.length;
+  const selectedAvgDuration = formatAvgDuration(selectedEngine.avgDurationMs);
 
   return (
     <Card ref={containerRef} className="relative space-y-5 p-5">
       <div className="flex items-center justify-between gap-4">
         <EngineIcon engine={selectedEngine} size={42} className="shrink-0" />
         <div className="hidden flex-col items-end gap-2 text-xs text-text-muted lg:flex">
-          {selectedEngine.latencyTier && (
+          {selectedAvgDuration && (
             <Chip variant="ghost" className="text-[11px] lowercase first-letter:uppercase">
-              {copy.latency.replace('{tier}', selectedEngine.latencyTier)}
+              {copy.avgDuration.replace('{value}', selectedAvgDuration)}
             </Chip>
           )}
           {selectedEngine.status && (
@@ -509,6 +518,7 @@ export function EngineSelect({
                       const active = engine.id === selectedEngine.id;
                       const highlighted = index === highlightedIndex;
                       const meta = ENGINE_META.get(engine.id);
+                      const avgDurationLabel = formatAvgDuration(engine.avgDurationMs);
                       const availability: EngineAvailability = meta?.availability ?? engine.availability ?? 'available';
                       const disabled = availability === 'paused';
                       return (
@@ -560,7 +570,7 @@ export function EngineSelect({
                                 </div>
                               </div>
                               <div className="flex flex-col items-end gap-1 text-[11px] text-text-muted">
-                                {engine.latencyTier && <span>{copy.latency.replace('{tier}', engine.latencyTier)}</span>}
+                                {avgDurationLabel && <span>{copy.avgDuration.replace('{value}', avgDurationLabel)}</span>}
                                 {engine.status && <span className="uppercase tracking-micro">{engine.status}</span>}
                               </div>
                             </div>
@@ -594,6 +604,7 @@ export function EngineSelect({
                     type="button"
                     onClick={() => supported && onModeChange(candidate)}
                     disabled={!supported}
+                    title={!supported ? copy.unsupportedMode : undefined}
                     className={clsx(
                       'rounded-input border px-4 py-2 text-[13px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                       mode === candidate && supported
@@ -859,6 +870,7 @@ function BrowseEnginesModal({
               const name = meta?.marketingName ?? engine.label ?? engine.id;
               const versionLabel = meta?.versionLabel ?? engine.version ?? '-';
               const description = guide?.description ?? meta?.seo.description ?? modalCopy.descriptionFallback;
+              const avgDurationLabel = formatAvgDuration(engine.avgDurationMs);
 
               return (
                 <Card
@@ -879,7 +891,11 @@ function BrowseEnginesModal({
                         </p>
                       </div>
                       <div className="flex flex-col items-end gap-1 text-[11px] text-text-muted">
-                        {engine.latencyTier && <span className="rounded-input border border-border px-2 py-0.5">{engine.latencyTier}</span>}
+                        {avgDurationLabel && (
+                          <span className="rounded-input border border-border px-2 py-0.5">
+                            {copy.avgDuration.replace('{value}', avgDurationLabel)}
+                          </span>
+                        )}
                         {engine.status && <span className="rounded-input border border-border px-2 py-0.5 uppercase tracking-micro">{engine.status}</span>}
                       </div>
                     </div>

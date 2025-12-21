@@ -1,58 +1,123 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 
+import clsx from 'clsx';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { forwardRef, type Ref, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { getJobStatus, useEngines, useInfiniteJobs } from '@/lib/api';
 import { groupJobsIntoSummaries } from '@/lib/job-groups';
-import { GroupedJobCard } from '@/components/GroupedJobCard';
 import { normalizeGroupSummaries } from '@/lib/normalize-group-summary';
 import type { GroupSummary } from '@/types/groups';
 import type { Job } from '@/types/jobs';
-import type { EngineCaps } from '@/types/engines';
-import { supabase } from '@/lib/supabaseClient';
+import type { EngineCaps, Mode } from '@/types/engines';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { MediaLightbox, type MediaLightboxEntry } from '@/components/MediaLightbox';
+import { EngineSelect } from '@/components/ui/EngineSelect';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { authFetch } from '@/lib/authFetch';
+import { listFalEngines } from '@/config/falEngines';
+
+const NEW_USER_ENGINE_ID = 'sora-2';
+const STORAGE_KEYS = {
+  form: 'maxvideoai.generate.form.v1',
+  imageForm: 'maxvideoai.image.composer.v1',
+  templates: 'maxvideoai.dashboard.templates.v1',
+} as const;
+const MODE_OPTIONS: Mode[] = ['t2v', 'i2v', 'r2v'];
+const IMAGE_MODE_OPTIONS: Mode[] = ['t2i', 'i2i'];
+const IN_PROGRESS_POLL_MS = 5000;
+const IN_PROGRESS_LIMIT = 8;
+const RECENT_SAMPLE_LIMIT = 20;
+const TEMPLATE_LIMIT = 6;
+const IMAGE_ENGINE_REGISTRY = listFalEngines().filter((entry) => (entry.category ?? 'video') === 'image');
 
 const DEFAULT_DASHBOARD_COPY = {
-  quickActions: {
-    create: 'Create a video',
-    jobs: 'View latest renders',
-    billing: 'Add funds',
+  create: {
+    title: 'Create',
+    subtitle: 'Start a new render or pick up where you left off.',
+    videoTitle: 'Create video',
+    videoSubtitle: 'Choose your engine and mode, then start a render.',
+    imageTitle: 'Create image',
+    imageSubtitle: 'Generate stills or edits with the image engines.',
+    engineLabel: 'Engine',
+    newVideo: 'New video',
+    useLastVideo: 'Use last video settings',
+    startVideoTemplate: 'Start from template',
+    newImage: 'New image',
+    useLastImage: 'Use last image settings',
+    startImageTemplate: 'Start from template',
   },
-  wallet: {
-    title: 'Wallet & Member',
-    balanceLabel: 'Current balance',
-    tierLabel: 'Member tier',
-    savingsLabel: 'Rolling 30-day savings: {percent}%',
-    manageCta: 'Manage billing',
-    memberFallback: 'Member',
+  modes: {
+    t2v: 'T2V',
+    i2v: 'I2V',
+    r2v: 'Reference',
+    t2i: 'Create',
+    i2i: 'Edit',
   },
-  spend: {
-    title: 'Spend at a glance',
-    today: 'Today',
-    last30: 'Last 30 days',
+  inProgress: {
+    title: 'In progress',
+    empty: 'No active renders right now.',
+    etaLabel: 'ETA',
+    progressLabel: 'Progress',
+    open: 'Open',
+    remix: 'Remix',
   },
-  latest: {
-    title: 'Latest renders',
-    viewAll: 'View all →',
-    error: 'Failed to load latest renders. Please retry.',
-    retry: 'Retry',
-    curatedHint: 'Starter renders curated by the MaxVideo team appear here until you create your own.',
-    emptyHint: 'Start a generation to populate your latest renders.',
+  recent: {
+    title: 'Recent renders',
+    viewAll: 'Open Library',
+    empty: 'No renders yet. Start a generation to populate your library.',
+    tabs: {
+      all: 'All',
+      completed: 'Completed',
+      failed: 'Failed',
+    },
+  },
+  insights: {
+    title: 'Insights',
+    spendToday: 'Spend today',
+    spend30: 'Spend 30d',
+    avgCost: 'Avg cost',
+    runway: 'Runway',
+    runwayFallback: 'Runway estimate needs completed renders.',
+    mostUsed: 'Most used',
+  },
+  quickStarts: {
+    title: 'Quick starts',
+    empty: 'Save a render as a template to reuse it here.',
+    use: 'Use',
+    manage: 'Open Library',
+    remove: 'Remove',
+    defaultTitle: 'Template',
+    meta: {
+      engine: 'Engine',
+      format: 'Format',
+      duration: 'Duration',
+      audio: 'Audio',
+      audioOn: 'On',
+      audioOff: 'Off',
+      audioUnknown: '—',
+      price: 'Price',
+      formatAuto: 'Auto',
+    },
   },
   engines: {
-    title: 'Engines status',
+    title: 'Engine status',
+    allOk: 'All engines operational',
     error: 'Failed to load engines.',
     queueLabel: 'queue: {count}',
   },
   actions: {
     retry: 'Retry',
+    loadMore: 'Load more',
+    download: 'Download',
+    remix: 'Remix',
+    template: 'Use as template',
+    noPreview: 'No preview',
   },
   lightbox: {
     groupTitle: 'Group ×{count}',
@@ -72,43 +137,240 @@ const DEFAULT_DASHBOARD_COPY = {
 
 type DashboardCopy = typeof DEFAULT_DASHBOARD_COPY;
 
+type TemplateEntry = {
+  id: string;
+  prompt: string;
+  engineLabel?: string | null;
+  engineId?: string | null;
+  thumbUrl?: string | null;
+  durationSec?: number | null;
+  aspectRatio?: string | null;
+  hasAudio?: boolean | null;
+  priceCents?: number | null;
+  currency?: string | null;
+  createdAt?: string | null;
+};
+
 export default function DashboardPage() {
   const { t } = useI18n();
   const copy = t('workspace.dashboard', DEFAULT_DASHBOARD_COPY) as DashboardCopy;
-  const { data: enginesData, error: enginesError } = useEngines();
-  const { data: jobsPages, error: jobsError, isLoading, mutate: mutateJobs } = useInfiniteJobs(9, {
-    type: 'video',
-  });
+  const router = useRouter();
   const { loading: authLoading } = useRequireAuth();
+  const { data: enginesData, error: enginesError } = useEngines();
+  const {
+    data: jobsPages,
+    isLoading,
+    setSize,
+    isValidating,
+    mutate: mutateJobs,
+    stableJobs,
+  } = useInfiniteJobs(25, { type: 'video' });
+  const { stableJobs: stableImageJobs } = useInfiniteJobs(1, { type: 'image' });
+
+  const [selectedEngineId, setSelectedEngineId] = useState<string | null>(null);
+  const [selectedMode, setSelectedMode] = useState<Mode>('t2v');
+  const [hasStoredForm, setHasStoredForm] = useState(false);
+  const [selectionResolved, setSelectionResolved] = useState(false);
+  const [selectedImageEngineId, setSelectedImageEngineId] = useState<string | null>(null);
+  const [selectedImageMode, setSelectedImageMode] = useState<Mode>('t2i');
+  const [hasStoredImageForm, setHasStoredImageForm] = useState(false);
+  const [imageSelectionResolved, setImageSelectionResolved] = useState(false);
+  const [exportsSummary, setExportsSummary] = useState<{ total: number } | null>(null);
+  const [templates, setTemplates] = useState<TemplateEntry[]>([]);
+  const [walletSummary, setWalletSummary] = useState<{ balance: number; currency: string } | null>(null);
+  const [memberSummary, setMemberSummary] = useState<{ spentToday?: number; spent30?: number } | null>(null);
+  const [recentTab, setRecentTab] = useState<'all' | 'completed' | 'failed'>('all');
+  const [lightbox, setLightbox] = useState<{ kind: 'group'; group: GroupSummary } | { kind: 'job'; job: Job } | null>(null);
+  const quickStartRef = useRef<HTMLDivElement | null>(null);
+
+  const availableEngines = useMemo(() => {
+    return (enginesData?.engines ?? []).filter((engine) => isEngineAvailable(engine));
+  }, [enginesData?.engines]);
+
+  const imageEngines = useMemo(() => IMAGE_ENGINE_REGISTRY.map((entry) => entry.engine), []);
+  const availableImageEngines = useMemo(() => {
+    return imageEngines.filter((engine) => isEngineAvailable(engine) && supportsImageModes(engine));
+  }, [imageEngines]);
 
   const engineLookup = useMemo(() => {
     const byId = new Map<string, EngineCaps>();
-    const byLabel = new Map<string, EngineCaps>();
     (enginesData?.engines ?? []).forEach((engine) => {
       byId.set(engine.id, engine);
-      byLabel.set(engine.label.toLowerCase(), engine);
     });
-    return { byId, byLabel };
+    return { byId };
   }, [enginesData?.engines]);
 
+  const imageEngineLookup = useMemo(() => {
+    const byId = new Map<string, EngineCaps>();
+    imageEngines.forEach((engine) => {
+      byId.set(engine.id, engine);
+    });
+    return { byId };
+  }, [imageEngines]);
 
-  const jobs = useMemo(() => jobsPages?.[0]?.jobs ?? [], [jobsPages]);
-  const hasCuratedJobs = useMemo(() => jobs.some((job) => job.curated), [jobs]);
-  const { groups: apiGroups } = useMemo(
-    () => groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true }),
-    [jobs]
-  );
-  const quickActions = useMemo(
-    () => [
-      { id: 'create', href: '/app', icon: 'generate' },
-      { id: 'jobs', href: '/jobs', icon: 'jobs' },
-      { id: 'billing', href: '/billing', icon: 'wallet' },
-    ],
-    []
-  );
+  const jobs = useMemo(() => {
+    if (Array.isArray(stableJobs) && stableJobs.length) return stableJobs;
+    return jobsPages?.flatMap((page) => page.jobs) ?? [];
+  }, [jobsPages, stableJobs]);
+
+  const latestRealJob = useMemo(() => jobs.find((job) => !job.curated && job.engineId), [jobs]);
+  const imageJobs = useMemo(() => {
+    if (Array.isArray(stableImageJobs) && stableImageJobs.length) return stableImageJobs;
+    return [];
+  }, [stableImageJobs]);
+  const latestImageJob = useMemo(() => imageJobs.find((job) => !job.curated && job.engineId), [imageJobs]);
+  const lastJobsPage = jobsPages && jobsPages.length ? jobsPages[jobsPages.length - 1] : null;
 
   useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
+    if (typeof window === 'undefined') return;
+    const stored = readStoredForm();
+    if (stored?.engineId) {
+      setSelectedEngineId(stored.engineId);
+      setSelectedMode(stored.mode ?? 't2v');
+      setHasStoredForm(true);
+      setSelectionResolved(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const stored = readStoredImageForm();
+    if (stored?.engineId) {
+      setSelectedImageEngineId(stored.engineId);
+      setSelectedImageMode(stored.mode ?? 't2i');
+      setHasStoredImageForm(true);
+      setImageSelectionResolved(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (authLoading || hasStoredForm || exportsSummary) return;
+    let mounted = true;
+    authFetch('/api/user/exports/summary')
+      .then(async (response) => {
+        if (!response.ok) return null;
+        const payload = (await response.json().catch(() => null)) as { total?: number } | null;
+        if (!mounted || !payload) return null;
+        setExportsSummary({ total: Number(payload.total ?? 0) });
+        return null;
+      })
+      .catch(() => undefined);
+    return () => {
+      mounted = false;
+    };
+  }, [authLoading, hasStoredForm, exportsSummary]);
+
+  useEffect(() => {
+    if (selectionResolved || hasStoredForm || !exportsSummary || !availableEngines.length) return;
+    if (exportsSummary.total === 0) {
+      setSelectedEngineId(NEW_USER_ENGINE_ID);
+      setSelectionResolved(true);
+      return;
+    }
+    if (exportsSummary.total > 0) {
+      const fallback = latestRealJob?.engineId ?? availableEngines[0]?.id ?? null;
+      if (fallback) {
+        setSelectedEngineId(fallback);
+        setSelectionResolved(true);
+      }
+    }
+  }, [availableEngines, exportsSummary, hasStoredForm, latestRealJob, selectionResolved]);
+
+  useEffect(() => {
+    if (imageSelectionResolved || hasStoredImageForm || !availableImageEngines.length) return;
+    const total = exportsSummary?.total;
+    if (typeof total === 'number') {
+      if (total === 0) {
+        setSelectedImageEngineId(availableImageEngines[0]?.id ?? null);
+        setImageSelectionResolved(true);
+        return;
+      }
+      if (total > 0) {
+        const fallback = latestImageJob?.engineId ?? availableImageEngines[0]?.id ?? null;
+        if (fallback) {
+          setSelectedImageEngineId(fallback);
+          setImageSelectionResolved(true);
+        }
+        return;
+      }
+    }
+    const fallback = latestImageJob?.engineId ?? availableImageEngines[0]?.id ?? null;
+    if (fallback) {
+      setSelectedImageEngineId(fallback);
+      setImageSelectionResolved(true);
+    }
+  }, [
+    availableImageEngines,
+    exportsSummary?.total,
+    hasStoredImageForm,
+    imageSelectionResolved,
+    latestImageJob,
+  ]);
+
+  useEffect(() => {
+    if (!availableEngines.length || !selectedEngineId) return;
+    const isAvailable = availableEngines.some((engine) => engine.id === selectedEngineId);
+    if (!isAvailable) {
+      setSelectedEngineId(availableEngines[0]?.id ?? selectedEngineId);
+    }
+  }, [availableEngines, selectedEngineId]);
+
+  useEffect(() => {
+    if (!availableImageEngines.length || !selectedImageEngineId) return;
+    const isAvailable = availableImageEngines.some((engine) => engine.id === selectedImageEngineId);
+    if (!isAvailable) {
+      setSelectedImageEngineId(availableImageEngines[0]?.id ?? selectedImageEngineId);
+    }
+  }, [availableImageEngines, selectedImageEngineId]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    setTemplates(readTemplates());
+  }, []);
+
+  useEffect(() => {
+    if (authLoading) return;
+    let mounted = true;
+
+    const fetchAccountState = async () => {
+      try {
+        const [walletRes, memberRes] = await Promise.all([
+          authFetch('/api/wallet'),
+          authFetch('/api/member-status'),
+        ]);
+        if (!mounted) return;
+        const wallet = (await walletRes.json().catch(() => null)) as { balance?: number; currency?: string } | null;
+        const member = (await memberRes.json().catch(() => null)) as { spentToday?: number; spent30?: number } | null;
+        setWalletSummary({
+          balance: typeof wallet?.balance === 'number' ? wallet.balance : 0,
+          currency: typeof wallet?.currency === 'string' ? wallet.currency.toUpperCase() : 'USD',
+        });
+        setMemberSummary({
+          spentToday: typeof member?.spentToday === 'number' ? member.spentToday : undefined,
+          spent30: typeof member?.spent30 === 'number' ? member.spent30 : undefined,
+        });
+      } catch {
+        if (!mounted) return;
+        setWalletSummary(null);
+        setMemberSummary(null);
+      }
+    };
+
+    void fetchAccountState();
+
+    const handleInvalidate = () => {
+      void fetchAccountState();
+    };
+    window.addEventListener('wallet:invalidate', handleInvalidate);
+
+    return () => {
+      mounted = false;
+      window.removeEventListener('wallet:invalidate', handleInvalidate);
+    };
+  }, [authLoading]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
     const handleHidden = () => {
       void mutateJobs();
     };
@@ -116,23 +378,145 @@ export default function DashboardPage() {
     return () => window.removeEventListener('jobs:hidden', handleHidden);
   }, [mutateJobs]);
 
-  const groupedJobs = useMemo(
-    () =>
-      [...apiGroups]
-        .filter((group) => group.members.length > 0)
-        .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
-    [apiGroups]
-  );
+  const pendingJobs = useMemo(() => {
+    return jobs
+      .filter((job) => job.status === 'pending' && !job.curated)
+      .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
+      .slice(0, IN_PROGRESS_LIMIT);
+  }, [jobs]);
 
-  const normalizedGroupedJobs = useMemo(() => normalizeGroupSummaries(groupedJobs), [groupedJobs]);
-  const [walletSummary, setWalletSummary] = useState<{ balance: number; currency: string } | null>(null);
-  const [memberSummary, setMemberSummary] = useState<{
-    tier: string;
-    savingsPct: number;
-    spent30?: number;
-    spentToday?: number;
-  } | null>(null);
-  const [lightbox, setLightbox] = useState<{ kind: 'group'; group: GroupSummary } | { kind: 'job'; job: Job } | null>(null);
+  useEffect(() => {
+    if (pendingJobs.length === 0) return;
+    const interval = window.setInterval(() => {
+      void mutateJobs();
+    }, IN_PROGRESS_POLL_MS);
+    return () => window.clearInterval(interval);
+  }, [mutateJobs, pendingJobs.length]);
+
+  const selectedEngine = useMemo(() => {
+    if (!selectedEngineId) return availableEngines[0] ?? enginesData?.engines?.[0] ?? null;
+    return engineLookup.byId.get(selectedEngineId) ?? availableEngines[0] ?? enginesData?.engines?.[0] ?? null;
+  }, [availableEngines, engineLookup.byId, enginesData?.engines, selectedEngineId]);
+  const canStart = Boolean(selectedEngine);
+
+  const selectedImageEngine = useMemo(() => {
+    if (!selectedImageEngineId) return availableImageEngines[0] ?? imageEngines[0] ?? null;
+    return imageEngineLookup.byId.get(selectedImageEngineId) ?? availableImageEngines[0] ?? imageEngines[0] ?? null;
+  }, [availableImageEngines, imageEngines, imageEngineLookup.byId, selectedImageEngineId]);
+  const canStartImage = Boolean(selectedImageEngine);
+
+  useEffect(() => {
+    if (!selectedEngine) return;
+    if (!selectedEngine.modes.includes(selectedMode)) {
+      setSelectedMode(selectedEngine.modes[0] ?? 't2v');
+    }
+  }, [selectedEngine, selectedMode]);
+
+  useEffect(() => {
+    if (!selectedImageEngine) return;
+    if (!selectedImageEngine.modes.includes(selectedImageMode)) {
+      const fallbackMode =
+        selectedImageEngine.modes.find((mode) => mode === 't2i' || mode === 'i2i') ?? 't2i';
+      setSelectedImageMode(fallbackMode);
+    }
+  }, [selectedImageEngine, selectedImageMode]);
+
+  const groupedJobs = useMemo(() => {
+    const { groups } = groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true });
+    return [...groups]
+      .filter((group) => group.members.length > 0)
+      .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+  }, [jobs]);
+
+  const normalizedGroups = useMemo(() => normalizeGroupSummaries(groupedJobs), [groupedJobs]);
+
+  const recentGroups = useMemo(() => {
+    const filtered = normalizedGroups.filter((group) => {
+      const status = group.hero.status ?? 'completed';
+      if (status === 'pending') return false;
+      if (recentTab === 'failed') return status === 'failed';
+      if (recentTab === 'completed') return status !== 'failed';
+      return true;
+    });
+    return filtered;
+  }, [normalizedGroups, recentTab]);
+
+  const isInitialLoading = isLoading && jobs.length === 0 && normalizedGroups.length === 0;
+
+  const formatCurrency = useCallback((amount: number, currencyCode?: string) => {
+    const safeCurrency = currencyCode ?? 'USD';
+    try {
+      return new Intl.NumberFormat(CURRENCY_LOCALE, { style: 'currency', currency: safeCurrency }).format(amount);
+    } catch {
+      return `${safeCurrency} ${amount.toFixed(2)}`;
+    }
+  }, []);
+
+  const currencyCode =
+    walletSummary?.currency ??
+    jobs.find((job) => typeof job.currency === 'string')?.currency ??
+    'USD';
+
+  const spendTodayDisplay = formatCurrency(memberSummary?.spentToday ?? 0, currencyCode);
+  const spend30Display = formatCurrency(memberSummary?.spent30 ?? 0, currencyCode);
+
+  const completedJobsForStats = useMemo(() => {
+    return jobs
+      .filter((job) => job.status === 'completed' && !job.curated)
+      .slice(0, RECENT_SAMPLE_LIMIT);
+  }, [jobs]);
+
+  const avgCostCents = useMemo(() => {
+    const values = completedJobsForStats
+      .map((job) => getJobCostCents(job))
+      .filter((value): value is number => typeof value === 'number' && Number.isFinite(value));
+    if (!values.length) return null;
+    return values.reduce((sum, value) => sum + value, 0) / values.length;
+  }, [completedJobsForStats]);
+
+  const avgCostDisplay = avgCostCents != null ? formatCurrency(avgCostCents / 100, currencyCode) : '—';
+
+  const avgCostPerSec = useMemo(() => {
+    const samples = completedJobsForStats
+      .map((job) => {
+        const cost = getJobCostCents(job);
+        if (typeof cost !== 'number' || !Number.isFinite(cost)) return null;
+        if (!job.durationSec || !Number.isFinite(job.durationSec)) return null;
+        return cost / Math.max(1, job.durationSec);
+      })
+      .filter((value): value is number => value !== null && Number.isFinite(value));
+    if (!samples.length) return null;
+    return samples.reduce((sum, value) => sum + value, 0) / samples.length;
+  }, [completedJobsForStats]);
+
+  const runwaySeconds = useMemo(() => {
+    if (!walletSummary || avgCostPerSec == null || avgCostPerSec <= 0) return null;
+    return (walletSummary.balance * 100) / avgCostPerSec;
+  }, [avgCostPerSec, walletSummary]);
+
+  const runwayDisplay = runwaySeconds ? formatRunway(runwaySeconds) : '—';
+
+  const mostUsedEngine = useMemo(() => {
+    const counts = new Map<string, number>();
+    jobs
+      .filter((job) => !job.curated && job.engineId)
+      .slice(0, RECENT_SAMPLE_LIMIT)
+      .forEach((job) => {
+        if (!job.engineId) return;
+        counts.set(job.engineId, (counts.get(job.engineId) ?? 0) + 1);
+      });
+    let bestId: string | null = null;
+    let bestCount = 0;
+    counts.forEach((count, engineId) => {
+      if (count > bestCount) {
+        bestCount = count;
+        bestId = engineId;
+      }
+    });
+    if (!bestId) return null;
+    return engineLookup.byId.get(bestId)?.label ?? bestId;
+  }, [engineLookup.byId, jobs]);
+
   const handleRefreshJob = useCallback(async (jobId: string) => {
     try {
       const status = await getJobStatus(jobId);
@@ -146,95 +530,117 @@ export default function DashboardPage() {
       throw error instanceof Error ? error : new Error('Unable to refresh render status.');
     }
   }, []);
-  const placeholderIds = useMemo(() => Array.from({ length: 6 }, (_, index) => `dashboard-placeholder-${index}`), []);
-  const isInitialLoading = isLoading && jobs.length === 0 && groupedJobs.length === 0;
-  const latestGroups = useMemo(() => normalizedGroupedJobs.slice(0, 12), [normalizedGroupedJobs]);
-  const latestSkeletonCount =
-    isInitialLoading || (isLoading && latestGroups.length === 0) ? placeholderIds.length : 0;
-  const showEmptyLatest = !isLoading && latestGroups.length === 0;
-  const formatCurrency = useCallback((amount: number, currencyCode?: string) => {
-    const safeCurrency = currencyCode ?? 'USD';
-    try {
-      return new Intl.NumberFormat(CURRENCY_LOCALE, { style: 'currency', currency: safeCurrency }).format(amount);
-    } catch {
-      return `${safeCurrency} ${amount.toFixed(2)}`;
+
+  const handleVideoModeChange = useCallback((mode: Mode) => {
+    setSelectedMode(mode);
+  }, []);
+
+  const handleVideoEngineChange = useCallback((engineId: string) => {
+    setSelectedEngineId(engineId);
+    setSelectionResolved(true);
+  }, []);
+
+  const handleImageModeChange = useCallback((mode: Mode) => {
+    setSelectedImageMode(mode);
+  }, []);
+
+  const handleImageEngineChange = useCallback((engineId: string) => {
+    setSelectedImageEngineId(engineId);
+    setImageSelectionResolved(true);
+  }, []);
+
+  const handleNewVideo = useCallback(() => {
+    if (!selectedEngine) return;
+    const nextMode = selectedEngine.modes.includes(selectedMode)
+      ? selectedMode
+      : selectedEngine.modes[0] ?? 't2v';
+    if (typeof window !== 'undefined') {
+      persistVideoSelection(selectedEngine.id, nextMode);
+    }
+    router.push(`/app?engine=${encodeURIComponent(selectedEngine.id)}&mode=${encodeURIComponent(nextMode)}`);
+  }, [router, selectedEngine, selectedMode]);
+
+  const handleNewImage = useCallback(() => {
+    if (!selectedImageEngine) return;
+    const nextMode = selectedImageEngine.modes.includes(selectedImageMode)
+      ? selectedImageMode
+      : selectedImageEngine.modes.find((mode) => mode === 't2i' || mode === 'i2i') ?? 't2i';
+    if (typeof window !== 'undefined') {
+      persistImageSelection(selectedImageEngine.id, nextMode);
+    }
+    router.push(`/app/image`);
+  }, [router, selectedImageEngine, selectedImageMode]);
+
+  const handleUseLastVideoSettings = useCallback(() => {
+    router.push('/app');
+  }, [router]);
+
+  const handleUseLastImageSettings = useCallback(() => {
+    router.push('/app/image');
+  }, [router]);
+
+  const handleStartFromVideoTemplate = useCallback(() => {
+    if (quickStartRef.current) {
+      quickStartRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, []);
-  const currencyCode = walletSummary?.currency ?? 'USD';
-  const balanceDisplay = formatCurrency(walletSummary?.balance ?? 0, currencyCode);
-  const spendTodayDisplay = formatCurrency(memberSummary?.spentToday ?? 0, currencyCode);
-  const spend30Display = formatCurrency(memberSummary?.spent30 ?? 0, currencyCode);
 
-  useEffect(() => {
-    if (authLoading) return;
+  const handleStartFromImageTemplate = useCallback(() => {
+    router.push('/app/image');
+  }, [router]);
 
-    let mounted = true;
+  const handleSaveTemplate = useCallback(
+    (group: GroupSummary) => {
+      if (group.hero.job?.curated) return;
+      const jobId = group.hero.jobId ?? group.hero.job?.jobId ?? null;
+      if (!jobId) return;
+      const heroJob = group.hero.job ?? null;
+      const priceCents =
+        typeof group.hero.priceCents === 'number'
+          ? group.hero.priceCents
+          : heroJob
+            ? getJobCostCents(heroJob)
+            : null;
+      const durationSec =
+        typeof group.hero.durationSec === 'number' && Number.isFinite(group.hero.durationSec)
+          ? group.hero.durationSec
+          : null;
+      const entry: TemplateEntry = {
+        id: jobId,
+        prompt: group.hero.prompt ?? copy.quickStarts.defaultTitle,
+        engineLabel: group.hero.engineLabel ?? null,
+        engineId: group.hero.engineId ?? heroJob?.engineId ?? null,
+        thumbUrl: group.hero.thumbUrl ?? heroJob?.thumbUrl ?? null,
+        durationSec,
+        aspectRatio: group.hero.aspectRatio ?? heroJob?.aspectRatio ?? null,
+        hasAudio: typeof heroJob?.hasAudio === 'boolean' ? heroJob.hasAudio : null,
+        priceCents,
+        currency: group.hero.currency ?? heroJob?.currency ?? null,
+        createdAt: group.createdAt ?? null,
+      };
+      setTemplates((prev) => {
+        const next = [entry, ...prev.filter((item) => item.id !== entry.id)].slice(0, TEMPLATE_LIMIT);
+        writeTemplates(next);
+        return next;
+      });
+    },
+    [copy.quickStarts.defaultTitle]
+  );
 
-    const fetchAccountState = async (token?: string | null) => {
-      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-      try {
-        const [walletRes, memberRes] = await Promise.all([
-          fetch('/api/wallet', { headers }).then((r) => {
-            if (!r.ok) throw new Error('wallet request failed');
-            return r.json();
-          }),
-          fetch('/api/member-status', { headers }).then((r) => {
-            if (!r.ok) throw new Error('member status request failed');
-            return r.json();
-          }),
-        ]);
-        if (!mounted) return;
-        setWalletSummary({
-          balance:
-            typeof walletRes.balance === 'number'
-              ? walletRes.balance
-              : Number(walletRes.balance ?? 0),
-          currency:
-            typeof walletRes.currency === 'string'
-              ? walletRes.currency.toUpperCase()
-              : 'USD',
-        });
-        setMemberSummary({
-          tier: typeof memberRes.tier === 'string' ? memberRes.tier : 'Member',
-          savingsPct:
-            typeof memberRes.savingsPct === 'number' ? memberRes.savingsPct : 0,
-          spent30:
-            typeof memberRes.spent30 === 'number' ? memberRes.spent30 : undefined,
-          spentToday:
-            typeof memberRes.spentToday === 'number'
-              ? memberRes.spentToday
-              : undefined,
-        });
-      } catch {
-        if (!mounted) return;
-        setWalletSummary(null);
-        setMemberSummary(null);
-      }
-    };
+  const handleUseTemplate = useCallback(
+    (template: TemplateEntry) => {
+      router.push(`/app?job=${encodeURIComponent(template.id)}`);
+    },
+    [router]
+  );
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
-      void fetchAccountState(data.session?.access_token);
+  const handleDeleteTemplate = useCallback((templateId: string) => {
+    setTemplates((prev) => {
+      const next = prev.filter((item) => item.id !== templateId);
+      writeTemplates(next);
+      return next;
     });
-
-    const { data: authSubscription } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        void fetchAccountState(session?.access_token);
-      }
-    );
-
-    const handleInvalidate = async () => {
-      const { data } = await supabase.auth.getSession();
-      await fetchAccountState(data.session?.access_token);
-    };
-    window.addEventListener('wallet:invalidate', handleInvalidate);
-
-    return () => {
-      mounted = false;
-      authSubscription?.subscription.unsubscribe();
-      window.removeEventListener('wallet:invalidate', handleInvalidate);
-    };
-  }, [authLoading]);
+  }, []);
 
   if (authLoading) {
     return null;
@@ -246,152 +652,81 @@ export default function DashboardPage() {
       <div className="flex flex-1">
         <AppSidebar />
         <main className="flex-1 overflow-y-auto p-5 lg:p-7">
-          <div className="mb-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {quickActions.map((action) => (
-              <QuickAction
-                key={action.id}
-                href={action.href}
-                icon={action.icon}
-                label={copy.quickActions[action.id as keyof DashboardCopy['quickActions']]}
+          <div className="grid gap-6 lg:grid-cols-12">
+            <div className="space-y-6 lg:col-span-8">
+              <CreateHero
+                copy={copy}
+                videoEngines={availableEngines}
+                imageEngines={availableImageEngines}
+                selectedVideoEngineId={selectedEngine?.id ?? ''}
+                selectedVideoMode={selectedMode}
+                selectedImageEngineId={selectedImageEngine?.id ?? ''}
+                selectedImageMode={selectedImageMode}
+                hasStoredVideoForm={hasStoredForm}
+                hasStoredImageForm={hasStoredImageForm}
+                canStartVideo={canStart}
+                canStartImage={canStartImage}
+                onVideoModeChange={handleVideoModeChange}
+                onVideoEngineChange={handleVideoEngineChange}
+                onImageModeChange={handleImageModeChange}
+                onImageEngineChange={handleImageEngineChange}
+                onNewVideo={handleNewVideo}
+                onUseLastVideoSettings={handleUseLastVideoSettings}
+                onStartFromVideoTemplate={handleStartFromVideoTemplate}
+                onNewImage={handleNewImage}
+                onUseLastImageSettings={handleUseLastImageSettings}
+                onStartFromImageTemplate={handleStartFromImageTemplate}
               />
-            ))}
+
+              <InProgressList
+                copy={copy}
+                jobs={pendingJobs}
+                onOpen={(job) => setLightbox({ kind: 'job', job })}
+              />
+
+              <RecentGrid
+                copy={copy}
+                groups={recentGroups}
+                isLoading={isInitialLoading}
+                isValidating={isValidating}
+                hasMore={Boolean(lastJobsPage?.nextCursor)}
+                onOpenGroup={(group) => setLightbox({ kind: 'group', group })}
+                onSaveTemplate={handleSaveTemplate}
+                onLoadMore={() => setSize((size) => size + 1)}
+                tab={recentTab}
+                onTabChange={setRecentTab}
+              />
+            </div>
+
+            <div className="space-y-6 lg:col-span-4">
+              <InsightsPanel
+                copy={copy}
+                spendToday={spendTodayDisplay}
+                spend30={spend30Display}
+                avgCost={avgCostDisplay}
+                runway={runwayDisplay}
+                runwayFallback={runwaySeconds ? null : copy.insights.runwayFallback}
+                mostUsed={mostUsedEngine}
+              />
+
+              <QuickStarts
+                copy={copy}
+                templates={templates}
+                onUseTemplate={handleUseTemplate}
+                onDeleteTemplate={handleDeleteTemplate}
+                ref={quickStartRef}
+              />
+
+              <EngineStatusCompact
+                copy={copy}
+                engines={availableEngines}
+                enginesError={enginesError}
+              />
+            </div>
           </div>
-
-          {/* Wallet & Member and Spend first */}
-          <section className="mb-7 grid gap-4 md:grid-cols-2">
-            <div className="rounded-card border border-border bg-white p-4 shadow-card">
-              <h3 className="mb-2 font-semibold text-text-primary">{copy.wallet.title}</h3>
-              <div className="flex items-center justify-between text-sm text-text-secondary">
-                <div>
-                  <p>{copy.wallet.balanceLabel}</p>
-                  <p className="text-2xl font-semibold text-text-primary">{balanceDisplay}</p>
-                </div>
-                <div className="text-right">
-                  <p>{copy.wallet.tierLabel}</p>
-                  <p className="text-2xl font-semibold text-text-primary">{memberSummary?.tier ?? copy.wallet.memberFallback}</p>
-                  <p className="text-xs text-text-muted">
-                    {copy.wallet.savingsLabel.replace('{percent}', String(memberSummary?.savingsPct ?? 0))}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-3">
-                <Link href="/billing" className="rounded-input border border-border px-3 py-2 text-sm font-medium text-text-primary hover:bg-bg">
-                  {copy.wallet.manageCta}
-                </Link>
-              </div>
-            </div>
-            <div className="rounded-card border border-border bg-white p-4 shadow-card">
-              <h3 className="mb-2 font-semibold text-text-primary">{copy.spend.title}</h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="rounded-input border border-border bg-bg p-3">
-                  <p className="text-text-muted">{copy.spend.today}</p>
-                  <p className="text-xl font-semibold text-text-primary">{spendTodayDisplay}</p>
-                </div>
-                <div className="rounded-input border border-border bg-bg p-3">
-                  <p className="text-text-muted">{copy.spend.last30}</p>
-                  <p className="text-xl font-semibold text-text-primary">{spend30Display}</p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Latest renders below, with smaller thumbnails */}
-          <section className="mb-7">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-text-primary">{copy.latest.title}</h2>
-              <Link href="/jobs" className="text-sm font-medium text-accent hover:underline">
-                {copy.latest.viewAll}
-              </Link>
-            </div>
-            {jobsError ? (
-              <div className="rounded-card border border-border bg-white p-4 text-state-warning">
-                {copy.latest.error}
-                <button
-                  type="button"
-                  onClick={() => location.reload()}
-                  className="ml-3 rounded-input border border-border px-2 py-1 text-sm hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  {copy.actions.retry}
-                </button>
-              </div>
-            ) : (
-              <div className="flex w-full gap-4 overflow-x-auto pb-2">
-                {(showEmptyLatest || latestSkeletonCount > 0) &&
-                  placeholderIds
-                    .slice(0, showEmptyLatest ? placeholderIds.length : latestSkeletonCount)
-                    .map((id) => (
-                      <div
-                        key={id}
-                        className="flex h-full min-w-[280px] flex-shrink-0 flex-col overflow-hidden rounded-card border border-border bg-white/60"
-                      >
-                        <div className="relative" style={{ aspectRatio: '16 / 9' }}>
-                        <div className="skeleton absolute inset-0" />
-                      </div>
-                      <div className="border-t border-border bg-white/70 px-3 py-2">
-                        <div className="h-3 w-24 rounded-full bg-neutral-200" />
-                      </div>
-                    </div>
-                  ))}
-                {latestGroups.map((group) => {
-                  const heroEngineId = group.hero.engineId ?? null;
-                  const heroEngineLabelKey = group.hero.engineLabel?.toLowerCase?.() ?? null;
-                  const heroEngine = heroEngineId
-                    ? engineLookup.byId.get(heroEngineId)
-                    : heroEngineLabelKey
-                      ? engineLookup.byLabel.get(heroEngineLabelKey)
-                      : undefined;
-                  return (
-                    <div key={`group-${group.id}`} className="min-w-[280px] flex-shrink-0 md:min-w-[320px]">
-                      <GroupedJobCard
-                        group={group}
-                        engine={heroEngine}
-                        actionMenu={false}
-                        onOpen={(nextGroup) => setLightbox({ kind: 'group', group: nextGroup })}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-            {hasCuratedJobs ? (
-              <p className="mt-2 text-sm text-text-secondary">
-                {copy.latest.curatedHint}
-              </p>
-            ) : null}
-            {showEmptyLatest ? (
-              <p className="mt-2 text-sm text-text-secondary">
-                {copy.latest.emptyHint}
-              </p>
-            ) : null}
-          </section>
-
-          <section className="mb-5">
-            <h3 className="mb-3 font-semibold text-text-primary">{copy.engines.title}</h3>
-            {enginesError ? (
-              <p className="text-sm text-state-warning">{copy.engines.error}</p>
-            ) : (
-              <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                {(enginesData?.engines ?? []).map((e) => (
-                  <li key={e.id} className="flex items-center justify-between rounded-card border border-border bg-white p-2 text-sm shadow-card">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-text-primary">{e.label}</p>
-                      <p className="truncate text-xs text-text-muted">{e.latencyTier} • v{e.version ?? '—'}</p>
-                    </div>
-                    <div className="text-right">
-                      <span className="rounded-input border border-border bg-bg px-2 py-1 text-xs text-text-secondary">{e.status}</span>
-                      {typeof e.queueDepth === 'number' && (
-                        <p className="mt-1 text-xs text-text-muted">
-                          {copy.engines.queueLabel.replace('{count}', String(e.queueDepth))}
-                        </p>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
         </main>
       </div>
+
       {lightbox && (
         <MediaLightbox
           title={
@@ -443,17 +778,644 @@ export default function DashboardPage() {
   );
 }
 
-function QuickAction({ href, icon, label }: { href: string; icon: string; label: string }) {
+function CreateHero({
+  copy,
+  videoEngines,
+  imageEngines,
+  selectedVideoEngineId,
+  selectedVideoMode,
+  selectedImageEngineId,
+  selectedImageMode,
+  hasStoredVideoForm,
+  hasStoredImageForm,
+  canStartVideo,
+  canStartImage,
+  onVideoModeChange,
+  onVideoEngineChange,
+  onImageModeChange,
+  onImageEngineChange,
+  onNewVideo,
+  onUseLastVideoSettings,
+  onStartFromVideoTemplate,
+  onNewImage,
+  onUseLastImageSettings,
+  onStartFromImageTemplate,
+}: {
+  copy: DashboardCopy;
+  videoEngines: EngineCaps[];
+  imageEngines: EngineCaps[];
+  selectedVideoEngineId: string;
+  selectedVideoMode: Mode;
+  selectedImageEngineId: string;
+  selectedImageMode: Mode;
+  hasStoredVideoForm: boolean;
+  hasStoredImageForm: boolean;
+  canStartVideo: boolean;
+  canStartImage: boolean;
+  onVideoModeChange: (mode: Mode) => void;
+  onVideoEngineChange: (engineId: string) => void;
+  onImageModeChange: (mode: Mode) => void;
+  onImageEngineChange: (engineId: string) => void;
+  onNewVideo: () => void;
+  onUseLastVideoSettings: () => void;
+  onStartFromVideoTemplate: () => void;
+  onNewImage: () => void;
+  onUseLastImageSettings: () => void;
+  onStartFromImageTemplate: () => void;
+}) {
   return (
-    <Link
-      href={href}
-      className="flex items-center gap-3 rounded-card border border-border bg-white p-4 text-sm font-medium text-text-primary shadow-card hover:bg-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-    >
-      <span className="flex h-10 w-10 items-center justify-center rounded-card border border-border bg-bg">
-        <Image src={`/assets/icons/${icon}.svg`} alt="" width={18} height={18} />
-      </span>
-      <span>{label}</span>
-    </Link>
+    <section className="rounded-card border border-border bg-white p-5 shadow-card">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-text-primary">{copy.create.title}</h1>
+          <p className="mt-1 text-sm text-text-secondary">{copy.create.subtitle}</p>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-6 lg:grid-cols-2">
+        <CreateVideoCard
+          copy={copy}
+          engines={videoEngines}
+          selectedEngineId={selectedVideoEngineId}
+          selectedMode={selectedVideoMode}
+          hasStoredForm={hasStoredVideoForm}
+          canStart={canStartVideo}
+          onModeChange={onVideoModeChange}
+          onEngineChange={onVideoEngineChange}
+          onNew={onNewVideo}
+          onUseLast={onUseLastVideoSettings}
+          onStartFromTemplate={onStartFromVideoTemplate}
+        />
+        <CreateImageCard
+          copy={copy}
+          engines={imageEngines}
+          selectedEngineId={selectedImageEngineId}
+          selectedMode={selectedImageMode}
+          hasStoredForm={hasStoredImageForm}
+          canStart={canStartImage}
+          onModeChange={onImageModeChange}
+          onEngineChange={onImageEngineChange}
+          onNew={onNewImage}
+          onUseLast={onUseLastImageSettings}
+          onStartFromTemplate={onStartFromImageTemplate}
+        />
+      </div>
+    </section>
+  );
+}
+
+function CreateVideoCard({
+  copy,
+  engines,
+  selectedEngineId,
+  selectedMode,
+  hasStoredForm,
+  canStart,
+  onModeChange,
+  onEngineChange,
+  onNew,
+  onUseLast,
+  onStartFromTemplate,
+}: {
+  copy: DashboardCopy;
+  engines: EngineCaps[];
+  selectedEngineId: string;
+  selectedMode: Mode;
+  hasStoredForm: boolean;
+  canStart: boolean;
+  onModeChange: (mode: Mode) => void;
+  onEngineChange: (engineId: string) => void;
+  onNew: () => void;
+  onUseLast: () => void;
+  onStartFromTemplate: () => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-lg font-semibold text-text-primary">{copy.create.videoTitle}</h2>
+        <p className="mt-1 text-sm text-text-secondary">{copy.create.videoSubtitle}</p>
+      </div>
+      <EngineSelect
+        engines={engines}
+        engineId={selectedEngineId}
+        onEngineChange={onEngineChange}
+        mode={selectedMode}
+        onModeChange={onModeChange}
+        modeOptions={MODE_OPTIONS}
+        modeLabelOverrides={{
+          t2v: copy.modes.t2v,
+          i2v: copy.modes.i2v,
+          r2v: copy.modes.r2v,
+        }}
+      />
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={onNew}
+          disabled={!canStart}
+          className={clsx(
+            'rounded-input px-4 py-2 text-sm font-semibold transition',
+            canStart
+              ? 'bg-accent text-white hover:bg-accent/90'
+              : 'cursor-not-allowed bg-neutral-200 text-text-muted'
+          )}
+        >
+          {copy.create.newVideo}
+        </button>
+        {hasStoredForm ? (
+          <button
+            type="button"
+            onClick={onUseLast}
+            className="rounded-input border border-border px-4 py-2 text-sm font-semibold text-text-secondary transition hover:border-accentSoft/60 hover:bg-accentSoft/10"
+          >
+            {copy.create.useLastVideo}
+          </button>
+        ) : null}
+        <button
+          type="button"
+          onClick={onStartFromTemplate}
+          className="rounded-input border border-border px-4 py-2 text-sm font-semibold text-text-secondary transition hover:border-accentSoft/60 hover:bg-accentSoft/10"
+        >
+          {copy.create.startVideoTemplate}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function CreateImageCard({
+  copy,
+  engines,
+  selectedEngineId,
+  selectedMode,
+  hasStoredForm,
+  canStart,
+  onModeChange,
+  onEngineChange,
+  onNew,
+  onUseLast,
+  onStartFromTemplate,
+}: {
+  copy: DashboardCopy;
+  engines: EngineCaps[];
+  selectedEngineId: string;
+  selectedMode: Mode;
+  hasStoredForm: boolean;
+  canStart: boolean;
+  onModeChange: (mode: Mode) => void;
+  onEngineChange: (engineId: string) => void;
+  onNew: () => void;
+  onUseLast: () => void;
+  onStartFromTemplate: () => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-lg font-semibold text-text-primary">{copy.create.imageTitle}</h2>
+        <p className="mt-1 text-sm text-text-secondary">{copy.create.imageSubtitle}</p>
+      </div>
+      <EngineSelect
+        engines={engines}
+        engineId={selectedEngineId}
+        onEngineChange={onEngineChange}
+        mode={selectedMode}
+        onModeChange={onModeChange}
+        modeOptions={IMAGE_MODE_OPTIONS}
+        modeLabelOverrides={{
+          t2i: copy.modes.t2i,
+          i2i: copy.modes.i2i,
+        }}
+        showBillingNote={false}
+      />
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={onNew}
+          disabled={!canStart}
+          className={clsx(
+            'rounded-input px-4 py-2 text-sm font-semibold transition',
+            canStart
+              ? 'bg-accent text-white hover:bg-accent/90'
+              : 'cursor-not-allowed bg-neutral-200 text-text-muted'
+          )}
+        >
+          {copy.create.newImage}
+        </button>
+        {hasStoredForm ? (
+          <button
+            type="button"
+            onClick={onUseLast}
+            className="rounded-input border border-border px-4 py-2 text-sm font-semibold text-text-secondary transition hover:border-accentSoft/60 hover:bg-accentSoft/10"
+          >
+            {copy.create.useLastImage}
+          </button>
+        ) : null}
+        <button
+          type="button"
+          onClick={onStartFromTemplate}
+          className="rounded-input border border-border px-4 py-2 text-sm font-semibold text-text-secondary transition hover:border-accentSoft/60 hover:bg-accentSoft/10"
+        >
+          {copy.create.startImageTemplate}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function InProgressList({
+  copy,
+  jobs,
+  onOpen,
+}: {
+  copy: DashboardCopy;
+  jobs: Job[];
+  onOpen: (job: Job) => void;
+}) {
+  return (
+    <section className="rounded-card border border-border bg-white p-5 shadow-card">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-text-primary">{copy.inProgress.title}</h2>
+      </div>
+      {!jobs.length ? (
+        <p className="text-sm text-text-secondary">{copy.inProgress.empty}</p>
+      ) : (
+        <div className="space-y-3">
+          {jobs.map((job) => (
+            <InProgressRow key={job.jobId} job={job} copy={copy} onOpen={onOpen} />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function InProgressRow({
+  job,
+  copy,
+  onOpen,
+}: {
+  job: Job;
+  copy: DashboardCopy;
+  onOpen: (job: Job) => void;
+}) {
+  const progress = typeof job.progress === 'number' ? Math.max(0, Math.min(100, Math.round(job.progress))) : 0;
+  const eta = formatEta(job.etaLabel, job.etaSeconds);
+  const priceCents = getJobCostCents(job);
+  const price = priceCents != null ? formatCurrencyLocal(priceCents / 100, job.currency) : null;
+  const prompt = job.prompt ? truncate(job.prompt, 140) : '';
+
+  return (
+    <div className="flex flex-col gap-3 rounded-card border border-border bg-bg/60 p-3 sm:flex-row sm:items-center">
+      <div className="relative h-16 w-full overflow-hidden rounded-input border border-border bg-white sm:h-14 sm:w-24">
+        {job.thumbUrl ? (
+          <Image src={job.thumbUrl} alt="" fill className="object-cover" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-xs text-text-muted">{copy.actions.noPreview}</div>
+        )}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center justify-between gap-3">
+          <p className="truncate text-sm font-semibold text-text-primary">{job.engineLabel}</p>
+          {price ? <span className="text-xs font-semibold text-text-primary">{price}</span> : null}
+        </div>
+        <p className="mt-1 truncate text-xs text-text-muted">{prompt}</p>
+        <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-white">
+          <div className="h-full rounded-full bg-accent" style={{ width: `${progress}%` }} />
+        </div>
+        <div className="mt-1 flex items-center justify-between text-xs text-text-muted">
+          <span>{copy.inProgress.progressLabel}: {progress}%</span>
+          <span>{copy.inProgress.etaLabel}: {eta}</span>
+        </div>
+      </div>
+      <div className="flex flex-shrink-0 items-center gap-2">
+        <button
+          type="button"
+          onClick={() => onOpen(job)}
+          className="rounded-input border border-border px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-accentSoft/10"
+        >
+          {copy.inProgress.open}
+        </button>
+        <Link
+          href={`/app?job=${encodeURIComponent(job.jobId)}`}
+          className="rounded-input border border-border px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-accentSoft/10"
+        >
+          {copy.inProgress.remix}
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function RecentGrid({
+  copy,
+  groups,
+  isLoading,
+  isValidating,
+  hasMore,
+  onOpenGroup,
+  onSaveTemplate,
+  onLoadMore,
+  tab,
+  onTabChange,
+}: {
+  copy: DashboardCopy;
+  groups: GroupSummary[];
+  isLoading: boolean;
+  isValidating: boolean;
+  hasMore: boolean;
+  onOpenGroup: (group: GroupSummary) => void;
+  onSaveTemplate: (group: GroupSummary) => void;
+  onLoadMore: () => void;
+  tab: 'all' | 'completed' | 'failed';
+  onTabChange: (tab: 'all' | 'completed' | 'failed') => void;
+}) {
+  return (
+    <section className="rounded-card border border-border bg-white p-5 shadow-card">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold text-text-primary">{copy.recent.title}</h2>
+        <Link
+          href="/jobs"
+          className="rounded-input border border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-accentSoft/10"
+        >
+          {copy.recent.viewAll}
+        </Link>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {(['all', 'completed', 'failed'] as const).map((value) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => onTabChange(value)}
+            className={clsx(
+              'rounded-input border px-3 py-1 text-xs font-semibold',
+              tab === value
+                ? 'border-accent bg-accent text-white'
+                : 'border-border bg-white text-text-secondary hover:border-accentSoft/60 hover:bg-accentSoft/10'
+            )}
+          >
+            {copy.recent.tabs[value]}
+          </button>
+        ))}
+      </div>
+
+      {isLoading && !groups.length ? (
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={`recent-skeleton-${index}`} className="h-56 rounded-card border border-border bg-bg/60" />
+          ))}
+        </div>
+      ) : !groups.length ? (
+        <p className="mt-4 text-sm text-text-secondary">{copy.recent.empty}</p>
+      ) : (
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {groups.map((group) => {
+            const isCurated = Boolean(group.hero.job?.curated);
+            const jobId = group.hero.jobId ?? group.hero.id;
+            return (
+              <div key={group.id} className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => onOpenGroup(group)}
+                  className="relative aspect-video overflow-hidden rounded-card border border-border bg-bg"
+                >
+                  {group.hero.thumbUrl ? (
+                    <Image src={group.hero.thumbUrl} alt="" fill className="object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-xs text-text-muted">{copy.actions.noPreview}</div>
+                  )}
+                  <div className="absolute left-3 top-3 rounded-pill bg-black/60 px-2 py-1 text-[11px] font-semibold text-white">
+                    {group.hero.engineLabel}
+                  </div>
+                </button>
+                <div className="flex flex-wrap gap-2">
+                  {group.hero.videoUrl ? (
+                    <a
+                      href={group.hero.videoUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-input border border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-accentSoft/10"
+                    >
+                      {copy.actions.download}
+                    </a>
+                  ) : null}
+                  {!isCurated ? (
+                    <Link
+                      href={`/app?job=${encodeURIComponent(jobId)}`}
+                      className="rounded-input border border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-accentSoft/10"
+                    >
+                      {copy.actions.remix}
+                    </Link>
+                  ) : null}
+                  {!isCurated ? (
+                    <button
+                      type="button"
+                      onClick={() => onSaveTemplate(group)}
+                      className="rounded-input border border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-accentSoft/10"
+                    >
+                      {copy.actions.template}
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {hasMore ? (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={onLoadMore}
+            className="rounded-input border border-border px-4 py-2 text-sm font-semibold text-text-secondary hover:bg-accentSoft/10"
+            disabled={isValidating}
+          >
+            {copy.actions.loadMore}
+          </button>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function InsightsPanel({
+  copy,
+  spendToday,
+  spend30,
+  avgCost,
+  runway,
+  runwayFallback,
+  mostUsed,
+}: {
+  copy: DashboardCopy;
+  spendToday: string;
+  spend30: string;
+  avgCost: string;
+  runway: string;
+  runwayFallback: string | null;
+  mostUsed: string | null;
+}) {
+  return (
+    <section className="rounded-card border border-border bg-white p-5 shadow-card">
+      <h3 className="text-lg font-semibold text-text-primary">{copy.insights.title}</h3>
+      <div className="mt-4 grid gap-3 text-sm">
+        <InsightRow label={copy.insights.spendToday} value={spendToday} />
+        <InsightRow label={copy.insights.spend30} value={spend30} />
+        <InsightRow label={copy.insights.avgCost} value={avgCost} />
+        <InsightRow label={copy.insights.runway} value={runway} />
+      </div>
+      {runwayFallback ? (
+        <p className="mt-3 text-xs text-text-muted">{runwayFallback}</p>
+      ) : null}
+      {mostUsed ? (
+        <p className="mt-3 text-xs text-text-muted">
+          {copy.insights.mostUsed}: <span className="font-semibold text-text-primary">{mostUsed}</span>
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+function InsightRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between rounded-input border border-border bg-bg px-3 py-2">
+      <span className="text-text-muted">{label}</span>
+      <span className="font-semibold text-text-primary">{value}</span>
+    </div>
+  );
+}
+
+  const QuickStarts = forwardRef(function QuickStarts(
+  {
+    copy,
+    templates,
+    onUseTemplate,
+    onDeleteTemplate,
+  }: {
+    copy: DashboardCopy;
+    templates: TemplateEntry[];
+    onUseTemplate: (template: TemplateEntry) => void;
+    onDeleteTemplate: (templateId: string) => void;
+  },
+  ref: Ref<HTMLDivElement>
+) {
+  return (
+    <section ref={ref} className="rounded-card border border-border bg-white p-5 shadow-card">
+      <h3 className="text-lg font-semibold text-text-primary">{copy.quickStarts.title}</h3>
+      {!templates.length ? (
+        <p className="mt-3 text-sm text-text-secondary">{copy.quickStarts.empty}</p>
+      ) : (
+        <div className="mt-4 space-y-3">
+          {templates.map((template) => (
+            <div key={template.id} className="rounded-input border border-border bg-bg px-3 py-3">
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="relative h-16 w-full overflow-hidden rounded-input border border-border bg-white sm:h-16 sm:w-28">
+                  {template.thumbUrl ? (
+                    <Image src={template.thumbUrl} alt="" fill className="object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-[11px] text-text-muted">
+                      {copy.actions.noPreview}
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-text-primary">
+                        {template.engineLabel ?? copy.create.engineLabel}
+                      </p>
+                      <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-text-muted">
+                        <span>
+                          {copy.quickStarts.meta.format}: {template.aspectRatio ?? copy.quickStarts.meta.formatAuto}
+                        </span>
+                        <span>
+                          {copy.quickStarts.meta.duration}: {formatDurationShort(template.durationSec)}
+                        </span>
+                        <span>
+                          {copy.quickStarts.meta.audio}: {formatAudioLabel(template.hasAudio, copy)}
+                        </span>
+                        <span>
+                          {copy.quickStarts.meta.price}: {formatTemplatePrice(template)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onUseTemplate(template)}
+                        className="rounded-input border border-border px-2 py-1 text-xs font-semibold text-text-secondary hover:bg-accentSoft/10"
+                      >
+                        {copy.quickStarts.use}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onDeleteTemplate(template.id)}
+                        className="rounded-input border border-border px-2 py-1 text-xs font-semibold text-text-muted hover:bg-accentSoft/10"
+                      >
+                        {copy.quickStarts.remove}
+                      </button>
+                    </div>
+                  </div>
+                  {template.prompt ? (
+                    <p className="mt-2 text-xs text-text-muted">
+                      {truncate(template.prompt, 110)}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      <Link href="/jobs" className="mt-4 inline-flex text-xs font-semibold text-accent hover:underline">
+        {copy.quickStarts.manage}
+      </Link>
+    </section>
+  );
+});
+QuickStarts.displayName = 'QuickStarts';
+
+function EngineStatusCompact({
+  copy,
+  engines,
+  enginesError,
+}: {
+  copy: DashboardCopy;
+  engines: EngineCaps[];
+  enginesError: unknown;
+}) {
+  if (enginesError) {
+    return (
+      <section className="rounded-card border border-border bg-white p-5 shadow-card">
+        <h3 className="text-lg font-semibold text-text-primary">{copy.engines.title}</h3>
+        <p className="mt-2 text-sm text-state-warning">{copy.engines.error}</p>
+      </section>
+    );
+  }
+
+  const flagged = engines.filter((engine) => isEngineAlert(engine));
+
+  return (
+    <section className="rounded-card border border-border bg-white p-5 shadow-card">
+      <h3 className="text-lg font-semibold text-text-primary">{copy.engines.title}</h3>
+      {flagged.length === 0 ? (
+        <p className="mt-2 text-sm text-text-secondary">{copy.engines.allOk}</p>
+      ) : (
+        <div className="mt-3 space-y-2">
+          {flagged.map((engine) => (
+            <div key={engine.id} className="flex items-center justify-between rounded-input border border-border bg-bg px-3 py-2 text-xs">
+              <span className="font-semibold text-text-primary">{engine.label}</span>
+              <span className="text-text-muted">
+                {engine.status}
+                {typeof engine.queueDepth === 'number'
+                  ? ` · ${copy.engines.queueLabel.replace('{count}', String(engine.queueDepth))}`
+                  : ''}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -507,4 +1469,213 @@ function formatDateTime(value: string): string {
   } catch {
     return value;
   }
+}
+
+function isEngineAvailable(engine: EngineCaps): boolean {
+  const availability = engine.availability ?? 'available';
+  return availability !== 'paused';
+}
+
+function supportsImageModes(engine: EngineCaps): boolean {
+  return engine.modes.some((mode) => mode === 't2i' || mode === 'i2i');
+}
+
+function isEngineAlert(engine: EngineCaps): boolean {
+  const status = engine.status ?? 'live';
+  const availability = engine.availability ?? 'available';
+  const okStatus = status === 'live' || status === 'busy' || status === 'early_access';
+  const okAvailability = availability === 'available' || availability === 'limited';
+  return !(okStatus && okAvailability);
+}
+
+function readStoredForm(): { engineId: string; mode?: Mode } | null {
+  if (typeof window === 'undefined') return null;
+  const raw = window.localStorage.getItem(STORAGE_KEYS.form);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as { engineId?: unknown; mode?: unknown };
+    if (!parsed || typeof parsed !== 'object') return null;
+    if (typeof parsed.engineId !== 'string') return null;
+    const mode = typeof parsed.mode === 'string' && MODE_OPTIONS.includes(parsed.mode as Mode)
+      ? (parsed.mode as Mode)
+      : undefined;
+    return { engineId: parsed.engineId, mode };
+  } catch {
+    return null;
+  }
+}
+
+function readStoredImageForm(): { engineId: string; mode?: Mode } | null {
+  if (typeof window === 'undefined') return null;
+  const raw = window.localStorage.getItem(STORAGE_KEYS.imageForm);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as { engineId?: unknown; mode?: unknown; version?: unknown } | null;
+    if (!parsed || typeof parsed !== 'object') return null;
+    if (typeof parsed.version === 'number' && parsed.version !== 1) return null;
+    if (typeof parsed.engineId !== 'string' || !parsed.engineId.trim()) return null;
+    const mode = parsed.mode === 't2i' || parsed.mode === 'i2i' ? parsed.mode : undefined;
+    return { engineId: parsed.engineId, mode };
+  } catch {
+    return null;
+  }
+}
+
+function persistVideoSelection(engineId: string, mode: Mode): void {
+  if (typeof window === 'undefined') return;
+  const payload: Record<string, unknown> = {
+    engineId,
+    mode,
+    updatedAt: Date.now(),
+  };
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEYS.form);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') {
+        Object.assign(payload, parsed);
+        payload.engineId = engineId;
+        payload.mode = mode;
+        payload.updatedAt = Date.now();
+      }
+    }
+  } catch {
+    // ignore storage parse failures
+  }
+  try {
+    window.localStorage.setItem(STORAGE_KEYS.form, JSON.stringify(payload));
+  } catch {
+    // ignore storage failures
+  }
+}
+
+function persistImageSelection(engineId: string, mode: Mode): void {
+  if (typeof window === 'undefined') return;
+  const payload: Record<string, unknown> = {
+    version: 1,
+    engineId,
+    mode: mode === 't2i' || mode === 'i2i' ? mode : 't2i',
+    prompt: '',
+    numImages: 1,
+    aspectRatio: null,
+    resolution: null,
+    referenceSlots: [],
+  };
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEYS.imageForm);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') {
+        Object.assign(payload, parsed);
+        payload.version = 1;
+        payload.engineId = engineId;
+        payload.mode = mode === 't2i' || mode === 'i2i' ? mode : 't2i';
+      }
+    }
+  } catch {
+    // ignore storage parse failures
+  }
+  try {
+    window.localStorage.setItem(STORAGE_KEYS.imageForm, JSON.stringify(payload));
+  } catch {
+    // ignore storage failures
+  }
+}
+
+function readTemplates(): TemplateEntry[] {
+  if (typeof window === 'undefined') return [];
+  const raw = window.localStorage.getItem(STORAGE_KEYS.templates);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as TemplateEntry[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((entry) => typeof entry.id === 'string' && entry.id.length > 0)
+      .map((entry) => ({
+        id: entry.id,
+        prompt: typeof entry.prompt === 'string' ? entry.prompt : '',
+        engineLabel: typeof entry.engineLabel === 'string' ? entry.engineLabel : null,
+        engineId: typeof entry.engineId === 'string' ? entry.engineId : null,
+        thumbUrl: typeof entry.thumbUrl === 'string' ? entry.thumbUrl : null,
+        durationSec:
+          typeof entry.durationSec === 'number' && Number.isFinite(entry.durationSec)
+            ? entry.durationSec
+            : null,
+        aspectRatio: typeof entry.aspectRatio === 'string' ? entry.aspectRatio : null,
+        hasAudio: typeof entry.hasAudio === 'boolean' ? entry.hasAudio : null,
+        priceCents:
+          typeof entry.priceCents === 'number' && Number.isFinite(entry.priceCents) ? entry.priceCents : null,
+        currency: typeof entry.currency === 'string' ? entry.currency : null,
+        createdAt: typeof entry.createdAt === 'string' ? entry.createdAt : null,
+      }));
+  } catch {
+    return [];
+  }
+}
+
+function writeTemplates(templates: TemplateEntry[]): void {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(STORAGE_KEYS.templates, JSON.stringify(templates));
+}
+
+function getJobCostCents(job: Job): number | null {
+  if (typeof job.finalPriceCents === 'number') return job.finalPriceCents;
+  const pricing = job.pricingSnapshot as { totalCents?: number } | undefined;
+  if (typeof pricing?.totalCents === 'number') return pricing.totalCents;
+  return null;
+}
+
+function formatCurrencyLocal(amount: number, currencyCode?: string): string {
+  const safeCurrency = currencyCode ?? 'USD';
+  try {
+    return new Intl.NumberFormat(CURRENCY_LOCALE, { style: 'currency', currency: safeCurrency }).format(amount);
+  } catch {
+    return `${safeCurrency} ${amount.toFixed(2)}`;
+  }
+}
+
+function formatRunway(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds <= 0) return '—';
+  if (seconds >= 3600) {
+    return `${(seconds / 3600).toFixed(1)}h`;
+  }
+  if (seconds >= 60) {
+    return `${Math.round(seconds / 60)}m`;
+  }
+  return `${Math.round(seconds)}s`;
+}
+
+function formatEta(label?: string | null, seconds?: number | null): string {
+  if (label && label.trim().length) return label;
+  if (typeof seconds === 'number' && Number.isFinite(seconds) && seconds > 0) {
+    if (seconds >= 60) {
+      return `${Math.round(seconds / 60)}m`;
+    }
+    return `${Math.round(seconds)}s`;
+  }
+  return '—';
+}
+
+function formatDurationShort(value?: number | null): string {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return '—';
+  return `${Math.round(value)}s`;
+}
+
+function formatAudioLabel(value: boolean | null | undefined, copy: DashboardCopy): string {
+  if (value === true) return copy.quickStarts.meta.audioOn;
+  if (value === false) return copy.quickStarts.meta.audioOff;
+  return copy.quickStarts.meta.audioUnknown;
+}
+
+function formatTemplatePrice(template: TemplateEntry): string {
+  if (typeof template.priceCents === 'number' && Number.isFinite(template.priceCents)) {
+    return formatCurrencyLocal(template.priceCents / 100, template.currency ?? undefined);
+  }
+  return '—';
+}
+
+function truncate(value: string, limit: number): string {
+  if (value.length <= limit) return value;
+  const slice = value.slice(0, limit - 1).trimEnd();
+  return `${slice}…`;
 }

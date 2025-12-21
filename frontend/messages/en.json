@@ -1278,7 +1278,7 @@
       },
       "links": {
         "dashboard": "Dashboard",
-        "generate": "Generate",
+        "generate": "Generate Video",
         "jobs": "Jobs",
         "billing": "Billing",
         "settings": "Settings"
@@ -1487,11 +1487,12 @@
         }
       },
       "engineSelect": {
-        "latency": "Latency {tier}",
+        "avgDuration": "Avg {value}",
         "choose": "Choose engine",
         "variant": "Variant",
         "browse": "Browse engines...",
         "inputMode": "Input mode",
+        "unsupportedMode": "Not supported by this engine",
         "modal": {
           "close": "Close",
           "title": "Choose the right engine for your shot",
@@ -1687,38 +1688,87 @@
         }
       },
     "dashboard": {
-      "quickActions": {
-        "create": "Create a video",
-        "jobs": "View latest renders",
-        "billing": "Add funds"
+      "create": {
+        "title": "Create",
+        "subtitle": "Start a new render or pick up where you left off.",
+        "videoTitle": "Create video",
+        "videoSubtitle": "Choose your engine and mode, then start a render.",
+        "imageTitle": "Create image",
+        "imageSubtitle": "Generate stills or edits with the image engines.",
+        "engineLabel": "Engine",
+        "newVideo": "New video",
+        "useLastVideo": "Use last video settings",
+        "startVideoTemplate": "Start from template",
+        "newImage": "New image",
+        "useLastImage": "Use last image settings",
+        "startImageTemplate": "Start from template"
       },
-      "wallet": {
-        "title": "Wallet & Member",
-        "balanceLabel": "Current balance",
-        "tierLabel": "Member tier",
-        "savingsLabel": "Rolling 30-day savings: {percent}%",
-        "manageCta": "Manage billing",
-        "memberFallback": "Member"
+      "modes": {
+        "t2v": "T2V",
+        "i2v": "I2V",
+        "r2v": "Reference",
+        "t2i": "Create",
+        "i2i": "Edit"
       },
-      "spend": {
-        "title": "Spend at a glance",
-        "today": "Today",
-        "last30": "Last 30 days"
+      "inProgress": {
+        "title": "In progress",
+        "empty": "No active renders right now.",
+        "etaLabel": "ETA",
+        "progressLabel": "Progress",
+        "open": "Open",
+        "remix": "Remix"
       },
-      "latest": {
-        "title": "Latest renders",
-        "viewAll": "View all →",
-        "error": "Failed to load latest renders. Please retry.",
-        "curatedHint": "Starter renders curated by the MaxVideo team appear here until you create your own.",
-        "emptyHint": "Start a generation to populate your latest renders."
+      "recent": {
+        "title": "Recent renders",
+        "viewAll": "Open Library",
+        "empty": "No renders yet. Start a generation to populate your library.",
+        "tabs": {
+          "all": "All",
+          "completed": "Completed",
+          "failed": "Failed"
+        }
+      },
+      "insights": {
+        "title": "Insights",
+        "spendToday": "Spend today",
+        "spend30": "Spend 30d",
+        "avgCost": "Avg cost",
+        "runway": "Runway",
+        "runwayFallback": "Runway estimate needs completed renders.",
+        "mostUsed": "Most used"
+      },
+      "quickStarts": {
+        "title": "Quick starts",
+        "empty": "Save a render as a template to reuse it here.",
+        "use": "Use",
+        "manage": "Open Library",
+        "remove": "Remove",
+        "meta": {
+          "engine": "Engine",
+          "format": "Format",
+          "duration": "Duration",
+          "audio": "Audio",
+          "audioOn": "On",
+          "audioOff": "Off",
+          "audioUnknown": "—",
+          "price": "Price",
+          "formatAuto": "Auto"
+        },
+        "defaultTitle": "Template"
       },
       "engines": {
-        "title": "Engines status",
+        "title": "Engine status",
+        "allOk": "All engines operational",
         "error": "Failed to load engines.",
         "queueLabel": "queue: {count}"
       },
       "actions": {
-        "retry": "Retry"
+        "retry": "Retry",
+        "loadMore": "Load more",
+        "download": "Download",
+        "remix": "Remix",
+        "template": "Use as template",
+        "noPreview": "No preview"
       },
       "lightbox": {
         "groupTitle": "Group ×{count}",
@@ -1748,8 +1798,21 @@
         "description": "Starter Credits ($10). Top up once, then pay per render to the cent. Any unused balance stays yours.",
         "addFunds": "Add {amount}",
         "quickAmount": "{amount}",
+        "customLabel": "Custom amount (USD)",
+        "customPlaceholder": "Enter amount (min $10)",
+        "customHint": "Minimum top-up is $10.",
+        "customCta": "Add custom amount",
+        "customInvalid": "Enter a valid amount.",
+        "customMin": "Minimum is $10.",
         "autoTopUp": "Enable auto top-up (optional)",
-        "lowBalance": "Your balance is low. Top up to keep creating."
+        "lowBalance": "Your balance is low. Top up to keep creating.",
+        "currencyLabel": "Charge currency",
+        "currencyLoading": "Detecting currencies…",
+        "currencyLoadError": "Unable to load currencies. Defaulting to USD.",
+        "currencyDetected": "Auto-detected {currency}",
+        "currencyOverride": "Charging in {selected} (auto: {detected})",
+        "quoteLoading": "Fetching live totals…",
+        "quoteError": "Unable to fetch FX quotes. Amount finalized at checkout."
       },
       "membership": {
         "title": "Member Status",

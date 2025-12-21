@@ -34,7 +34,7 @@ type NavItemDefinition = {
 
 export const NAV_ITEMS: readonly NavItemDefinition[] = [
   { id: 'dashboard', label: 'Dashboard', badge: null, icon: 'dashboard', href: '/dashboard' },
-  { id: 'generate', label: 'Generate Video', badge: 'LIVE', badgeKey: 'live', icon: 'generate', href: '/app' },
+  { id: 'generate', label: 'Generate Video', badge: null, icon: 'generate', href: '/app' },
   { id: 'generate-image', label: 'Generate Image', badge: null, icon: 'generate-image', href: '/app/image' },
   { id: 'library', label: 'Library', badge: null, icon: 'library', href: '/app/library' },
   { id: 'jobs', label: 'Jobs', badge: null, icon: 'jobs', href: '/jobs' },
