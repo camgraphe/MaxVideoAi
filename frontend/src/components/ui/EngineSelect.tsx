@@ -22,6 +22,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 const MODE_LABELS: Record<Mode, string> = {
   t2v: 'Text -> Video',
   i2v: 'Image -> Video',
+  r2v: 'Reference -> Video',
   t2i: 'Text -> Image',
   i2i: 'Image -> Image',
 };
@@ -38,7 +39,7 @@ type EngineGuideEntry = {
   badges: string[];
 };
 
-const DEFAULT_MODE_OPTIONS: Mode[] = ['t2v', 'i2v'];
+const DEFAULT_MODE_OPTIONS: Mode[] = ['t2v', 'i2v', 'r2v'];
 
 const ENGINE_MODE_LABEL_OVERRIDES: Record<string, Partial<Record<Mode, string>>> = {
   'veo-3-1-first-last': {
@@ -53,6 +54,11 @@ const ENGINE_MODE_LABEL_OVERRIDES: Record<string, Partial<Record<Mode, string>>>
   'wan-2-5': {
     t2v: 'Text · Audio-ready',
     i2v: 'Image · Audio-ready',
+  },
+  'wan-2-6': {
+    t2v: 'Text · Multi-shot',
+    i2v: 'Image · Animate',
+    r2v: 'Reference · Consistency',
   },
 };
 
@@ -123,6 +129,11 @@ const DEFAULT_ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
     description:
       'Wan 2.5 handles 5 or 10 second clips with optional background audio plus prompt expansion when you need extra detail.',
     badges: ['Audio option', '5s or 10s', '480p–1080p'],
+  },
+  'wan-2-6': {
+    description:
+      'Wan 2.6 merges text, image, and reference-to-video in one card with multi-shot prompting and 720p/1080p tiers.',
+    badges: ['Text prompts', 'Image input', 'Reference video'],
   },
 };
 
@@ -814,7 +825,7 @@ function BrowseEnginesModal({
               <FilterChip active={modeFilter === 'all'} onClick={() => setModeFilter('all')}>
                 {modalCopy.modeAll}
               </FilterChip>
-              {(['t2v', 'i2v'] as Mode[]).map((candidate) => (
+              {DEFAULT_MODE_OPTIONS.map((candidate) => (
                 <FilterChip key={candidate} active={modeFilter === candidate} onClick={() => setModeFilter(candidate)}>
                   {modalCopy.modeValue.replace('{value}', candidate.toUpperCase())}
                 </FilterChip>

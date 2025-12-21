@@ -248,6 +248,33 @@
     ]
   },
   {
+    "engine": "Wan 2.6 Text, Image & Reference to Video",
+    "catalogSlug": "wan-2-6",
+    "falSlug": "wan/v2.6/text-to-video",
+    "source_url": "https://fal.ai/models/wan/v2.6/text-to-video",
+    "last_checked_at": "2025-03-20T00:00:00",
+    "stale": false,
+    "checksum": "",
+    "prices": [
+      {
+        "variant": { "resolution": "720p" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.1
+        }
+      },
+      {
+        "variant": { "resolution": "1080p" },
+        "raw": {
+          "currency": "USD",
+          "unit": "second",
+          "amount": 0.15
+        }
+      }
+    ]
+  },
+  {
     "engine": "MiniMax Hailuo 02 Standard (Text & Image to Video)",
     "catalogSlug": "minimax-hailuo-02-text",
     "falSlug": "fal-ai/minimax/hailuo-02/standard/text-to-video",

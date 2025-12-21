@@ -4,6 +4,7 @@ import { getResultProviderMode } from '@/lib/result-provider';
 import type { ResultProviderMode } from '@/types/providers';
 import type { VideoAsset } from '@/types/render';
 import { resolveFalModelId } from '@/lib/fal-catalog';
+import { listFalEngines } from '@/config/falEngines';
 import { getFalClient } from '@/lib/fal-client';
 import { buildSoraFalInput, type SoraRequest } from '@/lib/sora';
 import { getLumaRay2DurationInfo, toLumaRay2DurationLabel } from '@/lib/luma-ray2';
@@ -14,6 +15,18 @@ const BLOCKED_VIDEO_HOSTS = new Set([
   'd3rlna7iyyu8wu.cloudfront.net',
   'amssamples.streaming.mediaservices.windows.net',
 ]);
+
+const ENGINE_MODE_MODEL_MAP = (() => {
+  const map = new Map<string, Map<string, string>>();
+  listFalEngines().forEach((engine) => {
+    const modeMap = new Map<string, string>();
+    engine.modes.forEach((mode) => {
+      modeMap.set(mode.mode, mode.falModelId);
+    });
+    map.set(engine.id, modeMap);
+  });
+  return map;
+})();
 
 type FalVideoCandidate =
   | string
@@ -208,6 +221,12 @@ function isBlockedUrl(url: string): boolean {
 
 function resolveModelSlug(payload: GeneratePayload, fallback?: string): string | undefined {
   const baseSlug = fallback;
+  const modeKey = typeof payload.mode === 'string' ? payload.mode : undefined;
+  const mapped =
+    modeKey && payload.engineId ? ENGINE_MODE_MODEL_MAP.get(payload.engineId)?.get(modeKey) : undefined;
+  if (mapped) {
+    return mapped;
+  }
   const mode = payload.mode === 'i2v' ? 'image-to-video' : 'text-to-video';
 
   if (payload.engineId === 'veo-3-1-first-last') {
@@ -371,12 +390,25 @@ async function generateViaFal(
       addToArray(slotId === 'reference_images' ? 'reference_images' : slotId, urlCandidate);
       continue;
     }
+    if (
+      slotId === 'video_urls' ||
+      slotId === 'video_url' ||
+      slotId === 'reference_videos' ||
+      slotId === 'videos'
+    ) {
+      addToArray('video_urls', urlCandidate);
+      continue;
+    }
     if (slotId === 'input_image' || slotId === 'image' || slotId === 'image_url') {
       requestBody[slotId] = urlCandidate;
       continue;
     }
     if (slotId === 'first_frame_url' || slotId === 'last_frame_url') {
       requestBody[slotId] = urlCandidate;
+      continue;
+    }
+    if (!slotId && attachment.kind === 'video') {
+      addToArray('video_urls', urlCandidate);
       continue;
     }
   }

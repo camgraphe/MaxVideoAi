@@ -79,5 +79,14 @@
     "versionLabel": "2.5 Preview",
     "availability": "available",
     "logoPolicy": "textOnly"
+  },
+  {
+    "engineId": "wan-2-6",
+    "marketingName": "Wan 2.6 Text, Image & Reference to Video",
+    "brandId": "wan",
+    "modelSlug": "wan-2-6",
+    "versionLabel": "2.6",
+    "availability": "available",
+    "logoPolicy": "textOnly"
   }
 ]

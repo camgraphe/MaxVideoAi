@@ -172,6 +172,12 @@ export function SettingsControls({
     }
     return null;
   }, [caps]);
+  const durationMaxSeconds = useMemo(() => {
+    if (!enumeratedDurationOptions || enumeratedDurationOptions.length === 0) {
+      return engine.maxDurationSec;
+    }
+    return Math.max(...enumeratedDurationOptions.map((option) => option.value));
+  }, [engine.maxDurationSec, enumeratedDurationOptions]);
 
   const durationRange = useMemo(() => {
     if (!caps?.duration) return null;
@@ -237,7 +243,7 @@ export function SettingsControls({
   const resolutionLocked = Boolean(caps?.resolutionLocked);
   const showResolutionControl = resolutionOptions.length > 0 && !resolutionLocked;
   const showAspectControl = aspectOptions.length > 0;
-  const audioIncluded = Boolean(engine.audio);
+  const audioIncluded = Boolean(engine.audio) && mode !== 'r2v';
   const effectiveCfgScale =
     typeof cfgScale === 'number'
       ? cfgScale
@@ -298,7 +304,7 @@ export function SettingsControls({
             <span className="text-[12px] uppercase tracking-micro text-text-muted">
               {controlsCopy.duration.optionsLabel}
               <span className="ml-2 align-middle text-[11px] text-text-muted/80">
-                {(controlsCopy.duration.maxLabel ?? 'Max {seconds}s').replace('{seconds}', String(engine.maxDurationSec))}
+                {(controlsCopy.duration.maxLabel ?? 'Max {seconds}s').replace('{seconds}', String(durationMaxSeconds))}
               </span>
             </span>
             <div className="flex flex-wrap gap-2" ref={durationOptionsContainerRef}>

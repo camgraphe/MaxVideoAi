@@ -201,6 +201,37 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
 
   const normalizedMode: Mode = mode ?? 't2v';
 
+  if (normalizedMode === 'r2v') {
+    const rawVideos = payload['video_urls'];
+    const videos = Array.isArray(rawVideos)
+      ? rawVideos.map((value) => (typeof value === 'string' ? value.trim() : '')).filter(Boolean)
+      : typeof rawVideos === 'string' && rawVideos.trim().length
+        ? [rawVideos.trim()]
+        : [];
+    if (!videos.length) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'video_urls',
+          message: 'Reference videos are required for this engine mode',
+        },
+      };
+    }
+    if (videos.length > 3) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'video_urls',
+          message: 'Up to 3 reference videos are supported',
+          allowed: [1, 3],
+          value: videos.length,
+        },
+      };
+    }
+  }
+
   if (engineId === 'veo-3-1-first-last' && (normalizedMode === 'i2v' || normalizedMode === 'i2i')) {
     const firstFrame = typeof payload['first_frame_url'] === 'string' ? payload['first_frame_url'].trim() : '';
     if (!firstFrame) {
@@ -259,7 +290,7 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
         ok: false,
         error: {
           code: 'ENGINE_CONSTRAINT',
-          field: 'image_url',
+          field: normalizedMode === 'r2v' ? 'video_urls' : 'image_url',
           message: `Max upload is ${caps.maxUploadMB}MB`,
           allowed: [caps.maxUploadMB],
           value: uploadedMb,

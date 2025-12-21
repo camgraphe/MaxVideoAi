@@ -71,7 +71,7 @@ const WAN_POLICY: BrandAssetPolicy = {
   logoAllowed: false,
   textOnly: true,
   linkToGuidelines: 'https://www.wan-ai.com',
-  usageNotes: 'Use the “Wan 2.5” text lockup on solid backgrounds until official assets are provided.',
+  usageNotes: 'Use the “Wan” text lockup on solid backgrounds until official assets are provided.',
 };
 
 export const PARTNER_BRANDS: PartnerBrand[] = [
@@ -229,7 +229,7 @@ export const PARTNER_BRANDS: PartnerBrand[] = [
       light: 'Wan 2.5 wordmark',
       dark: 'Wan 2.5 wordmark (inverse)',
     },
-    engineIds: ['wan-2-5', 'wan-25', 'wan25', 'wan-25-preview'],
+    engineIds: ['wan-2-5', 'wan-2-6', 'wan-25', 'wan25', 'wan-26', 'wan26', 'wan-25-preview'],
   },
 ];
 

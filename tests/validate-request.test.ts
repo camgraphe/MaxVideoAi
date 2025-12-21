@@ -185,3 +185,30 @@ test('Hailuo-02 Std enforces duration and resolution', () => {
   });
   assert.deepEqual(valid, OK);
 });
+
+test('Wan 2.6 R2V requires reference videos', () => {
+  const missing = validateRequest('wan-2-6', 'r2v', {
+    duration: 5,
+    resolution: '720p',
+    aspect_ratio: '16:9',
+  });
+  assert.equal(missing.ok, false);
+  assert.equal(missing.error?.field, 'video_urls');
+
+  const valid = validateRequest('wan-2-6', 'r2v', {
+    duration: 5,
+    resolution: '720p',
+    aspect_ratio: '16:9',
+    video_urls: ['https://example.com/ref1.mp4'],
+  });
+  assert.deepEqual(valid, OK);
+
+  const invalidLong = validateRequest('wan-2-6', 'r2v', {
+    duration: 15,
+    resolution: '1080p',
+    aspect_ratio: '16:9',
+    video_urls: ['https://example.com/ref1.mp4'],
+  });
+  assert.equal(invalidLong.ok, false);
+  assert.equal(invalidLong.error?.field, 'duration');
+});

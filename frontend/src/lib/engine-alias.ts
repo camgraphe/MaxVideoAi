@@ -31,6 +31,8 @@ const ENGINE_ID_ALIASES = (() => {
     'wan25': 'wan-2-5',
     'wan-25': 'wan-2-5',
     'wan-25-preview': 'wan-2-5',
+    'wan26': 'wan-2-6',
+    'wan-26': 'wan-2-6',
     'luma-dm': 'minimax-hailuo-02-text',
     'lumadreammachine': 'minimax-hailuo-02-text',
     'minimax-hailuo-02-image': 'minimax-hailuo-02-text',

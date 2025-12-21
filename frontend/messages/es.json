@@ -1537,6 +1537,10 @@
           "wan-2-5": {
             "description": "Wan 2.5 genera clips de 5 o 10 s con audio opcional y expansión de prompt cuando tus briefs son cortos.",
             "badges": ["Opción de audio", "5 s o 10 s", "480p–1080p"]
+          },
+          "wan-2-6": {
+            "description": "Wan 2.6 reúne texto, imagen y referencia a video en una sola tarjeta, con prompts multi-shot y niveles 720p/1080p.",
+            "badges": ["Prompts de texto", "Imagen de referencia", "Video de referencia"]
           }
         }
       }

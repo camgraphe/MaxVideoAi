@@ -8,3 +8,4 @@ sora-2,OpenAI Sora 2,openai,sora-2,2,available,textOnly
 sora-2-pro,OpenAI Sora 2 Pro,openai,sora-2-pro,Pro,available,textOnly
 pika-text-to-video,Pika 2.2 Text & Image to Video,pika,pika-text-to-video,2.2,available,textOnly
 wan-2-5,Wan 2.5 Text & Image to Video,wan,wan-2-5,2.5 Preview,available,textOnly
+wan-2-6,Wan 2.6 Text, Image & Reference to Video,wan,wan-2-6,2.6,available,textOnly

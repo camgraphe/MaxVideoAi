@@ -3,7 +3,7 @@ export type { PricingSnapshot } from '@maxvideoai/pricing';
 
 export type EngineStatus = 'live' | 'busy' | 'degraded' | 'maintenance' | 'early_access';
 export type LatencyTier = 'fast' | 'standard';
-export type Mode = 't2v' | 'i2v' | 't2i' | 'i2i';
+export type Mode = 't2v' | 'i2v' | 'r2v' | 't2i' | 'i2i';
 export type Resolution =
   | '480p'
   | '720p'

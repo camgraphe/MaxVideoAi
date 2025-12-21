@@ -387,6 +387,7 @@ function AssetLibraryModal({
 const MODE_DISPLAY_LABEL: Record<Mode, string> = {
   t2v: 'Text → Video',
   i2v: 'Image → Video',
+  r2v: 'Reference → Video',
   t2i: 'Text → Image',
   i2i: 'Image → Image',
 };
@@ -2057,7 +2058,8 @@ const showNotice = useCallback((message: string) => {
             createdAt: asset.createdAt,
           }))
         : [];
-      setAssetLibrary(assets);
+      const filtered = assets.filter((asset) => !asset.mime || asset.mime.startsWith('image/'));
+      setAssetLibrary(filtered);
       setAssetLibraryLoaded(true);
       setAssetLibraryLoadedSource(source);
     } catch (error) {
@@ -2260,7 +2262,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         try {
           const formData = new FormData();
           formData.append('file', file, file.name);
-          const response = await authFetch('/api/uploads/image', {
+          const uploadEndpoint = field.type === 'video' ? '/api/uploads/video' : '/api/uploads/image';
+          const response = await authFetch(uploadEndpoint, {
             method: 'POST',
             body: formData,
           });
@@ -2686,7 +2689,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const engineModeOptions = useMemo<Mode[] | undefined>(() => {
     if (!selectedEngine) return undefined;
-    const preferredOrder: Mode[] = ['t2v', 'i2v', 'i2i'];
+    const preferredOrder: Mode[] = ['t2v', 'i2v', 'r2v', 'i2i'];
     const available = preferredOrder.filter((value) => selectedEngine.modes.includes(value));
     return available.length ? available : undefined;
   }, [selectedEngine]);
@@ -3548,6 +3551,12 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           .map((attachment) => attachment.url)
           .filter((url, index, self) => self.indexOf(url) === index)
       : [];
+    const referenceVideoUrls = inputsPayload
+      ? inputsPayload
+          .filter((attachment) => attachment.kind === 'video' && typeof attachment.url === 'string')
+          .map((attachment) => attachment.url)
+          .filter((url, index, self) => self.indexOf(url) === index)
+      : [];
 
     const primaryImageUrl = primaryAttachment?.url ?? referenceImageUrls[0];
 
@@ -3561,6 +3570,11 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           ? 'Ajoutez une image (URL ou fichier) pour lancer Image → Video avec Sora.'
           : 'Add at least one reference image (URL or upload) before running this mode.';
         showNotice(guardMessage);
+        return;
+      }
+      const isVideoDrivenMode = form.mode === 'r2v';
+      if (isVideoDrivenMode && referenceVideoUrls.length === 0) {
+        showNotice('Add 1–3 reference videos (MP4/MOV) before running Reference → Video.');
         return;
       }
       if (isImageDrivenMode && selectedEngine.id === 'veo-3-1-first-last') {
@@ -4496,7 +4510,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                           <span className="font-semibold text-text-primary">{selectedEngine.label}</span>
                           <span className="text-text-muted">• {MODE_DISPLAY_LABEL[form.mode]}</span>
                         </div>
-                        {capability?.maxUploadMB && form.mode === 'i2v' && (
+                        {capability?.maxUploadMB && (form.mode === 'i2v' || form.mode === 'r2v') && (
                           <p className="text-[11px] text-text-muted">Max upload: {capability.maxUploadMB} MB</p>
                         )}
                         {capability?.acceptsImageFormats && capability.acceptsImageFormats.length > 0 && form.mode === 'i2v' && (

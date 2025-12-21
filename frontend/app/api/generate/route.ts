@@ -1041,6 +1041,10 @@ async function rollbackPendingPayment(params: {
     processedAttachments.find((attachment) => attachment.slotId === 'first_frame_url')?.url?.trim() ?? undefined;
   const lastFrameUrl =
     processedAttachments.find((attachment) => attachment.slotId === 'last_frame_url')?.url?.trim() ?? undefined;
+  const videoUrls = processedAttachments
+    .filter((attachment) => attachment.kind === 'video' && typeof attachment.url === 'string')
+    .map((attachment) => attachment.url!.trim())
+    .filter((url, index, self) => url.length > 0 && self.indexOf(url) === index);
   const initialImageUrl =
     soraRequest?.mode === 'i2v'
       ? soraRequest.image_url
@@ -1072,8 +1076,12 @@ async function rollbackPendingPayment(params: {
   if (lastFrameUrl) {
     validationPayload.last_frame_url = lastFrameUrl;
   }
+  if (videoUrls.length) {
+    validationPayload.video_urls = videoUrls;
+  }
 
   const needsImage = mode === 'i2v' || mode === 'i2i';
+  const needsVideo = mode === 'r2v';
   if (isLumaRay2 && mode === 'i2v') {
     if (!initialImageUrl) {
       logMetric('rejected', {
@@ -1093,6 +1101,14 @@ async function rollbackPendingPayment(params: {
     }
     if (initialImageUrl) {
       validationPayload.image_url = initialImageUrl;
+    }
+  } else if (needsVideo) {
+    if (!videoUrls.length) {
+      logMetric('rejected', {
+        errorCode: 'VIDEO_URL_REQUIRED',
+        meta: { engineId: engine.id, mode },
+      });
+      return NextResponse.json({ ok: false, error: 'Video URLs are required for this engine mode' }, { status: 400 });
     }
   }
 
@@ -1331,6 +1347,7 @@ async function rollbackPendingPayment(params: {
   const falInputSummary = {
     primaryImageUrl: initialImageUrl ?? null,
     referenceImageCount: Array.isArray(normalizedReferenceImages) ? normalizedReferenceImages.length : 0,
+    referenceVideoCount: videoUrls.length,
     hasFirstFrame: Boolean(firstFrameUrl),
     hasLastFrame: Boolean(lastFrameUrl),
     inputSlots:
@@ -1402,6 +1419,7 @@ async function rollbackPendingPayment(params: {
     refs: {
       imageUrl: initialImageUrl ?? null,
       referenceImages: normalizedReferenceImages ?? null,
+      videoUrls: videoUrls.length ? videoUrls : null,
       firstFrameUrl: firstFrameUrl ?? null,
       lastFrameUrl: lastFrameUrl ?? null,
       inputs: falInputs ?? null,

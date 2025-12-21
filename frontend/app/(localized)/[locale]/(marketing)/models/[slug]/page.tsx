@@ -1578,6 +1578,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
     slug === 'veo-3-1-first-last' ||
     slug === 'pika-text-to-video' ||
     slug === 'wan-2-5' ||
+    slug === 'wan-2-6' ||
     slug === 'kling-2-5-turbo' ||
     slug === 'minimax-hailuo-02-text' ||
     slug === 'ltx-2' ||

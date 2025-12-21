@@ -1540,6 +1540,10 @@
           "wan-2-5": {
             "description": "Wan 2.5 handles 5 or 10 second clips with optional background audio plus prompt expansion when you need extra detail.",
             "badges": ["Audio option", "5s or 10s", "480p–1080p"]
+          },
+          "wan-2-6": {
+            "description": "Wan 2.6 merges text, image, and reference-to-video in one card with multi-shot prompting and 720p/1080p tiers.",
+            "badges": ["Text prompts", "Image input", "Reference video"]
           }
         }
       }
