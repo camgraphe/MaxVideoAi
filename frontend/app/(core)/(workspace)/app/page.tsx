@@ -2945,6 +2945,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             resolution: null,
             fps: null,
             iterationCount: tile.iterationCount,
+            audio: typeof tile.hasAudio === 'boolean' ? tile.hasAudio : null,
           },
           advanced: { cfgScale: null, loop: null },
           refs: { imageUrl: null, referenceImages: null, firstFrameUrl: null, lastFrameUrl: null, inputs: null },
