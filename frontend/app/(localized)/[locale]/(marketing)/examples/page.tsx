@@ -135,8 +135,12 @@ const ENGINE_FILTER_GROUPS: Record<
   'fal-ai/ltx-2/image-to-video': { id: 'ltx-2', label: 'LTX-2', brandId: 'lightricks' },
   'fal-ai/ltx-2/text-to-video/fast': { id: 'ltx-2', label: 'LTX-2', brandId: 'lightricks' },
   'fal-ai/ltx-2/image-to-video/fast': { id: 'ltx-2', label: 'LTX-2', brandId: 'lightricks' },
-  'wan-2-5': { id: 'wan', label: 'Wan 2.5', brandId: 'wan' },
-  wan: { id: 'wan', label: 'Wan 2.5', brandId: 'wan' },
+  'wan-2-5': { id: 'wan', label: 'Wan', brandId: 'wan' },
+  'wan-2-6': { id: 'wan', label: 'Wan', brandId: 'wan' },
+  'wan/v2.6/text-to-video': { id: 'wan', label: 'Wan', brandId: 'wan' },
+  'wan/v2.6/image-to-video': { id: 'wan', label: 'Wan', brandId: 'wan' },
+  'wan/v2.6/reference-to-video': { id: 'wan', label: 'Wan', brandId: 'wan' },
+  wan: { id: 'wan', label: 'Wan', brandId: 'wan' },
 };
 
 function toAbsoluteUrl(url?: string | null): string | null {
