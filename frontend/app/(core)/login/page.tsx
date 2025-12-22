@@ -150,11 +150,12 @@ export default function LoginPage() {
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [browserLocale, setBrowserLocale] = useState<string | null>(null);
   const [signupSuggestion, setSignupSuggestion] = useState<{ email: string; password: string } | null>(null);
+  const safeNextPath = useMemo(() => sanitizeNextPath(nextPath), [nextPath]);
   const redirectTo = useMemo(() => {
     if (!siteUrl) return undefined;
     const base = siteUrl.endsWith('/') ? siteUrl.slice(0, -1) : siteUrl;
-    return `${base}/login`;
-  }, [siteUrl]);
+    return `${base}/auth/callback?next=${encodeURIComponent(safeNextPath)}`;
+  }, [safeNextPath, siteUrl]);
 
   const syncInputState = useCallback(() => {
     const nextEmail = emailRef.current?.value ?? '';
