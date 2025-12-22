@@ -7,7 +7,6 @@ import { Link, usePathname } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 import { supabase } from '@/lib/supabaseClient';
-import { clearAuthCache, fetchSessionOnce, readAuthCache, updateAuthCache } from '@/lib/auth-cache';
 import { NAV_ITEMS } from '@/components/AppSidebar';
 import { setLogoutIntent } from '@/lib/logout-intent';
 
@@ -60,39 +59,32 @@ export function MarketingNav() {
       }
     };
 
-    const cached = readAuthCache();
-    if (cached.session || cached.user) {
-      setEmail(cached.user?.email ?? cached.session?.user?.email ?? null);
-      void fetchAccountState(cached.session?.access_token);
-    }
+    const updateEmailFromServer = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!mounted) return;
+      setEmail(data.user?.email ?? null);
+    };
 
-    fetchSessionOnce()
-      .then((session) => {
+    supabase.auth
+      .getSession()
+      .then(async ({ data }) => {
+        await updateEmailFromServer();
         if (!mounted) return;
-        updateAuthCache(session, session?.user ?? null);
-        setEmail(session?.user?.email ?? null);
-        void fetchAccountState(session?.access_token);
+        void fetchAccountState(data.session?.access_token);
       })
       .catch(() => {
-        if (mounted && !cached.session && !cached.user) {
+        if (mounted) {
           setEmail(null);
         }
       });
 
     const { data: subscription } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      updateAuthCache(session ?? null, session?.user ?? null);
-      if (!mounted) return;
-      setEmail(session?.user?.email ?? null);
+      await updateEmailFromServer();
       void fetchAccountState(session?.access_token);
     });
     const handleInvalidate = async () => {
-      const cachedSession = readAuthCache().session;
-      if (cachedSession?.access_token) {
-        await fetchAccountState(cachedSession.access_token);
-        return;
-      }
-      const session = await fetchSessionOnce().catch(() => null);
-      await fetchAccountState(session?.access_token);
+      const { data } = await supabase.auth.getSession();
+      await fetchAccountState(data.session?.access_token);
     };
     window.addEventListener('wallet:invalidate', handleInvalidate);
     return () => {
@@ -116,7 +108,6 @@ export function MarketingNav() {
     setLogoutIntent();
     setEmail(null);
     setWallet(null);
-    clearAuthCache();
     void supabase.auth.signOut().catch(() => undefined);
     const payload = JSON.stringify({});
     if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
