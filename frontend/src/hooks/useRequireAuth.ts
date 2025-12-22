@@ -4,6 +4,7 @@ import type { Session, User } from '@supabase/supabase-js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
+import { clearAuthCache, fetchSessionOnce, readAuthCache, updateAuthCache } from '@/lib/auth-cache';
 import {
   disableClarityForVisitor,
   enableClarityForVisitor,
@@ -22,49 +23,6 @@ type RequireAuthResult = {
 
 const AUTH_USER_LOOKUP_TIMEOUT_MS = 4000;
 const AUTH_SESSION_LOOKUP_TIMEOUT_MS = 3500;
-const AUTH_CACHE_REFRESH_MS = 60_000;
-
-type AuthCacheState = {
-  session: Session | null;
-  user: User | null;
-  updatedAt: number;
-};
-
-const AUTH_CACHE: AuthCacheState = {
-  session: null,
-  user: null,
-  updatedAt: 0,
-};
-
-let AUTH_SESSION_PROMISE: Promise<Session | null> | null = null;
-
-function readAuthCache(): { session: Session | null; user: User | null; isFresh: boolean } {
-  const session = AUTH_CACHE.session;
-  const user = AUTH_CACHE.user ?? session?.user ?? null;
-  const isFresh = Boolean(session) && Date.now() - AUTH_CACHE.updatedAt < AUTH_CACHE_REFRESH_MS;
-  return { session, user, isFresh };
-}
-
-function updateAuthCache(session: Session | null, user: User | null) {
-  AUTH_CACHE.session = session;
-  AUTH_CACHE.user = user ?? session?.user ?? null;
-  AUTH_CACHE.updatedAt = Date.now();
-}
-
-function clearAuthCache() {
-  updateAuthCache(null, null);
-}
-
-function fetchSessionOnce(): Promise<Session | null> {
-  if (AUTH_SESSION_PROMISE) return AUTH_SESSION_PROMISE;
-  AUTH_SESSION_PROMISE = supabase.auth
-    .getSession()
-    .then((sessionResult) => sessionResult.data.session ?? null)
-    .finally(() => {
-      AUTH_SESSION_PROMISE = null;
-    });
-  return AUTH_SESSION_PROMISE;
-}
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   return new Promise((resolve, reject) => {

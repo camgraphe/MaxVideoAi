@@ -7,6 +7,7 @@ import { NAV_ITEMS } from '@/components/AppSidebar';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, useId } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { clearAuthCache, fetchSessionOnce, readAuthCache, updateAuthCache } from '@/lib/auth-cache';
 import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -58,30 +59,40 @@ export function HeaderBar() {
         }
       }
     };
-    const updateEmailFromServer = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (!mounted) return;
-      setEmail(data.user?.email ?? null);
-    };
-    supabase.auth
-      .getSession()
-      .then(async ({ data }) => {
-        await updateEmailFromServer();
+    const cached = readAuthCache();
+    if (cached.session || cached.user) {
+      setEmail(cached.user?.email ?? cached.session?.user?.email ?? null);
+      void fetchAccountState(cached.session?.access_token);
+    }
+
+    fetchSessionOnce()
+      .then((session) => {
         if (!mounted) return;
-        void fetchAccountState(data.session?.access_token);
+        updateAuthCache(session, session?.user ?? null);
+        setEmail(session?.user?.email ?? null);
+        void fetchAccountState(session?.access_token);
       })
       .catch(() => {
-        if (mounted) {
+        if (mounted && !cached.session && !cached.user) {
           setEmail(null);
         }
       });
+
     const { data: sub } = supabase.auth.onAuthStateChange(async (_e, session) => {
-      await updateEmailFromServer();
+      updateAuthCache(session ?? null, session?.user ?? null);
+      if (!mounted) return;
+      setEmail(session?.user?.email ?? null);
       void fetchAccountState(session?.access_token);
     });
+
     const handleInvalidate = async () => {
-      const { data } = await supabase.auth.getSession();
-      await fetchAccountState(data.session?.access_token);
+      const cachedSession = readAuthCache().session;
+      if (cachedSession?.access_token) {
+        await fetchAccountState(cachedSession.access_token);
+        return;
+      }
+      const session = await fetchSessionOnce().catch(() => null);
+      await fetchAccountState(session?.access_token);
     };
     window.addEventListener('wallet:invalidate', handleInvalidate);
     return () => {
@@ -114,6 +125,7 @@ export function HeaderBar() {
     setEmail(null);
     setWallet(null);
     setMember(null);
+    clearAuthCache();
     sendSignOutRequest();
     window.location.href = '/';
   };
