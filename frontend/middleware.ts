@@ -23,6 +23,7 @@ const NON_LOCALIZED_PREFIXES = [
   '/jobs',
   '/legal',
   '/login',
+  '/auth',
   '/settings',
   '/video',
   '/sitemap-video.xml',
@@ -226,6 +227,28 @@ export async function middleware(req: NextRequest) {
     const url = new URL(req.url);
     url.host = host.replace(/^www\./, '');
     return finalizeResponse(NextResponse.redirect(url, 308), hasLogoutIntentCookie);
+  }
+  const authCode = req.nextUrl.searchParams.get('code');
+  if (authCode && req.nextUrl.pathname !== '/auth/callback') {
+    const callbackUrl = req.nextUrl.clone();
+    callbackUrl.pathname = '/auth/callback';
+    callbackUrl.search = '';
+    callbackUrl.searchParams.set('code', authCode);
+
+    const nextUrl = req.nextUrl.clone();
+    nextUrl.searchParams.delete('code');
+    nextUrl.searchParams.delete('state');
+    nextUrl.searchParams.delete('error');
+    nextUrl.searchParams.delete('error_description');
+    nextUrl.searchParams.delete('redirect_to');
+    nextUrl.searchParams.delete('next');
+    const nextPath =
+      nextUrl.pathname + (nextUrl.search && nextUrl.search !== '?' ? nextUrl.search : '');
+    if (nextPath && nextPath !== '/' && nextPath !== '/auth/callback') {
+      callbackUrl.searchParams.set('next', nextPath);
+    }
+
+    return finalizeResponse(NextResponse.redirect(callbackUrl), hasLogoutIntentCookie);
   }
 
   const originalPathname = req.nextUrl.pathname;
