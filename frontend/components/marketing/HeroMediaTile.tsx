@@ -239,6 +239,7 @@ export function HeroMediaTile({
   ) : cardHref ? (
     <Link
       href={cardHref}
+      prefetch={false}
       className="block rounded-[28px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
       aria-label={`Open ${label} generator`}
     >
@@ -303,6 +304,7 @@ export function HeroMediaTile({
                 {generateHref ? (
                   <Link
                     href={generateHref}
+                    prefetch={false}
                     className="inline-flex rounded-pill bg-accent px-4 py-2 text-xs font-semibold uppercase tracking-micro text-white transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Generate like this

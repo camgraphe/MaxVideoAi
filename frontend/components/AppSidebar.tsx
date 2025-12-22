@@ -169,6 +169,7 @@ export function AppSidebar() {
       <li key={item.id} className="relative">
         <Link
           href={item.href}
+          prefetch={false}
           className={clsx(
             'group relative flex w-full items-center rounded-[14px] px-2 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
             collapsedNav ? 'justify-center gap-0' : 'gap-3 px-3',

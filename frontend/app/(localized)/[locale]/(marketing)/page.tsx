@@ -572,6 +572,7 @@ export default async function HomePage() {
         <div className="flex flex-col items-center gap-3 sm:flex-row">
           <Link
             href="/app"
+            prefetch={false}
             className="inline-flex items-center rounded-pill bg-accent px-6 py-3 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           >
             {hero.primaryCta}

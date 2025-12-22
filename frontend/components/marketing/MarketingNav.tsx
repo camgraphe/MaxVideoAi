@@ -277,6 +277,7 @@ export function MarketingNav() {
                 >
                   <Link
                     href="/billing"
+                    prefetch={false}
                     className="flex items-center gap-2 rounded-pill border border-hairline bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary transition hover:border-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     aria-describedby={walletPromptOpen ? walletPromptId : undefined}
                   >
@@ -304,6 +305,7 @@ export function MarketingNav() {
                       </p>
                       <Link
                         href="/billing"
+                        prefetch={false}
                         className="mt-3 inline-flex w-full items-center justify-center rounded-input bg-accent px-3 py-2 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         {t('workspace.header.walletTopUp.cta', 'Top up now')}
@@ -314,6 +316,7 @@ export function MarketingNav() {
               </div>
               <Link
                 href="/app"
+                prefetch={false}
                 className="inline-flex items-center rounded-pill border border-hairline px-4 py-2 text-sm font-semibold text-text-primary shadow-card transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
                 {generateLabel}
@@ -354,7 +357,8 @@ export function MarketingNav() {
                           <Link
                             key={item.id}
                             href={item.href}
-                                className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            prefetch={false}
+                            className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             onClick={() => setAccountMenuOpen(false)}
                           >
                             <span>{label}</span>
@@ -389,6 +393,7 @@ export function MarketingNav() {
               </Link>
               <Link
                 href="/app"
+                prefetch={false}
                 className="inline-flex items-center rounded-pill bg-accent px-4 py-2 text-sm font-semibold text-white shadow-card transition transform-gpu hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
                 {cta}
@@ -457,6 +462,7 @@ export function MarketingNav() {
                 </div>
                 <Link
                   href="/app"
+                  prefetch={false}
                   className="block rounded-2xl bg-accent px-4 py-3 text-center text-base font-semibold text-white shadow-card"
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -481,6 +487,7 @@ export function MarketingNav() {
                 </Link>
                 <Link
                   href="/app"
+                  prefetch={false}
                   className="block rounded-2xl bg-accent px-4 py-3 text-center text-base font-semibold text-white shadow-card"
                   onClick={() => setMobileMenuOpen(false)}
                 >

@@ -325,6 +325,7 @@ export function GalleryRail({
       <h2 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">{copy.title}</h2>
       <Link
         href="/jobs"
+        prefetch={false}
         className="rounded-[10px] border border-transparent px-3 py-1 text-[12px] font-medium text-text-muted transition hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {copy.viewAll}

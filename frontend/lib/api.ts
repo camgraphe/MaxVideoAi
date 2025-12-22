@@ -195,7 +195,6 @@ export function useEngines(category: EngineCategory = 'video') {
       return { engines: data?.engines ?? [] };
     },
     {
-      revalidateOnFocus: false,
       dedupingInterval: 5 * 60 * 1000,
     }
   );
@@ -285,11 +284,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType })
     return fetchJobsPage(limit, cursor, { type });
   };
 
-  const swr = useSWRInfinite<JobsPage, Error>(
-    getJobsKey,
-    fetchJobs,
-    { revalidateOnFocus: false }
-  );
+  const swr = useSWRInfinite<JobsPage, Error>(getJobsKey, fetchJobs);
 
   const { mutate } = swr;
 

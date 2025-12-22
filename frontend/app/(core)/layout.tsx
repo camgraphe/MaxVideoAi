@@ -5,6 +5,9 @@ import { AnalyticsScripts } from '@/components/analytics/AnalyticsScripts';
 import ConsentModeBootstrap from '@/components/analytics/ConsentModeBootstrap';
 import { CookieBanner } from '@/components/legal/CookieBanner';
 import { JsonLd } from '@/components/SeoJsonLd';
+import { SessionWatchdog } from '@/components/auth/SessionWatchdog';
+import { SWRFocusResync } from '@/components/swr/SWRFocusResync';
+import { SWRProvider } from '@/components/swr/SWRProvider';
 import { I18nProvider } from '@/lib/i18n/I18nProvider';
 import { resolveDictionary } from '@/lib/i18n/server';
 const SITE_URL =
@@ -77,7 +80,11 @@ export default async function CoreLayout({ children }: { children: ReactNode }) 
     <>
       <ConsentModeBootstrap />
       <I18nProvider locale={locale} dictionary={dictionary} fallback={fallback}>
-        {children}
+        <SWRProvider>
+          <SessionWatchdog />
+          <SWRFocusResync />
+          {children}
+        </SWRProvider>
       </I18nProvider>
       {process.env.NODE_ENV === 'production' ? <VercelAnalytics /> : null}
       <AnalyticsScripts />

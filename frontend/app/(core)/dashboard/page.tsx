@@ -1148,6 +1148,7 @@ function RecentGrid({
         <h2 className="text-lg font-semibold text-text-primary">{copy.recent.title}</h2>
         <Link
           href="/jobs"
+          prefetch={false}
           className="rounded-input border border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-accentSoft/10"
         >
           {copy.recent.viewAll}
@@ -1380,7 +1381,7 @@ function InsightRow({ label, value }: { label: string; value: string }) {
           ))}
         </div>
       )}
-      <Link href="/jobs" className="mt-4 inline-flex text-xs font-semibold text-accent hover:underline">
+      <Link href="/jobs" prefetch={false} className="mt-4 inline-flex text-xs font-semibold text-accent hover:underline">
         {copy.quickStarts.manage}
       </Link>
     </section>

@@ -136,7 +136,6 @@ export default function LibraryPage() {
       : `/api/user-assets?limit=200&source=${encodeURIComponent(activeSource)}`,
     fetcher,
     {
-      revalidateOnFocus: false,
       dedupingInterval: 60_000,
     }
   );
@@ -187,10 +186,10 @@ export default function LibraryPage() {
               <p className="text-sm text-text-secondary">{copy.hero.subtitle}</p>
             </div>
             <div className="flex gap-2 text-sm text-text-secondary">
-              <Link href="/app/image" className="rounded-input border border-border px-3 py-1 hover:bg-white/70">
+              <Link href="/app/image" prefetch={false} className="rounded-input border border-border px-3 py-1 hover:bg-white/70">
                 {copy.hero.ctas.image}
               </Link>
-              <Link href="/app" className="rounded-input border border-border px-3 py-1 hover:bg-white/70">
+              <Link href="/app" prefetch={false} className="rounded-input border border-border px-3 py-1 hover:bg-white/70">
                 {copy.hero.ctas.video}
               </Link>
             </div>

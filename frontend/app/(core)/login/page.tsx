@@ -309,45 +309,6 @@ export default function LoginPage() {
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get('code');
-    if (!code) {
-      return;
-    }
-    let cancelled = false;
-    setStatusTone('info');
-    setStatus('Completing sign-in…');
-    setError(null);
-    void supabase.auth
-      .exchangeCodeForSession(code)
-      .then(({ data, error }) => {
-        if (cancelled) return;
-        if (error) {
-          setError(error.message ?? 'Unable to complete sign-in.');
-          setStatus(null);
-          return;
-        }
-        if (data.session) {
-          setStatusTone('success');
-          setStatus('Signed in. Redirecting…');
-        }
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        setError(err instanceof Error ? err.message : 'Unable to complete sign-in.');
-        setStatus(null);
-      })
-      .finally(() => {
-        if (cancelled) return;
-        window.history.replaceState({}, document.title, window.location.pathname);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
     if (mode !== 'signin' && signupSuggestion) {
       setSignupSuggestion(null);
     }

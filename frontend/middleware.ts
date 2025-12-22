@@ -6,7 +6,7 @@ import { routing } from '@/i18n/routing';
 import { defaultLocale, localePathnames, locales } from '@/i18n/locales';
 import { LOCALE_COOKIE } from '@/lib/i18n/constants';
 import localizedSlugConfig from '@/config/localized-slugs.json';
-import { createSupabaseMiddlewareClient } from '@/lib/supabase-ssr';
+import { updateSession } from '@/lib/supabase-ssr';
 import { LOGOUT_INTENT_COOKIE } from '@/lib/logout-intent-cookie';
 
 const NEXT_LOCALE_COOKIE = 'NEXT_LOCALE';
@@ -346,10 +346,7 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  const supabase = createSupabaseMiddlewareClient(req, response);
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { userId } = await updateSession(req, response);
 
   const isProtectedRoute = PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
   if (!isProtectedRoute) {
@@ -363,7 +360,7 @@ export async function middleware(req: NextRequest) {
     response.headers.append('Vary', 'Cookie');
   }
 
-  if (user?.id) {
+  if (userId) {
     return finalizeResponse(response, hasLogoutIntentCookie);
   }
 

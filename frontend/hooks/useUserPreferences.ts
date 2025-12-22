@@ -30,7 +30,6 @@ export function useUserPreferences(enabled = true) {
     enabled ? '/api/user/preferences' : null,
     fetchPreferences,
     {
-      revalidateOnFocus: false,
     }
   );
 }

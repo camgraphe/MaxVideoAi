@@ -332,6 +332,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
         </p>
         <Link
           href={generatorHref}
+          prefetch={false}
           className="mt-3 inline-flex items-center text-sm font-semibold text-accent transition hover:text-accentSoft"
         >
           {content.calculator?.cta ?? 'Open the generator'} <span aria-hidden>→</span>
@@ -346,7 +347,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           <FlagPill live={FEATURES.pricing.publicCalculator} />
           <span>
             {content.estimator.walletLink}{' '}
-            <Link href={generatorHref} className="font-semibold text-accent hover:text-accentSoft">
+            <Link href={generatorHref} prefetch={false} className="font-semibold text-accent hover:text-accentSoft">
               {content.estimator.walletLinkCta}
             </Link>
             .

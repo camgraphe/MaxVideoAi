@@ -2248,7 +2248,11 @@ export default async function ModelDetailPage({ params }: PageParams) {
               <div className="sm:col-span-2">
                 <dt className="text-xs uppercase tracking-micro text-text-muted">{detailCopy.overview.platformPrice}</dt>
                 <dd>
-                  <Link href={platformPriceInfo.href} className="text-sm font-semibold text-accent hover:text-accentSoft">
+                  <Link
+                    href={platformPriceInfo.href}
+                    prefetch={false}
+                    className="text-sm font-semibold text-accent hover:text-accentSoft"
+                  >
                     {platformPriceInfo.label}
                   </Link>
                 </dd>
@@ -2331,6 +2335,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       <div className="mt-10 flex flex-wrap gap-3">
         <Link
           href="/app"
+          prefetch={false}
           className="inline-flex items-center rounded-pill border border-hairline px-4 py-2 text-sm font-semibold text-text-primary transition hover:border-accent hover:text-accent"
         >
           {detailCopy.buttons.pricing}

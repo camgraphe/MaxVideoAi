@@ -20,7 +20,25 @@ type RequireAuthResult = {
   loading: boolean;
 };
 
+const AUTH_SESSION_LOOKUP_TIMEOUT_MS = 4000;
 const AUTH_USER_LOOKUP_TIMEOUT_MS = 4000;
+const AUTH_FOCUS_THROTTLE_MS = 2000;
+
+let refreshPromise: Promise<Session | null> | null = null;
+
+async function refreshSessionOnce(): Promise<Session | null> {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+  refreshPromise = supabase.auth
+    .refreshSession()
+    .then(({ data }) => data.session ?? null)
+    .catch(() => null)
+    .finally(() => {
+      refreshPromise = null;
+    });
+  return refreshPromise;
+}
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -49,6 +67,9 @@ export function useRequireAuth(): RequireAuthResult {
   const identifiedRef = useRef<string | null>(null);
   const tagsSignatureRef = useRef<string | null>(null);
   const forcedClarityOptOutRef = useRef(false);
+  const ensureSessionInFlightRef = useRef<Promise<void> | null>(null);
+  const lastFocusRef = useRef(0);
+  const cancelledRef = useRef(false);
 
   const nextPath = useMemo(() => {
     const base = pathname ?? '/app';
@@ -71,14 +92,21 @@ export function useRequireAuth(): RequireAuthResult {
     router.replace(target);
   }, [router, nextPath]);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function ensureSession() {
+  const ensureSession = useCallback(async () => {
+    if (ensureSessionInFlightRef.current) {
+      await ensureSessionInFlightRef.current;
+      return;
+    }
+    const run = (async () => {
       try {
-        const sessionResult = await supabase.auth.getSession();
-        if (cancelled) return;
-        const nextSession = sessionResult.data.session ?? null;
+        const sessionResult = await withTimeout(supabase.auth.getSession(), AUTH_SESSION_LOOKUP_TIMEOUT_MS);
+        if (cancelledRef.current) return;
+        let nextSession = sessionResult.data.session ?? null;
+        if (!nextSession) {
+          const refreshed = await withTimeout(refreshSessionOnce(), AUTH_SESSION_LOOKUP_TIMEOUT_MS).catch(() => null);
+          if (cancelledRef.current) return;
+          nextSession = refreshed ?? null;
+        }
         const fallbackUser = nextSession?.user ?? null;
         setSession(nextSession);
         setUser(fallbackUser);
@@ -91,7 +119,7 @@ export function useRequireAuth(): RequireAuthResult {
 
         try {
           const userResult = await withTimeout(supabase.auth.getUser(), AUTH_USER_LOOKUP_TIMEOUT_MS);
-          if (cancelled) return;
+          if (cancelledRef.current) return;
           const verifiedUser = userResult.data.user ?? null;
           if (verifiedUser) {
             setUser(verifiedUser);
@@ -104,32 +132,69 @@ export function useRequireAuth(): RequireAuthResult {
           // Keep the local session/user if the network validation hangs or fails.
         }
       } catch {
-        if (cancelled) return;
-        setSession(null);
-        setUser(null);
-        redirectToLogin();
-      } finally {
-        if (!cancelled) setLoading(false);
+        if (cancelledRef.current) return;
+        setLoading(false);
       }
+    })();
+    ensureSessionInFlightRef.current = run;
+    try {
+      await run;
+    } finally {
+      ensureSessionInFlightRef.current = null;
     }
+  }, [redirectToLogin]);
 
-    ensureSession();
+  useEffect(() => {
+    cancelledRef.current = false;
+    void ensureSession();
 
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      if (cancelled) return;
-      setSession(newSession ?? null);
-      const nextUser = newSession?.user ?? null;
-      setUser(nextUser);
-      if (!nextUser) {
-        redirectToLogin();
+    const { data: subscription } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
+      if (cancelledRef.current) return;
+      if (newSession?.user) {
+        setSession(newSession);
+        setUser(newSession.user ?? null);
+        return;
       }
+      const sessionResult = await supabase.auth.getSession().catch(() => null);
+      if (cancelledRef.current) return;
+      const recoveredSession = sessionResult?.data?.session ?? null;
+      if (recoveredSession?.user) {
+        setSession(recoveredSession);
+        setUser(recoveredSession.user ?? null);
+        return;
+      }
+      setSession(null);
+      setUser(null);
+      redirectToLogin();
     });
 
     return () => {
-      cancelled = true;
+      cancelledRef.current = true;
       subscription?.subscription.unsubscribe();
     };
-  }, [redirectToLogin]);
+  }, [ensureSession, redirectToLogin]);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      const now = Date.now();
+      if (now - lastFocusRef.current < AUTH_FOCUS_THROTTLE_MS) return;
+      lastFocusRef.current = now;
+      void ensureSession();
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        handleFocus();
+      }
+    };
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('pageshow', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('pageshow', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [ensureSession]);
 
   useEffect(() => {
     const userId = user?.id ?? null;

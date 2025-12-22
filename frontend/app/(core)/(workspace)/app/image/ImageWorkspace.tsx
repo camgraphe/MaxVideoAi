@@ -678,7 +678,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       return payload;
     },
     {
-      revalidateOnFocus: false,
       keepPreviousData: true,
     }
   );
@@ -1979,6 +1978,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
               </div>
               <Link
                 href="/jobs"
+                prefetch={false}
                 className="rounded-input border border-border bg-white px-4 py-2 text-sm font-semibold text-text-secondary transition hover:border-accentSoft/60 hover:bg-accentSoft/10 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {galleryViewAll}
