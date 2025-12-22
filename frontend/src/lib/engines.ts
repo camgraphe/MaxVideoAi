@@ -11,6 +11,8 @@ import type {
 import type { MemberTier, PricingSnapshot } from '@maxvideoai/pricing';
 import { applyEngineVariantPricing, buildAudioAddonInput } from '@/lib/pricing-addons';
 
+export type EngineCategory = 'video' | 'image' | 'all';
+
 export function normalizeMemberTier(value?: string | null): MemberTier {
   const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
   if (raw === 'plus' || raw === 'pro') {
@@ -27,18 +29,28 @@ const MODEL_PRIORITY_ENTRIES = getModelRoster().map(
 const MODEL_PRIORITY = new Map<string, number>(MODEL_PRIORITY_ENTRIES);
 const DEFAULT_PRIORITY = MODEL_PRIORITY_ENTRIES.length;
 
-const REGISTRY_ENGINES = listFalEngines().filter((entry) => (entry.category ?? 'video') === 'video');
+const REGISTRY_ENTRIES = listFalEngines();
+const REGISTRY_BY_CATEGORY = {
+  video: REGISTRY_ENTRIES.filter((entry) => (entry.category ?? 'video') === 'video'),
+  image: REGISTRY_ENTRIES.filter((entry) => (entry.category ?? 'video') === 'image'),
+  all: REGISTRY_ENTRIES,
+};
 
-const ENGINES_BASE: EngineCaps[] = REGISTRY_ENGINES.map((entry) => cloneEngine(entry.engine))
-  .filter((engine) => !ENGINE_BLOCKLIST.has(engine.id.trim().toLowerCase()))
-  .sort((a, b) => {
-    const aPriority = MODEL_PRIORITY.get(a.id.toLowerCase()) ?? DEFAULT_PRIORITY;
-    const bPriority = MODEL_PRIORITY.get(b.id.toLowerCase()) ?? DEFAULT_PRIORITY;
-    if (aPriority !== bPriority) {
-      return aPriority - bPriority;
-    }
-    return a.label.localeCompare(b.label);
-  });
+function buildBaseEngines(entries: typeof REGISTRY_ENTRIES): EngineCaps[] {
+  return entries
+    .map((entry) => cloneEngine(entry.engine))
+    .filter((engine) => !ENGINE_BLOCKLIST.has(engine.id.trim().toLowerCase()))
+    .sort((a, b) => {
+      const aPriority = MODEL_PRIORITY.get(a.id.toLowerCase()) ?? DEFAULT_PRIORITY;
+      const bPriority = MODEL_PRIORITY.get(b.id.toLowerCase()) ?? DEFAULT_PRIORITY;
+      if (aPriority !== bPriority) {
+        return aPriority - bPriority;
+      }
+      return a.label.localeCompare(b.label);
+    });
+}
+
+const ENGINES_BASE: EngineCaps[] = buildBaseEngines(REGISTRY_BY_CATEGORY.video);
 
 export function cloneEngine(engine: EngineCaps): EngineCaps {
   return {
@@ -96,6 +108,11 @@ export function toItemization(snapshot: PricingSnapshot, memberTier?: string): P
 
 export function getBaseEngines(): EngineCaps[] {
   return ENGINES_BASE.map(cloneEngine);
+}
+
+export function getBaseEnginesByCategory(category: EngineCategory = 'video'): EngineCaps[] {
+  const entries = REGISTRY_BY_CATEGORY[category] ?? REGISTRY_BY_CATEGORY.video;
+  return buildBaseEngines(entries);
 }
 
 export async function enginesResponse(): Promise<{ ok: true; engines: EngineCaps[] }> {

@@ -20,7 +20,7 @@ import type { QuadPreviewTile, QuadTileAction } from '@/components/QuadPreviewPa
 import { GalleryRail } from '@/components/GalleryRail';
 import type { GroupSummary, GroupMemberSummary } from '@/types/groups';
 import { CompositePreviewDock } from '@/components/groups/CompositePreviewDock';
-import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
+import dynamic from 'next/dynamic';
 import { DEFAULT_PROCESSING_COPY } from '@/components/groups/ProcessingOverlay';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getRenderEta } from '@/lib/render-eta';
@@ -4833,3 +4833,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     </div>
   );
 }
+const GroupViewerModal = dynamic(
+  () => import('@/components/groups/GroupViewerModal').then((mod) => mod.GroupViewerModal),
+  { ssr: false }
+);

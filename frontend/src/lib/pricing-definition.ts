@@ -1,10 +1,5 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore - cross-package import for shared registry data.
-import { listFalEngines } from '../../../frontend/src/config/falEngines';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore - shared engine types live in the frontend workspace.
-import type { EngineCaps } from '../../../frontend/types/engines';
-import type { PricingAddonRule, PricingEngineDefinition } from './types';
+import type { EngineCaps, EnginePricing, EnginePricingDetails } from '@/types/engines';
+import type { PricingAddonRule, PricingEngineDefinition } from '@maxvideoai/pricing';
 
 const DEFAULT_MEMBER_DISCOUNTS = {
   member: 0,
@@ -17,7 +12,10 @@ function resolveDurationSteps(engine: EngineCaps) {
     engine.inputSchema?.optional?.find((field) => field.id === 'duration_seconds') ??
     engine.inputSchema?.optional?.find((field) => field.id === 'duration');
   const min = Math.max(1, Math.floor(durationField?.min ?? 1));
-  const max = Math.max(min, Math.floor(durationField?.max ?? engine.pricingDetails?.maxDurationSec ?? engine.maxDurationSec ?? 30));
+  const max = Math.max(
+    min,
+    Math.floor(durationField?.max ?? engine.pricingDetails?.maxDurationSec ?? engine.maxDurationSec ?? 30)
+  );
   const step = Math.max(1, Math.floor(durationField?.step ?? 1));
   const rawDefault = durationField?.default;
   let defaultValue: number | undefined;
@@ -70,14 +68,32 @@ function normaliseResolutionMultipliers(
   return multipliers;
 }
 
-function resolveBaseUnitPriceCents(engine: EngineCaps): { baseUnitPriceCents: number; currency: string; byResolution: Record<string, number> | undefined } | null {
-  const currency =
-    engine.pricingDetails?.currency ??
-    engine.pricing?.currency ??
-    'USD';
+function resolveAddonPricing(engine: EngineCaps): Record<string, PricingAddonRule | undefined> | undefined {
+  if (engine.pricingDetails?.addons) {
+    return engine.pricingDetails.addons;
+  }
+  const legacy = engine.pricing?.addons;
+  if (!legacy) return undefined;
+  const mapped: Record<string, PricingAddonRule | undefined> = {};
+  Object.entries(legacy).forEach(([key, value]) => {
+    if (!value) return;
+    mapped[key] = {
+      perSecondCents: typeof value.perSecond === 'number' ? Math.round(value.perSecond * 100) : undefined,
+      flatCents: typeof value.flat === 'number' ? Math.round(value.flat * 100) : undefined,
+    };
+  });
+  return Object.keys(mapped).length ? mapped : undefined;
+}
+
+function resolveBaseUnitPriceCents(engine: EngineCaps): {
+  baseUnitPriceCents: number;
+  currency: string;
+  byResolution: Record<string, number> | undefined;
+} | null {
+  const currency = engine.pricingDetails?.currency ?? engine.pricing?.currency ?? 'USD';
 
   let base = engine.pricingDetails?.perSecondCents?.default;
-  let byResolution = engine.pricingDetails?.perSecondCents?.byResolution;
+  const byResolution = engine.pricingDetails?.perSecondCents?.byResolution;
 
   if (typeof base !== 'number') {
     const resolutionEntries = byResolution ? Object.values(byResolution) : [];
@@ -118,52 +134,64 @@ function resolveBaseUnitPriceCents(engine: EngineCaps): { baseUnitPriceCents: nu
   return null;
 }
 
-export function buildPricingDefinitionsFromFixtures(): PricingEngineDefinition[] {
-  const engines = listFalEngines();
-  const definitions: PricingEngineDefinition[] = [];
-
-  for (const entry of engines) {
-    const engine = entry.engine as EngineCaps | undefined;
-    if (!engine?.id) {
-      continue;
-    }
-    const baseInfo = resolveBaseUnitPriceCents(engine);
-    if (!baseInfo || baseInfo.baseUnitPriceCents <= 0) {
-      continue;
-    }
-
-    const durationSteps = resolveDurationSteps(engine);
-    const resolutionMultipliers = normaliseResolutionMultipliers(
-      baseInfo.baseUnitPriceCents,
-      baseInfo.byResolution,
-      engine.pricing?.byResolution
-    );
-
-    definitions.push({
-      engineId: engine.id,
-      label: engine.label,
-      version: engine.version,
-      currency: baseInfo.currency,
-      baseUnitPriceCents: baseInfo.baseUnitPriceCents,
-      durationSteps,
-      resolutionMultipliers,
-      memberTierDiscounts: {
-        member: DEFAULT_MEMBER_DISCOUNTS.member,
-        plus: DEFAULT_MEMBER_DISCOUNTS.plus,
-        pro: DEFAULT_MEMBER_DISCOUNTS.pro,
-      },
-      minChargeCents: 0,
-      rounding: { mode: 'nearest', incrementCents: 1 },
-      taxPolicyHint: 'standard',
-      addons: engine.pricingDetails?.addons ?? undefined,
-      platformFeePct: 0.3,
-      platformFeeFlatCents: 0,
-      availability: engine.availability,
-      metadata: {
-        source: 'falEngines.ts',
-      },
-    });
+export function buildPricingDefinition(engine: EngineCaps): PricingEngineDefinition | null {
+  const baseInfo = resolveBaseUnitPriceCents(engine);
+  if (!baseInfo || baseInfo.baseUnitPriceCents <= 0) {
+    return null;
   }
+  const durationSteps = resolveDurationSteps(engine);
+  const resolutionMultipliers = normaliseResolutionMultipliers(
+    baseInfo.baseUnitPriceCents,
+    baseInfo.byResolution,
+    engine.pricing?.byResolution
+  );
 
-  return definitions;
+  return {
+    engineId: engine.id,
+    label: engine.label,
+    version: engine.version,
+    currency: baseInfo.currency,
+    baseUnitPriceCents: baseInfo.baseUnitPriceCents,
+    durationSteps,
+    resolutionMultipliers,
+    memberTierDiscounts: {
+      member: DEFAULT_MEMBER_DISCOUNTS.member,
+      plus: DEFAULT_MEMBER_DISCOUNTS.plus,
+      pro: DEFAULT_MEMBER_DISCOUNTS.pro,
+    },
+    minChargeCents: 0,
+    rounding: { mode: 'nearest', incrementCents: 1 },
+    taxPolicyHint: 'standard',
+    addons: resolveAddonPricing(engine),
+    platformFeePct: 0.3,
+    platformFeeFlatCents: 0,
+    availability: engine.availability,
+    metadata: {
+      source: 'engine-caps',
+    },
+  };
+}
+
+export function applyEnginePricingOverride(
+  engine: EngineCaps,
+  override?: EnginePricingDetails | null
+): EngineCaps {
+  if (!override) return engine;
+  const pricing: EnginePricing = {
+    unit: 'sec',
+    currency: override.currency,
+  };
+  if (override.perSecondCents?.default != null) {
+    pricing.base = override.perSecondCents.default / 100;
+  }
+  if (override.perSecondCents?.byResolution) {
+    pricing.byResolution = Object.fromEntries(
+      Object.entries(override.perSecondCents.byResolution).map(([key, cents]) => [key, cents / 100])
+    );
+  }
+  return {
+    ...engine,
+    pricingDetails: override,
+    pricing,
+  };
 }

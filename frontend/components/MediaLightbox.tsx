@@ -16,12 +16,17 @@ export interface MediaLightboxEntry {
   progress?: number | null;
   message?: string | null;
   engineLabel?: string | null;
+  engineId?: string | null;
   durationSec?: number | null;
   createdAt?: string | null;
   indexable?: boolean;
   visibility?: 'public' | 'private';
   hasAudio?: boolean;
   mediaType?: 'image' | 'video';
+  prompt?: string | null;
+  priceCents?: number | null;
+  currency?: string | null;
+  curated?: boolean;
 }
 
 export interface MediaLightboxProps {
@@ -35,6 +40,10 @@ export interface MediaLightboxProps {
   allowIndexingControls?: boolean;
   onToggleIndexable?: (entry: MediaLightboxEntry, nextIndexable: boolean) => Promise<void>;
   onSaveToLibrary?: (entry: MediaLightboxEntry) => Promise<void>;
+  onRemixEntry?: (entry: MediaLightboxEntry) => void;
+  remixLabel?: string;
+  onUseTemplate?: (entry: MediaLightboxEntry) => void;
+  templateLabel?: string;
 }
 
 function aspectRatioClass(aspectRatio?: string | null): string {
@@ -64,6 +73,10 @@ export function MediaLightbox({
   allowIndexingControls = false,
   onToggleIndexable,
   onSaveToLibrary,
+  onRemixEntry,
+  remixLabel,
+  onUseTemplate,
+  templateLabel,
 }: MediaLightboxProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [refreshStates, setRefreshStates] = useState<Record<string, { loading: boolean; error: string | null }>>({});
@@ -368,6 +381,8 @@ export function MediaLightbox({
               Boolean(onRefreshEntry) &&
               hasRefreshTarget &&
               (entry.status === 'pending' || !entry.videoUrl);
+            const canRemix = Boolean(onRemixEntry);
+            const canTemplate = Boolean(onUseTemplate) && !entry.curated;
             const downloadState = downloadStates[entry.id];
             const isDownloading = Boolean(downloadState?.loading);
             const downloadError = downloadState?.error ?? null;
@@ -471,6 +486,36 @@ export function MediaLightbox({
                     >
                       {isDownloading ? 'Downloading…' : 'Download'}
                     </button>
+                    {onRemixEntry ? (
+                      <button
+                        type="button"
+                        onClick={() => onRemixEntry(entry)}
+                        disabled={!canRemix}
+                        className={clsx(
+                          'rounded-input border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                          canRemix
+                            ? 'border-border bg-white text-text-secondary hover:bg-bg'
+                            : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
+                        )}
+                      >
+                        {remixLabel ?? 'Remix'}
+                      </button>
+                    ) : null}
+                    {onUseTemplate ? (
+                      <button
+                        type="button"
+                        onClick={() => onUseTemplate(entry)}
+                        disabled={!canTemplate}
+                        className={clsx(
+                          'rounded-input border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                          canTemplate
+                            ? 'border-border bg-white text-text-secondary hover:bg-bg'
+                            : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
+                        )}
+                      >
+                        {templateLabel ?? 'Use as template'}
+                      </button>
+                    ) : null}
                     <button
                       type="button"
                       onClick={() => handleCopyLink(entry.id, mediaUrl)}

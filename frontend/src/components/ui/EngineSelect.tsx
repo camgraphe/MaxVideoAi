@@ -16,7 +16,7 @@ import type { EngineAvailability, EngineCaps, Mode, Resolution } from '@/types/e
 import { Card } from './Card';
 import { Chip } from './Chip';
 import { EngineIcon } from '@/components/ui/EngineIcon';
-import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
+import type { FalEngineEntry } from '@/config/falEngines';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
 const MODE_LABELS: Record<Mode, string> = {
@@ -27,9 +27,34 @@ const MODE_LABELS: Record<Mode, string> = {
   i2i: 'Image -> Image',
 };
 
-const ENGINE_REGISTRY: FalEngineEntry[] = listFalEngines();
-const ENGINE_ORDER = new Map<string, number>(ENGINE_REGISTRY.map((entry, index) => [entry.id, index]));
-const ENGINE_META = new Map<string, FalEngineEntry>(ENGINE_REGISTRY.map((entry) => [entry.id, entry]));
+type EngineRegistryMeta = {
+  order: Map<string, number>;
+  meta: Map<string, FalEngineEntry>;
+};
+
+let engineRegistryMetaCache: EngineRegistryMeta | null = null;
+let engineRegistryMetaPromise: Promise<EngineRegistryMeta> | null = null;
+
+async function ensureEngineRegistryMeta(): Promise<EngineRegistryMeta> {
+  if (engineRegistryMetaCache) return engineRegistryMetaCache;
+  if (!engineRegistryMetaPromise) {
+    engineRegistryMetaPromise = import('@/config/falEngines')
+      .then((mod) => {
+        const registry = mod.listFalEngines();
+        const meta: EngineRegistryMeta = {
+          order: new Map(registry.map((entry, index) => [entry.id, index])),
+          meta: new Map(registry.map((entry) => [entry.id, entry])),
+        };
+        engineRegistryMetaCache = meta;
+        return meta;
+      })
+      .catch((error) => {
+        engineRegistryMetaPromise = null;
+        throw error;
+      });
+  }
+  return engineRegistryMetaPromise;
+}
 
 const SORA_ENGINE_IDS = ['sora-2', 'sora-2-pro'] as const;
 const SORA_ENGINE_SET = new Set<string>(SORA_ENGINE_IDS);
@@ -191,6 +216,7 @@ export function EngineSelect({
 }: EngineSelectProps) {
   const { t } = useI18n();
   const copy = t('workspace.generate.engineSelect', DEFAULT_ENGINE_SELECT_COPY) as EngineSelectCopy;
+  const [registryMeta, setRegistryMeta] = useState<EngineRegistryMeta | null>(() => engineRegistryMetaCache);
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState<DropdownPosition | null>(null);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
@@ -205,23 +231,27 @@ export function EngineSelect({
   const triggerId = useId();
 
   const availableEngines = useMemo(() => {
-    const sorted = engines.slice().sort((a, b) => {
-      const orderA = ENGINE_ORDER.get(a.id) ?? Number.MAX_SAFE_INTEGER;
-      const orderB = ENGINE_ORDER.get(b.id) ?? Number.MAX_SAFE_INTEGER;
-      return orderA - orderB;
-    });
-    return sorted.filter((entry) => {
-      const meta = ENGINE_META.get(entry.id);
-      return meta && meta.availability !== 'paused';
-    });
-  }, [engines]);
+    const sorted = engines.slice();
+    const order = registryMeta?.order;
+    if (order) {
+      sorted.sort((a, b) => {
+        const orderA = order.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+        const orderB = order.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+        return orderA - orderB;
+      });
+    }
+    return sorted.filter((entry) => entry.availability !== 'paused');
+  }, [engines, registryMeta]);
 
   const selectedEngine = useMemo(() => {
     const candidate = availableEngines.find((entry) => entry.id === engineId);
     return candidate ?? availableEngines[0] ?? engines[0];
   }, [availableEngines, engineId, engines]);
 
-  const selectedMeta = useMemo(() => (selectedEngine ? ENGINE_META.get(selectedEngine.id) : undefined), [selectedEngine]);
+  const selectedMeta = useMemo(
+    () => (selectedEngine ? registryMeta?.meta.get(selectedEngine.id) : undefined),
+    [registryMeta, selectedEngine]
+  );
 
   const visibleEngines = availableEngines;
 
@@ -235,6 +265,37 @@ export function EngineSelect({
     if (!engine) return '';
     return String(engine.id || engine.label || '').replace(/\s+/g, '').toUpperCase();
   }, []);
+
+  useEffect(() => {
+    if (registryMeta) return;
+    if (typeof window === 'undefined') return;
+    let active = true;
+    const timer = window.setTimeout(() => {
+      ensureEngineRegistryMeta()
+        .then((meta) => {
+          if (active) setRegistryMeta(meta);
+        })
+        .catch(() => undefined);
+    }, 1200);
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, [registryMeta]);
+
+  useEffect(() => {
+    if (registryMeta) return;
+    if (!open && !browseOpen) return;
+    let active = true;
+    ensureEngineRegistryMeta()
+      .then((meta) => {
+        if (active) setRegistryMeta(meta);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [browseOpen, open, registryMeta]);
 
   useEffect(() => {
     const element = document.createElement('div');
@@ -460,7 +521,7 @@ export function EngineSelect({
             <div className="space-y-2">
               <span className="text-[11px] uppercase tracking-micro text-text-muted">{copy.variant}</span>
               <div className="flex flex-wrap gap-2">
-                {soraVariantEngines.map((entry) => {
+                      {soraVariantEngines.map((entry) => {
                   const active = entry.id === selectedEngine.id;
                   return (
                     <button
@@ -474,7 +535,7 @@ export function EngineSelect({
                           : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
                       )}
                     >
-                      {ENGINE_META.get(entry.id)?.marketingName ?? entry.label ?? entry.id}
+                      {registryMeta?.meta.get(entry.id)?.marketingName ?? entry.label ?? entry.id}
                     </button>
                   );
                 })}
@@ -517,7 +578,7 @@ export function EngineSelect({
                     {visibleEngines.map((engine, index) => {
                       const active = engine.id === selectedEngine.id;
                       const highlighted = index === highlightedIndex;
-                      const meta = ENGINE_META.get(engine.id);
+                      const meta = registryMeta?.meta.get(engine.id);
                       const avgDurationLabel = formatAvgDuration(engine.avgDurationMs);
                       const availability: EngineAvailability = meta?.availability ?? engine.availability ?? 'available';
                       const disabled = availability === 'paused';
@@ -633,6 +694,7 @@ export function EngineSelect({
           }}
           copy={copy}
           modeLabelOverrides={modeLabelOverrides}
+          engineMeta={registryMeta?.meta}
         />
       )}
     </Card>
@@ -646,6 +708,7 @@ interface BrowseEnginesModalProps {
   onSelect: (engineId: string) => void;
   copy: EngineSelectCopy;
   modeLabelOverrides?: Partial<Record<Mode, string>>;
+  engineMeta?: Map<string, FalEngineEntry>;
 }
 
 type ModeFilter = 'all' | Mode;
@@ -657,6 +720,7 @@ function BrowseEnginesModal({
   onSelect,
   copy,
   modeLabelOverrides,
+  engineMeta,
 }: BrowseEnginesModalProps) {
   const modalCopy = copy.modal;
   const [portalElement, setPortalElement] = useState<HTMLDivElement | null>(null);
@@ -721,7 +785,7 @@ function BrowseEnginesModal({
         if (modeFilter !== 'all' && !engine.modes.includes(modeFilter)) return false;
         if (resolutionFilter !== 'all' && !engine.resolutions.includes(resolutionFilter)) return false;
 
-        const meta = ENGINE_META.get(engine.id);
+        const meta = engineMeta?.get(engine.id);
         if (!searchValue) return true;
         const guide = guides[engine.id];
         const haystack = [
@@ -743,14 +807,14 @@ function BrowseEnginesModal({
           return aPriority - bPriority;
         }
         if (a.isLab === b.isLab) {
-          const aName = ENGINE_META.get(a.id)?.marketingName ?? a.label ?? a.id;
-          const bName = ENGINE_META.get(b.id)?.marketingName ?? b.label ?? b.id;
+          const aName = engineMeta?.get(a.id)?.marketingName ?? a.label ?? a.id;
+          const bName = engineMeta?.get(b.id)?.marketingName ?? b.label ?? b.id;
           return aName.localeCompare(bName);
         }
         return a.isLab ? 1 : -1;
       });
     return ranked;
-  }, [engines, modeFilter, resolutionFilter, searchValue, copy]);
+  }, [engines, modeFilter, resolutionFilter, searchValue, copy, engineMeta]);
 
   const handleBackdropClick = useCallback(
     (event: ReactMouseEvent<HTMLDivElement>) => {
@@ -866,7 +930,7 @@ function BrowseEnginesModal({
               const badges = guide?.badges ?? [];
               const labsBadgeNeeded = engine.isLab && !badges.some((badge) => badge === 'Labs');
               const combinedBadges = labsBadgeNeeded ? [...badges, 'Labs'] : badges;
-              const meta = ENGINE_META.get(engine.id);
+              const meta = engineMeta?.get(engine.id);
               const name = meta?.marketingName ?? engine.label ?? engine.id;
               const versionLabel = meta?.versionLabel ?? engine.version ?? '-';
               const description = guide?.description ?? meta?.seo.description ?? modalCopy.descriptionFallback;

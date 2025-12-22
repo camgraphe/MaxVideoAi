@@ -51,7 +51,7 @@ function formatCurrencyCents(value: number): string {
 
 const DEFAULT_RULE_TEMPLATE: PricingRule = {
   id: 'new',
-  marginPercent: 0.2,
+  marginPercent: 0.3,
   marginFlatCents: 0,
   currency: 'USD',
 };

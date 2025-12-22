@@ -46,7 +46,7 @@ export type PricingRule = {
 
 const DEFAULT_RULE: PricingRule = {
   id: 'default',
-  marginPercent: 0.2,
+  marginPercent: 0.3,
   marginFlatCents: 0,
   surchargeAudioPercent: 0.2,
   surchargeUpscalePercent: 0.5,
@@ -277,7 +277,7 @@ function buildDefinitionFromEngine(engine: EngineCaps, pricingDetails?: EnginePr
     rounding: { mode: 'nearest', incrementCents: 1 },
     taxPolicyHint: 'standard',
     addons: pricingDetails?.addons ?? undefined,
-    platformFeePct: 0.2,
+    platformFeePct: 0.3,
     platformFeeFlatCents: 0,
     availability: engine.availability,
     metadata: {

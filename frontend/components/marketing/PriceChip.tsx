@@ -1,12 +1,13 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import type { MemberTier } from '@maxvideoai/pricing';
+import { computePricingSnapshot, type MemberTier } from '@maxvideoai/pricing';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getModelByEngineId } from '@/lib/model-roster';
 import { normalizeEngineId } from '@/lib/engine-alias';
+import { selectPricingRule, type PricingRuleLite } from '@/lib/pricing-rules';
 
 interface PriceChipProps {
   engineId: string;
@@ -14,6 +15,7 @@ interface PriceChipProps {
   resolution: string;
   memberTier?: MemberTier | string;
   suffix?: string;
+  pricingRules?: PricingRuleLite[];
 }
 
 function formatCurrency(currency: string, cents: number) {
@@ -29,21 +31,51 @@ function formatPercentage(value: number | undefined) {
   return `${Math.round(value * 100)}%`;
 }
 
-export function PriceChip({ engineId, durationSec, resolution, memberTier = 'member', suffix }: PriceChipProps) {
+export function PriceChip({
+  engineId,
+  durationSec,
+  resolution,
+  memberTier = 'member',
+  suffix,
+  pricingRules,
+}: PriceChipProps) {
   const { dictionary, t } = useI18n();
   const kernel = getPricingKernel();
   const [isOpen, setIsOpen] = useState(false);
   const canonicalId = normalizeEngineId(engineId) ?? engineId;
 
+  const pricingRule = useMemo(
+    () => selectPricingRule(pricingRules, canonicalId, resolution),
+    [pricingRules, canonicalId, resolution]
+  );
+
   const quote = useMemo(() => {
-    return kernel.quote({
-      engineId: canonicalId,
-      durationSec,
-      resolution,
-      memberTier: (memberTier ?? 'member').toString().toLowerCase() as MemberTier,
-    });
+    const definition = kernel.getDefinition(canonicalId);
+    if (!definition) return null;
+    try {
+      const adjusted = pricingRule
+        ? {
+            ...definition,
+            platformFeePct: pricingRule.marginPercent ?? definition.platformFeePct,
+            platformFeeFlatCents: pricingRule.marginFlatCents ?? definition.platformFeeFlatCents,
+            currency: pricingRule.currency ?? definition.currency,
+          }
+        : definition;
+      return computePricingSnapshot(adjusted, {
+        engineId: canonicalId,
+        durationSec,
+        resolution,
+        memberTier: (memberTier ?? 'member').toString().toLowerCase() as MemberTier,
+      }).quote;
+    } catch {
+      return null;
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [engineId, durationSec, resolution, memberTier?.toString()]);
+  }, [canonicalId, durationSec, resolution, memberTier?.toString(), pricingRule]);
+
+  if (!quote) {
+    return null;
+  }
 
   const snapshot = quote.snapshot;
   const definition = quote.definition;

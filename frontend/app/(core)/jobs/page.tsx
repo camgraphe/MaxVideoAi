@@ -13,7 +13,7 @@ import { adaptGroupSummary } from '@/lib/video-group-adapter';
 import { useResultProvider } from '@/hooks/useResultProvider';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
-import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
+import dynamic from 'next/dynamic';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { FEATURES } from '@/content/feature-flags';
 import { FlagPill } from '@/components/FlagPill';
@@ -612,3 +612,7 @@ function CollapsedGroupRail({
     </div>
   );
 }
+const GroupViewerModal = dynamic(
+  () => import('@/components/groups/GroupViewerModal').then((mod) => mod.GroupViewerModal),
+  { ssr: false }
+);

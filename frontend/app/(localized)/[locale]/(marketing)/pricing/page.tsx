@@ -2,9 +2,8 @@ import type { Metadata } from 'next';
 import { Link } from '@/i18n/navigation';
 import Script from 'next/script';
 import { getTranslations } from 'next-intl/server';
-import { PriceEstimator } from '@/components/marketing/PriceEstimator';
+import dynamic from 'next/dynamic';
 import { resolveDictionary } from '@/lib/i18n/server';
-import { getPricingKernel } from '@/lib/pricing-kernel';
 import { DEFAULT_MARKETING_SCENARIO, scenarioToPricingInput, type PricingScenario } from '@/lib/pricing-scenarios';
 import { FEATURES } from '@/content/feature-flags';
 import { FlagPill } from '@/components/FlagPill';
@@ -14,8 +13,17 @@ import { localeRegions, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
+import { listFalEngines } from '@/config/falEngines';
+import { computePricingSnapshot, listPricingRules } from '@/lib/pricing';
+import type { PricingRuleLite } from '@/lib/pricing-rules';
+import { listEnginePricingOverrides } from '@/server/engine-settings';
+import { applyEnginePricingOverride } from '@/lib/pricing-definition';
 
 const PRICING_SLUG_MAP = buildSlugMap('pricing');
+
+const PriceEstimator = dynamic(
+  () => import('@/components/marketing/PriceEstimator').then((mod) => mod.PriceEstimator)
+);
 
 export const revalidate = 60 * 10;
 
@@ -151,9 +159,41 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
   const faq = content.faq;
   const heroLink = content.hero.link ?? null;
   const canonical = buildMetadataUrls(locale as AppLocale, PRICING_SLUG_MAP, { englishPath: '/pricing' }).canonical;
-  const kernel = getPricingKernel();
-  const starterQuote = kernel.quote(scenarioToPricingInput(DEFAULT_MARKETING_SCENARIO));
-  const starterCurrency = starterQuote.snapshot.currency;
+  const pricingRules = await listPricingRules();
+  const pricingRulesLite: PricingRuleLite[] = pricingRules.map((rule) => ({
+    id: rule.id,
+    engineId: rule.engineId ?? null,
+    resolution: rule.resolution ?? null,
+    marginPercent: rule.marginPercent,
+    marginFlatCents: rule.marginFlatCents,
+    currency: rule.currency ?? 'USD',
+  }));
+  const enginePricingOverrides = await listEnginePricingOverrides();
+  const engineIndex = new Map(
+    listFalEngines().map((entry) => {
+      const override = enginePricingOverrides[entry.engine.id];
+      const engine = override ? applyEnginePricingOverride(entry.engine, override) : entry.engine;
+      return [engine.id, engine];
+    })
+  );
+  const resolveScenarioQuote = async (scenario: PricingScenario) => {
+    const input = scenarioToPricingInput(scenario);
+    const engineCaps = engineIndex.get(input.engineId);
+    if (!engineCaps) return null;
+    try {
+      return await computePricingSnapshot({
+        engine: engineCaps,
+        durationSec: input.durationSec,
+        resolution: input.resolution,
+        membershipTier: input.memberTier,
+        addons: input.addons,
+      });
+    } catch {
+      return null;
+    }
+  };
+  const starterSnapshot = await resolveScenarioQuote(DEFAULT_MARKETING_SCENARIO);
+  const starterCurrency = starterSnapshot?.currency ?? 'USD';
   const refundFeatureItems = [
     { text: refunds.points[0], live: FEATURES.pricing.refundsAuto },
     { text: refunds.points[1], live: FEATURES.pricing.itemisedReceipts },
@@ -214,25 +254,26 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
   const priceFactors = content.priceFactors ?? DEFAULT_PRICE_FACTORS;
   const generatorHref = '/generate';
 
-  const resolvedExampleCards: ExampleCardConfig[] = exampleCards.map((card) => {
-    if ((typeof card.price === 'string' && card.price.trim().length > 0) || !card.pricingScenario) {
-      return card;
-    }
-    try {
-      const quote = kernel.quote({
-        ...scenarioToPricingInput(card.pricingScenario),
-        addons: card.pricingScenario.addons,
-      });
-      const priceLabel = formatCurrencyForLocale(locale as AppLocale, quote.snapshot.currency ?? starterCurrency, quote.snapshot.totalCents / 100);
+  const resolvedExampleCards: ExampleCardConfig[] = await Promise.all(
+    exampleCards.map(async (card) => {
+      if ((typeof card.price === 'string' && card.price.trim().length > 0) || !card.pricingScenario) {
+        return card;
+      }
+      const snapshot = await resolveScenarioQuote(card.pricingScenario);
+      if (!snapshot) {
+        return card;
+      }
+      const priceLabel = formatCurrencyForLocale(
+        locale as AppLocale,
+        snapshot.currency ?? starterCurrency,
+        snapshot.totalCents / 100
+      );
       return {
         ...card,
         price: `≈ ${priceLabel}`,
       };
-    } catch (error) {
-      console.error('Failed to compute example card price', card.title, error);
-      return card;
-    }
-  });
+    })
+  );
 
   const formattedTiers = membershipTiers.map((tier, index) => {
     const tierCopy = Array.isArray(member.tiers) ? ((member.tiers[index] ?? null) as TierCopy | null) : null;
@@ -299,7 +340,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
 
       <section id="estimator" className="mt-12 scroll-mt-28">
         <div className="mx-auto max-w-4xl">
-          <PriceEstimator />
+          <PriceEstimator pricingRules={pricingRulesLite} enginePricingOverrides={enginePricingOverrides} />
         </div>
         <div className="mx-auto mt-6 flex max-w-3xl flex-col items-center gap-2 text-center text-xs text-text-muted sm:flex-row sm:justify-center">
           <FlagPill live={FEATURES.pricing.publicCalculator} />

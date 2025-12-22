@@ -5,8 +5,13 @@ import clsx from 'clsx';
 import { PriceChip } from '@/components/marketing/PriceChip';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
+import type { PricingRuleLite } from '@/lib/pricing-rules';
 
-export function ProofTabs() {
+type ProofTabsProps = {
+  pricingRules?: PricingRuleLite[];
+};
+
+export function ProofTabs({ pricingRules }: ProofTabsProps) {
   const { t } = useI18n();
   const tabs = t('home.proofTabs', []) as Array<{ id: string; label: string; heading: string; body: string }>;
   const [activeId, setActiveId] = useState<string>(tabs[0]?.id ?? 'brief');
@@ -40,7 +45,9 @@ export function ProofTabs() {
             <h3 className="text-xl font-semibold text-text-primary sm:text-2xl">{activeTab.heading}</h3>
             <p className="mt-2 max-w-3xl text-base text-text-secondary sm:text-lg">{activeTab.body}</p>
           </div>
-          {activeTab.id === 'price' && <PriceChip {...DEFAULT_MARKETING_SCENARIO} suffix={priceChipSuffix} />}
+          {activeTab.id === 'price' && (
+            <PriceChip {...DEFAULT_MARKETING_SCENARIO} suffix={priceChipSuffix} pricingRules={pricingRules} />
+          )}
         </div>
       </div>
     </section>

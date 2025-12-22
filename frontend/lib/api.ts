@@ -183,11 +183,14 @@ function scheduleStatusRetry(jobId: string, attempt: number): void {
   STATUS_RETRY_TIMERS.set(jobId, { attempt, timer });
 }
 
-export function useEngines() {
+type EngineCategory = 'video' | 'image' | 'all';
+
+export function useEngines(category: EngineCategory = 'video') {
+  const query = category === 'video' ? '' : `?category=${encodeURIComponent(category)}`;
   return useSWR<EnginesResponse>(
-    'static-engines',
+    `static-engines:${category}`,
     async () => {
-      const response = await authFetch('/api/engines');
+      const response = await authFetch(`/api/engines${query}`);
       const data = (await response.json().catch(() => null)) as { engines?: EnginesResponse['engines'] } | null;
       return { engines: data?.engines ?? [] };
     },

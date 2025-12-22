@@ -11,14 +11,16 @@ import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
 import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
 import { MosaicBackdrop, type MosaicBackdropMedia } from '@/components/marketing/MosaicBackdrop';
 import type { CompareEngineCard } from '@/components/marketing/CompareEnginesCarousel';
-import { getPricingKernel } from '@/lib/pricing-kernel';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getHomepageSlots, HERO_SLOT_KEYS } from '@/server/homepage';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { listExamples } from '@/server/videos';
 import { listFalEngines } from '@/config/falEngines';
+import type { EngineCaps } from '@/types/engines';
 import type { AppLocale } from '@/i18n/locales';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
+import { computePricingSnapshot, listPricingRules } from '@/lib/pricing';
+import type { PricingRuleLite } from '@/lib/pricing-rules';
 
 const ProofTabs = dynamic(
   () =>
@@ -274,8 +276,19 @@ type HeroTilePricingInput = {
   minPriceCurrency?: string | null;
 };
 
+function pickResolution(resolutions: string[] | undefined, requested: string | undefined) {
+  if (!resolutions || !resolutions.length) {
+    return requested ?? '1080p';
+  }
+  if (requested && resolutions.includes(requested)) return requested;
+  const nonAuto = resolutions.find((value) => value !== 'auto') ?? resolutions[0];
+  return nonAuto ?? requested ?? '1080p';
+}
+
 async function resolveHeroTilePrices(tiles: HeroTilePricingInput[]) {
-  const kernel = getPricingKernel();
+  const engineIndex = new Map<string, EngineCaps>(
+    listFalEngines().map((entry) => [entry.engine.id, entry.engine])
+  );
   const formatPriceLabel = (cents: number, currency: string) =>
     `from ${new Intl.NumberFormat(CURRENCY_LOCALE, {
       style: 'currency',
@@ -296,11 +309,16 @@ async function resolveHeroTilePrices(tiles: HeroTilePricingInput[]) {
       }
 
       try {
-        const { snapshot } = kernel.quote({
-          engineId: canonicalId,
+        const engineCaps = engineIndex.get(canonicalId) ?? engineIndex.get(tile.engineId ?? '');
+        if (!engineCaps) {
+          return [tile.id, fallbackLabel] as const;
+        }
+        const resolution = pickResolution(engineCaps.resolutions as string[] | undefined, tile.resolution);
+        const snapshot = await computePricingSnapshot({
+          engine: engineCaps,
           durationSec: tile.durationSec,
-          resolution: tile.resolution ?? '1080p',
-          memberTier: 'member',
+          resolution,
+          membershipTier: 'member',
         });
         let cents = snapshot.totalCents;
         let currency = snapshot.currency;
@@ -321,6 +339,15 @@ async function resolveHeroTilePrices(tiles: HeroTilePricingInput[]) {
 export default async function HomePage() {
   const { dictionary } = await resolveDictionary();
   const home = dictionary.home;
+  const pricingRules = await listPricingRules();
+  const pricingRulesLite: PricingRuleLite[] = pricingRules.map((rule) => ({
+    id: rule.id,
+    engineId: rule.engineId ?? null,
+    resolution: rule.resolution ?? null,
+    marginPercent: rule.marginPercent,
+    marginFlatCents: rule.marginFlatCents,
+    currency: rule.currency ?? 'USD',
+  }));
   const seoDescription =
     home.meta?.description ?? 'Generate cinematic AI videos via Sora 2, Veo 3, Pika 2.2, and more from one hub.';
   const defaultBadges = ['PAY-AS-YOU-GO', 'PRICE-BEFORE', 'ALWAYS-CURRENT'];
@@ -620,7 +647,7 @@ export default async function HomePage() {
       </section>
       <MosaicBackdrop media={proofBackgroundMedia}>
         <div id="how-it-works" className="pt-16 sm:pt-20 scroll-mt-32">
-          <ProofTabs />
+          <ProofTabs pricingRules={pricingRulesLite} />
         </div>
 
         <section className="mx-auto mt-20 max-w-6xl px-4 pb-20 sm:px-6 lg:px-8">
@@ -679,7 +706,11 @@ export default async function HomePage() {
               <h3 className="mt-4 text-xl font-semibold text-text-primary">{pricing.title}</h3>
               <p className="mt-3 text-sm text-text-secondary">{pricing.body}</p>
               <div className="mt-5">
-                <PriceChip {...DEFAULT_MARKETING_SCENARIO} suffix={home.priceChipSuffix} />
+                <PriceChip
+                  {...DEFAULT_MARKETING_SCENARIO}
+                  suffix={home.priceChipSuffix}
+                  pricingRules={pricingRulesLite}
+                />
               </div>
               <Link
                 href="/pricing"

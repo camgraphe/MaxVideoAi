@@ -14,9 +14,13 @@ import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
 import { getEngineLocalized, type EngineLocalizedContent } from '@/lib/models/i18n';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { normalizeEngineId } from '@/lib/engine-alias';
+import type { EngineCaps } from '@/types/engines';
 import { type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { listExamples, getVideosByIds, type GalleryVideo } from '@/server/videos';
 import { FAQSchema } from '@/components/seo/FAQSchema';
+import { computePricingSnapshot } from '@/lib/pricing';
+import { applyEnginePricingOverride } from '@/lib/pricing-definition';
+import { listEnginePricingOverrides } from '@/server/engine-settings';
 import { serializeJsonLd } from '../model-jsonld';
 
 type PageParams = {
@@ -62,6 +66,7 @@ const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null
 
 type SpecSection = { title: string; items: string[] };
 type LocalizedFaqEntry = { question: string; answer: string };
+type QuickStartBlock = { title: string; subtitle?: string | null; steps: string[] };
 
 type SoraCopy = {
   heroTitle: string | null;
@@ -82,6 +87,8 @@ type SoraCopy = {
   whatIntro2: string | null;
   whatFlowTitle: string | null;
   whatFlowSteps: string[];
+  quickStartTitle: string | null;
+  quickStartBlocks: QuickStartBlock[];
   howToLatamTitle: string | null;
   howToLatamSteps: string[];
   specTitle: string | null;
@@ -116,6 +123,8 @@ type SoraCopy = {
   tipsTitle: string | null;
   strengths: string[];
   boundaries: string[];
+  troubleshootingTitle: string | null;
+  troubleshootingItems: string[];
   tipsFooter: string | null;
   safetyTitle: string | null;
   safetyRules: string[];
@@ -124,6 +133,8 @@ type SoraCopy = {
   comparisonTitle: string | null;
   comparisonPoints: string[];
   comparisonCta: string | null;
+  relatedCtaSora2: string | null;
+  relatedCtaSora2Pro: string | null;
   relatedTitle: string | null;
   relatedSubtitle: string | null;
   finalPara1: string | null;
@@ -261,6 +272,191 @@ function buildDetailSlugMap(slug: string) {
   }, {} as Record<AppLocale, string>);
 }
 
+const PRICING_SECTION_TITLES = {
+  en: 'Pricing',
+  fr: 'Tarifs',
+  es: 'Precios',
+} as const;
+
+const PRICING_SECTION_MATCH = new Set(['pricing', 'tarifs', 'precios']);
+const PRICING_EXTRA_MARKERS = ['exemples rapides', 'quick examples', 'ejemplos rápidos'];
+
+function formatPerSecond(locale: AppLocale, currency: string, amount: number) {
+  const region = localeRegions[locale] ?? 'en-US';
+  return new Intl.NumberFormat(region, {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+function formatCurrency(locale: AppLocale, currency: string, amount: number) {
+  const region = localeRegions[locale] ?? 'en-US';
+  return new Intl.NumberFormat(region, {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+function formatPricingLine(locale: AppLocale, amountLabel: string, resolution: string) {
+  const spacer = locale === 'en' ? 'at' : 'en';
+  return `${amountLabel}/s ${spacer} ${resolution}`;
+}
+
+function selectPricingResolutions(resolutions: string[]): string[] {
+  const preferred = ['720p', '1080p', '4k', '1440p', '768p', '512p'];
+  const byKey = new Map(resolutions.map((value) => [value.toLowerCase(), value]));
+  const ordered: string[] = [];
+  preferred.forEach((key) => {
+    const match = byKey.get(key);
+    if (match) ordered.push(match);
+  });
+  resolutions.forEach((value) => {
+    if (!ordered.includes(value)) ordered.push(value);
+  });
+  return ordered.slice(0, 3);
+}
+
+function parseDurationValue(raw: number | string | null | undefined): number | null {
+  if (raw == null) return null;
+  if (typeof raw === 'number' && Number.isFinite(raw) && raw > 0) {
+    return Math.round(raw);
+  }
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    if (!trimmed) return null;
+    const numeric = Number(trimmed.replace(/[^0-9.]/g, ''));
+    if (!Number.isFinite(numeric) || numeric <= 0) return null;
+    return Math.round(numeric);
+  }
+  return null;
+}
+
+function selectQuickDurations(engine: EngineCaps): number[] {
+  const durationField = engine.inputSchema?.optional?.find((field) =>
+    field.id === 'duration_seconds' || field.id === 'duration'
+  );
+  const values = new Set<number>();
+
+  if (Array.isArray(durationField?.values)) {
+    durationField.values.forEach((value) => {
+      const parsed = parseDurationValue(value);
+      if (parsed) values.add(parsed);
+    });
+  }
+
+  if (!values.size) {
+    const minRaw = typeof durationField?.min === 'number' ? durationField.min : 1;
+    const maxRaw = typeof durationField?.max === 'number' ? durationField.max : engine.maxDurationSec ?? minRaw;
+    const min = Math.max(1, Math.round(minRaw));
+    const max = Math.max(min, Math.round(maxRaw));
+    const mid = Math.round((min + max) / 2);
+    values.add(min);
+    values.add(mid);
+    values.add(max);
+  }
+
+  const sorted = Array.from(values).filter((value) => Number.isFinite(value) && value > 0).sort((a, b) => a - b);
+  if (sorted.length <= 3) return sorted;
+
+  const min = sorted[0];
+  const max = sorted[sorted.length - 1];
+  const mid = sorted[Math.floor(sorted.length / 2)];
+  return Array.from(new Set([min, mid, max]));
+}
+
+function resolveDefaultResolution(engine: EngineCaps): string | null {
+  const resolutionField = engine.inputSchema?.optional?.find((field) => field.id === 'resolution');
+  const defaultValue = typeof resolutionField?.default === 'string' ? resolutionField.default : null;
+  const allowedValues = Array.isArray(resolutionField?.values) ? resolutionField.values : [];
+  if (defaultValue && (!allowedValues.length || allowedValues.includes(defaultValue))) {
+    return defaultValue;
+  }
+  const fallback = (engine.resolutions ?? []).find((value) => value && value !== 'auto');
+  return fallback ?? null;
+}
+
+async function buildPricingItems(engine: EngineCaps, locale: AppLocale): Promise<string[]> {
+  const hasVideoMode = engine.modes?.some((mode) => ['t2v', 'i2v', 'r2v'].includes(mode));
+  if (!hasVideoMode) return [];
+  const resolutions = (engine.resolutions ?? []).filter((value) => value && value !== 'auto');
+  if (!resolutions.length) return [];
+
+  const targetResolutions = selectPricingResolutions(resolutions);
+  const requestedDuration = 5;
+  const items: string[] = [];
+
+  for (const resolution of targetResolutions) {
+    try {
+      const snapshot = await computePricingSnapshot({
+        engine,
+        durationSec: requestedDuration,
+        resolution,
+        membershipTier: 'member',
+      });
+      const seconds = typeof snapshot.base.seconds === 'number' ? snapshot.base.seconds : requestedDuration;
+      const perSecond = seconds > 0 ? snapshot.totalCents / seconds / 100 : snapshot.totalCents / 100;
+      const amountLabel = formatPerSecond(locale, snapshot.currency ?? 'USD', perSecond);
+      items.push(formatPricingLine(locale, amountLabel, resolution));
+    } catch {
+      // ignore pricing failures for marketing surface
+    }
+  }
+
+  return items;
+}
+
+async function buildQuickPricingItems(engine: EngineCaps, locale: AppLocale): Promise<string[]> {
+  const durations = selectQuickDurations(engine);
+  const resolution = resolveDefaultResolution(engine);
+  if (!durations.length || !resolution) return [];
+  const items: string[] = [];
+
+  for (const durationSec of durations) {
+    try {
+      const snapshot = await computePricingSnapshot({
+        engine,
+        durationSec,
+        resolution,
+        membershipTier: 'member',
+      });
+      const amountLabel = formatCurrency(locale, snapshot.currency ?? 'USD', snapshot.totalCents / 100);
+      items.push(`${durationSec}s: ${amountLabel}`);
+    } catch {
+      // ignore pricing failures for marketing surface
+    }
+  }
+
+  return items;
+}
+
+function extractPricingExtras(items: string[]): string[] {
+  const index = items.findIndex((item) => {
+    const normalized = item.trim().toLowerCase();
+    return PRICING_EXTRA_MARKERS.some((marker) => normalized.startsWith(marker));
+  });
+  if (index < 0) return [];
+  return items.slice(index);
+}
+
+function applyPricingSection(sections: SpecSection[], locale: AppLocale, pricingItems: string[]): SpecSection[] {
+  if (!pricingItems.length) return sections;
+  const title = PRICING_SECTION_TITLES[locale] ?? PRICING_SECTION_TITLES.en;
+  const index = sections.findIndex((section) =>
+    PRICING_SECTION_MATCH.has(section.title.trim().toLowerCase())
+  );
+  if (index < 0) {
+    return [...sections, { title, items: pricingItems }];
+  }
+  const next = [...sections];
+  const extras = extractPricingExtras(next[index].items);
+  next[index] = { ...next[index], items: extras.length ? [...pricingItems, ...extras] : pricingItems };
+  return next;
+}
+
 type DetailCopy = {
   backLabel: string;
   overviewTitle: string;
@@ -376,6 +572,23 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
       })
       .filter((section): section is SpecSection => Boolean(section));
   };
+  const getQuickStartBlocks = (): QuickStartBlock[] => {
+    const value = custom['quickStartBlocks'];
+    if (!Array.isArray(value)) return [];
+    return value.reduce<QuickStartBlock[]>((blocks, entry) => {
+      if (!entry || typeof entry !== 'object') return blocks;
+      const obj = entry as Record<string, unknown>;
+      const title = typeof obj.title === 'string' ? obj.title : null;
+      const subtitle = typeof obj.subtitle === 'string' ? obj.subtitle : null;
+      const stepsRaw = obj.steps;
+      const steps = Array.isArray(stepsRaw)
+        ? stepsRaw.map((item) => (typeof item === 'string' ? item : '')).filter(Boolean)
+        : [];
+      if (!title || !steps.length) return blocks;
+      blocks.push({ title, subtitle, steps });
+      return blocks;
+    }, []);
+  };
 
   const fallbackSpecSections = (): SpecSection[] => {
     if (!localized.technicalOverview || !localized.technicalOverview.length) return [];
@@ -442,6 +655,8 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
     whatIntro2: getString('whatIntro2'),
     whatFlowTitle: getString('whatFlowTitle'),
     whatFlowSteps: getStringArray('whatFlowSteps'),
+    quickStartTitle: getString('quickStartTitle'),
+    quickStartBlocks: getQuickStartBlocks(),
     howToLatamTitle: getString('howToLatamTitle'),
     howToLatamSteps: getStringArray('howToLatamSteps'),
     specTitle,
@@ -476,6 +691,8 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
     tipsTitle: getString('tipsTitle'),
     strengths: getStringArray('strengths'),
     boundaries: getStringArray('boundaries'),
+    troubleshootingTitle: getString('troubleshootingTitle'),
+    troubleshootingItems: getStringArray('troubleshootingItems'),
     tipsFooter: getString('tipsFooter'),
     safetyTitle: getString('safetyTitle'),
     safetyRules: getStringArray('safetyRules'),
@@ -484,6 +701,8 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
     comparisonTitle: getString('comparisonTitle'),
     comparisonPoints: getStringArray('comparisonPoints'),
     comparisonCta: getString('comparisonCta'),
+    relatedCtaSora2: getString('relatedCtaSora2'),
+    relatedCtaSora2Pro: getString('relatedCtaSora2Pro'),
     relatedTitle: getString('relatedTitle'),
     relatedSubtitle: getString('relatedSubtitle'),
     finalPara1: getString('finalPara1'),
@@ -673,6 +892,14 @@ async function renderSoraModelPage({
   const canonicalUrl = canonicalRaw.replace(/\/+$/, '') || canonicalRaw;
   const localizedCanonicalUrl = canonicalUrl;
   const copy = buildSoraCopy(localizedContent, engine.modelSlug);
+  const enginePricingOverrides = await listEnginePricingOverrides();
+  const pricingEngine = applyEnginePricingOverride(
+    engine.engine,
+    enginePricingOverrides[engine.engine.id]
+  );
+  const pricingItems = await buildPricingItems(pricingEngine, locale);
+  const computedQuickPricingItems = await buildQuickPricingItems(pricingEngine, locale);
+  const quickPricingItems = computedQuickPricingItems.length ? computedQuickPricingItems : copy.quickPricingItems;
   const backPath = (() => {
     try {
       const url = new URL(canonicalUrl);
@@ -782,6 +1009,8 @@ async function renderSoraModelPage({
       canonicalUrl={canonicalUrl}
       localizedCanonicalUrl={localizedCanonicalUrl}
       breadcrumb={breadcrumb}
+      pricingItems={pricingItems}
+      quickPricingItems={quickPricingItems}
     />
   );
 }
@@ -802,6 +1031,8 @@ function Sora2PageLayout({
   canonicalUrl,
   localizedCanonicalUrl,
   breadcrumb,
+  pricingItems,
+  quickPricingItems,
 }: {
   engine: FalEngineEntry;
   backLabel: string;
@@ -818,6 +1049,8 @@ function Sora2PageLayout({
   canonicalUrl: string;
   localizedCanonicalUrl: string;
   breadcrumb: DetailCopy['breadcrumb'];
+  pricingItems: string[];
+  quickPricingItems: string[];
 }) {
   const inLanguage = localeRegions[locale] ?? 'en-US';
   const resolvedBreadcrumb = breadcrumb ?? DEFAULT_DETAIL_COPY.breadcrumb;
@@ -856,11 +1089,12 @@ function Sora2PageLayout({
   const heroHighlights = copy.heroHighlights;
   const bestUseCases = copy.bestUseCases.length ? copy.bestUseCases : localizedContent.bestUseCases?.items ?? [];
   const whatFlowSteps = copy.whatFlowSteps;
+  const quickStartTitle = copy.quickStartTitle;
+  const quickStartBlocks = copy.quickStartBlocks;
   const howToLatamTitle = copy.howToLatamTitle;
   const howToLatamSteps = copy.howToLatamSteps;
-  const specSections = copy.specSections;
+  const specSections = applyPricingSection(copy.specSections, locale, pricingItems);
   const quickPricingTitle = copy.quickPricingTitle;
-  const quickPricingItems = copy.quickPricingItems;
   const promptPatternSteps = copy.promptPatternSteps.length
     ? copy.promptPatternSteps
     : localizedContent.promptStructure?.steps ?? [];
@@ -869,9 +1103,13 @@ function Sora2PageLayout({
   const miniFilmTips = copy.multishotTips;
   const strengths = copy.strengths;
   const boundaries = copy.boundaries;
+  const troubleshootingTitle = copy.troubleshootingTitle;
+  const troubleshootingItems = copy.troubleshootingItems;
   const safetyRules = copy.safetyRules;
   const safetyInterpretation = copy.safetyInterpretation;
   const comparisonPoints = copy.comparisonPoints;
+  const relatedCtaSora2 = copy.relatedCtaSora2;
+  const relatedCtaSora2Pro = copy.relatedCtaSora2Pro;
   const faqTitle = copy.faqTitle ?? 'FAQ';
   const faqList = faqEntries.map((entry) => ({
     question: entry.question,
@@ -1082,6 +1320,26 @@ function Sora2PageLayout({
           {copy.whatTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.whatTitle}</h2> : null}
           {copy.whatIntro1 ? <p className="text-base text-text-secondary">{copy.whatIntro1}</p> : null}
           {copy.whatIntro2 ? <p className="text-base text-text-secondary">{copy.whatIntro2}</p> : null}
+          {quickStartTitle && quickStartBlocks.length ? (
+            <div className="space-y-4 rounded-2xl border border-hairline bg-white/70 p-4 shadow-card">
+              <h3 className="text-base font-semibold text-text-primary">{quickStartTitle}</h3>
+              <div className="space-y-4">
+                {quickStartBlocks.map((block) => (
+                  <div key={block.title} className="space-y-2">
+                    <p className="text-sm font-semibold text-text-primary">
+                      {block.title}
+                      {block.subtitle ? <span className="text-text-secondary"> — {block.subtitle}</span> : null}
+                    </p>
+                    <ol className="list-decimal space-y-1 pl-5 text-sm text-text-secondary">
+                      {block.steps.map((step) => (
+                        <li key={step}>{step}</li>
+                      ))}
+                    </ol>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
           {whatFlowSteps.length ? (
             <>
               {copy.whatFlowTitle ? (
@@ -1359,6 +1617,16 @@ function Sora2PageLayout({
                 </div>
               ) : null}
             </div>
+            {troubleshootingTitle && troubleshootingItems.length ? (
+              <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+                <p className="text-sm font-semibold text-text-primary">{troubleshootingTitle}</p>
+                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                  {troubleshootingItems.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
             {copy.tipsFooter ? <p className="text-sm text-text-secondary">{copy.tipsFooter}</p> : null}
           </section>
         ) : null}
@@ -1446,7 +1714,13 @@ function Sora2PageLayout({
                       : entry.modelSlug === 'sora-2'
                         ? 'Explore Sora 2 →'
                         : copy.comparisonCta ?? 'View model →'
-                  : copy.comparisonCta ?? 'View model →';
+                    : engineSlug === 'wan-2-6'
+                      ? entry.modelSlug === 'sora-2'
+                        ? relatedCtaSora2 ?? secondaryCta ?? copy.comparisonCta ?? 'View model →'
+                        : entry.modelSlug === 'sora-2-pro'
+                          ? relatedCtaSora2Pro ?? copy.comparisonCta ?? 'View model →'
+                          : copy.comparisonCta ?? 'View model →'
+                      : copy.comparisonCta ?? 'View model →';
               return (
                 <article
                   key={entry.modelSlug}

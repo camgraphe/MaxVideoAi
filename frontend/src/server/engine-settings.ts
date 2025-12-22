@@ -64,6 +64,18 @@ export async function fetchEngineSettings(): Promise<Map<string, EngineSettingsR
   return new Map(rows.map((row) => [row.engine_id, row]));
 }
 
+export async function listEnginePricingOverrides(): Promise<Record<string, EnginePricingDetails>> {
+  if (!process.env.DATABASE_URL) return {};
+  const settings = await fetchEngineSettings();
+  const overrides: Record<string, EnginePricingDetails> = {};
+  settings.forEach((record, engineId) => {
+    if (record.pricing) {
+      overrides[engineId] = record.pricing;
+    }
+  });
+  return overrides;
+}
+
 export async function ensureEngineSettingsSeed(updatedBy?: string): Promise<void> {
   if (!process.env.DATABASE_URL) return;
   const rows = await query<{ count: string }>(`SELECT COUNT(*)::text as count FROM engine_settings`);

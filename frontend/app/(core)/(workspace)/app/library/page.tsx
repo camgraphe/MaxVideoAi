@@ -134,7 +134,11 @@ export default function LibraryPage() {
     activeSource === 'all'
       ? '/api/user-assets?limit=200'
       : `/api/user-assets?limit=200&source=${encodeURIComponent(activeSource)}`,
-    fetcher
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 60_000,
+    }
   );
   const assets = assetsData?.assets ?? [];
   const [deletingId, setDeletingId] = useState<string | null>(null);

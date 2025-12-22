@@ -1,4 +1,11 @@
-import { cloneEngine, getBaseEngines, normalizeMemberTier, toItemization } from '@/lib/engines';
+import {
+  cloneEngine,
+  getBaseEngines,
+  getBaseEnginesByCategory,
+  normalizeMemberTier,
+  toItemization,
+  type EngineCategory,
+} from '@/lib/engines';
 import { computePricingSnapshot } from '@/lib/pricing';
 import type { EngineCaps, EnginePricing, EnginePricingDetails } from '@/types/engines';
 import { fetchEngineOverrides } from '@/server/engine-overrides';
@@ -129,8 +136,10 @@ function mergeEngine(
   return { engine: clone, disabled };
 }
 
-export async function getConfiguredEngines(includeDisabled = false): Promise<EngineCaps[]> {
-  const baseEngines = getBaseEngines();
+async function getConfiguredEnginesForBase(
+  baseEngines: EngineCaps[],
+  includeDisabled = false
+): Promise<EngineCaps[]> {
   if (!process.env.DATABASE_URL) {
     return includeDisabled ? baseEngines.map(cloneEngine) : baseEngines.map(cloneEngine);
   }
@@ -145,6 +154,19 @@ export async function getConfiguredEngines(includeDisabled = false): Promise<Eng
     .map((engine) => mergeEngine(engine, settingsMap, overridesMap))
     .filter((entry) => includeDisabled || !entry.disabled)
     .map((entry) => entry.engine);
+}
+
+export async function getConfiguredEnginesByCategory(
+  category: EngineCategory = 'video',
+  includeDisabled = false
+): Promise<EngineCaps[]> {
+  const baseEngines = getBaseEnginesByCategory(category);
+  return getConfiguredEnginesForBase(baseEngines, includeDisabled);
+}
+
+export async function getConfiguredEngines(includeDisabled = false): Promise<EngineCaps[]> {
+  const baseEngines = getBaseEngines();
+  return getConfiguredEnginesForBase(baseEngines, includeDisabled);
 }
 
 export async function getConfiguredEngine(engineId: string): Promise<EngineCaps | undefined> {

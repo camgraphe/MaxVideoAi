@@ -2,14 +2,15 @@
 
 import { useEffect, useId, useMemo, useState } from 'react';
 import clsx from 'clsx';
-import type { EngineAvailability, EngineCaps, EngineInputField, Mode } from '@/types/engines';
-import type { MemberTier as PricingMemberTier } from '@maxvideoai/pricing';
-import type { PricingKernel } from '@maxvideoai/pricing';
+import type { EngineAvailability, EngineCaps, EngineInputField, EnginePricingDetails, Mode } from '@/types/engines';
+import { computePricingSnapshot, type MemberTier as PricingMemberTier, type PricingKernel } from '@maxvideoai/pricing';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { AVAILABILITY_BADGE_CLASS } from '@/lib/availability';
 import { getPartnerByEngineId } from '@/lib/brand-partners';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
+import { selectPricingRule, type PricingRuleLite } from '@/lib/pricing-rules';
+import { applyEnginePricingOverride, buildPricingDefinition } from '@/lib/pricing-definition';
 
 type MemberTier = 'Member' | 'Plus' | 'Pro';
 
@@ -31,6 +32,7 @@ interface EngineOption {
   audioToggle: boolean;
   audioAddonKey?: string | null;
   pricingEngineId: string;
+  pricingEngineCaps?: EngineCaps;
   sortIndex: number;
   baseEngineId: string;
   showDuration: boolean;
@@ -38,6 +40,8 @@ interface EngineOption {
 
 interface PriceEstimatorProps {
   variant?: 'full' | 'lite';
+  pricingRules?: PricingRuleLite[];
+  enginePricingOverrides?: Record<string, EnginePricingDetails | null | undefined>;
 }
 
 const MEMBER_ORDER: MemberTier[] = ['Member', 'Plus', 'Pro'];
@@ -196,22 +200,25 @@ function collectDurationOptions(
 function buildEngineOption(
   entry: FalEngineEntry,
   engineCaps: EngineCaps,
+  pricingEngineCaps: EngineCaps,
   kernel: PricingKernel,
   descriptions: Record<string, string>,
-  overrides?: EngineOptionOverrides
+  overrides?: EngineOptionOverrides,
+  pricingRules?: PricingRuleLite[]
 ): EngineOption | null {
   if (entry.availability === 'paused') {
     return null;
   }
 
   const pricingEngineId = overrides?.pricingEngineId ?? entry.id;
-  const definition = kernel.getDefinition(pricingEngineId);
+  const definition = buildPricingDefinition(pricingEngineCaps) ?? kernel.getDefinition(pricingEngineId);
   const optionId = overrides?.idOverride ?? entry.id;
   const labelOverride = overrides?.labelOverride;
-  const perSecond = engineCaps.pricingDetails?.perSecondCents;
+  const perSecond = pricingEngineCaps.pricingDetails?.perSecondCents ?? engineCaps.pricingDetails?.perSecondCents;
   const perSecondDefault = centsToDollars(perSecond?.default);
-  const platformFeePct = definition?.platformFeePct ?? 0;
-  const platformMultiplier = 1 + platformFeePct;
+  const engineRule = pricingRules ? selectPricingRule(pricingRules, pricingEngineId, null) : null;
+  const defaultMarginPct = engineRule?.marginPercent ?? definition?.platformFeePct ?? 0;
+  const defaultMultiplier = 1 + defaultMarginPct;
   const resolutionSources = engineCaps.resolutions?.length
     ? engineCaps.resolutions
     : definition
@@ -223,10 +230,15 @@ function buildEngineOption(
   let rates: Array<{ value: string; label: string; rate: number }>;
 
   if (perImageConfig) {
-    rates = perImageConfig.rates;
+    rates = perImageConfig.rates.map((rate) => ({
+      ...rate,
+      rate: rate.rate * defaultMultiplier,
+    }));
   } else {
     rates = resolutionSources
       .map((resolution) => {
+        const rule = pricingRules ? selectPricingRule(pricingRules, pricingEngineId, resolution) : null;
+        const platformMultiplier = 1 + (rule?.marginPercent ?? defaultMarginPct);
         if (definition) {
           const multiplier =
             definition.resolutionMultipliers[resolution] ?? definition.resolutionMultipliers.default ?? 1;
@@ -247,7 +259,7 @@ function buildEngineOption(
         {
           value: 'default',
           label: 'DEFAULT',
-          rate: fallbackRate * platformMultiplier,
+          rate: fallbackRate * defaultMultiplier,
         },
       ];
     }
@@ -302,7 +314,7 @@ function buildEngineOption(
     durationOptions,
     defaultDuration,
     resolutions: rates,
-    currency: definition?.currency ?? engineCaps.pricingDetails?.currency ?? 'USD',
+    currency: engineRule?.currency ?? definition?.currency ?? engineCaps.pricingDetails?.currency ?? 'USD',
     availability: entry.availability,
     availabilityLink,
     showResolution: !perImageConfig,
@@ -311,6 +323,7 @@ function buildEngineOption(
     audioToggle,
     audioAddonKey,
     pricingEngineId,
+    pricingEngineCaps,
     sortIndex,
     baseEngineId: entry.id,
     showDuration: overrides?.showDuration ?? !perImageConfig,
@@ -325,7 +338,7 @@ function formatCurrency(value: number, currency: string) {
   }).format(value);
 }
 
-export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
+export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOverrides }: PriceEstimatorProps) {
   const engineId = useId();
   const durationId = useId();
   const resolutionId = useId();
@@ -348,6 +361,16 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
 
   const descriptions = dictionary.pricing.estimator.descriptions;
   const availabilityLabels = dictionary.models.availabilityLabels;
+  const pricingEngineMap = useMemo(() => {
+    const map = new Map<string, EngineCaps>();
+    FAL_ENGINE_REGISTRY.forEach((entry) => {
+      if (!entry.engine) return;
+      const override = enginePricingOverrides?.[entry.id];
+      const adjusted = override ? applyEnginePricingOverride(entry.engine, override) : entry.engine;
+      map.set(entry.id, adjusted);
+    });
+    return map;
+  }, [enginePricingOverrides]);
 
   const engineOptions = useMemo(() => {
     const options: EngineOption[] = [];
@@ -359,19 +382,21 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
       if (!engineCaps.modes?.some((mode) => SUPPORTED_MODES.has(mode))) {
         return;
       }
-      const baseOption = buildEngineOption(entry, engineCaps, kernel, descriptions);
+      const pricingEngineCaps = pricingEngineMap.get(entry.id) ?? engineCaps;
+      const baseOption = buildEngineOption(entry, engineCaps, pricingEngineCaps, kernel, descriptions, undefined, pricingRules);
       if (baseOption && baseOption.availability !== 'paused') {
         options.push(baseOption);
       }
       if (entry.id === 'veo-3-1-first-last') {
-        const fastOption = buildEngineOption(entry, engineCaps, kernel, descriptions, {
+        const fastPricingCaps = pricingEngineMap.get('veo-3-1-fast') ?? engineCaps;
+        const fastOption = buildEngineOption(entry, engineCaps, fastPricingCaps, kernel, descriptions, {
           idOverride: 'veo-3-1-first-last-fast',
           labelOverride: `${entry.marketingName} (Fast)`,
           descriptionOverride:
             descriptions['veo-3-1-first-last-fast'] ?? descriptions[entry.id] ?? entry.seo.description ?? entry.marketingName,
           pricingEngineId: 'veo-3-1-fast',
           sortIndexOverride: (FAL_ENGINE_ORDER.get(entry.id) ?? Number.MAX_SAFE_INTEGER) + 0.1,
-        });
+        }, pricingRules);
         if (fastOption && fastOption.availability !== 'paused') {
           options.push(fastOption);
         }
@@ -400,7 +425,7 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
       const orderB = b.sortIndex;
       return orderA - orderB;
     });
-  }, [descriptions, kernel]);
+  }, [descriptions, kernel, pricingRules, pricingEngineMap]);
 
   const [selectedEngineId, setSelectedEngineId] = useState(() => engineOptions[0]?.id ?? '');
   const selectedEngine = useMemo(() => engineOptions.find((option) => option.id === selectedEngineId) ?? engineOptions[0], [engineOptions, selectedEngineId]);
@@ -480,21 +505,38 @@ export function PriceEstimator({ variant = 'full' }: PriceEstimatorProps) {
 
   const pricingMemberTier = (memberTier.toLowerCase() as PricingMemberTier);
 
+  const pricingRule = useMemo(() => {
+    if (!selectedEngine) return null;
+    return selectPricingRule(pricingRules, selectedEngine.pricingEngineId, selectedResolution);
+  }, [pricingRules, selectedEngine, selectedResolution]);
+
   const pricingQuote = useMemo(() => {
     if (!selectedEngine || bypassPricing) return null;
+    const pricingCaps = selectedEngine.pricingEngineCaps ?? null;
+    const baseDefinition = pricingCaps ? buildPricingDefinition(pricingCaps) : null;
+    const fallbackDefinition = baseDefinition ?? kernel.getDefinition(selectedEngine.pricingEngineId);
+    if (!fallbackDefinition) return null;
     try {
       const addons = buildAudioAddonPayload(selectedEngine.audioAddonKey, audioEnabled);
-      return kernel.quote({
+      const definition = pricingRule
+        ? {
+            ...fallbackDefinition,
+            platformFeePct: pricingRule.marginPercent ?? fallbackDefinition.platformFeePct,
+            platformFeeFlatCents: pricingRule.marginFlatCents ?? fallbackDefinition.platformFeeFlatCents,
+            currency: pricingRule.currency ?? fallbackDefinition.currency,
+          }
+        : fallbackDefinition;
+      return computePricingSnapshot(definition, {
         engineId: selectedEngine.pricingEngineId,
         durationSec: duration,
         resolution: selectedResolution,
         memberTier: pricingMemberTier,
         ...(addons ? { addons } : {}),
-      });
+      }).quote;
     } catch {
       return null;
     }
-  }, [kernel, selectedEngine, duration, selectedResolution, pricingMemberTier, bypassPricing, audioEnabled]);
+  }, [kernel, selectedEngine, duration, selectedResolution, pricingMemberTier, bypassPricing, audioEnabled, pricingRule]);
 
   const pricingSnapshot = bypassPricing ? null : pricingQuote?.snapshot ?? null;
   const manualPricing = useMemo(() => {

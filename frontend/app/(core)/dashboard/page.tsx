@@ -4,6 +4,7 @@
 import clsx from 'clsx';
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { forwardRef, type Ref, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { HeaderBar } from '@/components/HeaderBar';
@@ -15,12 +16,11 @@ import type { GroupSummary } from '@/types/groups';
 import type { Job } from '@/types/jobs';
 import type { EngineCaps, Mode } from '@/types/engines';
 import { CURRENCY_LOCALE } from '@/lib/intl';
-import { MediaLightbox, type MediaLightboxEntry } from '@/components/MediaLightbox';
+import type { MediaLightboxEntry } from '@/components/MediaLightbox';
 import { EngineSelect } from '@/components/ui/EngineSelect';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { authFetch } from '@/lib/authFetch';
-import { listFalEngines } from '@/config/falEngines';
 
 const NEW_USER_ENGINE_ID = 'sora-2';
 const STORAGE_KEYS = {
@@ -34,7 +34,11 @@ const IN_PROGRESS_POLL_MS = 5000;
 const IN_PROGRESS_LIMIT = 8;
 const RECENT_SAMPLE_LIMIT = 20;
 const TEMPLATE_LIMIT = 6;
-const IMAGE_ENGINE_REGISTRY = listFalEngines().filter((entry) => (entry.category ?? 'video') === 'image');
+
+const MediaLightbox = dynamic(
+  () => import('@/components/MediaLightbox').then((mod) => mod.MediaLightbox),
+  { ssr: false }
+);
 
 const DEFAULT_DASHBOARD_COPY = {
   create: {
@@ -157,6 +161,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const { loading: authLoading } = useRequireAuth();
   const { data: enginesData, error: enginesError } = useEngines();
+  const { data: imageEnginesData } = useEngines('image');
   const {
     data: jobsPages,
     isLoading,
@@ -187,7 +192,7 @@ export default function DashboardPage() {
     return (enginesData?.engines ?? []).filter((engine) => isEngineAvailable(engine));
   }, [enginesData?.engines]);
 
-  const imageEngines = useMemo(() => IMAGE_ENGINE_REGISTRY.map((entry) => entry.engine), []);
+  const imageEngines = useMemo(() => imageEnginesData?.engines ?? [], [imageEnginesData?.engines]);
   const availableImageEngines = useMemo(() => {
     return imageEngines.filter((engine) => isEngineAvailable(engine) && supportsImageModes(engine));
   }, [imageEngines]);
@@ -579,15 +584,13 @@ export default function DashboardPage() {
     router.push('/app/image');
   }, [router]);
 
-  const handleStartFromVideoTemplate = useCallback(() => {
-    if (quickStartRef.current) {
-      quickStartRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+  const pushTemplateEntry = useCallback((entry: TemplateEntry) => {
+    setTemplates((prev) => {
+      const next = [entry, ...prev.filter((item) => item.id !== entry.id)].slice(0, TEMPLATE_LIMIT);
+      writeTemplates(next);
+      return next;
+    });
   }, []);
-
-  const handleStartFromImageTemplate = useCallback(() => {
-    router.push('/app/image');
-  }, [router]);
 
   const handleSaveTemplate = useCallback(
     (group: GroupSummary) => {
@@ -618,13 +621,9 @@ export default function DashboardPage() {
         currency: group.hero.currency ?? heroJob?.currency ?? null,
         createdAt: group.createdAt ?? null,
       };
-      setTemplates((prev) => {
-        const next = [entry, ...prev.filter((item) => item.id !== entry.id)].slice(0, TEMPLATE_LIMIT);
-        writeTemplates(next);
-        return next;
-      });
+      pushTemplateEntry(entry);
     },
-    [copy.quickStarts.defaultTitle]
+    [copy.quickStarts.defaultTitle, pushTemplateEntry]
   );
 
   const handleUseTemplate = useCallback(
@@ -641,6 +640,38 @@ export default function DashboardPage() {
       return next;
     });
   }, []);
+
+  const handleRemixEntry = useCallback(
+    (entry: MediaLightboxEntry) => {
+      const jobId = entry.jobId ?? entry.id;
+      if (!jobId) return;
+      router.push(`/app?job=${encodeURIComponent(jobId)}`);
+    },
+    [router]
+  );
+
+  const handleTemplateEntry = useCallback(
+    (entry: MediaLightboxEntry) => {
+      if (entry.curated) return;
+      const jobId = entry.jobId ?? entry.id;
+      if (!jobId) return;
+      const template: TemplateEntry = {
+        id: jobId,
+        prompt: entry.prompt ?? copy.quickStarts.defaultTitle,
+        engineLabel: entry.engineLabel ?? null,
+        engineId: entry.engineId ?? null,
+        thumbUrl: entry.thumbUrl ?? null,
+        durationSec: typeof entry.durationSec === 'number' ? entry.durationSec : null,
+        aspectRatio: entry.aspectRatio ?? null,
+        hasAudio: typeof entry.hasAudio === 'boolean' ? entry.hasAudio : null,
+        priceCents: typeof entry.priceCents === 'number' ? entry.priceCents : null,
+        currency: entry.currency ?? null,
+        createdAt: entry.createdAt ?? null,
+      };
+      pushTemplateEntry(template);
+    },
+    [copy.quickStarts.defaultTitle, pushTemplateEntry]
+  );
 
   if (authLoading) {
     return null;
@@ -672,10 +703,8 @@ export default function DashboardPage() {
                 onImageEngineChange={handleImageEngineChange}
                 onNewVideo={handleNewVideo}
                 onUseLastVideoSettings={handleUseLastVideoSettings}
-                onStartFromVideoTemplate={handleStartFromVideoTemplate}
                 onNewImage={handleNewImage}
                 onUseLastImageSettings={handleUseLastImageSettings}
-                onStartFromImageTemplate={handleStartFromImageTemplate}
               />
 
               <InProgressList
@@ -767,6 +796,10 @@ export default function DashboardPage() {
               : buildEntriesFromJob(lightbox.job)
           }
           onClose={() => setLightbox(null)}
+          onRemixEntry={handleRemixEntry}
+          remixLabel={copy.actions.remix}
+          onUseTemplate={handleTemplateEntry}
+          templateLabel={copy.actions.template}
           onRefreshEntry={(entry) => {
             const jobId = entry.jobId ?? entry.id;
             if (!jobId) return;
@@ -796,10 +829,8 @@ function CreateHero({
   onImageEngineChange,
   onNewVideo,
   onUseLastVideoSettings,
-  onStartFromVideoTemplate,
   onNewImage,
   onUseLastImageSettings,
-  onStartFromImageTemplate,
 }: {
   copy: DashboardCopy;
   videoEngines: EngineCaps[];
@@ -818,10 +849,8 @@ function CreateHero({
   onImageEngineChange: (engineId: string) => void;
   onNewVideo: () => void;
   onUseLastVideoSettings: () => void;
-  onStartFromVideoTemplate: () => void;
   onNewImage: () => void;
   onUseLastImageSettings: () => void;
-  onStartFromImageTemplate: () => void;
 }) {
   return (
     <section className="rounded-card border border-border bg-white p-5 shadow-card">
@@ -844,7 +873,6 @@ function CreateHero({
           onEngineChange={onVideoEngineChange}
           onNew={onNewVideo}
           onUseLast={onUseLastVideoSettings}
-          onStartFromTemplate={onStartFromVideoTemplate}
         />
         <CreateImageCard
           copy={copy}
@@ -857,7 +885,6 @@ function CreateHero({
           onEngineChange={onImageEngineChange}
           onNew={onNewImage}
           onUseLast={onUseLastImageSettings}
-          onStartFromTemplate={onStartFromImageTemplate}
         />
       </div>
     </section>
@@ -875,7 +902,6 @@ function CreateVideoCard({
   onEngineChange,
   onNew,
   onUseLast,
-  onStartFromTemplate,
 }: {
   copy: DashboardCopy;
   engines: EngineCaps[];
@@ -887,13 +913,27 @@ function CreateVideoCard({
   onEngineChange: (engineId: string) => void;
   onNew: () => void;
   onUseLast: () => void;
-  onStartFromTemplate: () => void;
 }) {
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold text-text-primary">{copy.create.videoTitle}</h2>
-        <p className="mt-1 text-sm text-text-secondary">{copy.create.videoSubtitle}</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold text-text-primary">{copy.create.videoTitle}</h2>
+          <p className="mt-1 text-sm text-text-secondary">{copy.create.videoSubtitle}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onNew}
+          disabled={!canStart}
+          className={clsx(
+            'rounded-input px-5 py-3 text-base font-semibold transition',
+            canStart
+              ? 'bg-accent text-white hover:bg-accent/90'
+              : 'cursor-not-allowed bg-neutral-200 text-text-muted'
+          )}
+        >
+          {copy.create.newVideo}
+        </button>
       </div>
       <EngineSelect
         engines={engines}
@@ -909,19 +949,6 @@ function CreateVideoCard({
         }}
       />
       <div className="flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          onClick={onNew}
-          disabled={!canStart}
-          className={clsx(
-            'rounded-input px-4 py-2 text-sm font-semibold transition',
-            canStart
-              ? 'bg-accent text-white hover:bg-accent/90'
-              : 'cursor-not-allowed bg-neutral-200 text-text-muted'
-          )}
-        >
-          {copy.create.newVideo}
-        </button>
         {hasStoredForm ? (
           <button
             type="button"
@@ -931,13 +958,6 @@ function CreateVideoCard({
             {copy.create.useLastVideo}
           </button>
         ) : null}
-        <button
-          type="button"
-          onClick={onStartFromTemplate}
-          className="rounded-input border border-border px-4 py-2 text-sm font-semibold text-text-secondary transition hover:border-accentSoft/60 hover:bg-accentSoft/10"
-        >
-          {copy.create.startVideoTemplate}
-        </button>
       </div>
     </div>
   );
@@ -954,7 +974,6 @@ function CreateImageCard({
   onEngineChange,
   onNew,
   onUseLast,
-  onStartFromTemplate,
 }: {
   copy: DashboardCopy;
   engines: EngineCaps[];
@@ -966,13 +985,27 @@ function CreateImageCard({
   onEngineChange: (engineId: string) => void;
   onNew: () => void;
   onUseLast: () => void;
-  onStartFromTemplate: () => void;
 }) {
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold text-text-primary">{copy.create.imageTitle}</h2>
-        <p className="mt-1 text-sm text-text-secondary">{copy.create.imageSubtitle}</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold text-text-primary">{copy.create.imageTitle}</h2>
+          <p className="mt-1 text-sm text-text-secondary">{copy.create.imageSubtitle}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onNew}
+          disabled={!canStart}
+          className={clsx(
+            'rounded-input px-5 py-3 text-base font-semibold transition',
+            canStart
+              ? 'bg-accent text-white hover:bg-accent/90'
+              : 'cursor-not-allowed bg-neutral-200 text-text-muted'
+          )}
+        >
+          {copy.create.newImage}
+        </button>
       </div>
       <EngineSelect
         engines={engines}
@@ -988,19 +1021,6 @@ function CreateImageCard({
         showBillingNote={false}
       />
       <div className="flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          onClick={onNew}
-          disabled={!canStart}
-          className={clsx(
-            'rounded-input px-4 py-2 text-sm font-semibold transition',
-            canStart
-              ? 'bg-accent text-white hover:bg-accent/90'
-              : 'cursor-not-allowed bg-neutral-200 text-text-muted'
-          )}
-        >
-          {copy.create.newImage}
-        </button>
         {hasStoredForm ? (
           <button
             type="button"
@@ -1010,13 +1030,6 @@ function CreateImageCard({
             {copy.create.useLastImage}
           </button>
         ) : null}
-        <button
-          type="button"
-          onClick={onStartFromTemplate}
-          className="rounded-input border border-border px-4 py-2 text-sm font-semibold text-text-secondary transition hover:border-accentSoft/60 hover:bg-accentSoft/10"
-        >
-          {copy.create.startImageTemplate}
-        </button>
       </div>
     </div>
   );
@@ -1432,9 +1445,14 @@ function buildEntriesFromJob(job: Job): MediaLightboxEntry[] {
       progress: typeof job.progress === 'number' ? job.progress : null,
       message: job.message ?? null,
       engineLabel: job.engineLabel,
+      engineId: job.engineId ?? null,
       durationSec: job.durationSec,
       createdAt: job.createdAt,
       hasAudio: Boolean(job.hasAudio),
+      prompt: job.prompt ?? null,
+      priceCents: getJobCostCents(job),
+      currency: job.currency ?? null,
+      curated: Boolean(job.curated),
     },
   ];
 }
@@ -1454,9 +1472,14 @@ function buildEntriesFromGroup(group: GroupSummary, versionLabel: string): Media
     progress: typeof member.progress === 'number' ? member.progress : null,
     message: member.message ?? null,
     engineLabel: member.engineLabel,
+    engineId: member.engineId ?? null,
     durationSec: member.durationSec,
     createdAt: member.createdAt,
     hasAudio: Boolean(member.job?.hasAudio),
+    prompt: member.prompt ?? group.hero.prompt ?? null,
+    priceCents: typeof member.priceCents === 'number' ? member.priceCents : null,
+    currency: member.currency ?? group.currency ?? null,
+    curated: Boolean(member.job?.curated),
   }));
 }
 

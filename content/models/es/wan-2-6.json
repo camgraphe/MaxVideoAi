@@ -3,21 +3,21 @@
   "versionLabel": "2.6",
   "seo": {
     "title": "Wan 2.6 – Generador de video IA (Texto, Imagen y Referencia) | MaxVideoAI",
-    "description": "Genera clips cinematográficos de 5–15 s con Wan 2.6 en MaxVideoAI. Prompts multi-shot, animación de un still, o consistencia de sujeto con 1–3 videos de referencia. 720p/1080p, precio por segundo.",
+    "description": "Genera clips cinematográficos de 5–15 s (Texto/Imagen) con Wan 2.6 en MaxVideoAI. Prompts multi-shot, animación de un still, o consistencia de sujeto con 1–3 videos de referencia (5–10 s). 720p/1080p, precio por segundo.",
     "image": "/hero/wan-26.jpg"
   },
-  "overview": "Wan 2.6 en MaxVideoAI: clips cortos multi-shot de 5–15 s desde texto o imagen, más modo referencia para consistencia de sujeto. Salida 720p/1080p, audio opcional en T2V/I2V, pago por uso.",
+  "overview": "Wan 2.6 en MaxVideoAI: clips cortos multi-shot de 5–15 s desde texto o imagen, más modo referencia (5–10 s) para consistencia de sujeto. Salida 720p/1080p, audio opcional en T2V/I2V, pago por uso.",
   "hero": {
-    "title": "Wan 2.6 – Video IA multi-shot con modos Texto, Imagen y Referencia (720p/1080p, 5–15 s)",
+    "title": "Wan 2.6 – Video IA multi-shot (Texto/Imagen 5–15 s, Referencia 5–10 s, 720p/1080p)",
     "intro": "Clips cortos cinematográficos pensados para prompts estructurados, transiciones limpias y sujetos coherentes.",
-    "badge": "720p/1080p · 5–15 s · Entrada texto / imagen / referencia · Audio opcional (T2V/I2V)",
+    "badge": "720p/1080p · Texto/Imagen 5–15 s · Referencia 5–10 s · Audio opcional (T2V/I2V)",
     "ctaPrimary": {
       "label": "Empezar con Wan 2.6",
       "href": "/app?engine=wan-2-6"
     },
     "secondaryLinks": [
       {
-        "label": "Comparar Wan 2.6 vs Wan 2.5 →",
+        "label": "Comparar Wan 2.6 vs Sora 2 →",
         "href": "/models/wan-2-5"
       }
     ]
@@ -38,7 +38,7 @@
     { "label": "Ratios", "body": "T2V/R2V: 16:9, 9:16, 1:1, 4:3, 3:4 · I2V: auto desde la imagen" },
     { "label": "Entradas", "body": "Prompts de texto, un still, o 1–3 videos de referencia" },
     { "label": "Audio", "body": "URL de audio opcional en T2V/I2V; desactivado en R2V" },
-    { "label": "Precios", "body": "0,10 $/s (720p), 0,15 $/s (1080p)" }
+    { "label": "Precios", "body": "0,13 $/s (720p), 0,20 $/s (1080p)" }
   ],
   "promptStructure": {
     "title": "Promptear Wan 2.6",
@@ -106,7 +106,7 @@
       "1. Elige Wan 2.6.",
       "2. Selecciona Texto → Video, Imagen → Video o Referencia → Video.",
       "3. Ajusta duración, resolución y ratio (T2V/R2V).",
-      "4. Opcional: negative prompt o seed.",
+      "4. Opcional: seed.",
       "5. Opcional: audio de fondo (T2V/I2V).",
       "6. Ve el precio final antes de renderizar."
     ],
@@ -126,7 +126,7 @@
         "title": "Imagen → Video",
         "items": [
           "Entrada: 1 still obligatorio",
-          "Duración: 5 / 10 / 15 s",
+          "Duración: 5 / 10 s",
           "Resolución: 720p / 1080p",
           "Ratio automático desde la imagen",
           "URL de audio opcional (WAV/MP3)"
@@ -145,8 +145,11 @@
       {
         "title": "Precios",
         "items": [
-          "0,10 $/s en 720p",
-          "0,15 $/s en 1080p"
+          "0,13 $/s en 720p",
+          "0,20 $/s en 1080p",
+          "Ejemplos rápidos",
+          "720p: 0,13 $/s → 5 s = 0,65 $ · 10 s = 1,30 $ · 15 s = 1,95 $",
+          "1080p: 0,20 $/s → 5 s = 1,00 $ · 10 s = 2,00 $ · 15 s = 3,00 $"
         ]
       }
     ],
@@ -161,6 +164,17 @@
     ],
     "promptSkeleton": "Plano 1 [0-3s] ... Plano 2 [3-8s] ... Plano 3 [8-15s] ... luz, cámara, movimiento.",
     "promptSkeletonNote": "En R2V, coloca @Video1/@Video2/@Video3 para anclar los sujetos.",
+    "demoTitle": "Ejemplo listo para renderizar",
+    "demoPromptLabel": "Ejemplo listo para renderizar (multi-shot, 15 s, 16:9, 1080p)",
+    "demoPrompt": [
+      "Look global: thriller elegante, noche lluviosa, neón suave, 35mm, grano fino, profundidad de campo cinemática, cámara fluida, paleta azul/ámbar.",
+      "Plano 1 [0–4s]: travelling lento por un callejón mojado, reflejos en el suelo, una silueta al fondo, atmósfera brumosa.",
+      "Plano 2 [4–10s]: corte a primer plano de manos abriendo un sobre sellado sobre una mesa de madera, luz cálida lateral, foco muy corto.",
+      "Plano 3 [10–15s]: una puerta se abre a una sala blanca sobreexpuesta, destello de luz, polvo fino en el haz, fundido a negro."
+    ],
+    "demoNotes": [
+      "Opción de audio: URL de una capa ambient suave (3–15 s), volumen bajo."
+    ],
     "tipsTitle": "Consejos y limitaciones",
     "strengths": [
       "Control multi-shot para mini narrativas",
@@ -179,6 +193,8 @@
       "Wan 2.5 incluye opción 480p y audio nativo"
     ],
     "comparisonCta": "Comparar Wan 2.6 vs Wan 2.5 →",
+    "relatedCtaSora2": "Comparar Wan 2.6 vs Sora 2 →",
+    "relatedCtaSora2Pro": "Comparar Wan 2.6 vs Sora 2 Pro →",
     "faqTitle": "FAQ – Wan 2.6 en MaxVideoAI",
     "faqs": [
       { "q": "¿Wan 2.6 soporta audio?", "a": "URL de audio opcional en modos Texto e Imagen. El modo Referencia no soporta audio subido." },
@@ -189,6 +205,46 @@
     "relatedSubtitle": "Compara precio, latencia y opciones de salida en el catálogo MaxVideoAI.",
     "finalPara1": "Wan 2.6 está diseñado para secuencias cortas con control multi-shot.",
     "finalPara2": "Empieza con texto o imagen y luego pasa a referencia para consistencia.",
-    "finalButton": "Abrir Wan 2.6 en Generate →"
+    "finalButton": "Abrir Wan 2.6 en Generate →",
+    "galleryIntro": "Los ejemplos de Wan 2.6 llegarán pronto.",
+    "quickStartTitle": "Inicio rápido (1 minuto)",
+    "quickStartBlocks": [
+      {
+        "title": "Texto → Video (T2V)",
+        "subtitle": "la forma más rápida de testear una idea",
+        "steps": [
+          "Elige 10 s, 720p, ratio 16:9 (seguro)",
+          "Describe: sujeto + lugar + luz + estilo de cámara",
+          "Añade 2–3 beats con timestamps si quieres multi-shot",
+          "Si el mood está bien → relanza en 1080p"
+        ]
+      },
+      {
+        "title": "Imagen → Video (I2V)",
+        "subtitle": "perfecto para animar un key visual",
+        "steps": [
+          "Sube la imagen (el ratio se adapta automáticamente)",
+          "Indica sobre todo el movimiento (cámara + sujeto) y microdetalles (viento, reflejos, polvo…)",
+          "10–15 s = sensación más premium (más respiración)"
+        ]
+      },
+      {
+        "title": "Referencia → Video (R2V)",
+        "subtitle": "para bloquear identidad / coherencia",
+        "steps": [
+          "Sube 1–3 videos (ángulos variados, mismo sujeto)",
+          "En el prompt, etiqueta @Video1 / @Video2 / @Video3",
+          "Pide un plano simple (no una película completa)",
+          "Empieza en 5–10 s (máx. 10 s) para maximizar coherencia"
+        ]
+      }
+    ],
+    "troubleshootingTitle": "Problemas frecuentes (fix rápido)",
+    "troubleshootingItems": [
+      "El sujeto cambia / drift → prompts más cortos + menos beats + pasa a Referencia con 2 videos mejor encuadrados",
+      "Cámara demasiado nerviosa → cambia \"dynamic\" por \"slow, smooth, controlled\" + especifica \"plano único\"",
+      "Planos incoherentes entre beats → repite las mismas anclas (óptica, lugar, hora, vestuario) en cada beat",
+      "Look demasiado distinto del key visual (I2V) → describe \"misma escena / mismo sujeto\" y solo pide el movimiento"
+    ]
   }
 }

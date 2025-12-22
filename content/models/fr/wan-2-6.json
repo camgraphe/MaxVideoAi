@@ -3,21 +3,21 @@
   "versionLabel": "2.6",
   "seo": {
     "title": "Wan 2.6 – Générateur vidéo IA (Texte, Image & Référence) | MaxVideoAI",
-    "description": "Générez des clips cinématiques de 5–15 s avec Wan 2.6 dans MaxVideoAI. Prompts multi-shots, animation d’un still, ou cohérence de sujet via 1–3 vidéos de référence. 720p/1080p, prix à la seconde.",
+    "description": "Générez des clips cinématiques de 5–15 s en Texte/Image avec Wan 2.6 dans MaxVideoAI. Prompts multi-shots, animation d’un still, ou cohérence de sujet via 1–3 vidéos de référence (5–10 s). 720p/1080p, prix à la seconde.",
     "image": "/hero/wan-26.jpg"
   },
-  "overview": "Wan 2.6 dans MaxVideoAI : clips courts multi-shots 5–15 s depuis texte ou image, plus mode référence pour la cohérence de sujet. Sortie 720p/1080p, audio optionnel en T2V/I2V, pricing à la seconde.",
+  "overview": "Wan 2.6 dans MaxVideoAI : clips courts multi-shots 5–15 s depuis texte ou image, plus mode référence (5–10 s) pour la cohérence de sujet. Sortie 720p/1080p, audio optionnel en T2V/I2V, pricing à la seconde.",
   "hero": {
-    "title": "Wan 2.6 – Vidéo IA multi-shot avec modes Texte, Image & Référence (720p/1080p, 5–15 s)",
+    "title": "Wan 2.6 – Vidéo IA multi-shot (Texte/Image 5–15 s, Référence 5–10 s, 720p/1080p)",
     "intro": "Clips courts cinématiques pensés pour les prompts structurés, transitions propres et sujets cohérents.",
-    "badge": "720p/1080p · 5–15 s · Entrée texte / image / référence · Audio optionnel (T2V/I2V)",
+    "badge": "720p/1080p · Texte/Image 5–15 s · Référence 5–10 s · Audio optionnel (T2V/I2V)",
     "ctaPrimary": {
       "label": "Commencer avec Wan 2.6",
       "href": "/app?engine=wan-2-6"
     },
     "secondaryLinks": [
       {
-        "label": "Comparer Wan 2.6 vs Wan 2.5 →",
+        "label": "Comparer Wan 2.6 vs Sora 2 →",
         "href": "/models/wan-2-5"
       }
     ]
@@ -38,7 +38,7 @@
     { "label": "Ratios", "body": "T2V/R2V : 16:9, 9:16, 1:1, 4:3, 3:4 · I2V : auto depuis l’image" },
     { "label": "Entrées", "body": "Prompts texte, image still, ou 1–3 vidéos de référence" },
     { "label": "Audio", "body": "URL audio optionnelle en T2V/I2V ; désactivée en R2V" },
-    { "label": "Tarifs", "body": "0,10 $/s (720p), 0,15 $/s (1080p)" }
+    { "label": "Tarifs", "body": "0,13 $/s (720p), 0,20 $/s (1080p)" }
   ],
   "promptStructure": {
     "title": "Prompter Wan 2.6",
@@ -106,7 +106,7 @@
       "1. Choisir Wan 2.6.",
       "2. Sélectionner Texte → Vidéo, Image → Vidéo ou Référence → Vidéo.",
       "3. Régler durée, résolution et ratio (T2V/R2V).",
-      "4. Optionnel : negative prompt ou seed.",
+      "4. Optionnel : seed.",
       "5. Optionnel : audio de fond (T2V/I2V).",
       "6. Voir le prix final avant rendu."
     ],
@@ -126,7 +126,7 @@
         "title": "Image → Vidéo",
         "items": [
           "Entrée : 1 still obligatoire",
-          "Durée : 5 / 10 / 15 s",
+          "Durée : 5 / 10 s",
           "Résolution : 720p / 1080p",
           "Ratio automatique depuis l’image",
           "Audio URL optionnel (WAV/MP3)"
@@ -145,12 +145,15 @@
       {
         "title": "Tarifs",
         "items": [
-          "0,10 $/s en 720p",
-          "0,15 $/s en 1080p"
+          "0,13 $/s en 720p",
+          "0,20 $/s en 1080p",
+          "Exemples rapides",
+          "720p : 0,13 $/s → 5 s = 0,65 $ · 10 s = 1,30 $ · 15 s = 1,95 $",
+          "1080p : 0,20 $/s → 5 s = 1,00 $ · 10 s = 2,00 $ · 15 s = 3,00 $"
         ]
       }
     ],
-    "promptTitle": "Idees de prompt pour Wan 2.6",
+    "promptTitle": "Idées de prompt pour Wan 2.6",
     "promptIntro": "Commencez par le look global, puis des plans horodatés.",
     "promptPatternSteps": [
       "Look global et sujet",
@@ -161,6 +164,17 @@
     ],
     "promptSkeleton": "Plan 1 [0-3s] ... Plan 2 [3-8s] ... Plan 3 [8-15s] ... lumière, caméra, mouvement.",
     "promptSkeletonNote": "En R2V, placez @Video1/@Video2/@Video3 pour ancrer les sujets.",
+    "demoTitle": "Exemple prêt à rendre",
+    "demoPromptLabel": "Exemple prêt à rendre (multi-shot, 15 s, 16:9, 1080p)",
+    "demoPrompt": [
+      "Look global : thriller élégant, nuit pluvieuse, néons doux, 35mm, grain fin, profondeur de champ ciné, caméra fluide, palette bleu/ambre.",
+      "Plan 1 [0–4s] : travelling avant dans une ruelle mouillée, reflets au sol, une silhouette au fond, atmosphère brumeuse.",
+      "Plan 2 [4–10s] : cut sur gros plan mains qui ouvrent une enveloppe scellée sur une table en bois, lumière chaude latérale, focus très court.",
+      "Plan 3 [10–15s] : porte qui s’ouvre sur une pièce blanche surexposée, flash de lumière, poussière fine dans le faisceau, fondu au noir."
+    ],
+    "demoNotes": [
+      "Option audio : URL d’une nappe ambient douce 3–15 s, volume discret."
+    ],
     "tipsTitle": "Conseils & limitations",
     "strengths": [
       "Contrôle multi-shot pour mini narratifs",
@@ -179,6 +193,8 @@
       "Wan 2.5 inclut le 480p et l’audio natif"
     ],
     "comparisonCta": "Comparer Wan 2.6 vs Wan 2.5 →",
+    "relatedCtaSora2": "Comparer Wan 2.6 vs Sora 2 →",
+    "relatedCtaSora2Pro": "Comparer Wan 2.6 vs Sora 2 Pro →",
     "faqTitle": "FAQ – Wan 2.6 dans MaxVideoAI",
     "faqs": [
       { "q": "Wan 2.6 supporte-t-il l’audio ?", "a": "URL audio optionnelle en modes Texte et Image. Le mode Référence ne supporte pas l’audio upload." },
@@ -189,6 +205,46 @@
     "relatedSubtitle": "Comparez prix, latence et options de sortie sur tout le catalogue.",
     "finalPara1": "Wan 2.6 est conçu pour des séquences courtes avec contrôle multi-shot.",
     "finalPara2": "Démarrez en texte ou image, puis passez en référence pour la cohérence.",
-    "finalButton": "Ouvrir Wan 2.6 dans Generate →"
+    "finalButton": "Ouvrir Wan 2.6 dans Generate →",
+    "galleryIntro": "Des exemples Wan 2.6 arriveront bientôt.",
+    "quickStartTitle": "Démarrage rapide (1 minute)",
+    "quickStartBlocks": [
+      {
+        "title": "Texte → Vidéo (T2V)",
+        "subtitle": "le plus rapide pour tester une idée",
+        "steps": [
+          "Choisis 10 s, 720p, ratio 16:9 (safe)",
+          "Décris : sujet + lieu + lumière + style caméra",
+          "Ajoute 2–3 beats horodatés si tu veux du multi-shot",
+          "Si le mood est bon → relance en 1080p"
+        ]
+      },
+      {
+        "title": "Image → Vidéo (I2V)",
+        "subtitle": "parfait pour \"animer un key visual\"",
+        "steps": [
+          "Upload l’image (le ratio suit automatiquement)",
+          "Indique surtout le mouvement (caméra + sujet) et les micro-détails (vent, reflets, poussière…)",
+          "10–15 s = rendu plus premium (plus de respiration)"
+        ]
+      },
+      {
+        "title": "Référence → Vidéo (R2V)",
+        "subtitle": "pour verrouiller identité / cohérence",
+        "steps": [
+          "Upload 1–3 vidéos (angles variés, même sujet)",
+          "Dans le prompt, tagge @Video1 / @Video2 / @Video3",
+          "Demande un plan simple (pas un film entier)",
+          "Démarre en 5–10 s (10 s max) pour maximiser la cohérence"
+        ]
+      }
+    ],
+    "troubleshootingTitle": "Problèmes fréquents (fix rapide)",
+    "troubleshootingItems": [
+      "Le sujet change / drift → prompts plus courts + moins de beats + passe en Référence avec 2 vidéos mieux cadrées",
+      "Caméra trop nerveuse → remplace \"dynamic\" par \"slow, smooth, controlled\" + précise \"plan unique\"",
+      "Plans incohérents entre beats → répète les mêmes ancres (optique, lieu, heure, tenue) à chaque beat",
+      "Look trop différent du key visual (I2V) → décris \"même scène / même sujet\", puis ne demande que le mouvement"
+    ]
   }
 }
