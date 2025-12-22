@@ -229,7 +229,7 @@ export async function middleware(req: NextRequest) {
     return finalizeResponse(NextResponse.redirect(url, 308), hasLogoutIntentCookie);
   }
   const authCode = req.nextUrl.searchParams.get('code');
-  if (authCode && req.nextUrl.pathname !== '/auth/callback' && req.nextUrl.pathname !== LOGIN_PATH) {
+  if (authCode && req.nextUrl.pathname !== '/auth/callback') {
     const callbackUrl = req.nextUrl.clone();
     callbackUrl.pathname = '/auth/callback';
     callbackUrl.search = '';
