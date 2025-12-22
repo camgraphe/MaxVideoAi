@@ -23,7 +23,16 @@ export async function GET(req: NextRequest) {
 
   if (code) {
     const supabase = createSupabaseRouteClient();
-    await supabase.auth.exchangeCodeForSession(code);
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) {
+      console.error('[auth.callback] exchange failed', error);
+      const fallbackUrl = new URL('/login', requestUrl.origin);
+      fallbackUrl.searchParams.set('code', code);
+      if (nextPath && nextPath !== DEFAULT_NEXT_PATH) {
+        fallbackUrl.searchParams.set('next', nextPath);
+      }
+      return NextResponse.redirect(fallbackUrl);
+    }
   }
 
   return NextResponse.redirect(new URL(nextPath, requestUrl.origin));
