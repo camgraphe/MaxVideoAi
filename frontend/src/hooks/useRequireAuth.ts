@@ -22,49 +22,6 @@ type RequireAuthResult = {
 
 const AUTH_USER_LOOKUP_TIMEOUT_MS = 4000;
 const AUTH_SESSION_LOOKUP_TIMEOUT_MS = 3500;
-const AUTH_CACHE_REFRESH_MS = 60_000;
-
-type AuthCacheState = {
-  session: Session | null;
-  user: User | null;
-  updatedAt: number;
-};
-
-const AUTH_CACHE: AuthCacheState = {
-  session: null,
-  user: null,
-  updatedAt: 0,
-};
-
-let AUTH_SESSION_PROMISE: Promise<Session | null> | null = null;
-
-function readAuthCache(): { session: Session | null; user: User | null; isFresh: boolean } {
-  const session = AUTH_CACHE.session;
-  const user = AUTH_CACHE.user ?? session?.user ?? null;
-  const isFresh = Boolean(session) && Date.now() - AUTH_CACHE.updatedAt < AUTH_CACHE_REFRESH_MS;
-  return { session, user, isFresh };
-}
-
-function updateAuthCache(session: Session | null, user: User | null) {
-  AUTH_CACHE.session = session;
-  AUTH_CACHE.user = user ?? session?.user ?? null;
-  AUTH_CACHE.updatedAt = Date.now();
-}
-
-function clearAuthCache() {
-  updateAuthCache(null, null);
-}
-
-function fetchSessionOnce(): Promise<Session | null> {
-  if (AUTH_SESSION_PROMISE) return AUTH_SESSION_PROMISE;
-  AUTH_SESSION_PROMISE = supabase.auth
-    .getSession()
-    .then((sessionResult) => sessionResult.data.session ?? null)
-    .finally(() => {
-      AUTH_SESSION_PROMISE = null;
-    });
-  return AUTH_SESSION_PROMISE;
-}
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -86,10 +43,9 @@ export function useRequireAuth(): RequireAuthResult {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const initialCache = readAuthCache();
-  const [session, setSession] = useState<Session | null>(initialCache.session);
-  const [user, setUser] = useState<User | null>(initialCache.user);
-  const [loading, setLoading] = useState(!initialCache.session && !initialCache.user);
+  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const redirectingRef = useRef(false);
   const identifiedRef = useRef<string | null>(null);
   const tagsSignatureRef = useRef<string | null>(null);
@@ -118,41 +74,30 @@ export function useRequireAuth(): RequireAuthResult {
 
   useEffect(() => {
     let cancelled = false;
-    const cached = readAuthCache();
-    const hasCachedSession = Boolean(cached.session || cached.user);
-
-    if (hasCachedSession) {
-      setSession(cached.session);
-      setUser(cached.user);
-      setLoading(false);
-    }
 
     function ensureSession() {
       let timedOut = false;
       let timeoutId: number | null = null;
-      const shouldBlock = !hasCachedSession;
 
-      if (shouldBlock) {
-        timeoutId = window.setTimeout(() => {
-          if (cancelled) return;
-          timedOut = true;
-          setLoading(false);
-        }, AUTH_SESSION_LOOKUP_TIMEOUT_MS);
-      }
+      timeoutId = window.setTimeout(() => {
+        if (cancelled) return;
+        timedOut = true;
+        setLoading(false);
+      }, AUTH_SESSION_LOOKUP_TIMEOUT_MS);
 
-      fetchSessionOnce()
-        .then(async (nextSession) => {
+      supabase.auth
+        .getSession()
+        .then(async (sessionResult) => {
           if (cancelled) return;
           if (timeoutId != null) window.clearTimeout(timeoutId);
 
+          const nextSession = sessionResult.data.session ?? null;
           const fallbackUser = nextSession?.user ?? null;
           setSession(nextSession);
           setUser(fallbackUser);
           setLoading(false);
-          updateAuthCache(nextSession, fallbackUser);
 
           if (!nextSession || !fallbackUser) {
-            clearAuthCache();
             redirectToLogin();
             return;
           }
@@ -163,12 +108,10 @@ export function useRequireAuth(): RequireAuthResult {
             const verifiedUser = userResult.data.user ?? null;
             if (verifiedUser) {
               setUser(verifiedUser);
-              updateAuthCache(nextSession, verifiedUser);
               return;
             }
             setSession(null);
             setUser(null);
-            clearAuthCache();
             redirectToLogin();
           } catch {
             // Keep the local session/user if the network validation hangs or fails.
@@ -178,29 +121,21 @@ export function useRequireAuth(): RequireAuthResult {
           if (cancelled) return;
           if (timeoutId != null) window.clearTimeout(timeoutId);
           if (timedOut) return;
-          if (!hasCachedSession) {
-            setSession(null);
-            setUser(null);
-            clearAuthCache();
-            redirectToLogin();
-          }
+          setSession(null);
+          setUser(null);
+          redirectToLogin();
           setLoading(false);
         });
     }
 
-    if (!cached.isFresh) {
-      ensureSession();
-    }
+    ensureSession();
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, newSession) => {
       if (cancelled) return;
       setSession(newSession ?? null);
       const nextUser = newSession?.user ?? null;
       setUser(nextUser);
-      setLoading(false);
-      updateAuthCache(newSession ?? null, nextUser);
       if (!nextUser) {
-        clearAuthCache();
         redirectToLogin();
       }
     });
