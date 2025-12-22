@@ -21,7 +21,6 @@ type RequireAuthResult = {
 };
 
 const AUTH_USER_LOOKUP_TIMEOUT_MS = 4000;
-const AUTH_SESSION_LOOKUP_TIMEOUT_MS = 3500;
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -75,57 +74,43 @@ export function useRequireAuth(): RequireAuthResult {
   useEffect(() => {
     let cancelled = false;
 
-    function ensureSession() {
-      let timedOut = false;
-      let timeoutId: number | null = null;
-
-      timeoutId = window.setTimeout(() => {
+    async function ensureSession() {
+      try {
+        const sessionResult = await supabase.auth.getSession();
         if (cancelled) return;
-        timedOut = true;
+        const nextSession = sessionResult.data.session ?? null;
+        const fallbackUser = nextSession?.user ?? null;
+        setSession(nextSession);
+        setUser(fallbackUser);
         setLoading(false);
-      }, AUTH_SESSION_LOOKUP_TIMEOUT_MS);
 
-      supabase.auth
-        .getSession()
-        .then(async (sessionResult) => {
+        if (!nextSession || !fallbackUser) {
+          redirectToLogin();
+          return;
+        }
+
+        try {
+          const userResult = await withTimeout(supabase.auth.getUser(), AUTH_USER_LOOKUP_TIMEOUT_MS);
           if (cancelled) return;
-          if (timeoutId != null) window.clearTimeout(timeoutId);
-
-          const nextSession = sessionResult.data.session ?? null;
-          const fallbackUser = nextSession?.user ?? null;
-          setSession(nextSession);
-          setUser(fallbackUser);
-          setLoading(false);
-
-          if (!nextSession || !fallbackUser) {
-            redirectToLogin();
+          const verifiedUser = userResult.data.user ?? null;
+          if (verifiedUser) {
+            setUser(verifiedUser);
             return;
           }
-
-          try {
-            const userResult = await withTimeout(supabase.auth.getUser(), AUTH_USER_LOOKUP_TIMEOUT_MS);
-            if (cancelled) return;
-            const verifiedUser = userResult.data.user ?? null;
-            if (verifiedUser) {
-              setUser(verifiedUser);
-              return;
-            }
-            setSession(null);
-            setUser(null);
-            redirectToLogin();
-          } catch {
-            // Keep the local session/user if the network validation hangs or fails.
-          }
-        })
-        .catch(() => {
-          if (cancelled) return;
-          if (timeoutId != null) window.clearTimeout(timeoutId);
-          if (timedOut) return;
           setSession(null);
           setUser(null);
           redirectToLogin();
-          setLoading(false);
-        });
+        } catch {
+          // Keep the local session/user if the network validation hangs or fails.
+        }
+      } catch {
+        if (cancelled) return;
+        setSession(null);
+        setUser(null);
+        redirectToLogin();
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
 
     ensureSession();
