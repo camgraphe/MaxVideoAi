@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { buildSitemapIndexXml } from '@/lib/sitemapData';
 
 export const runtime = 'nodejs';
-export const dynamic = 'force-static';
+export const revalidate = 3600;
 
 export async function GET() {
   try {

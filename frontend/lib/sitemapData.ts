@@ -253,13 +253,20 @@ function getGitLastModified(sourceFile?: string): string | undefined {
   const result = spawnSync('git', ['log', '-1', '--pretty=format:%cs', '--', relative], {
     encoding: 'utf8',
   });
-  if (result.error || result.status !== 0) {
+  if (!result.error && result.status === 0) {
+    const formatted = formatLastModified(result.stdout.trim());
+    GIT_LASTMOD_CACHE.set(sourceFile, formatted ?? null);
+    return formatted;
+  }
+  try {
+    const stats = fs.statSync(sourceFile);
+    const formatted = formatLastModified(stats.mtime.toISOString());
+    GIT_LASTMOD_CACHE.set(sourceFile, formatted ?? null);
+    return formatted;
+  } catch {
     GIT_LASTMOD_CACHE.set(sourceFile, null);
     return undefined;
   }
-  const formatted = formatLastModified(result.stdout.trim());
-  GIT_LASTMOD_CACHE.set(sourceFile, formatted ?? null);
-  return formatted;
 }
 
 function getRouteLastModified(englishPath: string, sourceFile?: string): string | undefined {
