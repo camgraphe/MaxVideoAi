@@ -37,10 +37,10 @@ function upsertVideoLastMod(xml: string, lastMod: string): string {
   const entry = entryMatch[0];
   let updated = entry;
   if (/<lastmod>/.test(entry)) {
-    updated = entry.replace(/<lastmod>[^<]*<\/lastmod>/, `<lastmod>${lastMod}</lastmod>`);
+    updated = entry.replace(/<lastmod>[^<]*<\\/lastmod>/, `<lastmod>${lastMod}</lastmod>`);
   } else {
     updated = entry.replace(
-      /<\/sitemap>/,
+      /<\\/sitemap>/,
       `    <lastmod>${lastMod}</lastmod>\n  </sitemap>`
     );
   }
