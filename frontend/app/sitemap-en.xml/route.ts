@@ -22,7 +22,8 @@ export async function GET() {
       status: 200,
       headers: {
         'Content-Type': 'application/xml; charset=UTF-8',
-        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+        'Cache-Control': 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800',
+        'CDN-Cache-Control': 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800',
         'X-Sitemap-Url-Count': String(urlCount),
       },
     });

@@ -93,6 +93,10 @@ const MANUAL_ROUTE_DATES = new Map<string, string>(Object.entries(SITEMAP_MANUAL
 const MANUAL_SITEMAP_DATES = new Map<string, string>(Object.entries(SITEMAP_MANUAL_TIMESTAMPS.sitemaps ?? {}));
 const GIT_LASTMOD_CACHE = new Map<string, string | null>();
 let cachedAppPathsManifest: Record<string, string> | null = null;
+const USE_MTIME_FALLBACK =
+  process.env.SITEMAP_USE_MTIME_FALLBACK === 'true' ||
+  (process.env.SITEMAP_USE_MTIME_FALLBACK !== 'false' && process.env.NODE_ENV !== 'production');
+const FALLBACK_LASTMOD = formatLastModified(process.env.SITEMAP_FALLBACK_LASTMOD);
 
 type CanonicalPathEntry = {
   englishPath: string;
@@ -257,6 +261,14 @@ function getGitLastModified(sourceFile?: string): string | undefined {
     const formatted = formatLastModified(result.stdout.trim());
     GIT_LASTMOD_CACHE.set(sourceFile, formatted ?? null);
     return formatted;
+  }
+  if (FALLBACK_LASTMOD) {
+    GIT_LASTMOD_CACHE.set(sourceFile, FALLBACK_LASTMOD);
+    return FALLBACK_LASTMOD;
+  }
+  if (!USE_MTIME_FALLBACK) {
+    GIT_LASTMOD_CACHE.set(sourceFile, null);
+    return undefined;
   }
   try {
     const stats = fs.statSync(sourceFile);

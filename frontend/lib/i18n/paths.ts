@@ -7,6 +7,9 @@ export type SupportedLocale = 'en' | 'fr' | 'es';
 
 export const LOCALES: SupportedLocale[] = ['en', 'fr', 'es'];
 export const LOCALE_PREFIXES: Record<SupportedLocale, string> = { en: '', fr: 'fr', es: 'es' };
+const USE_MTIME_FALLBACK =
+  process.env.SITEMAP_USE_MTIME_FALLBACK === 'true' ||
+  (process.env.SITEMAP_USE_MTIME_FALLBACK !== 'false' && process.env.NODE_ENV !== 'production');
 
 export type BlogEntryMeta = {
   canonicalSlug: string;
@@ -101,20 +104,21 @@ function buildBlogEntries(): BlogEntryMeta[] {
       }
       const bucket = map.get(canonicalSlug)!;
       bucket.localizedSlugs[locale] = slug;
-      const frontMatterDate =
-        resolveIsoDate(
-          data.updatedAt ??
-            data.updated_at ??
-            data.updated ??
-            data.modifiedAt ??
-            data.modified_at ??
-            data.modified ??
-            data.date ??
-            data.publishedAt ??
-            data.published_at
-        ) ?? resolveIsoDate(fs.statSync(filePath).mtime);
-      if (frontMatterDate && (!bucket.lastModified || frontMatterDate > bucket.lastModified)) {
-        bucket.lastModified = frontMatterDate;
+      const frontMatterDate = resolveIsoDate(
+        data.updatedAt ??
+          data.updated_at ??
+          data.updated ??
+          data.modifiedAt ??
+          data.modified_at ??
+          data.modified ??
+          data.date ??
+          data.publishedAt ??
+          data.published_at
+      );
+      const lastModified =
+        frontMatterDate ?? (USE_MTIME_FALLBACK ? resolveIsoDate(fs.statSync(filePath).mtime) : undefined);
+      if (lastModified && (!bucket.lastModified || lastModified > bucket.lastModified)) {
+        bucket.lastModified = lastModified;
       }
     });
   });

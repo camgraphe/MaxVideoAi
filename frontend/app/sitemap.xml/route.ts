@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { buildSitemapIndexXml } from '@/lib/sitemapData';
 
 export const runtime = 'nodejs';
-export const revalidate = 3600;
+export const dynamic = 'force-static';
 
 export async function GET() {
   try {
@@ -22,7 +22,8 @@ export async function GET() {
       status: 200,
       headers: {
         'Content-Type': 'application/xml; charset=UTF-8',
-        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+        'Cache-Control': 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800',
+        'CDN-Cache-Control': 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800',
         'X-Sitemap-Index-Count': String(sitemapCount),
       },
     });
