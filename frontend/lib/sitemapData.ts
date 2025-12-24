@@ -234,7 +234,9 @@ function formatLastModified(value?: string): string | undefined {
   if (Number.isNaN(date.getTime())) {
     return undefined;
   }
-  return date.toISOString().slice(0, 10);
+  const isoDate = date.toISOString().slice(0, 10);
+  const today = new Date().toISOString().slice(0, 10);
+  return isoDate > today ? today : isoDate;
 }
 
 function getManualRouteLastModified(englishPath: string): string | undefined {
@@ -638,7 +640,7 @@ const DYNAMIC_ROUTE_GENERATORS: Record<string, DynamicRouteGenerator> = {
     const docs = await getContentEntries('content/docs');
     return docs.map((doc) => ({
       englishPath: `/docs/${doc.slug}`,
-      lastModified: doc.updatedAt ?? doc.date,
+      lastModified: formatLastModified(doc.updatedAt) ?? getGitLastModified(doc.sourcePath),
     }));
   },
   '/models/[slug]': async () =>

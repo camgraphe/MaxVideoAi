@@ -24,6 +24,7 @@ export interface ContentEntry extends ContentFrontMatter {
   content: string;
   excerpt: string;
   structuredData?: string[];
+  sourcePath?: string;
 }
 
 function isErrnoException(error: unknown): error is NodeJS.ErrnoException {
@@ -70,6 +71,7 @@ async function parseMarkdownFile(filePath: string): Promise<ContentEntry> {
     content: htmlContent,
     excerpt,
     structuredData: structuredData.length ? structuredData : undefined,
+    sourcePath: filePath,
   };
 }
 
