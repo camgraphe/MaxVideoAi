@@ -94,7 +94,8 @@ export function MarketingNav() {
       });
 
     const { data: subscription } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+      const eventType = event as string;
+      if (eventType === 'SIGNED_OUT' || eventType === 'USER_DELETED') {
         clearLastKnownAccount();
         writeLastKnownUserId(null);
         setEmail(null);

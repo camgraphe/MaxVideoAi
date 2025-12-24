@@ -286,7 +286,8 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType })
     void updateCacheKey();
     const subscription = supabase.auth.onAuthStateChange(async (event, session) => {
       if (cancelled) return;
-      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+      const eventType = event as string;
+      if (eventType === 'SIGNED_OUT' || eventType === 'USER_DELETED') {
         await updateCacheKey(true);
         return;
       }

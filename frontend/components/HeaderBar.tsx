@@ -116,7 +116,8 @@ export function HeaderBar() {
       });
     const { data: sub } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
-      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+      const eventType = event as string;
+      if (eventType === 'SIGNED_OUT' || eventType === 'USER_DELETED') {
         clearLastKnownAccount();
         writeLastKnownUserId(null);
         setEmail(null);

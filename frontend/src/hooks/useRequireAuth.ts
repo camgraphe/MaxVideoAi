@@ -205,11 +205,12 @@ export function useRequireAuth(): RequireAuthResult {
 
     const { data: subscription } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       if (cancelledRef.current) return;
+      const eventType = event as string;
       if (newSession?.user) {
         applySession(newSession);
         return;
       }
-      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+      if (eventType === 'SIGNED_OUT' || eventType === 'USER_DELETED') {
         markLoggedOut();
         return;
       }
