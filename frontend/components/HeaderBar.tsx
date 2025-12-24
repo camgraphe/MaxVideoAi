@@ -507,8 +507,9 @@ export function HeaderBar() {
             <nav className="flex flex-col gap-2 text-base font-semibold text-text-primary">
               {marketingLinks.map((item) => {
                 const label = t(`nav.linkLabels.${item.key}`, item.key);
-                const isActive =
-                  pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href + '/'));
+                const href = item.href;
+                const currentPath = pathname ?? '';
+                const isActive = currentPath === href || currentPath.startsWith(`${href}/`);
                 return (
                   <Link
                     key={item.href}
