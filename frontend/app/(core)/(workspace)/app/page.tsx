@@ -34,6 +34,7 @@ import type { Job } from '@/types/jobs';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { supportsAudioPricingToggle } from '@/lib/pricing-addons';
+import { readLastKnownUserId } from '@/lib/last-known';
 import {
   getLumaRay2DurationInfo,
   getLumaRay2ResolutionInfo,
@@ -933,7 +934,7 @@ export default function Page() {
   const { data, error: enginesError, isLoading } = useEngines();
   const engines = useMemo(() => data?.engines ?? [], [data]);
   const { data: latestJobsPages, mutate: mutateLatestJobs } = useInfiniteJobs(24, { type: 'video' });
-  const { user, loading: authLoading } = useRequireAuth();
+  const { user, loading: authLoading, authStatus } = useRequireAuth();
   const engineIdByLabel = useMemo(() => {
     const map = new Map<string, string>();
     engines.forEach((engine) => {
@@ -1288,14 +1289,22 @@ useEffect(() => {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user?.id) {
-      setUserId(null);
+    if (user?.id) {
+      setUserId(user.id);
       setAuthChecked(true);
       return;
     }
-    setUserId(user.id);
+    if (authStatus === 'refreshing' || authStatus === 'unknown') {
+      const lastKnownUserId = readLastKnownUserId();
+      if (lastKnownUserId) {
+        setUserId(lastKnownUserId);
+        setAuthChecked(true);
+      }
+      return;
+    }
+    setUserId(null);
     setAuthChecked(true);
-  }, [authLoading, user]);
+  }, [authLoading, authStatus, user?.id]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

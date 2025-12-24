@@ -12,6 +12,7 @@ import {
   queueClarityCommand,
 } from '@/lib/clarity-client';
 import { consumeLogoutIntent } from '@/lib/logout-intent';
+import { clearLastKnownAccount, readLastKnownUserId, writeLastKnownUserId } from '@/lib/last-known';
 
 type RequireAuthResult = {
   userId: string | null;
@@ -75,6 +76,8 @@ export function useRequireAuth(): RequireAuthResult {
   const initialResolvedRef = useRef(false);
   const lastKnownSessionRef = useRef<Session | null>(null);
   const lastKnownUserRef = useRef<User | null>(null);
+  const initialLastKnownUserId = useMemo(() => readLastKnownUserId(), []);
+  const lastKnownUserIdRef = useRef<string | null>(initialLastKnownUserId);
 
   const nextPath = useMemo(() => {
     const base = pathname ?? '/app';
@@ -103,6 +106,10 @@ export function useRequireAuth(): RequireAuthResult {
     setUser(nextUser);
     lastKnownSessionRef.current = nextSession;
     lastKnownUserRef.current = nextUser;
+    if (nextUser?.id) {
+      lastKnownUserIdRef.current = nextUser.id;
+      writeLastKnownUserId(nextUser.id);
+    }
     setAuthStatus('authed');
     if (!initialResolvedRef.current) {
       setLoading(false);
@@ -119,6 +126,9 @@ export function useRequireAuth(): RequireAuthResult {
     setUser(null);
     lastKnownSessionRef.current = null;
     lastKnownUserRef.current = null;
+    lastKnownUserIdRef.current = null;
+    clearLastKnownAccount();
+    writeLastKnownUserId(null);
     setAuthStatus('loggedOut');
     if (!initialResolvedRef.current) {
       setLoading(false);
@@ -144,7 +154,8 @@ export function useRequireAuth(): RequireAuthResult {
           nextSession = refreshed ?? null;
         }
         if (!nextSession || !nextSession.user) {
-          if (lastKnownUserRef.current) {
+          const hasLastKnownUser = Boolean(lastKnownUserRef.current?.id ?? lastKnownUserIdRef.current);
+          if (hasLastKnownUser) {
             markRefreshing();
             if (!initialResolvedRef.current) {
               setLoading(false);
@@ -164,6 +175,8 @@ export function useRequireAuth(): RequireAuthResult {
           if (verifiedUser) {
             setUser(verifiedUser);
             lastKnownUserRef.current = verifiedUser;
+            lastKnownUserIdRef.current = verifiedUser.id;
+            writeLastKnownUserId(verifiedUser.id);
             return;
           }
         } catch {
@@ -207,7 +220,8 @@ export function useRequireAuth(): RequireAuthResult {
         applySession(recoveredSession);
         return;
       }
-      if (lastKnownUserRef.current) {
+      const hasLastKnownUser = Boolean(lastKnownUserRef.current?.id ?? lastKnownUserIdRef.current);
+      if (hasLastKnownUser) {
         markRefreshing();
         if (!initialResolvedRef.current) {
           setLoading(false);
@@ -339,7 +353,7 @@ export function useRequireAuth(): RequireAuthResult {
   }, [user]);
 
   return {
-    userId: user?.id ?? null,
+    userId: user?.id ?? lastKnownUserIdRef.current ?? null,
     user,
     session,
     loading,

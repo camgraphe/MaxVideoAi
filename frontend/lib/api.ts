@@ -3,6 +3,7 @@ import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import { supabase } from '@/lib/supabaseClient';
 import { authFetch } from '@/lib/authFetch';
+import { readLastKnownUserId, writeLastKnownUserId } from '@/lib/last-known';
 import type { EnginesResponse, PreflightRequest, PreflightResponse } from '@/types/engines';
 import type { Job, JobsPage } from '@/types/jobs';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
@@ -237,11 +238,14 @@ async function fetchJobsPage(
 type JobsKey = readonly ['jobs', string, number, string | null, JobFeedType];
 
 export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType }) {
-  const [cacheKey, setCacheKey] = useState<string | null>(() => (typeof window === 'undefined' ? 'server' : null));
+  const [cacheKey, setCacheKey] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return 'server';
+    return readLastKnownUserId();
+  });
   const feedType: JobFeedType =
     options?.type === 'image' || options?.type === 'video' ? options.type : 'all';
   const lastRevalidateRef = useRef<number>(0);
-  const lastKnownUserIdRef = useRef<string | null>(null);
+  const lastKnownUserIdRef = useRef<string | null>(typeof window === 'undefined' ? null : readLastKnownUserId());
   const [stableStore, setStableStore] = useState<{
     byId: Record<string, Job>;
     order: string[];
@@ -254,19 +258,27 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType })
       if (forceAnonymous) {
         if (cancelled) return;
         lastKnownUserIdRef.current = null;
+        writeLastKnownUserId(null);
         setCacheKey('anonymous');
         return;
       }
-      const { data } = await supabase.auth.getUser();
+      const { data } = await supabase.auth.getSession();
       if (cancelled) return;
-      const userId = data.user?.id ?? null;
+      const userId = data.session?.user?.id ?? null;
       if (userId) {
         lastKnownUserIdRef.current = userId;
+        writeLastKnownUserId(userId);
         setCacheKey(userId);
         return;
       }
       if (lastKnownUserIdRef.current) {
         setCacheKey(lastKnownUserIdRef.current);
+        return;
+      }
+      const storedUserId = readLastKnownUserId();
+      if (storedUserId) {
+        lastKnownUserIdRef.current = storedUserId;
+        setCacheKey(storedUserId);
         return;
       }
       setCacheKey('anonymous');
@@ -281,6 +293,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType })
       const nextUserId = session?.user?.id ?? null;
       if (nextUserId) {
         lastKnownUserIdRef.current = nextUserId;
+        writeLastKnownUserId(nextUserId);
         setCacheKey(nextUserId);
         return;
       }

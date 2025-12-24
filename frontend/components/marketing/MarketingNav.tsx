@@ -3,18 +3,30 @@
 import Image from 'next/image';
 import clsx from 'clsx';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import type { Session } from '@supabase/supabase-js';
 import { Link, usePathname } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 import { supabase } from '@/lib/supabaseClient';
 import { NAV_ITEMS } from '@/components/AppSidebar';
 import { setLogoutIntent } from '@/lib/logout-intent';
+import {
+  clearLastKnownAccount,
+  readLastKnownUserId,
+  readLastKnownWallet,
+  writeLastKnownUserId,
+  writeLastKnownWallet,
+} from '@/lib/last-known';
 
 export function MarketingNav() {
   const pathname = usePathname();
   const { t } = useI18n();
   const [email, setEmail] = useState<string | null>(null);
-  const [wallet, setWallet] = useState<{ balance: number } | null>(null);
+  const [wallet, setWallet] = useState<{ balance: number } | null>(() => {
+    const stored = readLastKnownWallet();
+    if (!stored) return null;
+    return { balance: stored.balance };
+  });
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [walletPromptOpen, setWalletPromptOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -40,37 +52,40 @@ export function MarketingNav() {
 
   useEffect(() => {
     let mounted = true;
-    const fetchAccountState = async (token?: string | null) => {
-      if (!token) {
-        if (mounted) {
-          setWallet(null);
-        }
-        return;
-      }
+    const fetchAccountState = async (token?: string | null, userId?: string | null) => {
+      if (!token) return;
       const headers = { Authorization: `Bearer ${token}` };
       try {
         const walletRes = await fetch('/api/wallet', { headers }).then((response) => response.json());
         if (!mounted) return;
-        setWallet({ balance: walletRes.balance ?? 0 });
-      } catch {
-        if (mounted) {
-          setWallet(null);
+        const balance = typeof walletRes?.balance === 'number' ? walletRes.balance : null;
+        if (balance !== null) {
+          setWallet({ balance });
+          const currency = typeof walletRes?.currency === 'string' ? walletRes.currency : undefined;
+          writeLastKnownWallet({ balance, currency }, userId ?? readLastKnownUserId());
         }
+      } catch {
+        // Keep last known values on transient failures.
       }
     };
 
-    const updateEmailFromServer = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (!mounted) return;
-      setEmail(data.user?.email ?? null);
+    const applySession = (session: Session | null) => {
+      if (!mounted) return null;
+      const userId = session?.user?.id ?? null;
+      if (userId) {
+        writeLastKnownUserId(userId);
+      }
+      setEmail(session?.user?.email ?? null);
+      return userId;
     };
 
     supabase.auth
       .getSession()
       .then(async ({ data }) => {
-        await updateEmailFromServer();
+        const session = data.session ?? null;
+        const userId = applySession(session);
         if (!mounted) return;
-        void fetchAccountState(data.session?.access_token);
+        void fetchAccountState(session?.access_token, userId ?? session?.user?.id ?? null);
       })
       .catch(() => {
         if (mounted) {
@@ -78,13 +93,25 @@ export function MarketingNav() {
         }
       });
 
-    const { data: subscription } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      await updateEmailFromServer();
-      void fetchAccountState(session?.access_token);
+    const { data: subscription } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        clearLastKnownAccount();
+        writeLastKnownUserId(null);
+        setEmail(null);
+        setWallet(null);
+        return;
+      }
+      const userId = applySession(session ?? null);
+      void fetchAccountState(session?.access_token, userId ?? session?.user?.id ?? null);
     });
     const handleInvalidate = async () => {
       const { data } = await supabase.auth.getSession();
-      await fetchAccountState(data.session?.access_token);
+      const session = data.session ?? null;
+      const userId = session?.user?.id ?? null;
+      if (userId) {
+        writeLastKnownUserId(userId);
+      }
+      await fetchAccountState(session?.access_token, userId);
     };
     window.addEventListener('wallet:invalidate', handleInvalidate);
     return () => {
@@ -108,6 +135,8 @@ export function MarketingNav() {
     setLogoutIntent();
     setEmail(null);
     setWallet(null);
+    clearLastKnownAccount();
+    writeLastKnownUserId(null);
     void supabase.auth.signOut().catch(() => undefined);
     const payload = JSON.stringify({});
     if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
@@ -283,7 +312,7 @@ export function MarketingNav() {
                   >
                     <WalletGlyph size={16} className="text-text-primary" />
                     <span className="text-sm font-semibold tracking-normal text-text-primary">
-                      ${(wallet?.balance ?? 0).toFixed(2)}
+                      {wallet ? `$${wallet.balance.toFixed(2)}` : '--'}
                     </span>
                   </Link>
                   {walletPromptOpen && (
@@ -457,7 +486,7 @@ export function MarketingNav() {
                 <div className="flex items-center justify-between rounded-2xl border border-hairline bg-white px-4 py-3">
                   <span className="flex items-center gap-2 text-base font-semibold text-text-primary">
                     <WalletGlyph size={18} className="text-text-primary" />
-                    ${(wallet?.balance ?? 0).toFixed(2)}
+                    {wallet ? `$${wallet.balance.toFixed(2)}` : '--'}
                   </span>
                 </div>
                 <Link

@@ -11,6 +11,13 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { USD_TOPUP_TIERS } from '@/config/topupTiers';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
+import {
+  readLastKnownMember,
+  readLastKnownUserId,
+  readLastKnownWallet,
+  writeLastKnownMember,
+  writeLastKnownWallet,
+} from '@/lib/last-known';
 
 type ReceiptItem = {
   id: number;
@@ -32,7 +39,7 @@ type MembershipTierInfo = {
 
 type MemberStatus = {
   tier: string;
-  savingsPct: number;
+  savingsPct?: number;
   spent30?: number;
   spentToday?: number;
   mock?: boolean;
@@ -180,8 +187,24 @@ export default function BillingPage() {
   const { session, loading: authLoading } = useRequireAuth();
 
   const [currencyOptions, setCurrencyOptions] = useState<string[]>(['USD']);
-  const [wallet, setWallet] = useState<{ balance: number; currency: string } | null>(null);
-  const [member, setMember] = useState<MemberStatus | null>(null);
+  const [wallet, setWallet] = useState<{ balance: number; currency: string } | null>(() => {
+    const stored = readLastKnownWallet();
+    if (!stored) return null;
+    return {
+      balance: stored.balance,
+      currency: typeof stored.currency === 'string' ? stored.currency.toUpperCase() : 'USD',
+    };
+  });
+  const [member, setMember] = useState<MemberStatus | null>(() => {
+    const stored = readLastKnownMember();
+    if (!stored?.tier) return null;
+    return {
+      tier: stored.tier,
+      savingsPct: stored.savingsPct,
+      spent30: stored.spent30,
+      spentToday: stored.spentToday,
+    };
+  });
   const [stripeMode, setStripeMode] = useState<'test' | 'live' | 'disabled'>('disabled');
   const [toast, setToast] = useState<string | null>(null);
   const [receipts, setReceipts] = useState<{
@@ -255,7 +278,9 @@ export default function BillingPage() {
           const balance = typeof d.balance === 'number' ? d.balance : null;
           if (balance === null) return;
           const currency = typeof d.currency === 'string' ? d.currency : 'USD';
-          setWallet({ balance, currency });
+          const nextWallet = { balance, currency };
+          setWallet(nextWallet);
+          writeLastKnownWallet(nextWallet, session?.user?.id ?? readLastKnownUserId());
           const resolvedCurrency = String(d.settlementCurrency ?? currency ?? 'USD').toUpperCase();
           setAutoCurrency(resolvedCurrency);
           if (!userCurrencyOverrideRef.current) {
@@ -274,7 +299,17 @@ export default function BillingPage() {
         .then((d) => {
           if (!mounted || !d) return;
           if (typeof d.tier === 'string') {
-            setMember(d as MemberStatus);
+            const nextMember = d as MemberStatus;
+            setMember(nextMember);
+            writeLastKnownMember(
+              {
+                tier: nextMember.tier,
+                spent30: nextMember.spent30,
+                spentToday: nextMember.spentToday,
+                savingsPct: nextMember.savingsPct,
+              },
+              session?.user?.id ?? readLastKnownUserId()
+            );
           }
         })
         .catch(() => undefined);

@@ -11,13 +11,30 @@ import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { setLogoutIntent } from '@/lib/logout-intent';
+import {
+  clearLastKnownAccount,
+  readLastKnownMember,
+  readLastKnownUserId,
+  readLastKnownWallet,
+  writeLastKnownMember,
+  writeLastKnownUserId,
+  writeLastKnownWallet,
+} from '@/lib/last-known';
 
 export function HeaderBar() {
   const { t } = useI18n();
   const [email, setEmail] = useState<string | null>(null);
   const [authResolved, setAuthResolved] = useState(false);
-  const [wallet, setWallet] = useState<{ balance: number } | null>(null);
-  const [member, setMember] = useState<{ tier: string } | null>(null);
+  const [wallet, setWallet] = useState<{ balance: number } | null>(() => {
+    const stored = readLastKnownWallet();
+    if (!stored) return null;
+    return { balance: stored.balance };
+  });
+  const [member, setMember] = useState<{ tier: string } | null>(() => {
+    const stored = readLastKnownMember();
+    if (!stored?.tier) return null;
+    return { tier: stored.tier };
+  });
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [walletPromptOpen, setWalletPromptOpen] = useState(false);
   const avatarRef = useRef<HTMLButtonElement>(null);
@@ -42,7 +59,7 @@ export function HeaderBar() {
   const showServiceNotice = Boolean(bannerMessage);
   useEffect(() => {
     let mounted = true;
-    const fetchAccountState = async (token?: string | null) => {
+    const fetchAccountState = async (token?: string | null, userId?: string | null) => {
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
       try {
         const [walletRes, memberRes] = await Promise.all([
@@ -56,12 +73,22 @@ export function HeaderBar() {
           const nextBalance = typeof walletJson?.balance === 'number' ? walletJson.balance : null;
           if (nextBalance !== null) {
             setWallet({ balance: nextBalance });
+            const nextCurrency = typeof walletJson?.currency === 'string' ? walletJson.currency : undefined;
+            writeLastKnownWallet(
+              { balance: nextBalance, currency: nextCurrency },
+              userId ?? readLastKnownUserId()
+            );
           }
         }
         if (memberRes.ok) {
           const nextTier = typeof memberJson?.tier === 'string' ? memberJson.tier : null;
           if (nextTier) {
             setMember({ tier: nextTier });
+            const nextSavings =
+              typeof memberJson?.savingsPct === 'number' && Number.isFinite(memberJson.savingsPct)
+                ? memberJson.savingsPct
+                : undefined;
+            writeLastKnownMember({ tier: nextTier, savingsPct: nextSavings }, userId ?? readLastKnownUserId());
           }
         }
       } catch {
@@ -73,9 +100,13 @@ export function HeaderBar() {
       .then(({ data }) => {
         if (!mounted) return;
         const session = data.session ?? null;
+        const userId = session?.user?.id ?? null;
+        if (userId) {
+          writeLastKnownUserId(userId);
+        }
         setEmail(session?.user?.email ?? null);
         setAuthResolved(true);
-        void fetchAccountState(session?.access_token);
+        void fetchAccountState(session?.access_token, userId);
       })
       .catch(() => {
         if (mounted) {
@@ -83,15 +114,33 @@ export function HeaderBar() {
           setAuthResolved(true);
         }
       });
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_e, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        clearLastKnownAccount();
+        writeLastKnownUserId(null);
+        setEmail(null);
+        setWallet(null);
+        setMember(null);
+        setAuthResolved(true);
+        return;
+      }
+      const userId = session?.user?.id ?? null;
+      if (userId) {
+        writeLastKnownUserId(userId);
+      }
       setEmail(session?.user?.email ?? null);
       setAuthResolved(true);
-      void fetchAccountState(session?.access_token);
+      void fetchAccountState(session?.access_token, userId);
     });
     const handleInvalidate = async () => {
       const { data } = await supabase.auth.getSession();
-      await fetchAccountState(data.session?.access_token);
+      const session = data.session ?? null;
+      const userId = session?.user?.id ?? null;
+      if (userId) {
+        writeLastKnownUserId(userId);
+      }
+      await fetchAccountState(session?.access_token, userId);
     };
     window.addEventListener('wallet:invalidate', handleInvalidate);
     return () => {
@@ -124,6 +173,8 @@ export function HeaderBar() {
     setEmail(null);
     setWallet(null);
     setMember(null);
+    clearLastKnownAccount();
+    writeLastKnownUserId(null);
     sendSignOutRequest();
     window.location.href = '/';
   };

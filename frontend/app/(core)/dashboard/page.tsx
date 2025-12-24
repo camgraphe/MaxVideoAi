@@ -21,6 +21,13 @@ import { EngineSelect } from '@/components/ui/EngineSelect';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { authFetch } from '@/lib/authFetch';
+import {
+  readLastKnownMember,
+  readLastKnownUserId,
+  readLastKnownWallet,
+  writeLastKnownMember,
+  writeLastKnownWallet,
+} from '@/lib/last-known';
 
 const NEW_USER_ENGINE_ID = 'sora-2';
 const STORAGE_KEYS = {
@@ -182,8 +189,19 @@ export default function DashboardPage() {
   const [imageSelectionResolved, setImageSelectionResolved] = useState(false);
   const [exportsSummary, setExportsSummary] = useState<{ total: number } | null>(null);
   const [templates, setTemplates] = useState<TemplateEntry[]>([]);
-  const [walletSummary, setWalletSummary] = useState<{ balance: number; currency: string } | null>(null);
-  const [memberSummary, setMemberSummary] = useState<{ spentToday?: number; spent30?: number } | null>(null);
+  const [walletSummary, setWalletSummary] = useState<{ balance: number; currency: string } | null>(() => {
+    const stored = readLastKnownWallet();
+    if (!stored) return null;
+    return {
+      balance: stored.balance,
+      currency: typeof stored.currency === 'string' ? stored.currency.toUpperCase() : 'USD',
+    };
+  });
+  const [memberSummary, setMemberSummary] = useState<{ spentToday?: number; spent30?: number } | null>(() => {
+    const stored = readLastKnownMember();
+    if (!stored) return null;
+    return { spentToday: stored.spentToday, spent30: stored.spent30 };
+  });
   const [recentTab, setRecentTab] = useState<'all' | 'completed' | 'failed'>('all');
   const [lightbox, setLightbox] = useState<{ kind: 'group'; group: GroupSummary } | { kind: 'job'; job: Job } | null>(null);
   const quickStartRef = useRef<HTMLDivElement | null>(null);
@@ -349,17 +367,29 @@ export default function DashboardPage() {
         if (walletRes.ok) {
           const nextBalance = typeof wallet?.balance === 'number' ? wallet.balance : null;
           if (nextBalance !== null) {
-            setWalletSummary({
+            const nextSummary = {
               balance: nextBalance,
               currency: typeof wallet?.currency === 'string' ? wallet.currency.toUpperCase() : 'USD',
-            });
+            };
+            setWalletSummary(nextSummary);
+            writeLastKnownWallet(nextSummary, readLastKnownUserId());
           }
         }
         if (memberRes.ok) {
-          setMemberSummary({
-            spentToday: typeof member?.spentToday === 'number' ? member.spentToday : undefined,
-            spent30: typeof member?.spent30 === 'number' ? member.spent30 : undefined,
-          });
+          const memberPayload = member as {
+            tier?: string;
+            spentToday?: number;
+            spent30?: number;
+            savingsPct?: number;
+          } | null;
+          const nextMember = {
+            tier: typeof memberPayload?.tier === 'string' ? memberPayload.tier : undefined,
+            spentToday: typeof memberPayload?.spentToday === 'number' ? memberPayload.spentToday : undefined,
+            spent30: typeof memberPayload?.spent30 === 'number' ? memberPayload.spent30 : undefined,
+            savingsPct: typeof memberPayload?.savingsPct === 'number' ? memberPayload.savingsPct : undefined,
+          };
+          setMemberSummary({ spentToday: nextMember.spentToday, spent30: nextMember.spent30 });
+          writeLastKnownMember(nextMember, readLastKnownUserId());
         }
       } catch {
         // Keep last known values on transient failures.
