@@ -485,7 +485,7 @@ export function EngineSelect({
       </div>
 
       <div className="flex flex-wrap gap-5">
-        <div className="min-w-0 flex-1 space-y-2 sm:min-w-[240px]">
+        <div className="min-w-[240px] flex-1 space-y-2">
           <label className="text-[12px] uppercase tracking-micro text-text-muted">{copy.choose}</label>
           <button
             id={triggerId}
@@ -654,7 +654,7 @@ export function EngineSelect({
         </div>
 
         {displayedModeOptions.length ? (
-          <div className="min-w-0 flex-1 space-y-3 sm:min-w-[200px]">
+          <div className="min-w-[200px] flex-1 space-y-3">
             <p className="text-[12px] uppercase tracking-micro text-text-muted">{copy.inputMode}</p>
             <div className="flex flex-wrap gap-2">
               {displayedModeOptions.map((candidate) => {
