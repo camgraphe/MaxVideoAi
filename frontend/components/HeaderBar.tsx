@@ -46,17 +46,26 @@ export function HeaderBar() {
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
       try {
         const [walletRes, memberRes] = await Promise.all([
-          fetch('/api/wallet', { headers }).then((r) => r.json()),
-          fetch('/api/member-status', { headers }).then((r) => r.json()),
+          fetch('/api/wallet', { headers, cache: 'no-store' }),
+          fetch('/api/member-status', { headers, cache: 'no-store' }),
         ]);
+        const walletJson = await walletRes.json().catch(() => null);
+        const memberJson = await memberRes.json().catch(() => null);
         if (!mounted) return;
-        setWallet({ balance: walletRes.balance ?? 0 });
-        setMember({ tier: memberRes.tier ?? 'Member' });
-      } catch {
-        if (mounted) {
-          setWallet(null);
-          setMember(null);
+        if (walletRes.ok) {
+          const nextBalance = typeof walletJson?.balance === 'number' ? walletJson.balance : null;
+          if (nextBalance !== null) {
+            setWallet({ balance: nextBalance });
+          }
         }
+        if (memberRes.ok) {
+          const nextTier = typeof memberJson?.tier === 'string' ? memberJson.tier : null;
+          if (nextTier) {
+            setMember({ tier: nextTier });
+          }
+        }
+      } catch {
+        // Keep last known values on transient failures.
       }
     };
     supabase.auth
@@ -264,7 +273,7 @@ export function HeaderBar() {
             >
               <Image src="/assets/icons/wallet.svg" alt="" width={16} height={16} aria-hidden />
               <span className="text-sm font-semibold tracking-normal text-text-primary">
-                ${(wallet?.balance ?? 0).toFixed(2)}
+                {wallet ? `$${wallet.balance.toFixed(2)}` : authResolved ? '--' : '...'}
               </span>
             </Link>
             {walletPromptOpen && (
@@ -294,7 +303,7 @@ export function HeaderBar() {
             )}
           </div>
           <Chip className="hidden px-2.5 py-1 text-[12px] md:inline-flex" variant="outline">
-            {member?.tier ?? t('workspace.header.memberFallback', 'Member')}
+            {member?.tier ?? (authResolved ? '--' : '...')}
           </Chip>
           {email ? (
             <div className="relative">

@@ -241,6 +241,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType })
   const feedType: JobFeedType =
     options?.type === 'image' || options?.type === 'video' ? options.type : 'all';
   const lastRevalidateRef = useRef<number>(0);
+  const lastKnownUserIdRef = useRef<string | null>(null);
   const [stableStore, setStableStore] = useState<{
     byId: Record<string, Job>;
     order: string[];
@@ -249,15 +250,40 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType })
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     let cancelled = false;
-    const updateCacheKey = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (!cancelled) {
-        setCacheKey(data.user?.id ?? 'anonymous');
+    const updateCacheKey = async (forceAnonymous = false) => {
+      if (forceAnonymous) {
+        if (cancelled) return;
+        lastKnownUserIdRef.current = null;
+        setCacheKey('anonymous');
+        return;
       }
+      const { data } = await supabase.auth.getUser();
+      if (cancelled) return;
+      const userId = data.user?.id ?? null;
+      if (userId) {
+        lastKnownUserIdRef.current = userId;
+        setCacheKey(userId);
+        return;
+      }
+      if (lastKnownUserIdRef.current) {
+        setCacheKey(lastKnownUserIdRef.current);
+        return;
+      }
+      setCacheKey('anonymous');
     };
     void updateCacheKey();
-    const subscription = supabase.auth.onAuthStateChange(async () => {
+    const subscription = supabase.auth.onAuthStateChange(async (event, session) => {
       if (cancelled) return;
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        await updateCacheKey(true);
+        return;
+      }
+      const nextUserId = session?.user?.id ?? null;
+      if (nextUserId) {
+        lastKnownUserIdRef.current = nextUserId;
+        setCacheKey(nextUserId);
+        return;
+      }
       await updateCacheKey();
     });
     return () => {

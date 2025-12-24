@@ -5,7 +5,7 @@ import { ENV, isConnectPayments } from '@/lib/env';
 import { computePricingSnapshot, getPlatformFeeCents, getVendorShareCents } from '@/lib/pricing';
 import { randomUUID } from 'crypto';
 import { ensureBillingSchema } from '@/lib/schema';
-import { applyMockWalletTopUp, getMockWalletBalance } from '@/lib/wallet';
+import { applyMockWalletTopUp } from '@/lib/wallet';
 import { getConfiguredEngine } from '@/server/engines';
 import { getSoraVariantForEngine, isSoraEngineId, parseSoraRequest, type SoraRequest } from '@/lib/sora';
 import {
@@ -22,6 +22,14 @@ import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
 
 const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
+
+export const dynamic = 'force-dynamic';
+
+function json(body: unknown, init?: Parameters<typeof NextResponse.json>[1]) {
+  const response = NextResponse.json(body, init);
+  response.headers.set('Cache-Control', 'private, no-store');
+  return response;
+}
 
 async function resolveAuthenticatedUser(): Promise<string | null> {
   try {
@@ -40,32 +48,27 @@ async function resolveAuthenticatedUser(): Promise<string | null> {
 
 export async function GET(req: NextRequest) {
   const userId = await resolveAuthenticatedUser();
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!userId) return json({ error: 'Unauthorized' }, { status: 401 });
 
-  let useMock = false;
   const databaseConfigured = Boolean(process.env.DATABASE_URL);
+  if (!databaseConfigured) {
+    return json({ error: 'Database unavailable' }, { status: 503 });
+  }
   try {
     await ensureBillingSchema();
   } catch (error) {
-    console.warn('[wallet] falling back to mock ledger (schema init failed)', error);
-    useMock = true;
+    console.warn('[wallet] schema init failed', error);
+    return json({ error: 'Database unavailable' }, { status: 503 });
   }
 
   let preferredCurrency: Currency | null = null;
-  if (!useMock && databaseConfigured) {
+  try {
     preferredCurrency = await getUserPreferredCurrency(userId);
+  } catch (error) {
+    console.warn('[wallet] failed to resolve preferred currency', error);
+    return json({ error: 'Wallet lookup failed' }, { status: 500 });
   }
   const fallbackResolution = resolveCurrency(req, preferredCurrency ? { preferred_currency: preferredCurrency } : undefined);
-
-  if (useMock || !databaseConfigured) {
-    const balanceCents = getMockWalletBalance(userId);
-    return NextResponse.json({
-      balance: balanceCents / 100,
-      currency: WALLET_DISPLAY_CURRENCY,
-      settlementCurrency: fallbackResolution.currency.toUpperCase(),
-      mock: true,
-    });
-  }
 
   try {
     const rows = await query<{ type: string; amount_cents: number | string | null; currency: string | null }>(
@@ -117,20 +120,14 @@ export async function GET(req: NextRequest) {
     }
 
     const balanceCents = Math.max(0, topups + refunds - charges);
-    return NextResponse.json({
+    return json({
       balance: balanceCents / 100,
       currency: walletCurrencyUpper,
       settlementCurrency: fallbackResolution.currency.toUpperCase(),
     });
   } catch (error) {
-    console.warn('[wallet] query failed, using mock ledger', error);
-    const balanceCents = getMockWalletBalance(userId);
-    return NextResponse.json({
-      balance: balanceCents / 100,
-      currency: WALLET_DISPLAY_CURRENCY,
-      settlementCurrency: fallbackResolution.currency.toUpperCase(),
-      mock: true,
-    });
+    console.warn('[wallet] query failed', error);
+    return json({ error: 'Wallet lookup failed' }, { status: 500 });
   }
 }
 

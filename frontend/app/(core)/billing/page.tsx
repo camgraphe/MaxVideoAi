@@ -242,25 +242,42 @@ export default function BillingPage() {
     async function load() {
       const token = session?.access_token ?? null;
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-      fetch('/api/wallet', { headers })
-        .then((r) => r.json())
+      fetch('/api/wallet', { headers, cache: 'no-store' })
+        .then(async (r) => {
+          const payload = await r.json().catch(() => null);
+          if (!r.ok) {
+            throw new Error(payload?.error ?? 'wallet_load_failed');
+          }
+          return payload;
+        })
         .then((d) => {
-          if (!mounted) return;
-          setWallet(d);
-          const resolvedCurrency = String(d.settlementCurrency ?? d.currency ?? 'USD').toUpperCase();
+          if (!mounted || !d) return;
+          const balance = typeof d.balance === 'number' ? d.balance : null;
+          if (balance === null) return;
+          const currency = typeof d.currency === 'string' ? d.currency : 'USD';
+          setWallet({ balance, currency });
+          const resolvedCurrency = String(d.settlementCurrency ?? currency ?? 'USD').toUpperCase();
           setAutoCurrency(resolvedCurrency);
           if (!userCurrencyOverrideRef.current) {
             setChargeCurrency(resolvedCurrency);
           }
         })
-        .catch(() => mounted && setWallet({ balance: 0, currency: 'USD' }));
-      fetch('/api/member-status?includeTiers=1', { headers })
-        .then((r) => r.json())
-        .then((d) => mounted && setMember(d))
-        .catch(() =>
-          mounted &&
-          setMember({ tier: copy.membership.defaultTier, savingsPct: 0, tiers: FALLBACK_MEMBERSHIP_TIERS })
-        );
+        .catch(() => undefined);
+      fetch('/api/member-status?includeTiers=1', { headers, cache: 'no-store' })
+        .then(async (r) => {
+          const payload = await r.json().catch(() => null);
+          if (!r.ok) {
+            throw new Error(payload?.error ?? 'member_status_load_failed');
+          }
+          return payload;
+        })
+        .then((d) => {
+          if (!mounted || !d) return;
+          if (typeof d.tier === 'string') {
+            setMember(d as MemberStatus);
+          }
+        })
+        .catch(() => undefined);
 
       // Load receipts first page
       setReceipts((s) => ({ ...s, loading: true, error: null }));
@@ -608,7 +625,9 @@ export default function BillingPage() {
             <div className="rounded-card border border-border bg-white p-4 shadow-card">
               <h2 className="mb-2 text-lg font-semibold text-text-primary">{copy.wallet.title}</h2>
               <p className="text-sm text-text-secondary">{copy.wallet.description}</p>
-              <p className="mt-1 text-2xl font-semibold text-text-primary">${(wallet?.balance ?? 0).toFixed(2)}</p>
+              <p className="mt-1 text-2xl font-semibold text-text-primary">
+                {wallet ? `$${wallet.balance.toFixed(2)}` : authLoading ? '...' : '--'}
+              </p>
               <div className="mt-3 flex flex-col gap-3 text-sm text-text-secondary sm:flex-row sm:items-start sm:gap-4">
                 <div className="flex flex-col gap-1 text-left">
                   <label className="text-xs font-medium text-text-secondary" htmlFor="billing-currency-select">
@@ -702,7 +721,7 @@ export default function BillingPage() {
               {quoteError && (
                 <p className="mt-2 text-xs text-state-warning">{quoteError}</p>
               )}
-              {(wallet?.balance ?? 0) < 2 && (
+              {wallet && wallet.balance < 2 && (
                 <p className="mt-2 text-sm text-state-warning">{copy.wallet.lowBalance}</p>
               )}
             </div>
@@ -711,10 +730,12 @@ export default function BillingPage() {
               <p className="text-sm text-text-secondary">{copy.membership.description}</p>
               <div className="mt-2 flex items-center gap-2">
                 <span className="rounded-full bg-bg px-2 py-1 text-xs text-text-secondary">
-                  {member?.tier ?? copy.membership.defaultTier}
+                  {member?.tier ?? (authLoading ? '...' : '--')}
                 </span>
                 <span className="rounded-full bg-accent/10 px-2 py-1 text-xs text-accent">
-                  {copy.membership.savingsChip.replace('{percent}', String(member?.savingsPct ?? 0))}
+                  {typeof member?.savingsPct === 'number'
+                    ? copy.membership.savingsChip.replace('{percent}', String(member.savingsPct))
+                    : '--'}
                 </span>
               </div>
               <ul className="mt-3 list-disc pl-5 text-sm text-text-secondary">

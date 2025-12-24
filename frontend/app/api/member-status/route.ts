@@ -4,15 +4,17 @@ import { ensureBillingSchema } from '@/lib/schema';
 import { getMembershipTiers } from '@/lib/membership';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
-const FALLBACK_TIERS = [
-  { tier: 'member', spendThresholdCents: 0, discountPercent: 0 },
-  { tier: 'plus', spendThresholdCents: 5_000, discountPercent: 0.05 },
-  { tier: 'pro', spendThresholdCents: 20_000, discountPercent: 0.1 },
-];
+export const dynamic = 'force-dynamic';
+
+function json(body: unknown, init?: Parameters<typeof NextResponse.json>[1]) {
+  const response = NextResponse.json(body, init);
+  response.headers.set('Cache-Control', 'private, no-store');
+  return response;
+}
 
 export async function GET(req: NextRequest) {
   const { userId } = await getRouteAuthContext(req);
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!userId) return json({ error: 'Unauthorized' }, { status: 401 });
 
   const includeTiers = (() => {
     try {
@@ -26,22 +28,14 @@ export async function GET(req: NextRequest) {
 
   const databaseConfigured = isDatabaseConfigured();
   if (!databaseConfigured) {
-    const payload: Record<string, unknown> = { tier: 'Member', savingsPct: 0, spent30: 0, spentToday: 0, mock: true };
-    if (includeTiers) {
-      payload.tiers = FALLBACK_TIERS;
-    }
-    return NextResponse.json(payload);
+    return json({ error: 'Database unavailable' }, { status: 503 });
   }
 
   try {
     await ensureBillingSchema();
   } catch (error) {
-    console.warn('[api/member-status] schema init failed, returning defaults', error);
-    const payload: Record<string, unknown> = { tier: 'Member', savingsPct: 0, spent30: 0, spentToday: 0, mock: true };
-    if (includeTiers) {
-      payload.tiers = FALLBACK_TIERS;
-    }
-    return NextResponse.json(payload);
+    console.warn('[api/member-status] schema init failed', error);
+    return json({ error: 'Database unavailable' }, { status: 503 });
   }
 
   let rows: Array<{ sum_30: string; sum_today: string }>;
@@ -77,12 +71,8 @@ export async function GET(req: NextRequest) {
       [userId]
     );
   } catch (error) {
-    console.warn('[api/member-status] query failed, returning defaults', error);
-    const payload: Record<string, unknown> = { tier: 'Member', savingsPct: 0, spent30: 0, spentToday: 0, mock: true };
-    if (includeTiers) {
-      payload.tiers = FALLBACK_TIERS;
-    }
-    return NextResponse.json(payload);
+    console.warn('[api/member-status] query failed', error);
+    return json({ error: 'Member status lookup failed' }, { status: 500 });
   }
   const spent30 = Number(rows[0]?.sum_30 ?? '0');
   const spentToday = Number(rows[0]?.sum_today ?? '0');
@@ -112,5 +102,5 @@ export async function GET(req: NextRequest) {
     }));
   }
 
-  return NextResponse.json(response);
+  return json(response);
 }

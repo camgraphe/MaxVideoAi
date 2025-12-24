@@ -340,24 +340,29 @@ export default function DashboardPage() {
     const fetchAccountState = async () => {
       try {
         const [walletRes, memberRes] = await Promise.all([
-          authFetch('/api/wallet'),
-          authFetch('/api/member-status'),
+          authFetch('/api/wallet', { cache: 'no-store' }),
+          authFetch('/api/member-status', { cache: 'no-store' }),
         ]);
         if (!mounted) return;
         const wallet = (await walletRes.json().catch(() => null)) as { balance?: number; currency?: string } | null;
         const member = (await memberRes.json().catch(() => null)) as { spentToday?: number; spent30?: number } | null;
-        setWalletSummary({
-          balance: typeof wallet?.balance === 'number' ? wallet.balance : 0,
-          currency: typeof wallet?.currency === 'string' ? wallet.currency.toUpperCase() : 'USD',
-        });
-        setMemberSummary({
-          spentToday: typeof member?.spentToday === 'number' ? member.spentToday : undefined,
-          spent30: typeof member?.spent30 === 'number' ? member.spent30 : undefined,
-        });
+        if (walletRes.ok) {
+          const nextBalance = typeof wallet?.balance === 'number' ? wallet.balance : null;
+          if (nextBalance !== null) {
+            setWalletSummary({
+              balance: nextBalance,
+              currency: typeof wallet?.currency === 'string' ? wallet.currency.toUpperCase() : 'USD',
+            });
+          }
+        }
+        if (memberRes.ok) {
+          setMemberSummary({
+            spentToday: typeof member?.spentToday === 'number' ? member.spentToday : undefined,
+            spent30: typeof member?.spent30 === 'number' ? member.spent30 : undefined,
+          });
+        }
       } catch {
-        if (!mounted) return;
-        setWalletSummary(null);
-        setMemberSummary(null);
+        // Keep last known values on transient failures.
       }
     };
 
@@ -462,8 +467,10 @@ export default function DashboardPage() {
     jobs.find((job) => typeof job.currency === 'string')?.currency ??
     'USD';
 
-  const spendTodayDisplay = formatCurrency(memberSummary?.spentToday ?? 0, currencyCode);
-  const spend30Display = formatCurrency(memberSummary?.spent30 ?? 0, currencyCode);
+  const spendTodayDisplay =
+    typeof memberSummary?.spentToday === 'number' ? formatCurrency(memberSummary.spentToday, currencyCode) : '--';
+  const spend30Display =
+    typeof memberSummary?.spent30 === 'number' ? formatCurrency(memberSummary.spent30, currencyCode) : '--';
 
   const completedJobsForStats = useMemo(() => {
     return jobs

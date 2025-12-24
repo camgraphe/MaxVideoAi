@@ -18,6 +18,7 @@ type RequireAuthResult = {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  authStatus: 'unknown' | 'refreshing' | 'authed' | 'loggedOut';
 };
 
 const AUTH_SESSION_LOOKUP_TIMEOUT_MS = 4000;
@@ -63,6 +64,7 @@ export function useRequireAuth(): RequireAuthResult {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authStatus, setAuthStatus] = useState<'unknown' | 'refreshing' | 'authed' | 'loggedOut'>('unknown');
   const redirectingRef = useRef(false);
   const identifiedRef = useRef<string | null>(null);
   const tagsSignatureRef = useRef<string | null>(null);
@@ -70,6 +72,9 @@ export function useRequireAuth(): RequireAuthResult {
   const ensureSessionInFlightRef = useRef<Promise<void> | null>(null);
   const lastFocusRef = useRef(0);
   const cancelledRef = useRef(false);
+  const initialResolvedRef = useRef(false);
+  const lastKnownSessionRef = useRef<Session | null>(null);
+  const lastKnownUserRef = useRef<User | null>(null);
 
   const nextPath = useMemo(() => {
     const base = pathname ?? '/app';
@@ -92,6 +97,36 @@ export function useRequireAuth(): RequireAuthResult {
     router.replace(target);
   }, [router, nextPath]);
 
+  const applySession = useCallback((nextSession: Session) => {
+    const nextUser = nextSession.user ?? null;
+    setSession(nextSession);
+    setUser(nextUser);
+    lastKnownSessionRef.current = nextSession;
+    lastKnownUserRef.current = nextUser;
+    setAuthStatus('authed');
+    if (!initialResolvedRef.current) {
+      setLoading(false);
+      initialResolvedRef.current = true;
+    }
+  }, []);
+
+  const markRefreshing = useCallback(() => {
+    setAuthStatus((prev) => (prev === 'loggedOut' ? prev : 'refreshing'));
+  }, []);
+
+  const markLoggedOut = useCallback(() => {
+    setSession(null);
+    setUser(null);
+    lastKnownSessionRef.current = null;
+    lastKnownUserRef.current = null;
+    setAuthStatus('loggedOut');
+    if (!initialResolvedRef.current) {
+      setLoading(false);
+      initialResolvedRef.current = true;
+    }
+    redirectToLogin();
+  }, [redirectToLogin]);
+
   const ensureSession = useCallback(async () => {
     if (ensureSessionInFlightRef.current) {
       await ensureSessionInFlightRef.current;
@@ -103,19 +138,24 @@ export function useRequireAuth(): RequireAuthResult {
         if (cancelledRef.current) return;
         let nextSession = sessionResult.data.session ?? null;
         if (!nextSession) {
+          markRefreshing();
           const refreshed = await withTimeout(refreshSessionOnce(), AUTH_SESSION_LOOKUP_TIMEOUT_MS).catch(() => null);
           if (cancelledRef.current) return;
           nextSession = refreshed ?? null;
         }
-        const fallbackUser = nextSession?.user ?? null;
-        setSession(nextSession);
-        setUser(fallbackUser);
-        setLoading(false);
-
-        if (!nextSession || !fallbackUser) {
-          redirectToLogin();
+        if (!nextSession || !nextSession.user) {
+          if (lastKnownUserRef.current) {
+            markRefreshing();
+            if (!initialResolvedRef.current) {
+              setLoading(false);
+              initialResolvedRef.current = true;
+            }
+            return;
+          }
+          markLoggedOut();
           return;
         }
+        applySession(nextSession);
 
         try {
           const userResult = await withTimeout(supabase.auth.getUser(), AUTH_USER_LOOKUP_TIMEOUT_MS);
@@ -123,17 +163,19 @@ export function useRequireAuth(): RequireAuthResult {
           const verifiedUser = userResult.data.user ?? null;
           if (verifiedUser) {
             setUser(verifiedUser);
+            lastKnownUserRef.current = verifiedUser;
             return;
           }
-          setSession(null);
-          setUser(null);
-          redirectToLogin();
         } catch {
           // Keep the local session/user if the network validation hangs or fails.
         }
       } catch {
         if (cancelledRef.current) return;
-        setLoading(false);
+        markRefreshing();
+        if (!initialResolvedRef.current) {
+          setLoading(false);
+          initialResolvedRef.current = true;
+        }
       }
     })();
     ensureSessionInFlightRef.current = run;
@@ -142,37 +184,45 @@ export function useRequireAuth(): RequireAuthResult {
     } finally {
       ensureSessionInFlightRef.current = null;
     }
-  }, [redirectToLogin]);
+  }, [applySession, markLoggedOut, markRefreshing]);
 
   useEffect(() => {
     cancelledRef.current = false;
     void ensureSession();
 
-    const { data: subscription } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
+    const { data: subscription } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       if (cancelledRef.current) return;
       if (newSession?.user) {
-        setSession(newSession);
-        setUser(newSession.user ?? null);
+        applySession(newSession);
+        return;
+      }
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        markLoggedOut();
         return;
       }
       const sessionResult = await supabase.auth.getSession().catch(() => null);
       if (cancelledRef.current) return;
       const recoveredSession = sessionResult?.data?.session ?? null;
       if (recoveredSession?.user) {
-        setSession(recoveredSession);
-        setUser(recoveredSession.user ?? null);
+        applySession(recoveredSession);
         return;
       }
-      setSession(null);
-      setUser(null);
-      redirectToLogin();
+      if (lastKnownUserRef.current) {
+        markRefreshing();
+        if (!initialResolvedRef.current) {
+          setLoading(false);
+          initialResolvedRef.current = true;
+        }
+        return;
+      }
+      markLoggedOut();
     });
 
     return () => {
       cancelledRef.current = true;
       subscription?.subscription.unsubscribe();
     };
-  }, [ensureSession, redirectToLogin]);
+  }, [applySession, ensureSession, markLoggedOut, markRefreshing]);
 
   useEffect(() => {
     const handleFocus = () => {
@@ -293,5 +343,6 @@ export function useRequireAuth(): RequireAuthResult {
     user,
     session,
     loading,
+    authStatus,
   };
 }
