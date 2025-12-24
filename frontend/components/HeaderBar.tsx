@@ -11,6 +11,7 @@ import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { setLogoutIntent } from '@/lib/logout-intent';
+import { usePathname } from 'next/navigation';
 import {
   clearLastKnownAccount,
   readLastKnownMember,
@@ -23,6 +24,7 @@ import {
 
 export function HeaderBar() {
   const { t } = useI18n();
+  const pathname = usePathname();
   const [email, setEmail] = useState<string | null>(null);
   const [authResolved, setAuthResolved] = useState(false);
   const [wallet, setWallet] = useState<{ balance: number } | null>(() => {
@@ -37,10 +39,15 @@ export function HeaderBar() {
   });
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [walletPromptOpen, setWalletPromptOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const avatarRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const walletPromptCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const walletPromptId = useId();
+  const brand = t('nav.brand', 'MaxVideo AI') ?? 'MaxVideo AI';
+  const loginLabel = t('nav.login', 'Log in');
+  const ctaLabel = t('nav.cta', 'Start a render');
+  const generateLabel = t('nav.generate', 'Generate');
   const serviceNoticeEnv = process.env.NEXT_PUBLIC_SERVICE_NOTICE;
   const envNotice =
     serviceNoticeEnv && serviceNoticeEnv.toLowerCase() === 'off'
@@ -235,6 +242,24 @@ export function HeaderBar() {
     };
   }, [accountMenuOpen]);
 
+  useEffect(() => {
+    if (!mobileMenuOpen) {
+      document.body.style.removeProperty('overflow');
+      return;
+    }
+    document.body.style.overflow = 'hidden';
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.body.style.removeProperty('overflow');
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [mobileMenuOpen]);
+
   const initials = useMemo(() => {
     if (!email) return '?';
     const [namePart] = email.split('@');
@@ -254,6 +279,7 @@ export function HeaderBar() {
     { key: 'docs', href: '/docs' },
     { key: 'blog', href: '/blog' },
   ] as const;
+  const isAuthenticated = Boolean(email);
 
   const openWalletPrompt = () => {
     if (walletPromptCloseTimeout.current) {
@@ -313,7 +339,21 @@ export function HeaderBar() {
         </div>
 
         <div className="flex items-center gap-3 text-xs text-text-muted">
-          <AppLanguageToggle />
+          <div className="hidden md:block">
+            <AppLanguageToggle />
+          </div>
+          <button
+            type="button"
+            className="inline-flex items-center justify-center rounded-full border border-hairline bg-white/80 p-2 text-text-primary transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+            aria-label={t('workspace.header.mobileToggle', 'Open menu')}
+            onClick={() => setMobileMenuOpen(true)}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
           <div className="relative" onMouseEnter={openWalletPrompt} onMouseLeave={scheduleWalletPromptClose}>
             <Link
               href="/billing"
@@ -436,6 +476,104 @@ export function HeaderBar() {
           )}
         </div>
       </header>
+      {mobileMenuOpen ? (
+        <div className="fixed inset-0 z-50 bg-white/95 px-4 py-6 sm:px-6">
+          <div className="mx-auto flex max-w-sm items-center justify-between">
+            <Link
+              href="/"
+              className="flex items-center gap-3 font-display text-base font-semibold tracking-tight text-text-primary"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-label={t('workspace.header.logoAria', 'Go to marketing homepage')}
+            >
+              <Image src="/assets/branding/logo-mark.svg" alt="MaxVideoAI" width={32} height={32} priority />
+              <span>{brand}</span>
+            </Link>
+            <button
+              type="button"
+              className="rounded-full border border-hairline bg-white p-2 text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label={t('workspace.header.mobileClose', 'Close menu')}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                <line x1="6" y1="6" x2="18" y2="18" />
+                <line x1="18" y1="6" x2="6" y2="18" />
+              </svg>
+            </button>
+          </div>
+          <div className="mx-auto mt-5 max-w-sm space-y-5">
+            <div className="flex justify-end">
+              <AppLanguageToggle />
+            </div>
+            <nav className="flex flex-col gap-2 text-base font-semibold text-text-primary">
+              {marketingLinks.map((item) => {
+                const label = t(`nav.linkLabels.${item.key}`, item.key);
+                const isActive =
+                  pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href + '/'));
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    prefetch={false}
+                    className={clsx(
+                      'rounded-2xl border border-hairline px-4 py-3',
+                      isActive ? 'bg-accent/10 text-text-primary' : 'bg-white'
+                    )}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {label}
+                  </Link>
+                );
+              })}
+            </nav>
+            {isAuthenticated ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between rounded-2xl border border-hairline bg-white px-4 py-3">
+                  <span className="flex items-center gap-2 text-base font-semibold text-text-primary">
+                    <WalletGlyph size={18} className="text-text-primary" />
+                    {wallet ? `$${wallet.balance.toFixed(2)}` : '--'}
+                  </span>
+                </div>
+                <Link
+                  href="/app"
+                  prefetch={false}
+                  className="block rounded-2xl bg-accent px-4 py-3 text-center text-base font-semibold text-white shadow-card"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {generateLabel}
+                </Link>
+                <button
+                  type="button"
+                  className="w-full rounded-2xl border border-hairline px-4 py-3 text-base font-semibold text-text-primary shadow-card"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleSignOut();
+                  }}
+                >
+                  {t('workspace.header.signOut', 'Sign out')}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <Link
+                  href="/login?next=/app"
+                  className="block rounded-2xl border border-hairline px-4 py-3 text-center text-base font-semibold text-text-primary shadow-card"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {loginLabel}
+                </Link>
+                <Link
+                  href="/app"
+                  prefetch={false}
+                  className="block rounded-2xl bg-accent px-4 py-3 text-center text-base font-semibold text-white shadow-card"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {ctaLabel}
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : null}
       <ReconsentPrompt />
     </>
   );
@@ -448,5 +586,26 @@ function LogoMark() {
       <Image src="/assets/branding/logo-mark.svg" alt="MaxVideoAI" width={28} height={28} priority />
       <span className="text-lg font-semibold tracking-tight text-text-primary">MaxVideo AI</span>
     </Link>
+  );
+}
+
+function WalletGlyph({ size = 16, className }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M3.5 7.75c0-1.1.9-2 2-2h12.25a1.5 1.5 0 0 1 0 3H4.5a1 1 0 0 1-1-1Z" />
+      <rect x="3.5" y="9.5" width="17" height="8.5" rx="2.25" />
+      <path d="M17 13.25h1.5" />
+    </svg>
   );
 }
