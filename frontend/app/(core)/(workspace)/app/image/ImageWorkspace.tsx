@@ -1545,8 +1545,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
 
   return (
     <>
-      <div className="flex w-full flex-1 flex-col overflow-hidden">
-        <main className="flex w-full flex-1 flex-col gap-6 p-4 sm:p-6">
+      <div className="flex w-full flex-1 min-w-0 flex-col overflow-hidden">
+        <main className="flex w-full flex-1 min-w-0 flex-col gap-6 p-4 sm:p-6">
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr),400px] xl:items-start">
             <div className="space-y-6">
               <ImageCompositePreviewDock

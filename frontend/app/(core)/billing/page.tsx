@@ -634,9 +634,9 @@ export default function BillingPage() {
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <HeaderBar />
-      <div className="flex flex-1">
+      <div className="flex flex-1 min-w-0">
         <AppSidebar />
-        <main className="relative flex-1 overflow-y-auto p-5 lg:p-7">
+        <main className="relative flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
           {toast && (
             <div className="pointer-events-none absolute left-1/2 top-3 z-50 -translate-x-1/2 transform rounded-input border border-border bg-white px-4 py-2 text-sm text-text-primary shadow-card">
               {toast}

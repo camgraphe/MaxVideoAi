@@ -4507,10 +4507,10 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     <div className="flex min-h-screen flex-col bg-bg">
       <HeaderBar />
       <div className="flex flex-1 flex-col xl:flex-row">
-        <div className="flex flex-1">
+        <div className="flex flex-1 min-w-0">
           <AppSidebar />
-          <div className="flex flex-1 flex-col overflow-hidden">
-            <main className="flex flex-1 flex-col gap-5 p-5 lg:p-7">
+          <div className="flex flex-1 min-w-0 flex-col overflow-hidden">
+            <main className="flex flex-1 min-w-0 flex-col gap-5 p-5 lg:p-7">
             {notice && (
               <div className="rounded-[12px] border border-[#FACC15]/60 bg-[#FEF3C7] px-4 py-2 text-sm text-[#92400E] shadow-card">
                 {notice}

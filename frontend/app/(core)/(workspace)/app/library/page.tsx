@@ -177,9 +177,9 @@ export default function LibraryPage() {
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <HeaderBar />
-      <div className="flex flex-1">
+      <div className="flex flex-1 min-w-0">
         <AppSidebar />
-        <main className="flex-1 overflow-y-auto p-5 lg:p-7">
+        <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h1 className="text-2xl font-semibold text-text-primary">{copy.hero.title}</h1>

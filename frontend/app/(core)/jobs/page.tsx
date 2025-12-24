@@ -367,9 +367,9 @@ export default function JobsPage() {
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <HeaderBar />
-      <div className="flex flex-1">
+      <div className="flex flex-1 min-w-0">
         <AppSidebar />
-        <main className="flex-1 overflow-y-auto p-5 lg:p-7">
+        <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
           <div className="mb-4 flex items-center justify-between">
             <h1 className="text-xl font-semibold text-text-primary">{copy.title}</h1>
           </div>

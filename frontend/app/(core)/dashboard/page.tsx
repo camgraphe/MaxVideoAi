@@ -717,9 +717,9 @@ export default function DashboardPage() {
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <HeaderBar />
-      <div className="flex flex-1">
+      <div className="flex flex-1 min-w-0">
         <AppSidebar />
-        <main className="flex-1 overflow-y-auto p-5 lg:p-7">
+        <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
           <div className="grid gap-6 lg:grid-cols-12">
             <div className="space-y-6 lg:col-span-8">
               <CreateHero
