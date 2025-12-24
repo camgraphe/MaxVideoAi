@@ -12,10 +12,7 @@ export type SitemapTimestampConfig = {
 };
 
 export const SITEMAP_MANUAL_TIMESTAMPS: SitemapTimestampConfig = {
-  sitemaps: {
-    // Update whenever the dynamically generated video sitemap deploys new content.
-    'sitemap-video.xml': '2024-11-26',
-  },
+  sitemaps: {},
   routes: {
     // Example: '/pricing': '2024-11-15',
   },
