@@ -20,8 +20,11 @@ const percentFormatter = new Intl.NumberFormat('en-US', { style: 'percent', maxi
 type PageProps = {
   searchParams?: {
     range?: string;
+    excludeAdmin?: string | string[];
   };
 };
+
+const ADMIN_EXCLUDED_USER_IDS = ['301cc489-d689-477f-94c4-0b051deda0bc'];
 
 export default async function AdminInsightsPage({ searchParams }: PageProps) {
   try {
@@ -31,7 +34,10 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
     notFound();
   }
 
-  const metrics = await fetchAdminMetrics(searchParams?.range);
+  const excludeAdmin = resolveExcludeAdminParam(searchParams?.excludeAdmin);
+  const metrics = await fetchAdminMetrics(searchParams?.range, {
+    excludeUserIds: excludeAdmin ? ADMIN_EXCLUDED_USER_IDS : [],
+  });
   const quickInsights = buildQuickInsights(metrics);
   const growthRows = buildGrowthRows(metrics);
   const topupRows = buildAmountRows(metrics.timeseries.topupsDaily);
@@ -49,7 +55,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
             Postgres in real time.
           </p>
         </div>
-        <RangeSelector current={metrics.range.label} />
+        <RangeSelector current={metrics.range.label} excludeAdmin={excludeAdmin} />
       </header>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -353,6 +359,14 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
   );
 }
 
+function resolveExcludeAdminParam(value: string | string[] | undefined): boolean {
+  const resolved = Array.isArray(value) ? value[value.length - 1] : value;
+  if (resolved == null) return true;
+  const normalized = resolved.trim().toLowerCase();
+  if (!normalized) return true;
+  return !['0', 'false', 'no', 'off'].includes(normalized);
+}
+
 function SectionCard({
   title,
   description,
@@ -383,9 +397,12 @@ function StatCard({ label, value, helper }: { label: string; value: string; help
   );
 }
 
-function RangeSelector({ current }: { current: MetricsRangeLabel }) {
+function RangeSelector({ current, excludeAdmin }: { current: MetricsRangeLabel; excludeAdmin: boolean }) {
   return (
-    <form className="flex items-center gap-2 rounded-full border border-white/40 bg-white/80 px-3 py-2 text-sm text-text-secondary shadow-card" method="get">
+    <form
+      className="flex flex-wrap items-center gap-3 rounded-full border border-white/40 bg-white/80 px-3 py-2 text-sm text-text-secondary shadow-card"
+      method="get"
+    >
       <label htmlFor="range" className="text-xs font-semibold uppercase tracking-[0.2em]">
         Range
       </label>
@@ -401,6 +418,17 @@ function RangeSelector({ current }: { current: MetricsRangeLabel }) {
           </option>
         ))}
       </select>
+      <input type="hidden" name="excludeAdmin" value="0" />
+      <label className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted">
+        <input
+          type="checkbox"
+          name="excludeAdmin"
+          value="1"
+          defaultChecked={excludeAdmin}
+          className="h-4 w-4 rounded border border-white/60 text-text-primary accent-text-primary"
+        />
+        Exclude admin user
+      </label>
       <button
         type="submit"
         className="rounded-full bg-text-primary px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white"

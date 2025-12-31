@@ -19,6 +19,10 @@ import type {
 } from '@/lib/admin/types';
 export type { AdminMetrics, MetricsRangeLabel } from '@/lib/admin/types';
 
+type AdminMetricsOptions = {
+  excludeUserIds?: string[];
+};
+
 type CountRow = {
   bucket: Date | string;
   count: number | string | null;
@@ -261,7 +265,12 @@ function buildEmptyMetrics(range: MetricsRange): AdminMetrics {
   };
 }
 
-async function loadEngineUsageRows(): Promise<EngineAggRow[]> {
+async function loadEngineUsageRows(excludedUserIds?: string[]): Promise<EngineAggRow[]> {
+  const filteredUserIds = (excludedUserIds ?? []).map((userId) => userId.trim()).filter(Boolean);
+  const hasExcludedUsers = filteredUserIds.length > 0;
+  const excludeUserIdClause = hasExcludedUsers ? 'AND user_id <> ALL($1::text[])' : '';
+  const params = hasExcludedUsers ? [filteredUserIds] : undefined;
+
   return safeQuery<EngineAggRow>(
     `
       WITH recent_jobs AS (
@@ -274,6 +283,7 @@ async function loadEngineUsageRows(): Promise<EngineAggRow[]> {
         WHERE status = 'completed'
           AND created_at >= NOW() - INTERVAL '${ENGINE_USAGE_WINDOW_DAYS} days'
           AND user_id IS NOT NULL
+          ${excludeUserIdClause}
       ),
       charge_window AS (
         SELECT job_id, COALESCE(SUM(amount_cents), 0)::bigint AS amount_cents
@@ -292,7 +302,8 @@ async function loadEngineUsageRows(): Promise<EngineAggRow[]> {
       LEFT JOIN charge_window c ON c.job_id = r.job_id
       GROUP BY r.engine_id, r.engine_label
       ORDER BY amount_cents DESC NULLS LAST
-    `
+    `,
+    params
   );
 }
 
@@ -320,8 +331,21 @@ function mapEngineUsage(rows: EngineAggRow[]): EngineUsage[] {
   });
 }
 
-export async function fetchAdminMetrics(rangeParam?: string | null): Promise<AdminMetrics> {
+export async function fetchAdminMetrics(
+  rangeParam?: string | null,
+  options?: AdminMetricsOptions
+): Promise<AdminMetrics> {
   const range = resolveRange(rangeParam);
+  const excludedUserIds = (options?.excludeUserIds ?? []).map((userId) => userId.trim()).filter(Boolean);
+  const hasExcludedUsers = excludedUserIds.length > 0;
+  const exclusionParams = hasExcludedUsers ? [excludedUserIds] : undefined;
+  const excludeUserIdClause = (column: string, options?: { allowNulls?: boolean }) => {
+    if (!hasExcludedUsers) return '';
+    if (options?.allowNulls) {
+      return `AND (${column} IS NULL OR ${column} <> ALL($1::text[]))`;
+    }
+    return `AND ${column} <> ALL($1::text[])`;
+  };
 
   if (!isDatabaseConfigured()) {
     return buildEmptyMetrics(range);
@@ -357,10 +381,12 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
         SELECT date_trunc('day', created_at) AS bucket, COUNT(*)::bigint AS count
         FROM profiles
         WHERE synced_from_supabase
+          ${excludeUserIdClause('id::text')}
           AND created_at >= NOW() - INTERVAL '${range.days} days'
         GROUP BY bucket
         ORDER BY bucket ASC
-      `
+      `,
+      exclusionParams
     ),
     safeQuery<CountRow>(
       `
@@ -369,9 +395,11 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
         WHERE created_at >= NOW() - INTERVAL '${range.days} days'
           AND status = 'completed'
           AND user_id IS NOT NULL
+          ${excludeUserIdClause('user_id')}
         GROUP BY bucket
         ORDER BY bucket ASC
-      `
+      `,
+      exclusionParams
     ),
     safeQuery<AmountRow>(
       `
@@ -382,9 +410,11 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
         FROM app_receipts
         WHERE type = 'topup'
           AND created_at >= NOW() - INTERVAL '${range.days} days'
+          ${excludeUserIdClause('user_id', { allowNulls: true })}
         GROUP BY bucket
         ORDER BY bucket ASC
-      `
+      `,
+      exclusionParams
     ),
     safeQuery<AmountRow>(
       `
@@ -395,19 +425,23 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
         FROM app_receipts
         WHERE type = 'charge'
           AND created_at >= NOW() - INTERVAL '${range.days} days'
+          ${excludeUserIdClause('user_id', { allowNulls: true })}
         GROUP BY bucket
         ORDER BY bucket ASC
-      `
+      `,
+      exclusionParams
     ),
     safeQuery<CountRow>(
       `
         SELECT date_trunc('month', created_at) AS bucket, COUNT(*)::bigint AS count
         FROM profiles
         WHERE synced_from_supabase
+          ${excludeUserIdClause('id::text')}
           AND created_at >= NOW() - INTERVAL '12 months'
         GROUP BY bucket
         ORDER BY bucket ASC
-      `
+      `,
+      exclusionParams
     ),
     safeQuery<AmountRow>(
       `
@@ -418,9 +452,11 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
         FROM app_receipts
         WHERE type = 'topup'
           AND created_at >= NOW() - INTERVAL '12 months'
+          ${excludeUserIdClause('user_id', { allowNulls: true })}
         GROUP BY bucket
         ORDER BY bucket ASC
-      `
+      `,
+      exclusionParams
     ),
     safeQuery<AmountRow>(
       `
@@ -431,17 +467,30 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
         FROM app_receipts
         WHERE type = 'charge'
           AND created_at >= NOW() - INTERVAL '12 months'
+          ${excludeUserIdClause('user_id', { allowNulls: true })}
         GROUP BY bucket
         ORDER BY bucket ASC
-      `
+      `,
+      exclusionParams
     ),
-    safeQuery<SummaryRow>(`SELECT COUNT(*)::bigint AS total FROM profiles WHERE synced_from_supabase LIMIT 1`),
+    safeQuery<SummaryRow>(
+      `
+        SELECT COUNT(*)::bigint AS total
+        FROM profiles
+        WHERE synced_from_supabase
+          ${excludeUserIdClause('id::text')}
+        LIMIT 1
+      `,
+      exclusionParams
+    ),
     safeQuery<SummaryRow>(
       `
         SELECT COUNT(DISTINCT user_id)::bigint AS total
         FROM app_receipts
         WHERE type = 'topup'
-      `
+          ${excludeUserIdClause('user_id', { allowNulls: true })}
+      `,
+      exclusionParams
     ),
     safeQuery<SummaryRow>(
       `
@@ -450,35 +499,43 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
         WHERE status = 'completed'
           AND created_at >= NOW() - INTERVAL '30 days'
           AND user_id IS NOT NULL
-      `
+          ${excludeUserIdClause('user_id')}
+      `,
+      exclusionParams
     ),
     safeQuery<SummaryRow>(
       `
         SELECT COALESCE(SUM(amount_cents), 0)::bigint AS total
         FROM app_receipts
         WHERE type = 'topup'
-      `
+          ${excludeUserIdClause('user_id', { allowNulls: true })}
+      `,
+      exclusionParams
     ),
     safeQuery<SummaryRow>(
       `
         SELECT COALESCE(SUM(amount_cents), 0)::bigint AS total
         FROM app_receipts
         WHERE type = 'charge'
-      `
+          ${excludeUserIdClause('user_id', { allowNulls: true })}
+      `,
+      exclusionParams
     ),
-    loadEngineUsageRows(),
+    loadEngineUsageRows(excludedUserIds),
     safeQuery<FunnelRow>(
       `
         WITH first_topups AS (
           SELECT user_id, MIN(created_at) AS first_topup_at
           FROM app_receipts
           WHERE type = 'topup'
+            ${excludeUserIdClause('user_id', { allowNulls: true })}
           GROUP BY user_id
         ),
         first_renders AS (
           SELECT user_id, MIN(created_at) AS first_render_at
           FROM app_jobs
           WHERE status = 'completed'
+            ${excludeUserIdClause('user_id', { allowNulls: true })}
           GROUP BY user_id
         )
         SELECT
@@ -490,7 +547,8 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
           )::bigint AS converted_within_30d
         FROM first_topups ft
         LEFT JOIN first_renders fr ON fr.user_id = ft.user_id
-      `
+      `,
+      exclusionParams
     ),
     safeQuery<DurationRow>(
       `
@@ -498,6 +556,7 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
           SELECT user_id, MIN(created_at) AS first_topup_at
           FROM app_receipts
           WHERE type = 'topup'
+            ${excludeUserIdClause('user_id', { allowNulls: true })}
           GROUP BY user_id
         )
         SELECT
@@ -505,9 +564,11 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
         FROM first_topups ft
         JOIN profiles p ON p.id::text = ft.user_id
         WHERE p.synced_from_supabase
+          ${excludeUserIdClause('p.id::text')}
           AND p.created_at IS NOT NULL
           AND ft.first_topup_at >= p.created_at
-      `
+      `,
+      exclusionParams
     ),
     safeQuery<DurationRow>(
       `
@@ -515,12 +576,14 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
           SELECT user_id, MIN(created_at) AS first_topup_at
           FROM app_receipts
           WHERE type = 'topup'
+            ${excludeUserIdClause('user_id', { allowNulls: true })}
           GROUP BY user_id
         ),
         first_renders AS (
           SELECT user_id, MIN(created_at) AS first_render_at
           FROM app_jobs
           WHERE status = 'completed'
+            ${excludeUserIdClause('user_id', { allowNulls: true })}
           GROUP BY user_id
         )
         SELECT
@@ -528,7 +591,8 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
         FROM first_topups ft
         JOIN first_renders fr ON fr.user_id = ft.user_id
         WHERE fr.first_render_at >= ft.first_topup_at
-      `
+      `,
+      exclusionParams
     ),
     safeQuery<BehaviorRow>(
       `
@@ -536,6 +600,7 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
           SELECT DISTINCT user_id
           FROM app_receipts
           WHERE type = 'topup'
+            ${excludeUserIdClause('user_id', { allowNulls: true })}
         ),
         render_counts AS (
           SELECT j.user_id, COUNT(*)::bigint AS render_count
@@ -543,13 +608,15 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
           JOIN paying_users p ON p.user_id = j.user_id
           WHERE j.status = 'completed'
             AND j.created_at >= NOW() - INTERVAL '30 days'
+            ${excludeUserIdClause('j.user_id')}
           GROUP BY j.user_id
         )
         SELECT
           AVG(render_count)::numeric AS avg_renders,
           PERCENTILE_DISC(0.5) WITHIN GROUP (ORDER BY render_count) AS median_renders
         FROM render_counts
-      `
+      `,
+      exclusionParams
     ),
     safeQuery<ReturningRow>(
       `
@@ -559,6 +626,7 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
           WHERE status = 'completed'
             AND user_id IS NOT NULL
             AND created_at >= NOW() - INTERVAL '7 days'
+            ${excludeUserIdClause('user_id')}
         ),
         previous_window AS (
           SELECT DISTINCT user_id
@@ -567,6 +635,7 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
             AND user_id IS NOT NULL
             AND created_at >= NOW() - INTERVAL '14 days'
             AND created_at < NOW() - INTERVAL '7 days'
+            ${excludeUserIdClause('user_id')}
         )
         SELECT COUNT(*)::bigint AS returning_count
         FROM (
@@ -574,7 +643,8 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
           INTERSECT
           SELECT user_id FROM previous_window
         ) overlap
-      `
+      `,
+      exclusionParams
     ),
     safeQuery<WhaleRow>(
       `
@@ -582,12 +652,14 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
           SELECT user_id, SUM(amount_cents)::bigint AS lifetime_topup_cents, MIN(created_at) AS first_topup_at
           FROM app_receipts
           WHERE type = 'topup'
+            ${excludeUserIdClause('user_id', { allowNulls: true })}
           GROUP BY user_id
         ),
         charge_totals AS (
           SELECT user_id, SUM(amount_cents)::bigint AS lifetime_charge_cents
           FROM app_receipts
           WHERE type = 'charge'
+            ${excludeUserIdClause('user_id', { allowNulls: true })}
           GROUP BY user_id
         ),
         job_stats AS (
@@ -598,6 +670,7 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
             MAX(created_at) AS last_render_at
           FROM app_jobs
           WHERE status = 'completed'
+            ${excludeUserIdClause('user_id', { allowNulls: true })}
           GROUP BY user_id
         )
         SELECT
@@ -619,9 +692,11 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
         LEFT JOIN charge_totals c ON c.user_id = t.user_id
         LEFT JOIN job_stats j ON j.user_id = t.user_id
         LEFT JOIN profiles p ON p.id::text = t.user_id AND p.synced_from_supabase
+          ${excludeUserIdClause('p.id::text')}
         ORDER BY t.lifetime_topup_cents DESC
         LIMIT 10
-      `
+      `,
+      exclusionParams
     ),
     safeQuery<HealthRow>(
       `
@@ -630,7 +705,9 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
           COUNT(*) FILTER (WHERE status IN ('failed', 'completed'))::bigint AS total_count
         FROM app_jobs
         WHERE created_at >= NOW() - INTERVAL '30 days'
-      `
+          ${excludeUserIdClause('user_id', { allowNulls: true })}
+      `,
+      exclusionParams
     ),
     safeQuery<FailedEngineRow>(
       `
@@ -641,10 +718,12 @@ export async function fetchAdminMetrics(rangeParam?: string | null): Promise<Adm
           COUNT(*) FILTER (WHERE status IN ('failed', 'completed'))::bigint AS total_count
         FROM app_jobs
         WHERE created_at >= NOW() - INTERVAL '30 days'
+          ${excludeUserIdClause('user_id', { allowNulls: true })}
         GROUP BY engine_id, engine_label
         HAVING COUNT(*) FILTER (WHERE status IN ('failed', 'completed')) > 0
         ORDER BY failed_count DESC
-      `
+      `,
+      exclusionParams
     ),
   ]);
 
