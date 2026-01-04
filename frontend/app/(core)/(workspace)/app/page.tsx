@@ -3631,7 +3631,16 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
     const runIteration = async (iterationIndex: number) => {
       const isImageDrivenMode = form.mode === 'i2v' || form.mode === 'i2i';
-      if (isImageDrivenMode && !primaryImageUrl) {
+      const isVeoFirstLast = isImageDrivenMode && selectedEngine.id === 'veo-3-1-first-last';
+      const firstFrameAttachment = isVeoFirstLast
+        ? inputsPayload?.find((attachment) => attachment.slotId === 'first_frame_url')
+        : null;
+      const lastFrameAttachment = isVeoFirstLast
+        ? inputsPayload?.find((attachment) => attachment.slotId === 'last_frame_url')
+        : null;
+      const hasFirstLastFrames = Boolean(firstFrameAttachment && lastFrameAttachment);
+
+      if (isImageDrivenMode && !primaryImageUrl && !hasFirstLastFrames) {
         const guardMessage = selectedEngine.id.startsWith('sora-2')
           ? 'Ajoutez une image (URL ou fichier) pour lancer Image → Video avec Sora.'
           : 'Add at least one reference image (URL or upload) before running this mode.';
@@ -3643,9 +3652,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         showNotice('Add 1–3 reference videos (MP4/MOV) before running Reference → Video.');
         return;
       }
-      if (isImageDrivenMode && selectedEngine.id === 'veo-3-1-first-last') {
-        const firstFrameAttachment = inputsPayload?.find((attachment) => attachment.slotId === 'first_frame_url');
-        const lastFrameAttachment = inputsPayload?.find((attachment) => attachment.slotId === 'last_frame_url');
+      if (isVeoFirstLast) {
         if (!firstFrameAttachment || !lastFrameAttachment) {
           showNotice('Upload both a first and last frame before generating with Veo First/Last.');
           return;
