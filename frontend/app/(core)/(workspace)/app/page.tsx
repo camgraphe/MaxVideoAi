@@ -3631,7 +3631,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
     const runIteration = async (iterationIndex: number) => {
       const isImageDrivenMode = form.mode === 'i2v' || form.mode === 'i2i';
-      const isVeoFirstLast = isImageDrivenMode && selectedEngine.id === 'veo-3-1-first-last';
+      const isVeoFirstLast =
+        isImageDrivenMode
+        && (selectedEngine.id === 'veo-3-1-first-last' || selectedEngine.id === 'veo-3-1-first-last-fast');
       const firstFrameAttachment = isVeoFirstLast
         ? inputsPayload?.find((attachment) => attachment.slotId === 'first_frame_url')
         : null;
