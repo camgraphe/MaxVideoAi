@@ -11,6 +11,7 @@ import { getMembershipTiers } from '@/lib/membership';
 import FaqJsonLd from '@/components/FaqJsonLd';
 import { localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
+import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { buildMetadataUrls, SITE_BASE_URL } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
@@ -163,6 +164,18 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
   const breadcrumbLabels = getBreadcrumbLabels(locale as AppLocale);
   const localePrefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
   const homeUrl = `${SITE_BASE_URL}${localePrefix || ''}`;
+  const exploreTitle =
+    locale === 'fr' ? 'Explorer les moteurs' : locale === 'es' ? 'Explorar motores' : 'Explore engines';
+  const exploreModelsLabel = locale === 'fr' ? 'Modèles' : locale === 'es' ? 'Modelos' : 'Models';
+  const exploreExamplesLabel = locale === 'fr' ? 'Exemples' : locale === 'es' ? 'Ejemplos' : 'Examples';
+  const exploreLinks = [
+    { href: localizePathFromEnglish(locale, '/models'), label: exploreModelsLabel },
+    { href: localizePathFromEnglish(locale, '/examples'), label: exploreExamplesLabel },
+    { href: localizePathFromEnglish(locale, '/models/sora-2'), label: 'Sora 2' },
+    { href: localizePathFromEnglish(locale, '/models/veo-3-1'), label: 'Veo 3.1' },
+    { href: localizePathFromEnglish(locale, '/models/kling-2-5-turbo'), label: 'Kling' },
+    { href: localizePathFromEnglish(locale, '/models/pika-text-to-video'), label: 'Pika' },
+  ];
   const breadcrumbJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -343,6 +356,23 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           </p>
         ) : null}
       </header>
+
+      <section className="mt-6 rounded-card border border-hairline bg-white/80 p-4 text-sm text-text-secondary shadow-card">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{exploreTitle}</span>
+          <div className="flex flex-wrap gap-2">
+            {exploreLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-xs font-semibold text-text-secondary transition hover:border-accent hover:text-accent"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section className="mt-8 rounded-card border border-hairline bg-white/90 p-6 text-sm text-text-secondary shadow-card">
         <h2 className="text-lg font-semibold text-text-primary">

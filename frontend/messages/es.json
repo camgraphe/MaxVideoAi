@@ -786,6 +786,8 @@
     "note": "Los precios de Fal cambian rápido; confirma la pastilla Precio-Antes o tu clave directa antes de lanzar.",
     "detail": {
       "backLabel": "← Volver a los modelos",
+      "examplesLinkLabel": "Ver ejemplos",
+      "pricingLinkLabel": "Comparar precios",
       "overviewTitle": "Resumen",
       "overview": {
         "brand": "Marca",

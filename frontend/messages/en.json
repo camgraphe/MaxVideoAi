@@ -702,6 +702,8 @@
     "note": "",
     "detail": {
       "backLabel": "← Back to models",
+      "examplesLinkLabel": "See examples",
+      "pricingLinkLabel": "Compare pricing",
       "overviewTitle": "Overview",
       "overview": {
         "brand": "Brand",

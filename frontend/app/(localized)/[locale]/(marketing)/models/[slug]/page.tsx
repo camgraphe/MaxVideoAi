@@ -8,6 +8,7 @@ import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
 import { listFalEngines, getFalEngineBySlug, type FalEngineEntry } from '@/config/falEngines';
 import { locales, localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
+import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
@@ -459,6 +460,8 @@ function applyPricingSection(sections: SpecSection[], locale: AppLocale, pricing
 
 type DetailCopy = {
   backLabel: string;
+  examplesLinkLabel: string;
+  pricingLinkLabel: string;
   overviewTitle: string;
   overview: {
     brand: string;
@@ -485,6 +488,8 @@ type DetailCopy = {
 
 const DEFAULT_DETAIL_COPY: DetailCopy = {
   backLabel: '← Back to models',
+  examplesLinkLabel: 'See examples',
+  pricingLinkLabel: 'Compare pricing',
   overviewTitle: 'Overview',
   overview: {
     brand: 'Brand',
@@ -872,12 +877,16 @@ function pickDemoMedia(
 async function renderSoraModelPage({
   engine,
   backLabel,
+  examplesLinkLabel,
+  pricingLinkLabel,
   localizedContent,
   locale,
   breadcrumb,
 }: {
   engine: FalEngineEntry;
   backLabel: string;
+  examplesLinkLabel: string;
+  pricingLinkLabel: string;
   localizedContent: EngineLocalizedContent;
   locale: AppLocale;
   breadcrumb: DetailCopy['breadcrumb'];
@@ -1071,12 +1080,15 @@ function Sora2PageLayout({
   const heroDesc1 = copy.heroDesc1 ?? localizedContent.overview ?? localizedContent.seo.description ?? null;
   const heroDesc2 = copy.heroDesc2;
   const isEsLocale = locale === 'es';
+  const localizedExamplesPath = localizePathFromEnglish(locale, '/examples');
+  const localizedPricingPath = localizePathFromEnglish(locale, '/pricing');
   const modelsBase = (MODELS_BASE_PATH_MAP[locale] ?? 'models').replace(/^\/+|\/+$/g, '');
   const localizeModelsPath = (targetSlug?: string) => {
     const slugPart = targetSlug ? `/${targetSlug.replace(/^\/+/, '')}` : '';
     return `/${modelsBase}${slugPart}`.replace(/\/{2,}/g, '/');
   };
   const galleryEngineSlug = engineSlug;
+  const examplesLinkHref = `${localizedExamplesPath}?engine=${encodeURIComponent(galleryEngineSlug)}`;
   const primaryCta = copy.primaryCta ?? localizedContent.hero?.ctaPrimary?.label ?? 'Start generating';
   const primaryCtaHref = copy.primaryCtaHref ?? localizedContent.hero?.ctaPrimary?.href ?? '/app?engine=sora-2';
   const secondaryCta = copy.secondaryCta;
@@ -1252,6 +1264,14 @@ function Sora2PageLayout({
                   {secondaryCta}
                 </Link>
               ) : null}
+            </div>
+            <div className="flex flex-wrap justify-center gap-4 text-sm">
+              <Link href={examplesLinkHref} className="font-semibold text-accent hover:text-accentSoft">
+                {examplesLinkLabel}
+              </Link>
+              <Link href={localizedPricingPath} className="font-semibold text-accent hover:text-accentSoft">
+                {pricingLinkLabel}
+              </Link>
             </div>
             {isEsLocale && howToLatamTitle && howToLatamSteps.length ? (
               <section className="rounded-2xl border border-hairline bg-white/70 p-5 shadow-card">
@@ -1872,6 +1892,8 @@ export default async function ModelDetailPage({ params }: PageParams) {
     return await renderSoraModelPage({
       engine,
       backLabel: detailCopy.backLabel,
+      examplesLinkLabel: detailCopy.examplesLinkLabel,
+      pricingLinkLabel: detailCopy.pricingLinkLabel,
       localizedContent,
       locale: activeLocale,
       breadcrumb: detailCopy.breadcrumb,
@@ -2013,6 +2035,9 @@ export default async function ModelDetailPage({ params }: PageParams) {
         href: '/generate',
       }
     : null;
+  const localizedExamplesPath = localizePathFromEnglish(activeLocale, '/examples');
+  const localizedPricingPath = localizePathFromEnglish(activeLocale, '/pricing');
+  const examplesLinkHref = `${localizedExamplesPath}?engine=${encodeURIComponent(engine.modelSlug ?? slug)}`;
 
   const heroPosterSrc = localizedContent.seo.image ?? engine.media?.imagePath ?? null;
   const heroPosterPreload = heroPosterSrc ? buildOptimizedPosterUrl(heroPosterSrc) ?? heroPosterSrc : null;
@@ -2121,6 +2146,14 @@ export default async function ModelDetailPage({ params }: PageParams) {
             ))}
         </div>
       ) : null}
+      <div className="mt-3 flex flex-wrap gap-4 text-sm">
+        <Link href={examplesLinkHref} className="font-semibold text-accent hover:text-accentSoft">
+          {detailCopy.examplesLinkLabel}
+        </Link>
+        <Link href={localizedPricingPath} className="font-semibold text-accent hover:text-accentSoft">
+          {detailCopy.pricingLinkLabel}
+        </Link>
+      </div>
 
       {tocItems.length ? (
         <nav

@@ -786,6 +786,8 @@
     "note": "Les tarifs Fal évoluent vite : vérifiez la pastille Prix-Avant ou votre clé directe avant chaque lancement.",
     "detail": {
       "backLabel": "← Retour aux modèles",
+      "examplesLinkLabel": "Voir des exemples",
+      "pricingLinkLabel": "Comparer les tarifs",
       "overviewTitle": "Aperçu",
       "overview": {
         "brand": "Marque",

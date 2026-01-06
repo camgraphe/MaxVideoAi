@@ -11,6 +11,7 @@ import { listFalEngines } from '@/config/falEngines';
 import { ExamplesGalleryGrid, type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
+import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { buildMetadataUrls, SITE_BASE_URL } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
@@ -450,6 +451,16 @@ const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
   'ltx-2': { bg: 'bg-[#E6F9FF]', text: 'text-[#0A6C80]' },
 };
 
+const ENGINE_MODEL_LINKS: Record<string, string> = {
+  'sora-2': 'sora-2',
+  veo: 'veo-3-1',
+  kling: 'kling-2-5-turbo',
+  wan: 'wan-2-6',
+  pika: 'pika-text-to-video',
+  hailuo: 'minimax-hailuo-02-text',
+  'ltx-2': 'ltx-2',
+};
+
   const engineFilterOptions = PREFERRED_ENGINE_ORDER.map((preferredId) => {
     const key = normalizeFilterId(preferredId);
     const existing = engineFilterMap.get(key);
@@ -470,6 +481,17 @@ const selectedOption =
       ? engineFilterOptions.find((option) => option.key === normalizeFilterId(collapsedEngineParam))
       : null;
   const selectedEngine = selectedOption?.id ?? null;
+  const selectedEngineLabel = selectedOption?.label ?? 'Model';
+  const modelSlug = selectedEngine ? ENGINE_MODEL_LINKS[selectedEngine.toLowerCase()] ?? null : null;
+  const modelPath = modelSlug ? localizePathFromEnglish(locale, `/models/${modelSlug}`) : null;
+  const pricingPath = localizePathFromEnglish(locale, '/pricing');
+  const engineModelLinkLabel =
+    locale === 'fr'
+      ? `Voir le modèle ${selectedEngineLabel}`
+      : locale === 'es'
+        ? `Ver modelo ${selectedEngineLabel}`
+        : `View ${selectedEngineLabel} model`;
+  const pricingLinkLabel = locale === 'fr' ? 'Comparer les tarifs' : locale === 'es' ? 'Comparar precios' : 'Compare pricing';
 
 const videos = selectedEngine
   ? allVideos.filter((video) => {
@@ -681,6 +703,16 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
           </div>
         ) : null}
       </section>
+      {selectedEngine && modelPath ? (
+        <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-text-secondary">
+          <Link href={modelPath} className="font-semibold text-accent hover:text-accentSoft">
+            {engineModelLinkLabel}
+          </Link>
+          <Link href={pricingPath} className="font-semibold text-accent hover:text-accentSoft">
+            {pricingLinkLabel}
+          </Link>
+        </div>
+      ) : null}
 
       <section className="mt-8 overflow-hidden rounded-[12px] border border-hairline bg-white/80 shadow-card">
         <ExamplesGalleryGrid
