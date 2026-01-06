@@ -1251,7 +1251,9 @@
   "gallery": {
     "meta": {
       "title": "AI Video Examples – Sora 2, Veo 3.1, Pika & Kling | MaxVideoAI",
-      "description": "Explore AI video examples generated with Sora 2, Veo 3.1, Pika, Kling, Wan and more. Preview motion, style, prompts and duration, then clone any shot into your own workspace in MaxVideoAI."
+      "description": "Explore AI video examples generated with Sora 2, Veo 3.1, Pika, Kling, Wan and more. Preview motion, style, prompts and duration, then clone any shot into your own workspace in MaxVideoAI.",
+      "title_engine": "AI Video Examples — {engineName} | MaxVideoAI",
+      "description_engine": "Browse {engineName} video examples with prompts, duration, audio info, and pricing shown per clip. Clone any shot into the workspace."
     }
   },
   "workspace": {

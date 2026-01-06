@@ -170,6 +170,28 @@ function resolveCanonicalEngineParam(raw: string | string[] | undefined): string
   return descriptor?.id.toLowerCase() ?? canonicalEngineParam.toLowerCase();
 }
 
+function resolveEngineLabel(raw: string | string[] | undefined): string | null {
+  const engineParam = Array.isArray(raw) ? raw[0] : raw;
+  const engineParamValue = typeof engineParam === 'string' ? engineParam.trim() : '';
+  if (!engineParamValue) return null;
+  const canonicalEngineParam = normalizeEngineId(engineParamValue) ?? engineParamValue;
+  const engineMeta = ENGINE_META.get(canonicalEngineParam.toLowerCase()) ?? null;
+  const descriptor = resolveFilterDescriptor(canonicalEngineParam, engineMeta, canonicalEngineParam);
+  return descriptor?.label ?? engineMeta?.label ?? canonicalEngineParam;
+}
+
+function buildExamplesCanonical(baseCanonical: string, engineParam: string, page: number | null): string {
+  const params = new URLSearchParams();
+  if (engineParam) {
+    params.set('engine', engineParam);
+  }
+  if (page && page > 1) {
+    params.set('page', String(page));
+  }
+  const suffix = params.toString();
+  return suffix ? `${baseCanonical}?${suffix}` : baseCanonical;
+}
+
 export async function generateMetadata({
   params,
   searchParams,
@@ -181,27 +203,21 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: 'gallery.meta' });
   const metadataUrls = buildMetadataUrls(locale, GALLERY_SLUG_MAP, { englishPath: '/examples' });
   const collapsedEngineParam = resolveCanonicalEngineParam(searchParams.engine);
+  const engineLabel = resolveEngineLabel(searchParams.engine);
   const pageParam = Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page;
   const parsedPage = pageParam ? Number.parseInt(pageParam, 10) : NaN;
   const normalizedPage = Number.isFinite(parsedPage) && parsedPage > 1 ? parsedPage : null;
   const latest = await listExamples('date-desc', 20);
   const firstWithThumb = latest.find((video) => Boolean(video.thumbUrl));
   const ogImage = toAbsoluteUrl(firstWithThumb?.thumbUrl) ?? `${SITE}/og/price-before.png`;
-  const canonicalParams = new URLSearchParams();
-  if (collapsedEngineParam) {
-    canonicalParams.set('engine', collapsedEngineParam);
-  }
-  if (normalizedPage) {
-    canonicalParams.set('page', String(normalizedPage));
-  }
-  const canonical = canonicalParams.toString()
-    ? `${metadataUrls.canonical}?${canonicalParams.toString()}`
-    : metadataUrls.canonical;
+  const canonical = buildExamplesCanonical(metadataUrls.canonical, collapsedEngineParam, normalizedPage);
+  const title = engineLabel ? t('title_engine', { engineName: engineLabel }) : t('title');
+  const description = engineLabel ? t('description_engine', { engineName: engineLabel }) : t('description');
 
   return buildSeoMetadata({
     locale,
-    title: t('title'),
-    description: t('description'),
+    title,
+    description,
     hreflangGroup: 'examples',
     slugMap: GALLERY_SLUG_MAP,
     image: ogImage,
@@ -555,7 +571,11 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
     /\/{2,}/g,
     '/'
   );
-  const canonicalUrl = `${SITE}${canonicalPath}`;
+  const canonicalUrl = buildExamplesCanonical(
+    `${SITE}${canonicalPath}`,
+    collapsedEngineParam,
+    currentPage > 1 ? currentPage : null
+  );
 
   const itemListJson =
     itemListElements.length > 0
