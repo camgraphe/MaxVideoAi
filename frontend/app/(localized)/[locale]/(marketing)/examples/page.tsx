@@ -359,6 +359,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
   const sort = getSort(sortParam);
   const collapsedEngineParam = resolveCanonicalEngineParam(searchParams.engine);
+  const engineLabel = resolveEngineLabel(searchParams.engine);
   const pageParam = Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page;
   const parsedPage = (() => {
     if (typeof pageParam !== 'string' || pageParam.trim().length === 0) {
