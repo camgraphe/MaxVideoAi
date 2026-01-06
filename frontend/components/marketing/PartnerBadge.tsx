@@ -10,7 +10,7 @@ export function PartnerBadge({ className }: PartnerBadgeProps) {
     .filter(Boolean)
     .join(' ');
   const badgeHtml =
-    '<a href="https://theresanaiforthat.com/ai/maxvideoai/?ref=featured&v=8201228" target="_blank" rel="nofollow"><img width="300" src="https://media.theresanaiforthat.com/featured-on-taaft.png?width=600" alt="Featured on There\'s An AI For That"></a>';
+    '<a href="https://theresanaiforthat.com/ai/maxvideoai/?ref=featured&v=8201228" target="_blank" rel="nofollow"><img width="300" src="https://media.theresanaiforthat.com/featured-on-taaft.png?width=600"></a>';
 
   return (
     <div className={classes} dangerouslySetInnerHTML={{ __html: badgeHtml }} />
