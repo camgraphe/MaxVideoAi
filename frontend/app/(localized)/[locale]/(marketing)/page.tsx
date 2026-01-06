@@ -12,7 +12,7 @@ import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
 import { MosaicBackdrop, type MosaicBackdropMedia } from '@/components/marketing/MosaicBackdrop';
 import type { CompareEngineCard } from '@/components/marketing/CompareEnginesCarousel';
 import { CURRENCY_LOCALE } from '@/lib/intl';
-import { PartnerBadge } from '@/components/marketing/PartnerBadge';
+import { PartnerBadges } from '@/components/marketing/PartnerBadges';
 import { getHomepageSlots, HERO_SLOT_KEYS } from '@/server/homepage';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { listExamples } from '@/server/videos';
@@ -340,6 +340,7 @@ async function resolveHeroTilePrices(tiles: HeroTilePricingInput[]) {
 export default async function HomePage({ params }: { params?: { locale?: AppLocale } } = {}) {
   const { dictionary } = await resolveDictionary({ locale: params?.locale });
   const home = dictionary.home;
+  const showPartnerBadges = !params?.locale;
   const pricingRules = await listPricingRules();
   const pricingRulesLite: PricingRuleLite[] = pricingRules.map((rule) => ({
     id: rule.id,
@@ -740,12 +741,18 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
           </div>
         </section>
       </MosaicBackdrop>
+      {showPartnerBadges ? (
+        <section className="mx-auto mt-14 max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="rounded-card border border-hairline bg-white/70 p-6 shadow-card">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Partners</p>
+            <h2 className="mt-2 text-lg font-semibold text-text-primary">Featured on</h2>
+            <div className="mt-4">
+              <PartnerBadges className="opacity-90 transition hover:opacity-100" />
+            </div>
+          </div>
+        </section>
+      ) : null}
       <MiniFAQ faq={home.faq} />
-      <section className="mx-auto mt-10 max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap items-center justify-start gap-4 md:justify-end">
-          <PartnerBadge className="opacity-80 transition hover:opacity-100" />
-        </div>
-      </section>
       <Script id="software-jsonld" type="application/ld+json">
         {JSON.stringify(softwareSchema)}
       </Script>
