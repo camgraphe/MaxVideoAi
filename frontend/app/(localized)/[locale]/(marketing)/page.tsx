@@ -337,9 +337,10 @@ async function resolveHeroTilePrices(tiles: HeroTilePricingInput[]) {
   return Object.fromEntries(entries);
 }
 
-export default async function HomePage() {
-  const { dictionary } = await resolveDictionary();
+export default async function HomePage({ params }: { params?: { locale?: AppLocale } } = {}) {
+  const { dictionary } = await resolveDictionary({ locale: params?.locale });
   const home = dictionary.home;
+  const showPartnerBadge = !params?.locale;
   const pricingRules = await listPricingRules();
   const pricingRulesLite: PricingRuleLite[] = pricingRules.map((rule) => ({
     id: rule.id,
@@ -741,11 +742,13 @@ export default async function HomePage() {
         </section>
       </MosaicBackdrop>
       <MiniFAQ faq={home.faq} />
-      <section className="mx-auto mt-10 max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap items-center justify-start gap-4 md:justify-end">
-          <PartnerBadge className="opacity-80 transition hover:opacity-100" />
-        </div>
-      </section>
+      {showPartnerBadge ? (
+        <section className="mx-auto mt-10 max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-wrap items-center justify-start gap-4 md:justify-end">
+            <PartnerBadge className="opacity-80 transition hover:opacity-100" />
+          </div>
+        </section>
+      ) : null}
       <Script id="software-jsonld" type="application/ld+json">
         {JSON.stringify(softwareSchema)}
       </Script>
