@@ -397,8 +397,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const canonical = `${SITE}/video/${encodeURIComponent(video.id)}`;
   const thumbnail = toAbsoluteUrl(video.thumbUrl) ?? FALLBACK_THUMB;
   const videoUrl = toAbsoluteUrl(video.videoUrl) ?? canonical;
+  const isJobId = params.id.toLowerCase().startsWith('job_');
 
-  return {
+  const metadata: Metadata = {
     title: metaTitle,
     description,
     alternates: { canonical },
@@ -428,6 +429,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       creator: '@MaxVideoAI',
     },
   };
+  if (isJobId) {
+    metadata.robots = { index: false, follow: true };
+  }
+  return metadata;
 }
 
 export default async function VideoPage({ params, searchParams }: PageProps) {

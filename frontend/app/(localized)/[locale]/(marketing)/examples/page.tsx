@@ -160,6 +160,16 @@ function serializeJsonLd(data: unknown): string {
     .replace(/\u2029/g, '\\u2029');
 }
 
+function resolveCanonicalEngineParam(raw: string | string[] | undefined): string {
+  const engineParam = Array.isArray(raw) ? raw[0] : raw;
+  const engineParamValue = typeof engineParam === 'string' ? engineParam.trim() : '';
+  if (!engineParamValue) return '';
+  const canonicalEngineParam = normalizeEngineId(engineParamValue) ?? engineParamValue;
+  const engineMeta = ENGINE_META.get(canonicalEngineParam.toLowerCase()) ?? null;
+  const descriptor = resolveFilterDescriptor(canonicalEngineParam, engineMeta, canonicalEngineParam);
+  return descriptor?.id.toLowerCase() ?? canonicalEngineParam.toLowerCase();
+}
+
 export async function generateMetadata({
   params,
   searchParams,
@@ -170,13 +180,23 @@ export async function generateMetadata({
   const locale = params.locale;
   const t = await getTranslations({ locale, namespace: 'gallery.meta' });
   const metadataUrls = buildMetadataUrls(locale, GALLERY_SLUG_MAP, { englishPath: '/examples' });
+  const collapsedEngineParam = resolveCanonicalEngineParam(searchParams.engine);
   const pageParam = Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page;
   const parsedPage = pageParam ? Number.parseInt(pageParam, 10) : NaN;
   const normalizedPage = Number.isFinite(parsedPage) && parsedPage > 1 ? parsedPage : null;
   const latest = await listExamples('date-desc', 20);
   const firstWithThumb = latest.find((video) => Boolean(video.thumbUrl));
   const ogImage = toAbsoluteUrl(firstWithThumb?.thumbUrl) ?? `${SITE}/og/price-before.png`;
-  const canonical = normalizedPage ? `${metadataUrls.canonical}?page=${normalizedPage}` : metadataUrls.canonical;
+  const canonicalParams = new URLSearchParams();
+  if (collapsedEngineParam) {
+    canonicalParams.set('engine', collapsedEngineParam);
+  }
+  if (normalizedPage) {
+    canonicalParams.set('page', String(normalizedPage));
+  }
+  const canonical = canonicalParams.toString()
+    ? `${metadataUrls.canonical}?${canonicalParams.toString()}`
+    : metadataUrls.canonical;
 
   return buildSeoMetadata({
     locale,
@@ -321,15 +341,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     typeof content.hero?.body === 'string' && content.hero.body.trim().length ? content.hero.body : HERO_BODY_FALLBACK;
   const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
   const sort = getSort(sortParam);
-  const engineParam = Array.isArray(searchParams.engine) ? searchParams.engine[0] : searchParams.engine;
-  const engineParamValue = typeof engineParam === 'string' ? engineParam.trim() : '';
-  const canonicalEngineParam = engineParamValue ? normalizeEngineId(engineParamValue) ?? engineParamValue : '';
-  const collapsedEngineParam = (() => {
-    if (!canonicalEngineParam) return '';
-    const engineMeta = ENGINE_META.get(canonicalEngineParam.toLowerCase()) ?? null;
-    const descriptor = resolveFilterDescriptor(canonicalEngineParam, engineMeta, canonicalEngineParam);
-    return descriptor?.id.toLowerCase() ?? canonicalEngineParam.toLowerCase();
-  })();
+  const collapsedEngineParam = resolveCanonicalEngineParam(searchParams.engine);
   const pageParam = Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page;
   const parsedPage = (() => {
     if (typeof pageParam !== 'string' || pageParam.trim().length === 0) {
