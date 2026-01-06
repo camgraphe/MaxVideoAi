@@ -65,7 +65,6 @@ const KNOWN_MARKETING_SEGMENTS = new Set(
   ].map((segment) => segment.toLowerCase())
 );
 const EXACT_PATH_REDIRECTS: Record<string, string> = {
-  '/a': '/',
   '/ai': '/',
   '/video': '/',
   '/pika': '/models/pika-text-to-video',
@@ -76,6 +75,7 @@ const EXACT_PATH_REDIRECTS: Record<string, string> = {
   '/models/pika-image-to-video': '/models/pika-text-to-video',
   '/models/pika-image-video': '/models/pika-text-to-video',
 };
+const GONE_MARKETING_PATHS = new Set(['/a']);
 const FUZZY_REDIRECT_TARGETS: Array<{ slug: string; destination: string }> = [
   { slug: 'models', destination: '/models' },
   { slug: 'pricing', destination: '/pricing' },
@@ -412,6 +412,9 @@ function finalizeResponse(res: NextResponse, clearLogoutIntent: boolean) {
 function handleMarketingSlug(req: NextRequest, pathname: string): NextResponse | null {
   const { localePrefix, pathWithoutLocale } = splitLocaleFromPath(pathname);
   const normalizedPath = normalizePath(pathWithoutLocale);
+  if (GONE_MARKETING_PATHS.has(normalizedPath)) {
+    return new NextResponse('Gone', { status: 410 });
+  }
   const localeAwareKey = `${(localePrefix || '').toLowerCase()}${normalizedPath}`;
   const localeAwareRedirect = resolveExactLocaleRedirect(req, localeAwareKey, localePrefix);
   if (localeAwareRedirect) {
