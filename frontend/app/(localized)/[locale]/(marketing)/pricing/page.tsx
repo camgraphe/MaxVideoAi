@@ -11,7 +11,6 @@ import { getMembershipTiers } from '@/lib/membership';
 import FaqJsonLd from '@/components/FaqJsonLd';
 import { localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
-import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { buildMetadataUrls, SITE_BASE_URL } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
@@ -169,12 +168,12 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
   const exploreModelsLabel = locale === 'fr' ? 'Modèles' : locale === 'es' ? 'Modelos' : 'Models';
   const exploreExamplesLabel = locale === 'fr' ? 'Exemples' : locale === 'es' ? 'Ejemplos' : 'Examples';
   const exploreLinks = [
-    { href: localizePathFromEnglish(locale, '/models'), label: exploreModelsLabel },
-    { href: localizePathFromEnglish(locale, '/examples'), label: exploreExamplesLabel },
-    { href: localizePathFromEnglish(locale, '/models/sora-2'), label: 'Sora 2' },
-    { href: localizePathFromEnglish(locale, '/models/veo-3-1'), label: 'Veo 3.1' },
-    { href: localizePathFromEnglish(locale, '/models/kling-2-5-turbo'), label: 'Kling' },
-    { href: localizePathFromEnglish(locale, '/models/pika-text-to-video'), label: 'Pika' },
+    { href: { pathname: '/models' }, label: exploreModelsLabel },
+    { href: { pathname: '/examples' }, label: exploreExamplesLabel },
+    { href: { pathname: '/models/[slug]', params: { slug: 'sora-2' } }, label: 'Sora 2' },
+    { href: { pathname: '/models/[slug]', params: { slug: 'veo-3-1' } }, label: 'Veo 3.1' },
+    { href: { pathname: '/models/[slug]', params: { slug: 'kling-2-5-turbo' } }, label: 'Kling' },
+    { href: { pathname: '/models/[slug]', params: { slug: 'pika-text-to-video' } }, label: 'Pika' },
   ];
   const breadcrumbJsonLd = {
     '@context': 'https://schema.org',

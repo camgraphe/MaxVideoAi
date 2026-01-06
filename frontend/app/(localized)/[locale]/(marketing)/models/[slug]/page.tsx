@@ -8,7 +8,6 @@ import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
 import { listFalEngines, getFalEngineBySlug, type FalEngineEntry } from '@/config/falEngines';
 import { locales, localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
-import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
@@ -1080,15 +1079,14 @@ function Sora2PageLayout({
   const heroDesc1 = copy.heroDesc1 ?? localizedContent.overview ?? localizedContent.seo.description ?? null;
   const heroDesc2 = copy.heroDesc2;
   const isEsLocale = locale === 'es';
-  const localizedExamplesPath = localizePathFromEnglish(locale, '/examples');
-  const localizedPricingPath = localizePathFromEnglish(locale, '/pricing');
   const modelsBase = (MODELS_BASE_PATH_MAP[locale] ?? 'models').replace(/^\/+|\/+$/g, '');
   const localizeModelsPath = (targetSlug?: string) => {
     const slugPart = targetSlug ? `/${targetSlug.replace(/^\/+/, '')}` : '';
     return `/${modelsBase}${slugPart}`.replace(/\/{2,}/g, '/');
   };
   const galleryEngineSlug = engineSlug;
-  const examplesLinkHref = `${localizedExamplesPath}?engine=${encodeURIComponent(galleryEngineSlug)}`;
+  const examplesLinkHref = { pathname: '/examples', query: { engine: galleryEngineSlug } };
+  const pricingLinkHref = { pathname: '/pricing' };
   const primaryCta = copy.primaryCta ?? localizedContent.hero?.ctaPrimary?.label ?? 'Start generating';
   const primaryCtaHref = copy.primaryCtaHref ?? localizedContent.hero?.ctaPrimary?.href ?? '/app?engine=sora-2';
   const secondaryCta = copy.secondaryCta;
@@ -2032,9 +2030,8 @@ export default async function ModelDetailPage({ params }: PageParams) {
         href: '/generate',
       }
     : null;
-  const localizedExamplesPath = localizePathFromEnglish(activeLocale, '/examples');
-  const localizedPricingPath = localizePathFromEnglish(activeLocale, '/pricing');
-  const examplesLinkHref = `${localizedExamplesPath}?engine=${encodeURIComponent(engine.modelSlug ?? slug)}`;
+  const examplesLinkHref = { pathname: '/examples', query: { engine: engine.modelSlug ?? slug } };
+  const pricingLinkHref = { pathname: '/pricing' };
 
   const heroPosterSrc = localizedContent.seo.image ?? engine.media?.imagePath ?? null;
   const heroPosterPreload = heroPosterSrc ? buildOptimizedPosterUrl(heroPosterSrc) ?? heroPosterSrc : null;
@@ -2147,9 +2144,9 @@ export default async function ModelDetailPage({ params }: PageParams) {
         <Link href={examplesLinkHref} className="font-semibold text-accent hover:text-accentSoft">
           {detailCopy.examplesLinkLabel}
         </Link>
-        <Link href={localizedPricingPath} className="font-semibold text-accent hover:text-accentSoft">
-          {detailCopy.pricingLinkLabel}
-        </Link>
+              <Link href={pricingLinkHref} className="font-semibold text-accent hover:text-accentSoft">
+                {detailCopy.pricingLinkLabel}
+              </Link>
       </div>
 
       {tocItems.length ? (

@@ -11,7 +11,6 @@ import { listFalEngines } from '@/config/falEngines';
 import { ExamplesGalleryGrid, type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
-import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { buildMetadataUrls, SITE_BASE_URL } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
@@ -483,8 +482,8 @@ const selectedOption =
   const selectedEngine = selectedOption?.id ?? null;
   const selectedEngineLabel = selectedOption?.label ?? 'Model';
   const modelSlug = selectedEngine ? ENGINE_MODEL_LINKS[selectedEngine.toLowerCase()] ?? null : null;
-  const modelPath = modelSlug ? localizePathFromEnglish(locale, `/models/${modelSlug}`) : null;
-  const pricingPath = localizePathFromEnglish(locale, '/pricing');
+  const modelPath = modelSlug ? { pathname: '/models/[slug]', params: { slug: modelSlug } } : null;
+  const pricingPath = { pathname: '/pricing' };
   const engineModelLinkLabel =
     locale === 'fr'
       ? `Voir le modèle ${selectedEngineLabel}`
