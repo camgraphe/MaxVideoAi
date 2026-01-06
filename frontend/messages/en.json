@@ -506,8 +506,8 @@
     "priceChipSuffix": "Price before you generate.",
     "priceChipPrefix": "This render",
     "meta": {
-      "title": "Pricing – Pay-as-you-go Credits for Sora, Veo, Pika & Kling | MaxVideoAI",
-      "description": "Explore MaxVideoAI's pay-as-you-go pricing. Preview Sora, Veo, Pika and Kling costs before you generate, start with $10 credits, and only pay on success."
+      "title": "AI Video Pricing — Pay-As-You-Go | MaxVideoAI",
+      "description": "See pricing before you generate. Compare costs across engines (Sora, Veo, Kling, Pika). Pay only for successful renders — no subscription. Pricing shown per clip."
     }
   },
   "workflows": {
@@ -696,9 +696,9 @@
         "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "v2.6 Pro"
       },
-      "title": "AI Video Models – Compare Sora 2, Veo 3.1, Pika & Kling | MaxVideoAI",
-      "description": "Browse all AI video models in one place: Sora 2, Veo 3.1, Pika 2.2, Kling, Wan, MiniMax and more. Compare pricing, quality and limits before you generate."
-    },
+    "title": "AI Video Models Comparison + Pricing Shown | MaxVideoAI",
+    "description": "Compare AI video engines side-by-side: pricing shown per clip, audio support, max duration and resolution. Pick the right model before you generate."
+  },
     "note": "",
     "detail": {
       "backLabel": "← Back to models",
@@ -1250,8 +1250,8 @@
   },
   "gallery": {
     "meta": {
-      "title": "AI Video Examples – Sora 2, Veo 3.1, Pika & Kling | MaxVideoAI",
-      "description": "Explore AI video examples generated with Sora 2, Veo 3.1, Pika, Kling, Wan and more. Preview motion, style, prompts and duration, then clone any shot into your own workspace in MaxVideoAI.",
+      "title": "AI Video Examples + Pricing Shown | MaxVideoAI",
+      "description": "Explore real AI video examples with prompts, duration, audio info and pricing shown per clip. Clone any shot into your workspace in seconds.",
       "title_engine": "AI Video Examples — {engineName} | MaxVideoAI",
       "description_engine": "Browse {engineName} video examples with prompts, duration, audio info, and pricing shown per clip. Clone any shot into the workspace."
     }

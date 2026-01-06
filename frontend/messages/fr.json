@@ -590,8 +590,8 @@
     "priceChipSuffix": "Prix avant génération.",
     "priceChipPrefix": "Ce rendu",
     "meta": {
-      "title": "Tarification — Générateur vidéo IA — Paiement à l’usage | MaxVideoAI",
-      "description": "Explorez les tarifs à l’usage de MaxVideoAI. Estimez Sora, Veo, Pika et Kling avant de générer, démarrez avec 10 $ de crédits et ne payez qu’en cas de succès."
+      "title": "Tarifs vidéo IA — Paiement à l’usage | MaxVideoAI",
+      "description": "Voyez le prix avant de générer. Comparez les coûts (Sora, Veo, Kling, Pika). Paiement uniquement si le rendu réussit — sans abonnement. Prix par clip."
     }
   },
   "workflows": {
@@ -780,8 +780,8 @@
         "priceBefore": "Tarifs en direct dans le workspace Generate.",
         "versionLabel": "v2.6 Pro"
       },
-      "title": "Modèles vidéo IA – Comparez Sora 2, Veo 3.1, Pika & Kling | MaxVideoAI",
-      "description": "Parcourez tous les modèles vidéo IA au même endroit : Sora 2, Veo 3.1, Pika 2.2, Kling, Wan, MiniMax et plus encore. Comparez prix, qualité et limites avant de générer."
+      "title": "Modèles vidéo IA : comparer + prix affichés | MaxVideoAI",
+      "description": "Comparez les moteurs vidéo IA : prix par clip, audio, durée max et résolution. Choisissez le bon modèle avant de générer."
     },
     "note": "Les tarifs Fal évoluent vite : vérifiez la pastille Prix-Avant ou votre clé directe avant chaque lancement.",
     "detail": {
@@ -1261,8 +1261,8 @@
   },
   "gallery": {
     "meta": {
-      "title": "Exemples vidéo IA – Sora 2, Veo 3.1, Pika & Kling | MaxVideoAI",
-      "description": "Découvrez des exemples vidéo IA générés avec Sora 2, Veo 3.1, Pika, Kling, Wan et plus encore. Prévisualisez mouvement, style, prompts et durée puis clonez chaque prise dans votre propre workspace MaxVideoAI.",
+      "title": "Exemples vidéo IA + prix affichés | MaxVideoAI",
+      "description": "Explorez des exemples réels avec prompts, durée, audio et prix par clip. Dupliquez un plan dans votre workspace en quelques secondes.",
       "title_engine": "Exemples vidéo IA — {engineName} | MaxVideoAI",
       "description_engine": "Découvrez des exemples vidéo {engineName} avec prompts, durée, audio et prix affichés par clip. Dupliquez chaque plan dans le workspace."
     }
