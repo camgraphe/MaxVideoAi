@@ -1186,6 +1186,7 @@ async function maybeAutoRefundWalletCharge(
          metadata
        )
        VALUES ($1,'refund',$2,$3,$4,$5,$6::jsonb,0,$7,NULL,NULL,0,$8,$9::jsonb)
+       ON CONFLICT DO NOTHING
        RETURNING id`,
       [
         charge.user_id ?? jobInfo.user_id,

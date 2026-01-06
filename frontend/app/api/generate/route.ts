@@ -847,7 +847,8 @@ async function recordRefundReceipt(
        )
        VALUES (
          $1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12,$13
-       )`,
+       )
+       ON CONFLICT DO NOTHING`,
       [
         receipt.userId,
         receipt.amountCents,
@@ -2108,7 +2109,8 @@ async function rollbackPendingPayment(params: {
     try {
       await query(
         `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description, job_id, pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id, stripe_charge_id, platform_revenue_cents, destination_acct)
-         VALUES ($1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12)`,
+         VALUES ($1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12)
+         ON CONFLICT DO NOTHING`,
         [
           pendingReceipt.userId,
           pendingReceipt.amountCents,

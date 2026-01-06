@@ -53,7 +53,8 @@ async function recordRefund(row: ChargeRow, stripeRefundId: string | null) {
        NULL,0,NULL,
        $6,$7,$8,
        0,NULL,$9::jsonb
-     )`,
+     )
+     ON CONFLICT DO NOTHING`,
     [
       row.user_id,
       row.amount_cents,

@@ -248,6 +248,12 @@ export async function ensureBillingSchema(): Promise<void> {
       `);
 
       await query(`
+        CREATE UNIQUE INDEX IF NOT EXISTS app_receipts_unique_refund_job
+        ON app_receipts (job_id)
+        WHERE job_id IS NOT NULL AND type = 'refund';
+      `);
+
+      await query(`
         -- legacy columns retained for Connect margin reporting; left NULL when RECEIPTS_PRICE_ONLY is enabled.
         ALTER TABLE app_receipts
         ADD COLUMN IF NOT EXISTS platform_revenue_cents BIGINT,
