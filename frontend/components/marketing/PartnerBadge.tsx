@@ -3,7 +3,10 @@ type PartnerBadgeProps = {
 };
 
 export function PartnerBadge({ className }: PartnerBadgeProps) {
-  const classes = ['w-full max-w-[240px] sm:max-w-[280px] md:max-w-[300px]', className]
+  const classes = [
+    'w-full max-w-[300px] aspect-[600/125] [&>a>img]:h-auto [&>a>img]:w-full',
+    className,
+  ]
     .filter(Boolean)
     .join(' ');
 
@@ -14,14 +17,7 @@ export function PartnerBadge({ className }: PartnerBadgeProps) {
         target="_blank"
         rel="nofollow"
       >
-        <img
-          width="300"
-          height="63"
-          src="https://media.theresanaiforthat.com/featured-on-taaft.png?width=600"
-          alt="Featured on There's An AI For That"
-          loading="lazy"
-          className="h-auto w-full"
-        />
+        <img width="300" src="https://media.theresanaiforthat.com/featured-on-taaft.png?width=600" />
       </a>
     </div>
   );

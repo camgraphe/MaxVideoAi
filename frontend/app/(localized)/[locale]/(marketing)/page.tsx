@@ -12,6 +12,7 @@ import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
 import { MosaicBackdrop, type MosaicBackdropMedia } from '@/components/marketing/MosaicBackdrop';
 import type { CompareEngineCard } from '@/components/marketing/CompareEnginesCarousel';
 import { CURRENCY_LOCALE } from '@/lib/intl';
+import { PartnerBadge } from '@/components/marketing/PartnerBadge';
 import { getHomepageSlots, HERO_SLOT_KEYS } from '@/server/homepage';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { listExamples } from '@/server/videos';
@@ -740,6 +741,11 @@ export default async function HomePage() {
         </section>
       </MosaicBackdrop>
       <MiniFAQ faq={home.faq} />
+      <section className="mx-auto mt-10 max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-wrap items-center justify-start gap-4 md:justify-end">
+          <PartnerBadge className="opacity-80 transition hover:opacity-100" />
+        </div>
+      </section>
       <Script id="software-jsonld" type="application/ld+json">
         {JSON.stringify(softwareSchema)}
       </Script>
