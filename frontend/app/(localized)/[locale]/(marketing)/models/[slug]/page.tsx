@@ -876,20 +876,14 @@ function pickDemoMedia(
 
 async function renderSoraModelPage({
   engine,
-  backLabel,
-  examplesLinkLabel,
-  pricingLinkLabel,
+  detailCopy,
   localizedContent,
   locale,
-  breadcrumb,
 }: {
   engine: FalEngineEntry;
-  backLabel: string;
-  examplesLinkLabel: string;
-  pricingLinkLabel: string;
+  detailCopy: DetailCopy;
   localizedContent: EngineLocalizedContent;
   locale: AppLocale;
-  breadcrumb: DetailCopy['breadcrumb'];
 }) {
   const detailSlugMap = buildDetailSlugMap(engine.modelSlug);
   const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${engine.modelSlug}`));
@@ -1003,7 +997,9 @@ async function renderSoraModelPage({
 
   return (
     <Sora2PageLayout
-      backLabel={backLabel}
+      backLabel={detailCopy.backLabel}
+      examplesLinkLabel={detailCopy.examplesLinkLabel}
+      pricingLinkLabel={detailCopy.pricingLinkLabel}
       localizedContent={localizedContent}
       copy={copy}
       engine={engine}
@@ -1017,7 +1013,7 @@ async function renderSoraModelPage({
       locale={locale}
       canonicalUrl={canonicalUrl}
       localizedCanonicalUrl={localizedCanonicalUrl}
-      breadcrumb={breadcrumb}
+      breadcrumb={detailCopy.breadcrumb}
       pricingItems={pricingItems}
       quickPricingItems={quickPricingItems}
     />
@@ -1027,6 +1023,8 @@ async function renderSoraModelPage({
 function Sora2PageLayout({
   engine,
   backLabel,
+  examplesLinkLabel,
+  pricingLinkLabel,
   localizedContent,
   copy,
   heroMedia,
@@ -1045,6 +1043,8 @@ function Sora2PageLayout({
 }: {
   engine: FalEngineEntry;
   backLabel: string;
+  examplesLinkLabel: string;
+  pricingLinkLabel: string;
   localizedContent: EngineLocalizedContent;
   copy: SoraCopy;
   heroMedia: FeaturedMedia;
@@ -1891,12 +1891,9 @@ export default async function ModelDetailPage({ params }: PageParams) {
     const localizedContent = await getEngineLocalized(slug, activeLocale);
     return await renderSoraModelPage({
       engine,
-      backLabel: detailCopy.backLabel,
-      examplesLinkLabel: detailCopy.examplesLinkLabel,
-      pricingLinkLabel: detailCopy.pricingLinkLabel,
+      detailCopy,
       localizedContent,
       locale: activeLocale,
-      breadcrumb: detailCopy.breadcrumb,
     });
   }
 
