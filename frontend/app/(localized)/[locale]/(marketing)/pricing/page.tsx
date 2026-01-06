@@ -360,15 +360,18 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{exploreTitle}</span>
           <div className="flex flex-wrap gap-2">
-            {exploreLinks.map((link) => (
+            {exploreLinks.map((link) => {
+              const key = `${link.label}-${typeof link.href === 'string' ? link.href : link.href.pathname}`;
+              return (
               <Link
-                key={link.href}
+                key={key}
                 href={link.href}
                 className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-xs font-semibold text-text-secondary transition hover:border-accent hover:text-accent"
               >
                 {link.label}
               </Link>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
