@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
-import { PartnerBadge } from '@/components/marketing/PartnerBadge';
 
 export function MarketingFooter() {
   const { t } = useI18n();
@@ -122,9 +121,6 @@ export function MarketingFooter() {
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <p className="max-w-3xl text-sm leading-relaxed text-text-muted">{brandNote}</p>
           <p className="max-w-3xl text-xs leading-relaxed text-text-muted">{crawlerNote}</p>
-        </div>
-        <div className="flex justify-start md:justify-end">
-          <PartnerBadge className="opacity-80 transition hover:opacity-100" />
         </div>
       </div>
     </footer>
