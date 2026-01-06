@@ -76,6 +76,11 @@ const nextConfig = {
         statusCode: 301,
       },
       {
+        source: '/es/pricing-calculator',
+        destination: '/es/precios',
+        statusCode: 301,
+      },
+      {
         source: '/fr/simulateur-prix',
         destination: '/fr/tarifs',
         statusCode: 301,
@@ -171,6 +176,16 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/fr/modeles/pika-image-to-video',
+        destination: '/fr/modeles/pika-text-to-video',
+        permanent: true,
+      },
+      {
+        source: '/es/modelos/pika-image-to-video',
+        destination: '/es/modelos/pika-text-to-video',
+        permanent: true,
+      },
+      {
         source: '/models/hailuo-2-pro',
         destination: '/models/minimax-hailuo-02-text',
         permanent: true,
@@ -218,6 +233,26 @@ const nextConfig = {
       {
         source: '/models/kling-2-5-turbo-pro',
         destination: '/models/kling-2-5-turbo',
+        permanent: true,
+      },
+      {
+        source: '/chains/:path*',
+        destination: '/workflows',
+        permanent: true,
+      },
+      {
+        source: '/clip/:path*',
+        destination: '/examples',
+        permanent: true,
+      },
+      {
+        source: '/modeles/:path*',
+        destination: '/fr/modeles/:path*',
+        permanent: true,
+      },
+      {
+        source: '/modelos/:path*',
+        destination: '/es/modelos/:path*',
         permanent: true,
       },
       {
