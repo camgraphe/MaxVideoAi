@@ -2,8 +2,11 @@ import ExamplesPage, { generateMetadata as generateLocalizedMetadata } from '../
 import LocaleLayout from '../(localized)/[locale]/layout';
 import { DEFAULT_LOCALE } from '../default-locale-wrapper';
 
-export const generateMetadata = () =>
-  generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE }, searchParams: {} });
+export const generateMetadata = ({
+  searchParams,
+}: {
+  searchParams?: Record<string, string | string[] | undefined>;
+}) => generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE }, searchParams: searchParams ?? {} });
 
 export default function ExamplesDefaultPage(props: { searchParams?: Record<string, string | string[] | undefined> }) {
   return (

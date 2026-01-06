@@ -96,6 +96,11 @@ const EXAMPLES_INITIAL_BATCH = 12;
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
+function isTrackingParam(key: string): boolean {
+  const normalized = key.toLowerCase();
+  return normalized.startsWith('utm_') || normalized === 'gclid' || normalized === 'fbclid';
+}
+
 const ENGINE_FILTER_GROUPS: Record<
   string,
   {
@@ -370,7 +375,9 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
   })();
   const hasInvalidPageParam = typeof pageParam !== 'undefined' && (!Number.isFinite(parsedPage) || parsedPage < 1);
   const currentPage = hasInvalidPageParam ? 1 : Math.max(1, parsedPage || 1);
-  const unsupportedQueryKeys = Object.keys(searchParams).filter((key) => !ALLOWED_QUERY_KEYS.has(key));
+  const unsupportedQueryKeys = Object.keys(searchParams).filter(
+    (key) => !ALLOWED_QUERY_KEYS.has(key) && !isTrackingParam(key),
+  );
 
   const redirectToNormalized = (targetPage: number) => {
     const headerList = headers();
