@@ -1267,7 +1267,7 @@ function Sora2PageLayout({
               <Link href={examplesLinkHref} className="font-semibold text-accent hover:text-accentSoft">
                 {examplesLinkLabel}
               </Link>
-              <Link href={localizedPricingPath} className="font-semibold text-accent hover:text-accentSoft">
+              <Link href={pricingLinkHref} className="font-semibold text-accent hover:text-accentSoft">
                 {pricingLinkLabel}
               </Link>
             </div>
