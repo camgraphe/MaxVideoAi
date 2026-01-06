@@ -340,7 +340,6 @@ async function resolveHeroTilePrices(tiles: HeroTilePricingInput[]) {
 export default async function HomePage({ params }: { params?: { locale?: AppLocale } } = {}) {
   const { dictionary } = await resolveDictionary({ locale: params?.locale });
   const home = dictionary.home;
-  const showPartnerBadges = !params?.locale;
   const pricingRules = await listPricingRules();
   const pricingRulesLite: PricingRuleLite[] = pricingRules.map((rule) => ({
     id: rule.id,
@@ -741,17 +740,15 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
           </div>
         </section>
       </MosaicBackdrop>
-      {showPartnerBadges ? (
-        <section className="mx-auto mt-14 max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-card border border-hairline bg-white/70 p-6 shadow-card">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Partners</p>
-            <h2 className="mt-2 text-lg font-semibold text-text-primary">Featured on</h2>
-            <div className="mt-4">
-              <PartnerBadges className="opacity-90 transition hover:opacity-100" />
-            </div>
+      <section className="mx-auto mt-14 max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="rounded-card border border-hairline bg-white/70 p-6 shadow-card">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Partners</p>
+          <h2 className="mt-2 text-lg font-semibold text-text-primary">Featured on</h2>
+          <div className="mt-4">
+            <PartnerBadges className="opacity-90 transition hover:opacity-100" />
           </div>
-        </section>
-      ) : null}
+        </div>
+      </section>
       <MiniFAQ faq={home.faq} />
       <Script id="software-jsonld" type="application/ld+json">
         {JSON.stringify(softwareSchema)}
