@@ -76,6 +76,27 @@ const EXACT_PATH_REDIRECTS: Record<string, string> = {
   '/models/pika-image-video': '/models/pika-text-to-video',
 };
 const GONE_MARKETING_PATHS = new Set(['/a']);
+const QUERY_PARAM_STRIP_PREFIXES = [
+  '/models',
+  '/pricing',
+  '/examples',
+  '/blog',
+  '/legal',
+  '/docs',
+  '/workflows',
+  '/status',
+  '/ai-video-engines',
+  '/changelog',
+  '/contact',
+  '/about',
+  '/video',
+  '/login',
+];
+const QUERY_PARAM_ALLOWLISTS = {
+  examples: new Set(['sort', 'engine', 'page']),
+  login: new Set(['next']),
+  video: new Set(['from']),
+};
 const FUZZY_REDIRECT_TARGETS: Array<{ slug: string; destination: string }> = [
   { slug: 'models', destination: '/models' },
   { slug: 'pricing', destination: '/pricing' },
@@ -288,13 +309,18 @@ export async function middleware(req: NextRequest) {
   pathname = normalizedPathname;
   localeFromPath = extractLocaleFromPathname(pathname);
   const isAdminRoute = pathname.toLowerCase() === '/admin' || pathname.toLowerCase().startsWith('/admin/');
+  const trackingNoindex = shouldMarkTrackingNoindex(req, pathname, isAdminRoute);
+  const queryCleanup = normalizePublicQueryParams(req, pathname);
+  if (queryCleanup) {
+    return finalizeResponse(queryCleanup, hasLogoutIntentCookie, trackingNoindex);
+  }
 
   const isMarketingPath = shouldHandleLocale(pathname);
   const isBotRequest = detectBot(userAgent);
 
   const marketingResponse = isMarketingPath ? handleMarketingSlug(req, pathname) : null;
   if (marketingResponse) {
-    return finalizeResponse(marketingResponse, hasLogoutIntentCookie);
+    return finalizeResponse(marketingResponse, hasLogoutIntentCookie, trackingNoindex);
   }
 
   if (isMarketingPath && !localeFromPath && !isBotRequest && !bypassLocaleRedirect) {
@@ -307,7 +333,7 @@ export async function middleware(req: NextRequest) {
       if (normalizedTarget !== pathname) {
         const redirectUrl = req.nextUrl.clone();
         redirectUrl.pathname = normalizedTarget;
-        return finalizeResponse(NextResponse.redirect(redirectUrl, 307), hasLogoutIntentCookie);
+        return finalizeResponse(NextResponse.redirect(redirectUrl, 307), hasLogoutIntentCookie, trackingNoindex);
       }
     }
   }
@@ -350,7 +376,7 @@ export async function middleware(req: NextRequest) {
 
   const isProtectedRoute = PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
   if (!isProtectedRoute) {
-    return finalizeResponse(response, hasLogoutIntentCookie);
+    return finalizeResponse(response, hasLogoutIntentCookie, trackingNoindex);
   }
 
   if (isAdminRoute) {
@@ -361,7 +387,7 @@ export async function middleware(req: NextRequest) {
   }
 
   if (userId) {
-    return finalizeResponse(response, hasLogoutIntentCookie);
+    return finalizeResponse(response, hasLogoutIntentCookie, trackingNoindex);
   }
 
   if (isAdminRoute) {
@@ -371,7 +397,7 @@ export async function middleware(req: NextRequest) {
     unauthorized.headers.set('Pragma', 'no-cache');
     unauthorized.headers.append('Vary', 'Cookie');
     mergeResponseCookies(unauthorized, response);
-    return finalizeResponse(unauthorized, hasLogoutIntentCookie);
+    return finalizeResponse(unauthorized, hasLogoutIntentCookie, trackingNoindex);
   }
 
   if (hasLogoutIntentCookie) {
@@ -380,7 +406,7 @@ export async function middleware(req: NextRequest) {
     redirectUrl.search = '';
     const logoutResponse = NextResponse.redirect(redirectUrl);
     mergeResponseCookies(logoutResponse, response);
-    return finalizeResponse(logoutResponse, true);
+    return finalizeResponse(logoutResponse, true, trackingNoindex);
   }
 
   const redirectUrl = req.nextUrl.clone();
@@ -395,14 +421,17 @@ export async function middleware(req: NextRequest) {
 
   const loginResponse = NextResponse.redirect(redirectUrl);
   mergeResponseCookies(loginResponse, response);
-  return finalizeResponse(loginResponse, false);
+  return finalizeResponse(loginResponse, false, trackingNoindex);
 }
 
 export const config = {
   matcher: ['/admin/:path*', '/((?!_next|.*\\..*|api).*)'],
 };
 
-function finalizeResponse(res: NextResponse, clearLogoutIntent: boolean) {
+function finalizeResponse(res: NextResponse, clearLogoutIntent: boolean, trackingNoindex = false) {
+  if (trackingNoindex && !res.headers.has('X-Robots-Tag')) {
+    res.headers.set('X-Robots-Tag', 'noindex, follow');
+  }
   if (clearLogoutIntent) {
     res.cookies.set(LOGOUT_INTENT_COOKIE, '', { path: '/', maxAge: 0 });
   }
@@ -495,6 +524,82 @@ function normalizePath(pathname: string) {
     return '/';
   }
   return withoutTrailing.startsWith('/') ? withoutTrailing.toLowerCase() : `/${withoutTrailing.toLowerCase()}`;
+}
+
+function shouldStripQueryParams(pathWithoutLocale: string): boolean {
+  if (pathWithoutLocale === '/') {
+    return true;
+  }
+  return QUERY_PARAM_STRIP_PREFIXES.some((prefix) => pathWithoutLocale.startsWith(prefix));
+}
+
+function isTrackingParam(key: string): boolean {
+  const normalized = key.toLowerCase();
+  return normalized.startsWith('utm_') || normalized === 'gclid' || normalized === 'fbclid';
+}
+
+function hasTrackingParams(params: URLSearchParams): boolean {
+  for (const key of params.keys()) {
+    if (isTrackingParam(key)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function shouldMarkTrackingNoindex(req: NextRequest, pathname: string, isAdminRoute: boolean): boolean {
+  if (isAdminRoute) {
+    return false;
+  }
+  if (!hasTrackingParams(req.nextUrl.searchParams)) {
+    return false;
+  }
+  const { pathWithoutLocale } = splitLocaleFromPath(pathname);
+  return shouldStripQueryParams(pathWithoutLocale);
+}
+
+function resolveQueryAllowlist(pathWithoutLocale: string): Set<string> | null {
+  if (pathWithoutLocale === '/examples') {
+    return QUERY_PARAM_ALLOWLISTS.examples;
+  }
+  if (pathWithoutLocale === '/login') {
+    return QUERY_PARAM_ALLOWLISTS.login;
+  }
+  if (pathWithoutLocale.startsWith('/video')) {
+    return QUERY_PARAM_ALLOWLISTS.video;
+  }
+  return null;
+}
+
+function normalizePublicQueryParams(req: NextRequest, pathname: string): NextResponse | null {
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    return null;
+  }
+  const { pathWithoutLocale } = splitLocaleFromPath(pathname);
+  if (!shouldStripQueryParams(pathWithoutLocale)) {
+    return null;
+  }
+  const params = req.nextUrl.searchParams;
+  if (!params.size) {
+    return null;
+  }
+  const allowlist = resolveQueryAllowlist(pathWithoutLocale);
+  let changed = false;
+  const cleanedParams = new URLSearchParams();
+  params.forEach((value, key) => {
+    if ((allowlist && allowlist.has(key)) || isTrackingParam(key)) {
+      cleanedParams.append(key, value);
+    } else {
+      changed = true;
+    }
+  });
+  if (!changed) {
+    return null;
+  }
+  const cleaned = req.nextUrl.clone();
+  const nextQuery = cleanedParams.toString();
+  cleaned.search = nextQuery ? `?${nextQuery}` : '';
+  return NextResponse.redirect(cleaned, 301);
 }
 
 function resolveExactRedirect(req: NextRequest, normalizedPath: string, localePrefix: string) {

@@ -6,8 +6,10 @@ import Script from 'next/script';
 import { getContentEntries, getEntryBySlug } from '@/lib/content/markdown';
 import type { AppLocale } from '@/i18n/locales';
 import { localePathnames, localeRegions, locales } from '@/i18n/locales';
-import { buildMetadataUrls } from '@/lib/metadataUrls';
+import { buildSlugMap } from '@/lib/i18nSlugs';
+import { buildMetadataUrls, SITE_BASE_URL } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
+import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
 
 interface Params {
   locale: AppLocale;
@@ -29,6 +31,7 @@ const BLOG_TITLE_OVERRIDES: Partial<Record<string, Partial<Record<AppLocale, str
     es: 'Sora 2 prompts secuenciales para video IA – Blog MaxVideoAI',
   },
 };
+const BLOG_SLUG_MAP = buildSlugMap('blog');
 
 function toIsoDate(value?: string | null): string | undefined {
   if (!value) return undefined;
@@ -174,6 +177,34 @@ export default async function BlogPostPage({ params }: { params: Params }) {
     availableLocales: Array.from(publishableLocales),
   });
   const canonicalUrl = metadataUrls.canonical;
+  const breadcrumbLabels = getBreadcrumbLabels(locale);
+  const blogListUrl = buildMetadataUrls(locale, BLOG_SLUG_MAP, { englishPath: '/blog' }).canonical;
+  const localePrefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
+  const homeUrl = `${SITE_BASE_URL}${localePrefix || ''}`;
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: breadcrumbLabels.home,
+        item: homeUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: breadcrumbLabels.blog,
+        item: blogListUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: post.title,
+        item: canonicalUrl,
+      },
+    ],
+  };
   const publishedIso = toIsoDate(post.date) ?? post.date;
   const modifiedIso = toIsoDate(post.updatedAt ?? post.date) ?? publishedIso;
   const demotedContent = post.content.replace(/<\/?h1>/gi, (match) => match.replace(/h1/i, 'h2'));
@@ -291,6 +322,12 @@ export default async function BlogPostPage({ params }: { params: Params }) {
           </div>
         </section>
       ) : null}
+
+      <Script
+        id={`breadcrumb-${locale}-${post.slug}-jsonld`}
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
 
       <Script
         id={`article-${locale}-${post.slug}-jsonld`}

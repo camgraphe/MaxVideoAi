@@ -9,10 +9,11 @@ import { FEATURES } from '@/content/feature-flags';
 import { FlagPill } from '@/components/FlagPill';
 import { getMembershipTiers } from '@/lib/membership';
 import FaqJsonLd from '@/components/FaqJsonLd';
-import { localeRegions, type AppLocale } from '@/i18n/locales';
+import { localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
-import { buildMetadataUrls } from '@/lib/metadataUrls';
+import { buildMetadataUrls, SITE_BASE_URL } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
+import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
 import { listFalEngines } from '@/config/falEngines';
 import { computePricingSnapshot, listPricingRules } from '@/lib/pricing';
 import type { PricingRuleLite } from '@/lib/pricing-rules';
@@ -159,6 +160,27 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
   const faq = content.faq;
   const heroLink = content.hero.link ?? null;
   const canonical = buildMetadataUrls(locale as AppLocale, PRICING_SLUG_MAP, { englishPath: '/pricing' }).canonical;
+  const breadcrumbLabels = getBreadcrumbLabels(locale as AppLocale);
+  const localePrefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
+  const homeUrl = `${SITE_BASE_URL}${localePrefix || ''}`;
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: breadcrumbLabels.home,
+        item: homeUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: breadcrumbLabels.pricing,
+        item: canonical,
+      },
+    ],
+  };
   const pricingRules = await listPricingRules();
   const pricingRulesLite: PricingRuleLite[] = pricingRules.map((rule) => ({
     id: rule.id,
@@ -477,6 +499,9 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
         </article>
       </section>
 
+      <Script id="pricing-breadcrumb-jsonld" type="application/ld+json">
+        {JSON.stringify(breadcrumbJsonLd)}
+      </Script>
       <Script id="pricing-jsonld" type="application/ld+json">
         {JSON.stringify(serviceSchema)}
       </Script>

@@ -13,6 +13,7 @@ import { localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls, SITE_BASE_URL } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
+import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 
@@ -576,6 +577,35 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
     collapsedEngineParam,
     currentPage > 1 ? currentPage : null
   );
+  const baseExamplesUrl = `${SITE}${canonicalPath}`;
+  const breadcrumbLabels = getBreadcrumbLabels(locale as AppLocale);
+  const breadcrumbItems = [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: breadcrumbLabels.home,
+      item: `${SITE}${localePrefix || ''}`,
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: breadcrumbLabels.examples,
+      item: baseExamplesUrl,
+    },
+  ];
+  if (engineLabel) {
+    breadcrumbItems.push({
+      '@type': 'ListItem',
+      position: 3,
+      name: engineLabel,
+      item: canonicalUrl,
+    });
+  }
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: breadcrumbItems,
+  };
 
   const itemListJson =
     itemListElements.length > 0
@@ -786,6 +816,13 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
           </details>
         </section>
 
+        {breadcrumbJsonLd ? (
+          <script
+            type="application/ld+json"
+            suppressHydrationWarning
+            dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
+          />
+        ) : null}
         {itemListJson ? (
           <script
             type="application/ld+json"

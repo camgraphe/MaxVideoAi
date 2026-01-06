@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { Link } from '@/i18n/navigation';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
-import { type AppLocale } from '@/i18n/locales';
+import { localePathnames, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
+import { SITE_BASE_URL } from '@/lib/metadataUrls';
+import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
 import { ModelsGallery } from '@/components/marketing/ModelsGallery';
 import { getEnginePictogram } from '@/lib/engine-branding';
 import { getEngineLocalized } from '@/lib/models/i18n';
@@ -96,6 +99,32 @@ function getEngineDisplayName(entry: FalEngineEntry): string {
 export default async function ModelsPage() {
   const { locale, dictionary } = await resolveDictionary();
   const activeLocale = locale as AppLocale;
+  const breadcrumbLabels = getBreadcrumbLabels(activeLocale);
+  const localePrefix = localePathnames[activeLocale] ? `/${localePathnames[activeLocale]}` : '';
+  const modelsPath = `${localePrefix}/${MODELS_SLUG_MAP[activeLocale] ?? MODELS_SLUG_MAP.en ?? 'models'}`.replace(
+    /\/{2,}/g,
+    '/'
+  );
+  const homeUrl = `${SITE_BASE_URL}${localePrefix || ''}`;
+  const modelsUrl = `${SITE_BASE_URL}${modelsPath}`;
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: breadcrumbLabels.home,
+        item: homeUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: breadcrumbLabels.models,
+        item: modelsUrl,
+      },
+    ],
+  };
   const content = dictionary.models;
   const heroTitle = content.hero?.title ?? 'AI Video Engines – Sora, Veo, Pika & More';
   const HERO_BODY_FALLBACK =
@@ -286,6 +315,9 @@ export default async function ModelsPage() {
           {content.note}
         </p>
       ) : null}
+      <Script id="models-breadcrumb-jsonld" type="application/ld+json">
+        {JSON.stringify(breadcrumbJsonLd)}
+      </Script>
     </main>
   );
 }
