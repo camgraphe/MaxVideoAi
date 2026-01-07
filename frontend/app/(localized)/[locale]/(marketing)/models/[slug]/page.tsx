@@ -1125,6 +1125,7 @@ function Sora2PageLayout({
     question: entry.question,
     answer: entry.answer,
   }));
+  const faqJsonLdEntries = faqList.slice(0, 6);
   const pageDescription = heroDesc1 ?? heroSubtitle ?? localizedContent.seo.description ?? heroTitle;
   const heroPosterAbsolute = toAbsoluteUrl(heroMedia.posterUrl ?? localizedContent.seo.image ?? null);
   const heroVideoAbsolute = heroMedia.videoUrl ? toAbsoluteUrl(heroMedia.videoUrl) : null;
@@ -1218,7 +1219,6 @@ function Sora2PageLayout({
             dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
           />
         ))}
-        <FAQSchema questions={faqList} />
       </Head>
       <main className="mx-auto max-w-6xl px-4 pb-20 pt-14 sm:px-6 lg:px-8">
         <Link href={localizeModelsPath()} className="text-sm font-semibold text-accent hover:text-accentSoft">
@@ -1713,6 +1713,7 @@ function Sora2PageLayout({
             </div>
           </section>
         ) : null}
+        <FAQSchema questions={faqJsonLdEntries} />
 
         {relatedEngines.length ? (
           <section className="mt-14 space-y-4">
@@ -2068,6 +2069,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
   const hasTextSection = Boolean(promptStructure) || promptEntries.length > 0;
   const hasTipsSection = Boolean(tips?.items && tips.items.length);
   const hasFaqSection = faqEntries.length > 0;
+  const faqJsonLdEntries = faqEntries.slice(0, 6);
   const tocItems = [
     { id: 'specs', label: 'Specs', visible: hasSpecs },
     { id: 'text-to-video', label: 'Text to Video', visible: hasTextSection },
@@ -2091,7 +2093,6 @@ export default async function ModelDetailPage({ params }: PageParams) {
             dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
           />
         ))}
-        <FAQSchema questions={faqEntries} />
       </Head>
       <Link href={localizeModelsPath()} className="text-sm font-semibold text-accent hover:text-accentSoft">
         {detailCopy.backLabel}
@@ -2321,6 +2322,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
           </div>
         </section>
       )}
+      <FAQSchema questions={faqJsonLdEntries} />
 
       {relatedEngines.length ? (
         <section className="mt-12">

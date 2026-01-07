@@ -3,7 +3,7 @@ import type { AppLocale } from '@/i18n/locales';
 import type { ReactNode } from 'react';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
-import FaqJsonLd from '@/components/FaqJsonLd';
+import { FAQSchema } from '@/components/seo/FAQSchema';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveDictionary } from '@/lib/i18n/server';
@@ -186,6 +186,7 @@ export default async function AiVideoEnginesPage() {
   const faqItems = Array.isArray(content.faq) && content.faq.length ? content.faq : DEFAULT_CONTENT.faq;
   const faqTitle = content.faqTitle ?? DEFAULT_CONTENT.faqTitle;
   const cta = content.cta ?? DEFAULT_CONTENT.cta;
+  const faqJsonLdEntries = faqItems.slice(0, 6);
 
   return (
     <div className="mx-auto max-w-4xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
@@ -238,7 +239,7 @@ export default async function AiVideoEnginesPage() {
         </div>
       </section>
 
-      <FaqJsonLd qa={faqItems.map(({ question, answer }) => ({ q: question, a: answer }))} />
+      <FAQSchema questions={faqJsonLdEntries} />
 
       {cta?.body ? (
         <div className="mt-16 rounded-card border border-hairline bg-white p-6 text-sm leading-relaxed text-text-secondary shadow-card">

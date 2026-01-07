@@ -8,7 +8,7 @@ import { DEFAULT_MARKETING_SCENARIO, scenarioToPricingInput, type PricingScenari
 import { FEATURES } from '@/content/feature-flags';
 import { FlagPill } from '@/components/FlagPill';
 import { getMembershipTiers } from '@/lib/membership';
-import FaqJsonLd from '@/components/FaqJsonLd';
+import { FAQSchema } from '@/components/seo/FAQSchema';
 import { localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls, SITE_BASE_URL } from '@/lib/metadataUrls';
@@ -125,17 +125,6 @@ const DEFAULT_PRICE_FACTORS = {
     'Engine tier (Sora/Veo/Pika/MiniMax) sets the base rate.',
   ],
 } as const;
-
-const DEFAULT_SUPPLEMENTAL_FAQ = [
-  {
-    question: 'Can I use Sora 2 in Europe?',
-    answer: 'Direct access is invite-only. MaxVideoAI provides paid access to Sora 2 rendering from Europe via our hub.',
-  },
-  {
-    question: 'Do videos have watermarks?',
-    answer: 'No. Renders produced through MaxVideoAI are delivered without watermarks.',
-  },
-];
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
@@ -328,17 +317,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
     return { name, requirement, benefit };
   });
 
-  const supplementalFaq =
-    Array.isArray(content.supplementalFaq) && content.supplementalFaq.length
-      ? content.supplementalFaq
-      : DEFAULT_SUPPLEMENTAL_FAQ;
-  const faqJsonLdEntries = [
-    ...faq.entries.map((entry) => ({
-      q: entry.question,
-      a: entry.answer,
-    })),
-    ...supplementalFaq.map((entry) => ({ q: entry.question, a: entry.answer })),
-  ];
+  const faqJsonLdEntries = faq.entries.slice(0, 6);
 
   return (
     <main className="mx-auto max-w-6xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
@@ -537,7 +516,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
       <Script id="pricing-jsonld" type="application/ld+json">
         {JSON.stringify(serviceSchema)}
       </Script>
-      <FaqJsonLd qa={faqJsonLdEntries} />
+      <FAQSchema questions={faqJsonLdEntries} />
     </main>
   );
 }

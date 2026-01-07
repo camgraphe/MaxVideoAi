@@ -1,4 +1,4 @@
-import { buildModelServiceJsonLd, buildModelFaqJsonLd, serializeJsonLd } from './model-jsonld';
+import { buildModelServiceJsonLd, serializeJsonLd } from './model-jsonld';
 
 type Props = {
   slug: string;
@@ -6,26 +6,14 @@ type Props = {
 
 export function ModelJsonLdHead({ slug }: Props) {
   const serviceJsonLd = buildModelServiceJsonLd(slug);
-  const faqJsonLd = buildModelFaqJsonLd(slug);
-
-  if (!serviceJsonLd && !faqJsonLd) {
+  if (!serviceJsonLd) {
     return null;
   }
 
   return (
-    <>
-      {serviceJsonLd ? (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: serializeJsonLd(serviceJsonLd) }}
-        />
-      ) : null}
-      {faqJsonLd ? (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: serializeJsonLd(faqJsonLd) }}
-        />
-      ) : null}
-    </>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: serializeJsonLd(serviceJsonLd) }}
+    />
   );
 }
