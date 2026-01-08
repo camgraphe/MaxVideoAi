@@ -114,6 +114,9 @@ interface EngineSelectProps {
   modeOptions?: Mode[];
   showBillingNote?: boolean;
   modeLabelOverrides?: Partial<Record<Mode, string>>;
+  showModeSelect?: boolean;
+  variant?: 'card' | 'bar';
+  className?: string;
 }
 
 const DEFAULT_ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
@@ -213,6 +216,9 @@ export function EngineSelect({
   modeOptions,
   showBillingNote = true,
   modeLabelOverrides,
+  showModeSelect = true,
+  variant = 'card',
+  className,
 }: EngineSelectProps) {
   const { t } = useI18n();
   const copy = t('workspace.generate.engineSelect', DEFAULT_ENGINE_SELECT_COPY) as EngineSelectCopy;
@@ -458,6 +464,9 @@ export function EngineSelect({
     return null;
   }
 
+  const isBarVariant = variant === 'bar';
+  const shouldShowModes = showModeSelect && displayedModeOptions.length > 0;
+
   const activeOptionId =
     highlightedIndex >= 0 && highlightedIndex < visibleEngines.length
       ? `${visibleEngines[highlightedIndex].id}-option`
@@ -466,42 +475,56 @@ export function EngineSelect({
   itemRefs.current.length = visibleEngines.length;
   const selectedAvgDuration = formatAvgDuration(selectedEngine.avgDurationMs);
 
-  return (
-    <Card ref={containerRef} className="relative space-y-5 p-5">
-      <div className="flex items-center justify-between gap-4">
-        <EngineIcon engine={selectedEngine} size={42} className="shrink-0" />
-        <div className="hidden flex-col items-end gap-2 text-xs text-text-muted lg:flex">
-          {selectedAvgDuration && (
-            <Chip variant="ghost" className="text-[11px] lowercase first-letter:uppercase">
-              {copy.avgDuration.replace('{value}', selectedAvgDuration)}
-            </Chip>
-          )}
-          {selectedEngine.status && (
-            <Chip variant="ghost" className="text-[11px] uppercase tracking-micro">
-              {selectedEngine.status}
-            </Chip>
-          )}
-        </div>
-      </div>
+  const containerClassName = clsx(
+    isBarVariant ? 'flex flex-wrap items-center gap-3' : 'relative space-y-5 p-5',
+    className
+  );
 
-      <div className="flex flex-wrap gap-5">
-        <div className="min-w-[240px] flex-1 space-y-2">
-          <label className="text-[12px] uppercase tracking-micro text-text-muted">{copy.choose}</label>
+  const content = (
+    <>
+      {!isBarVariant && (
+        <div className="flex items-center justify-between gap-4">
+          <EngineIcon engine={selectedEngine} size={42} className="shrink-0" />
+          <div className="hidden flex-col items-end gap-2 text-xs text-text-muted lg:flex">
+            {selectedAvgDuration && (
+              <Chip variant="ghost" className="text-[11px] lowercase first-letter:uppercase">
+                {copy.avgDuration.replace('{value}', selectedAvgDuration)}
+              </Chip>
+            )}
+            {selectedEngine.status && (
+              <Chip variant="ghost" className="text-[11px] uppercase tracking-micro">
+                {selectedEngine.status}
+              </Chip>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className={clsx('flex flex-wrap', isBarVariant ? 'flex-1 items-center gap-3' : 'gap-5')}>
+        <div className={clsx('flex-1', isBarVariant ? 'min-w-[220px] space-y-1.5' : 'min-w-[240px] space-y-2')}>
+          <label className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[12px]')}>
+            {copy.choose}
+          </label>
           <button
             id={triggerId}
             ref={triggerRef}
             type="button"
             onClick={toggleOpen}
             onKeyDown={handleTriggerKeyDown}
-            className="flex w-full items-center justify-between gap-3 rounded-input border border-hairline bg-white px-4 py-3 text-left text-sm text-text-primary shadow-sm transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className={clsx(
+              'flex w-full items-center justify-between gap-3 rounded-input border border-hairline bg-white text-left text-text-primary shadow-sm transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              isBarVariant ? 'px-3 py-2 text-[13px]' : 'px-4 py-3 text-sm'
+            )}
             aria-haspopup="listbox"
             aria-expanded={open}
           >
             <div className="flex min-w-0 items-center gap-3">
-              <EngineIcon engine={selectedEngine} size={32} className="shrink-0" />
+              <EngineIcon engine={selectedEngine} size={isBarVariant ? 26 : 32} className="shrink-0" />
               <div className="min-w-0">
-                <p className="truncate font-medium">{selectedMeta?.marketingName ?? formatEngineShort(selectedEngine)}</p>
-                <p className="truncate text-[11px] text-text-muted">
+                <p className={clsx('truncate font-medium', isBarVariant ? 'text-[13px]' : '')}>
+                  {selectedMeta?.marketingName ?? formatEngineShort(selectedEngine)}
+                </p>
+                <p className={clsx('truncate text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[11px]')}>
                   {selectedEngine.provider}
                   {selectedMeta?.versionLabel || selectedEngine.version ? ` - ${selectedMeta?.versionLabel ?? selectedEngine.version ?? ''}` : ''}
                 </p>
@@ -518,10 +541,12 @@ export function EngineSelect({
           </button>
 
           {isSoraSelection && soraVariantEngines.length > 1 && (
-            <div className="space-y-2">
-              <span className="text-[11px] uppercase tracking-micro text-text-muted">{copy.variant}</span>
+            <div className={clsx(isBarVariant ? 'space-y-1' : 'space-y-2')}>
+              <span className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[11px]')}>
+                {copy.variant}
+              </span>
               <div className="flex flex-wrap gap-2">
-                      {soraVariantEngines.map((entry) => {
+                {soraVariantEngines.map((entry) => {
                   const active = entry.id === selectedEngine.id;
                   return (
                     <button
@@ -529,7 +554,8 @@ export function EngineSelect({
                       type="button"
                       onClick={() => onEngineChange(entry.id)}
                       className={clsx(
-                        'rounded-pill border px-3 py-1 text-[12px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white',
+                        'rounded-pill border px-3 py-1 font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white',
+                        isBarVariant ? 'text-[10px]' : 'text-[12px]',
                         active
                           ? 'border-accent bg-accent text-white'
                           : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
@@ -544,7 +570,9 @@ export function EngineSelect({
           )}
 
           {showBillingNote && selectedMeta?.billingNote && (
-            <p className="text-[11px] text-text-muted">{selectedMeta.billingNote}</p>
+            <p className={clsx('text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[11px]')}>
+              {selectedMeta.billingNote}
+            </p>
           )}
 
           {open && portalElement && position &&
@@ -620,10 +648,10 @@ export function EngineSelect({
                                   {engine.provider} - {meta?.versionLabel ?? engine.version ?? '-'}
                                 </p>
                                 <div className="flex flex-wrap gap-1.5 text-[11px]">
-                                      {engine.modes.map((engineMode) => (
-                                        <Chip key={engineMode} variant="outline" className="px-2 py-0.5 text-[11px]">
-                                          {getModeLabel(engine.id, engineMode, modeLabelOverrides)}
-                                        </Chip>
+                                  {engine.modes.map((engineMode) => (
+                                    <Chip key={engineMode} variant="outline" className="px-2 py-0.5 text-[11px]">
+                                      {getModeLabel(engine.id, engineMode, modeLabelOverrides)}
+                                    </Chip>
                                   ))}
                                   {engine.isLab && (
                                     <Chip variant="ghost" className="px-2 py-0.5 text-[11px]">Lab</Chip>
@@ -647,15 +675,20 @@ export function EngineSelect({
           <button
             type="button"
             onClick={() => setBrowseOpen(true)}
-            className="w-full rounded-input border border-hairline bg-white px-4 py-2 text-sm font-medium text-accent transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className={clsx(
+              'rounded-input border border-hairline bg-white font-medium text-accent transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              isBarVariant ? 'px-3 py-1.5 text-[11px]' : 'w-full px-4 py-2 text-sm'
+            )}
           >
             {copy.browse}
           </button>
         </div>
 
-        {displayedModeOptions.length ? (
-          <div className="min-w-[200px] flex-1 space-y-3">
-            <p className="text-[12px] uppercase tracking-micro text-text-muted">{copy.inputMode}</p>
+        {shouldShowModes ? (
+          <div className={clsx(isBarVariant ? 'min-w-[200px] flex-1 space-y-2' : 'min-w-[200px] flex-1 space-y-3')}>
+            <p className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[12px]')}>
+              {copy.inputMode}
+            </p>
             <div className="flex flex-wrap gap-2">
               {displayedModeOptions.map((candidate) => {
                 const supported = selectedEngine.modes.includes(candidate);
@@ -667,7 +700,8 @@ export function EngineSelect({
                     disabled={!supported}
                     title={!supported ? copy.unsupportedMode : undefined}
                     className={clsx(
-                      'rounded-input border px-4 py-2 text-[13px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      'rounded-input border font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      isBarVariant ? 'px-3 py-1.5 text-[12px]' : 'px-4 py-2 text-[13px]',
                       mode === candidate && supported
                         ? 'border-accent bg-accent text-white'
                         : supported
@@ -697,6 +731,20 @@ export function EngineSelect({
           engineMeta={registryMeta?.meta}
         />
       )}
+    </>
+  );
+
+  if (isBarVariant) {
+    return (
+      <div ref={containerRef} className={containerClassName}>
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <Card ref={containerRef} className={containerClassName}>
+      {content}
     </Card>
   );
 }

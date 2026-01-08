@@ -1484,7 +1484,8 @@
           "optional": "Optionnel"
         },
         "prompt": {
-          "placeholder": "Décrivez le plan..."
+          "placeholder": "Décrivez la scène…",
+          "placeholderWithImage": "Décrivez comment l’image doit bouger / se transformer…"
         },
         "negativePrompt": {
           "placeholder": "Éléments à éviter…",

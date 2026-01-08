@@ -3,6 +3,7 @@
 import clsx from 'clsx';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { ExternalLink, Pause, Play, Repeat, Volume2, VolumeX } from 'lucide-react';
 import type { VideoGroup, VideoItem } from '@/types/video-groups';
 import { ProcessingOverlay } from '@/components/groups/ProcessingOverlay';
@@ -36,6 +37,8 @@ interface CompositePreviewDockProps {
   onOpenModal?: (group: VideoGroup) => void;
   copyPrompt?: string | null;
   onCopyPrompt?: () => void;
+  engineSettings?: ReactNode;
+  showTitle?: boolean;
 }
 
 const LAYOUT_SLOT_COUNT: Record<VideoGroup['layout'], number> = {
@@ -53,7 +56,7 @@ const GRID_CLASS: Record<VideoGroup['layout'], string> = {
 };
 
 const ICON_BUTTON_BASE =
-  'flex h-10 w-10 items-center justify-center rounded-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+  'flex h-9 w-9 items-center justify-center rounded-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 function isVideo(item: VideoItem): boolean {
   const hint = typeof item.meta?.mediaType === 'string' ? String(item.meta.mediaType).toLowerCase() : null;
@@ -63,7 +66,15 @@ function isVideo(item: VideoItem): boolean {
   return url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.mov');
 }
 
-export function CompositePreviewDock({ group, isLoading = false, onOpenModal, copyPrompt, onCopyPrompt }: CompositePreviewDockProps) {
+export function CompositePreviewDock({
+  group,
+  isLoading = false,
+  onOpenModal,
+  copyPrompt,
+  onCopyPrompt,
+  engineSettings,
+  showTitle = true,
+}: CompositePreviewDockProps) {
   const { t } = useI18n();
   const copy = t('workspace.generate.preview', DEFAULT_PREVIEW_COPY) as PreviewCopy;
   const [isPlaying, setIsPlaying] = useState(true);
@@ -156,79 +167,125 @@ export function CompositePreviewDock({ group, isLoading = false, onOpenModal, co
     showSkeleton = !group.items.some((item) => Boolean(item?.url || item?.thumb));
   }
 
+  const headerTitle = showTitle ? (
+    <div>
+      <h2 className="text-sm font-semibold text-text-primary">{copy.title}</h2>
+      <p className="text-xs text-text-muted">
+        {group
+          ? (group.items.length === 1 ? copy.variants.singular : copy.variants.plural).replace('{count}', String(group.items.length))
+          : copy.empty}
+      </p>
+    </div>
+  ) : null;
+
+  const toolbar = (
+    <div className="flex items-center gap-1 rounded-full border border-hairline bg-white/80 p-1 shadow-sm">
+      <button
+        type="button"
+        onClick={() => setIsPlaying((prev) => !prev)}
+        className={clsx(
+          ICON_BUTTON_BASE,
+          isPlaying ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary'
+        )}
+        aria-label={isPlaying ? copy.controls.play.ariaOn : copy.controls.play.ariaOff}
+        aria-pressed={isPlaying}
+      >
+        <UIIcon icon={isPlaying ? Pause : Play} />
+        <span className="sr-only">{isPlaying ? copy.controls.play.on : copy.controls.play.off}</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => setIsMuted((prev) => !prev)}
+        className={clsx(
+          ICON_BUTTON_BASE,
+          isMuted ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary'
+        )}
+        aria-label={isMuted ? copy.controls.mute.ariaOn : copy.controls.mute.ariaOff}
+        aria-pressed={isMuted}
+      >
+        <UIIcon icon={isMuted ? VolumeX : Volume2} />
+        <span className="sr-only">{isMuted ? copy.controls.mute.on : copy.controls.mute.off}</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => setIsLooping((prev) => !prev)}
+        className={clsx(
+          ICON_BUTTON_BASE,
+          isLooping
+            ? 'text-text-primary bg-neutral-800/20 hover:bg-neutral-800/30'
+            : 'text-text-secondary hover:text-text-primary'
+        )}
+        aria-label={isLooping ? copy.controls.loop.ariaOn : copy.controls.loop.ariaOff}
+        aria-pressed={isLooping}
+      >
+        <UIIcon icon={Repeat} />
+        <span className="sr-only">{isLooping ? copy.controls.loop.on : copy.controls.loop.off}</span>
+      </button>
+      <button
+        type="button"
+        onClick={handleOpenModal}
+        disabled={!group}
+        className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
+        aria-label={copy.controls.modal.aria}
+      >
+        <UIIcon icon={ExternalLink} />
+        <span className="sr-only">{copy.controls.modal.label}</span>
+      </button>
+    </div>
+  );
+
   return (
     <section className="rounded-card border border-border bg-white/90 shadow-card">
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline px-4 py-3">
-        <div>
-          <h2 className="text-sm font-semibold text-text-primary">{copy.title}</h2>
-          <p className="text-xs text-text-muted">
-            {group
-              ? (group.items.length === 1 ? copy.variants.singular : copy.variants.plural).replace('{count}', String(group.items.length))
-              : copy.empty}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setIsPlaying((prev) => !prev)}
-            className={clsx(
-              ICON_BUTTON_BASE,
-              isPlaying ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary'
-            )}
-            aria-label={isPlaying ? copy.controls.play.ariaOn : copy.controls.play.ariaOff}
-            aria-pressed={isPlaying}
-          >
-            <UIIcon icon={isPlaying ? Pause : Play} />
-            <span className="sr-only">{isPlaying ? copy.controls.play.on : copy.controls.play.off}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsMuted((prev) => !prev)}
-            className={clsx(
-              ICON_BUTTON_BASE,
-              isMuted ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary'
-            )}
-            aria-label={isMuted ? copy.controls.mute.ariaOn : copy.controls.mute.ariaOff}
-            aria-pressed={isMuted}
-          >
-            <UIIcon icon={isMuted ? VolumeX : Volume2} />
-            <span className="sr-only">{isMuted ? copy.controls.mute.on : copy.controls.mute.off}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsLooping((prev) => !prev)}
-            className={clsx(
-              ICON_BUTTON_BASE,
-              isLooping
-                ? 'text-text-primary bg-neutral-800/20 hover:bg-neutral-800/30'
-                : 'text-text-secondary hover:text-text-primary'
-            )}
-            aria-label={isLooping ? copy.controls.loop.ariaOn : copy.controls.loop.ariaOff}
-            aria-pressed={isLooping}
-          >
-            <UIIcon icon={Repeat} />
-            <span className="sr-only">{isLooping ? copy.controls.loop.on : copy.controls.loop.off}</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleOpenModal}
-            disabled={!group}
-            className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
-            aria-label={copy.controls.modal.aria}
-          >
-            <UIIcon icon={ExternalLink} />
-            <span className="sr-only">{copy.controls.modal.label}</span>
-          </button>
-          {copyPrompt && onCopyPrompt ? (
-            <button
-              type="button"
-              onClick={onCopyPrompt}
-              className="rounded-full border border-border bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-accent transition hover:bg-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              {copy.controls.copyPrompt}
-            </button>
-          ) : null}
-        </div>
+      <header className="border-b border-hairline px-4 py-3">
+        {engineSettings ? (
+          <>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">{engineSettings}</div>
+              <div className="flex items-center gap-2">
+                {toolbar}
+                {!showTitle && copyPrompt && onCopyPrompt ? (
+                  <button
+                    type="button"
+                    onClick={onCopyPrompt}
+                    className="rounded-full border border-border bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-accent transition hover:bg-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {copy.controls.copyPrompt}
+                  </button>
+                ) : null}
+              </div>
+            </div>
+            {showTitle ? (
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                {headerTitle}
+                {copyPrompt && onCopyPrompt ? (
+                  <button
+                    type="button"
+                    onClick={onCopyPrompt}
+                    className="rounded-full border border-border bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-accent transition hover:bg-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {copy.controls.copyPrompt}
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </>
+        ) : (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            {headerTitle}
+            <div className="flex flex-wrap items-center gap-2">
+              {toolbar}
+              {copyPrompt && onCopyPrompt ? (
+                <button
+                  type="button"
+                  onClick={onCopyPrompt}
+                  className="rounded-full border border-border bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-accent transition hover:bg-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {copy.controls.copyPrompt}
+                </button>
+              ) : null}
+            </div>
+          </div>
+        )}
       </header>
 
       <div className="px-4 py-4">

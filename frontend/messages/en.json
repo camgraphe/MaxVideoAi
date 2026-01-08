@@ -1473,7 +1473,8 @@
           "optional": "Optional"
         },
         "prompt": {
-          "placeholder": "Describe the shot..."
+          "placeholder": "Describe the scene…",
+          "placeholderWithImage": "Describe how the image should move / transform…"
         },
         "negativePrompt": {
           "placeholder": "Elements to avoid…",

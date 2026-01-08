@@ -13,8 +13,9 @@ import { getEngineCaps, type EngineCaps as EngineCapabilityCaps } from '@/fixtur
 import { LOGIN_LAST_TARGET_KEY, LOGIN_SKIP_ONBOARDING_KEY } from '@/lib/auth-storage';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { EngineSelect } from '@/components/ui/EngineSelect';
 import { SettingsControls } from '@/components/SettingsControls';
+import { CoreSettingsBar } from '@/components/CoreSettingsBar';
+import { EngineSettingsBar } from '@/components/EngineSettingsBar';
 import { Composer, type ComposerAttachment, type AssetFieldConfig, type AssetFieldRole } from '@/components/Composer';
 import type { QuadPreviewTile, QuadTileAction } from '@/components/QuadPreviewPanel';
 import { GalleryRail } from '@/components/GalleryRail';
@@ -2034,8 +2035,6 @@ useEffect(() => {
     }
   }, [memberTier, hydratedForScope, storageScope, writeStorage]);
 
-  const durationRef = useRef<HTMLElement | null>(null);
-  const resolutionRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
   const noticeTimeoutRef = useRef<number | null>(null);
   const [inputAssets, setInputAssets] = useState<Record<string, (ReferenceAsset | null)[]>>({});
@@ -3068,6 +3067,41 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       });
   }, [applyVideoSettingsSnapshot, engines.length, provider, requestedJobId, writeScopedStorage]);
 
+  const referenceInputStatus = useMemo(() => {
+    let hasImage = false;
+    let hasVideo = false;
+    Object.values(inputAssets).forEach((entries) => {
+      entries.forEach((asset) => {
+        if (!asset) return;
+        if (asset.kind === 'image') {
+          hasImage = true;
+        }
+        if (asset.kind === 'video') {
+          hasVideo = true;
+        }
+      });
+    });
+    return { hasImage, hasVideo };
+  }, [inputAssets]);
+
+  const implicitMode = useMemo<Mode>(() => {
+    if (!selectedEngine) return form?.mode ?? 't2v';
+    const modes = selectedEngine.modes;
+    if (referenceInputStatus.hasVideo && modes.includes('r2v')) return 'r2v';
+    if (referenceInputStatus.hasImage && modes.includes('i2v')) return 'i2v';
+    if (modes.includes('t2v')) return 't2v';
+    return modes[0] ?? 't2v';
+  }, [form?.mode, referenceInputStatus.hasImage, referenceInputStatus.hasVideo, selectedEngine]);
+
+  useEffect(() => {
+    if (!selectedEngine || !form) return;
+    if (form.mode === implicitMode) return;
+    setForm((current) => {
+      if (!current || current.mode === implicitMode) return current;
+      return coerceFormState(selectedEngine, implicitMode, { ...current, mode: implicitMode });
+    });
+  }, [form, implicitMode, selectedEngine, setForm]);
+
   const activeMode: Mode = form?.mode ?? (selectedEngine?.modes[0] ?? 't2v');
 
   const capability = useMemo(() => {
@@ -3239,7 +3273,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       };
     }
 
-    const appliesToMode = (field: EngineInputField) => !field.modes || field.modes.includes(activeMode);
+    const allowsCrossModeAssets = activeMode === 't2v' && Boolean(selectedEngine?.modes?.some((mode) => mode === 'i2v' || mode === 'r2v'));
+    const appliesToMode = (field: EngineInputField) => {
+      if (!field.modes || field.modes.includes(activeMode)) return true;
+      if (!allowsCrossModeAssets) return false;
+      if (field.type === 'image' && field.modes.includes('i2v')) return true;
+      if (field.type === 'video' && field.modes.includes('r2v')) return true;
+      return false;
+    };
     const isRequired = (field: EngineInputField, origin: 'required' | 'optional') => {
       if (field.requiredInModes) {
         return field.requiredInModes.includes(activeMode);
@@ -4525,170 +4566,164 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 {notice}
               </div>
             )}
-            <div className="grid gap-5 xl:grid-cols-[320px_auto]">
-              <div className="contents xl:col-start-1 xl:row-start-1 xl:flex xl:min-w-0 xl:flex-col xl:gap-5 xl:self-start">
-                <div className="order-1 xl:order-none">
-                  <div className="min-w-0">
-                    <EngineSelect
-                      engines={engines}
-                      engineId={form.engineId}
-                      onEngineChange={handleEngineChange}
-                      mode={form.mode}
-                      onModeChange={handleModeChange}
-                      modeOptions={engineModeOptions}
-                    />
+            <div className="space-y-5">
+              {showCenterGallery ? (
+                normalizedPendingGroups.length === 0 && !isGenerationLoading ? (
+                  <div className="rounded-card border border-border bg-white/80 p-5 text-center text-sm text-text-secondary">
+                    {workspaceCopy.gallery.empty}
                   </div>
-                </div>
-                <div className="order-3 xl:order-none">
-                  <div className="min-w-0">
-                    <SettingsControls
-                      engine={selectedEngine}
-                      caps={capability}
-                      durationSec={form.durationSec}
-                      durationOption={form.durationOption ?? null}
-                      onDurationChange={handleDurationChange}
-                      numFrames={form.numFrames ?? undefined}
-                      onNumFramesChange={handleFramesChange}
-                      resolution={form.resolution}
-                      onResolutionChange={handleResolutionChange}
-                      aspectRatio={form.aspectRatio}
-                      onAspectRatioChange={handleAspectRatioChange}
-                      fps={form.fps}
-                      onFpsChange={handleFpsChange}
-                      mode={form.mode}
-                      iterations={form.iterations}
-                      onIterationsChange={(iterations) =>
-                        setForm((current) => {
-                          const next = current ? { ...current, iterations } : current;
-                          if (iterations <= 1) {
-                            setViewMode('single');
-                          }
-                          return next;
-                        })
-                      }
-                      showAudioControl={supportsAudioToggle}
-                      audioEnabled={form.audio}
-                      onAudioChange={(audio) => setForm((current) => (current ? { ...current, audio } : current))}
-                      showLoopControl={selectedEngine.id === 'lumaRay2'}
-                      loopEnabled={selectedEngine.id === 'lumaRay2' ? Boolean(form.loop) : undefined}
-                      onLoopChange={(next) =>
-                        setForm((current) => (current ? { ...current, loop: next } : current))
-                      }
-                      showExtendControl={false}
-                      seedLocked={form.seedLocked}
-                      onSeedLockedChange={(seedLocked) =>
-                        setForm((current) => (current ? { ...current, seedLocked } : current))
-                      }
-                      focusRefs={{
-                        duration: durationRef,
-                        resolution: resolutionRef,
-                      }}
-                      cfgScale={cfgScale}
-                      onCfgScaleChange={(value) => setCfgScale(value)}
-                    />
-                    {selectedEngine && (
-                      <div className="mt-3 space-y-1 rounded-input border border-border/80 bg-white/80 p-3 text-[12px] text-text-secondary">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-semibold text-text-primary">{selectedEngine.label}</span>
-                          <span className="text-text-muted">• {MODE_DISPLAY_LABEL[form.mode]}</span>
-                        </div>
-                        {capability?.maxUploadMB && (form.mode === 'i2v' || form.mode === 'r2v') && (
-                          <p className="text-[11px] text-text-muted">Max upload: {capability.maxUploadMB} MB</p>
-                        )}
-                        {capability?.acceptsImageFormats && capability.acceptsImageFormats.length > 0 && form.mode === 'i2v' && (
-                          <p className="text-[11px] text-text-muted">
-                            Accepted formats: {capability.acceptsImageFormats.map((format) => format.toUpperCase()).join(', ')}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="order-2 xl:order-none xl:col-start-2 xl:row-start-1 xl:self-start">
-                <div className="space-y-5">
-                  {showCenterGallery ? (
-                    normalizedPendingGroups.length === 0 && !isGenerationLoading ? (
-                      <div className="rounded-card border border-border bg-white/80 p-5 text-center text-sm text-text-secondary">
-                        {workspaceCopy.gallery.empty}
-                      </div>
-                    ) : (
-                      <div className="grid gap-4 sm:grid-cols-2">
-	                        {normalizedPendingGroups.map((group) => {
-	                          const engineId = group.hero.engineId;
-	                          const engine = engineId ? engineMap.get(engineId) ?? null : null;
-	                          return (
-	                            <GroupedJobCard
-	                              key={group.id}
-	                              group={group}
-	                              engine={engine ?? undefined}
-	                              onOpen={handleActiveGroupOpen}
-	                              onAction={handleActiveGroupAction}
-                              allowRemove={false}
-                            />
-                          );
-                        })}
-                        {isGenerationLoading &&
-                          Array.from({ length: normalizedPendingGroups.length ? 0 : generationSkeletonCount }).map((_, index) => (
-                            <div key={`workspace-gallery-skeleton-${index}`} className="rounded-card border border-border bg-white/60 p-0" aria-hidden>
-                              <div className="relative overflow-hidden rounded-card">
-                                <div className="relative" style={{ aspectRatio: '16 / 9' }}>
-                                  <div className="skeleton absolute inset-0" />
-                                </div>
-                              </div>
-                              <div className="border-t border-border bg-white/70 px-3 py-2">
-                                <div className="h-3 w-24 rounded-full bg-neutral-200" />
-                              </div>
+                ) : (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {normalizedPendingGroups.map((group) => {
+                      const engineId = group.hero.engineId;
+                      const engine = engineId ? engineMap.get(engineId) ?? null : null;
+                      return (
+                        <GroupedJobCard
+                          key={group.id}
+                          group={group}
+                          engine={engine ?? undefined}
+                          onOpen={handleActiveGroupOpen}
+                          onAction={handleActiveGroupAction}
+                          allowRemove={false}
+                        />
+                      );
+                    })}
+                    {isGenerationLoading &&
+                      Array.from({ length: normalizedPendingGroups.length ? 0 : generationSkeletonCount }).map((_, index) => (
+                        <div key={`workspace-gallery-skeleton-${index}`} className="rounded-card border border-border bg-white/60 p-0" aria-hidden>
+                          <div className="relative overflow-hidden rounded-card">
+                            <div className="relative" style={{ aspectRatio: '16 / 9' }}>
+                              <div className="skeleton absolute inset-0" />
                             </div>
-                          ))}
-                      </div>
-                    )
-                  ) : null}
-                  <CompositePreviewDock
-                    group={compositeGroup}
-                    isLoading={isGenerationLoading && !compositeGroup}
-                    copyPrompt={sharedPrompt}
-                    onCopyPrompt={sharedPrompt ? handleCopySharedPrompt : undefined}
-                    onOpenModal={(group) => {
-                      if (!group) return;
-                      if (renderGroups.has(group.id)) {
-                        setViewerTarget({ kind: 'pending', id: group.id });
-                        return;
-                      }
-                      if (compositeOverrideSummary && compositeOverrideSummary.id === group.id) {
-                        setViewerTarget({ kind: 'summary', summary: compositeOverrideSummary });
-                      }
-                    }}
+                          </div>
+                          <div className="border-t border-border bg-white/70 px-3 py-2">
+                            <div className="h-3 w-24 rounded-full bg-neutral-200" />
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )
+              ) : null}
+              <CompositePreviewDock
+                group={compositeGroup}
+                isLoading={isGenerationLoading && !compositeGroup}
+                copyPrompt={sharedPrompt}
+                onCopyPrompt={sharedPrompt ? handleCopySharedPrompt : undefined}
+                showTitle={false}
+                engineSettings={
+                  <EngineSettingsBar
+                    engines={engines}
+                    engineId={form.engineId}
+                    onEngineChange={handleEngineChange}
+                    mode={activeMode}
+                    onModeChange={handleModeChange}
+                    modeOptions={engineModeOptions}
+                    modeLabel={MODE_DISPLAY_LABEL[activeMode]}
                   />
-                  <Composer
+                }
+                onOpenModal={(group) => {
+                  if (!group) return;
+                  if (renderGroups.has(group.id)) {
+                    setViewerTarget({ kind: 'pending', id: group.id });
+                    return;
+                  }
+                  if (compositeOverrideSummary && compositeOverrideSummary.id === group.id) {
+                    setViewerTarget({ kind: 'summary', summary: compositeOverrideSummary });
+                  }
+                }}
+              />
+              <Composer
+                engine={selectedEngine}
+                prompt={prompt}
+                onPromptChange={setPrompt}
+                negativePrompt={negativePrompt}
+                onNegativePromptChange={setNegativePrompt}
+                price={price}
+                currency={currency}
+                isLoading={isPricing}
+                error={preflightError}
+                messages={preflight?.messages}
+                textareaRef={composerRef}
+                onGenerate={startRender}
+                preflight={preflight}
+                promptField={inputSchemaSummary.promptField}
+                promptRequired={inputSchemaSummary.promptRequired}
+                negativePromptField={inputSchemaSummary.negativePromptField}
+                negativePromptRequired={inputSchemaSummary.negativePromptRequired}
+                assetFields={inputSchemaSummary.assetFields}
+                assets={composerAssets}
+                onAssetAdd={handleAssetAdd}
+                onAssetRemove={handleAssetRemove}
+                onNotice={showNotice}
+                onOpenLibrary={handleOpenAssetLibrary}
+                settingsBar={
+                  <CoreSettingsBar
                     engine={selectedEngine}
-                    prompt={prompt}
-                    onPromptChange={setPrompt}
-                    negativePrompt={negativePrompt}
-                    onNegativePromptChange={setNegativePrompt}
-                    price={price}
-                    currency={currency}
-                    isLoading={isPricing}
-                    error={preflightError}
-                    messages={preflight?.messages}
-                    textareaRef={composerRef}
-                    onGenerate={startRender}
+                    mode={activeMode}
+                    caps={capability}
+                    durationSec={form.durationSec}
+                    durationOption={form.durationOption ?? null}
+                    onDurationChange={handleDurationChange}
+                    numFrames={form.numFrames ?? undefined}
+                    onNumFramesChange={handleFramesChange}
+                    resolution={form.resolution}
+                    onResolutionChange={handleResolutionChange}
+                    aspectRatio={form.aspectRatio}
+                    onAspectRatioChange={handleAspectRatioChange}
                     iterations={form.iterations}
-                    preflight={preflight}
-                    promptField={inputSchemaSummary.promptField}
-                    promptRequired={inputSchemaSummary.promptRequired}
-                    negativePromptField={inputSchemaSummary.negativePromptField}
-                    negativePromptRequired={inputSchemaSummary.negativePromptRequired}
-                    assetFields={inputSchemaSummary.assetFields}
-                    assets={composerAssets}
-                    onAssetAdd={handleAssetAdd}
-                    onAssetRemove={handleAssetRemove}
-                    onNotice={showNotice}
-                    onOpenLibrary={handleOpenAssetLibrary}
+                    onIterationsChange={(iterations) =>
+                      setForm((current) => {
+                        const next = current ? { ...current, iterations } : current;
+                        if (iterations <= 1) {
+                          setViewMode('single');
+                        }
+                        return next;
+                      })
+                    }
+                    showAudioControl={supportsAudioToggle}
+                    audioEnabled={form.audio}
+                    onAudioChange={(audio) => setForm((current) => (current ? { ...current, audio } : current))}
+                    showLoopControl={selectedEngine.id === 'lumaRay2'}
+                    loopEnabled={selectedEngine.id === 'lumaRay2' ? Boolean(form.loop) : undefined}
+                    onLoopChange={(next) =>
+                      setForm((current) => (current ? { ...current, loop: next } : current))
+                    }
                   />
-                </div>
-              </div>
+                }
+              />
+              <SettingsControls
+                engine={selectedEngine}
+                caps={capability}
+                durationSec={form.durationSec}
+                durationOption={form.durationOption ?? null}
+                onDurationChange={handleDurationChange}
+                numFrames={form.numFrames ?? undefined}
+                onNumFramesChange={handleFramesChange}
+                resolution={form.resolution}
+                onResolutionChange={handleResolutionChange}
+                aspectRatio={form.aspectRatio}
+                onAspectRatioChange={handleAspectRatioChange}
+                fps={form.fps}
+                onFpsChange={handleFpsChange}
+                mode={activeMode}
+                iterations={form.iterations}
+                showAudioControl={supportsAudioToggle}
+                audioEnabled={form.audio}
+                onAudioChange={(audio) => setForm((current) => (current ? { ...current, audio } : current))}
+                showLoopControl={selectedEngine.id === 'lumaRay2'}
+                loopEnabled={selectedEngine.id === 'lumaRay2' ? Boolean(form.loop) : undefined}
+                onLoopChange={(next) =>
+                  setForm((current) => (current ? { ...current, loop: next } : current))
+                }
+                showExtendControl={false}
+                seedLocked={form.seedLocked}
+                onSeedLockedChange={(seedLocked) =>
+                  setForm((current) => (current ? { ...current, seedLocked } : current))
+                }
+                cfgScale={cfgScale}
+                onCfgScaleChange={(value) => setCfgScale(value)}
+                variant="advanced"
+              />
             </div>
           </main>
         </div>

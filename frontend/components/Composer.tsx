@@ -4,7 +4,7 @@
 import clsx from 'clsx';
 import Link from 'next/link';
 import { useMemo, useCallback, useRef, useEffect, useState } from 'react';
-import type { Ref, ChangeEvent, DragEvent } from 'react';
+import type { Ref, ChangeEvent, DragEvent, ReactNode } from 'react';
 import type { EngineCaps, EngineInputField, PreflightResponse } from '@/types/engines';
 import type { EngineCaps as CapabilityCaps } from '@/fixtures/engineCaps';
 import { Card } from '@/components/ui/Card';
@@ -59,6 +59,7 @@ interface Props {
   onAssetRemove?: (field: EngineInputField, index: number) => void;
   onNotice?: (message: string) => void;
   onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;
+  settingsBar?: ReactNode;
 }
 
 const DEFAULT_COMPOSER_COPY = {
@@ -76,7 +77,8 @@ const DEFAULT_COMPOSER_COPY = {
     optional: 'Optional',
   },
   prompt: {
-    placeholder: 'Describe the shot...',
+    placeholder: 'Describe the scene…',
+    placeholderWithImage: 'Describe how the image should move / transform…',
   },
   negativePrompt: {
     placeholder: 'Elements to avoid…',
@@ -116,7 +118,6 @@ export function Composer({
   messages,
   textareaRef,
   onGenerate,
-  iterations = 1,
   preflight,
   promptField,
   promptRequired,
@@ -128,6 +129,7 @@ export function Composer({
   onAssetRemove,
   onNotice,
   onOpenLibrary,
+  settingsBar,
 }: Props) {
   const { t } = useI18n();
   const composerCopy = useMemo<ComposerCopy>(() => {
@@ -192,6 +194,16 @@ export function Composer({
     (promptRequired && !prompt.trim()) ||
     (negativePromptField && negativePromptRequired && !negativePromptValue);
   const showSoraImageWarning = engine.id.startsWith('sora-2') && assetFields.some((entry) => entry.field.type === 'image');
+  const hasReferenceImage = useMemo(() => {
+    return assetFields.some((entry) => {
+      if (entry.field.type !== 'image') return false;
+      const entries = assets[entry.field.id] ?? [];
+      return entries.some((asset) => asset?.kind === 'image');
+    });
+  }, [assetFields, assets]);
+  const promptPlaceholder = hasReferenceImage
+    ? composerCopy.prompt.placeholderWithImage ?? composerCopy.prompt.placeholder
+    : composerCopy.prompt.placeholder;
 
   const triggerButtonAnimation = useCallback(() => {
     if (animationTimeoutRef.current) {
@@ -266,13 +278,51 @@ export function Composer({
             <textarea
               value={prompt}
               onChange={(event) => onPromptChange(event.currentTarget.value)}
-              placeholder={composerCopy.prompt.placeholder}
+              placeholder={promptPlaceholder}
               rows={6}
               className="w-full rounded-input border border-border bg-white px-4 py-3 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               ref={textareaRef}
             />
           </div>
         </div>
+
+        {(settingsBar || onGenerate) && (
+          <div className="flex flex-wrap items-center gap-3">
+            {settingsBar ? <div className="min-w-0 flex-1">{settingsBar}</div> : null}
+            {onGenerate ? (
+              <div className="ml-auto flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={disableGenerate}
+                  className={clsx(
+                    'relative inline-flex items-center justify-center rounded-input px-5 py-3 text-sm font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    'overflow-hidden transform-gpu transition-transform duration-200 ease-out',
+                    isButtonAnimating && !disableGenerate ? 'animate-button-pop' : '',
+                    disableGenerate
+                      ? 'cursor-not-allowed border border-border bg-white text-text-muted'
+                      : 'border border-accent bg-accent text-white shadow-card hover:brightness-[0.98] active:scale-[0.97]'
+                  )}
+                  onClick={handleGenerateClick}
+                >
+                  <span className="relative z-10">{isLoading ? composerCopy.button.loading : composerCopy.button.idle}</span>
+                  <span
+                    aria-hidden
+                    className={clsx(
+                      'pointer-events-none absolute inset-0 rounded-input bg-white/20 opacity-0 transition-opacity duration-200 ease-out',
+                      isPulseVisible && !disableGenerate ? 'opacity-100' : ''
+                    )}
+                  />
+                </button>
+              </div>
+            ) : null}
+          </div>
+        )}
+
+        {error && (
+          <div className="rounded-input border border-rose-200 bg-rose-50 px-3 py-2 text-[13px] text-rose-700 whitespace-pre-line">
+            {error}
+          </div>
+        )}
 
         {negativePromptField && (
           <div className="space-y-1">
@@ -329,41 +379,6 @@ export function Composer({
           </div>
         )}
       </div>
-
-      <footer className="flex flex-col gap-3 text-sm text-text-secondary sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-end">
-          {error && (
-            <div className="rounded-input border border-rose-200 bg-rose-50 px-3 py-2 text-[13px] text-rose-700 whitespace-pre-line">
-              {error}
-            </div>
-          )}
-          <span className="inline-flex items-center rounded-full bg-black/5 px-2.5 py-1 text-[12px] font-semibold uppercase tracking-micro text-text-secondary">
-            {composerCopy.iterationsLabel.replace('{count}', String(Math.max(1, iterations)))}
-          </span>
-          <button
-            type="button"
-            disabled={disableGenerate}
-            className={clsx(
-              'relative inline-flex items-center justify-center rounded-input px-5 py-3 text-sm font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              'overflow-hidden transform-gpu transition-transform duration-200 ease-out',
-              isButtonAnimating && !disableGenerate ? 'animate-button-pop' : '',
-              disableGenerate
-                ? 'cursor-not-allowed border border-border bg-white text-text-muted'
-                : 'border border-accent bg-accent text-white shadow-card hover:brightness-[0.98] active:scale-[0.97]'
-            )}
-            onClick={handleGenerateClick}
-          >
-            <span className="relative z-10">{isLoading ? composerCopy.button.loading : composerCopy.button.idle}</span>
-            <span
-              aria-hidden
-              className={clsx(
-                'pointer-events-none absolute inset-0 rounded-input bg-white/20 opacity-0 transition-opacity duration-200 ease-out',
-                isPulseVisible && !disableGenerate ? 'opacity-100' : ''
-              )}
-            />
-          </button>
-        </div>
-      </footer>
       {messages && messages.length > 0 && (
         <ul className="space-y-1 text-xs text-text-muted">
           {messages.map((message) => (
