@@ -56,7 +56,7 @@ const GRID_CLASS: Record<VideoGroup['layout'], string> = {
 };
 
 const ICON_BUTTON_BASE =
-  'flex h-9 w-9 items-center justify-center rounded-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+  'flex h-8 w-8 items-center justify-center rounded-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 function isVideo(item: VideoItem): boolean {
   const hint = typeof item.meta?.mediaType === 'string' ? String(item.meta.mediaType).toLowerCase() : null;
@@ -179,7 +179,7 @@ export function CompositePreviewDock({
   ) : null;
 
   const toolbar = (
-    <div className="flex items-center gap-1 rounded-full border border-hairline bg-white/80 p-1 shadow-sm">
+    <div className="flex items-center gap-1 rounded-full border border-hairline/70 bg-white/60 p-0.5 shadow-sm backdrop-blur">
       <button
         type="button"
         onClick={() => setIsPlaying((prev) => !prev)}
@@ -241,18 +241,15 @@ export function CompositePreviewDock({
           <>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0 flex-1">{engineSettings}</div>
-              <div className="flex items-center gap-2">
-                {toolbar}
-                {!showTitle && copyPrompt && onCopyPrompt ? (
-                  <button
-                    type="button"
-                    onClick={onCopyPrompt}
-                    className="rounded-full border border-border bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-accent transition hover:bg-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    {copy.controls.copyPrompt}
-                  </button>
-                ) : null}
-              </div>
+              {!showTitle && copyPrompt && onCopyPrompt ? (
+                <button
+                  type="button"
+                  onClick={onCopyPrompt}
+                  className="rounded-full border border-border bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-accent transition hover:bg-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {copy.controls.copyPrompt}
+                </button>
+              ) : null}
             </div>
             {showTitle ? (
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
@@ -273,7 +270,6 @@ export function CompositePreviewDock({
           <div className="flex flex-wrap items-center justify-between gap-3">
             {headerTitle}
             <div className="flex flex-wrap items-center gap-2">
-              {toolbar}
               {copyPrompt && onCopyPrompt ? (
                 <button
                   type="button"
@@ -373,19 +369,6 @@ export function CompositePreviewDock({
                         tileCount={tileCount || slots.length}
                       />
                     ) : null}
-                    {onOpenModal ? (
-                      <div className="absolute bottom-2 left-2">
-                        <button
-                          type="button"
-                          onClick={handleOpenModal}
-                          className="pointer-events-auto inline-flex items-center gap-1 rounded-full border border-border bg-white/90 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-secondary shadow transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          aria-label={copy.controls.openTake.aria}
-                        >
-                          <UIIcon icon={ExternalLink} size={16} />
-                          <span>{copy.controls.openTake.label}</span>
-                        </button>
-                      </div>
-                    ) : null}
                   </figure>
                 );
               })}
@@ -402,6 +385,11 @@ export function CompositePreviewDock({
               <span className="mt-2 text-xs text-white/85">{group?.errorMsg ?? 'Generation failed. Please retry.'}</span>
             </div>
           ) : null}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex items-center justify-center pb-3">
+            <div className="pointer-events-auto">
+              {toolbar}
+            </div>
+          </div>
         </div>
       </div>
     </section>

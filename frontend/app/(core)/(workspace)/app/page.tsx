@@ -394,6 +394,7 @@ const MODE_DISPLAY_LABEL: Record<Mode, string> = {
   t2i: 'Text → Image',
   i2i: 'Image → Image',
 };
+const DESKTOP_RAIL_MIN_WIDTH = 1088;
 
 type DurationOptionMeta = {
   raw: number | string;
@@ -468,6 +469,12 @@ function resolveAudioDefault(engine: EngineCaps, mode: Mode): boolean {
   const field = findGenerateAudioField(engine, mode);
   const parsed = parseBooleanInput(field?.default);
   return parsed ?? true;
+}
+
+function getPreferredEngineMode(engine: EngineCaps, candidate?: Mode | null): Mode {
+  if (candidate && engine.modes.includes(candidate)) return candidate;
+  if (engine.id === 'veo-3-1-first-last' && engine.modes.includes('i2i')) return 'i2i';
+  return engine.modes[0] ?? 't2v';
 }
 
 function framesToSeconds(frames: number): number {
@@ -1172,11 +1179,11 @@ useEffect(() => {
   const [viewMode, setViewMode] = useState<'single' | 'quad'>('single');
   const [isDesktopLayout, setIsDesktopLayout] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
-    return window.matchMedia('(min-width: 1280px)').matches;
+    return window.matchMedia(`(min-width: ${DESKTOP_RAIL_MIN_WIDTH}px)`).matches;
   });
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
-    const mediaQuery = window.matchMedia('(min-width: 1280px)');
+    const mediaQuery = window.matchMedia(`(min-width: ${DESKTOP_RAIL_MIN_WIDTH}px)`);
     const handleChange = (event: MediaQueryListEvent | MediaQueryList) => {
       setIsDesktopLayout(event.matches);
     };
@@ -1357,7 +1364,7 @@ useEffect(() => {
           engines[0] ??
           null;
         if (engine) {
-          const mode = engine.modes.includes(storedFormRaw.mode) ? storedFormRaw.mode : (engine.modes[0] ?? 't2v');
+          const mode = getPreferredEngineMode(engine, storedFormRaw.mode);
           const base = coerceFormState(engine, mode, null);
           const candidate: FormState = {
             ...base,
@@ -1393,9 +1400,11 @@ useEffect(() => {
 
       if (resolvedRequestedEngineId) {
         if (!storedFormRaw) {
+          const requestedEngine = engines.find((entry) => entry.id === resolvedRequestedEngineId) ?? null;
+          const preferredMode = requestedEngine ? getPreferredEngineMode(requestedEngine) : ('t2v' as Mode);
           const base: FormState = {
             engineId: resolvedRequestedEngineId,
-            mode: 't2v' as Mode,
+            mode: preferredMode,
             durationSec: 4,
             durationOption: 4,
             numFrames: undefined,
@@ -1424,7 +1433,7 @@ useEffect(() => {
       }
       if (!nextForm) {
         const engine = engines[0];
-        nextForm = coerceFormState(engine, engine.modes[0] ?? 't2v', null);
+        nextForm = coerceFormState(engine, getPreferredEngineMode(engine), null);
       }
       setForm(nextForm);
 
@@ -2743,6 +2752,11 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
 
   const engineModeOptions = useMemo<Mode[] | undefined>(() => {
     if (!selectedEngine) return undefined;
+    if (selectedEngine.id === 'veo-3-1-first-last') {
+      const order: Mode[] = ['i2i', 'i2v'];
+      const available = order.filter((value) => selectedEngine.modes.includes(value));
+      return available.length ? available : undefined;
+    }
     const preferredOrder: Mode[] = ['t2v', 'i2v', 'r2v', 'i2i'];
     const available = preferredOrder.filter((value) => selectedEngine.modes.includes(value));
     return available.length ? available : undefined;
@@ -2795,8 +2809,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         const snapshotMode: Mode =
           snapshotModeRaw === 't2v' || snapshotModeRaw === 'i2v' || snapshotModeRaw === 't2i' || snapshotModeRaw === 'i2i'
             ? (snapshotModeRaw as Mode)
-            : (engine.modes[0] ?? 't2v');
-        const mode = engine.modes.includes(snapshotMode) ? snapshotMode : (engine.modes[0] ?? 't2v');
+            : getPreferredEngineMode(engine);
+        const mode = engine.modes.includes(snapshotMode) ? snapshotMode : getPreferredEngineMode(engine);
 
         const promptValue = typeof record.prompt === 'string' ? record.prompt : '';
         const negativePromptValue = typeof record.negativePrompt === 'string' ? record.negativePrompt : '';
@@ -3087,6 +3101,9 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   const implicitMode = useMemo<Mode>(() => {
     if (!selectedEngine) return form?.mode ?? 't2v';
     const modes = selectedEngine.modes;
+    if (selectedEngine.id === 'veo-3-1-first-last') {
+      return getPreferredEngineMode(selectedEngine, form?.mode);
+    }
     if (referenceInputStatus.hasVideo && modes.includes('r2v')) return 'r2v';
     if (referenceInputStatus.hasImage && modes.includes('i2v')) return 'i2v';
     if (modes.includes('t2v')) return 't2v';
@@ -3102,7 +3119,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     });
   }, [form, implicitMode, selectedEngine, setForm]);
 
-  const activeMode: Mode = form?.mode ?? (selectedEngine?.modes[0] ?? 't2v');
+  const activeMode: Mode = form?.mode ?? (selectedEngine ? getPreferredEngineMode(selectedEngine) : 't2v');
 
   const capability = useMemo(() => {
     if (!selectedEngine) return undefined;
@@ -3123,7 +3140,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
       if (!nextEngine) return;
       setForm((current) => {
         const candidate = current ?? null;
-        const nextMode = candidate && nextEngine.modes.includes(candidate.mode) ? candidate.mode : nextEngine.modes[0];
+        const nextMode = getPreferredEngineMode(nextEngine, candidate?.mode ?? null);
         const normalizedPrevious = candidate ? { ...candidate, engineId: nextEngine.id, mode: nextMode } : null;
         return coerceFormState(nextEngine, nextMode, normalizedPrevious);
       });
@@ -3137,7 +3154,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     setForm((current) => {
       const candidate = current ?? null;
       if (candidate?.engineId === engineOverride.id) return candidate;
-      const preferredMode = candidate && engineOverride.modes.includes(candidate.mode) ? candidate.mode : engineOverride.modes[0];
+      const preferredMode = getPreferredEngineMode(engineOverride, candidate?.mode ?? null);
       const normalizedPrevious = candidate ? { ...candidate, engineId: engineOverride.id, mode: preferredMode } : null;
       const nextState = coerceFormState(engineOverride, preferredMode, normalizedPrevious);
       if (process.env.NODE_ENV !== 'production') {
@@ -3171,7 +3188,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   const handleModeChange = useCallback(
     (mode: Mode) => {
       if (!selectedEngine) return;
-      const nextMode = selectedEngine.modes.includes(mode) ? mode : selectedEngine.modes[0];
+      const nextMode = getPreferredEngineMode(selectedEngine, mode);
       setForm((current) => coerceFormState(selectedEngine, nextMode, current ? { ...current, mode: nextMode } : null));
     },
     [selectedEngine]
@@ -4182,7 +4199,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     setForm((current) => {
       const candidate = current ?? null;
       if (!candidate) return candidate;
-      const nextMode = candidate && selectedEngine.modes.includes(candidate.mode) ? candidate.mode : selectedEngine.modes[0];
+      const nextMode = getPreferredEngineMode(selectedEngine, candidate?.mode ?? null);
       const normalizedPrevious = candidate ? { ...candidate, mode: nextMode } : null;
       const nextState = coerceFormState(selectedEngine, nextMode, normalizedPrevious);
       if (candidate) {
@@ -4556,7 +4573,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <HeaderBar />
-      <div className="flex flex-1 flex-col xl:flex-row">
+      <div className={clsx('flex flex-1', isDesktopLayout ? 'flex-row' : 'flex-col')}>
         <div className="flex flex-1 min-w-0">
           <AppSidebar />
           <div className="flex flex-1 min-w-0 flex-col overflow-hidden">
@@ -4619,6 +4636,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                     onModeChange={handleModeChange}
                     modeOptions={engineModeOptions}
                     modeLabel={MODE_DISPLAY_LABEL[activeMode]}
+                    showModeBadge={false}
                   />
                 }
                 onOpenModal={(group) => {

@@ -2771,7 +2771,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
   {
     id: 'minimax-hailuo-02-text',
     modelSlug: 'minimax-hailuo-02-text',
-    marketingName: 'MiniMax Hailuo 02 Standard (Text & Image to Video)',
+    marketingName: 'MiniMax Hailuo 02 Standard',
     cardTitle: 'MiniMax Hailuo 02',
     provider: 'MiniMax',
     brandId: 'minimax',

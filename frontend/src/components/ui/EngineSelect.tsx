@@ -58,6 +58,10 @@ async function ensureEngineRegistryMeta(): Promise<EngineRegistryMeta> {
 
 const SORA_ENGINE_IDS = ['sora-2', 'sora-2-pro'] as const;
 const SORA_ENGINE_SET = new Set<string>(SORA_ENGINE_IDS);
+const VEO_ENGINE_IDS = ['veo-3-1', 'veo-3-1-fast'] as const;
+const VEO_ENGINE_SET = new Set<string>(VEO_ENGINE_IDS);
+const MODE_VARIANT_ENGINE_IDS = ['veo-3-1-first-last'] as const;
+const MODE_VARIANT_ENGINE_SET = new Set<string>(MODE_VARIANT_ENGINE_IDS);
 
 type EngineGuideEntry = {
   description: string;
@@ -96,6 +100,14 @@ function getModeLabel(
   if (custom) return custom;
   const engineOverrides = engineId ? ENGINE_MODE_LABEL_OVERRIDES[engineId] : undefined;
   return engineOverrides?.[value] ?? MODE_LABELS[value] ?? value.toUpperCase();
+}
+
+function getModeDisplayOrder(engineId: string | undefined, modes: Mode[]): Mode[] {
+  if (engineId === 'veo-3-1-first-last') {
+    const order: Mode[] = ['i2i', 'i2v'];
+    return order.filter((mode) => modes.includes(mode));
+  }
+  return modes;
 }
 
 function formatAvgDuration(value: number | null | undefined): string | null {
@@ -261,16 +273,31 @@ export function EngineSelect({
 
   const visibleEngines = availableEngines;
 
-  const soraVariantEngines = useMemo(
-    () => availableEngines.filter((entry) => SORA_ENGINE_SET.has(entry.id)),
-    [availableEngines]
-  );
-  const isSoraSelection = selectedEngine ? SORA_ENGINE_SET.has(selectedEngine.id) : false;
+  const variantEngines = useMemo(() => {
+    if (!selectedEngine) return [];
+    if (SORA_ENGINE_SET.has(selectedEngine.id)) {
+      return availableEngines.filter((entry) => SORA_ENGINE_SET.has(entry.id));
+    }
+    if (VEO_ENGINE_SET.has(selectedEngine.id)) {
+      return availableEngines.filter((entry) => VEO_ENGINE_SET.has(entry.id));
+    }
+    return [];
+  }, [availableEngines, selectedEngine]);
+
+  const showVariantSelector = variantEngines.length > 1;
 
   const formatEngineShort = useCallback((engine: EngineCaps | null | undefined) => {
     if (!engine) return '';
     return String(engine.id || engine.label || '').replace(/\s+/g, '').toUpperCase();
   }, []);
+
+  const getVariantLabel = useCallback(
+    (entry: EngineCaps) => {
+      const meta = registryMeta?.meta.get(entry.id);
+      return meta?.cardTitle ?? meta?.marketingName ?? entry.label ?? entry.id;
+    },
+    [registryMeta]
+  );
 
   useEffect(() => {
     if (registryMeta) return;
@@ -334,6 +361,13 @@ export function EngineSelect({
     });
     return deduped;
   }, [modeOptions]);
+
+  const modeVariantOptions = useMemo(() => {
+    if (!selectedEngine || !MODE_VARIANT_ENGINE_SET.has(selectedEngine.id)) return [];
+    return displayedModeOptions.filter((option) => selectedEngine.modes.includes(option));
+  }, [displayedModeOptions, selectedEngine]);
+
+  const showModeVariantSelector = modeVariantOptions.length > 1;
 
   const updatePosition = useCallback(() => {
     if (!triggerRef.current) return;
@@ -476,7 +510,7 @@ export function EngineSelect({
   const selectedAvgDuration = formatAvgDuration(selectedEngine.avgDurationMs);
 
   const containerClassName = clsx(
-    isBarVariant ? 'flex flex-wrap items-center gap-3' : 'relative space-y-5 p-5',
+    isBarVariant ? 'flex flex-wrap items-center gap-2 sm:gap-3' : 'relative space-y-5 p-5',
     className
   );
 
@@ -500,53 +534,65 @@ export function EngineSelect({
         </div>
       )}
 
-      <div className={clsx('flex flex-wrap', isBarVariant ? 'flex-1 items-center gap-3' : 'gap-5')}>
-        <div className={clsx('flex-1', isBarVariant ? 'min-w-[220px] space-y-1.5' : 'min-w-[240px] space-y-2')}>
+      <div className={clsx('flex flex-wrap', isBarVariant ? 'flex-1 items-center gap-2 sm:gap-3' : 'gap-5')}>
+        <div className={clsx('flex-1', isBarVariant ? 'min-w-[160px] space-y-1.5 sm:min-w-[220px]' : 'min-w-[240px] space-y-2')}>
           <label className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[12px]')}>
             {copy.choose}
           </label>
-          <button
-            id={triggerId}
-            ref={triggerRef}
-            type="button"
-            onClick={toggleOpen}
-            onKeyDown={handleTriggerKeyDown}
-            className={clsx(
-              'flex w-full items-center justify-between gap-3 rounded-input border border-hairline bg-white text-left text-text-primary shadow-sm transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              isBarVariant ? 'px-3 py-2 text-[13px]' : 'px-4 py-3 text-sm'
-            )}
-            aria-haspopup="listbox"
-            aria-expanded={open}
-          >
-            <div className="flex min-w-0 items-center gap-3">
-              <EngineIcon engine={selectedEngine} size={isBarVariant ? 26 : 32} className="shrink-0" />
-              <div className="min-w-0">
-                <p className={clsx('truncate font-medium', isBarVariant ? 'text-[13px]' : '')}>
-                  {selectedMeta?.marketingName ?? formatEngineShort(selectedEngine)}
-                </p>
-                <p className={clsx('truncate text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[11px]')}>
-                  {selectedEngine.provider}
-                  {selectedMeta?.versionLabel || selectedEngine.version ? ` - ${selectedMeta?.versionLabel ?? selectedEngine.version ?? ''}` : ''}
-                </p>
-              </div>
-            </div>
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 20 20"
-              className={clsx('h-5 w-5 text-text-muted transition-transform', open && 'rotate-180')}
-              fill="none"
+          <div className="flex items-stretch gap-2">
+            <button
+              id={triggerId}
+              ref={triggerRef}
+              type="button"
+              onClick={toggleOpen}
+              onKeyDown={handleTriggerKeyDown}
+              className={clsx(
+                'flex w-full items-center justify-between gap-3 rounded-input border border-hairline bg-white text-left text-text-primary shadow-sm transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                isBarVariant ? 'px-2.5 py-1.5 text-[12px] sm:px-3 sm:py-2 sm:text-[13px]' : 'px-4 py-3 text-sm'
+              )}
+              aria-haspopup="listbox"
+              aria-expanded={open}
             >
-              <path d="m6 8 4 4 4-4" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
+              <div className="flex min-w-0 items-center gap-3">
+                <EngineIcon engine={selectedEngine} size={isBarVariant ? 24 : 32} className="shrink-0" />
+                <div className="min-w-0">
+                  <p className={clsx('truncate font-medium', isBarVariant ? 'text-[13px]' : '')}>
+                    {selectedMeta?.marketingName ?? formatEngineShort(selectedEngine)}
+                  </p>
+                  <p className={clsx('truncate text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[11px]')}>
+                    {selectedEngine.provider}
+                    {selectedMeta?.versionLabel || selectedEngine.version ? ` - ${selectedMeta?.versionLabel ?? selectedEngine.version ?? ''}` : ''}
+                  </p>
+                </div>
+              </div>
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 20 20"
+                className={clsx('h-5 w-5 text-text-muted transition-transform', open && 'rotate-180')}
+                fill="none"
+              >
+                <path d="m6 8 4 4 4-4" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => setBrowseOpen(true)}
+              className={clsx(
+                'shrink-0 rounded-input border border-hairline bg-white font-medium text-accent transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                isBarVariant ? 'px-2.5 py-1.5 text-[11px] sm:px-3 sm:py-2 sm:text-[12px]' : 'px-4 py-3 text-sm'
+              )}
+            >
+              {copy.browse}
+            </button>
+          </div>
 
-          {isSoraSelection && soraVariantEngines.length > 1 && (
+          {showVariantSelector && (
             <div className={clsx(isBarVariant ? 'space-y-1' : 'space-y-2')}>
               <span className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[11px]')}>
                 {copy.variant}
               </span>
               <div className="flex flex-wrap gap-2">
-                {soraVariantEngines.map((entry) => {
+                {variantEngines.map((entry) => {
                   const active = entry.id === selectedEngine.id;
                   return (
                     <button
@@ -561,7 +607,36 @@ export function EngineSelect({
                           : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
                       )}
                     >
-                      {registryMeta?.meta.get(entry.id)?.marketingName ?? entry.label ?? entry.id}
+                      {getVariantLabel(entry)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {showModeVariantSelector && (
+            <div className={clsx(isBarVariant ? 'space-y-1' : 'space-y-2')}>
+              <span className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[11px]')}>
+                {copy.variant}
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {modeVariantOptions.map((candidate) => {
+                  const active = mode === candidate;
+                  return (
+                    <button
+                      key={candidate}
+                      type="button"
+                      onClick={() => onModeChange(candidate)}
+                      className={clsx(
+                        'rounded-pill border px-3 py-1 font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white',
+                        isBarVariant ? 'text-[10px]' : 'text-[12px]',
+                        active
+                          ? 'border-accent bg-accent text-white'
+                          : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
+                      )}
+                    >
+                      {getModeLabel(selectedEngine?.id, candidate, modeLabelOverrides)}
                     </button>
                   );
                 })}
@@ -647,14 +722,14 @@ export function EngineSelect({
                                 <p className="truncate text-[12px] text-text-muted">
                                   {engine.provider} - {meta?.versionLabel ?? engine.version ?? '-'}
                                 </p>
-                                <div className="flex flex-wrap gap-1.5 text-[11px]">
-                                  {engine.modes.map((engineMode) => (
-                                    <Chip key={engineMode} variant="outline" className="px-2 py-0.5 text-[11px]">
+                                <div className="flex flex-wrap gap-1 text-[10px]">
+                                  {getModeDisplayOrder(engine.id, engine.modes).map((engineMode) => (
+                                    <Chip key={engineMode} variant="outline" className="px-1.5 py-0.5 text-[10px]">
                                       {getModeLabel(engine.id, engineMode, modeLabelOverrides)}
                                     </Chip>
                                   ))}
                                   {engine.isLab && (
-                                    <Chip variant="ghost" className="px-2 py-0.5 text-[11px]">Lab</Chip>
+                                    <Chip variant="ghost" className="px-1.5 py-0.5 text-[10px]">Lab</Chip>
                                   )}
                                 </div>
                               </div>
@@ -672,16 +747,6 @@ export function EngineSelect({
               </div>,
               portalElement
             )}
-          <button
-            type="button"
-            onClick={() => setBrowseOpen(true)}
-            className={clsx(
-              'rounded-input border border-hairline bg-white font-medium text-accent transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              isBarVariant ? 'px-3 py-1.5 text-[11px]' : 'w-full px-4 py-2 text-sm'
-            )}
-          >
-            {copy.browse}
-          </button>
         </div>
 
         {shouldShowModes ? (
@@ -1027,7 +1092,7 @@ function BrowseEnginesModal({
                   </div>
                   <div className="flex flex-wrap items-center gap-3 text-xs text-text-muted">
                     <span>
-                      Modes: {engine.modes.map((entry) => getModeLabel(engine.id, entry, modeLabelOverrides)).join(' / ')}
+                      Modes: {getModeDisplayOrder(engine.id, engine.modes).map((entry) => getModeLabel(engine.id, entry, modeLabelOverrides)).join(' / ')}
                     </span>
                     <span>
                       Max {engine.maxDurationSec}s / Res {engine.resolutions.join(' / ')}

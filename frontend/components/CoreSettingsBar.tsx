@@ -37,7 +37,7 @@ type DurationOptionMeta = {
 };
 
 const SELECT_BASE =
-  'w-full min-w-[140px] rounded-input border border-hairline bg-white px-3 py-2 text-[12px] text-text-primary transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+  'w-full min-w-[140px] appearance-none rounded-input border border-hairline bg-white px-3 py-2 pr-8 text-[12px] text-text-primary transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 function parseDurationOptionValue(option: number | string): DurationOptionMeta {
   if (typeof option === 'number') {
@@ -77,33 +77,43 @@ function SelectGroup({
   value,
   onChange,
   disabled,
+  className,
 }: {
   label: string;
   options: { value: string | number | boolean; label: string; disabled?: boolean }[];
   value: string | number | boolean;
   onChange: (value: string | number | boolean) => void;
   disabled?: boolean;
+  className?: string;
 }) {
   if (!options.length) return null;
   const selected = String(value);
   return (
-    <label className="flex flex-col gap-1">
+    <label className={clsx('flex min-w-0 flex-col gap-1', className)}>
       <span className="text-[10px] uppercase tracking-micro text-text-muted">{label}</span>
-      <select
-        className={clsx(SELECT_BASE, disabled && 'cursor-not-allowed opacity-60')}
-        value={selected}
-        onChange={(event) => {
-          const match = options.find((option) => String(option.value) === event.currentTarget.value);
-          if (match) onChange(match.value);
-        }}
-        disabled={disabled}
-      >
-        {options.map((option) => (
-          <option key={`${label}-${String(option.value)}`} value={String(option.value)} disabled={option.disabled}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+      <div className="relative">
+        <select
+          className={clsx(SELECT_BASE, disabled && 'cursor-not-allowed opacity-60')}
+          value={selected}
+          onChange={(event) => {
+            const match = options.find((option) => String(option.value) === event.currentTarget.value);
+            if (match) onChange(match.value);
+          }}
+          disabled={disabled}
+        >
+          {options.map((option) => (
+            <option key={`${label}-${String(option.value)}`} value={String(option.value)} disabled={option.disabled}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <span
+          aria-hidden
+          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-text-muted"
+        >
+          ▾
+        </span>
+      </div>
     </label>
   );
 }
@@ -229,7 +239,7 @@ export function CoreSettingsBar({
 
   return (
     <div className="min-w-0 flex-1">
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {frameOptions || (enumeratedDurationOptions && enumeratedDurationOptions.length) ? (
           <SelectGroup
             label={frameOptions ? framesLabel : durationLabel}
@@ -303,9 +313,11 @@ export function CoreSettingsBar({
           />
         )}
         {audioIncluded && controlsCopy.core.audioIncluded && (
-          <span className="inline-flex items-center rounded-full border border-accent/20 bg-accentSoft/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-micro text-accent">
-            {controlsCopy.core.audioIncluded}
-          </span>
+          <div className="col-span-2 sm:col-span-3 lg:col-span-4 xl:col-span-5">
+            <span className="inline-flex items-center rounded-full border border-accent/20 bg-accentSoft/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-micro text-accent">
+              {controlsCopy.core.audioIncluded}
+            </span>
+          </div>
         )}
       </div>
       {isLtx2FastLong && (

@@ -240,40 +240,29 @@ export function Composer({
 
   return (
     <Card className="space-y-5 p-5">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">{composerCopy.title}</h2>
-        </div>
-        <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
-          {formattedPrice && (
-            <Chip variant="accent" className="px-3 py-1.5">
-              {composerCopy.priceLabel.replace('{amount}', formattedPrice)}
-            </Chip>
-          )}
-          {memberDiscount && memberDiscount.amountCents > 0 && (
-            <Chip className="px-3 py-1.5 text-accent" variant="outline">
-              {composerCopy.memberLabel.replace(
-                '{percent}',
-                String(Math.round((memberDiscount.percentApplied ?? 0) * 100))
-              )}
-            </Chip>
-          )}
-        </div>
-      </header>
-
       <div className="space-y-4">
         <div className="space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <span className="text-sm font-medium text-text-primary">{promptLabel}</span>
-              {promptDescription && (
-                <p className="text-[12px] text-text-muted">{promptDescription}</p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-sm font-medium text-text-primary">{promptLabel}</span>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
+              {formattedPrice && (
+                <Chip variant="accent" className="px-3 py-1.5">
+                  {composerCopy.priceLabel.replace('{amount}', formattedPrice)}
+                </Chip>
+              )}
+              {memberDiscount && memberDiscount.amountCents > 0 && (
+                <Chip className="px-3 py-1.5 text-accent" variant="outline">
+                  {composerCopy.memberLabel.replace(
+                    '{percent}',
+                    String(Math.round((memberDiscount.percentApplied ?? 0) * 100))
+                  )}
+                </Chip>
               )}
             </div>
-            <span className={clsx('rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-micro', promptRequired ? 'border-accent text-accent' : 'border-border text-text-muted')}>
-              {promptRequired ? composerCopy.labels.required : composerCopy.labels.optional}
-            </span>
           </div>
+          {promptDescription && (
+            <p className="text-[12px] text-text-muted">{promptDescription}</p>
+          )}
           <div className="relative">
             <textarea
               value={prompt}
@@ -287,33 +276,31 @@ export function Composer({
         </div>
 
         {(settingsBar || onGenerate) && (
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end lg:flex-nowrap">
             {settingsBar ? <div className="min-w-0 flex-1">{settingsBar}</div> : null}
             {onGenerate ? (
-              <div className="ml-auto flex items-center gap-2">
-                <button
-                  type="button"
-                  disabled={disableGenerate}
+              <button
+                type="button"
+                disabled={disableGenerate}
+                className={clsx(
+                  'relative inline-flex w-full shrink-0 items-center justify-center rounded-input px-5 py-3 text-sm font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto',
+                  'overflow-hidden transform-gpu transition-transform duration-200 ease-out',
+                  isButtonAnimating && !disableGenerate ? 'animate-button-pop' : '',
+                  disableGenerate
+                    ? 'cursor-not-allowed border border-border bg-white text-text-muted'
+                    : 'border border-accent bg-accent text-white shadow-card hover:brightness-[0.98] active:scale-[0.97]'
+                )}
+                onClick={handleGenerateClick}
+              >
+                <span className="relative z-10">{isLoading ? composerCopy.button.loading : composerCopy.button.idle}</span>
+                <span
+                  aria-hidden
                   className={clsx(
-                    'relative inline-flex items-center justify-center rounded-input px-5 py-3 text-sm font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    'overflow-hidden transform-gpu transition-transform duration-200 ease-out',
-                    isButtonAnimating && !disableGenerate ? 'animate-button-pop' : '',
-                    disableGenerate
-                      ? 'cursor-not-allowed border border-border bg-white text-text-muted'
-                      : 'border border-accent bg-accent text-white shadow-card hover:brightness-[0.98] active:scale-[0.97]'
+                    'pointer-events-none absolute inset-0 rounded-input bg-white/20 opacity-0 transition-opacity duration-200 ease-out',
+                    isPulseVisible && !disableGenerate ? 'opacity-100' : ''
                   )}
-                  onClick={handleGenerateClick}
-                >
-                  <span className="relative z-10">{isLoading ? composerCopy.button.loading : composerCopy.button.idle}</span>
-                  <span
-                    aria-hidden
-                    className={clsx(
-                      'pointer-events-none absolute inset-0 rounded-input bg-white/20 opacity-0 transition-opacity duration-200 ease-out',
-                      isPulseVisible && !disableGenerate ? 'opacity-100' : ''
-                    )}
-                  />
-                </button>
-              </div>
+                />
+              </button>
             ) : null}
           </div>
         )}
@@ -569,6 +556,7 @@ function AssetDropzone({
         >
           {slotAssets.map((asset, index) => {
             const slotRequired = index < minCount;
+            const showRequiredHint = slotRequired && engine.id !== 'wan-2-6';
             const allowClick = asset === null || maxCount === 0;
             return (
               <div
@@ -653,7 +641,7 @@ function AssetDropzone({
                       Drag & drop or click to add.{' '}
                       {helperLines.length > 0 ? helperLines.join(' • ') : null}
                     </span>
-                    {slotRequired && <span className="text-[10px] text-[#F97316]">Needed before generating.</span>}
+                    {showRequiredHint && <span className="text-[10px] text-[#F97316]">Needed before generating.</span>}
                     {field.type === 'image' && (
                       <div className="flex w-full items-center justify-center gap-2 pt-1">
                         {assetSlotCta ? (
