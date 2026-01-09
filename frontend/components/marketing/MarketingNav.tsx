@@ -22,11 +22,7 @@ export function MarketingNav() {
   const pathname = usePathname();
   const { t } = useI18n();
   const [email, setEmail] = useState<string | null>(null);
-  const [wallet, setWallet] = useState<{ balance: number } | null>(() => {
-    const stored = readLastKnownWallet();
-    if (!stored) return null;
-    return { balance: stored.balance };
-  });
+  const [wallet, setWallet] = useState<{ balance: number } | null>(null);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [walletPromptOpen, setWalletPromptOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -49,6 +45,13 @@ export function MarketingNav() {
   const cta = t('nav.cta', 'Start a render');
   const generateLabel = t('nav.generate', 'Generate');
   const isAuthenticated = Boolean(email);
+
+  useEffect(() => {
+    const storedWallet = readLastKnownWallet();
+    if (storedWallet) {
+      setWallet((current) => current ?? { balance: storedWallet.balance });
+    }
+  }, []);
 
   useEffect(() => {
     let mounted = true;

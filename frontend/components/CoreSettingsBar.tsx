@@ -6,6 +6,7 @@ import type { EngineCaps, Mode } from '@/types/engines';
 import type { EngineCaps as CapabilityCaps } from '@/fixtures/engineCaps';
 import { DEFAULT_CONTROLS_COPY, mergeControlsCopy } from '@/components/SettingsControls';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { SelectMenu } from '@/components/ui/SelectMenu';
 
 interface CoreSettingsBarProps {
   engine: EngineCaps;
@@ -35,9 +36,6 @@ type DurationOptionMeta = {
   value: number;
   label: string;
 };
-
-const SELECT_BASE =
-  'w-full min-w-[140px] appearance-none rounded-input border border-hairline bg-white px-3 py-2 pr-8 text-[12px] text-text-primary transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 function parseDurationOptionValue(option: number | string): DurationOptionMeta {
   if (typeof option === 'number') {
@@ -87,33 +85,10 @@ function SelectGroup({
   className?: string;
 }) {
   if (!options.length) return null;
-  const selected = String(value);
   return (
     <label className={clsx('flex min-w-0 flex-col gap-1', className)}>
       <span className="text-[10px] uppercase tracking-micro text-text-muted">{label}</span>
-      <div className="relative">
-        <select
-          className={clsx(SELECT_BASE, disabled && 'cursor-not-allowed opacity-60')}
-          value={selected}
-          onChange={(event) => {
-            const match = options.find((option) => String(option.value) === event.currentTarget.value);
-            if (match) onChange(match.value);
-          }}
-          disabled={disabled}
-        >
-          {options.map((option) => (
-            <option key={`${label}-${String(option.value)}`} value={String(option.value)} disabled={option.disabled}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <span
-          aria-hidden
-          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-text-muted"
-        >
-          ▾
-        </span>
-      </div>
+      <SelectMenu options={options} value={value} onChange={onChange} disabled={disabled} />
     </label>
   );
 }

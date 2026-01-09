@@ -1834,6 +1834,7 @@
       "composer": {
         "promptLabel": "Prompt",
         "promptPlaceholder": "Describe la imagen que quieres generar…",
+        "promptPlaceholderWithImage": "Describe cómo debe editarse / transformarse la imagen…",
         "charCount": "{count} caracteres",
         "presetsHint": "Elige un preset · 1–8 por ejecución",
         "numImagesLabel": "Número de imágenes",

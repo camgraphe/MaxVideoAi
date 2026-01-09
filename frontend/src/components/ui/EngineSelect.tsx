@@ -127,6 +127,7 @@ interface EngineSelectProps {
   showBillingNote?: boolean;
   modeLabelOverrides?: Partial<Record<Mode, string>>;
   showModeSelect?: boolean;
+  modeLayout?: 'inline' | 'stacked';
   variant?: 'card' | 'bar';
   className?: string;
 }
@@ -229,6 +230,7 @@ export function EngineSelect({
   showBillingNote = true,
   modeLabelOverrides,
   showModeSelect = true,
+  modeLayout = 'inline',
   variant = 'card',
   className,
 }: EngineSelectProps) {
@@ -499,6 +501,7 @@ export function EngineSelect({
   }
 
   const isBarVariant = variant === 'bar';
+  const isStackedMode = modeLayout === 'stacked';
   const shouldShowModes = showModeSelect && displayedModeOptions.length > 0;
 
   const activeOptionId =
@@ -510,7 +513,11 @@ export function EngineSelect({
   const selectedAvgDuration = formatAvgDuration(selectedEngine.avgDurationMs);
 
   const containerClassName = clsx(
-    isBarVariant ? 'flex flex-wrap items-center gap-2 sm:gap-3' : 'relative space-y-5 p-5',
+    isBarVariant
+      ? isStackedMode
+        ? 'flex flex-col gap-2'
+        : 'flex flex-wrap items-center gap-2 sm:gap-3'
+      : 'relative space-y-5 p-5',
     className
   );
 
@@ -534,7 +541,16 @@ export function EngineSelect({
         </div>
       )}
 
-      <div className={clsx('flex flex-wrap', isBarVariant ? 'flex-1 items-center gap-2 sm:gap-3' : 'gap-5')}>
+      <div
+        className={clsx(
+          'flex flex-wrap',
+          isBarVariant
+            ? isStackedMode
+              ? 'w-full items-start gap-2 sm:gap-3'
+              : 'flex-1 items-center gap-2 sm:gap-3'
+            : 'gap-5'
+        )}
+      >
         <div className={clsx('flex-1', isBarVariant ? 'min-w-[160px] space-y-1.5 sm:min-w-[220px]' : 'min-w-[240px] space-y-2')}>
           <label className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[12px]')}>
             {copy.choose}
@@ -750,7 +766,15 @@ export function EngineSelect({
         </div>
 
         {shouldShowModes ? (
-          <div className={clsx(isBarVariant ? 'min-w-[200px] flex-1 space-y-2' : 'min-w-[200px] flex-1 space-y-3')}>
+          <div
+            className={clsx(
+              isBarVariant
+                ? isStackedMode
+                  ? 'w-full space-y-2'
+                  : 'min-w-[200px] flex-1 space-y-2'
+                : 'min-w-[200px] flex-1 space-y-3'
+            )}
+          >
             <p className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[12px]')}>
               {copy.inputMode}
             </p>

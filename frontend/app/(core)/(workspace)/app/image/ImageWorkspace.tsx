@@ -5,7 +5,6 @@
 import clsx from 'clsx';
 import useSWR from 'swr';
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import deepmerge from 'deepmerge';
 import type {
@@ -15,26 +14,30 @@ import type {
   MouseEvent as ReactMouseEvent,
 } from 'react';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
+import { GalleryRail } from '@/components/GalleryRail';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { EngineSelect } from '@/components/ui/EngineSelect';
+import { SelectMenu } from '@/components/ui/SelectMenu';
 import { runImageGeneration, useInfiniteJobs, saveImageToLibrary } from '@/lib/api';
 import type { ImageGenerationMode, GeneratedImage } from '@/types/image-generation';
 import type { EngineCaps, EngineInputField } from '@/types/engines';
+import type { GroupSummary, GroupMemberSummary } from '@/types/groups';
 import type { Job } from '@/types/jobs';
 import type { VideoGroup } from '@/types/video-groups';
 import type { MediaLightboxEntry } from '@/components/MediaLightbox';
 import { ImageCompositePreviewDock, type ImageCompositePreviewEntry } from '@/components/groups/ImageCompositePreviewDock';
 import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 import { buildVideoGroupFromImageRun } from '@/lib/image-groups';
+import { normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import {
   formatAspectRatioLabel,
   getNanoBananaAspectRatios,
   getNanoBananaDefaultAspectRatio,
 } from '@/lib/image/aspectRatios';
-import { resolveCssAspectRatio } from '@/lib/aspect';
 import { authFetch } from '@/lib/authFetch';
+import { adaptGroupSummary } from '@/lib/video-group-adapter';
 
 const NANO_BANANA_ENGINE_IDS = new Set(['nano-banana', 'nano-banana-pro']);
 const NANO_BANANA_ALIAS_PREFIXES = ['fal-ai/nano-banana'];
@@ -67,6 +70,7 @@ interface ImageWorkspaceCopy {
   composer: {
     promptLabel: string;
     promptPlaceholder: string;
+    promptPlaceholderWithImage: string;
     charCount: string;
     presetsHint: string;
     numImagesLabel: string;
@@ -180,6 +184,7 @@ const DEFAULT_COPY: ImageWorkspaceCopy = {
   composer: {
     promptLabel: 'Prompt',
     promptPlaceholder: 'Describe the image you’d like to generate...',
+    promptPlaceholderWithImage: 'Describe how the image should be edited / transformed…',
     charCount: '{count} chars',
     presetsHint: 'Tap a preset · 1–8 per run',
     numImagesLabel: 'Number of images',
@@ -277,7 +282,7 @@ const DEFAULT_REFERENCE_LIMIT = 4;
 const MIN_IMAGE_COUNT = 1;
 const MAX_IMAGE_COUNT = 8;
 const QUICK_IMAGE_COUNT_OPTIONS = [1, 2, 4, 6, 8] as const;
-const HISTORY_VISIBLE_CHUNK = 9;
+const DESKTOP_RAIL_MIN_WIDTH = 1088;
 const DEFAULT_UPLOAD_LIMIT_MB = Number.isFinite(Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25'))
   ? Number(process.env.NEXT_PUBLIC_ASSET_MAX_IMAGE_MB ?? '25')
   : 25;
@@ -452,6 +457,28 @@ function SectionDivider() {
   return <div className="my-6 border-t border-white/60" role="presentation" />;
 }
 
+function SelectGroup({
+  label,
+  options,
+  value,
+  onChange,
+  disabled,
+}: {
+  label: string;
+  options: { value: string | number; label: string }[];
+  value: string | number;
+  onChange: (value: string | number) => void;
+  disabled?: boolean;
+}) {
+  if (!options.length) return null;
+  return (
+    <label className="flex min-w-0 flex-col gap-1">
+      <span className="text-[10px] uppercase tracking-micro text-text-muted">{label}</span>
+      <SelectMenu options={options} value={value} onChange={onChange} disabled={disabled} />
+    </label>
+  );
+}
+
 function formatCurrency(amount: number, currency: string): string {
   try {
     return new Intl.NumberFormat('en-US', {
@@ -462,15 +489,6 @@ function formatCurrency(amount: number, currency: string): string {
   } catch {
     return `${currency} ${amount.toFixed(3)}`;
   }
-}
-
-function formatTimestamp(timestamp: number): string {
-  return new Intl.DateTimeFormat('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    month: 'short',
-    day: 'numeric',
-  }).format(new Date(timestamp));
 }
 
 function mapJobToHistoryEntry(job: Job): HistoryEntry | null {
@@ -499,6 +517,55 @@ function mapJobToHistoryEntry(job: Job): HistoryEntry | null {
   };
 }
 
+function buildPendingGroup({
+  id,
+  engineId,
+  engineLabel,
+  prompt,
+  count,
+  createdAt,
+}: {
+  id: string;
+  engineId: string;
+  engineLabel: string;
+  prompt: string;
+  count: number;
+  createdAt: number;
+}): GroupSummary {
+  const normalizedCount = Math.max(1, Math.round(count));
+  const previewCount = Math.min(4, normalizedCount);
+  const createdAtIso = new Date(createdAt).toISOString();
+  const members: GroupMemberSummary[] = Array.from({ length: previewCount }, (_, index) => ({
+    id: `${id}-pending-${index + 1}`,
+    engineId,
+    engineLabel,
+    durationSec: 0,
+    prompt,
+    createdAt: createdAtIso,
+    source: 'render',
+    status: 'pending',
+    iterationIndex: index,
+    iterationCount: normalizedCount,
+  }));
+
+  return {
+    id,
+    source: 'active',
+    splitMode: normalizedCount > 1 ? 'quad' : 'single',
+    count: normalizedCount,
+    totalPriceCents: null,
+    createdAt: createdAtIso,
+    hero: members[0],
+    previews: members.map((member) => ({
+      id: member.id,
+      thumbUrl: null,
+      videoUrl: null,
+      aspectRatio: null,
+    })),
+    members,
+  };
+}
+
 export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const { t } = useI18n();
   const searchParams = useSearchParams();
@@ -523,7 +590,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const [localHistory, setLocalHistory] = useState<HistoryEntry[]>([]);
   const [selectedPreviewEntryId, setSelectedPreviewEntryId] = useState<string | null>(null);
   const [selectedPreviewImageIndex, setSelectedPreviewImageIndex] = useState(0);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [pendingGroups, setPendingGroups] = useState<GroupSummary[]>([]);
+  const [isDesktopLayout, setIsDesktopLayout] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSavingToLibrary, setIsSavingToLibrary] = useState(false);
@@ -541,6 +609,21 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   ] = useState<[string, string, ImageGenerationMode, number, string] | null>(() =>
     engines[0] ? ['image-pricing', engines[0].id, 't2i', 1, ''] : null
   );
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const mediaQuery = window.matchMedia(`(min-width: ${DESKTOP_RAIL_MIN_WIDTH}px)`);
+    const handleChange = (event: MediaQueryListEvent | MediaQueryList) => {
+      setIsDesktopLayout(event.matches);
+    };
+    handleChange(mediaQuery);
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+    mediaQuery.addListener(handleChange);
+    return () => mediaQuery.removeListener(handleChange);
+  }, []);
 
   const engineCapsList = useMemo(() => engines.map((engine) => engine.engineCaps), [engines]);
   const selectedEngine = useMemo(
@@ -628,13 +711,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const isNanoBanana = useMemo(() => isNanoBananaEngine(selectedEngine), [selectedEngine]);
 
   useEffect(() => {
-    if (!selectedEngine) return;
-    if (!selectedEngine.modes.includes(mode)) {
-      setMode(selectedEngine.modes[0] ?? 't2i');
-    }
-  }, [selectedEngine, mode]);
-
-  useEffect(() => {
     if (!isNanoBanana) {
       setAspectRatio(null);
       return;
@@ -696,10 +772,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
 
   const {
     data: jobPages,
-    isLoading: jobsLoading,
-    isValidating: jobsValidating,
-    size: jobsSize,
-    setSize: setJobsSize,
+    mutate: mutateJobs,
   } = useInfiniteJobs(24, { type: 'image' });
 
   const imageEngineAliasSet = useMemo(() => {
@@ -747,8 +820,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     return Array.from(map.values()).sort((a, b) => b.createdAt - a.createdAt);
   }, [localHistory, remoteHistory]);
 
-  const [visibleHistoryCount, setVisibleHistoryCount] = useState(HISTORY_VISIBLE_CHUNK);
-
   const readyReferenceUrls = useMemo(
     () =>
       visibleReferenceSlots
@@ -777,6 +848,13 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   }, []);
 
   const closeViewer = useCallback(() => setViewerGroup(null), []);
+
+  const handleOpenGalleryGroup = useCallback((group: GroupSummary) => {
+    const hasMedia = group.previews.some((preview) => preview.thumbUrl || preview.videoUrl);
+    if (!hasMedia) return;
+    const normalized = normalizeGroupSummary(group);
+    setViewerGroup(adaptGroupSummary(normalized, 'fal'));
+  }, []);
 
   const handleSaveVariantToLibrary = useCallback(async (entry: MediaLightboxEntry) => {
     const mediaUrl = entry.videoUrl ?? entry.thumbUrl;
@@ -957,72 +1035,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       }
     },
     [engines]
-  );
-
-  const handleSelectHistoryEntry = useCallback(
-    (entry: HistoryEntry) => {
-      setSelectedPreviewEntryId(entry.id);
-      setSelectedPreviewImageIndex(0);
-      setError(null);
-      setStatusMessage(null);
-
-      const jobId = entry.jobId ?? null;
-      if (!jobId) {
-        try {
-          applyImageSettingsSnapshot({
-            schemaVersion: 1,
-            surface: 'image',
-            engineId: entry.engineId,
-            inputMode: entry.mode,
-            prompt: entry.prompt ?? '',
-            core: {
-              numImages: entry.images.length || 1,
-              aspectRatio: entry.aspectRatio ?? null,
-              resolution: null,
-            },
-            meta: { derived: true },
-          });
-        } catch (error) {
-          setError(error instanceof Error ? error.message : resolvedCopy.errors.generic);
-        }
-        return;
-      }
-
-      void authFetch(`/api/jobs/${encodeURIComponent(jobId)}`)
-        .then(async (response) => {
-          const payload = (await response.json().catch(() => null)) as
-            | {
-                ok?: boolean;
-                error?: string;
-                settingsSnapshot?: unknown;
-              }
-            | null;
-          if (!response.ok || !payload?.ok) {
-            throw new Error(payload?.error ?? `Failed to load job (${response.status})`);
-          }
-          applyImageSettingsSnapshot(payload.settingsSnapshot, { selectJobId: entry.id });
-        })
-        .catch(() => {
-          try {
-            applyImageSettingsSnapshot({
-              schemaVersion: 1,
-              surface: 'image',
-              engineId: entry.engineId,
-              inputMode: entry.mode,
-              prompt: entry.prompt ?? '',
-              core: {
-                numImages: entry.images.length || 1,
-                aspectRatio: entry.aspectRatio ?? null,
-                resolution: null,
-              },
-              meta: { derived: true },
-            });
-          } catch (error) {
-            setError(error instanceof Error ? error.message : resolvedCopy.errors.generic);
-          }
-        });
-    },
-    [applyImageSettingsSnapshot, resolvedCopy.errors.generic]
   );
 
   useEffect(() => {
@@ -1348,7 +1360,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       if (!selectedEngine) return;
-      if (!prompt.trim()) {
+      const trimmedPrompt = prompt.trim();
+      if (!trimmedPrompt) {
         setError(resolvedCopy.errors.promptMissing);
         return;
       }
@@ -1356,9 +1369,21 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         setError(resolvedCopy.errors.referenceMissing);
         return;
       }
-      setIsGenerating(true);
       setError(null);
       setStatusMessage(null);
+      const pendingId = `pending-${crypto.randomUUID()}`;
+      const pendingCreatedAt = Date.now();
+      setPendingGroups((prev) => [
+        buildPendingGroup({
+          id: pendingId,
+          engineId: selectedEngine.id,
+          engineLabel: selectedEngine.name,
+          prompt: trimmedPrompt,
+          count: numImages,
+          createdAt: pendingCreatedAt,
+        }),
+        ...prev,
+      ]);
       try {
         const appliedAspectRatio =
           isNanoBanana && (aspectRatio || aspectRatio === 'auto')
@@ -1369,7 +1394,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         const response = await runImageGeneration({
           engineId: selectedEngine.id,
           mode,
-          prompt: prompt.trim(),
+          prompt: trimmedPrompt,
           numImages,
           imageUrls: mode === 'i2i' ? readyReferenceUrls : undefined,
           aspectRatio: appliedAspectRatio,
@@ -1381,7 +1406,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
           engineId: response.engineId ?? selectedEngine.id,
           engineLabel: response.engineLabel ?? selectedEngine.name,
           mode,
-          prompt: prompt.trim(),
+          prompt: trimmedPrompt,
           createdAt: Date.now(),
           description: response.description,
           images: response.images,
@@ -1394,10 +1419,11 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         setStatusMessage(
           formatTemplate(resolvedCopy.messages.success, { count: response.images.length, suffix })
         );
+        void mutateJobs();
       } catch (err) {
         setError(err instanceof Error ? err.message : resolvedCopy.errors.generic);
       } finally {
-        setIsGenerating(false);
+        setPendingGroups((prev) => prev.filter((group) => group.id !== pendingId));
       }
     },
     [
@@ -1414,6 +1440,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       referenceMinRequired,
       resolution,
       selectedEngine,
+      mutateJobs,
     ]
   );
 
@@ -1448,29 +1475,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   }, []);
 
   const historyEntries = combinedHistory;
-  const visibleHistoryEntries = historyEntries.slice(0, visibleHistoryCount);
-  const hasLocalHistoryMore = historyEntries.length > visibleHistoryCount;
-  const handleLoadMoreHistory = useCallback(() => {
-    if (hasLocalHistoryMore) {
-      setVisibleHistoryCount((prev) => prev + HISTORY_VISIBLE_CHUNK);
-      return;
-    }
-    if (jobPages && jobPages[jobPages.length - 1]?.nextCursor) {
-      setVisibleHistoryCount((prev) => prev + HISTORY_VISIBLE_CHUNK);
-      setJobsSize(jobsSize + 1);
-    }
-  }, [hasLocalHistoryMore, jobPages, jobsSize, setJobsSize]);
-  const hasRemoteNextPage = Boolean(jobPages && jobPages[jobPages.length - 1]?.nextCursor);
-  const shouldShowLoadMore = hasLocalHistoryMore || hasRemoteNextPage;
-
-  useEffect(() => {
-    setVisibleHistoryCount((prev) => {
-      if (historyEntries.length < prev) {
-        return Math.max(HISTORY_VISIBLE_CHUNK, historyEntries.length);
-      }
-      return prev;
-    });
-  }, [historyEntries.length]);
 
   const previewEntry = (() => {
     if (selectedPreviewEntryId) {
@@ -1513,19 +1517,42 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       </main>
     );
   }
-  const numImagesUnit =
-    numImages === 1 ? resolvedCopy.composer.numImagesUnit.singular : resolvedCopy.composer.numImagesUnit.plural;
-  const numImagesCountLabel = formatTemplate(resolvedCopy.composer.numImagesCount, {
-    count: numImages,
-    unit: numImagesUnit,
-  });
+  const hasPendingRuns = pendingGroups.length > 0;
   const promptCharCount = formatTemplate(resolvedCopy.composer.charCount, { count: prompt.length });
-  const historyCountLabel =
-    historyEntries.length === 0
-      ? resolvedCopy.history.runsLabel.zero
-      : formatTemplate(resolvedCopy.history.runsLabel.other, { count: historyEntries.length });
   const aspectRatioOptions = isNanoBanana ? getNanoBananaAspectRatios(mode) : [];
-  const selectedAspectRatioLabel = formatAspectRatioLabel(aspectRatio);
+  const imageCountOptions = useMemo(
+    () =>
+      QUICK_IMAGE_COUNT_OPTIONS.map((option) => ({
+        value: option,
+        label: formatTemplate(resolvedCopy.composer.numImagesCount, {
+          count: option,
+          unit: option === 1 ? resolvedCopy.composer.numImagesUnit.singular : resolvedCopy.composer.numImagesUnit.plural,
+        }),
+      })),
+    [resolvedCopy.composer.numImagesCount, resolvedCopy.composer.numImagesUnit]
+  );
+  const aspectRatioSelectOptions = useMemo(
+    () =>
+      aspectRatioOptions.map((option) => ({
+        value: option,
+        label: formatAspectRatioLabel(option) ?? option,
+      })),
+    [aspectRatioOptions]
+  );
+  const resolutionSelectOptions = useMemo(
+    () =>
+      (resolutionOptions ?? []).map((option) => ({
+        value: option,
+        label: option.toUpperCase(),
+      })),
+    [resolutionOptions]
+  );
+  const showAspectRatioControl = aspectRatioSelectOptions.length > 0;
+  const showResolutionControl = resolutionSelectOptions.length > 0;
+  const promptPlaceholder =
+    mode === 'i2i'
+      ? resolvedCopy.composer.promptPlaceholderWithImage ?? resolvedCopy.composer.promptPlaceholder
+      : resolvedCopy.composer.promptPlaceholder;
   const compositePreviewEntry: ImageCompositePreviewEntry | null = previewEntry
     ? {
         id: previewEntry.id,
@@ -1539,15 +1566,12 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     : null;
   const composerPriceLabelTemplate = t('workspace.generate.composer.priceLabel', 'This render: {amount}') as string;
   const composerPriceLabel = composerPriceLabelTemplate.replace('{amount}', estimatedCostLabel);
-  const galleryTitle = t('workspace.generate.galleryRail.title', 'Latest renders') as string;
-  const galleryViewAll = t('workspace.generate.galleryRail.viewAll', 'View all') as string;
-  const galleryOpen = t('workspace.image.preview.openModal', 'Open') as string;
 
   return (
     <>
-      <div className="flex w-full flex-1 min-w-0 flex-col overflow-hidden">
-        <main className="flex w-full flex-1 min-w-0 flex-col gap-6 p-4 sm:p-6">
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr),400px] xl:items-start">
+      <div className={clsx('flex w-full flex-1 min-w-0', isDesktopLayout ? 'flex-row' : 'flex-col')}>
+        <div className="flex w-full flex-1 min-w-0 flex-col overflow-hidden">
+          <main className="flex w-full flex-1 min-w-0 flex-col gap-6 p-4 sm:p-6">
             <div className="space-y-6">
               <ImageCompositePreviewDock
                 entry={compositePreviewEntry}
@@ -1618,42 +1642,50 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                 isSavingToLibrary={isSavingToLibrary}
                 isRemovingFromLibrary={isRemovingFromLibrary}
                 copiedUrl={copiedUrl}
+                showTitle={false}
+                engineSettings={
+                  <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                  <EngineSelect
+                    engines={engineCapsList}
+                    engineId={selectedEngine.id}
+                    onEngineChange={(nextId) => setEngineId(nextId)}
+                    mode={mode}
+                    onModeChange={(nextMode) => setMode(nextMode as ImageGenerationMode)}
+                    modeOptions={['t2i', 'i2i']}
+                    modeLabelOverrides={{
+                      t2i: resolvedCopy.modeTabs.generate,
+                      i2i: resolvedCopy.modeTabs.edit,
+                    }}
+                    showModeSelect
+                    modeLayout="stacked"
+                    showBillingNote={false}
+                    variant="bar"
+                    className="min-w-0 flex-1"
+                  />
+                  </div>
+                }
               />
 
               <form onSubmit={handleRun}>
-                <Card className="space-y-4 p-5">
-                  <header className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <h2 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">
-                        {resolvedCopy.composer.promptLabel}
-                      </h2>
-                      {mode === 'i2i' && referenceMinRequired > 0 && readyReferenceUrls.length < referenceMinRequired ? (
-                        <p className="mt-1 text-[12px] text-state-warning">{resolvedCopy.errors.referenceMissing}</p>
-                      ) : null}
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
-                      <Chip variant={pricingValidating ? 'ghost' : 'accent'} className="px-3 py-1.5">
-                        {pricingValidating ? resolvedCopy.engine.priceCalculating : composerPriceLabel}
-                      </Chip>
-                    </div>
-                  </header>
-
-                  {pricingError ? <p className="text-[12px] text-state-warning">{pricingError.message}</p> : null}
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-text-primary">{resolvedCopy.composer.promptLabel}</span>
-                        <span className="rounded-full border border-accent px-2 py-0.5 text-[10px] uppercase tracking-micro text-accent">
-                          {t('workspace.generate.composer.labels.required', 'Required')}
-                        </span>
+                <Card className="space-y-5 p-5">
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-sm font-medium text-text-primary">{resolvedCopy.composer.promptLabel}</span>
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
+                        <span>{promptCharCount}</span>
+                        <Chip variant={pricingValidating ? 'ghost' : 'accent'} className="px-3 py-1.5">
+                          {pricingValidating ? resolvedCopy.engine.priceCalculating : composerPriceLabel}
+                        </Chip>
                       </div>
-                      <span className="text-xs text-text-muted">{promptCharCount}</span>
                     </div>
+                    {mode === 'i2i' && referenceMinRequired > 0 && readyReferenceUrls.length < referenceMinRequired ? (
+                      <p className="text-[12px] text-state-warning">{resolvedCopy.errors.referenceMissing}</p>
+                    ) : null}
+                    {pricingError ? <p className="text-[12px] text-state-warning">{pricingError.message}</p> : null}
                     <textarea
                       id="prompt"
                       className="w-full rounded-input border border-border bg-white px-4 py-3 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      placeholder={resolvedCopy.composer.promptPlaceholder}
+                      placeholder={promptPlaceholder}
                       value={prompt}
                       onChange={(event) => setPrompt(event.target.value)}
                       rows={6}
@@ -1686,432 +1718,208 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                     </p>
                   ) : null}
 
-                  <button
-                    type="submit"
-                    disabled={isGenerating}
-                    className={clsx(
-                      'inline-flex w-full items-center justify-center rounded-input bg-accent px-5 py-3 text-sm font-semibold text-white shadow-card transition',
-                      isGenerating ? 'opacity-60' : 'hover:bg-accent/90'
-                    )}
-                  >
-                    {isGenerating ? resolvedCopy.runButton.running : resolvedCopy.runButton.idle}
-                  </button>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end lg:flex-nowrap">
+                    <div className="min-w-0 flex-1">
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                        <SelectGroup
+                          label={resolvedCopy.composer.numImagesLabel}
+                          options={imageCountOptions}
+                          value={numImages}
+                          onChange={(value) => setNumImagesPreset(Number(value))}
+                        />
+                        {showAspectRatioControl ? (
+                          <SelectGroup
+                            label={resolvedCopy.composer.aspectRatioLabel}
+                            options={aspectRatioSelectOptions}
+                            value={aspectRatio ?? aspectRatioSelectOptions[0]?.value ?? ''}
+                            onChange={(value) => setAspectRatio(String(value))}
+                          />
+                        ) : null}
+                        {showResolutionControl ? (
+                          <SelectGroup
+                            label={resolvedCopy.composer.resolutionLabel}
+                            options={resolutionSelectOptions}
+                            value={resolution ?? resolutionSelectOptions[0]?.value ?? ''}
+                            onChange={(value) => setResolution(String(value))}
+                            disabled={isResolutionLocked}
+                          />
+                        ) : null}
+                      </div>
+                    </div>
+                    <button
+                      type="submit"
+                      className={clsx(
+                        'inline-flex w-full items-center justify-center rounded-input bg-accent px-5 py-3 text-sm font-semibold text-white shadow-card transition sm:w-auto',
+                        'hover:bg-accent/90'
+                      )}
+                    >
+                      {hasPendingRuns ? resolvedCopy.runButton.running : resolvedCopy.runButton.idle}
+                    </button>
+                  </div>
+
+                  <SectionDivider />
+
+                  <section className="space-y-3">
+                    <div className="flex flex-wrap items-baseline justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
+                          {resolvedCopy.composer.referenceLabel}
+                        </p>
+                        <p className="text-[10px] text-text-secondary">{referenceHelperText}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setLibraryModal({ open: true, slotIndex: null })}
+                        className="rounded-full border border-border px-3 py-1 text-[11px] font-semibold text-text-secondary transition hover:border-accent hover:text-text-primary"
+                      >
+                        {resolvedCopy.composer.referenceButton}
+                      </button>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {visibleReferenceSlots.map((slot, index) => (
+                        <div
+                          key={`slot-${index}`}
+                          onDragOver={(event) => {
+                            event.preventDefault();
+                            event.dataTransfer.dropEffect = 'copy';
+                          }}
+                          onDrop={(event) => handleSlotDrop(event, index)}
+                          onPaste={(event) => handleSlotPaste(event, index)}
+                        className={clsx(
+                          'group relative flex aspect-[2/1] flex-col overflow-hidden rounded-2xl border border-dashed border-hairline bg-white/80 text-center text-[11px] text-text-secondary transition',
+                          slot && 'border-solid border-accent/40 bg-white shadow-card'
+                        )}
+                        >
+                          <input
+                            type="file"
+                            accept="image/*"
+                            ref={(element) => {
+                              fileInputRefs.current[index] = element;
+                            }}
+                            className="sr-only"
+                            onChange={(event) => {
+                              const file = event.target.files?.[0] ?? null;
+                              event.target.value = '';
+                              void handleReferenceFile(index, file);
+                            }}
+                          />
+                          {slot ? (
+                            <>
+                              <img
+                                src={slot.previewUrl ?? slot.url}
+                                alt=""
+                                className="h-full w-full object-cover"
+                                referrerPolicy="no-referrer"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveReferenceSlot(index)}
+                                className="absolute right-2 top-2 rounded-full bg-black/65 px-2 py-0.5 text-[11px] font-semibold text-white shadow"
+                                aria-label={resolvedCopy.composer.referenceSlotActions.remove}
+                              >
+                                ×
+                              </button>
+                              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-black/55 px-2 py-1 text-[10px] text-white">
+                                <span className="truncate">
+                                  {slot.name ?? slot.source ?? resolvedCopy.composer.referenceSlotNameFallback}
+                                </span>
+                                <div className="flex gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => triggerFileDialog(index)}
+                                    className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold"
+                                  >
+                                    {resolvedCopy.composer.referenceSlotActions.replace}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => openLibraryForSlot(index)}
+                                    className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold"
+                                  >
+                                    {resolvedCopy.composer.referenceSlotActions.library}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveReferenceSlot(index)}
+                                    className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold"
+                                  >
+                                    {resolvedCopy.composer.referenceSlotActions.remove}
+                                  </button>
+                                </div>
+                              </div>
+                              {slot.status === 'uploading' ? (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50 px-3 text-center text-xs font-semibold text-white">
+                                  <span>{resolvedCopy.general.uploading}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveReferenceSlot(index)}
+                                    className="rounded-full bg-white/25 px-3 py-1 text-[11px] font-semibold text-white transition hover:bg-white/40"
+                                  >
+                                    {resolvedCopy.general.cancelUpload}
+                                  </button>
+                                </div>
+                              ) : null}
+                            </>
+                          ) : (
+                            <div className="flex h-full flex-col items-center justify-center gap-2 px-3 text-[11px] text-text-secondary">
+                              <span className="text-text-primary">
+                                {formatTemplate(resolvedCopy.composer.referenceSlotLabel, { index: index + 1 })}
+                              </span>
+                              <p className="text-[10px] leading-tight text-text-muted">{resolvedCopy.composer.referenceSlotHint}</p>
+                              <div className="flex flex-wrap justify-center gap-2 text-[10px]">
+                                <button
+                                  type="button"
+                                  onClick={() => triggerFileDialog(index)}
+                                  className="rounded-full border border-border px-3 py-1 font-semibold text-text-primary"
+                                >
+                                  {resolvedCopy.composer.referenceSlotActions.upload}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => openLibraryForSlot(index)}
+                                  className="rounded-full border border-border px-3 py-1 font-semibold text-text-primary"
+                                >
+                                  {resolvedCopy.composer.referenceSlotActions.library}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <p className="mt-2 text-xs text-text-secondary">{resolvedCopy.composer.referenceNote}</p>
+                  </section>
                 </Card>
               </form>
             </div>
-
-	            <Card className="space-y-6 p-6 xl:self-start">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">{resolvedCopy.engine.eyebrow}</p>
-                <div className="mt-2 flex flex-col gap-3">
-                  <EngineSelect
-                    engines={engineCapsList}
-                    engineId={selectedEngine.id}
-                    onEngineChange={(nextId) => setEngineId(nextId)}
-                    mode={mode}
-                    onModeChange={(nextMode) => setMode(nextMode as ImageGenerationMode)}
-                    modeOptions={['t2i', 'i2i']}
-                    modeLabelOverrides={{
-                      t2i: resolvedCopy.modeTabs.generate,
-                      i2i: resolvedCopy.modeTabs.edit,
-                    }}
-                    showBillingNote={false}
-                  />
-                </div>
-              </div>
-
-              <SectionDivider />
-
-              <section className="space-y-3">
-                <div className="flex flex-wrap items-baseline justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
-                      {resolvedCopy.composer.numImagesLabel}
-                    </p>
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-text-muted">
-                      {resolvedCopy.composer.presetsHint}
-                    </p>
-                  </div>
-                  <p className="text-sm font-semibold text-text-primary">{numImagesCountLabel}</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {QUICK_IMAGE_COUNT_OPTIONS.map((option) => (
-                    <button
-                      key={`image-count-${option}`}
-                      type="button"
-                      onClick={() => setNumImagesPreset(option)}
-                      className={clsx(
-                        'rounded-full border px-3 py-1 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                        numImages === option
-                          ? 'border-accent bg-accent text-white'
-                          : 'border-border bg-white text-text-secondary hover:border-accentSoft/60 hover:text-text-primary'
-                      )}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
-              </section>
-
-              {isNanoBanana ? (
-                <>
-                  <SectionDivider />
-                  <section className="space-y-3">
-                    <div className="flex flex-wrap items-baseline justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
-                          {resolvedCopy.composer.aspectRatioLabel}
-                        </p>
-                        <p className="text-xs text-text-secondary">
-                          {mode === 'i2i'
-                            ? resolvedCopy.composer.aspectRatioAutoNote
-                            : resolvedCopy.composer.aspectRatioHint}
-                        </p>
-                      </div>
-                      <p className="text-sm font-semibold text-text-primary">
-                        {selectedAspectRatioLabel ?? resolvedCopy.composer.aspectRatioHint}
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {aspectRatioOptions.map((option) => (
-                        <button
-                          key={`aspect-ratio-${option}`}
-                          type="button"
-                          onClick={() => setAspectRatio(option)}
-                          className={clsx(
-                            'rounded-full border px-3 py-1 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                            aspectRatio === option
-                              ? 'border-accent bg-accent text-white'
-                              : 'border-border bg-white text-text-secondary hover:border-accentSoft/60 hover:text-text-primary'
-                          )}
-                        >
-                          {formatAspectRatioLabel(option) ?? option}
-                        </button>
-                      ))}
-                    </div>
-                  </section>
-                </>
-              ) : null}
-
-              {hasResolutionOptions ? (
-                <>
-                  <SectionDivider />
-                  <section className="space-y-3">
-                    <div className="flex flex-wrap items-baseline justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
-                          {resolvedCopy.composer.resolutionLabel}
-                        </p>
-                        <p className="text-xs text-text-secondary">
-                          {isResolutionLocked
-                            ? resolvedCopy.composer.resolutionLockedLabel
-                            : resolvedCopy.composer.resolutionHint}
-                        </p>
-                      </div>
-                      {resolution ? (
-                        <p className="text-sm font-semibold text-text-primary">{resolution.toUpperCase()}</p>
-                      ) : null}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {resolutionOptions?.map((option) => (
-                        <button
-                          key={`resolution-${option}`}
-                          type="button"
-                          onClick={() => setResolution(option)}
-                          disabled={isResolutionLocked}
-                          className={clsx(
-                            'rounded-full border px-3 py-1 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                            resolution === option
-                              ? 'border-accent bg-accent text-white'
-                              : 'border-border bg-white text-text-secondary hover:border-accentSoft/60 hover:text-text-primary',
-                            isResolutionLocked && 'cursor-not-allowed opacity-70'
-                          )}
-                        >
-                          {option.toUpperCase()}
-                        </button>
-                      ))}
-                    </div>
-                  </section>
-                </>
-              ) : null}
-
-              <SectionDivider />
-
-              <section className="space-y-3">
-                <div className="flex flex-wrap items-baseline justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
-                      {resolvedCopy.composer.referenceLabel}
-                    </p>
-                    <p className="text-[10px] text-text-secondary">{referenceHelperText}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setLibraryModal({ open: true, slotIndex: null })}
-                    className="rounded-full border border-border px-3 py-1 text-[11px] font-semibold text-text-secondary transition hover:border-accent hover:text-text-primary"
-                  >
-                    {resolvedCopy.composer.referenceButton}
-                  </button>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {visibleReferenceSlots.map((slot, index) => (
-                    <div
-                      key={`slot-${index}`}
-                      onDragOver={(event) => {
-                        event.preventDefault();
-                        event.dataTransfer.dropEffect = 'copy';
-                      }}
-                      onDrop={(event) => handleSlotDrop(event, index)}
-                      onPaste={(event) => handleSlotPaste(event, index)}
-                      className={clsx(
-                        'group relative flex aspect-square flex-col overflow-hidden rounded-2xl border border-dashed border-hairline bg-white/80 text-center text-[11px] text-text-secondary transition',
-                        slot && 'border-solid border-accent/40 bg-white shadow-card'
-                      )}
-                    >
-                      <input
-                        type="file"
-                        accept="image/*"
-                        ref={(element) => {
-                          fileInputRefs.current[index] = element;
-                        }}
-                        className="sr-only"
-                        onChange={(event) => {
-                          const file = event.target.files?.[0] ?? null;
-                          event.target.value = '';
-                          void handleReferenceFile(index, file);
-                        }}
-                      />
-                      {slot ? (
-                        <>
-                          <img
-                            src={slot.previewUrl ?? slot.url}
-                            alt=""
-                            className="h-full w-full object-cover"
-                            referrerPolicy="no-referrer"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveReferenceSlot(index)}
-                            className="absolute right-2 top-2 rounded-full bg-black/65 px-2 py-0.5 text-[11px] font-semibold text-white shadow"
-                            aria-label={resolvedCopy.composer.referenceSlotActions.remove}
-                          >
-                            ×
-                          </button>
-                          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-black/55 px-2 py-1 text-[10px] text-white">
-                            <span className="truncate">
-                              {slot.name ?? slot.source ?? resolvedCopy.composer.referenceSlotNameFallback}
-                            </span>
-                            <div className="flex gap-1">
-                              <button
-                                type="button"
-                                onClick={() => triggerFileDialog(index)}
-                                className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold"
-                              >
-                                {resolvedCopy.composer.referenceSlotActions.replace}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => openLibraryForSlot(index)}
-                                className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold"
-                              >
-                                {resolvedCopy.composer.referenceSlotActions.library}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveReferenceSlot(index)}
-                                className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold"
-                              >
-                                {resolvedCopy.composer.referenceSlotActions.remove}
-                              </button>
-                            </div>
-                          </div>
-                          {slot.status === 'uploading' ? (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50 px-3 text-center text-xs font-semibold text-white">
-                              <span>{resolvedCopy.general.uploading}</span>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveReferenceSlot(index)}
-                                className="rounded-full bg-white/25 px-3 py-1 text-[11px] font-semibold text-white transition hover:bg-white/40"
-                              >
-                                {resolvedCopy.general.cancelUpload}
-                              </button>
-                            </div>
-                          ) : null}
-                        </>
-                      ) : (
-                        <div className="flex h-full flex-col items-center justify-center gap-2 px-3 text-[11px] text-text-secondary">
-                          <span className="text-text-primary">
-                            {formatTemplate(resolvedCopy.composer.referenceSlotLabel, { index: index + 1 })}
-                          </span>
-                          <p className="text-[10px] leading-tight text-text-muted">{resolvedCopy.composer.referenceSlotHint}</p>
-                          <div className="flex flex-wrap justify-center gap-2 text-[10px]">
-                            <button
-                              type="button"
-                              onClick={() => triggerFileDialog(index)}
-                              className="rounded-full border border-border px-3 py-1 font-semibold text-text-primary"
-                            >
-                              {resolvedCopy.composer.referenceSlotActions.upload}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => openLibraryForSlot(index)}
-                              className="rounded-full border border-border px-3 py-1 font-semibold text-text-primary"
-                            >
-                              {resolvedCopy.composer.referenceSlotActions.library}
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-	                <p className="mt-2 text-xs text-text-secondary">{resolvedCopy.composer.referenceNote}</p>
-	              </section>
-	            </Card>
+          </main>
+        </div>
+        {isDesktopLayout ? (
+          <div className="w-[360px] px-4 py-4">
+            <GalleryRail
+              engine={selectedEngineCaps}
+              feedType="image"
+              activeGroups={pendingGroups}
+              jobFilter={isImageJob}
+              onOpenGroup={handleOpenGalleryGroup}
+              variant="desktop"
+            />
           </div>
-
-          <Card className="p-5">
-            <header className="flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <h2 className="text-lg font-semibold text-text-primary">{galleryTitle}</h2>
-                <p className="mt-1 text-xs text-text-muted">{historyCountLabel}</p>
-              </div>
-              <Link
-                href="/jobs"
-                prefetch={false}
-                className="rounded-input border border-border bg-white px-4 py-2 text-sm font-semibold text-text-secondary transition hover:border-accentSoft/60 hover:bg-accentSoft/10 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {galleryViewAll}
-              </Link>
-            </header>
-
-            {historyEntries.length === 0 ? (
-              <div className="mt-4 rounded-card border border-dashed border-border bg-white/60 p-8 text-center text-sm text-text-secondary">
-                {resolvedCopy.history.empty}
-              </div>
-            ) : (
-              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {visibleHistoryEntries.map((entry) => {
-                  const displayImages = entry.images.slice(0, 4);
-                  const entryAspectRatioLabel = formatAspectRatioLabel(entry.aspectRatio ?? null);
-                  const isSelected = previewEntry?.id === entry.id;
-                  return (
-                    <div
-                      key={entry.id}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => handleSelectHistoryEntry(entry)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          event.preventDefault();
-                          handleSelectHistoryEntry(entry);
-                        }
-                      }}
-                      className={clsx(
-                        'cursor-pointer overflow-hidden rounded-card border bg-white shadow-card transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                        isSelected ? 'border-accent' : 'border-border hover:border-accentSoft/60'
-                      )}
-                    >
-                      <div className="relative bg-[#f2f4f8] p-1">
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            handleOpenHistoryEntry(entry);
-                          }}
-                          className="absolute right-3 top-3 rounded-full border border-white/70 bg-white/90 px-3 py-1 text-[11px] font-semibold text-text-secondary shadow-sm transition hover:text-text-primary"
-                        >
-                          {galleryOpen}
-                        </button>
-                        {displayImages.length ? (
-                          <div className="grid grid-cols-2 gap-1">
-                            {displayImages.map((image, index) => (
-                              <div
-                                key={`${entry.id}-${index}`}
-                                className="relative overflow-hidden rounded-[12px] bg-neutral-900/5"
-                                style={{
-                                  aspectRatio: resolveCssAspectRatio({
-                                    value: entry.aspectRatio ?? null,
-                                    width: image.width ?? null,
-                                    height: image.height ?? null,
-                                    fallback: '1 / 1',
-                                  }),
-                                }}
-                              >
-                                <img
-                                  src={image.url}
-                                  alt={entry.prompt}
-                                  className="h-full w-full object-cover"
-                                  loading="lazy"
-                                  referrerPolicy="no-referrer"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="flex aspect-square items-center justify-center text-xs text-text-secondary">
-                            {resolvedCopy.history.noPreview}
-                          </div>
-                        )}
-                      </div>
-                      <div className="space-y-2 border-t border-border px-4 py-3 text-xs text-text-secondary">
-                        <p className="font-semibold text-text-primary">{entry.engineLabel}</p>
-                        <p className="line-clamp-2 text-text-secondary">{entry.prompt}</p>
-                        <div className="flex flex-wrap items-center gap-2 text-[11px] text-text-muted">
-                          <span>{entry.mode === 't2i' ? resolvedCopy.modeTabs.generate : resolvedCopy.modeTabs.edit}</span>
-                          {entryAspectRatioLabel ? (
-                            <span className="rounded-full bg-text-primary/10 px-2 py-0.5 text-[9px] font-semibold text-text-primary">
-                              {entryAspectRatioLabel}
-                            </span>
-                          ) : null}
-                        </div>
-                        <span className="block text-[11px] text-text-muted">{formatTimestamp(entry.createdAt)}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {jobsLoading && historyEntries.length === 0 && (
-              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <div key={`history-skeleton-${index}`} className="rounded-card border border-border bg-white/60 p-0" aria-hidden>
-                    <div className="relative aspect-square overflow-hidden rounded-t-card bg-neutral-100">
-                      <div className="skeleton absolute inset-0" />
-                    </div>
-                    <div className="border-t border-border px-4 py-3">
-                      <div className="h-3 w-24 rounded-full bg-neutral-200" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {jobsValidating && historyEntries.length > 0 && (
-              <div className="mt-4 text-center text-xs text-text-secondary">{resolvedCopy.history.refreshing}</div>
-            )}
-
-            {shouldShowLoadMore && (
-              <div className="mt-4 flex justify-center">
-                <button
-                  type="button"
-                  onClick={handleLoadMoreHistory}
-                  disabled={!hasLocalHistoryMore && hasRemoteNextPage && jobsValidating}
-                  className={clsx(
-                    'rounded-full border border-border px-4 py-2 text-xs font-semibold text-text-primary',
-                    !hasLocalHistoryMore && hasRemoteNextPage && jobsValidating ? 'opacity-60' : 'hover:bg-white/80'
-                  )}
-                >
-                  {resolvedCopy.history.loadMore}
-                </button>
-              </div>
-            )}
-          </Card>
-        </main>
+        ) : null}
       </div>
-    {viewerGroup ? (
+      {!isDesktopLayout ? (
+        <div className="border-t border-hairline bg-white/70 px-4 py-4">
+          <GalleryRail
+            engine={selectedEngineCaps}
+            feedType="image"
+            activeGroups={pendingGroups}
+            jobFilter={isImageJob}
+            onOpenGroup={handleOpenGalleryGroup}
+            variant="mobile"
+          />
+        </div>
+      ) : null}
+      {viewerGroup ? (
       <GroupViewerModal
         group={viewerGroup}
         onClose={closeViewer}
@@ -2119,7 +1927,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         onSaveToLibrary={handleSaveVariantToLibrary}
       />
     ) : null}
-    {libraryModal.open ? (
+      {libraryModal.open ? (
       <ImageLibraryModal
         open={libraryModal.open}
         onClose={() => setLibraryModal({ open: false, slotIndex: null })}

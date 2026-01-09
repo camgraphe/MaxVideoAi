@@ -27,16 +27,8 @@ export function HeaderBar() {
   const pathname = usePathname();
   const [email, setEmail] = useState<string | null>(null);
   const [authResolved, setAuthResolved] = useState(false);
-  const [wallet, setWallet] = useState<{ balance: number } | null>(() => {
-    const stored = readLastKnownWallet();
-    if (!stored) return null;
-    return { balance: stored.balance };
-  });
-  const [member, setMember] = useState<{ tier: string } | null>(() => {
-    const stored = readLastKnownMember();
-    if (!stored?.tier) return null;
-    return { tier: stored.tier };
-  });
+  const [wallet, setWallet] = useState<{ balance: number } | null>(null);
+  const [member, setMember] = useState<{ tier: string } | null>(null);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [walletPromptOpen, setWalletPromptOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -64,6 +56,16 @@ export function HeaderBar() {
   const [serviceNotice, setServiceNotice] = useState<string>(envNotice);
   const bannerMessage = serviceNotice?.trim() ?? '';
   const showServiceNotice = Boolean(bannerMessage);
+  useEffect(() => {
+    const storedWallet = readLastKnownWallet();
+    if (storedWallet) {
+      setWallet((current) => current ?? { balance: storedWallet.balance });
+    }
+    const storedMember = readLastKnownMember();
+    if (storedMember?.tier) {
+      setMember((current) => current ?? { tier: storedMember.tier });
+    }
+  }, []);
   useEffect(() => {
     let mounted = true;
     const fetchAccountState = async (token?: string | null, userId?: string | null) => {

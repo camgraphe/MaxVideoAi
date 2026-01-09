@@ -21,6 +21,7 @@ type GalleryVariant = 'desktop' | 'mobile';
 
 interface Props {
   engine: EngineCaps;
+  feedType?: 'video' | 'image';
   activeGroups?: GroupSummary[];
   onOpenGroup?: (group: GroupSummary) => void;
   onGroupAction?: (group: GroupSummary, action: GroupedJobAction) => void;
@@ -59,6 +60,7 @@ const DEFAULT_GROUP_PROVIDER: ResultProvider = 'fal';
 
 export function GalleryRail({
   engine,
+  feedType = 'video',
   activeGroups = [],
   onOpenGroup,
   onGroupAction,
@@ -67,7 +69,7 @@ export function GalleryRail({
 }: Props) {
   const { t } = useI18n();
   const copy = t('workspace.generate.galleryRail', DEFAULT_GALLERY_COPY) as GalleryCopy;
-  const { data, error, isLoading, isValidating, setSize, mutate, stableJobs } = useInfiniteJobs(24, { type: 'video' });
+  const { data, error, isLoading, isValidating, setSize, mutate, stableJobs } = useInfiniteJobs(24, { type: feedType });
   const { data: enginesData } = useEngines();
   const engineList = useMemo(() => enginesData?.engines ?? [], [enginesData?.engines]);
   const jobs = useMemo(() => {

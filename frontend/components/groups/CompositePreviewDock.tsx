@@ -178,8 +178,8 @@ export function CompositePreviewDock({
     </div>
   ) : null;
 
-  const toolbar = (
-    <div className="flex items-center gap-1 rounded-full border border-hairline/70 bg-white/60 p-0.5 shadow-sm backdrop-blur">
+  const toolbarControls = (
+    <div className="flex flex-col items-center gap-1">
       <button
         type="button"
         onClick={() => setIsPlaying((prev) => !prev)}
@@ -285,7 +285,15 @@ export function CompositePreviewDock({
       </header>
 
       <div className="px-4 py-4">
-        <div className="relative w-full rounded-[16px] border border-dashed border-border/70 bg-[#EDF1FA] p-[8px]" style={{ aspectRatio: '16 / 9' }}>
+        <div className="flex items-start gap-3">
+          <aside className="flex w-[80px] shrink-0 items-center justify-center rounded-[18px] border border-hairline/70 bg-white/60 p-2 shadow-sm backdrop-blur">
+            {toolbarControls}
+          </aside>
+          <div className="flex flex-1 justify-center">
+            <div
+              className="relative w-full max-h-[50vh] max-w-[960px] rounded-[16px] border border-dashed border-border/70 bg-[#EDF1FA] p-[8px]"
+              style={{ aspectRatio: '16 / 9' }}
+            >
           {showSkeleton ? (
             <div className={clsx('grid h-full w-full gap-[6px]', gridClass)}>
               {Array.from({ length: group ? LAYOUT_SLOT_COUNT[group.layout] ?? 1 : 1 }).map((_, index) => (
@@ -385,9 +393,6 @@ export function CompositePreviewDock({
               <span className="mt-2 text-xs text-white/85">{group?.errorMsg ?? 'Generation failed. Please retry.'}</span>
             </div>
           ) : null}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex items-center justify-center pb-3">
-            <div className="pointer-events-auto">
-              {toolbar}
             </div>
           </div>
         </div>

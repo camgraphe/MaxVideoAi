@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import clsx from 'clsx';
+import type { ReactNode } from 'react';
 import { Copy, Download, ExternalLink, Minus, Plus } from 'lucide-react';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { resolveCssAspectRatio } from '@/lib/aspect';
@@ -37,10 +38,12 @@ interface ImageCompositePreviewDockProps {
   isSavingToLibrary?: boolean;
   isRemovingFromLibrary?: boolean;
   copiedUrl?: string | null;
+  engineSettings?: ReactNode;
+  showTitle?: boolean;
 }
 
 const ICON_BUTTON_BASE =
-  'flex h-10 w-10 items-center justify-center rounded-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+  'flex h-9 w-9 items-center justify-center rounded-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 export function ImageCompositePreviewDock({
   entry,
@@ -55,6 +58,8 @@ export function ImageCompositePreviewDock({
   isSavingToLibrary = false,
   isRemovingFromLibrary = false,
   copiedUrl,
+  engineSettings,
+  showTitle = true,
 }: ImageCompositePreviewDockProps) {
   const { t } = useI18n();
   const title = t('workspace.generate.preview.title', 'Composite Preview');
@@ -84,74 +89,95 @@ export function ImageCompositePreviewDock({
   const canAddToLibrary = Boolean(selected?.url && onAddToLibrary) && !isSavingToLibrary && !isRemovingFromLibrary && !isInLibrary;
   const canRemoveFromLibrary = Boolean(onRemoveFromLibrary) && !isSavingToLibrary && !isRemovingFromLibrary && isInLibrary;
 
+  const headerTitle = showTitle ? (
+    <div>
+      <h2 className="text-sm font-semibold text-text-primary">{title}</h2>
+      <p className="text-xs text-text-muted">{images.length ? `${images.length} variant${images.length === 1 ? '' : 's'}` : empty}</p>
+    </div>
+  ) : null;
+
+  const toolbar = (
+    <div className="flex items-center gap-1 rounded-full border border-hairline/70 bg-white/70 p-1 shadow-sm backdrop-blur">
+      {isInLibrary ? (
+        <button
+          type="button"
+          onClick={onRemoveFromLibrary}
+          disabled={!canRemoveFromLibrary}
+          className={clsx(ICON_BUTTON_BASE, 'text-state-warning', 'disabled:opacity-50')}
+          aria-label={isRemovingFromLibrary ? removingLabel : removeFromLibraryLabel}
+          title={isRemovingFromLibrary ? removingLabel : removeFromLibraryLabel}
+        >
+          <UIIcon icon={Minus} size={18} />
+          <span className="sr-only">{isRemovingFromLibrary ? removingLabel : removeFromLibraryLabel}</span>
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => (selected?.url && onAddToLibrary ? onAddToLibrary(selected.url) : undefined)}
+          disabled={!canAddToLibrary}
+          className={clsx(ICON_BUTTON_BASE, 'text-accent', 'disabled:opacity-50')}
+          aria-label={isSavingToLibrary ? savingLabel : addToLibraryLabel}
+          title={isSavingToLibrary ? savingLabel : addToLibraryLabel}
+        >
+          <UIIcon icon={Plus} size={18} />
+          <span className="sr-only">{isSavingToLibrary ? savingLabel : addToLibraryLabel}</span>
+        </button>
+      )}
+      <button
+        type="button"
+        onClick={() => (selected?.url && onDownload ? onDownload(selected.url) : undefined)}
+        disabled={!canDownload}
+        className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
+        aria-label={downloadLabel}
+        title={downloadLabel}
+      >
+        <UIIcon icon={Download} />
+        <span className="sr-only">{downloadLabel}</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => (selected?.url && onCopyLink ? onCopyLink(selected.url) : undefined)}
+        disabled={!canCopy}
+        className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
+        aria-label={copyLabel}
+        title={copyLabel}
+      >
+        <UIIcon icon={Copy} />
+        <span className="sr-only">{copyLabel}</span>
+      </button>
+      <button
+        type="button"
+        onClick={onOpenModal}
+        disabled={!canOpenModal}
+        className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
+        aria-label={modalLabel}
+        title={modalLabel}
+      >
+        <UIIcon icon={ExternalLink} />
+        <span className="sr-only">{modalLabel}</span>
+      </button>
+    </div>
+  );
+
   return (
     <section className="overflow-hidden rounded-card border border-border bg-white/80 shadow-card">
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline px-4 py-3">
-        <div>
-          <h2 className="text-sm font-semibold text-text-primary">{title}</h2>
-          <p className="text-xs text-text-muted">{images.length ? `${images.length} variant${images.length === 1 ? '' : 's'}` : empty}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {isInLibrary ? (
-            <button
-              type="button"
-              onClick={onRemoveFromLibrary}
-              disabled={!canRemoveFromLibrary}
-              className={clsx(
-                'inline-flex items-center gap-2 rounded-full border border-border bg-state-warning/10 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-state-warning transition hover:bg-state-warning/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                !canRemoveFromLibrary ? 'cursor-not-allowed opacity-50' : null
-              )}
-              aria-label={removeFromLibraryLabel}
-            >
-              <UIIcon icon={Minus} size={16} />
-              <span>{isRemovingFromLibrary ? removingLabel : removeFromLibraryLabel}</span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => (selected?.url && onAddToLibrary ? onAddToLibrary(selected.url) : undefined)}
-              disabled={!canAddToLibrary}
-              className={clsx(
-                'inline-flex items-center gap-2 rounded-full border border-border bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-accent transition hover:bg-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                !canAddToLibrary ? 'cursor-not-allowed opacity-50' : null
-              )}
-              aria-label={addToLibraryLabel}
-            >
-              <UIIcon icon={Plus} size={16} />
-              <span>{isSavingToLibrary ? savingLabel : addToLibraryLabel}</span>
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={() => (selected?.url && onDownload ? onDownload(selected.url) : undefined)}
-            disabled={!canDownload}
-            className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
-            aria-label={downloadLabel}
-          >
-            <UIIcon icon={Download} />
-            <span className="sr-only">{downloadLabel}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => (selected?.url && onCopyLink ? onCopyLink(selected.url) : undefined)}
-            disabled={!canCopy}
-            className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
-            aria-label={copyLabel}
-          >
-            <UIIcon icon={Copy} />
-            <span className="sr-only">{copyLabel}</span>
-          </button>
-          <button
-            type="button"
-            onClick={onOpenModal}
-            disabled={!canOpenModal}
-            className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
-            aria-label={modalLabel}
-          >
-            <UIIcon icon={ExternalLink} />
-            <span className="sr-only">{modalLabel}</span>
-          </button>
-        </div>
+      <header className="border-b border-hairline px-4 py-3">
+        {engineSettings ? (
+          <>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0 flex-1">{engineSettings}</div>
+            </div>
+            {showTitle ? (
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                {headerTitle}
+              </div>
+            ) : null}
+          </>
+        ) : (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            {headerTitle}
+          </div>
+        )}
       </header>
 
       <div className="px-4 py-4">
@@ -170,6 +196,11 @@ export function ImageCompositePreviewDock({
           ) : (
             <div className="flex h-full w-full items-center justify-center text-xs text-text-muted">{empty}</div>
           )}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex items-center justify-center pb-3">
+            <div className="pointer-events-auto">
+              {toolbar}
+            </div>
+          </div>
         </div>
 
         {images.length > 1 ? (
