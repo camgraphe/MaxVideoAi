@@ -323,7 +323,19 @@ export function HeaderBar() {
           'border-b border-border bg-white/80 backdrop-blur-xl'
         )}
       >
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-3 md:gap-8">
+          <button
+            type="button"
+            className="inline-flex items-center justify-center text-text-primary transition hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+            aria-label={t('workspace.header.mobileToggle', 'Open menu')}
+            onClick={() => setMobileMenuOpen(true)}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
           <LogoMark />
           <nav
             className="hidden items-center gap-5 text-sm font-medium text-text-muted md:flex"
@@ -345,18 +357,6 @@ export function HeaderBar() {
           <div className="hidden md:block">
             <AppLanguageToggle />
           </div>
-          <button
-            type="button"
-            className="inline-flex items-center justify-center rounded-full border border-hairline bg-white/80 p-2 text-text-primary transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
-            aria-label={t('workspace.header.mobileToggle', 'Open menu')}
-            onClick={() => setMobileMenuOpen(true)}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          </button>
           <div className="relative" onMouseEnter={openWalletPrompt} onMouseLeave={scheduleWalletPromptClose}>
             <Link
               href="/billing"
@@ -406,11 +406,16 @@ export function HeaderBar() {
                 ref={avatarRef}
                 type="button"
                 onClick={() => setAccountMenuOpen((prev) => !prev)}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#dce4ff] bg-gradient-to-br from-[#dfe6ff] via-white/95 to-white text-sm font-semibold text-text-primary shadow-card transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#dce4ff] bg-gradient-to-br from-[#dfe6ff] via-white/95 to-white text-sm font-semibold text-text-primary shadow-card transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-haspopup="menu"
                 aria-expanded={accountMenuOpen}
               >
                 {initials}
+                <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border border-white bg-white text-[10px] text-text-muted shadow-sm">
+                  <svg viewBox="0 0 12 12" aria-hidden="true" className="h-2.5 w-2.5">
+                    <path d="m2.2 4.6 3.8 3.8 3.8-3.8" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
               </button>
               {accountMenuOpen && (
                 <div
