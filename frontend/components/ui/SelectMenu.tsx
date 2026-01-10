@@ -53,6 +53,15 @@ export function SelectMenu({ options, value, onChange, disabled = false, classNa
     setHighlightedIndex(nextIndex);
   }, [open, options, selectedIndex]);
 
+  const previousValueRef = useRef(value);
+  useEffect(() => {
+    if (Object.is(previousValueRef.current, value)) return;
+    previousValueRef.current = value;
+    if (open) {
+      setOpen(false);
+    }
+  }, [open, value]);
+
   useEffect(() => {
     if (!open) return;
     const handleClick = (event: MouseEvent) => {

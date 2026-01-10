@@ -551,7 +551,7 @@ export function EngineSelect({
             : 'gap-5'
         )}
       >
-        <div className={clsx('flex-1', isBarVariant ? 'min-w-[160px] space-y-1.5 sm:min-w-[220px]' : 'min-w-[240px] space-y-2')}>
+        <div className={clsx('flex-1', isBarVariant ? 'min-w-0 space-y-1.5' : 'min-w-[240px] space-y-2')}>
           <label className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[12px]')}>
             {copy.choose}
           </label>
@@ -563,7 +563,7 @@ export function EngineSelect({
               onClick={toggleOpen}
               onKeyDown={handleTriggerKeyDown}
               className={clsx(
-                'flex w-full items-center justify-between gap-3 rounded-input border border-hairline bg-white text-left text-text-primary shadow-sm transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                'flex min-w-0 flex-1 items-center justify-between gap-3 rounded-input border border-hairline bg-white text-left text-text-primary shadow-sm transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 isBarVariant ? 'px-2.5 py-1.5 text-[12px] sm:px-3 sm:py-2 sm:text-[13px]' : 'px-4 py-3 text-sm'
               )}
               aria-haspopup="listbox"
