@@ -9,7 +9,7 @@ import type { EngineCaps } from '@/types/engines';
 import type { Job } from '@/types/jobs';
 import type { GroupSummary } from '@/types/groups';
 import type { VideoGroup, ResultProvider } from '@/types/video-groups';
-import { hideJob, useEngines, useInfiniteJobs } from '@/lib/api';
+import { hideJob, saveImageToLibrary, useEngines, useInfiniteJobs } from '@/lib/api';
 import { groupJobsIntoSummaries } from '@/lib/job-groups';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
@@ -52,6 +52,11 @@ const DEFAULT_GALLERY_COPY = {
     samples: 'Sample clips cannot be removed.',
     removed: 'Removed from gallery.',
     failed: 'Unable to remove from gallery.',
+    saved: 'Saved to library.',
+    saveFailed: 'Unable to save to library.',
+    copied: 'Link copied.',
+    copyFailed: 'Unable to copy link.',
+    noMedia: 'No media available.',
   },
 } as const;
 
@@ -211,16 +216,33 @@ export function GalleryRail({
   const closeSnackbar = useCallback(() => setSnackbar(null), []);
   const closeViewer = useCallback(() => setViewerGroup(null), []);
 
-  const handleCardAction = useCallback(
-    (group: GroupSummary, action: GroupedJobAction) => {
-      const original = summaryIndex.get(group.id) ?? group;
-      if (action === 'remove') {
-        handleRemoveGroup(original);
-        return;
+  const resolveAspectRatioLabel = useCallback((group: GroupSummary) => {
+    const ratio = group.hero.aspectRatio ?? group.previews.find((preview) => preview.aspectRatio)?.aspectRatio ?? null;
+    if (!ratio) return null;
+    if (ratio.toLowerCase() === 'auto') return 'Auto';
+    return ratio;
+  }, []);
+
+  const resolveMediaUrl = useCallback(
+    (group: GroupSummary, preferImage: boolean) => {
+      if (preferImage) {
+        return (
+          group.hero.thumbUrl ??
+          group.previews.find((preview) => preview.thumbUrl)?.thumbUrl ??
+          group.hero.videoUrl ??
+          group.previews.find((preview) => preview.videoUrl)?.videoUrl ??
+          null
+        );
       }
-      onGroupAction?.(original, action);
+      return (
+        group.hero.videoUrl ??
+        group.previews.find((preview) => preview.videoUrl)?.videoUrl ??
+        group.hero.thumbUrl ??
+        group.previews.find((preview) => preview.thumbUrl)?.thumbUrl ??
+        null
+      );
     },
-    [handleRemoveGroup, onGroupAction, summaryIndex]
+    []
   );
 
   const handleCardOpen = useCallback(
@@ -235,6 +257,112 @@ export function GalleryRail({
       setViewerGroup(adapted);
     },
     [onOpenGroup, summaryIndex]
+  );
+
+  const handleCardView = useCallback(
+    (group: GroupSummary) => {
+      const original = summaryIndex.get(group.id) ?? group;
+      const normalized = normalizeGroupSummary(original);
+      const adapted = adaptGroupSummary(normalized, DEFAULT_GROUP_PROVIDER);
+      setViewerGroup(adapted);
+    },
+    [summaryIndex]
+  );
+
+  const handleCardDownload = useCallback(
+    (group: GroupSummary) => {
+      const original = summaryIndex.get(group.id) ?? group;
+      const candidateUrl = resolveMediaUrl(original, feedType === 'image');
+      if (!candidateUrl) {
+        setSnackbar({ message: copy.snackbar.noMedia, duration: 2400 });
+        return;
+      }
+      const anchor = document.createElement('a');
+      anchor.href = candidateUrl;
+      anchor.download = '';
+      anchor.target = '_blank';
+      anchor.rel = 'noreferrer';
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+    },
+    [copy.snackbar.noMedia, feedType, resolveMediaUrl, summaryIndex]
+  );
+
+  const handleCardCopy = useCallback(
+    (group: GroupSummary) => {
+      const original = summaryIndex.get(group.id) ?? group;
+      const candidateUrl = resolveMediaUrl(original, feedType === 'image');
+      if (!candidateUrl) {
+        setSnackbar({ message: copy.snackbar.noMedia, duration: 2400 });
+        return;
+      }
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        void navigator.clipboard
+          .writeText(candidateUrl)
+          .then(() => setSnackbar({ message: copy.snackbar.copied, duration: 2000 }))
+          .catch(() => setSnackbar({ message: copy.snackbar.copyFailed, duration: 2400 }));
+      } else {
+        setSnackbar({ message: copy.snackbar.copyFailed, duration: 2400 });
+      }
+    },
+    [copy.snackbar.copied, copy.snackbar.copyFailed, copy.snackbar.noMedia, feedType, resolveMediaUrl, summaryIndex]
+  );
+
+  const handleCardSaveImage = useCallback(
+    (group: GroupSummary) => {
+      const original = summaryIndex.get(group.id) ?? group;
+      const candidateUrl = resolveMediaUrl(original, true);
+      if (!candidateUrl) {
+        setSnackbar({ message: copy.snackbar.noMedia, duration: 2400 });
+        return;
+      }
+      void saveImageToLibrary({
+        url: candidateUrl,
+        jobId: original.hero.jobId ?? original.hero.job?.jobId ?? original.id,
+        label: original.hero.prompt ?? undefined,
+      })
+        .then(() => setSnackbar({ message: copy.snackbar.saved, duration: 2000 }))
+        .catch(() => setSnackbar({ message: copy.snackbar.saveFailed, duration: 2400 }));
+    },
+    [copy.snackbar.noMedia, copy.snackbar.saveFailed, copy.snackbar.saved, resolveMediaUrl, summaryIndex]
+  );
+
+  const handleCardAction = useCallback(
+    (group: GroupSummary, action: GroupedJobAction) => {
+      const original = summaryIndex.get(group.id) ?? group;
+      if (action === 'view') {
+        handleCardView(original);
+        return;
+      }
+      if (action === 'download') {
+        handleCardDownload(original);
+        return;
+      }
+      if (action === 'copy') {
+        handleCardCopy(original);
+        return;
+      }
+      if (action === 'save-image' && feedType === 'image') {
+        handleCardSaveImage(original);
+        return;
+      }
+      if (action === 'remove') {
+        handleRemoveGroup(original);
+        return;
+      }
+      onGroupAction?.(original, action);
+    },
+    [
+      feedType,
+      handleCardCopy,
+      handleCardDownload,
+      handleCardSaveImage,
+      handleCardView,
+      handleRemoveGroup,
+      onGroupAction,
+      summaryIndex,
+    ]
   );
 
   const allowCardRemoval = useCallback(
@@ -302,6 +430,8 @@ export function GalleryRail({
             allowRemove={allowCardRemoval(group)}
             showImageCta={curated}
             imageCtaLabel={copy.imageCta}
+            metaLabel={feedType === 'image' ? resolveAspectRatioLabel(group) : undefined}
+            menuVariant={feedType === 'video' ? 'gallery' : 'gallery-image'}
           />
         );
       })}
@@ -377,7 +507,7 @@ export function GalleryRail({
   return (
     <>
       {isDesktopVariant ? (
-        <aside className="flex h-[calc(125vh-var(--header-height))] w-[272px] shrink-0 flex-col border-l border-border bg-bg/80 px-4 pb-6 pt-4">
+        <aside className="flex h-[calc(125vh-var(--header-height))] w-full max-w-[312px] shrink-0 flex-col border-l border-border bg-bg/80 px-3 pb-6 pt-4">
           {content}
         </aside>
       ) : (

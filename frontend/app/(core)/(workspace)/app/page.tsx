@@ -4746,7 +4746,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           </main>
         </div>
         {isDesktopLayout && (
-          <div className="w-[360px] px-4 py-4">
+          <div className="flex w-[320px] justify-end pl-2 pr-0 py-4">
             <GalleryRail
               engine={selectedEngine}
               activeGroups={normalizedPendingGroups}

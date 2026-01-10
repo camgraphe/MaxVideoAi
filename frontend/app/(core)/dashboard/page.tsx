@@ -984,6 +984,8 @@ function CreateVideoCard({
           i2v: copy.modes.i2v,
           r2v: copy.modes.r2v,
         }}
+        showModeSelect={false}
+        variant="bar"
       />
       <div className="flex flex-wrap items-center gap-3">
         {hasStoredForm ? (
@@ -1056,6 +1058,8 @@ function CreateImageCard({
           i2i: copy.modes.i2i,
         }}
         showBillingNote={false}
+        showModeSelect={false}
+        variant="bar"
       />
       <div className="flex flex-wrap items-center gap-3">
         {hasStoredForm ? (

@@ -420,6 +420,11 @@ function AssetDropzone({
     : 'video/*';
   const limits = engine.inputLimits;
   const constraints = engine.inputSchema?.constraints ?? {};
+  const hideRequiredSlotCopy =
+    field.type === 'image' &&
+    (role === 'primary' || role === 'reference') &&
+    engine.modes.includes('t2v') &&
+    engine.modes.includes('i2v');
 
   const slotCount = useMemo(() => {
     if (maxCount > 0) return maxCount;
@@ -556,7 +561,8 @@ function AssetDropzone({
         >
           {slotAssets.map((asset, index) => {
             const slotRequired = index < minCount;
-            const showRequiredHint = slotRequired && engine.id !== 'wan-2-6';
+            const showRequiredHint = slotRequired && engine.id !== 'wan-2-6' && !hideRequiredSlotCopy;
+            const slotLabel = hideRequiredSlotCopy ? 'Image' : slotRequired ? 'Required' : 'Optional';
             const allowClick = asset === null || maxCount === 0;
             return (
               <div
@@ -635,7 +641,7 @@ function AssetDropzone({
                 ) : (
                   <div className="flex h-full flex-col items-center justify-center gap-1.5 px-3 text-center">
                     <span className="text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
-                      {slotRequired ? 'Required' : 'Optional'} slot
+                      {slotLabel} slot
                     </span>
                     <span className="text-[11px] text-text-muted">
                       Drag & drop or click to add.{' '}

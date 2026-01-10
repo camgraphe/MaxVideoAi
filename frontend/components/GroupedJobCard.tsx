@@ -14,7 +14,17 @@ import { ProcessingOverlay } from '@/components/groups/ProcessingOverlay';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { isPlaceholderMediaUrl } from '@/lib/media';
 
-export type GroupedJobAction = 'open' | 'continue' | 'refine' | 'branch' | 'compare' | 'remove' | 'save-image';
+export type GroupedJobAction =
+  | 'open'
+  | 'view'
+  | 'download'
+  | 'copy'
+  | 'continue'
+  | 'refine'
+  | 'branch'
+  | 'compare'
+  | 'remove'
+  | 'save-image';
 
 function ThumbImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
   const baseClass = clsx('h-full w-full pointer-events-none', className);
@@ -99,8 +109,9 @@ export interface GroupedJobCardProps {
   engine?: EngineCaps | null;
   onOpen?: (group: GroupSummary) => void;
   onAction?: (group: GroupSummary, action: GroupedJobAction) => void;
+  metaLabel?: string | null;
   actionMenu?: boolean;
-  menuVariant?: 'full' | 'compact';
+  menuVariant?: 'full' | 'compact' | 'gallery' | 'gallery-image';
   allowRemove?: boolean;
   isImageGroup?: boolean;
   savingToLibrary?: boolean;
@@ -118,6 +129,7 @@ export function GroupedJobCard({
   engine,
   onOpen,
   onAction,
+  metaLabel,
   actionMenu = true,
   menuVariant = 'full',
   allowRemove = true,
@@ -193,21 +205,34 @@ export function GroupedJobCard({
   const showMenu = Boolean(onAction) && actionMenu;
   const isCurated = Boolean(hero.job?.curated);
   const showAdvancedMenuActions = menuVariant === 'full';
+  const showGalleryActions = menuVariant === 'gallery';
+  const showGalleryImageActions = menuVariant === 'gallery-image';
 
   const handleAction = (action: GroupedJobAction) => {
     setMenuOpen(false);
     onAction?.(group, action);
   };
 
-  const splitModeLabel = group.splitMode ? group.splitMode.charAt(0).toUpperCase() + group.splitMode.slice(1) : 'Split mode';
+  const handleRemake = () => {
+    setMenuOpen(false);
+    onOpen?.(group);
+  };
+
+  const durationLabel = typeof hero.durationSec === 'number' ? `${hero.durationSec}s` : null;
+  const detailLabel = metaLabel !== undefined ? metaLabel : durationLabel;
   const heroHasAudio = Boolean(group.hero.job?.hasAudio);
 
   const [hovered, setHovered] = useState(false);
 
   return (
-    <Card className="relative overflow-hidden rounded-card border border-border bg-white/90 p-0 shadow-card">
+    <Card
+      className={clsx(
+        'relative overflow-visible rounded-card border border-border bg-white/90 p-0 shadow-card',
+        menuOpen && 'z-30'
+      )}
+    >
       <figure
-        className="relative cursor-pointer"
+        className="relative cursor-pointer overflow-hidden rounded-t-card"
         role="button"
         tabIndex={0}
         onClick={() => onOpen?.(group)}
@@ -261,9 +286,11 @@ export function GroupedJobCard({
           </div>
         </div>
         {heroHasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available" /> : null}
-        <div className="absolute left-3 top-3 inline-flex items-center rounded-full bg-black/65 px-2.5 py-0.5 text-[11px] font-semibold text-white shadow">
-          {splitLabel}
-        </div>
+        {group.count > 1 ? (
+          <div className="absolute left-3 top-3 inline-flex items-center rounded-full bg-black/65 px-2.5 py-0.5 text-[11px] font-semibold text-white shadow">
+            {splitLabel}
+          </div>
+        ) : null}
         {showMenu && (
           <button
             type="button"
@@ -284,7 +311,9 @@ export function GroupedJobCard({
       <div className="flex items-center justify-between gap-3 border-t border-hairline bg-white/80 px-3 py-2 text-sm text-text-secondary">
         <div className="flex items-center gap-2">
           <EngineIcon engine={engine ?? undefined} label={hero.engineLabel} size={28} className="shrink-0" />
-          <span className="text-[11px] uppercase tracking-micro text-text-muted">{splitModeLabel} • {splitLabel}</span>
+          {detailLabel ? (
+            <span className="text-[11px] uppercase tracking-micro text-text-muted">{detailLabel}</span>
+          ) : null}
         </div>
         <div className="flex items-center gap-2">
           {isImageGroup && (
@@ -329,57 +358,120 @@ export function GroupedJobCard({
       {showMenu && menuOpen && (
         <div
           ref={menuRef}
-          className="absolute right-3 top-12 z-20 w-48 rounded-card border border-border bg-white p-2 text-sm text-text-secondary shadow-card"
+          className="absolute right-3 top-12 z-40 w-48 rounded-card border border-border bg-white p-2 text-sm text-text-secondary shadow-card"
         >
-          <button
-            type="button"
-            onClick={() => handleAction('open')}
-            className="flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
-          >
-            <span>Open group</span>
-            <span className="text-[11px] text-text-muted">↵</span>
-          </button>
-          {recreateHref ? (
-            <Link
-              href={recreateHref}
-              onClick={() => setMenuOpen(false)}
-              className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
-            >
-              <span>{recreateLabel}</span>
-            </Link>
-          ) : null}
-          {showAdvancedMenuActions ? (
+          {showGalleryActions ? (
             <>
               <button
                 type="button"
-                onClick={() => handleAction('continue')}
-                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+                onClick={() => handleAction('view')}
+                className="flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
               >
-                <span>Continue (Hero)</span>
+                <span>Open</span>
               </button>
               <button
                 type="button"
-                onClick={() => handleAction('refine')}
-                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+                onClick={handleRemake}
+                disabled={!onOpen}
+                className={clsx(
+                  'mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition',
+                  onOpen ? 'hover:bg-accentSoft/10' : 'cursor-not-allowed opacity-60'
+                )}
               >
-                <span>Refine (Hero)</span>
+                <span>Remake</span>
               </button>
               <button
                 type="button"
-                onClick={() => handleAction('branch')}
+                onClick={() => handleAction('download')}
                 className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
               >
-                <span>Branch</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAction('compare')}
-                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
-              >
-                <span>Compare</span>
+                <span>Download</span>
               </button>
             </>
-          ) : null}
+          ) : showGalleryImageActions ? (
+            <>
+              <button
+                type="button"
+                onClick={() => handleAction('open')}
+                className="flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+              >
+                <span>Open</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAction('save-image')}
+                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+              >
+                <span>Add to Library</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAction('download')}
+                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+              >
+                <span>Download</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAction('copy')}
+                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+              >
+                <span>Copy link</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => handleAction('open')}
+                className="flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+              >
+                <span>Open group</span>
+                <span className="text-[11px] text-text-muted">↵</span>
+              </button>
+              {recreateHref ? (
+                <Link
+                  href={recreateHref}
+                  onClick={() => setMenuOpen(false)}
+                  className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+                >
+                  <span>{recreateLabel}</span>
+                </Link>
+              ) : null}
+              {showAdvancedMenuActions ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => handleAction('continue')}
+                    className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+                  >
+                    <span>Continue (Hero)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAction('refine')}
+                    className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+                  >
+                    <span>Refine (Hero)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAction('branch')}
+                    className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+                  >
+                    <span>Branch</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAction('compare')}
+                    className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+                  >
+                    <span>Compare</span>
+                  </button>
+                </>
+              ) : null}
+            </>
+          )}
           {isImageGroup && (
             <button
               type="button"

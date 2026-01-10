@@ -272,6 +272,7 @@ export function CompositePreviewDock({
             isPlaying ? 'text-text-primary shadow-inner' : 'text-text-secondary hover:text-text-primary'
           )}
           aria-label={isPlaying ? controls.play.ariaOn : controls.play.ariaOff}
+          title={isPlaying ? controls.play.on : controls.play.off}
           aria-pressed={isPlaying}
         >
           <UIIcon icon={isPlaying ? Pause : Play} />
@@ -290,6 +291,7 @@ export function CompositePreviewDock({
             isMuted ? 'text-text-primary shadow-inner' : 'text-text-secondary hover:text-text-primary'
           )}
           aria-label={isMuted ? controls.mute.ariaOn : controls.mute.ariaOff}
+          title={isMuted ? controls.mute.on : controls.mute.off}
           aria-pressed={isMuted}
         >
           <UIIcon icon={isMuted ? VolumeX : Volume2} />
@@ -308,6 +310,7 @@ export function CompositePreviewDock({
             isLooping ? 'text-text-primary shadow-inner' : 'text-text-secondary hover:text-text-primary'
           )}
           aria-label={isLooping ? controls.loop.ariaOn : controls.loop.ariaOff}
+          title={isLooping ? controls.loop.on : controls.loop.off}
           aria-pressed={isLooping}
         >
           <span className="relative inline-flex">
@@ -332,6 +335,7 @@ export function CompositePreviewDock({
           disabled={!primaryMediaUrl}
           className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
           aria-label={controls.download.aria}
+          title={controls.download.label}
         >
           <UIIcon icon={Download} />
           <span className="sr-only">{controls.download.label}</span>
@@ -347,6 +351,7 @@ export function CompositePreviewDock({
           disabled={!group}
           className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
           aria-label={controls.modal.aria}
+          title={controls.modal.label}
         >
           <UIIcon icon={ExternalLink} />
           <span className="sr-only">{controls.modal.label}</span>
