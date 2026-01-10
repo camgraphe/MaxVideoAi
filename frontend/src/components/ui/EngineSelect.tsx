@@ -515,8 +515,8 @@ export function EngineSelect({
   const containerClassName = clsx(
     isBarVariant
       ? isStackedMode
-        ? 'flex flex-col gap-2'
-        : 'flex flex-wrap items-center gap-2 sm:gap-3'
+        ? 'flex min-w-0 flex-col gap-2'
+        : 'flex min-w-0 flex-wrap items-center gap-2 sm:gap-3'
       : 'relative space-y-5 p-5',
     className
   );
@@ -551,11 +551,11 @@ export function EngineSelect({
             : 'gap-5'
         )}
       >
-        <div className={clsx('flex-1', isBarVariant ? 'min-w-0 space-y-1.5' : 'min-w-[240px] space-y-2')}>
+        <div className={clsx('flex-1 min-w-0', isBarVariant ? 'space-y-1.5' : 'space-y-2 sm:min-w-[240px]')}>
           <label className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[12px]')}>
             {copy.choose}
           </label>
-          <div className="flex items-stretch gap-2">
+          <div className="flex min-w-0 items-stretch gap-2">
             <button
               id={triggerId}
               ref={triggerRef}
