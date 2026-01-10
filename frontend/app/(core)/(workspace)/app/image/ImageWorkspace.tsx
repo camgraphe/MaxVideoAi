@@ -465,9 +465,9 @@ function SelectGroup({
   disabled,
 }: {
   label: string;
-  options: { value: string | number; label: string }[];
-  value: string | number;
-  onChange: (value: string | number) => void;
+  options: { value: string | number | boolean; label: string }[];
+  value: string | number | boolean;
+  onChange: (value: string | number | boolean) => void;
   disabled?: boolean;
 }) {
   if (!options.length) return null;
@@ -1510,16 +1510,12 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
   const savedAsset = (savedAssets?.[0] as LibraryAsset | undefined) ?? null;
   const isInLibrary = Boolean(savedAsset?.id);
 
-  if (!selectedEngine || !selectedEngineCaps) {
-    return (
-      <main className="flex flex-1 items-center justify-center bg-bg text-text-secondary">
-        {resolvedCopy.general.emptyEngines}
-      </main>
-    );
-  }
   const hasPendingRuns = pendingGroups.length > 0;
   const promptCharCount = formatTemplate(resolvedCopy.composer.charCount, { count: prompt.length });
-  const aspectRatioOptions = isNanoBanana ? getNanoBananaAspectRatios(mode) : [];
+  const aspectRatioOptions = useMemo(
+    () => (isNanoBanana ? getNanoBananaAspectRatios(mode) : []),
+    [isNanoBanana, mode]
+  );
   const imageCountOptions = useMemo(
     () =>
       QUICK_IMAGE_COUNT_OPTIONS.map((option) => ({
@@ -1566,6 +1562,14 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     : null;
   const composerPriceLabelTemplate = t('workspace.generate.composer.priceLabel', 'This render: {amount}') as string;
   const composerPriceLabel = composerPriceLabelTemplate.replace('{amount}', estimatedCostLabel);
+
+  if (!selectedEngine || !selectedEngineCaps) {
+    return (
+      <main className="flex flex-1 items-center justify-center bg-bg text-text-secondary">
+        {resolvedCopy.general.emptyEngines}
+      </main>
+    );
+  }
 
   return (
     <>

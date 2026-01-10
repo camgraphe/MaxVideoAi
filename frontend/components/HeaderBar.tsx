@@ -62,8 +62,9 @@ export function HeaderBar() {
       setWallet((current) => current ?? { balance: storedWallet.balance });
     }
     const storedMember = readLastKnownMember();
-    if (storedMember?.tier) {
-      setMember((current) => current ?? { tier: storedMember.tier });
+    const storedTier = storedMember?.tier;
+    if (storedTier) {
+      setMember((current) => current ?? { tier: storedTier });
     }
   }, []);
   useEffect(() => {
