@@ -594,11 +594,13 @@ export function EngineSelect({
               type="button"
               onClick={() => setBrowseOpen(true)}
               className={clsx(
-                'shrink-0 rounded-input border border-hairline bg-white font-medium text-accent transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                isBarVariant ? 'px-2.5 py-1.5 text-[11px] sm:px-3 sm:py-2 sm:text-[12px]' : 'px-4 py-3 text-sm'
+                'min-w-0 rounded-input border border-hairline bg-white font-medium text-accent transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                isBarVariant
+                  ? 'max-w-[45%] px-2.5 py-1.5 text-[11px] sm:max-w-none sm:px-3 sm:py-2 sm:text-[12px]'
+                  : 'px-4 py-3 text-sm'
               )}
             >
-              {copy.browse}
+              <span className="truncate">{copy.browse}</span>
             </button>
           </div>
 

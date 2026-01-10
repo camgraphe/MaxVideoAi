@@ -1141,7 +1141,7 @@ const WAN_2_5_ENGINE: EngineCaps = {
 
 const WAN_2_6_ENGINE: EngineCaps = {
   id: 'wan-2-6',
-  label: 'Wan 2.6 Text, Image & Reference to Video',
+  label: 'Wan 2.6 Text & Image to Video',
   provider: 'Wan',
   version: '2.6',
   status: 'live',
@@ -2654,7 +2654,7 @@ export const FAL_ENGINE_REGISTRY: FalEngineEntry[] = [
   {
     id: 'wan-2-6',
     modelSlug: 'wan-2-6',
-    marketingName: 'Wan 2.6 Text, Image & Reference to Video',
+    marketingName: 'Wan 2.6 Text & Image to Video',
     cardTitle: 'Wan 2.6',
     provider: 'Wan',
     brandId: 'wan',

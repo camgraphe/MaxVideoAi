@@ -719,9 +719,9 @@ export default function DashboardPage() {
       <HeaderBar />
       <div className="flex flex-1 min-w-0">
         <AppSidebar />
-        <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
+        <main className="flex-1 min-w-0 overflow-x-hidden overflow-y-auto p-5 lg:p-7">
           <div className="grid gap-6 lg:grid-cols-12">
-            <div className="space-y-6 lg:col-span-8">
+            <div className="min-w-0 space-y-6 lg:col-span-8">
               <CreateHero
                 copy={copy}
                 videoEngines={availableEngines}
@@ -764,7 +764,7 @@ export default function DashboardPage() {
               />
             </div>
 
-            <div className="space-y-6 lg:col-span-4">
+            <div className="min-w-0 space-y-6 lg:col-span-4">
               <InsightsPanel
                 copy={copy}
                 spendToday={spendTodayDisplay}
@@ -958,12 +958,31 @@ function CreateVideoCard({
           <h2 className="text-lg font-semibold text-text-primary">{copy.create.videoTitle}</h2>
           <p className="mt-1 text-sm text-text-secondary">{copy.create.videoSubtitle}</p>
         </div>
+      </div>
+      <div className="flex flex-col gap-3">
+        <div className="min-w-0">
+          <EngineSelect
+            engines={engines}
+            engineId={selectedEngineId}
+            onEngineChange={onEngineChange}
+            mode={selectedMode}
+            onModeChange={onModeChange}
+            modeOptions={MODE_OPTIONS}
+            modeLabelOverrides={{
+              t2v: copy.modes.t2v,
+              i2v: copy.modes.i2v,
+              r2v: copy.modes.r2v,
+            }}
+            showModeSelect={false}
+            variant="bar"
+          />
+        </div>
         <button
           type="button"
           onClick={onNew}
           disabled={!canStart}
           className={clsx(
-            'rounded-input px-5 py-3 text-base font-semibold transition',
+            'w-full rounded-input px-5 py-3 text-base font-semibold transition',
             canStart
               ? 'bg-accent text-white hover:bg-accent/90'
               : 'cursor-not-allowed bg-neutral-200 text-text-muted'
@@ -972,21 +991,6 @@ function CreateVideoCard({
           {copy.create.newVideo}
         </button>
       </div>
-      <EngineSelect
-        engines={engines}
-        engineId={selectedEngineId}
-        onEngineChange={onEngineChange}
-        mode={selectedMode}
-        onModeChange={onModeChange}
-        modeOptions={MODE_OPTIONS}
-        modeLabelOverrides={{
-          t2v: copy.modes.t2v,
-          i2v: copy.modes.i2v,
-          r2v: copy.modes.r2v,
-        }}
-        showModeSelect={false}
-        variant="bar"
-      />
       <div className="flex flex-wrap items-center gap-3">
         {hasStoredForm ? (
           <button
@@ -1032,12 +1036,31 @@ function CreateImageCard({
           <h2 className="text-lg font-semibold text-text-primary">{copy.create.imageTitle}</h2>
           <p className="mt-1 text-sm text-text-secondary">{copy.create.imageSubtitle}</p>
         </div>
+      </div>
+      <div className="flex flex-col gap-3">
+        <div className="min-w-0">
+          <EngineSelect
+            engines={engines}
+            engineId={selectedEngineId}
+            onEngineChange={onEngineChange}
+            mode={selectedMode}
+            onModeChange={onModeChange}
+            modeOptions={IMAGE_MODE_OPTIONS}
+            modeLabelOverrides={{
+              t2i: copy.modes.t2i,
+              i2i: copy.modes.i2i,
+            }}
+            showBillingNote={false}
+            showModeSelect={false}
+            variant="bar"
+          />
+        </div>
         <button
           type="button"
           onClick={onNew}
           disabled={!canStart}
           className={clsx(
-            'rounded-input px-5 py-3 text-base font-semibold transition',
+            'w-full rounded-input px-5 py-3 text-base font-semibold transition',
             canStart
               ? 'bg-accent text-white hover:bg-accent/90'
               : 'cursor-not-allowed bg-neutral-200 text-text-muted'
@@ -1046,21 +1069,6 @@ function CreateImageCard({
           {copy.create.newImage}
         </button>
       </div>
-      <EngineSelect
-        engines={engines}
-        engineId={selectedEngineId}
-        onEngineChange={onEngineChange}
-        mode={selectedMode}
-        onModeChange={onModeChange}
-        modeOptions={IMAGE_MODE_OPTIONS}
-        modeLabelOverrides={{
-          t2i: copy.modes.t2i,
-          i2i: copy.modes.i2i,
-        }}
-        showBillingNote={false}
-        showModeSelect={false}
-        variant="bar"
-      />
       <div className="flex flex-wrap items-center gap-3">
         {hasStoredForm ? (
           <button
