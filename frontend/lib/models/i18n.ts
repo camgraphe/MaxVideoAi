@@ -2,7 +2,6 @@ import 'server-only';
 
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import { unstable_cache } from 'next/cache';
 import type { AppLocale } from '@/i18n/locales';
 
 type EngineOverlayPrompt =
@@ -208,9 +207,7 @@ function normalizeFaqs(entries?: EngineOverlayFaq[]): LocalizedFaq[] {
     .filter((item): item is LocalizedFaq => Boolean(item));
 }
 
-const ENGINE_LOCALIZED_CACHE_TTL_SECONDS = 60 * 10;
-
-async function getEngineLocalizedRaw(slug: string, locale: AppLocale): Promise<EngineLocalizedContent> {
+export async function getEngineLocalized(slug: string, locale: AppLocale): Promise<EngineLocalizedContent> {
   const base = await readOverlay(slug, 'en');
   const overlay = locale === 'en' ? base : await readOverlay(slug, locale);
   const resolvedPrompts =
@@ -235,14 +232,6 @@ async function getEngineLocalizedRaw(slug: string, locale: AppLocale): Promise<E
     faqs: resolvedFaqs,
     custom: overlay.custom ?? base.custom,
   };
-}
-
-export async function getEngineLocalized(slug: string, locale: AppLocale): Promise<EngineLocalizedContent> {
-  return unstable_cache(
-    () => getEngineLocalizedRaw(slug, locale),
-    ['engine-localized', slug, locale],
-    { revalidate: ENGINE_LOCALIZED_CACHE_TTL_SECONDS, tags: ['models-i18n'] }
-  )();
 }
 
 function mergeHero(base?: OverlayHero, overlay?: OverlayHero): OverlayHero | undefined {
