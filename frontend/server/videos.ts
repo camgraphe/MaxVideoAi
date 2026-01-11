@@ -1,4 +1,3 @@
-import { unstable_cache } from 'next/cache';
 import { query } from '@/lib/db';
 import { normalizeMediaUrl } from '@/lib/media';
 import { getIndexablePlaylistSlugs, removeVideosFromIndexablePlaylists } from '@/server/indexing';
@@ -26,8 +25,6 @@ type VideoRow = {
   pricing_snapshot: PricingSnapshot | null;
   order_index?: number | null;
 };
-
-const EXAMPLES_CACHE_TTL_SECONDS = 60 * 5;
 
 export type GalleryVideo = {
   id: string;
@@ -125,7 +122,7 @@ export async function getVideosByIds(videoIds: string[]): Promise<Map<string, Ga
   return map;
 }
 
-async function listPlaylistVideosRaw(slug: string, limit: number): Promise<GalleryVideo[]> {
+export async function listPlaylistVideos(slug: string, limit: number): Promise<GalleryVideo[]> {
   const rows = await query<VideoRow & { order_index: number }>(
     `
       SELECT aj.job_id, aj.user_id, aj.engine_id, aj.engine_label, aj.duration_sec, aj.prompt, aj.thumb_url,
@@ -149,15 +146,7 @@ async function listPlaylistVideosRaw(slug: string, limit: number): Promise<Galle
   return rows.map(mapRow);
 }
 
-export async function listPlaylistVideos(slug: string, limit: number): Promise<GalleryVideo[]> {
-  return unstable_cache(
-    () => listPlaylistVideosRaw(slug, limit),
-    ['examples-playlist', slug, String(limit)],
-    { revalidate: EXAMPLES_CACHE_TTL_SECONDS, tags: ['examples', `examples-playlist:${slug}`] }
-  )();
-}
-
-async function listLatestRaw(limit: number): Promise<GalleryVideo[]> {
+async function listLatest(limit: number): Promise<GalleryVideo[]> {
   const rows = await query<VideoRow>(
     `
       ${BASE_SELECT}
@@ -171,7 +160,7 @@ async function listLatestRaw(limit: number): Promise<GalleryVideo[]> {
   return rows.map(mapRow);
 }
 
-async function listTrendingRaw(limit: number): Promise<GalleryVideo[]> {
+async function listTrending(limit: number): Promise<GalleryVideo[]> {
   const rows = await query<VideoRow>(
     `
       ${BASE_SELECT}
@@ -183,22 +172,6 @@ async function listTrendingRaw(limit: number): Promise<GalleryVideo[]> {
     [limit]
   );
   return rows.map(mapRow);
-}
-
-async function listLatest(limit: number): Promise<GalleryVideo[]> {
-  return unstable_cache(
-    () => listLatestRaw(limit),
-    ['examples-latest', String(limit)],
-    { revalidate: EXAMPLES_CACHE_TTL_SECONDS, tags: ['examples'] }
-  )();
-}
-
-async function listTrending(limit: number): Promise<GalleryVideo[]> {
-  return unstable_cache(
-    () => listTrendingRaw(limit),
-    ['examples-trending', String(limit)],
-    { revalidate: EXAMPLES_CACHE_TTL_SECONDS, tags: ['examples'] }
-  )();
 }
 
 export async function listGalleryVideos(tab: GalleryTab, limit = 24): Promise<GalleryVideo[]> {
@@ -257,7 +230,7 @@ function sortVideosByPreference(videos: GalleryVideo[], sort: ExampleSort): Gall
   }
 }
 
-async function listExamplesPageRaw(options: ListExamplesPageOptions): Promise<ListExamplesPageResult> {
+export async function listExamplesPage(options: ListExamplesPageOptions): Promise<ListExamplesPageResult> {
   const { sort, limit = 150, offset = 0 } = options;
   const slugs = getIndexablePlaylistSlugs();
   if (!slugs.length) {
@@ -305,15 +278,6 @@ async function listExamplesPageRaw(options: ListExamplesPageOptions): Promise<Li
     offset: start,
     hasMore: start + items.length < total,
   };
-}
-
-export async function listExamplesPage(options: ListExamplesPageOptions): Promise<ListExamplesPageResult> {
-  const { sort, limit = 150, offset = 0 } = options;
-  return unstable_cache(
-    () => listExamplesPageRaw({ sort, limit, offset }),
-    ['examples-page', sort, String(limit), String(offset)],
-    { revalidate: EXAMPLES_CACHE_TTL_SECONDS, tags: ['examples'] }
-  )();
 }
 
 export async function listExamples(sort: ExampleSort, limit = 150): Promise<GalleryVideo[]> {

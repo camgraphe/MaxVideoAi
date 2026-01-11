@@ -491,9 +491,8 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
   const videoUrl = toAbsoluteUrl(video.videoUrl) ?? video.videoUrl ?? canonical;
   const thumbnailUrl = toAbsoluteUrl(video.thumbUrl) ?? FALLBACK_THUMB;
   const poster = video.thumbUrl ?? FALLBACK_POSTER;
-  const optimizedPoster = buildOptimizedPosterUrl(poster, { width: 1200, quality: 70 });
-  const playbackPoster = poster;
-  const videoPoster = optimizedPoster ?? poster;
+  const optimizedPoster = buildOptimizedPosterUrl(poster);
+  const playbackPoster = optimizedPoster ?? poster;
   const aspect = parseAspectRatio(video.aspectRatio);
   const isPortrait = aspect ? aspect.width < aspect.height : false;
   const engineEntry = resolveEngineEntry(video.engineId);
@@ -551,7 +550,7 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
   return (
     <div className="mx-auto max-w-6xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
       <Head>
-        <link rel="preload" as="image" href={video.videoUrl ? videoPoster : playbackPoster} fetchPriority="high" />
+        <link rel="preload" as="image" href={playbackPoster} fetchPriority="high" />
       </Head>
       <div className="mb-6 text-xs uppercase tracking-micro text-text-muted">
         <BackLink href={backHref} label={copy.backLink} className="transition hover:text-text-secondary" />
@@ -566,7 +565,7 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
               {video.videoUrl ? (
                 <video
                   controls
-                  poster={videoPoster}
+                  poster={playbackPoster}
                   className="h-full w-full object-contain"
                   playsInline
                   preload="metadata"

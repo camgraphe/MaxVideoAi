@@ -259,7 +259,6 @@ export default async function BlogPostPage({ params }: { params: Params }) {
                 fill
                 priority
                 fetchPriority="high"
-                quality={60}
                 sizes="(min-width: 1024px) 960px, 100vw"
                 className="object-cover object-center"
               />

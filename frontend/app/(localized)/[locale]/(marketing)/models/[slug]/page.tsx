@@ -16,7 +16,6 @@ import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import type { EngineCaps } from '@/types/engines';
 import { type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
-import { MediaPreview } from '@/components/marketing/MediaPreview';
 import { listExamples, getVideosByIds, type GalleryVideo } from '@/server/videos';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { computePricingSnapshot } from '@/lib/pricing';
@@ -760,7 +759,6 @@ type FeaturedMedia = {
   prompt: string | null;
   videoUrl: string | null;
   posterUrl: string | null;
-  posterOptimizedUrl?: string | null;
   durationSec?: number | null;
   hasAudio?: boolean;
   href?: string | null;
@@ -812,7 +810,7 @@ function toGalleryCard(
     aspectRatio: video.aspectRatio ?? null,
     durationSec: video.durationSec,
     hasAudio: video.hasAudio,
-    optimizedPosterUrl: buildOptimizedPosterUrl(video.thumbUrl, { width: 1200, quality: 70 }),
+    optimizedPosterUrl: buildOptimizedPosterUrl(video.thumbUrl),
     rawPosterUrl: video.thumbUrl ?? null,
     videoUrl: video.videoUrl ?? null,
     recreateHref: `/app?engine=${encodeURIComponent(engineSlug)}&from=${encodeURIComponent(video.id)}`,
@@ -825,8 +823,7 @@ function toFeaturedMedia(entry?: ExampleGalleryVideo | null): FeaturedMedia | nu
     id: entry.id,
     prompt: entry.prompt,
     videoUrl: entry.videoUrl ?? null,
-    posterUrl: entry.rawPosterUrl ?? null,
-    posterOptimizedUrl: entry.optimizedPosterUrl ?? null,
+    posterUrl: entry.optimizedPosterUrl ?? entry.rawPosterUrl ?? null,
     durationSec: entry.durationSec,
     hasAudio: entry.hasAudio,
     href: entry.href,
@@ -974,8 +971,7 @@ async function renderSoraModelPage({
         ? `${localizedContent.marketingName ?? engine.marketingName} demo still from MaxVideoAI`
         : `${localizedContent.marketingName ?? engine.marketingName} demo clip from MaxVideoAI`,
     videoUrl: engine.type === 'image' ? null : engine.media?.videoUrl ?? engine.demoUrl ?? null,
-    posterUrl: engine.media?.imagePath ?? null,
-    posterOptimizedUrl: buildOptimizedPosterUrl(engine.media?.imagePath, { width: 1200, quality: 70 }),
+    posterUrl: buildOptimizedPosterUrl(engine.media?.imagePath) ?? engine.media?.imagePath ?? null,
     durationSec: null,
     hasAudio: engine.type === 'image' ? false : true,
     href: null,
@@ -1098,9 +1094,7 @@ function Sora2PageLayout({
   const localizedSecondaryCtaHref = secondaryCtaHref?.startsWith('/models')
     ? localizeModelsPath(secondaryCtaHref.replace(/^\/models\/?/, ''))
     : secondaryCtaHref;
-  const heroPosterPreload =
-    heroMedia.posterOptimizedUrl ??
-    (heroMedia.posterUrl ? buildOptimizedPosterUrl(heroMedia.posterUrl, { width: 1200, quality: 70 }) : null);
+  const heroPosterPreload = heroMedia.posterUrl ? buildOptimizedPosterUrl(heroMedia.posterUrl) ?? heroMedia.posterUrl : null;
 
   const heroHighlights = copy.heroHighlights;
   const bestUseCases = copy.bestUseCases.length ? copy.bestUseCases : localizedContent.bestUseCases?.items ?? [];
@@ -1289,7 +1283,7 @@ function Sora2PageLayout({
             ) : null}
             <div className="flex justify-center">
               <div className="w-full max-w-5xl">
-                <MediaPreview media={heroMedia} label={heroTitle} priority />
+                <MediaPreview media={heroMedia} label={heroTitle} />
               </div>
             </div>
             <div className="space-y-3 rounded-2xl border border-hairline bg-bg px-4 py-3">
@@ -1453,9 +1447,9 @@ function Sora2PageLayout({
                       className="flex w-64 shrink-0 flex-col overflow-hidden rounded-2xl border border-hairline bg-white shadow-card"
                     >
                       <Link href={video.href} className="group relative block aspect-video bg-neutral-100">
-                        {video.rawPosterUrl ? (
+                        {video.optimizedPosterUrl || video.rawPosterUrl ? (
                           <Image
-                            src={video.rawPosterUrl}
+                            src={video.optimizedPosterUrl ?? video.rawPosterUrl ?? ''}
                             alt={
                               video.prompt
                                 ? `MaxVideoAI ${video.engineLabel} example – ${video.prompt}`
@@ -1787,6 +1781,81 @@ function Sora2PageLayout({
   );
 }
 
+function MediaPreview({ media, label }: { media: FeaturedMedia; label: string }) {
+  const posterSrc = media.posterUrl ?? null;
+  const aspect = media.aspectRatio ?? '16:9';
+  const [w, h] = aspect.split(':').map(Number);
+  const isValidAspect = Number.isFinite(w) && Number.isFinite(h) && h > 0 && w > 0;
+  const paddingBottom = isValidAspect ? `${(h / w) * 100}%` : '56.25%';
+  const isVertical = isValidAspect ? w < h : false;
+  const figureClassName = [
+    'group relative overflow-hidden rounded-[22px] border border-hairline bg-white shadow-card',
+    isVertical ? 'mx-auto max-w-sm' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  return (
+    <figure className={figureClassName}>
+      <div className="relative w-full overflow-hidden rounded-t-[22px] bg-neutral-100">
+        <div className="relative w-full" style={{ paddingBottom }}>
+          <div className="absolute inset-0">
+            {media.videoUrl ? (
+              <video
+                className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                poster={posterSrc ?? undefined}
+              >
+                <source src={media.videoUrl} type="video/mp4" />
+              </video>
+            ) : posterSrc ? (
+              <Image
+                src={posterSrc}
+                alt={media.prompt ? `Sora 2 preview – ${media.prompt}` : label}
+                fill
+                className="h-full w-full object-cover"
+                sizes="(max-width: 768px) 100vw, 720px"
+                quality={80}
+                loading="eager"
+                fetchPriority="high"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-neutral-50 text-sm font-semibold text-text-muted">
+                Sora 2 preview
+              </div>
+            )}
+            {media.hasAudio ? (
+              <span className="absolute left-3 top-3 rounded-full bg-black/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-white">
+                Audio on
+              </span>
+            ) : null}
+            {media.durationSec ? (
+              <span className="absolute right-3 top-3 rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-primary shadow-card">
+                {media.durationSec}s
+              </span>
+            ) : null}
+          </div>
+        </div>
+      </div>
+      <figcaption className="space-y-1 px-4 py-3">
+        <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{label}</p>
+        {media.prompt ? <p className="text-sm font-semibold leading-snug text-text-primary">{media.prompt}</p> : null}
+        {media.href ? (
+          <Link
+            href={media.href}
+            className="inline-flex items-center text-xs font-semibold text-accent transition hover:text-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
+          >
+            View render →
+          </Link>
+        ) : null}
+      </figcaption>
+    </figure>
+  );
+}
+
 export default async function ModelDetailPage({ params }: PageParams) {
   const { slug, locale: routeLocale } = params;
   const engine = getFalEngineBySlug(slug);
@@ -1966,9 +2035,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
   const pricingLinkHref = { pathname: '/pricing' };
 
   const heroPosterSrc = localizedContent.seo.image ?? engine.media?.imagePath ?? null;
-  const heroPosterPreload = heroPosterSrc
-    ? buildOptimizedPosterUrl(heroPosterSrc, { width: 1200, quality: 70 }) ?? heroPosterSrc
-    : null;
+  const heroPosterPreload = heroPosterSrc ? buildOptimizedPosterUrl(heroPosterSrc) ?? heroPosterSrc : null;
   const heroPosterAbsolute = toAbsoluteUrl(heroPosterSrc);
   const heroTitle = heroContent?.title ?? marketingName ?? slug;
   const pageDescription = introText ?? seoDescription ?? heroTitle;

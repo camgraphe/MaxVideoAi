@@ -1,4 +1,3 @@
-import { revalidateTag } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/admin';
 import { listPricingRules, upsertPricingRule } from '@/lib/pricing';
@@ -54,7 +53,6 @@ export async function POST(req: NextRequest) {
       currency: typeof payload.currency === 'string' ? payload.currency : undefined,
       vendorAccountId: typeof payload.vendorAccountId === 'string' ? payload.vendorAccountId : undefined,
     });
-    revalidateTag('pricing');
     return NextResponse.json({ ok: true, rule });
   } catch (error) {
     console.error('[api/admin/pricing/rules] failed to save rule', error);

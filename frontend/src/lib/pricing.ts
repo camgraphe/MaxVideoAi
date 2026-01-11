@@ -1,4 +1,3 @@
-import { unstable_cache } from 'next/cache';
 import { isDatabaseConfigured, query } from '@/lib/db';
 import type { EngineCaps, EnginePricingDetails } from '@/types/engines';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
@@ -57,7 +56,6 @@ const DEFAULT_RULE: PricingRule = {
 const CACHE_TTL_MS = 60_000;
 let cachedRules: PricingRule[] | null = null;
 let cacheLoadedAt = 0;
-const PRICING_RULES_CACHE_TTL_SECONDS = 60 * 10;
 
 function toNumber(value: number | string | null | undefined, fallback = 0, precision?: number): number {
   if (typeof value === 'number' && Number.isFinite(value)) {
@@ -500,10 +498,7 @@ function sanitiseText(value: string | null | undefined): string | null {
 }
 
 export async function listPricingRules(): Promise<PricingRule[]> {
-  return unstable_cache(() => loadRules(), ['pricing-rules'], {
-    revalidate: PRICING_RULES_CACHE_TTL_SECONDS,
-    tags: ['pricing'],
-  })();
+  return loadRules();
 }
 
 export async function upsertPricingRule(input: UpsertPricingRuleInput): Promise<PricingRule> {

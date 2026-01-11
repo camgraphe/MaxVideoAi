@@ -1,4 +1,3 @@
-import { unstable_cache } from 'next/cache';
 import { getLocale, getMessages } from 'next-intl/server';
 import type { AbstractIntlMessages } from 'next-intl';
 import type { AppLocale } from '@/i18n/locales';
@@ -21,14 +20,8 @@ export async function resolveDictionary(options?: {
   locale?: Locale;
 }): Promise<{ locale: Locale; dictionary: Dictionary; fallback: Dictionary }> {
   const locale = options?.locale ?? (await resolveLocale());
-  return unstable_cache(
-    async () => {
-      const dictionary = deserializeMessages(await getMessages({ locale }));
-      const fallback =
-        locale === defaultLocale ? dictionary : deserializeMessages(await getMessages({ locale: defaultLocale }));
-      return { locale, dictionary, fallback };
-    },
-    ['dictionary', locale],
-    { revalidate: 60 * 10, tags: ['dictionary', `dictionary:${locale}`] }
-  )();
+  const dictionary = deserializeMessages(await getMessages({ locale }));
+  const fallback =
+    locale === defaultLocale ? dictionary : deserializeMessages(await getMessages({ locale: defaultLocale }));
+  return { locale, dictionary, fallback };
 }

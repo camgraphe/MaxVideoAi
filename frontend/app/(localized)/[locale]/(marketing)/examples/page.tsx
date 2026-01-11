@@ -528,7 +528,7 @@ const clientVideos: ExampleGalleryVideo[] = videos.map((video) => {
     aspectRatio: video.aspectRatio ?? null,
     durationSec: video.durationSec,
     hasAudio: video.hasAudio,
-    optimizedPosterUrl: video.thumbUrl ? buildOptimizedPosterUrl(video.thumbUrl, { width: 960, quality: 60 }) : null,
+    optimizedPosterUrl: video.thumbUrl ? buildOptimizedPosterUrl(video.thumbUrl) : null,
     rawPosterUrl: video.thumbUrl ?? getPlaceholderPoster(video.aspectRatio),
     videoUrl: video.videoUrl ?? null,
   };

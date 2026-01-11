@@ -1,4 +1,3 @@
-import { unstable_cache } from 'next/cache';
 import { query } from '@/lib/db';
 import { getBaseEngines } from '@/lib/engines';
 import type { EngineCaps, EnginePricingDetails } from '@/types/engines';
@@ -67,20 +66,14 @@ export async function fetchEngineSettings(): Promise<Map<string, EngineSettingsR
 
 export async function listEnginePricingOverrides(): Promise<Record<string, EnginePricingDetails>> {
   if (!process.env.DATABASE_URL) return {};
-  return unstable_cache(
-    async () => {
-      const settings = await fetchEngineSettings();
-      const overrides: Record<string, EnginePricingDetails> = {};
-      settings.forEach((record, engineId) => {
-        if (record.pricing) {
-          overrides[engineId] = record.pricing;
-        }
-      });
-      return overrides;
-    },
-    ['engine-pricing-overrides'],
-    { revalidate: 60 * 10, tags: ['pricing'] }
-  )();
+  const settings = await fetchEngineSettings();
+  const overrides: Record<string, EnginePricingDetails> = {};
+  settings.forEach((record, engineId) => {
+    if (record.pricing) {
+      overrides[engineId] = record.pricing;
+    }
+  });
+  return overrides;
 }
 
 export async function ensureEngineSettingsSeed(updatedBy?: string): Promise<void> {
