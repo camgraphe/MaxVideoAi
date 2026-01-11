@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { submitToIndexNow } from '@/lib/indexnow';
@@ -50,6 +51,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   try {
     await appendPlaylistItem(playlistId, videoId);
     await submitToIndexNow('/examples');
+    revalidateTag('examples');
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('[admin/playlists/:id/items] failed to append', error);
@@ -92,6 +94,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
   try {
     await removePlaylistItem(playlistId, videoId);
     await submitToIndexNow('/examples');
+    revalidateTag('examples');
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('[admin/playlists/:id/items] failed to remove', error);
@@ -141,6 +144,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
   try {
     await reorderPlaylistItems(playlistId, normalized);
     await submitToIndexNow('/examples');
+    revalidateTag('examples');
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('[admin/playlists/:id/items] failed to reorder', error);

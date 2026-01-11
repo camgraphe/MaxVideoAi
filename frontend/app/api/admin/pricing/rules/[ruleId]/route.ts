@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/admin';
 import { deletePricingRule, upsertPricingRule } from '@/lib/pricing';
@@ -41,6 +42,7 @@ export async function PUT(req: NextRequest, { params }: { params: { ruleId: stri
       currency: typeof payload.currency === 'string' ? payload.currency : undefined,
       vendorAccountId: typeof payload.vendorAccountId === 'string' ? payload.vendorAccountId : undefined,
     });
+    revalidateTag('pricing');
     return NextResponse.json({ ok: true, rule });
   } catch (error) {
     console.error('[api/admin/pricing/rules/:id] failed to update rule', error);
@@ -64,6 +66,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { ruleId: s
 
   try {
     await deletePricingRule(ruleId);
+    revalidateTag('pricing');
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('[api/admin/pricing/rules/:id] failed to delete rule', error);

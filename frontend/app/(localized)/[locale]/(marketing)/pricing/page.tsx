@@ -7,6 +7,7 @@ import { resolveDictionary } from '@/lib/i18n/server';
 import { DEFAULT_MARKETING_SCENARIO, scenarioToPricingInput, type PricingScenario } from '@/lib/pricing-scenarios';
 import { FEATURES } from '@/content/feature-flags';
 import { FlagPill } from '@/components/FlagPill';
+import { IdleMount } from '@/components/ui/IdleMount';
 import { getMembershipTiers } from '@/lib/membership';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
@@ -23,8 +24,16 @@ import { applyEnginePricingOverride } from '@/lib/pricing-definition';
 const PRICING_SLUG_MAP = buildSlugMap('pricing');
 
 const PriceEstimator = dynamic(
-  () => import('@/components/marketing/PriceEstimator').then((mod) => mod.PriceEstimator)
+  () => import('@/components/marketing/PriceEstimator').then((mod) => mod.PriceEstimator),
+  {
+    ssr: false,
+    loading: () => <PriceEstimatorSkeleton />,
+  }
 );
+
+function PriceEstimatorSkeleton() {
+  return <div className="h-[520px] w-full animate-pulse rounded-[32px] border border-hairline bg-white/80" aria-hidden />;
+}
 
 export const revalidate = 60 * 10;
 
@@ -374,7 +383,9 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
 
       <section id="estimator" className="mt-12 scroll-mt-28">
         <div className="mx-auto max-w-4xl">
-          <PriceEstimator pricingRules={pricingRulesLite} enginePricingOverrides={enginePricingOverrides} />
+          <IdleMount fallback={<PriceEstimatorSkeleton />}>
+            <PriceEstimator pricingRules={pricingRulesLite} enginePricingOverrides={enginePricingOverrides} />
+          </IdleMount>
         </div>
         <div className="mx-auto mt-6 flex max-w-3xl flex-col items-center gap-2 text-center text-xs text-text-muted sm:flex-row sm:justify-center">
           <FlagPill live={FEATURES.pricing.publicCalculator} />

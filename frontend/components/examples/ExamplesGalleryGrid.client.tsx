@@ -27,8 +27,8 @@ export type ExampleGalleryVideo = {
 
 const INITIAL_BATCH = 8;
 const BATCH_SIZE = 8;
-const LANDSCAPE_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 60vw, 40vw';
-const PORTRAIT_SIZES = '(max-width: 640px) 100vw, (max-width: 1024px) 60vw, 40vw';
+const LANDSCAPE_SIZES = '(max-width: 640px) 100vw, (max-width: 1279px) 50vw, 33vw';
+const PORTRAIT_SIZES = '(max-width: 640px) 100vw, (max-width: 1279px) 50vw, 33vw';
 const DEFAULT_LANDSCAPE_RATIO = 16 / 9;
 const DEFAULT_LANDSCAPE_HEIGHT_PERCENT = 100 / DEFAULT_LANDSCAPE_RATIO;
 const TALL_CARD_MEDIA_PERCENT = Number((DEFAULT_LANDSCAPE_HEIGHT_PERCENT * 2).toFixed(3));
@@ -247,7 +247,8 @@ function ExampleCard({
     };
   }, [shouldPlay, forceExclusivePlay]);
 
-  const posterSrc = isLighthouse ? LH_POSTER_SRC : video.optimizedPosterUrl ?? video.rawPosterUrl ?? null;
+  const posterImageSrc = isLighthouse ? LH_POSTER_SRC : video.rawPosterUrl ?? null;
+  const posterVideoSrc = isLighthouse ? LH_POSTER_SRC : video.optimizedPosterUrl ?? video.rawPosterUrl ?? null;
 
   return (
     <Link
@@ -269,15 +270,15 @@ function ExampleCard({
                 muted
                 loop
                 playsInline
-                poster={posterSrc ?? undefined}
+                poster={posterVideoSrc ?? undefined}
                 data-examples-card
                 className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-[1.02]"
               >
                 <source src={video.videoUrl} type="video/mp4" />
               </video>
-            ) : posterSrc ? (
+            ) : posterImageSrc ? (
               <Image
-                src={posterSrc}
+                src={posterImageSrc}
                 alt={`${video.engineLabel} AI video example – ${video.prompt}`}
                 fill
                 className="h-full w-full object-cover object-center"

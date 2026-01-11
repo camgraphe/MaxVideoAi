@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/admin';
 import { upsertEngineOverride } from '@/server/engine-overrides';
@@ -198,6 +199,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { engineId: 
   }
 
   let nextPricing = currentSettings?.pricing ?? null;
+  const pricingPayloadPresent = Object.prototype.hasOwnProperty.call(body, 'pricing');
   if (Object.prototype.hasOwnProperty.call(body, 'pricing')) {
     if (body.pricing === null) {
       nextPricing = null;
@@ -248,6 +250,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { engineId: 
         adminId
       );
     }
+
+    if (body.reset === true || pricingPayloadPresent) {
+      revalidateTag('pricing');
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ error: message }, { status: 500 });
@@ -275,5 +281,6 @@ export async function DELETE(req: NextRequest, { params }: { params: { engineId:
   }
 
   await removeEngineSettings(engineId);
+  revalidateTag('pricing');
   return NextResponse.json({ ok: true });
 }
