@@ -277,6 +277,15 @@ export async function ensureBillingSchema(): Promise<void> {
         FROM app_receipts;
       `);
 
+      await query(`
+        CREATE TABLE IF NOT EXISTS stripe_webhook_events (
+          event_id TEXT PRIMARY KEY,
+          event_type TEXT NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          processed_at TIMESTAMPTZ
+        );
+      `);
+
       try {
         await query(`CREATE TYPE user_role AS ENUM ('admin', 'user');`);
       } catch (error) {

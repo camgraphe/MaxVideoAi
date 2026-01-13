@@ -16,6 +16,7 @@ const stripe = stripeSecret
 export const runtime = 'nodejs';
 const connectMode = isConnectPayments();
 const receiptsPriceOnly = receiptsPriceOnlyEnabled();
+const HANDLED_EVENT_TYPES = new Set(['checkout.session.completed', 'payment_intent.succeeded']);
 
 export async function POST(request: NextRequest) {
   if (!stripe || !webhookSecret) {
@@ -37,6 +38,17 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    if (!HANDLED_EVENT_TYPES.has(event.type)) {
+      console.log('[stripe-webhook] Unhandled event type', event.type);
+      return NextResponse.json({ received: true });
+    }
+
+    const shouldProcess = await beginStripeEvent(event);
+    if (!shouldProcess) {
+      console.log('[stripe-webhook] Skipping duplicate event', { eventId: event.id, type: event.type });
+      return NextResponse.json({ received: true, duplicate: true });
+    }
+
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
@@ -48,15 +60,72 @@ export async function POST(request: NextRequest) {
         await handlePaymentIntent(intent);
         break;
       }
-      default:
-        console.log('[stripe-webhook] Unhandled event type', event.type);
     }
+
+    await markStripeEventProcessed(event.id);
   } catch (error) {
+    await rollbackStripeEvent(event.id);
     console.error('[stripe-webhook] Handler error', error);
     return NextResponse.json({ error: 'Webhook handler failure' }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });
+}
+
+async function beginStripeEvent(event: Stripe.Event): Promise<boolean> {
+  if (!process.env.DATABASE_URL) {
+    return true;
+  }
+
+  try {
+    await ensureBillingSchema();
+  } catch (error) {
+    console.warn('[stripe-webhook] ensureBillingSchema failed for event idempotency', error);
+    return true;
+  }
+
+  try {
+    const rows = await query<{ event_id: string }>(
+      `INSERT INTO stripe_webhook_events (event_id, event_type)
+       VALUES ($1, $2)
+       ON CONFLICT (event_id) DO NOTHING
+       RETURNING event_id`,
+      [event.id, event.type]
+    );
+    return rows.length > 0;
+  } catch (error) {
+    console.warn('[stripe-webhook] Failed to record event id', { eventId: event.id, error });
+    return true;
+  }
+}
+
+async function markStripeEventProcessed(eventId: string) {
+  if (!process.env.DATABASE_URL) {
+    return;
+  }
+
+  try {
+    await query(
+      `UPDATE stripe_webhook_events
+       SET processed_at = NOW()
+       WHERE event_id = $1`,
+      [eventId]
+    );
+  } catch (error) {
+    console.warn('[stripe-webhook] Failed to mark event processed', { eventId, error });
+  }
+}
+
+async function rollbackStripeEvent(eventId: string) {
+  if (!process.env.DATABASE_URL) {
+    return;
+  }
+
+  try {
+    await query(`DELETE FROM stripe_webhook_events WHERE event_id = $1`, [eventId]);
+  } catch (error) {
+    console.warn('[stripe-webhook] Failed to rollback event record', { eventId, error });
+  }
 }
 
 async function handleCheckoutSession(session: Stripe.Checkout.Session) {

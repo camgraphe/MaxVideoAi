@@ -22,6 +22,7 @@ import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
 
 const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
+const STRIPE_TAX_CODE_ELECTRONIC_SERVICES = ENV.STRIPE_TAX_CODE_ELECTRONIC_SERVICES ?? 'txcd_10103001';
 
 export const dynamic = 'force-dynamic';
 
@@ -419,14 +420,18 @@ export async function POST(req: NextRequest) {
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'payment',
       payment_method_types: ['card'],
+      billing_address_collection: 'required',
+      automatic_tax: { enabled: true },
+      tax_id_collection: { enabled: true },
       success_url: `${origin}/billing?status=success`,
       cancel_url: `${origin}/billing?status=cancelled`,
       line_items: [
         {
           price_data: {
             currency: resolvedCurrencyLower,
-            product_data: { name: 'Wallet top-up' },
+            product_data: { name: 'Wallet top-up', tax_code: STRIPE_TAX_CODE_ELECTRONIC_SERVICES },
             unit_amount: settlementAmountCents,
+            tax_behavior: 'exclusive',
           },
           quantity: 1,
         },
