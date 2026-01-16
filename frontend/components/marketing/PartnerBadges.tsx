@@ -5,12 +5,18 @@ type PartnerBadgesProps = {
 type PartnerBadgeEntry = {
   id: string;
   html: string;
+  className?: string;
 };
 
 const PARTNER_BADGES: PartnerBadgeEntry[] = [
   {
     id: 'taaft-featured',
     html: '<a href="https://theresanaiforthat.com/ai/maxvideoai/?ref=featured&v=8201228" target="_blank" rel="nofollow"><img width="300" src="https://media.theresanaiforthat.com/featured-on-taaft.png?width=600" alt="Featured on There\'s An AI For That"></a>',
+  },
+  {
+    id: 'startup-fame-featured',
+    className: 'max-w-[171px] aspect-[171/54]',
+    html: '<a href="https://startupfa.me/s/maxvideoai?utm_source=maxvideoai.com" target="_blank" rel="noopener noreferrer"> <img src="https://startupfa.me/badges/featured-badge.webp" alt="MaxVideoAI - Featured on Startup Fame" width="171" height="54" /> </a>',
   },
 ];
 
@@ -27,7 +33,12 @@ export function PartnerBadges({ className }: PartnerBadgesProps) {
       {PARTNER_BADGES.map((badge) => (
         <div
           key={badge.id}
-          className="w-full max-w-[300px] aspect-[600/125] [&>a>img]:h-auto [&>a>img]:w-full"
+          className={[
+            'w-full max-w-[300px] aspect-[600/125] [&>a>img]:h-auto [&>a>img]:w-full',
+            badge.className,
+          ]
+            .filter(Boolean)
+            .join(' ')}
           dangerouslySetInnerHTML={{ __html: badge.html }}
         />
       ))}
