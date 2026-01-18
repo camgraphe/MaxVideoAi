@@ -2,15 +2,15 @@
   "marketingName": "Pika 2.2",
   "versionLabel": "2.2",
   "seo": {
-    "title": "Pika 2.2 text-to-video & image AI video – MaxVideoAI",
-    "description": "Generate Pika Labs 2.2 videos without a subscription. Text-to-video and image-to-video in 5–8 seconds, 720p/1080p. Pay only per clip with MaxVideoAI.",
+    "title": "Pika 2.2 Text & Image to Video (5–10s, 1080p) | Examples & Specs",
+    "description": "Pika 2.2 on MaxVideoAI: text-to-video and image-to-video in 5s or 10s (720p/1080p). See per-second pricing, real examples you can recreate, and generate pay-as-you-go—no subscription.",
     "image": "/hero/pika-22.jpg"
   },
-  "overview": "Pika 2.2 in MaxVideoAI: silent, stylized 5–8s clips at 720p/1080p, from text or a single image, across 1:1, 16:9 or 9:16. Ideal for anime, comic, pixel and playful 3D looks built for social feeds.",
+  "overview": "Pika 2.2 in MaxVideoAI: silent, stylized 5–10s clips at 720p/1080p, from text or a single image, across 1:1, 16:9 or 9:16. Ideal for anime, comic, pixel and playful 3D looks built for social feeds.",
   "hero": {
     "title": "Pika Labs 2.2 – Text-to-Video & Image-to-Video",
-    "intro": "Pika 2.2 – Stylized AI Video for Social-First Clips (5–8s, 720p/1080p, No Audio)",
-    "badge": "720p/1080p · 5–8s · Text or Image input · No audio",
+    "intro": "Pika 2.2 – Stylized AI Video for Social-First Clips (5–10s, up to 1080p)",
+    "badge": "Up to 1080p · 5–10s · Text or Image input",
     "ctaPrimary": {
       "label": "Start generating with Pika 2.2",
       "href": "/app?engine=pika-text-to-video"
@@ -34,7 +34,7 @@
   },
   "technicalOverviewTitle": "Technical overview",
   "technicalOverview": [
-    { "label": "Duration", "body": "5 s or 8 s per render" },
+    { "label": "Duration", "body": "5 s or 10 s per render" },
     { "label": "Resolution", "body": "720p or 1080p" },
     { "label": "Aspect ratios", "body": "1:1, 16:9, 9:16" },
     { "label": "Inputs", "body": "Text → Video; Image → Video from a single still" },
@@ -47,14 +47,14 @@
   ],
   "promptStructure": {
     "title": "Text-to-Video with Pika 2.2",
-    "quote": "Stylized [style] animation of [subject] in [environment]. Camera [movement] while [key action] happens over [5/8] seconds, [aspect ratio], with [effects]. No audio.",
+    "quote": "Stylized [style] animation of [subject] in [environment]. Camera [movement] while [key action] happens over [5/10] seconds, [aspect ratio], with [effects]. No audio.",
     "description": "Write prompts like a stylized animation brief: subject + style, environment, motion, effects, framing and duration.",
     "steps": [
       "Subject & style (anime, pixel-art, comic, cel-shaded 3D, etc.)",
       "Environment (one scene)",
       "Motion (subject, camera, background elements)",
       "Effects (trails, glitch, smear frames, particles)",
-      "Framing & duration (close/medium/wide; 5 or 8 seconds; aspect ratio)"
+      "Framing & duration (close/medium/wide; 5 or 10 seconds; aspect ratio)"
     ]
   },
   "tips": {
@@ -73,8 +73,8 @@
   },
   "prompts": [
     {
-      "title": "Anime courier rooftop run (8s, 9:16)",
-      "prompt": "Anime-style vertical shot of a teen courier sprinting across neon rooftops at dusk, 8s, 9:16. Camera tracks beside them as holographic billboards whoosh past, smear-frame trails on fast limbs, soft parallax clouds, no logos, no on-screen text."
+      "title": "Anime courier rooftop run (10s, 9:16)",
+      "prompt": "Anime-style vertical shot of a teen courier sprinting across neon rooftops at dusk, 10s, 9:16. Camera tracks beside them as holographic billboards whoosh past, smear-frame trails on fast limbs, soft parallax clouds, no logos, no on-screen text."
     },
     {
       "title": "Pixel wizard loop (5s, 1:1)",
@@ -83,14 +83,14 @@
   ],
   "faqs": [
     { "q": "Does Pika 2.2 generate audio?", "a": "No. Pika 2.2 in MaxVideoAI always outputs silent clips. Add sound in post or use an audio-capable engine when needed." },
-    { "q": "Which duration should I use: 5 or 8 seconds?", "a": "5s for punchy hooks and quick loops; 8s when you need a bit more room for build-up or parallax." },
+    { "q": "Which duration should I use: 5 or 10 seconds?", "a": "5s for punchy hooks and quick loops; 10s when you need a bit more room for build-up or parallax." },
     { "q": "Can Pika 2.2 do vertical video?", "a": "Yes. Choose 9:16 for TikTok, Reels, Shorts and Stories; keep the subject centered for safe crops." },
     { "q": "How do seeds and negative prompts help?", "a": "Reuse a seed to keep iterations related; use negative prompts to block text/logos/extra characters/watermarks." },
     { "q": "When should I use another engine instead?", "a": "For photoreal people/products or native audio, use Sora 2 or Veo 3.1; for sound-ready short clips, consider Wan 2.5." }
   ],
   "custom": {
-    "heroDesc1": "Use Pika 2.2 to turn short prompts or single images into bold, stylized animations built for TikTok, Reels and gaming content.",
-    "heroDesc2": "Pick 5 or 8 seconds, choose 1:1, 16:9 or 9:16, start from text or a reference frame, and get a silent clip ready for your edit.",
+    "heroDesc1": "Use Pika 2.2 to generate stylized 5s or 10s clips in up to 1080p from text or a single reference image. See the price per clip before you run, then recreate proven examples in one click.",
+    "heroDesc2": "Pick 5 or 10 seconds, choose 1:1, 16:9 or 9:16, start from text or a reference frame, and get a silent clip ready for your edit.",
     "whyTitle": "Why Pika 2.2 is powerful inside MaxVideoAI",
     "heroHighlights": [
       "Text → Video and Image → Video in a single engine card",
@@ -117,18 +117,18 @@
     "whatFlowSteps": [
       "1. Pick Pika 2.2 as the engine.",
       "2. Choose Text → Video or Image → Video.",
-      "3. Set duration (5/8 s), aspect ratio and resolution (720p or 1080p).",
+      "3. Set duration (5/10 s), aspect ratio and resolution (720p or 1080p).",
       "4. (Optional) Set a seed and add a negative prompt.",
       "5. Paste a lively, style-driven prompt.",
       "6. See the price per clip before you run the job."
     ],
-    "specTitle": "Real Specs – Pika 2.2 in MaxVideoAI (720p/1080p, 5–8s)",
+    "specTitle": "Real Specs – Pika 2.2 in MaxVideoAI (720p/1080p, 5–10s)",
     "specNote": "These specs describe Pika 2.2 exactly as you can use it today via MaxVideoAI.",
     "specSections": [
       {
         "title": "Duration & Output",
         "items": [
-          "Durations: 5 s and 8 s",
+          "Durations: 5 s and 10 s",
           "Output: 720p (1280×720) or 1080p (1920×1080)",
           "Tuned for short, high-impact clips"
         ]
@@ -145,7 +145,7 @@
         "title": "Inputs & File Types",
         "items": [
           "Text prompts with punchy, visual language",
-          "Reference image: PNG/JPG/JPEG/WebP/GIF/AVIF; ~25 MB; single still animated into 5–8 s",
+          "Reference image: PNG/JPG/JPEG/WebP/GIF/AVIF; ~25 MB; single still animated into 5–10 s",
           "No video input; start from stills or text"
         ]
       },
@@ -161,8 +161,8 @@
         "items": [
           "Per-second model in MaxVideoAI",
           "Example: perSecondCents720 = 4; perSecondCents1080 = 9",
-          "720p (~$0.04/s): 5s ≈ $0.20; 8s ≈ $0.32",
-          "1080p (~$0.09/s): 5s ≈ $0.45; 8s ≈ $0.72",
+          "720p (~$0.04/s): 5s ≈ $0.20; 10s ≈ $0.40",
+          "1080p (~$0.09/s): 5s ≈ $0.45; 10s ≈ $0.90",
           "Wallet shared across engines; compare live price before running"
         ]
       }
@@ -180,9 +180,9 @@
       "Environment (single location)",
       "Motion (subject/camera/background)",
       "Effects (glitch, trails, particles, smear frames)",
-      "Framing & duration (5/8 s; aspect ratio)"
+      "Framing & duration (5/10 s; aspect ratio)"
     ],
-    "promptSkeleton": "Stylized [style] animation of [subject] in [environment]. Camera [movement] while [key action] happens over [5/8] seconds, [aspect ratio], with [effects]. No audio.",
+    "promptSkeleton": "Stylized [style] animation of [subject] in [environment]. Camera [movement] while [key action] happens over [5/10] seconds, [aspect ratio], with [effects]. No audio.",
     "promptSkeletonNote": "Keep wording concise and swap style/subject to A/B variants quickly.",
     "imageTitle": "Image-to-Video Flow with Pika 2.2 (+ Nano Banana)",
     "imageIntro": "Lock visual style with a still, then iterate only on motion and effects.",
@@ -204,7 +204,7 @@
       "Make the last frame flow into the first (orbit, bounce, scrolling parallax)",
       "Keep camera paths simple (pan/orbit/dolly) vs chaotic moves",
       "One subject, one environment, one main effect per clip",
-      "Use 5s for punchy moments; 8s for a bit of build-up/payoff",
+      "Use 5s for punchy moments; 10s for a bit of build-up/payoff",
       "Chain loops in your timeline for longer animations or carousels"
     ],
     "demoTitle": "Demo: One Prompt for Pika 2.2",
@@ -229,7 +229,7 @@
       "Seeds + negative prompts help refine motion and clean artifacts"
     ],
     "boundaries": [
-      "5–8 second focus; not for long narratives",
+      "5–10 second focus; not for long narratives",
       "Better at stylized motion than strict photorealism",
       "Small text/UI may be soft; overlay critical copy in post",
       "No multi-image sequencing; for multi-beat mini-films, use Sora or Veo and keep Pika for stylized inserts"
@@ -256,7 +256,7 @@
     "faqTitle": "FAQ – Pika 2.2 in MaxVideoAI",
     "faqs": [
       { "q": "Does Pika 2.2 generate audio?", "a": "No. Clips are silent; add your own soundtrack or use an audio-capable engine." },
-      { "q": "Which duration should I pick?", "a": "5s for hooks/loops; 8s for a bit more narrative or parallax." },
+      { "q": "Which duration should I pick?", "a": "5s for hooks/loops; 10s for a bit more narrative or parallax." },
       { "q": "Can I do vertical video?", "a": "Yes, select 9:16 and keep the subject centered for safe crops." },
       { "q": "How do seeds and negatives help?", "a": "Seeds keep iterations related; negative prompts block text/logos/extra characters/watermarks." },
       { "q": "When to switch engines?", "a": "Use Sora/Veo for photoreal or audio; Wan 2.5 for sound-ready; Sora 2 Pro/Veo 3.1 for high-end hero shots." }

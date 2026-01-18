@@ -24,6 +24,25 @@ test('Pika 2.2 accepts 5 second duration', () => {
   assert.deepEqual(result, OK);
 });
 
+test('Pika 2.2 accepts 10 second duration', () => {
+  const result = validateRequest('pika-text-to-video', 't2v', {
+    duration: 10,
+    resolution: '720p',
+    aspect_ratio: '16:9',
+  });
+  assert.deepEqual(result, OK);
+});
+
+test('Pika 2.2 rejects 8 second duration', () => {
+  const result = validateRequest('pika-text-to-video', 't2v', {
+    duration: 8,
+    resolution: '720p',
+    aspect_ratio: '16:9',
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.error?.field, 'duration');
+});
+
 test('Sora image-to-video only allows 4/8/12 seconds', () => {
   const invalid = validateRequest('sora-2', 'i2v', {
     duration: 6,

@@ -189,7 +189,7 @@ const COMPARE_ENGINE_META: Record<
   'ltx-2-fast': { maxDuration: '6–20s', audio: 'Yes', bestFor: 'Rapid social clips' },
   'ltx-2': { maxDuration: '6–10s', audio: 'Yes', bestFor: 'Premium product stories' },
   'kling-2-6-pro': { maxDuration: '5–10s', audio: 'Yes', bestFor: 'Cinematic dialogue' },
-  'pika-text-to-video': { maxDuration: '3–6s', audio: 'No', bestFor: 'Prompts or image loops' },
+  'pika-text-to-video': { maxDuration: '5–10s', audio: 'No', bestFor: 'Prompts or image loops' },
   'minimax-hailuo-02-text': { maxDuration: '6–8s', audio: 'No', bestFor: 'Stylised text/image motion' },
 };
 

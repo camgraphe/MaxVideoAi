@@ -163,7 +163,7 @@ Encourage iterative prompting and comparing with adjacent engines in the same UI
 - **Veo 3.1** — t2v/i2v; 4/6/8s; 720p/1080p; 16:9/9:16/1:1; audio toggle; seed + extend; image ≤10 MB; ~$0.40/s audio on, ~$0.20/s off.  
 - **Veo 3.1 Fast** — t2v/i2v; 4/6/8s; 720p/1080p; audio toggle; image ≤10 MB; ~$0.15/s audio on, ~$0.10/s off.  
 - **Veo 3.1 First/Last** — i2v/i2i with first+last frames; 4/6/8s; 720p/1080p; audio toggle; image ≤12 MB; ~$0.40/s audio on, ~$0.20/s off.  
-- **Pika 2.2** — t2v/i2v; 5/8s; 720p/1080p; multiple aspect ratios; audio off; image ≤25 MB; ~$0.04/s @720p, ~$0.09/s @1080p; seed + negative prompt.  
+- **Pika 2.2** — t2v/i2v; 5/10s; 720p/1080p; multiple aspect ratios; audio off; image ≤25 MB; ~$0.04/s @720p, ~$0.09/s @1080p; seed + negative prompt.  
 - **Kling 2.5 Turbo** — t2v/i2v/i2i; 5/10s; 720p/1080p; 16:9/9:16/1:1; audio off; image ≤25 MB; ~$0.07/s (≈$0.35 per 5s); supports CFG.  
 - **Wan 2.5** — t2v/i2v; 5/10s; 480p/720p/1080p; 16:9/9:16/1:1; audio on + optional audio URL; image ≤25 MB; ~$0.05/0.10/0.15 per s by resolution; seed optional.  
 - **MiniMax Hailuo 02** — t2v/i2v; 6/10s; 512p/768p; 16:9/9:16/1:1; audio off; image ≤20 MB; optional end frame; ~$0.045/s (≈$0.24 for 6s).  
