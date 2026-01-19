@@ -146,7 +146,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-2">
+      <section className="grid grid-gap lg:grid-cols-2">
         <SectionCard title="Wallet top-ups" description={`Amounts loaded during the past ${describeRange(metrics.range.label)}.`}>
           <MiniBarChart
             ariaLabel="Daily wallet top-ups"
@@ -248,7 +248,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
       </SectionCard>
 
       <SectionCard title="User behavior & funnel" description="Conversion funnels and heavy-spender overview.">
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid grid-gap lg:grid-cols-2">
           <div className="space-y-4">
             <MetricList
               items={[

@@ -614,8 +614,8 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         </div>
       </section>
 
-      <section className="border-t border-hairline bg-white/90 px-4 py-8 text-text-secondary sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 text-center">
+      <section className="border-t border-hairline bg-white/90 text-text-secondary">
+        <div className="container-page flex max-w-6xl flex-col items-center gap-4 py-8 text-center">
           <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
             {worksWith.label}
           </span>
@@ -628,8 +628,8 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         </div>
       </section>
 
-      <section className="border-t border-hairline bg-white px-4 text-left sm:px-6 lg:px-8 section">
-        <div className="mx-auto flex max-w-7xl flex-col-reverse items-center gap-12 text-center lg:flex-row lg:items-center lg:text-left">
+      <section className="border-t border-hairline bg-white text-left section">
+        <div className="container-page flex max-w-7xl flex-col-reverse items-center gap-12 text-center lg:flex-row lg:items-center lg:text-left">
           <div className="w-full sm:max-w-[62ch] space-y-5 lg:w-[40%]">
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{heroScreenshot.title}</h2>
             <p className="text-sm text-text-secondary sm:text-base">{heroScreenshot.body}</p>

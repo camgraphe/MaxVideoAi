@@ -71,7 +71,7 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
         />
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-2">
+      <section className="grid grid-gap lg:grid-cols-2">
         {wallet ? <ManualCreditForm userId={userId} /> : null}
         <ImpersonationCard userId={userId} profile={profile} serviceRoleConfigured={overview.serviceRoleConfigured} />
       </section>

@@ -721,7 +721,7 @@ export default function DashboardPage() {
       <div className="flex flex-1 min-w-0">
         <AppSidebar />
         <main className="flex-1 min-w-0 overflow-x-hidden overflow-y-auto p-5 lg:p-7">
-          <div className="grid gap-6 lg:grid-cols-12">
+          <div className="grid grid-gap lg:grid-cols-12">
             <div className="min-w-0 space-y-6 lg:col-span-8">
               <CreateHero
                 copy={copy}
@@ -899,7 +899,7 @@ function CreateHero({
         </div>
       </div>
 
-      <div className="mt-5 grid gap-6 lg:grid-cols-2">
+      <div className="mt-5 grid grid-gap lg:grid-cols-2">
         <CreateVideoCard
           copy={copy}
           engines={videoEngines}

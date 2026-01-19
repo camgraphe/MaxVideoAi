@@ -407,7 +407,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
         </div>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
+      <div className="grid grid-gap lg:grid-cols-[320px_minmax(0,1fr)]">
         <aside className="space-y-3">
           <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">Playlists</h2>
           <div className="space-y-2">
