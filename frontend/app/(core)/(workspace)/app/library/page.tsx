@@ -4,12 +4,11 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import useSWR from 'swr';
-import Link from 'next/link';
 import deepmerge from 'deepmerge';
 import { Download, Trash2 } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { ButtonLink } from '@/components/ui/Button';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { authFetch } from '@/lib/authFetch';
 
@@ -208,51 +207,59 @@ export default function LibraryPage() {
                 aria-label="Library image filters"
                 className="flex w-full overflow-hidden rounded-full border border-border bg-white/70 text-xs font-semibold text-text-secondary sm:w-auto"
               >
-                <button
+                <Button
                   type="button"
                   role="tab"
+                  variant="ghost"
+                  size="sm"
                   aria-selected={activeSource === 'all'}
                   onClick={() => {
                     setActiveSource('all');
                     setDeleteError(null);
                     setDeletingId(null);
                   }}
-                  className={`flex-1 px-4 py-2 transition sm:flex-none ${
-                    activeSource === 'all' ? 'bg-brand text-on-brand' : 'hover:bg-white'
+                  className={`flex-1 rounded-none px-4 py-2 sm:flex-none ${
+                    activeSource === 'all' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-white'
                   }`}
                 >
                   {copy.tabs.all}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   role="tab"
+                  variant="ghost"
+                  size="sm"
                   aria-selected={activeSource === 'upload'}
                   onClick={() => {
                     setActiveSource('upload');
                     setDeleteError(null);
                     setDeletingId(null);
                   }}
-                  className={`flex-1 px-4 py-2 transition sm:flex-none ${
-                    activeSource === 'upload' ? 'bg-brand text-on-brand' : 'hover:bg-white'
+                  className={`flex-1 rounded-none px-4 py-2 sm:flex-none ${
+                    activeSource === 'upload' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-white'
                   }`}
                 >
                   {copy.tabs.upload}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   role="tab"
+                  variant="ghost"
+                  size="sm"
                   aria-selected={activeSource === 'generated'}
                   onClick={() => {
                     setActiveSource('generated');
                     setDeleteError(null);
                     setDeletingId(null);
                   }}
-                  className={`flex-1 px-4 py-2 transition sm:flex-none ${
-                    activeSource === 'generated' ? 'bg-brand text-on-brand' : 'hover:bg-white'
+                  className={`flex-1 rounded-none px-4 py-2 sm:flex-none ${
+                    activeSource === 'generated'
+                      ? 'bg-brand text-on-brand hover:bg-brand'
+                      : 'text-text-secondary hover:bg-white'
                   }`}
                 >
                   {copy.tabs.generated}
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -296,29 +303,34 @@ export default function LibraryPage() {
                       {asset.createdAt ? <p className="text-text-muted">{new Date(asset.createdAt).toLocaleString()}</p> : null}
                       <div className="flex items-center gap-2">
                         {asset.jobId ? (
-                          <Link
+                          <ButtonLink
                             href={
                               asset.jobId.startsWith('img_')
                                 ? `/app/image?job=${encodeURIComponent(asset.jobId)}`
                                 : `/app?job=${encodeURIComponent(asset.jobId)}`
                             }
-                            className="flex flex-1 items-center justify-center gap-1 rounded-input border border-border/70 bg-white py-1 text-[11px] font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 gap-1 border-border/70 bg-white py-1 text-[11px] text-text-secondary hover:border-text-muted hover:text-text-primary"
                             aria-label={copy.assets.useSettingsButton}
                           >
                             <span>{copy.assets.useSettingsButton}</span>
-                          </Link>
+                          </ButtonLink>
                         ) : null}
-                        <a
+                        <ButtonLink
+                          linkComponent="a"
                           href={asset.url}
                           download
                           target="_blank"
                           rel="noreferrer"
-                          className="flex flex-1 items-center justify-center gap-1 rounded-input border border-border/70 bg-white py-1 text-[11px] font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 gap-1 border-border/70 bg-white py-1 text-[11px] text-text-secondary hover:border-text-muted hover:text-text-primary"
                           aria-label={`${copy.assets.downloadButton} ${asset.url.split('/').pop() ?? copy.assets.assetFallback}`}
                         >
                           <Download className="h-3.5 w-3.5" aria-hidden />
                           <span>{copy.assets.downloadButton}</span>
-                        </a>
+                        </ButtonLink>
                         <button
                           type="button"
                           onClick={() => handleDeleteAsset(asset.id)}

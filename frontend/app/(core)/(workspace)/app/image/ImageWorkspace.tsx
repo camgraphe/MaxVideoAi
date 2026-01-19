@@ -2004,13 +2004,15 @@ function ImageLibraryModal({
             <h2 className="text-lg font-semibold text-text-primary">{copy.modal.title}</h2>
             <p className="text-xs text-text-secondary">{copy.modal.description}</p>
           </div>
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={onClose}
-            className="self-start rounded-full border border-border px-3 py-1 text-sm font-medium text-text-secondary hover:bg-bg sm:self-auto"
+            className="self-start rounded-full border-border px-3 text-sm font-medium text-text-secondary hover:bg-bg sm:self-auto"
           >
             {copy.modal.close}
-          </button>
+          </Button>
         </div>
         <div className="border-b border-border px-4 py-3 sm:px-6">
           <div
@@ -2018,35 +2020,48 @@ function ImageLibraryModal({
             aria-label="Library image filters"
             className="flex w-full overflow-hidden rounded-full border border-border bg-white/70 text-xs font-semibold text-text-secondary"
           >
-            <button
+            <Button
               type="button"
               role="tab"
+              variant="ghost"
+              size="sm"
               aria-selected={activeSource === 'all'}
               onClick={() => setActiveSource('all')}
-              className={`flex-1 px-4 py-2 transition ${activeSource === 'all' ? 'bg-brand text-on-brand' : 'hover:bg-white'}`}
+              className={clsx(
+                'flex-1 rounded-none px-4 py-2',
+                activeSource === 'all' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-white'
+              )}
             >
               {copy.tabs.all}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               role="tab"
+              variant="ghost"
+              size="sm"
               aria-selected={activeSource === 'upload'}
               onClick={() => setActiveSource('upload')}
-              className={`flex-1 px-4 py-2 transition ${activeSource === 'upload' ? 'bg-brand text-on-brand' : 'hover:bg-white'}`}
+              className={clsx(
+                'flex-1 rounded-none px-4 py-2',
+                activeSource === 'upload' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-white'
+              )}
             >
               {copy.tabs.upload}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               role="tab"
+              variant="ghost"
+              size="sm"
               aria-selected={activeSource === 'generated'}
               onClick={() => setActiveSource('generated')}
-              className={`flex-1 px-4 py-2 transition ${
-                activeSource === 'generated' ? 'bg-brand text-on-brand' : 'hover:bg-white'
-              }`}
+              className={clsx(
+                'flex-1 rounded-none px-4 py-2',
+                activeSource === 'generated' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-white'
+              )}
             >
               {copy.tabs.generated}
-            </button>
+            </Button>
           </div>
         </div>
         <div className="max-h-[70vh] overflow-y-auto px-4 py-4 sm:px-6">

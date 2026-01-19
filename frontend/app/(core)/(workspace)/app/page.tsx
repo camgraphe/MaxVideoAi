@@ -254,20 +254,24 @@ function AssetLibraryModal({
             <p className="text-sm text-text-secondary">{fieldLabel}</p>
           </div>
           <div className="flex items-center gap-2 self-end sm:self-auto">
-            <button
+            <Button
               type="button"
-              className="rounded-input border border-border px-3 py-1.5 text-sm text-text-secondary transition hover:border-text-muted hover:bg-surface-2"
+              variant="outline"
+              size="sm"
+              className="border-border px-3 text-sm text-text-secondary hover:text-text-primary"
               onClick={() => onRefresh(source)}
             >
               {copy.refresh}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              className="rounded-input border border-border px-3 py-1.5 text-sm text-text-secondary transition hover:border-text-muted hover:bg-surface-2"
+              variant="outline"
+              size="sm"
+              className="border-border px-3 text-sm text-text-secondary hover:text-text-primary"
               onClick={onClose}
             >
               {copy.close}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -276,33 +280,48 @@ function AssetLibraryModal({
           aria-label="Library image filters"
           className="mt-4 flex w-full overflow-hidden rounded-full border border-border bg-white/70 text-xs font-semibold text-text-secondary"
         >
-          <button
+          <Button
             type="button"
             role="tab"
+            variant="ghost"
+            size="sm"
             aria-selected={source === 'all'}
             onClick={() => onSourceChange('all')}
-            className={`flex-1 px-4 py-2 transition ${source === 'all' ? 'bg-brand text-on-brand' : 'hover:bg-white'}`}
+            className={clsx(
+              'flex-1 rounded-none px-4 py-2',
+              source === 'all' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-white'
+            )}
           >
             {(copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).tabs.all}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             role="tab"
+            variant="ghost"
+            size="sm"
             aria-selected={source === 'upload'}
             onClick={() => onSourceChange('upload')}
-            className={`flex-1 px-4 py-2 transition ${source === 'upload' ? 'bg-brand text-on-brand' : 'hover:bg-white'}`}
+            className={clsx(
+              'flex-1 rounded-none px-4 py-2',
+              source === 'upload' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-white'
+            )}
           >
             {(copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).tabs.upload}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             role="tab"
+            variant="ghost"
+            size="sm"
             aria-selected={source === 'generated'}
             onClick={() => onSourceChange('generated')}
-            className={`flex-1 px-4 py-2 transition ${source === 'generated' ? 'bg-brand text-on-brand' : 'hover:bg-white'}`}
+            className={clsx(
+              'flex-1 rounded-none px-4 py-2',
+              source === 'generated' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-white'
+            )}
           >
             {(copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).tabs.generated}
-          </button>
+          </Button>
         </div>
 
         <div className="mt-4 max-h-[60vh] overflow-y-auto">
@@ -365,17 +384,19 @@ function AssetLibraryModal({
                         >
                           {isDeleting ? 'Deleting…' : 'Delete'}
                         </button>
-                        <button
+                        <Button
                           type="button"
-                          className={clsx(
-                            'rounded-input border border-brand bg-surface-2 px-3 py-1 text-[12px] font-semibold uppercase tracking-micro text-brand transition',
-                            isDeleting ? 'opacity-60' : 'hover:bg-surface-3'
-                          )}
                           onClick={() => onSelect(asset)}
                           disabled={isDeleting}
+                          variant="outline"
+                          size="sm"
+                          className={clsx(
+                            'border-brand bg-surface-2 px-3 py-1 text-[12px] uppercase tracking-micro text-brand hover:border-brand',
+                            isDeleting ? 'opacity-60' : 'hover:bg-surface-3'
+                          )}
                         >
                           Use
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   </div>
