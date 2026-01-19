@@ -38,7 +38,7 @@ function statusBadge(status?: string | null) {
   if (normalized === 'completed') return <span className={clsx(base, 'border-success-border bg-success-bg text-success')}>Completed</span>;
   if (normalized === 'failed') return <span className={clsx(base, 'border-error-border bg-error-bg text-error')}>Failed</span>;
   if (normalized === 'running' || normalized === 'queued') return <span className={clsx(base, 'border-warning-border bg-warning-bg text-warning')}>{status}</span>;
-  return <span className={clsx(base, 'border-slate-200 bg-slate-50 text-slate-700')}>{status}</span>;
+  return <span className={clsx(base, 'border-info-border bg-info-bg text-info')}>{status}</span>;
 }
 
 export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }: JobAuditTableProps) {
@@ -267,7 +267,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
             'rounded-md border px-3 py-2 text-sm',
             statusVariant === 'success' && 'border-success-border bg-success-bg text-success',
             statusVariant === 'error' && 'border-error-border bg-error-bg text-error',
-            statusVariant === 'info' && 'border-slate-200 bg-slate-50 text-slate-700'
+            statusVariant === 'info' && 'border-info-border bg-info-bg text-info'
           )}
         >
           {statusMessage}

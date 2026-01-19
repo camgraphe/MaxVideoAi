@@ -197,7 +197,7 @@ export default function AdminUsersPage() {
       )}
 
       {data?.pagination && data?.users ? (
-        <div className="flex items-center justify-between text-xs text-slate-400">
+        <div className="flex items-center justify-between text-xs text-text-muted">
           <span>
             Page {data.pagination.page} · {data.pagination.perPage} rows
           </span>

@@ -45,7 +45,7 @@ const TYPE_CLASS: Record<AdminTransactionRecord['type'], string> = {
   refund: 'bg-success-bg text-success border-success-border',
   topup: 'bg-info-bg text-info border-info-border',
   discount: 'bg-purple-50 text-purple-700 border-purple-200',
-  tax: 'bg-slate-50 text-slate-700 border-slate-200',
+  tax: 'bg-info-bg text-info border-info-border',
 };
 
 export function AdminTransactionTable({ initialTransactions }: AdminTransactionTableProps) {
@@ -137,7 +137,7 @@ export function AdminTransactionTable({ initialTransactions }: AdminTransactionT
             'rounded-md border px-3 py-2 text-sm',
             status.variant === 'success' && 'border-success-border bg-success-bg text-success',
             status.variant === 'error' && 'border-error-border bg-error-bg text-error',
-            status.variant === 'info' && 'border-slate-200 bg-slate-50 text-slate-700'
+            status.variant === 'info' && 'border-info-border bg-info-bg text-info'
           )}
         >
           {status.message}
