@@ -1720,7 +1720,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                   ) : null}
 
                   {statusMessage ? (
-                    <p className="rounded-card border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                    <p className="rounded-card border border-success-border bg-success-bg px-3 py-2 text-sm text-success">
                       {statusMessage}
                     </p>
                   ) : null}

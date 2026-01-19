@@ -222,10 +222,10 @@ export function HomepageVideoManager({ initialHero }: HomepageVideoManagerProps)
                     <p className="text-base font-semibold text-text-primary">{slot.title || 'Untitled slot'}</p>
                   </div>
                   {slot.feedback ? (
-                    <span className="text-xs font-semibold text-emerald-600">{slot.feedback}</span>
+                    <span className="text-xs font-semibold text-success">{slot.feedback}</span>
                   ) : null}
                   {slot.error ? (
-                    <span className="text-xs font-semibold text-rose-600">{slot.error}</span>
+                    <span className="text-xs font-semibold text-error">{slot.error}</span>
                   ) : null}
                 </div>
                 <div className="relative overflow-hidden rounded-card border border-hairline bg-black" style={{ aspectRatio: '16 / 9' }}>
@@ -307,7 +307,7 @@ export function HomepageVideoManager({ initialHero }: HomepageVideoManagerProps)
                       variant="outline"
                       onClick={() => handleClearVideo(slot)}
                       disabled={slot.saving || !slot.draftVideoId}
-                      className="border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-100 hover:text-rose-600"
+                      className="border-error-border bg-error-bg px-3 py-2 text-sm font-semibold text-error hover:bg-error-bg hover:text-error"
                     >
                       Clear video
                     </Button>
@@ -319,7 +319,7 @@ export function HomepageVideoManager({ initialHero }: HomepageVideoManagerProps)
                       {typeof video.durationSec === 'number' ? ` • ${video.durationSec}s` : ''}
                     </p>
                   ) : slot.videoId ? (
-                    <p className="text-xs text-rose-600">Failed to load preview for {slot.videoId}</p>
+                    <p className="text-xs text-error">Failed to load preview for {slot.videoId}</p>
                   ) : null}
                 </div>
               </article>

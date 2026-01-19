@@ -117,7 +117,7 @@ export default function AdminLegalPage() {
       {isLoading ? (
         <div className="rounded-xl border border-hairline bg-surface p-6 text-sm text-text-secondary shadow-card">Loading…</div>
       ) : error ? (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600">
+        <div className="rounded-xl border border-error-border bg-error-bg p-4 text-sm text-error">
           {error.message || 'Failed to load legal documents.'}
         </div>
       ) : (

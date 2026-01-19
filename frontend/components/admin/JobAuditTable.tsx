@@ -35,9 +35,9 @@ function statusBadge(status?: string | null) {
   if (!status) return null;
   const normalized = status.toLowerCase();
   const base = 'inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold uppercase tracking-micro';
-  if (normalized === 'completed') return <span className={clsx(base, 'border-green-200 bg-green-50 text-green-700')}>Completed</span>;
-  if (normalized === 'failed') return <span className={clsx(base, 'border-red-200 bg-red-50 text-red-700')}>Failed</span>;
-  if (normalized === 'running' || normalized === 'queued') return <span className={clsx(base, 'border-amber-200 bg-amber-50 text-amber-700')}>{status}</span>;
+  if (normalized === 'completed') return <span className={clsx(base, 'border-success-border bg-success-bg text-success')}>Completed</span>;
+  if (normalized === 'failed') return <span className={clsx(base, 'border-error-border bg-error-bg text-error')}>Failed</span>;
+  if (normalized === 'running' || normalized === 'queued') return <span className={clsx(base, 'border-warning-border bg-warning-bg text-warning')}>{status}</span>;
   return <span className={clsx(base, 'border-slate-200 bg-slate-50 text-slate-700')}>{status}</span>;
 }
 
@@ -265,8 +265,8 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
         <div
           className={clsx(
             'rounded-md border px-3 py-2 text-sm',
-            statusVariant === 'success' && 'border-green-200 bg-green-50 text-green-800',
-            statusVariant === 'error' && 'border-red-200 bg-red-50 text-red-700',
+            statusVariant === 'success' && 'border-success-border bg-success-bg text-success',
+            statusVariant === 'error' && 'border-error-border bg-error-bg text-error',
             statusVariant === 'info' && 'border-slate-200 bg-slate-50 text-slate-700'
           )}
         >
@@ -299,11 +299,11 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
             ) : (
               sortedJobs.map((job) => {
                 const paymentClass = job.paymentOk
-                  ? 'border-green-200 bg-green-50 text-green-700'
-                  : 'border-red-200 bg-red-50 text-red-700';
+                  ? 'border-success-border bg-success-bg text-success'
+                  : 'border-error-border bg-error-bg text-error';
                 const falClass = job.falOk
-                  ? 'border-green-200 bg-green-50 text-green-700'
-                  : 'border-red-200 bg-red-50 text-red-700';
+                  ? 'border-success-border bg-success-bg text-success'
+                  : 'border-error-border bg-error-bg text-error';
 
                 return (
                   <tr key={job.jobId} className="align-top">
@@ -323,7 +323,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
                         ) : null}
                         {job.archived ? (
                           <div className="flex flex-col gap-2">
-                            <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 font-semibold uppercase tracking-micro text-amber-700">
+                            <span className="inline-flex items-center rounded-full border border-warning-border bg-warning-bg px-2 py-0.5 font-semibold uppercase tracking-micro text-warning">
                               Auto-archived
                             </span>
                             <Button
@@ -392,10 +392,10 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
                           className={clsx(
                             'inline-flex items-center rounded-full border px-2 py-0.5 font-semibold uppercase tracking-micro',
                             job.hasVideo
-                              ? 'border-green-200 bg-green-50 text-green-700'
+                              ? 'border-success-border bg-success-bg text-success'
                               : job.isPlaceholderVideo
-                                ? 'border-amber-200 bg-amber-50 text-amber-700'
-                                : 'border-red-200 bg-red-50 text-red-700'
+                                ? 'border-warning-border bg-warning-bg text-warning'
+                                : 'border-error-border bg-error-bg text-error'
                           )}
                         >
                           {job.hasVideo ? 'Video ready' : job.isPlaceholderVideo ? 'Placeholder asset' : 'Missing video'}

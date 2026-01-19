@@ -146,7 +146,7 @@ function AnomaliesPanel({
                 <tr key={row.receiptId} className="border-t border-border/40 text-text-secondary">
                   <td className="py-2 font-mono text-xs">#{row.receiptId}</td>
                   <td className="py-2">{row.userId ?? '—'}</td>
-                  <td className="py-2 text-rose-600">{formatUsdCents(row.amountCents)}</td>
+                  <td className="py-2 text-error">{formatUsdCents(row.amountCents)}</td>
                   <td className="py-2 font-mono text-xs">{row.jobId ?? '—'}</td>
                   <td className="py-2">{formatDate(row.createdAt)}</td>
                 </tr>

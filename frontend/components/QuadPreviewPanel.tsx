@@ -318,9 +318,9 @@ export function QuadPreviewPanel({
                       </div>
                     )}
                     {showFailedOverlay && (
-                      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-1 rounded-input bg-red-50 px-3 text-center text-[10px] text-red-700">
-                        <span className="font-semibold uppercase tracking-micro text-red-600">Failed</span>
-                        {failureMessage && <span className="line-clamp-4 text-[10px] leading-tight text-red-700">{failureMessage}</span>}
+                      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-1 rounded-input bg-error-bg px-3 text-center text-[10px] text-error">
+                        <span className="font-semibold uppercase tracking-micro text-error">Failed</span>
+                        {failureMessage && <span className="line-clamp-4 text-[10px] leading-tight text-error">{failureMessage}</span>}
                       </div>
                     )}
                   </div>
@@ -368,7 +368,7 @@ export function QuadPreviewPanel({
                 className={clsx(
                   'flex flex-col overflow-hidden rounded-card border',
                   isFailed
-                    ? 'border-red-200 bg-red-50/60 shadow-card'
+                    ? 'border-error-border bg-error-bg shadow-card'
                     : isHero
                       ? 'border-brand shadow-lg'
                       : 'border-border bg-surface-glass-85 shadow-card'
@@ -378,7 +378,7 @@ export function QuadPreviewPanel({
                   className={clsx(
                     'flex items-center justify-between gap-2 border-b px-3 py-2 text-[11px] font-semibold uppercase tracking-micro',
                     isFailed
-                      ? 'border-red-200 bg-red-50 text-red-700'
+                      ? 'border-error-border bg-error-bg text-error'
                       : 'border-hairline bg-surface text-text-muted'
                   )}
                 >
@@ -437,9 +437,9 @@ export function QuadPreviewPanel({
                   </div>
                   <div className="absolute inset-0 z-10" data-quad-tile-root={tile.localKey} />
                   {tile.status === 'failed' ? (
-                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 bg-red-50/95 px-4 text-center text-[12px] text-red-700 backdrop-blur-sm">
-                      <span className="font-semibold uppercase tracking-micro text-red-600">Generation failed</span>
-                      <span className="text-[11px] leading-snug text-red-700">
+                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 bg-error-bg px-4 text-center text-[12px] text-error backdrop-blur-sm">
+                      <span className="font-semibold uppercase tracking-micro text-error">Generation failed</span>
+                      <span className="text-[11px] leading-snug text-error">
                         {failureMessage ??
                           'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'}
                       </span>
@@ -455,9 +455,9 @@ export function QuadPreviewPanel({
 
                 <div className="flex flex-col gap-2 border-t border-hairline bg-surface px-3 py-2 text-[12px] text-text-secondary">
                   {isFailed && (
-                    <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-left">
-                      <p className="text-[10px] font-semibold uppercase tracking-micro text-red-600">Refund note</p>
-                      <p className="mt-1 text-[11px] leading-snug text-red-700">
+                    <div className="rounded-md border border-error-border bg-error-bg px-3 py-2 text-left">
+                      <p className="text-[10px] font-semibold uppercase tracking-micro text-error">Refund note</p>
+                      <p className="mt-1 text-[11px] leading-snug text-error">
                         {failureMessage ??
                           'The service reported a failure without details. Try again. If it fails repeatedly, contact support with your request ID.'}
                       </p>

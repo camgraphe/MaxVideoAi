@@ -382,6 +382,8 @@ Note: `bg-placeholder` pour surfaces vides, `bg-skeleton` pour barres/shimmer.
 * `ui.infoBorder` - `rgba(37, 99, 235, 0.35)`
 * `ui.onInfo` - `#131A22`
 
+Note: usage UI = `text-success`, `bg-success-bg`, `border-success-border` (idem warning/error/info).
+
 #### Shadows
 
 * `ui.shadowCard` - `0 1px 2px rgba(16,24,40,.06), 0 6px 16px rgba(16,24,40,.06)`
@@ -521,6 +523,8 @@ Note: `bg-placeholder` pour surfaces vides, `bg-skeleton` pour barres/shimmer.
 * `ui.infoBg` - `rgba(96, 165, 250, 0.18)`
 * `ui.infoBorder` - `rgba(96, 165, 250, 0.40)`
 * `ui.onInfo` - `#F7F8FA`
+
+Note: usage UI = `text-success`, `bg-success-bg`, `border-success-border` (idem warning/error/info).
 
 #### Shadows
 
@@ -768,6 +772,9 @@ Objectif : rendre explicite le chemin de verite, pour eviter les divergences (ex
 | `ui.onInverse` | `--on-inverse` | `text-on-inverse` |
 | `ui.placeholder` | `--placeholder` | `bg-placeholder` |
 | `ui.skeleton` | `--skeleton` | `bg-skeleton` |
+| `ui.success` | `--success` | `text-success` |
+| `ui.successBg` | `--success-bg` | `bg-success-bg` |
+| `ui.successBorder` | `--success-border` | `border-success-border` |
 | `ui.border` | `--border` | `border-border` |
 | `ui.hairline` | `--hairline` | `border-hairline` |
 | `ui.accent` | `--accent` | `text-accent` / `bg-accent` selon usage |

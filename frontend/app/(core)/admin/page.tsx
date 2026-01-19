@@ -205,7 +205,7 @@ function HealthTile({
   variant?: 'ok' | 'warn';
   href?: string;
 }) {
-  const intentClasses = variant === 'warn' ? 'text-rose-600' : 'text-text-primary';
+  const intentClasses = variant === 'warn' ? 'text-error' : 'text-text-primary';
   const baseClasses = 'block rounded-2xl border border-border/70 bg-surface px-5 py-4';
   const interactiveClasses = href
     ? 'transition hover:-translate-y-0.5 hover:border-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'

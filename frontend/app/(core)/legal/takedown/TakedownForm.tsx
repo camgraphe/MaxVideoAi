@@ -179,8 +179,8 @@ export function TakedownForm({ copy }: { copy: TakedownFormCopy }) {
         />
       </div>
 
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
-      {status === 'success' ? <p className="text-sm text-green-600">{copy.success}</p> : null}
+      {error ? <p className="text-sm text-error">{error}</p> : null}
+      {status === 'success' ? <p className="text-sm text-success">{copy.success}</p> : null}
 
       <Button
         type="submit"

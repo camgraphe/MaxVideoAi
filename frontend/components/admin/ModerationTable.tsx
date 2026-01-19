@@ -464,13 +464,13 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
       </header>
 
       {playlistFetchError ? (
-        <div className="rounded-card border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+        <div className="rounded-card border border-warning-border bg-warning-bg px-4 py-3 text-sm text-warning">
           {playlistFetchError}
         </div>
       ) : null}
 
       {error ? (
-        <div className="rounded-card border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <div className="rounded-card border border-error-border bg-error-bg px-4 py-3 text-sm text-error">
           {error}
         </div>
       ) : null}
@@ -510,14 +510,14 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
                         className={clsx(
                           'absolute left-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro',
                           video.indexable
-                            ? 'bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200'
-                            : 'bg-amber-50 text-amber-600 ring-1 ring-amber-200'
+                            ? 'bg-success-bg text-success ring-1 ring-success-border'
+                            : 'bg-warning-bg text-warning ring-1 ring-warning-border'
                         )}
                       >
                         {video.indexable ? 'Indexable' : 'No index'}
                       </span>
                       {video.archived ? (
-                        <span className="absolute right-2 top-2 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-amber-700 ring-1 ring-amber-200">
+                        <span className="absolute right-2 top-2 rounded-full bg-warning-bg px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-warning ring-1 ring-warning-border">
                           Archived
                         </span>
                       ) : null}
@@ -559,7 +559,7 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
                         <span>Indexable: {video.indexable ? 'Yes' : 'No'}</span>
                         {video.status ? <span>Status: {video.status}</span> : null}
                         {video.message ? (
-                          <span className="text-amber-700">Fal message: {video.message}</span>
+                          <span className="text-warning">Fal message: {video.message}</span>
                         ) : null}
                       </div>
                     </td>
@@ -576,7 +576,7 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
                             type="button"
                             size="sm"
                             variant="outline"
-                            className="rounded-input border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-rose-700 hover:bg-rose-100 hover:text-rose-700"
+                            className="rounded-input border-error-border bg-error-bg px-3 py-1 text-xs font-semibold uppercase tracking-micro text-error hover:bg-error-bg hover:text-error"
                             onClick={() => updateVisibility(video, 'private', false)}
                             disabled={isPending}
                           >
@@ -589,8 +589,8 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
                             className={clsx(
                               'rounded-input px-3 py-1 text-xs font-semibold uppercase tracking-micro',
                               video.indexable
-                                ? 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100'
-                                : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                                ? 'border-warning-border bg-warning-bg text-warning hover:bg-warning-bg'
+                                : 'border-success-border bg-success-bg text-success hover:bg-success-bg'
                             )}
                             onClick={() => updateVisibility(video, 'public', !video.indexable)}
                             disabled={isPending}
@@ -603,7 +603,7 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
                           <Button
                             type="button"
                             size="sm"
-                            className="rounded-input bg-emerald-600 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-on-inverse hover:bg-emerald-500"
+                            className="rounded-input bg-success px-3 py-1 text-xs font-semibold uppercase tracking-micro text-on-inverse hover:bg-success"
                             onClick={() => updateVisibility(video, 'public', true)}
                             disabled={isPending}
                           >
@@ -633,7 +633,7 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
                             type="button"
                             size="sm"
                             variant="outline"
-                            className="rounded-input border-rose-300 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                            className="rounded-input border-error-border px-3 py-1 text-xs font-semibold uppercase tracking-micro text-error hover:bg-error-bg hover:text-error"
                             onClick={() => handleDeleteVideo(video)}
                             disabled={deletingId === video.id}
                           >
@@ -679,7 +679,7 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
                                 variant="outline"
                                 onClick={() => handleRemoveFromPlaylist(video, playlist.id)}
                                 disabled={isAssigningPlaylist}
-                                className="min-h-0 h-auto gap-1 rounded-pill border-border bg-bg px-2 py-1 text-[11px] text-text-secondary hover:border-rose-300 hover:text-rose-600"
+                                className="min-h-0 h-auto gap-1 rounded-pill border-border bg-bg px-2 py-1 text-[11px] text-text-secondary hover:border-error-border hover:text-error"
                               >
                                 {playlist.name}
                                 <span aria-hidden>×</span>
@@ -689,10 +689,10 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
                           </div>
                         ) : null}
                         {playlistMessage ? (
-                          <p className="text-[11px] text-emerald-600">{playlistMessage}</p>
+                          <p className="text-[11px] text-success">{playlistMessage}</p>
                         ) : null}
                         {playlistErrorMessage ? (
-                          <p className="text-[11px] text-rose-600">{playlistErrorMessage}</p>
+                          <p className="text-[11px] text-error">{playlistErrorMessage}</p>
                         ) : null}
                       </div>
                     </div>

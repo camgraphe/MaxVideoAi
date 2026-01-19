@@ -397,12 +397,12 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
       </header>
 
       {feedback ? (
-        <div className="rounded-card border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+        <div className="rounded-card border border-success-border bg-success-bg px-4 py-3 text-sm text-success">
           {feedback}
         </div>
       ) : null}
       {error ? (
-        <div className="rounded-card border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <div className="rounded-card border border-error-border bg-error-bg px-4 py-3 text-sm text-error">
           {error}
         </div>
       ) : null}
@@ -430,7 +430,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                 >
                   <div className="flex items-center justify-between gap-4 text-sm font-semibold">
                     <span>{playlist.name}</span>
-                    {playlist.dirty ? <span className="text-xs text-amber-600">Unsaved</span> : null}
+                    {playlist.dirty ? <span className="text-xs text-warning">Unsaved</span> : null}
                   </div>
                   <p className="mt-1 text-xs text-text-muted">
                     {playlist.slug} · {playlist.itemCount} item{playlist.itemCount === 1 ? '' : 's'}
@@ -458,7 +458,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                   type="button"
                   size="sm"
                   variant="outline"
-                  className="rounded-input border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-rose-700 hover:bg-rose-100 hover:text-rose-700"
+                  className="rounded-input border-error-border bg-error-bg px-3 py-1 text-xs font-semibold uppercase tracking-micro text-error hover:bg-error-bg hover:text-error"
                   onClick={() => handleDeletePlaylist(selectedPlaylist.id)}
                   disabled={isPending}
                 >
@@ -643,7 +643,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                       type="button"
                       size="sm"
                       variant="outline"
-                      className="rounded-input border-hairline px-2 py-1 text-rose-600 hover:border-rose-400 hover:text-rose-700"
+                      className="rounded-input border-hairline px-2 py-1 text-error hover:border-error-border hover:text-error"
                       onClick={() => handleRemoveVideo(item.videoId)}
                       disabled={isPending}
                     >

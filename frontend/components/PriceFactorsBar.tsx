@@ -198,7 +198,7 @@ export function PriceFactorsBar({ preflight, currency = 'USD', isLoading = false
           <span
             className={clsx(
               'font-medium',
-              item.amount < 0 ? 'text-emerald-600' : 'text-text-primary'
+              item.amount < 0 ? 'text-success' : 'text-text-primary'
             )}
           >
             {formatAmount(item.amount, formatter, item.emphasizeSign)}

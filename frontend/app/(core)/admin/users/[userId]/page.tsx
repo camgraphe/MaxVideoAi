@@ -53,7 +53,7 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
             </ProfileField>
           </dl>
         ) : (
-          <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+          <p className="mt-4 rounded-lg border border-warning-border bg-warning-bg p-3 text-sm text-warning">
             Supabase service role key is not configured. Add <code className="font-mono text-xs">SUPABASE_SERVICE_ROLE_KEY</code> to
             fetch profile metadata and enable impersonation.
           </p>
@@ -242,7 +242,7 @@ function ImpersonationCard({
         </p>
       </div>
       {disabled ? (
-        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+        <p className="rounded-lg border border-warning-border bg-warning-bg px-3 py-2 text-xs text-warning">
           {serviceRoleConfigured
             ? 'This user record has no email associated with it.'
             : 'Supabase service role key missing — impersonation requires service role access.'}
@@ -262,7 +262,7 @@ function ImpersonationCard({
         </Button>
       </form>
       {profile?.isAdmin ? (
-        <p className="text-xs text-rose-600">
+        <p className="text-xs text-error">
           This account is an admin. Impersonating another admin will inherit their permissions; exit immediately after debugging.
         </p>
       ) : null}

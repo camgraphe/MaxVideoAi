@@ -525,7 +525,7 @@ export function GroupedJobCard({
               variant="ghost"
               size="sm"
               onClick={() => handleAction('remove')}
-              className="mt-2 w-full justify-between rounded-input px-2 py-1.5 text-left text-red-600 hover:bg-red-50"
+              className="mt-2 w-full justify-between rounded-input px-2 py-1.5 text-left text-error hover:bg-error-bg"
             >
               <span>Remove</span>
             </Button>

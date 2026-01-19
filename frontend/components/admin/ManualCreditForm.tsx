@@ -86,7 +86,7 @@ export function ManualCreditForm({ userId }: ManualCreditFormProps) {
       {status ? (
         <div
           className={`rounded-lg border px-3 py-2 text-xs ${
-            status.variant === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-200 bg-rose-50 text-rose-600'
+            status.variant === 'success' ? 'border-success-border bg-success-bg text-success' : 'border-error-border bg-error-bg text-error'
           }`}
         >
           {status.message}

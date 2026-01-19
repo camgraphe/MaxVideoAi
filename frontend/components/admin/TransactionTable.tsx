@@ -41,9 +41,9 @@ const TYPE_LABEL: Record<AdminTransactionRecord['type'], string> = {
 };
 
 const TYPE_CLASS: Record<AdminTransactionRecord['type'], string> = {
-  charge: 'bg-amber-50 text-amber-700 border-amber-200',
-  refund: 'bg-green-50 text-green-700 border-green-200',
-  topup: 'bg-blue-50 text-blue-700 border-blue-200',
+  charge: 'bg-warning-bg text-warning border-warning-border',
+  refund: 'bg-success-bg text-success border-success-border',
+  topup: 'bg-info-bg text-info border-info-border',
   discount: 'bg-purple-50 text-purple-700 border-purple-200',
   tax: 'bg-slate-50 text-slate-700 border-slate-200',
 };
@@ -135,8 +135,8 @@ export function AdminTransactionTable({ initialTransactions }: AdminTransactionT
         <div
           className={clsx(
             'rounded-md border px-3 py-2 text-sm',
-            status.variant === 'success' && 'border-green-200 bg-green-50 text-green-800',
-            status.variant === 'error' && 'border-red-200 bg-red-50 text-red-700',
+            status.variant === 'success' && 'border-success-border bg-success-bg text-success',
+            status.variant === 'error' && 'border-error-border bg-error-bg text-error',
             status.variant === 'info' && 'border-slate-200 bg-slate-50 text-slate-700'
           )}
         >
@@ -236,8 +236,8 @@ export function AdminTransactionTable({ initialTransactions }: AdminTransactionT
                         <span className="uppercase tracking-wide text-text-muted">
                           {row.jobPaymentStatus ?? '—'}
                         </span>
-                        {jobMissing ? <span className="text-amber-700">Job record missing</span> : null}
-                        {row.hasRefund ? <span className="text-green-700">Refunded</span> : null}
+                        {jobMissing ? <span className="text-warning">Job record missing</span> : null}
+                        {row.hasRefund ? <span className="text-success">Refunded</span> : null}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm text-text-secondary">

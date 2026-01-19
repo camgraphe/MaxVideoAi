@@ -105,7 +105,7 @@ export default function AdminUsersPage() {
       </div>
 
       {statsUnavailable ? (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+        <div className="rounded-xl border border-warning-border bg-warning-bg p-4 text-sm text-warning">
           Supabase service role key is missing. Add <code className="font-mono">SUPABASE_SERVICE_ROLE_KEY</code> to your environment to display user metrics.
         </div>
       ) : null}
@@ -132,11 +132,11 @@ export default function AdminUsersPage() {
       ) : null}
 
       {unauthorized ? (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600">
+        <div className="rounded-xl border border-error-border bg-error-bg p-4 text-sm text-error">
           Access denied. Sign in with an admin account.
         </div>
       ) : serviceRoleMissing ? (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+        <div className="rounded-xl border border-warning-border bg-warning-bg p-4 text-sm text-warning">
           Supabase service role key is missing. Add <code className="font-mono">SUPABASE_SERVICE_ROLE_KEY</code> to your environment to enable admin user management.
         </div>
       ) : isLoading ? (
@@ -144,11 +144,11 @@ export default function AdminUsersPage() {
           Loading…
         </div>
       ) : error ? (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600">
+        <div className="rounded-xl border border-error-border bg-error-bg p-4 text-sm text-error">
           {error.message || 'Failed to load users.'}
         </div>
       ) : fetchError ? (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600">
+        <div className="rounded-xl border border-error-border bg-error-bg p-4 text-sm text-error">
           {fetchError}
         </div>
       ) : (

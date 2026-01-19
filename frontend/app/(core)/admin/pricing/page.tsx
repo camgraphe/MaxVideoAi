@@ -186,7 +186,7 @@ export default function PricingAdminPage() {
         {membershipLoading ? (
           <p className="mt-4 text-sm text-text-secondary">Loading membership tiers…</p>
         ) : membershipError ? (
-          <p className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+          <p className="mt-4 rounded-lg border border-error-border bg-error-bg p-3 text-xs text-error">
             Failed to load membership tiers.
           </p>
         ) : orderedMembership.length ? (
@@ -235,7 +235,7 @@ export default function PricingAdminPage() {
         {membershipStatus ? (
           <p
             className={`mt-4 text-xs ${
-              membershipStatus === 'saved' ? 'text-emerald-600' : 'text-rose-600'
+              membershipStatus === 'saved' ? 'text-success' : 'text-error'
             }`}
           >
             {membershipStatus === 'saved' ? 'Membership tiers saved.' : membershipStatus}
@@ -256,7 +256,7 @@ export default function PricingAdminPage() {
         {rulesLoading ? (
           <p className="text-sm text-text-secondary">Loading pricing rules…</p>
         ) : rulesError ? (
-          <p className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">Failed to load pricing rules.</p>
+          <p className="rounded-lg border border-error-border bg-error-bg p-3 text-xs text-error">Failed to load pricing rules.</p>
         ) : (
           <div className="space-y-4">
             {rules.map((rule) => (
@@ -378,7 +378,7 @@ function PricingRuleCard({ rule, onRefresh }: RuleCardProps) {
             size="sm"
             onClick={handleDelete}
             disabled={saving || rule.id === 'default'}
-            className="rounded-pill border-rose-200 px-3 py-1 text-xs font-semibold text-rose-600 hover:border-rose-400 hover:text-rose-700"
+            className="rounded-pill border-error-border px-3 py-1 text-xs font-semibold text-error hover:border-error-border hover:text-error"
           >
             Delete
           </Button>
@@ -436,12 +436,12 @@ function PricingRuleCard({ rule, onRefresh }: RuleCardProps) {
           >
             {saving ? 'Saving…' : 'Save'}
           </Button>
-          {status && <p className="text-xs text-rose-600">{status}</p>}
+          {status && <p className="text-xs text-error">{status}</p>}
         </div>
       ) : status === 'saved' ? (
-        <p className="mt-2 text-xs text-emerald-600">Rule saved.</p>
+        <p className="mt-2 text-xs text-success">Rule saved.</p>
       ) : status ? (
-        <p className="mt-2 text-xs text-rose-600">{status}</p>
+        <p className="mt-2 text-xs text-error">{status}</p>
       ) : null}
     </div>
   );
@@ -614,7 +614,7 @@ function NewPricingRuleCard({ onCreated }: NewRuleProps) {
         >
           {saving ? 'Saving…' : 'Create rule'}
         </Button>
-        {status && <p className="text-xs text-rose-600">{status}</p>}
+        {status && <p className="text-xs text-error">{status}</p>}
       </div>
     </div>
   );

@@ -326,7 +326,7 @@ function AssetLibraryModal({
 
         <div className="mt-4 max-h-[60vh] overflow-y-auto">
           {error ? (
-            <div className="rounded-input border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">
+            <div className="rounded-input border border-error-border bg-error-bg px-4 py-3 text-sm text-error">
               {error}
             </div>
           ) : isLoading ? (
@@ -369,10 +369,10 @@ function AssetLibraryModal({
                           variant="outline"
                           size="sm"
                           className={clsx(
-                            'px-3 py-1 text-[12px] font-semibold uppercase tracking-micro focus-visible:ring-rose-300',
+                            'px-3 py-1 text-[12px] font-semibold uppercase tracking-micro focus-visible:ring-error-border',
                             isDeleting
-                              ? 'border-rose-200 bg-rose-100 text-rose-500 opacity-70'
-                              : 'border-rose-200 bg-rose-50 text-rose-600 hover:border-rose-300 hover:bg-rose-100'
+                              ? 'border-error-border bg-error-bg text-error opacity-70'
+                              : 'border-error-border bg-error-bg text-error hover:border-error-border hover:bg-error-bg'
                           )}
                           onClick={() => {
                             const result = onDelete(asset);

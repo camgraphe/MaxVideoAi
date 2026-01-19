@@ -169,7 +169,7 @@ export default async function AdminEnginesPage() {
             </div>
           )
         ) : (
-          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-700">
+          <div className="rounded-2xl border border-warning-border bg-warning-bg p-5 text-sm text-warning">
             Database connection missing. Set <code className="font-mono text-xs">DATABASE_URL</code> to edit engine overrides.
           </div>
         )}

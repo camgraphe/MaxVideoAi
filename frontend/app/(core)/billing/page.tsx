@@ -651,7 +651,7 @@ export default function BillingPage() {
             <p className="mt-1 text-sm text-text-secondary">{copy.hero.subtitle}</p>
             {stripeMode !== 'disabled' && (
               <div className="mt-2">
-                <span className={`rounded-full px-2 py-1 text-xs ${stripeMode==='test' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                <span className={`rounded-full px-2 py-1 text-xs ${stripeMode==='test' ? 'bg-warning-bg text-warning' : 'bg-success-bg text-success'}`}>
                   {stripeMode === 'test' ? copy.hero.testMode : copy.hero.liveMode}
                 </span>
               </div>
@@ -874,11 +874,11 @@ export default function BillingPage() {
                   const typeLabel = copy.receipts.typeLabels[typeKey as keyof typeof copy.receipts.typeLabels] ?? r.type;
                   const typeClass =
                     r.type === 'charge'
-                      ? 'bg-rose-100 text-rose-700'
+                      ? 'bg-error-bg text-error'
                       : r.type === 'refund'
                         ? 'bg-sky-100 text-sky-700'
-                        : 'bg-emerald-100 text-emerald-700';
-                  const amountClass = signedCents < 0 ? 'text-text-primary' : 'text-emerald-600';
+                        : 'bg-success-bg text-success';
+                  const amountClass = signedCents < 0 ? 'text-text-primary' : 'text-success';
                   const taxCents = Number(r.tax_amount_cents ?? 0);
                   const discountCents = Number(r.discount_amount_cents ?? 0);
                   return (

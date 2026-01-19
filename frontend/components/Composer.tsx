@@ -307,7 +307,7 @@ export function Composer({
         )}
 
         {error && (
-          <div className="rounded-input border border-rose-200 bg-rose-50 px-3 py-2 text-[13px] text-rose-700 whitespace-pre-line">
+          <div className="rounded-input border border-error-border bg-error-bg px-3 py-2 text-[13px] text-error whitespace-pre-line">
             {error}
           </div>
         )}
