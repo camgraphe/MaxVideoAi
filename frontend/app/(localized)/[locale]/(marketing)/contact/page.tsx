@@ -121,7 +121,7 @@ export default async function ContactPage({
             {errorText}
           </div>
         ) : null}
-        <form className="space-y-4" method="post" action="/api/contact" aria-label={content.hero.title}>
+        <form className="stack-gap" method="post" action="/api/contact" aria-label={content.hero.title}>
           <input type="hidden" name="locale" value={locale} />
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-text-secondary">

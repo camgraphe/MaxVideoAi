@@ -496,7 +496,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
         </article>
         <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
           <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{faq.title}</h2>
-          <dl className="mt-4 space-y-4">
+          <dl className="mt-4 stack-gap">
             {faq.entries.map((entry) => (
               <div key={entry.question}>
                 <dt className="text-sm font-semibold text-text-primary">{entry.question}</dt>
