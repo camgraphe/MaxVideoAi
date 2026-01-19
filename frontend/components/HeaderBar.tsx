@@ -314,14 +314,14 @@ export function HeaderBar() {
   return (
     <>
       {showServiceNotice ? (
-        <div className="relative z-40 border-b border-amber-200 bg-amber-50 px-4 py-2 text-center text-xs font-medium text-amber-900 sm:text-sm" role="status" aria-live="polite">
+        <div className="relative z-40 border-b border-[var(--warning-border)] bg-[var(--warning-bg)] px-4 py-2 text-center text-xs font-medium text-[var(--warning)] sm:text-sm" role="status" aria-live="polite">
           {bannerMessage}
         </div>
       ) : null}
       <header
         className={clsx(
           'sticky top-0 z-40 flex h-[var(--header-height)] items-center justify-between px-6 lg:px-8',
-          'border-b border-border bg-white/80 backdrop-blur-xl'
+          'border-b border-border bg-surface/80 backdrop-blur-xl'
         )}
       >
         <div className="flex items-center gap-4 md:gap-6">
@@ -364,7 +364,7 @@ export function HeaderBar() {
             <Link
               href="/billing"
               prefetch={false}
-              className="flex items-center gap-2 rounded-input border border-hairline bg-white/80 px-3 py-1 uppercase tracking-micro transition-colors hover:border-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex items-center gap-2 rounded-input border border-hairline bg-surface/80 px-3 py-1 uppercase tracking-micro transition-colors hover:border-border-hover hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-describedby={walletPromptOpen ? walletPromptId : undefined}
               onFocus={openWalletPrompt}
               onBlur={scheduleWalletPromptClose}
@@ -378,7 +378,7 @@ export function HeaderBar() {
               <div
                 id={walletPromptId}
                 role="status"
-                className="absolute right-0 top-full z-10 mt-2 w-64 rounded-card border border-hairline bg-white p-3 text-left text-xs text-text-secondary shadow-card"
+                className="absolute right-0 top-full z-10 mt-2 w-64 rounded-card border border-hairline bg-surface p-3 text-left text-xs text-text-secondary shadow-card"
                 onMouseEnter={openWalletPrompt}
                 onMouseLeave={scheduleWalletPromptClose}
               >
@@ -412,12 +412,12 @@ export function HeaderBar() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setAccountMenuOpen((prev) => !prev)}
-                className="h-10 w-10 min-h-0 rounded-full border border-[#dce4ff] bg-gradient-to-br from-[#dfe6ff] via-white/95 to-white p-0 text-sm font-semibold text-text-primary shadow-card hover:brightness-110"
+                className="h-10 w-10 min-h-0 rounded-full border border-border bg-surface-2 p-0 text-sm font-semibold text-text-primary shadow-card hover:bg-surface-3"
                 aria-haspopup="menu"
                 aria-expanded={accountMenuOpen}
               >
                 {initials}
-                <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border border-white bg-white text-[10px] text-text-muted shadow-sm">
+                <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border border-border bg-surface text-[10px] text-text-muted shadow-sm">
                   <svg viewBox="0 0 12 12" aria-hidden="true" className="h-2.5 w-2.5">
                     <path d="m2.2 4.6 3.8 3.8 3.8-3.8" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
@@ -426,7 +426,7 @@ export function HeaderBar() {
               {accountMenuOpen && (
                 <div
                   ref={menuRef}
-                  className="absolute right-0 mt-3 w-56 rounded-card border border-hairline bg-white p-3 text-sm text-text-secondary shadow-card"
+                  className="absolute right-0 mt-3 w-56 rounded-card border border-hairline bg-surface p-3 text-sm text-text-secondary shadow-card"
                   role="menu"
                 >
                   <div className="mb-3 rounded-input bg-bg px-3 py-2">
@@ -491,12 +491,12 @@ export function HeaderBar() {
               </ButtonLink>
             </div>
           ) : (
-            <div className="h-10 w-[180px] rounded-input bg-neutral-100 shadow-sm" aria-hidden />
+            <div className="h-10 w-[180px] rounded-input bg-surface-2 shadow-sm" aria-hidden />
           )}
         </div>
       </header>
       {mobileMenuOpen ? (
-        <div className="fixed inset-0 z-50 bg-white/95 px-4 py-6 sm:px-6">
+        <div className="fixed inset-0 z-50 bg-surface/95 px-4 py-6 sm:px-6">
           <div className="mx-auto flex max-w-sm items-center justify-between">
             <Link
               href="/"
@@ -511,7 +511,7 @@ export function HeaderBar() {
               type="button"
               variant="outline"
               size="sm"
-              className="min-h-0 h-9 w-9 rounded-full border-hairline bg-white p-2 text-text-primary"
+              className="min-h-0 h-9 w-9 rounded-full border-hairline bg-surface p-2 text-text-primary"
               aria-label={t('workspace.header.mobileClose', 'Close menu')}
               onClick={() => setMobileMenuOpen(false)}
             >
@@ -538,7 +538,7 @@ export function HeaderBar() {
                     prefetch={false}
                     className={clsx(
                       'rounded-2xl border border-hairline px-4 py-3',
-                      isActive ? 'bg-surface-2 text-text-primary' : 'bg-white'
+                      isActive ? 'bg-surface-2 text-text-primary' : 'bg-surface'
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -549,7 +549,7 @@ export function HeaderBar() {
             </nav>
             {isAuthenticated ? (
               <div className="stack-gap-sm">
-                <div className="flex items-center justify-between rounded-2xl border border-hairline bg-white px-4 py-3">
+                <div className="flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3">
                   <span className="flex items-center gap-2 text-base font-semibold text-text-primary">
                     <WalletGlyph size={18} className="text-text-primary" />
                     {wallet ? `$${wallet.balance.toFixed(2)}` : '--'}

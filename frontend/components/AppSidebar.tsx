@@ -194,7 +194,7 @@ export function AppSidebar() {
               collapsedNav ? 'h-10 w-10' : 'h-12 w-12',
               active
                 ? 'border-text-muted bg-surface-2 text-text-primary'
-                : 'border-transparent bg-white/80 text-text-muted group-hover:bg-surface-2 group-hover:text-text-primary'
+                : 'border-transparent bg-surface/80 text-text-muted group-hover:bg-surface-2 group-hover:text-text-primary'
             )}
             aria-hidden
           >
@@ -215,7 +215,7 @@ export function AppSidebar() {
           <div
             id={tooltipId}
             role="tooltip"
-            className="pointer-events-none absolute left-[76px] top-1/2 z-[1000] -translate-y-1/2 whitespace-nowrap rounded-card border border-border bg-white px-3 py-1 text-xs font-medium text-text-secondary opacity-0 shadow-card transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100"
+            className="pointer-events-none absolute left-[76px] top-1/2 z-[1000] -translate-y-1/2 whitespace-nowrap rounded-card border border-border bg-surface px-3 py-1 text-xs font-medium text-text-secondary opacity-0 shadow-card transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100"
           >
             {label}
           </div>
@@ -229,7 +229,7 @@ export function AppSidebar() {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className={clsx(
-        'relative hidden min-h-[calc(100vh-var(--header-height))] md:flex flex-col border-r border-hairline bg-white/70 backdrop-blur-md transition-[width] duration-300 ease-in-out',
+        'relative hidden min-h-[calc(100vh-var(--header-height))] md:flex flex-col border-r border-hairline bg-surface/70 backdrop-blur-md transition-[width] duration-300 ease-in-out',
         collapsed ? 'w-[78px]' : 'w-64'
       )}
     >
@@ -245,7 +245,7 @@ export function AppSidebar() {
           variant="ghost"
           size="sm"
           onClick={handleCollapsedToggle}
-          className="h-10 w-10 min-h-0 rounded-input border border-hairline bg-white/70 p-0 text-text-secondary hover:-translate-y-0.5 hover:bg-white/80 hover:text-text-primary"
+          className="h-10 w-10 min-h-0 rounded-input border border-hairline bg-surface/70 p-0 text-text-secondary hover:-translate-y-0.5 hover:bg-surface/80 hover:text-text-primary"
         >
           <UIIcon icon={collapsed ? PanelRightOpen : PanelLeftOpen} size={20} />
           <span className="sr-only">
@@ -261,7 +261,7 @@ export function AppSidebar() {
           size="sm"
           onClick={handlePinToggle}
           className={clsx(
-            'h-10 w-10 min-h-0 rounded-input border border-hairline bg-white/70 p-0 text-text-secondary hover:bg-white/80 hover:text-text-primary',
+            'h-10 w-10 min-h-0 rounded-input border border-hairline bg-surface/70 p-0 text-text-secondary hover:bg-surface/80 hover:text-text-primary',
             collapsed ? 'pointer-events-none opacity-0' : 'opacity-100'
           )}
           aria-hidden={collapsed}
@@ -298,7 +298,7 @@ export function AppSidebar() {
             href="/"
             aria-label={t('workspace.sidebar.aria.home', 'Go to home')}
             className={clsx(
-              'flex items-center justify-center rounded-card border border-hairline bg-white/80 shadow-card transition',
+              'flex items-center justify-center rounded-card border border-hairline bg-surface/80 shadow-card transition',
               collapsed ? 'mx-auto h-11 w-11' : 'h-12'
             )}
           >
