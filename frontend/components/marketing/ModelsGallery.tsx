@@ -104,7 +104,7 @@ function ModelCard({ card, ctaLabel }: { card: ModelGalleryCard; ctaLabel: strin
         <span className="rounded-full border border-black/10 px-2 py-1 text-[10px] font-semibold text-neutral-600">MaxVideoAI</span>
       </div>
       <div className="mt-3">
-        <h2 className="text-xl font-semibold leading-snug text-neutral-900">{card.label}</h2>
+        <h3 className="text-lg font-semibold leading-snug text-neutral-900 sm:text-xl">{card.label}</h3>
         <p className="mt-1 text-sm text-neutral-600">{card.description}</p>
         {card.priceNote ? (
           card.priceNoteHref ? (
