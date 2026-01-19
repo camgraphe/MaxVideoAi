@@ -147,7 +147,7 @@ export default function ExamplesGalleryGridClient({
           <button
             type="button"
             onClick={handleLoadMore}
-            className="rounded-full border border-border bg-white px-4 py-2 text-sm font-semibold text-text-primary shadow-card transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
+            className="rounded-full border border-brand/40 bg-white px-4 py-2 text-sm font-semibold text-brand shadow-card transition hover:border-brand hover:bg-brand/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {loadMoreLabel}
           </button>
@@ -311,7 +311,7 @@ function ExampleCard({
           <div className="pt-1">
             <Link
               href={video.recreateHref}
-              className="text-[11px] font-semibold text-accent transition hover:text-accentSoft"
+              className="text-[11px] font-semibold text-brand transition hover:text-brand-hover"
               prefetch={false}
             >
               Recreate this shot →

@@ -103,7 +103,7 @@ export function CompareEnginesCarousel({ engines, copy }: CompareEnginesCarousel
   }, [renderedEngines.length]);
 
   return (
-    <section aria-labelledby="compare-engines" className="mx-auto mt-20 max-w-6xl px-4 sm:px-6 lg:px-8">
+    <section aria-labelledby="compare-engines" className="mx-auto mt-16 max-w-6xl px-4 sm:px-6 lg:px-8">
       <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-card">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>

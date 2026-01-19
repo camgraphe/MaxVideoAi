@@ -22,7 +22,7 @@ type ObfuscatedEmailLinkProps = {
    */
   fallbackHref?: string;
   /**
-   * If true, skip the default accent styles so callers can control the appearance entirely.
+   * If true, skip the default brand styles so callers can control the appearance entirely.
    */
   unstyled?: boolean;
   className?: string;

@@ -189,7 +189,7 @@ export default async function AiVideoEnginesPage() {
   const faqJsonLdEntries = faqItems.slice(0, 6);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-4xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
       <header className="space-y-4">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{hero.title}</h1>
         {hero.intro ? <p className="text-base text-text-secondary">{renderRichText(hero.intro, 'hero-intro')}</p> : null}

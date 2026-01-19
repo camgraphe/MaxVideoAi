@@ -241,7 +241,7 @@ export default async function BlogPostPage({ params }: { params: Params }) {
   };
 
   return (
-    <div className="mx-auto max-w-5xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-5xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
       <Link
         href="/blog"
         className="inline-flex items-center text-sm font-semibold text-brand transition hover:text-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
