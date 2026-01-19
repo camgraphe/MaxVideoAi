@@ -43,20 +43,22 @@ export default async function AboutPage() {
 
   return (
     <div className="container-page max-w-4xl section">
-      <header className="stack-gap-sm">
-        <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
-        <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
-      </header>
+      <div className="stack-gap-lg">
+        <header className="stack-gap-sm">
+          <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
+          <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
+        </header>
 
-      <section className="mt-12 stack-gap-lg text-sm text-text-secondary">
-        {content.paragraphs.map((paragraph, index) => (
-          <p key={index}>{paragraph}</p>
-        ))}
-      </section>
+        <section className="stack-gap-lg text-sm text-text-secondary">
+          {content.paragraphs.map((paragraph, index) => (
+            <p key={index}>{paragraph}</p>
+          ))}
+        </section>
 
-      <aside className="mt-12 rounded-card border border-hairline bg-white p-6 shadow-card text-sm text-text-muted">
-        {content.note}
-      </aside>
+        <aside className="rounded-card border border-hairline bg-surface p-6 shadow-card text-sm text-text-muted">
+          {content.note}
+        </aside>
+      </div>
     </div>
   );
 }

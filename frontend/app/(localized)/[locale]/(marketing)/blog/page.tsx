@@ -143,8 +143,10 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
   if (posts.length === 0) {
     return (
       <main className="container-page max-w-3xl section text-center">
-        <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
-        <p className="mt-4 text-base leading-relaxed text-text-secondary">{content.empty}</p>
+        <div className="stack-gap-sm">
+          <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
+          <p className="text-base leading-relaxed text-text-secondary">{content.empty}</p>
+        </div>
       </main>
     );
   }
@@ -153,154 +155,156 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
 
   return (
     <main className="container-page max-w-6xl section">
-      <header className="rounded-[32px] border border-hairline bg-white/80 p-8 shadow-card backdrop-blur sm:p-12">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div className="sm:max-w-[62ch] stack-gap">
-            <p className="text-xs font-semibold uppercase tracking-micro text-brand">
-              {content.hero.eyebrow ?? 'The Studio Journal'}
-            </p>
-            <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-5xl">
-              {content.hero.title}
-            </h1>
-            <p className="text-base leading-relaxed text-text-secondary sm:text-lg">{content.hero.subtitle}</p>
-          </div>
-          <ButtonLink
-            href={{ pathname: '/models/[slug]', params: { slug: 'sora-2' } }}
-            className="self-start shadow-card"
-            linkComponent={Link}
-          >
-            {content.hero.ctaLabel ?? 'Latest Sora coverage →'}
-          </ButtonLink>
-        </div>
-      </header>
-
-      <section className="mt-10 stack-gap-lg rounded-[28px] border border-hairline bg-white/90 p-8 text-sm text-text-secondary shadow-card sm:p-10">
-        <p>{content.intro?.lead}</p>
-        <div className="grid grid-gap-sm lg:grid-cols-3">
-          {(content.intro?.cards ?? []).map((card) => (
-            <div key={card.title}>
-              <h2 className="text-sm font-semibold uppercase tracking-micro text-text-primary">{card.title}</h2>
-              <p className="mt-2">{card.body}</p>
+      <div className="stack-gap-lg">
+        <header className="rounded-[32px] border border-hairline bg-surface/80 p-8 shadow-card backdrop-blur sm:p-12">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="sm:max-w-[62ch] stack-gap">
+              <p className="text-xs font-semibold uppercase tracking-micro text-brand">
+                {content.hero.eyebrow ?? 'The Studio Journal'}
+              </p>
+              <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-5xl">
+                {content.hero.title}
+              </h1>
+              <p className="text-base leading-relaxed text-text-secondary sm:text-lg">{content.hero.subtitle}</p>
             </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="mt-12 grid grid-gap-lg lg:grid-cols-[minmax(0,2fr),minmax(0,1fr)]">
-        <article className="group relative overflow-hidden rounded-[28px] border border-hairline bg-white/90 shadow-card transition hover:-translate-y-1 hover:shadow-float">
-          <div className="relative h-64 w-full overflow-hidden sm:h-80">
-            <Image
-              src={normalizeImageSrc(featured.image)}
-              alt={featured.title}
-              fill
-              priority
-              fetchPriority="high"
-              sizes="(min-width: 1280px) 720px, (min-width: 1024px) 600px, 100vw"
-              className="object-cover object-center transition duration-700 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0" />
-          </div>
-          <div className="stack-gap px-6 pb-8 pt-6 sm:px-10">
-            <div className="flex flex-wrap items-center gap-4 text-xs uppercase tracking-micro text-brand">
-              <span className="rounded-pill bg-surface-2 px-3 py-1 font-semibold text-brand">
-                {new Date(featured.date).toLocaleDateString(localeDateMap[locale], {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
-              </span>
-              <div className="flex flex-wrap gap-2 text-text-muted">
-                {featured.keywords?.slice(0, 2).map((keyword) => (
-                  <span key={keyword} className="rounded-pill bg-bg px-3 py-1 font-semibold">
-                    {keyword}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div className="stack-gap-sm">
-              <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
-                <Link href={{ pathname: '/blog/[slug]', params: { slug: featured.slug } }} className="transition hover:text-brandHover">
-                  {featured.title}
-                </Link>
-              </h2>
-              <p className="text-base leading-relaxed text-text-secondary sm:text-lg">{featured.description}</p>
-            </div>
-            <TextLink
-              href={{ pathname: '/blog/[slug]', params: { slug: featured.slug } }}
-              className="gap-2 text-sm"
+            <ButtonLink
+              href={{ pathname: '/models/[slug]', params: { slug: 'sora-2' } }}
+              className="self-start shadow-card"
               linkComponent={Link}
             >
-              {formatReadMoreLabel(featured.title)}
-              <span aria-hidden>→</span>
-            </TextLink>
+              {content.hero.ctaLabel ?? 'Latest Sora coverage →'}
+            </ButtonLink>
           </div>
-        </article>
+        </header>
 
-        <div className="stack-gap-lg">
-          {rest.map((post) => (
-            <article
-              key={post.slug}
-              className={clsx(
-                'group flex flex-col gap-4 rounded-3xl border border-hairline bg-white/90 p-6 shadow-card transition hover:-translate-y-1 hover:shadow-float',
-                'sm:flex-row sm:items-center sm:p-7'
-              )}
-            >
-              <div className="relative h-32 w-full overflow-hidden rounded-2xl bg-bg sm:h-28 sm:w-40">
-                <Image
-                  src={normalizeImageSrc(post.image)}
-                  alt={post.title ?? 'MaxVideoAI blog cover'}
-                  fill
-                  loading="lazy"
-                  decoding="async"
-                  sizes="160px"
-                  className="object-cover object-center transition duration-700 group-hover:scale-105"
-                />
+        <section className="stack-gap-lg rounded-[28px] border border-hairline bg-surface/90 p-8 text-sm text-text-secondary shadow-card sm:p-10">
+          <p>{content.intro?.lead}</p>
+          <div className="grid grid-gap-sm lg:grid-cols-3">
+            {(content.intro?.cards ?? []).map((card) => (
+              <div key={card.title}>
+                <h2 className="text-sm font-semibold uppercase tracking-micro text-text-primary">{card.title}</h2>
+                <p className="mt-2">{card.body}</p>
               </div>
-              <div className="flex-1 stack-gap-sm">
-                <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-micro text-text-muted">
-                  <span>
-                    {new Date(post.date).toLocaleDateString(localeDateMap[locale], {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
-                  </span>
-                  {post.keywords?.slice(0, 1).map((keyword) => (
-                    <span key={keyword} className="rounded-pill bg-bg px-3 py-1 font-semibold text-brand">
+            ))}
+          </div>
+        </section>
+
+        <section className="grid grid-gap-lg lg:grid-cols-[minmax(0,2fr),minmax(0,1fr)]">
+          <article className="group relative overflow-hidden rounded-[28px] border border-hairline bg-surface/90 shadow-card transition hover:-translate-y-1 hover:shadow-float">
+            <div className="relative h-64 w-full overflow-hidden sm:h-80">
+              <Image
+                src={normalizeImageSrc(featured.image)}
+                alt={featured.title}
+                fill
+                priority
+                fetchPriority="high"
+                sizes="(min-width: 1280px) 720px, (min-width: 1024px) 600px, 100vw"
+                className="object-cover object-center transition duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0" />
+            </div>
+            <div className="stack-gap px-6 pb-8 pt-6 sm:px-10">
+              <div className="flex flex-wrap items-center gap-4 text-xs uppercase tracking-micro text-brand">
+                <span className="rounded-pill bg-surface-2 px-3 py-1 font-semibold text-brand">
+                  {new Date(featured.date).toLocaleDateString(localeDateMap[locale], {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </span>
+                <div className="flex flex-wrap gap-2 text-text-muted">
+                  {featured.keywords?.slice(0, 2).map((keyword) => (
+                    <span key={keyword} className="rounded-pill bg-bg px-3 py-1 font-semibold">
                       {keyword}
                     </span>
                   ))}
                 </div>
-                <h3 className="text-xl font-semibold text-text-primary transition group-hover:text-brand">
-                  <Link href={{ pathname: '/blog/[slug]', params: { slug: post.slug } }}>{post.title}</Link>
-                </h3>
-                <p className="text-sm text-text-secondary">{post.description}</p>
-                <TextLink
-                  href={{ pathname: '/blog/[slug]', params: { slug: post.slug } }}
-                  className="gap-1 text-sm"
-                  linkComponent={Link}
-                >
-                  {formatReadMoreLabel(post.title ?? post.slug)}
-                  <span aria-hidden>→</span>
-                </TextLink>
               </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="mt-12 rounded-[28px] border border-hairline bg-white/90 p-8 shadow-card sm:p-10">
-        <h2 className="text-lg font-semibold text-text-primary">{faq.title}</h2>
-        <dl className="mt-6 stack-gap-lg text-sm text-text-secondary">
-          {faq.items.map((item) => (
-            <div key={item.question}>
-              <dt className="font-semibold text-text-primary">{item.question}</dt>
-              <dd className="mt-2">{renderPressEmail(item.answer)}</dd>
+              <div className="stack-gap-sm">
+                <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
+                  <Link href={{ pathname: '/blog/[slug]', params: { slug: featured.slug } }} className="transition hover:text-brandHover">
+                    {featured.title}
+                  </Link>
+                </h2>
+                <p className="text-base leading-relaxed text-text-secondary sm:text-lg">{featured.description}</p>
+              </div>
+              <TextLink
+                href={{ pathname: '/blog/[slug]', params: { slug: featured.slug } }}
+                className="gap-2 text-sm"
+                linkComponent={Link}
+              >
+                {formatReadMoreLabel(featured.title)}
+                <span aria-hidden>→</span>
+              </TextLink>
             </div>
-          ))}
-        </dl>
-        {faq.footnote ? <p className="mt-4 text-xs text-text-muted">{renderPressEmail(faq.footnote)}</p> : null}
-      </section>
+          </article>
+
+          <div className="stack-gap-lg">
+            {rest.map((post) => (
+              <article
+                key={post.slug}
+                className={clsx(
+                  'group flex flex-col gap-4 rounded-3xl border border-hairline bg-surface/90 p-6 shadow-card transition hover:-translate-y-1 hover:shadow-float',
+                  'sm:flex-row sm:items-center sm:p-7'
+                )}
+              >
+                <div className="relative h-32 w-full overflow-hidden rounded-2xl bg-bg sm:h-28 sm:w-40">
+                  <Image
+                    src={normalizeImageSrc(post.image)}
+                    alt={post.title ?? 'MaxVideoAI blog cover'}
+                    fill
+                    loading="lazy"
+                    decoding="async"
+                    sizes="160px"
+                    className="object-cover object-center transition duration-700 group-hover:scale-105"
+                  />
+                </div>
+                <div className="flex-1 stack-gap-sm">
+                  <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-micro text-text-muted">
+                    <span>
+                      {new Date(post.date).toLocaleDateString(localeDateMap[locale], {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </span>
+                    {post.keywords?.slice(0, 1).map((keyword) => (
+                      <span key={keyword} className="rounded-pill bg-bg px-3 py-1 font-semibold text-brand">
+                        {keyword}
+                      </span>
+                    ))}
+                  </div>
+                  <h3 className="text-xl font-semibold text-text-primary transition group-hover:text-brand">
+                    <Link href={{ pathname: '/blog/[slug]', params: { slug: post.slug } }}>{post.title}</Link>
+                  </h3>
+                  <p className="text-sm text-text-secondary">{post.description}</p>
+                  <TextLink
+                    href={{ pathname: '/blog/[slug]', params: { slug: post.slug } }}
+                    className="gap-1 text-sm"
+                    linkComponent={Link}
+                  >
+                    {formatReadMoreLabel(post.title ?? post.slug)}
+                    <span aria-hidden>→</span>
+                  </TextLink>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-[28px] border border-hairline bg-surface/90 p-8 shadow-card sm:p-10">
+          <h2 className="text-lg font-semibold text-text-primary">{faq.title}</h2>
+          <dl className="mt-6 stack-gap-lg text-sm text-text-secondary">
+            {faq.items.map((item) => (
+              <div key={item.question}>
+                <dt className="font-semibold text-text-primary">{item.question}</dt>
+                <dd className="mt-2">{renderPressEmail(item.answer)}</dd>
+              </div>
+            ))}
+          </dl>
+          {faq.footnote ? <p className="mt-4 text-xs text-text-muted">{renderPressEmail(faq.footnote)}</p> : null}
+        </section>
+      </div>
 
       <Script id="blog-list-jsonld" type="application/ld+json">
         {JSON.stringify(articleListSchema)}
