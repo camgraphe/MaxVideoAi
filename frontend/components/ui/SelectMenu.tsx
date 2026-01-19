@@ -154,7 +154,7 @@ export function SelectMenu({ options, value, onChange, disabled = false, classNa
         </svg>
       </Button>
       {open ? (
-        <div className="absolute left-0 right-0 z-[50] mt-2 max-h-60 overflow-y-auto rounded-[12px] border border-border bg-white/95 p-1 shadow-card backdrop-blur">
+        <div className="absolute left-0 right-0 z-[50] mt-2 max-h-60 overflow-y-auto rounded-card border border-border bg-white/95 p-1 shadow-card backdrop-blur">
           <ul role="listbox" className="space-y-1 text-[12px]">
             {options.map((option, index) => {
               const isSelected = String(option.value) === String(value);
@@ -178,7 +178,7 @@ export function SelectMenu({ options, value, onChange, disabled = false, classNa
                       setOpen(false);
                     }}
                     className={clsx(
-                      'min-h-0 h-auto w-full justify-between rounded-[8px] px-3 py-2 text-left',
+                      'min-h-0 h-auto w-full justify-between rounded-input px-3 py-2 text-left',
                       option.disabled
                         ? 'cursor-not-allowed text-text-muted/60'
                         : 'text-text-secondary hover:bg-surface-2 hover:text-text-primary',

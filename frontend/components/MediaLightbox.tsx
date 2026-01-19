@@ -329,7 +329,7 @@ export function MediaLightbox({
         }
       }}
     >
-      <div className="relative max-h-full w-full max-w-5xl overflow-y-auto rounded-[18px] border border-border bg-white p-6 shadow-2xl">
+      <div className="relative max-h-full w-full max-w-5xl overflow-y-auto rounded-modal border border-border bg-white p-6 shadow-float">
         <Button
           type="button"
           variant="outline"
@@ -404,7 +404,7 @@ export function MediaLightbox({
                 key={entry.id}
                 className="rounded-card border border-border bg-white/90 p-4 shadow-card md:flex md:items-start md:gap-4"
               >
-                <div className={clsx('relative overflow-hidden rounded-[16px] bg-[#EFF3FA] md:w-[360px] md:flex-shrink-0', aspectClass)}>
+                <div className={clsx('relative overflow-hidden rounded-card bg-[#EFF3FA] md:w-[360px] md:flex-shrink-0', aspectClass)}>
                   {videoUrl ? (
                     <video
                       key={videoUrl}

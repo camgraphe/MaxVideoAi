@@ -247,7 +247,7 @@ function AssetLibraryModal({
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 px-4">
       <div className="absolute inset-0" role="presentation" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-3xl rounded-[16px] border border-border bg-white p-6 shadow-2xl">
+      <div className="relative z-10 w-full max-w-3xl rounded-modal border border-border bg-white p-6 shadow-float">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div>
             <h2 className="text-lg font-semibold text-text-primary">{copy.title}</h2>
@@ -4604,7 +4604,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           <div className="flex flex-1 min-w-0 flex-col overflow-hidden">
             <main className="flex flex-1 min-w-0 flex-col gap-5 p-5 lg:p-7">
             {notice && (
-              <div className="rounded-[12px] border border-[#FACC15]/60 bg-[#FEF3C7] px-4 py-2 text-sm text-[#92400E] shadow-card">
+              <div className="rounded-card border border-[#FACC15]/60 bg-[#FEF3C7] px-4 py-2 text-sm text-[#92400E] shadow-card">
                 {notice}
               </div>
             )}
@@ -4806,7 +4806,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 px-4">
           <div className="absolute inset-0" role="presentation" onClick={closeTopUpModal} />
           <form
-            className="relative z-10 w-full max-w-md rounded-[16px] border border-border bg-white p-6 shadow-2xl"
+            className="relative z-10 w-full max-w-md rounded-modal border border-border bg-white p-6 shadow-float"
             onSubmit={handleTopUpSubmit}
           >
             <div className="flex items-start justify-between gap-4">

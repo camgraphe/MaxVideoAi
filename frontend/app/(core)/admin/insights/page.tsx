@@ -93,7 +93,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
         </ul>
       </SectionCard>
 
-      <section className="rounded-[28px] border border-white/30 bg-white/85 p-5 shadow-card">
+      <section className="rounded-card border border-white/30 bg-white/85 p-5 shadow-card">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">Growth</p>
@@ -378,7 +378,7 @@ function SectionCard({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-[28px] border border-white/30 bg-white/85 p-5 shadow-card">
+    <section className="rounded-card border border-white/30 bg-white/85 p-5 shadow-card">
       <header className="space-y-1">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">{title}</p>
         {description ? <p className="text-sm text-text-secondary">{description}</p> : null}
@@ -390,7 +390,7 @@ function SectionCard({
 
 function StatCard({ label, value, helper }: { label: string; value: string; helper?: string }) {
   return (
-    <div className="rounded-[20px] border border-white/30 bg-white/90 px-4 py-3 shadow-card">
+    <div className="rounded-card border border-white/30 bg-white/90 px-4 py-3 shadow-card">
       <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">{label}</p>
       <p className="mt-2 text-2xl font-semibold text-text-primary">{value}</p>
       {helper ? <p className="text-xs text-text-secondary">{helper}</p> : null}

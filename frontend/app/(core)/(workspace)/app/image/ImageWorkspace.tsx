@@ -2014,7 +2014,7 @@ function ImageLibraryModal({
       aria-modal="true"
       onMouseDown={handleBackdropClick}
     >
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-[24px] border border-border bg-white shadow-2xl">
+      <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-modal border border-border bg-white shadow-float">
         <div className="flex flex-col gap-3 border-b border-border px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6">
           <div>
             <h2 className="text-lg font-semibold text-text-primary">{copy.modal.title}</h2>

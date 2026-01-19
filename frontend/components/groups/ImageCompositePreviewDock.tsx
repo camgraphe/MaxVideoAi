@@ -199,7 +199,7 @@ export function ImageCompositePreviewDock({
       <div className="px-4 py-4">
         <div className="flex flex-col items-center">
           <div
-            className="relative w-full overflow-hidden rounded-[16px] border border-hairline bg-[#f2f4f8] max-h-[320px] sm:max-h-[420px]"
+            className="relative w-full overflow-hidden rounded-card border border-hairline bg-[#f2f4f8] max-h-[320px] sm:max-h-[420px]"
             style={{ aspectRatio: aspectRatioCss ?? '1 / 1' }}
           >
             {selected ? (
@@ -215,7 +215,7 @@ export function ImageCompositePreviewDock({
             )}
           </div>
           <div className="mt-3 flex w-full">
-            <div className="flex w-full items-center justify-center rounded-[14px] border border-hairline/70 bg-white/75 px-3 py-2 shadow-sm backdrop-blur">
+            <div className="flex w-full items-center justify-center rounded-card border border-hairline/70 bg-white/75 px-3 py-2 shadow-sm backdrop-blur">
               {toolbar}
             </div>
           </div>
@@ -234,7 +234,7 @@ export function ImageCompositePreviewDock({
                   variant="ghost"
                   onClick={() => onSelectIndex(index)}
                   className={clsx(
-                    'relative h-14 w-14 flex-none overflow-hidden rounded-[12px] border bg-white p-0 shadow-sm transition',
+                    'relative h-14 w-14 flex-none overflow-hidden rounded-card border bg-white p-0 shadow-sm transition',
                     isActive ? 'border-brand' : 'border-border hover:border-text-muted'
                   )}
                   aria-label={buttonLabel}

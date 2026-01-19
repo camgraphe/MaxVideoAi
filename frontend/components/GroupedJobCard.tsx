@@ -260,7 +260,7 @@ export function GroupedJobCard({
               return (
                 <div
                   key={previewKey}
-                  className="relative flex items-center justify-center overflow-hidden rounded-[10px] bg-[var(--surface-2)]"
+                  className="relative flex items-center justify-center overflow-hidden rounded-card bg-[var(--surface-2)]"
                 >
                   <div className="absolute inset-0">
                     {isCompleted ? (
@@ -373,7 +373,7 @@ export function GroupedJobCard({
                 variant="ghost"
                 size="sm"
                 onClick={() => handleAction('view')}
-                className="w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
+                className="w-full justify-between rounded-input px-2 py-1.5 text-left"
               >
                 <span>Open</span>
               </Button>
@@ -384,7 +384,7 @@ export function GroupedJobCard({
                 onClick={handleRemake}
                 disabled={!onOpen}
                 className={clsx(
-                  'mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left',
+                  'mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left',
                   onOpen ? '' : 'cursor-not-allowed opacity-60'
                 )}
               >
@@ -395,7 +395,7 @@ export function GroupedJobCard({
                 variant="ghost"
                 size="sm"
                 onClick={() => handleAction('download')}
-                className="mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
+                className="mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left"
               >
                 <span>Download</span>
               </Button>
@@ -407,7 +407,7 @@ export function GroupedJobCard({
                 variant="ghost"
                 size="sm"
                 onClick={() => handleAction('open')}
-                className="w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
+                className="w-full justify-between rounded-input px-2 py-1.5 text-left"
               >
                 <span>Open</span>
               </Button>
@@ -416,7 +416,7 @@ export function GroupedJobCard({
                 variant="ghost"
                 size="sm"
                 onClick={() => handleAction('save-image')}
-                className="mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
+                className="mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left"
               >
                 <span>Add to Library</span>
               </Button>
@@ -425,7 +425,7 @@ export function GroupedJobCard({
                 variant="ghost"
                 size="sm"
                 onClick={() => handleAction('download')}
-                className="mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
+                className="mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left"
               >
                 <span>Download</span>
               </Button>
@@ -434,7 +434,7 @@ export function GroupedJobCard({
                 variant="ghost"
                 size="sm"
                 onClick={() => handleAction('copy')}
-                className="mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
+                className="mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left"
               >
                 <span>Copy link</span>
               </Button>
@@ -446,7 +446,7 @@ export function GroupedJobCard({
                 variant="ghost"
                 size="sm"
                 onClick={() => handleAction('open')}
-                className="w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
+                className="w-full justify-between rounded-input px-2 py-1.5 text-left"
               >
                 <span>Open group</span>
                 <span className="text-[11px] text-text-muted">↵</span>
@@ -457,7 +457,7 @@ export function GroupedJobCard({
                   variant="ghost"
                   size="sm"
                   onClick={() => setMenuOpen(false)}
-                  className="mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
+                  className="mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left"
                 >
                   <span>{recreateLabel}</span>
                 </ButtonLink>
@@ -469,7 +469,7 @@ export function GroupedJobCard({
                     variant="ghost"
                     size="sm"
                     onClick={() => handleAction('continue')}
-                    className="mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
+                    className="mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left"
                   >
                     <span>Continue (Hero)</span>
                   </Button>
@@ -478,7 +478,7 @@ export function GroupedJobCard({
                     variant="ghost"
                     size="sm"
                     onClick={() => handleAction('refine')}
-                    className="mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
+                    className="mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left"
                   >
                     <span>Refine (Hero)</span>
                   </Button>
@@ -487,7 +487,7 @@ export function GroupedJobCard({
                     variant="ghost"
                     size="sm"
                     onClick={() => handleAction('branch')}
-                    className="mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
+                    className="mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left"
                   >
                     <span>Branch</span>
                   </Button>
@@ -496,7 +496,7 @@ export function GroupedJobCard({
                     variant="ghost"
                     size="sm"
                     onClick={() => handleAction('compare')}
-                    className="mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
+                    className="mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left"
                   >
                     <span>Compare</span>
                   </Button>
@@ -511,7 +511,7 @@ export function GroupedJobCard({
               size="sm"
               onClick={() => handleAction('save-image')}
               className={clsx(
-                'mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left',
+                'mt-1 w-full justify-between rounded-input px-2 py-1.5 text-left',
                 savingToLibrary ? 'opacity-60' : ''
               )}
               disabled={savingToLibrary}
@@ -525,7 +525,7 @@ export function GroupedJobCard({
               variant="ghost"
               size="sm"
               onClick={() => handleAction('remove')}
-              className="mt-2 w-full justify-between rounded-[8px] px-2 py-1.5 text-left text-red-600 hover:bg-red-50"
+              className="mt-2 w-full justify-between rounded-input px-2 py-1.5 text-left text-red-600 hover:bg-red-50"
             >
               <span>Remove</span>
             </Button>

@@ -45,6 +45,7 @@ const config: Config = {
       borderRadius: {
         card: 'var(--radius-card)',
         input: 'var(--radius-input)',
+        modal: 'var(--radius-xl)',
         pill: '9999px'
       },
       letterSpacing: {

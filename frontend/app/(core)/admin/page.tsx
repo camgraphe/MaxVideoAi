@@ -155,7 +155,7 @@ function HealthStrip({ health }: { health: AdminHealthSnapshot }) {
         );
 
   return (
-    <section className="rounded-[32px] border border-border/80 bg-white/95 p-5 shadow-card">
+    <section className="rounded-card border border-border/80 bg-white/95 p-5 shadow-card">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <HealthTile
           label="Engine signals"
@@ -231,7 +231,7 @@ function HealthTile({
 
 function QuickToolsCard() {
   return (
-    <section className="rounded-[28px] border border-border/70 bg-white/95 p-5 shadow-card">
+    <section className="rounded-card border border-border/70 bg-white/95 p-5 shadow-card">
       <header className="space-y-1">
         <p className="text-xs font-semibold uppercase tracking-[0.35em] text-text-muted">Admin quick tools</p>
         <p className="text-sm text-text-secondary">Jump to common support flows without loading the full modules first.</p>

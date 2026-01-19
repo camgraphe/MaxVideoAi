@@ -253,7 +253,7 @@ export function QuadPreviewPanel({
       {iterationCount > 1 && (
         <figure className="overflow-hidden rounded-card border border-border bg-white/80 p-3 text-center">
           <div className={clsx('relative w-full', compositeAspectClass)}>
-            <div className={clsx('absolute inset-0 grid gap-2 rounded-[12px] bg-[#E7ECF7] p-1', mosaicGridClass)}>
+            <div className={clsx('absolute inset-0 grid gap-2 rounded-card bg-[#E7ECF7] p-1', mosaicGridClass)}>
               {mosaicTiles.map((preview, index) => {
                 const slotKey = preview?.localKey ?? `slot-${index}`;
                 const statusInfo = preview?.localKey ? mosaicStatusMap.get(preview.localKey) : undefined;
@@ -271,7 +271,7 @@ export function QuadPreviewPanel({
                   <div
                     key={slotKey}
                     data-quad-cell={slotKey}
-                    className="relative flex items-center justify-center overflow-hidden rounded-[10px] bg-white/70"
+                    className="relative flex items-center justify-center overflow-hidden rounded-input bg-white/70"
                   >
                     <div className={clsx('relative h-full w-full', cellAspect)}>
                       {tileStatus !== 'failed' && preview?.videoUrl ? (
@@ -318,7 +318,7 @@ export function QuadPreviewPanel({
                       </div>
                     )}
                     {showFailedOverlay && (
-                      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-1 rounded-[10px] bg-red-50 px-3 text-center text-[10px] text-red-700">
+                      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-1 rounded-input bg-red-50 px-3 text-center text-[10px] text-red-700">
                         <span className="font-semibold uppercase tracking-micro text-red-600">Failed</span>
                         {failureMessage && <span className="line-clamp-4 text-[10px] leading-tight text-red-700">{failureMessage}</span>}
                       </div>

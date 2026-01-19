@@ -149,9 +149,9 @@ export function PriceFactorsBar({ preflight, currency = 'USD', isLoading = false
         {[0, 1, 2].map((key) => (
           <div
             key={key}
-          className="h-[40px] min-w-[140px] rounded-[10px] border border-hairline bg-white"
+          className="h-[40px] min-w-[140px] rounded-input border border-hairline bg-white"
           >
-            <div className="skeleton h-full w-full rounded-[10px]" />
+            <div className="skeleton h-full w-full rounded-input" />
           </div>
         ))}
       </div>
@@ -188,7 +188,7 @@ export function PriceFactorsBar({ preflight, currency = 'USD', isLoading = false
           variant="outline"
           size="sm"
           onClick={onNavigate ? () => onNavigate(item.kind) : undefined}
-          className="min-h-0 h-auto items-center gap-2 rounded-[10px] border-hairline bg-white px-3 py-2 text-[12px] leading-4 tracking-[0.08em] text-text-secondary hover:border-text-muted hover:bg-surface-2"
+          className="min-h-0 h-auto items-center gap-2 rounded-input border-hairline bg-white px-3 py-2 text-[12px] leading-4 tracking-[0.08em] text-text-secondary hover:border-text-muted hover:bg-surface-2"
           title={item.tooltip}
         >
           {item.icon && (

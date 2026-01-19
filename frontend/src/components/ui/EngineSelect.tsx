@@ -998,7 +998,7 @@ function BrowseEnginesModal({
       aria-modal="true"
       onClick={handleBackdropClick}
     >
-      <div className="relative flex h-full max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-[24px] border border-border bg-white shadow-2xl">
+      <div className="relative flex h-full max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-modal border border-border bg-white shadow-float">
         <button
           type="button"
           onClick={onClose}

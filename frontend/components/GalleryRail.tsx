@@ -460,7 +460,7 @@ export function GalleryRail({
         prefetch={false}
         variant="ghost"
         size="sm"
-        className="rounded-[10px] border border-transparent px-3 py-1 text-[12px] font-medium text-text-muted hover:text-text-secondary"
+        className="rounded-input border border-transparent px-3 py-1 text-[12px] font-medium text-text-muted hover:text-text-secondary"
       >
         {copy.viewAll}
       </ButtonLink>
@@ -468,18 +468,18 @@ export function GalleryRail({
   );
 
   const curatedBanner = hasCuratedJobs ? (
-    <div className="rounded-[10px] border border-hairline bg-white/80 px-3 py-2 text-[12px] text-text-secondary">{copy.curated}</div>
+    <div className="rounded-card border border-hairline bg-white/80 px-3 py-2 text-[12px] text-text-secondary">{copy.curated}</div>
   ) : null;
 
   const errorBanner = error ? (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-[#FACC15]/60 bg-[#FEF3C7] px-3 py-2 text-[12px] text-[#92400E]">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-[#FACC15]/60 bg-[#FEF3C7] px-3 py-2 text-[12px] text-[#92400E]">
       <span role="alert">{copy.error}</span>
       <Button
         type="button"
         variant="outline"
         size="sm"
         onClick={retry}
-        className="rounded-[8px] border-[#92400E]/20 bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-[#92400E] hover:bg-white"
+        className="rounded-input border-[#92400E]/20 bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-[#92400E] hover:bg-white"
       >
         {copy.retry}
       </Button>
@@ -547,7 +547,7 @@ function Snackbar({ state, onClose }: { state: SnackbarState | null; onClose: ()
 
   return createPortal(
     <div className="fixed inset-x-0 bottom-6 z-[9998] flex justify-center px-4">
-      <div className="inline-flex max-w-xl flex-wrap items-center gap-3 rounded-[14px] border border-white/15 bg-black/80 px-4 py-3 text-[13px] text-white shadow-lg backdrop-blur">
+      <div className="inline-flex max-w-xl flex-wrap items-center gap-3 rounded-card border border-white/15 bg-black/80 px-4 py-3 text-[13px] text-white shadow-lg backdrop-blur">
         <span>{state.message}</span>
         {actions.length > 0 && (
           <div className="flex flex-wrap gap-2">

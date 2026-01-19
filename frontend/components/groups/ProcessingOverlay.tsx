@@ -118,7 +118,7 @@ export function ProcessingOverlay({
     <>
       <div
         className={clsx(
-          'processing-overlay absolute inset-0 grid place-items-center rounded-[18px]',
+          'processing-overlay absolute inset-0 grid place-items-center rounded-card',
           `processing-overlay--${tone}`,
           className
         )}

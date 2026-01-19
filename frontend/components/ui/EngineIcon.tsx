@@ -27,7 +27,7 @@ export function EngineIcon({ engine, label, size = 36, className, rounded = 'xl'
     explicitLabel
   );
 
-  const borderRadiusClass = rounded === 'full' ? 'rounded-full' : 'rounded-[12px]';
+  const borderRadiusClass = rounded === 'full' ? 'rounded-full' : 'rounded-card';
   const fontSize = computeFontSize(size);
 
   return (

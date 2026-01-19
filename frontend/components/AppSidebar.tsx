@@ -172,7 +172,7 @@ export function AppSidebar() {
           href={item.href}
           prefetch={false}
           className={clsx(
-            'group relative flex w-full items-center rounded-[14px] px-2 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            'group relative flex w-full items-center rounded-card px-2 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
             collapsedNav ? 'justify-center gap-0' : 'gap-3 px-3',
             active
               ? 'bg-surface-2 text-text-primary'
@@ -190,7 +190,7 @@ export function AppSidebar() {
           />
           <span
             className={clsx(
-              'flex items-center justify-center rounded-[12px] border transition-colors duration-150',
+              'flex items-center justify-center rounded-card border transition-colors duration-150',
               collapsedNav ? 'h-10 w-10' : 'h-12 w-12',
               active
                 ? 'border-text-muted bg-surface-2 text-text-primary'

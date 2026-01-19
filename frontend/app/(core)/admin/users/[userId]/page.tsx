@@ -37,7 +37,7 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
         </p>
       </header>
 
-      <section className="rounded-[28px] border border-border/70 bg-white/95 p-5 shadow-card">
+      <section className="rounded-card border border-border/70 bg-white/95 p-5 shadow-card">
         <h2 className="text-sm font-semibold uppercase tracking-[0.35em] text-text-muted">Profile</h2>
         {profile ? (
           <dl className="mt-4 grid gap-4 md:grid-cols-2">
@@ -76,7 +76,7 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
         <ImpersonationCard userId={userId} profile={profile} serviceRoleConfigured={overview.serviceRoleConfigured} />
       </section>
 
-      <section className="rounded-[28px] border border-border/70 bg-white/95 p-5 shadow-card">
+      <section className="rounded-card border border-border/70 bg-white/95 p-5 shadow-card">
         <header className="flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.35em] text-text-muted">Engine usage</p>
@@ -113,7 +113,7 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
         </div>
       </section>
 
-      <section className="rounded-[28px] border border-border/70 bg-white/95 p-5 shadow-card">
+      <section className="rounded-card border border-border/70 bg-white/95 p-5 shadow-card">
         <header className="flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.35em] text-text-muted">Recent jobs</p>
@@ -158,7 +158,7 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
         </div>
       </section>
 
-      <section className="rounded-[28px] border border-border/70 bg-white/95 p-5 shadow-card">
+      <section className="rounded-card border border-border/70 bg-white/95 p-5 shadow-card">
         <header className="flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.35em] text-text-muted">Top-ups</p>

@@ -442,13 +442,13 @@ export function CompositePreviewDock({
         <div className="flex flex-col items-center">
           <div
             ref={previewRef}
-            className="relative w-full max-w-[960px] rounded-[16px] border border-dashed border-border/70 bg-[#EDF1FA] p-[8px]"
+            className="relative w-full max-w-[960px] rounded-card border border-dashed border-border/70 bg-[#EDF1FA] p-[8px]"
             style={{ aspectRatio: '16 / 9' }}
           >
             {showSkeleton ? (
               <div className={clsx('grid h-full w-full gap-[6px]', gridClass)}>
                 {Array.from({ length: group ? LAYOUT_SLOT_COUNT[group.layout] ?? 1 : 1 }).map((_, index) => (
-                  <div key={`dock-skeleton-${index}`} className="relative flex items-center justify-center overflow-hidden rounded-[12px] bg-white/70">
+                  <div key={`dock-skeleton-${index}`} className="relative flex items-center justify-center overflow-hidden rounded-card bg-white/70">
                     <div className="skeleton absolute inset-0" />
                   </div>
                 ))}
@@ -458,7 +458,7 @@ export function CompositePreviewDock({
                 {slots.map((item, index) => {
                   if (!item) {
                     return (
-                      <div key={`dock-empty-${index}`} className="relative flex items-center justify-center overflow-hidden rounded-[12px] bg-white/70 text-xs text-text-muted">
+                      <div key={`dock-empty-${index}`} className="relative flex items-center justify-center overflow-hidden rounded-card bg-white/70 text-xs text-text-muted">
                         {copy.placeholder}
                       </div>
                     );
@@ -488,7 +488,7 @@ export function CompositePreviewDock({
                         );
 
                   return (
-                    <figure key={itemKey} className="group relative flex items-center justify-center overflow-hidden rounded-[12px] bg-[var(--surface-2)]">
+                    <figure key={itemKey} className="group relative flex items-center justify-center overflow-hidden rounded-card bg-[var(--surface-2)]">
                       <div className="absolute inset-0">
                         {itemStatus === 'completed' && video ? (
                           <>
@@ -543,7 +543,7 @@ export function CompositePreviewDock({
                         />
                       ) : null}
                       <div className="pointer-events-none block" style={{ width: '100%', aspectRatio: '16 / 9' }} aria-hidden />
-                      <div className="pointer-events-none absolute inset-0 rounded-[12px] border border-white/10 transition group-hover:border-white/30" />
+                      <div className="pointer-events-none absolute inset-0 rounded-card border border-white/10 transition group-hover:border-white/30" />
                       {itemStatus !== 'completed' && !showGroupError ? (
                         <ProcessingOverlay
                           className="absolute inset-0"
@@ -559,13 +559,13 @@ export function CompositePreviewDock({
                 })}
               </div>
             ) : (
-              <div className="flex h-full w-full flex-col items-center justify-center rounded-[12px] bg-white/80 text-sm text-text-secondary">
+              <div className="flex h-full w-full flex-col items-center justify-center rounded-card bg-white/80 text-sm text-text-secondary">
                 Select a take to preview
               </div>
             )}
 
             {showGroupError ? (
-              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[16px] bg-black/65 px-6 text-center text-white">
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-card bg-black/65 px-6 text-center text-white">
                 <span className="text-sm font-semibold uppercase tracking-micro">Preview unavailable</span>
                 <span className="mt-2 text-xs text-white/85">{group?.errorMsg ?? 'Generation failed. Please retry.'}</span>
               </div>
@@ -574,7 +574,7 @@ export function CompositePreviewDock({
           <div className="mt-3 flex w-full max-w-[960px]">
             <div
               ref={toolbarRef}
-              className="flex w-full items-center justify-center rounded-[14px] border border-hairline/70 bg-white/75 px-3 py-2 shadow-sm backdrop-blur"
+              className="flex w-full items-center justify-center rounded-card border border-hairline/70 bg-white/75 px-3 py-2 shadow-sm backdrop-blur"
             >
               {toolbarControls}
             </div>
