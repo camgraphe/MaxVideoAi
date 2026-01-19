@@ -780,19 +780,19 @@ Cette section liste ce qui existe deja en tokens/vars (valeurs connues) et ce qu
   - `--container-max` = `1280px`
   - `--content-max` = `1120px`
   - `--page-padding-x` = `16px` *(mobile baseline; on peut augmenter via breakpoints Tailwind)*
-  - `--section-padding-y` = `64px` *(cible douce; actuel frequent = 80-96px)*
-  - `--stack-gap` = `16px`
+  - `--section-padding-y` = `72px` *(mobile; desktop = `88px`)*
+  - `--stack-gap` = `20px`
   - `--stack-gap-sm` = `12px`
-  - `--stack-gap-lg` = `24px`
-  - `--grid-gap` = `24px`
-  - `--grid-gap-sm` = `16px`
-  - `--grid-gap-lg` = `32px`
+  - `--stack-gap-lg` = `32px`
+  - `--grid-gap` = `28px`
+  - `--grid-gap-sm` = `20px`
+  - `--grid-gap-lg` = `36px`
   - `--card-pad` = `16px`
 
 > Notes :
 > - On garde la scale Tailwind par défaut, mais ce subset sert de **référence design** (anti-drift).
 > - `--page-padding-x` peut être surchargé via `md:`/`lg:` côté Tailwind au lieu de variables responsives.
-> - Spacing doux (migration) : viser `py-16`/`py-20` au lieu de `py-24` pour les sections standard, sans toucher aux heroes.
+> - Spacing doux (migration) : utiliser `--section-padding-y` (72/88) pour les sections standard, sans toucher aux heroes.
 
 #### Phase 2 — sizing UI (cohérence composants)
 

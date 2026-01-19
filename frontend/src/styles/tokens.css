@@ -69,13 +69,13 @@
   --container-max: 1280px;
   --content-max: 1120px;
   --page-padding-x: 16px;
-  --section-padding-y: 64px;
-  --stack-gap: 16px;
+  --section-padding-y: 72px;
+  --stack-gap: 20px;
   --stack-gap-sm: 12px;
-  --stack-gap-lg: 24px;
-  --grid-gap: 24px;
-  --grid-gap-sm: 16px;
-  --grid-gap-lg: 32px;
+  --stack-gap-lg: 32px;
+  --grid-gap: 28px;
+  --grid-gap-sm: 20px;
+  --grid-gap-lg: 36px;
   --card-pad: 16px;
   --input-height: 40px;
   --button-height: 40px;
@@ -115,7 +115,7 @@
 
 @media (min-width: 1024px) {
   :root {
-    --section-padding-y: 80px;
+    --section-padding-y: 88px;
   }
 }
 
