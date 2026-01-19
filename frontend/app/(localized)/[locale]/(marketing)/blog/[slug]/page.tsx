@@ -292,7 +292,7 @@ export default async function BlogPostPage({ params }: { params: Params }) {
       </article>
 
       {relatedPosts.length ? (
-        <section className="mt-12 space-y-4">
+        <section className="mt-12 stack-gap">
           <div>
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">Related reading</h2>
             <p className="text-sm text-text-secondary">More launch notes and engine breakdowns curated for you.</p>

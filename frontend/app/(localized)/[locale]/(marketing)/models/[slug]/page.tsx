@@ -1227,7 +1227,7 @@ function Sora2PageLayout({
           {backLabel}
         </Link>
 
-        <section className="mt-6 space-y-4 rounded-3xl border border-hairline bg-white/80 p-6 shadow-card sm:p-8">
+        <section className="mt-6 stack-gap rounded-3xl border border-hairline bg-white/80 p-6 shadow-card sm:p-8">
           <div className="space-y-6">
             <div className="space-y-3 text-center">
               <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">
@@ -1340,14 +1340,14 @@ function Sora2PageLayout({
           </nav>
         ) : null}
 
-        <section id="examples" className="mt-12 space-y-4">
+        <section id="examples" className="mt-12 stack-gap">
           {copy.whatTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.whatTitle}</h2> : null}
           {copy.whatIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro1}</p> : null}
           {copy.whatIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro2}</p> : null}
           {quickStartTitle && quickStartBlocks.length ? (
-            <div className="space-y-4 rounded-2xl border border-hairline bg-white/70 p-4 shadow-card">
+            <div className="stack-gap rounded-2xl border border-hairline bg-white/70 p-4 shadow-card">
               <h3 className="text-base font-semibold text-text-primary">{quickStartTitle}</h3>
-              <div className="space-y-4">
+              <div className="stack-gap">
                 {quickStartBlocks.map((block) => (
                   <div key={block.title} className="space-y-2">
                     <p className="text-sm font-semibold text-text-primary">
@@ -1379,7 +1379,7 @@ function Sora2PageLayout({
         </section>
 
         {specSections.length ? (
-          <section id="specs" className="mt-12 space-y-4">
+          <section id="specs" className="mt-12 stack-gap">
             {copy.specTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.specTitle}</h2> : null}
             {copy.specNote ? (
               <blockquote className="rounded-2xl border border-hairline bg-surface-2 px-4 py-3 text-sm text-text-secondary">
@@ -1429,7 +1429,7 @@ function Sora2PageLayout({
           </section>
         ) : null}
 
-        <section id={textAnchorId} className="mt-12 space-y-4">
+        <section id={textAnchorId} className="mt-12 stack-gap">
           {copy.galleryTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.galleryTitle}</h2> : null}
           {galleryVideos.length ? (
             <>
@@ -1444,7 +1444,7 @@ function Sora2PageLayout({
                   </Link>
                 </p>
               ) : null}
-            <div className="mt-6 space-y-4">
+            <div className="mt-6 stack-gap">
               <div className="overflow-x-auto pb-2">
                 <div className="flex min-w-full gap-4">
                   {galleryVideos.slice(0, 6).map((video) => (
@@ -1514,7 +1514,7 @@ function Sora2PageLayout({
           </div>
         </section>
 
-        <section id={imageAnchorId} className="mt-12 space-y-4">
+        <section id={imageAnchorId} className="mt-12 stack-gap">
           {copy.promptTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.promptTitle}</h2> : null}
           {copy.promptIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.promptIntro}</p> : null}
           <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
@@ -1541,7 +1541,7 @@ function Sora2PageLayout({
           </div>
         </section>
 
-        <section className="mt-12 space-y-4">
+        <section className="mt-12 stack-gap">
           {copy.imageTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.imageTitle}</h2> : null}
           {copy.imageIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.imageIntro}</p> : null}
           <div className="grid gap-4 lg:grid-cols-2">
@@ -1566,7 +1566,7 @@ function Sora2PageLayout({
           </div>
         </section>
 
-        <section className="mt-12 space-y-4">
+        <section className="mt-12 stack-gap">
           {copy.multishotTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.multishotTitle}</h2> : null}
           {copy.multishotIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.multishotIntro1}</p> : null}
           {copy.multishotIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.multishotIntro2}</p> : null}
@@ -1592,7 +1592,7 @@ function Sora2PageLayout({
                 </div>
               )}
             </div>
-            <div className="space-y-4 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card lg:order-1">
+            <div className="stack-gap rounded-2xl border border-hairline bg-white/80 p-4 shadow-card lg:order-1">
               {copy.demoPromptLabel ? (
                 <p className="text-sm font-semibold text-text-primary">{copy.demoPromptLabel}</p>
               ) : null}
@@ -1655,7 +1655,7 @@ function Sora2PageLayout({
         ) : null}
 
         {copy.safetyTitle || safetyRules.length ? (
-          <section id="safety" className="mt-12 space-y-4">
+          <section id="safety" className="mt-12 stack-gap">
             {copy.safetyTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.safetyTitle}</h2> : null}
             <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
               {safetyRules.length ? (
@@ -1678,7 +1678,7 @@ function Sora2PageLayout({
         ) : null}
 
         {copy.comparisonTitle || comparisonPoints.length ? (
-          <section className="mt-12 space-y-4">
+          <section className="mt-12 stack-gap">
             {copy.comparisonTitle ? (
               <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.comparisonTitle}</h2>
             ) : null}
@@ -1704,7 +1704,7 @@ function Sora2PageLayout({
         ) : null}
 
         {faqList.length ? (
-          <section id="faq" className="mt-12 space-y-4">
+          <section id="faq" className="mt-12 stack-gap">
             {faqTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{faqTitle}</h2> : null}
             <div className="grid gap-3 md:grid-cols-2">
               {faqList.map((entry) => (
@@ -1722,7 +1722,7 @@ function Sora2PageLayout({
         <FAQSchema questions={faqJsonLdEntries} />
 
         {relatedEngines.length ? (
-          <section className="mt-12 space-y-4">
+          <section className="mt-12 stack-gap">
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
               {copy.relatedTitle ?? 'Explore other models'}
             </h2>
@@ -2258,7 +2258,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
         </p>
       ) : null}
 
-      <section id="specs" className="mt-10 space-y-4">
+      <section id="specs" className="mt-10 stack-gap">
         <div className="rounded-card border border-hairline bg-white p-6 shadow-card">
           <h2 className="text-lg font-semibold text-text-primary">{detailCopy.overviewTitle}</h2>
           <dl className="mt-4 grid gap-3 text-sm text-text-secondary sm:grid-cols-2">
@@ -2300,7 +2300,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       {promptEntries.length > 0 && (
         <section
           id={!attachTextIdToPromptStructure ? textAnchorId : undefined}
-          className="mt-10 space-y-4"
+          className="mt-10 stack-gap"
         >
           <h2 className="text-lg font-semibold text-text-primary">{detailCopy.promptsTitle}</h2>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -2316,7 +2316,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       )}
 
       {faqEntries.length > 0 && (
-        <section id="faq" className="mt-10 space-y-4">
+        <section id="faq" className="mt-10 stack-gap">
           <h2 className="text-lg font-semibold text-text-primary">{detailCopy.faqTitle}</h2>
           <div className="space-y-3 text-sm text-text-secondary">
             {faqEntries.map(({ question, answer }) => (

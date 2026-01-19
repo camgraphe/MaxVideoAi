@@ -200,7 +200,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0" />
           </div>
-          <div className="space-y-4 px-6 pb-8 pt-6 sm:px-10">
+          <div className="stack-gap px-6 pb-8 pt-6 sm:px-10">
             <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-micro text-brand">
               <span className="rounded-pill bg-surface-2 px-3 py-1 font-semibold text-brand">
                 {new Date(featured.date).toLocaleDateString(localeDateMap[locale], {

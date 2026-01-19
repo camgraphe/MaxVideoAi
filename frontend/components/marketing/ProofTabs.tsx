@@ -43,7 +43,7 @@ export function ProofTabs({ pricingRules }: ProofTabsProps) {
             );
           })}
         </div>
-        <div className="mt-6 space-y-4">
+        <div className="mt-6 stack-gap">
           <div>
             <h3 className="text-xl font-semibold text-text-primary sm:text-2xl">{activeTab.heading}</h3>
             <p className="mt-2 max-w-3xl text-base text-text-secondary sm:text-lg">{activeTab.body}</p>

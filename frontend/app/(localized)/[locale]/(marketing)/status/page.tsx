@@ -81,7 +81,7 @@ export default async function StatusPage() {
           </ul>
         </div>
       </section>
-      <section className="mt-12 space-y-4">
+      <section className="mt-12 stack-gap">
         {content.systems.map((system) => (
           <article key={system.name} className="flex items-start justify-between gap-4 rounded-card border border-hairline bg-white p-4 shadow-card">
             <div>

@@ -227,7 +227,7 @@ export default async function AiVideoEnginesPage() {
         </div>
       </section>
 
-      <section className="mt-12 space-y-4">
+      <section className="mt-12 stack-gap">
         <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{faqTitle}</h2>
         <div className="space-y-3 text-base leading-relaxed text-text-secondary">
           {faqItems.map((item) => (
