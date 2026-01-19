@@ -6,6 +6,7 @@ import { Link } from '@/i18n/navigation';
 import Script from 'next/script';
 import { getTranslations } from 'next-intl/server';
 import { PriceChip } from '@/components/marketing/PriceChip';
+import { ButtonLink } from '@/components/ui/Button';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
 import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
@@ -571,19 +572,18 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
           </p>
         </div>
         <div className="flex flex-col items-center gap-3 sm:flex-row">
-          <Link
+          <ButtonLink
             href="/app"
             prefetch={false}
-            className="inline-flex items-center rounded-pill bg-brand px-6 py-3 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            size="lg"
+            className="shadow-card"
+            linkComponent={Link}
           >
             {hero.primaryCta}
-          </Link>
-          <Link
-            href="#how-it-works"
-            className="inline-flex items-center rounded-pill border border-hairline px-6 py-3 text-sm font-semibold text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-          >
+          </ButtonLink>
+          <ButtonLink href="#how-it-works" variant="outline" size="lg" linkComponent={Link}>
             {hero.secondaryCta}
-          </Link>
+          </ButtonLink>
         </div>
         <p className="mt-2 text-center text-sm text-muted-foreground">
           <Link href="/pricing" className="underline underline-offset-2">

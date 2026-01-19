@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import clsx from 'clsx';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
+import { Button } from '@/components/ui/Button';
 import mediaStyles from './examples-media.module.css';
 import masonryStyles from './examples-masonry.module.css';
 
@@ -144,13 +145,14 @@ export default function ExamplesGalleryGridClient({
       )}
       {pendingVideos.length && !isLighthouse ? (
         <div className="flex justify-center">
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={handleLoadMore}
-            className="rounded-full border border-brand/40 bg-white px-4 py-2 text-sm font-semibold text-brand shadow-card transition hover:border-brand hover:bg-brand/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="border-brand/40 text-brand shadow-card hover:border-brand hover:bg-brand/10"
           >
             {loadMoreLabel}
-          </button>
+          </Button>
         </div>
       ) : null}
     </div>
