@@ -596,10 +596,10 @@ function AssetDropzone({
                 {asset ? (
                   <>
                     {asset.kind === 'image' ? (
-                      <img src={asset.previewUrl} alt={asset.name} className="absolute inset-0 h-full w-full object-cover" />
+                      <img src={asset.previewUrl} alt={asset.name} className="absolute inset-0 h-full w-full bg-surface object-contain" />
                     ) : (
                       <>
-                            <video src={asset.previewUrl} controls className="absolute inset-0 h-full w-full bg-black object-cover" />
+                            <video src={asset.previewUrl} controls className="absolute inset-0 h-full w-full bg-black object-contain" />
                             <AudioEqualizerBadge tone="light" size="sm" label="Video includes audio" />
                           </>
                         )}

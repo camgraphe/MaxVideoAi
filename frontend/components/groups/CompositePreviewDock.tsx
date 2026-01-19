@@ -217,6 +217,7 @@ export function CompositePreviewDock({
   const gridClass = group ? GRID_CLASS[group.layout] ?? 'grid-cols-1' : 'grid-cols-1';
   const tileCount = group ? Math.min(group.items.length, LAYOUT_SLOT_COUNT[group.layout] ?? group.items.length) : 0;
   const showGroupError = group?.status === 'error';
+  const isSingleLayout = group?.layout === 'x1';
   const primaryMediaUrl = useMemo(() => {
     if (!group) return null;
     const videoItem = group.items.find((item) => Boolean(item?.url) && isVideo(item));
@@ -442,23 +443,38 @@ export function CompositePreviewDock({
         <div className="flex flex-col items-center">
           <div
             ref={previewRef}
-            className="relative w-full max-w-[960px] rounded-card border border-dashed border-border/70 bg-placeholder p-[8px]"
+            className={clsx(
+              'relative w-full max-w-[960px] rounded-card border border-dashed border-border/70 bg-placeholder',
+              isSingleLayout ? 'overflow-hidden p-0' : 'p-[8px]'
+            )}
             style={{ aspectRatio: '16 / 9' }}
           >
             {showSkeleton ? (
-              <div className={clsx('grid h-full w-full gap-[6px]', gridClass)}>
+              <div className={clsx('grid h-full w-full', gridClass, isSingleLayout ? 'gap-0' : 'gap-[6px]')}>
                 {Array.from({ length: group ? LAYOUT_SLOT_COUNT[group.layout] ?? 1 : 1 }).map((_, index) => (
-                  <div key={`dock-skeleton-${index}`} className="relative flex items-center justify-center overflow-hidden rounded-card bg-surface-glass-70">
+                  <div
+                    key={`dock-skeleton-${index}`}
+                    className={clsx(
+                      'relative flex items-center justify-center overflow-hidden bg-surface-glass-70',
+                      isSingleLayout ? 'rounded-none' : 'rounded-card'
+                    )}
+                  >
                     <div className="skeleton absolute inset-0" />
                   </div>
                 ))}
               </div>
             ) : group ? (
-              <div className={clsx('grid h-full w-full gap-[6px]', gridClass)}>
+              <div className={clsx('grid h-full w-full', gridClass, isSingleLayout ? 'gap-0' : 'gap-[6px]')}>
                 {slots.map((item, index) => {
                   if (!item) {
                     return (
-                      <div key={`dock-empty-${index}`} className="relative flex items-center justify-center overflow-hidden rounded-card bg-surface-glass-70 text-xs text-text-muted">
+                      <div
+                        key={`dock-empty-${index}`}
+                        className={clsx(
+                          'relative flex items-center justify-center overflow-hidden bg-surface-glass-70 text-xs text-text-muted',
+                          isSingleLayout ? 'rounded-none' : 'rounded-card'
+                        )}
+                      >
                         {copy.placeholder}
                       </div>
                     );
@@ -488,7 +504,13 @@ export function CompositePreviewDock({
                         );
 
                   return (
-                    <figure key={itemKey} className="group relative flex items-center justify-center overflow-hidden rounded-card bg-[var(--surface-2)]">
+                    <figure
+                      key={itemKey}
+                      className={clsx(
+                        'group relative flex items-center justify-center overflow-hidden bg-[var(--surface-2)]',
+                        isSingleLayout ? 'rounded-none' : 'rounded-card'
+                      )}
+                    >
                       <div className="absolute inset-0">
                         {itemStatus === 'completed' && video ? (
                           <>
@@ -543,7 +565,12 @@ export function CompositePreviewDock({
                         />
                       ) : null}
                       <div className="pointer-events-none block" style={{ width: '100%', aspectRatio: '16 / 9' }} aria-hidden />
-                      <div className="pointer-events-none absolute inset-0 rounded-card border border-surface-on-media-10 transition group-hover:border-surface-on-media-30" />
+                      <div
+                        className={clsx(
+                          'pointer-events-none absolute inset-0 border border-surface-on-media-10 transition group-hover:border-surface-on-media-30',
+                          isSingleLayout ? 'rounded-none' : 'rounded-card'
+                        )}
+                      />
                       {itemStatus !== 'completed' && !showGroupError ? (
                         <ProcessingOverlay
                           className="absolute inset-0"

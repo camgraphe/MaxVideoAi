@@ -197,6 +197,7 @@ export function GroupedJobCard({
     return group.previews;
   }, [group.previews]);
   const previewCount = useMemo(() => Math.max(1, Math.min(4, group.count)), [group.count]);
+  const isSinglePreview = previewCount === 1;
   const previewGridClass = useMemo(() => {
     if (previewCount === 1) return 'grid-cols-1';
     if (previewCount === 3) return 'grid-cols-3';
@@ -248,7 +249,13 @@ export function GroupedJobCard({
         }}
       >
         <div className="relative w-full" style={{ aspectRatio: '16 / 9' }}>
-          <div className={clsx('absolute inset-0 grid gap-1 bg-placeholder p-1', previewGridClass)}>
+          <div
+            className={clsx(
+              'absolute inset-0 grid bg-placeholder',
+              previewGridClass,
+              isSinglePreview ? 'p-0' : 'gap-1 p-1'
+            )}
+          >
             {Array.from({ length: previewCount }).map((_, index) => {
               const preview = previews[index];
               const member = preview ? group.members.find((entry) => entry.id === preview.id) : undefined;
@@ -260,7 +267,10 @@ export function GroupedJobCard({
               return (
                 <div
                   key={previewKey}
-                  className="relative flex items-center justify-center overflow-hidden rounded-card bg-[var(--surface-2)]"
+                  className={clsx(
+                    'relative flex items-center justify-center overflow-hidden bg-[var(--surface-2)]',
+                    isSinglePreview ? 'rounded-none' : 'rounded-card'
+                  )}
                 >
                   <div className="absolute inset-0">
                     {isCompleted ? (
@@ -312,54 +322,56 @@ export function GroupedJobCard({
           </button>
         )}
       </figure>
-      <div className="flex items-center justify-between gap-4 border-t border-hairline bg-surface-glass-80 px-3 py-2 text-sm text-text-secondary">
-        <div className="flex items-center gap-2">
-          <EngineIcon engine={engine ?? undefined} label={hero.engineLabel} size={28} className="shrink-0" />
-          {detailLabel ? (
-            <span className="text-[11px] uppercase tracking-micro text-text-muted">{detailLabel}</span>
-          ) : null}
-        </div>
-        <div className="flex items-center gap-2">
-          {isImageGroup && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={(event) => {
-                event.stopPropagation();
-                handleAction('save-image');
-              }}
-              disabled={savingToLibrary}
-              className={clsx(
-                'min-h-0 h-auto rounded-pill px-2.5 py-1 text-[11px] font-semibold',
-                savingToLibrary
-                  ? 'border-border bg-surface-glass-70 text-text-muted'
-                  : 'border-brand bg-surface text-brand hover:bg-surface-2 hover:text-brand'
-              )}
-            >
-              {savingToLibrary ? imageLibrarySavingLabel : imageLibraryLabel}
-            </Button>
-          )}
-          {isCurated ? (
-            <div className="flex items-center gap-2">
-              <span className="rounded-pill border border-hairline bg-bg px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
-                Sample
-              </span>
-              {showImageCta ? (
-                <ButtonLink
-                  href={imageCtaHref}
-                  variant="outline"
-                  size="sm"
-                  className="min-h-0 h-auto rounded-pill border-brand px-2 py-0.5 text-[11px] font-semibold text-brand hover:bg-surface-2 hover:text-brand"
-                >
-                  {imageCtaLabel}
-                </ButtonLink>
-              ) : null}
-            </div>
-          ) : null}
-          {formattedPrice ? (
-            <span className="flex-shrink-0 text-[12px] font-semibold text-text-primary">{formattedPrice}</span>
-          ) : null}
+      <div className="overflow-hidden rounded-b-card">
+        <div className="flex items-center justify-between gap-4 border-t border-hairline bg-surface-glass-80 px-3 py-2 text-sm text-text-secondary">
+          <div className="flex items-center gap-2">
+            <EngineIcon engine={engine ?? undefined} label={hero.engineLabel} size={28} className="shrink-0" />
+            {detailLabel ? (
+              <span className="text-[11px] uppercase tracking-micro text-text-muted">{detailLabel}</span>
+            ) : null}
+          </div>
+          <div className="flex items-center gap-2">
+            {isImageGroup && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleAction('save-image');
+                }}
+                disabled={savingToLibrary}
+                className={clsx(
+                  'min-h-0 h-auto rounded-pill px-2.5 py-1 text-[11px] font-semibold',
+                  savingToLibrary
+                    ? 'border-border bg-surface-glass-70 text-text-muted'
+                    : 'border-brand bg-surface text-brand hover:bg-surface-2 hover:text-brand'
+                )}
+              >
+                {savingToLibrary ? imageLibrarySavingLabel : imageLibraryLabel}
+              </Button>
+            )}
+            {isCurated ? (
+              <div className="flex items-center gap-2">
+                <span className="rounded-pill border border-hairline bg-bg px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
+                  Sample
+                </span>
+                {showImageCta ? (
+                  <ButtonLink
+                    href={imageCtaHref}
+                    variant="outline"
+                    size="sm"
+                    className="min-h-0 h-auto rounded-pill border-brand px-2 py-0.5 text-[11px] font-semibold text-brand hover:bg-surface-2 hover:text-brand"
+                  >
+                    {imageCtaLabel}
+                  </ButtonLink>
+                ) : null}
+              </div>
+            ) : null}
+            {formattedPrice ? (
+              <span className="flex-shrink-0 text-[12px] font-semibold text-text-primary">{formattedPrice}</span>
+            ) : null}
+          </div>
         </div>
       </div>
 
