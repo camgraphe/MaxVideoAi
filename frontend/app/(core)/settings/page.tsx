@@ -13,6 +13,7 @@ import deepmerge from 'deepmerge';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { authFetch } from '@/lib/authFetch';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
+import { Button } from '@/components/ui/Button';
 
 type Tab = 'account' | 'team' | 'privacy' | 'notifications';
 
@@ -206,11 +207,15 @@ function TabLink({
   badgeSrSoon?: string;
 }) {
   return (
-    <button
+    <Button
       type="button"
       id={`settings-tab-${id}`}
       onClick={onClick}
-      className={`rounded-input border px-3 py-2 text-sm ${active ? 'border-brand bg-white text-text-primary shadow-card' : 'border-border bg-bg text-text-secondary hover:bg-white'}`}
+      variant="outline"
+      size="sm"
+      className={`px-3 text-sm ${
+        active ? 'border-brand bg-white text-text-primary shadow-card hover:border-brand' : 'border-border bg-bg text-text-secondary hover:bg-white'
+      }`}
       aria-current={active ? 'page' : undefined}
     >
       <span className="flex items-center gap-2">
@@ -222,7 +227,7 @@ function TabLink({
           </>
         )}
       </span>
-    </button>
+    </Button>
   );
 }
 
@@ -302,8 +307,12 @@ function TeamTab({ live, copy }: { live: boolean; copy: SettingsCopy['team'] }) 
         <>
           <p className="text-sm text-text-secondary">{copy.liveDescription}</p>
           <div className="mt-3 flex gap-2">
-            <button className="rounded-input border border-border px-3 py-2 text-sm hover:bg-bg">{copy.invite}</button>
-            <button className="rounded-input border border-border px-3 py-2 text-sm hover:bg-bg">{copy.createProject}</button>
+            <Button variant="outline" size="sm" className="border-border px-3 text-sm hover:bg-bg">
+              {copy.invite}
+            </Button>
+            <Button variant="outline" size="sm" className="border-border px-3 text-sm hover:bg-bg">
+              {copy.createProject}
+            </Button>
           </div>
         </>
       ) : (

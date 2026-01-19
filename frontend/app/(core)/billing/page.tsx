@@ -11,6 +11,8 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { USD_TOPUP_TIERS } from '@/config/topupTiers';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import {
   readLastKnownMember,
   readLastKnownUserId,
@@ -722,7 +724,7 @@ export default function BillingPage() {
                 <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
                   <div className="relative flex-1">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-text-muted">$</span>
-                    <input
+                    <Input
                       type="number"
                       min={10}
                       step={1}
@@ -730,21 +732,20 @@ export default function BillingPage() {
                       value={customAmountInput}
                       onChange={(event) => setCustomAmountInput(event.target.value)}
                       placeholder={copy.wallet.customPlaceholder}
-                      className="w-full rounded-input border border-border bg-white px-7 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="bg-white px-7"
                     />
                   </div>
-                  <button
+                  <Button
                     type="button"
                     disabled={!customAmountValid}
                     onClick={() => customAmountCents && handleTopUp(customAmountCents)}
-                    className={`rounded-input px-4 py-2 text-sm font-semibold transition ${
-                      customAmountValid
-                        ? 'bg-brand text-on-brand hover:bg-brandHover'
-                        : 'cursor-not-allowed bg-neutral-200 text-text-muted'
+                    size="md"
+                    className={`px-4 ${
+                      customAmountValid ? '' : 'bg-neutral-200 text-text-muted hover:bg-neutral-200 disabled:opacity-100'
                     }`}
                   >
                     {copy.wallet.customCta}
-                  </button>
+                  </Button>
                 </div>
                 <p className={`mt-2 text-xs ${customAmountError ? 'text-state-warning' : 'text-text-muted'}`}>
                   {customAmountError ?? copy.wallet.customHint}
@@ -812,8 +813,12 @@ export default function BillingPage() {
               <>
                 <p className="mt-1 text-sm text-text-secondary">{copy.teams.description}</p>
                 <div className="mt-3 flex gap-2">
-                  <button className="rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg">{copy.teams.actions.invite}</button>
-                  <button className="rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg">{copy.teams.actions.budgets}</button>
+                  <Button variant="outline" size="sm" className="border-border bg-white px-3 text-sm hover:bg-bg">
+                    {copy.teams.actions.invite}
+                  </Button>
+                  <Button variant="outline" size="sm" className="border-border bg-white px-3 text-sm hover:bg-bg">
+                    {copy.teams.actions.budgets}
+                  </Button>
                 </div>
                 <p className="mt-2 text-xs text-text-muted">{copy.teams.note}</p>
               </>
@@ -833,10 +838,12 @@ export default function BillingPage() {
           </section>
 
           <section className="mb-6 rounded-card border border-border bg-white p-4 shadow-card">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={toggleReceipts}
-                className="flex w-full items-center justify-between rounded-input border border-transparent px-2 py-2 text-left transition hover:bg-[rgba(69,112,255,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full items-start justify-between border border-transparent px-2 py-2 text-left hover:bg-[rgba(69,112,255,0.08)]"
                 aria-expanded={!receiptsCollapsed}
               >
                 <div>
@@ -852,7 +859,7 @@ export default function BillingPage() {
                     ▾
                   </span>
                 </div>
-              </button>
+              </Button>
             {receipts.error && <p className="text-sm text-state-warning">{receipts.error}</p>}
             <div className="mt-3 space-y-3">
               {visibleReceipts.length === 0 && !receipts.loading && (
@@ -916,13 +923,26 @@ export default function BillingPage() {
               {!receiptsCollapsed && (
                 <div className="flex items-center gap-2">
                   {receipts.nextCursor && (
-                    <button onClick={loadMoreReceipts} disabled={receipts.loading} className="rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg disabled:opacity-60">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={loadMoreReceipts}
+                      disabled={receipts.loading}
+                      className="border-border bg-white px-3 text-sm hover:bg-bg"
+                    >
                       {receipts.loading ? copy.receipts.loading : copy.receipts.loadMore}
-                    </button>
+                    </Button>
                   )}
-                  <button onClick={exportCSV} className="ml-auto rounded-input border border-border bg-white px-3 py-2 text-sm hover:bg-bg">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={exportCSV}
+                    className="ml-auto border-border bg-white px-3 text-sm hover:bg-bg"
+                  >
                     {copy.receipts.exportCsv}
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
