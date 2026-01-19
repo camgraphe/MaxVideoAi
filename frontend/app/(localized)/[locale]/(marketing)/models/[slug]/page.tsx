@@ -22,6 +22,7 @@ import { computePricingSnapshot } from '@/lib/pricing';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
 import { listEnginePricingOverrides } from '@/server/engine-settings';
 import { serializeJsonLd } from '../model-jsonld';
+import { ButtonLink } from '@/components/ui/Button';
 
 type PageParams = {
   params: {
@@ -1248,19 +1249,23 @@ function Sora2PageLayout({
               {heroDesc2 ? <p className="text-base leading-relaxed text-text-secondary">{heroDesc2}</p> : null}
             </div>
             <div className="flex flex-wrap justify-center gap-3">
-              <Link
+              <ButtonLink
                 href={primaryCtaHref}
-                className="inline-flex items-center rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover"
+                size="lg"
+                className="shadow-card"
+                linkComponent={Link}
               >
                 {primaryCta}
-              </Link>
+              </ButtonLink>
               {secondaryCta && localizedSecondaryCtaHref ? (
-                <Link
+                <ButtonLink
                   href={localizedSecondaryCtaHref}
-                  className="inline-flex items-center rounded-full border border-hairline px-5 py-2 text-sm font-semibold text-text-primary transition hover:border-text-muted hover:text-text-primary"
+                  variant="outline"
+                  size="lg"
+                  linkComponent={Link}
                 >
                   {secondaryCta}
-                </Link>
+                </ButtonLink>
               ) : null}
             </div>
             <div className="flex flex-wrap justify-center gap-4 text-sm">
@@ -1500,12 +1505,14 @@ function Sora2PageLayout({
             </div>
           )}
           <div className="mt-4">
-            <Link
+            <ButtonLink
               href={galleryCtaHref}
-              className="inline-flex items-center rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white shadow-card transition hover:bg-neutral-800"
+              size="lg"
+              className="shadow-card"
+              linkComponent={Link}
             >
               {copy.gallerySceneCta ?? (isImageEngine ? 'Open this still in the Image lab →' : 'Open this scene in Generate →')}
-            </Link>
+            </ButtonLink>
           </div>
         </section>
 
@@ -1686,12 +1693,13 @@ function Sora2PageLayout({
                 </ul>
               ) : null}
               {copy.comparisonCta ? (
-                <Link
+                <ButtonLink
                   href={secondaryCtaHref}
-                  className="inline-flex items-center rounded-full bg-neutral-900 px-4 py-2 text-sm font-semibold text-white shadow-card transition hover:bg-neutral-800"
+                  className="shadow-card"
+                  linkComponent={Link}
                 >
                   {copy.comparisonCta}
-                </Link>
+                </ButtonLink>
               ) : null}
             </div>
           </section>
@@ -1768,12 +1776,14 @@ function Sora2PageLayout({
         <section className="mt-14 space-y-3 rounded-3xl border border-hairline bg-white/90 px-6 py-6 text-text-primary shadow-card sm:px-8">
           {copy.finalPara1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.finalPara1}</p> : null}
           {copy.finalPara2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.finalPara2}</p> : null}
-          <Link
+          <ButtonLink
             href={primaryCtaHref}
-            className="inline-flex w-fit items-center rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover"
+            size="lg"
+            className="w-fit shadow-card"
+            linkComponent={Link}
           >
             {copy.finalButton ?? primaryCta}
-          </Link>
+          </ButtonLink>
         </section>
 
       </main>
@@ -2121,23 +2131,27 @@ export default async function ModelDetailPage({ params }: PageParams) {
       {(heroPrimaryCta?.label || secondaryCtas.length) ? (
         <div className="mt-6 flex flex-wrap gap-3">
           {heroPrimaryCta?.label && heroPrimaryCta.href ? (
-            <Link
+            <ButtonLink
               href={heroPrimaryCta.href}
-              className="inline-flex items-center rounded-pill bg-brand px-5 py-2.5 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover"
+              size="lg"
+              className="shadow-card"
+              linkComponent={Link}
             >
               {heroPrimaryCta.label}
-            </Link>
+            </ButtonLink>
           ) : null}
           {secondaryCtas
             .filter((cta): cta is { label: string; href: string } => Boolean(cta.label && cta.href))
             .map((cta) => (
-              <Link
+              <ButtonLink
                 key={`${cta.href}-${cta.label}`}
                 href={cta.href!}
-                className="inline-flex items-center rounded-pill border border-hairline px-5 py-2 text-sm font-semibold text-text-primary transition hover:border-text-muted hover:text-text-primary"
+                variant="outline"
+                size="lg"
+                linkComponent={Link}
               >
                 {cta.label}
-              </Link>
+              </ButtonLink>
             ))}
         </div>
       ) : null}
@@ -2362,19 +2376,21 @@ export default async function ModelDetailPage({ params }: PageParams) {
       ) : null}
 
       <div className="mt-10 flex flex-wrap gap-3">
-        <Link
+        <ButtonLink
           href="/app"
           prefetch={false}
-          className="inline-flex items-center rounded-pill border border-hairline px-4 py-2 text-sm font-semibold text-text-primary transition hover:border-text-muted hover:text-text-primary"
+          variant="outline"
+          linkComponent={Link}
         >
           {detailCopy.buttons.pricing}
-        </Link>
-        <Link
+        </ButtonLink>
+        <ButtonLink
           href={launchHref}
-          className="inline-flex items-center rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover"
+          className="shadow-card"
+          linkComponent={Link}
         >
           {detailCopy.buttons.launch}
-        </Link>
+        </ButtonLink>
       </div>
 
     </div>

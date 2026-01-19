@@ -10,6 +10,7 @@ import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
+import { ButtonLink } from '@/components/ui/Button';
 
 const BLOG_SLUG_MAP = buildSlugMap('blog');
 const BLOG_META = {
@@ -162,12 +163,13 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
             </h1>
             <p className="text-base leading-relaxed text-text-secondary sm:text-lg">{content.hero.subtitle}</p>
           </div>
-          <Link
+          <ButtonLink
             href={{ pathname: '/models/[slug]', params: { slug: 'sora-2' } }}
-            className="inline-flex items-center gap-2 self-start rounded-pill border border-hairline bg-brand px-5 py-2 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            className="self-start shadow-card"
+            linkComponent={Link}
           >
             {content.hero.ctaLabel ?? 'Latest Sora coverage →'}
-          </Link>
+          </ButtonLink>
         </div>
       </header>
 
