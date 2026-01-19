@@ -1223,11 +1223,13 @@ function Sora2PageLayout({
         ))}
       </Head>
       <main className="container-page max-w-6xl section">
-        <Link href={localizeModelsPath()} className="text-sm font-semibold text-brand hover:text-brandHover">
-          {backLabel}
-        </Link>
+        <div className="stack-gap-lg">
+          <div className="stack-gap-sm">
+            <Link href={localizeModelsPath()} className="text-sm font-semibold text-brand hover:text-brandHover">
+              {backLabel}
+            </Link>
 
-        <section className="mt-6 stack-gap rounded-3xl border border-hairline bg-surface/80 p-6 shadow-card sm:p-8">
+            <section className="stack-gap rounded-3xl border border-hairline bg-surface/80 p-6 shadow-card sm:p-8">
           <div className="stack-gap-lg">
             <div className="stack-gap-sm text-center">
               <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">
@@ -1318,11 +1320,12 @@ function Sora2PageLayout({
               </div>
             ) : null}
           </div>
-        </section>
+            </section>
+          </div>
 
         {tocItems.length ? (
           <nav
-            className="mt-10 rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
+            className="rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
             aria-label="Model page navigation"
           >
             <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Jump to section</p>
@@ -1340,7 +1343,7 @@ function Sora2PageLayout({
           </nav>
         ) : null}
 
-        <section id="examples" className="mt-12 stack-gap">
+        <section id="examples" className="stack-gap">
           {copy.whatTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.whatTitle}</h2> : null}
           {copy.whatIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro1}</p> : null}
           {copy.whatIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro2}</p> : null}
@@ -1379,7 +1382,7 @@ function Sora2PageLayout({
         </section>
 
         {specSections.length ? (
-          <section id="specs" className="mt-12 stack-gap">
+          <section id="specs" className="stack-gap">
             {copy.specTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.specTitle}</h2> : null}
             {copy.specNote ? (
               <blockquote className="rounded-2xl border border-hairline bg-surface-2 px-4 py-3 text-sm text-text-secondary">
@@ -1408,7 +1411,7 @@ function Sora2PageLayout({
         ) : null}
 
         {copy.microCta ? (
-          <div className="mt-10 flex justify-center">
+          <div className="flex justify-center">
             <Link
               href={primaryCtaHref}
               className="text-sm font-semibold text-brand transition hover:text-brandHover"
@@ -1419,7 +1422,7 @@ function Sora2PageLayout({
         ) : null}
 
         {quickPricingTitle && quickPricingItems.length ? (
-          <section className="mt-10 stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-5 shadow-card">
+          <section className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-5 shadow-card">
             <h3 className="text-lg font-semibold text-text-primary">{quickPricingTitle}</h3>
             <ul className="space-y-1 text-sm text-text-secondary">
               {quickPricingItems.map((item) => (
@@ -1429,7 +1432,7 @@ function Sora2PageLayout({
           </section>
         ) : null}
 
-        <section id={textAnchorId} className="mt-12 stack-gap">
+        <section id={textAnchorId} className="stack-gap">
           {copy.galleryTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.galleryTitle}</h2> : null}
           {galleryVideos.length ? (
             <>
@@ -1444,7 +1447,7 @@ function Sora2PageLayout({
                   </Link>
                 </p>
               ) : null}
-            <div className="mt-6 stack-gap">
+            <div className="stack-gap">
               <div className="overflow-x-auto pb-2">
                 <div className="flex min-w-full gap-4">
                   {galleryVideos.slice(0, 6).map((video) => (
@@ -1514,7 +1517,7 @@ function Sora2PageLayout({
           </div>
         </section>
 
-        <section id={imageAnchorId} className="mt-12 stack-gap">
+        <section id={imageAnchorId} className="stack-gap">
           {copy.promptTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.promptTitle}</h2> : null}
           {copy.promptIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.promptIntro}</p> : null}
           <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
@@ -1541,7 +1544,7 @@ function Sora2PageLayout({
           </div>
         </section>
 
-        <section className="mt-12 stack-gap">
+        <section className="stack-gap">
           {copy.imageTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.imageTitle}</h2> : null}
           {copy.imageIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.imageIntro}</p> : null}
           <div className="grid grid-gap-sm lg:grid-cols-2">
@@ -1566,7 +1569,7 @@ function Sora2PageLayout({
           </div>
         </section>
 
-        <section className="mt-12 stack-gap">
+        <section className="stack-gap">
           {copy.multishotTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.multishotTitle}</h2> : null}
           {copy.multishotIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.multishotIntro1}</p> : null}
           {copy.multishotIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.multishotIntro2}</p> : null}
@@ -1580,7 +1583,7 @@ function Sora2PageLayout({
         </section>
 
       {copy.demoTitle || copy.demoPrompt.length || copy.demoNotes.length ? (
-        <section className="mt-12 stack-gap-lg">
+        <section className="stack-gap-lg">
           {copy.demoTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.demoTitle}</h2> : null}
           <div className="grid grid-gap lg:grid-cols-2 lg:items-start">
             <div className="rounded-2xl border border-hairline bg-surface/80 p-3 shadow-card lg:order-2">
@@ -1618,7 +1621,7 @@ function Sora2PageLayout({
       ) : null}
 
         {copy.tipsTitle || strengths.length || boundaries.length ? (
-          <section id="tips" className="mt-12 stack-gap-lg">
+          <section id="tips" className="stack-gap-lg">
             {copy.tipsTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.tipsTitle}</h2> : null}
             <div className="grid grid-gap-sm lg:grid-cols-2">
               {strengths.length ? (
@@ -1655,7 +1658,7 @@ function Sora2PageLayout({
         ) : null}
 
         {copy.safetyTitle || safetyRules.length ? (
-          <section id="safety" className="mt-12 stack-gap">
+          <section id="safety" className="stack-gap">
             {copy.safetyTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.safetyTitle}</h2> : null}
             <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
               {safetyRules.length ? (
@@ -1678,7 +1681,7 @@ function Sora2PageLayout({
         ) : null}
 
         {copy.comparisonTitle || comparisonPoints.length ? (
-          <section className="mt-12 stack-gap">
+          <section className="stack-gap">
             {copy.comparisonTitle ? (
               <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.comparisonTitle}</h2>
             ) : null}
@@ -1704,7 +1707,7 @@ function Sora2PageLayout({
         ) : null}
 
         {faqList.length ? (
-          <section id="faq" className="mt-12 stack-gap">
+          <section id="faq" className="stack-gap">
             {faqTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{faqTitle}</h2> : null}
             <div className="grid grid-gap-sm md:grid-cols-2">
               {faqList.map((entry) => (
@@ -1722,14 +1725,14 @@ function Sora2PageLayout({
         <FAQSchema questions={faqJsonLdEntries} />
 
         {relatedEngines.length ? (
-          <section className="mt-12 stack-gap">
+          <section className="stack-gap">
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
               {copy.relatedTitle ?? 'Explore other models'}
             </h2>
             {copy.relatedSubtitle ? <p className="text-sm text-text-secondary">{copy.relatedSubtitle}</p> : null}
-          <div className="grid grid-gap-sm md:grid-cols-3">
-            {relatedEngines.map((entry) => {
-              const label = entry.marketingName ?? entry.engine.label;
+            <div className="grid grid-gap-sm md:grid-cols-3">
+              {relatedEngines.map((entry) => {
+                const label = entry.marketingName ?? entry.engine.label;
                 const ctaLabel =
                   engineSlug === 'veo-3-1-first-last'
                     ? entry.modelSlug === 'veo-3-1'
@@ -1746,29 +1749,29 @@ function Sora2PageLayout({
                           ? relatedCtaSora2Pro ?? copy.comparisonCta ?? 'View model →'
                           : copy.comparisonCta ?? 'View model →'
                       : copy.comparisonCta ?? 'View model →';
-              return (
-                <article
-                  key={entry.modelSlug}
-                  className="rounded-2xl border border-hairline bg-surface/90 p-4 shadow-card transition hover:-translate-y-1 hover:border-text-muted"
-                >
-                  <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{entry.brandId}</p>
-                  <h3 className="mt-2 text-lg font-semibold text-text-primary">
-                    {label}
-                  </h3>
-                  <p className="mt-2 text-sm text-text-secondary line-clamp-3">
-                    {entry.seo?.description ?? localizedContent.overview ?? ''}
-                  </p>
-                  <TextLink href={localizeModelsPath(entry.modelSlug)} className="mt-4 gap-1 text-sm" linkComponent={Link}>
-                    {ctaLabel}
-                  </TextLink>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-      ) : null}
+                return (
+                  <article
+                    key={entry.modelSlug}
+                    className="rounded-2xl border border-hairline bg-surface/90 p-4 shadow-card transition hover:-translate-y-1 hover:border-text-muted"
+                  >
+                    <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{entry.brandId}</p>
+                    <h3 className="mt-2 text-lg font-semibold text-text-primary">
+                      {label}
+                    </h3>
+                    <p className="mt-2 text-sm text-text-secondary line-clamp-3">
+                      {entry.seo?.description ?? localizedContent.overview ?? ''}
+                    </p>
+                    <TextLink href={localizeModelsPath(entry.modelSlug)} className="mt-4 gap-1 text-sm" linkComponent={Link}>
+                      {ctaLabel}
+                    </TextLink>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
 
-        <section className="mt-12 stack-gap-sm rounded-3xl border border-hairline bg-surface/90 px-6 py-6 text-text-primary shadow-card sm:px-8">
+        <section className="stack-gap-sm rounded-3xl border border-hairline bg-surface/90 px-6 py-6 text-text-primary shadow-card sm:px-8">
           {copy.finalPara1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.finalPara1}</p> : null}
           {copy.finalPara2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.finalPara2}</p> : null}
           <ButtonLink
@@ -1780,7 +1783,7 @@ function Sora2PageLayout({
             {copy.finalButton ?? primaryCta}
           </ButtonLink>
         </section>
-
+        </div>
       </main>
     </>
   );
@@ -2084,7 +2087,6 @@ export default async function ModelDetailPage({ params }: PageParams) {
 
   return (
     <>
-      <div className="container-page max-w-4xl section">
       <Head>
         {heroPosterPreload ? <link rel="preload" as="image" href={heroPosterPreload} fetchPriority="high" /> : null}
         {schemaPayloads.map((schema, index) => (
@@ -2096,69 +2098,74 @@ export default async function ModelDetailPage({ params }: PageParams) {
           />
         ))}
       </Head>
-      <Link href={localizeModelsPath()} className="text-sm font-semibold text-brand hover:text-brandHover">
-        {detailCopy.backLabel}
-      </Link>
-      <header className="mt-6 stack-gap-sm">
-        <div className="flex flex-wrap items-center gap-4">
-          {brand && engine.logoPolicy === 'logoAllowed' ? (
-            <span className="flex items-center">
-              <Image src={brand.assets.light.svg} alt={`${marketingName} logo`} width={140} height={32} className="h-9 w-auto dark:hidden" />
-              <Image src={brand.assets.dark.svg} alt={`${marketingName} logo`} width={140} height={32} className="hidden h-9 w-auto dark:inline-flex" />
-            </span>
-          ) : null}
-          <div>
-            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
-              {heroContent?.title ?? marketingName}
-            </h2>
-            {versionLabel ? (
-              <p className="text-sm uppercase tracking-micro text-text-muted">{versionLabel}</p>
-            ) : null}
+      <div className="container-page max-w-4xl section">
+        <div className="stack-gap-lg">
+          <div className="stack-gap-sm">
+            <Link href={localizeModelsPath()} className="text-sm font-semibold text-brand hover:text-brandHover">
+              {detailCopy.backLabel}
+            </Link>
+            <header className="stack-gap-sm">
+              <div className="flex flex-wrap items-center gap-4">
+                {brand && engine.logoPolicy === 'logoAllowed' ? (
+                  <span className="flex items-center">
+                    <Image src={brand.assets.light.svg} alt={`${marketingName} logo`} width={140} height={32} className="h-9 w-auto dark:hidden" />
+                    <Image src={brand.assets.dark.svg} alt={`${marketingName} logo`} width={140} height={32} className="hidden h-9 w-auto dark:inline-flex" />
+                  </span>
+                ) : null}
+                <div>
+                  <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
+                    {heroContent?.title ?? marketingName}
+                  </h2>
+                  {versionLabel ? (
+                    <p className="text-sm uppercase tracking-micro text-text-muted">{versionLabel}</p>
+                  ) : null}
+                </div>
+              </div>
+              {introText ? <p className="text-sm text-text-secondary">{introText}</p> : null}
+            </header>
           </div>
-          
-        </div>
-      {introText ? <p className="text-sm text-text-secondary">{introText}</p> : null}
-      </header>
 
-      {(heroPrimaryCta?.label || secondaryCtas.length) ? (
-        <div className="mt-6 flex flex-wrap gap-4">
-          {heroPrimaryCta?.label && heroPrimaryCta.href ? (
-            <ButtonLink
-              href={heroPrimaryCta.href}
-              size="lg"
-              className="shadow-card"
-              linkComponent={Link}
-            >
-              {heroPrimaryCta.label}
-            </ButtonLink>
-          ) : null}
-          {secondaryCtas
-            .filter((cta): cta is { label: string; href: string } => Boolean(cta.label && cta.href))
-            .map((cta) => (
-              <ButtonLink
-                key={`${cta.href}-${cta.label}`}
-                href={cta.href!}
-                variant="outline"
-                size="lg"
-                linkComponent={Link}
-              >
-                {cta.label}
-              </ButtonLink>
-            ))}
-        </div>
-      ) : null}
-      <div className="mt-3 flex flex-wrap gap-4 text-sm">
-        <Link href={examplesLinkHref} className="font-semibold text-brand hover:text-brandHover">
-          {detailCopy.examplesLinkLabel}
-        </Link>
+          <div className="stack-gap-sm">
+            {(heroPrimaryCta?.label || secondaryCtas.length) ? (
+              <div className="flex flex-wrap gap-4">
+                {heroPrimaryCta?.label && heroPrimaryCta.href ? (
+                  <ButtonLink
+                    href={heroPrimaryCta.href}
+                    size="lg"
+                    className="shadow-card"
+                    linkComponent={Link}
+                  >
+                    {heroPrimaryCta.label}
+                  </ButtonLink>
+                ) : null}
+                {secondaryCtas
+                  .filter((cta): cta is { label: string; href: string } => Boolean(cta.label && cta.href))
+                  .map((cta) => (
+                    <ButtonLink
+                      key={`${cta.href}-${cta.label}`}
+                      href={cta.href!}
+                      variant="outline"
+                      size="lg"
+                      linkComponent={Link}
+                    >
+                      {cta.label}
+                    </ButtonLink>
+                  ))}
+              </div>
+            ) : null}
+            <div className="flex flex-wrap gap-4 text-sm">
+              <Link href={examplesLinkHref} className="font-semibold text-brand hover:text-brandHover">
+                {detailCopy.examplesLinkLabel}
+              </Link>
               <Link href={pricingLinkHref} className="font-semibold text-brand hover:text-brandHover">
                 {detailCopy.pricingLinkLabel}
               </Link>
-      </div>
+            </div>
+          </div>
 
       {tocItems.length ? (
         <nav
-          className="mt-10 rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
+          className="rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
           aria-label="Model page navigation"
         >
           <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Jump to section</p>
@@ -2177,7 +2184,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       ) : null}
 
       {bestUseCases?.items && bestUseCases.items.length ? (
-        <section className="mt-10 rounded-card border border-hairline bg-surface p-6 shadow-card">
+        <section className="rounded-card border border-hairline bg-surface p-6 shadow-card">
           <h2 className="text-lg font-semibold text-text-primary">
             {bestUseCases.title ?? 'Best use cases'}
           </h2>
@@ -2190,7 +2197,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       ) : null}
 
       {technicalOverview.length ? (
-        <section className="mt-10 rounded-card border border-hairline bg-surface p-6 shadow-card">
+        <section className="rounded-card border border-hairline bg-surface p-6 shadow-card">
           <h2 className="text-lg font-semibold text-text-primary">{technicalOverviewTitle}</h2>
           <div className="mt-4 grid grid-gap-sm text-sm text-text-secondary sm:grid-cols-2">
             {technicalOverview.map((entry, index) => (
@@ -2216,7 +2223,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       {promptStructure ? (
         <section
           id={attachTextIdToPromptStructure ? textAnchorId : undefined}
-          className="mt-10 rounded-card border border-hairline bg-surface p-6 shadow-card"
+          className="rounded-card border border-hairline bg-surface p-6 shadow-card"
         >
           <h2 className="text-lg font-semibold text-text-primary">{promptStructure.title ?? 'Prompt structure'}</h2>
           {promptStructure.quote ? (
@@ -2238,7 +2245,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       ) : null}
 
       {tips?.items && tips.items.length ? (
-        <section id="tips" className="mt-10 rounded-card border border-hairline bg-surface p-6 shadow-card">
+        <section id="tips" className="rounded-card border border-hairline bg-surface p-6 shadow-card">
           <h2 className="text-lg font-semibold text-text-primary">{tips.title ?? 'Tips & tricks'}</h2>
           <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-text-secondary">
             {tips.items.map((tip) => (
@@ -2249,7 +2256,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       ) : null}
 
       {compareLink?.href && compareLink.label ? (
-        <p className="mt-6 text-sm text-text-secondary">
+        <p className="text-sm text-text-secondary">
           {compareLink.before ?? ''}
           <Link href={compareLinkHref ?? compareLink.href} className="font-semibold text-brand hover:text-brandHover">
             {compareLink.label}
@@ -2258,7 +2265,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
         </p>
       ) : null}
 
-      <section id="specs" className="mt-10 stack-gap">
+      <section id="specs" className="stack-gap">
         <div className="rounded-card border border-hairline bg-surface p-6 shadow-card">
           <h2 className="text-lg font-semibold text-text-primary">{detailCopy.overviewTitle}</h2>
           <dl className="mt-4 grid grid-gap-sm text-sm text-text-secondary sm:grid-cols-2">
@@ -2300,7 +2307,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       {promptEntries.length > 0 && (
         <section
           id={!attachTextIdToPromptStructure ? textAnchorId : undefined}
-          className="mt-10 stack-gap"
+          className="stack-gap"
         >
           <h2 className="text-lg font-semibold text-text-primary">{detailCopy.promptsTitle}</h2>
           <div className="grid grid-gap-sm sm:grid-cols-2">
@@ -2316,7 +2323,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       )}
 
       {faqEntries.length > 0 && (
-        <section id="faq" className="mt-10 stack-gap">
+        <section id="faq" className="stack-gap">
           <h2 className="text-lg font-semibold text-text-primary">{detailCopy.faqTitle}</h2>
           <div className="stack-gap-sm text-sm text-text-secondary">
             {faqEntries.map(({ question, answer }) => (
@@ -2331,8 +2338,8 @@ export default async function ModelDetailPage({ params }: PageParams) {
       <FAQSchema questions={faqJsonLdEntries} />
 
       {relatedEngines.length ? (
-        <section className="mt-12">
-          <div className="mb-6 space-y-2">
+        <section className="stack-gap">
+          <div className="stack-gap-sm">
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{relatedCopy.title}</h2>
             <p className="text-sm text-text-secondary">{relatedCopy.subtitle}</p>
           </div>
@@ -2368,7 +2375,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
         </section>
       ) : null}
 
-      <div className="mt-10 flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-4">
         <ButtonLink
           href="/app"
           prefetch={false}
@@ -2386,6 +2393,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
         </ButtonLink>
       </div>
 
+        </div>
     </div>
   </>
 );
