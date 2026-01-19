@@ -552,13 +552,13 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
   const lcpPosterSrc = heroTileConfigs[0]?.posterSrc ?? HERO_TILES[0].posterSrc;
 
   return (
-    <div className="pb-16 lg:pb-20">
+    <div>
       <Head>
         <link rel="preconnect" href="https://videohub-uploads-us.s3.amazonaws.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://v3b.fal.media" crossOrigin="anonymous" />
         {lcpPosterSrc ? <link rel="preload" as="image" href={lcpPosterSrc} fetchPriority="high" media="(max-width: 767px)" /> : null}
       </Head>
-      <section className="container-page section flex max-w-6xl flex-col items-center gap-10 pt-20 text-center">
+      <section className="container-page section flex max-w-6xl flex-col items-center gap-10 text-center">
         <div className="flex flex-wrap items-center justify-center gap-4">
           {badges.map((badge) => (
             <span key={badge} className="rounded-pill border border-hairline bg-white px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary">
@@ -614,8 +614,8 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         </div>
       </section>
 
-      <section className="border-t border-hairline bg-white/90 text-text-secondary">
-        <div className="container-page flex max-w-6xl flex-col items-center gap-4 py-8 text-center">
+      <section className="border-t border-hairline bg-white/90 text-text-secondary section-compact">
+        <div className="container-page flex max-w-6xl flex-col items-center gap-4 text-center">
           <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
             {worksWith.label}
           </span>
@@ -648,95 +648,97 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
           </div>
         </div>
       </section>
-      <MosaicBackdrop media={proofBackgroundMedia}>
-        <section id="how-it-works" className="container-page section max-w-6xl scroll-mt-32">
-          <ProofTabs pricingRules={pricingRulesLite} />
-        </section>
+      <MosaicBackdrop media={proofBackgroundMedia} className="section">
+        <div className="stack-gap-lg">
+          <section id="how-it-works" className="container-page max-w-6xl scroll-mt-32">
+            <ProofTabs pricingRules={pricingRulesLite} />
+          </section>
 
-        <section className="container-page section max-w-6xl">
-          <div className="grid grid-gap lg:grid-cols-3">
-            {whyCards.map((item) => (
-              <article key={item.title} className="rounded-card border border-hairline bg-white p-6 shadow-card">
-                <h3 className="text-lg font-semibold text-text-primary">{item.title}</h3>
-                <p className="mt-3 text-sm text-text-secondary">{item.body}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <ExamplesOrbitCallout
-          engines={orbitEngines}
-          heading={examplesCalloutCopy.title}
-          description={examplesCalloutCopy.subtitle ?? ''}
-          ctaLabel={examplesCalloutCopy.cta}
-          eyebrow={examplesCalloutCopy.eyebrow}
-        />
-        <CompareEnginesCarousel engines={compareEngines} copy={compareCopy ?? undefined} />
-
-        <section className="container-page section max-w-6xl">
-          <div className="mb-6 flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{waysSection.title}</h2>
-              <p className="text-sm text-text-secondary sm:text-base">{waysSection.subtitle}</p>
+          <section className="container-page max-w-6xl">
+            <div className="grid grid-gap lg:grid-cols-3">
+              {whyCards.map((item) => (
+                <article key={item.title} className="rounded-card border border-hairline bg-white p-6 shadow-card">
+                  <h3 className="text-lg font-semibold text-text-primary">{item.title}</h3>
+                  <p className="mt-3 text-sm text-text-secondary">{item.body}</p>
+                </article>
+              ))}
             </div>
-          </div>
-          <div className="grid grid-gap lg:grid-cols-2">
-            {ways.map((item) => (
-              <article key={item.title} className="flex flex-col gap-4 rounded-card border border-hairline bg-white p-6 shadow-card">
-                <div>
-                  <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">{item.title}</span>
+          </section>
+
+          <ExamplesOrbitCallout
+            engines={orbitEngines}
+            heading={examplesCalloutCopy.title}
+            description={examplesCalloutCopy.subtitle ?? ''}
+            ctaLabel={examplesCalloutCopy.cta}
+            eyebrow={examplesCalloutCopy.eyebrow}
+          />
+          <CompareEnginesCarousel engines={compareEngines} copy={compareCopy ?? undefined} />
+
+          <section className="container-page max-w-6xl">
+            <div className="mb-6 flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{waysSection.title}</h2>
+                <p className="text-sm text-text-secondary sm:text-base">{waysSection.subtitle}</p>
+              </div>
+            </div>
+            <div className="grid grid-gap lg:grid-cols-2">
+              {ways.map((item) => (
+                <article key={item.title} className="flex flex-col gap-4 rounded-card border border-hairline bg-white p-6 shadow-card">
+                  <div>
+                    <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">{item.title}</span>
+                  </div>
+                  <h3 className="text-xl font-semibold text-text-primary">{item.description}</h3>
+                  <ul className="space-y-2 text-sm text-text-secondary">
+                    {item.bullets.map((bullet) => (
+                      <li key={bullet} className="flex items-start gap-2">
+                        <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-text-muted" />
+                        <span>{bullet}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="container-page max-w-6xl">
+            <div className="grid grid-gap lg:grid-cols-[1.2fr_1fr]">
+              <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
+                <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
+                  {pricing.badge}
+                </span>
+                <h3 className="mt-4 text-xl font-semibold text-text-primary">{pricing.title}</h3>
+                <p className="mt-3 text-sm text-text-secondary">{pricing.body}</p>
+                <div className="mt-5">
+                  <PriceChip
+                    {...DEFAULT_MARKETING_SCENARIO}
+                    suffix={home.priceChipSuffix}
+                    pricingRules={pricingRulesLite}
+                  />
                 </div>
-                <h3 className="text-xl font-semibold text-text-primary">{item.description}</h3>
-                <ul className="space-y-2 text-sm text-text-secondary">
-                  {item.bullets.map((bullet) => (
-                    <li key={bullet} className="flex items-start gap-2">
+                <TextLink href="/pricing" className="mt-6 text-sm" linkComponent={Link}>
+                  {pricing.link}
+                </TextLink>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  3,000+ internal test renders · automatic refunds on failures · wallet-first billing
+                </p>
+              </article>
+              <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
+                <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
+                  {trust.badge}
+                </span>
+                <ul className="mt-4 stack-gap-sm text-sm text-text-secondary">
+                  {trust.points.map((point) => (
+                    <li key={point} className="flex items-start gap-2">
                       <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-text-muted" />
-                      <span>{bullet}</span>
+                      <span>{point}</span>
                     </li>
                   ))}
                 </ul>
               </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="container-page section max-w-6xl">
-          <div className="grid grid-gap lg:grid-cols-[1.2fr_1fr]">
-            <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
-              <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
-                {pricing.badge}
-              </span>
-              <h3 className="mt-4 text-xl font-semibold text-text-primary">{pricing.title}</h3>
-              <p className="mt-3 text-sm text-text-secondary">{pricing.body}</p>
-              <div className="mt-5">
-                <PriceChip
-                  {...DEFAULT_MARKETING_SCENARIO}
-                  suffix={home.priceChipSuffix}
-                  pricingRules={pricingRulesLite}
-                />
-              </div>
-              <TextLink href="/pricing" className="mt-6 text-sm" linkComponent={Link}>
-                {pricing.link}
-              </TextLink>
-              <p className="mt-3 text-sm text-muted-foreground">
-                3,000+ internal test renders · automatic refunds on failures · wallet-first billing
-              </p>
-            </article>
-            <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
-              <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
-                {trust.badge}
-              </span>
-              <ul className="mt-4 stack-gap-sm text-sm text-text-secondary">
-                {trust.points.map((point) => (
-                  <li key={point} className="flex items-start gap-2">
-                    <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-text-muted" />
-                    <span>{point}</span>
-                  </li>
-                ))}
-              </ul>
-            </article>
-          </div>
-        </section>
+            </div>
+          </section>
+        </div>
       </MosaicBackdrop>
       <section className="container-page section max-w-6xl">
         <div className="rounded-card border border-hairline bg-white/70 p-6 shadow-card">

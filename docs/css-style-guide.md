@@ -898,6 +898,7 @@ Objectif : ajouter des standards simples, applicables sans casser l'existant. On
 ### Section spacing (doux)
 - Standard cible : `py-16` (mobile) / `py-20` (desktop)
 - Eviter `py-24` sauf sections hero ou blocks "feature" majeurs
+- Sections compactes (strips / bandeaux) : utiliser `.section-compact` (≈ `py-8`)
 
 ### Typo (mobile lisible)
 - H1 : mobile `text-3xl`, desktop `text-5xl`

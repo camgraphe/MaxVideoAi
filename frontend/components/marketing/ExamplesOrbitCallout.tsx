@@ -44,7 +44,7 @@ export function ExamplesOrbitCallout({ heading, description, ctaLabel, eyebrow, 
   if (!orbitEngines.length) return null;
 
   return (
-    <section className="mx-auto mt-16 w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+    <section className="container-page max-w-6xl">
       <div className="relative overflow-hidden rounded-[40px] border border-hairline bg-white/75 p-8 shadow-card backdrop-blur-sm sm:p-12">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(80,102,255,0.16),transparent_55%)]" aria-hidden />
         <div className="pointer-events-none absolute -inset-px rounded-[42px] bg-gradient-to-b from-white/40 via-transparent to-white/20 opacity-80" aria-hidden />
@@ -142,7 +142,7 @@ export function ExamplesOrbitCallout({ heading, description, ctaLabel, eyebrow, 
               href="/examples"
               className={clsx(
                 styles.portalButton,
-                'group absolute left-1/2 top-1/2 z-20 flex h-28 w-28 items-center justify-center rounded-full text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-white'
+                'group absolute left-1/2 top-1/2 z-20 flex h-28 w-28 items-center justify-center rounded-full text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-bg'
               )}
               aria-label={ctaLabel}
             >

@@ -104,14 +104,14 @@ export function CompareEnginesCarousel({ engines, copy }: CompareEnginesCarousel
   }, [renderedEngines.length]);
 
   return (
-    <section aria-labelledby="compare-engines" className="mx-auto mt-16 max-w-6xl px-4 sm:px-6 lg:px-8">
-      <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-card">
+    <section aria-labelledby="compare-engines" className="container-page max-w-6xl">
+      <div className="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 id="compare-engines" className="text-xl font-semibold text-text-primary">
               {title}
             </h2>
-            <p className="text-sm text-muted-foreground">{subtitle}</p>
+            <p className="text-sm text-text-muted">{subtitle}</p>
           </div>
           <div className="hidden gap-2 sm:flex">
             <Button
@@ -148,18 +148,18 @@ export function CompareEnginesCarousel({ engines, copy }: CompareEnginesCarousel
               href={engine.href}
               aria-label={`${ariaPrefix} ${engine.name}`}
               data-card
-              className="group relative w-[260px] shrink-0 snap-start overflow-hidden rounded-3xl border border-black/5 bg-white text-neutral-900 shadow-lg transition hover:border-black/10 hover:shadow-xl sm:w-[300px]"
+              className="group relative w-[260px] shrink-0 snap-start overflow-hidden rounded-3xl border border-hairline bg-surface text-text-primary shadow-card transition hover:border-border-hover hover:shadow-float sm:w-[300px]"
             >
               <div className="relative h-44 overflow-hidden">
                 <div
-                  className="absolute inset-0 bg-cover bg-center bg-neutral-200 opacity-10 transition duration-500 group-hover:opacity-25"
+                  className="absolute inset-0 bg-cover bg-center bg-surface-2 opacity-10 transition duration-500 group-hover:opacity-25"
                   style={{ backgroundImage: engine.bg ? `url(${engine.bg})` : undefined }}
                   aria-hidden="true"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-white via-white/70 to-white/50 opacity-95 transition group-hover:opacity-80" />
+                <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/70 to-surface/50 opacity-95 transition group-hover:opacity-80" />
                 <div className="relative flex h-full flex-col justify-end p-4">
                   <div className="text-sm font-semibold">{engine.name}</div>
-                  <dl className="mt-1 text-xs text-neutral-500">
+                  <dl className="mt-1 text-xs text-text-muted">
                     <div className="flex justify-between gap-4">
                       <dt>{statMax}</dt>
                       <dd>{engine.maxDuration}</dd>
@@ -173,7 +173,7 @@ export function CompareEnginesCarousel({ engines, copy }: CompareEnginesCarousel
                       <dd>{engine.bestFor}</dd>
                     </div>
                   </dl>
-                  <div className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-neutral-900/70 transition group-hover:translate-x-1 group-hover:text-neutral-900">
+                  <div className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-text-secondary transition group-hover:translate-x-1 group-hover:text-text-primary">
                     {seePresetsLabel}
                   </div>
                 </div>
