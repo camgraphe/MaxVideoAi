@@ -67,8 +67,8 @@ export default async function PrivacyPage() {
   const header = HEADER_COPY[locale] ?? HEADER_COPY.en;
 
   return (
-    <div className="space-y-8">
-      <header className="space-y-2">
+    <div className="stack-gap-lg">
+      <header className="stack-gap-sm">
         <h2 className="text-xl font-semibold text-text-primary">{header.title}</h2>
         <p className="text-sm text-text-secondary">
           {header.versionLabel}: {version} · {header.effectiveLabel}: {effective ?? version}

@@ -1576,7 +1576,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
     <>
       <div className={clsx('flex w-full flex-1 min-w-0', isDesktopLayout ? 'flex-row' : 'flex-col')}>
         <div className="flex w-full flex-1 min-w-0 flex-col overflow-hidden">
-          <main className="flex w-full flex-1 min-w-0 flex-col gap-6 p-4 sm:p-6">
+          <main className="flex w-full flex-1 min-w-0 flex-col gap-[var(--stack-gap-lg)] p-4 sm:p-6">
             <div className="stack-gap-lg">
               <ImageCompositePreviewDock
                 entry={compositePreviewEntry}

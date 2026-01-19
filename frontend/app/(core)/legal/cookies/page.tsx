@@ -27,8 +27,8 @@ export default async function CookiePolicyPage() {
   const effective = formatLegalDate(document?.publishedAt ?? `${version}T00:00:00Z`);
 
   return (
-    <div className="space-y-8">
-      <header className="space-y-2">
+    <div className="stack-gap-lg">
+      <header className="stack-gap-sm">
         <h2 className="text-xl font-semibold text-text-primary">Cookie Policy</h2>
         <p className="text-sm text-text-secondary">
           Version: {version} · Effective date: {effective ?? version}

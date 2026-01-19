@@ -177,8 +177,8 @@ export default async function TakedownPage() {
   const formCopy = FORM_COPY[locale] ?? FORM_COPY.en;
 
   return (
-    <div className="space-y-8">
-      <header className="space-y-2">
+    <div className="stack-gap-lg">
+      <header className="stack-gap-sm">
         <h1 className="text-xl font-semibold text-text-primary">{header.title}</h1>
         <p className="text-sm text-text-secondary">{header.effective}</p>
         <p className="text-sm text-text-secondary">{header.companyLine}</p>

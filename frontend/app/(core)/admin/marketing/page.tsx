@@ -34,7 +34,7 @@ export default async function AdminMarketingOptInsPage() {
 
   return (
     <div className="stack-gap-lg">
-      <header className="space-y-2">
+      <header className="stack-gap-sm">
         <h1 className="text-3xl font-semibold text-text-primary">Marketing opt-ins</h1>
         <p className="text-sm text-text-secondary">
           Track the members who agreed to receive promotional email updates. Use the export to sync with your marketing platform.

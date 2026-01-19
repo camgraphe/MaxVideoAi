@@ -23,7 +23,7 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
   const lifetimeChargesUsd = wallet ? (wallet.stats.charge ?? 0) / 100 : 0;
 
   return (
-    <div className="space-y-8">
+    <div className="stack-gap-lg">
       <Link href="/admin/users" className="text-sm text-text-secondary transition hover:text-text-primary">
         ← Back to users
       </Link>

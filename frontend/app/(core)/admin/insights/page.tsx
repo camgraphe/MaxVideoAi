@@ -46,7 +46,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
   const monthlyRows = buildMonthlyRows(metrics);
 
   return (
-    <div className="space-y-8">
+    <div className="stack-gap-lg">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.35em] text-text-muted">Analytics</p>

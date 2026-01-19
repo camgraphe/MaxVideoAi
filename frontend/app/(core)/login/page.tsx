@@ -597,7 +597,7 @@ export default function LoginPage() {
         </Button>
       </div>
       <div className="w-full max-w-md stack-gap-lg rounded-card border border-border bg-white p-6 shadow-card">
-        <header className="space-y-4">
+        <header className="stack-gap">
           <div>
             <h1 className="text-lg font-semibold text-text-primary">
               {mode === 'signup'

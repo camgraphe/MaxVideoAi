@@ -98,8 +98,8 @@ const percentFormatter = new Intl.NumberFormat('en-US', { style: 'percent', maxi
 export default async function AdminIndexPage() {
   const health = await fetchAdminHealth();
   return (
-    <div className="space-y-8">
-      <header className="space-y-2">
+    <div className="stack-gap-lg">
+      <header className="stack-gap-sm">
         <p className="text-xs font-semibold uppercase tracking-[0.4em] text-text-muted">Hub &amp; Health</p>
         <h1 className="text-3xl font-semibold text-text-primary">Admin dashboard</h1>
         <p className="text-sm text-text-secondary">

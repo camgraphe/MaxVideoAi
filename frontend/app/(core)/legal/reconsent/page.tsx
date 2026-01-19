@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function LegalReconsentPage() {
   return (
     <div className="stack-gap-lg">
-      <header className="space-y-2">
+      <header className="stack-gap-sm">
         <h2 className="text-xl font-semibold text-text-primary">Review updates</h2>
         <p className="text-sm text-text-secondary">
           If you are signed in, the latest legal documents will appear below for acceptance. Otherwise, sign in to continue.

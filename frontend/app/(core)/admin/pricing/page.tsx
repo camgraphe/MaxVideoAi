@@ -155,7 +155,7 @@ export default function PricingAdminPage() {
   };
 
   return (
-    <div className="space-y-10">
+    <div className="stack-gap-xl">
       <section className="rounded-2xl border border-hairline bg-white p-6 shadow-card">
         <h1 className="text-xl font-semibold text-text-primary">Pricing controls</h1>
         <p className="mt-2 text-sm text-text-secondary">

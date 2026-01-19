@@ -21,8 +21,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function MentionsLegalesPage() {
   return (
-    <div className="space-y-8">
-      <header className="space-y-2">
+    <div className="stack-gap-lg">
+      <header className="stack-gap-sm">
         <h2 className="text-xl font-semibold text-text-primary">Mentions légales</h2>
         <p className="text-sm text-text-secondary">
           Conformément à l’article 6 de la loi n°2004-575 du 21 juin 2004 pour la confiance dans l’économie numérique.

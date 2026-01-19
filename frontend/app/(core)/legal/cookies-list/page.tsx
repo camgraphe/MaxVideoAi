@@ -68,8 +68,8 @@ export default function CookiesListPage() {
   );
 
   return (
-    <div className="space-y-8">
-      <header className="space-y-2">
+    <div className="stack-gap-lg">
+      <header className="stack-gap-sm">
         <h2 className="text-xl font-semibold text-text-primary">Cookie &amp; SDK inventory</h2>
         <p className="text-sm text-text-secondary">
           We track the cookies and SDKs used on maxvideoai.com. Non-essential technologies are only activated after consent.
@@ -77,7 +77,7 @@ export default function CookiesListPage() {
         <p className="text-sm text-text-secondary">Last updated: 26 October 2025</p>
       </header>
 
-      <article className="space-y-10 text-base leading-relaxed text-text-secondary">
+      <article className="stack-gap-xl text-base leading-relaxed text-text-secondary">
         {(Object.keys(grouped) as CookieRow['category'][]).map((category) => (
           <section key={category} className="space-y-4">
             <div>

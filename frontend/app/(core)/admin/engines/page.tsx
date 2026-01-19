@@ -41,8 +41,8 @@ export default async function AdminEnginesPage() {
   ]);
 
   return (
-    <div className="space-y-8">
-      <header className="space-y-2">
+    <div className="stack-gap-lg">
+      <header className="stack-gap-sm">
         <p className="text-xs font-semibold uppercase tracking-[0.35em] text-text-muted">Operations</p>
         <h1 className="text-3xl font-semibold text-text-primary">Engine performance &amp; configuration</h1>
         <p className="text-sm text-text-secondary">

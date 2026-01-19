@@ -58,7 +58,7 @@ export default async function AcceptableUsePage() {
   const header = HEADER_COPY[locale] ?? HEADER_COPY.en;
   return (
     <div className="stack-gap-lg">
-      <header className="space-y-2">
+      <header className="stack-gap-sm">
         <h1 className="text-xl font-semibold text-text-primary">{header.title}</h1>
         <p className="text-sm text-text-secondary">{header.effective}</p>
         <p className="text-sm text-text-secondary">{header.companyLine}</p>

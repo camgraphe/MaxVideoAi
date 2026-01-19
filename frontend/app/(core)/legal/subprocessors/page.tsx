@@ -73,8 +73,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function SubprocessorsPage() {
   return (
-    <div className="space-y-8">
-      <header className="space-y-2">
+    <div className="stack-gap-lg">
+      <header className="stack-gap-sm">
         <h2 className="text-xl font-semibold text-text-primary">Sub-processors</h2>
         <p className="text-sm text-text-secondary">
           We engage the following third parties to help deliver the Service. We maintain appropriate data-processing agreements and conduct regular reviews.
