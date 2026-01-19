@@ -541,7 +541,7 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
                           sizes="160px"
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center text-xs text-white/70">
+                        <div className="flex h-full w-full items-center justify-center text-xs text-on-media-70">
                           No preview
                         </div>
                       )}

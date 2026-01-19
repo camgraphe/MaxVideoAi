@@ -147,7 +147,7 @@ export function ExamplesOrbitCallout({ heading, description, ctaLabel, eyebrow, 
               aria-label={ctaLabel}
             >
               <span className="sr-only">{ctaLabel}</span>
-              <GalleryGlyph className="h-8 w-8 text-white/95 drop-shadow-[0_6px_18px_rgba(18,35,75,0.25)] transition-[transform,color] duration-300 ease-out group-hover:scale-[1.24] group-hover:text-white" />
+              <GalleryGlyph className="h-8 w-8 text-on-media-95 drop-shadow-[0_6px_18px_rgba(18,35,75,0.25)] transition-[transform,color] duration-300 ease-out group-hover:scale-[1.24] group-hover:text-white" />
             </Link>
             <div className="pointer-events-none absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface-2 opacity-60 blur-3xl" aria-hidden />
           </div>

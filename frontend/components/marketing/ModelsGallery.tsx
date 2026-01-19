@@ -95,13 +95,13 @@ function ModelCard({ card, ctaLabel }: { card: ModelGalleryCard; ctaLabel: strin
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
-      className="flex min-h-[11rem] cursor-pointer flex-col justify-between rounded-2xl border border-black/5 p-4 text-neutral-900 shadow-lg transition hover:border-black/10 hover:shadow-xl"
+      className="flex min-h-[11rem] cursor-pointer flex-col justify-between rounded-2xl border border-surface-on-media-dark-5 p-4 text-neutral-900 shadow-lg transition hover:border-surface-on-media-dark-10 hover:shadow-xl"
       style={{ backgroundColor: background, color: textColor }}
       aria-label={`${normalizedCtaLabel} ${card.label}`}
     >
       <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-micro text-neutral-600">
         <span>{card.versionLabel}</span>
-        <span className="rounded-full border border-black/10 px-2 py-1 text-[10px] font-semibold text-neutral-600">MaxVideoAI</span>
+        <span className="rounded-full border border-surface-on-media-dark-10 px-2 py-1 text-[10px] font-semibold text-neutral-600">MaxVideoAI</span>
       </div>
       <div className="mt-3">
         <h3 className="text-lg font-semibold leading-snug text-neutral-900 sm:text-xl">{card.label}</h3>

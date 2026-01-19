@@ -706,14 +706,14 @@ export default function BillingPage() {
                           {copy.wallet.addFunds.replace('{amount}', formatUsdAmount(tier.amountCents))}
                         </span>
                         {topupQuotes[tier.amountCents] && normalizedChargeCurrency !== 'USD' && (
-                          <span className="text-xs text-white/80">
+                          <span className="text-xs text-on-media-80">
                             ≈ {formatLocalAmount(topupQuotes[tier.amountCents].amountMinor, topupQuotes[tier.amountCents].currency)}
                           </span>
                         )}
                       </div>
-                      <div className="flex flex-col items-end text-[11px] font-semibold uppercase tracking-micro text-white/85">
+                      <div className="flex flex-col items-end text-[11px] font-semibold uppercase tracking-micro text-on-media-85">
                         <span className="rounded-full border border-surface-on-media-40 px-2 py-1 text-[10px]">Stripe</span>
-                        <span className="mt-2 text-white/70">Tap to top up</span>
+                        <span className="mt-2 text-on-media-70">Tap to top up</span>
                       </div>
                     </div>
                   </Button>

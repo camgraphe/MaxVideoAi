@@ -242,7 +242,7 @@ export function HomepageVideoManager({ initialHero }: HomepageVideoManagerProps)
                   ) : video?.thumbUrl ? (
                     <Image src={video.thumbUrl} alt="Preview" fill className="object-cover" sizes="320px" />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-xs text-white/70">
+                    <div className="flex h-full w-full items-center justify-center text-xs text-on-media-70">
                       No preview
                     </div>
                   )}

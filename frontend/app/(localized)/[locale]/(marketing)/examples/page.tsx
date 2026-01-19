@@ -691,7 +691,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
                           isActive
                             ? 'border-transparent bg-text-primary text-white shadow-card'
                             : palette
-                              ? clsx('border border-black/10 hover:opacity-90', palette.bg, palette.text)
+                              ? clsx('border border-surface-on-media-dark-10 hover:opacity-90', palette.bg, palette.text)
                               : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:text-text-primary'
                         )}
                       >

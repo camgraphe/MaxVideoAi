@@ -283,9 +283,20 @@ Note: usage UI = panels/modals sur fond visible + `backdrop-blur`. Eviter `bg-wh
 
 Note: tokens invariants (white tints) pour chips/FX sur images ou videos et pour borders "glass". Usage Tailwind = `bg-surface-on-media-*` / `border-surface-on-media-*`.
 
+#### On-media / text
+
+* `ui.textOnMedia95` - `rgba(255, 255, 255, 0.95)`
+* `ui.textOnMedia90` - `rgba(255, 255, 255, 0.90)`
+* `ui.textOnMedia85` - `rgba(255, 255, 255, 0.85)`
+* `ui.textOnMedia80` - `rgba(255, 255, 255, 0.80)`
+* `ui.textOnMedia70` - `rgba(255, 255, 255, 0.70)`
+
+Note: textes sur media = `text-on-media-*`.
+
 #### On-media / dark scrims
 
 * `ui.surfaceOnMediaDark5` - `rgba(0, 0, 0, 0.05)`
+* `ui.surfaceOnMediaDark10` - `rgba(0, 0, 0, 0.10)`
 * `ui.surfaceOnMediaDark40` - `rgba(0, 0, 0, 0.40)`
 * `ui.surfaceOnMediaDark45` - `rgba(0, 0, 0, 0.45)`
 * `ui.surfaceOnMediaDark50` - `rgba(0, 0, 0, 0.50)`
@@ -413,9 +424,20 @@ Note: les chips "on-media" peuvent rester en `bg-white/xx` (art/brand), mais l'U
 
 Note: tokens invariants (white tints) pour chips/FX sur images ou videos et pour borders "glass". Usage Tailwind = `bg-surface-on-media-*` / `border-surface-on-media-*`.
 
+#### On-media / text
+
+* `ui.textOnMedia95` - `rgba(255, 255, 255, 0.95)`
+* `ui.textOnMedia90` - `rgba(255, 255, 255, 0.90)`
+* `ui.textOnMedia85` - `rgba(255, 255, 255, 0.85)`
+* `ui.textOnMedia80` - `rgba(255, 255, 255, 0.80)`
+* `ui.textOnMedia70` - `rgba(255, 255, 255, 0.70)`
+
+Note: textes sur media = `text-on-media-*`.
+
 #### On-media / dark scrims
 
 * `ui.surfaceOnMediaDark5` - `rgba(0, 0, 0, 0.05)`
+* `ui.surfaceOnMediaDark10` - `rgba(0, 0, 0, 0.10)`
 * `ui.surfaceOnMediaDark40` - `rgba(0, 0, 0, 0.40)`
 * `ui.surfaceOnMediaDark45` - `rgba(0, 0, 0, 0.45)`
 * `ui.surfaceOnMediaDark50` - `rgba(0, 0, 0, 0.50)`
@@ -736,6 +758,7 @@ Objectif : rendre explicite le chemin de verite, pour eviter les divergences (ex
 | `ui.surfaceGlass90` | `--surface-glass-90` | `bg-surface-glass-90` |
 | `ui.surfaceOnMedia20` | `--surface-on-media-20` | `bg-surface-on-media-20` |
 | `ui.surfaceOnMediaDark60` | `--surface-on-media-dark-60` | `bg-surface-on-media-dark-60` |
+| `ui.textOnMedia80` | `--text-on-media-80` | `text-on-media-80` |
 | `ui.border` | `--border` | `border-border` |
 | `ui.hairline` | `--hairline` | `border-hairline` |
 | `ui.accent` | `--accent` | `text-accent` / `bg-accent` selon usage |

@@ -22,6 +22,12 @@
   --surface-on-media-50: rgba(255, 255, 255, 0.50);
   --surface-on-media-60: rgba(255, 255, 255, 0.60);
   --surface-on-media-70: rgba(255, 255, 255, 0.70);
+  --text-on-media-95: rgba(255, 255, 255, 0.95);
+  --text-on-media-90: rgba(255, 255, 255, 0.90);
+  --text-on-media-85: rgba(255, 255, 255, 0.85);
+  --text-on-media-80: rgba(255, 255, 255, 0.80);
+  --text-on-media-70: rgba(255, 255, 255, 0.70);
+  --surface-on-media-dark-10: rgba(0, 0, 0, 0.10);
   --surface-on-media-dark-5: rgba(0, 0, 0, 0.05);
   --surface-on-media-dark-40: rgba(0, 0, 0, 0.40);
   --surface-on-media-dark-45: rgba(0, 0, 0, 0.45);
@@ -171,6 +177,12 @@
   --surface-on-media-50: rgba(255, 255, 255, 0.50);
   --surface-on-media-60: rgba(255, 255, 255, 0.60);
   --surface-on-media-70: rgba(255, 255, 255, 0.70);
+  --text-on-media-95: rgba(255, 255, 255, 0.95);
+  --text-on-media-90: rgba(255, 255, 255, 0.90);
+  --text-on-media-85: rgba(255, 255, 255, 0.85);
+  --text-on-media-80: rgba(255, 255, 255, 0.80);
+  --text-on-media-70: rgba(255, 255, 255, 0.70);
+  --surface-on-media-dark-10: rgba(0, 0, 0, 0.10);
   --surface-on-media-dark-5: rgba(0, 0, 0, 0.05);
   --surface-on-media-dark-40: rgba(0, 0, 0, 0.40);
   --surface-on-media-dark-45: rgba(0, 0, 0, 0.45);
