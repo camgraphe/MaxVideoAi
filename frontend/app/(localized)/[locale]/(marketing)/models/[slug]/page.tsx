@@ -1279,7 +1279,7 @@ function Sora2PageLayout({
             </div>
             {isEsLocale && howToLatamTitle && howToLatamSteps.length ? (
               <section className="rounded-2xl border border-hairline bg-white/70 p-5 shadow-card">
-                <h2 className="text-xl font-semibold text-text-primary">{howToLatamTitle}</h2>
+                <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{howToLatamTitle}</h2>
                 <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-text-secondary">
                   {howToLatamSteps.map((step) => (
                     <li key={step}>{step}</li>
@@ -2333,7 +2333,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       {relatedEngines.length ? (
         <section className="mt-12">
           <div className="mb-6 space-y-2">
-            <h2 className="text-xl font-semibold text-text-primary">{relatedCopy.title}</h2>
+            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{relatedCopy.title}</h2>
             <p className="text-sm text-text-secondary">{relatedCopy.subtitle}</p>
           </div>
           <div className="grid gap-4 md:grid-cols-3">

@@ -357,7 +357,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
       </section>
 
       <section className="mt-8 rounded-card border border-hairline bg-white/90 p-6 text-sm text-text-secondary shadow-card">
-        <h2 className="text-lg font-semibold text-text-primary">
+        <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
           {content.calculator?.title ?? 'Preview prices in the app'}
         </h2>
         <p className="mt-2">
@@ -388,7 +388,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
         </div>
       </section>
       <section aria-labelledby="example-costs" className="mt-10">
-        <h2 id="example-costs" className="scroll-mt-28 text-lg font-semibold text-text-primary">
+        <h2 id="example-costs" className="scroll-mt-28 text-2xl font-semibold text-text-primary sm:text-3xl">
           {exampleCosts.title ?? DEFAULT_EXAMPLE_COSTS.title}
         </h2>
         <p className="mb-4 text-sm text-text-secondary">
@@ -426,7 +426,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
       </section>
       {priceFactors.points?.length ? (
         <section aria-labelledby="price-factors" className="mt-8">
-          <h2 id="price-factors" className="text-lg font-semibold text-text-primary">
+          <h2 id="price-factors" className="text-2xl font-semibold text-text-primary sm:text-3xl">
             {priceFactors.title ?? DEFAULT_PRICE_FACTORS.title}
           </h2>
           <ul className="mt-2 space-y-1 text-sm text-text-secondary">
@@ -438,7 +438,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
       ) : null}
 
       <section className="mt-12 rounded-card border border-hairline bg-white p-6 shadow-card">
-        <h2 className="text-xl font-semibold text-text-primary">
+        <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
           {teams.title}
           <FlagPill live={FEATURES.pricing.teams} className="ml-3" />
         </h2>
@@ -458,7 +458,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
       </section>
 
       <section className="mt-12 rounded-card border border-hairline bg-white p-6 shadow-card">
-        <h2 className="text-xl font-semibold text-text-primary">
+        <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
           {member.title}
           <FlagPill live={FEATURES.pricing.memberTiers} className="ml-3" />
         </h2>
@@ -479,7 +479,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           id="refunds-protections"
           className="scroll-mt-28 rounded-card border border-hairline bg-white p-6 shadow-card"
         >
-          <h2 className="text-xl font-semibold text-text-primary">
+          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
             {refunds.title}
           </h2>
           <ul className="mt-4 space-y-3 text-sm text-text-secondary">
@@ -495,7 +495,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           </ul>
         </article>
         <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
-          <h2 className="text-xl font-semibold text-text-primary">{faq.title}</h2>
+          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{faq.title}</h2>
           <dl className="mt-4 space-y-4">
             {faq.entries.map((entry) => (
               <div key={entry.question}>
