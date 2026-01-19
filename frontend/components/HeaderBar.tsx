@@ -348,7 +348,7 @@ export function HeaderBar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="transition-colors hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                className="transition-colors hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
               >
                 {t(`nav.linkLabels.${item.key}`, item.key)}
               </Link>

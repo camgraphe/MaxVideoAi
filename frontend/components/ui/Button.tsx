@@ -8,12 +8,12 @@ type ButtonVariant = 'primary' | 'outline' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 const baseClasses =
-  'inline-flex items-center justify-center gap-2 font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-60';
+  'inline-flex items-center justify-center gap-2 font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:cursor-not-allowed disabled:opacity-60';
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'bg-brand text-on-brand hover:bg-brandHover',
-  outline: 'border border-hairline text-text-primary hover:border-text-muted hover:bg-surface-2',
-  ghost: 'text-text-secondary hover:text-text-primary hover:bg-surface-2',
+  primary: 'bg-brand text-on-brand hover:bg-brandHover active:bg-brandActive',
+  outline: 'border border-hairline text-text-primary hover:border-border-hover hover:bg-surface-hover active:border-border-hover active:bg-surface-2',
+  ghost: 'text-text-secondary hover:text-text-primary hover:bg-surface-hover active:bg-surface-2',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {

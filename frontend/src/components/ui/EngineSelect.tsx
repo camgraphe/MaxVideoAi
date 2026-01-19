@@ -618,7 +618,7 @@ export function EngineSelect({
                       type="button"
                       onClick={() => onEngineChange(entry.id)}
                       className={clsx(
-                        'rounded-pill border px-3 py-1 font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white',
+                        'rounded-pill border px-3 py-1 font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
                         isBarVariant ? 'text-[10px]' : 'text-[12px]',
                         active
                           ? 'border-brand bg-brand text-on-brand'
@@ -647,7 +647,7 @@ export function EngineSelect({
                       type="button"
                       onClick={() => onModeChange(candidate)}
                       className={clsx(
-                        'rounded-pill border px-3 py-1 font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white',
+                        'rounded-pill border px-3 py-1 font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
                         isBarVariant ? 'text-[10px]' : 'text-[12px]',
                         active
                           ? 'border-brand bg-brand text-on-brand'
