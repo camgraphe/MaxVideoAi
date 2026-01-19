@@ -98,7 +98,7 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
           </header>
 
           <nav aria-label="On-page navigation">
-            <div className="rounded-xl border border-hairline bg-white p-3 text-sm text-text-secondary sm:hidden">
+            <div className="rounded-xl border border-hairline bg-surface p-3 text-sm text-text-secondary sm:hidden">
               <div className="flex flex-wrap gap-2 text-muted-foreground">
                 {tocLinks.map((link) => (
                   <a
@@ -112,7 +112,7 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
               </div>
             </div>
             <div className="mt-4 sm:grid sm:grid-cols-[220px_1fr] sm:gap-6">
-              <aside className="hidden sm:block sm:sticky sm:top-24 sm:h-max sm:self-start sm:rounded-xl sm:border sm:border-hairline sm:bg-white sm:p-4 sm:text-sm sm:text-text-secondary">
+              <aside className="hidden sm:block sm:sticky sm:top-24 sm:h-max sm:self-start sm:rounded-xl sm:border sm:border-hairline sm:bg-surface sm:p-4 sm:text-sm sm:text-text-secondary">
                 <div className="mb-2 text-sm font-semibold text-text-primary">On this page</div>
                 <ul className="space-y-1">
                   {tocLinks.map((link) => (
@@ -127,7 +127,7 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
                   ))}
                 </ul>
               </aside>
-              <div>
+              <div className="stack-gap-lg">
                 <DocsTocActive />
                 <section className="grid grid-gap lg:grid-cols-2">
                   {sections.map((section) => {
@@ -136,7 +136,7 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
                       <article
                         key={section.title}
                         id={sectionId}
-                        className="scroll-mt-28 rounded-card border border-hairline bg-white p-6 shadow-card"
+                        className="scroll-mt-28 rounded-card border border-hairline bg-surface p-6 shadow-card"
                       >
                         <h2 className="text-lg font-semibold text-text-primary">{section.title}</h2>
                         {sectionId === 'api' ? (
@@ -249,7 +249,7 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
                   })}
                 </section>
 
-                <section id="library" className="mt-12 scroll-mt-28">
+                <section id="library" className="scroll-mt-28">
                   <h2 className="flex items-center gap-2 text-xl font-semibold text-text-primary">
                     {content.libraryHeading ?? 'Library'}
                     <FlagPill live={FEATURES.docs.libraryDocs} />
@@ -293,7 +293,7 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
             <h3 id="docs-feedback" className="sr-only">
               Feedback
             </h3>
-            <div className="flex flex-col gap-4 rounded-xl border border-hairline bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-4 rounded-xl border border-hairline bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-text-muted">Was this page helpful?</p>
               <div className="flex items-center gap-2">
                 <Link href="/contact" className="rounded-md border border-hairline px-3 py-1.5 text-sm hover:shadow-sm">

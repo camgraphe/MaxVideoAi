@@ -243,84 +243,83 @@ export default async function BlogPostPage({ params }: { params: Params }) {
 
   return (
     <div className="container-page max-w-5xl section">
-      <TextLink href="/blog" className="text-sm" linkComponent={Link}>
-        ← Back to blog
-      </TextLink>
+      <div className="stack-gap-lg">
+        <TextLink href="/blog" className="text-sm" linkComponent={Link}>
+          ← Back to blog
+        </TextLink>
 
-      <article className="mt-6 overflow-hidden rounded-[28px] border border-hairline bg-white/90 shadow-card backdrop-blur">
-        <header className="relative border-b border-hairline bg-gradient-to-br from-white to-bg/60">
-          {post.image ? (
-            <div className="relative h-64 w-full overflow-hidden bg-bg sm:h-80">
-              <Image
-                src={post.image}
-                alt={post.title}
-                fill
-                priority
-                fetchPriority="high"
-                sizes="(min-width: 1024px) 960px, 100vw"
-                className="object-cover object-center"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-white via-white/90 via-60% to-white/10" />
-            </div>
-          ) : (
-            <div className="h-24 w-full bg-gradient-to-r from-surface-2 via-surface-3 to-surface-2 sm:h-28" />
-          )}
-          <div className="relative z-10 stack-gap-lg px-6 pb-10 pt-8 sm:px-10">
-            <div className="flex flex-wrap items-center gap-4 text-xs uppercase tracking-micro text-text-muted">
-              <span className="rounded-pill border border-hairline bg-white/80 px-3 py-1 font-semibold text-text-secondary shadow-sm">
-                {formattedDate}
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {post.keywords?.map((keyword) => (
-                  <span
-                    key={keyword}
-                    className="rounded-pill bg-surface-2 px-3 py-1 font-semibold text-brand"
-                  >
-                    {keyword}
-                  </span>
-                ))}
+        <article className="overflow-hidden rounded-[28px] border border-hairline bg-surface/90 shadow-card backdrop-blur">
+          <header className="relative border-b border-hairline bg-gradient-to-br from-surface to-bg/60">
+            {post.image ? (
+              <div className="relative h-64 w-full overflow-hidden bg-bg sm:h-80">
+                <Image
+                  src={post.image}
+                  alt={post.title}
+                  fill
+                  priority
+                  fetchPriority="high"
+                  sizes="(min-width: 1024px) 960px, 100vw"
+                  className="object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/90 via-60% to-surface/10" />
+              </div>
+            ) : (
+              <div className="h-24 w-full bg-gradient-to-r from-surface-2 via-surface-3 to-surface-2 sm:h-28" />
+            )}
+            <div className="relative z-10 stack-gap-lg px-6 pb-10 pt-8 sm:px-10">
+              <div className="flex flex-wrap items-center gap-4 text-xs uppercase tracking-micro text-text-muted">
+                <span className="rounded-pill border border-hairline bg-surface/80 px-3 py-1 font-semibold text-text-secondary shadow-sm">
+                  {formattedDate}
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {post.keywords?.map((keyword) => (
+                    <span key={keyword} className="rounded-pill bg-surface-2 px-3 py-1 font-semibold text-brand">
+                      {keyword}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="max-w-3xl stack-gap-sm">
+                <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-5xl">{post.title}</h1>
+                <p className="text-base leading-relaxed text-text-secondary sm:text-lg">{post.description}</p>
               </div>
             </div>
-            <div className="max-w-3xl stack-gap-sm">
-              <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-5xl">{post.title}</h1>
-              <p className="text-base leading-relaxed text-text-secondary sm:text-lg">{post.description}</p>
+          </header>
+
+          <div className="blog-prose px-6 py-10 sm:px-10" dangerouslySetInnerHTML={{ __html: demotedContent }} />
+        </article>
+
+        {relatedPosts.length ? (
+          <section className="stack-gap">
+            <div>
+              <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">Related reading</h2>
+              <p className="text-sm text-text-secondary">More launch notes and engine breakdowns curated for you.</p>
             </div>
-          </div>
-        </header>
-
-        <div className="blog-prose px-6 py-10 sm:px-10" dangerouslySetInnerHTML={{ __html: demotedContent }} />
-      </article>
-
-      {relatedPosts.length ? (
-        <section className="mt-12 stack-gap">
-          <div>
-            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">Related reading</h2>
-            <p className="text-sm text-text-secondary">More launch notes and engine breakdowns curated for you.</p>
-          </div>
-          <div className="grid grid-gap-sm md:grid-cols-3">
-            {relatedPosts.map((related) => (
-              <article key={related.slug} className="rounded-2xl border border-hairline bg-white/90 p-5 shadow-card">
-                <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-                  {new Date(related.date).toLocaleDateString(localeDateMap[locale], {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
-                </p>
-                <h3 className="mt-2 text-base font-semibold text-text-primary">{related.title}</h3>
-                <p className="mt-2 text-sm text-text-secondary">{related.description}</p>
-                <TextLink
-                  href={{ pathname: '/blog/[slug]', params: { slug: related.slug } }}
-                  className="mt-4 gap-1 text-sm"
-                  linkComponent={Link}
-                >
-                  Read article <span aria-hidden>→</span>
-                </TextLink>
-              </article>
-            ))}
-          </div>
-        </section>
-      ) : null}
+            <div className="grid grid-gap-sm md:grid-cols-3">
+              {relatedPosts.map((related) => (
+                <article key={related.slug} className="rounded-2xl border border-hairline bg-surface/90 p-5 shadow-card">
+                  <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
+                    {new Date(related.date).toLocaleDateString(localeDateMap[locale], {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </p>
+                  <h3 className="mt-2 text-base font-semibold text-text-primary">{related.title}</h3>
+                  <p className="mt-2 text-sm text-text-secondary">{related.description}</p>
+                  <TextLink
+                    href={{ pathname: '/blog/[slug]', params: { slug: related.slug } }}
+                    className="mt-4 gap-1 text-sm"
+                    linkComponent={Link}
+                  >
+                    Read article <span aria-hidden>→</span>
+                  </TextLink>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
+      </div>
 
       <Script
         id={`breadcrumb-${locale}-${post.slug}-jsonld`}

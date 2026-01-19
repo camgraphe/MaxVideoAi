@@ -654,206 +654,205 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
         {lcpPosterSrc ? <link rel="preload" as="image" href={lcpPosterSrc} fetchPriority="high" /> : null}
       </Head>
       <main className="container-page max-w-7xl section">
-      <header className="max-w-3xl stack-gap">
-          <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
-          <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
-          <p className="text-sm leading-relaxed text-text-secondary/90">{heroBody}</p>
-        </header>
+        <div className="stack-gap-lg">
+          <header className="max-w-3xl stack-gap-sm">
+            <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
+            <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
+            <p className="text-sm leading-relaxed text-text-secondary/90">{heroBody}</p>
+          </header>
 
-      <section className="mt-8 flex flex-wrap items-center gap-4 text-xs text-text-secondary">
-        {engineFilterOptions.length ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="font-semibold uppercase tracking-micro text-text-muted">{engineFilterLabel}</span>
-            <div className="flex flex-wrap items-center gap-1">
-              <Link
-                href={{ pathname: '/examples', query: buildQueryParams(DEFAULT_SORT, null, 1) }}
-                rel="nofollow"
-                className={clsx(
-                  'flex h-9 items-center justify-center rounded-full border px-3 text-[11px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  selectedEngine
-                    ? 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:text-text-primary'
-                    : 'border-transparent bg-text-primary text-white shadow-card'
-                )}
-              >
-                {engineFilterAllLabel}
-              </Link>
-              {engineFilterOptions.map((engine) => {
-                const isActive = selectedEngine === engine.id;
-                const palette = ENGINE_FILTER_STYLES[engine.id.toLowerCase()] ?? null;
-                return (
+          <section className="flex flex-wrap items-center gap-4 text-xs text-text-secondary">
+            {engineFilterOptions.length ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-semibold uppercase tracking-micro text-text-muted">{engineFilterLabel}</span>
+                <div className="flex flex-wrap items-center gap-1">
                   <Link
-                    key={engine.id}
-                    href={{ pathname: '/examples', query: buildQueryParams(DEFAULT_SORT, engine.id, 1) }}
+                    href={{ pathname: '/examples', query: buildQueryParams(DEFAULT_SORT, null, 1) }}
                     rel="nofollow"
                     className={clsx(
-                      'flex h-9 items-center justify-center rounded-full border px-4 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                      isActive
-                        ? 'border-transparent bg-text-primary text-white shadow-card'
-                        : palette
-                          ? clsx('border border-black/10 hover:opacity-90', palette.bg, palette.text)
-                          : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:text-text-primary'
+                      'flex h-9 items-center justify-center rounded-full border px-3 text-[11px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      selectedEngine
+                        ? 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:text-text-primary'
+                        : 'border-transparent bg-text-primary text-white shadow-card'
                     )}
                   >
-                    {engine.label}
+                    {engineFilterAllLabel}
                   </Link>
-                );
-              })}
-            </div>
-          </div>
-        ) : null}
-      </section>
-      {selectedEngine && modelPath ? (
-        <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-text-secondary">
-          <Link href={modelPath} className="font-semibold text-brand hover:text-brandHover">
-            {engineModelLinkLabel}
-          </Link>
-          <Link href={pricingPath} className="font-semibold text-brand hover:text-brandHover">
-            {pricingLinkLabel}
-          </Link>
-        </div>
-      ) : null}
-
-      <section className="mt-8 overflow-hidden rounded-[12px] border border-hairline bg-white/80 shadow-card">
-        <ExamplesGalleryGrid
-          examples={clientVideos}
-          loadMoreLabel={loadMoreLabel}
-        />
-      </section>
-
-      {totalPages > 1 ? (
-        <nav className="mt-6 flex flex-col items-center justify-between gap-4 rounded-[24px] border border-hairline bg-white/70 px-4 py-4 text-sm text-text-secondary sm:flex-row">
-          <div>
-            {hasPreviousPage ? (
-              <Link
-                href={{
-                  pathname: '/examples',
-                  query: buildQueryParams(sort, selectedEngine, currentPage - 1),
-                }}
-                rel="prev"
-                className="inline-flex items-center rounded-full border border-hairline px-3 py-1 font-medium text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                ← {paginationPrevLabel}
-              </Link>
-            ) : (
-              <span className="inline-flex items-center rounded-full border border-dashed border-hairline px-3 py-1 text-text-muted">
-                ← {paginationPrevLabel}
-              </span>
-            )}
-          </div>
-          <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-            {paginationPageLabel} {currentPage} / {totalPages}
-          </span>
-          <div>
-            {hasNextPage ? (
-              <Link
-                href={{
-                  pathname: '/examples',
-                  query: buildQueryParams(sort, selectedEngine, currentPage + 1),
-                }}
-                rel="next"
-                className="inline-flex items-center rounded-full border border-hairline px-3 py-1 font-medium text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {paginationNextLabel} →
-              </Link>
-            ) : (
-              <span className="inline-flex items-center rounded-full border border-dashed border-hairline px-3 py-1 text-text-muted">
-                {paginationNextLabel} →
-              </span>
-            )}
-          </div>
-        </nav>
-      ) : null}
-
-        <section className="mt-10 max-w-4xl text-sm leading-relaxed text-text-secondary/90">
-          <p>{longDescription}</p>
-        </section>
-
-        {videoLinkEntries.length ? (
-          <details className="mt-10 rounded-[16px] border border-hairline bg-white/70 px-4 py-5 text-sm text-text-secondary/90">
-            <summary className="flex cursor-pointer items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-              <span className="text-base font-semibold text-text-primary">{recentAccessTitle}</span>
-              <span className="text-xs uppercase tracking-micro text-text-muted">{showLabel}</span>
-            </summary>
-            <div className="mt-3">
-              <p className="text-xs text-text-muted">{recentAccessBody}</p>
-              <ul className="mt-4 grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
-                {videoLinkEntries.map((entry) => (
-                  <li key={entry.id}>
-                    <Link
-                      href={`/video/${encodeURIComponent(entry.id)}`}
-                      className="text-text-secondary transition hover:text-text-primary"
-                    >
-                      {entry.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </details>
-        ) : null}
-
-        <section className="mt-10">
-          <details className="rounded-[16px] border border-hairline bg-white/80 px-4 py-5 shadow-card">
-            <summary className="flex cursor-pointer items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-              <div>
-                <h2 className="text-lg font-semibold text-text-primary">
-                  {locale === 'fr'
-                    ? "Plus d'exemples vidéo IA"
-                    : locale === 'es'
-                      ? 'Más ejemplos de video IA'
-                      : 'More AI video examples'}
-                </h2>
-                <p className="mt-1 text-xs text-text-secondary">
-                  {locale === 'fr'
-                    ? 'Explorez davantage de rendus publics créés avec MaxVideoAI.'
-                    : locale === 'es'
-                      ? 'Explora más renderizados públicos creados con MaxVideoAI.'
-                      : 'Browse more public renders created with MaxVideoAI.'}
-                </p>
+                  {engineFilterOptions.map((engine) => {
+                    const isActive = selectedEngine === engine.id;
+                    const palette = ENGINE_FILTER_STYLES[engine.id.toLowerCase()] ?? null;
+                    return (
+                      <Link
+                        key={engine.id}
+                        href={{ pathname: '/examples', query: buildQueryParams(DEFAULT_SORT, engine.id, 1) }}
+                        rel="nofollow"
+                        className={clsx(
+                          'flex h-9 items-center justify-center rounded-full border px-4 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                          isActive
+                            ? 'border-transparent bg-text-primary text-white shadow-card'
+                            : palette
+                              ? clsx('border border-black/10 hover:opacity-90', palette.bg, palette.text)
+                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:text-text-primary'
+                        )}
+                      >
+                        {engine.label}
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
-              <span className="text-xs uppercase tracking-micro text-text-muted">
-                {locale === 'fr' ? 'Afficher' : locale === 'es' ? 'Mostrar' : 'Show'}
-              </span>
-            </summary>
-            <div className="mt-4 grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
-              {[
-                'job_5b9191d8-7f7c-4947-b007-c6aa384d97c1',
-                'job_1d93e1b7-e4d4-4ae3-a2f3-421ffb4615c0',
-                'job_0775869a-2386-40d4-9753-25083bf0f6b2',
-                'job_5efdec94-0818-466b-b570-9898192b4f24',
-                'job_c9abd206-c515-45f2-bb5a-dc5b18e35eeb',
-                'job_45d957eb-e943-4838-b6f0-50a1b006687d',
-                'job_71905754-c5e6-4078-864d-f17cd7f62d95',
-                'job_27680a77-1690-4856-b188-5fd6d359d2f8',
-                'job_1ecfbd83-2a68-4196-a453-a3e81e8a0623',
-                'job_17214ed3-acbc-41b5-8528-59dce5f236a5',
-                'job_3f4474d3-7481-4362-8fd9-a90d41853231',
-                'job_93c9f857-1e89-4551-ba70-4619770a6cb1',
-                'job_c1311458-e35c-4e4d-b791-488c14fc395e',
-                'job_a1662b5f-8b50-465e-9af6-aba585e1d807',
-                'job_9dda92fc-830a-41c4-88d4-44967acc8875',
-                'job_19bc2180-5d30-458c-9034-610396cb9255',
-                'job_c637ef05-1f9a-43b6-aeec-8b1bcf60e684',
-                'job_f4b0fd07-cbd8-4f48-8e7c-3145d8063a99',
-                'job_3676559d-d828-46c8-adc6-6dd0255f9e0a',
-                'job_d5a3c272-4e3d-4932-b39b-837ac8aa462b',
-                'job_948ac337-d8a4-40fe-9583-1995cdab75d1',
-              ].map((id, index) => (
-                <Link
-                  key={id}
-                  href={`/video/${encodeURIComponent(id)}`}
-                  className="block rounded-lg border border-hairline bg-white/80 p-4 text-sm font-semibold text-text-primary shadow-card transition hover:border-text-muted hover:text-text-primary"
-                >
-                  {locale === 'fr'
-                    ? `Exemple ${index + 1}`
-                    : locale === 'es'
-                      ? `Ejemplo ${index + 1}`
-                      : `Example ${index + 1}`}
-                </Link>
-              ))}
+            ) : null}
+          </section>
+          {selectedEngine && modelPath ? (
+            <div className="flex flex-wrap items-center gap-4 text-sm text-text-secondary">
+              <Link href={modelPath} className="font-semibold text-brand hover:text-brandHover">
+                {engineModelLinkLabel}
+              </Link>
+              <Link href={pricingPath} className="font-semibold text-brand hover:text-brandHover">
+                {pricingLinkLabel}
+              </Link>
             </div>
-          </details>
-        </section>
+          ) : null}
+
+          <section className="overflow-hidden rounded-[12px] border border-hairline bg-surface/80 shadow-card">
+            <ExamplesGalleryGrid examples={clientVideos} loadMoreLabel={loadMoreLabel} />
+          </section>
+
+          {totalPages > 1 ? (
+            <nav className="flex flex-col items-center justify-between gap-4 rounded-[24px] border border-hairline bg-surface/70 px-4 py-4 text-sm text-text-secondary sm:flex-row">
+              <div>
+                {hasPreviousPage ? (
+                  <Link
+                    href={{
+                      pathname: '/examples',
+                      query: buildQueryParams(sort, selectedEngine, currentPage - 1),
+                    }}
+                    rel="prev"
+                    className="inline-flex items-center rounded-full border border-hairline px-3 py-1 font-medium text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    ← {paginationPrevLabel}
+                  </Link>
+                ) : (
+                  <span className="inline-flex items-center rounded-full border border-dashed border-hairline px-3 py-1 text-text-muted">
+                    ← {paginationPrevLabel}
+                  </span>
+                )}
+              </div>
+              <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">
+                {paginationPageLabel} {currentPage} / {totalPages}
+              </span>
+              <div>
+                {hasNextPage ? (
+                  <Link
+                    href={{
+                      pathname: '/examples',
+                      query: buildQueryParams(sort, selectedEngine, currentPage + 1),
+                    }}
+                    rel="next"
+                    className="inline-flex items-center rounded-full border border-hairline px-3 py-1 font-medium text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {paginationNextLabel} →
+                  </Link>
+                ) : (
+                  <span className="inline-flex items-center rounded-full border border-dashed border-hairline px-3 py-1 text-text-muted">
+                    {paginationNextLabel} →
+                  </span>
+                )}
+              </div>
+            </nav>
+          ) : null}
+
+          <section className="max-w-4xl text-sm leading-relaxed text-text-secondary/90">
+            <p>{longDescription}</p>
+          </section>
+
+          {videoLinkEntries.length ? (
+            <details className="rounded-[16px] border border-hairline bg-surface/70 px-4 py-5 text-sm text-text-secondary/90">
+              <summary className="flex cursor-pointer items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <span className="text-base font-semibold text-text-primary">{recentAccessTitle}</span>
+                <span className="text-xs uppercase tracking-micro text-text-muted">{showLabel}</span>
+              </summary>
+              <div className="mt-3">
+                <p className="text-xs text-text-muted">{recentAccessBody}</p>
+                <ul className="mt-4 grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
+                  {videoLinkEntries.map((entry) => (
+                    <li key={entry.id}>
+                      <Link
+                        href={`/video/${encodeURIComponent(entry.id)}`}
+                        className="text-text-secondary transition hover:text-text-primary"
+                      >
+                        {entry.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </details>
+          ) : null}
+
+          <section>
+            <details className="rounded-[16px] border border-hairline bg-surface/80 px-4 py-5 shadow-card">
+              <summary className="flex cursor-pointer items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <div>
+                  <h2 className="text-lg font-semibold text-text-primary">
+                    {locale === 'fr'
+                      ? "Plus d'exemples vidéo IA"
+                      : locale === 'es'
+                        ? 'Más ejemplos de video IA'
+                        : 'More AI video examples'}
+                  </h2>
+                  <p className="mt-1 text-xs text-text-secondary">
+                    {locale === 'fr'
+                      ? 'Explorez davantage de rendus publics créés avec MaxVideoAI.'
+                      : locale === 'es'
+                        ? 'Explora más renderizados públicos creados con MaxVideoAI.'
+                        : 'Browse more public renders created with MaxVideoAI.'}
+                  </p>
+                </div>
+                <span className="text-xs uppercase tracking-micro text-text-muted">
+                  {locale === 'fr' ? 'Afficher' : locale === 'es' ? 'Mostrar' : 'Show'}
+                </span>
+              </summary>
+              <div className="mt-4 grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
+                {[
+                  'job_5b9191d8-7f7c-4947-b007-c6aa384d97c1',
+                  'job_1d93e1b7-e4d4-4ae3-a2f3-421ffb4615c0',
+                  'job_0775869a-2386-40d4-9753-25083bf0f6b2',
+                  'job_5efdec94-0818-466b-b570-9898192b4f24',
+                  'job_c9abd206-c515-45f2-bb5a-dc5b18e35eeb',
+                  'job_45d957eb-e943-4838-b6f0-50a1b006687d',
+                  'job_71905754-c5e6-4078-864d-f17cd7f62d95',
+                  'job_27680a77-1690-4856-b188-5fd6d359d2f8',
+                  'job_1ecfbd83-2a68-4196-a453-a3e81e8a0623',
+                  'job_17214ed3-acbc-41b5-8528-59dce5f236a5',
+                  'job_3f4474d3-7481-4362-8fd9-a90d41853231',
+                  'job_93c9f857-1e89-4551-ba70-4619770a6cb1',
+                  'job_c1311458-e35c-4e4d-b791-488c14fc395e',
+                  'job_a1662b5f-8b50-465e-9af6-aba585e1d807',
+                  'job_9dda92fc-830a-41c4-88d4-44967acc8875',
+                  'job_19bc2180-5d30-458c-9034-610396cb9255',
+                  'job_c637ef05-1f9a-43b6-aeec-8b1bcf60e684',
+                  'job_f4b0fd07-cbd8-4f48-8e7c-3145d8063a99',
+                  'job_3676559d-d828-46c8-adc6-6dd0255f9e0a',
+                  'job_d5a3c272-4e3d-4932-b39b-837ac8aa462b',
+                  'job_948ac337-d8a4-40fe-9583-1995cdab75d1',
+                ].map((id, index) => (
+                  <Link
+                    key={id}
+                    href={`/video/${encodeURIComponent(id)}`}
+                    className="block rounded-lg border border-hairline bg-surface/80 p-4 text-sm font-semibold text-text-primary shadow-card transition hover:border-text-muted hover:text-text-primary"
+                  >
+                    {locale === 'fr'
+                      ? `Exemple ${index + 1}`
+                      : locale === 'es'
+                        ? `Ejemplo ${index + 1}`
+                        : `Example ${index + 1}`}
+                  </Link>
+                ))}
+              </div>
+            </details>
+          </section>
+        </div>
 
         {breadcrumbJsonLd ? (
           <script
