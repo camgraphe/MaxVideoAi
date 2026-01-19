@@ -321,7 +321,7 @@ export function HeaderBar() {
       <header
         className={clsx(
           'sticky top-0 z-40 flex h-[var(--header-height)] items-center justify-between px-6 lg:px-8',
-          'border-b border-border bg-surface/80 backdrop-blur-xl'
+          'border-b border-border bg-surface'
         )}
       >
         <div className="flex items-center gap-4 md:gap-6">
