@@ -2113,7 +2113,7 @@ function ImageLibraryModal({
                   onClick={() => onSelect(asset)}
                   className="group min-h-0 h-auto rounded-card border border-border bg-surface p-0 text-left shadow-card hover:border-text-primary"
                 >
-                  <div className="relative aspect-square overflow-hidden rounded-t-card bg-[#f2f4f8]">
+                  <div className="relative aspect-square overflow-hidden rounded-t-card bg-placeholder">
                     <img src={asset.url} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
                     <div className="absolute inset-0 hidden items-center justify-center bg-surface-on-media-dark-40 text-sm font-semibold text-on-inverse group-hover:flex">
                       {copy.overlay}

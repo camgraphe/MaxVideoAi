@@ -114,7 +114,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
           <MiniChartPanel title="Active accounts per day">
             <MiniBarChart
               ariaLabel="Daily active accounts"
-              color="#7c3aed"
+              color="var(--chart-active)"
               points={metrics.timeseries.activeAccountsDaily.map((point) => ({
                 label: formatDay(point.date),
                 value: point.value,
@@ -150,7 +150,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
         <SectionCard title="Wallet top-ups" description={`Amounts loaded during the past ${describeRange(metrics.range.label)}.`}>
           <MiniBarChart
             ariaLabel="Daily wallet top-ups"
-            color="#0ea5e9"
+            color="var(--accent)"
             points={metrics.timeseries.topupsDaily.map((point) => ({
               label: formatDay(point.date),
               value: point.amountCents / 100,
@@ -161,7 +161,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
         <SectionCard title="Render charges" description={`Charges recorded over the past ${describeRange(metrics.range.label)}.`}>
           <MiniBarChart
             ariaLabel="Daily render charges"
-            color="#f97316"
+            color="var(--chart-charges)"
             points={metrics.timeseries.chargesDaily.map((point) => ({
               label: formatDay(point.date),
               value: point.amountCents / 100,
@@ -457,7 +457,7 @@ type MiniBarChartPoint = {
 
 function MiniBarChart({
   points,
-  color = '#2563eb',
+  color = 'var(--info)',
   ariaLabel = 'mini bar chart',
 }: {
   points: MiniBarChartPoint[];

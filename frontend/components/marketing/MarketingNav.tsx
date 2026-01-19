@@ -364,7 +364,7 @@ export function MarketingNav() {
                   size="sm"
                   variant="ghost"
                   onClick={() => setAccountMenuOpen((prev) => !prev)}
-                  className="min-h-0 h-10 w-10 rounded-full border border-[#dce4ff] bg-gradient-to-br from-[#dfe6ff] via-white/95 to-white text-sm font-semibold text-text-primary shadow-card hover:brightness-110"
+                  className="min-h-0 h-10 w-10 rounded-full border border-hairline bg-gradient-to-br from-surface-2 via-surface-glass-95 to-surface text-sm font-semibold text-text-primary shadow-card hover:brightness-110"
                   aria-haspopup="menu"
                   aria-expanded={accountMenuOpen}
                 >

@@ -199,7 +199,7 @@ export function ImageCompositePreviewDock({
       <div className="px-4 py-4">
         <div className="flex flex-col items-center">
           <div
-            className="relative w-full overflow-hidden rounded-card border border-hairline bg-[#f2f4f8] max-h-[320px] sm:max-h-[420px]"
+            className="relative w-full overflow-hidden rounded-card border border-hairline bg-placeholder max-h-[320px] sm:max-h-[420px]"
             style={{ aspectRatio: aspectRatioCss ?? '1 / 1' }}
           >
             {selected ? (

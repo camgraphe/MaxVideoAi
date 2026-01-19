@@ -609,7 +609,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
           'relative overflow-hidden rounded-[32px] border p-6 shadow-[0_20px_60px_-25px_rgba(17,24,39,0.35)] sm:p-8 lg:p-10',
           isLite
             ? 'border-hairline bg-surface-glass-95'
-            : 'border-surface-on-media-40 bg-gradient-to-br from-white via-white/95 to-[#f3f6ff]'
+            : 'border-surface-on-media-40 bg-gradient-to-br from-surface via-surface-glass-95 to-surface-2'
         )}
       >
         {!isLite && (

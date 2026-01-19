@@ -472,14 +472,14 @@ export function GalleryRail({
   ) : null;
 
   const errorBanner = error ? (
-    <div className="flex flex-wrap items-center justify-between gap-4 rounded-card border border-[#FACC15]/60 bg-[#FEF3C7] px-3 py-2 text-[12px] text-[#92400E]">
+    <div className="flex flex-wrap items-center justify-between gap-4 rounded-card border border-warning-border bg-warning-bg px-3 py-2 text-[12px] text-warning">
       <span role="alert">{copy.error}</span>
       <Button
         type="button"
         variant="outline"
         size="sm"
         onClick={retry}
-        className="rounded-input border-[#92400E]/20 bg-surface-glass-70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-[#92400E] hover:bg-surface"
+        className="rounded-input border-warning-border bg-surface-glass-70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-warning hover:bg-surface"
       >
         {copy.retry}
       </Button>

@@ -652,7 +652,7 @@ function AssetDropzone({
                       Drag & drop or click to add.{' '}
                       {helperLines.length > 0 ? helperLines.join(' • ') : null}
                     </span>
-                    {showRequiredHint && <span className="text-[10px] text-[#F97316]">Needed before generating.</span>}
+                    {showRequiredHint && <span className="text-[10px] text-warning">Needed before generating.</span>}
                     {field.type === 'image' && (
                       <div className="flex w-full items-center justify-center gap-2 pt-1">
                         {assetSlotCta ? (

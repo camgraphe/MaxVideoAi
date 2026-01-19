@@ -294,7 +294,7 @@ export default function LibraryPage() {
               <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-4">
                 {assets.map((asset) => (
                   <article key={asset.id} className="rounded-card border border-border bg-surface shadow-card">
-                    <div className="relative aspect-square overflow-hidden rounded-t-card bg-[#f2f4f8]">
+                    <div className="relative aspect-square overflow-hidden rounded-t-card bg-placeholder">
                       <img src={asset.url} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
                     </div>
                     <div className="space-y-2 border-t border-border px-4 py-3 text-xs text-text-secondary">

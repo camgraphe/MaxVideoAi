@@ -248,7 +248,7 @@ export function GroupedJobCard({
         }}
       >
         <div className="relative w-full" style={{ aspectRatio: '16 / 9' }}>
-          <div className={clsx('absolute inset-0 grid gap-1 bg-[#E7ECF7] p-1', previewGridClass)}>
+          <div className={clsx('absolute inset-0 grid gap-1 bg-placeholder p-1', previewGridClass)}>
             {Array.from({ length: previewCount }).map((_, index) => {
               const preview = previews[index];
               const member = preview ? group.members.find((entry) => entry.id === preview.id) : undefined;

@@ -404,7 +404,7 @@ export function MediaLightbox({
                 key={entry.id}
                 className="rounded-card border border-border bg-surface-glass-90 p-4 shadow-card md:flex md:items-start md:gap-4"
               >
-                <div className={clsx('relative overflow-hidden rounded-card bg-[#EFF3FA] md:w-[360px] md:flex-shrink-0', aspectClass)}>
+                <div className={clsx('relative overflow-hidden rounded-card bg-placeholder md:w-[360px] md:flex-shrink-0', aspectClass)}>
                   {videoUrl ? (
                     <video
                       key={videoUrl}
@@ -419,7 +419,7 @@ export function MediaLightbox({
                   ) : thumbUrl ? (
                     <Image src={thumbUrl} alt="" fill className="object-cover" />
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#dfe7ff] via-white to-[#f1f4ff] text-[12px] font-medium uppercase tracking-micro text-text-muted">
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-surface-2 via-surface to-surface-2 text-[12px] font-medium uppercase tracking-micro text-text-muted">
                     Preview unavailable
                   </div>
                 )}

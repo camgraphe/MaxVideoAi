@@ -253,7 +253,7 @@ export function QuadPreviewPanel({
       {iterationCount > 1 && (
         <figure className="overflow-hidden rounded-card border border-border bg-surface-glass-80 p-3 text-center">
           <div className={clsx('relative w-full', compositeAspectClass)}>
-            <div className={clsx('absolute inset-0 grid gap-2 rounded-card bg-[#E7ECF7] p-1', mosaicGridClass)}>
+            <div className={clsx('absolute inset-0 grid gap-2 rounded-card bg-placeholder p-1', mosaicGridClass)}>
               {mosaicTiles.map((preview, index) => {
                 const slotKey = preview?.localKey ?? `slot-${index}`;
                 const statusInfo = preview?.localKey ? mosaicStatusMap.get(preview.localKey) : undefined;
@@ -296,7 +296,7 @@ export function QuadPreviewPanel({
                           priority={false}
                         />
                       ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#dfe7ff] via-white to-[#f1f4ff]" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-surface-2 via-surface to-surface-2" />
                       )}
                       {Boolean(preview?.hasAudio) && tileStatus !== 'failed' ? (
                         <AudioEqualizerBadge tone="light" size="sm" label="Audio available" />
@@ -345,7 +345,7 @@ export function QuadPreviewPanel({
               return (
                 <div
                   key={`placeholder-${index}`}
-                  className="flex rounded-card border border-dashed border-border bg-gradient-to-br from-[#eef2ff] via-white to-[#f2f6ff]"
+                  className="flex rounded-card border border-dashed border-border bg-gradient-to-br from-surface-2 via-surface to-surface-2"
                 />
               );
             }
@@ -404,7 +404,7 @@ export function QuadPreviewPanel({
                   </Button>
                 </div>
 
-                <div className={clsx('relative bg-[#E7ECF7]', tileAspectClass)} data-quad-tile={tile.localKey}>
+                <div className={clsx('relative bg-placeholder', tileAspectClass)} data-quad-tile={tile.localKey}>
                   <div className="relative h-full w-full">
                     {tile.status !== 'failed' && tile.videoUrl ? (
                       <video
@@ -429,7 +429,7 @@ export function QuadPreviewPanel({
                         priority={false}
                       />
                     ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-[#dfe7ff] via-white to-[#f1f4ff]" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-surface-2 via-surface to-surface-2" />
                     )}
                     {tile.status !== 'failed' && tile.videoUrl && tile.hasAudio ? (
                       <AudioEqualizerBadge tone="light" size="sm" label="Audio available" />

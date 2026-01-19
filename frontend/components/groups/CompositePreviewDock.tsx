@@ -442,7 +442,7 @@ export function CompositePreviewDock({
         <div className="flex flex-col items-center">
           <div
             ref={previewRef}
-            className="relative w-full max-w-[960px] rounded-card border border-dashed border-border/70 bg-[#EDF1FA] p-[8px]"
+            className="relative w-full max-w-[960px] rounded-card border border-dashed border-border/70 bg-placeholder p-[8px]"
             style={{ aspectRatio: '16 / 9' }}
           >
             {showSkeleton ? (
@@ -529,7 +529,7 @@ export function CompositePreviewDock({
                             onLoadingComplete={() => markReady(itemKey)}
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#e5ebf6] via-white to-[#f1f4ff] text-[11px] uppercase tracking-micro text-text-muted">
+                          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-surface-2 via-surface to-surface-2 text-[11px] uppercase tracking-micro text-text-muted">
                             Media
                           </div>
                         )}

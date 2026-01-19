@@ -384,6 +384,13 @@ Note: `bg-placeholder` pour surfaces vides, `bg-skeleton` pour barres/shimmer.
 
 Note: usage UI = `text-success`, `bg-success-bg`, `border-success-border` (idem warning/error/info).
 
+#### Charts (admin)
+
+* `ui.chartActive` - `#7C3AED`
+* `ui.chartCharges` - `#F97316`
+
+Note: utiliser `var(--chart-active)` / `var(--chart-charges)` dans les composants de chart (MiniBarChart).
+
 #### Shadows
 
 * `ui.shadowCard` - `0 1px 2px rgba(16,24,40,.06), 0 6px 16px rgba(16,24,40,.06)`
@@ -525,6 +532,13 @@ Note: `bg-placeholder` pour surfaces vides, `bg-skeleton` pour barres/shimmer.
 * `ui.onInfo` - `#F7F8FA`
 
 Note: usage UI = `text-success`, `bg-success-bg`, `border-success-border` (idem warning/error/info).
+
+#### Charts (admin)
+
+* `ui.chartActive` - `#7C3AED`
+* `ui.chartCharges` - `#F97316`
+
+Note: utiliser `var(--chart-active)` / `var(--chart-charges)` dans les composants de chart (MiniBarChart).
 
 #### Shadows
 
@@ -805,17 +819,27 @@ But : autoriser quelques hardcodes uniquement quand c'est volontaire (branding /
 
 * `frontend/src/**/engine-branding.ts`
 * Toute logique "brand par engine" (badges/couleurs d'identification de modeles)
+* `frontend/app/(localized)/[locale]/(marketing)/examples/page.tsx` (palette engine)
 
 ### 6.2. Marketing art / gradients (OK hardcode)
 
 * `frontend/components/marketing/examples-orbit.module.css`
 * Autres fichiers marketing qui contiennent des gradients decoratifs (hero/orbit/portal)
+* `frontend/components/marketing/PriceEstimator.tsx` (glow decoratif)
 
-### 6.3. UI (NO hardcode)
+### 6.3. Marques tierces / assets (OK hardcode)
+
+* Logos / icones officiels (ex: Google sign-in SVG dans `frontend/app/(core)/login/page.tsx`)
+
+### 6.4. Meta / platform colors (OK hardcode)
+
+* `themeColor` / `mask-icon` (ex: `frontend/app/(core)/layout.tsx`, `frontend/app/(localized)/[locale]/layout.tsx`)
+
+### 6.5. UI (NO hardcode)
 
 * Surfaces, borders, text, hover/focus, overlays, shadows UI -> tokens uniquement (`ui.*` / CSS vars / Tailwind keys semantiques)
 
-### 6.4. Legacy exceptions (tolerees temporairement)
+### 6.6. Legacy exceptions (tolerees temporairement)
 
 Objectif : garder une porte tres etroite pour l'existant, sans refactor massif.
 

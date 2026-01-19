@@ -4604,7 +4604,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
           <div className="flex flex-1 min-w-0 flex-col overflow-hidden">
             <main className="flex flex-1 min-w-0 flex-col gap-[var(--stack-gap-lg)] p-5 lg:p-7">
             {notice && (
-              <div className="rounded-card border border-[#FACC15]/60 bg-[#FEF3C7] px-4 py-2 text-sm text-[#92400E] shadow-card">
+              <div className="rounded-card border border-warning-border bg-warning-bg px-4 py-2 text-sm text-warning shadow-card">
                 {notice}
               </div>
             )}
