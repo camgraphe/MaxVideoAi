@@ -28,7 +28,7 @@ export function EngineSettingsBar({
   showModeBadge = true,
 }: EngineSettingsBarProps) {
   return (
-    <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+    <div className="flex min-w-0 flex-1 flex-wrap items-center gap-4">
       <EngineSelect
         engines={engines}
         engineId={engineId}

@@ -90,7 +90,7 @@ export function TakedownForm({ copy }: { copy: TakedownFormCopy }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 rounded-card border border-border bg-white p-6 shadow-card">
+    <form onSubmit={handleSubmit} className="stack-gap-lg rounded-card border border-border bg-white p-6 shadow-card">
       <div className="space-y-2">
         <label htmlFor="email" className="block text-sm font-medium text-text-primary">
           {copy.emailLabel}

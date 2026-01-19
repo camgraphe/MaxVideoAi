@@ -71,6 +71,8 @@
   --page-padding-x: 16px;
   --section-padding-y: 64px;
   --stack-gap: 16px;
+  --stack-gap-sm: 12px;
+  --stack-gap-lg: 24px;
   --grid-gap: 24px;
   --grid-gap-sm: 16px;
   --grid-gap-lg: 32px;

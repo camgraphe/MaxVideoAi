@@ -78,7 +78,7 @@ export default function AdminUsersPage() {
     value == null ? '—' : new Intl.NumberFormat('en-US').format(value);
 
   return (
-    <div className="space-y-6">
+    <div className="stack-gap-lg">
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-semibold text-text-primary">Members</h2>

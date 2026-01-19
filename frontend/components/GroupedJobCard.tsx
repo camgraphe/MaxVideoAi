@@ -310,7 +310,7 @@ export function GroupedJobCard({
           </Button>
         )}
       </figure>
-      <div className="flex items-center justify-between gap-3 border-t border-hairline bg-white/80 px-3 py-2 text-sm text-text-secondary">
+      <div className="flex items-center justify-between gap-4 border-t border-hairline bg-white/80 px-3 py-2 text-sm text-text-secondary">
         <div className="flex items-center gap-2">
           <EngineIcon engine={engine ?? undefined} label={hero.engineLabel} size={28} className="shrink-0" />
           {detailLabel ? (

@@ -105,7 +105,7 @@ export default function ExamplesGalleryGridClient({
   return (
     <div className="space-y-4 p-4 sm:p-6">
       {isMobile ? (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {visibleVideos.map((video) => {
             const isFirstVideo = video.id === firstVisibleId;
             return (

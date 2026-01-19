@@ -38,7 +38,7 @@ export default async function AdminHomepagePage() {
   const heroSlots = hero.map(mapSlot);
 
   return (
-    <div className="space-y-6">
+    <div className="stack-gap-lg">
       <header>
         <h1 className="text-2xl font-semibold text-text-primary">Homepage programming</h1>
         <p className="mt-2 text-sm text-text-secondary">Pick the hero highlights shown on the marketing homepage.</p>

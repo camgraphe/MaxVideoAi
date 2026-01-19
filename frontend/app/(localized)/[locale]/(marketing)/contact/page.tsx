@@ -74,7 +74,7 @@ export default async function ContactPage({
 
   return (
     <div className="container-page max-w-4xl section">
-      <header className="space-y-3">
+      <header className="stack-gap-sm">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
         <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
       </header>
@@ -192,7 +192,7 @@ export default async function ContactPage({
       </section>
       <section className="mt-12 rounded-card border border-hairline bg-white/90 p-6 shadow-card sm:p-8">
         <h2 className="text-lg font-semibold text-text-primary">Contact FAQ</h2>
-        <dl className="mt-5 space-y-5 text-sm text-text-secondary">
+        <dl className="mt-5 stack-gap-lg text-sm text-text-secondary">
           <div>
             <dt className="font-semibold text-text-primary">How fast will someone reply?</dt>
             <dd className="mt-2">

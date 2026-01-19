@@ -239,7 +239,7 @@ export function Composer({
   }, [isLoading]);
 
   return (
-    <Card className="space-y-5 p-5">
+    <Card className="stack-gap-lg p-5">
       <div className="space-y-4">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -276,7 +276,7 @@ export function Composer({
         </div>
 
         {(settingsBar || onGenerate) && (
-          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end lg:flex-nowrap">
+          <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end lg:flex-nowrap">
             {settingsBar ? <div className="min-w-0 flex-1">{settingsBar}</div> : null}
             {onGenerate ? (
               <Button
@@ -335,7 +335,7 @@ export function Composer({
 
         {assetFields.length > 0 && (
           <div className="space-y-2">
-            <div className="flex flex-wrap gap-3 text-sm">
+            <div className="flex flex-wrap gap-4 text-sm">
               {assetFields.map(({ field, required, role }) => (
                 <AssetDropzone
                   key={field.id}
@@ -521,7 +521,7 @@ function AssetDropzone({
 
   return (
     <div className="flex min-w-[260px] flex-1">
-      <div className="flex w-full flex-col gap-3 rounded-input border border-dashed border-border bg-white/80 p-4 text-text-secondary">
+      <div className="flex w-full flex-col gap-4 rounded-input border border-dashed border-border bg-white/80 p-4 text-text-secondary">
         <div className="flex items-center justify-between gap-2">
           <div>
             <span className="text-sm font-medium text-text-primary">

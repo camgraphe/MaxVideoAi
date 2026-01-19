@@ -84,7 +84,7 @@ export default async function WorkflowsPage({ params }: { params: { locale: AppL
 
   return (
     <div className="container-page max-w-5xl section">
-      <header className="space-y-3">
+      <header className="stack-gap-sm">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
         <p className="sm:max-w-[62ch] text-sm text-text-muted">{content.hero.subtitle}</p>
         {content.hero.notice ? (
@@ -103,7 +103,7 @@ export default async function WorkflowsPage({ params }: { params: { locale: AppL
         </h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="rounded-2xl border border-hairline bg-white p-5 shadow-card">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <div aria-hidden className="flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-sm">
                 ⚡
               </div>
@@ -119,7 +119,7 @@ export default async function WorkflowsPage({ params }: { params: { locale: AppL
             </ul>
           </div>
           <div className="rounded-2xl border border-hairline bg-white p-5 shadow-card">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <div aria-hidden className="flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-sm">
                 🧩
               </div>

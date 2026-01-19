@@ -16,7 +16,7 @@ export default async function AdminSystemPage() {
   const notice = await getServiceNoticeSetting();
 
   return (
-    <div className="space-y-6">
+    <div className="stack-gap-lg">
       <header>
         <h1 className="text-2xl font-semibold text-text-primary">Alertes service</h1>
         <p className="mt-2 text-sm text-text-secondary">

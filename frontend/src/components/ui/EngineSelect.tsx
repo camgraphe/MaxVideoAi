@@ -516,8 +516,8 @@ export function EngineSelect({
     isBarVariant
       ? isStackedMode
         ? 'flex min-w-0 flex-col gap-2'
-        : 'flex min-w-0 flex-wrap items-center gap-2 sm:gap-3'
-      : 'relative space-y-5 p-5',
+        : 'flex min-w-0 flex-wrap items-center gap-2 sm:gap-4'
+      : 'relative stack-gap-lg p-5',
     className
   );
 
@@ -546,9 +546,9 @@ export function EngineSelect({
           'flex flex-wrap',
           isBarVariant
             ? isStackedMode
-              ? 'w-full items-start gap-2 sm:gap-3'
-              : 'flex-1 items-center gap-2 sm:gap-3'
-            : 'gap-5'
+              ? 'w-full items-start gap-2 sm:gap-4'
+              : 'flex-1 items-center gap-2 sm:gap-4'
+            : 'gap-6'
         )}
       >
         <div className={clsx('flex-1 min-w-0', isBarVariant ? 'space-y-1.5' : 'space-y-2 sm:min-w-[240px]')}>
@@ -563,13 +563,13 @@ export function EngineSelect({
               onClick={toggleOpen}
               onKeyDown={handleTriggerKeyDown}
               className={clsx(
-                'flex min-w-0 flex-1 items-center justify-between gap-3 rounded-input border border-hairline bg-white text-left text-text-primary shadow-sm transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                'flex min-w-0 flex-1 items-center justify-between gap-4 rounded-input border border-hairline bg-white text-left text-text-primary shadow-sm transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 isBarVariant ? 'px-2.5 py-1.5 text-[12px] sm:px-3 sm:py-2 sm:text-[13px]' : 'px-4 py-3 text-sm'
               )}
               aria-haspopup="listbox"
               aria-expanded={open}
             >
-              <div className="flex min-w-0 items-center gap-3">
+              <div className="flex min-w-0 items-center gap-4">
                 <EngineIcon engine={selectedEngine} size={isBarVariant ? 24 : 32} className="shrink-0" />
                 <div className="min-w-0">
                   <p className={clsx('truncate font-medium', isBarVariant ? 'text-[13px]' : '')}>
@@ -676,7 +676,7 @@ export function EngineSelect({
                 style={{ top: position.top, left: position.left, minWidth: Math.max(position.width, 280) }}
               >
                 <div className="overflow-hidden rounded-card border border-border bg-white shadow-float">
-                  <div className="flex items-center justify-between gap-3 border-b border-hairline px-3 py-2 text-[12px] text-text-muted">
+                  <div className="flex items-center justify-between gap-4 border-b border-hairline px-3 py-2 text-[12px] text-text-muted">
                     <span>Engines</span>
                     <button
                       type="button"
@@ -720,7 +720,7 @@ export function EngineSelect({
                             onMouseEnter={() => setHighlightedIndex(index)}
                             onFocus={() => setHighlightedIndex(index)}
                             className={clsx(
-                              'flex w-full items-start gap-3 px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                              'flex w-full items-start gap-4 px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                               'hover:bg-surface-2',
                               active && 'bg-surface-2',
                               highlighted && !active && 'bg-surface-2',
@@ -734,7 +734,7 @@ export function EngineSelect({
                             tabIndex={-1}
                           >
                             <EngineIcon engine={engine} size={32} className="mt-0.5 shrink-0" />
-                            <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
+                            <div className="flex min-w-0 flex-1 items-start justify-between gap-4">
                               <div className="min-w-0 space-y-1">
                                 <p className="truncate text-sm font-medium text-text-primary">{meta?.marketingName ?? formatEngineShort(engine)}</p>
                                 <p className="truncate text-[12px] text-text-muted">
@@ -774,7 +774,7 @@ export function EngineSelect({
                 ? isStackedMode
                   ? 'w-full space-y-2'
                   : 'min-w-[200px] flex-1 space-y-2'
-                : 'min-w-[200px] flex-1 space-y-3'
+                : 'min-w-[200px] flex-1 stack-gap-sm'
             )}
           >
             <p className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[12px]')}>
@@ -1025,7 +1025,7 @@ function BrowseEnginesModal({
               </a>
             </div>
           </div>
-          <div className="mt-6 space-y-3">
+          <div className="mt-6 stack-gap-sm">
             <div className="relative">
               <input
                 type="search"
@@ -1084,9 +1084,9 @@ function BrowseEnginesModal({
                   )}
                   onClick={() => onSelect(engine.id)}
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-4">
                     <EngineIcon engine={engine} size={44} className="shrink-0" />
-                    <div className="flex flex-1 items-start justify-between gap-3">
+                    <div className="flex flex-1 items-start justify-between gap-4">
                       <div className="space-y-1">
                         <h3 className="text-base font-semibold text-text-primary">{name}</h3>
                         <p className="text-xs uppercase tracking-micro text-text-muted">
@@ -1116,7 +1116,7 @@ function BrowseEnginesModal({
                       </span>
                     ))}
                   </div>
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-text-muted">
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-text-muted">
                     <span>
                       Modes: {getModeDisplayOrder(engine.id, engine.modes).map((entry) => getModeLabel(engine.id, entry, modeLabelOverrides)).join(' / ')}
                     </span>

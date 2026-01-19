@@ -660,7 +660,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
           <p className="text-sm leading-relaxed text-text-secondary/90">{heroBody}</p>
         </header>
 
-      <section className="mt-8 flex flex-wrap items-center gap-3 text-xs text-text-secondary">
+      <section className="mt-8 flex flex-wrap items-center gap-4 text-xs text-text-secondary">
         {engineFilterOptions.length ? (
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-semibold uppercase tracking-micro text-text-muted">{engineFilterLabel}</span>
@@ -815,7 +815,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
                 {locale === 'fr' ? 'Afficher' : locale === 'es' ? 'Mostrar' : 'Show'}
               </span>
             </summary>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-4 grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
               {[
                 'job_5b9191d8-7f7c-4947-b007-c6aa384d97c1',
                 'job_1d93e1b7-e4d4-4ae3-a2f3-421ffb4615c0',

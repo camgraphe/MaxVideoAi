@@ -42,7 +42,7 @@ export function PromptPreview({
 
   return (
     <div className="rounded-card border border-border bg-white/90 p-6 shadow-card backdrop-blur">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <p className="text-xs uppercase tracking-micro text-text-muted">{promptLabel}</p>
         <CopyPromptButton prompt={cleanPrompt} copyLabel={copyLabel} copiedLabel={copiedLabel} />
       </div>

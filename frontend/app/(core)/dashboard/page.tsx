@@ -722,7 +722,7 @@ export default function DashboardPage() {
         <AppSidebar />
         <main className="flex-1 min-w-0 overflow-x-hidden overflow-y-auto p-5 lg:p-7">
           <div className="grid grid-gap lg:grid-cols-12">
-            <div className="min-w-0 space-y-6 lg:col-span-8">
+            <div className="min-w-0 stack-gap-lg lg:col-span-8">
               <CreateHero
                 copy={copy}
                 videoEngines={availableEngines}
@@ -765,7 +765,7 @@ export default function DashboardPage() {
               />
             </div>
 
-            <div className="min-w-0 space-y-6 lg:col-span-4">
+            <div className="min-w-0 stack-gap-lg lg:col-span-4">
               <InsightsPanel
                 copy={copy}
                 spendToday={spendTodayDisplay}
@@ -954,13 +954,13 @@ function CreateVideoCard({
 }) {
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold text-text-primary">{copy.create.videoTitle}</h2>
           <p className="mt-1 text-sm text-text-secondary">{copy.create.videoSubtitle}</p>
         </div>
       </div>
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         <div className="min-w-0">
           <EngineSelect
             engines={engines}
@@ -991,7 +991,7 @@ function CreateVideoCard({
           {copy.create.newVideo}
         </Button>
       </div>
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-4">
         {hasStoredForm ? (
           <Button
             type="button"
@@ -1033,13 +1033,13 @@ function CreateImageCard({
 }) {
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold text-text-primary">{copy.create.imageTitle}</h2>
           <p className="mt-1 text-sm text-text-secondary">{copy.create.imageSubtitle}</p>
         </div>
       </div>
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         <div className="min-w-0">
           <EngineSelect
             engines={engines}
@@ -1070,7 +1070,7 @@ function CreateImageCard({
           {copy.create.newImage}
         </Button>
       </div>
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-4">
         {hasStoredForm ? (
           <Button
             type="button"
@@ -1104,7 +1104,7 @@ function InProgressList({
       {!jobs.length ? (
         <p className="text-sm text-text-secondary">{copy.inProgress.empty}</p>
       ) : (
-        <div className="space-y-3">
+        <div className="stack-gap-sm">
           {jobs.map((job) => (
             <InProgressRow key={job.jobId} job={job} copy={copy} onOpen={onOpen} />
           ))}
@@ -1130,7 +1130,7 @@ function InProgressRow({
   const prompt = job.prompt ? truncate(job.prompt, 140) : '';
 
   return (
-    <div className="flex flex-col gap-3 rounded-card border border-border bg-bg/60 p-3 sm:flex-row sm:items-center">
+    <div className="flex flex-col gap-4 rounded-card border border-border bg-bg/60 p-3 sm:flex-row sm:items-center">
       <div className="relative h-16 w-full overflow-hidden rounded-input border border-border bg-white sm:h-14 sm:w-24">
         {job.thumbUrl ? (
           <Image src={job.thumbUrl} alt="" fill className="object-cover" />
@@ -1139,7 +1139,7 @@ function InProgressRow({
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-4">
           <p className="truncate text-sm font-semibold text-text-primary">{job.engineLabel}</p>
           {price ? <span className="text-xs font-semibold text-text-primary">{price}</span> : null}
         </div>
@@ -1200,7 +1200,7 @@ function RecentGrid({
 }) {
   return (
     <section className="rounded-card border border-border bg-white p-5 shadow-card">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-lg font-semibold text-text-primary">{copy.recent.title}</h2>
         <ButtonLink
           href="/jobs"
@@ -1343,7 +1343,7 @@ function InsightsPanel({
   return (
     <section className="rounded-card border border-border bg-white p-5 shadow-card">
       <h3 className="text-lg font-semibold text-text-primary">{copy.insights.title}</h3>
-      <div className="mt-4 grid gap-3 text-sm">
+      <div className="mt-4 grid grid-gap-sm text-sm">
         <InsightRow label={copy.insights.spendToday} value={spendToday} />
         <InsightRow label={copy.insights.spend30} value={spend30} />
         <InsightRow label={copy.insights.avgCost} value={avgCost} />
@@ -1390,10 +1390,10 @@ function InsightRow({ label, value }: { label: string; value: string }) {
       {!templates.length ? (
         <p className="mt-3 text-sm text-text-secondary">{copy.quickStarts.empty}</p>
       ) : (
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 stack-gap-sm">
           {templates.map((template) => (
             <div key={template.id} className="rounded-input border border-border bg-bg px-3 py-3">
-              <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="flex flex-col gap-4 sm:flex-row">
                 <div className="relative h-16 w-full overflow-hidden rounded-input border border-border bg-white sm:h-16 sm:w-28">
                   {template.thumbUrl ? (
                     <Image src={template.thumbUrl} alt="" fill className="object-cover" />

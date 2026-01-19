@@ -222,7 +222,7 @@ export function QuadPreviewPanel({
 
   return (
     <Card className="space-y-4 p-4">
-      <header className="flex flex-wrap items-center justify-between gap-3">
+      <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">Batch preview</h2>
           <p className="text-[12px] text-text-secondary">
@@ -335,7 +335,7 @@ export function QuadPreviewPanel({
       {iterationCount <= 1 && (
         <div
           className={clsx(
-            'grid gap-3',
+            'grid grid-gap-sm',
             sortedTiles.length === 1 ? 'md:grid-cols-1' : 'md:grid-cols-2',
             iterationCount >= 3 ? 'auto-rows-[minmax(120px,1fr)]' : undefined
           )}

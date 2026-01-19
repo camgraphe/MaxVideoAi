@@ -596,7 +596,7 @@ export default function LoginPage() {
           <span>{authCopy.back}</span>
         </Button>
       </div>
-      <div className="w-full max-w-md space-y-5 rounded-card border border-border bg-white p-6 shadow-card">
+      <div className="w-full max-w-md stack-gap-lg rounded-card border border-border bg-white p-6 shadow-card">
         <header className="space-y-4">
           <div>
             <h1 className="text-lg font-semibold text-text-primary">
@@ -672,7 +672,7 @@ export default function LoginPage() {
               <span>{authCopy.divider}</span>
               <span className="h-px flex-1 bg-border" aria-hidden />
             </div>
-            <form onSubmit={mode === 'signin' ? signInWithPassword : signUpWithPassword} className="space-y-3">
+            <form onSubmit={mode === 'signin' ? signInWithPassword : signUpWithPassword} className="stack-gap-sm">
               <label className="block text-sm">
                 <span className="mb-1 block text-text-secondary">{authCopy.fields.email}</span>
                 <Input
@@ -718,7 +718,7 @@ export default function LoginPage() {
                 </label>
               )}
               {mode === 'signup' && (
-                <div className="space-y-3 rounded-card bg-bg p-3 text-sm text-text-secondary">
+                <div className="stack-gap-sm rounded-card bg-bg p-3 text-sm text-text-secondary">
                   <label className="flex items-start gap-2">
                     <input
                       type="checkbox"
@@ -805,7 +805,7 @@ export default function LoginPage() {
             )}
           </>
         ) : (
-          <form onSubmit={sendReset} className="space-y-3">
+          <form onSubmit={sendReset} className="stack-gap-sm">
             <label className="block text-sm">
               <span className="mb-1 block text-text-secondary">{authCopy.fields.email}</span>
               <Input

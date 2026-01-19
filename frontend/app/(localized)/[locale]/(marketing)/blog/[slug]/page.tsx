@@ -265,8 +265,8 @@ export default async function BlogPostPage({ params }: { params: Params }) {
           ) : (
             <div className="h-24 w-full bg-gradient-to-r from-surface-2 via-surface-3 to-surface-2 sm:h-28" />
           )}
-          <div className="relative z-10 space-y-6 px-6 pb-10 pt-8 sm:px-10">
-            <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-micro text-text-muted">
+          <div className="relative z-10 stack-gap-lg px-6 pb-10 pt-8 sm:px-10">
+            <div className="flex flex-wrap items-center gap-4 text-xs uppercase tracking-micro text-text-muted">
               <span className="rounded-pill border border-hairline bg-white/80 px-3 py-1 font-semibold text-text-secondary shadow-sm">
                 {formattedDate}
               </span>
@@ -281,7 +281,7 @@ export default async function BlogPostPage({ params }: { params: Params }) {
                 ))}
               </div>
             </div>
-            <div className="max-w-3xl space-y-3">
+            <div className="max-w-3xl stack-gap-sm">
               <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-5xl">{post.title}</h1>
               <p className="text-base leading-relaxed text-text-secondary sm:text-lg">{post.description}</p>
             </div>

@@ -94,7 +94,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
       </SectionCard>
 
       <section className="rounded-card border border-white/30 bg-white/85 p-5 shadow-card">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">Growth</p>
             <p className="text-sm text-text-secondary">Daily signups & active accounts</p>
@@ -401,7 +401,7 @@ function StatCard({ label, value, helper }: { label: string; value: string; help
 function RangeSelector({ current, excludeAdmin }: { current: MetricsRangeLabel; excludeAdmin: boolean }) {
   return (
     <form
-      className="flex flex-wrap items-center gap-3 rounded-full border border-white/40 bg-white/80 px-3 py-2 text-sm text-text-secondary shadow-card"
+      className="flex flex-wrap items-center gap-4 rounded-full border border-white/40 bg-white/80 px-3 py-2 text-sm text-text-secondary shadow-card"
       method="get"
     >
       <label htmlFor="range" className="text-xs font-semibold uppercase tracking-[0.2em]">

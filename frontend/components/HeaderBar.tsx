@@ -324,7 +324,7 @@ export function HeaderBar() {
           'border-b border-border bg-white/80 backdrop-blur-xl'
         )}
       >
-        <div className="flex items-center gap-3 md:gap-8">
+        <div className="flex items-center gap-4 md:gap-6">
           <Button
             type="button"
             variant="ghost"
@@ -341,7 +341,7 @@ export function HeaderBar() {
           </Button>
           <LogoMark />
           <nav
-            className="hidden items-center gap-5 text-sm font-medium text-text-muted md:flex"
+            className="hidden items-center gap-6 text-sm font-medium text-text-muted md:flex"
             aria-label={t('workspace.header.marketingNav', 'Marketing navigation')}
           >
             {marketingLinks.map((item) => (
@@ -356,7 +356,7 @@ export function HeaderBar() {
           </nav>
         </div>
 
-        <div className="flex items-center gap-3 text-xs text-text-muted">
+        <div className="flex items-center gap-4 text-xs text-text-muted">
           <div className="hidden md:block">
             <AppLanguageToggle />
           </div>
@@ -500,7 +500,7 @@ export function HeaderBar() {
           <div className="mx-auto flex max-w-sm items-center justify-between">
             <Link
               href="/"
-              className="flex items-center gap-3 font-display text-base font-semibold tracking-tight text-text-primary"
+              className="flex items-center gap-4 font-display text-base font-semibold tracking-tight text-text-primary"
               onClick={() => setMobileMenuOpen(false)}
               aria-label={t('workspace.header.logoAria', 'Go to marketing homepage')}
             >
@@ -521,7 +521,7 @@ export function HeaderBar() {
               </svg>
             </Button>
           </div>
-          <div className="mx-auto mt-5 max-w-sm space-y-5">
+          <div className="mx-auto mt-5 max-w-sm stack-gap-lg">
             <div className="flex justify-end">
               <AppLanguageToggle />
             </div>
@@ -548,7 +548,7 @@ export function HeaderBar() {
               })}
             </nav>
             {isAuthenticated ? (
-              <div className="space-y-3">
+              <div className="stack-gap-sm">
                 <div className="flex items-center justify-between rounded-2xl border border-hairline bg-white px-4 py-3">
                   <span className="flex items-center gap-2 text-base font-semibold text-text-primary">
                     <WalletGlyph size={18} className="text-text-primary" />
@@ -578,7 +578,7 @@ export function HeaderBar() {
                 </Button>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="stack-gap-sm">
                 <ButtonLink
                   href="/login?next=/app"
                   variant="outline"

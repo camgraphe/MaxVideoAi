@@ -180,7 +180,7 @@ export default function LibraryPage() {
       <div className="flex flex-1 min-w-0">
         <AppSidebar />
         <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-semibold text-text-primary">{copy.hero.title}</h1>
               <p className="text-sm text-text-secondary">{copy.hero.subtitle}</p>
@@ -196,8 +196,8 @@ export default function LibraryPage() {
           </div>
 
           <section className="rounded-card border border-border bg-white/80 p-5 shadow-card">
-            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center justify-between gap-3 sm:justify-start">
+            <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center justify-between gap-4 sm:justify-start">
                 <h2 className="text-lg font-semibold text-text-primary">{copy.assets.title}</h2>
                 <span className="text-xs text-text-secondary">{assetCountLabel}</span>
               </div>

@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic';
 export default async function AdminJobsAuditPage({ searchParams = {} }: PageProps) {
   if (!process.env.DATABASE_URL) {
     return (
-      <div className="space-y-6">
+      <div className="stack-gap-lg">
         <header className="space-y-1">
           <h1 className="text-2xl font-semibold text-text-primary">Job Audit</h1>
           <p className="text-sm text-text-secondary">
@@ -42,7 +42,7 @@ export default async function AdminJobsAuditPage({ searchParams = {} }: PageProp
   const filtersQuery = buildFiltersQuery(filters);
 
   return (
-    <div className="space-y-6">
+    <div className="stack-gap-lg">
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold text-text-primary">Job audit</h1>
         <p className="text-sm text-text-secondary">
@@ -100,7 +100,7 @@ function buildFiltersQuery(filters: UiFilters): string {
 function JobFilters({ filters }: { filters: UiFilters }) {
   return (
     <form className="space-y-4 rounded-2xl border border-border/60 bg-white/95 p-5 shadow-card" method="get">
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-gap-sm md:grid-cols-2 lg:grid-cols-3">
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
           Job ID
           <input
@@ -133,7 +133,7 @@ function JobFilters({ filters }: { filters: UiFilters }) {
         </label>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-gap-sm md:grid-cols-2 lg:grid-cols-4">
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
           Status
           <select
@@ -169,7 +169,7 @@ function JobFilters({ filters }: { filters: UiFilters }) {
         </label>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-4">
         <Button
           type="submit"
           size="sm"

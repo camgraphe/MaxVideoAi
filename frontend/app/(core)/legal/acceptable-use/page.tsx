@@ -57,7 +57,7 @@ export default async function AcceptableUsePage() {
   const locale = await resolveLocale();
   const header = HEADER_COPY[locale] ?? HEADER_COPY.en;
   return (
-    <div className="space-y-6">
+    <div className="stack-gap-lg">
       <header className="space-y-2">
         <h1 className="text-xl font-semibold text-text-primary">{header.title}</h1>
         <p className="text-sm text-text-secondary">{header.effective}</p>

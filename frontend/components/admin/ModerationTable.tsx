@@ -433,7 +433,7 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
   );
 
   return (
-    <div className="space-y-6">
+    <div className="stack-gap-lg">
       <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-text-primary">Moderate live videos</h1>

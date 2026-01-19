@@ -351,7 +351,7 @@ export function MediaLightbox({
         </header>
 
         {metadata.length > 0 && (
-          <section className="mt-5 grid gap-3 text-sm text-text-secondary md:grid-cols-2">
+          <section className="mt-5 grid grid-gap-sm text-sm text-text-secondary md:grid-cols-2">
             {metadata.map((item) => (
               <div key={item.label}>
                 <p className="text-xs uppercase tracking-micro text-text-muted">{item.label}</p>

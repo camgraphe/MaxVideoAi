@@ -28,7 +28,7 @@ export default async function ChangelogPage() {
 
   return (
     <div className="container-page max-w-4xl section">
-      <header className="space-y-3">
+      <header className="stack-gap-sm">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
         <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
       </header>
@@ -53,7 +53,7 @@ export default async function ChangelogPage() {
           </ul>
         </div>
       </section>
-      <section className="mt-12 space-y-6">
+      <section className="mt-12 stack-gap-lg">
         {content.entries.map((entry) => (
           <article key={entry.date} className="rounded-card border border-hairline bg-white p-6 shadow-card">
             <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{entry.date}</p>

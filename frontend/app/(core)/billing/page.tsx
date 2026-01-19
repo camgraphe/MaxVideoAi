@@ -665,7 +665,7 @@ export default function BillingPage() {
               <p className="mt-1 text-2xl font-semibold text-text-primary">
                 {wallet ? `$${wallet.balance.toFixed(2)}` : authLoading ? '...' : '--'}
               </p>
-              <div className="mt-3 flex flex-col gap-3 text-sm text-text-secondary sm:flex-row sm:items-start sm:gap-4">
+              <div className="mt-3 flex flex-col gap-4 text-sm text-text-secondary sm:flex-row sm:items-start sm:gap-4">
                 <div className="flex flex-col gap-1 text-left">
                   <label className="text-xs font-medium text-text-secondary" htmlFor="billing-currency-select">
                     {copy.wallet.currencyLabel}
@@ -686,7 +686,7 @@ export default function BillingPage() {
                   <p className={`text-xs ${currencyStatusClass}`}>{currencyStatus}</p>
                 </div>
               </div>
-              <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <div className="mt-3 grid grid-gap-sm md:grid-cols-2">
                 {USD_TOPUP_TIERS.map((tier) => (
                   <Button
                     key={tier.id}
@@ -863,7 +863,7 @@ export default function BillingPage() {
                 </div>
               </Button>
             {receipts.error && <p className="text-sm text-state-warning">{receipts.error}</p>}
-            <div className="mt-3 space-y-3">
+            <div className="mt-3 stack-gap-sm">
               {visibleReceipts.length === 0 && !receipts.loading && (
                 <p className="text-sm text-text-secondary">{copy.receipts.empty}</p>
               )}
@@ -882,8 +882,8 @@ export default function BillingPage() {
                   const taxCents = Number(r.tax_amount_cents ?? 0);
                   const discountCents = Number(r.discount_amount_cents ?? 0);
                   return (
-                    <article key={r.id} className="space-y-3 rounded-card border border-border bg-bg p-4 text-sm text-text-secondary">
-                      <header className="flex flex-wrap items-center justify-between gap-3">
+                    <article key={r.id} className="stack-gap-sm rounded-card border border-border bg-bg p-4 text-sm text-text-secondary">
+                      <header className="flex flex-wrap items-center justify-between gap-4">
                         <div className="flex flex-col">
                           <span className="text-xs text-text-muted" suppressHydrationWarning>
                             {dateFormatter.format(new Date(r.created_at))}

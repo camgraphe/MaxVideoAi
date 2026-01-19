@@ -196,7 +196,7 @@ export default async function AiVideoEnginesPage() {
         {hero.secondary ? <p className="text-base leading-relaxed text-text-secondary">{renderRichText(hero.secondary, 'hero-secondary')}</p> : null}
       </header>
 
-      <section className="mt-12 space-y-6">
+      <section className="mt-12 stack-gap-lg">
         {sections.map((section, index) => (
           <div key={section.title ?? `section-${index}`} className="stack-gap">
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{section.title}</h2>
@@ -209,12 +209,12 @@ export default async function AiVideoEnginesPage() {
         ))}
       </section>
 
-      <section className="mt-12 space-y-6">
+      <section className="mt-12 stack-gap-lg">
         <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{comparison.title}</h2>
         <p className="text-base leading-relaxed text-text-secondary">{renderRichText(comparison.intro, 'comparison-intro')}</p>
         <div className="grid grid-gap sm:grid-cols-2">
           {comparison.cards.map((card) => (
-            <article key={card.label} className="space-y-3 rounded-card border border-hairline bg-white p-5 shadow-card">
+            <article key={card.label} className="stack-gap-sm rounded-card border border-hairline bg-white p-5 shadow-card">
               <div className="text-sm font-semibold uppercase tracking-micro text-text-muted">{card.label}</div>
               <p className="text-base text-text-primary">{card.title}</p>
               <ul className="list-disc pl-6 text-sm text-text-secondary">
@@ -229,7 +229,7 @@ export default async function AiVideoEnginesPage() {
 
       <section className="mt-12 stack-gap">
         <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{faqTitle}</h2>
-        <div className="space-y-3 text-base leading-relaxed text-text-secondary">
+        <div className="stack-gap-sm text-base leading-relaxed text-text-secondary">
           {faqItems.map((item) => (
             <article key={item.question} className="rounded-card border border-hairline bg-white p-5 shadow-card">
               <h3 className="text-lg font-semibold text-text-primary">{item.question}</h3>

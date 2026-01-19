@@ -111,7 +111,7 @@ export default async function AdminIndexPage() {
       <QuickToolsCard />
 
       {SECTION_GROUPS.map((group) => (
-        <section key={group.title} className="space-y-3">
+        <section key={group.title} className="stack-gap-sm">
           <h2 className="text-sm font-semibold uppercase tracking-micro text-text-muted">{group.title}</h2>
           <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
             {group.items.map((item) => (
@@ -279,7 +279,7 @@ function QuickToolsCard() {
         </form>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-3">
+      <div className="mt-4 flex flex-wrap gap-4">
         <ButtonLink
           href="/admin/insights"
           variant="outline"

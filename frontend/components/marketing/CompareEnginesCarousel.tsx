@@ -160,11 +160,11 @@ export function CompareEnginesCarousel({ engines, copy }: CompareEnginesCarousel
                 <div className="relative flex h-full flex-col justify-end p-4">
                   <div className="text-sm font-semibold">{engine.name}</div>
                   <dl className="mt-1 text-xs text-neutral-500">
-                    <div className="flex justify-between gap-3">
+                    <div className="flex justify-between gap-4">
                       <dt>{statMax}</dt>
                       <dd>{engine.maxDuration}</dd>
                     </div>
-                    <div className="flex justify-between gap-3">
+                    <div className="flex justify-between gap-4">
                       <dt>{statAudio}</dt>
                       <dd>{engine.audio}</dd>
                     </div>

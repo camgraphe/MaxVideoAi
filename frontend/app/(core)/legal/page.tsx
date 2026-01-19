@@ -162,7 +162,7 @@ export default async function LegalIndexPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="stack-gap-lg">
       <header className="space-y-2">
         <h2 className="text-xl font-semibold text-text-primary">{copy.title}</h2>
         <p className="text-sm text-text-secondary">{copy.description}</p>
@@ -170,7 +170,7 @@ export default async function LegalIndexPage() {
 
       <section className="rounded-card border border-hairline bg-white/90 p-5 text-sm text-text-secondary shadow-card sm:p-6">
         <p>{copy.intro}</p>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="mt-4 grid grid-gap-sm sm:grid-cols-2">
           {copy.columns.map((column) => (
             <div key={column.title}>
               <h3 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{column.title}</h3>
@@ -185,7 +185,7 @@ export default async function LegalIndexPage() {
           const meta = entry.docKey ? documents[entry.docKey] : null;
           return (
             <li key={entry.href} className="rounded-card border border-border bg-white p-5 shadow-card">
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start justify-between gap-4">
                 <div>
                   <Link
                     href={entry.href}

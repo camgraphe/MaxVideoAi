@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export default async function AdminTransactionsPage() {
   if (!process.env.DATABASE_URL) {
     return (
-      <div className="space-y-6">
+      <div className="stack-gap-lg">
         <header className="space-y-1">
           <h1 className="text-2xl font-semibold text-text-primary">Transactions</h1>
           <p className="text-sm text-text-secondary">
@@ -21,7 +21,7 @@ export default async function AdminTransactionsPage() {
   const [transactions, anomalies] = await Promise.all([fetchAdminTransactions(100), fetchTransactionAnomalies()]);
 
   return (
-    <div className="space-y-6">
+    <div className="stack-gap-lg">
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold text-text-primary">Transactions</h1>
         <p className="text-sm text-text-secondary">
@@ -66,7 +66,7 @@ function AnomaliesPanel({
   };
 
   return (
-    <section className="space-y-6 rounded-2xl border border-border/60 bg-white/95 p-5 shadow-card">
+    <section className="stack-gap-lg rounded-2xl border border-border/60 bg-white/95 p-5 shadow-card">
       <div>
         <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-text-muted">Anomalies</h2>
         <p className="text-xs text-text-secondary">

@@ -207,7 +207,7 @@ export function ReconsentPrompt() {
           return (
             <li
               key={doc.key}
-              className="flex items-start justify-between gap-3 rounded-input border border-border bg-bg px-3 py-2"
+              className="flex items-start justify-between gap-4 rounded-input border border-border bg-bg px-3 py-2"
             >
               <div>
                 <p className="font-medium text-text-primary">{meta.label}</p>

@@ -48,7 +48,7 @@ export function AdminNavigation({ sections }: AdminNavigationProps) {
   const navSections = useMemo(() => sections, [sections]);
 
   return (
-    <div ref={containerRef} className="flex items-center gap-3 text-sm text-text-secondary">
+    <div ref={containerRef} className="flex items-center gap-4 text-sm text-text-secondary">
       {navSections.map((section, index) => {
         const isOpen = openIndex === index;
         return (

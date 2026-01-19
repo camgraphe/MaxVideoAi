@@ -387,7 +387,7 @@ export function CompositePreviewDock({
       <header className="border-b border-hairline px-4 py-3">
         {engineSettings ? (
           <>
-            <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="min-w-0 flex-1">{engineSettings}</div>
               {!showTitle && copyPrompt && onCopyPrompt ? (
                 <Button
@@ -419,7 +419,7 @@ export function CompositePreviewDock({
             ) : null}
           </>
         ) : (
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             {headerTitle}
             <div className="flex flex-wrap items-center gap-2">
               {copyPrompt && onCopyPrompt ? (

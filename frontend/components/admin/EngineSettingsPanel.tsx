@@ -144,7 +144,7 @@ export function EngineSettingsPanel({ engineId, engineLabel, baseline, initialFo
 
   return (
     <section className="space-y-4 rounded-2xl border border-border/60 bg-white/95 p-5 shadow-card">
-      <header className="flex flex-wrap items-center justify-between gap-3">
+      <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">Engine</p>
           <h3 className="text-lg font-semibold text-text-primary">{engineLabel}</h3>
@@ -165,8 +165,8 @@ export function EngineSettingsPanel({ engineId, engineLabel, baseline, initialFo
         </Button>
       </header>
 
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+      <form onSubmit={handleSubmit} className="stack-gap-sm">
+        <div className="grid grid-gap-sm md:grid-cols-2 lg:grid-cols-4">
           <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
             Active
             <select
@@ -222,7 +222,7 @@ export function EngineSettingsPanel({ engineId, engineLabel, baseline, initialFo
           </label>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-gap-sm md:grid-cols-2 lg:grid-cols-4">
           <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
             Max duration (seconds)
             <input
@@ -246,7 +246,7 @@ export function EngineSettingsPanel({ engineId, engineLabel, baseline, initialFo
           </label>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-gap-sm md:grid-cols-2 lg:grid-cols-4">
           <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
             Currency
             <input
@@ -293,7 +293,7 @@ export function EngineSettingsPanel({ engineId, engineLabel, baseline, initialFo
           </div>
         ) : null}
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <Button
             type="submit"
             size="sm"

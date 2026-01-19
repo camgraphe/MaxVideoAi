@@ -246,7 +246,7 @@ function AccountTab({ user, copy }: AccountTabProps) {
   return (
     <section className="rounded-card border border-border bg-white p-4 shadow-card">
       <h2 className="mb-3 text-lg font-semibold text-text-primary">{copy.title}</h2>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid grid-gap-sm sm:grid-cols-2">
         <label className="text-sm">
           <span className="mb-1 block text-text-secondary">{copy.fields.name.label}</span>
           <input
@@ -357,7 +357,7 @@ function PrivacyTab({
       <h2 className="mb-3 text-lg font-semibold text-text-primary">{copy.title}</h2>
       <div className="space-y-4 text-sm text-text-secondary">
         <div className="rounded-card border border-hairline bg-bg px-4 py-3">
-          <label className="flex items-start gap-3">
+          <label className="flex items-start gap-4">
             <input
               type="checkbox"
               className="mt-1 h-4 w-4 rounded border border-border accent-brand"
@@ -439,7 +439,7 @@ function NotificationsTab({ live, copy }: { live: boolean; copy: SettingsCopy['n
     <section className="rounded-card border border-border bg-white p-4 shadow-card">
       <h2 className="mb-3 text-lg font-semibold text-text-primary">{copy.title}</h2>
       <div className="space-y-4">
-        <div className="flex flex-col gap-3 rounded-input border border-border bg-bg px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 rounded-input border border-border bg-bg px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex-1">
             <p className="text-sm font-semibold text-text-primary">{copy.marketing.title}</p>
             <p className="text-xs text-text-secondary">{copy.marketing.description}</p>
@@ -467,7 +467,7 @@ function NotificationsTab({ live, copy }: { live: boolean; copy: SettingsCopy['n
           </Button>
         </div>
         {prefError ? <p className="text-xs text-state-warning">{prefError}</p> : null}
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-gap-sm sm:grid-cols-2">
           <ToggleRow label={copy.toggles.jobDone} />
           <ToggleRow label={copy.toggles.jobFailed} />
           <ToggleRow label={copy.toggles.lowWallet} />

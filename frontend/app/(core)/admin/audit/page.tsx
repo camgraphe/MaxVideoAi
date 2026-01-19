@@ -15,7 +15,7 @@ export default async function AdminAuditLogPage() {
   const logs = await fetchAdminAuditLogs(100);
 
   return (
-    <div className="space-y-6">
+    <div className="stack-gap-lg">
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold text-text-primary">Admin audit log</h1>
         <p className="text-sm text-text-secondary">

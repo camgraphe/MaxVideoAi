@@ -105,7 +105,7 @@ export function ServiceNoticeForm({ initialNotice }: ServiceNoticeFormProps) {
       {error ? (
         <div className="rounded-input border border-state-warning/40 bg-state-warning/10 px-3 py-2 text-sm text-state-warning">{error}</div>
       ) : null}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-4">
         <Button
           type="submit"
           size="sm"

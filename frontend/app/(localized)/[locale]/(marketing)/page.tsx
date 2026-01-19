@@ -253,7 +253,7 @@ function MiniFAQ({ faq }: MiniFaqProps) {
           {resolvedTitle}
         </h2>
         <p className="mb-4 text-sm text-muted-foreground">{resolvedDescription}</p>
-        <div className="space-y-3">
+        <div className="stack-gap-sm">
           {items.map((item) => (
             <details key={item.q} className="group rounded-lg border border-hairline bg-white/60 p-4 transition hover:border-text-muted">
               <summary className="flex cursor-pointer select-none list-none items-center justify-between text-sm font-medium text-text-primary">
@@ -559,20 +559,20 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         {lcpPosterSrc ? <link rel="preload" as="image" href={lcpPosterSrc} fetchPriority="high" media="(max-width: 767px)" /> : null}
       </Head>
       <section className="container-page section flex max-w-6xl flex-col items-center gap-10 pt-20 text-center">
-        <div className="flex flex-wrap items-center justify-center gap-3">
+        <div className="flex flex-wrap items-center justify-center gap-4">
           {badges.map((badge) => (
             <span key={badge} className="rounded-pill border border-hairline bg-white px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary">
               {badge}
             </span>
           ))}
         </div>
-        <div className="space-y-6">
+        <div className="stack-gap-lg">
           <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-5xl">{hero.title}</h1>
           <p className="mx-auto sm:max-w-[62ch] text-lg leading-relaxed text-text-secondary">
             {hero.subtitle}
           </p>
         </div>
-        <div className="flex flex-col items-center gap-3 sm:flex-row">
+        <div className="flex flex-col items-center gap-4 sm:flex-row">
           <ButtonLink
             href="/app"
             prefetch={false}
@@ -630,7 +630,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
 
       <section className="border-t border-hairline bg-white text-left section">
         <div className="container-page flex max-w-7xl flex-col-reverse items-center gap-12 text-center lg:flex-row lg:items-center lg:text-left">
-          <div className="w-full sm:max-w-[62ch] space-y-5 lg:w-[40%]">
+          <div className="w-full sm:max-w-[62ch] stack-gap-lg lg:w-[40%]">
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{heroScreenshot.title}</h2>
             <p className="text-sm text-text-secondary sm:text-base">{heroScreenshot.body}</p>
           </div>
@@ -726,7 +726,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
               <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
                 {trust.badge}
               </span>
-              <ul className="mt-4 space-y-3 text-sm text-text-secondary">
+              <ul className="mt-4 stack-gap-sm text-sm text-text-secondary">
                 {trust.points.map((point) => (
                   <li key={point} className="flex items-start gap-2">
                     <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-text-muted" />

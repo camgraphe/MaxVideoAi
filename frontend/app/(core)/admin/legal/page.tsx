@@ -89,7 +89,7 @@ export default function AdminLegalPage() {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
   return (
-    <div className="space-y-6">
+    <div className="stack-gap-lg">
       <div className="space-y-1">
         <h2 className="text-xl font-semibold text-text-primary">Legal documents</h2>
         <p className="text-sm text-text-secondary">

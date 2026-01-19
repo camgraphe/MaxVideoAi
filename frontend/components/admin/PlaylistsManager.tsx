@@ -378,7 +378,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
 
   return (
     <div className="space-y-8">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-semibold text-text-primary">Playlist curation</h1>
           <p className="text-sm text-text-secondary">
@@ -408,7 +408,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
       ) : null}
 
       <div className="grid grid-gap lg:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="space-y-3">
+        <aside className="stack-gap-sm">
           <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">Playlists</h2>
           <div className="space-y-2">
             {playlists.map((playlist) => {
@@ -428,7 +428,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                   onClick={() => handleSelectPlaylist(playlist.id)}
                   disabled={isPending}
                 >
-                  <div className="flex items-center justify-between gap-3 text-sm font-semibold">
+                  <div className="flex items-center justify-between gap-4 text-sm font-semibold">
                     <span>{playlist.name}</span>
                     {playlist.dirty ? <span className="text-xs text-amber-600">Unsaved</span> : null}
                   </div>
@@ -446,10 +446,10 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
           </div>
         </aside>
 
-        <section className="space-y-6">
+        <section className="stack-gap-lg">
           {selectedPlaylist ? (
             <div className="rounded-card border border-border bg-white p-6 shadow-card space-y-4">
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-text-primary">Playlist details</h2>
                   <p className="text-sm text-text-secondary">Update name, slug, or visibility defaults.</p>
@@ -521,7 +521,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
 
           {selectedPlaylist ? (
             <div className="rounded-card border border-border bg-white p-6 shadow-card space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-text-primary">Playlist items</h2>
                   <p className="text-sm text-text-secondary">
@@ -598,7 +598,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     <div className="h-16 w-28 overflow-hidden rounded border border-border bg-neutral-100">
                       <Image
                         src={item.thumbUrl || getPlaceholderThumb(item.aspectRatio)}

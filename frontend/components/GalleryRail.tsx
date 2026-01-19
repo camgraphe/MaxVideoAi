@@ -472,7 +472,7 @@ export function GalleryRail({
   ) : null;
 
   const errorBanner = error ? (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-[#FACC15]/60 bg-[#FEF3C7] px-3 py-2 text-[12px] text-[#92400E]">
+    <div className="flex flex-wrap items-center justify-between gap-4 rounded-card border border-[#FACC15]/60 bg-[#FEF3C7] px-3 py-2 text-[12px] text-[#92400E]">
       <span role="alert">{copy.error}</span>
       <Button
         type="button"
@@ -515,7 +515,7 @@ export function GalleryRail({
           {content}
         </aside>
       ) : (
-        <section className="flex w-full flex-col gap-3">
+        <section className="flex w-full flex-col gap-4">
           {content}
         </section>
       )}
@@ -547,7 +547,7 @@ function Snackbar({ state, onClose }: { state: SnackbarState | null; onClose: ()
 
   return createPortal(
     <div className="fixed inset-x-0 bottom-6 z-[9998] flex justify-center px-4">
-      <div className="inline-flex max-w-xl flex-wrap items-center gap-3 rounded-card border border-white/15 bg-black/80 px-4 py-3 text-[13px] text-white shadow-lg backdrop-blur">
+      <div className="inline-flex max-w-xl flex-wrap items-center gap-4 rounded-card border border-white/15 bg-black/80 px-4 py-3 text-[13px] text-white shadow-lg backdrop-blur">
         <span>{state.message}</span>
         {actions.length > 0 && (
           <div className="flex flex-wrap gap-2">

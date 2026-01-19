@@ -773,7 +773,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                         })}
                       </div>
                     ) : (
-                      <div className="mt-4 space-y-3">
+                      <div className="mt-4 stack-gap-sm">
                         <input
                           id={durationId}
                           type="range"
@@ -880,10 +880,10 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
             </fieldset>
           </div>
 
-          <aside className="flex flex-col gap-5">
+          <aside className="flex flex-col gap-6">
             <div className="rounded-[28px] border border-white/70 bg-white/95 p-6 text-sm text-text-secondary shadow-[0_28px_60px_-24px_rgba(15,23,42,0.3)] sm:p-7">
-              <div className="space-y-6">
-                <div className="space-y-3">
+              <div className="stack-gap-lg">
+                <div className="stack-gap-sm">
                   <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
                     {estimateLabels.heading}
                   </span>

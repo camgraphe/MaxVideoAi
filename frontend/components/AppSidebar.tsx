@@ -173,7 +173,7 @@ export function AppSidebar() {
           prefetch={false}
           className={clsx(
             'group relative flex w-full items-center rounded-card px-2 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-            collapsedNav ? 'justify-center gap-0' : 'gap-3 px-3',
+            collapsedNav ? 'justify-center gap-0' : 'gap-4 px-3',
             active
               ? 'bg-surface-2 text-text-primary'
               : 'text-text-muted hover:bg-surface-2 hover:text-text-primary'
@@ -236,7 +236,7 @@ export function AppSidebar() {
       <div
         className={clsx(
           'items-center px-4 pt-6',
-          collapsed ? 'flex flex-col gap-3' : 'flex flex-row items-center justify-between gap-3 pb-2'
+          collapsed ? 'flex flex-col gap-4' : 'flex flex-row items-center justify-between gap-4 pb-2'
         )}
         aria-label={t('workspace.sidebar.aria.controls', 'Sidebar controls')}
       >

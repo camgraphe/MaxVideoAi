@@ -1228,8 +1228,8 @@ function Sora2PageLayout({
         </Link>
 
         <section className="mt-6 stack-gap rounded-3xl border border-hairline bg-white/80 p-6 shadow-card sm:p-8">
-          <div className="space-y-6">
-            <div className="space-y-3 text-center">
+          <div className="stack-gap-lg">
+            <div className="stack-gap-sm text-center">
               <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">
                 {heroTitle}
               </h1>
@@ -1249,7 +1249,7 @@ function Sora2PageLayout({
               {heroDesc1 ? <p className="text-base leading-relaxed text-text-secondary">{heroDesc1}</p> : null}
               {heroDesc2 ? <p className="text-base leading-relaxed text-text-secondary">{heroDesc2}</p> : null}
             </div>
-            <div className="flex flex-wrap justify-center gap-3">
+            <div className="flex flex-wrap justify-center gap-4">
               <ButtonLink
                 href={primaryCtaHref}
                 size="lg"
@@ -1292,7 +1292,7 @@ function Sora2PageLayout({
                 <MediaPreview media={heroMedia} label={heroTitle} />
               </div>
             </div>
-            <div className="space-y-3 rounded-2xl border border-hairline bg-bg px-4 py-3">
+            <div className="stack-gap-sm rounded-2xl border border-hairline bg-bg px-4 py-3">
               {copy.whyTitle ? <p className="text-sm font-semibold text-text-primary">{copy.whyTitle}</p> : null}
               {heroHighlights.length ? (
                 <ul className="grid gap-2 text-sm text-text-secondary sm:grid-cols-2">
@@ -1419,7 +1419,7 @@ function Sora2PageLayout({
         ) : null}
 
         {quickPricingTitle && quickPricingItems.length ? (
-          <section className="mt-10 space-y-3 rounded-2xl border border-hairline bg-white/80 p-5 shadow-card">
+          <section className="mt-10 stack-gap-sm rounded-2xl border border-hairline bg-white/80 p-5 shadow-card">
             <h3 className="text-lg font-semibold text-text-primary">{quickPricingTitle}</h3>
             <ul className="space-y-1 text-sm text-text-secondary">
               {quickPricingItems.map((item) => (
@@ -1517,12 +1517,12 @@ function Sora2PageLayout({
         <section id={imageAnchorId} className="mt-12 stack-gap">
           {copy.promptTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.promptTitle}</h2> : null}
           {copy.promptIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.promptIntro}</p> : null}
-          <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+          <div className="stack-gap-sm rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
             {promptPatternSteps.length ? (
               <div className="space-y-2">
                 <div className="grid gap-2 sm:grid-cols-2">
                   {promptPatternSteps.map((step, index) => (
-                    <div key={step} className="flex items-start gap-3 rounded-xl bg-bg px-3 py-2 text-sm text-text-secondary">
+                    <div key={step} className="flex items-start gap-4 rounded-xl bg-bg px-3 py-2 text-sm text-text-secondary">
                       <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-surface-2 text-[11px] font-semibold text-text-primary">
                         {index + 1}
                       </span>
@@ -1546,7 +1546,7 @@ function Sora2PageLayout({
           {copy.imageIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.imageIntro}</p> : null}
           <div className="grid grid-gap-sm lg:grid-cols-2">
             {imageToVideoSteps.length ? (
-              <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+              <div className="stack-gap-sm rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
                 <ol className="list-decimal space-y-2 pl-5 text-sm text-text-secondary">
                   {imageToVideoSteps.map((step) => (
                     <li key={step}>{step}</li>
@@ -1555,7 +1555,7 @@ function Sora2PageLayout({
               </div>
             ) : null}
             {imageToVideoUseCases.length ? (
-              <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+              <div className="stack-gap-sm rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
                 <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
                   {imageToVideoUseCases.map((item) => (
                     <li key={item}>{item}</li>
@@ -1570,7 +1570,7 @@ function Sora2PageLayout({
           {copy.multishotTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.multishotTitle}</h2> : null}
           {copy.multishotIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.multishotIntro1}</p> : null}
           {copy.multishotIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.multishotIntro2}</p> : null}
-          <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+          <div className="stack-gap-sm rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
             <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
               {miniFilmTips.map((tip) => (
                 <li key={tip}>{tip}</li>
@@ -1580,7 +1580,7 @@ function Sora2PageLayout({
         </section>
 
       {copy.demoTitle || copy.demoPrompt.length || copy.demoNotes.length ? (
-        <section className="mt-12 space-y-6">
+        <section className="mt-12 stack-gap-lg">
           {copy.demoTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.demoTitle}</h2> : null}
           <div className="grid grid-gap lg:grid-cols-2 lg:items-start">
             <div className="rounded-2xl border border-hairline bg-white/80 p-3 shadow-card lg:order-2">
@@ -1618,11 +1618,11 @@ function Sora2PageLayout({
       ) : null}
 
         {copy.tipsTitle || strengths.length || boundaries.length ? (
-          <section id="tips" className="mt-12 space-y-6">
+          <section id="tips" className="mt-12 stack-gap-lg">
             {copy.tipsTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.tipsTitle}</h2> : null}
             <div className="grid grid-gap-sm lg:grid-cols-2">
               {strengths.length ? (
-                <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+                <div className="stack-gap-sm rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
                   <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
                     {strengths.map((item) => (
                       <li key={item}>{item}</li>
@@ -1631,7 +1631,7 @@ function Sora2PageLayout({
                 </div>
               ) : null}
               {boundaries.length ? (
-                <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+                <div className="stack-gap-sm rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
                   <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
                     {boundaries.map((item) => (
                       <li key={item}>{item}</li>
@@ -1641,7 +1641,7 @@ function Sora2PageLayout({
               ) : null}
             </div>
             {troubleshootingTitle && troubleshootingItems.length ? (
-              <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+              <div className="stack-gap-sm rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
                 <p className="text-sm font-semibold text-text-primary">{troubleshootingTitle}</p>
                 <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
                   {troubleshootingItems.map((item) => (
@@ -1657,7 +1657,7 @@ function Sora2PageLayout({
         {copy.safetyTitle || safetyRules.length ? (
           <section id="safety" className="mt-12 stack-gap">
             {copy.safetyTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.safetyTitle}</h2> : null}
-            <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+            <div className="stack-gap-sm rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
               {safetyRules.length ? (
                 <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
                   {safetyRules.map((rule) => (
@@ -1682,7 +1682,7 @@ function Sora2PageLayout({
             {copy.comparisonTitle ? (
               <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.comparisonTitle}</h2>
             ) : null}
-            <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+            <div className="stack-gap-sm rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
               {comparisonPoints.length ? (
                 <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
                   {comparisonPoints.map((item) => (
@@ -1706,7 +1706,7 @@ function Sora2PageLayout({
         {faqList.length ? (
           <section id="faq" className="mt-12 stack-gap">
             {faqTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{faqTitle}</h2> : null}
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid grid-gap-sm md:grid-cols-2">
               {faqList.map((entry) => (
                 <article
                   key={entry.question}
@@ -1768,7 +1768,7 @@ function Sora2PageLayout({
         </section>
       ) : null}
 
-        <section className="mt-12 space-y-3 rounded-3xl border border-hairline bg-white/90 px-6 py-6 text-text-primary shadow-card sm:px-8">
+        <section className="mt-12 stack-gap-sm rounded-3xl border border-hairline bg-white/90 px-6 py-6 text-text-primary shadow-card sm:px-8">
           {copy.finalPara1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.finalPara1}</p> : null}
           {copy.finalPara2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.finalPara2}</p> : null}
           <ButtonLink
@@ -2099,7 +2099,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       <Link href={localizeModelsPath()} className="text-sm font-semibold text-brand hover:text-brandHover">
         {detailCopy.backLabel}
       </Link>
-      <header className="mt-6 space-y-3">
+      <header className="mt-6 stack-gap-sm">
         <div className="flex flex-wrap items-center gap-4">
           {brand && engine.logoPolicy === 'logoAllowed' ? (
             <span className="flex items-center">
@@ -2121,7 +2121,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       </header>
 
       {(heroPrimaryCta?.label || secondaryCtas.length) ? (
-        <div className="mt-6 flex flex-wrap gap-3">
+        <div className="mt-6 flex flex-wrap gap-4">
           {heroPrimaryCta?.label && heroPrimaryCta.href ? (
             <ButtonLink
               href={heroPrimaryCta.href}
@@ -2261,7 +2261,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       <section id="specs" className="mt-10 stack-gap">
         <div className="rounded-card border border-hairline bg-white p-6 shadow-card">
           <h2 className="text-lg font-semibold text-text-primary">{detailCopy.overviewTitle}</h2>
-          <dl className="mt-4 grid gap-3 text-sm text-text-secondary sm:grid-cols-2">
+          <dl className="mt-4 grid grid-gap-sm text-sm text-text-secondary sm:grid-cols-2">
             <div>
               <dt className="text-xs uppercase tracking-micro text-text-muted">{detailCopy.overview.brand}</dt>
               <dd>{brand ? brand.label : engine.brandId}</dd>
@@ -2303,7 +2303,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
           className="mt-10 stack-gap"
         >
           <h2 className="text-lg font-semibold text-text-primary">{detailCopy.promptsTitle}</h2>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-gap-sm sm:grid-cols-2">
             {promptEntries.map((entry) => (
               <article key={entry.title} className="rounded-card border border-hairline bg-white p-4 text-sm text-text-secondary shadow-card">
                 <h3 className="text-sm font-semibold text-text-primary">{entry.title}</h3>
@@ -2318,7 +2318,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       {faqEntries.length > 0 && (
         <section id="faq" className="mt-10 stack-gap">
           <h2 className="text-lg font-semibold text-text-primary">{detailCopy.faqTitle}</h2>
-          <div className="space-y-3 text-sm text-text-secondary">
+          <div className="stack-gap-sm text-sm text-text-secondary">
             {faqEntries.map(({ question, answer }) => (
               <article key={question} className="rounded-card border border-hairline bg-white p-4 shadow-card">
                 <h3 className="text-sm font-semibold text-text-primary">{question}</h3>
@@ -2368,7 +2368,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
         </section>
       ) : null}
 
-      <div className="mt-10 flex flex-wrap gap-3">
+      <div className="mt-10 flex flex-wrap gap-4">
         <ButtonLink
           href="/app"
           prefetch={false}

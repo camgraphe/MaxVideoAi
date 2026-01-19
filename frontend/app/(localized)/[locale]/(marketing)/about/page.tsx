@@ -43,12 +43,12 @@ export default async function AboutPage() {
 
   return (
     <div className="container-page max-w-4xl section">
-      <header className="space-y-3">
+      <header className="stack-gap-sm">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
         <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
       </header>
 
-      <section className="mt-12 space-y-6 text-sm text-text-secondary">
+      <section className="mt-12 stack-gap-lg text-sm text-text-secondary">
         {content.paragraphs.map((paragraph, index) => (
           <p key={index}>{paragraph}</p>
         ))}

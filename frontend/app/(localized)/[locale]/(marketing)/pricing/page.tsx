@@ -337,7 +337,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
       </header>
 
       <section className="mt-6 rounded-card border border-hairline bg-white/80 p-4 text-sm text-text-secondary shadow-card">
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-4">
           <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{exploreTitle}</span>
           <div className="flex flex-wrap gap-2">
             {exploreLinks.map((link) => {
@@ -444,7 +444,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
         </h2>
         <p className="mt-2 text-sm text-text-secondary">{teams.description}</p>
         {FEATURES.pricing.teams ? (
-          <ul className="mt-4 space-y-3 text-sm text-text-secondary">
+          <ul className="mt-4 stack-gap-sm text-sm text-text-secondary">
             {teams.points.map((point) => (
               <li key={point} className="flex items-start gap-2">
                 <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-text-muted" />
@@ -482,7 +482,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
             {refunds.title}
           </h2>
-          <ul className="mt-4 space-y-3 text-sm text-text-secondary">
+          <ul className="mt-4 stack-gap-sm text-sm text-text-secondary">
             {refundFeatureItems.map((item) => (
               <li key={item.text} className="flex items-start gap-2">
                 <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-text-muted" />

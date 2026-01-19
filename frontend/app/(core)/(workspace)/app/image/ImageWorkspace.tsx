@@ -1577,7 +1577,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
       <div className={clsx('flex w-full flex-1 min-w-0', isDesktopLayout ? 'flex-row' : 'flex-col')}>
         <div className="flex w-full flex-1 min-w-0 flex-col overflow-hidden">
           <main className="flex w-full flex-1 min-w-0 flex-col gap-6 p-4 sm:p-6">
-            <div className="space-y-6">
+            <div className="stack-gap-lg">
               <ImageCompositePreviewDock
                 entry={compositePreviewEntry}
                 selectedIndex={selectedPreviewImageIndex}
@@ -1649,7 +1649,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                 copiedUrl={copiedUrl}
                 showTitle={false}
                 engineSettings={
-                  <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                  <div className="flex min-w-0 flex-1 flex-wrap items-center gap-4">
                   <EngineSelect
                     engines={engineCapsList}
                     engineId={selectedEngine.id}
@@ -1672,8 +1672,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
               />
 
               <form onSubmit={handleRun}>
-                <Card className="space-y-5 p-5">
-                  <div className="space-y-3">
+                <Card className="stack-gap-lg p-5">
+                  <div className="stack-gap-sm">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-sm font-medium text-text-primary">{resolvedCopy.composer.promptLabel}</span>
                       <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
@@ -1725,9 +1725,9 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                     </p>
                   ) : null}
 
-                  <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end lg:flex-nowrap">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end lg:flex-nowrap">
                     <div className="min-w-0 flex-1">
-                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                         <SelectGroup
                           label={resolvedCopy.composer.numImagesLabel}
                           options={imageCountOptions}
@@ -1760,8 +1760,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
 
                   <SectionDivider />
 
-                  <section className="space-y-3">
-                    <div className="flex flex-wrap items-baseline justify-between gap-3">
+                  <section className="stack-gap-sm">
+                    <div className="flex flex-wrap items-baseline justify-between gap-4">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
                           {resolvedCopy.composer.referenceLabel}
@@ -1778,7 +1778,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                         {resolvedCopy.composer.referenceButton}
                       </Button>
                     </div>
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="grid grid-gap-sm sm:grid-cols-2">
                       {visibleReferenceSlots.map((slot, index) => (
                         <div
                           key={`slot-${index}`}
@@ -2015,7 +2015,7 @@ function ImageLibraryModal({
       onMouseDown={handleBackdropClick}
     >
       <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-modal border border-border bg-white shadow-float">
-        <div className="flex flex-col gap-3 border-b border-border px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6">
+        <div className="flex flex-col gap-4 border-b border-border px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6">
           <div>
             <h2 className="text-lg font-semibold text-text-primary">{copy.modal.title}</h2>
             <p className="text-xs text-text-secondary">{copy.modal.description}</p>

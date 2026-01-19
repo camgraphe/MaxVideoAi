@@ -29,7 +29,7 @@ export default function MentionsLegalesPage() {
         </p>
       </header>
 
-      <article className="space-y-6 text-base leading-relaxed text-text-secondary">
+      <article className="stack-gap-lg text-base leading-relaxed text-text-secondary">
         <section className="space-y-2">
           <h3 className="text-lg font-semibold text-text-primary">Éditeur du site</h3>
           <p>

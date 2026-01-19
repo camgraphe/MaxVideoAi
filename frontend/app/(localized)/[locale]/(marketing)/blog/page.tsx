@@ -174,7 +174,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
         </div>
       </header>
 
-      <section className="mt-10 space-y-6 rounded-[28px] border border-hairline bg-white/90 p-8 text-sm text-text-secondary shadow-card sm:p-10">
+      <section className="mt-10 stack-gap-lg rounded-[28px] border border-hairline bg-white/90 p-8 text-sm text-text-secondary shadow-card sm:p-10">
         <p>{content.intro?.lead}</p>
         <div className="grid grid-gap-sm lg:grid-cols-3">
           {(content.intro?.cards ?? []).map((card) => (
@@ -201,7 +201,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0" />
           </div>
           <div className="stack-gap px-6 pb-8 pt-6 sm:px-10">
-            <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-micro text-brand">
+            <div className="flex flex-wrap items-center gap-4 text-xs uppercase tracking-micro text-brand">
               <span className="rounded-pill bg-surface-2 px-3 py-1 font-semibold text-brand">
                 {new Date(featured.date).toLocaleDateString(localeDateMap[locale], {
                   month: 'short',
@@ -217,7 +217,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
                 ))}
               </div>
             </div>
-            <div className="space-y-3">
+            <div className="stack-gap-sm">
               <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
                 <Link href={{ pathname: '/blog/[slug]', params: { slug: featured.slug } }} className="transition hover:text-brandHover">
                   {featured.title}
@@ -236,7 +236,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
           </div>
         </article>
 
-        <div className="space-y-6">
+        <div className="stack-gap-lg">
           {rest.map((post) => (
             <article
               key={post.slug}
@@ -256,7 +256,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
                   className="object-cover object-center transition duration-700 group-hover:scale-105"
                 />
               </div>
-              <div className="flex-1 space-y-3">
+              <div className="flex-1 stack-gap-sm">
                 <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-micro text-text-muted">
                   <span>
                     {new Date(post.date).toLocaleDateString(localeDateMap[locale], {
@@ -291,7 +291,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
 
       <section className="mt-12 rounded-[28px] border border-hairline bg-white/90 p-8 shadow-card sm:p-10">
         <h2 className="text-lg font-semibold text-text-primary">{faq.title}</h2>
-        <dl className="mt-6 space-y-5 text-sm text-text-secondary">
+        <dl className="mt-6 stack-gap-lg text-sm text-text-secondary">
           {faq.items.map((item) => (
             <div key={item.question}>
               <dt className="font-semibold text-text-primary">{item.question}</dt>

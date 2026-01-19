@@ -248,7 +248,7 @@ function AssetLibraryModal({
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 px-4">
       <div className="absolute inset-0" role="presentation" onClick={onClose} />
       <div className="relative z-10 w-full max-w-3xl rounded-modal border border-border bg-white p-6 shadow-float">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div>
             <h2 className="text-lg font-semibold text-text-primary">{copy.title}</h2>
             <p className="text-sm text-text-secondary">{fieldLabel}</p>
@@ -330,7 +330,7 @@ function AssetLibraryModal({
               {error}
             </div>
           ) : isLoading ? (
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-gap-sm sm:grid-cols-2">
               {Array.from({ length: 4 }).map((_, index) => (
                 <div key={`asset-skeleton-${index}`} className="h-40 rounded-card border border-border bg-neutral-100" aria-hidden>
                   <div className="skeleton h-full w-full" />
@@ -358,7 +358,7 @@ function AssetLibraryModal({
                         sizes="(min-width: 1024px) 400px, (min-width: 640px) 300px, 100vw"
                       />
                     </div>
-                    <div className="flex items-center justify-between gap-3 border-t border-border bg-white px-3 py-2 text-[12px] text-text-secondary">
+                    <div className="flex items-center justify-between gap-4 border-t border-border bg-white px-3 py-2 text-[12px] text-text-secondary">
                       <div className="flex flex-col gap-1">
                         {dimensions && <span>{dimensions}</span>}
                         {sizeLabel && <span>{sizeLabel}</span>}
@@ -4602,13 +4602,13 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         <div className="flex flex-1 min-w-0">
           <AppSidebar />
           <div className="flex flex-1 min-w-0 flex-col overflow-hidden">
-            <main className="flex flex-1 min-w-0 flex-col gap-5 p-5 lg:p-7">
+            <main className="flex flex-1 min-w-0 flex-col gap-6 p-5 lg:p-7">
             {notice && (
               <div className="rounded-card border border-[#FACC15]/60 bg-[#FEF3C7] px-4 py-2 text-sm text-[#92400E] shadow-card">
                 {notice}
               </div>
             )}
-            <div className="space-y-5">
+            <div className="stack-gap-lg">
               {showCenterGallery ? (
                 normalizedPendingGroups.length === 0 && !isGenerationLoading ? (
                   <div className="rounded-card border border-border bg-white/80 p-5 text-center text-sm text-text-secondary">
@@ -4887,7 +4887,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 {workspaceCopy.topUp.close}
               </Button>
             </div>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+            <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:justify-end">
               <Button type="button" variant="outline" size="sm" onClick={closeTopUpModal} className="px-4">
                 {workspaceCopy.topUp.maybeLater}
               </Button>

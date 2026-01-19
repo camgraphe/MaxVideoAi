@@ -105,14 +105,14 @@ export default async function TermsPage() {
 
 function TermsArticleEn({ version, effective }: { version: string; effective: string | null }) {
   return (
-    <article className="space-y-6 text-base leading-relaxed text-text-secondary">
+    <article className="stack-gap-lg text-base leading-relaxed text-text-secondary">
       <p>
         These Terms govern your access to and use of the MaxVideoAI workspace (the “Service”), including AI-assisted video creation, wallet
         top-ups, job management, and receipts. By creating an account or using the Service you agree to these Terms, the Privacy Policy, and
         the Cookie Policy.
       </p>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">1. Eligibility &amp; age</h3>
         <p>
           You must be at least <strong>15 years old</strong> (or the age of digital consent in your country, whichever is higher) to use the Service. If you
@@ -120,7 +120,7 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">2. Your account</h3>
         <p>
           Keep your credentials confidential and do not share them. You are responsible for all activity that happens under your account. We may
@@ -128,7 +128,7 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">3. Pricing, payments &amp; wallet</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>
@@ -149,7 +149,7 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">4. Currency</h3>
         <p>
           Charges may be in EUR or USD depending on your location or saved preference. Wallet balances and receipts reflect the charged currency. If
@@ -157,7 +157,7 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">5. AI-assisted outputs</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>You are responsible for the prompts, inputs, and use of outputs. Do not submit illegal, infringing, or harmful content.</li>
@@ -166,7 +166,7 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">6. User content &amp; generated media</h3>
         <p>
           You own your prompts, uploads, reference frames, captions, and other assets you provide to the Service. We may store, process, and display
@@ -205,7 +205,7 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">7. Service IP</h3>
         <p>
           We and our licensors own the Service, including software, models, safety tooling, UI, documentation, and brand assets. Except for the limited
@@ -213,7 +213,7 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">8. Acceptable use</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>No reverse engineering, unauthorised access, or interference with the Service.</li>
@@ -222,7 +222,7 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">9. Third-party services</h3>
         <p>
           We rely on trusted sub-processors to operate the Service, including Stripe (payments), hosting/CDN providers, object storage, databases, and AI
@@ -230,7 +230,7 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">10. Availability &amp; changes</h3>
         <p>
           We aim for high availability but cannot guarantee uninterrupted service. Features may change or be discontinued with reasonable notice where
@@ -238,7 +238,7 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">11. Warranties &amp; disclaimers</h3>
         <p>
           The Service is provided “as is” without warranties of merchantability, fitness for a particular purpose, or non-infringement. Outputs are
@@ -246,7 +246,7 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">12. Liability cap</h3>
         <p>
           To the extent permitted by law, our aggregate liability for any claim is limited to the fees you paid to us in the 12 months before the event
@@ -254,12 +254,12 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">13. Indemnity</h3>
         <p>You agree to indemnify and hold us harmless from claims arising from your content, your use of outputs, or any breach of these Terms.</p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">14. Termination</h3>
         <p>
           You may stop using the Service at any time. We may suspend or terminate access for breach, risk to the Service, or legal compliance reasons.
@@ -267,7 +267,7 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">15. Governing law &amp; venue</h3>
         <p>
           These Terms are governed by French law. The courts of Paris have exclusive jurisdiction, subject to mandatory consumer protections in your
@@ -275,7 +275,7 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">16. Consumer rights &amp; withdrawals</h3>
         <p>
           If you are a consumer in the EU/EEA/UK, you may have statutory rights, including withdrawal or conformity guarantees. Nothing in these Terms
@@ -283,7 +283,7 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">17. Changes &amp; re-consent</h3>
         <p>
           We may update these Terms. When material changes occur, we will notify you and may require you to accept the new version at your next login.
@@ -291,7 +291,7 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">18. Contact</h3>
         <p>
           Questions about these Terms?{' '}
@@ -311,14 +311,14 @@ function TermsArticleEn({ version, effective }: { version: string; effective: st
 
 function TermsArticleFr({ version, effective }: { version: string; effective: string | null }) {
   return (
-    <article className="space-y-6 text-base leading-relaxed text-text-secondary">
+    <article className="stack-gap-lg text-base leading-relaxed text-text-secondary">
       <p>
         Les présentes Conditions régissent votre accès et votre utilisation de l’espace de travail MaxVideoAI (le « Service »), notamment la création de
         vidéos assistées par IA, les recharges de wallet, la gestion des jobs et les reçus. En créant un compte ou en utilisant le Service, vous acceptez
         ces Conditions ainsi que la Politique de confidentialité et la Politique cookies.
       </p>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">1. Éligibilité &amp; âge</h3>
         <p>
           Vous devez avoir au minimum <strong>15 ans</strong> (ou l’âge du consentement numérique dans votre pays, si plus élevé) pour utiliser le Service. Si vous agissez
@@ -326,7 +326,7 @@ function TermsArticleFr({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">2. Votre compte</h3>
         <p>
           Gardez vos identifiants confidentiels et ne les partagez pas. Vous êtes responsable de toute activité réalisée via votre compte. Nous pouvons
@@ -334,7 +334,7 @@ function TermsArticleFr({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">3. Tarification, paiements &amp; wallet</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>
@@ -355,14 +355,14 @@ function TermsArticleFr({ version, effective }: { version: string; effective: st
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">4. Devise</h3>
         <p>
           Les prélèvements peuvent être effectués en EUR ou USD selon votre localisation ou préférence enregistrée. Les soldes du wallet et les reçus reflètent la devise facturée. Si votre moyen de paiement est libellé dans une autre devise, votre banque peut appliquer des frais de change.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">5. Sorties assistées par IA</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>Vous êtes responsable des prompts, des contenus fournis et de l’usage des sorties. N’envoyez aucun contenu illégal, contrefaisant ou nocif.</li>
@@ -371,7 +371,7 @@ function TermsArticleFr({ version, effective }: { version: string; effective: st
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">6. Contenus utilisateur &amp; médias générés</h3>
         <p>
           Vous conservez la propriété de vos prompts, uploads, références, légendes ou autres éléments fournis au Service. Nous pouvons stocker, traiter et afficher ces assets uniquement pour livrer le rendu demandé (texte-vers-vidéo ou image-vers-vidéo), router les jobs, fournir les fonctionnalités activées dans votre workspace et respecter nos obligations de sécurité. Nous ne revendiquons aucune propriété sur les uploads.
@@ -401,14 +401,14 @@ function TermsArticleFr({ version, effective }: { version: string; effective: st
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">7. Propriété du Service</h3>
         <p>
           Nous (ainsi que nos concédants) détenons le Service, y compris les logiciels, modèles, outils de sécurité, interfaces, documentations et marques. Hormis les droits expressément accordés, aucune propriété intellectuelle ne vous est transférée.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">8. Utilisation acceptable</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>Interdiction de rétro-ingénierie, d’accès non autorisé ou de perturbation du Service.</li>
@@ -417,70 +417,70 @@ function TermsArticleFr({ version, effective }: { version: string; effective: st
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">9. Services tiers</h3>
         <p>
           Nous nous appuyons sur des sous-traitants de confiance (Stripe pour les paiements, hébergeurs/CDN, stockage objet, bases de données, partenaires d’inférence IA). Consultez la Politique de confidentialité et la page /legal/subprocessors pour la liste détaillée.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">10. Disponibilité &amp; évolutions</h3>
         <p>
           Nous visons une haute disponibilité mais ne pouvons garantir l’absence d’interruptions. Les fonctionnalités peuvent évoluer ou être retirées avec un préavis raisonnable lorsque c’est possible.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">11. Garanties &amp; exclusions</h3>
         <p>
           Le Service est fourni « en l’état » sans garantie de qualité marchande, d’adéquation à un usage particulier ou d’absence de contrefaçon. Les sorties sont générées par des systèmes probabilistes et peuvent être inexactes. Vous les utilisez à vos risques.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">12. Limitation de responsabilité</h3>
         <p>
           Dans la limite permise par la loi, notre responsabilité cumulée est plafonnée aux montants que vous nous avez versés durant les 12 mois précédant l’événement à l’origine de la réclamation. Cette clause ne limite pas les responsabilités qui ne peuvent être exclues légalement.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">13. Indemnisation</h3>
         <p>
           Vous acceptez de nous indemniser contre toute réclamation liée à vos contenus, à l’usage des sorties ou à la violation des présentes Conditions.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">14. Résiliation</h3>
         <p>
           Vous pouvez arrêter d’utiliser le Service à tout moment. Nous pouvons suspendre ou couper l’accès en cas de violation, de risque pour le Service ou d’obligation légale. Les clauses relatives à la propriété intellectuelle, aux exclusions, à la responsabilité et à l’indemnisation survivent à la résiliation.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">15. Droit applicable &amp; juridiction</h3>
         <p>
           Les présentes Conditions sont régies par le droit français. Les tribunaux de Paris sont seuls compétents, sous réserve des protections impératives dont vous pourriez bénéficier dans votre pays de résidence.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">16. Droits consommateurs &amp; rétractation</h3>
         <p>
           Si vous êtes consommateur dans l’UE/EEE/Royaume-Uni, vous disposez de droits légaux (rétractation, conformité). Rien dans ces Conditions ne restreint ces droits.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">17. Modifications &amp; nouveau consentement</h3>
         <p>
           Nous pouvons mettre à jour ces Conditions. En cas de changement important, nous vous informerons et pourrons exiger une acceptation lors de votre prochaine connexion. La version et la date d’effet figurent ci-dessus.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">18. Contact</h3>
         <p>
           Questions sur ces Conditions ? Écrivez à{' '}
@@ -500,13 +500,13 @@ function TermsArticleFr({ version, effective }: { version: string; effective: st
 
 function TermsArticleEs({ version, effective }: { version: string; effective: string | null }) {
   return (
-    <article className="space-y-6 text-base leading-relaxed text-text-secondary">
+    <article className="stack-gap-lg text-base leading-relaxed text-text-secondary">
       <p>
         Estos Términos regulan tu acceso y uso del espacio de trabajo MaxVideoAI (el «Servicio»), incluidas las funciones de vídeo asistido por IA, las recargas del
         wallet, la gestión de trabajos y los recibos. Al crear una cuenta o usar el Servicio aceptas estos Términos, la Política de privacidad y la Política de cookies.
       </p>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">1. Elegibilidad y edad</h3>
         <p>
           Debes tener al menos <strong>15 años</strong> (o la edad de consentimiento digital en tu país, la que sea mayor) para usar el Servicio. Si actúas en nombre de una empresa
@@ -514,7 +514,7 @@ function TermsArticleEs({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">2. Tu cuenta</h3>
         <p>
           Mantén tus credenciales confidenciales y no las compartas. Eres responsable de toda actividad realizada con tu cuenta. Podemos suspender o cancelar cuentas
@@ -522,7 +522,7 @@ function TermsArticleEs({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">3. Precios, pagos y wallet</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>
@@ -543,14 +543,14 @@ function TermsArticleEs({ version, effective }: { version: string; effective: st
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">4. Moneda</h3>
         <p>
           Los cargos pueden realizarse en EUR o USD según tu ubicación o preferencia guardada. Los saldos del wallet y los recibos reflejan la moneda cobrada. Si tu medio de pago usa otra moneda, tu banco puede aplicar comisiones o tipos de cambio.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">5. Resultados asistidos por IA</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>Eres responsable de los prompts, entradas y uso de las salidas. No envíes contenido ilegal, infractor o dañino.</li>
@@ -559,7 +559,7 @@ function TermsArticleEs({ version, effective }: { version: string; effective: st
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">6. Contenido del usuario y medios generados</h3>
         <p>
           Conservas la propiedad de tus prompts, archivos cargados, referencias, subtítulos y demás activos que aportes al Servicio. Podemos almacenar, procesar y mostrar
@@ -597,7 +597,7 @@ function TermsArticleEs({ version, effective }: { version: string; effective: st
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">7. Propiedad del Servicio</h3>
         <p>
           Nosotros y nuestros licenciantes poseemos el Servicio, incluidos software, modelos, herramientas de seguridad, interfaz, documentación y marcas. Salvo los derechos
@@ -605,7 +605,7 @@ function TermsArticleEs({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">8. Uso aceptable</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>Prohibido el reverse engineering, el acceso no autorizado o interferir con el Servicio.</li>
@@ -614,7 +614,7 @@ function TermsArticleEs({ version, effective }: { version: string; effective: st
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">9. Servicios de terceros</h3>
         <p>
           Dependemos de subencargados de confianza (Stripe para pagos, proveedores de hosting/CDN, almacenamiento, bases de datos, partners de inferencia). Consulta la
@@ -622,14 +622,14 @@ function TermsArticleEs({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">10. Disponibilidad y cambios</h3>
         <p>
           Buscamos una alta disponibilidad pero no podemos garantizar un servicio ininterrumpido. Las funciones pueden cambiar o retirarse avisando con antelación cuando sea posible.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">11. Garantías y exenciones</h3>
         <p>
           El Servicio se ofrece “tal cual”, sin garantías de comerciabilidad, idoneidad para un propósito específico ni ausencia de infracción. Las salidas pueden ser inexactas;
@@ -637,7 +637,7 @@ function TermsArticleEs({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">12. Límite de responsabilidad</h3>
         <p>
           En la medida permitida por la ley, nuestra responsabilidad total se limita a los importes que nos pagaste en los 12 meses previos al evento que originó la reclamación.
@@ -645,12 +645,12 @@ function TermsArticleEs({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">13. Indemnización</h3>
         <p>Te comprometes a indemnizarnos frente a reclamaciones derivadas de tu contenido, de tu uso de las salidas o del incumplimiento de estos Términos.</p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">14. Terminación</h3>
         <p>
           Puedes dejar de usar el Servicio en cualquier momento. Podemos suspender o terminar el acceso si hay incumplimientos, riesgos para el Servicio o exigencias legales. Las
@@ -658,21 +658,21 @@ function TermsArticleEs({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">15. Ley aplicable y jurisdicción</h3>
         <p>
           Estos Términos se rigen por la ley francesa. Los tribunales de París tienen jurisdicción exclusiva, sin perjuicio de las protecciones imperativas de tu país de residencia.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">16. Derechos del consumidor y desistimiento</h3>
         <p>
           Si eres consumidor en la UE/EEE/Reino Unido, puedes disponer de derechos legales (desistimiento, conformidad). Nada en estos Términos limita dichos derechos.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">17. Cambios y nuevo consentimiento</h3>
         <p>
           Podemos actualizar estos Términos. Cuando haya cambios sustanciales te lo notificaremos y podremos requerir que aceptes la nueva versión en tu siguiente inicio de sesión.
@@ -680,7 +680,7 @@ function TermsArticleEs({ version, effective }: { version: string; effective: st
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">18. Contacto</h3>
         <p>
           ¿Dudas sobre estos Términos? Escribe a{' '}

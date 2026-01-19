@@ -230,7 +230,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
 
   return (
     <section className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="text-sm text-text-secondary">
           Showing {sortedJobs.length} job{sortedJobs.length === 1 ? '' : 's'} (latest first)
           {showArchived ? ' (including archived failures).' : '.'}

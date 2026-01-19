@@ -129,20 +129,20 @@ export default async function PrivacyPage() {
 
 function PrivacyArticleEn({ version, effective }: { version: string; effective: string | null }) {
   return (
-    <article className="space-y-6 text-base leading-relaxed text-text-secondary">
+    <article className="stack-gap-lg text-base leading-relaxed text-text-secondary">
       <p>
         This Privacy Policy explains how MaxVideoAI (“we”, “us”) collects, uses, discloses, and protects personal data when you visit maxvideoai.com, create an account, purchase
         top-ups, or generate AI outputs.
       </p>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">1. Scope</h3>
         <p>
           The Policy covers the processing of personal data across the MaxVideoAI workspace, including account management, billing, analytics, content generation, and support interactions.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">2. Categories of data we process</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>
@@ -166,7 +166,7 @@ function PrivacyArticleEn({ version, effective }: { version: string; effective: 
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">3. Purposes &amp; legal bases (GDPR)</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>
@@ -187,7 +187,7 @@ function PrivacyArticleEn({ version, effective }: { version: string; effective: 
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">4. Retention</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>
@@ -203,7 +203,7 @@ function PrivacyArticleEn({ version, effective }: { version: string; effective: 
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">5. Sharing &amp; sub-processors</h3>
         <p>We use trusted providers to operate the Service. Typical sub-processors include:</p>
         <ul className="ml-5 list-disc space-y-2">
@@ -223,14 +223,14 @@ function PrivacyArticleEn({ version, effective }: { version: string; effective: 
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">6. International transfers</h3>
         <p>
           When personal data leaves the EEA/UK, we rely on appropriate safeguards such as Standard Contractual Clauses and implement supplementary measures where required.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">7. Security</h3>
         <p>
           We apply technical and organisational measures including encryption in transit, access controls, least-privilege principles, monitoring, and incident response processes. No method is entirely
@@ -238,7 +238,7 @@ function PrivacyArticleEn({ version, effective }: { version: string; effective: 
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">8. Cookies &amp; similar technologies</h3>
         <p>
           We use essential cookies to run the site and, with your consent, analytics or advertising cookies. Consent can be withdrawn at any time via the cookie banner or settings. See the{' '}
@@ -249,7 +249,7 @@ function PrivacyArticleEn({ version, effective }: { version: string; effective: 
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">9. Your rights (EU/EEA/UK)</h3>
         <p>
           Subject to conditions and applicable law, you may request access, rectification, erasure, restriction, objection, and data portability. You may also withdraw consent at any time. To exercise
@@ -264,19 +264,19 @@ function PrivacyArticleEn({ version, effective }: { version: string; effective: 
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">10. Children</h3>
         <p>The Service is not directed to children under 15/16. If you believe a child provided data without appropriate consent, contact us so we can delete the data.</p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">11. Changes</h3>
         <p>
           We may update this Policy. Material changes will be announced in-app or by email and may require renewed consent. The version and effective date appear above.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">12. Contact</h3>
         <p>
           Questions about privacy?{' '}
@@ -296,20 +296,20 @@ function PrivacyArticleEn({ version, effective }: { version: string; effective: 
 
 function PrivacyArticleFr({ version, effective }: { version: string; effective: string | null }) {
   return (
-    <article className="space-y-6 text-base leading-relaxed text-text-secondary">
+    <article className="stack-gap-lg text-base leading-relaxed text-text-secondary">
       <p>
         Cette Politique explique comment MaxVideoAI (« nous ») collecte, utilise, partage et protège vos données personnelles lorsque vous visitez maxvideoai.com, ouvrez un compte, achetez des crédits
         ou générez des sorties IA.
       </p>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">1. Périmètre</h3>
         <p>
           La Politique couvre les traitements effectués dans l’espace de travail MaxVideoAI : gestion de compte, facturation, analytics, génération de contenu et support.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">2. Données traitées</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>
@@ -333,7 +333,7 @@ function PrivacyArticleFr({ version, effective }: { version: string; effective: 
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">3. Finalités &amp; bases légales (RGPD)</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>
@@ -354,7 +354,7 @@ function PrivacyArticleFr({ version, effective }: { version: string; effective: 
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">4. Conservation</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>
@@ -370,7 +370,7 @@ function PrivacyArticleFr({ version, effective }: { version: string; effective: 
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">5. Partage &amp; sous-traitants</h3>
         <p>Nous recourons à des prestataires de confiance :</p>
         <ul className="ml-5 list-disc space-y-2">
@@ -390,14 +390,14 @@ function PrivacyArticleFr({ version, effective }: { version: string; effective: 
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">6. Transferts internationaux</h3>
         <p>
           Si les données sortent de l’EEE/Royaume-Uni, nous utilisons des garanties appropriées (clauses contractuelles types) et des mesures complémentaires si nécessaire.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">7. Sécurité</h3>
         <p>
           Nous appliquons des mesures techniques et organisationnelles (chiffrement en transit, contrôle d’accès, principe du moindre privilège, monitoring, réponse aux incidents). Aucun système
@@ -405,7 +405,7 @@ function PrivacyArticleFr({ version, effective }: { version: string; effective: 
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">8. Cookies &amp; technologies similaires</h3>
         <p>
           Nous utilisons des cookies essentiels pour faire fonctionner le site et, avec votre accord, des cookies d’analyse/publicité. Vous pouvez retirer votre consentement via la bannière ou les
@@ -417,7 +417,7 @@ function PrivacyArticleFr({ version, effective }: { version: string; effective: 
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">9. Vos droits (UE/EEE/R.-U.)</h3>
         <p>
           Selon la loi applicable, vous pouvez demander l’accès, la rectification, l’effacement, la limitation, l’opposition ou la portabilité. Vous pouvez retirer votre consentement à tout moment en
@@ -432,12 +432,12 @@ function PrivacyArticleFr({ version, effective }: { version: string; effective: 
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">10. Mineurs</h3>
         <p>Le Service ne s’adresse pas aux enfants de moins de 15/16 ans. Si vous pensez qu’un mineur nous a fourni des données sans consentement adéquat, contactez-nous pour les supprimer.</p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">11. Évolutions</h3>
         <p>
           Nous pouvons mettre à jour cette Politique. Les changements importants seront annoncés dans l’app ou par e-mail et pourront nécessiter un nouveau consentement. La version en vigueur et la
@@ -445,7 +445,7 @@ function PrivacyArticleFr({ version, effective }: { version: string; effective: 
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">12. Contact</h3>
         <p>
           Question sur la confidentialité ? Écrivez à{' '}
@@ -465,20 +465,20 @@ function PrivacyArticleFr({ version, effective }: { version: string; effective: 
 
 function PrivacyArticleEs({ version, effective }: { version: string; effective: string | null }) {
   return (
-    <article className="space-y-6 text-base leading-relaxed text-text-secondary">
+    <article className="stack-gap-lg text-base leading-relaxed text-text-secondary">
       <p>
         Esta política explica cómo MaxVideoAI («nosotros») recopila, utiliza, comparte y protege tus datos personales cuando visitas maxvideoai.com, creas una cuenta, adquieres recargas o generas
         contenido con IA.
       </p>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">1. Alcance</h3>
         <p>
           Cubre el tratamiento de datos dentro del workspace de MaxVideoAI: gestión de cuentas, facturación, analíticas, generación de contenido y soporte.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">2. Datos que tratamos</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>
@@ -502,7 +502,7 @@ function PrivacyArticleEs({ version, effective }: { version: string; effective: 
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">3. Finalidades y bases legales (RGPD)</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>
@@ -523,7 +523,7 @@ function PrivacyArticleEs({ version, effective }: { version: string; effective: 
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">4. Conservación</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>
@@ -539,7 +539,7 @@ function PrivacyArticleEs({ version, effective }: { version: string; effective: 
         </ul>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">5. Compartición y subencargados</h3>
         <p>Trabajamos con proveedores de confianza:</p>
         <ul className="ml-5 list-disc space-y-2">
@@ -559,14 +559,14 @@ function PrivacyArticleEs({ version, effective }: { version: string; effective: 
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">6. Transferencias internacionales</h3>
         <p>
           Cuando los datos salen del EEE/Reino Unido, usamos garantías adecuadas como las Cláusulas Contractuales Tipo e implementamos medidas adicionales si es necesario.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">7. Seguridad</h3>
         <p>
           Aplicamos medidas técnicas y organizativas (cifrado en tránsito, controles de acceso, mínimo privilegio, monitorización, respuesta ante incidentes). Ningún método es infalible, así que
@@ -574,7 +574,7 @@ function PrivacyArticleEs({ version, effective }: { version: string; effective: 
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">8. Cookies y tecnologías similares</h3>
         <p>
           Usamos cookies esenciales para el funcionamiento y, con tu consentimiento, cookies de analítica o publicidad. Puedes retirar el consentimiento desde el banner o los ajustes. Consulta la{' '}
@@ -585,7 +585,7 @@ function PrivacyArticleEs({ version, effective }: { version: string; effective: 
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">9. Tus derechos (UE/EEE/R.-U.)</h3>
         <p>
           Según la ley aplicable puedes ejercer acceso, rectificación, supresión, restricción, portabilidad u oposición. También puedes retirar tu consentimiento escribiendo a{' '}
@@ -599,19 +599,19 @@ function PrivacyArticleEs({ version, effective }: { version: string; effective: 
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">10. Menores</h3>
         <p>El Servicio no está dirigido a menores de 15/16 años. Si crees que un menor nos facilitó datos sin el consentimiento adecuado, avísanos para eliminarlos.</p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">11. Cambios</h3>
         <p>
           Podemos actualizar esta Política. Cualquier cambio importante se comunicará en la app o por correo y puede requerir un nuevo consentimiento. La versión vigente y la fecha figuran arriba.
         </p>
       </section>
 
-      <section className="space-y-3">
+      <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">12. Contacto</h3>
         <p>
           ¿Dudas sobre privacidad? Escribe a{' '}

@@ -65,7 +65,7 @@ export function MarketingFooter() {
         <div className="flex flex-col gap-4 text-sm text-text-muted md:flex-row md:items-center md:justify-between">
           <Link
             href="/"
-            className="inline-flex items-center gap-3 font-display text-lg font-semibold tracking-tight text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            className="inline-flex items-center gap-4 font-display text-lg font-semibold tracking-tight text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           >
             <Image
               src="/assets/branding/logo-mark.svg"
@@ -76,7 +76,7 @@ export function MarketingFooter() {
             />
             <span>{brandLabel}</span>
           </Link>
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-5">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
             <div className="inline-flex items-center gap-2 rounded-full border border-hairline px-3 py-1.5 text-[11px] font-semibold uppercase tracking-micro text-text-muted shadow-sm">
               <span>{languageLabel}</span>
               <LanguageToggle />
@@ -86,7 +86,7 @@ export function MarketingFooter() {
         <div className="grid grid-gap-sm text-sm text-text-secondary sm:grid-cols-2 lg:grid-cols-2">
           <div>
             <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Explore MaxVideoAI</p>
-            <nav className="mt-3 flex flex-wrap gap-3" aria-label="Key pages">
+            <nav className="mt-3 flex flex-wrap gap-4" aria-label="Key pages">
               {exploreLinks.map((item) => {
                 const linkLocale = item.locale === true ? undefined : false;
                 return (
@@ -104,7 +104,7 @@ export function MarketingFooter() {
           </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Policies</p>
-            <nav className="mt-3 flex flex-wrap gap-3" aria-label="Policies">
+            <nav className="mt-3 flex flex-wrap gap-4" aria-label="Policies">
               {renderedPolicyLinks.map((item) => (
                 <Link
                   key={`policy-${item.href}`}

@@ -110,7 +110,7 @@ export function AdminTransactionTable({ initialTransactions }: AdminTransactionT
 
   return (
     <section className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="text-sm text-text-secondary">
           Showing {sortedRows.length} transaction{sortedRows.length === 1 ? '' : 's'} (most recent first).
         </div>

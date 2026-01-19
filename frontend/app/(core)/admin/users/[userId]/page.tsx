@@ -234,7 +234,7 @@ function ImpersonationCard({
 }) {
   const disabled = !serviceRoleConfigured || !profile?.email;
   return (
-    <div className="space-y-3 rounded-2xl border border-border/70 bg-white p-4">
+    <div className="stack-gap-sm rounded-2xl border border-border/70 bg-white p-4">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">Impersonation</p>
         <p className="text-sm text-text-secondary">

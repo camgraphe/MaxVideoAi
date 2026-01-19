@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function LegalReconsentPage() {
   return (
-    <div className="space-y-6">
+    <div className="stack-gap-lg">
       <header className="space-y-2">
         <h2 className="text-xl font-semibold text-text-primary">Review updates</h2>
         <p className="text-sm text-text-secondary">

@@ -247,7 +247,7 @@ export function HomepageVideoManager({ initialHero }: HomepageVideoManagerProps)
                     </div>
                   )}
                 </div>
-                <div className="grid gap-3">
+                <div className="grid grid-gap-sm">
                   <label className="space-y-1 text-sm text-text-secondary">
                     <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Display title</span>
                     <input

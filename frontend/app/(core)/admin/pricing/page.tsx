@@ -198,7 +198,7 @@ export default function PricingAdminPage() {
               return (
                 <div key={tier.tier} className="rounded-xl border border-hairline bg-bg p-4">
                   <h3 className="text-sm font-semibold text-text-primary">{label}</h3>
-                  <div className="mt-3 space-y-3 text-xs text-text-secondary">
+                  <div className="mt-3 stack-gap-sm text-xs text-text-secondary">
                     <label className="flex flex-col gap-1">
                       <span className="text-text-tertiary">Spend threshold (USD, 30-day rolling)</span>
                       <input
@@ -384,7 +384,7 @@ function PricingRuleCard({ rule, onRefresh }: RuleCardProps) {
           </Button>
         </div>
       </div>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <div className="mt-4 grid grid-gap-sm sm:grid-cols-2">
         <Field
           label="Engine ID"
           value={form.engineId}
@@ -426,7 +426,7 @@ function PricingRuleCard({ rule, onRefresh }: RuleCardProps) {
         />
       </div>
       {editing ? (
-        <div className="mt-4 flex items-center gap-3">
+        <div className="mt-4 flex items-center gap-4">
           <Button
             type="button"
             size="sm"
@@ -591,7 +591,7 @@ function NewPricingRuleCard({ onCreated }: NewRuleProps) {
           Cancel
         </Button>
       </div>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <div className="mt-4 grid grid-gap-sm sm:grid-cols-2">
         <Field label="Engine ID" value={form.engineId} onChange={(value) => handleChange('engineId', value)} placeholder="Optional" />
         <Field label="Resolution" value={form.resolution} onChange={(value) => handleChange('resolution', value)} placeholder="Optional" />
         <Field label="Margin (%)" value={form.marginPercent} onChange={(value) => handleChange('marginPercent', value)} />
@@ -604,7 +604,7 @@ function NewPricingRuleCard({ onCreated }: NewRuleProps) {
           placeholder="Optional"
         />
       </div>
-      <div className="mt-4 flex items-center gap-3">
+      <div className="mt-4 flex items-center gap-4">
         <Button
           type="button"
           size="sm"

@@ -47,13 +47,13 @@ export default async function CookiePolicyPage() {
         <LegalVersionBadge docKey="cookies" doc={document} />
       </header>
 
-      <article className="space-y-6 text-base leading-relaxed text-text-secondary">
+      <article className="stack-gap-lg text-base leading-relaxed text-text-secondary">
         <p>
           This Cookie Policy explains how MaxVideoAI uses cookies, SDKs, and similar technologies when you visit maxvideoai.com or use the workspace.
           Some cookies are essential for the Service to function; others require your consent.
         </p>
 
-        <section className="space-y-3">
+        <section className="stack-gap-sm">
           <h3 className="text-lg font-semibold text-text-primary">1. What are cookies?</h3>
           <p>
             Cookies are small text files placed on your device. SDKs and pixels offer similar functionality. They help remember your preferences,
@@ -61,7 +61,7 @@ export default async function CookiePolicyPage() {
           </p>
         </section>
 
-        <section className="space-y-3">
+        <section className="stack-gap-sm">
           <h3 className="text-lg font-semibold text-text-primary">2. How we use cookies</h3>
           <ul className="ml-5 list-disc space-y-2">
             <li><strong>Essential (required):</strong> authentication/session management, security, load balancing, fraud prevention, remembering consent.</li>
@@ -73,7 +73,7 @@ export default async function CookiePolicyPage() {
           </p>
         </section>
 
-        <section className="space-y-3">
+        <section className="stack-gap-sm">
           <h3 className="text-lg font-semibold text-text-primary">3. Google Consent Mode</h3>
           <p>
             When Google Analytics or Ads tags are active, we respect your choices through Google Consent Mode v2 signals
@@ -81,7 +81,7 @@ export default async function CookiePolicyPage() {
           </p>
         </section>
 
-        <section className="space-y-3">
+        <section className="stack-gap-sm">
           <h3 className="text-lg font-semibold text-text-primary">4. Managing your choices</h3>
           <p>
             Use the cookie banner or{' '}
@@ -93,7 +93,7 @@ export default async function CookiePolicyPage() {
           </p>
         </section>
 
-        <section className="space-y-3">
+        <section className="stack-gap-sm">
           <h3 className="text-lg font-semibold text-text-primary">5. Cookies we use</h3>
           <p>
             We maintain a live inventory of cookies and SDKs, including provider, purpose, and duration, at{' '}
@@ -104,14 +104,14 @@ export default async function CookiePolicyPage() {
           </p>
         </section>
 
-        <section className="space-y-3">
+        <section className="stack-gap-sm">
           <h3 className="text-lg font-semibold text-text-primary">6. Changes</h3>
           <p>
             We may update this Policy and our cookie inventory as the stack evolves. Significant changes will be communicated via the banner or an in-app notice.
           </p>
         </section>
 
-        <section className="space-y-3">
+        <section className="stack-gap-sm">
           <h3 className="text-lg font-semibold text-text-primary">7. Contact</h3>
           <p>
             Questions about cookies?{' '}

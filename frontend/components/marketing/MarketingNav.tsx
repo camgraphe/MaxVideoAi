@@ -254,7 +254,7 @@ export function MarketingNav() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="flex items-center gap-3 font-display text-base font-semibold tracking-tight text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+          className="flex items-center gap-4 font-display text-base font-semibold tracking-tight text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
         >
           <Image
             src="/assets/branding/logo-mark.svg"
@@ -297,13 +297,13 @@ export function MarketingNav() {
             );
           })}
         </nav>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <div className="hidden md:block">
             <LanguageToggle />
           </div>
           {isAuthenticated ? (
             <>
-              <div className="hidden items-center gap-3 md:flex">
+              <div className="hidden items-center gap-4 md:flex">
                 <div
                   className="relative"
                   onMouseEnter={openWalletPrompt}
@@ -448,7 +448,7 @@ export function MarketingNav() {
           <div className="mx-auto flex max-w-sm items-center justify-between">
             <Link
               href="/"
-              className="flex items-center gap-3 font-display text-base font-semibold text-text-primary"
+              className="flex items-center gap-4 font-display text-base font-semibold text-text-primary"
               onClick={() => setMobileMenuOpen(false)}
             >
               <Image
@@ -475,7 +475,7 @@ export function MarketingNav() {
               </svg>
             </Button>
           </div>
-          <div className="mx-auto mt-5 max-w-sm space-y-5">
+          <div className="mx-auto mt-5 max-w-sm stack-gap-lg">
             <div className="flex justify-end">
               <LanguageToggle />
             </div>
@@ -495,7 +495,7 @@ export function MarketingNav() {
               ))}
             </nav>
             {isAuthenticated ? (
-              <div className="space-y-3">
+              <div className="stack-gap-sm">
                 <div className="flex items-center justify-between rounded-2xl border border-hairline bg-white px-4 py-3">
                   <span className="flex items-center gap-2 text-base font-semibold text-text-primary">
                     <WalletGlyph size={18} className="text-text-primary" />
@@ -521,7 +521,7 @@ export function MarketingNav() {
                       </Button>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="stack-gap-sm">
                 <Link
                   href="/login?next=/app"
                   className="block rounded-2xl border border-hairline px-4 py-3 text-center text-base font-semibold text-text-primary shadow-card"

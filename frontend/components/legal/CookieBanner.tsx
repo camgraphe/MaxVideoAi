@@ -242,7 +242,7 @@ export function CookieBanner() {
               We use essential cookies to run the site. With your consent, we&apos;ll enable analytics to improve the product and
               advertising tags for campaign measurement. You can change your choices anytime.
             </p>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-4">
               <Button
                 type="button"
                 size="sm"
@@ -292,7 +292,7 @@ export function CookieBanner() {
           {showPreferences ? (
             <div className="w-full max-w-xs rounded-input border border-border bg-bg p-4">
               <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-text-secondary">Preferences</p>
-              <label className="mb-3 flex items-start justify-between gap-3 text-sm text-text-secondary">
+              <label className="mb-3 flex items-start justify-between gap-4 text-sm text-text-secondary">
                 <span>
                   Analytics cookies
                   <span className="block text-xs text-text-muted">Help us measure usage and improve features.</span>
@@ -310,7 +310,7 @@ export function CookieBanner() {
                   />
                 </Button>
               </label>
-              <label className="mb-3 flex items-start justify-between gap-3 text-sm text-text-secondary">
+              <label className="mb-3 flex items-start justify-between gap-4 text-sm text-text-secondary">
                 <span>
                   Advertising cookies
                   <span className="block text-xs text-text-muted">Measure campaigns and improve relevance.</span>

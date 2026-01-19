@@ -54,12 +54,12 @@ export function ManualCreditForm({ userId }: ManualCreditFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl border border-border/70 bg-white p-4">
+    <form onSubmit={handleSubmit} className="stack-gap-sm rounded-2xl border border-border/70 bg-white p-4">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">Manual credit</p>
         <p className="text-sm text-text-secondary">Add wallet balance for debugging or refunds.</p>
       </div>
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="grid grid-gap-sm md:grid-cols-2">
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
           Amount (USD)
           <input
@@ -92,7 +92,7 @@ export function ManualCreditForm({ userId }: ManualCreditFormProps) {
           {status.message}
         </div>
       ) : null}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <Button
           type="submit"
           size="sm"

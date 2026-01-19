@@ -8,7 +8,7 @@ export function NotFoundContent() {
       <p className="mt-2 text-base text-text-secondary">
         We can&apos;t find that URL. It might be outdated, or it never existed. Use the links below to keep exploring MaxVideoAI.
       </p>
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
         <ButtonLink href="/" className="shadow-card">
           Back to homepage
         </ButtonLink>

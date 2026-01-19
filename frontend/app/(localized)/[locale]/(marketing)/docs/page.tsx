@@ -91,7 +91,7 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
   return (
     <main id="top" className="scroll-smooth">
       <div className="container-page max-w-5xl section">
-        <header className="space-y-3">
+        <header className="stack-gap-sm">
           <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
           <p className="sm:max-w-[62ch] text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
         </header>
@@ -143,7 +143,7 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
                           {FEATURES.docs.apiPublicRefs ? 'Public summary available below.' : 'Full API docs require authentication inside the workspace.'}
                         </p>
                       ) : null}
-                      <ul className="mt-4 space-y-3 text-sm text-text-secondary">
+                      <ul className="mt-4 stack-gap-sm text-sm text-text-secondary">
                         {section.items.map((item, index) => {
                           if (typeof item === 'string') {
                             return (
@@ -260,7 +260,7 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
                     : 'Documentation coming soon.'}
                 </p>
                 {FEATURES.docs.libraryDocs && docs.length > 0 ? (
-                  <ul className="mt-4 space-y-3 text-sm text-text-secondary">
+                  <ul className="mt-4 stack-gap-sm text-sm text-text-secondary">
                     {docs.map((doc) => (
                       <li key={doc.slug}>
                         <Link href={{ pathname: '/docs/[slug]', params: { slug: doc.slug } }} className="font-semibold text-brand hover:text-brandHover">
@@ -292,7 +292,7 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
           <h3 id="docs-feedback" className="sr-only">
             Feedback
           </h3>
-          <div className="flex flex-col gap-3 rounded-xl border border-hairline bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 rounded-xl border border-hairline bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-text-muted">Was this page helpful?</p>
             <div className="flex items-center gap-2">
               <Link href="/contact" className="rounded-md border border-hairline px-3 py-1.5 text-sm hover:shadow-sm">

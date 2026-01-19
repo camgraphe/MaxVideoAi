@@ -33,7 +33,7 @@ export default async function AdminMarketingOptInsPage() {
   const csvHref = '/api/admin/marketing/opt-ins?format=csv';
 
   return (
-    <div className="space-y-6">
+    <div className="stack-gap-lg">
       <header className="space-y-2">
         <h1 className="text-3xl font-semibold text-text-primary">Marketing opt-ins</h1>
         <p className="text-sm text-text-secondary">
@@ -56,7 +56,7 @@ export default async function AdminMarketingOptInsPage() {
         </div>
       </section>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-hairline bg-white p-4 shadow-card">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-hairline bg-white p-4 shadow-card">
         <div className="text-sm text-text-secondary">
           List updates automatically when members toggle their marketing preference inside Settings → Notifications.
         </div>

@@ -271,7 +271,7 @@ export function SettingsControls({
     <Card className="space-y-4 p-4">
       {showCore && (
         <>
-          <header className="flex flex-wrap items-center justify-between gap-3">
+          <header className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h2 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">
                 {controlsCopy.core.title}
@@ -286,7 +286,7 @@ export function SettingsControls({
             </div>
           </header>
 
-          <div className="grid gap-3">
+          <div className="grid grid-gap-sm">
             {frameOptions && frameOptions.length ? (
               <div className="flex flex-col gap-2 text-sm text-text-secondary" ref={frameOptionsContainerRef}>
                 <span className="text-[12px] uppercase tracking-micro text-text-muted">
@@ -362,7 +362,7 @@ export function SettingsControls({
                       .replace('{max}', String(engine.maxDurationSec))}
                   </span>
                 </span>
-                <div className="flex items-center gap-3 rounded-input border border-border bg-white px-3 py-2">
+                <div className="flex items-center gap-4 rounded-input border border-border bg-white px-3 py-2">
                   <input
                     type="range"
                     min={durationRange.min}
@@ -534,7 +534,7 @@ export function SettingsControls({
           </svg>
         </Button>
         {isAdvancedOpen && (
-          <div className="space-y-3 border-t border-border px-3 pb-3 pt-2">
+          <div className="stack-gap-sm border-t border-border px-3 pb-3 pt-2">
             <label className="flex flex-col gap-2 text-sm text-text-secondary">
               <span className="text-[12px] uppercase tracking-micro text-text-muted">{controlsCopy.seed.label}</span>
               <input
@@ -720,7 +720,7 @@ function RangeWithInput({
   onChange: (next: number) => void;
 }) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-4">
       <input
         type="range"
         min={min}
