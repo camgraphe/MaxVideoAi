@@ -599,7 +599,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-4">
-                    <div className="h-16 w-28 overflow-hidden rounded border border-border bg-neutral-100">
+                    <div className="h-16 w-28 overflow-hidden rounded border border-border bg-placeholder">
                       <Image
                         src={item.thumbUrl || getPlaceholderThumb(item.aspectRatio)}
                         alt={`Thumbnail for ${item.videoId}`}

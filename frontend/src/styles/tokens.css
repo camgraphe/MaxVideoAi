@@ -47,6 +47,7 @@
   --text-disabled: #9AA7B6;
   --on-surface: #131A22;
   --on-surface-muted: #5D6B7A;
+  --on-inverse: #FFFFFF;
   --brand: #426AAE;
   --brand-hover: #355A95;
   --brand-active: #2B4F8A;
@@ -202,6 +203,7 @@
   --text-disabled: #6B778A;
   --on-surface: #F7F8FA;
   --on-surface-muted: #C9D2DE;
+  --on-inverse: #FFFFFF;
   --brand: #5B7CFA;
   --brand-hover: #4A6BE0;
   --brand-active: #3F5FCA;

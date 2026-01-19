@@ -97,7 +97,7 @@ export function ManualCreditForm({ userId }: ManualCreditFormProps) {
           type="submit"
           size="sm"
           disabled={pending}
-          className="rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
+          className="rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-on-inverse"
         >
           {pending ? 'Processing…' : 'Add credits'}
         </Button>

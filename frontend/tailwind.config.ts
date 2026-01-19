@@ -65,6 +65,7 @@ const config: Config = {
         },
         'on-surface': 'var(--on-surface)',
         'on-surface-muted': 'var(--on-surface-muted)',
+        'on-inverse': 'var(--on-inverse)',
         brand: 'var(--brand)',
         brandHover: 'var(--brand-hover)',
         brandActive: 'var(--brand-active)',
@@ -89,7 +90,9 @@ const config: Config = {
         'overlay-bg': 'var(--overlay-bg)',
         'overlay-surface': 'var(--overlay-surface)',
         'overlay-ink': 'var(--overlay-ink)',
-        'overlay-muted': 'var(--overlay-muted)'
+        'overlay-muted': 'var(--overlay-muted)',
+        placeholder: 'var(--placeholder)',
+        skeleton: 'var(--skeleton)'
       },
       boxShadow: {
         card: 'var(--shadow-card)',

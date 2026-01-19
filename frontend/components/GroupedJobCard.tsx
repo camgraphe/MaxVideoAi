@@ -287,7 +287,7 @@ export function GroupedJobCard({
         </div>
         {heroHasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available" /> : null}
         {group.count > 1 ? (
-          <div className="absolute left-3 top-3 inline-flex items-center rounded-full bg-surface-on-media-dark-65 px-2.5 py-0.5 text-[11px] font-semibold text-white shadow">
+          <div className="absolute left-3 top-3 inline-flex items-center rounded-full bg-surface-on-media-dark-65 px-2.5 py-0.5 text-[11px] font-semibold text-on-inverse shadow">
             {splitLabel}
           </div>
         ) : null}
@@ -301,7 +301,7 @@ export function GroupedJobCard({
               event.stopPropagation();
               setMenuOpen((prev) => !prev);
             }}
-            className="absolute right-3 top-3 h-8 w-8 min-h-0 rounded-full border border-surface-on-media-30 bg-surface-on-media-dark-55 p-0 text-white hover:bg-surface-on-media-dark-70"
+            className="absolute right-3 top-3 h-8 w-8 min-h-0 rounded-full border border-surface-on-media-30 bg-surface-on-media-dark-55 p-0 text-on-inverse hover:bg-surface-on-media-dark-70"
             aria-haspopup="menu"
             aria-expanded={menuOpen}
             aria-label="Group actions"

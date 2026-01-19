@@ -304,7 +304,7 @@ export function QuadPreviewPanel({
                     </div>
                     <div className="absolute inset-0 z-10" data-quad-player-root={slotKey} />
                     {showPendingOverlay && (
-                      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-surface-on-media-dark-45 px-2 text-center text-[10px] text-white backdrop-blur-sm">
+                      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-surface-on-media-dark-45 px-2 text-center text-[10px] text-on-inverse backdrop-blur-sm">
                         <span className="uppercase tracking-micro">Processing</span>
                         {(statusInfo?.message || preview?.message) && (
                           <span className="mt-1 max-w-[140px] text-[10px] text-on-media-80">
@@ -445,7 +445,7 @@ export function QuadPreviewPanel({
                       </span>
                     </div>
                   ) : tile.status !== 'completed' ? (
-                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-surface-on-media-dark-40 px-4 text-center text-[12px] text-white backdrop-blur-sm">
+                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-surface-on-media-dark-40 px-4 text-center text-[12px] text-on-inverse backdrop-blur-sm">
                       <span className="uppercase tracking-micro">Processing</span>
                       {tile.message && <span className="mt-1 text-[11px] text-on-media-80">{tile.message}</span>}
                       <span className="mt-2 text-[11px] font-semibold text-on-media-90">{tile.progress}%</span>

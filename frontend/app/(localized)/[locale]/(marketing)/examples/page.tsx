@@ -673,7 +673,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
                       'flex h-9 items-center justify-center rounded-full border px-3 text-[11px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                       selectedEngine
                         ? 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:text-text-primary'
-                        : 'border-transparent bg-text-primary text-white shadow-card'
+                        : 'border-transparent bg-text-primary text-on-inverse shadow-card'
                     )}
                   >
                     {engineFilterAllLabel}
@@ -689,7 +689,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
                         className={clsx(
                           'flex h-9 items-center justify-center rounded-full border px-4 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                           isActive
-                            ? 'border-transparent bg-text-primary text-white shadow-card'
+                            ? 'border-transparent bg-text-primary text-on-inverse shadow-card'
                             : palette
                               ? clsx('border border-surface-on-media-dark-10 hover:opacity-90', palette.bg, palette.text)
                               : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:text-text-primary'

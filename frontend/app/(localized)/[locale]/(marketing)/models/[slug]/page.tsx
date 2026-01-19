@@ -1455,7 +1455,7 @@ function Sora2PageLayout({
                       key={video.id}
                       className="flex w-64 shrink-0 flex-col overflow-hidden rounded-2xl border border-hairline bg-surface shadow-card"
                     >
-                      <Link href={video.href} className="group relative block aspect-video bg-neutral-100">
+                      <Link href={video.href} className="group relative block aspect-video bg-placeholder">
                         {video.optimizedPosterUrl || video.rawPosterUrl ? (
                           <Image
                             src={video.optimizedPosterUrl ?? video.rawPosterUrl ?? ''}
@@ -1470,7 +1470,7 @@ function Sora2PageLayout({
                             quality={70}
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-neutral-200 text-xs font-semibold text-text-muted">
+                          <div className="flex h-full w-full items-center justify-center bg-skeleton text-xs font-semibold text-text-muted">
                             No preview
                           </div>
                         )}
@@ -1804,7 +1804,7 @@ function MediaPreview({ media, label }: { media: FeaturedMedia; label: string })
     .join(' ');
   return (
     <figure className={figureClassName}>
-      <div className="relative w-full overflow-hidden rounded-t-[22px] bg-neutral-100">
+      <div className="relative w-full overflow-hidden rounded-t-[22px] bg-placeholder">
         <div className="relative w-full" style={{ paddingBottom }}>
           <div className="absolute inset-0">
             {media.videoUrl ? (
@@ -1831,12 +1831,12 @@ function MediaPreview({ media, label }: { media: FeaturedMedia; label: string })
                 fetchPriority="high"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-neutral-50 text-sm font-semibold text-text-muted">
+              <div className="flex h-full w-full items-center justify-center bg-surface-2 text-sm font-semibold text-text-muted">
                 Sora 2 preview
               </div>
             )}
             {media.hasAudio ? (
-              <span className="absolute left-3 top-3 rounded-full bg-surface-on-media-dark-70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-white">
+              <span className="absolute left-3 top-3 rounded-full bg-surface-on-media-dark-70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-on-inverse">
                 Audio on
               </span>
             ) : null}

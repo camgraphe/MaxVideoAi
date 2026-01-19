@@ -603,7 +603,7 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
                           <Button
                             type="button"
                             size="sm"
-                            className="rounded-input bg-emerald-600 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-white hover:bg-emerald-500"
+                            className="rounded-input bg-emerald-600 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-on-inverse hover:bg-emerald-500"
                             onClick={() => updateVisibility(video, 'public', true)}
                             disabled={isPending}
                           >

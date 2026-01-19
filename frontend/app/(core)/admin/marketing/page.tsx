@@ -70,7 +70,7 @@ export default async function AdminMarketingOptInsPage() {
 
       <div className="overflow-hidden rounded-2xl border border-hairline bg-surface shadow-card">
         <table className="min-w-full divide-y divide-hairline text-sm">
-          <thead className="bg-neutral-50 text-text-secondary">
+          <thead className="bg-surface-2 text-text-secondary">
             <tr>
               <th className="px-4 py-3 text-left font-medium">Email</th>
               <th className="px-4 py-3 text-left font-medium">User ID</th>

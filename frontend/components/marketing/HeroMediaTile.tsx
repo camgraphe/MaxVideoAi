@@ -199,9 +199,9 @@ export function HeroMediaTile({
             className="object-cover"
           />
         )}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-2 bg-gradient-to-t from-black/65 via-black/35 to-transparent p-4 text-left text-white">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-2 bg-gradient-to-t from-black/65 via-black/35 to-transparent p-4 text-left text-on-inverse">
           {badge ? (
-            <span className="inline-flex h-6 items-center rounded-pill border border-surface-on-media-50 bg-surface-on-media-15 px-3 text-[11px] font-semibold uppercase tracking-micro text-white">
+            <span className="inline-flex h-6 items-center rounded-pill border border-surface-on-media-50 bg-surface-on-media-15 px-3 text-[11px] font-semibold uppercase tracking-micro text-on-inverse">
               {badge}
             </span>
           ) : null}
@@ -222,7 +222,7 @@ export function HeroMediaTile({
         onClick={(event) => {
           event.stopPropagation();
         }}
-        className="pointer-events-auto absolute bottom-2 left-1/2 z-10 -translate-x-1/2 inline-flex min-h-[48px] min-w-[48px] items-center justify-center rounded-full px-3 py-2 text-xs font-medium text-on-media-90 transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
+        className="pointer-events-auto absolute bottom-2 left-1/2 z-10 -translate-x-1/2 inline-flex min-h-[48px] min-w-[48px] items-center justify-center rounded-full px-3 py-2 text-xs font-medium text-on-media-90 transition hover:text-on-inverse focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-surface-on-media-40"
       >
         {overlayLabel ?? 'Clone these settings'}
       </Link>

@@ -323,6 +323,7 @@ Note: scrims fonces pour lisibilite sur media. Usage Tailwind = `bg-surface-on-m
 * `ui.onSurface` - `#131A22`
 * `ui.onSurfaceMuted` - `#5D6B7A`
 * `ui.textDisabled` - `#9AA7B6` (= `color.light.neutralExt.textDisabled`)
+* `ui.onInverse` - `#FFFFFF` (texte sur fonds tres sombres)
 
 #### Interactive
 
@@ -356,6 +357,8 @@ Note: changement visuel attendu. Ancien ring (code) etait plutot neutre (`#9DA7B
 
 * `ui.placeholder` - `#EEF1F5`
 * `ui.skeleton` - `#EEF1F5`
+
+Note: `bg-placeholder` pour surfaces vides, `bg-skeleton` pour barres/shimmer.
 
 #### Semantic (base + derives)
 
@@ -464,6 +467,7 @@ Note: scrims fonces pour lisibilite sur media. Usage Tailwind = `bg-surface-on-m
 * `ui.onSurface` - `#F7F8FA`
 * `ui.onSurfaceMuted` - `#C9D2DE`
 * `ui.textDisabled` - `#6B778A`
+* `ui.onInverse` - `#FFFFFF` (texte sur fonds tres sombres)
 
 #### Interactive
 
@@ -493,6 +497,8 @@ Note: scrims fonces pour lisibilite sur media. Usage Tailwind = `bg-surface-on-m
 
 * `ui.placeholder` - `#2A3440`
 * `ui.skeleton` - `#2A3440`
+
+Note: `bg-placeholder` pour surfaces vides, `bg-skeleton` pour barres/shimmer.
 
 #### Semantic (base + derives)
 
@@ -759,6 +765,9 @@ Objectif : rendre explicite le chemin de verite, pour eviter les divergences (ex
 | `ui.surfaceOnMedia20` | `--surface-on-media-20` | `bg-surface-on-media-20` |
 | `ui.surfaceOnMediaDark60` | `--surface-on-media-dark-60` | `bg-surface-on-media-dark-60` |
 | `ui.textOnMedia80` | `--text-on-media-80` | `text-on-media-80` |
+| `ui.onInverse` | `--on-inverse` | `text-on-inverse` |
+| `ui.placeholder` | `--placeholder` | `bg-placeholder` |
+| `ui.skeleton` | `--skeleton` | `bg-skeleton` |
 | `ui.border` | `--border` | `border-border` |
 | `ui.hairline` | `--hairline` | `border-hairline` |
 | `ui.accent` | `--accent` | `text-accent` / `bg-accent` selon usage |

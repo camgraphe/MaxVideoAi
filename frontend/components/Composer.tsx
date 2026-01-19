@@ -603,7 +603,7 @@ function AssetDropzone({
                             <AudioEqualizerBadge tone="light" size="sm" label="Video includes audio" />
                           </>
                         )}
-                    <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-2 bg-surface-on-media-dark-50 px-2 py-1 text-[11px] text-white">
+                    <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-2 bg-surface-on-media-dark-50 px-2 py-1 text-[11px] text-on-inverse">
                       <span className="truncate" title={asset.name}>
                         {asset.name}
                       </span>
@@ -621,12 +621,12 @@ function AssetDropzone({
                       </Button>
                     </div>
                     {asset.status === 'uploading' && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-surface-on-media-dark-50 px-3 text-xs font-medium uppercase tracking-widest text-white">
+                      <div className="absolute inset-0 flex items-center justify-center bg-surface-on-media-dark-50 px-3 text-xs font-medium uppercase tracking-widest text-on-inverse">
                         Uploading…
                       </div>
                     )}
                     {asset.status === 'error' && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-surface-on-media-dark-60 px-4 text-center text-xs text-white">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-surface-on-media-dark-60 px-4 text-center text-xs text-on-inverse">
                         <span>{asset.error ?? 'Upload failed'}</span>
                         <Button
                           type="button"

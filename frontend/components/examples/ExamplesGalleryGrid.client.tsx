@@ -292,7 +292,7 @@ function ExampleCard({
                 onLoadingComplete={() => setPosterLoaded(true)}
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-neutral-100 text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+              <div className="flex h-full w-full items-center justify-center bg-placeholder text-[11px] font-semibold uppercase tracking-micro text-text-muted">
                 No preview
               </div>
             )}

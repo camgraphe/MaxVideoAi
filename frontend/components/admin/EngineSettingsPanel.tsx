@@ -298,7 +298,7 @@ export function EngineSettingsPanel({ engineId, engineLabel, baseline, initialFo
             type="submit"
             size="sm"
             disabled={submitting}
-            className="rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
+            className="rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-on-inverse"
           >
             {submitting ? 'Saving…' : 'Save settings'}
           </Button>

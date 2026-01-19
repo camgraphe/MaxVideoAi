@@ -1819,12 +1819,12 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleRemoveReferenceSlot(index)}
-                                className="absolute right-2 top-2 min-h-0 h-auto rounded-full bg-surface-on-media-dark-65 px-2 py-0.5 text-[11px] font-semibold text-white shadow hover:bg-surface-on-media-dark-70"
+                                className="absolute right-2 top-2 min-h-0 h-auto rounded-full bg-surface-on-media-dark-65 px-2 py-0.5 text-[11px] font-semibold text-on-inverse shadow hover:bg-surface-on-media-dark-70"
                                 aria-label={resolvedCopy.composer.referenceSlotActions.remove}
                               >
                                 ×
                               </Button>
-                              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-surface-on-media-dark-55 px-2 py-1 text-[10px] text-white">
+                              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-surface-on-media-dark-55 px-2 py-1 text-[10px] text-on-inverse">
                                 <span className="truncate">
                                   {slot.name ?? slot.source ?? resolvedCopy.composer.referenceSlotNameFallback}
                                 </span>
@@ -1834,7 +1834,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => triggerFileDialog(index)}
-                                    className="min-h-0 h-auto rounded-full bg-surface-on-media-20 px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-surface-on-media-30"
+                                    className="min-h-0 h-auto rounded-full bg-surface-on-media-20 px-2 py-0.5 text-[10px] font-semibold text-on-inverse hover:bg-surface-on-media-30"
                                   >
                                     {resolvedCopy.composer.referenceSlotActions.replace}
                                   </Button>
@@ -1843,7 +1843,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => openLibraryForSlot(index)}
-                                    className="min-h-0 h-auto rounded-full bg-surface-on-media-20 px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-surface-on-media-30"
+                                    className="min-h-0 h-auto rounded-full bg-surface-on-media-20 px-2 py-0.5 text-[10px] font-semibold text-on-inverse hover:bg-surface-on-media-30"
                                   >
                                     {resolvedCopy.composer.referenceSlotActions.library}
                                   </Button>
@@ -1852,21 +1852,21 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => handleRemoveReferenceSlot(index)}
-                                    className="min-h-0 h-auto rounded-full bg-surface-on-media-20 px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-surface-on-media-30"
+                                    className="min-h-0 h-auto rounded-full bg-surface-on-media-20 px-2 py-0.5 text-[10px] font-semibold text-on-inverse hover:bg-surface-on-media-30"
                                   >
                                     {resolvedCopy.composer.referenceSlotActions.remove}
                                   </Button>
                                 </div>
                               </div>
                               {slot.status === 'uploading' ? (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-surface-on-media-dark-50 px-3 text-center text-xs font-semibold text-white">
+                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-surface-on-media-dark-50 px-3 text-center text-xs font-semibold text-on-inverse">
                                   <span>{resolvedCopy.general.uploading}</span>
                                   <Button
                                     type="button"
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => handleRemoveReferenceSlot(index)}
-                                    className="min-h-0 h-auto rounded-full bg-surface-on-media-25 px-3 py-1 text-[11px] font-semibold text-white hover:bg-surface-on-media-40"
+                                    className="min-h-0 h-auto rounded-full bg-surface-on-media-25 px-3 py-1 text-[11px] font-semibold text-on-inverse hover:bg-surface-on-media-40"
                                   >
                                     {resolvedCopy.general.cancelUpload}
                                   </Button>
@@ -2089,11 +2089,11 @@ function ImageLibraryModal({
             <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, index) => (
                 <div key={`library-modal-skeleton-${index}`} className="rounded-card border border-border bg-surface-glass-60 p-0" aria-hidden>
-                  <div className="relative aspect-square overflow-hidden rounded-t-card bg-neutral-100">
+                  <div className="relative aspect-square overflow-hidden rounded-t-card bg-placeholder">
                     <div className="skeleton absolute inset-0" />
                   </div>
                   <div className="border-t border-border px-4 py-3">
-                    <div className="h-3 w-24 rounded-full bg-neutral-200" />
+                    <div className="h-3 w-24 rounded-full bg-skeleton" />
                   </div>
                 </div>
               ))}
@@ -2115,7 +2115,7 @@ function ImageLibraryModal({
                 >
                   <div className="relative aspect-square overflow-hidden rounded-t-card bg-[#f2f4f8]">
                     <img src={asset.url} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
-                    <div className="absolute inset-0 hidden items-center justify-center bg-surface-on-media-dark-40 text-sm font-semibold text-white group-hover:flex">
+                    <div className="absolute inset-0 hidden items-center justify-center bg-surface-on-media-dark-40 text-sm font-semibold text-on-inverse group-hover:flex">
                       {copy.overlay}
                     </div>
                   </div>

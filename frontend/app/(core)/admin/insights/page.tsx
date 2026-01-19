@@ -433,7 +433,7 @@ function RangeSelector({ current, excludeAdmin }: { current: MetricsRangeLabel; 
       <Button
         type="submit"
         size="sm"
-        className="rounded-full bg-text-primary px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white hover:bg-text-primary/90"
+        className="rounded-full bg-text-primary px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-on-inverse hover:bg-text-primary/90"
       >
         Apply
       </Button>

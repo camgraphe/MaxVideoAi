@@ -477,7 +477,7 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
           <div className="mt-6 flex justify-center">
             <Link
               href={backHref}
-              className="inline-flex items-center gap-2 rounded-full bg-text-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-text-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="inline-flex items-center gap-2 rounded-full bg-text-primary px-4 py-2 text-sm font-semibold text-on-inverse transition hover:bg-text-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {copy.unavailable.cta}
             </Link>

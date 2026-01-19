@@ -985,7 +985,7 @@ function CreateVideoCard({
           size="md"
           className={clsx(
             'w-full px-5 py-3 text-base font-semibold',
-            !canStart && 'bg-neutral-200 text-text-muted hover:bg-neutral-200 disabled:opacity-100'
+            !canStart && 'bg-surface-disabled text-text-muted hover:bg-surface-disabled disabled:opacity-100'
           )}
         >
           {copy.create.newVideo}
@@ -1064,7 +1064,7 @@ function CreateImageCard({
           size="md"
           className={clsx(
             'w-full px-5 py-3 text-base font-semibold',
-            !canStart && 'bg-neutral-200 text-text-muted hover:bg-neutral-200 disabled:opacity-100'
+            !canStart && 'bg-surface-disabled text-text-muted hover:bg-surface-disabled disabled:opacity-100'
           )}
         >
           {copy.create.newImage}
@@ -1259,7 +1259,7 @@ function RecentGrid({
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-xs text-text-muted">{copy.actions.noPreview}</div>
                   )}
-                  <div className="absolute left-3 top-3 rounded-pill bg-surface-on-media-dark-60 px-2 py-1 text-[11px] font-semibold text-white">
+                  <div className="absolute left-3 top-3 rounded-pill bg-surface-on-media-dark-60 px-2 py-1 text-[11px] font-semibold text-on-inverse">
                     {group.hero.engineLabel}
                   </div>
                 </Button>

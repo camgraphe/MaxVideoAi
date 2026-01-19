@@ -425,10 +425,10 @@ export function MediaLightbox({
                 )}
                 {entry.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available" /> : null}
                 {isProcessing && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-on-media-dark-45 px-3 text-center text-[11px] text-white backdrop-blur-sm">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-on-media-dark-45 px-3 text-center text-[11px] text-on-inverse backdrop-blur-sm">
                       <span className="uppercase tracking-micro">Processing…</span>
                       {entry.message ? <span className="mt-1 line-clamp-2 text-on-media-80">{entry.message}</span> : null}
-                      {progressLabel ? <span className="mt-1 text-[12px] font-semibold text-white">{progressLabel}</span> : null}
+                      {progressLabel ? <span className="mt-1 text-[12px] font-semibold text-on-inverse">{progressLabel}</span> : null}
                     </div>
                   )}
                 </div>

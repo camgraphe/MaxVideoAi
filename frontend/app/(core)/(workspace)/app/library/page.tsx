@@ -273,11 +273,11 @@ export default function LibraryPage() {
               <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-4">
                 {Array.from({ length: 8 }).map((_, index) => (
                   <div key={`asset-skeleton-${index}`} className="rounded-card border border-hairline bg-surface-glass-60">
-                    <div className="relative aspect-square rounded-t-card bg-neutral-100">
+                    <div className="relative aspect-square rounded-t-card bg-placeholder">
                       <div className="skeleton absolute inset-0" />
                     </div>
                     <div className="border-t border-border px-4 py-3">
-                      <div className="h-3 w-28 rounded bg-neutral-200" />
+                      <div className="h-3 w-28 rounded bg-skeleton" />
                     </div>
                   </div>
                 ))}

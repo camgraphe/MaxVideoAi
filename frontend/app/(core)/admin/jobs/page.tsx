@@ -173,7 +173,7 @@ function JobFilters({ filters }: { filters: UiFilters }) {
         <Button
           type="submit"
           size="sm"
-          className="rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white hover:bg-text-primary/90"
+          className="rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-on-inverse hover:bg-text-primary/90"
         >
           Apply filters
         </Button>

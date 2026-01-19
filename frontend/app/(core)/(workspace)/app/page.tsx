@@ -332,13 +332,13 @@ function AssetLibraryModal({
           ) : isLoading ? (
             <div className="grid grid-gap-sm sm:grid-cols-2">
               {Array.from({ length: 4 }).map((_, index) => (
-                <div key={`asset-skeleton-${index}`} className="h-40 rounded-card border border-border bg-neutral-100" aria-hidden>
+                <div key={`asset-skeleton-${index}`} className="h-40 rounded-card border border-border bg-placeholder" aria-hidden>
                   <div className="skeleton h-full w-full" />
                 </div>
               ))}
             </div>
           ) : assets.length === 0 ? (
-            <div className="rounded-input border border-border bg-neutral-50 px-4 py-6 text-center text-sm text-text-secondary">
+            <div className="rounded-input border border-border bg-surface-2 px-4 py-6 text-center text-sm text-text-secondary">
               {emptyLabel ?? copy.empty ?? 'No saved images yet. Upload a reference image to see it here.'}
             </div>
           ) : (
@@ -4639,7 +4639,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                             </div>
                           </div>
                           <div className="border-t border-border bg-surface-glass-70 px-3 py-2">
-                            <div className="h-3 w-24 rounded-full bg-neutral-200" />
+                            <div className="h-3 w-24 rounded-full bg-skeleton" />
                           </div>
                         </div>
                       ))}
