@@ -201,7 +201,7 @@ export function HeroMediaTile({
         )}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-2 bg-gradient-to-t from-black/65 via-black/35 to-transparent p-4 text-left text-white">
           {badge ? (
-            <span className="inline-flex h-6 items-center rounded-pill border border-white/50 bg-white/15 px-3 text-[11px] font-semibold uppercase tracking-micro text-white">
+            <span className="inline-flex h-6 items-center rounded-pill border border-white/50 bg-surface-on-media-15 px-3 text-[11px] font-semibold uppercase tracking-micro text-white">
               {badge}
             </span>
           ) : null}

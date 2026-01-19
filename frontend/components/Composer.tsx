@@ -297,7 +297,7 @@ export function Composer({
                 <span
                   aria-hidden
                   className={clsx(
-                    'pointer-events-none absolute inset-0 rounded-input bg-white/20 opacity-0 transition-opacity duration-200 ease-out',
+                    'pointer-events-none absolute inset-0 rounded-input bg-surface-on-media-20 opacity-0 transition-opacity duration-200 ease-out',
                     isPulseVisible && !disableGenerate ? 'opacity-100' : ''
                   )}
                 />

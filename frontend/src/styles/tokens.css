@@ -12,6 +12,13 @@
   --surface-glass-75: rgba(255, 255, 255, 0.75);
   --surface-glass-70: rgba(255, 255, 255, 0.70);
   --surface-glass-60: rgba(255, 255, 255, 0.60);
+  --surface-on-media-5: rgba(255, 255, 255, 0.05);
+  --surface-on-media-10: rgba(255, 255, 255, 0.10);
+  --surface-on-media-15: rgba(255, 255, 255, 0.15);
+  --surface-on-media-20: rgba(255, 255, 255, 0.20);
+  --surface-on-media-25: rgba(255, 255, 255, 0.25);
+  --surface-on-media-30: rgba(255, 255, 255, 0.30);
+  --surface-on-media-40: rgba(255, 255, 255, 0.40);
   --border: #C2CAD6;
   --hairline: #EEF1F5;
   --border-hover: #9AA7B6;
@@ -142,6 +149,13 @@
   --surface-glass-75: rgba(20, 27, 36, 0.75);
   --surface-glass-70: rgba(20, 27, 36, 0.70);
   --surface-glass-60: rgba(20, 27, 36, 0.60);
+  --surface-on-media-5: rgba(255, 255, 255, 0.05);
+  --surface-on-media-10: rgba(255, 255, 255, 0.10);
+  --surface-on-media-15: rgba(255, 255, 255, 0.15);
+  --surface-on-media-20: rgba(255, 255, 255, 0.20);
+  --surface-on-media-25: rgba(255, 255, 255, 0.25);
+  --surface-on-media-30: rgba(255, 255, 255, 0.30);
+  --surface-on-media-40: rgba(255, 255, 255, 0.40);
   --border: #253041;
   --hairline: #1E2734;
   --border-hover: #3B4A5F;

@@ -698,7 +698,7 @@ export default function BillingPage() {
                   >
                     <span className="pointer-events-none absolute inset-0 z-0 opacity-0 transition duration-300 group-hover:opacity-100" aria-hidden>
                       <span className="absolute inset-0 bg-gradient-to-r from-white/25 via-white/10 to-transparent" />
-                      <span className="absolute -left-6 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-white/40 blur-[65px]" />
+                      <span className="absolute -left-6 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-surface-on-media-40 blur-[65px]" />
                     </span>
                     <div className="relative z-10 flex items-center justify-between gap-4">
                       <div className="flex flex-col">

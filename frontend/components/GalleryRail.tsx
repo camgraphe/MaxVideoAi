@@ -565,7 +565,7 @@ function Snackbar({ state, onClose }: { state: SnackbarState | null; onClose: ()
                   'rounded-full px-3 py-1.5 text-[12px] font-semibold uppercase tracking-micro',
                   action.variant === 'primary'
                     ? 'border-transparent bg-brand text-on-brand hover:bg-brandHover'
-                    : 'border border-white/30 bg-transparent text-white hover:bg-white/10'
+                    : 'border border-white/30 bg-transparent text-white hover:bg-surface-on-media-10'
                 )}
               >
                 {action.label}

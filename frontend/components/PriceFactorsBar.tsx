@@ -210,7 +210,7 @@ export function PriceFactorsBar({ preflight, currency = 'USD', isLoading = false
         <span className="ml-auto inline-flex items-center rounded-full bg-brand px-3 py-1.5 text-[12px] font-medium text-on-brand">
           {totalLabel}: {formatTotal((preflight.total || 0) * safeIterations, formatter)}
           {safeIterations > 1 && memberDiscountTotal > AMOUNT_EPSILON && (
-            <span className="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-semibold text-on-brand">
+            <span className="ml-2 rounded-full bg-surface-on-media-20 px-2 py-0.5 text-[11px] font-semibold text-on-brand">
               Member saves {formatTotal(memberDiscountTotal, formatter)}
             </span>
           )}

@@ -1834,7 +1834,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => triggerFileDialog(index)}
-                                    className="min-h-0 h-auto rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-white/30"
+                                    className="min-h-0 h-auto rounded-full bg-surface-on-media-20 px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-surface-on-media-30"
                                   >
                                     {resolvedCopy.composer.referenceSlotActions.replace}
                                   </Button>
@@ -1843,7 +1843,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => openLibraryForSlot(index)}
-                                    className="min-h-0 h-auto rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-white/30"
+                                    className="min-h-0 h-auto rounded-full bg-surface-on-media-20 px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-surface-on-media-30"
                                   >
                                     {resolvedCopy.composer.referenceSlotActions.library}
                                   </Button>
@@ -1852,7 +1852,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => handleRemoveReferenceSlot(index)}
-                                    className="min-h-0 h-auto rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-white/30"
+                                    className="min-h-0 h-auto rounded-full bg-surface-on-media-20 px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-surface-on-media-30"
                                   >
                                     {resolvedCopy.composer.referenceSlotActions.remove}
                                   </Button>
@@ -1866,7 +1866,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => handleRemoveReferenceSlot(index)}
-                                    className="min-h-0 h-auto rounded-full bg-white/25 px-3 py-1 text-[11px] font-semibold text-white hover:bg-white/40"
+                                    className="min-h-0 h-auto rounded-full bg-surface-on-media-25 px-3 py-1 text-[11px] font-semibold text-white hover:bg-surface-on-media-40"
                                   >
                                     {resolvedCopy.general.cancelUpload}
                                   </Button>

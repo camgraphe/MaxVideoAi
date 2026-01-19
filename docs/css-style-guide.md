@@ -268,6 +268,18 @@ Ces tokens sont la couche **semantique UI** (marketing + app). Ils doivent evite
 
 Note: usage UI = panels/modals sur fond visible + `backdrop-blur`. Eviter `bg-white/xx` en nouvelles pages; preferer `bg-surface-glass-*` (Tailwind).
 
+#### On-media / FX tints
+
+* `ui.surfaceOnMedia5` - `rgba(255, 255, 255, 0.05)`
+* `ui.surfaceOnMedia10` - `rgba(255, 255, 255, 0.10)`
+* `ui.surfaceOnMedia15` - `rgba(255, 255, 255, 0.15)`
+* `ui.surfaceOnMedia20` - `rgba(255, 255, 255, 0.20)`
+* `ui.surfaceOnMedia25` - `rgba(255, 255, 255, 0.25)`
+* `ui.surfaceOnMedia30` - `rgba(255, 255, 255, 0.30)`
+* `ui.surfaceOnMedia40` - `rgba(255, 255, 255, 0.40)`
+
+Note: tokens invariants (white tints) pour chips/FX sur images ou videos. Usage Tailwind = `bg-surface-on-media-*`.
+
 #### Borders
 
 * `ui.border` - `#C2CAD6`
@@ -368,6 +380,18 @@ Note: changement visuel attendu. Ancien ring (code) etait plutot neutre (`#9DA7B
 * `ui.surfaceGlass60` - `rgba(20, 27, 36, 0.60)`
 
 Note: les chips "on-media" peuvent rester en `bg-white/xx` (art/brand), mais l'UI standard doit utiliser ces tokens.
+
+#### On-media / FX tints
+
+* `ui.surfaceOnMedia5` - `rgba(255, 255, 255, 0.05)`
+* `ui.surfaceOnMedia10` - `rgba(255, 255, 255, 0.10)`
+* `ui.surfaceOnMedia15` - `rgba(255, 255, 255, 0.15)`
+* `ui.surfaceOnMedia20` - `rgba(255, 255, 255, 0.20)`
+* `ui.surfaceOnMedia25` - `rgba(255, 255, 255, 0.25)`
+* `ui.surfaceOnMedia30` - `rgba(255, 255, 255, 0.30)`
+* `ui.surfaceOnMedia40` - `rgba(255, 255, 255, 0.40)`
+
+Note: tokens invariants (white tints) pour chips/FX sur images ou videos. Usage Tailwind = `bg-surface-on-media-*`.
 
 #### Borders
 
@@ -676,6 +700,7 @@ Objectif : rendre explicite le chemin de verite, pour eviter les divergences (ex
 | `ui.textMuted` | `--text-muted` | `text-text-muted` |
 | `ui.surface2` | `--surface-2` | `bg-[var(--surface-2)]` (temp) / `bg-surface-2` (cible) |
 | `ui.surfaceGlass90` | `--surface-glass-90` | `bg-surface-glass-90` |
+| `ui.surfaceOnMedia20` | `--surface-on-media-20` | `bg-surface-on-media-20` |
 | `ui.border` | `--border` | `border-border` |
 | `ui.hairline` | `--hairline` | `border-hairline` |
 | `ui.accent` | `--accent` | `text-accent` / `bg-accent` selon usage |
@@ -735,7 +760,7 @@ Regle : toute nouvelle UI ou nouvelle page ne doit pas ajouter de nouveaux hex d
 ## 7) Regle simple "no new UI hex" (a afficher dans le repo)
 
 * Interdit dans les composants/pages UI : `bg-[#...]`, `text-[#...]`, `border-[#...]`, `shadow-[...]`, gradients UI en dur.
-* Eviter `bg-white/xx` pour les surfaces UI : utiliser `bg-surface-glass-*` (exceptions: micro-UI on-media / FX decoratifs).
+* Eviter `bg-white/xx` pour les surfaces UI : utiliser `bg-surface-glass-*` (panels) ou `bg-surface-on-media-*` (chips/FX sur media).
 * Autorise uniquement dans les chemins listes en 6.1 / 6.2.
 
 ---

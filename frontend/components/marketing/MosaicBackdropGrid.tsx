@@ -59,7 +59,7 @@ function MosaicTile({ media }: { media: MosaicBackdropMedia }) {
   }, []);
 
   return (
-    <div ref={containerRef} className="relative h-full w-full overflow-hidden rounded-sm bg-white/5">
+    <div ref={containerRef} className="relative h-full w-full overflow-hidden rounded-sm bg-surface-on-media-5">
       {isVisible ? (
         <Image
           src={media.posterUrl}
