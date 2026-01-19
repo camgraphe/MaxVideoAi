@@ -44,7 +44,7 @@ export default async function DocPage({ params }: { params: Params }) {
   }
 
   return (
-    <div className="container-page max-w-3xl px-4 py-16 lg:py-20 sm:px-6 lg:px-8">
+    <div className="container-page max-w-3xl section">
       <article className="space-y-6">
         <header className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">

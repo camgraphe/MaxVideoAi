@@ -109,6 +109,12 @@
   --muted: var(--text-muted);
 }
 
+@media (min-width: 1024px) {
+  :root {
+    --section-padding-y: 80px;
+  }
+}
+
 [data-theme="dark"] {
   --bg: #0B0F14;
   --surface: #141B24;

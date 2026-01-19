@@ -189,8 +189,8 @@ export default async function AiVideoEnginesPage() {
   const faqJsonLdEntries = faqItems.slice(0, 6);
 
   return (
-    <div className="container-page max-w-4xl px-4 py-16 lg:py-20 sm:px-6 lg:px-8">
-      <header className="space-y-4">
+    <div className="container-page max-w-4xl section">
+      <header className="stack-gap">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{hero.title}</h1>
         {hero.intro ? <p className="text-base leading-relaxed text-text-secondary">{renderRichText(hero.intro, 'hero-intro')}</p> : null}
         {hero.secondary ? <p className="text-base leading-relaxed text-text-secondary">{renderRichText(hero.secondary, 'hero-secondary')}</p> : null}
@@ -198,7 +198,7 @@ export default async function AiVideoEnginesPage() {
 
       <section className="mt-12 space-y-6">
         {sections.map((section, index) => (
-          <div key={section.title ?? `section-${index}`} className="space-y-4">
+          <div key={section.title ?? `section-${index}`} className="stack-gap">
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{section.title}</h2>
             {section.body ? (
               <p className="text-base leading-relaxed text-text-secondary">

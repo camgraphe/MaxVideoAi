@@ -90,7 +90,7 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
 
   return (
     <main id="top" className="scroll-smooth">
-      <div className="container-page max-w-5xl px-4 py-16 lg:py-20 sm:px-6 lg:px-8">
+      <div className="container-page max-w-5xl section">
         <header className="space-y-3">
           <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
           <p className="sm:max-w-[62ch] text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>

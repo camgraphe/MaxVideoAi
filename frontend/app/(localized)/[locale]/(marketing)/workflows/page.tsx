@@ -83,7 +83,7 @@ export default async function WorkflowsPage({ params }: { params: { locale: AppL
   };
 
   return (
-    <div className="container-page max-w-5xl px-4 py-16 lg:py-20 sm:px-6 lg:px-8">
+    <div className="container-page max-w-5xl section">
       <header className="space-y-3">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
         <p className="sm:max-w-[62ch] text-sm text-text-muted">{content.hero.subtitle}</p>

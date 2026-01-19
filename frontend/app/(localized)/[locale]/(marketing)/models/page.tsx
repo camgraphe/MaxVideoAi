@@ -246,7 +246,7 @@ export default async function ModelsPage() {
   });
 
   return (
-    <main className="container-page max-w-5xl px-4 pb-6 pt-16 sm:px-6 lg:px-8">
+    <main className="container-page max-w-5xl pb-6 pt-16">
       <header className="space-y-3">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{heroTitle}</h1>
         <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
