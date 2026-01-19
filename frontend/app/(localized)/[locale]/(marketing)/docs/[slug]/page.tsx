@@ -46,7 +46,7 @@ export default async function DocPage({ params }: { params: Params }) {
   return (
     <div className="container-page max-w-3xl section">
       <article className="stack-gap-lg">
-        <header className="space-y-2">
+        <header className="stack-gap-sm">
           <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
             {new Date(doc.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           </p>

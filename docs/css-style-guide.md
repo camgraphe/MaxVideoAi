@@ -784,9 +784,11 @@ Cette section liste ce qui existe deja en tokens/vars (valeurs connues) et ce qu
   - `--stack-gap` = `20px`
   - `--stack-gap-sm` = `12px`
   - `--stack-gap-lg` = `32px`
+  - `--stack-gap-xl` = `40px`
   - `--grid-gap` = `28px`
   - `--grid-gap-sm` = `20px`
   - `--grid-gap-lg` = `36px`
+  - `--grid-gap-xl` = `48px`
   - `--card-pad` = `16px`
 
 > Notes :
@@ -899,6 +901,7 @@ Objectif : ajouter des standards simples, applicables sans casser l'existant. On
 - Standard cible : `--section-padding-y` (mobile `72px` / desktop `88px`)
 - Eviter les one-offs (`py-24`) sauf hero ou feature blocks majeurs
 - Sections compactes (strips / bandeaux) : utiliser `.section-compact` (≈ `py-8`)
+- Gaps XXL (hero, split layouts) : utiliser `stack-gap-xl` / `grid-gap-xl`
 
 ### Typo (mobile lisible)
 - H1 : mobile `text-3xl`, desktop `text-5xl`

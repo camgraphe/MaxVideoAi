@@ -73,9 +73,11 @@
   --stack-gap: 20px;
   --stack-gap-sm: 12px;
   --stack-gap-lg: 32px;
+  --stack-gap-xl: 40px;
   --grid-gap: 28px;
   --grid-gap-sm: 20px;
   --grid-gap-lg: 36px;
+  --grid-gap-xl: 48px;
   --card-pad: 16px;
   --input-height: 40px;
   --button-height: 40px;

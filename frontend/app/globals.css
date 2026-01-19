@@ -109,6 +109,12 @@ main {
     gap: var(--stack-gap-lg);
   }
 
+  .stack-gap-xl {
+    display: flex;
+    flex-direction: column;
+    gap: var(--stack-gap-xl);
+  }
+
   .grid-gap {
     gap: var(--grid-gap);
   }
@@ -119,6 +125,10 @@ main {
 
   .grid-gap-lg {
     gap: var(--grid-gap-lg);
+  }
+
+  .grid-gap-xl {
+    gap: var(--grid-gap-xl);
   }
 }
 

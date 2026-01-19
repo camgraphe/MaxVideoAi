@@ -603,7 +603,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
   const memberBenefitCopy = memberBenefits.get(memberTier);
 
   return (
-    <div className="space-y-8">
+    <div className="stack-gap-lg">
       <div
         className={clsx(
           'relative overflow-hidden rounded-[32px] border p-6 shadow-[0_20px_60px_-25px_rgba(17,24,39,0.35)] sm:p-8 lg:p-10',
@@ -618,8 +618,8 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
             <div className="absolute -right-24 bottom-[-120px] h-80 w-80 rounded-full bg-[#7c4dff]/12 blur-[160px]" />
           </div>
         )}
-        <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="space-y-8">
+        <div className="relative grid grid-gap-lg lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="stack-gap-lg">
             <div className="space-y-2">
               <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
                 {t('pricing.estimator.configureLabel', 'Configure')}

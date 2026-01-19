@@ -48,7 +48,7 @@ export function ExamplesOrbitCallout({ heading, description, ctaLabel, eyebrow, 
       <div className="relative overflow-hidden rounded-[40px] border border-hairline bg-white/75 p-8 shadow-card backdrop-blur-sm sm:p-12">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(80,102,255,0.16),transparent_55%)]" aria-hidden />
         <div className="pointer-events-none absolute -inset-px rounded-[42px] bg-gradient-to-b from-white/40 via-transparent to-white/20 opacity-80" aria-hidden />
-        <div className="relative z-10 grid gap-12 lg:grid-cols-[1.05fr_1fr] lg:items-center">
+        <div className="relative z-10 grid grid-gap-xl lg:grid-cols-[1.05fr_1fr] lg:items-center">
           <div className="stack-gap-lg text-center lg:text-left">
             {eyebrow ? (
               <span className="inline-flex items-center justify-center rounded-pill border border-hairline px-4 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">

@@ -558,7 +558,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         <link rel="preconnect" href="https://v3b.fal.media" crossOrigin="anonymous" />
         {lcpPosterSrc ? <link rel="preload" as="image" href={lcpPosterSrc} fetchPriority="high" media="(max-width: 767px)" /> : null}
       </Head>
-      <section className="container-page section flex max-w-6xl flex-col items-center gap-10 text-center">
+      <section className="container-page section max-w-6xl stack-gap-xl items-center text-center">
         <div className="flex flex-wrap items-center justify-center gap-4">
           {badges.map((badge) => (
             <span key={badge} className="rounded-pill border border-hairline bg-surface px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary">
@@ -629,7 +629,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
       </section>
 
       <section className="border-t border-hairline bg-surface text-left section">
-        <div className="container-page flex max-w-7xl flex-col-reverse items-center gap-12 text-center lg:flex-row lg:items-center lg:text-left">
+        <div className="container-page flex max-w-7xl flex-col-reverse items-center gap-[var(--grid-gap-xl)] text-center lg:flex-row lg:items-center lg:text-left">
           <div className="w-full sm:max-w-[62ch] stack-gap-lg lg:w-[40%]">
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{heroScreenshot.title}</h2>
             <p className="text-sm text-text-secondary sm:text-base">{heroScreenshot.body}</p>
