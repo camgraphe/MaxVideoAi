@@ -21,6 +21,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getEngineAliases, listFalEngines } from '@/config/falEngines';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 import { normalizeMediaUrl } from '@/lib/media';
+import { Button } from '@/components/ui/Button';
 
 const DEFAULT_JOBS_COPY = {
   title: 'Jobs',
@@ -406,29 +407,27 @@ export default function JobsPage() {
           {error ? (
             <div className="rounded-card border border-border bg-white p-4 text-state-warning">
               {copy.error}
-              <button
-                type="button"
-                onClick={() => mutate()}
-                className="ml-3 rounded-input border border-border px-2 py-1 text-sm hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
+              <Button type="button" variant="outline" size="sm" onClick={() => mutate()} className="ml-3 px-2 text-sm">
                 {copy.retry}
-              </button>
+              </Button>
             </div>
           ) : (
             <>
               <section className="mb-8">
                 <div className="mb-3 flex items-center justify-between">
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => toggleSection('video')}
                     aria-label={collapsedSections.video ? 'Expand video jobs' : 'Collapse video jobs'}
-                    className="flex items-center gap-2 text-lg font-semibold text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="gap-2 text-lg font-semibold text-text-primary hover:bg-transparent"
                   >
                     <span className="text-2xl leading-none text-text-primary">
                       {collapsedSections.video ? '▸' : '▾'}
                     </span>
                     <span>{copy.sections.video}</span>
-                  </button>
+                  </Button>
                   <span className="text-xs text-text-secondary">{videoGroups.length}</span>
                 </div>
                 {collapsedSections.video ? (
@@ -438,14 +437,16 @@ export default function JobsPage() {
                     {renderGroupGrid(videoGroups, copy.sections.videoEmpty, 'video')}
                     {videoGroups.length > 0 && hasMore && (
                       <div className="mt-4 flex justify-center">
-                        <button
+                        <Button
                           type="button"
+                          variant="outline"
+                          size="sm"
                           onClick={() => setSize((prev) => prev + 1)}
                           disabled={isValidating}
-                          className="rounded-input border border-border bg-white px-4 py-2 text-sm font-medium text-text-primary shadow-card hover:bg-white/80 disabled:opacity-60"
+                          className="border-border bg-white px-4 text-sm font-medium text-text-primary shadow-card hover:bg-white/80"
                         >
                           {isValidating ? copy.loading : copy.loadMore}
-                        </button>
+                        </Button>
                       </div>
                     )}
                   </>
@@ -454,17 +455,19 @@ export default function JobsPage() {
 
               <section>
                 <div className="mb-3 flex items-center justify-between">
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => toggleSection('image')}
                     aria-label={collapsedSections.image ? 'Expand image jobs' : 'Collapse image jobs'}
-                    className="flex items-center gap-2 text-lg font-semibold text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="gap-2 text-lg font-semibold text-text-primary hover:bg-transparent"
                   >
                     <span className="text-2xl leading-none text-text-primary">
                       {collapsedSections.image ? '▸' : '▾'}
                     </span>
                     <span>{copy.sections.image}</span>
-                  </button>
+                  </Button>
                   <span className="text-xs text-text-secondary">{imageGroups.length}</span>
                 </div>
                 {collapsedSections.image ? (
@@ -474,14 +477,16 @@ export default function JobsPage() {
                     {renderGroupGrid(imageGroups, copy.sections.imageEmpty, 'image')}
                     {imageGroups.length > 0 && hasMore && (
                       <div className="mt-4 flex justify-center">
-                        <button
+                        <Button
                           type="button"
+                          variant="outline"
+                          size="sm"
                           onClick={() => setSize((prev) => prev + 1)}
                           disabled={isValidating}
-                          className="rounded-input border border-border bg-white px-4 py-2 text-sm font-medium text-text-primary shadow-card hover:bg-white/80 disabled:opacity-60"
+                          className="border-border bg-white px-4 text-sm font-medium text-text-primary shadow-card hover:bg-white/80"
                         >
                           {isValidating ? copy.loading : copy.loadMore}
-                        </button>
+                        </Button>
                       </div>
                     )}
                   </>

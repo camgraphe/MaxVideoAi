@@ -21,6 +21,7 @@ import { EngineSelect } from '@/components/ui/EngineSelect';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { authFetch } from '@/lib/authFetch';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import {
   readLastKnownMember,
   readLastKnownUserId,
@@ -977,29 +978,30 @@ function CreateVideoCard({
             variant="bar"
           />
         </div>
-        <button
+        <Button
           type="button"
           onClick={onNew}
           disabled={!canStart}
+          size="md"
           className={clsx(
-            'w-full rounded-input px-5 py-3 text-base font-semibold transition',
-            canStart
-              ? 'bg-brand text-on-brand hover:bg-brandHover'
-              : 'cursor-not-allowed bg-neutral-200 text-text-muted'
+            'w-full px-5 py-3 text-base font-semibold',
+            !canStart && 'bg-neutral-200 text-text-muted hover:bg-neutral-200 disabled:opacity-100'
           )}
         >
           {copy.create.newVideo}
-        </button>
+        </Button>
       </div>
       <div className="flex flex-wrap items-center gap-3">
         {hasStoredForm ? (
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={onUseLast}
-            className="rounded-input border border-border px-4 py-2 text-sm font-semibold text-text-secondary transition hover:border-text-muted hover:bg-surface-2"
+            className="border-border px-4 text-sm font-semibold text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
           >
             {copy.create.useLastVideo}
-          </button>
+          </Button>
         ) : null}
       </div>
     </div>
@@ -1055,29 +1057,30 @@ function CreateImageCard({
             variant="bar"
           />
         </div>
-        <button
+        <Button
           type="button"
           onClick={onNew}
           disabled={!canStart}
+          size="md"
           className={clsx(
-            'w-full rounded-input px-5 py-3 text-base font-semibold transition',
-            canStart
-              ? 'bg-brand text-on-brand hover:bg-brandHover'
-              : 'cursor-not-allowed bg-neutral-200 text-text-muted'
+            'w-full px-5 py-3 text-base font-semibold',
+            !canStart && 'bg-neutral-200 text-text-muted hover:bg-neutral-200 disabled:opacity-100'
           )}
         >
           {copy.create.newImage}
-        </button>
+        </Button>
       </div>
       <div className="flex flex-wrap items-center gap-3">
         {hasStoredForm ? (
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={onUseLast}
-            className="rounded-input border border-border px-4 py-2 text-sm font-semibold text-text-secondary transition hover:border-text-muted hover:bg-surface-2"
+            className="border-border px-4 text-sm font-semibold text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
           >
             {copy.create.useLastImage}
-          </button>
+          </Button>
         ) : null}
       </div>
     </div>
@@ -1150,19 +1153,23 @@ function InProgressRow({
         </div>
       </div>
       <div className="flex flex-shrink-0 items-center gap-2">
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={() => onOpen(job)}
-          className="rounded-input border border-border px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-surface-2"
+          className="border-border px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
         >
           {copy.inProgress.open}
-        </button>
-        <Link
+        </Button>
+        <ButtonLink
           href={`/app?job=${encodeURIComponent(job.jobId)}`}
-          className="rounded-input border border-border px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-surface-2"
+          variant="outline"
+          size="sm"
+          className="border-border px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
         >
           {copy.inProgress.remix}
-        </Link>
+        </ButtonLink>
       </div>
     </div>
   );
@@ -1195,29 +1202,33 @@ function RecentGrid({
     <section className="rounded-card border border-border bg-white p-5 shadow-card">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-text-primary">{copy.recent.title}</h2>
-        <Link
+        <ButtonLink
           href="/jobs"
           prefetch={false}
-          className="rounded-input border border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2"
+          variant="outline"
+          size="sm"
+          className="border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
         >
           {copy.recent.viewAll}
-        </Link>
+        </ButtonLink>
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
         {(['all', 'completed', 'failed'] as const).map((value) => (
-          <button
+          <Button
             key={value}
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => onTabChange(value)}
             className={clsx(
-              'rounded-input border px-3 py-1 text-xs font-semibold',
+              'px-3 py-1 text-xs font-semibold',
               tab === value
-                ? 'border-brand bg-brand text-on-brand'
-                : 'border-border bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                ? 'border-brand bg-brand text-on-brand hover:border-brand hover:bg-brand'
+                : 'border-border bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary'
             )}
           >
             {copy.recent.tabs[value]}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -1250,51 +1261,60 @@ function RecentGrid({
                     {group.hero.engineLabel}
                   </div>
                 </button>
-                <div className="flex flex-wrap gap-2">
-                  {group.hero.videoUrl ? (
-                    <a
-                      href={group.hero.videoUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="rounded-input border border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2"
-                    >
-                      {copy.actions.download}
-                    </a>
-                  ) : null}
-                  {!isCurated ? (
-                    <Link
-                      href={`/app?job=${encodeURIComponent(jobId)}`}
-                      className="rounded-input border border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2"
-                    >
-                      {copy.actions.remix}
-                    </Link>
-                  ) : null}
-                  {!isCurated ? (
-                    <button
-                      type="button"
-                      onClick={() => onSaveTemplate(group)}
-                      className="rounded-input border border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2"
-                    >
-                      {copy.actions.template}
-                    </button>
-                  ) : null}
+                  <div className="flex flex-wrap gap-2">
+                    {group.hero.videoUrl ? (
+                      <ButtonLink
+                        linkComponent="a"
+                        href={group.hero.videoUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        variant="outline"
+                        size="sm"
+                        className="border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
+                      >
+                        {copy.actions.download}
+                      </ButtonLink>
+                    ) : null}
+                    {!isCurated ? (
+                      <ButtonLink
+                        href={`/app?job=${encodeURIComponent(jobId)}`}
+                        variant="outline"
+                        size="sm"
+                        className="border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
+                      >
+                        {copy.actions.remix}
+                      </ButtonLink>
+                    ) : null}
+                    {!isCurated ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onSaveTemplate(group)}
+                        className="border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
+                      >
+                        {copy.actions.template}
+                      </Button>
+                    ) : null}
+                  </div>
                 </div>
-              </div>
-            );
+              );
           })}
         </div>
       )}
 
       {hasMore ? (
         <div className="mt-4 flex justify-center">
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={onLoadMore}
-            className="rounded-input border border-border px-4 py-2 text-sm font-semibold text-text-secondary hover:bg-surface-2"
+            className="border-border px-4 text-sm font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
             disabled={isValidating}
           >
             {copy.actions.loadMore}
-          </button>
+          </Button>
         </div>
       ) : null}
     </section>
@@ -1403,20 +1423,24 @@ function InsightRow({ label, value }: { label: string; value: string }) {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button
+                      <Button
                         type="button"
+                        variant="outline"
+                        size="sm"
                         onClick={() => onUseTemplate(template)}
-                        className="rounded-input border border-border px-2 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2"
+                        className="border-border px-2 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary"
                       >
                         {copy.quickStarts.use}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
+                        variant="outline"
+                        size="sm"
                         onClick={() => onDeleteTemplate(template.id)}
-                        className="rounded-input border border-border px-2 py-1 text-xs font-semibold text-text-muted hover:bg-surface-2"
+                        className="border-border px-2 py-1 text-xs font-semibold text-text-muted hover:bg-surface-2 hover:text-text-primary"
                       >
                         {copy.quickStarts.remove}
-                      </button>
+                      </Button>
                     </div>
                   </div>
                   {template.prompt ? (

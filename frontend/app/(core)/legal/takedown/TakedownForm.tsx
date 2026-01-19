@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Button } from '@/components/ui/Button';
 
 type Reason = 'copyright' | 'privacy' | 'defamation' | 'trademark' | 'other';
 
@@ -181,13 +182,13 @@ export function TakedownForm({ copy }: { copy: TakedownFormCopy }) {
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
       {status === 'success' ? <p className="text-sm text-green-600">{copy.success}</p> : null}
 
-      <button
+      <Button
         type="submit"
         disabled={status === 'submitting'}
-        className="inline-flex items-center justify-center rounded bg-brand px-4 py-2 text-sm font-semibold text-on-brand transition hover:bg-brandHover disabled:cursor-not-allowed disabled:opacity-60"
+        className="px-4 text-sm font-semibold"
       >
         {status === 'submitting' ? copy.submittingLabel : copy.submitLabel}
-      </button>
+      </Button>
     </form>
   );
 }

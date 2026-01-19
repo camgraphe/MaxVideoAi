@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import useSWR from 'swr';
 import { useMemo, useState, useEffect } from 'react';
+import { Button } from '@/components/ui/Button';
 
 type AdminUser = {
   id: string;
@@ -83,13 +84,15 @@ export default function AdminUsersPage() {
           <h2 className="text-xl font-semibold text-text-primary">Members</h2>
           <p className="text-sm text-text-secondary">Search for a member by email or Supabase user ID.</p>
         </div>
-        <button
+        <Button
           type="button"
-          className="rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-text-secondary transition hover:bg-bg"
+          variant="outline"
+          size="sm"
+          className="border-hairline bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-text-secondary hover:bg-bg hover:text-text-primary"
           onClick={() => mutate()}
         >
           Refresh
-        </button>
+        </Button>
       </div>
 
       <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
@@ -199,24 +202,28 @@ export default function AdminUsersPage() {
             Page {data.pagination.page} · {data.pagination.perPage} rows
           </span>
           <div className="flex gap-2">
-            <button
+            <Button
               type="button"
-              className="rounded border border-hairline px-2 py-1 text-text-secondary disabled:opacity-40"
+              variant="outline"
+              size="sm"
+              className="border-hairline px-2 py-1 text-text-secondary disabled:opacity-40"
               disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
               Previous
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              className="rounded border border-hairline px-2 py-1 text-text-secondary disabled:opacity-40"
+              variant="outline"
+              size="sm"
+              className="border-hairline px-2 py-1 text-text-secondary disabled:opacity-40"
               disabled={!data.pagination || !data.pagination.nextPage}
               onClick={() =>
                 setPage((p) => (data.pagination && data.pagination.nextPage ? data.pagination.nextPage : p))
               }
             >
               Next
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}

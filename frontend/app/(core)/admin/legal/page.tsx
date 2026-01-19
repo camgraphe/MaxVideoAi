@@ -2,6 +2,7 @@
 
 import useSWR from 'swr';
 import { useEffect, useMemo, useState } from 'react';
+import { Button } from '@/components/ui/Button';
 
 const fetchJson = async <T,>(url: string): Promise<T> => {
   const res = await fetch(url, { cache: 'no-store' });
@@ -228,13 +229,14 @@ function DocumentRow({ doc, onUpdate, defaultDate }: DocumentRowProps) {
       </td>
       <td className="px-4 py-3 text-right">
         <form onSubmit={handleSubmit} className="space-y-2">
-          <button
+          <Button
             type="submit"
+            size="sm"
             disabled={saving}
-            className="w-full rounded-input bg-brand px-3 py-2 text-sm font-semibold text-on-brand transition hover:bg-brand/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="w-full px-3 text-sm font-semibold"
           >
             {saving ? 'Saving…' : 'Save changes'}
-          </button>
+          </Button>
           {error ? <p className="text-xs text-state-warning">{error}</p> : null}
         </form>
       </td>

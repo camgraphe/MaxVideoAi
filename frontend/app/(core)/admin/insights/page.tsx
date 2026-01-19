@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { fetchAdminMetrics, METRIC_RANGE_OPTIONS } from '@/server/admin-metrics';
 import type { AdminMetrics, MetricsRangeLabel } from '@/lib/admin/types';
 import { requireAdmin } from '@/server/admin';
+import { Button } from '@/components/ui/Button';
 
 const dayFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
 const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' });
@@ -429,12 +430,13 @@ function RangeSelector({ current, excludeAdmin }: { current: MetricsRangeLabel; 
         />
         Exclude admin user
       </label>
-      <button
+      <Button
         type="submit"
-        className="rounded-full bg-text-primary px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white"
+        size="sm"
+        className="rounded-full bg-text-primary px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white hover:bg-text-primary/90"
       >
         Apply
-      </button>
+      </Button>
     </form>
   );
 }

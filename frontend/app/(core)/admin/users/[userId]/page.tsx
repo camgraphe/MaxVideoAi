@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { fetchAdminUserOverview } from '@/server/admin-users';
 import { ManualCreditForm } from '@/components/admin/ManualCreditForm';
+import { Button } from '@/components/ui/Button';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -251,13 +252,14 @@ function ImpersonationCard({
         <input type="hidden" name="userId" value={userId} />
         <input type="hidden" name="redirectTo" value="/app" />
         <input type="hidden" name="returnTo" value={`/admin/users/${userId}`} />
-        <button
+        <Button
           type="submit"
+          size="sm"
           disabled={disabled}
-          className="inline-flex items-center rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white disabled:opacity-50"
+          className="rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white hover:bg-text-primary/90"
         >
           View workspace as this user
-        </button>
+        </Button>
       </form>
       {profile?.isAdmin ? (
         <p className="text-xs text-rose-600">

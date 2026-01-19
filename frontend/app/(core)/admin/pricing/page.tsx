@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
+import { Button } from '@/components/ui/Button';
 
 type PricingRule = {
   id: string;
@@ -171,14 +172,16 @@ export default function PricingAdminPage() {
               Control spend requirements and automatic discounts applied to Plus and Pro tiers.
             </p>
           </div>
-          <button
+          <Button
             type="button"
-            className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-60"
+            variant="outline"
+            size="sm"
             onClick={handleSaveMembership}
             disabled={savingMembership || membershipLoading || !!membershipError}
+            className="rounded-pill border-hairline px-3 py-1 text-xs font-semibold text-text-secondary hover:border-text-muted hover:text-text-primary"
           >
             {savingMembership ? 'Saving…' : 'Save tiers'}
-          </button>
+          </Button>
         </div>
         {membershipLoading ? (
           <p className="mt-4 text-sm text-text-secondary">Loading membership tiers…</p>
@@ -359,22 +362,26 @@ function PricingRuleCard({ rule, onRefresh }: RuleCardProps) {
           <p className="text-xs text-text-tertiary">Rule ID: {rule.id}</p>
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <Button
             type="button"
-            className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            variant="outline"
+            size="sm"
             onClick={() => setEditing((prev) => !prev)}
             disabled={saving}
+            className="rounded-pill border-hairline px-3 py-1 text-xs font-semibold text-text-secondary hover:border-text-muted hover:text-text-primary"
           >
             {editing ? 'Cancel' : 'Edit'}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            className="rounded-pill border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-600 transition hover:border-rose-400 hover:text-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-60"
+            variant="outline"
+            size="sm"
             onClick={handleDelete}
             disabled={saving || rule.id === 'default'}
+            className="rounded-pill border-rose-200 px-3 py-1 text-xs font-semibold text-rose-600 hover:border-rose-400 hover:text-rose-700"
           >
             Delete
-          </button>
+          </Button>
         </div>
       </div>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -420,14 +427,15 @@ function PricingRuleCard({ rule, onRefresh }: RuleCardProps) {
       </div>
       {editing ? (
         <div className="mt-4 flex items-center gap-3">
-          <button
+          <Button
             type="button"
-            className="rounded-pill border border-brand bg-brand px-3 py-1 text-xs font-semibold text-on-brand transition hover:bg-brand/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-brand/70"
+            size="sm"
             onClick={handleSave}
             disabled={saving}
+            className="rounded-pill border border-brand bg-brand px-3 py-1 text-xs font-semibold text-on-brand hover:bg-brand/90 disabled:bg-brand/70"
           >
             {saving ? 'Saving…' : 'Save'}
-          </button>
+          </Button>
           {status && <p className="text-xs text-rose-600">{status}</p>}
         </div>
       ) : status === 'saved' ? (
@@ -556,13 +564,15 @@ function NewPricingRuleCard({ onCreated }: NewRuleProps) {
 
   if (!open) {
     return (
-      <button
+      <Button
         type="button"
-        className="rounded-xl border border-dashed border-hairline px-4 py-6 text-sm font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+        variant="outline"
+        size="sm"
+        className="h-auto rounded-xl border-dashed border-hairline px-4 py-6 text-sm font-semibold text-text-secondary hover:border-text-muted hover:text-text-primary"
         onClick={() => setOpen(true)}
       >
         + Add pricing rule
-      </button>
+      </Button>
     );
   }
 
@@ -570,14 +580,16 @@ function NewPricingRuleCard({ onCreated }: NewRuleProps) {
     <div className="rounded-xl border border-border bg-surface-2 p-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text-primary">New pricing rule</h3>
-        <button
+        <Button
           type="button"
-          className="text-xs text-text-tertiary transition hover:text-text-secondary"
+          variant="ghost"
+          size="sm"
+          className="text-xs text-text-tertiary hover:text-text-secondary"
           onClick={() => setOpen(false)}
           disabled={saving}
         >
           Cancel
-        </button>
+        </Button>
       </div>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <Field label="Engine ID" value={form.engineId} onChange={(value) => handleChange('engineId', value)} placeholder="Optional" />
@@ -593,14 +605,15 @@ function NewPricingRuleCard({ onCreated }: NewRuleProps) {
         />
       </div>
       <div className="mt-4 flex items-center gap-3">
-        <button
+        <Button
           type="button"
-          className="rounded-pill border border-brand bg-brand px-3 py-1 text-xs font-semibold text-on-brand transition hover:bg-brand/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-brand/70"
+          size="sm"
+          className="rounded-pill border border-brand bg-brand px-3 py-1 text-xs font-semibold text-on-brand hover:bg-brand/90 disabled:bg-brand/70"
           onClick={handleCreate}
           disabled={saving}
         >
           {saving ? 'Saving…' : 'Create rule'}
-        </button>
+        </Button>
         {status && <p className="text-xs text-rose-600">{status}</p>}
       </div>
     </div>

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { fetchAdminHealth } from '@/server/admin-metrics';
 import type { AdminHealthSnapshot } from '@/lib/admin/types';
+import { Button, ButtonLink } from '@/components/ui/Button';
 
 export const dynamic = 'force-dynamic';
 
@@ -248,12 +249,13 @@ function QuickToolsCard() {
             placeholder="Email or Supabase user ID"
             className="rounded-lg border border-border/60 bg-white px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
           />
-          <button
+          <Button
             type="submit"
-            className="inline-flex items-center justify-center rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
+            size="sm"
+            className="rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white hover:bg-text-primary/90"
           >
             Search
-          </button>
+          </Button>
         </form>
 
         <form action="/admin/jobs" method="get" className="flex flex-col gap-2 rounded-2xl border border-border/70 bg-bg p-4">
@@ -267,34 +269,41 @@ function QuickToolsCard() {
             placeholder="Job id or Fal request id"
             className="rounded-lg border border-border/60 bg-white px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
           />
-          <button
+          <Button
             type="submit"
-            className="inline-flex items-center justify-center rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
+            size="sm"
+            className="rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white hover:bg-text-primary/90"
           >
             Search
-          </button>
+          </Button>
         </form>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-3">
-        <Link
+        <ButtonLink
           href="/admin/insights"
-          className="inline-flex items-center rounded-full border border-border/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-text-secondary transition hover:bg-bg"
+          variant="outline"
+          size="sm"
+          className="border-border/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-text-secondary hover:bg-bg hover:text-text-primary"
         >
           Go to analytics
-        </Link>
-        <Link
+        </ButtonLink>
+        <ButtonLink
           href="/admin/engines"
-          className="inline-flex items-center rounded-full border border-border/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-text-secondary transition hover:bg-bg"
+          variant="outline"
+          size="sm"
+          className="border-border/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-text-secondary hover:bg-bg hover:text-text-primary"
         >
           Engine performance
-        </Link>
-        <Link
+        </ButtonLink>
+        <ButtonLink
           href="/admin/system"
-          className="inline-flex items-center rounded-full border border-border/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-text-secondary transition hover:bg-bg"
+          variant="outline"
+          size="sm"
+          className="border-border/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-text-secondary hover:bg-bg hover:text-text-primary"
         >
           Service notice
-        </Link>
+        </ButtonLink>
       </div>
     </section>
   );

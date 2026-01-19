@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { fetchRecentJobAudits } from '@/server/admin-job-audit';
 import { AdminJobAuditTable } from '@/components/admin/JobAuditTable';
 
@@ -170,18 +170,21 @@ function JobFilters({ filters }: { filters: UiFilters }) {
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <button
+        <Button
           type="submit"
-          className="inline-flex items-center rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
+          size="sm"
+          className="rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white hover:bg-text-primary/90"
         >
           Apply filters
-        </button>
-        <Link
+        </Button>
+        <ButtonLink
           href="/admin/jobs"
-          className="text-xs font-semibold uppercase tracking-[0.2em] text-text-secondary transition hover:text-text-primary"
+          variant="ghost"
+          size="sm"
+          className="text-xs font-semibold uppercase tracking-[0.2em] text-text-secondary hover:text-text-primary"
         >
           Reset
-        </Link>
+        </ButtonLink>
       </div>
     </form>
   );
