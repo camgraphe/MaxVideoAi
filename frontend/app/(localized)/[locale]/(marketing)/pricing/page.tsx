@@ -322,190 +322,192 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
 
   return (
     <main className="container-page max-w-6xl section">
-      <header className="max-w-3xl stack-gap">
-        <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
-        <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
-        {heroLink ? (
-          <p className="text-base leading-relaxed text-text-secondary">
-            {heroLink.before}
-            <Link href={{ pathname: '/blog/[slug]', params: { slug: 'compare-ai-video-engines' } }} className="font-semibold text-brand hover:text-brandHover">
-              {heroLink.label ?? 'AI video comparison'}
-            </Link>
-            {heroLink.after}
-          </p>
-        ) : null}
-      </header>
-
-      <section className="mt-6 rounded-card border border-hairline bg-white/80 p-4 text-sm text-text-secondary shadow-card">
-        <div className="flex flex-wrap items-center gap-4">
-          <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{exploreTitle}</span>
-          <div className="flex flex-wrap gap-2">
-            {exploreLinks.map((link) => {
-              const key = `${link.label}-${typeof link.href === 'string' ? link.href : link.href.pathname}`;
-              return (
-              <Link
-                key={key}
-                href={link.href}
-                className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-xs font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
-              >
-                {link.label}
+      <div className="stack-gap-lg">
+        <header className="max-w-3xl stack-gap">
+          <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
+          <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
+          {heroLink ? (
+            <p className="text-base leading-relaxed text-text-secondary">
+              {heroLink.before}
+              <Link href={{ pathname: '/blog/[slug]', params: { slug: 'compare-ai-video-engines' } }} className="font-semibold text-brand hover:text-brandHover">
+                {heroLink.label ?? 'AI video comparison'}
               </Link>
-              );
-            })}
+              {heroLink.after}
+            </p>
+          ) : null}
+        </header>
+
+        <section className="rounded-card border border-hairline bg-white/80 p-4 text-sm text-text-secondary shadow-card">
+          <div className="flex flex-wrap items-center gap-4">
+            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{exploreTitle}</span>
+            <div className="flex flex-wrap gap-2">
+              {exploreLinks.map((link) => {
+                const key = `${link.label}-${typeof link.href === 'string' ? link.href : link.href.pathname}`;
+                return (
+                <Link
+                  key={key}
+                  href={link.href}
+                  className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-xs font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
+                >
+                  {link.label}
+                </Link>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </section>
-
-      <section className="mt-8 rounded-card border border-hairline bg-white/90 p-6 text-sm text-text-secondary shadow-card">
-        <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
-          {content.calculator?.title ?? 'Preview prices in the app'}
-        </h2>
-        <p className="mt-2">
-          {content.calculator?.description ??
-            'Open the generator to see the exact price before you create a video.'}
-        </p>
-        <TextLink href={generatorHref} prefetch={false} className="mt-3 gap-1 text-sm" linkComponent={Link}>
-          {content.calculator?.cta ?? 'Open the generator'} <span aria-hidden>→</span>
-        </TextLink>
-      </section>
-
-      <section id="estimator" className="mt-12 scroll-mt-28">
-        <div className="mx-auto max-w-4xl">
-          <PriceEstimator pricingRules={pricingRulesLite} enginePricingOverrides={enginePricingOverrides} />
-        </div>
-        <div className="mx-auto mt-6 flex max-w-3xl flex-col items-center gap-2 text-center text-xs text-text-muted sm:flex-row sm:justify-center">
-          <FlagPill live={FEATURES.pricing.publicCalculator} />
-          <span>
-            {content.estimator.walletLink}{' '}
-            <Link href={generatorHref} prefetch={false} className="font-semibold text-brand hover:text-brandHover">
-              {content.estimator.walletLinkCta}
-            </Link>
-            .
-            {!FEATURES.pricing.publicCalculator ? (
-              <span className="ml-1 text-xs text-text-muted">(coming soon)</span>
-            ) : null}
-          </span>
-        </div>
-      </section>
-      <section aria-labelledby="example-costs" className="mt-10">
-        <h2 id="example-costs" className="scroll-mt-28 text-2xl font-semibold text-text-primary sm:text-3xl">
-          {exampleCosts.title ?? DEFAULT_EXAMPLE_COSTS.title}
-        </h2>
-        <p className="mb-4 text-sm text-text-secondary">
-          {exampleCosts.subtitle ?? DEFAULT_EXAMPLE_COSTS.subtitle}
-        </p>
-        <div className="grid grid-cols-1 grid-gap-sm sm:grid-cols-3">
-          {resolvedExampleCards.map((card) => (
-            <div key={card.title} className="rounded-xl border border-hairline bg-white p-4 shadow-card">
-              <div className="text-sm font-medium text-text-primary">{card.title}</div>
-              <dl className="mt-2 text-sm text-text-secondary">
-                <div className="flex justify-between">
-                  <dt>{exampleLabels.engine}</dt>
-                  <dd>{card.engine}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt>{exampleLabels.duration}</dt>
-                  <dd>{card.duration}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt>{exampleLabels.resolution}</dt>
-                  <dd>{card.resolution}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt>{exampleLabels.audio}</dt>
-                  <dd>{card.audio}</dd>
-                </div>
-              </dl>
-              <div className="mt-3 text-base font-semibold text-text-primary">
-                {card.price ?? '—'}
-              </div>
-              {card.note ? <div className="text-xs text-text-muted">{card.note}</div> : null}
-            </div>
-          ))}
-        </div>
-      </section>
-      {priceFactors.points?.length ? (
-        <section aria-labelledby="price-factors" className="mt-8">
-          <h2 id="price-factors" className="text-2xl font-semibold text-text-primary sm:text-3xl">
-            {priceFactors.title ?? DEFAULT_PRICE_FACTORS.title}
-          </h2>
-          <ul className="mt-2 space-y-1 text-sm text-text-secondary">
-            {priceFactors.points.map((point) => (
-              <li key={point}>• {point}</li>
-            ))}
-          </ul>
         </section>
-      ) : null}
 
-      <section className="mt-12 rounded-card border border-hairline bg-white p-6 shadow-card">
-        <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
-          {teams.title}
-          <FlagPill live={FEATURES.pricing.teams} className="ml-3" />
-        </h2>
-        <p className="mt-2 text-sm text-text-secondary">{teams.description}</p>
-        {FEATURES.pricing.teams ? (
-          <ul className="mt-4 stack-gap-sm text-sm text-text-secondary">
-            {teams.points.map((point) => (
-              <li key={point} className="flex items-start gap-2">
-                <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-text-muted" />
-                <span>{point}</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-4 text-sm text-text-secondary">{teams.comingSoonNote}</p>
-        )}
-      </section>
-
-      <section className="mt-12 rounded-card border border-hairline bg-white p-6 shadow-card">
-        <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
-          {member.title}
-          <FlagPill live={FEATURES.pricing.memberTiers} className="ml-3" />
-        </h2>
-        <p className="mt-2 text-sm text-text-secondary">{member.subtitle}</p>
-        <div className="mt-6 grid grid-gap-sm md:grid-cols-3">
-          {formattedTiers.map((tier) => (
-            <div key={tier.name} className="rounded-card border border-hairline bg-bg p-4">
-              <p className="text-sm font-semibold text-text-primary">{tier.name}</p>
-              <p className="mt-1 text-xs uppercase tracking-micro text-text-muted">{tier.requirement}</p>
-              <p className="mt-3 text-sm text-text-secondary">{tier.benefit}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="mt-12 grid grid-gap lg:grid-cols-[1.1fr_0.9fr]">
-        <article
-          id="refunds-protections"
-          className="scroll-mt-28 rounded-card border border-hairline bg-white p-6 shadow-card"
-        >
+        <section className="rounded-card border border-hairline bg-white/90 p-6 text-sm text-text-secondary shadow-card">
           <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
-            {refunds.title}
+            {content.calculator?.title ?? 'Preview prices in the app'}
           </h2>
-          <ul className="mt-4 stack-gap-sm text-sm text-text-secondary">
-            {refundFeatureItems.map((item) => (
-              <li key={item.text} className="flex items-start gap-2">
-                <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-text-muted" />
-                <span className="inline-flex flex-wrap items-center gap-2">
-                  {item.text}
-                  <FlagPill live={item.live} />
-                </span>
-              </li>
-            ))}
-          </ul>
-        </article>
-        <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
-          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{faq.title}</h2>
-          <dl className="mt-4 stack-gap">
-            {faq.entries.map((entry) => (
-              <div key={entry.question}>
-                <dt className="text-sm font-semibold text-text-primary">{entry.question}</dt>
-                <dd className="mt-1 text-sm text-text-secondary">{entry.answer}</dd>
+          <p className="mt-2">
+            {content.calculator?.description ??
+              'Open the generator to see the exact price before you create a video.'}
+          </p>
+          <TextLink href={generatorHref} prefetch={false} className="mt-3 gap-1 text-sm" linkComponent={Link}>
+            {content.calculator?.cta ?? 'Open the generator'} <span aria-hidden>→</span>
+          </TextLink>
+        </section>
+
+        <section id="estimator" className="scroll-mt-28">
+          <div className="mx-auto max-w-4xl">
+            <PriceEstimator pricingRules={pricingRulesLite} enginePricingOverrides={enginePricingOverrides} />
+          </div>
+          <div className="mx-auto mt-6 flex max-w-3xl flex-col items-center gap-2 text-center text-xs text-text-muted sm:flex-row sm:justify-center">
+            <FlagPill live={FEATURES.pricing.publicCalculator} />
+            <span>
+              {content.estimator.walletLink}{' '}
+              <Link href={generatorHref} prefetch={false} className="font-semibold text-brand hover:text-brandHover">
+                {content.estimator.walletLinkCta}
+              </Link>
+              .
+              {!FEATURES.pricing.publicCalculator ? (
+                <span className="ml-1 text-xs text-text-muted">(coming soon)</span>
+              ) : null}
+            </span>
+          </div>
+        </section>
+        <section aria-labelledby="example-costs">
+          <h2 id="example-costs" className="scroll-mt-28 text-2xl font-semibold text-text-primary sm:text-3xl">
+            {exampleCosts.title ?? DEFAULT_EXAMPLE_COSTS.title}
+          </h2>
+          <p className="mb-4 text-sm text-text-secondary">
+            {exampleCosts.subtitle ?? DEFAULT_EXAMPLE_COSTS.subtitle}
+          </p>
+          <div className="grid grid-cols-1 grid-gap-sm sm:grid-cols-3">
+            {resolvedExampleCards.map((card) => (
+              <div key={card.title} className="rounded-xl border border-hairline bg-white p-4 shadow-card">
+                <div className="text-sm font-medium text-text-primary">{card.title}</div>
+                <dl className="mt-2 text-sm text-text-secondary">
+                  <div className="flex justify-between">
+                    <dt>{exampleLabels.engine}</dt>
+                    <dd>{card.engine}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt>{exampleLabels.duration}</dt>
+                    <dd>{card.duration}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt>{exampleLabels.resolution}</dt>
+                    <dd>{card.resolution}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt>{exampleLabels.audio}</dt>
+                    <dd>{card.audio}</dd>
+                  </div>
+                </dl>
+                <div className="mt-3 text-base font-semibold text-text-primary">
+                  {card.price ?? '—'}
+                </div>
+                {card.note ? <div className="text-xs text-text-muted">{card.note}</div> : null}
               </div>
             ))}
-          </dl>
-        </article>
-      </section>
+          </div>
+        </section>
+        {priceFactors.points?.length ? (
+          <section aria-labelledby="price-factors">
+            <h2 id="price-factors" className="text-2xl font-semibold text-text-primary sm:text-3xl">
+              {priceFactors.title ?? DEFAULT_PRICE_FACTORS.title}
+            </h2>
+            <ul className="mt-2 space-y-1 text-sm text-text-secondary">
+              {priceFactors.points.map((point) => (
+                <li key={point}>• {point}</li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        <section className="rounded-card border border-hairline bg-white p-6 shadow-card">
+          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
+            {teams.title}
+            <FlagPill live={FEATURES.pricing.teams} className="ml-3" />
+          </h2>
+          <p className="mt-2 text-sm text-text-secondary">{teams.description}</p>
+          {FEATURES.pricing.teams ? (
+            <ul className="mt-4 stack-gap-sm text-sm text-text-secondary">
+              {teams.points.map((point) => (
+                <li key={point} className="flex items-start gap-2">
+                  <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-text-muted" />
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-4 text-sm text-text-secondary">{teams.comingSoonNote}</p>
+          )}
+        </section>
+
+        <section className="rounded-card border border-hairline bg-white p-6 shadow-card">
+          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
+            {member.title}
+            <FlagPill live={FEATURES.pricing.memberTiers} className="ml-3" />
+          </h2>
+          <p className="mt-2 text-sm text-text-secondary">{member.subtitle}</p>
+          <div className="mt-6 grid grid-gap-sm md:grid-cols-3">
+            {formattedTiers.map((tier) => (
+              <div key={tier.name} className="rounded-card border border-hairline bg-bg p-4">
+                <p className="text-sm font-semibold text-text-primary">{tier.name}</p>
+                <p className="mt-1 text-xs uppercase tracking-micro text-text-muted">{tier.requirement}</p>
+                <p className="mt-3 text-sm text-text-secondary">{tier.benefit}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="grid grid-gap lg:grid-cols-[1.1fr_0.9fr]">
+          <article
+            id="refunds-protections"
+            className="scroll-mt-28 rounded-card border border-hairline bg-white p-6 shadow-card"
+          >
+            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
+              {refunds.title}
+            </h2>
+            <ul className="mt-4 stack-gap-sm text-sm text-text-secondary">
+              {refundFeatureItems.map((item) => (
+                <li key={item.text} className="flex items-start gap-2">
+                  <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-text-muted" />
+                  <span className="inline-flex flex-wrap items-center gap-2">
+                    {item.text}
+                    <FlagPill live={item.live} />
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </article>
+          <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
+            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{faq.title}</h2>
+            <dl className="mt-4 stack-gap">
+              {faq.entries.map((entry) => (
+                <div key={entry.question}>
+                  <dt className="text-sm font-semibold text-text-primary">{entry.question}</dt>
+                  <dd className="mt-1 text-sm text-text-secondary">{entry.answer}</dd>
+                </div>
+              ))}
+            </dl>
+          </article>
+        </section>
+      </div>
 
       <Script id="pricing-breadcrumb-jsonld" type="application/ld+json">
         {JSON.stringify(breadcrumbJsonLd)}

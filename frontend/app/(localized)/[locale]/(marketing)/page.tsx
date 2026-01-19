@@ -59,7 +59,7 @@ const ExamplesOrbitCallout = dynamic(
   {
     ssr: false,
     loading: () => (
-      <section className="container-page mt-12 w-full max-w-6xl">
+      <section className="container-page section w-full max-w-6xl">
         <div className="h-[380px] animate-pulse rounded-[40px] border border-hairline bg-white/70 shadow-card" aria-hidden />
       </section>
     ),
@@ -247,7 +247,7 @@ function MiniFAQ({ faq }: MiniFaqProps) {
       : fallback.items;
 
   return (
-    <section aria-labelledby="mini-faq-heading" className="container-page mt-12 max-w-6xl">
+    <section aria-labelledby="mini-faq-heading" className="container-page section max-w-6xl">
       <div className="rounded-2xl border border-hairline bg-white p-6 shadow-card">
         <h2 id="mini-faq-heading" className="text-xl font-semibold text-text-primary">
           {resolvedTitle}
@@ -649,11 +649,11 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         </div>
       </section>
       <MosaicBackdrop media={proofBackgroundMedia}>
-        <div id="how-it-works" className="pt-12 sm:pt-16 scroll-mt-32">
+        <section id="how-it-works" className="container-page section max-w-6xl scroll-mt-32">
           <ProofTabs pricingRules={pricingRulesLite} />
-        </div>
+        </section>
 
-        <section className="container-page section mt-12 max-w-6xl pt-0">
+        <section className="container-page section max-w-6xl">
           <div className="grid grid-gap lg:grid-cols-3">
             {whyCards.map((item) => (
               <article key={item.title} className="rounded-card border border-hairline bg-white p-6 shadow-card">
@@ -673,7 +673,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         />
         <CompareEnginesCarousel engines={compareEngines} copy={compareCopy ?? undefined} />
 
-        <section className="container-page mt-12 max-w-6xl">
+        <section className="container-page section max-w-6xl">
           <div className="mb-6 flex items-center justify-between gap-4">
             <div>
               <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{waysSection.title}</h2>
@@ -700,7 +700,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
           </div>
         </section>
 
-        <section className="container-page mt-12 max-w-6xl">
+        <section className="container-page section max-w-6xl">
           <div className="grid grid-gap lg:grid-cols-[1.2fr_1fr]">
             <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
               <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
@@ -738,7 +738,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
           </div>
         </section>
       </MosaicBackdrop>
-      <section className="container-page mt-12 max-w-6xl">
+      <section className="container-page section max-w-6xl">
         <div className="rounded-card border border-hairline bg-white/70 p-6 shadow-card">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Partners</p>
           <h2 className="mt-2 text-lg font-semibold text-text-primary">Featured on</h2>
