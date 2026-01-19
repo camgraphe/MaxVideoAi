@@ -36,6 +36,8 @@ import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { supportsAudioPricingToggle } from '@/lib/pricing-addons';
 import { readLastKnownUserId } from '@/lib/last-known';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import {
   getLumaRay2DurationInfo,
   getLumaRay2ResolutionInfo,
@@ -4831,14 +4833,14 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                         <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-text-secondary">
                           $
                         </span>
-                        <input
+                        <Input
                           id="custom-topup"
                           type="number"
                           min={10}
                           step={1}
                           value={Math.max(10, Math.round(topUpAmount / 100))}
                           onChange={handleCustomAmountChange}
-                          className="h-10 w-full rounded-input border border-border bg-white pl-6 pr-3 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="h-10 pl-6 pr-3"
                         />
                       </div>
                       <span className="text-xs text-text-muted">
@@ -4859,23 +4861,17 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
               </button>
             </div>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-              <button
-                type="button"
-                onClick={closeTopUpModal}
-                className="rounded-input border border-hairline px-4 py-2 text-sm font-medium text-text-secondary transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
+              <Button type="button" variant="outline" size="sm" onClick={closeTopUpModal} className="px-4">
                 {workspaceCopy.topUp.maybeLater}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
+                size="sm"
                 disabled={isTopUpLoading}
-                className={clsx(
-                  'rounded-input border border-transparent bg-brand px-4 py-2 text-sm font-semibold text-on-brand transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60',
-                  !isTopUpLoading && 'hover:brightness-105'
-                )}
+                className={clsx('px-4', !isTopUpLoading && 'hover:brightness-105')}
               >
                 {isTopUpLoading ? workspaceCopy.topUp.submitting : workspaceCopy.topUp.submit}
-              </button>
+              </Button>
             </div>
           </form>
         </div>

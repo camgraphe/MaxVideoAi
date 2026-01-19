@@ -9,6 +9,7 @@ import deepmerge from 'deepmerge';
 import { Download, Trash2 } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
+import { ButtonLink } from '@/components/ui/Button';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { authFetch } from '@/lib/authFetch';
 
@@ -186,12 +187,12 @@ export default function LibraryPage() {
               <p className="text-sm text-text-secondary">{copy.hero.subtitle}</p>
             </div>
             <div className="flex gap-2 text-sm text-text-secondary">
-              <Link href="/app/image" prefetch={false} className="rounded-input border border-border px-3 py-1 hover:bg-white/70">
+              <ButtonLink href="/app/image" prefetch={false} variant="outline" size="md" className="px-3">
                 {copy.hero.ctas.image}
-              </Link>
-              <Link href="/app" prefetch={false} className="rounded-input border border-border px-3 py-1 hover:bg-white/70">
+              </ButtonLink>
+              <ButtonLink href="/app" prefetch={false} variant="outline" size="md" className="px-3">
                 {copy.hero.ctas.video}
-              </Link>
+              </ButtonLink>
             </div>
           </div>
 

@@ -17,6 +17,7 @@ import type { PricingSnapshot } from '@maxvideoai/pricing';
 import { GalleryRail } from '@/components/GalleryRail';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
+import { Button } from '@/components/ui/Button';
 import { EngineSelect } from '@/components/ui/EngineSelect';
 import { SelectMenu } from '@/components/ui/SelectMenu';
 import { runImageGeneration, useInfiniteJobs, saveImageToLibrary } from '@/lib/api';
@@ -1750,15 +1751,9 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                         ) : null}
                       </div>
                     </div>
-                    <button
-                      type="submit"
-                      className={clsx(
-                        'inline-flex w-full items-center justify-center rounded-input bg-brand px-5 py-3 text-sm font-semibold text-on-brand shadow-card transition sm:w-auto',
-                        'hover:bg-brandHover'
-                      )}
-                    >
+                    <Button type="submit" size="lg" className="w-full sm:w-auto shadow-card">
                       {hasPendingRuns ? resolvedCopy.runButton.running : resolvedCopy.runButton.idle}
-                    </button>
+                    </Button>
                   </div>
 
                   <SectionDivider />
@@ -1771,13 +1766,15 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                         </p>
                         <p className="text-[10px] text-text-secondary">{referenceHelperText}</p>
                       </div>
-                      <button
+                      <Button
                         type="button"
+                        variant="outline"
+                        size="sm"
                         onClick={() => setLibraryModal({ open: true, slotIndex: null })}
-                        className="rounded-full border border-border px-3 py-1 text-[11px] font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
+                        className="rounded-full border-border text-[11px] text-text-secondary hover:text-text-primary"
                       >
                         {resolvedCopy.composer.referenceButton}
-                      </button>
+                      </Button>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
                       {visibleReferenceSlots.map((slot, index) => (
