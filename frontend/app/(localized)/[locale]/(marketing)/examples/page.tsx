@@ -653,7 +653,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
         <link rel="preconnect" href="https://v3b.fal.media" crossOrigin="anonymous" />
         {lcpPosterSrc ? <link rel="preload" as="image" href={lcpPosterSrc} fetchPriority="high" /> : null}
       </Head>
-      <main className="mx-auto max-w-7xl px-4 py-16 lg:py-20 sm:px-6 lg:px-8">
+      <main className="container-page max-w-7xl px-4 py-16 lg:py-20 sm:px-6 lg:px-8">
         <header className="max-w-3xl space-y-4">
           <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
           <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>

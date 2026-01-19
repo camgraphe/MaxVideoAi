@@ -1222,7 +1222,7 @@ function Sora2PageLayout({
           />
         ))}
       </Head>
-      <main className="mx-auto max-w-6xl px-4 py-16 lg:py-20 sm:px-6 lg:px-8">
+      <main className="container-page max-w-6xl px-4 py-16 lg:py-20 sm:px-6 lg:px-8">
         <Link href={localizeModelsPath()} className="text-sm font-semibold text-brand hover:text-brandHover">
           {backLabel}
         </Link>
@@ -2084,7 +2084,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
 
   return (
     <>
-      <div className="mx-auto max-w-4xl px-4 py-16 lg:py-20 sm:px-6 lg:px-8">
+      <div className="container-page max-w-4xl px-4 py-16 lg:py-20 sm:px-6 lg:px-8">
       <Head>
         {heroPosterPreload ? <link rel="preload" as="image" href={heroPosterPreload} fetchPriority="high" /> : null}
         {schemaPayloads.map((schema, index) => (

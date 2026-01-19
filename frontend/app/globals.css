@@ -71,6 +71,32 @@ main {
   @apply ring-2 ring-offset-2 ring-offset-bg ring-ring;
 }
 
+@layer components {
+  .container-page {
+    @apply mx-auto w-full px-4 sm:px-6 lg:px-8;
+    max-width: var(--container-max);
+  }
+
+  .container-content {
+    max-width: var(--content-max);
+  }
+
+  .section {
+    padding-top: var(--section-padding-y);
+    padding-bottom: var(--section-padding-y);
+  }
+
+  .stack-gap {
+    display: flex;
+    flex-direction: column;
+    gap: var(--stack-gap);
+  }
+
+  .grid-gap {
+    gap: var(--grid-gap);
+  }
+}
+
 @keyframes mosaicDrift {
   0% {
     transform: translate3d(0%, 0%, 0) scale(1.05);

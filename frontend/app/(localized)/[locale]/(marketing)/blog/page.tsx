@@ -142,7 +142,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
 
   if (posts.length === 0) {
     return (
-      <main className="mx-auto max-w-3xl px-4 py-16 lg:py-20 text-center sm:px-6 lg:px-8">
+      <main className="container-page max-w-3xl px-4 py-16 lg:py-20 text-center sm:px-6 lg:px-8">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
         <p className="mt-4 text-base leading-relaxed text-text-secondary">{content.empty}</p>
       </main>
@@ -152,7 +152,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
   const [featured, ...rest] = posts;
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-16 lg:py-20 sm:px-6 lg:px-8">
+    <main className="container-page max-w-6xl px-4 py-16 lg:py-20 sm:px-6 lg:px-8">
       <header className="rounded-[32px] border border-hairline bg-white/80 p-8 shadow-card backdrop-blur sm:p-12">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="sm:max-w-[62ch] space-y-4">
