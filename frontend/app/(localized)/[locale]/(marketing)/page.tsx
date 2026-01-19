@@ -654,7 +654,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         </div>
 
         <section className="container-page mt-12 max-w-6xl pb-16 lg:pb-20">
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid grid-gap lg:grid-cols-3">
             {whyCards.map((item) => (
               <article key={item.title} className="rounded-card border border-hairline bg-white p-6 shadow-card">
                 <h3 className="text-lg font-semibold text-text-primary">{item.title}</h3>
@@ -680,7 +680,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
               <p className="text-sm text-text-secondary sm:text-base">{waysSection.subtitle}</p>
             </div>
           </div>
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-gap lg:grid-cols-2">
             {ways.map((item) => (
               <article key={item.title} className="flex flex-col gap-4 rounded-card border border-hairline bg-white p-6 shadow-card">
                 <div>
@@ -701,7 +701,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         </section>
 
         <section className="container-page mt-12 max-w-6xl">
-          <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+          <div className="grid grid-gap lg:grid-cols-[1.2fr_1fr]">
             <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
               <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
                 {pricing.badge}

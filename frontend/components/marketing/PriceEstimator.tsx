@@ -630,7 +630,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
               <p className="text-sm text-text-secondary sm:text-base">{dictionary.pricing.estimator.subtitle}</p>
             </div>
 
-            <div className="grid gap-6">
+            <div className="grid grid-gap">
               <div className="rounded-[24px] border border-white/60 bg-white/85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
                 <div className="flex items-center justify-between">
                   <label
@@ -694,7 +694,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                 </div>
               </div>
 
-              <div className="grid gap-6 sm:grid-cols-2">
+              <div className="grid grid-gap sm:grid-cols-2">
                 {selectedEngine?.showResolution !== false ? (
                   <div className="rounded-[24px] border border-white/60 bg-white/85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
                     <label

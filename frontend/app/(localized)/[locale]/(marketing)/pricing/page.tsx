@@ -474,7 +474,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
         </div>
       </section>
 
-      <section className="mt-12 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+      <section className="mt-12 grid grid-gap lg:grid-cols-[1.1fr_0.9fr]">
         <article
           id="refunds-protections"
           className="scroll-mt-28 rounded-card border border-hairline bg-white p-6 shadow-card"

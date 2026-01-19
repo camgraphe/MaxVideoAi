@@ -212,7 +212,7 @@ export default async function AiVideoEnginesPage() {
       <section className="mt-12 space-y-6">
         <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{comparison.title}</h2>
         <p className="text-base leading-relaxed text-text-secondary">{renderRichText(comparison.intro, 'comparison-intro')}</p>
-        <div className="grid gap-6 sm:grid-cols-2">
+        <div className="grid grid-gap sm:grid-cols-2">
           {comparison.cards.map((card) => (
             <article key={card.label} className="space-y-3 rounded-card border border-hairline bg-white p-5 shadow-card">
               <div className="text-sm font-semibold uppercase tracking-micro text-text-muted">{card.label}</div>

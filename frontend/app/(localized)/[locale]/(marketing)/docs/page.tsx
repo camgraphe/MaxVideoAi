@@ -128,7 +128,7 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
             </aside>
             <div>
               <DocsTocActive />
-              <section className="grid gap-6 lg:grid-cols-2">
+              <section className="grid grid-gap lg:grid-cols-2">
                 {sections.map((section) => {
                   const sectionId = sectionIdMap[section.title] ?? undefined;
                   return (

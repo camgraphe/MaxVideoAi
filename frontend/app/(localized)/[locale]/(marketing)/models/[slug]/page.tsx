@@ -1582,7 +1582,7 @@ function Sora2PageLayout({
       {copy.demoTitle || copy.demoPrompt.length || copy.demoNotes.length ? (
         <section className="mt-12 space-y-6">
           {copy.demoTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.demoTitle}</h2> : null}
-          <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+          <div className="grid grid-gap lg:grid-cols-2 lg:items-start">
             <div className="rounded-2xl border border-hairline bg-white/80 p-3 shadow-card lg:order-2">
               {demoMedia ? (
                 <MediaPreview media={demoMedia} label={copy.demoTitle ?? 'Sora 2 demo'} />

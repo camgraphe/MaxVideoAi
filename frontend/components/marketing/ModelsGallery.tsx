@@ -67,7 +67,7 @@ export function ModelsGallery({
 
   return (
     <>
-      <div className="mt-12 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-12 grid grid-gap sm:grid-cols-2 xl:grid-cols-3">
         {cards.slice(0, visibleCount).map((card) => (
           <ModelCard key={card.id} card={card} ctaLabel={ctaLabel} />
         ))}
