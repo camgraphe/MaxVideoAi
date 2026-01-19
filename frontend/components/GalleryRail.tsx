@@ -138,6 +138,8 @@ export function GalleryRail({
   const [railProgress, setRailProgress] = useState(0);
   const [showRail, setShowRail] = useState(false);
   const [railTrackHeight, setRailTrackHeight] = useState(200);
+  const railTrackRef = useRef<HTMLDivElement>(null);
+  const railDragPointerId = useRef<number | null>(null);
   const isDesktopVariant = variant === 'desktop';
   const railThumbHeight = 24;
   const railTrackOffset = 12;
@@ -389,6 +391,48 @@ export function GalleryRail({
     void mutate();
   }, [mutate]);
 
+  const updateRailFromPointer = useCallback(
+    (clientY: number) => {
+      const track = railTrackRef.current;
+      const scroller = scrollContainerRef.current;
+      if (!track || !scroller) return;
+      const maxScroll = scroller.scrollHeight - scroller.clientHeight;
+      if (maxScroll <= 0) return;
+      const rect = track.getBoundingClientRect();
+      const trackRange = Math.max(1, railTrackHeight - railThumbHeight);
+      const offset = clientY - rect.top - railThumbHeight / 2;
+      const clamped = Math.min(Math.max(offset, 0), trackRange);
+      scroller.scrollTop = (clamped / trackRange) * maxScroll;
+    },
+    [railThumbHeight, railTrackHeight]
+  );
+
+  const handleRailPointerDown = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if (event.button !== 0) return;
+      railDragPointerId.current = event.pointerId;
+      event.currentTarget.setPointerCapture(event.pointerId);
+      updateRailFromPointer(event.clientY);
+      event.preventDefault();
+    },
+    [updateRailFromPointer]
+  );
+
+  const handleRailPointerMove = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if (railDragPointerId.current !== event.pointerId) return;
+      updateRailFromPointer(event.clientY);
+      event.preventDefault();
+    },
+    [updateRailFromPointer]
+  );
+
+  const handleRailPointerUp = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    if (railDragPointerId.current !== event.pointerId) return;
+    railDragPointerId.current = null;
+    event.currentTarget.releasePointerCapture(event.pointerId);
+  }, []);
+
   const updateRailProgress = useCallback(() => {
     const element = scrollContainerRef.current;
     if (!element) return;
@@ -547,8 +591,16 @@ export function GalleryRail({
         {cards}
       </div>
       {isDesktopVariant && showRail ? (
-        <div className="pointer-events-none absolute right-2 top-3">
-          <div className="relative w-[3px] rounded-full bg-brand/25" style={{ height: `${railTrackHeight}px` }}>
+        <div className="absolute right-2 top-3">
+          <div
+            ref={railTrackRef}
+            className="relative w-[4px] cursor-pointer touch-none rounded-full bg-brand/25"
+            style={{ height: `${railTrackHeight}px` }}
+            onPointerDown={handleRailPointerDown}
+            onPointerMove={handleRailPointerMove}
+            onPointerUp={handleRailPointerUp}
+            onPointerCancel={handleRailPointerUp}
+          >
             <div
               className="absolute left-0 top-0 w-full rounded-full bg-brand"
               style={{ height: `${railThumbHeight}px`, transform: `translateY(${railThumbOffset}px)` }}
