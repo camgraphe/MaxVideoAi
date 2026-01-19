@@ -16,11 +16,11 @@
   }
 
   .blog-prose pre {
-    @apply rounded-2xl bg-slate-950/95 p-5 text-sm text-slate-100 shadow-inner;
+    @apply rounded-2xl bg-surface-on-media-dark-80 p-5 text-sm text-on-inverse shadow-inner;
   }
 
   .blog-prose code:not(pre code) {
-    @apply rounded bg-slate-900/90 px-1.5 py-0.5 text-xs text-slate-100;
+    @apply rounded bg-surface-on-media-dark-70 px-1.5 py-0.5 text-xs text-on-inverse;
   }
 
   .blog-prose blockquote {
