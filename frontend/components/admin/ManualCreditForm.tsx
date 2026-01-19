@@ -54,7 +54,7 @@ export function ManualCreditForm({ userId }: ManualCreditFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="stack-gap-sm rounded-2xl border border-border/70 bg-white p-4">
+    <form onSubmit={handleSubmit} className="stack-gap-sm rounded-2xl border border-border/70 bg-surface p-4">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">Manual credit</p>
         <p className="text-sm text-text-secondary">Add wallet balance for debugging or refunds.</p>

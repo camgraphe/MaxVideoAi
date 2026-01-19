@@ -78,7 +78,7 @@ export function AdminNavigation({ sections }: AdminNavigationProps) {
               </svg>
             </Button>
             {isOpen ? (
-              <div className="absolute right-0 z-50 mt-3 w-60 overflow-hidden rounded-card border border-border bg-white shadow-float">
+              <div className="absolute right-0 z-50 mt-3 w-60 overflow-hidden rounded-card border border-border bg-surface shadow-float">
                 <ul className="divide-y divide-border">
                   {section.items.map((item) => (
                     <li key={item.href}>

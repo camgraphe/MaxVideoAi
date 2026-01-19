@@ -235,7 +235,7 @@ export function QuadPreviewPanel({
             size="sm"
             variant="outline"
             onClick={onSaveComposite}
-            className="min-h-0 h-auto rounded-input border-hairline bg-white px-3 py-1.5 text-[12px] font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2"
+            className="min-h-0 h-auto rounded-input border-hairline bg-surface px-3 py-1.5 text-[12px] font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2"
           >
             <Image src="/assets/icons/save.svg" alt="" width={14} height={14} className="h-3.5 w-3.5" aria-hidden />
             Save composite
@@ -251,7 +251,7 @@ export function QuadPreviewPanel({
       />
 
       {iterationCount > 1 && (
-        <figure className="overflow-hidden rounded-card border border-border bg-white/80 p-3 text-center">
+        <figure className="overflow-hidden rounded-card border border-border bg-surface-glass-80 p-3 text-center">
           <div className={clsx('relative w-full', compositeAspectClass)}>
             <div className={clsx('absolute inset-0 grid gap-2 rounded-card bg-[#E7ECF7] p-1', mosaicGridClass)}>
               {mosaicTiles.map((preview, index) => {
@@ -271,7 +271,7 @@ export function QuadPreviewPanel({
                   <div
                     key={slotKey}
                     data-quad-cell={slotKey}
-                    className="relative flex items-center justify-center overflow-hidden rounded-input bg-white/70"
+                    className="relative flex items-center justify-center overflow-hidden rounded-input bg-surface-glass-70"
                   >
                     <div className={clsx('relative h-full w-full', cellAspect)}>
                       {tileStatus !== 'failed' && preview?.videoUrl ? (
@@ -371,7 +371,7 @@ export function QuadPreviewPanel({
                     ? 'border-red-200 bg-red-50/60 shadow-card'
                     : isHero
                       ? 'border-brand shadow-lg'
-                      : 'border-border bg-white/85 shadow-card'
+                      : 'border-border bg-surface-glass-85 shadow-card'
                 )}
               >
                 <div
@@ -379,7 +379,7 @@ export function QuadPreviewPanel({
                     'flex items-center justify-between gap-2 border-b px-3 py-2 text-[11px] font-semibold uppercase tracking-micro',
                     isFailed
                       ? 'border-red-200 bg-red-50 text-red-700'
-                      : 'border-hairline bg-white text-text-muted'
+                      : 'border-hairline bg-surface text-text-muted'
                   )}
                 >
                   <span className="inline-flex items-center gap-2">
@@ -396,7 +396,7 @@ export function QuadPreviewPanel({
                     onClick={() => onSelectHero(tile)}
                     className={clsx(
                       'min-h-0 h-auto rounded-full px-2 py-0.5 text-[10px]',
-                      isHero ? 'border-brand bg-brand text-on-brand' : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                      isHero ? 'border-brand bg-brand text-on-brand' : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
                     )}
                   >
                     <Image src="/assets/icons/pin.svg" alt="" width={12} height={12} className="h-3 w-3" aria-hidden />
@@ -453,7 +453,7 @@ export function QuadPreviewPanel({
                   ) : null}
                 </div>
 
-                <div className="flex flex-col gap-2 border-t border-hairline bg-white px-3 py-2 text-[12px] text-text-secondary">
+                <div className="flex flex-col gap-2 border-t border-hairline bg-surface px-3 py-2 text-[12px] text-text-secondary">
                   {isFailed && (
                     <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-left">
                       <p className="text-[10px] font-semibold uppercase tracking-micro text-red-600">Refund note</p>
@@ -479,7 +479,7 @@ export function QuadPreviewPanel({
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between gap-1 border-t border-hairline bg-white px-2 py-1.5">
+                <div className="flex items-center justify-between gap-1 border-t border-hairline bg-surface px-2 py-1.5">
                   <div className="flex gap-1">
                     {TILE_ACTIONS.map((action) => (
                       <Button
@@ -488,7 +488,7 @@ export function QuadPreviewPanel({
                         size="sm"
                         variant="outline"
                         onClick={() => onTileAction(action.id, tile)}
-                        className="h-8 w-8 min-h-0 rounded-full border-hairline bg-white p-0 text-text-secondary hover:border-text-muted hover:bg-surface-2"
+                        className="h-8 w-8 min-h-0 rounded-full border-hairline bg-surface p-0 text-text-secondary hover:border-text-muted hover:bg-surface-2"
                         aria-label={action.label}
                       >
                         <Image src={action.icon} alt="" width={14} height={14} className="h-3.5 w-3.5" aria-hidden />
@@ -500,7 +500,7 @@ export function QuadPreviewPanel({
                     size="sm"
                     variant="outline"
                     onClick={() => onGroupAction('open', tile)}
-                    className="min-h-0 h-auto rounded-full border-hairline bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary hover:border-text-muted hover:bg-surface-2"
+                    className="min-h-0 h-auto rounded-full border-hairline bg-surface px-2.5 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary hover:border-text-muted hover:bg-surface-2"
                   >
                     View
                   </Button>
@@ -511,7 +511,7 @@ export function QuadPreviewPanel({
         </div>
       )}
 
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-input border border-dashed border-border bg-white/70 px-3 py-2 text-[11px] font-medium uppercase tracking-micro text-text-muted">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-input border border-dashed border-border bg-surface-glass-70 px-3 py-2 text-[11px] font-medium uppercase tracking-micro text-text-muted">
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
@@ -520,7 +520,7 @@ export function QuadPreviewPanel({
             onClick={() => setIsPlaying((prev) => !prev)}
             className={clsx(
               'min-h-0 h-auto rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-micro',
-              isPlaying ? 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2' : 'border-brand bg-surface-2 text-brand'
+              isPlaying ? 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2' : 'border-brand bg-surface-2 text-brand'
             )}
           >
             {isPlaying ? 'Pause' : 'Play'}
@@ -530,7 +530,7 @@ export function QuadPreviewPanel({
             size="sm"
             variant="outline"
             onClick={() => setIsLightboxOpen(true)}
-            className="min-h-0 h-auto rounded-full border-hairline bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary hover:border-text-muted hover:bg-surface-2"
+            className="min-h-0 h-auto rounded-full border-hairline bg-surface px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary hover:border-text-muted hover:bg-surface-2"
           >
             <Image src="/assets/icons/expand.svg" alt="" width={12} height={12} className="h-3 w-3" />
             Open takes

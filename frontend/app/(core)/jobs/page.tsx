@@ -288,7 +288,7 @@ export default function JobsPage() {
           );
         }
         return (
-          <div className="rounded-card border border-border bg-white p-6 text-center text-sm text-text-secondary">
+          <div className="rounded-card border border-border bg-surface p-6 text-center text-sm text-text-secondary">
             {emptyCopy}
           </div>
         );
@@ -346,7 +346,7 @@ export default function JobsPage() {
           return <CollapsedGroupRailSkeleton />;
         }
         return (
-          <div className="rounded-card border border-border bg-white p-4 text-center text-sm text-text-secondary">
+          <div className="rounded-card border border-border bg-surface p-4 text-center text-sm text-text-secondary">
             {emptyCopy}
           </div>
         );
@@ -376,7 +376,7 @@ export default function JobsPage() {
             <h1 className="text-xl font-semibold text-text-primary">{copy.title}</h1>
           </div>
 
-          <section aria-labelledby="teams-beta" className="mb-4 rounded-card border border-hairline bg-white p-4 shadow-card">
+          <section aria-labelledby="teams-beta" className="mb-4 rounded-card border border-hairline bg-surface p-4 shadow-card">
             <h2 id="teams-beta" className="flex items-center gap-2 text-base font-semibold text-text-primary">
               {copy.teams.title}
               <FlagPill live={teamsLive} />
@@ -400,13 +400,13 @@ export default function JobsPage() {
           </section>
 
           {hasCuratedVideo ? (
-            <div className="mb-4 rounded-card border border-hairline bg-white p-4 text-sm text-text-secondary">
+            <div className="mb-4 rounded-card border border-hairline bg-surface p-4 text-sm text-text-secondary">
               {copy.curated}
             </div>
           ) : null}
 
           {error ? (
-            <div className="rounded-card border border-border bg-white p-4 text-state-warning">
+            <div className="rounded-card border border-border bg-surface p-4 text-state-warning">
               {copy.error}
               <Button type="button" variant="outline" size="sm" onClick={() => mutate()} className="ml-3 px-2 text-sm">
                 {copy.retry}
@@ -444,7 +444,7 @@ export default function JobsPage() {
                           size="sm"
                           onClick={() => setSize((prev) => prev + 1)}
                           disabled={isValidating}
-                          className="border-border bg-white px-4 text-sm font-medium text-text-primary shadow-card hover:bg-white/80"
+                          className="border-border bg-surface px-4 text-sm font-medium text-text-primary shadow-card hover:bg-surface-glass-80"
                         >
                           {isValidating ? copy.loading : copy.loadMore}
                         </Button>
@@ -484,7 +484,7 @@ export default function JobsPage() {
                           size="sm"
                           onClick={() => setSize((prev) => prev + 1)}
                           disabled={isValidating}
-                          className="border-border bg-white px-4 text-sm font-medium text-text-primary shadow-card hover:bg-white/80"
+                          className="border-border bg-surface px-4 text-sm font-medium text-text-primary shadow-card hover:bg-surface-glass-80"
                         >
                           {isValidating ? copy.loading : copy.loadMore}
                         </Button>
@@ -511,13 +511,13 @@ export default function JobsPage() {
 
 function renderSkeletonCards(count: number, prefix: string) {
   return Array.from({ length: count }).map((_, index) => (
-    <div key={`${prefix}-skeleton-${index}`} className="rounded-card border border-border bg-white/60 p-0" aria-hidden>
+    <div key={`${prefix}-skeleton-${index}`} className="rounded-card border border-border bg-surface-glass-60 p-0" aria-hidden>
       <div className="relative overflow-hidden rounded-card">
         <div className="relative" style={{ aspectRatio: '16 / 9' }}>
           <div className="skeleton absolute inset-0" />
         </div>
       </div>
-      <div className="border-t border-border bg-white/70 px-3 py-2">
+      <div className="border-t border-border bg-surface-glass-70 px-3 py-2">
         <div className="h-3 w-24 rounded-full bg-neutral-200" />
       </div>
     </div>
@@ -570,7 +570,7 @@ function CollapsedGroupRailSkeleton() {
       {Array.from({ length: 8 }).map((_, index) => (
         <div
           key={`jobs-rail-skeleton-${index}`}
-          className="relative shrink-0 overflow-hidden rounded-card border border-border bg-white/60"
+          className="relative shrink-0 overflow-hidden rounded-card border border-border bg-surface-glass-60"
           style={{ width: COLLAPSED_RAIL_ITEM_WIDTH }}
           aria-hidden
         >
@@ -602,7 +602,7 @@ function CollapsedGroupRail({
             size="sm"
             variant="ghost"
             onClick={() => onOpen(group)}
-            className="group relative min-h-0 h-auto shrink-0 overflow-hidden rounded-card border border-border bg-white p-0 shadow-card"
+            className="group relative min-h-0 h-auto shrink-0 overflow-hidden rounded-card border border-border bg-surface p-0 shadow-card"
             style={{ width: COLLAPSED_RAIL_ITEM_WIDTH }}
             aria-label="Open render"
           >

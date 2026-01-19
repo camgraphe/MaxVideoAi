@@ -423,7 +423,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                     'min-h-0 h-auto w-full rounded-card px-4 py-3 text-left',
                     isActive
                       ? 'border-brand bg-surface-2 text-text-primary'
-                      : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                      : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
                   )}
                   onClick={() => handleSelectPlaylist(playlist.id)}
                   disabled={isPending}
@@ -439,7 +439,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
               );
             })}
             {playlists.length === 0 ? (
-              <div className="rounded-card border border-dashed border-hairline bg-white p-6 text-center text-sm text-text-secondary">
+              <div className="rounded-card border border-dashed border-hairline bg-surface p-6 text-center text-sm text-text-secondary">
                 No playlists yet. Create one to get started.
               </div>
             ) : null}
@@ -448,7 +448,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
 
         <section className="stack-gap-lg">
           {selectedPlaylist ? (
-            <div className="rounded-card border border-border bg-white p-6 shadow-card space-y-4">
+            <div className="rounded-card border border-border bg-surface p-6 shadow-card space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-text-primary">Playlist details</h2>
@@ -514,13 +514,13 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
               </Button>
             </div>
           ) : (
-            <div className="rounded-card border border-dashed border-hairline bg-white p-8 text-center text-sm text-text-secondary">
+            <div className="rounded-card border border-dashed border-hairline bg-surface p-8 text-center text-sm text-text-secondary">
               Select a playlist to edit.
             </div>
           )}
 
           {selectedPlaylist ? (
-            <div className="rounded-card border border-border bg-white p-6 shadow-card space-y-4">
+            <div className="rounded-card border border-border bg-surface p-6 shadow-card space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-text-primary">Playlist items</h2>

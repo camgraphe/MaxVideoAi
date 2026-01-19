@@ -214,7 +214,7 @@ function TabLink({
       variant="outline"
       size="sm"
       className={`px-3 text-sm ${
-        active ? 'border-brand bg-white text-text-primary shadow-card hover:border-brand' : 'border-border bg-bg text-text-secondary hover:bg-white'
+        active ? 'border-brand bg-surface text-text-primary shadow-card hover:border-brand' : 'border-border bg-bg text-text-secondary hover:bg-surface'
       }`}
       aria-current={active ? 'page' : undefined}
     >
@@ -244,7 +244,7 @@ function AccountTab({ user, copy }: AccountTabProps) {
   const emailDefault = user?.email ?? '';
 
   return (
-    <section className="rounded-card border border-border bg-white p-4 shadow-card">
+    <section className="rounded-card border border-border bg-surface p-4 shadow-card">
       <h2 className="mb-3 text-lg font-semibold text-text-primary">{copy.title}</h2>
       <div className="grid grid-gap-sm sm:grid-cols-2">
         <label className="text-sm">
@@ -297,7 +297,7 @@ function AccountTab({ user, copy }: AccountTabProps) {
 
 function TeamTab({ live, copy }: { live: boolean; copy: SettingsCopy['team'] }) {
   return (
-    <section className="rounded-card border border-border bg-white p-4 shadow-card">
+    <section className="rounded-card border border-border bg-surface p-4 shadow-card">
       <h2 className="mb-2 flex items-center gap-2 text-lg font-semibold text-text-primary">
         {copy.title}
         <FlagPill live={live} />
@@ -353,7 +353,7 @@ function PrivacyTab({
   const isDisabled = loading || saving || Boolean(loadError);
 
   return (
-    <section className="rounded-card border border-border bg-white p-4 shadow-card">
+    <section className="rounded-card border border-border bg-surface p-4 shadow-card">
       <h2 className="mb-3 text-lg font-semibold text-text-primary">{copy.title}</h2>
       <div className="space-y-4 text-sm text-text-secondary">
         <div className="rounded-card border border-hairline bg-bg px-4 py-3">
@@ -387,7 +387,7 @@ function NotificationsTab({ live, copy }: { live: boolean; copy: SettingsCopy['n
 
   if (!live) {
     return (
-      <section className="rounded-card border border-border bg-white p-4 shadow-card">
+      <section className="rounded-card border border-border bg-surface p-4 shadow-card">
         <h2 className="mb-2 flex items-center gap-2 text-lg font-semibold text-text-primary">
           {copy.title}
           <FlagPill live={false} />
@@ -436,7 +436,7 @@ function NotificationsTab({ live, copy }: { live: boolean; copy: SettingsCopy['n
     : null;
 
   return (
-    <section className="rounded-card border border-border bg-white p-4 shadow-card">
+    <section className="rounded-card border border-border bg-surface p-4 shadow-card">
       <h2 className="mb-3 text-lg font-semibold text-text-primary">{copy.title}</h2>
       <div className="space-y-4">
         <div className="flex flex-col gap-4 rounded-input border border-border bg-bg px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
@@ -458,11 +458,11 @@ function NotificationsTab({ live, copy }: { live: boolean; copy: SettingsCopy['n
             variant="ghost"
             onClick={handleMarketingToggle}
             disabled={isLoading || saving}
-            className={`h-7 w-12 min-h-0 rounded-full border p-0 ${marketingEnabled ? 'border-brand bg-brand' : 'border-border bg-white'}`}
+            className={`h-7 w-12 min-h-0 rounded-full border p-0 ${marketingEnabled ? 'border-brand bg-brand' : 'border-border bg-surface'}`}
             aria-pressed={marketingEnabled}
           >
             <span
-              className={`ml-1 block h-5 w-5 rounded-full bg-white shadow transition ${marketingEnabled ? 'translate-x-5' : ''}`}
+              className={`ml-1 block h-5 w-5 rounded-full bg-surface shadow transition ${marketingEnabled ? 'translate-x-5' : ''}`}
             />
           </Button>
         </div>
@@ -484,7 +484,7 @@ function ToggleRow({ label }: { label: string }) {
       <span className="text-text-secondary">{label}</span>
       <label className="inline-flex cursor-pointer items-center">
         <input type="checkbox" className="peer sr-only" defaultChecked />
-        <span className="h-5 w-9 rounded-full bg-white ring-1 ring-border transition peer-checked:bg-brand" />
+        <span className="h-5 w-9 rounded-full bg-surface ring-1 ring-border transition peer-checked:bg-brand" />
       </label>
     </div>
   );

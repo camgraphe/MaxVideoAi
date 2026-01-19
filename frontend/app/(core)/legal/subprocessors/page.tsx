@@ -92,7 +92,7 @@ export default function SubprocessorsPage() {
               <th scope="col" className="px-4 py-3">Data processed</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border bg-white">
+          <tbody className="divide-y divide-border bg-surface">
             {SUBPROCESSORS.map((entry) => (
               <tr key={entry.provider}>
                 <td className="px-4 py-4 font-medium text-text-primary">{entry.provider}</td>

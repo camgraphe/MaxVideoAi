@@ -37,7 +37,7 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
         </p>
       </header>
 
-      <section className="rounded-card border border-border/70 bg-white/95 p-5 shadow-card">
+      <section className="rounded-card border border-border/70 bg-surface-glass-95 p-5 shadow-card">
         <h2 className="text-sm font-semibold uppercase tracking-[0.35em] text-text-muted">Profile</h2>
         {profile ? (
           <dl className="mt-4 grid grid-gap-sm md:grid-cols-2">
@@ -76,7 +76,7 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
         <ImpersonationCard userId={userId} profile={profile} serviceRoleConfigured={overview.serviceRoleConfigured} />
       </section>
 
-      <section className="rounded-card border border-border/70 bg-white/95 p-5 shadow-card">
+      <section className="rounded-card border border-border/70 bg-surface-glass-95 p-5 shadow-card">
         <header className="flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.35em] text-text-muted">Engine usage</p>
@@ -113,7 +113,7 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
         </div>
       </section>
 
-      <section className="rounded-card border border-border/70 bg-white/95 p-5 shadow-card">
+      <section className="rounded-card border border-border/70 bg-surface-glass-95 p-5 shadow-card">
         <header className="flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.35em] text-text-muted">Recent jobs</p>
@@ -158,7 +158,7 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
         </div>
       </section>
 
-      <section className="rounded-card border border-border/70 bg-white/95 p-5 shadow-card">
+      <section className="rounded-card border border-border/70 bg-surface-glass-95 p-5 shadow-card">
         <header className="flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.35em] text-text-muted">Top-ups</p>
@@ -215,7 +215,7 @@ function ProfileField({ label, children }: { label: string; children: React.Reac
 
 function StatCard({ label, value, helper }: { label: string; value: string; helper?: string }) {
   return (
-    <div className="rounded-2xl border border-border/70 bg-white px-4 py-3">
+    <div className="rounded-2xl border border-border/70 bg-surface px-4 py-3">
       <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-text-muted">{label}</p>
       <p className="mt-2 text-2xl font-semibold text-text-primary">{value}</p>
       {helper ? <p className="text-xs text-text-secondary">{helper}</p> : null}
@@ -234,7 +234,7 @@ function ImpersonationCard({
 }) {
   const disabled = !serviceRoleConfigured || !profile?.email;
   return (
-    <div className="stack-gap-sm rounded-2xl border border-border/70 bg-white p-4">
+    <div className="stack-gap-sm rounded-2xl border border-border/70 bg-surface p-4">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">Impersonation</p>
         <p className="text-sm text-text-secondary">

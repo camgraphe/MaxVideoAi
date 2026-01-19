@@ -255,7 +255,7 @@ function ExampleCard({
     <Link
       ref={cardRef}
       href={`/video/${encodeURIComponent(video.id)}`}
-      className="group relative block overflow-hidden rounded-[18px] border border-hairline bg-white shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+      className="group relative block overflow-hidden rounded-[18px] border border-hairline bg-surface shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       aria-label={isLighthouse ? 'AI video example preview' : undefined}

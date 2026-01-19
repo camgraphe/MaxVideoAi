@@ -213,7 +213,7 @@ export function HomepageVideoManager({ initialHero }: HomepageVideoManagerProps)
           {heroSlots.map((slot) => {
             const video = slot.video;
             return (
-              <article key={slot.key} className="space-y-4 rounded-card border border-border bg-white p-5 shadow-card">
+              <article key={slot.key} className="space-y-4 rounded-card border border-border bg-surface p-5 shadow-card">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-sm font-semibold uppercase tracking-micro text-text-muted">

@@ -269,7 +269,7 @@ export function Composer({
               onChange={(event) => onPromptChange(event.currentTarget.value)}
               placeholder={promptPlaceholder}
               rows={6}
-              className="w-full rounded-input border border-border bg-white px-4 py-3 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full rounded-input border border-border bg-surface px-4 py-3 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               ref={textareaRef}
             />
           </div>
@@ -287,7 +287,7 @@ export function Composer({
                   'relative w-full shrink-0 px-5 py-3 uppercase tracking-micro sm:w-auto',
                   'overflow-hidden transform-gpu transition-transform duration-200 ease-out',
                   'border border-brand shadow-card',
-                  'disabled:border-border disabled:bg-white disabled:text-text-muted disabled:shadow-none',
+                  'disabled:border-border disabled:bg-surface disabled:text-text-muted disabled:shadow-none',
                   isButtonAnimating && !disableGenerate ? 'animate-button-pop' : '',
                   disableGenerate ? '' : 'active:scale-[0.97]'
                 )}
@@ -325,7 +325,7 @@ export function Composer({
               value={negativePrompt ?? ''}
               onChange={(event) => onNegativePromptChange?.(event.currentTarget.value)}
               placeholder={negativePromptDescription ?? composerCopy.negativePrompt.placeholder}
-              className="w-full rounded-input border border-border bg-white px-4 py-2 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full rounded-input border border-border bg-surface px-4 py-2 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
             {negativePromptDescription && (
               <p className="text-[12px] text-text-muted">{negativePromptDescription}</p>
@@ -521,7 +521,7 @@ function AssetDropzone({
 
   return (
     <div className="flex min-w-[260px] flex-1">
-      <div className="flex w-full flex-col gap-4 rounded-input border border-dashed border-border bg-white/80 p-4 text-text-secondary">
+      <div className="flex w-full flex-col gap-4 rounded-input border border-dashed border-border bg-surface-glass-80 p-4 text-text-secondary">
         <div className="flex items-center justify-between gap-2">
           <div>
             <span className="text-sm font-medium text-text-primary">
@@ -569,7 +569,7 @@ function AssetDropzone({
               <div
                 key={`${field.id}-slot-${index}`}
                 className={clsx(
-                  'relative flex h-36 w-full flex-col justify-center overflow-hidden rounded-card border border-border/70 bg-white text-center text-[12px] text-text-muted transition',
+                  'relative flex h-36 w-full flex-col justify-center overflow-hidden rounded-card border border-border/70 bg-surface text-center text-[12px] text-text-muted transition',
                   allowClick ? 'cursor-pointer hover:border-text-muted hover:bg-surface-2' : 'cursor-default'
                 )}
                 onClick={() => {
@@ -611,7 +611,7 @@ function AssetDropzone({
                         type="button"
                         size="sm"
                         variant="ghost"
-                        className="min-h-0 h-auto rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-text-secondary shadow-none hover:bg-white hover:text-text-primary"
+                        className="min-h-0 h-auto rounded-full bg-surface-glass-90 px-2 py-0.5 text-[10px] font-medium text-text-secondary shadow-none hover:bg-surface hover:text-text-primary"
                         onClick={(event) => {
                           event.stopPropagation();
                           onRemove?.(field, index);
@@ -632,7 +632,7 @@ function AssetDropzone({
                           type="button"
                           size="sm"
                           variant="ghost"
-                          className="min-h-0 h-auto rounded-full bg-white px-3 py-1 text-[11px] font-medium text-text-primary shadow-none hover:bg-white"
+                          className="min-h-0 h-auto rounded-full bg-surface px-3 py-1 text-[11px] font-medium text-text-primary shadow-none hover:bg-surface"
                           onClick={(event) => {
                             event.stopPropagation();
                             onRemove?.(field, index);
@@ -689,7 +689,7 @@ function AssetDropzone({
                     type="button"
                     size="sm"
                     variant="ghost"
-                    className="absolute bottom-2 right-2 min-h-0 h-auto rounded-full bg-white/90 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-text-secondary shadow-none hover:bg-white hover:text-text-primary"
+                    className="absolute bottom-2 right-2 min-h-0 h-auto rounded-full bg-surface-glass-90 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-text-secondary shadow-none hover:bg-surface hover:text-text-primary"
                     onClick={(event) => {
                       event.stopPropagation();
                       onOpenLibrary(field, index);

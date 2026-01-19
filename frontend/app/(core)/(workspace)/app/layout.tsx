@@ -37,7 +37,7 @@ function ImpersonationBanner({ userId, email }: { userId: string; email: string 
             type="submit"
             variant="outline"
             size="sm"
-            className="rounded-full border-amber-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-amber-800 hover:bg-amber-100"
+            className="rounded-full border-amber-300 bg-surface px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-amber-800 hover:bg-amber-100"
           >
             Exit impersonation
           </Button>

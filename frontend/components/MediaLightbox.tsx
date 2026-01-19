@@ -329,13 +329,13 @@ export function MediaLightbox({
         }
       }}
     >
-      <div className="relative max-h-full w-full max-w-5xl overflow-y-auto rounded-modal border border-border bg-white p-6 shadow-float">
+      <div className="relative max-h-full w-full max-w-5xl overflow-y-auto rounded-modal border border-border bg-surface p-6 shadow-float">
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={onClose}
-          className="absolute right-5 top-5 border-border bg-white px-3 py-1 text-sm font-medium text-text-secondary hover:bg-bg"
+          className="absolute right-5 top-5 border-border bg-surface px-3 py-1 text-sm font-medium text-text-secondary hover:bg-bg"
         >
           Close
         </Button>
@@ -402,7 +402,7 @@ export function MediaLightbox({
             return (
               <article
                 key={entry.id}
-                className="rounded-card border border-border bg-white/90 p-4 shadow-card md:flex md:items-start md:gap-4"
+                className="rounded-card border border-border bg-surface-glass-90 p-4 shadow-card md:flex md:items-start md:gap-4"
               >
                 <div className={clsx('relative overflow-hidden rounded-card bg-[#EFF3FA] md:w-[360px] md:flex-shrink-0', aspectClass)}>
                   {videoUrl ? (
@@ -473,7 +473,7 @@ export function MediaLightbox({
                       className={clsx(
                         'px-3 py-1.5 text-sm font-medium',
                         mediaUrl
-                          ? 'border-border bg-white text-text-secondary hover:bg-bg'
+                          ? 'border-border bg-surface text-text-secondary hover:bg-bg'
                           : 'pointer-events-none border-border/60 bg-bg text-text-muted'
                       )}
                     >
@@ -488,7 +488,7 @@ export function MediaLightbox({
                       className={clsx(
                         'px-3 py-1.5 text-sm font-medium',
                         mediaUrl
-                          ? 'border-border bg-white text-text-secondary hover:bg-bg disabled:cursor-not-allowed'
+                          ? 'border-border bg-surface text-text-secondary hover:bg-bg disabled:cursor-not-allowed'
                           : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
                       )}
                     >
@@ -504,7 +504,7 @@ export function MediaLightbox({
                         className={clsx(
                           'px-3 py-1.5 text-sm font-medium',
                           canRemix
-                            ? 'border-border bg-white text-text-secondary hover:bg-bg'
+                            ? 'border-border bg-surface text-text-secondary hover:bg-bg'
                             : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
                         )}
                       >
@@ -521,7 +521,7 @@ export function MediaLightbox({
                         className={clsx(
                           'px-3 py-1.5 text-sm font-medium',
                           canTemplate
-                            ? 'border-border bg-white text-text-secondary hover:bg-bg'
+                            ? 'border-border bg-surface text-text-secondary hover:bg-bg'
                             : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
                         )}
                       >
@@ -537,7 +537,7 @@ export function MediaLightbox({
                       className={clsx(
                         'px-3 py-1.5 text-sm font-medium',
                         mediaUrl
-                          ? 'border-border bg-white text-text-secondary hover:bg-bg disabled:cursor-not-allowed'
+                          ? 'border-border bg-surface text-text-secondary hover:bg-bg disabled:cursor-not-allowed'
                           : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
                       )}
                     >
@@ -637,7 +637,7 @@ export function MediaLightbox({
                   void navigator.clipboard.writeText(prompt).catch(() => undefined);
                 }
               }}
-              className="border-border bg-white px-3 py-1 text-xs font-medium text-text-secondary hover:bg-bg"
+              className="border-border bg-surface px-3 py-1 text-xs font-medium text-text-secondary hover:bg-bg"
             >
               Copy
             </Button>

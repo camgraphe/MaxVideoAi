@@ -22,7 +22,7 @@ export default async function AdminAuditLogPage() {
           Mirror of sensitive actions (impersonation, resync, etc.). Entries are stored in Postgres for internal traceability.
         </p>
       </header>
-      <div className="overflow-x-auto rounded-2xl border border-border/60 bg-white/95 p-4 shadow-card">
+      <div className="overflow-x-auto rounded-2xl border border-border/60 bg-surface-glass-95 p-4 shadow-card">
         <table className="min-w-full text-left text-sm">
           <thead>
             <tr className="text-xs uppercase tracking-[0.2em] text-text-muted">

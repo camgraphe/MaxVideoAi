@@ -596,7 +596,7 @@ export default function LoginPage() {
           <span>{authCopy.back}</span>
         </Button>
       </div>
-      <div className="w-full max-w-md stack-gap-lg rounded-card border border-border bg-white p-6 shadow-card">
+      <div className="w-full max-w-md stack-gap-lg rounded-card border border-border bg-surface p-6 shadow-card">
         <header className="stack-gap">
           <div>
             <h1 className="text-lg font-semibold text-text-primary">
@@ -623,7 +623,7 @@ export default function LoginPage() {
               onClick={() => setMode('signin')}
               className={clsx(
                 'flex-1 rounded-pill px-3 py-2',
-                effectiveMode === 'signin' ? 'shadow-card' : 'hover:bg-white'
+                effectiveMode === 'signin' ? 'shadow-card' : 'hover:bg-surface'
               )}
             >
               {authCopy.tabs.signin}
@@ -635,7 +635,7 @@ export default function LoginPage() {
               onClick={() => setMode('signup')}
               className={clsx(
                 'flex-1 rounded-pill px-3 py-2',
-                effectiveMode === 'signup' ? 'shadow-card' : 'hover:bg-white'
+                effectiveMode === 'signup' ? 'shadow-card' : 'hover:bg-surface'
               )}
             >
               {authCopy.tabs.signup}
@@ -845,7 +845,7 @@ export default function LoginPage() {
           </div>
         )}
         {mode === 'signin' && signupSuggestion && (
-          <div className="rounded-card border border-dashed border-border bg-white/75 px-3 py-3 text-xs text-text-secondary">
+          <div className="rounded-card border border-dashed border-border bg-surface-glass-75 px-3 py-3 text-xs text-text-secondary">
             <p className="text-sm font-semibold text-text-primary">New here?</p>
             <p className="mt-1">
               {formatTemplate(authCopy.signupSuggestion.body, { email: signupSuggestion.email })}

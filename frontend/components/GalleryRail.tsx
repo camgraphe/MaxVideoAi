@@ -437,13 +437,13 @@ export function GalleryRail({
       })}
       {(isInitialLoading || isFetchingMore) &&
         Array.from({ length: isInitialLoading ? 4 : 2 }).map((_, index) => (
-          <div key={`rail-skeleton-${index}`} className="rounded-card border border-border bg-white/60 p-0" aria-hidden>
+          <div key={`rail-skeleton-${index}`} className="rounded-card border border-border bg-surface-glass-60 p-0" aria-hidden>
             <div className="relative overflow-hidden rounded-card">
               <div className="relative" style={{ aspectRatio: '16 / 9' }}>
                 <div className="skeleton absolute inset-0" />
               </div>
             </div>
-            <div className="border-t border-border bg-white/70 px-3 py-2">
+            <div className="border-t border-border bg-surface-glass-70 px-3 py-2">
               <div className="h-3 w-24 rounded-full bg-neutral-200" />
             </div>
           </div>
@@ -468,7 +468,7 @@ export function GalleryRail({
   );
 
   const curatedBanner = hasCuratedJobs ? (
-    <div className="rounded-card border border-hairline bg-white/80 px-3 py-2 text-[12px] text-text-secondary">{copy.curated}</div>
+    <div className="rounded-card border border-hairline bg-surface-glass-80 px-3 py-2 text-[12px] text-text-secondary">{copy.curated}</div>
   ) : null;
 
   const errorBanner = error ? (
@@ -479,7 +479,7 @@ export function GalleryRail({
         variant="outline"
         size="sm"
         onClick={retry}
-        className="rounded-input border-[#92400E]/20 bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-[#92400E] hover:bg-white"
+        className="rounded-input border-[#92400E]/20 bg-surface-glass-70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-[#92400E] hover:bg-surface"
       >
         {copy.retry}
       </Button>

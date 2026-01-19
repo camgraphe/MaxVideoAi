@@ -227,7 +227,7 @@ export function GroupedJobCard({
   return (
     <Card
       className={clsx(
-        'relative overflow-visible rounded-card border border-border bg-white/90 p-0 shadow-card',
+        'relative overflow-visible rounded-card border border-border bg-surface-glass-90 p-0 shadow-card',
         menuOpen && 'z-30'
       )}
     >
@@ -310,7 +310,7 @@ export function GroupedJobCard({
           </Button>
         )}
       </figure>
-      <div className="flex items-center justify-between gap-4 border-t border-hairline bg-white/80 px-3 py-2 text-sm text-text-secondary">
+      <div className="flex items-center justify-between gap-4 border-t border-hairline bg-surface-glass-80 px-3 py-2 text-sm text-text-secondary">
         <div className="flex items-center gap-2">
           <EngineIcon engine={engine ?? undefined} label={hero.engineLabel} size={28} className="shrink-0" />
           {detailLabel ? (
@@ -331,8 +331,8 @@ export function GroupedJobCard({
               className={clsx(
                 'min-h-0 h-auto rounded-pill px-2.5 py-1 text-[11px] font-semibold',
                 savingToLibrary
-                  ? 'border-border bg-white/70 text-text-muted'
-                  : 'border-brand bg-white text-brand hover:bg-surface-2 hover:text-brand'
+                  ? 'border-border bg-surface-glass-70 text-text-muted'
+                  : 'border-brand bg-surface text-brand hover:bg-surface-2 hover:text-brand'
               )}
             >
               {savingToLibrary ? imageLibrarySavingLabel : imageLibraryLabel}
@@ -364,7 +364,7 @@ export function GroupedJobCard({
       {showMenu && menuOpen && (
         <div
           ref={menuRef}
-          className="absolute right-3 top-12 z-40 w-48 rounded-card border border-border bg-white p-2 text-sm text-text-secondary shadow-card"
+          className="absolute right-3 top-12 z-40 w-48 rounded-card border border-border bg-surface p-2 text-sm text-text-secondary shadow-card"
         >
           {showGalleryActions ? (
             <>

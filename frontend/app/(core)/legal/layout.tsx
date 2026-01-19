@@ -24,7 +24,7 @@ export default async function LegalLayout({ children }: { children: React.ReactN
             {copy.back}
           </Link>
         </header>
-        <section className="stack-gap-xl rounded-card border border-border bg-white p-6 shadow-card sm:p-10">
+        <section className="stack-gap-xl rounded-card border border-border bg-surface p-6 shadow-card sm:p-10">
           {children}
         </section>
       </div>

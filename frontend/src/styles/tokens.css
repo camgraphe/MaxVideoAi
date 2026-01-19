@@ -5,6 +5,13 @@
   --surface-3: #EEF1F5;
   --surface-hover: #EEF1F5;
   --surface-disabled: #EEF1F5;
+  --surface-glass-95: rgba(255, 255, 255, 0.95);
+  --surface-glass-90: rgba(255, 255, 255, 0.90);
+  --surface-glass-85: rgba(255, 255, 255, 0.85);
+  --surface-glass-80: rgba(255, 255, 255, 0.80);
+  --surface-glass-75: rgba(255, 255, 255, 0.75);
+  --surface-glass-70: rgba(255, 255, 255, 0.70);
+  --surface-glass-60: rgba(255, 255, 255, 0.60);
   --border: #C2CAD6;
   --hairline: #EEF1F5;
   --border-hover: #9AA7B6;
@@ -128,6 +135,13 @@
   --surface-3: #0F141C;
   --surface-hover: #1B2430;
   --surface-disabled: #0B0F14;
+  --surface-glass-95: rgba(20, 27, 36, 0.95);
+  --surface-glass-90: rgba(20, 27, 36, 0.90);
+  --surface-glass-85: rgba(20, 27, 36, 0.85);
+  --surface-glass-80: rgba(20, 27, 36, 0.80);
+  --surface-glass-75: rgba(20, 27, 36, 0.75);
+  --surface-glass-70: rgba(20, 27, 36, 0.70);
+  --surface-glass-60: rgba(20, 27, 36, 0.60);
   --border: #253041;
   --hairline: #1E2734;
   --border-hover: #3B4A5F;

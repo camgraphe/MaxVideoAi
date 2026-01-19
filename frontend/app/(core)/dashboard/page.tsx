@@ -891,7 +891,7 @@ function CreateHero({
   onUseLastImageSettings: () => void;
 }) {
   return (
-    <section className="rounded-card border border-border bg-white p-5 shadow-card">
+    <section className="rounded-card border border-border bg-surface p-5 shadow-card">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-text-primary">{copy.create.title}</h1>
@@ -1097,7 +1097,7 @@ function InProgressList({
   onOpen: (job: Job) => void;
 }) {
   return (
-    <section className="rounded-card border border-border bg-white p-5 shadow-card">
+    <section className="rounded-card border border-border bg-surface p-5 shadow-card">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-text-primary">{copy.inProgress.title}</h2>
       </div>
@@ -1131,7 +1131,7 @@ function InProgressRow({
 
   return (
     <div className="flex flex-col gap-4 rounded-card border border-border bg-bg/60 p-3 sm:flex-row sm:items-center">
-      <div className="relative h-16 w-full overflow-hidden rounded-input border border-border bg-white sm:h-14 sm:w-24">
+      <div className="relative h-16 w-full overflow-hidden rounded-input border border-border bg-surface sm:h-14 sm:w-24">
         {job.thumbUrl ? (
           <Image src={job.thumbUrl} alt="" fill className="object-cover" />
         ) : (
@@ -1144,7 +1144,7 @@ function InProgressRow({
           {price ? <span className="text-xs font-semibold text-text-primary">{price}</span> : null}
         </div>
         <p className="mt-1 truncate text-xs text-text-muted">{prompt}</p>
-        <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-white">
+        <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-surface">
           <div className="h-full rounded-full bg-brand" style={{ width: `${progress}%` }} />
         </div>
         <div className="mt-1 flex items-center justify-between text-xs text-text-muted">
@@ -1199,7 +1199,7 @@ function RecentGrid({
   onTabChange: (tab: 'all' | 'completed' | 'failed') => void;
 }) {
   return (
-    <section className="rounded-card border border-border bg-white p-5 shadow-card">
+    <section className="rounded-card border border-border bg-surface p-5 shadow-card">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-lg font-semibold text-text-primary">{copy.recent.title}</h2>
         <ButtonLink
@@ -1224,7 +1224,7 @@ function RecentGrid({
               'px-3 py-1 text-xs font-semibold',
               tab === value
                 ? 'border border-brand shadow-card'
-                : 'border border-border bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary'
+                : 'border border-border bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary'
             )}
           >
             {copy.recent.tabs[value]}
@@ -1341,7 +1341,7 @@ function InsightsPanel({
   mostUsed: string | null;
 }) {
   return (
-    <section className="rounded-card border border-border bg-white p-5 shadow-card">
+    <section className="rounded-card border border-border bg-surface p-5 shadow-card">
       <h3 className="text-lg font-semibold text-text-primary">{copy.insights.title}</h3>
       <div className="mt-4 grid grid-gap-sm text-sm">
         <InsightRow label={copy.insights.spendToday} value={spendToday} />
@@ -1385,7 +1385,7 @@ function InsightRow({ label, value }: { label: string; value: string }) {
   ref: Ref<HTMLDivElement>
 ) {
   return (
-    <section ref={ref} className="rounded-card border border-border bg-white p-5 shadow-card">
+    <section ref={ref} className="rounded-card border border-border bg-surface p-5 shadow-card">
       <h3 className="text-lg font-semibold text-text-primary">{copy.quickStarts.title}</h3>
       {!templates.length ? (
         <p className="mt-3 text-sm text-text-secondary">{copy.quickStarts.empty}</p>
@@ -1394,7 +1394,7 @@ function InsightRow({ label, value }: { label: string; value: string }) {
           {templates.map((template) => (
             <div key={template.id} className="rounded-input border border-border bg-bg px-3 py-3">
               <div className="flex flex-col gap-4 sm:flex-row">
-                <div className="relative h-16 w-full overflow-hidden rounded-input border border-border bg-white sm:h-16 sm:w-28">
+                <div className="relative h-16 w-full overflow-hidden rounded-input border border-border bg-surface sm:h-16 sm:w-28">
                   {template.thumbUrl ? (
                     <Image src={template.thumbUrl} alt="" fill className="object-cover" />
                   ) : (
@@ -1475,7 +1475,7 @@ function EngineStatusCompact({
 }) {
   if (enginesError) {
     return (
-      <section className="rounded-card border border-border bg-white p-5 shadow-card">
+      <section className="rounded-card border border-border bg-surface p-5 shadow-card">
         <h3 className="text-lg font-semibold text-text-primary">{copy.engines.title}</h3>
         <p className="mt-2 text-sm text-state-warning">{copy.engines.error}</p>
       </section>
@@ -1485,7 +1485,7 @@ function EngineStatusCompact({
   const flagged = engines.filter((engine) => isEngineAlert(engine));
 
   return (
-    <section className="rounded-card border border-border bg-white p-5 shadow-card">
+    <section className="rounded-card border border-border bg-surface p-5 shadow-card">
       <h3 className="text-lg font-semibold text-text-primary">{copy.engines.title}</h3>
       {flagged.length === 0 ? (
         <p className="mt-2 text-sm text-text-secondary">{copy.engines.allOk}</p>

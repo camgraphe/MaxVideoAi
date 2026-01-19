@@ -44,7 +44,7 @@ function AnomaliesPanel({
     anomalies.largeRefunds.length || anomalies.frequentRefundUsers.length || anomalies.invalidCharges.length;
   if (!hasContent) {
     return (
-      <section className="rounded-2xl border border-border/60 bg-white/95 p-5 shadow-card">
+      <section className="rounded-2xl border border-border/60 bg-surface-glass-95 p-5 shadow-card">
         <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-text-muted">Anomalies</h2>
         <p className="text-xs text-text-secondary">No anomalies detected in the latest 100 transactions.</p>
       </section>
@@ -66,7 +66,7 @@ function AnomaliesPanel({
   };
 
   return (
-    <section className="stack-gap-lg rounded-2xl border border-border/60 bg-white/95 p-5 shadow-card">
+    <section className="stack-gap-lg rounded-2xl border border-border/60 bg-surface-glass-95 p-5 shadow-card">
       <div>
         <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-text-muted">Anomalies</h2>
         <p className="text-xs text-text-secondary">

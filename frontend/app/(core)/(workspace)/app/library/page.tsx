@@ -195,7 +195,7 @@ export default function LibraryPage() {
             </div>
           </div>
 
-          <section className="rounded-card border border-border bg-white/80 p-5 shadow-card">
+          <section className="rounded-card border border-border bg-surface-glass-80 p-5 shadow-card">
             <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center justify-between gap-4 sm:justify-start">
                 <h2 className="text-lg font-semibold text-text-primary">{copy.assets.title}</h2>
@@ -205,7 +205,7 @@ export default function LibraryPage() {
               <div
                 role="tablist"
                 aria-label="Library image filters"
-                className="flex w-full overflow-hidden rounded-full border border-border bg-white/70 text-xs font-semibold text-text-secondary sm:w-auto"
+                className="flex w-full overflow-hidden rounded-full border border-border bg-surface-glass-70 text-xs font-semibold text-text-secondary sm:w-auto"
               >
                 <Button
                   type="button"
@@ -219,7 +219,7 @@ export default function LibraryPage() {
                     setDeletingId(null);
                   }}
                   className={`flex-1 rounded-none px-4 py-2 sm:flex-none ${
-                    activeSource === 'all' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-white'
+                    activeSource === 'all' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-surface'
                   }`}
                 >
                   {copy.tabs.all}
@@ -236,7 +236,7 @@ export default function LibraryPage() {
                     setDeletingId(null);
                   }}
                   className={`flex-1 rounded-none px-4 py-2 sm:flex-none ${
-                    activeSource === 'upload' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-white'
+                    activeSource === 'upload' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-surface'
                   }`}
                 >
                   {copy.tabs.upload}
@@ -255,7 +255,7 @@ export default function LibraryPage() {
                   className={`flex-1 rounded-none px-4 py-2 sm:flex-none ${
                     activeSource === 'generated'
                       ? 'hover:bg-brandHover'
-                      : 'text-text-secondary hover:bg-white'
+                      : 'text-text-secondary hover:bg-surface'
                   }`}
                 >
                   {copy.tabs.generated}
@@ -272,7 +272,7 @@ export default function LibraryPage() {
             {assetsLoading && assets.length === 0 ? (
               <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-4">
                 {Array.from({ length: 8 }).map((_, index) => (
-                  <div key={`asset-skeleton-${index}`} className="rounded-card border border-hairline bg-white/60">
+                  <div key={`asset-skeleton-${index}`} className="rounded-card border border-hairline bg-surface-glass-60">
                     <div className="relative aspect-square rounded-t-card bg-neutral-100">
                       <div className="skeleton absolute inset-0" />
                     </div>
@@ -293,7 +293,7 @@ export default function LibraryPage() {
             ) : (
               <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-4">
                 {assets.map((asset) => (
-                  <article key={asset.id} className="rounded-card border border-border bg-white shadow-card">
+                  <article key={asset.id} className="rounded-card border border-border bg-surface shadow-card">
                     <div className="relative aspect-square overflow-hidden rounded-t-card bg-[#f2f4f8]">
                       <img src={asset.url} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
                     </div>
@@ -311,7 +311,7 @@ export default function LibraryPage() {
                             }
                             variant="outline"
                             size="sm"
-                            className="flex-1 gap-1 border-border/70 bg-white py-1 text-[11px] text-text-secondary hover:border-text-muted hover:text-text-primary"
+                            className="flex-1 gap-1 border-border/70 bg-surface py-1 text-[11px] text-text-secondary hover:border-text-muted hover:text-text-primary"
                             aria-label={copy.assets.useSettingsButton}
                           >
                             <span>{copy.assets.useSettingsButton}</span>
@@ -325,7 +325,7 @@ export default function LibraryPage() {
                           rel="noreferrer"
                           variant="outline"
                           size="sm"
-                          className="flex-1 gap-1 border-border/70 bg-white py-1 text-[11px] text-text-secondary hover:border-text-muted hover:text-text-primary"
+                          className="flex-1 gap-1 border-border/70 bg-surface py-1 text-[11px] text-text-secondary hover:border-text-muted hover:text-text-primary"
                           aria-label={`${copy.assets.downloadButton} ${asset.url.split('/').pop() ?? copy.assets.assetFallback}`}
                         >
                           <Download className="h-3.5 w-3.5" aria-hidden />

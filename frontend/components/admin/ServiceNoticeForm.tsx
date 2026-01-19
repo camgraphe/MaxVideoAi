@@ -65,7 +65,7 @@ export function ServiceNoticeForm({ initialNotice }: ServiceNoticeFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-card border border-border bg-white p-6 shadow-card">
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-card border border-border bg-surface p-6 shadow-card">
       <div className="space-y-1">
         <h2 className="text-lg font-semibold text-text-primary">Bannière de service</h2>
         <p className="text-sm text-text-secondary">
@@ -92,7 +92,7 @@ export function ServiceNoticeForm({ initialNotice }: ServiceNoticeFormProps) {
           disabled={!enabled}
           rows={3}
           maxLength={500}
-          className="w-full rounded-input border border-border bg-white/80 px-3 py-2 text-sm text-text-primary shadow-inner focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:bg-muted/40"
+          className="w-full rounded-input border border-border bg-surface-glass-80 px-3 py-2 text-sm text-text-primary shadow-inner focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:bg-muted/40"
           placeholder="Ex : Certains fournisseurs rencontrent un incident. Les nouveaux rendus sont temporairement retardés."
         />
         <p className="text-xs text-text-muted">Max 500 caractères. Le message doit être renseigné pour activer la bannière.</p>

@@ -383,7 +383,7 @@ export function CompositePreviewDock({
   );
 
   return (
-    <section className="rounded-card border border-border bg-white/90 shadow-card">
+    <section className="rounded-card border border-border bg-surface-glass-90 shadow-card">
       <header className="border-b border-hairline px-4 py-3">
         {engineSettings ? (
           <>
@@ -448,7 +448,7 @@ export function CompositePreviewDock({
             {showSkeleton ? (
               <div className={clsx('grid h-full w-full gap-[6px]', gridClass)}>
                 {Array.from({ length: group ? LAYOUT_SLOT_COUNT[group.layout] ?? 1 : 1 }).map((_, index) => (
-                  <div key={`dock-skeleton-${index}`} className="relative flex items-center justify-center overflow-hidden rounded-card bg-white/70">
+                  <div key={`dock-skeleton-${index}`} className="relative flex items-center justify-center overflow-hidden rounded-card bg-surface-glass-70">
                     <div className="skeleton absolute inset-0" />
                   </div>
                 ))}
@@ -458,7 +458,7 @@ export function CompositePreviewDock({
                 {slots.map((item, index) => {
                   if (!item) {
                     return (
-                      <div key={`dock-empty-${index}`} className="relative flex items-center justify-center overflow-hidden rounded-card bg-white/70 text-xs text-text-muted">
+                      <div key={`dock-empty-${index}`} className="relative flex items-center justify-center overflow-hidden rounded-card bg-surface-glass-70 text-xs text-text-muted">
                         {copy.placeholder}
                       </div>
                     );
@@ -559,7 +559,7 @@ export function CompositePreviewDock({
                 })}
               </div>
             ) : (
-              <div className="flex h-full w-full flex-col items-center justify-center rounded-card bg-white/80 text-sm text-text-secondary">
+              <div className="flex h-full w-full flex-col items-center justify-center rounded-card bg-surface-glass-80 text-sm text-text-secondary">
                 Select a take to preview
               </div>
             )}
@@ -574,7 +574,7 @@ export function CompositePreviewDock({
           <div className="mt-3 flex w-full max-w-[960px]">
             <div
               ref={toolbarRef}
-              className="flex w-full items-center justify-center rounded-card border border-hairline/70 bg-white/75 px-3 py-2 shadow-sm backdrop-blur"
+              className="flex w-full items-center justify-center rounded-card border border-hairline/70 bg-surface-glass-75 px-3 py-2 shadow-sm backdrop-blur"
             >
               {toolbarControls}
             </div>

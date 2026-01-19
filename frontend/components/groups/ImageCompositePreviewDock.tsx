@@ -176,7 +176,7 @@ export function ImageCompositePreviewDock({
   );
 
   return (
-    <section className="overflow-hidden rounded-card border border-border bg-white/80 shadow-card">
+    <section className="overflow-hidden rounded-card border border-border bg-surface-glass-80 shadow-card">
       <header className="border-b border-hairline px-4 py-3">
         {engineSettings ? (
           <>
@@ -215,7 +215,7 @@ export function ImageCompositePreviewDock({
             )}
           </div>
           <div className="mt-3 flex w-full">
-            <div className="flex w-full items-center justify-center rounded-card border border-hairline/70 bg-white/75 px-3 py-2 shadow-sm backdrop-blur">
+            <div className="flex w-full items-center justify-center rounded-card border border-hairline/70 bg-surface-glass-75 px-3 py-2 shadow-sm backdrop-blur">
               {toolbar}
             </div>
           </div>
@@ -234,7 +234,7 @@ export function ImageCompositePreviewDock({
                   variant="ghost"
                   onClick={() => onSelectIndex(index)}
                   className={clsx(
-                    'relative h-14 w-14 flex-none overflow-hidden rounded-card border bg-white p-0 shadow-sm transition',
+                    'relative h-14 w-14 flex-none overflow-hidden rounded-card border bg-surface p-0 shadow-sm transition',
                     isActive ? 'border-brand' : 'border-border hover:border-text-muted'
                   )}
                   aria-label={buttonLabel}

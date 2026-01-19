@@ -167,7 +167,7 @@ export function HeroMediaTile({
   }, [lightboxOpen]);
 
   const content = (
-    <figure className="group relative overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-card">
+    <figure className="group relative overflow-hidden rounded-[28px] border border-white/70 bg-surface shadow-card">
       <div className="relative aspect-[16/9] w-full">
         {showAudioIcon ? (
           <AudioEqualizerBadge tone="light" size="sm" label="Audio enabled" />
@@ -269,7 +269,7 @@ export function HeroMediaTile({
           }}
         >
           <div
-            className="relative w-full max-w-4xl rounded-[32px] border border-white/20 bg-white/95 p-4 text-left shadow-2xl backdrop-blur"
+            className="relative w-full max-w-4xl rounded-[32px] border border-white/20 bg-surface-glass-95 p-4 text-left shadow-2xl backdrop-blur"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4 border-b border-hairline pb-4 pr-14">
@@ -279,7 +279,7 @@ export function HeroMediaTile({
                   {modelHref ? (
                     <Link
                       href={modelHref}
-                      className="inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-brand shadow-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="inline-flex items-center gap-1 rounded-full bg-surface-glass-90 px-2 py-0.5 text-[11px] font-semibold text-brand shadow-sm transition hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <span>Model page</span>
                       <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
@@ -340,7 +340,7 @@ export function HeroMediaTile({
               size="sm"
               variant="ghost"
               onClick={() => setLightboxOpen(false)}
-              className="absolute right-4 top-4 h-11 w-11 min-h-0 rounded-full bg-white/95 p-0 text-text-primary shadow-lg ring-1 ring-border hover:bg-white"
+              className="absolute right-4 top-4 h-11 w-11 min-h-0 rounded-full bg-surface-glass-95 p-0 text-text-primary shadow-lg ring-1 ring-border hover:bg-surface"
               aria-label="Close preview"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>

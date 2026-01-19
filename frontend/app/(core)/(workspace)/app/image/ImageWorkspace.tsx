@@ -1689,7 +1689,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                     {pricingError ? <p className="text-[12px] text-state-warning">{pricingError.message}</p> : null}
                     <textarea
                       id="prompt"
-                      className="w-full rounded-input border border-border bg-white px-4 py-3 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="w-full rounded-input border border-border bg-surface px-4 py-3 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       placeholder={promptPlaceholder}
                       value={prompt}
                       onChange={(event) => setPrompt(event.target.value)}
@@ -1704,7 +1704,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                             variant="outline"
                             size="sm"
                             onClick={() => handlePreset(preset)}
-                            className="min-h-0 h-auto rounded-full border-hairline bg-white/80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
+                            className="min-h-0 h-auto rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
                           >
                             {preset.title}
                           </Button>
@@ -1789,8 +1789,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                           onDrop={(event) => handleSlotDrop(event, index)}
                           onPaste={(event) => handleSlotPaste(event, index)}
                         className={clsx(
-                          'group relative flex aspect-[2/1] flex-col overflow-hidden rounded-2xl border border-dashed border-hairline bg-white/80 text-center text-[11px] text-text-secondary transition',
-                          slot && 'border-solid border-text-muted bg-white shadow-card'
+                          'group relative flex aspect-[2/1] flex-col overflow-hidden rounded-2xl border border-dashed border-hairline bg-surface-glass-80 text-center text-[11px] text-text-secondary transition',
+                          slot && 'border-solid border-text-muted bg-surface shadow-card'
                         )}
                         >
                           <input
@@ -1925,7 +1925,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         ) : null}
       </div>
       {!isDesktopLayout ? (
-        <div className="border-t border-hairline bg-white/70 px-4 py-4">
+        <div className="border-t border-hairline bg-surface-glass-70 px-4 py-4">
           <GalleryRail
             engine={selectedEngineCaps}
             feedType="image"
@@ -2014,7 +2014,7 @@ function ImageLibraryModal({
       aria-modal="true"
       onMouseDown={handleBackdropClick}
     >
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-modal border border-border bg-white shadow-float">
+      <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-modal border border-border bg-surface shadow-float">
         <div className="flex flex-col gap-4 border-b border-border px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6">
           <div>
             <h2 className="text-lg font-semibold text-text-primary">{copy.modal.title}</h2>
@@ -2034,7 +2034,7 @@ function ImageLibraryModal({
           <div
             role="tablist"
             aria-label="Library image filters"
-            className="flex w-full overflow-hidden rounded-full border border-border bg-white/70 text-xs font-semibold text-text-secondary"
+            className="flex w-full overflow-hidden rounded-full border border-border bg-surface-glass-70 text-xs font-semibold text-text-secondary"
           >
             <Button
               type="button"
@@ -2045,7 +2045,7 @@ function ImageLibraryModal({
               onClick={() => setActiveSource('all')}
               className={clsx(
                 'flex-1 rounded-none px-4 py-2',
-                activeSource === 'all' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-white'
+                activeSource === 'all' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-surface'
               )}
             >
               {copy.tabs.all}
@@ -2059,7 +2059,7 @@ function ImageLibraryModal({
               onClick={() => setActiveSource('upload')}
               className={clsx(
                 'flex-1 rounded-none px-4 py-2',
-                activeSource === 'upload' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-white'
+                activeSource === 'upload' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-surface'
               )}
             >
               {copy.tabs.upload}
@@ -2073,7 +2073,7 @@ function ImageLibraryModal({
               onClick={() => setActiveSource('generated')}
               className={clsx(
                 'flex-1 rounded-none px-4 py-2',
-                activeSource === 'generated' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-white'
+                activeSource === 'generated' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-surface'
               )}
             >
               {copy.tabs.generated}
@@ -2088,7 +2088,7 @@ function ImageLibraryModal({
           ) : isLoading && !assets.length ? (
             <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, index) => (
-                <div key={`library-modal-skeleton-${index}`} className="rounded-card border border-border bg-white/60 p-0" aria-hidden>
+                <div key={`library-modal-skeleton-${index}`} className="rounded-card border border-border bg-surface-glass-60 p-0" aria-hidden>
                   <div className="relative aspect-square overflow-hidden rounded-t-card bg-neutral-100">
                     <div className="skeleton absolute inset-0" />
                   </div>
@@ -2111,7 +2111,7 @@ function ImageLibraryModal({
                   size="sm"
                   variant="ghost"
                   onClick={() => onSelect(asset)}
-                  className="group min-h-0 h-auto rounded-card border border-border bg-white p-0 text-left shadow-card hover:border-text-primary"
+                  className="group min-h-0 h-auto rounded-card border border-border bg-surface p-0 text-left shadow-card hover:border-text-primary"
                 >
                   <div className="relative aspect-square overflow-hidden rounded-t-card bg-[#f2f4f8]">
                     <img src={asset.url} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />

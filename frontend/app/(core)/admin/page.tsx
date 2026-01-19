@@ -118,7 +118,7 @@ export default async function AdminIndexPage() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="rounded-card border border-border bg-white p-6 shadow-card transition hover:-translate-y-0.5 hover:shadow-lg"
+                className="rounded-card border border-border bg-surface p-6 shadow-card transition hover:-translate-y-0.5 hover:shadow-lg"
               >
                 <h3 className="text-lg font-semibold text-text-primary">{item.title}</h3>
                 <p className="mt-2 text-sm text-text-secondary">{item.description}</p>
@@ -155,7 +155,7 @@ function HealthStrip({ health }: { health: AdminHealthSnapshot }) {
         );
 
   return (
-    <section className="rounded-card border border-border/80 bg-white/95 p-5 shadow-card">
+    <section className="rounded-card border border-border/80 bg-surface-glass-95 p-5 shadow-card">
       <div className="grid grid-gap-sm md:grid-cols-2 lg:grid-cols-4">
         <HealthTile
           label="Engine signals"
@@ -206,7 +206,7 @@ function HealthTile({
   href?: string;
 }) {
   const intentClasses = variant === 'warn' ? 'text-rose-600' : 'text-text-primary';
-  const baseClasses = 'block rounded-2xl border border-border/70 bg-white px-5 py-4';
+  const baseClasses = 'block rounded-2xl border border-border/70 bg-surface px-5 py-4';
   const interactiveClasses = href
     ? 'transition hover:-translate-y-0.5 hover:border-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
     : '';
@@ -231,7 +231,7 @@ function HealthTile({
 
 function QuickToolsCard() {
   return (
-    <section className="rounded-card border border-border/70 bg-white/95 p-5 shadow-card">
+    <section className="rounded-card border border-border/70 bg-surface-glass-95 p-5 shadow-card">
       <header className="space-y-1">
         <p className="text-xs font-semibold uppercase tracking-[0.35em] text-text-muted">Admin quick tools</p>
         <p className="text-sm text-text-secondary">Jump to common support flows without loading the full modules first.</p>
@@ -247,7 +247,7 @@ function QuickToolsCard() {
             name="search"
             type="text"
             placeholder="Email or Supabase user ID"
-            className="rounded-lg border border-border/60 bg-white px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+            className="rounded-lg border border-border/60 bg-surface px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
           />
           <Button
             type="submit"
@@ -267,7 +267,7 @@ function QuickToolsCard() {
             name="jobId"
             type="text"
             placeholder="Job id or Fal request id"
-            className="rounded-lg border border-border/60 bg-white px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+            className="rounded-lg border border-border/60 bg-surface px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
           />
           <Button
             type="submit"

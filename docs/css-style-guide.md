@@ -256,6 +256,18 @@ Ces tokens sont la couche **semantique UI** (marketing + app). Ils doivent evite
 * `ui.surfaceHover` - `#EEF1F5`
 * `ui.surfaceDisabled` - `#EEF1F5`
 
+#### Glass / translucent surfaces
+
+* `ui.surfaceGlass95` - `rgba(255, 255, 255, 0.95)`
+* `ui.surfaceGlass90` - `rgba(255, 255, 255, 0.90)`
+* `ui.surfaceGlass85` - `rgba(255, 255, 255, 0.85)`
+* `ui.surfaceGlass80` - `rgba(255, 255, 255, 0.80)`
+* `ui.surfaceGlass75` - `rgba(255, 255, 255, 0.75)`
+* `ui.surfaceGlass70` - `rgba(255, 255, 255, 0.70)`
+* `ui.surfaceGlass60` - `rgba(255, 255, 255, 0.60)`
+
+Note: usage UI = panels/modals sur fond visible + `backdrop-blur`. Eviter `bg-white/xx` en nouvelles pages; preferer `bg-surface-glass-*` (Tailwind).
+
 #### Borders
 
 * `ui.border` - `#C2CAD6`
@@ -344,6 +356,18 @@ Note: changement visuel attendu. Ancien ring (code) etait plutot neutre (`#9DA7B
 * `ui.surface3` - `#0F141C` (= `color.dark.neutralExt.surface3`)
 * `ui.surfaceHover` - `#1B2430`
 * `ui.surfaceDisabled` - `#0B0F14`
+
+#### Glass / translucent surfaces
+
+* `ui.surfaceGlass95` - `rgba(20, 27, 36, 0.95)`
+* `ui.surfaceGlass90` - `rgba(20, 27, 36, 0.90)`
+* `ui.surfaceGlass85` - `rgba(20, 27, 36, 0.85)`
+* `ui.surfaceGlass80` - `rgba(20, 27, 36, 0.80)`
+* `ui.surfaceGlass75` - `rgba(20, 27, 36, 0.75)`
+* `ui.surfaceGlass70` - `rgba(20, 27, 36, 0.70)`
+* `ui.surfaceGlass60` - `rgba(20, 27, 36, 0.60)`
+
+Note: les chips "on-media" peuvent rester en `bg-white/xx` (art/brand), mais l'UI standard doit utiliser ces tokens.
 
 #### Borders
 
@@ -651,6 +675,7 @@ Objectif : rendre explicite le chemin de verite, pour eviter les divergences (ex
 | `ui.textSecondary` | `--text-secondary` | `text-text-secondary` |
 | `ui.textMuted` | `--text-muted` | `text-text-muted` |
 | `ui.surface2` | `--surface-2` | `bg-[var(--surface-2)]` (temp) / `bg-surface-2` (cible) |
+| `ui.surfaceGlass90` | `--surface-glass-90` | `bg-surface-glass-90` |
 | `ui.border` | `--border` | `border-border` |
 | `ui.hairline` | `--hairline` | `border-hairline` |
 | `ui.accent` | `--accent` | `text-accent` / `bg-accent` selon usage |
@@ -710,6 +735,7 @@ Regle : toute nouvelle UI ou nouvelle page ne doit pas ajouter de nouveaux hex d
 ## 7) Regle simple "no new UI hex" (a afficher dans le repo)
 
 * Interdit dans les composants/pages UI : `bg-[#...]`, `text-[#...]`, `border-[#...]`, `shadow-[...]`, gradients UI en dur.
+* Eviter `bg-white/xx` pour les surfaces UI : utiliser `bg-surface-glass-*` (exceptions: micro-UI on-media / FX decoratifs).
 * Autorise uniquement dans les chemins listes en 6.1 / 6.2.
 
 ---

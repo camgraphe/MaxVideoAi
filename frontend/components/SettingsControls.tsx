@@ -310,7 +310,7 @@ export function SettingsControls({
                           'min-h-0 h-auto px-3 py-1.5 text-[13px] font-medium',
                           active
                             ? 'border-brand bg-brand text-on-brand'
-                            : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2',
+                            : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2',
                           !onNumFramesChange && 'cursor-not-allowed opacity-60'
                         )}
                       >
@@ -343,7 +343,7 @@ export function SettingsControls({
                           'min-h-0 h-auto px-3 py-1.5 text-[13px] font-medium',
                           active
                             ? 'border-brand bg-brand text-on-brand'
-                            : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                            : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
                         )}
                       >
                         {option.label}
@@ -362,7 +362,7 @@ export function SettingsControls({
                       .replace('{max}', String(engine.maxDurationSec))}
                   </span>
                 </span>
-                <div className="flex items-center gap-4 rounded-input border border-border bg-white px-3 py-2">
+                <div className="flex items-center gap-4 rounded-input border border-border bg-surface px-3 py-2">
                   <input
                     type="range"
                     min={durationRange.min}
@@ -378,12 +378,12 @@ export function SettingsControls({
                     max={engine.maxDurationSec}
                     value={durationSec}
                     onChange={(event) => onDurationChange(Number(event.currentTarget.value))}
-                    className="w-16 rounded-input border border-border bg-white px-2 py-1 text-right text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-16 rounded-input border border-border bg-surface px-2 py-1 text-right text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
               </label>
             ) : (
-              <div className="rounded-input border border-dashed border-border bg-white/60 p-3 text-[12px] text-text-muted">
+              <div className="rounded-input border border-dashed border-border bg-surface-glass-60 p-3 text-[12px] text-text-muted">
                 {controlsCopy.duration.managed}
               </div>
             )}
@@ -461,7 +461,7 @@ export function SettingsControls({
                     'min-h-0 h-auto px-2.5 py-1 text-[12px]',
                     iterations === n
                       ? 'border-brand bg-brand text-on-brand'
-                      : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                      : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
                   )}
                 >
                   X{n}
@@ -481,7 +481,7 @@ export function SettingsControls({
                   'min-h-0 h-auto px-2.5 py-1 text-[12px] font-medium',
                   audioEnabled
                     ? 'border-brand bg-brand text-on-brand'
-                    : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                    : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
                 )}
                 aria-pressed={audioEnabled}
               >
@@ -501,7 +501,7 @@ export function SettingsControls({
                   'min-h-0 h-auto px-2.5 py-1 text-[12px] font-medium',
                   loopEnabled
                     ? 'border-brand bg-brand text-on-brand'
-                    : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                    : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
                 )}
                 aria-pressed={loopEnabled}
               >
@@ -511,7 +511,7 @@ export function SettingsControls({
           )}
         </>
       )}
-      <div className="rounded-input border border-border bg-white">
+      <div className="rounded-input border border-border bg-surface">
         <Button
           type="button"
           size="sm"
@@ -542,7 +542,7 @@ export function SettingsControls({
                 placeholder={controlsCopy.seed.placeholder}
                 value={seed}
                 onChange={(e) => setSeed(e.currentTarget.value)}
-                className="rounded-input border border-border bg-white px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-input border border-border bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
             </label>
             <label className="inline-flex items-center gap-2 text-[13px] text-text-secondary">
@@ -567,7 +567,7 @@ export function SettingsControls({
                       'min-h-0 h-auto px-3 py-1.5 text-[13px]',
                       option === fps
                         ? 'border-brand bg-brand text-on-brand'
-                        : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                        : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
                     )}
                   >
                     {(controlsCopy.fpsSuffix ?? '{value} fps').replace('{value}', String(option))}
@@ -624,7 +624,7 @@ export function SettingsControls({
                 </h4>
                 <div className="flex items-center gap-2 text-[13px]">
                   <span>{controlsCopy.extend.action}</span>
-                  <input type="number" min={1} max={30} defaultValue={5} className="w-20 rounded-input border border-border bg-white px-2 py-1 text-right focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+                  <input type="number" min={1} max={30} defaultValue={5} className="w-20 rounded-input border border-border bg-surface px-2 py-1 text-right focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
                   <span>{controlsCopy.extend.unit}</span>
                 </div>
               </div>
@@ -673,7 +673,7 @@ function FieldGroup({ label, options, value, onChange, focusRef, labelFor, iconF
   return (
     <div
       className={clsx(
-        'rounded-input border border-border bg-white p-3 text-sm text-text-secondary',
+        'rounded-input border border-border bg-surface p-3 text-sm text-text-secondary',
         focusRef && 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
       )}
       ref={focusRef}
@@ -692,7 +692,7 @@ function FieldGroup({ label, options, value, onChange, focusRef, labelFor, iconF
               'min-h-0 h-auto px-3 py-1.5 text-[13px]',
               String(option) === value
                 ? 'border-brand bg-brand text-on-brand'
-                : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
             )}
           >
             {iconFor && iconFor(option) && (
@@ -737,7 +737,7 @@ function RangeWithInput({
         step={step}
         value={value}
         onChange={(event) => onChange(Number(event.currentTarget.value))}
-        className="w-20 rounded-input border border-border bg-white px-2 py-1 text-right text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="w-20 rounded-input border border-border bg-surface px-2 py-1 text-right text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
     </div>
   );

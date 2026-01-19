@@ -45,7 +45,7 @@ export function ExamplesOrbitCallout({ heading, description, ctaLabel, eyebrow, 
 
   return (
     <section className="container-page max-w-6xl">
-      <div className="relative overflow-hidden rounded-[40px] border border-hairline bg-white/75 p-8 shadow-card backdrop-blur-sm sm:p-12">
+      <div className="relative overflow-hidden rounded-[40px] border border-hairline bg-surface-glass-75 p-8 shadow-card backdrop-blur-sm sm:p-12">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(80,102,255,0.16),transparent_55%)]" aria-hidden />
         <div className="pointer-events-none absolute -inset-px rounded-[42px] bg-gradient-to-b from-white/40 via-transparent to-white/20 opacity-80" aria-hidden />
         <div className="relative z-10 grid grid-gap-xl lg:grid-cols-[1.05fr_1fr] lg:items-center">
@@ -109,7 +109,7 @@ export function ExamplesOrbitCallout({ heading, description, ctaLabel, eyebrow, 
                     <div
                       className={clsx(
                         styles.orbitIcon,
-                        'absolute left-1/2 top-1/2 flex h-14 w-14 items-center justify-center rounded-3xl border border-white/60 bg-white/95 shadow-[0_18px_45px_-24px_rgba(64,73,105,0.55)] backdrop-blur'
+                        'absolute left-1/2 top-1/2 flex h-14 w-14 items-center justify-center rounded-3xl border border-white/60 bg-surface-glass-95 shadow-[0_18px_45px_-24px_rgba(64,73,105,0.55)] backdrop-blur'
                       )}
                       style={
                         {

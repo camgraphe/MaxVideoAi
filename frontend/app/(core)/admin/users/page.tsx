@@ -88,14 +88,14 @@ export default function AdminUsersPage() {
           type="button"
           variant="outline"
           size="sm"
-          className="border-hairline bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-text-secondary hover:bg-bg hover:text-text-primary"
+          className="border-hairline bg-surface px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-text-secondary hover:bg-bg hover:text-text-primary"
           onClick={() => mutate()}
         >
           Refresh
         </Button>
       </div>
 
-      <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
+      <div className="rounded-xl border border-hairline bg-surface p-4 shadow-card">
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
@@ -112,19 +112,19 @@ export default function AdminUsersPage() {
 
       {stats && !statsUnavailable ? (
         <section className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
+          <div className="rounded-xl border border-hairline bg-surface p-4 shadow-card">
             <p className="text-xs uppercase tracking-[0.18em] text-text-tertiary">All time</p>
             <p className="mt-2 text-2xl font-semibold text-text-primary">{formatNumber(stats.total)}</p>
           </div>
-          <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
+          <div className="rounded-xl border border-hairline bg-surface p-4 shadow-card">
             <p className="text-xs uppercase tracking-[0.18em] text-text-tertiary">Today</p>
             <p className="mt-2 text-2xl font-semibold text-text-primary">{formatNumber(stats.today)}</p>
           </div>
-          <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
+          <div className="rounded-xl border border-hairline bg-surface p-4 shadow-card">
             <p className="text-xs uppercase tracking-[0.18em] text-text-tertiary">Last 7 days</p>
             <p className="mt-2 text-2xl font-semibold text-text-primary">{formatNumber(stats.last7)}</p>
           </div>
-          <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
+          <div className="rounded-xl border border-hairline bg-surface p-4 shadow-card">
             <p className="text-xs uppercase tracking-[0.18em] text-text-tertiary">Last 30 days</p>
             <p className="mt-2 text-2xl font-semibold text-text-primary">{formatNumber(stats.last30)}</p>
           </div>
@@ -140,7 +140,7 @@ export default function AdminUsersPage() {
           Supabase service role key is missing. Add <code className="font-mono">SUPABASE_SERVICE_ROLE_KEY</code> to your environment to enable admin user management.
         </div>
       ) : isLoading ? (
-        <div className="rounded-xl border border-hairline bg-white p-6 text-sm text-text-secondary shadow-card">
+        <div className="rounded-xl border border-hairline bg-surface p-6 text-sm text-text-secondary shadow-card">
           Loading…
         </div>
       ) : error ? (
@@ -152,7 +152,7 @@ export default function AdminUsersPage() {
           {fetchError}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-hairline bg-white shadow-card">
+        <div className="overflow-hidden rounded-2xl border border-hairline bg-surface shadow-card">
           <table className="min-w-full divide-y divide-hairline text-sm">
             <thead className="bg-neutral-50 text-text-secondary">
               <tr>

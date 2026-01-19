@@ -143,7 +143,7 @@ export function EngineSettingsPanel({ engineId, engineLabel, baseline, initialFo
   };
 
   return (
-    <section className="space-y-4 rounded-2xl border border-border/60 bg-white/95 p-5 shadow-card">
+    <section className="space-y-4 rounded-2xl border border-border/60 bg-surface-glass-95 p-5 shadow-card">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">Engine</p>
@@ -170,7 +170,7 @@ export function EngineSettingsPanel({ engineId, engineLabel, baseline, initialFo
           <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
             Active
             <select
-              className="mt-1 w-full rounded-lg border border-border/70 bg-white px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-border/70 bg-surface px-3 py-2 text-sm"
               value={form.active ? 'true' : 'false'}
               onChange={(event) => handleChange('active', event.target.value === 'true')}
             >
@@ -181,7 +181,7 @@ export function EngineSettingsPanel({ engineId, engineLabel, baseline, initialFo
           <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
             Availability
             <select
-              className="mt-1 w-full rounded-lg border border-border/70 bg-white px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-border/70 bg-surface px-3 py-2 text-sm"
               value={form.availability}
               onChange={(event) => handleChange('availability', event.target.value)}
             >
@@ -195,7 +195,7 @@ export function EngineSettingsPanel({ engineId, engineLabel, baseline, initialFo
           <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
             Status
             <select
-              className="mt-1 w-full rounded-lg border border-border/70 bg-white px-3 py-2 text-sm capitalize"
+              className="mt-1 w-full rounded-lg border border-border/70 bg-surface px-3 py-2 text-sm capitalize"
               value={form.status}
               onChange={(event) => handleChange('status', event.target.value)}
             >
@@ -209,7 +209,7 @@ export function EngineSettingsPanel({ engineId, engineLabel, baseline, initialFo
           <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
             Latency tier
             <select
-              className="mt-1 w-full rounded-lg border border-border/70 bg-white px-3 py-2 text-sm capitalize"
+              className="mt-1 w-full rounded-lg border border-border/70 bg-surface px-3 py-2 text-sm capitalize"
               value={form.latencyTier}
               onChange={(event) => handleChange('latencyTier', event.target.value)}
             >
@@ -228,7 +228,7 @@ export function EngineSettingsPanel({ engineId, engineLabel, baseline, initialFo
             <input
               type="number"
               min="1"
-              className="mt-1 w-full rounded-lg border border-border/70 bg-white px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-border/70 bg-surface px-3 py-2 text-sm"
               value={form.maxDurationSec}
               onChange={(event) => handleChange('maxDurationSec', event.target.value)}
               placeholder={baseline.maxDurationSec ? String(baseline.maxDurationSec) : ''}
@@ -238,7 +238,7 @@ export function EngineSettingsPanel({ engineId, engineLabel, baseline, initialFo
             Resolutions (comma separated)
             <input
               type="text"
-              className="mt-1 w-full rounded-lg border border-border/70 bg-white px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-border/70 bg-surface px-3 py-2 text-sm"
               value={form.resolutions}
               onChange={(event) => handleChange('resolutions', event.target.value)}
               placeholder={baseline.resolutions.join(', ') || '1080p, 4k'}
@@ -251,7 +251,7 @@ export function EngineSettingsPanel({ engineId, engineLabel, baseline, initialFo
             Currency
             <input
               type="text"
-              className="mt-1 w-full rounded-lg border border-border/70 bg-white px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-border/70 bg-surface px-3 py-2 text-sm"
               value={form.currency}
               onChange={(event) => handleChange('currency', event.target.value)}
               placeholder={baseline.currency}
@@ -262,7 +262,7 @@ export function EngineSettingsPanel({ engineId, engineLabel, baseline, initialFo
             <input
               type="number"
               min="0"
-              className="mt-1 w-full rounded-lg border border-border/70 bg-white px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-border/70 bg-surface px-3 py-2 text-sm"
               value={form.perSecondCents}
               onChange={(event) => handleChange('perSecondCents', event.target.value)}
               placeholder={baseline.perSecondCents != null ? String(baseline.perSecondCents) : ''}
@@ -273,7 +273,7 @@ export function EngineSettingsPanel({ engineId, engineLabel, baseline, initialFo
             <input
               type="number"
               min="0"
-              className="mt-1 w-full rounded-lg border border-border/70 bg-white px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-border/70 bg-surface px-3 py-2 text-sm"
               value={form.flatCents}
               onChange={(event) => handleChange('flatCents', event.target.value)}
               placeholder={baseline.flatCents != null ? String(baseline.flatCents) : ''}

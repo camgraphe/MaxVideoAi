@@ -42,21 +42,21 @@ export default async function AdminMarketingOptInsPage() {
       </header>
 
       <section className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
+        <div className="rounded-xl border border-hairline bg-surface p-4 shadow-card">
           <p className="text-xs uppercase tracking-[0.18em] text-text-tertiary">Total opt-ins</p>
           <p className="mt-2 text-3xl font-semibold text-text-primary">{records.length}</p>
         </div>
-        <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
+        <div className="rounded-xl border border-hairline bg-surface p-4 shadow-card">
           <p className="text-xs uppercase tracking-[0.18em] text-text-tertiary">Last 7 days</p>
           <p className="mt-2 text-3xl font-semibold text-text-primary">{last7}</p>
         </div>
-        <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
+        <div className="rounded-xl border border-hairline bg-surface p-4 shadow-card">
           <p className="text-xs uppercase tracking-[0.18em] text-text-tertiary">Last 30 days</p>
           <p className="mt-2 text-3xl font-semibold text-text-primary">{last30}</p>
         </div>
       </section>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-hairline bg-white p-4 shadow-card">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-hairline bg-surface p-4 shadow-card">
         <div className="text-sm text-text-secondary">
           List updates automatically when members toggle their marketing preference inside Settings → Notifications.
         </div>
@@ -68,7 +68,7 @@ export default async function AdminMarketingOptInsPage() {
         </a>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-hairline bg-white shadow-card">
+      <div className="overflow-hidden rounded-2xl border border-hairline bg-surface shadow-card">
         <table className="min-w-full divide-y divide-hairline text-sm">
           <thead className="bg-neutral-50 text-text-secondary">
             <tr>

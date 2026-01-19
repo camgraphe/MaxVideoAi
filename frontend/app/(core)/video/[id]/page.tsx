@@ -471,7 +471,7 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
         <div className="mb-6 text-xs uppercase tracking-micro text-text-muted">
           <BackLink href={backHref} label={copy.backLink} className="transition hover:text-text-secondary" />
         </div>
-        <div className="rounded-card border border-border bg-white px-6 py-10 text-center shadow-sm">
+        <div className="rounded-card border border-border bg-surface px-6 py-10 text-center shadow-sm">
           <h1 className="text-2xl font-semibold text-text-primary">{copy.unavailable.title}</h1>
           <p className="mt-4 text-base text-text-secondary">{copy.unavailable.message}</p>
           <div className="mt-6 flex justify-center">
@@ -604,7 +604,7 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
           </div>
         </section>
         <section className="grid grid-gap-lg lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
-          <div className="rounded-card border border-border bg-white/90 p-6 shadow-card backdrop-blur">
+          <div className="rounded-card border border-border bg-surface-glass-90 p-6 shadow-card backdrop-blur">
             <div className="space-y-4">
               {engineLink ? (
                 <Link
@@ -661,7 +661,7 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
             </div>
           </div>
           <div className="space-y-4">
-            <div className="rounded-card border border-border bg-white/90 p-6 shadow-card backdrop-blur">
+            <div className="rounded-card border border-border bg-surface-glass-90 p-6 shadow-card backdrop-blur">
               <p className="text-xs uppercase tracking-micro text-text-muted">{copy.create.title}</p>
               <h3 className="mt-1 text-lg font-semibold text-text-primary">{copy.create.subtitle}</h3>
               <p className="mt-2 text-sm text-text-secondary">{copy.create.body}</p>
@@ -669,7 +669,7 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
                 {copy.create.cta}
               </ButtonLink>
             </div>
-            <div className="rounded-card border border-border bg-white/90 p-6 shadow-card backdrop-blur">
+            <div className="rounded-card border border-border bg-surface-glass-90 p-6 shadow-card backdrop-blur">
               <h3 className="text-lg font-semibold text-text-primary">{copy.blog.title}</h3>
               <p className="mt-2 text-sm text-text-secondary">{copy.blog.message}</p>
               <ButtonLink href={blogPath} variant="outline" className="mt-4 w-full">

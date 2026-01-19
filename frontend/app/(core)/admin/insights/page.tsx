@@ -93,7 +93,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
         </ul>
       </SectionCard>
 
-      <section className="rounded-card border border-white/30 bg-white/85 p-5 shadow-card">
+      <section className="rounded-card border border-white/30 bg-surface-glass-85 p-5 shadow-card">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">Growth</p>
@@ -287,7 +287,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
               ]}
             />
           </div>
-          <div className="overflow-x-auto rounded-2xl border border-white/40 bg-white/70 p-3">
+          <div className="overflow-x-auto rounded-2xl border border-white/40 bg-surface-glass-70 p-3">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="text-xs uppercase tracking-[0.2em] text-text-muted">
@@ -378,7 +378,7 @@ function SectionCard({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-card border border-white/30 bg-white/85 p-5 shadow-card">
+    <section className="rounded-card border border-white/30 bg-surface-glass-85 p-5 shadow-card">
       <header className="space-y-1">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">{title}</p>
         {description ? <p className="text-sm text-text-secondary">{description}</p> : null}
@@ -390,7 +390,7 @@ function SectionCard({
 
 function StatCard({ label, value, helper }: { label: string; value: string; helper?: string }) {
   return (
-    <div className="rounded-card border border-white/30 bg-white/90 px-4 py-3 shadow-card">
+    <div className="rounded-card border border-white/30 bg-surface-glass-90 px-4 py-3 shadow-card">
       <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">{label}</p>
       <p className="mt-2 text-2xl font-semibold text-text-primary">{value}</p>
       {helper ? <p className="text-xs text-text-secondary">{helper}</p> : null}
@@ -401,7 +401,7 @@ function StatCard({ label, value, helper }: { label: string; value: string; help
 function RangeSelector({ current, excludeAdmin }: { current: MetricsRangeLabel; excludeAdmin: boolean }) {
   return (
     <form
-      className="flex flex-wrap items-center gap-4 rounded-full border border-white/40 bg-white/80 px-3 py-2 text-sm text-text-secondary shadow-card"
+      className="flex flex-wrap items-center gap-4 rounded-full border border-white/40 bg-surface-glass-80 px-3 py-2 text-sm text-text-secondary shadow-card"
       method="get"
     >
       <label htmlFor="range" className="text-xs font-semibold uppercase tracking-[0.2em]">
@@ -411,7 +411,7 @@ function RangeSelector({ current, excludeAdmin }: { current: MetricsRangeLabel; 
         id="range"
         name="range"
         defaultValue={current}
-        className="rounded-full border border-white/60 bg-white px-3 py-1 text-xs font-semibold text-text-primary"
+        className="rounded-full border border-white/60 bg-surface px-3 py-1 text-xs font-semibold text-text-primary"
       >
         {METRIC_RANGE_OPTIONS.map((option) => (
           <option key={option} value={option}>
@@ -443,7 +443,7 @@ function RangeSelector({ current, excludeAdmin }: { current: MetricsRangeLabel; 
 
 function MiniChartPanel({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-white/40 bg-white/70 p-3">
+    <div className="rounded-2xl border border-white/40 bg-surface-glass-70 p-3">
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">{title}</p>
       <div className="mt-2">{children}</div>
     </div>
@@ -520,7 +520,7 @@ function DailyAmountTable({ rows, countLabel }: { rows: DailyAmountRow[]; countL
 function ShareBar({ value, label }: { value: number; label: string }) {
   return (
     <div className="flex items-center gap-2">
-      <div className="h-2 w-full rounded-full bg-white/60">
+      <div className="h-2 w-full rounded-full bg-surface-glass-60">
         <div className="h-2 rounded-full bg-text-primary" style={{ width: `${Math.min(100, Math.max(0, value * 100))}%` }} />
       </div>
       <span className="text-xs text-text-secondary">{label}</span>
@@ -530,7 +530,7 @@ function ShareBar({ value, label }: { value: number; label: string }) {
 
 function MetricList({ items }: { items: Array<{ label: string; value: string }> }) {
   return (
-    <dl className="rounded-2xl border border-white/40 bg-white/70 p-4">
+    <dl className="rounded-2xl border border-white/40 bg-surface-glass-70 p-4">
       {items.map((item) => (
         <div key={item.label} className="py-2">
           <dt className="text-xs uppercase tracking-[0.2em] text-text-muted">{item.label}</dt>

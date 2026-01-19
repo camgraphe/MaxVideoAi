@@ -250,7 +250,7 @@ export function MarketingNav() {
 
   return (
     <>
-    <header className="sticky top-0 z-40 border-b border-hairline bg-white/90 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-hairline bg-surface-glass-90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
@@ -270,7 +270,7 @@ export function MarketingNav() {
           type="button"
           size="sm"
           variant="ghost"
-          className="min-h-0 h-9 w-9 rounded-full border border-hairline bg-white/80 p-2 text-text-primary hover:bg-surface-2 md:hidden"
+          className="min-h-0 h-9 w-9 rounded-full border border-hairline bg-surface-glass-80 p-2 text-text-primary hover:bg-surface-2 md:hidden"
           aria-label={t('nav.mobileToggle', 'Open menu')}
           onClick={() => setMobileMenuOpen(true)}
         >
@@ -314,7 +314,7 @@ export function MarketingNav() {
                   <Link
                     href="/billing"
                     prefetch={false}
-                    className="flex items-center gap-2 rounded-pill border border-hairline bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary transition hover:border-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="flex items-center gap-2 rounded-pill border border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary transition hover:border-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     aria-describedby={walletPromptOpen ? walletPromptId : undefined}
                   >
                     <WalletGlyph size={16} className="text-text-primary" />
@@ -444,7 +444,7 @@ export function MarketingNav() {
       </div>
     </header>
       {mobileMenuOpen ? (
-        <div className="fixed inset-0 z-50 bg-white/95 px-4 py-6 sm:px-6">
+        <div className="fixed inset-0 z-50 bg-surface-glass-95 px-4 py-6 sm:px-6">
           <div className="mx-auto flex max-w-sm items-center justify-between">
             <Link
               href="/"

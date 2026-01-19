@@ -156,7 +156,7 @@ export default function PricingAdminPage() {
 
   return (
     <div className="stack-gap-xl">
-      <section className="rounded-2xl border border-hairline bg-white p-6 shadow-card">
+      <section className="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
         <h1 className="text-xl font-semibold text-text-primary">Pricing controls</h1>
         <p className="mt-2 text-sm text-text-secondary">
           Adjust wallet membership thresholds, discounts, and per-engine margins. Changes propagate instantly to new quotes
@@ -164,7 +164,7 @@ export default function PricingAdminPage() {
         </p>
       </section>
 
-      <section className="rounded-2xl border border-hairline bg-white p-6 shadow-card">
+      <section className="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-text-primary">Membership tiers</h2>
@@ -243,7 +243,7 @@ export default function PricingAdminPage() {
         ) : null}
       </section>
 
-      <section className="rounded-2xl border border-hairline bg-white p-6 shadow-card">
+      <section className="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
         <div className="mb-4 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-text-primary">Pricing rules</h2>

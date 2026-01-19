@@ -105,7 +105,7 @@ export default function CookiesListPage() {
                       <th scope="col" className="px-4 py-3">Duration</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border bg-white">
+                  <tbody className="divide-y divide-border bg-surface">
                     {grouped[category].map((row) => (
                       <tr key={row.name}>
                         <td className="px-4 py-4 font-medium text-text-primary">{row.name}</td>

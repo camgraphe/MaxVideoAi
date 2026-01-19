@@ -168,7 +168,7 @@ export default async function LegalIndexPage() {
         <p className="text-sm text-text-secondary">{copy.description}</p>
       </header>
 
-      <section className="rounded-card border border-hairline bg-white/90 p-5 text-sm text-text-secondary shadow-card sm:p-6">
+      <section className="rounded-card border border-hairline bg-surface-glass-90 p-5 text-sm text-text-secondary shadow-card sm:p-6">
         <p>{copy.intro}</p>
         <div className="mt-4 grid grid-gap-sm sm:grid-cols-2">
           {copy.columns.map((column) => (
@@ -184,7 +184,7 @@ export default async function LegalIndexPage() {
         {LINKS.map((entry) => {
           const meta = entry.docKey ? documents[entry.docKey] : null;
           return (
-            <li key={entry.href} className="rounded-card border border-border bg-white p-5 shadow-card">
+            <li key={entry.href} className="rounded-card border border-border bg-surface p-5 shadow-card">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <Link

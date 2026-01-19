@@ -476,11 +476,11 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
       ) : null}
 
       {!hasVideos ? (
-        <div className="rounded-card border border-hairline bg-white p-8 text-center text-sm text-text-secondary">
+        <div className="rounded-card border border-hairline bg-surface p-8 text-center text-sm text-text-secondary">
           No public videos to review.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-card border border-border bg-white">
+        <div className="overflow-hidden rounded-card border border-border bg-surface">
           <table className="min-w-full divide-y divide-border text-sm">
             <thead className="bg-bg text-xs uppercase tracking-micro text-text-muted">
               <tr>
@@ -703,14 +703,14 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
             </tbody>
           </table>
           {nextCursor ? (
-            <div className="border-t border-border bg-white px-4 py-3 text-center">
+            <div className="border-t border-border bg-surface px-4 py-3 text-center">
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
                 onClick={handleLoadMore}
                 disabled={isLoadingMore}
-                className="rounded-input border-border bg-bg px-4 py-2 text-sm font-medium text-text-secondary hover:bg-white"
+                className="rounded-input border-border bg-bg px-4 py-2 text-sm font-medium text-text-secondary hover:bg-surface"
               >
                 {isLoadingMore ? 'Loading…' : 'Load more'}
               </Button>

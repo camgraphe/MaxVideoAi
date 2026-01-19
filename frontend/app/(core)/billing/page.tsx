@@ -640,13 +640,13 @@ export default function BillingPage() {
         <AppSidebar />
         <main className="relative flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
           {toast && (
-            <div className="pointer-events-none absolute left-1/2 top-3 z-50 -translate-x-1/2 transform rounded-input border border-border bg-white px-4 py-2 text-sm text-text-primary shadow-card">
+            <div className="pointer-events-none absolute left-1/2 top-3 z-50 -translate-x-1/2 transform rounded-input border border-border bg-surface px-4 py-2 text-sm text-text-primary shadow-card">
               {toast}
             </div>
           )}
           <h1 className="mb-4 text-xl font-semibold text-text-primary">{copy.title}</h1>
           {/* Pricing Hero */}
-          <section className="mb-6 rounded-card border border-border bg-white p-4 shadow-card">
+          <section className="mb-6 rounded-card border border-border bg-surface p-4 shadow-card">
             <h2 className="text-xl font-semibold text-text-primary">{copy.hero.title}</h2>
             <p className="mt-1 text-sm text-text-secondary">{copy.hero.subtitle}</p>
             {stripeMode !== 'disabled' && (
@@ -659,7 +659,7 @@ export default function BillingPage() {
           </section>
 
           <section className="mb-6 grid grid-gap-sm md:grid-cols-2">
-            <div className="rounded-card border border-border bg-white p-4 shadow-card">
+            <div className="rounded-card border border-border bg-surface p-4 shadow-card">
               <h2 className="mb-2 text-lg font-semibold text-text-primary">{copy.wallet.title}</h2>
               <p className="text-sm text-text-secondary">{copy.wallet.description}</p>
               <p className="mt-1 text-2xl font-semibold text-text-primary">
@@ -734,7 +734,7 @@ export default function BillingPage() {
                       value={customAmountInput}
                       onChange={(event) => setCustomAmountInput(event.target.value)}
                       placeholder={copy.wallet.customPlaceholder}
-                      className="bg-white px-7"
+                      className="bg-surface px-7"
                     />
                   </div>
                   <Button
@@ -763,7 +763,7 @@ export default function BillingPage() {
                 <p className="mt-2 text-sm text-state-warning">{copy.wallet.lowBalance}</p>
               )}
             </div>
-            <div className="rounded-card border border-border bg-white p-4 shadow-card">
+            <div className="rounded-card border border-border bg-surface p-4 shadow-card">
               <h2 className="mb-2 text-lg font-semibold text-text-primary">{copy.membership.title}</h2>
               <p className="text-sm text-text-secondary">{copy.membership.description}</p>
               <div className="mt-2 flex items-center gap-2">
@@ -805,7 +805,7 @@ export default function BillingPage() {
           </section>
 
           {/* For Teams (optional module) */}
-          <section className="mb-6 rounded-card border border-border bg-white p-4 shadow-card">
+          <section className="mb-6 rounded-card border border-border bg-surface p-4 shadow-card">
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-semibold text-text-primary">{copy.teams.title}</h2>
               <FlagPill live={teamsLive} />
@@ -815,10 +815,10 @@ export default function BillingPage() {
               <>
                 <p className="mt-1 text-sm text-text-secondary">{copy.teams.description}</p>
                 <div className="mt-3 flex gap-2">
-                  <Button variant="outline" size="sm" className="border-border bg-white px-3 text-sm hover:bg-bg">
+                  <Button variant="outline" size="sm" className="border-border bg-surface px-3 text-sm hover:bg-bg">
                     {copy.teams.actions.invite}
                   </Button>
-                  <Button variant="outline" size="sm" className="border-border bg-white px-3 text-sm hover:bg-bg">
+                  <Button variant="outline" size="sm" className="border-border bg-surface px-3 text-sm hover:bg-bg">
                     {copy.teams.actions.budgets}
                   </Button>
                 </div>
@@ -839,7 +839,7 @@ export default function BillingPage() {
             )}
           </section>
 
-          <section className="mb-6 rounded-card border border-border bg-white p-4 shadow-card">
+          <section className="mb-6 rounded-card border border-border bg-surface p-4 shadow-card">
               <Button
                 type="button"
                 variant="ghost"
@@ -931,7 +931,7 @@ export default function BillingPage() {
                       size="sm"
                       onClick={loadMoreReceipts}
                       disabled={receipts.loading}
-                      className="border-border bg-white px-3 text-sm hover:bg-bg"
+                      className="border-border bg-surface px-3 text-sm hover:bg-bg"
                     >
                       {receipts.loading ? copy.receipts.loading : copy.receipts.loadMore}
                     </Button>
@@ -941,7 +941,7 @@ export default function BillingPage() {
                     variant="outline"
                     size="sm"
                     onClick={exportCSV}
-                    className="ml-auto border-border bg-white px-3 text-sm hover:bg-bg"
+                    className="ml-auto border-border bg-surface px-3 text-sm hover:bg-bg"
                   >
                     {copy.receipts.exportCsv}
                   </Button>
@@ -951,7 +951,7 @@ export default function BillingPage() {
           </section>
 
           {/* Refunds & Protections */}
-          <section className="mb-6 rounded-card border border-border bg-white p-4 shadow-card">
+          <section className="mb-6 rounded-card border border-border bg-surface p-4 shadow-card">
             <h2 className="mb-2 text-lg font-semibold text-text-primary">{copy.refunds.title}</h2>
             <ul className="list-disc pl-5 text-sm text-text-secondary">
               {copy.refunds.points.map((point) => (
@@ -961,7 +961,7 @@ export default function BillingPage() {
           </section>
 
           {/* Micro‑FAQ */}
-          <section className="mb-6 rounded-card border border-border bg-white p-4 shadow-card">
+          <section className="mb-6 rounded-card border border-border bg-surface p-4 shadow-card">
             <h2 className="mb-2 text-lg font-semibold text-text-primary">{copy.faq.title}</h2>
             <div className="grid gap-2 text-sm text-text-secondary">
               {copy.faq.entries.map((entry, index) => (

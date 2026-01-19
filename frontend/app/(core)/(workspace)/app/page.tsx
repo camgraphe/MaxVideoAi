@@ -247,7 +247,7 @@ function AssetLibraryModal({
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 px-4">
       <div className="absolute inset-0" role="presentation" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-3xl rounded-modal border border-border bg-white p-6 shadow-float">
+      <div className="relative z-10 w-full max-w-3xl rounded-modal border border-border bg-surface p-6 shadow-float">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div>
             <h2 className="text-lg font-semibold text-text-primary">{copy.title}</h2>
@@ -278,7 +278,7 @@ function AssetLibraryModal({
         <div
           role="tablist"
           aria-label="Library image filters"
-          className="mt-4 flex w-full overflow-hidden rounded-full border border-border bg-white/70 text-xs font-semibold text-text-secondary"
+          className="mt-4 flex w-full overflow-hidden rounded-full border border-border bg-surface-glass-70 text-xs font-semibold text-text-secondary"
         >
           <Button
             type="button"
@@ -289,7 +289,7 @@ function AssetLibraryModal({
             onClick={() => onSourceChange('all')}
             className={clsx(
               'flex-1 rounded-none px-4 py-2',
-              source === 'all' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-white'
+              source === 'all' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-surface'
             )}
           >
             {(copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).tabs.all}
@@ -303,7 +303,7 @@ function AssetLibraryModal({
             onClick={() => onSourceChange('upload')}
             className={clsx(
               'flex-1 rounded-none px-4 py-2',
-              source === 'upload' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-white'
+              source === 'upload' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-surface'
             )}
           >
             {(copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).tabs.upload}
@@ -317,7 +317,7 @@ function AssetLibraryModal({
             onClick={() => onSourceChange('generated')}
             className={clsx(
               'flex-1 rounded-none px-4 py-2',
-              source === 'generated' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-white'
+              source === 'generated' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-surface'
             )}
           >
             {(copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).tabs.generated}
@@ -348,7 +348,7 @@ function AssetLibraryModal({
                 const sizeLabel = formatSize(asset.size);
                 const isDeleting = deletingAssetId === asset.id;
                 return (
-                  <div key={asset.id} className="overflow-hidden rounded-card border border-border/60 bg-white">
+                  <div key={asset.id} className="overflow-hidden rounded-card border border-border/60 bg-surface">
                     <div className="relative" style={{ aspectRatio: '16 / 9' }}>
                       <Image
                         src={asset.url}
@@ -358,7 +358,7 @@ function AssetLibraryModal({
                         sizes="(min-width: 1024px) 400px, (min-width: 640px) 300px, 100vw"
                       />
                     </div>
-                    <div className="flex items-center justify-between gap-4 border-t border-border bg-white px-3 py-2 text-[12px] text-text-secondary">
+                    <div className="flex items-center justify-between gap-4 border-t border-border bg-surface px-3 py-2 text-[12px] text-text-secondary">
                       <div className="flex flex-col gap-1">
                         {dimensions && <span>{dimensions}</span>}
                         {sizeLabel && <span>{sizeLabel}</span>}
@@ -4611,7 +4611,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
             <div className="stack-gap-lg">
               {showCenterGallery ? (
                 normalizedPendingGroups.length === 0 && !isGenerationLoading ? (
-                  <div className="rounded-card border border-border bg-white/80 p-5 text-center text-sm text-text-secondary">
+                  <div className="rounded-card border border-border bg-surface-glass-80 p-5 text-center text-sm text-text-secondary">
                     {workspaceCopy.gallery.empty}
                   </div>
                 ) : (
@@ -4632,13 +4632,13 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                     })}
                     {isGenerationLoading &&
                       Array.from({ length: normalizedPendingGroups.length ? 0 : generationSkeletonCount }).map((_, index) => (
-                        <div key={`workspace-gallery-skeleton-${index}`} className="rounded-card border border-border bg-white/60 p-0" aria-hidden>
+                        <div key={`workspace-gallery-skeleton-${index}`} className="rounded-card border border-border bg-surface-glass-60 p-0" aria-hidden>
                           <div className="relative overflow-hidden rounded-card">
                             <div className="relative" style={{ aspectRatio: '16 / 9' }}>
                               <div className="skeleton absolute inset-0" />
                             </div>
                           </div>
-                          <div className="border-t border-border bg-white/70 px-3 py-2">
+                          <div className="border-t border-border bg-surface-glass-70 px-3 py-2">
                             <div className="h-3 w-24 rounded-full bg-neutral-200" />
                           </div>
                         </div>
@@ -4783,7 +4783,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         )}
       </div>
       {!isDesktopLayout && (
-        <div className="border-t border-hairline bg-white/70 px-4 py-4">
+        <div className="border-t border-hairline bg-surface-glass-70 px-4 py-4">
           <GalleryRail
             engine={selectedEngine}
             activeGroups={normalizedPendingGroups}
@@ -4806,7 +4806,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 px-4">
           <div className="absolute inset-0" role="presentation" onClick={closeTopUpModal} />
           <form
-            className="relative z-10 w-full max-w-md rounded-modal border border-border bg-white p-6 shadow-float"
+            className="relative z-10 w-full max-w-md rounded-modal border border-border bg-surface p-6 shadow-float"
             onSubmit={handleTopUpSubmit}
           >
             <div className="flex items-start justify-between gap-4">
@@ -4841,7 +4841,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                             'min-h-0 h-8 px-3 py-1.5 text-sm font-medium',
                             isActive
                               ? 'border-brand bg-surface-2 text-brand hover:border-brand'
-                              : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2'
                           )}
                         >
                           {formatted}
@@ -4881,7 +4881,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 variant="outline"
                 size="sm"
                 onClick={closeTopUpModal}
-                className="rounded-full border-hairline bg-white/80 px-3 py-1.5 text-sm text-text-muted hover:bg-surface-2"
+                className="rounded-full border-hairline bg-surface-glass-80 px-3 py-1.5 text-sm text-text-muted hover:bg-surface-2"
                 aria-label={workspaceCopy.topUp.close}
               >
                 {workspaceCopy.topUp.close}

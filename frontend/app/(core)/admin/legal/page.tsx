@@ -115,13 +115,13 @@ export default function AdminLegalPage() {
       ) : null}
 
       {isLoading ? (
-        <div className="rounded-xl border border-hairline bg-white p-6 text-sm text-text-secondary shadow-card">Loading…</div>
+        <div className="rounded-xl border border-hairline bg-surface p-6 text-sm text-text-secondary shadow-card">Loading…</div>
       ) : error ? (
         <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600">
           {error.message || 'Failed to load legal documents.'}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-hairline bg-white shadow-card">
+        <div className="overflow-hidden rounded-2xl border border-hairline bg-surface shadow-card">
           <table className="min-w-full divide-y divide-hairline text-sm">
             <thead className="bg-neutral-50 text-text-secondary">
               <tr>
