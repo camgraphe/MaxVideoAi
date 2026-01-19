@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/Button';
 
 type ManualCreditFormProps = {
   userId: string;
@@ -92,13 +93,14 @@ export function ManualCreditForm({ userId }: ManualCreditFormProps) {
         </div>
       ) : null}
       <div className="flex items-center gap-3">
-        <button
+        <Button
           type="submit"
+          size="sm"
           disabled={pending}
-          className="inline-flex items-center rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white disabled:opacity-60"
+          className="rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
         >
           {pending ? 'Processing…' : 'Add credits'}
-        </button>
+        </Button>
         <span className="text-xs text-text-secondary">Posts to /api/admin/users/{userId}/wallet</span>
       </div>
     </form>

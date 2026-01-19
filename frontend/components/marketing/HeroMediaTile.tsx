@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
+import { Button } from '@/components/ui/Button';
 import { supabase } from '@/lib/supabaseClient';
 
 interface HeroMediaTileProps {
@@ -228,14 +229,16 @@ export function HeroMediaTile({
     ) : null;
 
   const card = detailHref ? (
-    <button
+    <Button
       type="button"
+      size="sm"
+      variant="ghost"
       onClick={() => setLightboxOpen(true)}
-      className="w-full rounded-[28px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+      className="min-h-0 h-auto w-full items-stretch justify-start rounded-[28px] p-0 text-left font-normal"
       aria-label={`Preview ${label}`}
     >
       {content}
-    </button>
+    </Button>
   ) : cardHref ? (
     <Link
       href={cardHref}
@@ -332,10 +335,12 @@ export function HeroMediaTile({
                 <source src={videoSrc} type="video/mp4" />
               </video>
             </div>
-            <button
+            <Button
               type="button"
+              size="sm"
+              variant="ghost"
               onClick={() => setLightboxOpen(false)}
-              className="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-text-primary shadow-lg ring-1 ring-border transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="absolute right-4 top-4 h-11 w-11 min-h-0 rounded-full bg-white/95 p-0 text-text-primary shadow-lg ring-1 ring-border hover:bg-white"
               aria-label="Close preview"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -347,7 +352,7 @@ export function HeroMediaTile({
                   strokeLinejoin="round"
                 />
               </svg>
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}

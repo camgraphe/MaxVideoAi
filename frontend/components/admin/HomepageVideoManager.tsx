@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react';
 import Image from 'next/image';
 import clsx from 'clsx';
+import { Button } from '@/components/ui/Button';
 import { authFetch } from '@/lib/authFetch';
 
 type SlotVideo = {
@@ -276,35 +277,40 @@ export function HomepageVideoManager({ initialHero }: HomepageVideoManagerProps)
                     />
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    <button
+                    <Button
                       type="button"
+                      size="sm"
                       onClick={() => handleSave(slot)}
                       disabled={!slot.dirty || slot.saving}
                       className={clsx(
-                        'rounded-input px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                        'px-4 py-2 text-sm font-semibold',
                         !slot.dirty || slot.saving
                           ? 'cursor-not-allowed border border-border bg-muted text-text-muted'
                           : 'border border-brand bg-brand text-on-brand hover:bg-brandHover'
                       )}
                     >
                       {slot.saving ? 'Saving…' : 'Save slot'}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
+                      size="sm"
+                      variant="outline"
                       onClick={() => handleReset(slot)}
                       disabled={slot.saving}
-                      className="rounded-input border border-border px-3 py-2 text-sm text-text-secondary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="border-border px-3 py-2 text-sm text-text-secondary hover:border-text-muted hover:text-text-primary"
                     >
                       Reset
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
+                      size="sm"
+                      variant="outline"
                       onClick={() => handleClearVideo(slot)}
                       disabled={slot.saving || !slot.draftVideoId}
-                      className="rounded-input border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-600 transition hover:bg-rose-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
+                      className="border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-100 hover:text-rose-600"
                     >
                       Clear video
-                    </button>
+                    </Button>
                   </div>
                   {video ? (
                     <p className="text-xs text-text-muted">

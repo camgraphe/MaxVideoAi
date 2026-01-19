@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { Button } from '@/components/ui/Button';
 
 type ServiceNoticeFormProps = {
   initialNotice: {
@@ -105,21 +106,24 @@ export function ServiceNoticeForm({ initialNotice }: ServiceNoticeFormProps) {
         <div className="rounded-input border border-state-warning/40 bg-state-warning/10 px-3 py-2 text-sm text-state-warning">{error}</div>
       ) : null}
       <div className="flex flex-wrap items-center gap-3">
-        <button
+        <Button
           type="submit"
+          size="sm"
           disabled={isPending || (enabled && !message.trim())}
-          className="inline-flex items-center rounded-full bg-brand px-4 py-2 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-on-brand shadow-card hover:bg-brandHover"
         >
           {isPending ? 'Enregistrement…' : 'Enregistrer'}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          size="sm"
+          variant="ghost"
           onClick={disableNotice}
           disabled={isPending}
-          className="text-sm font-semibold text-text-secondary underline-offset-2 transition hover:text-text-primary"
+          className="min-h-0 h-auto p-0 text-sm font-semibold text-text-secondary underline-offset-2 hover:text-text-primary"
         >
           Désactiver
-        </button>
+        </Button>
       </div>
     </form>
   );

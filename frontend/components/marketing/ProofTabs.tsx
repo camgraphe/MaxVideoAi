@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import clsx from 'clsx';
 import { PriceChip } from '@/components/marketing/PriceChip';
+import { Button } from '@/components/ui/Button';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
 import type { PricingRuleLite } from '@/lib/pricing-rules';
@@ -25,18 +26,20 @@ export function ProofTabs({ pricingRules }: ProofTabsProps) {
           {tabs.map((tab) => {
             const isActive = tab.id === activeId;
             return (
-              <button
+              <Button
                 key={tab.id}
                 type="button"
+                size="sm"
+                variant="outline"
                 onClick={() => setActiveId(tab.id)}
                 className={clsx(
-                  'rounded-pill border px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white',
+                  'min-h-0 h-auto rounded-pill px-4 py-2 text-sm font-medium',
                   isActive ? 'border-brand bg-brand text-on-brand' : 'border-hairline text-text-secondary hover:text-text-primary'
                 )}
                 aria-pressed={isActive}
               >
                 {tab.label}
-              </button>
+              </Button>
             );
           })}
         </div>

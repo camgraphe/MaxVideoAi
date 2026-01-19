@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { CopyPromptButton } from '@/components/CopyPromptButton';
+import { Button } from '@/components/ui/Button';
 
 type PromptPreviewProps = {
   prompt: string;
@@ -49,14 +50,16 @@ export function PromptPreview({
         {displayPrompt || promptFallback}
       </p>
       {needsCollapse ? (
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant="ghost"
           onClick={() => setExpanded((prev) => !prev)}
-          className="mt-3 text-sm font-semibold text-brand underline underline-offset-4 transition hover:text-brandHover"
+          className="mt-3 min-h-0 h-auto p-0 text-sm font-semibold text-brand underline underline-offset-4 hover:text-brandHover"
           aria-expanded={expanded}
         >
           {expanded ? showLessLabel : showMoreLabel}
-        </button>
+        </Button>
       ) : null}
     </div>
   );

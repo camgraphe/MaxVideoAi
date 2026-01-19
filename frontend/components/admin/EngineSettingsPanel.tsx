@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/Button';
 
 type EngineSettingsPanelProps = {
   engineId: string;
@@ -152,14 +153,16 @@ export function EngineSettingsPanel({ engineId, engineLabel, baseline, initialFo
             <strong>{baseline.latencyTier ?? 'n/a'}</strong>
           </p>
         </div>
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant="outline"
           onClick={handleReset}
-          className="rounded-full border border-border/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.3em] text-text-secondary transition hover:bg-bg disabled:opacity-60"
+          className="rounded-full border-border/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.3em] text-text-secondary hover:bg-bg"
           disabled={submitting}
         >
           Reset overrides
-        </button>
+        </Button>
       </header>
 
       <form onSubmit={handleSubmit} className="space-y-3">
@@ -291,13 +294,14 @@ export function EngineSettingsPanel({ engineId, engineLabel, baseline, initialFo
         ) : null}
 
         <div className="flex items-center gap-3">
-          <button
+          <Button
             type="submit"
+            size="sm"
             disabled={submitting}
-            className="inline-flex items-center rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white disabled:opacity-60"
+            className="rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white"
           >
             {submitting ? 'Saving…' : 'Save settings'}
-          </button>
+          </Button>
           <p className="text-xs text-text-secondary">
             Leave a field blank to keep the upstream configuration. Current defaults shown as placeholders.
           </p>

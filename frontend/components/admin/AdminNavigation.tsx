@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import clsx from 'clsx';
+import { Button } from '@/components/ui/Button';
 
 type NavSection = {
   title: string;
@@ -52,11 +53,13 @@ export function AdminNavigation({ sections }: AdminNavigationProps) {
         const isOpen = openIndex === index;
         return (
           <div key={section.title} className="relative">
-            <button
+            <Button
               type="button"
+              size="sm"
+              variant="ghost"
               onClick={() => setOpenIndex((current) => (current === index ? null : index))}
               className={clsx(
-                'flex items-center gap-1 rounded-pill px-2 py-1 text-xs font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                'min-h-0 h-auto rounded-pill px-2 py-1 text-xs font-semibold uppercase tracking-micro',
                 isOpen ? 'bg-surface-2 text-text-primary' : 'text-text-muted hover:text-text-primary'
               )}
               aria-expanded={isOpen}
@@ -73,7 +76,7 @@ export function AdminNavigation({ sections }: AdminNavigationProps) {
                   fill="currentColor"
                 />
               </svg>
-            </button>
+            </Button>
             {isOpen ? (
               <div className="absolute right-0 z-50 mt-3 w-60 overflow-hidden rounded-card border border-border bg-white shadow-2xl">
                 <ul className="divide-y divide-border">

@@ -3,6 +3,7 @@
 import clsx from 'clsx';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { Button } from '@/components/ui/Button';
 
 export type SelectOption = {
   value: string | number | boolean;
@@ -129,8 +130,10 @@ export function SelectMenu({ options, value, onChange, disabled = false, classNa
 
   return (
     <div ref={containerRef} className={clsx('relative', className)}>
-      <button
+      <Button
         type="button"
+        size="sm"
+        variant="outline"
         onClick={() => {
           if (disabled) return;
           setOpen((prev) => !prev);
@@ -149,7 +152,7 @@ export function SelectMenu({ options, value, onChange, disabled = false, classNa
         >
           <path d="m6 8 4 4 4-4" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-      </button>
+      </Button>
       {open ? (
         <div className="absolute left-0 right-0 z-[50] mt-2 max-h-60 overflow-y-auto rounded-[12px] border border-border bg-white/95 p-1 shadow-card backdrop-blur">
           <ul role="listbox" className="space-y-1 text-[12px]">
@@ -158,11 +161,13 @@ export function SelectMenu({ options, value, onChange, disabled = false, classNa
               const isHighlighted = index === highlightedIndex;
               return (
                 <li key={`${String(option.value)}-${index}`}>
-                  <button
+                  <Button
                     ref={(node) => {
                       optionRefs.current[index] = node;
                     }}
                     type="button"
+                    size="sm"
+                    variant="ghost"
                     role="option"
                     aria-selected={isSelected}
                     disabled={option.disabled}
@@ -173,7 +178,7 @@ export function SelectMenu({ options, value, onChange, disabled = false, classNa
                       setOpen(false);
                     }}
                     className={clsx(
-                      'flex w-full items-center justify-between rounded-[8px] px-3 py-2 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      'min-h-0 h-auto w-full justify-between rounded-[8px] px-3 py-2 text-left',
                       option.disabled
                         ? 'cursor-not-allowed text-text-muted/60'
                         : 'text-text-secondary hover:bg-surface-2 hover:text-text-primary',
@@ -182,7 +187,7 @@ export function SelectMenu({ options, value, onChange, disabled = false, classNa
                     )}
                   >
                     <span className="truncate">{option.label}</span>
-                  </button>
+                  </Button>
                 </li>
               );
             })}

@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState, useTransition, type DragEvent } from 'react';
 import clsx from 'clsx';
+import { Button } from '@/components/ui/Button';
 import { authFetch } from '@/lib/authFetch';
 type PlaylistSummary = {
   id: string;
@@ -384,14 +385,15 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
             Control the Starter tab and other public collections surfaced in the gallery.
           </p>
         </div>
-        <button
+        <Button
           type="button"
-          className="rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-on-brand shadow-card transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          size="sm"
           onClick={handleCreatePlaylist}
           disabled={isPending}
+          className="rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-on-brand shadow-card hover:brightness-105"
         >
           + New playlist
-        </button>
+        </Button>
       </header>
 
       {feedback ? (
@@ -412,11 +414,13 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
             {playlists.map((playlist) => {
               const isActive = playlist.id === selectedId;
               return (
-                <button
+                <Button
                   key={playlist.id}
                   type="button"
+                  size="sm"
+                  variant="outline"
                   className={clsx(
-                    'w-full rounded-card border px-4 py-3 text-left transition',
+                    'min-h-0 h-auto w-full rounded-card px-4 py-3 text-left',
                     isActive
                       ? 'border-brand bg-surface-2 text-text-primary'
                       : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
@@ -431,7 +435,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                   <p className="mt-1 text-xs text-text-muted">
                     {playlist.slug} · {playlist.itemCount} item{playlist.itemCount === 1 ? '' : 's'}
                   </p>
-                </button>
+                </Button>
               );
             })}
             {playlists.length === 0 ? (
@@ -450,14 +454,16 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                   <h2 className="text-lg font-semibold text-text-primary">Playlist details</h2>
                   <p className="text-sm text-text-secondary">Update name, slug, or visibility defaults.</p>
                 </div>
-                <button
+                <Button
                   type="button"
-                  className="rounded-input border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-rose-700 hover:bg-rose-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                  size="sm"
+                  variant="outline"
+                  className="rounded-input border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-rose-700 hover:bg-rose-100 hover:text-rose-700"
                   onClick={() => handleDeletePlaylist(selectedPlaylist.id)}
                   disabled={isPending}
                 >
                   Delete
-                </button>
+                </Button>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
@@ -497,14 +503,15 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                 />
                 Public playlist (visible on gallery tabs)
               </label>
-              <button
+              <Button
                 type="button"
-                className="rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-on-brand transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                size="sm"
+                className="rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-on-brand hover:brightness-105"
                 onClick={() => handleSavePlaylist(selectedPlaylist.id)}
                 disabled={!selectedPlaylist.dirty || isPending}
               >
                 Save details
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="rounded-card border border-dashed border-hairline bg-white p-8 text-center text-sm text-text-secondary">
@@ -522,14 +529,16 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                   </p>
                   <p className="text-xs text-text-muted">Drag rows or use the arrow buttons, then save the order.</p>
                 </div>
-                <button
+                <Button
                   type="button"
-                  className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  size="sm"
+                  variant="outline"
+                  className="rounded-pill border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary hover:border-text-muted hover:text-text-primary"
                   onClick={handleSaveItems}
                   disabled={!isItemsDirty || isPending}
                 >
                   Save order
-                </button>
+                </Button>
               </div>
 
               <form className="flex flex-wrap items-center gap-2" onSubmit={handleAddVideo}>
@@ -540,13 +549,14 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                   className="flex-1 min-w-[200px] rounded-input border border-border px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   disabled={isPending}
                 />
-                <button
+                <Button
                   type="submit"
-                  className="rounded-pill bg-brand px-4 py-2 text-xs font-semibold uppercase tracking-micro text-on-brand transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  size="sm"
+                  className="rounded-pill bg-brand px-4 py-2 text-xs font-semibold uppercase tracking-micro text-on-brand hover:brightness-105"
                   disabled={isPending}
                 >
                   Add video
-                </button>
+                </Button>
               </form>
 
               <div className="overflow-hidden rounded-card border border-border">
@@ -609,31 +619,37 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex justify-end gap-2 text-xs">
-                            <button
-                              type="button"
-                              className="rounded-input border border-hairline px-2 py-1 text-text-secondary hover:border-text-muted hover:text-text-primary"
-                              onClick={() => moveItem(item.videoId, -1)}
-                              disabled={index === 0 || isPending}
-                            >
-                              ↑
-                            </button>
-                            <button
-                              type="button"
-                              className="rounded-input border border-hairline px-2 py-1 text-text-secondary hover:border-text-muted hover:text-text-primary"
-                              onClick={() => moveItem(item.videoId, 1)}
-                              disabled={index === items.length - 1 || isPending}
-                            >
-                              ↓
-                            </button>
-                            <button
-                              type="button"
-                              className="rounded-input border border-hairline px-2 py-1 text-rose-600 hover:border-rose-400 hover:text-rose-700"
-                              onClick={() => handleRemoveVideo(item.videoId)}
-                              disabled={isPending}
-                            >
-                              Remove
-                            </button>
-                          </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="rounded-input border-hairline px-2 py-1 text-text-secondary hover:border-text-muted hover:text-text-primary"
+                      onClick={() => moveItem(item.videoId, -1)}
+                      disabled={index === 0 || isPending}
+                    >
+                      ↑
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="rounded-input border-hairline px-2 py-1 text-text-secondary hover:border-text-muted hover:text-text-primary"
+                      onClick={() => moveItem(item.videoId, 1)}
+                      disabled={index === items.length - 1 || isPending}
+                    >
+                      ↓
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="rounded-input border-hairline px-2 py-1 text-rose-600 hover:border-rose-400 hover:text-rose-700"
+                      onClick={() => handleRemoveVideo(item.videoId)}
+                      disabled={isPending}
+                    >
+                      Remove
+                    </Button>
+                  </div>
                         </td>
                       </tr>
                     ))}

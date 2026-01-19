@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import clsx from 'clsx';
 import Image from 'next/image';
+import { Button } from '@/components/ui/Button';
 import { TARGET_MODERATION_PLAYLIST_SLUGS } from '@/config/playlists';
 import { isPlaceholderMediaUrl, normalizeMediaUrl } from '@/lib/media';
 import { authFetch } from '@/lib/authFetch';
@@ -442,13 +443,15 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
         </div>
         <div className="flex flex-col gap-2 text-xs text-text-muted sm:items-end">
           <div className="flex gap-2">
-            <button
+            <Button
               type="button"
+              size="sm"
+              variant="outline"
               onClick={() => setShowArchived((prev) => !prev)}
-              className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-medium transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="gap-2 rounded-md border-border px-3 py-1.5 text-xs font-medium hover:border-text-muted hover:bg-surface-2"
             >
               {showArchived ? 'Hide archived' : 'Show archived'}
-            </button>
+            </Button>
           </div>
           <div className="flex flex-col gap-1 text-right">
             <span>
@@ -569,62 +572,73 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
                     <div className="flex flex-col gap-2">
                       {video.visibility === 'public' ? (
                         <>
-                          <button
+                          <Button
                             type="button"
-                            className="rounded-input border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-rose-700 transition hover:bg-rose-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
+                            size="sm"
+                            variant="outline"
+                            className="rounded-input border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-rose-700 hover:bg-rose-100 hover:text-rose-700"
                             onClick={() => updateVisibility(video, 'private', false)}
                             disabled={isPending}
                           >
                             Make private
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             type="button"
+                            size="sm"
+                            variant="outline"
                             className={clsx(
-                              'rounded-input px-3 py-1 text-xs font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                              'rounded-input px-3 py-1 text-xs font-semibold uppercase tracking-micro',
                               video.indexable
-                                ? 'border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100'
-                                : 'border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                                ? 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100'
+                                : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
                             )}
                             onClick={() => updateVisibility(video, 'public', !video.indexable)}
                             disabled={isPending}
                           >
                             {video.indexable ? 'Disable indexing' : 'Enable indexing'}
-                          </button>
+                          </Button>
                         </>
                       ) : (
                         <>
-                          <button
+                          <Button
                             type="button"
-                            className="rounded-input bg-emerald-600 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-white hover:bg-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            size="sm"
+                            className="rounded-input bg-emerald-600 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-white hover:bg-emerald-500"
                             onClick={() => updateVisibility(video, 'public', true)}
                             disabled={isPending}
                           >
                             Publish & index
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             type="button"
-                            className="rounded-input border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            size="sm"
+                            variant="outline"
+                            className="rounded-input border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary hover:border-text-muted hover:text-text-primary"
                             onClick={() => updateVisibility(video, 'public', false)}
                             disabled={isPending}
                           >
                             Publish (no index)
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             type="button"
-                            className="rounded-input border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            size="sm"
+                            variant="outline"
+                            className="rounded-input border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary hover:border-text-muted hover:text-text-primary"
                             onClick={() => updateVisibility(video, 'private', false)}
                             disabled={isPending}
                           >
                             Keep private
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             type="button"
-                            className="rounded-input border border-rose-300 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-rose-600 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
+                            size="sm"
+                            variant="outline"
+                            className="rounded-input border-rose-300 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-rose-600 hover:bg-rose-50 hover:text-rose-700"
                             onClick={() => handleDeleteVideo(video)}
                             disabled={deletingId === video.id}
                           >
                             {deletingId === video.id ? 'Deleting…' : 'Delete video'}
-                          </button>
+                          </Button>
                         </>
                       )}
                       <div className="mt-3 space-y-2 text-xs">
@@ -658,17 +672,19 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
                         {assignedPlaylists.length ? (
                           <div className="flex flex-wrap gap-2">
                             {assignedPlaylists.map((playlist) => (
-                              <button
+                              <Button
                                 key={`${video.id}-${playlist.id}`}
                                 type="button"
+                                size="sm"
+                                variant="outline"
                                 onClick={() => handleRemoveFromPlaylist(video, playlist.id)}
                                 disabled={isAssigningPlaylist}
-                                className="inline-flex items-center gap-1 rounded-pill border border-border bg-bg px-2 py-1 text-[11px] text-text-secondary transition hover:border-rose-300 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200"
+                                className="min-h-0 h-auto gap-1 rounded-pill border-border bg-bg px-2 py-1 text-[11px] text-text-secondary hover:border-rose-300 hover:text-rose-600"
                               >
                                 {playlist.name}
                                 <span aria-hidden>×</span>
                                 <span className="sr-only">Remove from {playlist.name}</span>
-                              </button>
+                              </Button>
                             ))}
                           </div>
                         ) : null}
@@ -688,14 +704,16 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
           </table>
           {nextCursor ? (
             <div className="border-t border-border bg-white px-4 py-3 text-center">
-              <button
+              <Button
                 type="button"
+                size="sm"
+                variant="outline"
                 onClick={handleLoadMore}
                 disabled={isLoadingMore}
-                className="rounded-input border border-border bg-bg px-4 py-2 text-sm font-medium text-text-secondary hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-input border-border bg-bg px-4 py-2 text-sm font-medium text-text-secondary hover:bg-white"
               >
                 {isLoadingMore ? 'Loading…' : 'Load more'}
-              </button>
+              </Button>
             </div>
           ) : null}
         </div>

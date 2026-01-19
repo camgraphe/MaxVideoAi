@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import clsx from 'clsx';
 import type { AdminJobAuditRecord } from '@/server/admin-job-audit';
+import { Button } from '@/components/ui/Button';
 
 interface JobAuditTableProps {
   initialJobs: AdminJobAuditRecord[];
@@ -235,24 +236,28 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
           {showArchived ? ' (including archived failures).' : '.'}
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <Button
             type="button"
+            size="sm"
+            variant="outline"
             onClick={() => setShowArchived((prev) => !prev)}
-            className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm font-medium transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="gap-2 rounded-md border-border px-3 py-1.5 text-sm font-medium hover:border-text-muted hover:bg-surface-2"
           >
             {showArchived ? 'Hide archived' : 'Show archived'}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            size="sm"
+            variant="outline"
             onClick={refresh}
             disabled={isRefreshing}
             className={clsx(
-              'inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              'gap-2 rounded-md border-border px-3 py-1.5 text-sm font-medium',
               isRefreshing ? 'cursor-not-allowed opacity-60' : 'hover:border-text-muted hover:bg-surface-2'
             )}
           >
             {isRefreshing ? 'Refreshing…' : 'Refresh'}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -321,13 +326,15 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
                             <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 font-semibold uppercase tracking-micro text-amber-700">
                               Auto-archived
                             </span>
-                            <button
+                            <Button
                               type="button"
+                              size="sm"
+                              variant="outline"
                               onClick={() => handleRestore(job.jobId)}
-                              className="inline-flex items-center justify-center rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-text-primary transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              className="rounded-md border-border bg-background px-2 py-1 text-xs font-medium text-text-primary hover:border-text-muted hover:bg-surface-2"
                             >
                               Bring back online
-                            </button>
+                            </Button>
                           </div>
                         ) : null}
                       </div>
@@ -344,19 +351,21 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
                           <span className="text-xs text-text-secondary">{job.message}</span>
                         ) : null}
                         {job.providerJobId && (!job.videoUrl || job.status !== 'completed') ? (
-                          <button
+                          <Button
                             type="button"
+                            size="sm"
+                            variant="outline"
                             onClick={() => void handleResync(job.jobId)}
                             disabled={syncingJobId === job.jobId}
                             className={clsx(
-                              'inline-flex items-center justify-center rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-text-primary transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                              'rounded-md border-border bg-background px-2 py-1 text-xs font-medium text-text-primary',
                               syncingJobId === job.jobId
                                 ? 'cursor-not-allowed opacity-60'
                                 : 'hover:border-text-muted hover:bg-surface-2'
                             )}
                           >
                             {syncingJobId === job.jobId ? 'Sync en cours…' : 'Reprendre sur Fal'}
-                          </button>
+                          </Button>
                         ) : null}
                       </div>
                     </td>
@@ -454,13 +463,15 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
                           )}
                         </div>
                         {job.paymentStatus?.includes('paid_wallet') && job.totalChargeCents > 0 && job.totalRefundCents === 0 ? (
-                          <button
+                          <Button
                             type="button"
+                            size="sm"
+                            variant="outline"
                             onClick={() => handleRefund(job.jobId)}
-                            className="inline-flex items-center justify-center rounded-md border border-destructive px-2.5 py-1 text-xs font-semibold text-destructive transition hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
+                            className="rounded-md border-destructive px-2.5 py-1 text-xs font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive"
                           >
                             Refund tokens
-                          </button>
+                          </Button>
                         ) : null}
                       </div>
                     </td>
@@ -477,17 +488,19 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
       ) : null}
       {nextCursor ? (
         <div className="text-center">
-          <button
+          <Button
             type="button"
+            size="sm"
+            variant="outline"
             onClick={() => void loadMore()}
             disabled={isLoadingMore}
             className={clsx(
-              'inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              'gap-2 rounded-md border-border px-3 py-1.5 text-sm font-medium',
               isLoadingMore ? 'cursor-not-allowed opacity-60' : 'hover:border-text-muted hover:bg-surface-2'
             )}
           >
             {isLoadingMore ? 'Loading…' : 'Load more jobs'}
-          </button>
+          </Button>
         </div>
       ) : null}
       {!nextCursor && !isLoadingMore ? (

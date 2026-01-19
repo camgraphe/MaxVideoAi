@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import clsx from 'clsx';
 import type { AdminTransactionRecord } from '@/server/admin-transactions';
+import { Button } from '@/components/ui/Button';
 
 type StatusVariant = 'info' | 'success' | 'error';
 
@@ -114,17 +115,19 @@ export function AdminTransactionTable({ initialTransactions }: AdminTransactionT
           Showing {sortedRows.length} transaction{sortedRows.length === 1 ? '' : 's'} (most recent first).
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <Button
             type="button"
+            size="sm"
+            variant="outline"
             onClick={refresh}
             disabled={isRefreshing}
             className={clsx(
-              'inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              'gap-2 rounded-md border-border px-3 py-1.5 text-sm font-medium',
               isRefreshing ? 'cursor-not-allowed opacity-60' : 'hover:border-text-muted hover:bg-surface-2'
             )}
           >
             {isRefreshing ? 'Refreshing…' : 'Refresh'}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -242,17 +245,19 @@ export function AdminTransactionTable({ initialTransactions }: AdminTransactionT
                     </td>
                     <td className="px-4 py-3">
                       {row.canRefund ? (
-                        <button
+                        <Button
                           type="button"
+                          size="sm"
+                          variant="outline"
                           onClick={() => handleRefund(row)}
                           disabled={isPending}
                           className={clsx(
-                            'inline-flex items-center rounded-md border border-destructive px-3 py-1.5 text-sm font-medium text-destructive transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive',
+                            'rounded-md border-destructive px-3 py-1.5 text-sm font-medium text-destructive hover:text-destructive',
                             isPending ? 'cursor-wait opacity-60' : 'hover:bg-destructive/10'
                           )}
                         >
                           {isPending ? 'Refunding…' : 'Refund tokens'}
-                        </button>
+                        </Button>
                       ) : row.type === 'charge' ? (
                         <span className="text-xs text-text-muted">
                           {row.hasRefund ? 'Already refunded' : 'Refund unavailable'}

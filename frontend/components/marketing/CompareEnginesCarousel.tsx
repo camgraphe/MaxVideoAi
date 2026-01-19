@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import type { LinkProps } from 'next/link';
 import { Link } from '@/i18n/navigation';
+import { Button } from '@/components/ui/Button';
 
 export type CompareEngineCard = {
   key: string;
@@ -113,22 +114,26 @@ export function CompareEnginesCarousel({ engines, copy }: CompareEnginesCarousel
             <p className="text-sm text-muted-foreground">{subtitle}</p>
           </div>
           <div className="hidden gap-2 sm:flex">
-            <button
+            <Button
               type="button"
+              size="sm"
+              variant="outline"
               onClick={() => scrollByCard(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-sm font-medium text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="h-9 w-9 min-h-0 rounded-full border-hairline text-sm font-medium text-text-secondary hover:text-text-primary"
               aria-label={ariaPrev}
             >
               ‹
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              size="sm"
+              variant="outline"
               onClick={() => scrollByCard(1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-sm font-medium text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="h-9 w-9 min-h-0 rounded-full border-hairline text-sm font-medium text-text-secondary hover:text-text-primary"
               aria-label={ariaNext}
             >
               ›
-            </button>
+            </Button>
           </div>
         </div>
 
