@@ -2,13 +2,13 @@
 /* eslint-disable @next/next/no-img-element */
 
 import clsx from 'clsx';
-import Link from 'next/link';
 import { useMemo, useCallback, useRef, useEffect, useState } from 'react';
 import type { Ref, ChangeEvent, DragEvent, ReactNode } from 'react';
 import type { EngineCaps, EngineInputField, PreflightResponse } from '@/types/engines';
 import type { EngineCaps as CapabilityCaps } from '@/fixtures/engineCaps';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -279,16 +279,17 @@ export function Composer({
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end lg:flex-nowrap">
             {settingsBar ? <div className="min-w-0 flex-1">{settingsBar}</div> : null}
             {onGenerate ? (
-              <button
+              <Button
                 type="button"
+                size="md"
                 disabled={disableGenerate}
                 className={clsx(
-                  'relative inline-flex w-full shrink-0 items-center justify-center rounded-input px-5 py-3 text-sm font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto',
+                  'relative w-full shrink-0 px-5 py-3 uppercase tracking-micro sm:w-auto',
                   'overflow-hidden transform-gpu transition-transform duration-200 ease-out',
+                  'border border-brand shadow-card',
+                  'disabled:border-border disabled:bg-white disabled:text-text-muted disabled:shadow-none',
                   isButtonAnimating && !disableGenerate ? 'animate-button-pop' : '',
-                  disableGenerate
-                    ? 'cursor-not-allowed border border-border bg-white text-text-muted'
-                    : 'border border-brand bg-brand text-on-brand shadow-card hover:bg-brandHover active:scale-[0.97]'
+                  disableGenerate ? '' : 'active:scale-[0.97]'
                 )}
                 onClick={handleGenerateClick}
               >
@@ -300,7 +301,7 @@ export function Composer({
                     isPulseVisible && !disableGenerate ? 'opacity-100' : ''
                   )}
                 />
-              </button>
+              </Button>
             ) : null}
           </div>
         )}
@@ -606,16 +607,18 @@ function AssetDropzone({
                       <span className="truncate" title={asset.name}>
                         {asset.name}
                       </span>
-                      <button
+                      <Button
                         type="button"
-                        className="rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-text-secondary transition hover:bg-white hover:text-text-primary"
+                        size="sm"
+                        variant="ghost"
+                        className="min-h-0 h-auto rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-text-secondary shadow-none hover:bg-white hover:text-text-primary"
                         onClick={(event) => {
                           event.stopPropagation();
                           onRemove?.(field, index);
                         }}
                       >
                         Remove
-                      </button>
+                      </Button>
                     </div>
                     {asset.status === 'uploading' && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/50 px-3 text-xs font-medium uppercase tracking-widest text-white">
@@ -625,16 +628,18 @@ function AssetDropzone({
                     {asset.status === 'error' && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/60 px-4 text-center text-xs text-white">
                         <span>{asset.error ?? 'Upload failed'}</span>
-                        <button
+                        <Button
                           type="button"
-                          className="rounded-full bg-white px-3 py-1 text-[11px] font-medium text-text-primary"
+                          size="sm"
+                          variant="ghost"
+                          className="min-h-0 h-auto rounded-full bg-white px-3 py-1 text-[11px] font-medium text-text-primary shadow-none hover:bg-white"
                           onClick={(event) => {
                             event.stopPropagation();
                             onRemove?.(field, index);
                           }}
                         >
                           Remove
-                        </button>
+                        </Button>
                       </div>
                     )}
                   </>
@@ -651,41 +656,47 @@ function AssetDropzone({
                     {field.type === 'image' && (
                       <div className="flex w-full items-center justify-center gap-2 pt-1">
                         {assetSlotCta ? (
-                          <Link
+                          <ButtonLink
                             href={assetSlotCta.href}
-                            className="flex-1 rounded-full border border-brand px-2 py-1 text-[10px] font-semibold text-brand transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            size="sm"
+                            variant="outline"
+                            className="min-h-0 h-auto flex-1 rounded-full border-brand px-2 py-1 text-[10px] font-semibold text-brand hover:bg-surface-2"
                             onClick={(event) => event.stopPropagation()}
                           >
                             {assetSlotCta.label}
-                          </Link>
+                          </ButtonLink>
                         ) : null}
                         {onOpenLibrary ? (
-                          <button
+                          <Button
                             type="button"
-                            className="flex-1 rounded-full border border-border px-2 py-1 text-[10px] font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            size="sm"
+                            variant="outline"
+                            className="min-h-0 h-auto flex-1 rounded-full border-border px-2 py-1 text-[10px] font-semibold text-text-secondary hover:border-text-muted hover:bg-transparent hover:text-text-primary"
                             onClick={(event) => {
                               event.stopPropagation();
                               onOpenLibrary(field, index);
                             }}
                           >
                             Library
-                          </button>
+                          </Button>
                         ) : null}
                       </div>
                     )}
                   </div>
                 )}
                 {asset && onOpenLibrary && field.type === 'image' && (
-                  <button
+                  <Button
                     type="button"
-                    className="absolute bottom-2 right-2 rounded-full bg-white/90 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-text-secondary shadow transition hover:bg-white hover:text-text-primary"
+                    size="sm"
+                    variant="ghost"
+                    className="absolute bottom-2 right-2 min-h-0 h-auto rounded-full bg-white/90 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-text-secondary shadow-none hover:bg-white hover:text-text-primary"
                     onClick={(event) => {
                       event.stopPropagation();
                       onOpenLibrary(field, index);
                     }}
                   >
                     Library
-                  </button>
+                  </Button>
                 )}
               </div>
             );

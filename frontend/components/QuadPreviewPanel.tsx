@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/Card';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { MediaLightbox, type MediaLightboxEntry } from '@/components/MediaLightbox';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
+import { Button } from '@/components/ui/Button';
 import type { EngineCaps, PreflightResponse } from '@/types/engines';
 
 export type QuadTileAction = 'continue' | 'refine' | 'branch' | 'copy' | 'open';
@@ -229,14 +230,16 @@ export function QuadPreviewPanel({
           </p>
         </div>
         {hasMosaicMedia && (
-          <button
+          <Button
             type="button"
+            size="sm"
+            variant="outline"
             onClick={onSaveComposite}
-            className="inline-flex items-center gap-2 rounded-input border border-hairline bg-white px-3 py-1.5 text-[12px] font-medium text-text-secondary transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="min-h-0 h-auto rounded-input border-hairline bg-white px-3 py-1.5 text-[12px] font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2"
           >
             <Image src="/assets/icons/save.svg" alt="" width={14} height={14} className="h-3.5 w-3.5" aria-hidden />
             Save composite
-          </button>
+          </Button>
         )}
       </header>
 
@@ -386,17 +389,19 @@ export function QuadPreviewPanel({
                     <span>{statusLabel}</span>
                     <span className="hidden sm:inline text-text-secondary">{branchLabel}</span>
                   </span>
-                  <button
+                  <Button
                     type="button"
+                    size="sm"
+                    variant="outline"
                     onClick={() => onSelectHero(tile)}
                     className={clsx(
-                      'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      'min-h-0 h-auto rounded-full px-2 py-0.5 text-[10px]',
                       isHero ? 'border-brand bg-brand text-on-brand' : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
                     )}
                   >
                     <Image src="/assets/icons/pin.svg" alt="" width={12} height={12} className="h-3 w-3" aria-hidden />
                     Hero
-                  </button>
+                  </Button>
                 </div>
 
                 <div className={clsx('relative bg-[#E7ECF7]', tileAspectClass)} data-quad-tile={tile.localKey}>
@@ -477,24 +482,28 @@ export function QuadPreviewPanel({
                 <div className="flex items-center justify-between gap-1 border-t border-hairline bg-white px-2 py-1.5">
                   <div className="flex gap-1">
                     {TILE_ACTIONS.map((action) => (
-                      <button
+                      <Button
                         key={action.id}
                         type="button"
+                        size="sm"
+                        variant="outline"
                         onClick={() => onTileAction(action.id, tile)}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-hairline bg-white text-text-secondary transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="h-8 w-8 min-h-0 rounded-full border-hairline bg-white p-0 text-text-secondary hover:border-text-muted hover:bg-surface-2"
                         aria-label={action.label}
                       >
                         <Image src={action.icon} alt="" width={14} height={14} className="h-3.5 w-3.5" aria-hidden />
-                      </button>
+                      </Button>
                     ))}
                   </div>
-                  <button
+                  <Button
                     type="button"
+                    size="sm"
+                    variant="outline"
                     onClick={() => onGroupAction('open', tile)}
-                    className="inline-flex items-center gap-1 rounded-full border border-hairline bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="min-h-0 h-auto rounded-full border-hairline bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary hover:border-text-muted hover:bg-surface-2"
                   >
                     View
-                  </button>
+                  </Button>
                 </div>
               </div>
             );
@@ -504,24 +513,28 @@ export function QuadPreviewPanel({
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-input border border-dashed border-border bg-white/70 px-3 py-2 text-[11px] font-medium uppercase tracking-micro text-text-muted">
         <div className="flex flex-wrap items-center gap-2">
-          <button
+          <Button
             type="button"
+            size="sm"
+            variant="outline"
             onClick={() => setIsPlaying((prev) => !prev)}
             className={clsx(
-              'inline-flex items-center gap-1 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              'min-h-0 h-auto rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-micro',
               isPlaying ? 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2' : 'border-brand bg-surface-2 text-brand'
             )}
           >
             {isPlaying ? 'Pause' : 'Play'}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            size="sm"
+            variant="outline"
             onClick={() => setIsLightboxOpen(true)}
-            className="inline-flex items-center gap-1 rounded-full border border-hairline bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="min-h-0 h-auto rounded-full border-hairline bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary hover:border-text-muted hover:bg-surface-2"
           >
             <Image src="/assets/icons/expand.svg" alt="" width={12} height={12} className="h-3 w-3" />
             Open takes
-          </button>
+          </Button>
         </div>
         {heroTile && (
           <span className="text-[10px] uppercase tracking-micro text-text-muted">

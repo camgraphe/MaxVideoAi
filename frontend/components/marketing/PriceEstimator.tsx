@@ -11,6 +11,7 @@ import { getPartnerByEngineId } from '@/lib/brand-partners';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import { selectPricingRule, type PricingRuleLite } from '@/lib/pricing-rules';
 import { applyEnginePricingOverride, buildPricingDefinition } from '@/lib/pricing-definition';
+import { Button } from '@/components/ui/Button';
 
 type MemberTier = 'Member' | 'Plus' | 'Pro';
 
@@ -752,12 +753,14 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                         {filteredDurationOptions.map((option) => {
                           const selected = option.value === duration;
                           return (
-                            <button
+                            <Button
                               key={option.value}
                               type="button"
+                              size="sm"
+                              variant="ghost"
                               onClick={() => setDuration(option.value)}
                               className={clsx(
-                                'rounded-full px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white',
+                                'min-h-0 h-auto rounded-full px-3 py-1.5 text-sm font-medium',
                                 selected
                                   ? 'bg-brand text-on-brand shadow-[0_10px_30px_-12px_rgba(66,106,174,0.55)]'
                                   : 'bg-white/70 text-text-secondary hover:bg-white'
@@ -765,7 +768,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                               aria-pressed={selected}
                             >
                               {option.label}
-                            </button>
+                            </Button>
                           );
                         })}
                       </div>
@@ -816,12 +819,14 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                       ].map((option) => {
                         const selected = audioEnabled === option.value;
                         return (
-                          <button
+                          <Button
                             key={String(option.value)}
                             type="button"
+                            size="sm"
+                            variant="ghost"
                             onClick={() => setAudioEnabled(option.value)}
                             className={clsx(
-                              'rounded-full px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white',
+                              'min-h-0 h-auto rounded-full px-3 py-1.5 text-sm font-medium',
                               selected
                                 ? 'bg-brand text-on-brand shadow-[0_10px_30px_-12px_rgba(66,106,174,0.55)]'
                                 : 'bg-white/70 text-text-secondary hover:bg-white'
@@ -829,7 +834,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                             aria-pressed={selected}
                           >
                             {option.label}
-                          </button>
+                          </Button>
                         );
                       })}
                     </div>
@@ -849,12 +854,14 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                 {MEMBER_ORDER.map((tier) => {
                   const selected = tier === memberTier;
                   return (
-                    <button
+                    <Button
                       key={tier}
                       type="button"
+                      size="sm"
+                      variant="ghost"
                       onClick={() => setMemberTier(tier)}
                       className={clsx(
-                        'rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white',
+                        'min-h-0 h-auto rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-micro',
                         selected
                           ? 'bg-neutral-900 text-white shadow-[0_10px_25px_-12px_rgba(17,24,39,0.6)]'
                           : 'bg-white/70 text-text-secondary hover:bg-white'
@@ -862,7 +869,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                       aria-pressed={selected}
                     >
                       {memberNames.get(tier) ?? tier}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>

@@ -7,6 +7,7 @@ import type { MutableRefObject, Ref } from 'react';
 import type { EngineCaps, Mode } from '@/types/engines';
 import type { EngineCaps as CapabilityCaps } from '@/fixtures/engineCaps';
 import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
 interface Props {
@@ -298,21 +299,23 @@ export function SettingsControls({
                   {frameOptions.map((option) => {
                     const active = numFrames === option;
                     return (
-                      <button
+                      <Button
                         key={option}
                         type="button"
+                        size="sm"
+                        variant="outline"
                         onClick={() => onNumFramesChange?.(option)}
                         disabled={!onNumFramesChange}
                         className={clsx(
-                          'rounded-input border px-3 py-1.5 text-[13px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                          'min-h-0 h-auto px-3 py-1.5 text-[13px] font-medium',
                           active
                             ? 'border-brand bg-brand text-on-brand'
-                          : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2',
+                            : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2',
                           !onNumFramesChange && 'cursor-not-allowed opacity-60'
                         )}
                       >
                         {(controlsCopy.frames.unit ?? '{count} frames').replace('{count}', String(option))}
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
@@ -330,19 +333,21 @@ export function SettingsControls({
                   {enumeratedDurationOptions.map((option) => {
                     const active = matchesDurationOptionValue(option, durationOption, durationSec);
                     return (
-                      <button
+                      <Button
                         key={String(option.raw)}
                         type="button"
+                        size="sm"
+                        variant="outline"
                         onClick={() => onDurationChange(option.raw)}
                         className={clsx(
-                          'rounded-input border px-3 py-1.5 text-[13px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                          'min-h-0 h-auto px-3 py-1.5 text-[13px] font-medium',
                           active
                             ? 'border-brand bg-brand text-on-brand'
                             : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
                         )}
                       >
                         {option.label}
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
@@ -446,30 +451,34 @@ export function SettingsControls({
             <div className="-mt-2 mb-1 flex items-center gap-2 px-1">
               <span className="text-[11px] uppercase tracking-micro text-text-muted">{controlsCopy.iterationsLabel}</span>
               {[1, 2, 3, 4].map((n) => (
-                <button
+                <Button
                   key={n}
                   type="button"
+                  size="sm"
+                  variant="outline"
                   onClick={() => onIterationsChange(n)}
                   className={clsx(
-                    'rounded-input border px-2.5 py-1 text-[12px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    'min-h-0 h-auto px-2.5 py-1 text-[12px]',
                     iterations === n
                       ? 'border-brand bg-brand text-on-brand'
                       : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
                   )}
                 >
                   X{n}
-                </button>
+                </Button>
               ))}
             </div>
           )}
           {showAudioToggle && (
             <div className="-mt-1 flex items-center justify-between px-1">
               <span className="text-[11px] uppercase tracking-micro text-text-muted">{controlsCopy.audio.label}</span>
-              <button
+              <Button
                 type="button"
+                size="sm"
+                variant="outline"
                 onClick={() => onAudioChange?.(!audioEnabled)}
                 className={clsx(
-                  'rounded-input border px-2.5 py-1 text-[12px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  'min-h-0 h-auto px-2.5 py-1 text-[12px] font-medium',
                   audioEnabled
                     ? 'border-brand bg-brand text-on-brand'
                     : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
@@ -477,17 +486,19 @@ export function SettingsControls({
                 aria-pressed={audioEnabled}
               >
                 {audioEnabled ? controlsCopy.audio.on : controlsCopy.audio.off}
-              </button>
+              </Button>
             </div>
           )}
           {showLoopControl && typeof loopEnabled === 'boolean' && onLoopChange && (
             <div className="-mt-1 flex items-center justify-between px-1">
               <span className="text-[11px] uppercase tracking-micro text-text-muted">{controlsCopy.loop.label}</span>
-              <button
+              <Button
                 type="button"
+                size="sm"
+                variant="outline"
                 onClick={() => onLoopChange(!loopEnabled)}
                 className={clsx(
-                  'rounded-input border px-2.5 py-1 text-[12px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  'min-h-0 h-auto px-2.5 py-1 text-[12px] font-medium',
                   loopEnabled
                     ? 'border-brand bg-brand text-on-brand'
                     : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
@@ -495,15 +506,17 @@ export function SettingsControls({
                 aria-pressed={loopEnabled}
               >
                 {loopEnabled ? controlsCopy.loop.on : controlsCopy.loop.off}
-              </button>
+              </Button>
             </div>
           )}
         </>
       )}
       <div className="rounded-input border border-border bg-white">
-        <button
+        <Button
           type="button"
-          className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left"
+          size="sm"
+          variant="ghost"
+          className="min-h-0 h-auto w-full justify-between px-3 py-2 text-left font-normal"
           onClick={() => setIsAdvancedOpen((prev) => !prev)}
           aria-expanded={isAdvancedOpen}
         >
@@ -519,7 +532,7 @@ export function SettingsControls({
           >
             <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-        </button>
+        </Button>
         {isAdvancedOpen && (
           <div className="space-y-3 border-t border-border px-3 pb-3 pt-2">
             <label className="flex flex-col gap-2 text-sm text-text-secondary">
@@ -544,19 +557,21 @@ export function SettingsControls({
             {engine.fps.length > 1 && (
               <div className="flex flex-wrap gap-2">
                 {(isLtx2FastLong ? engine.fps.filter((value) => value === 25) : engine.fps).map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => onFpsChange(option)}
-                  className={clsx(
-                      'rounded-input border px-3 py-1.5 text-[13px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  <Button
+                    key={option}
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onFpsChange(option)}
+                    className={clsx(
+                      'min-h-0 h-auto px-3 py-1.5 text-[13px]',
                       option === fps
                         ? 'border-brand bg-brand text-on-brand'
                         : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
                     )}
                   >
                     {(controlsCopy.fpsSuffix ?? '{value} fps').replace('{value}', String(option))}
-                  </button>
+                  </Button>
                 ))}
               </div>
             )}
@@ -667,12 +682,14 @@ function FieldGroup({ label, options, value, onChange, focusRef, labelFor, iconF
       <span className="text-[12px] uppercase tracking-micro text-text-muted">{label}</span>
       <div className="mt-3 flex flex-wrap gap-2">
         {options.map((option) => (
-          <button
+          <Button
             key={option}
             type="button"
+            size="sm"
+            variant="outline"
             onClick={() => onChange(String(option))}
             className={clsx(
-              'rounded-input border px-3 py-1.5 text-[13px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              'min-h-0 h-auto px-3 py-1.5 text-[13px]',
               String(option) === value
                 ? 'border-brand bg-brand text-on-brand'
                 : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
@@ -682,7 +699,7 @@ function FieldGroup({ label, options, value, onChange, focusRef, labelFor, iconF
               <Image src={iconFor(option)!} alt="" width={14} height={14} className="mr-2 inline-block h-3.5 w-3.5 align-[-2px]" />
             )}
             {labelFor ? labelFor(option) : String(option)}
-          </button>
+          </Button>
         ))}
       </div>
     </div>

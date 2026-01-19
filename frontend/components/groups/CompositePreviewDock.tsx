@@ -8,6 +8,7 @@ import { Download, ExternalLink, Pause, Play, Repeat, Volume2, VolumeX } from 'l
 import type { VideoGroup, VideoItem } from '@/types/video-groups';
 import { ProcessingOverlay } from '@/components/groups/ProcessingOverlay';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
+import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
@@ -264,11 +265,14 @@ export function CompositePreviewDock({
     {
       key: 'play',
       element: (
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant="ghost"
           onClick={() => setIsPlaying((prev) => !prev)}
           className={clsx(
             ICON_BUTTON_BASE,
+            'p-0',
             isPlaying ? 'text-text-primary shadow-inner' : 'text-text-secondary hover:text-text-primary'
           )}
           aria-label={isPlaying ? controls.play.ariaOn : controls.play.ariaOff}
@@ -277,17 +281,20 @@ export function CompositePreviewDock({
         >
           <UIIcon icon={isPlaying ? Pause : Play} />
           <span className="sr-only">{isPlaying ? controls.play.on : controls.play.off}</span>
-        </button>
+        </Button>
       ),
     },
     {
       key: 'mute',
       element: (
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant="ghost"
           onClick={() => setIsMuted((prev) => !prev)}
           className={clsx(
             ICON_BUTTON_BASE,
+            'p-0',
             isMuted ? 'text-text-primary shadow-inner' : 'text-text-secondary hover:text-text-primary'
           )}
           aria-label={isMuted ? controls.mute.ariaOn : controls.mute.ariaOff}
@@ -296,17 +303,20 @@ export function CompositePreviewDock({
         >
           <UIIcon icon={isMuted ? VolumeX : Volume2} />
           <span className="sr-only">{isMuted ? controls.mute.on : controls.mute.off}</span>
-        </button>
+        </Button>
       ),
     },
     {
       key: 'loop',
       element: (
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant="ghost"
           onClick={() => setIsLooping((prev) => !prev)}
           className={clsx(
             ICON_BUTTON_BASE,
+            'p-0',
             isLooping ? 'text-text-primary shadow-inner' : 'text-text-secondary hover:text-text-primary'
           )}
           aria-label={isLooping ? controls.loop.ariaOn : controls.loop.ariaOff}
@@ -323,39 +333,43 @@ export function CompositePreviewDock({
             ) : null}
           </span>
           <span className="sr-only">{isLooping ? controls.loop.on : controls.loop.off}</span>
-        </button>
+        </Button>
       ),
     },
     {
       key: 'download',
       element: (
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant="ghost"
           onClick={handleDownload}
           disabled={!primaryMediaUrl}
-          className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
+          className={clsx(ICON_BUTTON_BASE, 'p-0 text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
           aria-label={controls.download.aria}
           title={controls.download.label}
         >
           <UIIcon icon={Download} />
           <span className="sr-only">{controls.download.label}</span>
-        </button>
+        </Button>
       ),
     },
     {
       key: 'modal',
       element: (
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant="ghost"
           onClick={handleOpenModal}
           disabled={!group}
-          className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
+          className={clsx(ICON_BUTTON_BASE, 'p-0 text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
           aria-label={controls.modal.aria}
           title={controls.modal.label}
         >
           <UIIcon icon={ExternalLink} />
           <span className="sr-only">{controls.modal.label}</span>
-        </button>
+        </Button>
       ),
     },
   ];
@@ -376,26 +390,30 @@ export function CompositePreviewDock({
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0 flex-1">{engineSettings}</div>
               {!showTitle && copyPrompt && onCopyPrompt ? (
-                <button
+                <Button
                   type="button"
+                  size="sm"
+                  variant="outline"
                   onClick={onCopyPrompt}
-                  className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-brand transition hover:bg-surface-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="min-h-0 h-auto rounded-full border-border bg-surface-2 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-brand hover:bg-surface-3"
                 >
                   {controls.copyPrompt}
-                </button>
+                </Button>
               ) : null}
             </div>
             {showTitle ? (
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                 {headerTitle}
                 {copyPrompt && onCopyPrompt ? (
-                  <button
+                  <Button
                     type="button"
+                    size="sm"
+                    variant="outline"
                     onClick={onCopyPrompt}
-                    className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-brand transition hover:bg-surface-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="min-h-0 h-auto rounded-full border-border bg-surface-2 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-brand hover:bg-surface-3"
                   >
                     {controls.copyPrompt}
-                  </button>
+                  </Button>
                 ) : null}
               </div>
             ) : null}
@@ -405,13 +423,15 @@ export function CompositePreviewDock({
             {headerTitle}
             <div className="flex flex-wrap items-center gap-2">
               {copyPrompt && onCopyPrompt ? (
-                <button
+                <Button
                   type="button"
+                  size="sm"
+                  variant="outline"
                   onClick={onCopyPrompt}
-                  className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-brand transition hover:bg-surface-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="min-h-0 h-auto rounded-full border-border bg-surface-2 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-brand hover:bg-surface-3"
                 >
                   {controls.copyPrompt}
-                </button>
+                </Button>
               ) : null}
             </div>
           </div>

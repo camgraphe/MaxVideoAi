@@ -9,6 +9,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 import { supabase } from '@/lib/supabaseClient';
 import { NAV_ITEMS } from '@/components/AppSidebar';
+import { Button } from '@/components/ui/Button';
 import { setLogoutIntent } from '@/lib/logout-intent';
 import {
   clearLastKnownAccount,
@@ -265,9 +266,11 @@ export function MarketingNav() {
           />
           <span>{brand}</span>
         </Link>
-        <button
+        <Button
           type="button"
-          className="inline-flex items-center justify-center rounded-full border border-hairline bg-white/80 p-2 text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+          size="sm"
+          variant="ghost"
+          className="min-h-0 h-9 w-9 rounded-full border border-hairline bg-white/80 p-2 text-text-primary hover:bg-surface-2 md:hidden"
           aria-label={t('nav.mobileToggle', 'Open menu')}
           onClick={() => setMobileMenuOpen(true)}
         >
@@ -276,7 +279,7 @@ export function MarketingNav() {
             <line x1="3" y1="12" x2="21" y2="12" />
             <line x1="3" y1="18" x2="21" y2="18" />
           </svg>
-        </button>
+        </Button>
         <nav aria-label="Primary" className="hidden items-center gap-6 text-sm font-medium text-text-secondary md:flex">
           {links.map((item) => {
             const isActive = pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href + '/'));
@@ -355,16 +358,18 @@ export function MarketingNav() {
                 {generateLabel}
               </Link>
               <div className="relative">
-                <button
+                <Button
                   ref={avatarRef}
                   type="button"
+                  size="sm"
+                  variant="ghost"
                   onClick={() => setAccountMenuOpen((prev) => !prev)}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-[#dce4ff] bg-gradient-to-br from-[#dfe6ff] via-white/95 to-white text-sm font-semibold text-text-primary shadow-card transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="min-h-0 h-10 w-10 rounded-full border border-[#dce4ff] bg-gradient-to-br from-[#dfe6ff] via-white/95 to-white text-sm font-semibold text-text-primary shadow-card hover:brightness-110"
                   aria-haspopup="menu"
                   aria-expanded={accountMenuOpen}
                 >
                   {initials}
-                </button>
+                </Button>
                 {accountMenuOpen && (
                   <div
                     ref={menuRef}
@@ -404,14 +409,16 @@ export function MarketingNav() {
                         );
                       })}
                     </nav>
-                    <button
+                    <Button
                       type="button"
-                      className="flex w-full items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      size="sm"
+                      variant="ghost"
+                      className="min-h-0 h-auto w-full justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary hover:bg-surface-2"
                       onClick={() => signOut({ closeAccountMenu: true })}
                     >
                       {t('workspace.header.signOut', 'Sign out')}
                       <span className="text-[11px] uppercase tracking-micro text-text-muted">⌘⇧Q</span>
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -454,9 +461,11 @@ export function MarketingNav() {
               />
               <span>{brand}</span>
             </Link>
-            <button
+            <Button
               type="button"
-              className="rounded-full border border-hairline bg-white p-2 text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              size="sm"
+              variant="ghost"
+              className="min-h-0 h-9 w-9 rounded-full border border-hairline bg-white p-2 text-text-primary"
               aria-label={t('nav.mobileClose', 'Close menu')}
               onClick={() => setMobileMenuOpen(false)}
             >
@@ -464,7 +473,7 @@ export function MarketingNav() {
                 <line x1="6" y1="6" x2="18" y2="18" />
                 <line x1="18" y1="6" x2="6" y2="18" />
               </svg>
-            </button>
+            </Button>
           </div>
           <div className="mx-auto mt-5 max-w-sm space-y-5">
             <div className="flex justify-end">
@@ -501,13 +510,15 @@ export function MarketingNav() {
                 >
                   {generateLabel}
                 </Link>
-                      <button
+                      <Button
                         type="button"
-                        className="w-full rounded-2xl border border-hairline px-4 py-3 text-base font-semibold text-text-primary shadow-card"
+                        size="md"
+                        variant="outline"
+                        className="w-full rounded-2xl border-hairline px-4 py-3 text-base font-semibold text-text-primary shadow-card"
                         onClick={() => signOut({ closeMobileMenu: true })}
                       >
-                  {t('workspace.header.signOut', 'Sign out')}
-                </button>
+                        {t('workspace.header.signOut', 'Sign out')}
+                      </Button>
               </div>
             ) : (
               <div className="space-y-3">

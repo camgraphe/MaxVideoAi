@@ -5,6 +5,7 @@
 import clsx from 'clsx';
 import type { ReactNode } from 'react';
 import { Copy, Download, ExternalLink, Minus, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { resolveCssAspectRatio } from '@/lib/aspect';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -100,66 +101,76 @@ export function ImageCompositePreviewDock({
     <div className="flex flex-wrap items-center justify-center gap-2">
       {isInLibrary ? (
         <span title={isRemovingFromLibrary ? removingLabel : removeFromLibraryLabel}>
-          <button
+          <Button
             type="button"
+            size="sm"
+            variant="ghost"
             onClick={onRemoveFromLibrary}
             disabled={!canRemoveFromLibrary}
-            className={clsx(ICON_BUTTON_BASE, 'text-state-warning', 'disabled:opacity-50')}
+            className={clsx(ICON_BUTTON_BASE, 'p-0 text-state-warning', 'disabled:opacity-50')}
             aria-label={isRemovingFromLibrary ? removingLabel : removeFromLibraryLabel}
           >
             <UIIcon icon={Minus} size={18} />
             <span className="sr-only">{isRemovingFromLibrary ? removingLabel : removeFromLibraryLabel}</span>
-          </button>
+          </Button>
         </span>
       ) : (
         <span title={isSavingToLibrary ? savingLabel : addToLibraryLabel}>
-          <button
+          <Button
             type="button"
+            size="sm"
+            variant="ghost"
             onClick={() => (selected?.url && onAddToLibrary ? onAddToLibrary(selected.url) : undefined)}
             disabled={!canAddToLibrary}
-            className={clsx(ICON_BUTTON_BASE, 'text-brand', 'disabled:opacity-50')}
+            className={clsx(ICON_BUTTON_BASE, 'p-0 text-brand', 'disabled:opacity-50')}
             aria-label={isSavingToLibrary ? savingLabel : addToLibraryLabel}
           >
             <UIIcon icon={Plus} size={18} />
             <span className="sr-only">{isSavingToLibrary ? savingLabel : addToLibraryLabel}</span>
-          </button>
+          </Button>
         </span>
       )}
       <span title={downloadLabel}>
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant="ghost"
           onClick={() => (selected?.url && onDownload ? onDownload(selected.url) : undefined)}
           disabled={!canDownload}
-          className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
+          className={clsx(ICON_BUTTON_BASE, 'p-0 text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
           aria-label={downloadLabel}
         >
           <UIIcon icon={Download} />
           <span className="sr-only">{downloadLabel}</span>
-        </button>
+        </Button>
       </span>
       <span title={copyLabel}>
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant="ghost"
           onClick={() => (selected?.url && onCopyLink ? onCopyLink(selected.url) : undefined)}
           disabled={!canCopy}
-          className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
+          className={clsx(ICON_BUTTON_BASE, 'p-0 text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
           aria-label={copyLabel}
         >
           <UIIcon icon={Copy} />
           <span className="sr-only">{copyLabel}</span>
-        </button>
+        </Button>
       </span>
       <span title={modalLabel}>
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant="ghost"
           onClick={onOpenModal}
           disabled={!canOpenModal}
-          className={clsx(ICON_BUTTON_BASE, 'text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
+          className={clsx(ICON_BUTTON_BASE, 'p-0 text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
           aria-label={modalLabel}
         >
           <UIIcon icon={ExternalLink} />
           <span className="sr-only">{modalLabel}</span>
-        </button>
+        </Button>
       </span>
     </div>
   );
@@ -216,19 +227,21 @@ export function ImageCompositePreviewDock({
               const isActive = index === safeIndex;
               const buttonLabel = `Take ${index + 1}`;
               return (
-                <button
+                <Button
                   key={`${entry?.id ?? 'preview'}-${index}`}
                   type="button"
+                  size="sm"
+                  variant="ghost"
                   onClick={() => onSelectIndex(index)}
-                    className={clsx(
-                      'relative h-14 w-14 flex-none overflow-hidden rounded-[12px] border bg-white shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                      isActive ? 'border-brand' : 'border-border hover:border-text-muted'
-                    )}
+                  className={clsx(
+                    'relative h-14 w-14 flex-none overflow-hidden rounded-[12px] border bg-white p-0 shadow-sm transition',
+                    isActive ? 'border-brand' : 'border-border hover:border-text-muted'
+                  )}
                   aria-label={buttonLabel}
                   aria-pressed={isActive}
                 >
                   <img src={image.url} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
-                </button>
+                </Button>
               );
             })}
           </div>

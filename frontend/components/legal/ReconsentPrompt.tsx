@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Button } from '@/components/ui/Button';
 
 type DocumentStatus = {
   key: 'terms' | 'privacy' | 'cookies';
@@ -230,14 +231,15 @@ export function ReconsentPrompt() {
 
       {error ? <p className="text-sm text-state-warning">{error}</p> : null}
 
-      <button
+      <Button
         type="button"
+        size="sm"
         onClick={handleAccept}
         disabled={submitting}
-        className="w-full rounded-input bg-brand px-3 py-2 text-sm font-semibold text-on-brand transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="w-full px-3 py-2 text-sm"
       >
         {submitting ? 'Saving…' : 'Accept and continue'}
-      </button>
+      </Button>
     </div>
   );
 

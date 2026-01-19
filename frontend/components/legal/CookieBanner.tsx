@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { CONSENT_COOKIE_NAME, createDefaultConsent, mergeConsent, parseConsent, serializeConsent, type ConsentCategory, type ConsentRecord } from '@/lib/consent';
 import { setAnalyticsConsentCookie, setClarityConsent } from '@/lib/clarity-client';
+import { Button } from '@/components/ui/Button';
 
 type BannerState =
   | { ready: false }
@@ -242,24 +243,29 @@ export function CookieBanner() {
               advertising tags for campaign measurement. You can change your choices anytime.
             </p>
             <div className="flex flex-wrap gap-3">
-              <button
+              <Button
                 type="button"
+                size="sm"
                 onClick={handleAcceptAll}
                 disabled={fetchState === 'saving'}
-                className="rounded-input bg-brand px-4 py-2 text-sm font-semibold text-on-brand transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="px-4 py-2 text-sm"
               >
                 {fetchState === 'saving' ? 'Saving…' : 'Accept all'}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                size="sm"
+                variant="outline"
                 onClick={handleRejectAll}
                 disabled={fetchState === 'saving'}
-                className="rounded-input border border-border px-4 py-2 text-sm font-semibold text-text-primary transition hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="border-border px-4 py-2 text-sm text-text-primary hover:bg-bg"
               >
                 Reject all
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                size="sm"
+                variant="ghost"
                 onClick={() => {
                   setShowPreferences((prev) => {
                     const next = !prev;
@@ -269,10 +275,10 @@ export function CookieBanner() {
                     return next;
                   });
                 }}
-                className="text-sm font-semibold text-brand underline underline-offset-4 hover:text-brandHover"
+                className="min-h-0 h-auto p-0 text-sm font-semibold text-brand underline underline-offset-4 hover:text-brandHover"
               >
                 {showPreferences ? 'Hide choices' : 'Manage choices'}
-              </button>
+              </Button>
             </div>
             {error ? <p className="text-xs text-state-warning">{error}</p> : null}
             <p className="text-xs text-text-muted">
@@ -291,41 +297,46 @@ export function CookieBanner() {
                   Analytics cookies
                   <span className="block text-xs text-text-muted">Help us measure usage and improve features.</span>
                 </span>
-                <button
+                <Button
                   type="button"
+                  size="sm"
+                  variant="ghost"
                   onClick={() => toggleCategory('analytics')}
-                  className={`h-6 w-10 rounded-full border transition ${draft.analytics ? 'border-brand bg-brand' : 'border-border bg-white'}`}
+                  className={`min-h-0 h-6 w-10 rounded-full border p-0 transition ${draft.analytics ? 'border-brand bg-brand' : 'border-border bg-white'}`}
                   aria-pressed={draft.analytics}
                 >
                   <span
                     className={`block h-5 w-5 translate-y-0.5 rounded-full bg-white transition ${draft.analytics ? 'translate-x-4' : 'translate-x-0.5'}`}
                   />
-                </button>
+                </Button>
               </label>
               <label className="mb-3 flex items-start justify-between gap-3 text-sm text-text-secondary">
                 <span>
                   Advertising cookies
                   <span className="block text-xs text-text-muted">Measure campaigns and improve relevance.</span>
                 </span>
-                <button
+                <Button
                   type="button"
+                  size="sm"
+                  variant="ghost"
                   onClick={() => toggleCategory('ads')}
-                  className={`h-6 w-10 rounded-full border transition ${draft.ads ? 'border-brand bg-brand' : 'border-border bg-white'}`}
+                  className={`min-h-0 h-6 w-10 rounded-full border p-0 transition ${draft.ads ? 'border-brand bg-brand' : 'border-border bg-white'}`}
                   aria-pressed={draft.ads}
                 >
                   <span
                     className={`block h-5 w-5 translate-y-0.5 rounded-full bg-white transition ${draft.ads ? 'translate-x-4' : 'translate-x-0.5'}`}
                   />
-                </button>
+                </Button>
               </label>
-              <button
+              <Button
                 type="button"
+                size="sm"
                 onClick={handleSavePreferences}
                 disabled={fetchState === 'saving'}
-                className="w-full rounded-input bg-brand px-3 py-2 text-sm font-semibold text-on-brand transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full px-3 py-2 text-sm"
               >
                 {fetchState === 'saving' ? 'Saving…' : 'Save preferences'}
-              </button>
+              </Button>
             </div>
           ) : null}
         </div>

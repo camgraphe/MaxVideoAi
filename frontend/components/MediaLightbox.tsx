@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
+import { Button, ButtonLink } from '@/components/ui/Button';
 
 export interface MediaLightboxEntry {
   id: string;
@@ -329,13 +330,15 @@ export function MediaLightbox({
       }}
     >
       <div className="relative max-h-full w-full max-w-5xl overflow-y-auto rounded-[18px] border border-border bg-white p-6 shadow-2xl">
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={onClose}
-          className="absolute right-5 top-5 rounded-input border border-border bg-white px-3 py-1 text-sm font-medium text-text-secondary transition hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="absolute right-5 top-5 border-border bg-white px-3 py-1 text-sm font-medium text-text-secondary hover:bg-bg"
         >
           Close
-        </button>
+        </Button>
 
         <header className="pr-14">
           <h2 className="text-xl font-semibold text-text-primary">{title}</h2>
@@ -460,84 +463,97 @@ export function MediaLightbox({
                   </div>
 
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <a
+                    <ButtonLink
+                      linkComponent="a"
                       href={mediaUrl ?? undefined}
                       target="_blank"
                       rel="noreferrer"
+                      variant="outline"
+                      size="sm"
                       className={clsx(
-                        'rounded-input border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                        'px-3 py-1.5 text-sm font-medium',
                         mediaUrl
                           ? 'border-border bg-white text-text-secondary hover:bg-bg'
                           : 'pointer-events-none border-border/60 bg-bg text-text-muted'
                       )}
                     >
                       Open
-                    </a>
-                    <button
+                    </ButtonLink>
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="sm"
                       onClick={() => handleDownloadEntry(entry, mediaUrl)}
                       disabled={!mediaUrl || isDownloading}
                       className={clsx(
-                        'rounded-input border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                        'px-3 py-1.5 text-sm font-medium',
                         mediaUrl
                           ? 'border-border bg-white text-text-secondary hover:bg-bg disabled:cursor-not-allowed'
                           : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
                       )}
                     >
                       {isDownloading ? 'Downloading…' : 'Download'}
-                    </button>
+                    </Button>
                     {onRemixEntry ? (
-                      <button
+                      <Button
                         type="button"
+                        variant="outline"
+                        size="sm"
                         onClick={() => onRemixEntry(entry)}
                         disabled={!canRemix}
                         className={clsx(
-                          'rounded-input border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                          'px-3 py-1.5 text-sm font-medium',
                           canRemix
                             ? 'border-border bg-white text-text-secondary hover:bg-bg'
                             : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
                         )}
                       >
                         {remixLabel ?? 'Remix'}
-                      </button>
+                      </Button>
                     ) : null}
                     {onUseTemplate ? (
-                      <button
+                      <Button
                         type="button"
+                        variant="outline"
+                        size="sm"
                         onClick={() => onUseTemplate(entry)}
                         disabled={!canTemplate}
                         className={clsx(
-                          'rounded-input border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                          'px-3 py-1.5 text-sm font-medium',
                           canTemplate
                             ? 'border-border bg-white text-text-secondary hover:bg-bg'
                             : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
                         )}
                       >
                         {templateLabel ?? 'Use as template'}
-                      </button>
+                      </Button>
                     ) : null}
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="sm"
                       onClick={() => handleCopyLink(entry.id, mediaUrl)}
                       disabled={!mediaUrl}
                       className={clsx(
-                        'rounded-input border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                        'px-3 py-1.5 text-sm font-medium',
                         mediaUrl
                           ? 'border-border bg-white text-text-secondary hover:bg-bg disabled:cursor-not-allowed'
                           : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
                       )}
                     >
                       {copiedId === entry.id ? 'Link copied' : 'Copy link'}
-                    </button>
+                    </Button>
                     {onSaveToLibrary ? (
-                      <button
+                      <Button
                         type="button"
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleSaveEntryToLibrary(entry, mediaUrl)}
                         disabled={!mediaUrl || libraryState?.loading}
                         className={clsx(
-                          'rounded-input border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed',
+                          'px-3 py-1.5 text-sm font-medium',
                           mediaUrl
-                            ? 'border-brand bg-surface-2 text-brand hover:bg-surface-3'
+                            ? 'border-brand bg-surface-2 text-brand hover:bg-surface-3 hover:text-brand'
                             : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
                         )}
                       >
@@ -548,24 +564,26 @@ export function MediaLightbox({
                             : libraryState?.error
                               ? 'Retry save'
                               : 'Save to library'}
-                      </button>
+                      </Button>
                     ) : null}
                     {canRefresh ? (
-                      <button
+                      <Button
                         type="button"
+                        variant="outline"
+                        size="sm"
                         onClick={() => {
                           void handleRefreshEntry(entry).catch(() => undefined);
                         }}
                         disabled={isRefreshing}
                         className={clsx(
-                          'rounded-input border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed',
+                          'px-3 py-1.5 text-sm font-medium',
                           isRefreshing
                             ? 'border-border bg-bg text-text-muted'
-                            : 'border-brand bg-surface-2 text-brand hover:bg-surface-3'
+                            : 'border-brand bg-surface-2 text-brand hover:bg-surface-3 hover:text-brand'
                         )}
                       >
                         {isRefreshing ? 'Checking...' : 'Refresh status'}
-                      </button>
+                      </Button>
                     ) : null}
                   </div>
 
@@ -610,17 +628,19 @@ export function MediaLightbox({
           <section className="mt-6">
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-sm font-semibold uppercase tracking-micro text-text-muted">Prompt</h3>
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => {
                 if (navigator?.clipboard) {
                   void navigator.clipboard.writeText(prompt).catch(() => undefined);
                 }
               }}
-              className="rounded-input border border-border bg-white px-3 py-1 text-xs font-medium text-text-secondary transition hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="border-border bg-white px-3 py-1 text-xs font-medium text-text-secondary hover:bg-bg"
             >
               Copy
-            </button>
+            </Button>
             </div>
             <div className="mt-2 max-h-[180px] overflow-y-auto rounded-input border border-border bg-bg px-4 py-3 text-sm text-text-primary">
               <pre className="whitespace-pre-wrap break-words font-sans">{prompt}</pre>
