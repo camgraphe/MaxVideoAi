@@ -73,7 +73,7 @@ export default async function ContactPage({
     'We could not send your message. Please try again or reach out via email.';
 
   return (
-    <div className="mx-auto max-w-4xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-4xl px-4 py-16 lg:py-20 sm:px-6 lg:px-8">
       <header className="space-y-3">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
         <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>

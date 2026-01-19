@@ -1222,7 +1222,7 @@ function Sora2PageLayout({
           />
         ))}
       </Head>
-      <main className="mx-auto max-w-6xl px-4 pb-20 pt-14 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-6xl px-4 py-16 lg:py-20 sm:px-6 lg:px-8">
         <Link href={localizeModelsPath()} className="text-sm font-semibold text-brand hover:text-brandHover">
           {backLabel}
         </Link>
@@ -1340,7 +1340,7 @@ function Sora2PageLayout({
           </nav>
         ) : null}
 
-        <section id="examples" className="mt-14 space-y-4">
+        <section id="examples" className="mt-12 space-y-4">
           {copy.whatTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.whatTitle}</h2> : null}
           {copy.whatIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro1}</p> : null}
           {copy.whatIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro2}</p> : null}
@@ -1379,7 +1379,7 @@ function Sora2PageLayout({
         </section>
 
         {specSections.length ? (
-          <section id="specs" className="mt-14 space-y-4">
+          <section id="specs" className="mt-12 space-y-4">
             {copy.specTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.specTitle}</h2> : null}
             {copy.specNote ? (
               <blockquote className="rounded-2xl border border-hairline bg-surface-2 px-4 py-3 text-sm text-text-secondary">
@@ -1429,7 +1429,7 @@ function Sora2PageLayout({
           </section>
         ) : null}
 
-        <section id={textAnchorId} className="mt-14 space-y-4">
+        <section id={textAnchorId} className="mt-12 space-y-4">
           {copy.galleryTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.galleryTitle}</h2> : null}
           {galleryVideos.length ? (
             <>
@@ -1514,7 +1514,7 @@ function Sora2PageLayout({
           </div>
         </section>
 
-        <section id={imageAnchorId} className="mt-14 space-y-4">
+        <section id={imageAnchorId} className="mt-12 space-y-4">
           {copy.promptTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.promptTitle}</h2> : null}
           {copy.promptIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.promptIntro}</p> : null}
           <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
@@ -1541,7 +1541,7 @@ function Sora2PageLayout({
           </div>
         </section>
 
-        <section className="mt-14 space-y-4">
+        <section className="mt-12 space-y-4">
           {copy.imageTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.imageTitle}</h2> : null}
           {copy.imageIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.imageIntro}</p> : null}
           <div className="grid gap-4 lg:grid-cols-2">
@@ -1566,7 +1566,7 @@ function Sora2PageLayout({
           </div>
         </section>
 
-        <section className="mt-14 space-y-4">
+        <section className="mt-12 space-y-4">
           {copy.multishotTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.multishotTitle}</h2> : null}
           {copy.multishotIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.multishotIntro1}</p> : null}
           {copy.multishotIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.multishotIntro2}</p> : null}
@@ -1580,7 +1580,7 @@ function Sora2PageLayout({
         </section>
 
       {copy.demoTitle || copy.demoPrompt.length || copy.demoNotes.length ? (
-        <section className="mt-14 space-y-6">
+        <section className="mt-12 space-y-6">
           {copy.demoTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.demoTitle}</h2> : null}
           <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
             <div className="rounded-2xl border border-hairline bg-white/80 p-3 shadow-card lg:order-2">
@@ -1618,7 +1618,7 @@ function Sora2PageLayout({
       ) : null}
 
         {copy.tipsTitle || strengths.length || boundaries.length ? (
-          <section id="tips" className="mt-14 space-y-6">
+          <section id="tips" className="mt-12 space-y-6">
             {copy.tipsTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.tipsTitle}</h2> : null}
             <div className="grid gap-4 lg:grid-cols-2">
               {strengths.length ? (
@@ -1655,7 +1655,7 @@ function Sora2PageLayout({
         ) : null}
 
         {copy.safetyTitle || safetyRules.length ? (
-          <section id="safety" className="mt-14 space-y-4">
+          <section id="safety" className="mt-12 space-y-4">
             {copy.safetyTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.safetyTitle}</h2> : null}
             <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
               {safetyRules.length ? (
@@ -1678,7 +1678,7 @@ function Sora2PageLayout({
         ) : null}
 
         {copy.comparisonTitle || comparisonPoints.length ? (
-          <section className="mt-14 space-y-4">
+          <section className="mt-12 space-y-4">
             {copy.comparisonTitle ? (
               <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.comparisonTitle}</h2>
             ) : null}
@@ -1704,7 +1704,7 @@ function Sora2PageLayout({
         ) : null}
 
         {faqList.length ? (
-          <section id="faq" className="mt-14 space-y-4">
+          <section id="faq" className="mt-12 space-y-4">
             {faqTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{faqTitle}</h2> : null}
             <div className="grid gap-3 md:grid-cols-2">
               {faqList.map((entry) => (
@@ -1722,7 +1722,7 @@ function Sora2PageLayout({
         <FAQSchema questions={faqJsonLdEntries} />
 
         {relatedEngines.length ? (
-          <section className="mt-14 space-y-4">
+          <section className="mt-12 space-y-4">
             <h2 className="text-2xl font-semibold text-text-primary">
               {copy.relatedTitle ?? 'Explore other models'}
             </h2>
@@ -1768,7 +1768,7 @@ function Sora2PageLayout({
         </section>
       ) : null}
 
-        <section className="mt-14 space-y-3 rounded-3xl border border-hairline bg-white/90 px-6 py-6 text-text-primary shadow-card sm:px-8">
+        <section className="mt-12 space-y-3 rounded-3xl border border-hairline bg-white/90 px-6 py-6 text-text-primary shadow-card sm:px-8">
           {copy.finalPara1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.finalPara1}</p> : null}
           {copy.finalPara2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.finalPara2}</p> : null}
           <ButtonLink
@@ -2084,7 +2084,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
 
   return (
     <>
-      <div className="mx-auto max-w-4xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl px-4 py-16 lg:py-20 sm:px-6 lg:px-8">
       <Head>
         {heroPosterPreload ? <link rel="preload" as="image" href={heroPosterPreload} fetchPriority="high" /> : null}
         {schemaPayloads.map((schema, index) => (

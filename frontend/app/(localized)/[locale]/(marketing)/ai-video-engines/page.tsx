@@ -189,7 +189,7 @@ export default async function AiVideoEnginesPage() {
   const faqJsonLdEntries = faqItems.slice(0, 6);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-4xl px-4 py-16 lg:py-20 sm:px-6 lg:px-8">
       <header className="space-y-4">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{hero.title}</h1>
         {hero.intro ? <p className="text-base leading-relaxed text-text-secondary">{renderRichText(hero.intro, 'hero-intro')}</p> : null}
@@ -227,7 +227,7 @@ export default async function AiVideoEnginesPage() {
         </div>
       </section>
 
-      <section className="mt-16 space-y-4">
+      <section className="mt-12 space-y-4">
         <h2 className="text-2xl font-semibold text-text-primary">{faqTitle}</h2>
         <div className="space-y-3 text-base leading-relaxed text-text-secondary">
           {faqItems.map((item) => (
@@ -242,7 +242,7 @@ export default async function AiVideoEnginesPage() {
       <FAQSchema questions={faqJsonLdEntries} />
 
       {cta?.body ? (
-        <div className="mt-16 rounded-card border border-hairline bg-white p-6 text-sm leading-relaxed text-text-secondary shadow-card">
+        <div className="mt-12 rounded-card border border-hairline bg-white p-6 text-sm leading-relaxed text-text-secondary shadow-card">
           {renderRichText(cta.body, 'cta')}
         </div>
       ) : null}

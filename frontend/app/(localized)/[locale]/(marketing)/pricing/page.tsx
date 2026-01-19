@@ -321,7 +321,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
   const faqJsonLdEntries = faq.entries.slice(0, 6);
 
   return (
-    <main className="mx-auto max-w-6xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
+    <main className="mx-auto max-w-6xl px-4 py-16 lg:py-20 sm:px-6 lg:px-8">
       <header className="max-w-3xl space-y-4">
         <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
         <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>

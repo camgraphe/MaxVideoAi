@@ -59,7 +59,7 @@ const ExamplesOrbitCallout = dynamic(
   {
     ssr: false,
     loading: () => (
-      <section className="mx-auto mt-16 w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+      <section className="mx-auto mt-12 w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="h-[380px] animate-pulse rounded-[40px] border border-hairline bg-white/70 shadow-card" aria-hidden />
       </section>
     ),
@@ -247,7 +247,7 @@ function MiniFAQ({ faq }: MiniFaqProps) {
       : fallback.items;
 
   return (
-    <section aria-labelledby="mini-faq-heading" className="mx-auto mt-16 max-w-6xl px-4 sm:px-6 lg:px-8">
+    <section aria-labelledby="mini-faq-heading" className="mx-auto mt-12 max-w-6xl px-4 sm:px-6 lg:px-8">
       <div className="rounded-2xl border border-hairline bg-white p-6 shadow-card">
         <h2 id="mini-faq-heading" className="text-xl font-semibold text-text-primary">
           {resolvedTitle}
@@ -552,7 +552,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
   const lcpPosterSrc = heroTileConfigs[0]?.posterSrc ?? HERO_TILES[0].posterSrc;
 
   return (
-    <div className="pb-20">
+    <div className="pb-16 lg:pb-20">
       <Head>
         <link rel="preconnect" href="https://videohub-uploads-us.s3.amazonaws.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://v3b.fal.media" crossOrigin="anonymous" />
@@ -628,7 +628,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         </div>
       </section>
 
-      <section className="border-t border-hairline bg-white px-4 py-20 text-left sm:px-6 lg:px-8">
+      <section className="border-t border-hairline bg-white px-4 py-16 text-left sm:px-6 lg:px-8 lg:py-20">
         <div className="mx-auto flex max-w-7xl flex-col-reverse items-center gap-12 text-center lg:flex-row lg:items-center lg:text-left">
           <div className="w-full max-w-2xl space-y-5 lg:w-[40%]">
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{heroScreenshot.title}</h2>
@@ -649,11 +649,11 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         </div>
       </section>
       <MosaicBackdrop media={proofBackgroundMedia}>
-        <div id="how-it-works" className="pt-16 sm:pt-20 scroll-mt-32">
+        <div id="how-it-works" className="pt-12 sm:pt-16 scroll-mt-32">
           <ProofTabs pricingRules={pricingRulesLite} />
         </div>
 
-        <section className="mx-auto mt-16 max-w-6xl px-4 pb-20 sm:px-6 lg:px-8">
+        <section className="mx-auto mt-12 max-w-6xl px-4 pb-16 sm:px-6 lg:px-8 lg:pb-20">
           <div className="grid gap-6 lg:grid-cols-3">
             {whyCards.map((item) => (
               <article key={item.title} className="rounded-card border border-hairline bg-white p-6 shadow-card">
@@ -673,7 +673,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         />
         <CompareEnginesCarousel engines={compareEngines} copy={compareCopy ?? undefined} />
 
-        <section className="mx-auto mt-16 max-w-6xl px-4 sm:px-6 lg:px-8">
+        <section className="mx-auto mt-12 max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mb-6 flex items-center justify-between gap-4">
             <div>
               <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{waysSection.title}</h2>
@@ -700,7 +700,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
           </div>
         </section>
 
-        <section className="mx-auto mt-16 max-w-6xl px-4 sm:px-6 lg:px-8">
+        <section className="mx-auto mt-12 max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
             <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
               <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
@@ -738,7 +738,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
           </div>
         </section>
       </MosaicBackdrop>
-      <section className="mx-auto mt-14 max-w-6xl px-4 sm:px-6 lg:px-8">
+      <section className="mx-auto mt-12 max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="rounded-card border border-hairline bg-white/70 p-6 shadow-card">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Partners</p>
           <h2 className="mt-2 text-lg font-semibold text-text-primary">Featured on</h2>
