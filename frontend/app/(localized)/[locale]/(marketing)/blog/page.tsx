@@ -11,6 +11,7 @@ import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 import { ButtonLink } from '@/components/ui/Button';
+import { TextLink } from '@/components/ui/TextLink';
 
 const BLOG_SLUG_MAP = buildSlugMap('blog');
 const BLOG_META = {
@@ -224,13 +225,14 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
               </h2>
               <p className="text-base leading-relaxed text-text-secondary sm:text-lg">{featured.description}</p>
             </div>
-            <Link
+            <TextLink
               href={{ pathname: '/blog/[slug]', params: { slug: featured.slug } }}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-brand transition hover:text-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="gap-2 text-sm"
+              linkComponent={Link}
             >
               {formatReadMoreLabel(featured.title)}
               <span aria-hidden>→</span>
-            </Link>
+            </TextLink>
           </div>
         </article>
 
@@ -273,13 +275,14 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
                   <Link href={{ pathname: '/blog/[slug]', params: { slug: post.slug } }}>{post.title}</Link>
                 </h3>
                 <p className="text-sm text-text-secondary">{post.description}</p>
-                <Link
+                <TextLink
                   href={{ pathname: '/blog/[slug]', params: { slug: post.slug } }}
-                  className="inline-flex items-center gap-1 text-sm font-semibold text-brand transition hover:text-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                  className="gap-1 text-sm"
+                  linkComponent={Link}
                 >
                   {formatReadMoreLabel(post.title ?? post.slug)}
                   <span aria-hidden>→</span>
-                </Link>
+                </TextLink>
               </div>
             </article>
           ))}

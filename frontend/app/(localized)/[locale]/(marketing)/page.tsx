@@ -7,6 +7,7 @@ import Script from 'next/script';
 import { getTranslations } from 'next-intl/server';
 import { PriceChip } from '@/components/marketing/PriceChip';
 import { ButtonLink } from '@/components/ui/Button';
+import { TextLink } from '@/components/ui/TextLink';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
 import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
@@ -714,12 +715,9 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
                   pricingRules={pricingRulesLite}
                 />
               </div>
-              <Link
-                href="/pricing"
-                className="mt-6 inline-flex items-center text-sm font-semibold text-brand hover:text-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-              >
+              <TextLink href="/pricing" className="mt-6 text-sm" linkComponent={Link}>
                 {pricing.link}
-              </Link>
+              </TextLink>
               <p className="mt-3 text-sm text-muted-foreground">
                 3,000+ internal test renders · automatic refunds on failures · wallet-first billing
               </p>

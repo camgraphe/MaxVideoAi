@@ -19,6 +19,7 @@ import { computePricingSnapshot, listPricingRules } from '@/lib/pricing';
 import type { PricingRuleLite } from '@/lib/pricing-rules';
 import { listEnginePricingOverrides } from '@/server/engine-settings';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
+import { TextLink } from '@/components/ui/TextLink';
 
 const PRICING_SLUG_MAP = buildSlugMap('pricing');
 
@@ -363,13 +364,9 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           {content.calculator?.description ??
             'Open the generator to see the exact price before you create a video.'}
         </p>
-        <Link
-          href={generatorHref}
-          prefetch={false}
-          className="mt-3 inline-flex items-center text-sm font-semibold text-brand transition hover:text-brandHover"
-        >
+        <TextLink href={generatorHref} prefetch={false} className="mt-3 gap-1 text-sm" linkComponent={Link}>
           {content.calculator?.cta ?? 'Open the generator'} <span aria-hidden>→</span>
-        </Link>
+        </TextLink>
       </section>
 
       <section id="estimator" className="mt-12 scroll-mt-28">

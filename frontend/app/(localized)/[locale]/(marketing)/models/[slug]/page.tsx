@@ -23,6 +23,7 @@ import { applyEnginePricingOverride } from '@/lib/pricing-definition';
 import { listEnginePricingOverrides } from '@/server/engine-settings';
 import { serializeJsonLd } from '../model-jsonld';
 import { ButtonLink } from '@/components/ui/Button';
+import { TextLink } from '@/components/ui/TextLink';
 
 type PageParams = {
   params: {
@@ -1477,12 +1478,9 @@ function Sora2PageLayout({
                         </p>
                         <p className="text-sm font-semibold leading-snug text-text-primary line-clamp-2">{video.prompt}</p>
                         {video.recreateHref && copy.recreateLabel ? (
-                          <Link
-                            href={video.recreateHref}
-                            className="inline-flex items-center text-[11px] font-semibold text-brand transition hover:text-brandHover"
-                          >
+                          <TextLink href={video.recreateHref} className="text-[11px]" linkComponent={Link}>
                             {copy.recreateLabel}
-                          </Link>
+                          </TextLink>
                         ) : null}
                       </div>
                     </article>
@@ -1760,12 +1758,9 @@ function Sora2PageLayout({
                   <p className="mt-2 text-sm text-text-secondary line-clamp-3">
                     {entry.seo?.description ?? localizedContent.overview ?? ''}
                   </p>
-                  <Link
-                    href={localizeModelsPath(entry.modelSlug)}
-                    className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand transition hover:text-brandHover"
-                  >
+                  <TextLink href={localizeModelsPath(entry.modelSlug)} className="mt-4 gap-1 text-sm" linkComponent={Link}>
                     {ctaLabel}
-                  </Link>
+                  </TextLink>
                 </article>
               );
             })}
@@ -1854,12 +1849,9 @@ function MediaPreview({ media, label }: { media: FeaturedMedia; label: string })
         <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{label}</p>
         {media.prompt ? <p className="text-sm font-semibold leading-snug text-text-primary">{media.prompt}</p> : null}
         {media.href ? (
-          <Link
-            href={media.href}
-            className="inline-flex items-center text-xs font-semibold text-brand transition hover:text-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
+          <TextLink href={media.href} className="gap-1 text-xs" linkComponent={Link}>
             View render →
-          </Link>
+          </TextLink>
         ) : null}
       </figcaption>
     </figure>
@@ -2362,12 +2354,13 @@ export default async function ModelDetailPage({ params }: PageParams) {
                   <p className="mt-2 text-sm text-text-secondary">
                     {candidate.seo?.description ?? 'Latency, pricing, and prompt guides are documented on the detail page.'}
                   </p>
-                  <Link
+                  <TextLink
                     href={localizeModelsPath(candidate.modelSlug)}
-                    className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand transition hover:text-brandHover"
+                    className="mt-4 gap-1 text-sm"
+                    linkComponent={Link}
                   >
                     {ctaLabel} <span aria-hidden>→</span>
-                  </Link>
+                  </TextLink>
                 </article>
               );
             })}

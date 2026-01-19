@@ -8,6 +8,7 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 import { Button } from '@/components/ui/Button';
 import { Input, Textarea } from '@/components/ui/Input';
+import { TextLink } from '@/components/ui/TextLink';
 
 const CONTACT_SLUG_MAP = buildSlugMap('contact');
 const STATUS_SLUG_MAP = buildSlugMap('status');
@@ -224,12 +225,9 @@ export default async function ContactPage({
           Before opening a ticket, confirm whether an engine is already degraded. Status updates list latency, incident notes,
           and mitigation steps so you can decide whether to retry or switch models.
         </p>
-        <Link
-          href={statusHref}
-          className="mt-4 inline-flex items-center text-sm font-semibold text-brand transition hover:text-brandHover"
-        >
+        <TextLink href={statusHref} className="mt-4 gap-1 text-sm" linkComponent={Link}>
           View status page <span aria-hidden>→</span>
-        </Link>
+        </TextLink>
       </section>
     </div>
   );

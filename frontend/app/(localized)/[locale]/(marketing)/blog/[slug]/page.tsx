@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
+import { TextLink } from '@/components/ui/TextLink';
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import Script from 'next/script';
@@ -242,12 +243,9 @@ export default async function BlogPostPage({ params }: { params: Params }) {
 
   return (
     <div className="mx-auto max-w-5xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
-      <Link
-        href="/blog"
-        className="inline-flex items-center text-sm font-semibold text-brand transition hover:text-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
-      >
+      <TextLink href="/blog" className="text-sm" linkComponent={Link}>
         ← Back to blog
-      </Link>
+      </TextLink>
 
       <article className="mt-6 overflow-hidden rounded-[28px] border border-hairline bg-white/90 shadow-card backdrop-blur">
         <header className="relative border-b border-hairline bg-gradient-to-br from-white to-bg/60">
@@ -311,12 +309,13 @@ export default async function BlogPostPage({ params }: { params: Params }) {
                 </p>
                 <h3 className="mt-2 text-base font-semibold text-text-primary">{related.title}</h3>
                 <p className="mt-2 text-sm text-text-secondary">{related.description}</p>
-                <Link
+                <TextLink
                   href={{ pathname: '/blog/[slug]', params: { slug: related.slug } }}
-                  className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand transition hover:text-brandHover"
+                  className="mt-4 gap-1 text-sm"
+                  linkComponent={Link}
                 >
                   Read article <span aria-hidden>→</span>
-                </Link>
+                </TextLink>
               </article>
             ))}
           </div>
