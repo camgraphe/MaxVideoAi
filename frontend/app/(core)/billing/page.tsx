@@ -712,7 +712,7 @@ export default function BillingPage() {
                         )}
                       </div>
                       <div className="flex flex-col items-end text-[11px] font-semibold uppercase tracking-micro text-white/85">
-                        <span className="rounded-full border border-white/40 px-2 py-1 text-[10px]">Stripe</span>
+                        <span className="rounded-full border border-surface-on-media-40 px-2 py-1 text-[10px]">Stripe</span>
                         <span className="mt-2 text-white/70">Tap to top up</span>
                       </div>
                     </div>

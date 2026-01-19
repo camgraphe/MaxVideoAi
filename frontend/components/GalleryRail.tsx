@@ -547,7 +547,7 @@ function Snackbar({ state, onClose }: { state: SnackbarState | null; onClose: ()
 
   return createPortal(
     <div className="fixed inset-x-0 bottom-6 z-[9998] flex justify-center px-4">
-      <div className="inline-flex max-w-xl flex-wrap items-center gap-4 rounded-card border border-white/15 bg-black/80 px-4 py-3 text-[13px] text-white shadow-lg backdrop-blur">
+      <div className="inline-flex max-w-xl flex-wrap items-center gap-4 rounded-card border border-surface-on-media-15 bg-black/80 px-4 py-3 text-[13px] text-white shadow-lg backdrop-blur">
         <span>{state.message}</span>
         {actions.length > 0 && (
           <div className="flex flex-wrap gap-2">
@@ -565,7 +565,7 @@ function Snackbar({ state, onClose }: { state: SnackbarState | null; onClose: ()
                   'rounded-full px-3 py-1.5 text-[12px] font-semibold uppercase tracking-micro',
                   action.variant === 'primary'
                     ? 'border-transparent bg-brand text-on-brand hover:bg-brandHover'
-                    : 'border border-white/30 bg-transparent text-white hover:bg-surface-on-media-10'
+                    : 'border border-surface-on-media-30 bg-transparent text-white hover:bg-surface-on-media-10'
                 )}
               >
                 {action.label}

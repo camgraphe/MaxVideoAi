@@ -19,6 +19,9 @@
   --surface-on-media-25: rgba(255, 255, 255, 0.25);
   --surface-on-media-30: rgba(255, 255, 255, 0.30);
   --surface-on-media-40: rgba(255, 255, 255, 0.40);
+  --surface-on-media-50: rgba(255, 255, 255, 0.50);
+  --surface-on-media-60: rgba(255, 255, 255, 0.60);
+  --surface-on-media-70: rgba(255, 255, 255, 0.70);
   --border: #C2CAD6;
   --hairline: #EEF1F5;
   --border-hover: #9AA7B6;
@@ -156,6 +159,9 @@
   --surface-on-media-25: rgba(255, 255, 255, 0.25);
   --surface-on-media-30: rgba(255, 255, 255, 0.30);
   --surface-on-media-40: rgba(255, 255, 255, 0.40);
+  --surface-on-media-50: rgba(255, 255, 255, 0.50);
+  --surface-on-media-60: rgba(255, 255, 255, 0.60);
+  --surface-on-media-70: rgba(255, 255, 255, 0.70);
   --border: #253041;
   --hairline: #1E2734;
   --border-hover: #3B4A5F;

@@ -50,7 +50,7 @@ export default async function AdminEnginesPage() {
         </p>
       </header>
 
-      <section className="rounded-card border border-white/30 bg-surface-glass-80 p-6 shadow-card">
+      <section className="rounded-card border border-surface-on-media-30 bg-surface-glass-80 p-6 shadow-card">
         <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-text-muted">Fal attempt metrics</h2>
         <p className="text-xs text-text-secondary">Rolling 30-day summary of Fal attempts grouped by engine and mode.</p>
         <div className="mt-4 overflow-x-auto">
@@ -93,7 +93,7 @@ export default async function AdminEnginesPage() {
         </div>
       </section>
 
-      <section className="rounded-card border border-white/30 bg-surface-glass-80 p-6 shadow-card">
+      <section className="rounded-card border border-surface-on-media-30 bg-surface-glass-80 p-6 shadow-card">
         <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-text-muted">Usage &amp; revenue (30d)</h2>
         <p className="text-xs text-text-secondary">Renders, distinct users, revenue share, and average spend per engine.</p>
         <div className="mt-4 overflow-x-auto">
@@ -118,7 +118,7 @@ export default async function AdminEnginesPage() {
                 </tr>
               ) : (
                 usageMetrics.map((engine) => (
-                  <tr key={engine.engineId} className="border-t border-white/40 text-text-secondary">
+                  <tr key={engine.engineId} className="border-t border-surface-on-media-40 text-text-secondary">
                     <td className="py-2 font-semibold text-text-primary">{engine.engineLabel}</td>
                     <td className="py-2">{formatNumber(engine.rendersCount30d)}</td>
                     <td className="py-2">{formatNumber(engine.distinctUsers30d)}</td>
@@ -164,7 +164,7 @@ export default async function AdminEnginesPage() {
               ))}
             </div>
           ) : (
-            <div className="rounded-2xl border border-white/30 bg-surface-glass-80 p-5 text-sm text-text-secondary shadow-card">
+            <div className="rounded-2xl border border-surface-on-media-30 bg-surface-glass-80 p-5 text-sm text-text-secondary shadow-card">
               No engines registered yet. Seed engine settings to enable configuration.
             </div>
           )

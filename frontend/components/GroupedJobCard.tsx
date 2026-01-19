@@ -301,7 +301,7 @@ export function GroupedJobCard({
               event.stopPropagation();
               setMenuOpen((prev) => !prev);
             }}
-            className="absolute right-3 top-3 h-8 w-8 min-h-0 rounded-full border border-white/30 bg-black/55 p-0 text-white hover:bg-black/70"
+            className="absolute right-3 top-3 h-8 w-8 min-h-0 rounded-full border border-surface-on-media-30 bg-black/55 p-0 text-white hover:bg-black/70"
             aria-haspopup="menu"
             aria-expanded={menuOpen}
             aria-label="Group actions"

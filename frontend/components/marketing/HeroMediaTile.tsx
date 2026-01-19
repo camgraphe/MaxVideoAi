@@ -167,7 +167,7 @@ export function HeroMediaTile({
   }, [lightboxOpen]);
 
   const content = (
-    <figure className="group relative overflow-hidden rounded-[28px] border border-white/70 bg-surface shadow-card">
+    <figure className="group relative overflow-hidden rounded-[28px] border border-surface-on-media-70 bg-surface shadow-card">
       <div className="relative aspect-[16/9] w-full">
         {showAudioIcon ? (
           <AudioEqualizerBadge tone="light" size="sm" label="Audio enabled" />
@@ -201,7 +201,7 @@ export function HeroMediaTile({
         )}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-2 bg-gradient-to-t from-black/65 via-black/35 to-transparent p-4 text-left text-white">
           {badge ? (
-            <span className="inline-flex h-6 items-center rounded-pill border border-white/50 bg-surface-on-media-15 px-3 text-[11px] font-semibold uppercase tracking-micro text-white">
+            <span className="inline-flex h-6 items-center rounded-pill border border-surface-on-media-50 bg-surface-on-media-15 px-3 text-[11px] font-semibold uppercase tracking-micro text-white">
               {badge}
             </span>
           ) : null}
@@ -269,7 +269,7 @@ export function HeroMediaTile({
           }}
         >
           <div
-            className="relative w-full max-w-4xl rounded-[32px] border border-white/20 bg-surface-glass-95 p-4 text-left shadow-2xl backdrop-blur"
+            className="relative w-full max-w-4xl rounded-[32px] border border-surface-on-media-20 bg-surface-glass-95 p-4 text-left shadow-2xl backdrop-blur"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4 border-b border-hairline pb-4 pr-14">

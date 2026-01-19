@@ -277,8 +277,11 @@ Note: usage UI = panels/modals sur fond visible + `backdrop-blur`. Eviter `bg-wh
 * `ui.surfaceOnMedia25` - `rgba(255, 255, 255, 0.25)`
 * `ui.surfaceOnMedia30` - `rgba(255, 255, 255, 0.30)`
 * `ui.surfaceOnMedia40` - `rgba(255, 255, 255, 0.40)`
+* `ui.surfaceOnMedia50` - `rgba(255, 255, 255, 0.50)`
+* `ui.surfaceOnMedia60` - `rgba(255, 255, 255, 0.60)`
+* `ui.surfaceOnMedia70` - `rgba(255, 255, 255, 0.70)`
 
-Note: tokens invariants (white tints) pour chips/FX sur images ou videos. Usage Tailwind = `bg-surface-on-media-*`.
+Note: tokens invariants (white tints) pour chips/FX sur images ou videos et pour borders "glass". Usage Tailwind = `bg-surface-on-media-*` / `border-surface-on-media-*`.
 
 #### Borders
 
@@ -390,8 +393,11 @@ Note: les chips "on-media" peuvent rester en `bg-white/xx` (art/brand), mais l'U
 * `ui.surfaceOnMedia25` - `rgba(255, 255, 255, 0.25)`
 * `ui.surfaceOnMedia30` - `rgba(255, 255, 255, 0.30)`
 * `ui.surfaceOnMedia40` - `rgba(255, 255, 255, 0.40)`
+* `ui.surfaceOnMedia50` - `rgba(255, 255, 255, 0.50)`
+* `ui.surfaceOnMedia60` - `rgba(255, 255, 255, 0.60)`
+* `ui.surfaceOnMedia70` - `rgba(255, 255, 255, 0.70)`
 
-Note: tokens invariants (white tints) pour chips/FX sur images ou videos. Usage Tailwind = `bg-surface-on-media-*`.
+Note: tokens invariants (white tints) pour chips/FX sur images ou videos et pour borders "glass". Usage Tailwind = `bg-surface-on-media-*` / `border-surface-on-media-*`.
 
 #### Borders
 

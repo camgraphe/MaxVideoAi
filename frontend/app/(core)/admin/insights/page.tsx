@@ -93,7 +93,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
         </ul>
       </SectionCard>
 
-      <section className="rounded-card border border-white/30 bg-surface-glass-85 p-5 shadow-card">
+      <section className="rounded-card border border-surface-on-media-30 bg-surface-glass-85 p-5 shadow-card">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">Growth</p>
@@ -133,7 +133,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
             </thead>
             <tbody>
               {growthRows.map((row) => (
-                <tr key={`${row.kind ?? 'day'}-${row.date}`} className="border-t border-white/40 text-text-secondary">
+                <tr key={`${row.kind ?? 'day'}-${row.date}`} className="border-t border-surface-on-media-40 text-text-secondary">
                   <td className="py-2">
                     {row.kind === 'month' ? `${formatMonth(row.date)} total` : formatDay(row.date)}
                   </td>
@@ -185,7 +185,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
             <tbody>
               {monthlyRows.length ? (
                 monthlyRows.map((row) => (
-                  <tr key={row.month} className="border-t border-white/40 text-text-secondary">
+                  <tr key={row.month} className="border-t border-surface-on-media-40 text-text-secondary">
                     <td className="py-2">{formatMonth(row.month)}</td>
                     <td className="py-2 font-semibold text-text-primary">{formatNumber(row.signups)}</td>
                     <td className="py-2 font-semibold text-text-primary">{formatCurrency(row.topupsUsd)}</td>
@@ -221,7 +221,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
             <tbody>
               {metrics.engines.length ? (
                 metrics.engines.map((engine) => (
-                  <tr key={engine.engineId} className="border-t border-white/40 text-text-secondary">
+                  <tr key={engine.engineId} className="border-t border-surface-on-media-40 text-text-secondary">
                     <td className="py-2 font-semibold text-text-primary">{engine.engineLabel}</td>
                     <td className="py-2">{formatNumber(engine.rendersCount30d)}</td>
                     <td className="py-2">{formatNumber(engine.distinctUsers30d)}</td>
@@ -287,7 +287,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
               ]}
             />
           </div>
-          <div className="overflow-x-auto rounded-2xl border border-white/40 bg-surface-glass-70 p-3">
+          <div className="overflow-x-auto rounded-2xl border border-surface-on-media-40 bg-surface-glass-70 p-3">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="text-xs uppercase tracking-[0.2em] text-text-muted">
@@ -301,7 +301,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
               <tbody>
                 {metrics.behavior.whalesTop10.length ? (
                   metrics.behavior.whalesTop10.map((whale) => (
-                    <tr key={whale.userId} className="border-t border-white/40 text-text-secondary">
+                    <tr key={whale.userId} className="border-t border-surface-on-media-40 text-text-secondary">
                       <td className="py-2 font-semibold text-text-primary">{whale.identifier}</td>
                       <td className="py-2">{formatCurrency(whale.lifetimeTopupUsd)}</td>
                       <td className="py-2">{formatNumber(whale.renderCount)}</td>
@@ -339,7 +339,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
             <tbody>
               {metrics.health.failedByEngine30d.length ? (
                 metrics.health.failedByEngine30d.map((row) => (
-                  <tr key={row.engineId} className="border-t border-white/40 text-text-secondary">
+                  <tr key={row.engineId} className="border-t border-surface-on-media-40 text-text-secondary">
                     <td className="py-2 font-semibold text-text-primary">{row.engineLabel}</td>
                     <td className="py-2">{formatNumber(row.failedCount30d)}</td>
                     <td className="py-2">{formatPercent(row.failureRate30d)}</td>
@@ -378,7 +378,7 @@ function SectionCard({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-card border border-white/30 bg-surface-glass-85 p-5 shadow-card">
+    <section className="rounded-card border border-surface-on-media-30 bg-surface-glass-85 p-5 shadow-card">
       <header className="space-y-1">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">{title}</p>
         {description ? <p className="text-sm text-text-secondary">{description}</p> : null}
@@ -390,7 +390,7 @@ function SectionCard({
 
 function StatCard({ label, value, helper }: { label: string; value: string; helper?: string }) {
   return (
-    <div className="rounded-card border border-white/30 bg-surface-glass-90 px-4 py-3 shadow-card">
+    <div className="rounded-card border border-surface-on-media-30 bg-surface-glass-90 px-4 py-3 shadow-card">
       <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">{label}</p>
       <p className="mt-2 text-2xl font-semibold text-text-primary">{value}</p>
       {helper ? <p className="text-xs text-text-secondary">{helper}</p> : null}
@@ -401,7 +401,7 @@ function StatCard({ label, value, helper }: { label: string; value: string; help
 function RangeSelector({ current, excludeAdmin }: { current: MetricsRangeLabel; excludeAdmin: boolean }) {
   return (
     <form
-      className="flex flex-wrap items-center gap-4 rounded-full border border-white/40 bg-surface-glass-80 px-3 py-2 text-sm text-text-secondary shadow-card"
+      className="flex flex-wrap items-center gap-4 rounded-full border border-surface-on-media-40 bg-surface-glass-80 px-3 py-2 text-sm text-text-secondary shadow-card"
       method="get"
     >
       <label htmlFor="range" className="text-xs font-semibold uppercase tracking-[0.2em]">
@@ -411,7 +411,7 @@ function RangeSelector({ current, excludeAdmin }: { current: MetricsRangeLabel; 
         id="range"
         name="range"
         defaultValue={current}
-        className="rounded-full border border-white/60 bg-surface px-3 py-1 text-xs font-semibold text-text-primary"
+        className="rounded-full border border-surface-on-media-60 bg-surface px-3 py-1 text-xs font-semibold text-text-primary"
       >
         {METRIC_RANGE_OPTIONS.map((option) => (
           <option key={option} value={option}>
@@ -426,7 +426,7 @@ function RangeSelector({ current, excludeAdmin }: { current: MetricsRangeLabel; 
           name="excludeAdmin"
           value="1"
           defaultChecked={excludeAdmin}
-          className="h-4 w-4 rounded border border-white/60 text-text-primary accent-text-primary"
+          className="h-4 w-4 rounded border border-surface-on-media-60 text-text-primary accent-text-primary"
         />
         Exclude admin user
       </label>
@@ -443,7 +443,7 @@ function RangeSelector({ current, excludeAdmin }: { current: MetricsRangeLabel; 
 
 function MiniChartPanel({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-white/40 bg-surface-glass-70 p-3">
+    <div className="rounded-2xl border border-surface-on-media-40 bg-surface-glass-70 p-3">
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">{title}</p>
       <div className="mt-2">{children}</div>
     </div>
@@ -503,7 +503,7 @@ function DailyAmountTable({ rows, countLabel }: { rows: DailyAmountRow[]; countL
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={`${row.kind ?? 'day'}-${row.date}`} className="border-t border-white/40 text-text-secondary">
+            <tr key={`${row.kind ?? 'day'}-${row.date}`} className="border-t border-surface-on-media-40 text-text-secondary">
               <td className="py-2">
                 {row.kind === 'month' ? `${formatMonth(row.date)} total` : formatDay(row.date)}
               </td>
@@ -530,7 +530,7 @@ function ShareBar({ value, label }: { value: number; label: string }) {
 
 function MetricList({ items }: { items: Array<{ label: string; value: string }> }) {
   return (
-    <dl className="rounded-2xl border border-white/40 bg-surface-glass-70 p-4">
+    <dl className="rounded-2xl border border-surface-on-media-40 bg-surface-glass-70 p-4">
       {items.map((item) => (
         <div key={item.label} className="py-2">
           <dt className="text-xs uppercase tracking-[0.2em] text-text-muted">{item.label}</dt>

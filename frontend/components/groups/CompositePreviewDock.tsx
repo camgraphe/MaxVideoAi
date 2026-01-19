@@ -543,7 +543,7 @@ export function CompositePreviewDock({
                         />
                       ) : null}
                       <div className="pointer-events-none block" style={{ width: '100%', aspectRatio: '16 / 9' }} aria-hidden />
-                      <div className="pointer-events-none absolute inset-0 rounded-card border border-white/10 transition group-hover:border-white/30" />
+                      <div className="pointer-events-none absolute inset-0 rounded-card border border-surface-on-media-10 transition group-hover:border-surface-on-media-30" />
                       {itemStatus !== 'completed' && !showGroupError ? (
                         <ProcessingOverlay
                           className="absolute inset-0"

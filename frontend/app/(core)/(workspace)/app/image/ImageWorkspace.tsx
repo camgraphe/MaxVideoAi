@@ -455,7 +455,7 @@ interface ImageWorkspaceProps {
 }
 
 function SectionDivider() {
-  return <div className="my-6 border-t border-white/60" role="presentation" />;
+  return <div className="my-6 border-t border-surface-on-media-60" role="presentation" />;
 }
 
 function SelectGroup({

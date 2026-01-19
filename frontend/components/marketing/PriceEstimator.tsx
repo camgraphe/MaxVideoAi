@@ -609,7 +609,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
           'relative overflow-hidden rounded-[32px] border p-6 shadow-[0_20px_60px_-25px_rgba(17,24,39,0.35)] sm:p-8 lg:p-10',
           isLite
             ? 'border-hairline bg-surface-glass-95'
-            : 'border-white/40 bg-gradient-to-br from-white via-white/95 to-[#f3f6ff]'
+            : 'border-surface-on-media-40 bg-gradient-to-br from-white via-white/95 to-[#f3f6ff]'
         )}
       >
         {!isLite && (
@@ -631,7 +631,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
             </div>
 
             <div className="grid grid-gap">
-              <div className="rounded-[24px] border border-white/60 bg-surface-glass-85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
+              <div className="rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
                 <div className="flex items-center justify-between">
                   <label
                     htmlFor={engineId}
@@ -696,7 +696,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
 
               <div className="grid grid-gap sm:grid-cols-2">
                 {selectedEngine?.showResolution !== false ? (
-                  <div className="rounded-[24px] border border-white/60 bg-surface-glass-85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
+                  <div className="rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
                     <label
                       htmlFor={resolutionId}
                       className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted"
@@ -731,7 +731,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                     ) : null}
                   </div>
                 ) : (
-                  <div className="rounded-[24px] border border-white/60 bg-surface-glass-85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
+                  <div className="rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
                     <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
                       {t('pricing.estimator.engineRateLabel', 'Engine rate')}
                     </span>
@@ -746,7 +746,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                 )}
 
                 {selectedEngine?.showDuration !== false ? (
-                  <div className="rounded-[24px] border border-white/60 bg-surface-glass-85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
+                  <div className="rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
                     <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">{fields.duration}</span>
                     {filteredDurationOptions.length ? (
                       <div className="mt-3 flex flex-wrap gap-2">
@@ -808,7 +808,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                 ) : null}
 
                 {selectedEngine?.audioToggle ? (
-                  <div className="rounded-[24px] border border-white/60 bg-surface-glass-85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
+                  <div className="rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
                     <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
                       {t('pricing.estimator.audioLabel', 'Audio')}
                     </span>
@@ -846,7 +846,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
               </div>
             </div>
 
-            <fieldset className="rounded-[24px] border border-white/60 bg-surface-glass-85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
+            <fieldset className="rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
               <legend className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
                 {fields.memberStatus}
               </legend>
@@ -881,7 +881,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
           </div>
 
           <aside className="flex flex-col gap-6">
-            <div className="rounded-[28px] border border-white/70 bg-surface-glass-95 p-6 text-sm text-text-secondary shadow-[0_28px_60px_-24px_rgba(15,23,42,0.3)] sm:p-7">
+            <div className="rounded-[28px] border border-surface-on-media-70 bg-surface-glass-95 p-6 text-sm text-text-secondary shadow-[0_28px_60px_-24px_rgba(15,23,42,0.3)] sm:p-7">
               <div className="stack-gap-lg">
                 <div className="stack-gap-sm">
                   <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
@@ -948,7 +948,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
               </div>
             </div>
 
-            <div className="rounded-[24px] border border-white/70 bg-surface-glass-90 p-5 text-sm text-text-secondary shadow-[0_14px_30px_-22px_rgba(15,23,42,0.35)]">
+            <div className="rounded-[24px] border border-surface-on-media-70 bg-surface-glass-90 p-5 text-sm text-text-secondary shadow-[0_14px_30px_-22px_rgba(15,23,42,0.35)]">
               <p className="font-semibold text-text-primary">
                 {t('pricing.estimator.memberReminder', 'Need invoice routing or team wallets?')}
               </p>

@@ -109,7 +109,7 @@ export function ExamplesOrbitCallout({ heading, description, ctaLabel, eyebrow, 
                     <div
                       className={clsx(
                         styles.orbitIcon,
-                        'absolute left-1/2 top-1/2 flex h-14 w-14 items-center justify-center rounded-3xl border border-white/60 bg-surface-glass-95 shadow-[0_18px_45px_-24px_rgba(64,73,105,0.55)] backdrop-blur'
+                        'absolute left-1/2 top-1/2 flex h-14 w-14 items-center justify-center rounded-3xl border border-surface-on-media-60 bg-surface-glass-95 shadow-[0_18px_45px_-24px_rgba(64,73,105,0.55)] backdrop-blur'
                       )}
                       style={
                         {
