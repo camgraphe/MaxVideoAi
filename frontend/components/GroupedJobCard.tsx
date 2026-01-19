@@ -3,7 +3,6 @@
 /* eslint-disable @next/next/no-img-element */
 import clsx from 'clsx';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { EngineCaps } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
@@ -11,6 +10,7 @@ import { Card } from '@/components/ui/Card';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { ProcessingOverlay } from '@/components/groups/ProcessingOverlay';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { isPlaceholderMediaUrl } from '@/lib/media';
 
@@ -292,20 +292,22 @@ export function GroupedJobCard({
           </div>
         ) : null}
         {showMenu && (
-          <button
-            type="button"
+          <Button
             ref={menuButtonRef}
+            type="button"
+            variant="ghost"
+            size="sm"
             onClick={(event) => {
               event.stopPropagation();
               setMenuOpen((prev) => !prev);
             }}
-            className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-black/55 text-white transition hover:bg-black/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+            className="absolute right-3 top-3 h-8 w-8 min-h-0 rounded-full border border-white/30 bg-black/55 p-0 text-white hover:bg-black/70"
             aria-haspopup="menu"
             aria-expanded={menuOpen}
             aria-label="Group actions"
           >
             <span className="text-lg leading-none">•••</span>
-          </button>
+          </Button>
         )}
       </figure>
       <div className="flex items-center justify-between gap-3 border-t border-hairline bg-white/80 px-3 py-2 text-sm text-text-secondary">
@@ -317,22 +319,24 @@ export function GroupedJobCard({
         </div>
         <div className="flex items-center gap-2">
           {isImageGroup && (
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={(event) => {
                 event.stopPropagation();
                 handleAction('save-image');
               }}
               disabled={savingToLibrary}
               className={clsx(
-                'rounded-pill border px-2.5 py-1 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                'min-h-0 h-auto rounded-pill px-2.5 py-1 text-[11px] font-semibold',
                 savingToLibrary
                   ? 'border-border bg-white/70 text-text-muted'
-                  : 'border-brand bg-white text-brand hover:bg-surface-2'
+                  : 'border-brand bg-white text-brand hover:bg-surface-2 hover:text-brand'
               )}
             >
               {savingToLibrary ? imageLibrarySavingLabel : imageLibraryLabel}
-            </button>
+            </Button>
           )}
           {isCurated ? (
             <div className="flex items-center gap-2">
@@ -340,12 +344,14 @@ export function GroupedJobCard({
                 Sample
               </span>
               {showImageCta ? (
-                <Link
+                <ButtonLink
                   href={imageCtaHref}
-                  className="rounded-pill border border-brand px-2 py-0.5 text-[11px] font-semibold text-brand transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  variant="outline"
+                  size="sm"
+                  className="min-h-0 h-auto rounded-pill border-brand px-2 py-0.5 text-[11px] font-semibold text-brand hover:bg-surface-2 hover:text-brand"
                 >
                   {imageCtaLabel}
-                </Link>
+                </ButtonLink>
               ) : null}
             </div>
           ) : null}
@@ -362,137 +368,167 @@ export function GroupedJobCard({
         >
           {showGalleryActions ? (
             <>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => handleAction('view')}
-                className="flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
+                className="w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
               >
                 <span>Open</span>
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={handleRemake}
                 disabled={!onOpen}
                 className={clsx(
-                  'mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition',
-                  onOpen ? 'hover:bg-surface-2' : 'cursor-not-allowed opacity-60'
+                  'mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left',
+                  onOpen ? '' : 'cursor-not-allowed opacity-60'
                 )}
               >
                 <span>Remake</span>
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => handleAction('download')}
-                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
+                className="mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
               >
                 <span>Download</span>
-              </button>
+              </Button>
             </>
           ) : showGalleryImageActions ? (
             <>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => handleAction('open')}
-                className="flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
+                className="w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
               >
                 <span>Open</span>
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => handleAction('save-image')}
-                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
+                className="mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
               >
                 <span>Add to Library</span>
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => handleAction('download')}
-                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
+                className="mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
               >
                 <span>Download</span>
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => handleAction('copy')}
-                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
+                className="mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
               >
                 <span>Copy link</span>
-              </button>
+              </Button>
             </>
           ) : (
             <>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => handleAction('open')}
-                className="flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
+                className="w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
               >
                 <span>Open group</span>
                 <span className="text-[11px] text-text-muted">↵</span>
-              </button>
+              </Button>
               {recreateHref ? (
-                <Link
+                <ButtonLink
                   href={recreateHref}
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setMenuOpen(false)}
-                  className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
+                  className="mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
                 >
                   <span>{recreateLabel}</span>
-                </Link>
+                </ButtonLink>
               ) : null}
               {showAdvancedMenuActions ? (
                 <>
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => handleAction('continue')}
-                    className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
+                    className="mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
                   >
                     <span>Continue (Hero)</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => handleAction('refine')}
-                    className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
+                    className="mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
                   >
                     <span>Refine (Hero)</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => handleAction('branch')}
-                    className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
+                    className="mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
                   >
                     <span>Branch</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => handleAction('compare')}
-                    className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
+                    className="mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left"
                   >
                     <span>Compare</span>
-                  </button>
+                  </Button>
                 </>
               ) : null}
             </>
           )}
           {isImageGroup && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => handleAction('save-image')}
               className={clsx(
-                'mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition',
-                savingToLibrary ? 'opacity-60' : 'hover:bg-surface-2'
+                'mt-1 w-full justify-between rounded-[8px] px-2 py-1.5 text-left',
+                savingToLibrary ? 'opacity-60' : ''
               )}
               disabled={savingToLibrary}
             >
               <span>{savingToLibrary ? 'Saving…' : 'Add to Library'}</span>
-            </button>
+            </Button>
           )}
           {allowRemove && group.count <= 1 && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => handleAction('remove')}
-              className="mt-2 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left text-red-600 transition hover:bg-red-50"
+              className="mt-2 w-full justify-between rounded-[8px] px-2 py-1.5 text-left text-red-600 hover:bg-red-50"
             >
               <span>Remove</span>
-            </button>
+            </Button>
           )}
         </div>
       )}

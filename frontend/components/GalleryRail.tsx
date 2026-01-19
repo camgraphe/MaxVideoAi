@@ -2,7 +2,6 @@
 /* eslint-disable @next/next/no-img-element */
 
 import clsx from 'clsx';
-import Link from 'next/link';
 import { createPortal } from 'react-dom';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { EngineCaps } from '@/types/engines';
@@ -16,6 +15,7 @@ import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 import { adaptGroupSummary } from '@/lib/video-group-adapter';
+import { Button, ButtonLink } from '@/components/ui/Button';
 
 type GalleryVariant = 'desktop' | 'mobile';
 
@@ -455,13 +455,15 @@ export function GalleryRail({
   const header = (
     <header className="flex flex-wrap items-center justify-between gap-2">
       <h2 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">{copy.title}</h2>
-      <Link
+      <ButtonLink
         href="/jobs"
         prefetch={false}
-        className="rounded-[10px] border border-transparent px-3 py-1 text-[12px] font-medium text-text-muted transition hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        variant="ghost"
+        size="sm"
+        className="rounded-[10px] border border-transparent px-3 py-1 text-[12px] font-medium text-text-muted hover:text-text-secondary"
       >
         {copy.viewAll}
-      </Link>
+      </ButtonLink>
     </header>
   );
 
@@ -472,13 +474,15 @@ export function GalleryRail({
   const errorBanner = error ? (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-[#FACC15]/60 bg-[#FEF3C7] px-3 py-2 text-[12px] text-[#92400E]">
       <span role="alert">{copy.error}</span>
-      <button
+      <Button
         type="button"
+        variant="outline"
+        size="sm"
         onClick={retry}
-        className="inline-flex items-center rounded-[8px] border border-[#92400E]/20 bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-[#92400E] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#92400E]/40"
+        className="rounded-[8px] border-[#92400E]/20 bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-[#92400E] hover:bg-white"
       >
         {copy.retry}
-      </button>
+      </Button>
     </div>
   ) : null;
 
@@ -548,22 +552,24 @@ function Snackbar({ state, onClose }: { state: SnackbarState | null; onClose: ()
         {actions.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {actions.map((action) => (
-              <button
+              <Button
                 key={action.label}
                 type="button"
                 onClick={() => {
                   onClose();
                   action.onClick();
                 }}
+                variant="outline"
+                size="sm"
                 className={clsx(
-                  'inline-flex items-center rounded-full px-3 py-1.5 text-[12px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  'rounded-full px-3 py-1.5 text-[12px] font-semibold uppercase tracking-micro',
                   action.variant === 'primary'
                     ? 'border-transparent bg-brand text-on-brand hover:bg-brandHover'
                     : 'border border-white/30 bg-transparent text-white hover:bg-white/10'
                 )}
               >
                 {action.label}
-              </button>
+              </Button>
             ))}
           </div>
         )}

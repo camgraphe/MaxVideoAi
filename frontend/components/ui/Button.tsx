@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ElementType, ReactNode } from 'react';
 import Link from 'next/link';
 import clsx from 'clsx';
@@ -26,21 +27,19 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   size?: ButtonSize;
 };
 
-export function Button({
-  variant = 'primary',
-  size = 'md',
-  className,
-  type = 'button',
-  ...props
-}: ButtonProps) {
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  { variant = 'primary', size = 'md', className, type = 'button', ...props },
+  ref
+) {
   return (
     <button
+      ref={ref}
       type={type}
       className={clsx(baseClasses, variantClasses[variant], sizeClasses[size], className)}
       {...props}
     />
   );
-}
+});
 
 type ButtonLinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & {
   href: LinkProps['href'];
