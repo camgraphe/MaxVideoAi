@@ -19,7 +19,7 @@ export default async function LegalLayout({ children }: { children: React.ReactN
           <h2 className="text-2xl font-semibold text-text-primary">{copy.title}</h2>
           <Link
             href="/"
-            className="text-sm font-medium text-accent transition hover:text-accent/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+            className="text-sm font-medium text-brand transition hover:text-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
           >
             {copy.back}
           </Link>

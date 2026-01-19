@@ -111,13 +111,13 @@ function ModelCard({ card, ctaLabel }: { card: ModelGalleryCard; ctaLabel: strin
             <Link
               href={card.priceNoteHref}
               prefetch={false}
-              className="mt-2 inline-flex text-xs font-semibold text-accent hover:text-accentSoft"
+              className="mt-2 inline-flex text-xs font-semibold text-neutral-700 hover:text-neutral-900"
               onClick={(event) => event.stopPropagation()}
             >
               {card.priceNote}
             </Link>
           ) : (
-            <span className="mt-2 inline-flex text-xs font-semibold text-accent">{card.priceNote}</span>
+            <span className="mt-2 inline-flex text-xs font-semibold text-neutral-700">{card.priceNote}</span>
           )
         ) : null}
       </div>

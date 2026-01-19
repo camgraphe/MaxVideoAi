@@ -10,13 +10,17 @@
   --header-height: 72px;
 }
 
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
 * {
   outline-color: theme('colors.ring');
 }
 
 body {
   @apply bg-bg text-text-primary antialiased font-sans;
-  background: linear-gradient(180deg, #F8F9FA 0%, #F3F5F7 100%);
+  background: linear-gradient(180deg, var(--bg) 0%, var(--surface-3) 100%);
 }
 
 a[href="https://dang.ai/"] {

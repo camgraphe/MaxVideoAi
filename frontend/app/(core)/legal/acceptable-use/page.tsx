@@ -112,7 +112,7 @@ function AupArticleEn() {
         <h2 className="text-lg font-semibold text-text-primary">Report abuse</h2>
         <p>
           If you believe content generated through MaxVideoAI breaches this policy or your rights, notify us via the{' '}
-          <Link href="/legal/takedown" className="text-accent underline">
+          <Link href="/legal/takedown" className="text-brand underline hover:text-brandHover">
             Notice &amp; Takedown form
           </Link>{' '}
           or email{' '}
@@ -167,7 +167,7 @@ function AupArticleFr() {
         <h2 className="text-lg font-semibold text-text-primary">Signaler un abus</h2>
         <p>
           Si vous estimez qu’un contenu généré via MaxVideoAI viole cette politique ou vos droits, signalez-le via le{' '}
-          <Link href="/legal/takedown" className="text-accent underline">
+          <Link href="/legal/takedown" className="text-brand underline hover:text-brandHover">
             formulaire Notification &amp; retrait
           </Link>{' '}
           ou écrivez à{' '}
@@ -222,7 +222,7 @@ function AupArticleEs() {
         <h2 className="text-lg font-semibold text-text-primary">Reporta abusos</h2>
         <p>
           Si crees que un contenido generado con MaxVideoAI vulnera esta política o tus derechos, notifícanos mediante el{' '}
-          <Link href="/legal/takedown" className="text-accent underline">
+          <Link href="/legal/takedown" className="text-brand underline hover:text-brandHover">
             formulario de Notificación y retirada
           </Link>{' '}
           o escribe a{' '}

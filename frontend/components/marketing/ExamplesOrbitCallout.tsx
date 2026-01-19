@@ -59,8 +59,8 @@ export function ExamplesOrbitCallout({ heading, description, ctaLabel, eyebrow, 
             <p className="text-sm text-text-secondary sm:text-base">{description}</p>
           </div>
           <div className="relative mx-auto aspect-square w-full max-w-xs sm:max-w-sm">
-            <div className="absolute inset-0 rounded-full border border-accent/10" aria-hidden />
-            <div className="absolute inset-8 rounded-full border border-accent/10" aria-hidden />
+            <div className="absolute inset-0 rounded-full border border-hairline" aria-hidden />
+            <div className="absolute inset-8 rounded-full border border-hairline" aria-hidden />
             <div className={clsx(styles.orbitField, 'absolute inset-0')}>
               {orbitEngines.map((engine, index) => {
                 const angleRad = (index / orbitEngines.length) * Math.PI * 2;
@@ -149,7 +149,7 @@ export function ExamplesOrbitCallout({ heading, description, ctaLabel, eyebrow, 
               <span className="sr-only">{ctaLabel}</span>
               <GalleryGlyph className="h-8 w-8 text-white/95 drop-shadow-[0_6px_18px_rgba(18,35,75,0.25)] transition-[transform,color] duration-300 ease-out group-hover:scale-[1.24] group-hover:text-white" />
             </Link>
-            <div className="pointer-events-none absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/10 blur-3xl" aria-hidden />
+            <div className="pointer-events-none absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface-2 opacity-60 blur-3xl" aria-hidden />
           </div>
         </div>
       </div>

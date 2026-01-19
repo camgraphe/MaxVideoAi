@@ -129,7 +129,7 @@ export default async function ContactPage({
               name="name"
               type="text"
               required
-              className="mt-2 w-full rounded-input border border-hairline bg-bg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="mt-2 w-full rounded-input border border-hairline bg-bg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-ring focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             />
           </div>
           <div>
@@ -141,7 +141,7 @@ export default async function ContactPage({
               name="email"
               type="email"
               required
-              className="mt-2 w-full rounded-input border border-hairline bg-bg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="mt-2 w-full rounded-input border border-hairline bg-bg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-ring focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             />
           </div>
           <div>
@@ -152,7 +152,7 @@ export default async function ContactPage({
               id="topic"
               name="topic"
               defaultValue=""
-              className="mt-2 w-full rounded-input border border-hairline bg-bg px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="mt-2 w-full rounded-input border border-hairline bg-bg px-3 py-2 text-sm text-text-primary focus:border-ring focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               aria-label={content.form.topic}
             >
               <option value="" disabled>
@@ -174,12 +174,12 @@ export default async function ContactPage({
               name="message"
               rows={4}
               required
-              className="mt-2 w-full rounded-input border border-hairline bg-bg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="mt-2 w-full rounded-input border border-hairline bg-bg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-ring focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             />
           </div>
           <button
             type="submit"
-            className="inline-flex items-center rounded-pill bg-accent px-5 py-2 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            className="inline-flex items-center rounded-pill bg-brand px-5 py-2 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           >
             {content.form.submit}
           </button>
@@ -211,7 +211,7 @@ export default async function ContactPage({
             <dt className="font-semibold text-text-primary">Where can I check service status?</dt>
             <dd className="mt-2">
               Visit the{' '}
-              <Link href={statusHref} className="font-semibold text-accent hover:text-accentSoft">
+              <Link href={statusHref} className="font-semibold text-brand hover:text-brandHover">
                 status page
               </Link>{' '}
               for current engine latency and incident history before opening a ticket.
@@ -227,7 +227,7 @@ export default async function ContactPage({
         </p>
         <Link
           href={statusHref}
-          className="mt-4 inline-flex items-center text-sm font-semibold text-accent transition hover:text-accentSoft"
+          className="mt-4 inline-flex items-center text-sm font-semibold text-brand transition hover:text-brandHover"
         >
           View status page <span aria-hidden>→</span>
         </Link>

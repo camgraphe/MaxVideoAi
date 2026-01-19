@@ -537,7 +537,7 @@ export function MediaLightbox({
                         className={clsx(
                           'rounded-input border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed',
                           mediaUrl
-                            ? 'border-accent bg-accent/10 text-accent hover:bg-accent/20'
+                            ? 'border-brand bg-surface-2 text-brand hover:bg-surface-3'
                             : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
                         )}
                       >
@@ -561,7 +561,7 @@ export function MediaLightbox({
                           'rounded-input border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed',
                           isRefreshing
                             ? 'border-border bg-bg text-text-muted'
-                            : 'border-accent bg-accent/10 text-accent hover:bg-accent/20'
+                            : 'border-brand bg-surface-2 text-brand hover:bg-surface-3'
                         )}
                       >
                         {isRefreshing ? 'Checking...' : 'Refresh status'}
@@ -586,7 +586,7 @@ export function MediaLightbox({
                       <label className="inline-flex items-center gap-2">
                         <input
                           type="checkbox"
-                          className="h-4 w-4 rounded border border-border accent-accent"
+                          className="h-4 w-4 rounded border border-border accent-brand"
                           checked={displayIndexable}
                           onChange={() => handleIndexingToggle(entry, displayIndexable)}
                           disabled={isIndexingLoading}

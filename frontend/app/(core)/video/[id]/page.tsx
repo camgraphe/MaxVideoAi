@@ -608,12 +608,12 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
               {engineLink ? (
                 <Link
                   href={engineLink}
-                  className="block rounded-lg border border-hairline bg-bg p-4 transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
+                  className="block rounded-lg border border-hairline bg-bg p-4 transition hover:border-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <p className="text-xs uppercase tracking-micro text-text-muted">{copy.details.engineLabel}</p>
                   <p className="mt-1 text-lg font-semibold text-text-primary">{engineLabel}</p>
                   <p className="mt-1 text-sm text-text-secondary">{engineDescription}</p>
-                  <span className="mt-3 inline-flex items-center text-sm font-semibold text-accent">
+                  <span className="mt-3 inline-flex items-center text-sm font-semibold text-brand">
                     {copy.details.engineCta} →
                   </span>
                 </Link>
@@ -629,7 +629,7 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
                   <dt className="text-xs uppercase tracking-micro text-text-muted">{copy.details.priceTotalLabel}</dt>
                   <dd className="mt-1 text-base font-medium text-text-primary">{totalPriceDisplay}</dd>
                   {discountNote ? (
-                    <p className="mt-1 text-xs font-semibold text-accent">{discountNote}</p>
+                    <p className="mt-1 text-xs font-semibold text-brand">{discountNote}</p>
                   ) : null}
                 </div>
                 <div>
@@ -654,7 +654,7 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
               <div>
                 <Link
                   href={pricingPath}
-                  className="inline-flex w-full items-center justify-center rounded-pill border border-hairline bg-white px-5 py-2 text-sm font-semibold text-text-primary transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
+                  className="inline-flex w-full items-center justify-center rounded-pill border border-hairline bg-white px-5 py-2 text-sm font-semibold text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {copy.details.cta}
                 </Link>
@@ -669,7 +669,7 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
               <p className="mt-2 text-sm text-text-secondary">{copy.create.body}</p>
               <Link
                 href={`/app?from=${encodeURIComponent(video.id)}`}
-                className="mt-4 inline-flex w-full items-center justify-center rounded-pill bg-accent px-5 py-3 text-sm font-semibold uppercase tracking-micro text-white transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
+                className="mt-4 inline-flex w-full items-center justify-center rounded-pill bg-brand px-5 py-3 text-sm font-semibold uppercase tracking-micro text-on-brand transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {copy.create.cta}
               </Link>
@@ -679,7 +679,7 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
               <p className="mt-2 text-sm text-text-secondary">{copy.blog.message}</p>
               <Link
                 href={blogPath}
-                className="mt-4 inline-flex w-full items-center justify-center rounded-pill border border-hairline px-5 py-2 text-sm font-semibold text-text-primary transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
+                className="mt-4 inline-flex w-full items-center justify-center rounded-pill border border-hairline px-5 py-2 text-sm font-semibold text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {copy.blog.cta}
               </Link>

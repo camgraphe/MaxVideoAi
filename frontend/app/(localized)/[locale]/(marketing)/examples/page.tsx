@@ -669,9 +669,9 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
                 href={{ pathname: '/examples', query: buildQueryParams(DEFAULT_SORT, null, 1) }}
                 rel="nofollow"
                 className={clsx(
-                  'flex h-9 items-center justify-center rounded-full border px-3 text-[11px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
+                  'flex h-9 items-center justify-center rounded-full border px-3 text-[11px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   selectedEngine
-                    ? 'border-hairline bg-white text-text-secondary hover:border-accent hover:text-text-primary'
+                    ? 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:text-text-primary'
                     : 'border-transparent bg-text-primary text-white shadow-card'
                 )}
               >
@@ -686,12 +686,12 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
                     href={{ pathname: '/examples', query: buildQueryParams(DEFAULT_SORT, engine.id, 1) }}
                     rel="nofollow"
                     className={clsx(
-                      'flex h-9 items-center justify-center rounded-full border px-4 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
+                      'flex h-9 items-center justify-center rounded-full border px-4 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                       isActive
                         ? 'border-transparent bg-text-primary text-white shadow-card'
                         : palette
                           ? clsx('border border-black/10 hover:opacity-90', palette.bg, palette.text)
-                          : 'border-hairline bg-white text-text-secondary hover:border-accent hover:text-text-primary'
+                          : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:text-text-primary'
                     )}
                   >
                     {engine.label}
@@ -704,10 +704,10 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
       </section>
       {selectedEngine && modelPath ? (
         <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-text-secondary">
-          <Link href={modelPath} className="font-semibold text-accent hover:text-accentSoft">
+          <Link href={modelPath} className="font-semibold text-brand hover:text-brandHover">
             {engineModelLinkLabel}
           </Link>
-          <Link href={pricingPath} className="font-semibold text-accent hover:text-accentSoft">
+          <Link href={pricingPath} className="font-semibold text-brand hover:text-brandHover">
             {pricingLinkLabel}
           </Link>
         </div>
@@ -730,7 +730,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
                   query: buildQueryParams(sort, selectedEngine, currentPage - 1),
                 }}
                 rel="prev"
-                className="inline-flex items-center rounded-full border border-hairline px-3 py-1 font-medium text-text-primary transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+                className="inline-flex items-center rounded-full border border-hairline px-3 py-1 font-medium text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 ← {paginationPrevLabel}
               </Link>
@@ -751,7 +751,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
                   query: buildQueryParams(sort, selectedEngine, currentPage + 1),
                 }}
                 rel="next"
-                className="inline-flex items-center rounded-full border border-hairline px-3 py-1 font-medium text-text-primary transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+                className="inline-flex items-center rounded-full border border-hairline px-3 py-1 font-medium text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {paginationNextLabel} →
               </Link>
@@ -770,7 +770,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
 
         {videoLinkEntries.length ? (
           <details className="mt-10 rounded-[16px] border border-hairline bg-white/70 px-4 py-5 text-sm text-text-secondary/90">
-            <summary className="flex cursor-pointer items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50">
+            <summary className="flex cursor-pointer items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
               <span className="text-base font-semibold text-text-primary">{recentAccessTitle}</span>
               <span className="text-xs uppercase tracking-micro text-text-muted">{showLabel}</span>
             </summary>
@@ -794,7 +794,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
 
         <section className="mt-10">
           <details className="rounded-[16px] border border-hairline bg-white/80 px-4 py-5 shadow-card">
-            <summary className="flex cursor-pointer items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50">
+            <summary className="flex cursor-pointer items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
               <div>
                 <h2 className="text-lg font-semibold text-text-primary">
                   {locale === 'fr'
@@ -842,7 +842,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
                 <Link
                   key={id}
                   href={`/video/${encodeURIComponent(id)}`}
-                  className="block rounded-lg border border-hairline bg-white/80 p-4 text-sm font-semibold text-text-primary shadow-card transition hover:border-accent hover:text-accent"
+                  className="block rounded-lg border border-hairline bg-white/80 p-4 text-sm font-semibold text-text-primary shadow-card transition hover:border-text-muted hover:text-text-primary"
                 >
                   {locale === 'fr'
                     ? `Exemple ${index + 1}`

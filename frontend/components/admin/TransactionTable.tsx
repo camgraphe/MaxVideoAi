@@ -120,7 +120,7 @@ export function AdminTransactionTable({ initialTransactions }: AdminTransactionT
             disabled={isRefreshing}
             className={clsx(
               'inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              isRefreshing ? 'cursor-not-allowed opacity-60' : 'hover:border-accentSoft/60 hover:bg-accentSoft/10'
+              isRefreshing ? 'cursor-not-allowed opacity-60' : 'hover:border-text-muted hover:bg-surface-2'
             )}
           >
             {isRefreshing ? 'Refreshing…' : 'Refresh'}
@@ -190,9 +190,9 @@ export function AdminTransactionTable({ initialTransactions }: AdminTransactionT
                       {row.userId ? (
                         <Link
                           href={`/admin/users/${row.userId}`}
-                          className="flex flex-col rounded-md border border-transparent px-1 py-0.5 text-left transition hover:border-accent/20 hover:bg-accentSoft/10"
+                          className="flex flex-col rounded-md border border-transparent px-1 py-0.5 text-left transition hover:border-text-muted hover:bg-surface-2"
                         >
-                          <span className="text-sm font-medium text-accent">{userLabel}</span>
+                          <span className="text-sm font-medium text-brand">{userLabel}</span>
                           {row.userEmail && row.userId && row.userEmail !== row.userId ? (
                             <span className="text-xs text-text-muted">{row.userId}</span>
                           ) : null}

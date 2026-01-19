@@ -97,7 +97,7 @@ export default function AdminUsersPage() {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search by email or user id"
-          className="w-full rounded-lg border border-hairline bg-bg px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
+          className="w-full rounded-lg border border-hairline bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
 
@@ -173,7 +173,7 @@ export default function AdminUsersPage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link
-                      className="rounded-lg border border-accent/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-accent transition hover:bg-accent/10"
+                      className="rounded-lg border border-brand/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand transition hover:bg-brand/10"
                       href={`/admin/users/${user.id}`}
                     >
                       View

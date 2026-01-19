@@ -185,7 +185,7 @@ export function PriceFactorsBar({ preflight, currency = 'USD', isLoading = false
           key={item.id}
           type="button"
           onClick={onNavigate ? () => onNavigate(item.kind) : undefined}
-          className="inline-flex items-center gap-2 rounded-[10px] border border-hairline bg-white px-3 py-2 text-[12px] leading-4 tracking-[0.08em] text-text-secondary transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus:outline-none focus:ring-2 focus:ring-ring"
+          className="inline-flex items-center gap-2 rounded-[10px] border border-hairline bg-white px-3 py-2 text-[12px] leading-4 tracking-[0.08em] text-text-secondary transition hover:border-text-muted hover:bg-surface-2 focus:outline-none focus:ring-2 focus:ring-ring"
           title={item.tooltip}
         >
           {item.icon && (
@@ -204,10 +204,10 @@ export function PriceFactorsBar({ preflight, currency = 'USD', isLoading = false
       ))}
 
       {typeof preflight?.total === 'number' && (
-        <span className="ml-auto inline-flex items-center rounded-full bg-accent px-3 py-1.5 text-[12px] font-medium text-white">
+        <span className="ml-auto inline-flex items-center rounded-full bg-brand px-3 py-1.5 text-[12px] font-medium text-on-brand">
           {totalLabel}: {formatTotal((preflight.total || 0) * safeIterations, formatter)}
           {safeIterations > 1 && memberDiscountTotal > AMOUNT_EPSILON && (
-            <span className="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-semibold text-white">
+            <span className="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-semibold text-on-brand">
               Member saves {formatTotal(memberDiscountTotal, formatter)}
             </span>
           )}

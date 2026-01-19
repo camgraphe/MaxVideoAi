@@ -379,7 +379,7 @@ export function CompositePreviewDock({
                 <button
                   type="button"
                   onClick={onCopyPrompt}
-                  className="rounded-full border border-border bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-accent transition hover:bg-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-brand transition hover:bg-surface-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {controls.copyPrompt}
                 </button>
@@ -392,7 +392,7 @@ export function CompositePreviewDock({
                   <button
                     type="button"
                     onClick={onCopyPrompt}
-                    className="rounded-full border border-border bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-accent transition hover:bg-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-brand transition hover:bg-surface-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {controls.copyPrompt}
                   </button>
@@ -408,7 +408,7 @@ export function CompositePreviewDock({
                 <button
                   type="button"
                   onClick={onCopyPrompt}
-                  className="rounded-full border border-border bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-accent transition hover:bg-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-brand transition hover:bg-surface-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {controls.copyPrompt}
                 </button>

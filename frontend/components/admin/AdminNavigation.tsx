@@ -57,7 +57,7 @@ export function AdminNavigation({ sections }: AdminNavigationProps) {
               onClick={() => setOpenIndex((current) => (current === index ? null : index))}
               className={clsx(
                 'flex items-center gap-1 rounded-pill px-2 py-1 text-xs font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                isOpen ? 'bg-accentSoft/20 text-text-primary' : 'text-text-muted hover:text-text-primary'
+                isOpen ? 'bg-surface-2 text-text-primary' : 'text-text-muted hover:text-text-primary'
               )}
               aria-expanded={isOpen}
               aria-haspopup="true"
@@ -82,7 +82,7 @@ export function AdminNavigation({ sections }: AdminNavigationProps) {
                       <Link
                         href={item.href}
                         onClick={() => setOpenIndex(null)}
-                        className="flex items-center justify-between px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/15 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="flex items-center justify-between px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <span>{item.label}</span>
                         <span aria-hidden className="text-xs text-text-muted">

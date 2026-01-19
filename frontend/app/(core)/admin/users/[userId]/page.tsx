@@ -135,7 +135,7 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
                 usage.recentJobs.map((job) => (
                   <tr key={job.jobId} className="border-t border-border/40 text-text-secondary">
                     <td className="py-2 font-mono text-xs">
-                      <Link className="text-accent underline-offset-2 hover:underline" href={`/admin/jobs?jobId=${job.jobId}`}>
+                      <Link className="text-brand underline-offset-2 hover:underline" href={`/admin/jobs?jobId=${job.jobId}`}>
                         {job.jobId}
                       </Link>
                     </td>

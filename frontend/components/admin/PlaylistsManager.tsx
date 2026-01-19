@@ -195,7 +195,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
         try {
           setFeedback(null);
           setError(null);
-        const res = await authFetch(`/api/admin/playlists/${playlistId}`, { method: 'DELETE' });
+          const res = await authFetch(`/api/admin/playlists/${playlistId}`, { method: 'DELETE' });
           if (!res.ok) throw new Error(`Failed to delete playlist (${res.status})`);
           const json = await res.json().catch(() => ({ ok: false }));
           if (!json?.ok) throw new Error(json?.error ?? 'Delete failed');
@@ -386,7 +386,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
         </div>
         <button
           type="button"
-          className="rounded-pill bg-accent px-4 py-2 text-sm font-semibold text-white shadow-card transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-on-brand shadow-card transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           onClick={handleCreatePlaylist}
           disabled={isPending}
         >
@@ -417,7 +417,9 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                   type="button"
                   className={clsx(
                     'w-full rounded-card border px-4 py-3 text-left transition',
-                    isActive ? 'border-accent bg-accent/10 text-text-primary' : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50'
+                    isActive
+                      ? 'border-brand bg-surface-2 text-text-primary'
+                      : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
                   )}
                   onClick={() => handleSelectPlaylist(playlist.id)}
                   disabled={isPending}
@@ -497,7 +499,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
               </label>
               <button
                 type="button"
-                className="rounded-pill bg-text-primary px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-on-brand transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 onClick={() => handleSavePlaylist(selectedPlaylist.id)}
                 disabled={!selectedPlaylist.dirty || isPending}
               >
@@ -522,7 +524,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                 </div>
                 <button
                   type="button"
-                  className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   onClick={handleSaveItems}
                   disabled={!isItemsDirty || isPending}
                 >
@@ -540,7 +542,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                 />
                 <button
                   type="submit"
-                  className="rounded-pill bg-accent px-4 py-2 text-xs font-semibold uppercase tracking-micro text-white transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="rounded-pill bg-brand px-4 py-2 text-xs font-semibold uppercase tracking-micro text-on-brand transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   disabled={isPending}
                 >
                   Add video
@@ -609,7 +611,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                   <div className="flex justify-end gap-2 text-xs">
                             <button
                               type="button"
-                              className="rounded-input border border-hairline px-2 py-1 text-text-secondary hover:border-accent hover:text-accent"
+                              className="rounded-input border border-hairline px-2 py-1 text-text-secondary hover:border-text-muted hover:text-text-primary"
                               onClick={() => moveItem(item.videoId, -1)}
                               disabled={index === 0 || isPending}
                             >
@@ -617,7 +619,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                             </button>
                             <button
                               type="button"
-                              className="rounded-input border border-hairline px-2 py-1 text-text-secondary hover:border-accent hover:text-accent"
+                              className="rounded-input border border-hairline px-2 py-1 text-text-secondary hover:border-text-muted hover:text-text-primary"
                               onClick={() => moveItem(item.videoId, 1)}
                               disabled={index === items.length - 1 || isPending}
                             >

@@ -284,7 +284,7 @@ export function HomepageVideoManager({ initialHero }: HomepageVideoManagerProps)
                         'rounded-input px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                         !slot.dirty || slot.saving
                           ? 'cursor-not-allowed border border-border bg-muted text-text-muted'
-                          : 'border border-accent bg-accent text-white hover:bg-accent/90'
+                          : 'border border-brand bg-brand text-on-brand hover:bg-brandHover'
                       )}
                     >
                       {slot.saving ? 'Saving…' : 'Save slot'}
@@ -293,7 +293,7 @@ export function HomepageVideoManager({ initialHero }: HomepageVideoManagerProps)
                       type="button"
                       onClick={() => handleReset(slot)}
                       disabled={slot.saving}
-                      className="rounded-input border border-border px-3 py-2 text-sm text-text-secondary transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="rounded-input border border-border px-3 py-2 text-sm text-text-secondary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       Reset
                     </button>

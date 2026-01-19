@@ -62,7 +62,7 @@ export default async function AdminMarketingOptInsPage() {
         </div>
         <a
           href={csvHref}
-          className="inline-flex items-center gap-2 rounded-md border border-accent px-4 py-2 text-sm font-semibold text-accent transition hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="inline-flex items-center gap-2 rounded-md border border-brand px-4 py-2 text-sm font-semibold text-brand transition hover:bg-brand/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           Export CSV
         </a>
@@ -94,7 +94,7 @@ export default async function AdminMarketingOptInsPage() {
                   <td className="px-4 py-3 text-right">
                     <Link
                       href={`/admin/users/${record.userId}`}
-                      className="rounded-lg border border-accent/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-accent transition hover:bg-accent/10"
+                      className="rounded-lg border border-brand/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand transition hover:bg-brand/10"
                     >
                       View member
                     </Link>

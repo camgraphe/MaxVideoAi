@@ -1677,7 +1677,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                       <span className="text-sm font-medium text-text-primary">{resolvedCopy.composer.promptLabel}</span>
                       <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
                         <span>{promptCharCount}</span>
-                        <Chip variant={pricingValidating ? 'ghost' : 'accent'} className="px-3 py-1.5">
+                        <Chip variant={pricingValidating ? 'ghost' : 'outline'} className="px-3 py-1.5">
                           {pricingValidating ? resolvedCopy.engine.priceCalculating : composerPriceLabel}
                         </Chip>
                       </div>
@@ -1701,7 +1701,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                             key={`${preset.title}-${preset.mode}`}
                             type="button"
                             onClick={() => handlePreset(preset)}
-                            className="rounded-full border border-hairline bg-white/80 px-3 py-1 text-xs font-medium text-text-secondary transition hover:border-accentSoft/60 hover:bg-accentSoft/10 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="rounded-full border border-hairline bg-white/80 px-3 py-1 text-xs font-medium text-text-secondary transition hover:border-text-muted hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             {preset.title}
                           </button>
@@ -1753,8 +1753,8 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                     <button
                       type="submit"
                       className={clsx(
-                        'inline-flex w-full items-center justify-center rounded-input bg-accent px-5 py-3 text-sm font-semibold text-white shadow-card transition sm:w-auto',
-                        'hover:bg-accent/90'
+                        'inline-flex w-full items-center justify-center rounded-input bg-brand px-5 py-3 text-sm font-semibold text-on-brand shadow-card transition sm:w-auto',
+                        'hover:bg-brandHover'
                       )}
                     >
                       {hasPendingRuns ? resolvedCopy.runButton.running : resolvedCopy.runButton.idle}
@@ -1774,7 +1774,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                       <button
                         type="button"
                         onClick={() => setLibraryModal({ open: true, slotIndex: null })}
-                        className="rounded-full border border-border px-3 py-1 text-[11px] font-semibold text-text-secondary transition hover:border-accent hover:text-text-primary"
+                        className="rounded-full border border-border px-3 py-1 text-[11px] font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
                       >
                         {resolvedCopy.composer.referenceButton}
                       </button>
@@ -1791,7 +1791,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                           onPaste={(event) => handleSlotPaste(event, index)}
                         className={clsx(
                           'group relative flex aspect-[2/1] flex-col overflow-hidden rounded-2xl border border-dashed border-hairline bg-white/80 text-center text-[11px] text-text-secondary transition',
-                          slot && 'border-solid border-accent/40 bg-white shadow-card'
+                          slot && 'border-solid border-text-muted bg-white shadow-card'
                         )}
                         >
                           <input
@@ -2026,7 +2026,7 @@ function ImageLibraryModal({
               role="tab"
               aria-selected={activeSource === 'all'}
               onClick={() => setActiveSource('all')}
-              className={`flex-1 px-4 py-2 transition ${activeSource === 'all' ? 'bg-accent text-white' : 'hover:bg-white'}`}
+              className={`flex-1 px-4 py-2 transition ${activeSource === 'all' ? 'bg-brand text-on-brand' : 'hover:bg-white'}`}
             >
               {copy.tabs.all}
             </button>
@@ -2035,7 +2035,7 @@ function ImageLibraryModal({
               role="tab"
               aria-selected={activeSource === 'upload'}
               onClick={() => setActiveSource('upload')}
-              className={`flex-1 px-4 py-2 transition ${activeSource === 'upload' ? 'bg-accent text-white' : 'hover:bg-white'}`}
+              className={`flex-1 px-4 py-2 transition ${activeSource === 'upload' ? 'bg-brand text-on-brand' : 'hover:bg-white'}`}
             >
               {copy.tabs.upload}
             </button>
@@ -2045,7 +2045,7 @@ function ImageLibraryModal({
               aria-selected={activeSource === 'generated'}
               onClick={() => setActiveSource('generated')}
               className={`flex-1 px-4 py-2 transition ${
-                activeSource === 'generated' ? 'bg-accent text-white' : 'hover:bg-white'
+                activeSource === 'generated' ? 'bg-brand text-on-brand' : 'hover:bg-white'
               }`}
             >
               {copy.tabs.generated}

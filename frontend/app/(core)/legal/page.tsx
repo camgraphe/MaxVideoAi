@@ -154,7 +154,7 @@ export default async function LegalIndexPage() {
             domain="maxvideoai.com"
             label="legal@maxvideoai.com"
             placeholder="legal [at] maxvideoai.com"
-            className="font-semibold text-accent hover:text-accentSoft"
+            className="font-semibold text-brand hover:text-brandHover"
           />
         ) : null}
       </span>
@@ -189,7 +189,7 @@ export default async function LegalIndexPage() {
                 <div>
                   <Link
                     href={entry.href}
-                    className="text-lg font-semibold text-accent transition hover:text-accentSoft"
+                    className="text-lg font-semibold text-brand transition hover:text-brandHover"
                   >
                     {copy.links[entry.key]}
                   </Link>

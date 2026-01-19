@@ -613,7 +613,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
       >
         {!isLite && (
           <div className="pointer-events-none absolute inset-0 -z-10">
-            <div className="absolute -left-28 top-[-96px] h-72 w-72 rounded-full bg-accent/16 blur-[140px]" />
+            <div className="absolute -left-28 top-[-96px] h-72 w-72 rounded-full bg-surface-2 opacity-70 blur-[140px]" />
             <div className="absolute -right-24 bottom-[-120px] h-80 w-80 rounded-full bg-[#7c4dff]/12 blur-[160px]" />
           </div>
         )}
@@ -655,7 +655,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                       id={engineId}
                       value={selectedEngine?.id ?? ''}
                       onChange={(event) => setSelectedEngineId(event.target.value)}
-                      className="w-full appearance-none rounded-[16px] border border-transparent bg-white px-4 py-3 pr-12 text-sm font-semibold text-text-primary shadow-[0_1px_3px_rgba(15,23,42,0.1)] transition focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                      className="w-full appearance-none rounded-[16px] border border-transparent bg-white px-4 py-3 pr-12 text-sm font-semibold text-text-primary shadow-[0_1px_3px_rgba(15,23,42,0.1)] transition focus:border-ring focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                     >
                       {engineOptions.map((option) => (
                         <option key={option.id} value={option.id} disabled={option.availability === 'paused'}>
@@ -673,8 +673,8 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                     <p className="mt-3 text-xs text-text-muted">{selectedEngine.description}</p>
                   ) : null}
                   {selectedEngine?.audioIncluded ? (
-                    <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/5 px-3 py-1 text-[11px] font-semibold text-accent">
-                      <span className="text-[9px] leading-none text-accent">●</span>
+                    <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-hairline bg-surface-2 px-3 py-1 text-[11px] font-semibold text-text-secondary">
+                      <span className="text-[9px] leading-none text-text-muted">●</span>
                       <span>{t('pricing.estimator.audioIncluded', 'Audio included by default')}</span>
                     </div>
                   ) : null}
@@ -707,7 +707,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                         id={resolutionId}
                         value={selectedResolution}
                         onChange={(event) => setSelectedResolution(event.target.value)}
-                        className="w-full appearance-none rounded-[16px] border border-transparent bg-white px-4 py-3 pr-12 text-sm font-semibold text-text-primary shadow-[0_1px_3px_rgba(15,23,42,0.1)] transition focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                        className="w-full appearance-none rounded-[16px] border border-transparent bg-white px-4 py-3 pr-12 text-sm font-semibold text-text-primary shadow-[0_1px_3px_rgba(15,23,42,0.1)] transition focus:border-ring focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                       >
                         {selectedEngine?.resolutions.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -759,7 +759,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                               className={clsx(
                                 'rounded-full px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white',
                                 selected
-                                  ? 'bg-accent text-white shadow-[0_10px_30px_-12px_rgba(0,109,255,0.7)]'
+                                  ? 'bg-brand text-on-brand shadow-[0_10px_30px_-12px_rgba(66,106,174,0.55)]'
                                   : 'bg-white/70 text-text-secondary hover:bg-white'
                               )}
                               aria-pressed={selected}
@@ -823,7 +823,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                             className={clsx(
                               'rounded-full px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white',
                               selected
-                                ? 'bg-accent text-white shadow-[0_10px_30px_-12px_rgba(0,109,255,0.7)]'
+                                ? 'bg-brand text-on-brand shadow-[0_10px_30px_-12px_rgba(66,106,174,0.55)]'
                                 : 'bg-white/70 text-text-secondary hover:bg-white'
                             )}
                             aria-pressed={selected}
@@ -933,7 +933,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                   {memberBenefitCopy ? <p className="mt-1 text-xs text-text-muted">{memberBenefitCopy}</p> : null}
                 </div>
                 {selectedEngine?.audioIncluded ? (
-                  <p className="text-xs font-semibold text-accent">
+                  <p className="text-xs font-semibold text-text-secondary">
                     {t('pricing.estimator.audioIncluded', 'Audio included by default')}
                   </p>
                 ) : null}

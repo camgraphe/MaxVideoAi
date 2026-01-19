@@ -69,7 +69,7 @@ export default function MentionsLegalesPage() {
           </p>
           <p>
             <strong>Site web&nbsp;:</strong>{' '}
-            <a href="https://vercel.com" className="text-accent underline">
+            <a href="https://vercel.com" className="text-brand underline hover:text-brandHover">
               https://vercel.com
             </a>
           </p>
@@ -87,7 +87,7 @@ export default function MentionsLegalesPage() {
           <h3 className="text-lg font-semibold text-text-primary">Données personnelles</h3>
           <p>
             MaxVideoAI collecte et traite des données personnelles conformément à la{' '}
-            <Link href="/legal/privacy" className="text-accent underline">
+            <Link href="/legal/privacy" className="text-brand underline hover:text-brandHover">
               Politique de confidentialité
             </Link>
             . Pour exercer vos droits RGPD (accès, rectification, suppression, opposition, portabilité), contactez{' '}

@@ -253,7 +253,7 @@ function MiniFAQ({ faq }: MiniFaqProps) {
         <p className="mb-4 text-sm text-muted-foreground">{resolvedDescription}</p>
         <div className="space-y-3">
           {items.map((item) => (
-            <details key={item.q} className="group rounded-lg border border-hairline bg-white/60 p-4 transition hover:border-accent/40">
+            <details key={item.q} className="group rounded-lg border border-hairline bg-white/60 p-4 transition hover:border-text-muted">
               <summary className="flex cursor-pointer select-none list-none items-center justify-between text-sm font-medium text-text-primary">
                 <span>{item.q}</span>
                 <span className="ml-3 text-muted-foreground transition-transform group-open:rotate-180">▾</span>
@@ -574,13 +574,13 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
           <Link
             href="/app"
             prefetch={false}
-            className="inline-flex items-center rounded-pill bg-accent px-6 py-3 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            className="inline-flex items-center rounded-pill bg-brand px-6 py-3 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           >
             {hero.primaryCta}
           </Link>
           <Link
             href="#how-it-works"
-            className="inline-flex items-center rounded-pill border border-hairline px-6 py-3 text-sm font-semibold text-text-primary transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            className="inline-flex items-center rounded-pill border border-hairline px-6 py-3 text-sm font-semibold text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           >
             {hero.secondaryCta}
           </Link>
@@ -689,7 +689,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
                 <ul className="space-y-2 text-sm text-text-secondary">
                   {item.bullets.map((bullet) => (
                     <li key={bullet} className="flex items-start gap-2">
-                      <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-accent" />
+                      <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-text-muted" />
                       <span>{bullet}</span>
                     </li>
                   ))}
@@ -716,7 +716,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
               </div>
               <Link
                 href="/pricing"
-                className="mt-6 inline-flex items-center text-sm font-semibold text-accent hover:text-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                className="mt-6 inline-flex items-center text-sm font-semibold text-brand hover:text-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
                 {pricing.link}
               </Link>
@@ -731,7 +731,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
               <ul className="mt-4 space-y-3 text-sm text-text-secondary">
                 {trust.points.map((point) => (
                   <li key={point} className="flex items-start gap-2">
-                    <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-accent" />
+                    <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-text-muted" />
                     <span>{point}</span>
                   </li>
                 ))}

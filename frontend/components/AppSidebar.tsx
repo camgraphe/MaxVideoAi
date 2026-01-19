@@ -174,16 +174,16 @@ export function AppSidebar() {
             'group relative flex w-full items-center rounded-[14px] px-2 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
             collapsedNav ? 'justify-center gap-0' : 'gap-3 px-3',
             active
-              ? 'bg-accentSoft/20 text-text-primary'
-              : 'text-text-muted hover:bg-accentSoft/15 hover:text-text-primary'
+              ? 'bg-surface-2 text-text-primary'
+              : 'text-text-muted hover:bg-surface-2 hover:text-text-primary'
           )}
           aria-current={active ? 'page' : undefined}
           aria-describedby={collapsedNav ? tooltipId : undefined}
         >
           <span
             className={clsx(
-              'pointer-events-none absolute left-1 top-1/2 h-[60%] w-[3px] -translate-y-1/2 rounded-full bg-accentSoft transition-opacity',
-              active ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'
+              'pointer-events-none absolute left-1 top-1/2 h-[60%] w-[3px] -translate-y-1/2 rounded-full bg-brand transition-opacity',
+              active ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'
             )}
             aria-hidden
           />
@@ -192,8 +192,8 @@ export function AppSidebar() {
               'flex items-center justify-center rounded-[12px] border transition-colors duration-150',
               collapsedNav ? 'h-10 w-10' : 'h-12 w-12',
               active
-                ? 'border-accentSoft/40 bg-accentSoft/25 text-accent'
-                : 'border-transparent bg-white/80 text-text-muted group-hover:bg-accentSoft/15 group-hover:text-text-primary'
+                ? 'border-text-muted bg-surface-2 text-text-primary'
+                : 'border-transparent bg-white/80 text-text-muted group-hover:bg-surface-2 group-hover:text-text-primary'
             )}
             aria-hidden
           >

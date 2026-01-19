@@ -67,7 +67,7 @@ export function ManualCreditForm({ userId }: ManualCreditFormProps) {
             step="0.01"
             value={amount}
             onChange={(event) => setAmount(event.target.value)}
-            className="mt-1 w-full rounded-lg border border-border/60 bg-bg px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
+            className="mt-1 w-full rounded-lg border border-border/60 bg-bg px-3 py-2 text-sm text-text-primary focus:border-ring focus:outline-none"
             required
           />
         </label>
@@ -78,7 +78,7 @@ export function ManualCreditForm({ userId }: ManualCreditFormProps) {
             value={note}
             onChange={(event) => setNote(event.target.value)}
             placeholder="Reason (optional)"
-            className="mt-1 w-full rounded-lg border border-border/60 bg-bg px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
+            className="mt-1 w-full rounded-lg border border-border/60 bg-bg px-3 py-2 text-sm text-text-primary focus:border-ring focus:outline-none"
           />
         </label>
       </div>

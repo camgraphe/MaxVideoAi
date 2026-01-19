@@ -267,7 +267,7 @@ export function MarketingNav() {
         </Link>
         <button
           type="button"
-          className="inline-flex items-center justify-center rounded-full border border-hairline bg-white/80 p-2 text-text-primary transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+          className="inline-flex items-center justify-center rounded-full border border-hairline bg-white/80 p-2 text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
           aria-label={t('nav.mobileToggle', 'Open menu')}
           onClick={() => setMobileMenuOpen(true)}
         >
@@ -311,7 +311,7 @@ export function MarketingNav() {
                   <Link
                     href="/billing"
                     prefetch={false}
-                    className="flex items-center gap-2 rounded-pill border border-hairline bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary transition hover:border-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="flex items-center gap-2 rounded-pill border border-hairline bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary transition hover:border-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     aria-describedby={walletPromptOpen ? walletPromptId : undefined}
                   >
                     <WalletGlyph size={16} className="text-text-primary" />
@@ -339,7 +339,7 @@ export function MarketingNav() {
                       <Link
                         href="/billing"
                         prefetch={false}
-                        className="mt-3 inline-flex w-full items-center justify-center rounded-input bg-accent px-3 py-2 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="mt-3 inline-flex w-full items-center justify-center rounded-input bg-brand px-3 py-2 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         {t('workspace.header.walletTopUp.cta', 'Top up now')}
                       </Link>
@@ -350,7 +350,7 @@ export function MarketingNav() {
               <Link
                 href="/app"
                 prefetch={false}
-                className="inline-flex items-center rounded-pill border border-hairline px-4 py-2 text-sm font-semibold text-text-primary shadow-card transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                className="inline-flex items-center rounded-pill border border-hairline px-4 py-2 text-sm font-semibold text-text-primary shadow-card transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
                 {generateLabel}
               </Link>
@@ -391,12 +391,12 @@ export function MarketingNav() {
                             key={item.id}
                             href={item.href}
                             prefetch={false}
-                            className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             onClick={() => setAccountMenuOpen(false)}
                           >
                             <span>{label}</span>
                             {badgeLabel ? (
-                              <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-accent">
+                              <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
                                 {badgeLabel}
                               </span>
                             ) : null}
@@ -406,7 +406,7 @@ export function MarketingNav() {
                     </nav>
                     <button
                       type="button"
-                      className="flex w-full items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="flex w-full items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       onClick={() => signOut({ closeAccountMenu: true })}
                     >
                       {t('workspace.header.signOut', 'Sign out')}
@@ -427,7 +427,7 @@ export function MarketingNav() {
               <Link
                 href="/app"
                 prefetch={false}
-                className="inline-flex items-center rounded-pill bg-accent px-4 py-2 text-sm font-semibold text-white shadow-card transition transform-gpu hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                  className="inline-flex items-center rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-on-brand shadow-card transition transform-gpu hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
                 {cta}
               </Link>
@@ -478,7 +478,7 @@ export function MarketingNav() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={clsx(
                     'rounded-2xl border border-hairline px-4 py-3',
-                    pathname === item.href ? 'bg-accent/10 text-text-primary' : 'bg-white'
+                    pathname === item.href ? 'bg-surface-2 text-text-primary' : 'bg-white'
                   )}
                 >
                   {t(`nav.linkLabels.${item.key}`, item.key)}
@@ -496,7 +496,7 @@ export function MarketingNav() {
                 <Link
                   href="/app"
                   prefetch={false}
-                  className="block rounded-2xl bg-accent px-4 py-3 text-center text-base font-semibold text-white shadow-card"
+                  className="block rounded-2xl bg-brand px-4 py-3 text-center text-base font-semibold text-on-brand shadow-card"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {generateLabel}
@@ -521,7 +521,7 @@ export function MarketingNav() {
                 <Link
                   href="/app"
                   prefetch={false}
-                  className="block rounded-2xl bg-accent px-4 py-3 text-center text-base font-semibold text-white shadow-card"
+                  className="block rounded-2xl bg-brand px-4 py-3 text-center text-base font-semibold text-on-brand shadow-card"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {cta}

@@ -56,7 +56,7 @@ export function ObfuscatedEmailLink({
   return (
     <a
       href={href}
-      className={clsx(unstyled ? undefined : 'font-semibold text-accent hover:text-accentSoft', className)}
+      className={clsx(unstyled ? undefined : 'font-semibold text-brand hover:text-brandHover', className)}
       aria-label={`Email ${email ?? `${user} at ${domain}`}`}
     >
       {display}

@@ -19,7 +19,7 @@ interface SelectMenuProps {
 }
 
 const BUTTON_BASE =
-  'inline-flex w-full min-w-[140px] items-center justify-between gap-2 rounded-input border border-hairline bg-white px-3 py-2 text-[12px] text-text-primary shadow-sm transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+  'inline-flex w-full min-w-[140px] items-center justify-between gap-2 rounded-input border border-hairline bg-white px-3 py-2 text-[12px] text-text-primary shadow-sm transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 function findNextEnabled(options: SelectOption[], start: number, delta: number): number {
   if (!options.length) return -1;
@@ -176,9 +176,9 @@ export function SelectMenu({ options, value, onChange, disabled = false, classNa
                       'flex w-full items-center justify-between rounded-[8px] px-3 py-2 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                       option.disabled
                         ? 'cursor-not-allowed text-text-muted/60'
-                        : 'text-text-secondary hover:bg-accentSoft/10 hover:text-text-primary',
-                      isSelected && !option.disabled && 'bg-accentSoft/20 text-text-primary',
-                      isHighlighted && !option.disabled && !isSelected && 'bg-accentSoft/10'
+                        : 'text-text-secondary hover:bg-surface-2 hover:text-text-primary',
+                      isSelected && !option.disabled && 'bg-surface-2 text-text-primary',
+                      isHighlighted && !option.disabled && !isSelected && 'bg-surface-2'
                     )}
                   >
                     <span className="truncate">{option.label}</span>

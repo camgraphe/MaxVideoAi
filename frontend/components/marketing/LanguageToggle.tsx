@@ -121,7 +121,7 @@ function resolveEnglishPath(pathname: string, currentLocale: Locale): string {
         <select
           value={pendingLocale}
           onChange={(event) => handleChange(event.target.value as Locale)}
-          className="appearance-none rounded-full border border-[#dce4ff] bg-gradient-to-r from-white via-[#f7f9ff] to-white px-4 py-1.5 pr-8 text-xs font-semibold text-text-primary shadow-[0_2px_8px_rgba(15,23,42,0.08)] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className="appearance-none rounded-full border border-[#dce4ff] bg-gradient-to-r from-white via-[#f7f9ff] to-white px-4 py-1.5 pr-8 text-xs font-semibold text-text-primary shadow-[0_2px_8px_rgba(15,23,42,0.08)] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           aria-label={label}
         >
           {options.map((option) => (

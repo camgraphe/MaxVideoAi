@@ -217,7 +217,7 @@ export default function LibraryPage() {
                     setDeletingId(null);
                   }}
                   className={`flex-1 px-4 py-2 transition sm:flex-none ${
-                    activeSource === 'all' ? 'bg-accent text-white' : 'hover:bg-white'
+                    activeSource === 'all' ? 'bg-brand text-on-brand' : 'hover:bg-white'
                   }`}
                 >
                   {copy.tabs.all}
@@ -232,7 +232,7 @@ export default function LibraryPage() {
                     setDeletingId(null);
                   }}
                   className={`flex-1 px-4 py-2 transition sm:flex-none ${
-                    activeSource === 'upload' ? 'bg-accent text-white' : 'hover:bg-white'
+                    activeSource === 'upload' ? 'bg-brand text-on-brand' : 'hover:bg-white'
                   }`}
                 >
                   {copy.tabs.upload}
@@ -247,7 +247,7 @@ export default function LibraryPage() {
                     setDeletingId(null);
                   }}
                   className={`flex-1 px-4 py-2 transition sm:flex-none ${
-                    activeSource === 'generated' ? 'bg-accent text-white' : 'hover:bg-white'
+                    activeSource === 'generated' ? 'bg-brand text-on-brand' : 'hover:bg-white'
                   }`}
                 >
                   {copy.tabs.generated}
@@ -301,7 +301,7 @@ export default function LibraryPage() {
                                 ? `/app/image?job=${encodeURIComponent(asset.jobId)}`
                                 : `/app?job=${encodeURIComponent(asset.jobId)}`
                             }
-                            className="flex flex-1 items-center justify-center gap-1 rounded-input border border-border/70 bg-white py-1 text-[11px] font-semibold text-text-secondary transition hover:border-accent hover:text-accent"
+                            className="flex flex-1 items-center justify-center gap-1 rounded-input border border-border/70 bg-white py-1 text-[11px] font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
                             aria-label={copy.assets.useSettingsButton}
                           >
                             <span>{copy.assets.useSettingsButton}</span>
@@ -312,7 +312,7 @@ export default function LibraryPage() {
                           download
                           target="_blank"
                           rel="noreferrer"
-                          className="flex flex-1 items-center justify-center gap-1 rounded-input border border-border/70 bg-white py-1 text-[11px] font-semibold text-text-secondary transition hover:border-accent hover:text-accent"
+                          className="flex flex-1 items-center justify-center gap-1 rounded-input border border-border/70 bg-white py-1 text-[11px] font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
                           aria-label={`${copy.assets.downloadButton} ${asset.url.split('/').pop() ?? copy.assets.assetFallback}`}
                         >
                           <Download className="h-3.5 w-3.5" aria-hidden />

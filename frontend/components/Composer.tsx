@@ -246,12 +246,12 @@ export function Composer({
             <span className="text-sm font-medium text-text-primary">{promptLabel}</span>
             <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
               {formattedPrice && (
-                <Chip variant="accent" className="px-3 py-1.5">
+                <Chip variant="outline" className="px-3 py-1.5">
                   {composerCopy.priceLabel.replace('{amount}', formattedPrice)}
                 </Chip>
               )}
               {memberDiscount && memberDiscount.amountCents > 0 && (
-                <Chip className="px-3 py-1.5 text-accent" variant="outline">
+                <Chip className="px-3 py-1.5 text-brand" variant="outline">
                   {composerCopy.memberLabel.replace(
                     '{percent}',
                     String(Math.round((memberDiscount.percentApplied ?? 0) * 100))
@@ -288,7 +288,7 @@ export function Composer({
                   isButtonAnimating && !disableGenerate ? 'animate-button-pop' : '',
                   disableGenerate
                     ? 'cursor-not-allowed border border-border bg-white text-text-muted'
-                    : 'border border-accent bg-accent text-white shadow-card hover:brightness-[0.98] active:scale-[0.97]'
+                    : 'border border-brand bg-brand text-on-brand shadow-card hover:bg-brandHover active:scale-[0.97]'
                 )}
                 onClick={handleGenerateClick}
               >
@@ -548,7 +548,7 @@ function AssetDropzone({
               <p className="mt-1 text-[11px] text-state-warning">{referenceWarning}</p>
             )}
           </div>
-          <span className={clsx('rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-micro', required ? 'border-accent text-accent' : 'border-border text-text-muted')}>
+          <span className={clsx('rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-micro', required ? 'border-brand text-brand' : 'border-border text-text-muted')}>
             {required ? 'Required' : 'Optional'}
           </span>
         </div>
@@ -569,7 +569,7 @@ function AssetDropzone({
                 key={`${field.id}-slot-${index}`}
                 className={clsx(
                   'relative flex h-36 w-full flex-col justify-center overflow-hidden rounded-card border border-border/70 bg-white text-center text-[12px] text-text-muted transition',
-                  allowClick ? 'cursor-pointer hover:border-accentSoft/60 hover:bg-accentSoft/10' : 'cursor-default'
+                  allowClick ? 'cursor-pointer hover:border-text-muted hover:bg-surface-2' : 'cursor-default'
                 )}
                 onClick={() => {
                   if (!allowClick) return;
@@ -653,7 +653,7 @@ function AssetDropzone({
                         {assetSlotCta ? (
                           <Link
                             href={assetSlotCta.href}
-                            className="flex-1 rounded-full border border-accent/40 px-2 py-1 text-[10px] font-semibold text-accent transition hover:bg-accentSoft/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="flex-1 rounded-full border border-brand px-2 py-1 text-[10px] font-semibold text-brand transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             onClick={(event) => event.stopPropagation()}
                           >
                             {assetSlotCta.label}
@@ -662,7 +662,7 @@ function AssetDropzone({
                         {onOpenLibrary ? (
                           <button
                             type="button"
-                            className="flex-1 rounded-full border border-border px-2 py-1 text-[10px] font-semibold text-text-secondary transition hover:border-accentSoft/40 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="flex-1 rounded-full border border-border px-2 py-1 text-[10px] font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             onClick={(event) => {
                               event.stopPropagation();
                               onOpenLibrary(field, index);

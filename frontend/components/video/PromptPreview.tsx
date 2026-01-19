@@ -52,7 +52,7 @@ export function PromptPreview({
         <button
           type="button"
           onClick={() => setExpanded((prev) => !prev)}
-          className="mt-3 text-sm font-semibold text-accent underline underline-offset-4 transition hover:text-accentSoft"
+          className="mt-3 text-sm font-semibold text-brand underline underline-offset-4 transition hover:text-brandHover"
           aria-expanded={expanded}
         >
           {expanded ? showLessLabel : showMoreLabel}

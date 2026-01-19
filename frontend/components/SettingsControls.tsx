@@ -277,8 +277,8 @@ export function SettingsControls({
               </h2>
               <p className="text-[12px] text-text-muted">{controlsCopy.core.subtitle}</p>
               {audioIncluded && controlsCopy.core.audioIncluded && (
-                <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accentSoft/10 px-3 py-1 text-[11px] font-semibold text-accent">
-                  <span className="text-[9px] text-accent">●</span>
+                <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-hairline bg-surface-2 px-3 py-1 text-[11px] font-semibold text-text-secondary">
+                  <span className="text-[9px] text-text-muted">●</span>
                   <span>{controlsCopy.core.audioIncluded}</span>
                 </div>
               )}
@@ -306,8 +306,8 @@ export function SettingsControls({
                         className={clsx(
                           'rounded-input border px-3 py-1.5 text-[13px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                           active
-                            ? 'border-accent bg-accent text-white'
-                          : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10',
+                            ? 'border-brand bg-brand text-on-brand'
+                          : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2',
                           !onNumFramesChange && 'cursor-not-allowed opacity-60'
                         )}
                       >
@@ -337,8 +337,8 @@ export function SettingsControls({
                         className={clsx(
                           'rounded-input border px-3 py-1.5 text-[13px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                           active
-                            ? 'border-accent bg-accent text-white'
-                            : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
+                            ? 'border-brand bg-brand text-on-brand'
+                            : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
                         )}
                       >
                         {option.label}
@@ -453,8 +453,8 @@ export function SettingsControls({
                   className={clsx(
                     'rounded-input border px-2.5 py-1 text-[12px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                     iterations === n
-                      ? 'border-accent bg-accent text-white'
-                      : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
+                      ? 'border-brand bg-brand text-on-brand'
+                      : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
                   )}
                 >
                   X{n}
@@ -471,8 +471,8 @@ export function SettingsControls({
                 className={clsx(
                   'rounded-input border px-2.5 py-1 text-[12px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   audioEnabled
-                    ? 'border-accent bg-accent text-white'
-                    : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
+                    ? 'border-brand bg-brand text-on-brand'
+                    : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
                 )}
                 aria-pressed={audioEnabled}
               >
@@ -489,8 +489,8 @@ export function SettingsControls({
                 className={clsx(
                   'rounded-input border px-2.5 py-1 text-[12px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   loopEnabled
-                    ? 'border-accent bg-accent text-white'
-                    : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
+                    ? 'border-brand bg-brand text-on-brand'
+                    : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
                 )}
                 aria-pressed={loopEnabled}
               >
@@ -551,8 +551,8 @@ export function SettingsControls({
                   className={clsx(
                       'rounded-input border px-3 py-1.5 text-[13px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                       option === fps
-                        ? 'border-accent bg-accent text-white'
-                        : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
+                        ? 'border-brand bg-brand text-on-brand'
+                        : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
                     )}
                   >
                     {(controlsCopy.fpsSuffix ?? '{value} fps').replace('{value}', String(option))}
@@ -674,8 +674,8 @@ function FieldGroup({ label, options, value, onChange, focusRef, labelFor, iconF
             className={clsx(
               'rounded-input border px-3 py-1.5 text-[13px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               String(option) === value
-                ? 'border-accent bg-accent text-white'
-                : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
+                ? 'border-brand bg-brand text-on-brand'
+                : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
             )}
           >
             {iconFor && iconFor(option) && (

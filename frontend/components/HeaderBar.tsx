@@ -361,7 +361,7 @@ export function HeaderBar() {
             <Link
               href="/billing"
               prefetch={false}
-              className="flex items-center gap-2 rounded-input border border-hairline bg-white/80 px-3 py-1 uppercase tracking-micro transition-colors hover:border-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex items-center gap-2 rounded-input border border-hairline bg-white/80 px-3 py-1 uppercase tracking-micro transition-colors hover:border-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-describedby={walletPromptOpen ? walletPromptId : undefined}
               onFocus={openWalletPrompt}
               onBlur={scheduleWalletPromptClose}
@@ -388,7 +388,7 @@ export function HeaderBar() {
                 <Link
                   href="/billing"
                   prefetch={false}
-                  className="mt-3 inline-flex w-full items-center justify-center rounded-input bg-accent px-3 py-2 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="mt-3 inline-flex w-full items-center justify-center rounded-input bg-brand px-3 py-2 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   onFocus={openWalletPrompt}
                   onBlur={scheduleWalletPromptClose}
                 >
@@ -440,12 +440,12 @@ export function HeaderBar() {
                           key={item.id}
                           href={item.href}
                           role="menuitem"
-                          className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           onClick={() => setAccountMenuOpen(false)}
                         >
                           <span>{label}</span>
                           {badgeLabel ? (
-                            <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-accent">
+                            <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
                               {badgeLabel}
                             </span>
                           ) : null}
@@ -455,7 +455,7 @@ export function HeaderBar() {
                   </nav>
                   <button
                     type="button"
-                    className="flex w-full items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-accentSoft/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="flex w-full items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     onClick={handleSignOut}
                   >
                     {t('workspace.header.signOut', 'Sign out')}
@@ -468,7 +468,7 @@ export function HeaderBar() {
             <div className="flex items-center gap-2">
               <Link
                 href="/login"
-                className="flex h-10 items-center justify-center rounded-input bg-accent px-3 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex h-10 items-center justify-center rounded-input bg-brand px-3 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {t('workspace.header.createAccount', 'Create account')}
               </Link>
@@ -525,7 +525,7 @@ export function HeaderBar() {
                     prefetch={false}
                     className={clsx(
                       'rounded-2xl border border-hairline px-4 py-3',
-                      isActive ? 'bg-accent/10 text-text-primary' : 'bg-white'
+                      isActive ? 'bg-surface-2 text-text-primary' : 'bg-white'
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -545,7 +545,7 @@ export function HeaderBar() {
                 <Link
                   href="/app"
                   prefetch={false}
-                  className="block rounded-2xl bg-accent px-4 py-3 text-center text-base font-semibold text-white shadow-card"
+                  className="block rounded-2xl bg-brand px-4 py-3 text-center text-base font-semibold text-on-brand shadow-card"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {generateLabel}
@@ -573,7 +573,7 @@ export function HeaderBar() {
                 <Link
                   href="/app"
                   prefetch={false}
-                  className="block rounded-2xl bg-accent px-4 py-3 text-center text-base font-semibold text-white shadow-card"
+                  className="block rounded-2xl bg-brand px-4 py-3 text-center text-base font-semibold text-on-brand shadow-card"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {ctaLabel}

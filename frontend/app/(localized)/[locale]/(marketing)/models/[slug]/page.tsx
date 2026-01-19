@@ -1221,7 +1221,7 @@ function Sora2PageLayout({
         ))}
       </Head>
       <main className="mx-auto max-w-6xl px-4 pb-20 pt-14 sm:px-6 lg:px-8">
-        <Link href={localizeModelsPath()} className="text-sm font-semibold text-accent hover:text-accentSoft">
+        <Link href={localizeModelsPath()} className="text-sm font-semibold text-brand hover:text-brandHover">
           {backLabel}
         </Link>
 
@@ -1250,24 +1250,24 @@ function Sora2PageLayout({
             <div className="flex flex-wrap justify-center gap-3">
               <Link
                 href={primaryCtaHref}
-                className="inline-flex items-center rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft"
+                className="inline-flex items-center rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover"
               >
                 {primaryCta}
               </Link>
               {secondaryCta && localizedSecondaryCtaHref ? (
                 <Link
                   href={localizedSecondaryCtaHref}
-                  className="inline-flex items-center rounded-full border border-hairline px-5 py-2 text-sm font-semibold text-text-primary transition hover:border-accent hover:text-accent"
+                  className="inline-flex items-center rounded-full border border-hairline px-5 py-2 text-sm font-semibold text-text-primary transition hover:border-text-muted hover:text-text-primary"
                 >
                   {secondaryCta}
                 </Link>
               ) : null}
             </div>
             <div className="flex flex-wrap justify-center gap-4 text-sm">
-              <Link href={examplesLinkHref} className="font-semibold text-accent hover:text-accentSoft">
+              <Link href={examplesLinkHref} className="font-semibold text-brand hover:text-brandHover">
                 {examplesLinkLabel}
               </Link>
-              <Link href={pricingLinkHref} className="font-semibold text-accent hover:text-accentSoft">
+              <Link href={pricingLinkHref} className="font-semibold text-brand hover:text-brandHover">
                 {pricingLinkLabel}
               </Link>
             </div>
@@ -1292,7 +1292,7 @@ function Sora2PageLayout({
                 <ul className="grid gap-2 text-sm text-text-secondary sm:grid-cols-2">
                   {heroHighlights.map((item) => (
                     <li key={item} className="flex items-start gap-2">
-                      <span className="mt-[6px] h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
+                      <span className="mt-[6px] h-1.5 w-1.5 rounded-full bg-text-muted" aria-hidden />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -1325,7 +1325,7 @@ function Sora2PageLayout({
                 <a
                   key={item.id}
                   href={`#${item.id}`}
-                  className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-sm font-semibold text-text-secondary transition hover:border-accent hover:text-accent"
+                  className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-sm font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
                 >
                   {item.label}
                 </a>
@@ -1376,7 +1376,7 @@ function Sora2PageLayout({
           <section id="specs" className="mt-14 space-y-4">
             {copy.specTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.specTitle}</h2> : null}
             {copy.specNote ? (
-              <blockquote className="rounded-2xl border border-accent/30 bg-accent/5 px-4 py-3 text-sm text-text-secondary">
+              <blockquote className="rounded-2xl border border-hairline bg-surface-2 px-4 py-3 text-sm text-text-secondary">
                 {copy.specNote}
               </blockquote>
             ) : null}
@@ -1405,7 +1405,7 @@ function Sora2PageLayout({
           <div className="mt-10 flex justify-center">
             <Link
               href={primaryCtaHref}
-              className="text-sm font-semibold text-accent transition hover:text-accentSoft"
+              className="text-sm font-semibold text-brand transition hover:text-brandHover"
             >
               {copy.microCta}
             </Link>
@@ -1432,7 +1432,7 @@ function Sora2PageLayout({
                 <p className="text-base text-text-secondary">
                   <Link
                     href={`/examples?engine=${encodeURIComponent(galleryEngineSlug)}`}
-                    className="font-semibold text-accent hover:text-accentSoft"
+                    className="font-semibold text-brand hover:text-brandHover"
                   >
                     {copy.galleryAllCta}
                   </Link>
@@ -1474,7 +1474,7 @@ function Sora2PageLayout({
                         {video.recreateHref && copy.recreateLabel ? (
                           <Link
                             href={video.recreateHref}
-                            className="inline-flex items-center text-[11px] font-semibold text-accent transition hover:text-accentSoft"
+                            className="inline-flex items-center text-[11px] font-semibold text-brand transition hover:text-brandHover"
                           >
                             {copy.recreateLabel}
                           </Link>
@@ -1492,7 +1492,7 @@ function Sora2PageLayout({
               {copy.galleryAllCta ? (
                 <Link
                   href={`/examples?engine=${encodeURIComponent(galleryEngineSlug)}`}
-                  className="font-semibold text-accent hover:text-accentSoft"
+                  className="font-semibold text-brand hover:text-brandHover"
                 >
                   {copy.galleryAllCta}
                 </Link>
@@ -1518,7 +1518,7 @@ function Sora2PageLayout({
                 <div className="grid gap-2 sm:grid-cols-2">
                   {promptPatternSteps.map((step, index) => (
                     <div key={step} className="flex items-start gap-3 rounded-xl bg-bg px-3 py-2 text-sm text-text-secondary">
-                      <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-accent/10 text-[11px] font-semibold text-accent">
+                      <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-surface-2 text-[11px] font-semibold text-text-primary">
                         {index + 1}
                       </span>
                       <span>{step}</span>
@@ -1743,7 +1743,7 @@ function Sora2PageLayout({
               return (
                 <article
                   key={entry.modelSlug}
-                  className="rounded-2xl border border-hairline bg-white/90 p-4 shadow-card transition hover:-translate-y-1 hover:border-accent/60"
+                  className="rounded-2xl border border-hairline bg-white/90 p-4 shadow-card transition hover:-translate-y-1 hover:border-text-muted"
                 >
                   <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{entry.brandId}</p>
                   <h3 className="mt-2 text-lg font-semibold text-text-primary">
@@ -1754,7 +1754,7 @@ function Sora2PageLayout({
                   </p>
                   <Link
                     href={localizeModelsPath(entry.modelSlug)}
-                    className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accentSoft"
+                    className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand transition hover:text-brandHover"
                   >
                     {ctaLabel}
                   </Link>
@@ -1770,7 +1770,7 @@ function Sora2PageLayout({
           {copy.finalPara2 ? <p className="text-base text-text-secondary">{copy.finalPara2}</p> : null}
           <Link
             href={primaryCtaHref}
-            className="inline-flex w-fit items-center rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft"
+            className="inline-flex w-fit items-center rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover"
           >
             {copy.finalButton ?? primaryCta}
           </Link>
@@ -1846,7 +1846,7 @@ function MediaPreview({ media, label }: { media: FeaturedMedia; label: string })
         {media.href ? (
           <Link
             href={media.href}
-            className="inline-flex items-center text-xs font-semibold text-accent transition hover:text-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
+            className="inline-flex items-center text-xs font-semibold text-brand transition hover:text-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             View render →
           </Link>
@@ -2094,7 +2094,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
           />
         ))}
       </Head>
-      <Link href={localizeModelsPath()} className="text-sm font-semibold text-accent hover:text-accentSoft">
+      <Link href={localizeModelsPath()} className="text-sm font-semibold text-brand hover:text-brandHover">
         {detailCopy.backLabel}
       </Link>
       <header className="mt-6 space-y-3">
@@ -2123,7 +2123,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
           {heroPrimaryCta?.label && heroPrimaryCta.href ? (
             <Link
               href={heroPrimaryCta.href}
-              className="inline-flex items-center rounded-pill bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft"
+              className="inline-flex items-center rounded-pill bg-brand px-5 py-2.5 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover"
             >
               {heroPrimaryCta.label}
             </Link>
@@ -2134,7 +2134,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
               <Link
                 key={`${cta.href}-${cta.label}`}
                 href={cta.href!}
-                className="inline-flex items-center rounded-pill border border-hairline px-5 py-2 text-sm font-semibold text-text-primary transition hover:border-accent hover:text-accent"
+                className="inline-flex items-center rounded-pill border border-hairline px-5 py-2 text-sm font-semibold text-text-primary transition hover:border-text-muted hover:text-text-primary"
               >
                 {cta.label}
               </Link>
@@ -2142,10 +2142,10 @@ export default async function ModelDetailPage({ params }: PageParams) {
         </div>
       ) : null}
       <div className="mt-3 flex flex-wrap gap-4 text-sm">
-        <Link href={examplesLinkHref} className="font-semibold text-accent hover:text-accentSoft">
+        <Link href={examplesLinkHref} className="font-semibold text-brand hover:text-brandHover">
           {detailCopy.examplesLinkLabel}
         </Link>
-              <Link href={pricingLinkHref} className="font-semibold text-accent hover:text-accentSoft">
+              <Link href={pricingLinkHref} className="font-semibold text-brand hover:text-brandHover">
                 {detailCopy.pricingLinkLabel}
               </Link>
       </div>
@@ -2161,7 +2161,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
               <a
                 key={item.id}
                 href={`#${item.id}`}
-                className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-sm font-semibold text-text-secondary transition hover:border-accent hover:text-accent"
+                className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-sm font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
               >
                 {item.label}
               </a>
@@ -2196,7 +2196,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
                     href={entry.link.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-xs font-semibold text-accent hover:text-accentSoft"
+                    className="text-xs font-semibold text-brand hover:text-brandHover"
                   >
                     {entry.link.label}
                   </a>
@@ -2214,7 +2214,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
         >
           <h2 className="text-lg font-semibold text-text-primary">{promptStructure.title ?? 'Prompt structure'}</h2>
           {promptStructure.quote ? (
-            <blockquote className="mt-3 border-l-2 border-accent pl-3 text-sm text-text-secondary italic">
+            <blockquote className="mt-3 border-l-2 border-hairline pl-3 text-sm text-text-secondary italic">
               {promptStructure.quote}
             </blockquote>
           ) : null}
@@ -2245,7 +2245,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       {compareLink?.href && compareLink.label ? (
         <p className="mt-6 text-sm text-text-secondary">
           {compareLink.before ?? ''}
-          <Link href={compareLinkHref ?? compareLink.href} className="font-semibold text-accent hover:text-accentSoft">
+          <Link href={compareLinkHref ?? compareLink.href} className="font-semibold text-brand hover:text-brandHover">
             {compareLink.label}
           </Link>
           {compareLink.after ?? ''}
@@ -2279,7 +2279,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
                   <Link
                     href={platformPriceInfo.href}
                     prefetch={false}
-                    className="text-sm font-semibold text-accent hover:text-accentSoft"
+                    className="text-sm font-semibold text-brand hover:text-brandHover"
                   >
                     {platformPriceInfo.label}
                   </Link>
@@ -2350,7 +2350,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
                   </p>
                   <Link
                     href={localizeModelsPath(candidate.modelSlug)}
-                    className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accentSoft"
+                    className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand transition hover:text-brandHover"
                   >
                     {ctaLabel} <span aria-hidden>→</span>
                   </Link>
@@ -2365,13 +2365,13 @@ export default async function ModelDetailPage({ params }: PageParams) {
         <Link
           href="/app"
           prefetch={false}
-          className="inline-flex items-center rounded-pill border border-hairline px-4 py-2 text-sm font-semibold text-text-primary transition hover:border-accent hover:text-accent"
+          className="inline-flex items-center rounded-pill border border-hairline px-4 py-2 text-sm font-semibold text-text-primary transition hover:border-text-muted hover:text-text-primary"
         >
           {detailCopy.buttons.pricing}
         </Link>
         <Link
           href={launchHref}
-          className="inline-flex items-center rounded-pill bg-accent px-4 py-2 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft"
+          className="inline-flex items-center rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover"
         >
           {detailCopy.buttons.launch}
         </Link>

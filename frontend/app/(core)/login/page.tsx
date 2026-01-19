@@ -575,11 +575,11 @@ export default function LoginPage() {
   const renderTermsStatement = () => (
     <span className={clsx(termsError && 'text-state-warning')}>
       {authCopy.terms.prefix}
-      <a href="/legal/terms" target="_blank" rel="noopener noreferrer" className="text-accent underline">
+      <a href="/legal/terms" target="_blank" rel="noopener noreferrer" className="text-brand underline">
         {authCopy.terms.termsLabel}
       </a>
       {authCopy.terms.infix}
-      <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-accent underline">
+      <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-brand underline">
         {authCopy.terms.privacyLabel}
       </a>
       {authCopy.terms.suffix}
@@ -623,7 +623,7 @@ export default function LoginPage() {
               onClick={() => setMode('signin')}
               className={clsx(
                 'flex-1 rounded-pill px-3 py-2 transition',
-                effectiveMode === 'signin' ? 'bg-accent text-white shadow-card' : 'text-text-secondary hover:bg-white'
+                effectiveMode === 'signin' ? 'bg-brand text-on-brand shadow-card' : 'text-text-secondary hover:bg-white'
               )}
             >
               {authCopy.tabs.signin}
@@ -633,7 +633,7 @@ export default function LoginPage() {
               onClick={() => setMode('signup')}
               className={clsx(
                 'flex-1 rounded-pill px-3 py-2 transition',
-                effectiveMode === 'signup' ? 'bg-accent text-white shadow-card' : 'text-text-secondary hover:bg-white'
+                effectiveMode === 'signup' ? 'bg-brand text-on-brand shadow-card' : 'text-text-secondary hover:bg-white'
               )}
             >
               {authCopy.tabs.signup}
@@ -731,7 +731,7 @@ export default function LoginPage() {
                         }
                       }}
                       className={clsx(
-                        'mt-1 h-4 w-4 rounded border-border text-accent focus:ring-accent',
+                        'mt-1 h-4 w-4 rounded border-border text-brand focus:ring-ring',
                         termsError && 'border-state-warning text-state-warning focus:ring-state-warning'
                       )}
                       required
@@ -748,7 +748,7 @@ export default function LoginPage() {
                       type="checkbox"
                       checked={ageConfirmed}
                       onChange={(event) => setAgeConfirmed(event.target.checked)}
-                      className="mt-1 h-4 w-4 rounded border-border text-accent focus:ring-accent"
+                      className="mt-1 h-4 w-4 rounded border-border text-brand focus:ring-ring"
                       required
                     />
                     <span>{formatTemplate(authCopy.terms.age, { age: String(LEGAL_MIN_AGE) })}</span>
@@ -758,7 +758,7 @@ export default function LoginPage() {
                       type="checkbox"
                       checked={marketingOptIn}
                       onChange={(event) => setMarketingOptIn(event.target.checked)}
-                      className="mt-1 h-4 w-4 rounded border-border text-accent focus:ring-accent"
+                      className="mt-1 h-4 w-4 rounded border-border text-brand focus:ring-ring"
                     />
                     <span>{authCopy.terms.marketing}</span>
                   </label>
@@ -770,7 +770,7 @@ export default function LoginPage() {
                 className={clsx(
                   'w-full rounded-input px-3 py-2 text-sm font-semibold transition',
                   mode === 'signup'
-                    ? 'bg-accent text-white hover:bg-accentSoft'
+                    ? 'bg-brand text-on-brand hover:bg-brandHover'
                     : 'border border-border bg-white hover:bg-bg text-text-primary'
                 )}
               >
@@ -780,13 +780,13 @@ export default function LoginPage() {
 
             {mode === 'signin' ? (
               <div className="flex flex-col gap-2 text-xs">
-                <button type="button" onClick={() => setMode('reset')} className="self-start text-accent hover:underline">
+                <button type="button" onClick={() => setMode('reset')} className="self-start text-brand hover:underline">
                   {authCopy.forgotPassword}
                 </button>
                 <button
                   type="button"
                   onClick={() => setMode('signup')}
-                  className="self-start rounded-pill bg-accent/10 px-3 py-2 font-semibold text-accent transition hover:bg-accent/20"
+                  className="self-start rounded-pill bg-surface-2 px-3 py-2 font-semibold text-brand transition hover:bg-surface-3"
                 >
                   {authCopy.links.newAccount}
                 </button>
@@ -834,7 +834,7 @@ export default function LoginPage() {
             className={clsx(
               'rounded-card border px-3 py-3 text-sm font-medium',
               statusTone === 'success'
-                ? 'border-accent bg-accent/10 text-accent'
+                ? 'border-brand bg-surface-2 text-brand'
                 : 'border-border bg-bg text-text-secondary'
             )}
           >
@@ -851,7 +851,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={handleAcceptSignupSuggestion}
-                className="rounded-pill bg-accent px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-accentSoft"
+                className="rounded-pill bg-brand px-3 py-1.5 text-sm font-semibold text-on-brand transition hover:bg-brandHover"
               >
                 {authCopy.signupSuggestion.accept}
               </button>

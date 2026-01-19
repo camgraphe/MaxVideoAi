@@ -170,7 +170,7 @@ export default async function WorkflowsPage({ params }: { params: { locale: AppL
             <a
               key={card.title}
               href={card.href ?? '#'}
-              className="rounded-2xl border border-hairline bg-white p-5 shadow-card transition hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="rounded-2xl border border-hairline bg-white p-5 shadow-card transition hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               <div className="text-base font-semibold text-text-primary">{card.title}</div>
               <p className="mt-1 text-sm text-text-secondary">{card.description}</p>
@@ -179,7 +179,7 @@ export default async function WorkflowsPage({ params }: { params: { locale: AppL
                   <li key={bullet}>• {bullet}</li>
                 ))}
               </ul>
-              <div className="mt-3 text-sm font-semibold text-accent underline underline-offset-2">
+              <div className="mt-3 text-sm font-semibold text-brand underline underline-offset-2">
                 {cardCta ?? 'Browse examples →'}
               </div>
             </a>
@@ -200,7 +200,7 @@ export default async function WorkflowsPage({ params }: { params: { locale: AppL
               <Link
                 key={model.modelSlug}
                 href={modelHref}
-                className="rounded-card border border-hairline bg-bg p-4 transition hover:border-accentSoft hover:bg-white hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                className="rounded-card border border-hairline bg-bg p-4 transition hover:border-text-muted hover:bg-white hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
                 <div className="flex items-center justify-between gap-2">
                   <div>
@@ -219,7 +219,7 @@ export default async function WorkflowsPage({ params }: { params: { locale: AppL
                   ) : null}
                 </div>
                 <p className="mt-2 text-xs text-text-secondary">
-                  {brand ? `${brand.label}` : model.brandId} · <span className="text-accent">view details</span>
+                  {brand ? `${brand.label}` : model.brandId} · <span className="text-brand">view details</span>
                 </p>
               </Link>
             );

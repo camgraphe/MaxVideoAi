@@ -232,7 +232,7 @@ export function QuadPreviewPanel({
           <button
             type="button"
             onClick={onSaveComposite}
-            className="inline-flex items-center gap-2 rounded-input border border-hairline bg-white px-3 py-1.5 text-[12px] font-medium text-text-secondary transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="inline-flex items-center gap-2 rounded-input border border-hairline bg-white px-3 py-1.5 text-[12px] font-medium text-text-secondary transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Image src="/assets/icons/save.svg" alt="" width={14} height={14} className="h-3.5 w-3.5" aria-hidden />
             Save composite
@@ -367,7 +367,7 @@ export function QuadPreviewPanel({
                   isFailed
                     ? 'border-red-200 bg-red-50/60 shadow-card'
                     : isHero
-                      ? 'border-accent shadow-lg'
+                      ? 'border-brand shadow-lg'
                       : 'border-border bg-white/85 shadow-card'
                 )}
               >
@@ -380,7 +380,7 @@ export function QuadPreviewPanel({
                   )}
                 >
                   <span className="inline-flex items-center gap-2">
-                    <span className={clsx('rounded-full px-2 py-0.5', isHero ? 'bg-accent/10 text-accent' : 'bg-black/5 text-text-secondary')}>
+                    <span className={clsx('rounded-full px-2 py-0.5', isHero ? 'bg-surface-2 text-brand' : 'bg-black/5 text-text-secondary')}>
                       {versionLabel}
                     </span>
                     <span>{statusLabel}</span>
@@ -391,7 +391,7 @@ export function QuadPreviewPanel({
                     onClick={() => onSelectHero(tile)}
                     className={clsx(
                       'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                      isHero ? 'border-accent bg-accent text-white' : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
+                      isHero ? 'border-brand bg-brand text-on-brand' : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
                     )}
                   >
                     <Image src="/assets/icons/pin.svg" alt="" width={12} height={12} className="h-3 w-3" aria-hidden />
@@ -481,7 +481,7 @@ export function QuadPreviewPanel({
                         key={action.id}
                         type="button"
                         onClick={() => onTileAction(action.id, tile)}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-hairline bg-white text-text-secondary transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-hairline bg-white text-text-secondary transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         aria-label={action.label}
                       >
                         <Image src={action.icon} alt="" width={14} height={14} className="h-3.5 w-3.5" aria-hidden />
@@ -491,7 +491,7 @@ export function QuadPreviewPanel({
                   <button
                     type="button"
                     onClick={() => onGroupAction('open', tile)}
-                    className="inline-flex items-center gap-1 rounded-full border border-hairline bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="inline-flex items-center gap-1 rounded-full border border-hairline bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     View
                   </button>
@@ -509,7 +509,7 @@ export function QuadPreviewPanel({
             onClick={() => setIsPlaying((prev) => !prev)}
             className={clsx(
               'inline-flex items-center gap-1 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              isPlaying ? 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10' : 'border-accent bg-accent/10 text-accent'
+              isPlaying ? 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2' : 'border-brand bg-surface-2 text-brand'
             )}
           >
             {isPlaying ? 'Pause' : 'Play'}
@@ -517,7 +517,7 @@ export function QuadPreviewPanel({
           <button
             type="button"
             onClick={() => setIsLightboxOpen(true)}
-            className="inline-flex items-center gap-1 rounded-full border border-hairline bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="inline-flex items-center gap-1 rounded-full border border-hairline bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Image src="/assets/icons/expand.svg" alt="" width={12} height={12} className="h-3 w-3" />
             Open takes

@@ -206,7 +206,9 @@ function HealthTile({
 }) {
   const intentClasses = variant === 'warn' ? 'text-rose-600' : 'text-text-primary';
   const baseClasses = 'block rounded-2xl border border-border/70 bg-white px-5 py-4';
-  const interactiveClasses = href ? 'transition hover:-translate-y-0.5 hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40' : '';
+  const interactiveClasses = href
+    ? 'transition hover:-translate-y-0.5 hover:border-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+    : '';
   const content = (
     <>
       <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-text-muted">{label}</p>
@@ -244,7 +246,7 @@ function QuickToolsCard() {
             name="search"
             type="text"
             placeholder="Email or Supabase user ID"
-            className="rounded-lg border border-border/60 bg-white px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
+            className="rounded-lg border border-border/60 bg-white px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
           />
           <button
             type="submit"
@@ -263,7 +265,7 @@ function QuickToolsCard() {
             name="jobId"
             type="text"
             placeholder="Job id or Fal request id"
-            className="rounded-lg border border-border/60 bg-white px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
+            className="rounded-lg border border-border/60 bg-white px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
           />
           <button
             type="submit"

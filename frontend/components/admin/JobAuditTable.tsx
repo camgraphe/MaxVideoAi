@@ -238,7 +238,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
           <button
             type="button"
             onClick={() => setShowArchived((prev) => !prev)}
-            className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm font-medium transition hover:border-accentSoft/60 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm font-medium transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {showArchived ? 'Hide archived' : 'Show archived'}
           </button>
@@ -248,7 +248,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
             disabled={isRefreshing}
             className={clsx(
               'inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              isRefreshing ? 'cursor-not-allowed opacity-60' : 'hover:border-accentSoft/60 hover:bg-accentSoft/10'
+              isRefreshing ? 'cursor-not-allowed opacity-60' : 'hover:border-text-muted hover:bg-surface-2'
             )}
           >
             {isRefreshing ? 'Refreshing…' : 'Refresh'}
@@ -324,7 +324,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
                             <button
                               type="button"
                               onClick={() => handleRestore(job.jobId)}
-                              className="inline-flex items-center justify-center rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-text-primary transition hover:border-accentSoft/60 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              className="inline-flex items-center justify-center rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-text-primary transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                               Bring back online
                             </button>
@@ -352,7 +352,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
                               'inline-flex items-center justify-center rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-text-primary transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                               syncingJobId === job.jobId
                                 ? 'cursor-not-allowed opacity-60'
-                                : 'hover:border-accentSoft/60 hover:bg-accentSoft/10'
+                                : 'hover:border-text-muted hover:bg-surface-2'
                             )}
                           >
                             {syncingJobId === job.jobId ? 'Sync en cours…' : 'Reprendre sur Fal'}
@@ -483,7 +483,7 @@ export function AdminJobAuditTable({ initialJobs, initialCursor, filtersQuery }:
             disabled={isLoadingMore}
             className={clsx(
               'inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              isLoadingMore ? 'cursor-not-allowed opacity-60' : 'hover:border-accentSoft/60 hover:bg-accentSoft/10'
+              isLoadingMore ? 'cursor-not-allowed opacity-60' : 'hover:border-text-muted hover:bg-surface-2'
             )}
           >
             {isLoadingMore ? 'Loading…' : 'Load more jobs'}

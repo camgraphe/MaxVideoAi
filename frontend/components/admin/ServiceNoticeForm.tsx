@@ -74,7 +74,7 @@ export function ServiceNoticeForm({ initialNotice }: ServiceNoticeFormProps) {
       <label className="flex items-center gap-2 text-sm font-medium text-text-primary">
         <input
           type="checkbox"
-          className="h-4 w-4 rounded border-border text-accent focus:ring-accent"
+          className="h-4 w-4 rounded border-border text-brand focus:ring-ring"
           checked={enabled}
           onChange={(event) => setEnabled(event.target.checked)}
         />
@@ -108,7 +108,7 @@ export function ServiceNoticeForm({ initialNotice }: ServiceNoticeFormProps) {
         <button
           type="submit"
           disabled={isPending || (enabled && !message.trim())}
-          className="inline-flex items-center rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex items-center rounded-full bg-brand px-4 py-2 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isPending ? 'Enregistrement…' : 'Enregistrer'}
         </button>

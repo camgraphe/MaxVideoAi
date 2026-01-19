@@ -194,7 +194,7 @@ export function ReconsentPrompt() {
           To continue using MaxVideoAI, please review and accept the updated documents below.
         </p>
         {status.mode === 'soft' && !status.shouldBlock ? (
-          <p className="text-xs font-medium uppercase tracking-wide text-accent">
+          <p className="text-xs font-medium uppercase tracking-wide text-brand">
             Grace period active {countdown ? `· ${countdown}` : ''}
           </p>
         ) : null}
@@ -219,7 +219,7 @@ export function ReconsentPrompt() {
                 href={meta.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs font-semibold uppercase tracking-wide text-accent underline"
+                className="text-xs font-semibold uppercase tracking-wide text-brand underline hover:text-brandHover"
               >
                 View
               </a>
@@ -234,7 +234,7 @@ export function ReconsentPrompt() {
         type="button"
         onClick={handleAccept}
         disabled={submitting}
-        className="w-full rounded-input bg-accent px-3 py-2 text-sm font-semibold text-white transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="w-full rounded-input bg-brand px-3 py-2 text-sm font-semibold text-on-brand transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {submitting ? 'Saving…' : 'Accept and continue'}
       </button>

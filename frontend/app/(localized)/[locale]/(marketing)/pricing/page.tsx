@@ -327,7 +327,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
         {heroLink ? (
           <p className="text-base text-text-secondary">
             {heroLink.before}
-            <Link href={{ pathname: '/blog/[slug]', params: { slug: 'compare-ai-video-engines' } }} className="font-semibold text-accent hover:text-accentSoft">
+            <Link href={{ pathname: '/blog/[slug]', params: { slug: 'compare-ai-video-engines' } }} className="font-semibold text-brand hover:text-brandHover">
               {heroLink.label ?? 'AI video comparison'}
             </Link>
             {heroLink.after}
@@ -345,7 +345,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
               <Link
                 key={key}
                 href={link.href}
-                className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-xs font-semibold text-text-secondary transition hover:border-accent hover:text-accent"
+                className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-xs font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
               >
                 {link.label}
               </Link>
@@ -366,7 +366,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
         <Link
           href={generatorHref}
           prefetch={false}
-          className="mt-3 inline-flex items-center text-sm font-semibold text-accent transition hover:text-accentSoft"
+          className="mt-3 inline-flex items-center text-sm font-semibold text-brand transition hover:text-brandHover"
         >
           {content.calculator?.cta ?? 'Open the generator'} <span aria-hidden>→</span>
         </Link>
@@ -380,7 +380,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           <FlagPill live={FEATURES.pricing.publicCalculator} />
           <span>
             {content.estimator.walletLink}{' '}
-            <Link href={generatorHref} prefetch={false} className="font-semibold text-accent hover:text-accentSoft">
+            <Link href={generatorHref} prefetch={false} className="font-semibold text-brand hover:text-brandHover">
               {content.estimator.walletLinkCta}
             </Link>
             .
@@ -450,7 +450,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           <ul className="mt-4 space-y-3 text-sm text-text-secondary">
             {teams.points.map((point) => (
               <li key={point} className="flex items-start gap-2">
-                <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-accent" />
+                <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-text-muted" />
                 <span>{point}</span>
               </li>
             ))}
@@ -488,7 +488,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           <ul className="mt-4 space-y-3 text-sm text-text-secondary">
             {refundFeatureItems.map((item) => (
               <li key={item.text} className="flex items-start gap-2">
-                <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-accent" />
+                <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-text-muted" />
                 <span className="inline-flex flex-wrap items-center gap-2">
                   {item.text}
                   <FlagPill live={item.live} />

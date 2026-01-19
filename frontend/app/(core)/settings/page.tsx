@@ -210,7 +210,7 @@ function TabLink({
       type="button"
       id={`settings-tab-${id}`}
       onClick={onClick}
-      className={`rounded-input border px-3 py-2 text-sm ${active ? 'border-accent bg-white text-text-primary shadow-card' : 'border-border bg-bg text-text-secondary hover:bg-white'}`}
+      className={`rounded-input border px-3 py-2 text-sm ${active ? 'border-brand bg-white text-text-primary shadow-card' : 'border-border bg-bg text-text-secondary hover:bg-white'}`}
       aria-current={active ? 'page' : undefined}
     >
       <span className="flex items-center gap-2">
@@ -351,7 +351,7 @@ function PrivacyTab({
           <label className="flex items-start gap-3">
             <input
               type="checkbox"
-              className="mt-1 h-4 w-4 rounded border border-border accent-accent"
+              className="mt-1 h-4 w-4 rounded border border-border accent-brand"
               checked={allowIndex}
               onChange={(event) => onToggleIndexing(event.target.checked)}
               disabled={isDisabled}
@@ -440,14 +440,14 @@ function NotificationsTab({ live, copy }: { live: boolean; copy: SettingsCopy['n
               </p>
             ) : null}
             {doubleOptInPending ? (
-              <p className="mt-1 text-xs text-accent">{copy.marketing.confirmPending}</p>
+              <p className="mt-1 text-xs text-brand">{copy.marketing.confirmPending}</p>
             ) : null}
           </div>
           <button
             type="button"
             onClick={handleMarketingToggle}
             disabled={isLoading || saving}
-            className={`flex h-7 w-12 items-center rounded-full border transition ${marketingEnabled ? 'border-accent bg-accent' : 'border-border bg-white'}`}
+            className={`flex h-7 w-12 items-center rounded-full border transition ${marketingEnabled ? 'border-brand bg-brand' : 'border-border bg-white'}`}
             aria-pressed={marketingEnabled}
           >
             <span
@@ -473,7 +473,7 @@ function ToggleRow({ label }: { label: string }) {
       <span className="text-text-secondary">{label}</span>
       <label className="inline-flex cursor-pointer items-center">
         <input type="checkbox" className="peer sr-only" defaultChecked />
-        <span className="h-5 w-9 rounded-full bg-white ring-1 ring-border transition peer-checked:bg-accent" />
+        <span className="h-5 w-9 rounded-full bg-white ring-1 ring-border transition peer-checked:bg-brand" />
       </label>
     </div>
   );

@@ -984,7 +984,7 @@ function CreateVideoCard({
           className={clsx(
             'w-full rounded-input px-5 py-3 text-base font-semibold transition',
             canStart
-              ? 'bg-accent text-white hover:bg-accent/90'
+              ? 'bg-brand text-on-brand hover:bg-brandHover'
               : 'cursor-not-allowed bg-neutral-200 text-text-muted'
           )}
         >
@@ -996,7 +996,7 @@ function CreateVideoCard({
           <button
             type="button"
             onClick={onUseLast}
-            className="rounded-input border border-border px-4 py-2 text-sm font-semibold text-text-secondary transition hover:border-accentSoft/60 hover:bg-accentSoft/10"
+            className="rounded-input border border-border px-4 py-2 text-sm font-semibold text-text-secondary transition hover:border-text-muted hover:bg-surface-2"
           >
             {copy.create.useLastVideo}
           </button>
@@ -1062,7 +1062,7 @@ function CreateImageCard({
           className={clsx(
             'w-full rounded-input px-5 py-3 text-base font-semibold transition',
             canStart
-              ? 'bg-accent text-white hover:bg-accent/90'
+              ? 'bg-brand text-on-brand hover:bg-brandHover'
               : 'cursor-not-allowed bg-neutral-200 text-text-muted'
           )}
         >
@@ -1074,7 +1074,7 @@ function CreateImageCard({
           <button
             type="button"
             onClick={onUseLast}
-            className="rounded-input border border-border px-4 py-2 text-sm font-semibold text-text-secondary transition hover:border-accentSoft/60 hover:bg-accentSoft/10"
+            className="rounded-input border border-border px-4 py-2 text-sm font-semibold text-text-secondary transition hover:border-text-muted hover:bg-surface-2"
           >
             {copy.create.useLastImage}
           </button>
@@ -1142,7 +1142,7 @@ function InProgressRow({
         </div>
         <p className="mt-1 truncate text-xs text-text-muted">{prompt}</p>
         <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-white">
-          <div className="h-full rounded-full bg-accent" style={{ width: `${progress}%` }} />
+          <div className="h-full rounded-full bg-brand" style={{ width: `${progress}%` }} />
         </div>
         <div className="mt-1 flex items-center justify-between text-xs text-text-muted">
           <span>{copy.inProgress.progressLabel}: {progress}%</span>
@@ -1153,13 +1153,13 @@ function InProgressRow({
         <button
           type="button"
           onClick={() => onOpen(job)}
-          className="rounded-input border border-border px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-accentSoft/10"
+          className="rounded-input border border-border px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-surface-2"
         >
           {copy.inProgress.open}
         </button>
         <Link
           href={`/app?job=${encodeURIComponent(job.jobId)}`}
-          className="rounded-input border border-border px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-accentSoft/10"
+          className="rounded-input border border-border px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-surface-2"
         >
           {copy.inProgress.remix}
         </Link>
@@ -1198,7 +1198,7 @@ function RecentGrid({
         <Link
           href="/jobs"
           prefetch={false}
-          className="rounded-input border border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-accentSoft/10"
+          className="rounded-input border border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2"
         >
           {copy.recent.viewAll}
         </Link>
@@ -1212,8 +1212,8 @@ function RecentGrid({
             className={clsx(
               'rounded-input border px-3 py-1 text-xs font-semibold',
               tab === value
-                ? 'border-accent bg-accent text-white'
-                : 'border-border bg-white text-text-secondary hover:border-accentSoft/60 hover:bg-accentSoft/10'
+                ? 'border-brand bg-brand text-on-brand'
+                : 'border-border bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
             )}
           >
             {copy.recent.tabs[value]}
@@ -1256,7 +1256,7 @@ function RecentGrid({
                       href={group.hero.videoUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-input border border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-accentSoft/10"
+                      className="rounded-input border border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2"
                     >
                       {copy.actions.download}
                     </a>
@@ -1264,7 +1264,7 @@ function RecentGrid({
                   {!isCurated ? (
                     <Link
                       href={`/app?job=${encodeURIComponent(jobId)}`}
-                      className="rounded-input border border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-accentSoft/10"
+                      className="rounded-input border border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2"
                     >
                       {copy.actions.remix}
                     </Link>
@@ -1273,7 +1273,7 @@ function RecentGrid({
                     <button
                       type="button"
                       onClick={() => onSaveTemplate(group)}
-                      className="rounded-input border border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-accentSoft/10"
+                      className="rounded-input border border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2"
                     >
                       {copy.actions.template}
                     </button>
@@ -1290,7 +1290,7 @@ function RecentGrid({
           <button
             type="button"
             onClick={onLoadMore}
-            className="rounded-input border border-border px-4 py-2 text-sm font-semibold text-text-secondary hover:bg-accentSoft/10"
+            className="rounded-input border border-border px-4 py-2 text-sm font-semibold text-text-secondary hover:bg-surface-2"
             disabled={isValidating}
           >
             {copy.actions.loadMore}
@@ -1406,14 +1406,14 @@ function InsightRow({ label, value }: { label: string; value: string }) {
                       <button
                         type="button"
                         onClick={() => onUseTemplate(template)}
-                        className="rounded-input border border-border px-2 py-1 text-xs font-semibold text-text-secondary hover:bg-accentSoft/10"
+                        className="rounded-input border border-border px-2 py-1 text-xs font-semibold text-text-secondary hover:bg-surface-2"
                       >
                         {copy.quickStarts.use}
                       </button>
                       <button
                         type="button"
                         onClick={() => onDeleteTemplate(template.id)}
-                        className="rounded-input border border-border px-2 py-1 text-xs font-semibold text-text-muted hover:bg-accentSoft/10"
+                        className="rounded-input border border-border px-2 py-1 text-xs font-semibold text-text-muted hover:bg-surface-2"
                       >
                         {copy.quickStarts.remove}
                       </button>
@@ -1430,7 +1430,7 @@ function InsightRow({ label, value }: { label: string; value: string }) {
           ))}
         </div>
       )}
-      <Link href="/jobs" prefetch={false} className="mt-4 inline-flex text-xs font-semibold text-accent hover:underline">
+      <Link href="/jobs" prefetch={false} className="mt-4 inline-flex text-xs font-semibold text-brand hover:underline">
         {copy.quickStarts.manage}
       </Link>
     </section>

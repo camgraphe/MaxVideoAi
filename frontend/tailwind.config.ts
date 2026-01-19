@@ -15,26 +15,36 @@ const config: Config = {
         display: ['"Geist"', '"Inter"', 'system-ui', 'sans-serif']
       },
       colors: {
-        bg: '#F8F9FA',
-        surface: '#FFFFFF',
-        border: '#D1D5DB',
-        hairline: '#E5E7EB',
+        bg: 'var(--bg)',
+        surface: 'var(--surface)',
+        'surface-2': 'var(--surface-2)',
+        'surface-3': 'var(--surface-3)',
+        border: 'var(--border)',
+        hairline: 'var(--hairline)',
         text: {
-          primary: '#111111',
-          secondary: '#374151',
-          muted: '#6B7280'
+          primary: 'var(--text-primary)',
+          secondary: 'var(--text-secondary)',
+          muted: 'var(--text-muted)'
         },
-        accent: '#4F5D75',
-        accentSoft: '#61708B',
-        ring: '#9DA7B8'
+        brand: 'var(--brand)',
+        brandHover: 'var(--brand-hover)',
+        brandActive: 'var(--brand-active)',
+        onBrand: 'var(--on-brand)',
+        'brand-hover': 'var(--brand-hover)',
+        'brand-active': 'var(--brand-active)',
+        'on-brand': 'var(--on-brand)',
+        accent: 'var(--accent)',
+        accentSoft: 'var(--accent-subtle)',
+        'accent-soft': 'var(--accent-subtle)',
+        ring: 'var(--ring)'
       },
       boxShadow: {
-        card: '0 1px 2px rgba(16,24,40,.06), 0 6px 16px rgba(16,24,40,.06)',
-        float: '0 6px 16px rgba(16,24,40,.08)'
+        card: 'var(--shadow-card)',
+        float: 'var(--shadow-float)'
       },
       borderRadius: {
-        card: '12px',
-        input: '10px',
+        card: 'var(--radius-card)',
+        input: 'var(--radius-input)',
         pill: '9999px'
       },
       letterSpacing: {

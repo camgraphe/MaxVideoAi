@@ -117,7 +117,7 @@ export function ImageCompositePreviewDock({
             type="button"
             onClick={() => (selected?.url && onAddToLibrary ? onAddToLibrary(selected.url) : undefined)}
             disabled={!canAddToLibrary}
-            className={clsx(ICON_BUTTON_BASE, 'text-accent', 'disabled:opacity-50')}
+            className={clsx(ICON_BUTTON_BASE, 'text-brand', 'disabled:opacity-50')}
             aria-label={isSavingToLibrary ? savingLabel : addToLibraryLabel}
           >
             <UIIcon icon={Plus} size={18} />
@@ -220,10 +220,10 @@ export function ImageCompositePreviewDock({
                   key={`${entry?.id ?? 'preview'}-${index}`}
                   type="button"
                   onClick={() => onSelectIndex(index)}
-                  className={clsx(
-                    'relative h-14 w-14 flex-none overflow-hidden rounded-[12px] border bg-white shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    isActive ? 'border-accent' : 'border-border hover:border-accentSoft/60'
-                  )}
+                    className={clsx(
+                      'relative h-14 w-14 flex-none overflow-hidden rounded-[12px] border bg-white shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      isActive ? 'border-brand' : 'border-border hover:border-text-muted'
+                    )}
                   aria-label={buttonLabel}
                   aria-pressed={isActive}
                 >

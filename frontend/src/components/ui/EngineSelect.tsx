@@ -563,7 +563,7 @@ export function EngineSelect({
               onClick={toggleOpen}
               onKeyDown={handleTriggerKeyDown}
               className={clsx(
-                'flex min-w-0 flex-1 items-center justify-between gap-3 rounded-input border border-hairline bg-white text-left text-text-primary shadow-sm transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                'flex min-w-0 flex-1 items-center justify-between gap-3 rounded-input border border-hairline bg-white text-left text-text-primary shadow-sm transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 isBarVariant ? 'px-2.5 py-1.5 text-[12px] sm:px-3 sm:py-2 sm:text-[13px]' : 'px-4 py-3 text-sm'
               )}
               aria-haspopup="listbox"
@@ -594,7 +594,7 @@ export function EngineSelect({
               type="button"
               onClick={() => setBrowseOpen(true)}
               className={clsx(
-                'min-w-0 rounded-input border border-hairline bg-white font-medium text-accent transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                'min-w-0 rounded-input border border-hairline bg-white font-medium text-brand transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 isBarVariant
                   ? 'max-w-[45%] px-2.5 py-1.5 text-[11px] sm:max-w-none sm:px-3 sm:py-2 sm:text-[12px]'
                   : 'px-4 py-3 text-sm'
@@ -621,8 +621,8 @@ export function EngineSelect({
                         'rounded-pill border px-3 py-1 font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white',
                         isBarVariant ? 'text-[10px]' : 'text-[12px]',
                         active
-                          ? 'border-accent bg-accent text-white'
-                          : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
+                          ? 'border-brand bg-brand text-on-brand'
+                          : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
                       )}
                     >
                       {getVariantLabel(entry)}
@@ -650,8 +650,8 @@ export function EngineSelect({
                         'rounded-pill border px-3 py-1 font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white',
                         isBarVariant ? 'text-[10px]' : 'text-[12px]',
                         active
-                          ? 'border-accent bg-accent text-white'
-                          : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
+                          ? 'border-brand bg-brand text-on-brand'
+                          : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
                       )}
                     >
                       {getModeLabel(selectedEngine?.id, candidate, modeLabelOverrides)}
@@ -685,7 +685,7 @@ export function EngineSelect({
                         setHighlightedIndex(-1);
                         setBrowseOpen(true);
                       }}
-                      className="rounded-input border border-transparent px-2 py-1 text-[11px] font-medium text-accent transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="rounded-input border border-transparent px-2 py-1 text-[11px] font-medium text-brand transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {copy.browse}
                     </button>
@@ -721,9 +721,9 @@ export function EngineSelect({
                             onFocus={() => setHighlightedIndex(index)}
                             className={clsx(
                               'flex w-full items-start gap-3 px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                              'hover:bg-accentSoft/10',
-                              active && 'bg-accentSoft/15',
-                              highlighted && !active && 'bg-accentSoft/10',
+                              'hover:bg-surface-2',
+                              active && 'bg-surface-2',
+                              highlighted && !active && 'bg-surface-2',
                               disabled && 'cursor-not-allowed opacity-60'
                             )}
                             role="option"
@@ -794,9 +794,9 @@ export function EngineSelect({
                       'rounded-input border font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                       isBarVariant ? 'px-3 py-1.5 text-[12px]' : 'px-4 py-2 text-[13px]',
                       mode === candidate && supported
-                        ? 'border-accent bg-accent text-white'
+                        ? 'border-brand bg-brand text-on-brand'
                         : supported
-                          ? 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
+                          ? 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
                           : 'cursor-not-allowed border-hairline bg-white text-text-muted/60'
                     )}
                   >
@@ -979,8 +979,8 @@ function BrowseEnginesModal({
       className={clsx(
         'rounded-input border px-3 py-1.5 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         active
-          ? 'border-accent bg-accent text-white'
-          : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10 hover:text-text-primary'
+          ? 'border-brand bg-brand text-on-brand'
+          : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary'
       )}
     >
       {children}
@@ -1002,7 +1002,7 @@ function BrowseEnginesModal({
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full border border-hairline bg-white/80 px-3 py-1 text-xs font-medium text-text-secondary transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="absolute right-4 top-4 rounded-full border border-hairline bg-white/80 px-3 py-1 text-xs font-medium text-text-secondary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {modalCopy.close}
         </button>
@@ -1019,7 +1019,7 @@ function BrowseEnginesModal({
                 href="/docs/pricing"
                 target="_blank"
                 rel="noreferrer"
-                className="text-xs font-semibold text-accent hover:underline"
+                className="text-xs font-semibold text-brand hover:underline"
               >
                 {modalCopy.pricingLink}
               </a>
@@ -1079,8 +1079,8 @@ function BrowseEnginesModal({
                 <Card
                   key={engine.id}
                   className={clsx(
-                    'flex cursor-pointer flex-col gap-4 p-5 transition hover:border-accentSoft/60 hover:bg-accentSoft/10 hover:shadow-float',
-                    isSelected && 'border-accent bg-accentSoft/15 shadow-float'
+                    'flex cursor-pointer flex-col gap-4 p-5 transition hover:border-text-muted hover:bg-surface-2 hover:shadow-float',
+                    isSelected && 'border-brand bg-surface-2 shadow-float'
                   )}
                   onClick={() => onSelect(engine.id)}
                 >

@@ -244,7 +244,7 @@ export default async function BlogPostPage({ params }: { params: Params }) {
     <div className="mx-auto max-w-5xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
       <Link
         href="/blog"
-        className="inline-flex items-center text-sm font-semibold text-accent transition hover:text-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+        className="inline-flex items-center text-sm font-semibold text-brand transition hover:text-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
       >
         ← Back to blog
       </Link>
@@ -265,7 +265,7 @@ export default async function BlogPostPage({ params }: { params: Params }) {
               <div className="absolute inset-0 bg-gradient-to-t from-white via-white/90 via-60% to-white/10" />
             </div>
           ) : (
-            <div className="h-24 w-full bg-gradient-to-r from-accent/5 via-accent/10 to-accent/5 sm:h-28" />
+            <div className="h-24 w-full bg-gradient-to-r from-surface-2 via-surface-3 to-surface-2 sm:h-28" />
           )}
           <div className="relative z-10 space-y-6 px-6 pb-10 pt-8 sm:px-10">
             <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-micro text-text-muted">
@@ -276,7 +276,7 @@ export default async function BlogPostPage({ params }: { params: Params }) {
                 {post.keywords?.map((keyword) => (
                   <span
                     key={keyword}
-                    className="rounded-pill bg-accent/10 px-3 py-1 font-semibold text-accent"
+                    className="rounded-pill bg-surface-2 px-3 py-1 font-semibold text-brand"
                   >
                     {keyword}
                   </span>
@@ -313,7 +313,7 @@ export default async function BlogPostPage({ params }: { params: Params }) {
                 <p className="mt-2 text-sm text-text-secondary">{related.description}</p>
                 <Link
                   href={{ pathname: '/blog/[slug]', params: { slug: related.slug } }}
-                  className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accentSoft"
+                  className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand transition hover:text-brandHover"
                 >
                   Read article <span aria-hidden>→</span>
                 </Link>

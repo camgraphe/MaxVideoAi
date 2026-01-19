@@ -246,7 +246,7 @@ export function CookieBanner() {
                 type="button"
                 onClick={handleAcceptAll}
                 disabled={fetchState === 'saving'}
-                className="rounded-input bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-input bg-brand px-4 py-2 text-sm font-semibold text-on-brand transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {fetchState === 'saving' ? 'Saving…' : 'Accept all'}
               </button>
@@ -269,7 +269,7 @@ export function CookieBanner() {
                     return next;
                   });
                 }}
-                className="text-sm font-semibold text-accent underline underline-offset-4"
+                className="text-sm font-semibold text-brand underline underline-offset-4 hover:text-brandHover"
               >
                 {showPreferences ? 'Hide choices' : 'Manage choices'}
               </button>
@@ -277,7 +277,7 @@ export function CookieBanner() {
             {error ? <p className="text-xs text-state-warning">{error}</p> : null}
             <p className="text-xs text-text-muted">
               View our{' '}
-              <a href="/legal/cookies" target="_blank" rel="noopener noreferrer" className="text-accent underline">
+              <a href="/legal/cookies" target="_blank" rel="noopener noreferrer" className="text-brand underline hover:text-brandHover">
                 Cookie Policy
               </a>
               .
@@ -294,7 +294,7 @@ export function CookieBanner() {
                 <button
                   type="button"
                   onClick={() => toggleCategory('analytics')}
-                  className={`h-6 w-10 rounded-full border transition ${draft.analytics ? 'border-accent bg-accent' : 'border-border bg-white'}`}
+                  className={`h-6 w-10 rounded-full border transition ${draft.analytics ? 'border-brand bg-brand' : 'border-border bg-white'}`}
                   aria-pressed={draft.analytics}
                 >
                   <span
@@ -310,7 +310,7 @@ export function CookieBanner() {
                 <button
                   type="button"
                   onClick={() => toggleCategory('ads')}
-                  className={`h-6 w-10 rounded-full border transition ${draft.ads ? 'border-accent bg-accent' : 'border-border bg-white'}`}
+                  className={`h-6 w-10 rounded-full border transition ${draft.ads ? 'border-brand bg-brand' : 'border-border bg-white'}`}
                   aria-pressed={draft.ads}
                 >
                   <span
@@ -322,7 +322,7 @@ export function CookieBanner() {
                 type="button"
                 onClick={handleSavePreferences}
                 disabled={fetchState === 'saving'}
-                className="w-full rounded-input bg-accent px-3 py-2 text-sm font-semibold text-white transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full rounded-input bg-brand px-3 py-2 text-sm font-semibold text-on-brand transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {fetchState === 'saving' ? 'Saving…' : 'Save preferences'}
               </button>

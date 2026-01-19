@@ -173,7 +173,7 @@ export default function PricingAdminPage() {
           </div>
           <button
             type="button"
-            className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold text-text-secondary transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-60"
             onClick={handleSaveMembership}
             disabled={savingMembership || membershipLoading || !!membershipError}
           >
@@ -205,7 +205,7 @@ export default function PricingAdminPage() {
                         value={editable.thresholdUsd}
                         onChange={(event) => handleMembershipFieldChange(tier.tier, 'thresholdUsd', event.target.value)}
                         placeholder={thresholdDefault}
-                        className="rounded-lg border border-hairline px-3 py-2 text-sm font-medium text-text-primary focus:border-accent focus:outline-none focus:ring-2 focus:ring-ring"
+                        className="rounded-lg border border-hairline px-3 py-2 text-sm font-medium text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
                       />
                     </label>
                     <label className="flex flex-col gap-1">
@@ -218,7 +218,7 @@ export default function PricingAdminPage() {
                         value={editable.discountPct}
                         onChange={(event) => handleMembershipFieldChange(tier.tier, 'discountPct', event.target.value)}
                         placeholder={(tier.discountPercent * 100).toString()}
-                        className="rounded-lg border border-hairline px-3 py-2 text-sm font-medium text-text-primary focus:border-accent focus:outline-none focus:ring-2 focus:ring-ring"
+                        className="rounded-lg border border-hairline px-3 py-2 text-sm font-medium text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
                       />
                     </label>
                   </div>
@@ -361,7 +361,7 @@ function PricingRuleCard({ rule, onRefresh }: RuleCardProps) {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold text-text-secondary transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             onClick={() => setEditing((prev) => !prev)}
             disabled={saving}
           >
@@ -422,7 +422,7 @@ function PricingRuleCard({ rule, onRefresh }: RuleCardProps) {
         <div className="mt-4 flex items-center gap-3">
           <button
             type="button"
-            className="rounded-pill border border-accent bg-accent px-3 py-1 text-xs font-semibold text-white transition hover:bg-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-accent/70"
+            className="rounded-pill border border-brand bg-brand px-3 py-1 text-xs font-semibold text-on-brand transition hover:bg-brand/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-brand/70"
             onClick={handleSave}
             disabled={saving}
           >
@@ -496,7 +496,7 @@ function Field({ label, value, disabled, onChange, placeholder }: FieldProps) {
         onChange={(event) => onChange(event.target.value)}
         disabled={disabled}
         placeholder={placeholder}
-        className="rounded-lg border border-hairline px-3 py-2 text-sm font-medium text-text-primary focus:border-accent focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:bg-muted"
+        className="rounded-lg border border-hairline px-3 py-2 text-sm font-medium text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:bg-muted"
       />
     </label>
   );
@@ -558,7 +558,7 @@ function NewPricingRuleCard({ onCreated }: NewRuleProps) {
     return (
       <button
         type="button"
-        className="rounded-xl border border-dashed border-hairline px-4 py-6 text-sm font-semibold text-text-secondary transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+        className="rounded-xl border border-dashed border-hairline px-4 py-6 text-sm font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
         onClick={() => setOpen(true)}
       >
         + Add pricing rule
@@ -567,7 +567,7 @@ function NewPricingRuleCard({ onCreated }: NewRuleProps) {
   }
 
   return (
-    <div className="rounded-xl border border-accent/40 bg-accent/5 p-4">
+    <div className="rounded-xl border border-border bg-surface-2 p-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text-primary">New pricing rule</h3>
         <button
@@ -595,7 +595,7 @@ function NewPricingRuleCard({ onCreated }: NewRuleProps) {
       <div className="mt-4 flex items-center gap-3">
         <button
           type="button"
-          className="rounded-pill border border-accent bg-accent px-3 py-1 text-xs font-semibold text-white transition hover:bg-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-accent/70"
+          className="rounded-pill border border-brand bg-brand px-3 py-1 text-xs font-semibold text-on-brand transition hover:bg-brand/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-brand/70"
           onClick={handleCreate}
           disabled={saving}
         >

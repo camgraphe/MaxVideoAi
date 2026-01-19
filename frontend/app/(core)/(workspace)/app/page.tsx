@@ -254,14 +254,14 @@ function AssetLibraryModal({
           <div className="flex items-center gap-2 self-end sm:self-auto">
             <button
               type="button"
-              className="rounded-input border border-border px-3 py-1.5 text-sm text-text-secondary transition hover:border-accentSoft/60 hover:bg-accentSoft/10"
+              className="rounded-input border border-border px-3 py-1.5 text-sm text-text-secondary transition hover:border-text-muted hover:bg-surface-2"
               onClick={() => onRefresh(source)}
             >
               {copy.refresh}
             </button>
             <button
               type="button"
-              className="rounded-input border border-border px-3 py-1.5 text-sm text-text-secondary transition hover:border-accentSoft/60 hover:bg-accentSoft/10"
+              className="rounded-input border border-border px-3 py-1.5 text-sm text-text-secondary transition hover:border-text-muted hover:bg-surface-2"
               onClick={onClose}
             >
               {copy.close}
@@ -279,7 +279,7 @@ function AssetLibraryModal({
             role="tab"
             aria-selected={source === 'all'}
             onClick={() => onSourceChange('all')}
-            className={`flex-1 px-4 py-2 transition ${source === 'all' ? 'bg-accent text-white' : 'hover:bg-white'}`}
+            className={`flex-1 px-4 py-2 transition ${source === 'all' ? 'bg-brand text-on-brand' : 'hover:bg-white'}`}
           >
             {(copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).tabs.all}
           </button>
@@ -288,7 +288,7 @@ function AssetLibraryModal({
             role="tab"
             aria-selected={source === 'upload'}
             onClick={() => onSourceChange('upload')}
-            className={`flex-1 px-4 py-2 transition ${source === 'upload' ? 'bg-accent text-white' : 'hover:bg-white'}`}
+            className={`flex-1 px-4 py-2 transition ${source === 'upload' ? 'bg-brand text-on-brand' : 'hover:bg-white'}`}
           >
             {(copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).tabs.upload}
           </button>
@@ -297,7 +297,7 @@ function AssetLibraryModal({
             role="tab"
             aria-selected={source === 'generated'}
             onClick={() => onSourceChange('generated')}
-            className={`flex-1 px-4 py-2 transition ${source === 'generated' ? 'bg-accent text-white' : 'hover:bg-white'}`}
+            className={`flex-1 px-4 py-2 transition ${source === 'generated' ? 'bg-brand text-on-brand' : 'hover:bg-white'}`}
           >
             {(copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).tabs.generated}
           </button>
@@ -366,8 +366,8 @@ function AssetLibraryModal({
                         <button
                           type="button"
                           className={clsx(
-                            'rounded-input border border-accent bg-accent/10 px-3 py-1 text-[12px] font-semibold uppercase tracking-micro text-accent transition',
-                            isDeleting ? 'opacity-60' : 'hover:bg-accent/20'
+                            'rounded-input border border-brand bg-surface-2 px-3 py-1 text-[12px] font-semibold uppercase tracking-micro text-brand transition',
+                            isDeleting ? 'opacity-60' : 'hover:bg-surface-3'
                           )}
                           onClick={() => onSelect(asset)}
                           disabled={isDeleting}
@@ -4813,8 +4813,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                           className={clsx(
                             'rounded-input border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                             isActive
-                              ? 'border-accent bg-accent/10 text-accent'
-                              : 'border-hairline bg-white text-text-secondary hover:border-accentSoft/50 hover:bg-accentSoft/10'
+                              ? 'border-brand bg-surface-2 text-brand'
+                              : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
                           )}
                         >
                           {formatted}
@@ -4852,7 +4852,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
               <button
                 type="button"
                 onClick={closeTopUpModal}
-                className="rounded-full border border-hairline bg-white/80 p-2 text-text-muted transition hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-full border border-hairline bg-white/80 p-2 text-text-muted transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label={workspaceCopy.topUp.close}
               >
                 {workspaceCopy.topUp.close}
@@ -4862,7 +4862,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
               <button
                 type="button"
                 onClick={closeTopUpModal}
-                className="rounded-input border border-hairline px-4 py-2 text-sm font-medium text-text-secondary transition hover:border-accentSoft/50 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-input border border-hairline px-4 py-2 text-sm font-medium text-text-secondary transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {workspaceCopy.topUp.maybeLater}
               </button>
@@ -4870,7 +4870,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                 type="submit"
                 disabled={isTopUpLoading}
                 className={clsx(
-                  'rounded-input border border-transparent bg-accent px-4 py-2 text-sm font-semibold text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60',
+                  'rounded-input border border-transparent bg-brand px-4 py-2 text-sm font-semibold text-on-brand transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60',
                   !isTopUpLoading && 'hover:brightness-105'
                 )}
               >

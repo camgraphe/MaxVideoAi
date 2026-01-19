@@ -328,7 +328,7 @@ export function GroupedJobCard({
                 'rounded-pill border px-2.5 py-1 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 savingToLibrary
                   ? 'border-border bg-white/70 text-text-muted'
-                  : 'border-accent/40 bg-white text-accent hover:bg-accentSoft/20'
+                  : 'border-brand bg-white text-brand hover:bg-surface-2'
               )}
             >
               {savingToLibrary ? imageLibrarySavingLabel : imageLibraryLabel}
@@ -342,7 +342,7 @@ export function GroupedJobCard({
               {showImageCta ? (
                 <Link
                   href={imageCtaHref}
-                  className="rounded-pill border border-accent/40 px-2 py-0.5 text-[11px] font-semibold text-accent transition hover:bg-accentSoft/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="rounded-pill border border-brand px-2 py-0.5 text-[11px] font-semibold text-brand transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {imageCtaLabel}
                 </Link>
@@ -365,7 +365,7 @@ export function GroupedJobCard({
               <button
                 type="button"
                 onClick={() => handleAction('view')}
-                className="flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+                className="flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
               >
                 <span>Open</span>
               </button>
@@ -375,7 +375,7 @@ export function GroupedJobCard({
                 disabled={!onOpen}
                 className={clsx(
                   'mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition',
-                  onOpen ? 'hover:bg-accentSoft/10' : 'cursor-not-allowed opacity-60'
+                  onOpen ? 'hover:bg-surface-2' : 'cursor-not-allowed opacity-60'
                 )}
               >
                 <span>Remake</span>
@@ -383,7 +383,7 @@ export function GroupedJobCard({
               <button
                 type="button"
                 onClick={() => handleAction('download')}
-                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
               >
                 <span>Download</span>
               </button>
@@ -393,28 +393,28 @@ export function GroupedJobCard({
               <button
                 type="button"
                 onClick={() => handleAction('open')}
-                className="flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+                className="flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
               >
                 <span>Open</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleAction('save-image')}
-                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
               >
                 <span>Add to Library</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleAction('download')}
-                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
               >
                 <span>Download</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleAction('copy')}
-                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+                className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
               >
                 <span>Copy link</span>
               </button>
@@ -424,7 +424,7 @@ export function GroupedJobCard({
               <button
                 type="button"
                 onClick={() => handleAction('open')}
-                className="flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+                className="flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
               >
                 <span>Open group</span>
                 <span className="text-[11px] text-text-muted">↵</span>
@@ -433,7 +433,7 @@ export function GroupedJobCard({
                 <Link
                   href={recreateHref}
                   onClick={() => setMenuOpen(false)}
-                  className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+                  className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
                 >
                   <span>{recreateLabel}</span>
                 </Link>
@@ -443,28 +443,28 @@ export function GroupedJobCard({
                   <button
                     type="button"
                     onClick={() => handleAction('continue')}
-                    className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+                    className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
                   >
                     <span>Continue (Hero)</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleAction('refine')}
-                    className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+                    className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
                   >
                     <span>Refine (Hero)</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleAction('branch')}
-                    className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+                    className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
                   >
                     <span>Branch</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleAction('compare')}
-                    className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-accentSoft/10"
+                    className="mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition hover:bg-surface-2"
                   >
                     <span>Compare</span>
                   </button>
@@ -478,7 +478,7 @@ export function GroupedJobCard({
               onClick={() => handleAction('save-image')}
               className={clsx(
                 'mt-1 flex w-full items-center justify-between rounded-[8px] px-2 py-1.5 text-left transition',
-                savingToLibrary ? 'opacity-60' : 'hover:bg-accentSoft/10'
+                savingToLibrary ? 'opacity-60' : 'hover:bg-surface-2'
               )}
               disabled={savingToLibrary}
             >

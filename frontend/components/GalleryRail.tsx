@@ -556,9 +556,9 @@ function Snackbar({ state, onClose }: { state: SnackbarState | null; onClose: ()
                   action.onClick();
                 }}
                 className={clsx(
-                  'inline-flex items-center rounded-full px-3 py-1.5 text-[12px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9DA7B8CC]',
+                  'inline-flex items-center rounded-full px-3 py-1.5 text-[12px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   action.variant === 'primary'
-                    ? 'border-transparent bg-accent text-white hover:brightness-110'
+                    ? 'border-transparent bg-brand text-on-brand hover:bg-brandHover'
                     : 'border border-white/30 bg-transparent text-white hover:bg-white/10'
                 )}
               >

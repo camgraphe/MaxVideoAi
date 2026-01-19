@@ -31,7 +31,7 @@ export function ProofTabs({ pricingRules }: ProofTabsProps) {
                 onClick={() => setActiveId(tab.id)}
                 className={clsx(
                   'rounded-pill border px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white',
-                  isActive ? 'border-accent bg-accent text-white' : 'border-hairline text-text-secondary hover:text-text-primary'
+                  isActive ? 'border-brand bg-brand text-on-brand' : 'border-hairline text-text-secondary hover:text-text-primary'
                 )}
                 aria-pressed={isActive}
               >

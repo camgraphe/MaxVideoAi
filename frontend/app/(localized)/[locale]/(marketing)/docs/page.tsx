@@ -148,7 +148,7 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
                           if (typeof item === 'string') {
                             return (
                               <li key={index} className="flex items-start gap-2">
-                                <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-accent" />
+                                <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-text-muted" />
                                 <span>{item}</span>
                               </li>
                             );
@@ -156,14 +156,14 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
                           if (typeof item === 'object' && item?.type === 'link') {
                             return (
                               <li key={index} className="flex items-start gap-2">
-                                <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-accent" />
+                                <span aria-hidden className="mt-1 inline-block h-1.5 w-1.5 flex-none rounded-full bg-text-muted" />
                                 <span>
                                   {item.before}
-                                  <Link href="/legal/terms" className="text-accent hover:text-accentSoft">
+                                  <Link href="/legal/terms" className="text-brand hover:text-brandHover">
                                     {item.terms}
                                   </Link>
                                   {item.and}
-                                  <Link href="/legal/privacy" className="text-accent hover:text-accentSoft">
+                                  <Link href="/legal/privacy" className="text-brand hover:text-brandHover">
                                     {item.privacy}
                                   </Link>
                                   {item.after}
@@ -263,7 +263,7 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
                   <ul className="mt-4 space-y-3 text-sm text-text-secondary">
                     {docs.map((doc) => (
                       <li key={doc.slug}>
-                        <Link href={{ pathname: '/docs/[slug]', params: { slug: doc.slug } }} className="font-semibold text-accent hover:text-accentSoft">
+                        <Link href={{ pathname: '/docs/[slug]', params: { slug: doc.slug } }} className="font-semibold text-brand hover:text-brandHover">
                           {doc.title}
                         </Link>
                         <p className="text-xs text-text-muted">{doc.description}</p>

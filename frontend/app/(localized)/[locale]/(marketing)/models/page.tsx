@@ -267,7 +267,7 @@ export default async function ModelsPage() {
               className="rounded-2xl border border-hairline bg-gradient-to-br from-bg via-white to-bg p-5 shadow-card"
             >
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-lg">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-2 text-lg">
                   {card.emoji ?? '🎬'}
                 </span>
                 <h3 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{card.title}</h3>
@@ -280,11 +280,11 @@ export default async function ModelsPage() {
           <h3 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{introCta.title}</h3>
           <p className="mt-2">
             {introCta.before}
-            <Link href={{ pathname: '/blog/[slug]', params: { slug: 'compare-ai-video-engines' } }} className="font-semibold text-accent hover:text-accentSoft">
+            <Link href={{ pathname: '/blog/[slug]', params: { slug: 'compare-ai-video-engines' } }} className="font-semibold text-brand hover:text-brandHover">
               {introCta.comparisonLabel}
             </Link>
             {introCta.middle}
-            <Link href="/examples" className="font-semibold text-accent hover:text-accentSoft">
+            <Link href="/examples" className="font-semibold text-brand hover:text-brandHover">
               {introCta.examplesLabel}
             </Link>
             {introCta.after}
@@ -300,7 +300,7 @@ export default async function ModelsPage() {
                   key={entry.modelSlug}
                   href={{ pathname: '/models/[slug]', params: { slug: entry.modelSlug } }}
                   prefetch={false}
-                  className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary transition hover:border-accent hover:text-accent"
+                  className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary transition hover:border-text-muted hover:text-text-primary"
                   aria-label={`View ${entry.marketingName ?? entry.engine.label}`}
                 >
                   {entry.marketingName ?? entry.engine.label}

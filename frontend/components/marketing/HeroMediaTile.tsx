@@ -276,7 +276,7 @@ export function HeroMediaTile({
                   {modelHref ? (
                     <Link
                       href={modelHref}
-                      className="inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-accent shadow-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-brand shadow-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <span>Model page</span>
                       <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
@@ -305,14 +305,14 @@ export function HeroMediaTile({
                   <Link
                     href={generateHref}
                     prefetch={false}
-                    className="inline-flex rounded-pill bg-accent px-4 py-2 text-xs font-semibold uppercase tracking-micro text-white transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="inline-flex rounded-pill bg-brand px-4 py-2 text-xs font-semibold uppercase tracking-micro text-on-brand transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Generate like this
                   </Link>
                 ) : null}
                 <Link
                   href={detailHref}
-                  className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-primary transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   View details
                 </Link>
@@ -335,7 +335,7 @@ export function HeroMediaTile({
             <button
               type="button"
               onClick={() => setLightboxOpen(false)}
-              className="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-text-primary shadow-lg ring-1 ring-border transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-text-primary shadow-lg ring-1 ring-border transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Close preview"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>

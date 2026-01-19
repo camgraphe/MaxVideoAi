@@ -85,7 +85,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
         <ul className="space-y-2 text-sm text-text-secondary">
           {quickInsights.map((line, index) => (
             <li key={`insight-${index}`} className="flex items-start gap-2">
-              <span className="mt-1 h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
+              <span className="mt-1 h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
               <span>{line}</span>
             </li>
           ))}

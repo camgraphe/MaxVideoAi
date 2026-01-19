@@ -690,10 +690,10 @@ export default function BillingPage() {
                     key={tier.id}
                     type="button"
                     onClick={() => handleTopUp(tier.amountCents)}
-                    className="group relative overflow-hidden rounded-2xl border border-accent/25 bg-gradient-to-br from-[#172549] via-[#1f3160] to-[#263b70] px-4 py-4 text-left text-white shadow-[0_12px_28px_rgba(23,37,73,0.35)] transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 hover:-translate-y-0.5 hover:border-accent/60 hover:shadow-2xl"
+                    className="group relative overflow-hidden rounded-2xl border border-hairline bg-gradient-to-br from-[#172549] via-[#1f3160] to-[#263b70] px-4 py-4 text-left text-white shadow-[0_12px_28px_rgba(23,37,73,0.35)] transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring hover:-translate-y-0.5 hover:border-text-muted hover:shadow-2xl"
                   >
                     <span className="pointer-events-none absolute inset-0 z-0 opacity-0 transition duration-300 group-hover:opacity-100" aria-hidden>
-                      <span className="absolute inset-0 bg-gradient-to-r from-accent/35 via-accent/15 to-transparent" />
+                      <span className="absolute inset-0 bg-gradient-to-r from-white/25 via-white/10 to-transparent" />
                       <span className="absolute -left-6 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-white/40 blur-[65px]" />
                     </span>
                     <div className="relative z-10 flex items-center justify-between gap-4">
@@ -709,7 +709,7 @@ export default function BillingPage() {
                       </div>
                       <div className="flex flex-col items-end text-[11px] font-semibold uppercase tracking-micro text-white/85">
                         <span className="rounded-full border border-white/40 px-2 py-1 text-[10px]">Stripe</span>
-                        <span className="mt-2 text-accentSoft">Tap to top up</span>
+                        <span className="mt-2 text-white/70">Tap to top up</span>
                       </div>
                     </div>
                   </button>
@@ -739,7 +739,7 @@ export default function BillingPage() {
                     onClick={() => customAmountCents && handleTopUp(customAmountCents)}
                     className={`rounded-input px-4 py-2 text-sm font-semibold transition ${
                       customAmountValid
-                        ? 'bg-accent text-white hover:bg-accent/90'
+                        ? 'bg-brand text-on-brand hover:bg-brandHover'
                         : 'cursor-not-allowed bg-neutral-200 text-text-muted'
                     }`}
                   >
@@ -767,7 +767,7 @@ export default function BillingPage() {
                 <span className="rounded-full bg-bg px-2 py-1 text-xs text-text-secondary">
                   {member?.tier ?? (authLoading ? '...' : '--')}
                 </span>
-                <span className="rounded-full bg-accent/10 px-2 py-1 text-xs text-accent">
+                <span className="rounded-full bg-surface-2 px-2 py-1 text-xs text-brand">
                   {typeof member?.savingsPct === 'number'
                     ? copy.membership.savingsChip.replace('{percent}', String(member.savingsPct))
                     : '--'}

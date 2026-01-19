@@ -445,7 +445,7 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
             <button
               type="button"
               onClick={() => setShowArchived((prev) => !prev)}
-              className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-medium transition hover:border-accentSoft/60 hover:bg-accentSoft/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-medium transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {showArchived ? 'Hide archived' : 'Show archived'}
             </button>
@@ -603,7 +603,7 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
                           </button>
                           <button
                             type="button"
-                            className="rounded-input border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="rounded-input border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             onClick={() => updateVisibility(video, 'public', false)}
                             disabled={isPending}
                           >
@@ -611,7 +611,7 @@ export function ModerationTable({ videos, initialCursor }: ModerationTableProps)
                           </button>
                           <button
                             type="button"
-                            className="rounded-input border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="rounded-input border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             onClick={() => updateVisibility(video, 'private', false)}
                             disabled={isPending}
                           >

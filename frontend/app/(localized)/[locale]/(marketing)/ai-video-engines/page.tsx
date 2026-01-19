@@ -142,7 +142,7 @@ function renderRichText(text: string | undefined, keyPrefix: string): ReactNode 
         <Link
           key={`${keyPrefix}-link-${segment++}`}
           href={target.href}
-          className="font-semibold text-accent hover:text-accentSoft"
+          className="font-semibold text-brand hover:text-brandHover"
         >
           {label}
         </Link>

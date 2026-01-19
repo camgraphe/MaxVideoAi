@@ -31,7 +31,7 @@ export function CopyPromptButton({
     <button
       type="button"
       onClick={handleCopy}
-      className="rounded-input border border-border px-3 py-2 text-xs font-semibold uppercase tracking-micro text-text-primary transition hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 disabled:cursor-not-allowed disabled:opacity-60"
+      className="rounded-input border border-border px-3 py-2 text-xs font-semibold uppercase tracking-micro text-text-primary transition hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
       aria-label={copyLabel}
       disabled={disabled}
     >

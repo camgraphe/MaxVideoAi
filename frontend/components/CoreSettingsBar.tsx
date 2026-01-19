@@ -289,7 +289,7 @@ export function CoreSettingsBar({
         )}
         {audioIncluded && controlsCopy.core.audioIncluded && (
           <div className="col-span-2 sm:col-span-3 lg:col-span-4 xl:col-span-5">
-            <span className="inline-flex items-center rounded-full border border-accent/20 bg-accentSoft/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-micro text-accent">
+            <span className="inline-flex items-center rounded-full border border-hairline bg-surface-2 px-3 py-1 text-[10px] font-semibold uppercase tracking-micro text-text-secondary">
               {controlsCopy.core.audioIncluded}
             </span>
           </div>

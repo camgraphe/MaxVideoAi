@@ -85,7 +85,7 @@ export default async function CookiePolicyPage() {
           <h3 className="text-lg font-semibold text-text-primary">4. Managing your choices</h3>
           <p>
             Use the cookie banner or{' '}
-            <Link href="/legal/cookies-list" className="text-accent underline">
+            <Link href="/legal/cookies-list" className="text-brand underline hover:text-brandHover">
               preference centre
             </Link>{' '}
             to review or change your selections at any time.
@@ -97,7 +97,7 @@ export default async function CookiePolicyPage() {
           <h3 className="text-lg font-semibold text-text-primary">5. Cookies we use</h3>
           <p>
             We maintain a live inventory of cookies and SDKs, including provider, purpose, and duration, at{' '}
-            <Link href="/legal/cookies-list" className="text-accent underline">
+            <Link href="/legal/cookies-list" className="text-brand underline hover:text-brandHover">
               /legal/cookies-list
             </Link>
             .

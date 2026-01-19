@@ -100,7 +100,7 @@ export function TakedownForm({ copy }: { copy: TakedownFormCopy }) {
           required
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          className="w-full rounded border border-border bg-input px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/40"
+          className="w-full rounded border border-border bg-input px-3 py-2 text-sm text-text-primary focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
 
@@ -115,7 +115,7 @@ export function TakedownForm({ copy }: { copy: TakedownFormCopy }) {
           value={url}
           onChange={(event) => setUrl(event.target.value)}
           placeholder={copy.urlPlaceholder}
-          className="w-full rounded border border-border bg-input px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/40"
+          className="w-full rounded border border-border bg-input px-3 py-2 text-sm text-text-primary focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
 
@@ -127,7 +127,7 @@ export function TakedownForm({ copy }: { copy: TakedownFormCopy }) {
           id="reason"
           value={reason}
           onChange={(event) => setReason(event.target.value as Reason)}
-          className="w-full rounded border border-border bg-input px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/40"
+          className="w-full rounded border border-border bg-input px-3 py-2 text-sm text-text-primary focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
         >
           {(
             [
@@ -156,7 +156,7 @@ export function TakedownForm({ copy }: { copy: TakedownFormCopy }) {
           value={details}
           onChange={(event) => setDetails(event.target.value)}
           rows={5}
-          className="w-full rounded border border-border bg-input px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/40"
+          className="w-full rounded border border-border bg-input px-3 py-2 text-sm text-text-primary focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
           placeholder={copy.detailsPlaceholder}
         />
         <p className="text-xs text-text-muted">{copy.detailsHint}</p>
@@ -174,7 +174,7 @@ export function TakedownForm({ copy }: { copy: TakedownFormCopy }) {
             const next = event.target.files?.[0] ?? null;
             setFile(next ?? null);
           }}
-          className="block w-full text-sm text-text-secondary file:mr-4 file:rounded file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-accentSoft"
+          className="block w-full text-sm text-text-secondary file:mr-4 file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-semibold file:text-on-brand hover:file:bg-brandHover"
         />
       </div>
 
@@ -184,7 +184,7 @@ export function TakedownForm({ copy }: { copy: TakedownFormCopy }) {
       <button
         type="submit"
         disabled={status === 'submitting'}
-        className="inline-flex items-center justify-center rounded bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accentSoft disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex items-center justify-center rounded bg-brand px-4 py-2 text-sm font-semibold text-on-brand transition hover:bg-brandHover disabled:cursor-not-allowed disabled:opacity-60"
       >
         {status === 'submitting' ? copy.submittingLabel : copy.submitLabel}
       </button>

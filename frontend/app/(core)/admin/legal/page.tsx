@@ -99,7 +99,7 @@ export default function AdminLegalPage() {
           Need a consent ledger?{' '}
           <a
             href={`/admin/consents.csv?from=${today}`}
-            className="font-semibold text-accent underline"
+            className="font-semibold text-brand underline"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -231,7 +231,7 @@ function DocumentRow({ doc, onUpdate, defaultDate }: DocumentRowProps) {
           <button
             type="submit"
             disabled={saving}
-            className="w-full rounded-input bg-accent px-3 py-2 text-sm font-semibold text-white transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="w-full rounded-input bg-brand px-3 py-2 text-sm font-semibold text-on-brand transition hover:bg-brand/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {saving ? 'Saving…' : 'Save changes'}
           </button>

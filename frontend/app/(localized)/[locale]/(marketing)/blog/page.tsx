@@ -154,7 +154,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
       <header className="rounded-[32px] border border-hairline bg-white/80 p-8 shadow-card backdrop-blur sm:p-12">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl space-y-4">
-            <p className="text-xs font-semibold uppercase tracking-micro text-accent">
+            <p className="text-xs font-semibold uppercase tracking-micro text-brand">
               {content.hero.eyebrow ?? 'The Studio Journal'}
             </p>
             <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">
@@ -164,7 +164,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
           </div>
           <Link
             href={{ pathname: '/models/[slug]', params: { slug: 'sora-2' } }}
-            className="inline-flex items-center gap-2 self-start rounded-pill border border-hairline bg-accent px-5 py-2 text-sm font-semibold text-white shadow-card transition hover:bg-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            className="inline-flex items-center gap-2 self-start rounded-pill border border-hairline bg-brand px-5 py-2 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           >
             {content.hero.ctaLabel ?? 'Latest Sora coverage →'}
           </Link>
@@ -198,8 +198,8 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0" />
           </div>
           <div className="space-y-4 px-6 pb-8 pt-6 sm:px-10">
-            <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-micro text-accent">
-              <span className="rounded-pill bg-accent/10 px-3 py-1 font-semibold text-accent">
+            <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-micro text-brand">
+              <span className="rounded-pill bg-surface-2 px-3 py-1 font-semibold text-brand">
                 {new Date(featured.date).toLocaleDateString(localeDateMap[locale], {
                   month: 'short',
                   day: 'numeric',
@@ -216,7 +216,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
             </div>
             <div className="space-y-3">
               <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
-                <Link href={{ pathname: '/blog/[slug]', params: { slug: featured.slug } }} className="transition hover:text-accent">
+                <Link href={{ pathname: '/blog/[slug]', params: { slug: featured.slug } }} className="transition hover:text-brandHover">
                   {featured.title}
                 </Link>
               </h2>
@@ -224,7 +224,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
             </div>
             <Link
               href={{ pathname: '/blog/[slug]', params: { slug: featured.slug } }}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-accent transition hover:text-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-brand transition hover:text-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             >
               {formatReadMoreLabel(featured.title)}
               <span aria-hidden>→</span>
@@ -262,18 +262,18 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
                     })}
                   </span>
                   {post.keywords?.slice(0, 1).map((keyword) => (
-                    <span key={keyword} className="rounded-pill bg-bg px-3 py-1 font-semibold text-accent">
+                    <span key={keyword} className="rounded-pill bg-bg px-3 py-1 font-semibold text-brand">
                       {keyword}
                     </span>
                   ))}
                 </div>
-                <h3 className="text-xl font-semibold text-text-primary transition group-hover:text-accent">
+                <h3 className="text-xl font-semibold text-text-primary transition group-hover:text-brand">
                   <Link href={{ pathname: '/blog/[slug]', params: { slug: post.slug } }}>{post.title}</Link>
                 </h3>
                 <p className="text-sm text-text-secondary">{post.description}</p>
                 <Link
                   href={{ pathname: '/blog/[slug]', params: { slug: post.slug } }}
-                  className="inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accentSoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                  className="inline-flex items-center gap-1 text-sm font-semibold text-brand transition hover:text-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   {formatReadMoreLabel(post.title ?? post.slug)}
                   <span aria-hidden>→</span>
