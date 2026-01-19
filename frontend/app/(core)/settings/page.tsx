@@ -452,17 +452,19 @@ function NotificationsTab({ live, copy }: { live: boolean; copy: SettingsCopy['n
               <p className="mt-1 text-xs text-brand">{copy.marketing.confirmPending}</p>
             ) : null}
           </div>
-          <button
+          <Button
             type="button"
+            size="sm"
+            variant="ghost"
             onClick={handleMarketingToggle}
             disabled={isLoading || saving}
-            className={`flex h-7 w-12 items-center rounded-full border transition ${marketingEnabled ? 'border-brand bg-brand' : 'border-border bg-white'}`}
+            className={`h-7 w-12 min-h-0 rounded-full border p-0 ${marketingEnabled ? 'border-brand bg-brand' : 'border-border bg-white'}`}
             aria-pressed={marketingEnabled}
           >
             <span
               className={`ml-1 block h-5 w-5 rounded-full bg-white shadow transition ${marketingEnabled ? 'translate-x-5' : ''}`}
             />
-          </button>
+          </Button>
         </div>
         {prefError ? <p className="text-xs text-state-warning">{prefError}</p> : null}
         <div className="grid gap-3 sm:grid-cols-2">

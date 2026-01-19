@@ -2105,11 +2105,13 @@ function ImageLibraryModal({
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {assets.map((asset) => (
-                <button
+                <Button
                   key={asset.id}
                   type="button"
+                  size="sm"
+                  variant="ghost"
                   onClick={() => onSelect(asset)}
-                  className="group rounded-card border border-border bg-white text-left shadow-card transition hover:border-text-primary"
+                  className="group min-h-0 h-auto rounded-card border border-border bg-white p-0 text-left shadow-card hover:border-text-primary"
                 >
                   <div className="relative aspect-square overflow-hidden rounded-t-card bg-[#f2f4f8]">
                     <img src={asset.url} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
@@ -2121,7 +2123,7 @@ function ImageLibraryModal({
                     <p className="truncate text-text-primary">{asset.url.split('/').pop() ?? copy.assetFallback}</p>
                     {asset.createdAt ? <p className="text-text-muted">{new Date(asset.createdAt).toLocaleString()}</p> : null}
                   </div>
-                </button>
+                </Button>
               ))}
             </div>
           )}

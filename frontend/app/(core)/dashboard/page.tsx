@@ -1247,10 +1247,12 @@ function RecentGrid({
             const jobId = group.hero.jobId ?? group.hero.id;
             return (
               <div key={group.id} className="flex flex-col gap-2">
-                <button
+                <Button
                   type="button"
+                  size="sm"
+                  variant="ghost"
                   onClick={() => onOpenGroup(group)}
-                  className="relative aspect-video overflow-hidden rounded-card border border-border bg-bg"
+                  className="relative min-h-0 h-auto w-full aspect-video overflow-hidden rounded-card border border-border bg-bg p-0"
                 >
                   {group.hero.thumbUrl ? (
                     <Image src={group.hero.thumbUrl} alt="" fill className="object-cover" />
@@ -1260,7 +1262,7 @@ function RecentGrid({
                   <div className="absolute left-3 top-3 rounded-pill bg-black/60 px-2 py-1 text-[11px] font-semibold text-white">
                     {group.hero.engineLabel}
                   </div>
-                </button>
+                </Button>
                   <div className="flex flex-wrap gap-2">
                     {group.hero.videoUrl ? (
                       <ButtonLink

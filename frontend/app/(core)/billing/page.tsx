@@ -688,11 +688,13 @@ export default function BillingPage() {
               </div>
               <div className="mt-3 grid gap-3 md:grid-cols-2">
                 {USD_TOPUP_TIERS.map((tier) => (
-                  <button
+                  <Button
                     key={tier.id}
                     type="button"
+                    size="sm"
+                    variant="ghost"
                     onClick={() => handleTopUp(tier.amountCents)}
-                    className="group relative overflow-hidden rounded-2xl border border-hairline bg-gradient-to-br from-[#172549] via-[#1f3160] to-[#263b70] px-4 py-4 text-left text-white shadow-[0_12px_28px_rgba(23,37,73,0.35)] transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring hover:-translate-y-0.5 hover:border-text-muted hover:shadow-2xl"
+                    className="group relative w-full justify-start overflow-hidden rounded-2xl border border-hairline bg-gradient-to-br from-[#172549] via-[#1f3160] to-[#263b70] px-4 py-4 text-left text-white shadow-[0_12px_28px_rgba(23,37,73,0.35)] transition duration-300 hover:-translate-y-0.5 hover:border-text-muted hover:shadow-2xl"
                   >
                     <span className="pointer-events-none absolute inset-0 z-0 opacity-0 transition duration-300 group-hover:opacity-100" aria-hidden>
                       <span className="absolute inset-0 bg-gradient-to-r from-white/25 via-white/10 to-transparent" />
@@ -714,7 +716,7 @@ export default function BillingPage() {
                         <span className="mt-2 text-white/70">Tap to top up</span>
                       </div>
                     </div>
-                  </button>
+                  </Button>
                 ))}
               </div>
               <div className="mt-4 rounded-input border border-border bg-bg px-3 py-3">

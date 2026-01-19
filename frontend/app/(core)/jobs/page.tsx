@@ -13,6 +13,7 @@ import { adaptGroupSummary } from '@/lib/video-group-adapter';
 import { useResultProvider } from '@/hooks/useResultProvider';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
+import { Button } from '@/components/ui/Button';
 import dynamic from 'next/dynamic';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { FEATURES } from '@/content/feature-flags';
@@ -595,11 +596,13 @@ function CollapsedGroupRail({
       {items.map((group) => {
         const thumb = resolveGroupThumb(group);
         return (
-          <button
+          <Button
             key={group.id}
             type="button"
+            size="sm"
+            variant="ghost"
             onClick={() => onOpen(group)}
-            className="group relative shrink-0 overflow-hidden rounded-card border border-border bg-white shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="group relative min-h-0 h-auto shrink-0 overflow-hidden rounded-card border border-border bg-white p-0 shadow-card"
             style={{ width: COLLAPSED_RAIL_ITEM_WIDTH }}
             aria-label="Open render"
           >
@@ -611,7 +614,7 @@ function CollapsedGroupRail({
                 </div>
               ) : null}
             </div>
-          </button>
+          </Button>
         );
       })}
     </div>
