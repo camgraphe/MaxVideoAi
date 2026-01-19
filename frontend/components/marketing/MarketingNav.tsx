@@ -254,7 +254,7 @@ export function MarketingNav() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="flex items-center gap-4 font-display text-base font-semibold tracking-tight text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+          className="flex items-center gap-4 font-display text-base font-semibold tracking-tight text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
         >
           <Image
             src="/assets/branding/logo-mark.svg"
@@ -288,7 +288,7 @@ export function MarketingNav() {
                 key={item.key}
                 href={item.href}
                 className={clsx(
-                  'transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white',
+                  'transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
                   isActive ? 'text-text-primary' : undefined
                 )}
               >
@@ -326,7 +326,7 @@ export function MarketingNav() {
                     <div
                       id={walletPromptId}
                       role="status"
-                      className="absolute right-0 top-full z-10 mt-2 w-64 rounded-card border border-hairline bg-white p-3 text-left text-xs text-text-secondary shadow-card"
+                      className="absolute right-0 top-full z-10 mt-2 w-64 rounded-card border border-hairline bg-surface p-3 text-left text-xs text-text-secondary shadow-card"
                       onMouseEnter={openWalletPrompt}
                       onMouseLeave={scheduleWalletPromptClose}
                     >
@@ -353,7 +353,7 @@ export function MarketingNav() {
               <Link
                 href="/app"
                 prefetch={false}
-                className="inline-flex items-center rounded-pill border border-hairline px-4 py-2 text-sm font-semibold text-text-primary shadow-card transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                className="inline-flex items-center rounded-pill border border-hairline px-4 py-2 text-sm font-semibold text-text-primary shadow-card transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
               >
                 {generateLabel}
               </Link>
@@ -373,7 +373,7 @@ export function MarketingNav() {
                 {accountMenuOpen && (
                   <div
                     ref={menuRef}
-                    className="absolute right-0 mt-3 w-56 rounded-card border border-hairline bg-white p-3 text-sm text-text-secondary shadow-card"
+                    className="absolute right-0 mt-3 w-56 rounded-card border border-hairline bg-surface p-3 text-sm text-text-secondary shadow-card"
                     role="menu"
                   >
                     <div className="mb-3 rounded-input bg-bg px-3 py-2">
@@ -427,14 +427,14 @@ export function MarketingNav() {
             <>
               <Link
                 href="/login?next=/app"
-                className="hidden text-sm font-medium text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white md:inline-flex"
+                className="hidden text-sm font-medium text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg md:inline-flex"
               >
                 {login}
               </Link>
               <Link
                 href="/app"
                 prefetch={false}
-                  className="inline-flex items-center rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-on-brand shadow-card transition transform-gpu hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                  className="inline-flex items-center rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-on-brand shadow-card transition transform-gpu hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
               >
                 {cta}
               </Link>
@@ -465,7 +465,7 @@ export function MarketingNav() {
               type="button"
               size="sm"
               variant="ghost"
-              className="min-h-0 h-9 w-9 rounded-full border border-hairline bg-white p-2 text-text-primary"
+              className="min-h-0 h-9 w-9 rounded-full border border-hairline bg-surface p-2 text-text-primary"
               aria-label={t('nav.mobileClose', 'Close menu')}
               onClick={() => setMobileMenuOpen(false)}
             >
@@ -487,7 +487,7 @@ export function MarketingNav() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={clsx(
                     'rounded-2xl border border-hairline px-4 py-3',
-                    pathname === item.href ? 'bg-surface-2 text-text-primary' : 'bg-white'
+                    pathname === item.href ? 'bg-surface-2 text-text-primary' : 'bg-surface'
                   )}
                 >
                   {t(`nav.linkLabels.${item.key}`, item.key)}
@@ -496,7 +496,7 @@ export function MarketingNav() {
             </nav>
             {isAuthenticated ? (
               <div className="stack-gap-sm">
-                <div className="flex items-center justify-between rounded-2xl border border-hairline bg-white px-4 py-3">
+                <div className="flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3">
                   <span className="flex items-center gap-2 text-base font-semibold text-text-primary">
                     <WalletGlyph size={18} className="text-text-primary" />
                     {wallet ? `$${wallet.balance.toFixed(2)}` : '--'}

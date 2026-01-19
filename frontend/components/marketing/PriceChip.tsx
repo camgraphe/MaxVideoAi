@@ -97,7 +97,7 @@ export function PriceChip({
 
   return (
     <div className="relative inline-flex">
-      <span className="inline-flex items-center gap-2 rounded-pill border border-hairline bg-white px-3 py-1 text-xs font-semibold uppercase tracking-micro text-brand shadow-card">
+      <span className="inline-flex items-center gap-2 rounded-pill border border-hairline bg-surface px-3 py-1 text-xs font-semibold uppercase tracking-micro text-brand shadow-card">
         <span>{`${prefix} ${formattedTotal}`}</span>
         <span className="text-text-muted">{chipSuffix}</span>
         <Button
@@ -115,7 +115,7 @@ export function PriceChip({
       </span>
       {isOpen && (
         <div
-          className="absolute right-0 top-full z-10 mt-2 w-64 rounded-card border border-hairline bg-white p-4 text-left text-xs text-text-secondary shadow-card"
+          className="absolute right-0 top-full z-10 mt-2 w-64 rounded-card border border-hairline bg-surface p-4 text-left text-xs text-text-secondary shadow-card"
           onMouseEnter={() => setIsOpen(true)}
           onMouseLeave={() => setIsOpen(false)}
         >

@@ -60,12 +60,12 @@ export function MarketingFooter() {
   const brandLabel = t('nav.brand', 'MaxVideo AI') ?? 'MaxVideo AI';
   const languageLabel = t('footer.languageLabel', 'Language') ?? 'Language';
   return (
-    <footer className="border-t border-hairline bg-white">
+    <footer className="border-t border-hairline bg-surface">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 text-sm text-text-muted md:flex-row md:items-center md:justify-between">
           <Link
             href="/"
-            className="inline-flex items-center gap-4 font-display text-lg font-semibold tracking-tight text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            className="inline-flex items-center gap-4 font-display text-lg font-semibold tracking-tight text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
           >
             <Image
               src="/assets/branding/logo-mark.svg"
@@ -94,7 +94,7 @@ export function MarketingFooter() {
                     key={item.href}
                     href={item.href}
                     locale={linkLocale}
-                    className="text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                    className="text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                   >
                     {item.label}
                   </Link>
@@ -110,7 +110,7 @@ export function MarketingFooter() {
                   key={`policy-${item.href}`}
                   href={item.href}
                   locale={item.locale === true ? undefined : false}
-                  className="text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                  className="text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                 >
                   {item.label}
                 </Link>
