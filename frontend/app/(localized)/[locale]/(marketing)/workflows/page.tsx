@@ -101,7 +101,7 @@ export default async function WorkflowsPage({ params }: { params: { locale: AppL
         <h2 id="express-vs-workflows" className="scroll-mt-28 sr-only">
           Express vs Workflows
         </h2>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 grid-gap-sm md:grid-cols-2">
           <div className="rounded-2xl border border-hairline bg-white p-5 shadow-card">
             <div className="flex items-center gap-4">
               <div aria-hidden className="flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-sm">
@@ -163,7 +163,7 @@ export default async function WorkflowsPage({ params }: { params: { locale: AppL
         <p className="mb-4 text-sm text-text-secondary">
           {pickSection?.subtitle ?? 'Start from a common use case. You can swap engines later.'}
         </p>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 grid-gap-sm md:grid-cols-3">
           {useCaseCards.map((card) => {
             const cardCta = (card as { cta?: string })?.cta;
             return (

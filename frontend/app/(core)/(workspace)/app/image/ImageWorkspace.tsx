@@ -1727,7 +1727,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
 
                   <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end lg:flex-nowrap">
                     <div className="min-w-0 flex-1">
-                      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                      <div className="grid grid-cols-2 grid-gap-sm sm:grid-cols-3 lg:grid-cols-4">
                         <SelectGroup
                           label={resolvedCopy.composer.numImagesLabel}
                           options={imageCountOptions}

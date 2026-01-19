@@ -591,7 +591,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
             Preview pricing
           </Link>
         </p>
-        <div className="grid w-full gap-4 sm:grid-cols-2">
+        <div className="grid w-full grid-gap-sm sm:grid-cols-2">
           {heroTileConfigs.map((tile, index) => (
             <HeroMediaTile
               key={tile.id}

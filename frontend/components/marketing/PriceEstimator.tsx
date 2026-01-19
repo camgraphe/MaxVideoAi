@@ -900,7 +900,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                   </span>
                   <p className="text-base font-semibold text-text-primary">{selectedEngine?.label ?? '—'}</p>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 grid-gap-sm">
                   {selectedEngine?.showDuration !== false ? (
                     <div>
                       <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">

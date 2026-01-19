@@ -782,7 +782,11 @@ Cette section liste ce qui existe deja en tokens/vars (valeurs connues) et ce qu
   - `--page-padding-x` = `16px` *(mobile baseline; on peut augmenter via breakpoints Tailwind)*
   - `--section-padding-y` = `64px` *(cible douce; actuel frequent = 80-96px)*
   - `--stack-gap` = `16px`
+  - `--stack-gap-sm` = `12px`
+  - `--stack-gap-lg` = `24px`
   - `--grid-gap` = `24px`
+  - `--grid-gap-sm` = `16px`
+  - `--grid-gap-lg` = `32px`
   - `--card-pad` = `16px`
 
 > Notes :

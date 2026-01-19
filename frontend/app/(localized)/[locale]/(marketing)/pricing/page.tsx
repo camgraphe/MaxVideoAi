@@ -394,7 +394,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
         <p className="mb-4 text-sm text-text-secondary">
           {exampleCosts.subtitle ?? DEFAULT_EXAMPLE_COSTS.subtitle}
         </p>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 grid-gap-sm sm:grid-cols-3">
           {resolvedExampleCards.map((card) => (
             <div key={card.title} className="rounded-xl border border-hairline bg-white p-4 shadow-card">
               <div className="text-sm font-medium text-text-primary">{card.title}</div>
