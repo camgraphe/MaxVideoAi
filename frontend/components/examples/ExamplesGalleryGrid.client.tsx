@@ -262,7 +262,7 @@ function ExampleCard({
       prefetch={!isLighthouse}
       tabIndex={isLighthouse ? -1 : 0}
     >
-      <div className={clsx(mediaStyles.mediaOuter, 'relative w-full overflow-hidden bg-neutral-900/5')}>
+      <div className={clsx(mediaStyles.mediaOuter, 'relative w-full overflow-hidden bg-surface-on-media-dark-5')}>
         <div className="relative w-full" style={{ paddingBottom: mediaPadding }}>
           <div className="absolute inset-0">
             {shouldLoadVideo && video.videoUrl ? (

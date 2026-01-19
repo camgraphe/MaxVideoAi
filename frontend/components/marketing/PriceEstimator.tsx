@@ -863,7 +863,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                       className={clsx(
                         'min-h-0 h-auto rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-micro',
                         selected
-                          ? 'bg-neutral-900 text-on-inverse shadow-[0_10px_25px_-12px_rgba(17,24,39,0.6)]'
+                          ? 'bg-text-primary text-on-inverse shadow-[0_10px_25px_-12px_rgba(17,24,39,0.6)]'
                           : 'bg-surface-glass-70 text-text-secondary hover:bg-surface'
                       )}
                       aria-pressed={selected}

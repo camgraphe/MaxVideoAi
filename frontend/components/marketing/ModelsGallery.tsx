@@ -95,36 +95,36 @@ function ModelCard({ card, ctaLabel }: { card: ModelGalleryCard; ctaLabel: strin
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
-      className="flex min-h-[11rem] cursor-pointer flex-col justify-between rounded-2xl border border-surface-on-media-dark-5 p-4 text-neutral-900 shadow-lg transition hover:border-surface-on-media-dark-10 hover:shadow-xl"
+      className="flex min-h-[11rem] cursor-pointer flex-col justify-between rounded-2xl border border-surface-on-media-dark-5 p-4 text-text-primary shadow-lg transition hover:border-surface-on-media-dark-10 hover:shadow-xl"
       style={{ backgroundColor: background, color: textColor }}
       aria-label={`${normalizedCtaLabel} ${card.label}`}
     >
-      <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-micro text-neutral-600">
+      <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-micro text-text-secondary">
         <span>{card.versionLabel}</span>
-        <span className="rounded-full border border-surface-on-media-dark-10 px-2 py-1 text-[10px] font-semibold text-neutral-600">MaxVideoAI</span>
+        <span className="rounded-full border border-surface-on-media-dark-10 px-2 py-1 text-[10px] font-semibold text-text-secondary">MaxVideoAI</span>
       </div>
       <div className="mt-3">
-        <h3 className="text-lg font-semibold leading-snug text-neutral-900 sm:text-xl">{card.label}</h3>
-        <p className="mt-1 text-sm text-neutral-600">{card.description}</p>
+        <h3 className="text-lg font-semibold leading-snug text-text-primary sm:text-xl">{card.label}</h3>
+        <p className="mt-1 text-sm text-text-secondary">{card.description}</p>
         {card.priceNote ? (
           card.priceNoteHref ? (
             <Link
               href={card.priceNoteHref}
               prefetch={false}
-              className="mt-2 inline-flex text-xs font-semibold text-neutral-700 hover:text-neutral-900"
+              className="mt-2 inline-flex text-xs font-semibold text-text-secondary hover:text-text-primary"
               onClick={(event) => event.stopPropagation()}
             >
               {card.priceNote}
             </Link>
           ) : (
-            <span className="mt-2 inline-flex text-xs font-semibold text-neutral-700">{card.priceNote}</span>
+            <span className="mt-2 inline-flex text-xs font-semibold text-text-secondary">{card.priceNote}</span>
           )
         ) : null}
       </div>
       <Link
         href={card.href}
         prefetch={false}
-        className="mt-3 inline-flex items-center rounded-full px-2 py-1 text-sm font-semibold text-neutral-900/80 underline decoration-transparent underline-offset-4 transition hover:decoration-current focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+        className="mt-3 inline-flex items-center rounded-full px-2 py-1 text-sm font-semibold text-text-primary/80 underline decoration-transparent underline-offset-4 transition hover:decoration-current focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
         aria-label={`Explore ${card.label}`}
         onClick={(event) => event.stopPropagation()}
       >
