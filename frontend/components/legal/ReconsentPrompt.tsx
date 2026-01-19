@@ -229,7 +229,7 @@ export function ReconsentPrompt() {
         })}
       </ul>
 
-      {error ? <p className="text-sm text-state-warning">{error}</p> : null}
+      {error ? <p className="text-sm text-[var(--warning)]">{error}</p> : null}
 
       <Button
         type="button"
@@ -246,7 +246,7 @@ export function ReconsentPrompt() {
   if (status.shouldBlock) {
     return (
       <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 px-4 py-8">
-        <div className="w-full max-w-md rounded-card border border-border bg-white p-6 shadow-xl">
+        <div className="w-full max-w-md rounded-card border border-border bg-surface p-6 shadow-xl">
           {content}
         </div>
       </div>
@@ -254,7 +254,7 @@ export function ReconsentPrompt() {
   }
 
   return (
-    <div className="pointer-events-auto fixed bottom-6 right-6 z-[999] w-full max-w-sm rounded-card border border-border bg-white p-5 shadow-card">
+    <div className="pointer-events-auto fixed bottom-6 right-6 z-[999] w-full max-w-sm rounded-card border border-border bg-surface p-5 shadow-card">
       {content}
     </div>
   );

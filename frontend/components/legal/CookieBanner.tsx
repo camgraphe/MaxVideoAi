@@ -234,7 +234,7 @@ export function CookieBanner() {
 
   return (
     <div className="pointer-events-auto fixed bottom-4 left-0 right-0 z-[1100] flex justify-center px-4 sm:px-6">
-      <div className="w-full max-w-3xl rounded-card border border-border bg-white p-5 shadow-xl">
+      <div className="w-full max-w-3xl rounded-card border border-border bg-surface p-5 shadow-xl">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="flex-1 space-y-2">
             <h2 className="text-base font-semibold text-text-primary">Cookies &amp; Privacy</h2>
@@ -258,7 +258,7 @@ export function CookieBanner() {
                 variant="outline"
                 onClick={handleRejectAll}
                 disabled={fetchState === 'saving'}
-                className="border-border px-4 py-2 text-sm text-text-primary hover:bg-bg"
+                className="border-border px-4 py-2 text-sm text-text-primary hover:bg-surface-hover"
               >
                 Reject all
               </Button>
@@ -280,7 +280,7 @@ export function CookieBanner() {
                 {showPreferences ? 'Hide choices' : 'Manage choices'}
               </Button>
             </div>
-            {error ? <p className="text-xs text-state-warning">{error}</p> : null}
+            {error ? <p className="text-xs text-[var(--warning)]">{error}</p> : null}
             <p className="text-xs text-text-muted">
               View our{' '}
               <a href="/legal/cookies" target="_blank" rel="noopener noreferrer" className="text-brand underline hover:text-brandHover">
@@ -290,7 +290,7 @@ export function CookieBanner() {
             </p>
           </div>
           {showPreferences ? (
-            <div className="w-full max-w-xs rounded-input border border-border bg-bg p-4">
+            <div className="w-full max-w-xs rounded-input border border-border bg-surface-2 p-4">
               <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-text-secondary">Preferences</p>
               <label className="mb-3 flex items-start justify-between gap-4 text-sm text-text-secondary">
                 <span>
@@ -302,11 +302,11 @@ export function CookieBanner() {
                   size="sm"
                   variant="ghost"
                   onClick={() => toggleCategory('analytics')}
-                  className={`min-h-0 h-6 w-10 rounded-full border p-0 transition ${draft.analytics ? 'border-brand bg-brand' : 'border-border bg-white'}`}
+                  className={`min-h-0 h-6 w-10 rounded-full border p-0 transition ${draft.analytics ? 'border-brand bg-brand' : 'border-border bg-surface'}`}
                   aria-pressed={draft.analytics}
                 >
                   <span
-                    className={`block h-5 w-5 translate-y-0.5 rounded-full bg-white transition ${draft.analytics ? 'translate-x-4' : 'translate-x-0.5'}`}
+                    className={`block h-5 w-5 translate-y-0.5 rounded-full bg-on-brand transition ${draft.analytics ? 'translate-x-4' : 'translate-x-0.5'}`}
                   />
                 </Button>
               </label>
@@ -320,11 +320,11 @@ export function CookieBanner() {
                   size="sm"
                   variant="ghost"
                   onClick={() => toggleCategory('ads')}
-                  className={`min-h-0 h-6 w-10 rounded-full border p-0 transition ${draft.ads ? 'border-brand bg-brand' : 'border-border bg-white'}`}
+                  className={`min-h-0 h-6 w-10 rounded-full border p-0 transition ${draft.ads ? 'border-brand bg-brand' : 'border-border bg-surface'}`}
                   aria-pressed={draft.ads}
                 >
                   <span
-                    className={`block h-5 w-5 translate-y-0.5 rounded-full bg-white transition ${draft.ads ? 'translate-x-4' : 'translate-x-0.5'}`}
+                    className={`block h-5 w-5 translate-y-0.5 rounded-full bg-on-brand transition ${draft.ads ? 'translate-x-4' : 'translate-x-0.5'}`}
                   />
                 </Button>
               </label>
