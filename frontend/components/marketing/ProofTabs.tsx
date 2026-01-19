@@ -30,11 +30,11 @@ export function ProofTabs({ pricingRules }: ProofTabsProps) {
                 key={tab.id}
                 type="button"
                 size="sm"
-                variant="outline"
+                variant={isActive ? 'primary' : 'outline'}
                 onClick={() => setActiveId(tab.id)}
                 className={clsx(
                   'min-h-0 h-auto rounded-pill px-4 py-2 text-sm font-medium',
-                  isActive ? 'border-brand bg-brand text-on-brand' : 'border-hairline text-text-secondary hover:text-text-primary'
+                  isActive ? 'border border-brand' : 'border-hairline text-text-secondary hover:text-text-primary'
                 )}
                 aria-pressed={isActive}
               >

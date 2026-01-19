@@ -210,7 +210,7 @@ export default function LibraryPage() {
                 <Button
                   type="button"
                   role="tab"
-                  variant="ghost"
+                  variant={activeSource === 'all' ? 'primary' : 'ghost'}
                   size="sm"
                   aria-selected={activeSource === 'all'}
                   onClick={() => {
@@ -219,7 +219,7 @@ export default function LibraryPage() {
                     setDeletingId(null);
                   }}
                   className={`flex-1 rounded-none px-4 py-2 sm:flex-none ${
-                    activeSource === 'all' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-white'
+                    activeSource === 'all' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-white'
                   }`}
                 >
                   {copy.tabs.all}
@@ -227,7 +227,7 @@ export default function LibraryPage() {
                 <Button
                   type="button"
                   role="tab"
-                  variant="ghost"
+                  variant={activeSource === 'upload' ? 'primary' : 'ghost'}
                   size="sm"
                   aria-selected={activeSource === 'upload'}
                   onClick={() => {
@@ -236,7 +236,7 @@ export default function LibraryPage() {
                     setDeletingId(null);
                   }}
                   className={`flex-1 rounded-none px-4 py-2 sm:flex-none ${
-                    activeSource === 'upload' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-white'
+                    activeSource === 'upload' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-white'
                   }`}
                 >
                   {copy.tabs.upload}
@@ -244,7 +244,7 @@ export default function LibraryPage() {
                 <Button
                   type="button"
                   role="tab"
-                  variant="ghost"
+                  variant={activeSource === 'generated' ? 'primary' : 'ghost'}
                   size="sm"
                   aria-selected={activeSource === 'generated'}
                   onClick={() => {
@@ -254,7 +254,7 @@ export default function LibraryPage() {
                   }}
                   className={`flex-1 rounded-none px-4 py-2 sm:flex-none ${
                     activeSource === 'generated'
-                      ? 'bg-brand text-on-brand hover:bg-brand'
+                      ? 'hover:bg-brandHover'
                       : 'text-text-secondary hover:bg-white'
                   }`}
                 >

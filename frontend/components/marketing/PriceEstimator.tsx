@@ -757,12 +757,12 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                               key={option.value}
                               type="button"
                               size="sm"
-                              variant="ghost"
+                              variant={selected ? 'primary' : 'ghost'}
                               onClick={() => setDuration(option.value)}
                               className={clsx(
                                 'min-h-0 h-auto rounded-full px-3 py-1.5 text-sm font-medium',
                                 selected
-                                  ? 'bg-brand text-on-brand shadow-[0_10px_30px_-12px_rgba(66,106,174,0.55)]'
+                                  ? 'shadow-[0_10px_30px_-12px_rgba(66,106,174,0.55)]'
                                   : 'bg-white/70 text-text-secondary hover:bg-white'
                               )}
                               aria-pressed={selected}

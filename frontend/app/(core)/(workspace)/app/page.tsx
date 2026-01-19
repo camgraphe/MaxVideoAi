@@ -283,13 +283,13 @@ function AssetLibraryModal({
           <Button
             type="button"
             role="tab"
-            variant="ghost"
+            variant={source === 'all' ? 'primary' : 'ghost'}
             size="sm"
             aria-selected={source === 'all'}
             onClick={() => onSourceChange('all')}
             className={clsx(
               'flex-1 rounded-none px-4 py-2',
-              source === 'all' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-white'
+              source === 'all' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-white'
             )}
           >
             {(copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).tabs.all}
@@ -297,13 +297,13 @@ function AssetLibraryModal({
           <Button
             type="button"
             role="tab"
-            variant="ghost"
+            variant={source === 'upload' ? 'primary' : 'ghost'}
             size="sm"
             aria-selected={source === 'upload'}
             onClick={() => onSourceChange('upload')}
             className={clsx(
               'flex-1 rounded-none px-4 py-2',
-              source === 'upload' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-white'
+              source === 'upload' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-white'
             )}
           >
             {(copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).tabs.upload}
@@ -311,13 +311,13 @@ function AssetLibraryModal({
           <Button
             type="button"
             role="tab"
-            variant="ghost"
+            variant={source === 'generated' ? 'primary' : 'ghost'}
             size="sm"
             aria-selected={source === 'generated'}
             onClick={() => onSourceChange('generated')}
             className={clsx(
               'flex-1 rounded-none px-4 py-2',
-              source === 'generated' ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-white'
+              source === 'generated' ? 'hover:bg-brandHover' : 'text-text-secondary hover:bg-white'
             )}
           >
             {(copy as typeof DEFAULT_WORKSPACE_COPY.assetLibrary).tabs.generated}
