@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { decodeImpersonationTargetCookie, impersonationCookieNames } from '@/lib/admin/impersonation';
+import { Button } from '@/components/ui/Button';
 
 export const metadata: Metadata = {
   robots: {
@@ -32,12 +33,14 @@ function ImpersonationBanner({ userId, email }: { userId: string; email: string 
           until you exit impersonation.
         </p>
         <form action="/api/admin/impersonate/exit" method="post">
-          <button
+          <Button
             type="submit"
-            className="rounded-full border border-amber-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-amber-800 transition hover:bg-amber-100"
+            variant="outline"
+            size="sm"
+            className="rounded-full border-amber-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-amber-800 hover:bg-amber-100"
           >
             Exit impersonation
-          </button>
+          </Button>
         </form>
       </div>
     </div>

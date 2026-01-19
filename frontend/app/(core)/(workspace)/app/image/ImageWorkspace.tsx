@@ -1698,14 +1698,16 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                     {selectedEngine.prompts.length ? (
                       <div className="flex flex-wrap gap-2">
                         {selectedEngine.prompts.map((preset) => (
-                          <button
+                          <Button
                             key={`${preset.title}-${preset.mode}`}
                             type="button"
+                            variant="outline"
+                            size="sm"
                             onClick={() => handlePreset(preset)}
-                            className="rounded-full border border-hairline bg-white/80 px-3 py-1 text-xs font-medium text-text-secondary transition hover:border-text-muted hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="min-h-0 h-auto rounded-full border-hairline bg-white/80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
                           >
                             {preset.title}
-                          </button>
+                          </Button>
                         ))}
                       </div>
                     ) : null}
@@ -1812,52 +1814,62 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                                 className="h-full w-full object-cover"
                                 referrerPolicy="no-referrer"
                               />
-                              <button
+                              <Button
                                 type="button"
+                                variant="ghost"
+                                size="sm"
                                 onClick={() => handleRemoveReferenceSlot(index)}
-                                className="absolute right-2 top-2 rounded-full bg-black/65 px-2 py-0.5 text-[11px] font-semibold text-white shadow"
+                                className="absolute right-2 top-2 min-h-0 h-auto rounded-full bg-black/65 px-2 py-0.5 text-[11px] font-semibold text-white shadow hover:bg-black/70"
                                 aria-label={resolvedCopy.composer.referenceSlotActions.remove}
                               >
                                 ×
-                              </button>
+                              </Button>
                               <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-black/55 px-2 py-1 text-[10px] text-white">
                                 <span className="truncate">
                                   {slot.name ?? slot.source ?? resolvedCopy.composer.referenceSlotNameFallback}
                                 </span>
                                 <div className="flex gap-1">
-                                  <button
+                                  <Button
                                     type="button"
+                                    variant="ghost"
+                                    size="sm"
                                     onClick={() => triggerFileDialog(index)}
-                                    className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold"
+                                    className="min-h-0 h-auto rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-white/30"
                                   >
                                     {resolvedCopy.composer.referenceSlotActions.replace}
-                                  </button>
-                                  <button
+                                  </Button>
+                                  <Button
                                     type="button"
+                                    variant="ghost"
+                                    size="sm"
                                     onClick={() => openLibraryForSlot(index)}
-                                    className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold"
+                                    className="min-h-0 h-auto rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-white/30"
                                   >
                                     {resolvedCopy.composer.referenceSlotActions.library}
-                                  </button>
-                                  <button
+                                  </Button>
+                                  <Button
                                     type="button"
+                                    variant="ghost"
+                                    size="sm"
                                     onClick={() => handleRemoveReferenceSlot(index)}
-                                    className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold"
+                                    className="min-h-0 h-auto rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-white/30"
                                   >
                                     {resolvedCopy.composer.referenceSlotActions.remove}
-                                  </button>
+                                  </Button>
                                 </div>
                               </div>
                               {slot.status === 'uploading' ? (
                                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50 px-3 text-center text-xs font-semibold text-white">
                                   <span>{resolvedCopy.general.uploading}</span>
-                                  <button
+                                  <Button
                                     type="button"
+                                    variant="ghost"
+                                    size="sm"
                                     onClick={() => handleRemoveReferenceSlot(index)}
-                                    className="rounded-full bg-white/25 px-3 py-1 text-[11px] font-semibold text-white transition hover:bg-white/40"
+                                    className="min-h-0 h-auto rounded-full bg-white/25 px-3 py-1 text-[11px] font-semibold text-white hover:bg-white/40"
                                   >
                                     {resolvedCopy.general.cancelUpload}
-                                  </button>
+                                  </Button>
                                 </div>
                               ) : null}
                             </>
@@ -1868,20 +1880,24 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                               </span>
                               <p className="text-[10px] leading-tight text-text-muted">{resolvedCopy.composer.referenceSlotHint}</p>
                               <div className="flex flex-wrap justify-center gap-2 text-[10px]">
-                                <button
+                                <Button
                                   type="button"
+                                  variant="outline"
+                                  size="sm"
                                   onClick={() => triggerFileDialog(index)}
-                                  className="rounded-full border border-border px-3 py-1 font-semibold text-text-primary"
+                                  className="min-h-0 h-auto rounded-full border-border px-3 py-1 font-semibold text-text-primary"
                                 >
                                   {resolvedCopy.composer.referenceSlotActions.upload}
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                   type="button"
+                                  variant="outline"
+                                  size="sm"
                                   onClick={() => openLibraryForSlot(index)}
-                                  className="rounded-full border border-border px-3 py-1 font-semibold text-text-primary"
+                                  className="min-h-0 h-auto rounded-full border-border px-3 py-1 font-semibold text-text-primary"
                                 >
                                   {resolvedCopy.composer.referenceSlotActions.library}
-                                </button>
+                                </Button>
                               </div>
                             </div>
                           )}

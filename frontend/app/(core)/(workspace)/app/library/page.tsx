@@ -331,11 +331,13 @@ export default function LibraryPage() {
                           <Download className="h-3.5 w-3.5" aria-hidden />
                           <span>{copy.assets.downloadButton}</span>
                         </ButtonLink>
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="sm"
                           onClick={() => handleDeleteAsset(asset.id)}
                           disabled={deletingId === asset.id}
-                          className="flex h-8 w-8 items-center justify-center rounded-full border border-state-warning/40 bg-state-warning/10 text-state-warning transition hover:bg-state-warning/20 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="h-8 w-8 min-h-0 rounded-full border border-state-warning/40 bg-state-warning/10 p-0 text-state-warning hover:bg-state-warning/20 disabled:cursor-not-allowed disabled:opacity-60"
                           aria-label={copy.assets.deleteButton}
                         >
                           {deletingId === asset.id ? (
@@ -343,7 +345,7 @@ export default function LibraryPage() {
                           ) : (
                             <Trash2 className="h-4 w-4" aria-hidden />
                           )}
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   </article>

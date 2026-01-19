@@ -364,13 +364,15 @@ function AssetLibraryModal({
                         {sizeLabel && <span>{sizeLabel}</span>}
                       </div>
                       <div className="flex items-center gap-2">
-                        <button
+                        <Button
                           type="button"
+                          variant="outline"
+                          size="sm"
                           className={clsx(
-                            'rounded-input border px-3 py-1 text-[12px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300',
+                            'px-3 py-1 text-[12px] font-semibold uppercase tracking-micro focus-visible:ring-rose-300',
                             isDeleting
                               ? 'border-rose-200 bg-rose-100 text-rose-500 opacity-70'
-                              : 'border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100'
+                              : 'border-rose-200 bg-rose-50 text-rose-600 hover:border-rose-300 hover:bg-rose-100'
                           )}
                           onClick={() => {
                             const result = onDelete(asset);
@@ -383,7 +385,7 @@ function AssetLibraryModal({
                           disabled={isDeleting}
                         >
                           {isDeleting ? 'Deleting…' : 'Delete'}
-                        </button>
+                        </Button>
                         <Button
                           type="button"
                           onClick={() => onSelect(asset)}
@@ -4829,19 +4831,21 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                       })();
                       const isActive = topUpAmount === value;
                       return (
-                        <button
+                        <Button
                           key={value}
                           type="button"
+                          variant="outline"
+                          size="sm"
                           onClick={() => handleSelectPresetAmount(value)}
                           className={clsx(
-                            'rounded-input border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                            'min-h-0 h-8 px-3 py-1.5 text-sm font-medium',
                             isActive
-                              ? 'border-brand bg-surface-2 text-brand'
+                              ? 'border-brand bg-surface-2 text-brand hover:border-brand'
                               : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
                           )}
                         >
                           {formatted}
-                        </button>
+                        </Button>
                       );
                     })}
                   </div>
@@ -4872,14 +4876,16 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                   {topUpError && <p className="mt-2 text-sm text-state-warning">{topUpError}</p>}
                 </div>
               </div>
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={closeTopUpModal}
-                className="rounded-full border border-hairline bg-white/80 p-2 text-text-muted transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-full border-hairline bg-white/80 px-3 py-1.5 text-sm text-text-muted hover:bg-surface-2"
                 aria-label={workspaceCopy.topUp.close}
               >
                 {workspaceCopy.topUp.close}
-              </button>
+              </Button>
             </div>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
               <Button type="button" variant="outline" size="sm" onClick={closeTopUpModal} className="px-4">
