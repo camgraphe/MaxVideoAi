@@ -16,6 +16,7 @@ import { localizePathFromEnglish, type SupportedLocale } from '@/lib/i18n/paths'
 import { getFalEngineById, getFalEngineBySlug, type FalEngineEntry } from '@/config/falEngines';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
+import { ButtonLink } from '@/components/ui/Button';
 
 type PageProps = {
   params: { id: string };
@@ -652,12 +653,9 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
                 </div>
               </dl>
               <div>
-                <Link
-                  href={pricingPath}
-                  className="inline-flex w-full items-center justify-center rounded-pill border border-hairline bg-white px-5 py-2 text-sm font-semibold text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
+                <ButtonLink href={pricingPath} variant="outline" className="w-full">
                   {copy.details.cta}
-                </Link>
+                </ButtonLink>
                 <p className="mt-2 text-xs text-text-secondary">{copy.details.ctaDescription}</p>
               </div>
             </div>
@@ -667,22 +665,16 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
               <p className="text-xs uppercase tracking-micro text-text-muted">{copy.create.title}</p>
               <h3 className="mt-1 text-lg font-semibold text-text-primary">{copy.create.subtitle}</h3>
               <p className="mt-2 text-sm text-text-secondary">{copy.create.body}</p>
-              <Link
-                href={`/app?from=${encodeURIComponent(video.id)}`}
-                className="mt-4 inline-flex w-full items-center justify-center rounded-pill bg-brand px-5 py-3 text-sm font-semibold uppercase tracking-micro text-on-brand transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
+              <ButtonLink href={`/app?from=${encodeURIComponent(video.id)}`} size="lg" className="mt-4 w-full">
                 {copy.create.cta}
-              </Link>
+              </ButtonLink>
             </div>
             <div className="rounded-card border border-border bg-white/90 p-6 shadow-card backdrop-blur">
               <h3 className="text-lg font-semibold text-text-primary">{copy.blog.title}</h3>
               <p className="mt-2 text-sm text-text-secondary">{copy.blog.message}</p>
-              <Link
-                href={blogPath}
-                className="mt-4 inline-flex w-full items-center justify-center rounded-pill border border-hairline px-5 py-2 text-sm font-semibold text-text-primary transition hover:border-text-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
+              <ButtonLink href={blogPath} variant="outline" className="mt-4 w-full">
                 {copy.blog.cta}
-              </Link>
+              </ButtonLink>
             </div>
           </div>
         </section>

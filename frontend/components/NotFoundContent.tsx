@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { ButtonLink } from '@/components/ui/Button';
 
 export function NotFoundContent() {
   return (
@@ -9,18 +9,12 @@ export function NotFoundContent() {
         We can&apos;t find that URL. It might be outdated, or it never existed. Use the links below to keep exploring MaxVideoAI.
       </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <Link
-          href="/"
-          className="rounded-input bg-brand px-5 py-2.5 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
+        <ButtonLink href="/" className="shadow-card">
           Back to homepage
-        </Link>
-        <Link
-          href="/models"
-          className="rounded-input border border-border px-5 py-2.5 text-sm font-semibold text-text-primary transition hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
+        </ButtonLink>
+        <ButtonLink href="/models" variant="outline">
           Browse video models
-        </Link>
+        </ButtonLink>
       </div>
     </main>
   );

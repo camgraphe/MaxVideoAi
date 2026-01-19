@@ -12,6 +12,7 @@ import { AppLanguageToggle } from '@/components/AppLanguageToggle';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { setLogoutIntent } from '@/lib/logout-intent';
 import { usePathname } from 'next/navigation';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import {
   clearLastKnownAccount,
   readLastKnownMember,
@@ -385,15 +386,16 @@ export function HeaderBar() {
                 <p className="mt-1 text-sm text-text-primary">
                   {t('workspace.header.walletTopUp.copy', 'Click to add funds and keep generating without interruption.')}
                 </p>
-                <Link
+                <ButtonLink
                   href="/billing"
                   prefetch={false}
-                  className="mt-3 inline-flex w-full items-center justify-center rounded-input bg-brand px-3 py-2 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  size="sm"
+                  className="mt-3 w-full shadow-card"
                   onFocus={openWalletPrompt}
                   onBlur={scheduleWalletPromptClose}
                 >
                   {t('workspace.header.walletTopUp.cta', 'Top up now')}
-                </Link>
+                </ButtonLink>
               </div>
             )}
           </div>
@@ -466,18 +468,21 @@ export function HeaderBar() {
             </div>
           ) : authResolved ? (
             <div className="flex items-center gap-2">
-              <Link
+              <ButtonLink
                 href="/login"
-                className="flex h-10 items-center justify-center rounded-input bg-brand px-3 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                size="sm"
+                className="h-10 px-3 shadow-card"
               >
                 {t('workspace.header.createAccount', 'Create account')}
-              </Link>
-              <Link
+              </ButtonLink>
+              <ButtonLink
                 href="/login?mode=signin"
-                className="flex h-10 items-center justify-center rounded-input border border-hairline bg-white/80 px-3 text-sm font-medium text-text-primary transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                variant="outline"
+                size="sm"
+                className="h-10 px-3"
               >
                 {t('workspace.header.signIn', 'Sign in')}
-              </Link>
+              </ButtonLink>
             </div>
           ) : (
             <div className="h-10 w-[180px] rounded-input bg-neutral-100 shadow-sm" aria-hidden />
@@ -542,42 +547,48 @@ export function HeaderBar() {
                     {wallet ? `$${wallet.balance.toFixed(2)}` : '--'}
                   </span>
                 </div>
-                <Link
+                <ButtonLink
                   href="/app"
                   prefetch={false}
-                  className="block rounded-2xl bg-brand px-4 py-3 text-center text-base font-semibold text-on-brand shadow-card"
+                  size="lg"
+                  className="w-full text-base shadow-card"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {generateLabel}
-                </Link>
-                <button
+                </ButtonLink>
+                <Button
                   type="button"
-                  className="w-full rounded-2xl border border-hairline px-4 py-3 text-base font-semibold text-text-primary shadow-card"
+                  variant="outline"
+                  size="lg"
+                  className="w-full text-base"
                   onClick={() => {
                     setMobileMenuOpen(false);
                     handleSignOut();
                   }}
                 >
                   {t('workspace.header.signOut', 'Sign out')}
-                </button>
+                </Button>
               </div>
             ) : (
               <div className="space-y-3">
-                <Link
+                <ButtonLink
                   href="/login?next=/app"
-                  className="block rounded-2xl border border-hairline px-4 py-3 text-center text-base font-semibold text-text-primary shadow-card"
+                  variant="outline"
+                  size="lg"
+                  className="w-full text-base shadow-card"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {loginLabel}
-                </Link>
-                <Link
+                </ButtonLink>
+                <ButtonLink
                   href="/app"
                   prefetch={false}
-                  className="block rounded-2xl bg-brand px-4 py-3 text-center text-base font-semibold text-on-brand shadow-card"
+                  size="lg"
+                  className="w-full text-base shadow-card"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {ctaLabel}
-                </Link>
+                </ButtonLink>
               </div>
             )}
           </div>

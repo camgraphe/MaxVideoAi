@@ -9,6 +9,8 @@ import clsx from 'clsx';
 import enMessages from '@/messages/en.json';
 import frMessages from '@/messages/fr.json';
 import esMessages from '@/messages/es.json';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 export const dynamic = 'force-dynamic';
 
@@ -589,14 +591,10 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-bg p-6">
       <div className="mb-6 w-full max-w-md">
-        <button
-          type="button"
-          onClick={handleBack}
-          className="inline-flex items-center gap-2 text-sm font-medium text-text-secondary transition hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-        >
+        <Button type="button" onClick={handleBack} variant="ghost" size="sm" className="gap-2">
           <span aria-hidden>←</span>
           <span>{authCopy.back}</span>
-        </button>
+        </Button>
       </div>
       <div className="w-full max-w-md space-y-5 rounded-card border border-border bg-white p-6 shadow-card">
         <header className="space-y-4">
@@ -643,10 +641,11 @@ export default function LoginPage() {
 
         {mode !== 'reset' ? (
           <>
-            <button
+            <Button
               type="button"
               onClick={signInWithGoogle}
-              className="flex w-full items-center justify-center gap-2 rounded-input border border-border bg-white px-3 py-2 text-sm font-medium transition hover:bg-bg"
+              variant="outline"
+              className="w-full justify-center gap-2 font-medium"
             >
               <span aria-hidden className="inline-flex h-5 w-5 items-center justify-center">
                 <svg
@@ -663,7 +662,7 @@ export default function LoginPage() {
                 </svg>
               </span>
               Continue with Google
-            </button>
+            </Button>
             <div className="flex items-center gap-2 text-[11px] uppercase tracking-wide text-text-muted">
               <span className="h-px flex-1 bg-border" aria-hidden />
               <span>{authCopy.divider}</span>
@@ -672,7 +671,7 @@ export default function LoginPage() {
             <form onSubmit={mode === 'signin' ? signInWithPassword : signUpWithPassword} className="space-y-3">
               <label className="block text-sm">
                 <span className="mb-1 block text-text-secondary">{authCopy.fields.email}</span>
-                <input
+                <Input
                   type="email"
                   required
                   ref={emailRef}
@@ -680,14 +679,14 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   onFocus={syncInputState}
-                  className="w-full rounded-input border border-border bg-bg px-3 py-2"
+                  className="mt-2"
                   placeholder={authCopy.placeholders.email}
                   autoComplete="email"
                 />
               </label>
               <label className="block text-sm">
                 <span className="mb-1 block text-text-secondary">{authCopy.fields.password}</span>
-                <input
+                <Input
                   type="password"
                   required
                   ref={passwordRef}
@@ -695,7 +694,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onFocus={syncInputState}
-                  className="w-full rounded-input border border-border bg-bg px-3 py-2"
+                  className="mt-2"
                   placeholder={mode === 'signup' ? authCopy.placeholders.passwordNew : authCopy.placeholders.password}
                   autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
                 />
@@ -703,13 +702,13 @@ export default function LoginPage() {
               {mode === 'signup' && (
                 <label className="block text-sm">
                   <span className="mb-1 block text-text-secondary">{authCopy.fields.confirmPassword}</span>
-                  <input
+                  <Input
                     type="password"
                     required
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
-                    className="w-full rounded-input border border-border bg-bg px-3 py-2"
-                  placeholder={authCopy.placeholders.passwordNew}
+                    className="mt-2"
+                    placeholder={authCopy.placeholders.passwordNew}
                     autoComplete="new-password"
                   />
                 </label>
@@ -765,47 +764,47 @@ export default function LoginPage() {
                 </div>
               )}
 
-              <button
+              <Button
                 type="submit"
-                className={clsx(
-                  'w-full rounded-input px-3 py-2 text-sm font-semibold transition',
-                  mode === 'signup'
-                    ? 'bg-brand text-on-brand hover:bg-brandHover'
-                    : 'border border-border bg-white hover:bg-bg text-text-primary'
-                )}
+                variant={mode === 'signup' ? 'primary' : 'outline'}
+                className="w-full"
               >
                 {mode === 'signin' ? authCopy.actions.signin : authCopy.actions.signup}
-              </button>
+              </Button>
             </form>
 
             {mode === 'signin' ? (
               <div className="flex flex-col gap-2 text-xs">
-                <button type="button" onClick={() => setMode('reset')} className="self-start text-brand hover:underline">
-                  {authCopy.forgotPassword}
-                </button>
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setMode('reset')}
+                  className="self-start text-brand hover:text-brandHover"
+                >
+                  {authCopy.forgotPassword}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => setMode('signup')}
-                  className="self-start rounded-pill bg-surface-2 px-3 py-2 font-semibold text-brand transition hover:bg-surface-3"
+                  className="self-start text-brand hover:text-brandHover"
                 >
                   {authCopy.links.newAccount}
-                </button>
+                </Button>
               </div>
             ) : (
-              <button
-                type="button"
-                onClick={() => setMode('signin')}
-                className="text-xs font-medium text-text-secondary hover:underline"
-              >
+              <Button type="button" variant="ghost" size="sm" onClick={() => setMode('signin')}>
                 {authCopy.links.haveAccount}
-              </button>
+              </Button>
             )}
           </>
         ) : (
           <form onSubmit={sendReset} className="space-y-3">
             <label className="block text-sm">
               <span className="mb-1 block text-text-secondary">{authCopy.fields.email}</span>
-              <input
+              <Input
                 type="email"
                 required
                 ref={emailRef}
@@ -813,19 +812,19 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onFocus={syncInputState}
-                className="w-full rounded-input border border-border bg-bg px-3 py-2"
+                className="mt-2"
                 placeholder="you@domain.com"
                 autoComplete="email"
               />
             </label>
             <div className="flex justify-between text-xs">
-              <button type="button" onClick={() => setMode('signin')} className="text-text-secondary hover:underline">
+              <Button type="button" variant="ghost" size="sm" onClick={() => setMode('signin')}>
                 {authCopy.links.backToSignIn}
-              </button>
+              </Button>
             </div>
-            <button type="submit" className="w-full rounded-input border border-border bg-white px-3 py-2 text-sm font-medium transition hover:bg-bg">
+            <Button type="submit" variant="outline" className="w-full">
               {authCopy.actions.reset}
-            </button>
+            </Button>
           </form>
         )}
 
@@ -848,20 +847,17 @@ export default function LoginPage() {
               {formatTemplate(authCopy.signupSuggestion.body, { email: signupSuggestion.email })}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={handleAcceptSignupSuggestion}
-                className="rounded-pill bg-brand px-3 py-1.5 text-sm font-semibold text-on-brand transition hover:bg-brandHover"
-              >
+              <Button type="button" size="sm" onClick={handleAcceptSignupSuggestion}>
                 {authCopy.signupSuggestion.accept}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => setSignupSuggestion(null)}
-                className="rounded-pill border border-border px-3 py-1.5 text-sm font-semibold text-text-secondary transition hover:bg-bg"
               >
                 {authCopy.signupSuggestion.decline}
-              </button>
+              </Button>
             </div>
           </div>
         )}
