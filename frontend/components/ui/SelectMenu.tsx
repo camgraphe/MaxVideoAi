@@ -20,7 +20,7 @@ interface SelectMenuProps {
 }
 
 const BUTTON_BASE =
-  'inline-flex w-full min-w-[140px] items-center justify-between gap-2 rounded-input border border-hairline bg-white px-3 py-2 text-[12px] text-text-primary shadow-sm transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+  'inline-flex w-full min-w-[140px] items-center justify-between gap-2 rounded-input border border-hairline bg-surface px-3 py-2 text-[12px] text-text-primary shadow-sm transition hover:border-border-hover hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 function findNextEnabled(options: SelectOption[], start: number, delta: number): number {
   if (!options.length) return -1;
@@ -154,7 +154,7 @@ export function SelectMenu({ options, value, onChange, disabled = false, classNa
         </svg>
       </Button>
       {open ? (
-        <div className="absolute left-0 right-0 z-[50] mt-2 max-h-60 overflow-y-auto rounded-card border border-border bg-white/95 p-1 shadow-card backdrop-blur">
+        <div className="absolute left-0 right-0 z-[50] mt-2 max-h-60 overflow-y-auto rounded-card border border-border bg-surface p-1 shadow-card backdrop-blur">
           <ul role="listbox" className="space-y-1 text-[12px]">
             {options.map((option, index) => {
               const isSelected = String(option.value) === String(value);

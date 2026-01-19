@@ -12,9 +12,9 @@ export const Chip = forwardRef<HTMLSpanElement, ChipProps>(
   ({ className, variant = 'outline', children, ...props }, ref) => {
     const variantClass = {
       outline:
-        'border-hairline bg-white/80 text-text-secondary shadow-[0_0_0_1px_rgba(255,255,255,0.6)] backdrop-blur-sm',
-      accent: 'border-transparent bg-accent text-white shadow-card',
-      ghost: 'border-transparent bg-white/65 text-text-secondary backdrop-blur-sm'
+        'border-hairline bg-surface-2 text-text-muted',
+      accent: 'border-transparent bg-accent text-on-accent shadow-card',
+      ghost: 'border-transparent bg-surface text-text-secondary'
     }[variant];
 
     return (
