@@ -896,8 +896,8 @@ Objectif : ajouter des standards simples, applicables sans casser l'existant. On
 - Regle : sur mobile, le padding fait le "premium".
 
 ### Section spacing (doux)
-- Standard cible : `py-16` (mobile) / `py-20` (desktop)
-- Eviter `py-24` sauf sections hero ou blocks "feature" majeurs
+- Standard cible : `--section-padding-y` (mobile `72px` / desktop `88px`)
+- Eviter les one-offs (`py-24`) sauf hero ou feature blocks majeurs
 - Sections compactes (strips / bandeaux) : utiliser `.section-compact` (≈ `py-8`)
 
 ### Typo (mobile lisible)
