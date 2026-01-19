@@ -6,6 +6,8 @@ import { resolveDictionary } from '@/lib/i18n/server';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
+import { Button } from '@/components/ui/Button';
+import { Input, Textarea } from '@/components/ui/Input';
 
 const CONTACT_SLUG_MAP = buildSlugMap('contact');
 const STATUS_SLUG_MAP = buildSlugMap('status');
@@ -124,24 +126,24 @@ export default async function ContactPage({
             <label htmlFor="name" className="block text-sm font-medium text-text-secondary">
               {content.form.name}
             </label>
-            <input
+            <Input
               id="name"
               name="name"
               type="text"
               required
-              className="mt-2 w-full rounded-input border border-hairline bg-bg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-ring focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="mt-2"
             />
           </div>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-text-secondary">
               {content.form.email}
             </label>
-            <input
+            <Input
               id="email"
               name="email"
               type="email"
               required
-              className="mt-2 w-full rounded-input border border-hairline bg-bg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-ring focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="mt-2"
             />
           </div>
           <div>
@@ -152,7 +154,7 @@ export default async function ContactPage({
               id="topic"
               name="topic"
               defaultValue=""
-              className="mt-2 w-full rounded-input border border-hairline bg-bg px-3 py-2 text-sm text-text-primary focus:border-ring focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="mt-2 w-full rounded-input border border-hairline bg-bg px-3 py-2 text-sm text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               aria-label={content.form.topic}
             >
               <option value="" disabled>
@@ -169,20 +171,17 @@ export default async function ContactPage({
             <label htmlFor="message" className="block text-sm font-medium text-text-secondary">
               {content.form.message}
             </label>
-            <textarea
+            <Textarea
               id="message"
               name="message"
               rows={4}
               required
-              className="mt-2 w-full rounded-input border border-hairline bg-bg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-ring focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="mt-2"
             />
           </div>
-          <button
-            type="submit"
-            className="inline-flex items-center rounded-pill bg-brand px-5 py-2 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-          >
+          <Button type="submit" className="shadow-card">
             {content.form.submit}
-          </button>
+          </Button>
         </form>
         <div className="mt-6 rounded-card border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
           {content.form.alt.split('{email}')[0]}
