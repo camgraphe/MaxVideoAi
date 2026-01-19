@@ -135,7 +135,12 @@ export function GalleryRail({
   const sentinelRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [snackbar, setSnackbar] = useState<SnackbarState | null>(null);
+  const [railProgress, setRailProgress] = useState(0);
+  const [showRail, setShowRail] = useState(false);
+  const [railTrackHeight, setRailTrackHeight] = useState(200);
   const isDesktopVariant = variant === 'desktop';
+  const railThumbHeight = 24;
+  const railTrackOffset = 12;
   const handleRemoveJob = useCallback(
     async (job: Job) => {
       if (job.curated) {
@@ -384,6 +389,21 @@ export function GalleryRail({
     void mutate();
   }, [mutate]);
 
+  const updateRailProgress = useCallback(() => {
+    const element = scrollContainerRef.current;
+    if (!element) return;
+    const maxScroll = element.scrollHeight - element.clientHeight;
+    if (!isDesktopVariant || maxScroll <= 4) {
+      setShowRail(false);
+      setRailProgress(0);
+      return;
+    }
+    const nextTrackHeight = Math.max(120, element.clientHeight - railTrackOffset * 2);
+    setRailTrackHeight((prev) => (prev === nextTrackHeight ? prev : nextTrackHeight));
+    setShowRail(true);
+    setRailProgress(element.scrollTop / maxScroll);
+  }, [isDesktopVariant, railTrackOffset]);
+
   useEffect(() => {
     const element = sentinelRef.current;
     if (!element || !hasMore) return undefined;
@@ -411,8 +431,37 @@ export function GalleryRail({
     return () => observer.disconnect();
   }, [hasMore, isDesktopVariant, loadMore]);
 
+  useEffect(() => {
+    const element = scrollContainerRef.current;
+    if (!element) return undefined;
+
+    updateRailProgress();
+
+    const handleScroll = () => updateRailProgress();
+    element.addEventListener('scroll', handleScroll, { passive: true });
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => updateRailProgress());
+      resizeObserver.observe(element);
+    }
+
+    window.addEventListener('resize', updateRailProgress);
+
+    return () => {
+      element.removeEventListener('scroll', handleScroll);
+      resizeObserver?.disconnect();
+      window.removeEventListener('resize', updateRailProgress);
+    };
+  }, [updateRailProgress]);
+
   const isInitialLoading = isLoading && filteredJobs.length === 0;
   const isFetchingMore = isValidating && filteredJobs.length > 0;
+  const railThumbOffset = railProgress * (railTrackHeight - railThumbHeight);
+
+  useEffect(() => {
+    updateRailProgress();
+  }, [combinedGroups.length, isFetchingMore, isInitialLoading, updateRailProgress]);
 
   const cards = (
     <>
@@ -487,14 +536,26 @@ export function GalleryRail({
   ) : null;
 
   const body = (
-    <div
-      ref={scrollContainerRef}
-      className={clsx(
-        'mt-1 space-y-4',
-        isDesktopVariant ? 'flex-1 overflow-y-auto pr-1 pt-3' : ''
-      )}
-    >
-      {cards}
+    <div className={clsx('relative', isDesktopVariant ? 'flex-1 min-h-0' : '')}>
+      <div
+        ref={scrollContainerRef}
+        className={clsx(
+          'scrollbar-rail mt-1 space-y-4',
+          isDesktopVariant ? 'h-full overflow-y-auto pr-6 pt-3' : ''
+        )}
+      >
+        {cards}
+      </div>
+      {isDesktopVariant && showRail ? (
+        <div className="pointer-events-none absolute right-2 top-3">
+          <div className="relative w-[3px] rounded-full bg-brand/25" style={{ height: `${railTrackHeight}px` }}>
+            <div
+              className="absolute left-0 top-0 w-full rounded-full bg-brand"
+              style={{ height: `${railThumbHeight}px`, transform: `translateY(${railThumbOffset}px)` }}
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 

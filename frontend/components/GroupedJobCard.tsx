@@ -292,22 +292,24 @@ export function GroupedJobCard({
           </div>
         ) : null}
         {showMenu && (
-          <Button
+          <button
             ref={menuButtonRef}
             type="button"
-            variant="ghost"
-            size="sm"
             onClick={(event) => {
               event.stopPropagation();
               setMenuOpen((prev) => !prev);
             }}
-            className="absolute right-3 top-3 h-8 w-8 min-h-0 rounded-full border border-surface-on-media-30 bg-surface-on-media-dark-55 p-0 text-on-inverse hover:bg-surface-on-media-dark-70"
+            className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full border border-white/70 bg-white/85 text-black/80 shadow-md backdrop-blur hover:bg-white/95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
             aria-haspopup="menu"
             aria-expanded={menuOpen}
             aria-label="Group actions"
           >
-            <span className="text-lg leading-none">•••</span>
-          </Button>
+            <span className="inline-flex items-center justify-center gap-0.5 translate-y-[1px]" aria-hidden="true">
+              <span className="h-1 w-1 rounded-full bg-black/60" />
+              <span className="h-1 w-1 rounded-full bg-black/60" />
+              <span className="h-1 w-1 rounded-full bg-black/60" />
+            </span>
+          </button>
         )}
       </figure>
       <div className="flex items-center justify-between gap-4 border-t border-hairline bg-surface-glass-80 px-3 py-2 text-sm text-text-secondary">

@@ -1210,41 +1210,41 @@ Objectif : appliquer la refonte sans big-bang. Chaque etape est additive et veri
 
 ---
 
-## 12) Refonte - sujets restants a couvrir
+## 12) Accessibilite, theming, QA
 
-Cette section sert de checklist pour fermer la refonte.
+Cette section fixe les regles transverses (a11y, structure, dark) a respecter pendant la refonte.
 
-### Accessibilite
-- Contrastes min (texte normal et petit).
-- Focus visible coherent (ring + offset).
-- Hit area 44px sur mobile (boutons, toggles, liens critiques).
+### Contraste & lisibilite
+- Texte normal >= 4.5:1 ; texte large (>= 24px ou 18.66px bold) >= 3:1.
+- Elements non-textes (icones, borders, focus ring) >= 3:1.
+- Sur media/gradients, utiliser `text-on-media-*` + `surface-on-media-*` pour garantir la lisibilite.
 
-### Dark mode
-- Strategie d'activation (opt-in, auto, ou toggle).
-- Couverture des primitives UI avant les pages secondaires.
-- Tests visuels light/dark sur pages marketing + app.
+### Focus, clavier, hit areas
+- Focus visible obligatoire (utiliser `.focus-ring` + `ring-offset`).
+- `outline-none` uniquement si un ring equivalant est applique.
+- Hit area mobile min 44px pour boutons, toggles, liens critiques.
+- `:focus-visible` prioritaire pour eviter le bruit au clic.
 
-### Iconography
-- Tailles standard (ex: 16/20/24).
-- Regles de couleur (inherit vs token explicite).
-- Stroke width coherent.
+### Structure semantique (SEO-safe)
+- 1 seul `h1` par page ; pas de saut de niveaux (h1 -> h2 -> h3).
+- Ne pas changer le niveau de titre pour la taille : utiliser `text-*` et `leading-*`.
+- Boutons / liens avec labels clairs ; pas d'icones seules sans `aria-label`.
 
-### Imagery / Media
-- Ratios standard par type de card/hero.
-- Fallback visuel + skeleton.
-- Lazy loading par defaut en liste.
+### Dark mode (ready by design)
+- Le theming passe par `tokens.css` (`:root` + `[data-theme="dark"]`).
+- Pas de `bg-white` / `text-black` dans l'UI : toujours tokens `ui.*`.
+- Elements "on-media" restent invariants (white tints + scrims).
+- Valider contrastes en light/dark sur les pages "golden".
 
-### Data density
-- Tables -> cards en mobile.
-- Pagination/virtualisation pour listes denses.
+### Etats UI
+- Hover/active/disabled doivent consommer `ui.*Hover` / `ui.*Disabled`.
+- Disabled = pas d'effet hover, pas de focus ring visuel.
+- Erreurs/alerts/form states utilisent `ui.error*` / `ui.warning*` etc.
 
-### Content / microcopy
-- Usage des caps (labels/eyebrows).
-- Longueur max de titres/cta.
-
-### QA visuel
-- Pages "golden" (homepage, pricing, models, app).
-- Comparatif before/after sur spacing + buttons + focus.
+### QA visuel (garde-fous)
+- Pages "golden" : homepage, pricing, models, app (login + dashboard inclus).
+- Verifier : spacing, boutons (text on brand), focus ring, contrastes.
+- Comparatif avant/apres sur mobile + desktop (screenshots).
 
 ---
 
@@ -1264,9 +1264,10 @@ Cette section complete la bible UI pour la coherence visuelle (branding, art, hi
 
 ### Iconography
 - Set officiel (nom + source).
-- Tailles standard : 16 / 20 / 24 / 32.
-- Stroke width coherent (ex: 1.5px ou 2px).
+- Tailles standard : 16 / 20 / 24 / 32 (20 par defaut dans l'app).
+- Preferer `UIIcon` (Lucide) avec `strokeWidth` cohérent (1.5-1.75).
 - Couleur par defaut : `currentColor` + tokens pour highlights.
+- Icones decoratives : `aria-hidden` ; icones informatives : label explicite.
 
 ### Motion design
 - Principes : sobriete, utilite, reduire le bruit.
@@ -1296,4 +1297,6 @@ Cette section complete la bible UI pour la coherence visuelle (branding, art, hi
 
 ### Media usage
 - Ratios standard par type (cards, hero, gallery).
+- `bg-placeholder` / `bg-skeleton` pour les chargements.
+- `loading="lazy"` en liste ; `priority` reserve aux heros.
 - Pas d'images trop lourdes au-dessus du fold.

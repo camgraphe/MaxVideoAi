@@ -59,6 +59,15 @@ main {
   border-radius: 9999px;
 }
 
+.scrollbar-rail {
+  scrollbar-width: none;
+}
+
+.scrollbar-rail::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
 .shadow-card {
   box-shadow: theme('boxShadow.card');
 }
