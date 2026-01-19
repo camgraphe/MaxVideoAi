@@ -245,7 +245,7 @@ function AssetLibraryModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 px-4">
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-surface-on-media-dark-40 px-4">
       <div className="absolute inset-0" role="presentation" onClick={onClose} />
       <div className="relative z-10 w-full max-w-3xl rounded-modal border border-border bg-surface p-6 shadow-float">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
@@ -4803,7 +4803,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         />
       ) : null}
       {topUpModal && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 px-4">
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-surface-on-media-dark-40 px-4">
           <div className="absolute inset-0" role="presentation" onClick={closeTopUpModal} />
           <form
             className="relative z-10 w-full max-w-md rounded-modal border border-border bg-surface p-6 shadow-float"

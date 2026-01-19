@@ -565,7 +565,7 @@ export function CompositePreviewDock({
             )}
 
             {showGroupError ? (
-              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-card bg-black/65 px-6 text-center text-white">
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-card bg-surface-on-media-dark-65 px-6 text-center text-white">
                 <span className="text-sm font-semibold uppercase tracking-micro">Preview unavailable</span>
                 <span className="mt-2 text-xs text-white/85">{group?.errorMsg ?? 'Generation failed. Please retry.'}</span>
               </div>

@@ -245,7 +245,7 @@ export function ReconsentPrompt() {
 
   if (status.shouldBlock) {
     return (
-      <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 px-4 py-8">
+      <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-surface-on-media-dark-50 px-4 py-8">
         <div className="w-full max-w-md rounded-card border border-border bg-surface p-6 shadow-xl">
           {content}
         </div>

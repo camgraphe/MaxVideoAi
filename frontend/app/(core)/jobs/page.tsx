@@ -609,7 +609,7 @@ function CollapsedGroupRail({
             <div className="relative" style={{ aspectRatio: '16 / 9' }}>
               <RailThumb src={thumb} />
               {group.count > 1 ? (
-                <div className="absolute bottom-2 right-2 rounded-full bg-black/55 px-2 py-0.5 text-xs font-semibold text-white">
+                <div className="absolute bottom-2 right-2 rounded-full bg-surface-on-media-dark-55 px-2 py-0.5 text-xs font-semibold text-white">
                   ×{group.count}
                 </div>
               ) : null}

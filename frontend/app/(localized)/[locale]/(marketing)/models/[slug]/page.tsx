@@ -1836,7 +1836,7 @@ function MediaPreview({ media, label }: { media: FeaturedMedia; label: string })
               </div>
             )}
             {media.hasAudio ? (
-              <span className="absolute left-3 top-3 rounded-full bg-black/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-white">
+              <span className="absolute left-3 top-3 rounded-full bg-surface-on-media-dark-70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-white">
                 Audio on
               </span>
             ) : null}

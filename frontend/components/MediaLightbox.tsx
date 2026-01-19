@@ -320,7 +320,7 @@ export function MediaLightbox({
 
   return (
     <div
-      className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-sm"
+      className="fixed inset-0 z-[9998] flex items-center justify-center bg-surface-on-media-dark-60 px-4 py-6 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       onClick={(event) => {
@@ -425,7 +425,7 @@ export function MediaLightbox({
                 )}
                 {entry.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available" /> : null}
                 {isProcessing && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/45 px-3 text-center text-[11px] text-white backdrop-blur-sm">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-on-media-dark-45 px-3 text-center text-[11px] text-white backdrop-blur-sm">
                       <span className="uppercase tracking-micro">Processing…</span>
                       {entry.message ? <span className="mt-1 line-clamp-2 text-white/80">{entry.message}</span> : null}
                       {progressLabel ? <span className="mt-1 text-[12px] font-semibold text-white">{progressLabel}</span> : null}

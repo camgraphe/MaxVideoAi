@@ -1259,7 +1259,7 @@ function RecentGrid({
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-xs text-text-muted">{copy.actions.noPreview}</div>
                   )}
-                  <div className="absolute left-3 top-3 rounded-pill bg-black/60 px-2 py-1 text-[11px] font-semibold text-white">
+                  <div className="absolute left-3 top-3 rounded-pill bg-surface-on-media-dark-60 px-2 py-1 text-[11px] font-semibold text-white">
                     {group.hero.engineLabel}
                   </div>
                 </Button>

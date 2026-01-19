@@ -258,7 +258,7 @@ export function HeroMediaTile({
       {overlay}
       {lightboxOpen && detailHref ? (
         <div
-          className="fixed inset-0 z-[180] flex items-center justify-center bg-black/80 px-4 py-8"
+          className="fixed inset-0 z-[180] flex items-center justify-center bg-surface-on-media-dark-80 px-4 py-8"
           role="dialog"
           aria-modal="true"
           aria-label={`${label} preview`}

@@ -283,6 +283,20 @@ Note: usage UI = panels/modals sur fond visible + `backdrop-blur`. Eviter `bg-wh
 
 Note: tokens invariants (white tints) pour chips/FX sur images ou videos et pour borders "glass". Usage Tailwind = `bg-surface-on-media-*` / `border-surface-on-media-*`.
 
+#### On-media / dark scrims
+
+* `ui.surfaceOnMediaDark5` - `rgba(0, 0, 0, 0.05)`
+* `ui.surfaceOnMediaDark40` - `rgba(0, 0, 0, 0.40)`
+* `ui.surfaceOnMediaDark45` - `rgba(0, 0, 0, 0.45)`
+* `ui.surfaceOnMediaDark50` - `rgba(0, 0, 0, 0.50)`
+* `ui.surfaceOnMediaDark55` - `rgba(0, 0, 0, 0.55)`
+* `ui.surfaceOnMediaDark60` - `rgba(0, 0, 0, 0.60)`
+* `ui.surfaceOnMediaDark65` - `rgba(0, 0, 0, 0.65)`
+* `ui.surfaceOnMediaDark70` - `rgba(0, 0, 0, 0.70)`
+* `ui.surfaceOnMediaDark80` - `rgba(0, 0, 0, 0.80)`
+
+Note: scrims fonces pour lisibilite sur media. Usage Tailwind = `bg-surface-on-media-dark-*`.
+
 #### Borders
 
 * `ui.border` - `#C2CAD6`
@@ -398,6 +412,20 @@ Note: les chips "on-media" peuvent rester en `bg-white/xx` (art/brand), mais l'U
 * `ui.surfaceOnMedia70` - `rgba(255, 255, 255, 0.70)`
 
 Note: tokens invariants (white tints) pour chips/FX sur images ou videos et pour borders "glass". Usage Tailwind = `bg-surface-on-media-*` / `border-surface-on-media-*`.
+
+#### On-media / dark scrims
+
+* `ui.surfaceOnMediaDark5` - `rgba(0, 0, 0, 0.05)`
+* `ui.surfaceOnMediaDark40` - `rgba(0, 0, 0, 0.40)`
+* `ui.surfaceOnMediaDark45` - `rgba(0, 0, 0, 0.45)`
+* `ui.surfaceOnMediaDark50` - `rgba(0, 0, 0, 0.50)`
+* `ui.surfaceOnMediaDark55` - `rgba(0, 0, 0, 0.55)`
+* `ui.surfaceOnMediaDark60` - `rgba(0, 0, 0, 0.60)`
+* `ui.surfaceOnMediaDark65` - `rgba(0, 0, 0, 0.65)`
+* `ui.surfaceOnMediaDark70` - `rgba(0, 0, 0, 0.70)`
+* `ui.surfaceOnMediaDark80` - `rgba(0, 0, 0, 0.80)`
+
+Note: scrims fonces pour lisibilite sur media. Usage Tailwind = `bg-surface-on-media-dark-*`.
 
 #### Borders
 
@@ -707,6 +735,7 @@ Objectif : rendre explicite le chemin de verite, pour eviter les divergences (ex
 | `ui.surface2` | `--surface-2` | `bg-[var(--surface-2)]` (temp) / `bg-surface-2` (cible) |
 | `ui.surfaceGlass90` | `--surface-glass-90` | `bg-surface-glass-90` |
 | `ui.surfaceOnMedia20` | `--surface-on-media-20` | `bg-surface-on-media-20` |
+| `ui.surfaceOnMediaDark60` | `--surface-on-media-dark-60` | `bg-surface-on-media-dark-60` |
 | `ui.border` | `--border` | `border-border` |
 | `ui.hairline` | `--hairline` | `border-hairline` |
 | `ui.accent` | `--accent` | `text-accent` / `bg-accent` selon usage |
