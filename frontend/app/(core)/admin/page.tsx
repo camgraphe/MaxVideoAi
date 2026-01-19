@@ -113,7 +113,7 @@ export default async function AdminIndexPage() {
       {SECTION_GROUPS.map((group) => (
         <section key={group.title} className="space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-micro text-text-muted">{group.title}</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
             {group.items.map((item) => (
               <Link
                 key={item.href}
@@ -156,7 +156,7 @@ function HealthStrip({ health }: { health: AdminHealthSnapshot }) {
 
   return (
     <section className="rounded-card border border-border/80 bg-white/95 p-5 shadow-card">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-gap-sm md:grid-cols-2 lg:grid-cols-4">
         <HealthTile
           label="Engine signals"
           value={atRisk.length ? `${atRisk.length} incident${atRisk.length > 1 ? 's' : ''}` : 'All clear'}
@@ -237,7 +237,7 @@ function QuickToolsCard() {
         <p className="text-sm text-text-secondary">Jump to common support flows without loading the full modules first.</p>
       </header>
 
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
+      <div className="mt-4 grid grid-gap-sm md:grid-cols-2">
         <form action="/admin/users" method="get" className="flex flex-col gap-2 rounded-2xl border border-border/70 bg-bg p-4">
           <label htmlFor="quick-user" className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
             Find user

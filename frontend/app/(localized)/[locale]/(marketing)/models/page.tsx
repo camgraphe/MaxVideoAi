@@ -260,7 +260,7 @@ export default async function ModelsPage() {
           <p key={paragraph}>{paragraph}</p>
         ))}
         <ModelsGallery cards={modelCards} ctaLabel={cardCtaLabel} />
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid grid-gap-sm lg:grid-cols-3">
           {introCards.map((card) => (
             <div
               key={card.title}

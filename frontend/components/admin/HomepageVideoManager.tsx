@@ -209,7 +209,7 @@ export function HomepageVideoManager({ initialHero }: HomepageVideoManagerProps)
           <h2 className="text-lg font-semibold text-text-primary">Hero spotlight videos</h2>
           <p className="text-sm text-text-secondary">Configure the four hero tiles displayed above the fold.</p>
         </header>
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid grid-gap-sm lg:grid-cols-2">
           {heroSlots.map((slot) => {
             const video = slot.video;
             return (

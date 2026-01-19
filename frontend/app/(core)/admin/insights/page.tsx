@@ -59,7 +59,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
         <RangeSelector current={metrics.range.label} excludeAdmin={excludeAdmin} />
       </header>
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Total accounts"
           value={formatNumber(metrics.totals.totalAccounts)}
@@ -101,7 +101,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
           </div>
           <span className="text-xs text-text-muted">{describeRange(metrics.range.label)}</span>
         </div>
-        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <div className="mt-4 grid grid-gap-sm lg:grid-cols-2">
           <MiniChartPanel title="Signups per day">
             <MiniBarChart
               ariaLabel="Daily signup counts"
@@ -323,7 +323,7 @@ export default async function AdminInsightsPage({ searchParams }: PageProps) {
       </SectionCard>
 
       <SectionCard title="Operational health (30d)" description="Failures and anomalies to keep an eye on.">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
           <StatCard label="Failed renders (30d)" value={formatNumber(metrics.health.failedRenders30d)} />
           <StatCard label="Failure rate" value={formatPercent(metrics.health.failedRendersRate30d)} helper="Failed / completed" />
         </div>

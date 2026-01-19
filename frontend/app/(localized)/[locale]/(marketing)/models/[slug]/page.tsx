@@ -1386,7 +1386,7 @@ function Sora2PageLayout({
                 {copy.specNote}
               </blockquote>
             ) : null}
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid grid-gap-sm md:grid-cols-2">
               {specSections.map((section) => (
                 <article
                   key={section.title}
@@ -1544,7 +1544,7 @@ function Sora2PageLayout({
         <section className="mt-12 stack-gap">
           {copy.imageTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.imageTitle}</h2> : null}
           {copy.imageIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.imageIntro}</p> : null}
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid grid-gap-sm lg:grid-cols-2">
             {imageToVideoSteps.length ? (
               <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
                 <ol className="list-decimal space-y-2 pl-5 text-sm text-text-secondary">
@@ -1620,7 +1620,7 @@ function Sora2PageLayout({
         {copy.tipsTitle || strengths.length || boundaries.length ? (
           <section id="tips" className="mt-12 space-y-6">
             {copy.tipsTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.tipsTitle}</h2> : null}
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid grid-gap-sm lg:grid-cols-2">
               {strengths.length ? (
                 <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
                   <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
@@ -1727,7 +1727,7 @@ function Sora2PageLayout({
               {copy.relatedTitle ?? 'Explore other models'}
             </h2>
             {copy.relatedSubtitle ? <p className="text-sm text-text-secondary">{copy.relatedSubtitle}</p> : null}
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid grid-gap-sm md:grid-cols-3">
             {relatedEngines.map((entry) => {
               const label = entry.marketingName ?? entry.engine.label;
                 const ctaLabel =
@@ -2192,7 +2192,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       {technicalOverview.length ? (
         <section className="mt-10 rounded-card border border-hairline bg-white p-6 shadow-card">
           <h2 className="text-lg font-semibold text-text-primary">{technicalOverviewTitle}</h2>
-          <div className="mt-4 grid gap-4 text-sm text-text-secondary sm:grid-cols-2">
+          <div className="mt-4 grid grid-gap-sm text-sm text-text-secondary sm:grid-cols-2">
             {technicalOverview.map((entry, index) => (
               <article key={`${entry.label ?? index}-${entry.body}`} className="space-y-1">
                 {entry.label ? <strong className="block text-text-primary">{entry.label}</strong> : null}
@@ -2336,7 +2336,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{relatedCopy.title}</h2>
             <p className="text-sm text-text-secondary">{relatedCopy.subtitle}</p>
           </div>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid grid-gap-sm md:grid-cols-3">
             {relatedEngines.map((candidate) => {
               const label = candidate.marketingName ?? candidate.engine.label;
               const ctaLabel = (() => {

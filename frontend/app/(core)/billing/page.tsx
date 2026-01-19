@@ -658,7 +658,7 @@ export default function BillingPage() {
             )}
           </section>
 
-          <section className="mb-6 grid gap-4 md:grid-cols-2">
+          <section className="mb-6 grid grid-gap-sm md:grid-cols-2">
             <div className="rounded-card border border-border bg-white p-4 shadow-card">
               <h2 className="mb-2 text-lg font-semibold text-text-primary">{copy.wallet.title}</h2>
               <p className="text-sm text-text-secondary">{copy.wallet.description}</p>

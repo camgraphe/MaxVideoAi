@@ -270,7 +270,7 @@ export default function LibraryPage() {
             ) : null}
 
             {assetsLoading && assets.length === 0 ? (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-4">
                 {Array.from({ length: 8 }).map((_, index) => (
                   <div key={`asset-skeleton-${index}`} className="rounded-card border border-hairline bg-white/60">
                     <div className="relative aspect-square rounded-t-card bg-neutral-100">
@@ -291,7 +291,7 @@ export default function LibraryPage() {
                 {emptyLabel || copy.assets.empty}
               </div>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-4">
                 {assets.map((asset) => (
                   <article key={asset.id} className="rounded-card border border-border bg-white shadow-card">
                     <div className="relative aspect-square overflow-hidden rounded-t-card bg-[#f2f4f8]">

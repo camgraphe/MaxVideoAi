@@ -83,7 +83,7 @@ export function MarketingFooter() {
             </div>
           </div>
         </div>
-        <div className="grid gap-4 text-sm text-text-secondary sm:grid-cols-2 lg:grid-cols-2">
+        <div className="grid grid-gap-sm text-sm text-text-secondary sm:grid-cols-2 lg:grid-cols-2">
           <div>
             <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Explore MaxVideoAI</p>
             <nav className="mt-3 flex flex-wrap gap-3" aria-label="Key pages">

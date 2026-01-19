@@ -2086,7 +2086,7 @@ function ImageLibraryModal({
               {copy.modal.error}
             </div>
           ) : isLoading && !assets.length ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, index) => (
                 <div key={`library-modal-skeleton-${index}`} className="rounded-card border border-border bg-white/60 p-0" aria-hidden>
                   <div className="relative aspect-square overflow-hidden rounded-t-card bg-neutral-100">
@@ -2103,7 +2103,7 @@ function ImageLibraryModal({
               {emptyLabel}
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
               {assets.map((asset) => (
                 <Button
                   key={asset.id}

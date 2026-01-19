@@ -111,7 +111,7 @@ export default function AdminUsersPage() {
       ) : null}
 
       {stats && !statsUnavailable ? (
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
             <p className="text-xs uppercase tracking-[0.18em] text-text-tertiary">All time</p>
             <p className="mt-2 text-2xl font-semibold text-text-primary">{formatNumber(stats.total)}</p>

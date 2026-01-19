@@ -557,7 +557,7 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
         <BackLink href={backHref} label={copy.backLink} className="transition hover:text-text-secondary" />
       </div>
       <article className="space-y-12">
-        <section className="grid gap-8 lg:grid-cols-2 lg:items-start">
+        <section className="grid grid-gap-lg lg:grid-cols-2 lg:items-start">
           <div className="lg:order-1">
             <div
               className="relative overflow-hidden rounded-card border border-border bg-black shadow-card"
@@ -603,7 +603,7 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
             />
           </div>
         </section>
-        <section className="grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
+        <section className="grid grid-gap-lg lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
           <div className="rounded-card border border-border bg-white/90 p-6 shadow-card backdrop-blur">
             <div className="space-y-4">
               {engineLink ? (
@@ -625,7 +625,7 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
                   <p className="mt-1 text-sm text-text-secondary">{engineDescription}</p>
                 </div>
               )}
-              <dl className="grid gap-4 text-sm text-text-secondary sm:grid-cols-2">
+              <dl className="grid grid-gap-sm text-sm text-text-secondary sm:grid-cols-2">
                 <div>
                   <dt className="text-xs uppercase tracking-micro text-text-muted">{copy.details.priceTotalLabel}</dt>
                   <dd className="mt-1 text-base font-medium text-text-primary">{totalPriceDisplay}</dd>

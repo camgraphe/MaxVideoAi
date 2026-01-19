@@ -463,7 +463,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           <FlagPill live={FEATURES.pricing.memberTiers} className="ml-3" />
         </h2>
         <p className="mt-2 text-sm text-text-secondary">{member.subtitle}</p>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
+        <div className="mt-6 grid grid-gap-sm md:grid-cols-3">
           {formattedTiers.map((tier) => (
             <div key={tier.name} className="rounded-card border border-hairline bg-bg p-4">
               <p className="text-sm font-semibold text-text-primary">{tier.name}</p>

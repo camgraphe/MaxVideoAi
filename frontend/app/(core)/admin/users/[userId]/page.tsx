@@ -40,7 +40,7 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
       <section className="rounded-card border border-border/70 bg-white/95 p-5 shadow-card">
         <h2 className="text-sm font-semibold uppercase tracking-[0.35em] text-text-muted">Profile</h2>
         {profile ? (
-          <dl className="mt-4 grid gap-4 md:grid-cols-2">
+          <dl className="mt-4 grid grid-gap-sm md:grid-cols-2">
             <ProfileField label="Email">{profile.email ?? '—'}</ProfileField>
             <ProfileField label="User ID">{profile.id}</ProfileField>
             <ProfileField label="Created">{formatDate(profile.createdAt)}</ProfileField>
@@ -60,7 +60,7 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
         )}
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Total renders" value={formatNumber(usage?.totalRenders ?? 0)} helper="Lifetime completed jobs" />
         <StatCard label="Renders (30d)" value={formatNumber(usage?.renders30d ?? 0)} helper="Completed in last 30 days" />
         <StatCard label="Wallet balance" value={wallet ? formatCurrency(wallet.balanceCents / 100) : '—'} helper="Stored credits" />

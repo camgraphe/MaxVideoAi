@@ -84,7 +84,7 @@ export default async function ContactPage({
           size, target models, deadline, or compliance requirements—reach the right specialist faster. Every request
           receives a human reply; we do not outsource support or sales.
         </p>
-        <div className="mt-5 grid gap-4 sm:grid-cols-3">
+        <div className="mt-5 grid grid-gap-sm sm:grid-cols-3">
           <div>
             <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">Product help</h2>
             <p className="mt-2">

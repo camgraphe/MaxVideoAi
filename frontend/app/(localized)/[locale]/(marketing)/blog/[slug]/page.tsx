@@ -297,7 +297,7 @@ export default async function BlogPostPage({ params }: { params: Params }) {
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">Related reading</h2>
             <p className="text-sm text-text-secondary">More launch notes and engine breakdowns curated for you.</p>
           </div>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid grid-gap-sm md:grid-cols-3">
             {relatedPosts.map((related) => (
               <article key={related.slug} className="rounded-2xl border border-hairline bg-white/90 p-5 shadow-card">
                 <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">

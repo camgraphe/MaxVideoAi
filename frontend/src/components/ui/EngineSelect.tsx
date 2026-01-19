@@ -1062,7 +1062,7 @@ function BrowseEnginesModal({
           </div>
         </header>
         <div className="flex-1 overflow-y-auto bg-white px-6 py-6">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid grid-gap-sm md:grid-cols-2">
             {filteredEngines.map((engine) => {
               const guide = (copy.guides ?? DEFAULT_ENGINE_GUIDE)[engine.id];
               const isSelected = engine.id === selectedEngineId;

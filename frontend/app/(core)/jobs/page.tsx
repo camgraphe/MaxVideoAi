@@ -282,7 +282,7 @@ export default function JobsPage() {
       if (!groups.length) {
         if (isInitialLoading) {
           return (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {renderSkeletonCards(4, `${prefix}-initial`)}
             </div>
           );
@@ -294,7 +294,7 @@ export default function JobsPage() {
         );
       }
       return (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {groups.map((group) => {
             const engineId = group.hero.engineId;
             const engine = engineId ? engineLookup.byId.get(engineId) ?? null : null;

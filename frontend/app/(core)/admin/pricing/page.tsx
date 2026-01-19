@@ -190,7 +190,7 @@ export default function PricingAdminPage() {
             Failed to load membership tiers.
           </p>
         ) : orderedMembership.length ? (
-          <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <div className="mt-4 grid grid-gap-sm sm:grid-cols-3">
             {orderedMembership.map((tier) => {
               const editable = membershipDraft[tier.tier] ?? { thresholdUsd: '', discountPct: '' };
               const label = tier.tier.slice(0, 1).toUpperCase() + tier.tier.slice(1);

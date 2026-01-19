@@ -41,7 +41,7 @@ export default async function AdminMarketingOptInsPage() {
         </p>
       </header>
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-xl border border-hairline bg-white p-4 shadow-card">
           <p className="text-xs uppercase tracking-[0.18em] text-text-tertiary">Total opt-ins</p>
           <p className="mt-2 text-3xl font-semibold text-text-primary">{records.length}</p>

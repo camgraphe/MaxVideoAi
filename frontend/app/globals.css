@@ -95,6 +95,14 @@ main {
   .grid-gap {
     gap: var(--grid-gap);
   }
+
+  .grid-gap-sm {
+    gap: var(--grid-gap-sm);
+  }
+
+  .grid-gap-lg {
+    gap: var(--grid-gap-lg);
+  }
 }
 
 @keyframes mosaicDrift {

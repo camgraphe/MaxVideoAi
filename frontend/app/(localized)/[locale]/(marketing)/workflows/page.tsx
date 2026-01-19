@@ -190,7 +190,7 @@ export default async function WorkflowsPage({ params }: { params: { locale: AppL
       <section className="mt-12 rounded-card border border-hairline bg-white p-6 shadow-card">
         <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{modelRoster.title ?? 'Model roster'}</h2>
         <p className="mt-2 text-sm text-text-secondary">{modelRoster.description ?? ''}</p>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div className="mt-4 grid grid-gap-sm sm:grid-cols-2">
           {models.map((model) => {
             const brand = PARTNER_BRAND_MAP.get(model.brandId);
             const availabilityLabel = availabilityLabels[model.availability] ?? model.availability;

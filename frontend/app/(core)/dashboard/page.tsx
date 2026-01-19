@@ -1233,7 +1233,7 @@ function RecentGrid({
       </div>
 
       {isLoading && !groups.length ? (
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-4 grid grid-gap-sm sm:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 6 }).map((_, index) => (
             <div key={`recent-skeleton-${index}`} className="h-56 rounded-card border border-border bg-bg/60" />
           ))}
@@ -1241,7 +1241,7 @@ function RecentGrid({
       ) : !groups.length ? (
         <p className="mt-4 text-sm text-text-secondary">{copy.recent.empty}</p>
       ) : (
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-4 grid grid-gap-sm sm:grid-cols-2 xl:grid-cols-3">
           {groups.map((group) => {
             const isCurated = Boolean(group.hero.job?.curated);
             const jobId = group.hero.jobId ?? group.hero.id;

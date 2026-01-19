@@ -176,7 +176,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
 
       <section className="mt-10 space-y-6 rounded-[28px] border border-hairline bg-white/90 p-8 text-sm text-text-secondary shadow-card sm:p-10">
         <p>{content.intro?.lead}</p>
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid grid-gap-sm lg:grid-cols-3">
           {(content.intro?.cards ?? []).map((card) => (
             <div key={card.title}>
               <h2 className="text-sm font-semibold uppercase tracking-micro text-text-primary">{card.title}</h2>
@@ -186,7 +186,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
         </div>
       </section>
 
-      <section className="mt-12 grid gap-8 lg:grid-cols-[minmax(0,2fr),minmax(0,1fr)]">
+      <section className="mt-12 grid grid-gap-lg lg:grid-cols-[minmax(0,2fr),minmax(0,1fr)]">
         <article className="group relative overflow-hidden rounded-[28px] border border-hairline bg-white/90 shadow-card transition hover:-translate-y-1 hover:shadow-float">
           <div className="relative h-64 w-full overflow-hidden sm:h-80">
             <Image

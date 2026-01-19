@@ -72,6 +72,8 @@
   --section-padding-y: 64px;
   --stack-gap: 16px;
   --grid-gap: 24px;
+  --grid-gap-sm: 16px;
+  --grid-gap-lg: 32px;
   --card-pad: 16px;
   --input-height: 40px;
   --button-height: 40px;

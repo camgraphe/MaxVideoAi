@@ -466,7 +466,7 @@ export function PlaylistsManager({ initialPlaylists, initialPlaylistId, initialI
                 </Button>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-gap-sm sm:grid-cols-2">
                 <label className="text-sm">
                   <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">Name</span>
                   <input

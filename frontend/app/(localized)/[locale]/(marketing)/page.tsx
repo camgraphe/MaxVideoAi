@@ -558,7 +558,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         <link rel="preconnect" href="https://v3b.fal.media" crossOrigin="anonymous" />
         {lcpPosterSrc ? <link rel="preload" as="image" href={lcpPosterSrc} fetchPriority="high" media="(max-width: 767px)" /> : null}
       </Head>
-      <section className="container-page flex max-w-6xl flex-col items-center gap-10 pt-20 pb-16 text-center">
+      <section className="container-page section flex max-w-6xl flex-col items-center gap-10 pt-20 text-center">
         <div className="flex flex-wrap items-center justify-center gap-3">
           {badges.map((badge) => (
             <span key={badge} className="rounded-pill border border-hairline bg-white px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary">
@@ -653,7 +653,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
           <ProofTabs pricingRules={pricingRulesLite} />
         </div>
 
-        <section className="container-page mt-12 max-w-6xl pb-16 lg:pb-20">
+        <section className="container-page section mt-12 max-w-6xl pt-0">
           <div className="grid grid-gap lg:grid-cols-3">
             {whyCards.map((item) => (
               <article key={item.title} className="rounded-card border border-hairline bg-white p-6 shadow-card">

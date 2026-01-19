@@ -342,7 +342,7 @@ function AssetLibraryModal({
               {emptyLabel ?? copy.empty ?? 'No saved images yet. Upload a reference image to see it here.'}
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-gap-sm sm:grid-cols-2">
               {assets.map((asset) => {
                 const dimensions = asset.width && asset.height ? `${asset.width}×${asset.height}` : null;
                 const sizeLabel = formatSize(asset.size);
@@ -4615,7 +4615,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
                     {workspaceCopy.gallery.empty}
                   </div>
                 ) : (
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid grid-gap-sm sm:grid-cols-2">
                     {normalizedPendingGroups.map((group) => {
                       const engineId = group.hero.engineId;
                       const engine = engineId ? engineMap.get(engineId) ?? null : null;
