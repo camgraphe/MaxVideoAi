@@ -565,8 +565,8 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
           ))}
         </div>
         <div className="space-y-6">
-          <h1 className="text-4xl font-semibold tracking-tight text-text-primary sm:text-5xl">{hero.title}</h1>
-          <p className="mx-auto max-w-2xl text-lg text-text-secondary">
+          <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-5xl">{hero.title}</h1>
+          <p className="mx-auto max-w-2xl text-lg leading-relaxed text-text-secondary">
             {hero.subtitle}
           </p>
         </div>
@@ -630,7 +630,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
       <section className="border-t border-hairline bg-white px-4 py-20 text-left sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col-reverse items-center gap-12 text-center lg:flex-row lg:items-center lg:text-left">
           <div className="w-full max-w-2xl space-y-5 lg:w-[40%]">
-            <h2 className="text-3xl font-semibold text-text-primary sm:text-4xl">{heroScreenshot.title}</h2>
+            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{heroScreenshot.title}</h2>
             <p className="text-sm text-text-secondary sm:text-base">{heroScreenshot.body}</p>
           </div>
           <div className="relative w-full max-w-4xl">

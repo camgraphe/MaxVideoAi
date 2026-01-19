@@ -50,8 +50,8 @@ export default async function DocPage({ params }: { params: Params }) {
           <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
             {new Date(doc.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           </p>
-          <h1 className="text-3xl font-semibold text-text-primary">{doc.title}</h1>
-          <p className="text-base text-text-secondary">{doc.description}</p>
+          <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{doc.title}</h1>
+          <p className="text-base leading-relaxed text-text-secondary">{doc.description}</p>
         </header>
         <div className="prose prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: doc.content }} />
       </article>

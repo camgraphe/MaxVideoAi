@@ -655,8 +655,8 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
       </Head>
       <main className="mx-auto max-w-7xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
         <header className="max-w-3xl space-y-4">
-          <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
-          <p className="text-base text-text-secondary">{content.hero.subtitle}</p>
+          <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
+          <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
           <p className="text-sm leading-relaxed text-text-secondary/90">{heroBody}</p>
         </header>
 

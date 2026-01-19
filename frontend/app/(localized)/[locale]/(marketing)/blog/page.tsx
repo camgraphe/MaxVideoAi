@@ -141,8 +141,8 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
   if (posts.length === 0) {
     return (
       <main className="mx-auto max-w-3xl px-4 pb-20 pt-16 text-center sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
-        <p className="mt-4 text-base text-text-secondary">{content.empty}</p>
+        <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
+        <p className="mt-4 text-base leading-relaxed text-text-secondary">{content.empty}</p>
       </main>
     );
   }
@@ -157,10 +157,10 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
             <p className="text-xs font-semibold uppercase tracking-micro text-brand">
               {content.hero.eyebrow ?? 'The Studio Journal'}
             </p>
-            <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">
+            <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-5xl">
               {content.hero.title}
             </h1>
-            <p className="text-base text-text-secondary sm:text-lg">{content.hero.subtitle}</p>
+            <p className="text-base leading-relaxed text-text-secondary sm:text-lg">{content.hero.subtitle}</p>
           </div>
           <Link
             href={{ pathname: '/models/[slug]', params: { slug: 'sora-2' } }}
@@ -220,7 +220,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
                   {featured.title}
                 </Link>
               </h2>
-              <p className="text-base text-text-secondary sm:text-lg">{featured.description}</p>
+              <p className="text-base leading-relaxed text-text-secondary sm:text-lg">{featured.description}</p>
             </div>
             <Link
               href={{ pathname: '/blog/[slug]', params: { slug: featured.slug } }}

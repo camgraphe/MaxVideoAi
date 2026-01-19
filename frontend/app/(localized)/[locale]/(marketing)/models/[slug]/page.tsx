@@ -1228,7 +1228,7 @@ function Sora2PageLayout({
         <section className="mt-6 space-y-4 rounded-3xl border border-hairline bg-white/80 p-6 shadow-card sm:p-8">
           <div className="space-y-6">
             <div className="space-y-3 text-center">
-              <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">
+              <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">
                 {heroTitle}
               </h1>
               <h2 className="text-lg font-semibold text-text-primary">
@@ -1244,8 +1244,8 @@ function Sora2PageLayout({
                   ))}
                 </div>
               ) : null}
-              {heroDesc1 ? <p className="text-base text-text-secondary">{heroDesc1}</p> : null}
-              {heroDesc2 ? <p className="text-base text-text-secondary">{heroDesc2}</p> : null}
+              {heroDesc1 ? <p className="text-base leading-relaxed text-text-secondary">{heroDesc1}</p> : null}
+              {heroDesc2 ? <p className="text-base leading-relaxed text-text-secondary">{heroDesc2}</p> : null}
             </div>
             <div className="flex flex-wrap justify-center gap-3">
               <Link
@@ -1336,8 +1336,8 @@ function Sora2PageLayout({
 
         <section id="examples" className="mt-14 space-y-4">
           {copy.whatTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.whatTitle}</h2> : null}
-          {copy.whatIntro1 ? <p className="text-base text-text-secondary">{copy.whatIntro1}</p> : null}
-          {copy.whatIntro2 ? <p className="text-base text-text-secondary">{copy.whatIntro2}</p> : null}
+          {copy.whatIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro1}</p> : null}
+          {copy.whatIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro2}</p> : null}
           {quickStartTitle && quickStartBlocks.length ? (
             <div className="space-y-4 rounded-2xl border border-hairline bg-white/70 p-4 shadow-card">
               <h3 className="text-base font-semibold text-text-primary">{quickStartTitle}</h3>
@@ -1427,9 +1427,9 @@ function Sora2PageLayout({
           {copy.galleryTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.galleryTitle}</h2> : null}
           {galleryVideos.length ? (
             <>
-              {copy.galleryIntro ? <p className="text-base text-text-secondary">{copy.galleryIntro}</p> : null}
+              {copy.galleryIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.galleryIntro}</p> : null}
               {copy.galleryAllCta ? (
-                <p className="text-base text-text-secondary">
+                <p className="text-base leading-relaxed text-text-secondary">
                   <Link
                     href={`/examples?engine=${encodeURIComponent(galleryEngineSlug)}`}
                     className="font-semibold text-brand hover:text-brandHover"
@@ -1511,7 +1511,7 @@ function Sora2PageLayout({
 
         <section id={imageAnchorId} className="mt-14 space-y-4">
           {copy.promptTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.promptTitle}</h2> : null}
-          {copy.promptIntro ? <p className="text-base text-text-secondary">{copy.promptIntro}</p> : null}
+          {copy.promptIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.promptIntro}</p> : null}
           <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
             {promptPatternSteps.length ? (
               <div className="space-y-2">
@@ -1538,7 +1538,7 @@ function Sora2PageLayout({
 
         <section className="mt-14 space-y-4">
           {copy.imageTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.imageTitle}</h2> : null}
-          {copy.imageIntro ? <p className="text-base text-text-secondary">{copy.imageIntro}</p> : null}
+          {copy.imageIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.imageIntro}</p> : null}
           <div className="grid gap-4 lg:grid-cols-2">
             {imageToVideoSteps.length ? (
               <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
@@ -1563,8 +1563,8 @@ function Sora2PageLayout({
 
         <section className="mt-14 space-y-4">
           {copy.multishotTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.multishotTitle}</h2> : null}
-          {copy.multishotIntro1 ? <p className="text-base text-text-secondary">{copy.multishotIntro1}</p> : null}
-          {copy.multishotIntro2 ? <p className="text-base text-text-secondary">{copy.multishotIntro2}</p> : null}
+          {copy.multishotIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.multishotIntro1}</p> : null}
+          {copy.multishotIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.multishotIntro2}</p> : null}
           <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
             <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
               {miniFilmTips.map((tip) => (
@@ -1766,8 +1766,8 @@ function Sora2PageLayout({
       ) : null}
 
         <section className="mt-14 space-y-3 rounded-3xl border border-hairline bg-white/90 px-6 py-6 text-text-primary shadow-card sm:px-8">
-          {copy.finalPara1 ? <p className="text-base text-text-secondary">{copy.finalPara1}</p> : null}
-          {copy.finalPara2 ? <p className="text-base text-text-secondary">{copy.finalPara2}</p> : null}
+          {copy.finalPara1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.finalPara1}</p> : null}
+          {copy.finalPara2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.finalPara2}</p> : null}
           <Link
             href={primaryCtaHref}
             className="inline-flex w-fit items-center rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover"
@@ -2106,7 +2106,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
             </span>
           ) : null}
           <div>
-            <h2 className="text-3xl font-semibold text-text-primary sm:text-4xl">
+            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
               {heroContent?.title ?? marketingName}
             </h2>
             {versionLabel ? (

@@ -72,8 +72,8 @@ export default async function ContactPage({
   return (
     <div className="mx-auto max-w-4xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
       <header className="space-y-3">
-        <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
-        <p className="text-base text-text-secondary">{content.hero.subtitle}</p>
+        <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
+        <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
       </header>
       <section className="mt-8 rounded-card border border-hairline bg-white/90 p-6 text-sm text-text-secondary shadow-card sm:p-8">
         <p>

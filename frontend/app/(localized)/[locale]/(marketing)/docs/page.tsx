@@ -92,8 +92,8 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
     <main id="top" className="scroll-smooth">
       <div className="mx-auto max-w-5xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
         <header className="space-y-3">
-          <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
-          <p className="max-w-2xl text-base text-text-secondary">{content.hero.subtitle}</p>
+          <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
+          <p className="max-w-2xl text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
         </header>
 
         <nav aria-label="On-page navigation" className="mt-4">

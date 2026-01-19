@@ -284,8 +284,8 @@ export default async function BlogPostPage({ params }: { params: Params }) {
               </div>
             </div>
             <div className="max-w-3xl space-y-3">
-              <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">{post.title}</h1>
-              <p className="text-base text-text-secondary sm:text-lg">{post.description}</p>
+              <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-5xl">{post.title}</h1>
+              <p className="text-base leading-relaxed text-text-secondary sm:text-lg">{post.description}</p>
             </div>
           </div>
         </header>

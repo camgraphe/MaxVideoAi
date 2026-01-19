@@ -322,10 +322,10 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
   return (
     <main className="mx-auto max-w-6xl px-4 pb-20 pt-16 sm:px-6 lg:px-8">
       <header className="max-w-3xl space-y-4">
-        <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">{content.hero.title}</h1>
-        <p className="text-base text-text-secondary">{content.hero.subtitle}</p>
+        <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
+        <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
         {heroLink ? (
-          <p className="text-base text-text-secondary">
+          <p className="text-base leading-relaxed text-text-secondary">
             {heroLink.before}
             <Link href={{ pathname: '/blog/[slug]', params: { slug: 'compare-ai-video-engines' } }} className="font-semibold text-brand hover:text-brandHover">
               {heroLink.label ?? 'AI video comparison'}
