@@ -33,7 +33,7 @@ const ProofTabs = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="mx-auto mt-6 h-48 w-full max-w-6xl animate-pulse rounded-card bg-white/40" aria-hidden />
+      <div className="mx-auto mt-6 h-48 w-full max-w-6xl animate-pulse rounded-card bg-surface/40" aria-hidden />
     ),
   }
 );
@@ -46,7 +46,7 @@ const CompareEnginesCarousel = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="mx-auto mt-10 h-64 w-full max-w-6xl animate-pulse rounded-card bg-white/40" aria-hidden />
+      <div className="mx-auto mt-10 h-64 w-full max-w-6xl animate-pulse rounded-card bg-surface/40" aria-hidden />
     ),
   }
 );
@@ -60,7 +60,7 @@ const ExamplesOrbitCallout = dynamic(
     ssr: false,
     loading: () => (
       <section className="container-page section w-full max-w-6xl">
-        <div className="h-[380px] animate-pulse rounded-[40px] border border-hairline bg-white/70 shadow-card" aria-hidden />
+        <div className="h-[380px] animate-pulse rounded-[40px] border border-hairline bg-surface/70 shadow-card" aria-hidden />
       </section>
     ),
   }
@@ -248,14 +248,14 @@ function MiniFAQ({ faq }: MiniFaqProps) {
 
   return (
     <section aria-labelledby="mini-faq-heading" className="container-page section max-w-6xl">
-      <div className="rounded-2xl border border-hairline bg-white p-6 shadow-card">
+      <div className="rounded-2xl border border-hairline bg-surface p-6 shadow-card">
         <h2 id="mini-faq-heading" className="text-xl font-semibold text-text-primary">
           {resolvedTitle}
         </h2>
         <p className="mb-4 text-sm text-muted-foreground">{resolvedDescription}</p>
         <div className="stack-gap-sm">
           {items.map((item) => (
-            <details key={item.q} className="group rounded-lg border border-hairline bg-white/60 p-4 transition hover:border-text-muted">
+            <details key={item.q} className="group rounded-lg border border-hairline bg-surface/60 p-4 transition hover:border-text-muted">
               <summary className="flex cursor-pointer select-none list-none items-center justify-between text-sm font-medium text-text-primary">
                 <span>{item.q}</span>
                 <span className="ml-3 text-muted-foreground transition-transform group-open:rotate-180">▾</span>
@@ -561,7 +561,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
       <section className="container-page section flex max-w-6xl flex-col items-center gap-10 text-center">
         <div className="flex flex-wrap items-center justify-center gap-4">
           {badges.map((badge) => (
-            <span key={badge} className="rounded-pill border border-hairline bg-white px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary">
+            <span key={badge} className="rounded-pill border border-hairline bg-surface px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary">
               {badge}
             </span>
           ))}
@@ -614,7 +614,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         </div>
       </section>
 
-      <section className="border-t border-hairline bg-white/90 text-text-secondary section-compact">
+      <section className="border-t border-hairline bg-surface/90 text-text-secondary section-compact">
         <div className="container-page flex max-w-6xl flex-col items-center gap-4 text-center">
           <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
             {worksWith.label}
@@ -628,14 +628,14 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         </div>
       </section>
 
-      <section className="border-t border-hairline bg-white text-left section">
+      <section className="border-t border-hairline bg-surface text-left section">
         <div className="container-page flex max-w-7xl flex-col-reverse items-center gap-12 text-center lg:flex-row lg:items-center lg:text-left">
           <div className="w-full sm:max-w-[62ch] stack-gap-lg lg:w-[40%]">
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{heroScreenshot.title}</h2>
             <p className="text-sm text-text-secondary sm:text-base">{heroScreenshot.body}</p>
           </div>
           <div className="relative w-full max-w-4xl">
-            <div className="relative mx-auto aspect-[3/2] w-full overflow-hidden rounded-[48px] border border-hairline bg-white shadow-[0_60px_160px_-60px_rgba(28,37,65,0.6)]">
+            <div className="relative mx-auto aspect-[3/2] w-full overflow-hidden rounded-[48px] border border-hairline bg-surface shadow-[0_60px_160px_-60px_rgba(28,37,65,0.6)]">
               <Image
                 src="/assets/marketing/monitor-mockup-app.png"
                 alt={heroScreenshot.alt}
@@ -657,7 +657,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
           <section className="container-page max-w-6xl">
             <div className="grid grid-gap lg:grid-cols-3">
               {whyCards.map((item) => (
-                <article key={item.title} className="rounded-card border border-hairline bg-white p-6 shadow-card">
+                <article key={item.title} className="rounded-card border border-hairline bg-surface p-6 shadow-card">
                   <h3 className="text-lg font-semibold text-text-primary">{item.title}</h3>
                   <p className="mt-3 text-sm text-text-secondary">{item.body}</p>
                 </article>
@@ -683,7 +683,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
             </div>
             <div className="grid grid-gap lg:grid-cols-2">
               {ways.map((item) => (
-                <article key={item.title} className="flex flex-col gap-4 rounded-card border border-hairline bg-white p-6 shadow-card">
+                <article key={item.title} className="flex flex-col gap-4 rounded-card border border-hairline bg-surface p-6 shadow-card">
                   <div>
                     <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">{item.title}</span>
                   </div>
@@ -703,7 +703,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
 
           <section className="container-page max-w-6xl">
             <div className="grid grid-gap lg:grid-cols-[1.2fr_1fr]">
-              <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
+              <article className="rounded-card border border-hairline bg-surface p-6 shadow-card">
                 <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
                   {pricing.badge}
                 </span>
@@ -723,7 +723,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
                   3,000+ internal test renders · automatic refunds on failures · wallet-first billing
                 </p>
               </article>
-              <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
+              <article className="rounded-card border border-hairline bg-surface p-6 shadow-card">
                 <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
                   {trust.badge}
                 </span>
@@ -741,7 +741,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         </div>
       </MosaicBackdrop>
       <section className="container-page section max-w-6xl">
-        <div className="rounded-card border border-hairline bg-white/70 p-6 shadow-card">
+        <div className="rounded-card border border-hairline bg-surface/70 p-6 shadow-card">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Partners</p>
           <h2 className="mt-2 text-lg font-semibold text-text-primary">Featured on</h2>
           <div className="mt-4">

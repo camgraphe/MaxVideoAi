@@ -256,7 +256,7 @@ export default async function ModelsPage() {
           <p className="sm:max-w-[62ch] text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
           <p className="sm:max-w-[62ch] text-sm text-text-secondary">{heroBody}</p>
         </header>
-        <section className="stack-gap-lg rounded-3xl border border-hairline bg-white/90 p-6 text-sm text-text-secondary shadow-card sm:p-8">
+        <section className="stack-gap-lg rounded-3xl border border-hairline bg-surface/90 p-6 text-sm text-text-secondary shadow-card sm:p-8">
           {introParagraphs.map((paragraph) => (
             <p key={paragraph}>{paragraph}</p>
           ))}
@@ -265,7 +265,7 @@ export default async function ModelsPage() {
             {introCards.map((card) => (
               <div
                 key={card.title}
-                className="rounded-2xl border border-hairline bg-gradient-to-br from-bg via-white to-bg p-5 shadow-card"
+                className="rounded-2xl border border-hairline bg-gradient-to-br from-bg via-surface to-bg p-5 shadow-card"
               >
                 <div className="flex items-center gap-4">
                   <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-2 text-lg">
@@ -293,7 +293,7 @@ export default async function ModelsPage() {
           </div>
 
           {quickLinks.length ? (
-            <div className="rounded-3xl border border-hairline bg-white/80 p-4 shadow-card">
+            <div className="rounded-3xl border border-hairline bg-surface/80 p-4 shadow-card">
               <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Popular engines</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {quickLinks.map((entry) => (

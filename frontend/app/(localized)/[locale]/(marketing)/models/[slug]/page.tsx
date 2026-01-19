@@ -1227,7 +1227,7 @@ function Sora2PageLayout({
           {backLabel}
         </Link>
 
-        <section className="mt-6 stack-gap rounded-3xl border border-hairline bg-white/80 p-6 shadow-card sm:p-8">
+        <section className="mt-6 stack-gap rounded-3xl border border-hairline bg-surface/80 p-6 shadow-card sm:p-8">
           <div className="stack-gap-lg">
             <div className="stack-gap-sm text-center">
               <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">
@@ -1237,7 +1237,7 @@ function Sora2PageLayout({
                 {heroSubtitle}
               </h2>
               {heroBadge ? (
-                <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-hairline bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary shadow-card">
+                <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-hairline bg-surface/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary shadow-card">
                   {heroBadge.split('·').map((chunk, index, arr) => (
                     <span key={`${chunk}-${index}`} className="flex items-center gap-2">
                       <span>{chunk.trim()}</span>
@@ -1278,7 +1278,7 @@ function Sora2PageLayout({
               </Link>
             </div>
             {isEsLocale && howToLatamTitle && howToLatamSteps.length ? (
-              <section className="rounded-2xl border border-hairline bg-white/70 p-5 shadow-card">
+              <section className="rounded-2xl border border-hairline bg-surface/70 p-5 shadow-card">
                 <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{howToLatamTitle}</h2>
                 <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-text-secondary">
                   {howToLatamSteps.map((step) => (
@@ -1306,7 +1306,7 @@ function Sora2PageLayout({
               ) : null}
             </div>
             {bestUseCases.length ? (
-              <div className="space-y-2 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+              <div className="space-y-2 rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
                 {copy.bestUseCasesTitle ? (
                   <p className="text-sm font-semibold text-text-primary">{copy.bestUseCasesTitle}</p>
                 ) : null}
@@ -1322,7 +1322,7 @@ function Sora2PageLayout({
 
         {tocItems.length ? (
           <nav
-            className="mt-10 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card"
+            className="mt-10 rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
             aria-label="Model page navigation"
           >
             <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Jump to section</p>
@@ -1345,7 +1345,7 @@ function Sora2PageLayout({
           {copy.whatIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro1}</p> : null}
           {copy.whatIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro2}</p> : null}
           {quickStartTitle && quickStartBlocks.length ? (
-            <div className="stack-gap rounded-2xl border border-hairline bg-white/70 p-4 shadow-card">
+            <div className="stack-gap rounded-2xl border border-hairline bg-surface/70 p-4 shadow-card">
               <h3 className="text-base font-semibold text-text-primary">{quickStartTitle}</h3>
               <div className="stack-gap">
                 {quickStartBlocks.map((block) => (
@@ -1369,7 +1369,7 @@ function Sora2PageLayout({
               {copy.whatFlowTitle ? (
                 <p className="text-base font-semibold text-text-primary">{copy.whatFlowTitle}</p>
               ) : null}
-              <ol className="space-y-2 rounded-2xl border border-hairline bg-white/70 p-4 text-sm text-text-secondary">
+              <ol className="space-y-2 rounded-2xl border border-hairline bg-surface/70 p-4 text-sm text-text-secondary">
                 {whatFlowSteps.map((step) => (
                   <li key={step}>{step}</li>
                 ))}
@@ -1390,7 +1390,7 @@ function Sora2PageLayout({
               {specSections.map((section) => (
                 <article
                   key={section.title}
-                  className="space-y-2 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card"
+                  className="space-y-2 rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
                 >
                   <h3 className="text-lg font-semibold text-text-primary">{section.title}</h3>
                   <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
@@ -1419,7 +1419,7 @@ function Sora2PageLayout({
         ) : null}
 
         {quickPricingTitle && quickPricingItems.length ? (
-          <section className="mt-10 stack-gap-sm rounded-2xl border border-hairline bg-white/80 p-5 shadow-card">
+          <section className="mt-10 stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-5 shadow-card">
             <h3 className="text-lg font-semibold text-text-primary">{quickPricingTitle}</h3>
             <ul className="space-y-1 text-sm text-text-secondary">
               {quickPricingItems.map((item) => (
@@ -1450,7 +1450,7 @@ function Sora2PageLayout({
                   {galleryVideos.slice(0, 6).map((video) => (
                     <article
                       key={video.id}
-                      className="flex w-64 shrink-0 flex-col overflow-hidden rounded-2xl border border-hairline bg-white shadow-card"
+                      className="flex w-64 shrink-0 flex-col overflow-hidden rounded-2xl border border-hairline bg-surface shadow-card"
                     >
                       <Link href={video.href} className="group relative block aspect-video bg-neutral-100">
                         {video.optimizedPosterUrl || video.rawPosterUrl ? (
@@ -1490,7 +1490,7 @@ function Sora2PageLayout({
             </div>
             </>
           ) : (
-            <div className="mt-4 rounded-2xl border border-dashed border-hairline bg-white/60 px-4 py-4 text-sm text-text-secondary">
+            <div className="mt-4 rounded-2xl border border-dashed border-hairline bg-surface/60 px-4 py-4 text-sm text-text-secondary">
               {copy.galleryIntro ?? 'Sora 2 examples will appear here soon.'}{' '}
               {copy.galleryAllCta ? (
                 <Link
@@ -1517,7 +1517,7 @@ function Sora2PageLayout({
         <section id={imageAnchorId} className="mt-12 stack-gap">
           {copy.promptTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.promptTitle}</h2> : null}
           {copy.promptIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.promptIntro}</p> : null}
-          <div className="stack-gap-sm rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+          <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
             {promptPatternSteps.length ? (
               <div className="space-y-2">
                 <div className="grid gap-2 sm:grid-cols-2">
@@ -1546,7 +1546,7 @@ function Sora2PageLayout({
           {copy.imageIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.imageIntro}</p> : null}
           <div className="grid grid-gap-sm lg:grid-cols-2">
             {imageToVideoSteps.length ? (
-              <div className="stack-gap-sm rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+              <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
                 <ol className="list-decimal space-y-2 pl-5 text-sm text-text-secondary">
                   {imageToVideoSteps.map((step) => (
                     <li key={step}>{step}</li>
@@ -1555,7 +1555,7 @@ function Sora2PageLayout({
               </div>
             ) : null}
             {imageToVideoUseCases.length ? (
-              <div className="stack-gap-sm rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+              <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
                 <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
                   {imageToVideoUseCases.map((item) => (
                     <li key={item}>{item}</li>
@@ -1570,7 +1570,7 @@ function Sora2PageLayout({
           {copy.multishotTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.multishotTitle}</h2> : null}
           {copy.multishotIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.multishotIntro1}</p> : null}
           {copy.multishotIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.multishotIntro2}</p> : null}
-          <div className="stack-gap-sm rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+          <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
             <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
               {miniFilmTips.map((tip) => (
                 <li key={tip}>{tip}</li>
@@ -1583,7 +1583,7 @@ function Sora2PageLayout({
         <section className="mt-12 stack-gap-lg">
           {copy.demoTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.demoTitle}</h2> : null}
           <div className="grid grid-gap lg:grid-cols-2 lg:items-start">
-            <div className="rounded-2xl border border-hairline bg-white/80 p-3 shadow-card lg:order-2">
+            <div className="rounded-2xl border border-hairline bg-surface/80 p-3 shadow-card lg:order-2">
               {demoMedia ? (
                 <MediaPreview media={demoMedia} label={copy.demoTitle ?? 'Sora 2 demo'} />
               ) : (
@@ -1592,7 +1592,7 @@ function Sora2PageLayout({
                 </div>
               )}
             </div>
-            <div className="stack-gap rounded-2xl border border-hairline bg-white/80 p-4 shadow-card lg:order-1">
+            <div className="stack-gap rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card lg:order-1">
               {copy.demoPromptLabel ? (
                 <p className="text-sm font-semibold text-text-primary">{copy.demoPromptLabel}</p>
               ) : null}
@@ -1622,7 +1622,7 @@ function Sora2PageLayout({
             {copy.tipsTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.tipsTitle}</h2> : null}
             <div className="grid grid-gap-sm lg:grid-cols-2">
               {strengths.length ? (
-                <div className="stack-gap-sm rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+                <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
                   <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
                     {strengths.map((item) => (
                       <li key={item}>{item}</li>
@@ -1631,7 +1631,7 @@ function Sora2PageLayout({
                 </div>
               ) : null}
               {boundaries.length ? (
-                <div className="stack-gap-sm rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+                <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
                   <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
                     {boundaries.map((item) => (
                       <li key={item}>{item}</li>
@@ -1641,7 +1641,7 @@ function Sora2PageLayout({
               ) : null}
             </div>
             {troubleshootingTitle && troubleshootingItems.length ? (
-              <div className="stack-gap-sm rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+              <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
                 <p className="text-sm font-semibold text-text-primary">{troubleshootingTitle}</p>
                 <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
                   {troubleshootingItems.map((item) => (
@@ -1657,7 +1657,7 @@ function Sora2PageLayout({
         {copy.safetyTitle || safetyRules.length ? (
           <section id="safety" className="mt-12 stack-gap">
             {copy.safetyTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.safetyTitle}</h2> : null}
-            <div className="stack-gap-sm rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+            <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
               {safetyRules.length ? (
                 <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
                   {safetyRules.map((rule) => (
@@ -1682,7 +1682,7 @@ function Sora2PageLayout({
             {copy.comparisonTitle ? (
               <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.comparisonTitle}</h2>
             ) : null}
-            <div className="stack-gap-sm rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
+            <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
               {comparisonPoints.length ? (
                 <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
                   {comparisonPoints.map((item) => (
@@ -1710,7 +1710,7 @@ function Sora2PageLayout({
               {faqList.map((entry) => (
                 <article
                   key={entry.question}
-                  className="rounded-2xl border border-hairline bg-white/80 p-4 shadow-card"
+                  className="rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
                 >
                   <h3 className="text-sm font-semibold text-text-primary">{entry.question}</h3>
                   <p className="mt-2 text-sm text-text-secondary">{entry.answer}</p>
@@ -1749,7 +1749,7 @@ function Sora2PageLayout({
               return (
                 <article
                   key={entry.modelSlug}
-                  className="rounded-2xl border border-hairline bg-white/90 p-4 shadow-card transition hover:-translate-y-1 hover:border-text-muted"
+                  className="rounded-2xl border border-hairline bg-surface/90 p-4 shadow-card transition hover:-translate-y-1 hover:border-text-muted"
                 >
                   <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{entry.brandId}</p>
                   <h3 className="mt-2 text-lg font-semibold text-text-primary">
@@ -1768,7 +1768,7 @@ function Sora2PageLayout({
         </section>
       ) : null}
 
-        <section className="mt-12 stack-gap-sm rounded-3xl border border-hairline bg-white/90 px-6 py-6 text-text-primary shadow-card sm:px-8">
+        <section className="mt-12 stack-gap-sm rounded-3xl border border-hairline bg-surface/90 px-6 py-6 text-text-primary shadow-card sm:px-8">
           {copy.finalPara1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.finalPara1}</p> : null}
           {copy.finalPara2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.finalPara2}</p> : null}
           <ButtonLink
@@ -1794,7 +1794,7 @@ function MediaPreview({ media, label }: { media: FeaturedMedia; label: string })
   const paddingBottom = isValidAspect ? `${(h / w) * 100}%` : '56.25%';
   const isVertical = isValidAspect ? w < h : false;
   const figureClassName = [
-    'group relative overflow-hidden rounded-[22px] border border-hairline bg-white shadow-card',
+    'group relative overflow-hidden rounded-[22px] border border-hairline bg-surface shadow-card',
     isVertical ? 'mx-auto max-w-sm' : '',
   ]
     .filter(Boolean)
@@ -1838,7 +1838,7 @@ function MediaPreview({ media, label }: { media: FeaturedMedia; label: string })
               </span>
             ) : null}
             {media.durationSec ? (
-              <span className="absolute right-3 top-3 rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-primary shadow-card">
+              <span className="absolute right-3 top-3 rounded-full bg-surface/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-primary shadow-card">
                 {media.durationSec}s
               </span>
             ) : null}
@@ -2158,7 +2158,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
 
       {tocItems.length ? (
         <nav
-          className="mt-10 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card"
+          className="mt-10 rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
           aria-label="Model page navigation"
         >
           <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Jump to section</p>
@@ -2177,7 +2177,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       ) : null}
 
       {bestUseCases?.items && bestUseCases.items.length ? (
-        <section className="mt-10 rounded-card border border-hairline bg-white p-6 shadow-card">
+        <section className="mt-10 rounded-card border border-hairline bg-surface p-6 shadow-card">
           <h2 className="text-lg font-semibold text-text-primary">
             {bestUseCases.title ?? 'Best use cases'}
           </h2>
@@ -2190,7 +2190,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       ) : null}
 
       {technicalOverview.length ? (
-        <section className="mt-10 rounded-card border border-hairline bg-white p-6 shadow-card">
+        <section className="mt-10 rounded-card border border-hairline bg-surface p-6 shadow-card">
           <h2 className="text-lg font-semibold text-text-primary">{technicalOverviewTitle}</h2>
           <div className="mt-4 grid grid-gap-sm text-sm text-text-secondary sm:grid-cols-2">
             {technicalOverview.map((entry, index) => (
@@ -2216,7 +2216,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       {promptStructure ? (
         <section
           id={attachTextIdToPromptStructure ? textAnchorId : undefined}
-          className="mt-10 rounded-card border border-hairline bg-white p-6 shadow-card"
+          className="mt-10 rounded-card border border-hairline bg-surface p-6 shadow-card"
         >
           <h2 className="text-lg font-semibold text-text-primary">{promptStructure.title ?? 'Prompt structure'}</h2>
           {promptStructure.quote ? (
@@ -2238,7 +2238,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       ) : null}
 
       {tips?.items && tips.items.length ? (
-        <section id="tips" className="mt-10 rounded-card border border-hairline bg-white p-6 shadow-card">
+        <section id="tips" className="mt-10 rounded-card border border-hairline bg-surface p-6 shadow-card">
           <h2 className="text-lg font-semibold text-text-primary">{tips.title ?? 'Tips & tricks'}</h2>
           <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-text-secondary">
             {tips.items.map((tip) => (
@@ -2259,7 +2259,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
       ) : null}
 
       <section id="specs" className="mt-10 stack-gap">
-        <div className="rounded-card border border-hairline bg-white p-6 shadow-card">
+        <div className="rounded-card border border-hairline bg-surface p-6 shadow-card">
           <h2 className="text-lg font-semibold text-text-primary">{detailCopy.overviewTitle}</h2>
           <dl className="mt-4 grid grid-gap-sm text-sm text-text-secondary sm:grid-cols-2">
             <div>
@@ -2305,7 +2305,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
           <h2 className="text-lg font-semibold text-text-primary">{detailCopy.promptsTitle}</h2>
           <div className="grid grid-gap-sm sm:grid-cols-2">
             {promptEntries.map((entry) => (
-              <article key={entry.title} className="rounded-card border border-hairline bg-white p-4 text-sm text-text-secondary shadow-card">
+              <article key={entry.title} className="rounded-card border border-hairline bg-surface p-4 text-sm text-text-secondary shadow-card">
                 <h3 className="text-sm font-semibold text-text-primary">{entry.title}</h3>
                 <p className="mt-1 text-sm text-text-secondary">{entry.prompt}</p>
                 {entry.notes ? <p className="mt-2 text-xs text-text-muted">{entry.notes}</p> : null}
@@ -2320,7 +2320,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
           <h2 className="text-lg font-semibold text-text-primary">{detailCopy.faqTitle}</h2>
           <div className="stack-gap-sm text-sm text-text-secondary">
             {faqEntries.map(({ question, answer }) => (
-              <article key={question} className="rounded-card border border-hairline bg-white p-4 shadow-card">
+              <article key={question} className="rounded-card border border-hairline bg-surface p-4 shadow-card">
                 <h3 className="text-sm font-semibold text-text-primary">{question}</h3>
                 <p className="mt-1 text-sm text-text-secondary">{answer}</p>
               </article>
@@ -2348,7 +2348,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
                 return `Try ${label}`;
               })();
               return (
-                <article key={candidate.modelSlug} className="rounded-2xl border border-hairline bg-white/90 p-5 shadow-card">
+                <article key={candidate.modelSlug} className="rounded-2xl border border-hairline bg-surface/90 p-5 shadow-card">
                   <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{candidate.brandId}</p>
                   <h3 className="mt-2 text-lg font-semibold text-text-primary">{label}</h3>
                   <p className="mt-2 text-sm text-text-secondary">

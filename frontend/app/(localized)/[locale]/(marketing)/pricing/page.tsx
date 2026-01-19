@@ -323,7 +323,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
   return (
     <main className="container-page max-w-6xl section">
       <div className="stack-gap-lg">
-        <header className="max-w-3xl stack-gap">
+        <header className="max-w-3xl stack-gap-sm">
           <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
           <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
           {heroLink ? (
@@ -337,7 +337,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           ) : null}
         </header>
 
-        <section className="rounded-card border border-hairline bg-white/80 p-4 text-sm text-text-secondary shadow-card">
+        <section className="rounded-card border border-hairline bg-surface/80 p-4 text-sm text-text-secondary shadow-card">
           <div className="flex flex-wrap items-center gap-4">
             <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{exploreTitle}</span>
             <div className="flex flex-wrap gap-2">
@@ -357,7 +357,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           </div>
         </section>
 
-        <section className="rounded-card border border-hairline bg-white/90 p-6 text-sm text-text-secondary shadow-card">
+        <section className="rounded-card border border-hairline bg-surface/90 p-6 text-sm text-text-secondary shadow-card">
           <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
             {content.calculator?.title ?? 'Preview prices in the app'}
           </h2>
@@ -397,7 +397,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           </p>
           <div className="grid grid-cols-1 grid-gap-sm sm:grid-cols-3">
             {resolvedExampleCards.map((card) => (
-              <div key={card.title} className="rounded-xl border border-hairline bg-white p-4 shadow-card">
+              <div key={card.title} className="rounded-xl border border-hairline bg-surface p-4 shadow-card">
                 <div className="text-sm font-medium text-text-primary">{card.title}</div>
                 <dl className="mt-2 text-sm text-text-secondary">
                   <div className="flex justify-between">
@@ -438,7 +438,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           </section>
         ) : null}
 
-        <section className="rounded-card border border-hairline bg-white p-6 shadow-card">
+        <section className="rounded-card border border-hairline bg-surface p-6 shadow-card">
           <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
             {teams.title}
             <FlagPill live={FEATURES.pricing.teams} className="ml-3" />
@@ -458,7 +458,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           )}
         </section>
 
-        <section className="rounded-card border border-hairline bg-white p-6 shadow-card">
+        <section className="rounded-card border border-hairline bg-surface p-6 shadow-card">
           <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
             {member.title}
             <FlagPill live={FEATURES.pricing.memberTiers} className="ml-3" />
@@ -466,7 +466,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           <p className="mt-2 text-sm text-text-secondary">{member.subtitle}</p>
           <div className="mt-6 grid grid-gap-sm md:grid-cols-3">
             {formattedTiers.map((tier) => (
-              <div key={tier.name} className="rounded-card border border-hairline bg-bg p-4">
+              <div key={tier.name} className="rounded-card border border-hairline bg-surface-2 p-4">
                 <p className="text-sm font-semibold text-text-primary">{tier.name}</p>
                 <p className="mt-1 text-xs uppercase tracking-micro text-text-muted">{tier.requirement}</p>
                 <p className="mt-3 text-sm text-text-secondary">{tier.benefit}</p>
@@ -478,7 +478,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
         <section className="grid grid-gap lg:grid-cols-[1.1fr_0.9fr]">
           <article
             id="refunds-protections"
-            className="scroll-mt-28 rounded-card border border-hairline bg-white p-6 shadow-card"
+            className="scroll-mt-28 rounded-card border border-hairline bg-surface p-6 shadow-card"
           >
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
               {refunds.title}
@@ -495,7 +495,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
               ))}
             </ul>
           </article>
-          <article className="rounded-card border border-hairline bg-white p-6 shadow-card">
+          <article className="rounded-card border border-hairline bg-surface p-6 shadow-card">
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{faq.title}</h2>
             <dl className="mt-4 stack-gap">
               {faq.entries.map((entry) => (
