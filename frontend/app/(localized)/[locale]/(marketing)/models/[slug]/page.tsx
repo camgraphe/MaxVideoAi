@@ -1341,7 +1341,7 @@ function Sora2PageLayout({
         ) : null}
 
         <section id="examples" className="mt-12 space-y-4">
-          {copy.whatTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.whatTitle}</h2> : null}
+          {copy.whatTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.whatTitle}</h2> : null}
           {copy.whatIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro1}</p> : null}
           {copy.whatIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro2}</p> : null}
           {quickStartTitle && quickStartBlocks.length ? (
@@ -1380,7 +1380,7 @@ function Sora2PageLayout({
 
         {specSections.length ? (
           <section id="specs" className="mt-12 space-y-4">
-            {copy.specTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.specTitle}</h2> : null}
+            {copy.specTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.specTitle}</h2> : null}
             {copy.specNote ? (
               <blockquote className="rounded-2xl border border-hairline bg-surface-2 px-4 py-3 text-sm text-text-secondary">
                 {copy.specNote}
@@ -1430,7 +1430,7 @@ function Sora2PageLayout({
         ) : null}
 
         <section id={textAnchorId} className="mt-12 space-y-4">
-          {copy.galleryTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.galleryTitle}</h2> : null}
+          {copy.galleryTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.galleryTitle}</h2> : null}
           {galleryVideos.length ? (
             <>
               {copy.galleryIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.galleryIntro}</p> : null}
@@ -1515,7 +1515,7 @@ function Sora2PageLayout({
         </section>
 
         <section id={imageAnchorId} className="mt-12 space-y-4">
-          {copy.promptTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.promptTitle}</h2> : null}
+          {copy.promptTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.promptTitle}</h2> : null}
           {copy.promptIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.promptIntro}</p> : null}
           <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
             {promptPatternSteps.length ? (
@@ -1542,7 +1542,7 @@ function Sora2PageLayout({
         </section>
 
         <section className="mt-12 space-y-4">
-          {copy.imageTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.imageTitle}</h2> : null}
+          {copy.imageTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.imageTitle}</h2> : null}
           {copy.imageIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.imageIntro}</p> : null}
           <div className="grid gap-4 lg:grid-cols-2">
             {imageToVideoSteps.length ? (
@@ -1567,7 +1567,7 @@ function Sora2PageLayout({
         </section>
 
         <section className="mt-12 space-y-4">
-          {copy.multishotTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.multishotTitle}</h2> : null}
+          {copy.multishotTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.multishotTitle}</h2> : null}
           {copy.multishotIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.multishotIntro1}</p> : null}
           {copy.multishotIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.multishotIntro2}</p> : null}
           <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
@@ -1581,7 +1581,7 @@ function Sora2PageLayout({
 
       {copy.demoTitle || copy.demoPrompt.length || copy.demoNotes.length ? (
         <section className="mt-12 space-y-6">
-          {copy.demoTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.demoTitle}</h2> : null}
+          {copy.demoTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.demoTitle}</h2> : null}
           <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
             <div className="rounded-2xl border border-hairline bg-white/80 p-3 shadow-card lg:order-2">
               {demoMedia ? (
@@ -1619,7 +1619,7 @@ function Sora2PageLayout({
 
         {copy.tipsTitle || strengths.length || boundaries.length ? (
           <section id="tips" className="mt-12 space-y-6">
-            {copy.tipsTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.tipsTitle}</h2> : null}
+            {copy.tipsTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.tipsTitle}</h2> : null}
             <div className="grid gap-4 lg:grid-cols-2">
               {strengths.length ? (
                 <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
@@ -1656,7 +1656,7 @@ function Sora2PageLayout({
 
         {copy.safetyTitle || safetyRules.length ? (
           <section id="safety" className="mt-12 space-y-4">
-            {copy.safetyTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.safetyTitle}</h2> : null}
+            {copy.safetyTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.safetyTitle}</h2> : null}
             <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
               {safetyRules.length ? (
                 <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
@@ -1680,7 +1680,7 @@ function Sora2PageLayout({
         {copy.comparisonTitle || comparisonPoints.length ? (
           <section className="mt-12 space-y-4">
             {copy.comparisonTitle ? (
-              <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{copy.comparisonTitle}</h2>
+              <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.comparisonTitle}</h2>
             ) : null}
             <div className="space-y-3 rounded-2xl border border-hairline bg-white/80 p-4 shadow-card">
               {comparisonPoints.length ? (
@@ -1705,7 +1705,7 @@ function Sora2PageLayout({
 
         {faqList.length ? (
           <section id="faq" className="mt-12 space-y-4">
-            {faqTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:mt-0">{faqTitle}</h2> : null}
+            {faqTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{faqTitle}</h2> : null}
             <div className="grid gap-3 md:grid-cols-2">
               {faqList.map((entry) => (
                 <article
@@ -1723,7 +1723,7 @@ function Sora2PageLayout({
 
         {relatedEngines.length ? (
           <section className="mt-12 space-y-4">
-            <h2 className="text-2xl font-semibold text-text-primary">
+            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
               {copy.relatedTitle ?? 'Explore other models'}
             </h2>
             {copy.relatedSubtitle ? <p className="text-sm text-text-secondary">{copy.relatedSubtitle}</p> : null}

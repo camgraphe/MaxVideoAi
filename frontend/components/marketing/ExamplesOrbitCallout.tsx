@@ -55,7 +55,7 @@ export function ExamplesOrbitCallout({ heading, description, ctaLabel, eyebrow, 
                 {eyebrow}
               </span>
             ) : null}
-            <h2 className="text-3xl font-semibold text-text-primary sm:text-4xl">{heading}</h2>
+          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{heading}</h2>
             <p className="text-sm text-text-secondary sm:text-base">{description}</p>
           </div>
           <div className="relative mx-auto aspect-square w-full max-w-xs sm:max-w-sm">

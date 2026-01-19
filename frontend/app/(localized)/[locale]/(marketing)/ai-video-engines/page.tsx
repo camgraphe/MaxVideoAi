@@ -199,7 +199,7 @@ export default async function AiVideoEnginesPage() {
       <section className="mt-12 space-y-6">
         {sections.map((section, index) => (
           <div key={section.title ?? `section-${index}`} className="space-y-4">
-            <h2 className="text-2xl font-semibold text-text-primary">{section.title}</h2>
+            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{section.title}</h2>
             {section.body ? (
               <p className="text-base leading-relaxed text-text-secondary">
                 {renderRichText(section.body, `section-${index}`)}
@@ -210,7 +210,7 @@ export default async function AiVideoEnginesPage() {
       </section>
 
       <section className="mt-12 space-y-6">
-        <h2 className="text-2xl font-semibold text-text-primary">{comparison.title}</h2>
+        <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{comparison.title}</h2>
         <p className="text-base leading-relaxed text-text-secondary">{renderRichText(comparison.intro, 'comparison-intro')}</p>
         <div className="grid gap-6 sm:grid-cols-2">
           {comparison.cards.map((card) => (
@@ -228,7 +228,7 @@ export default async function AiVideoEnginesPage() {
       </section>
 
       <section className="mt-12 space-y-4">
-        <h2 className="text-2xl font-semibold text-text-primary">{faqTitle}</h2>
+        <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{faqTitle}</h2>
         <div className="space-y-3 text-base leading-relaxed text-text-secondary">
           {faqItems.map((item) => (
             <article key={item.question} className="rounded-card border border-hairline bg-white p-5 shadow-card">

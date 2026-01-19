@@ -155,7 +155,7 @@ export default async function BlogIndexPage({ params }: { params: { locale: AppL
     <main className="mx-auto max-w-6xl px-4 py-16 lg:py-20 sm:px-6 lg:px-8">
       <header className="rounded-[32px] border border-hairline bg-white/80 p-8 shadow-card backdrop-blur sm:p-12">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div className="max-w-2xl space-y-4">
+          <div className="sm:max-w-[62ch] space-y-4">
             <p className="text-xs font-semibold uppercase tracking-micro text-brand">
               {content.hero.eyebrow ?? 'The Studio Journal'}
             </p>
