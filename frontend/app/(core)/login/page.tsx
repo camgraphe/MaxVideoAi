@@ -618,28 +618,24 @@ export default function LoginPage() {
           <div className="flex items-center gap-2 rounded-pill bg-bg p-1 text-sm font-medium">
             <Button
               type="button"
-              variant="ghost"
+              variant={effectiveMode === 'signin' ? 'primary' : 'ghost'}
               size="sm"
               onClick={() => setMode('signin')}
               className={clsx(
                 'flex-1 rounded-pill px-3 py-2',
-                effectiveMode === 'signin'
-                  ? 'bg-brand text-on-brand shadow-card hover:bg-brand'
-                  : 'text-text-secondary hover:bg-white'
+                effectiveMode === 'signin' ? 'shadow-card' : 'hover:bg-white'
               )}
             >
               {authCopy.tabs.signin}
             </Button>
             <Button
               type="button"
-              variant="ghost"
+              variant={effectiveMode === 'signup' ? 'primary' : 'ghost'}
               size="sm"
               onClick={() => setMode('signup')}
               className={clsx(
                 'flex-1 rounded-pill px-3 py-2',
-                effectiveMode === 'signup'
-                  ? 'bg-brand text-on-brand shadow-card hover:bg-brand'
-                  : 'text-text-secondary hover:bg-white'
+                effectiveMode === 'signup' ? 'shadow-card' : 'hover:bg-white'
               )}
             >
               {authCopy.tabs.signup}

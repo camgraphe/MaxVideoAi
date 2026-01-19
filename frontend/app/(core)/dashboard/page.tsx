@@ -1217,14 +1217,14 @@ function RecentGrid({
           <Button
             key={value}
             type="button"
-            variant="outline"
+            variant={tab === value ? 'primary' : 'ghost'}
             size="sm"
             onClick={() => onTabChange(value)}
             className={clsx(
               'px-3 py-1 text-xs font-semibold',
               tab === value
-                ? 'border-brand bg-brand text-on-brand hover:border-brand hover:bg-brand'
-                : 'border-border bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary'
+                ? 'border border-brand shadow-card'
+                : 'border border-border bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary'
             )}
           >
             {copy.recent.tabs[value]}
