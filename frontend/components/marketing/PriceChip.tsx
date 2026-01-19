@@ -8,6 +8,7 @@ import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getModelByEngineId } from '@/lib/model-roster';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { selectPricingRule, type PricingRuleLite } from '@/lib/pricing-rules';
+import { Button } from '@/components/ui/Button';
 
 interface PriceChipProps {
   engineId: string;
@@ -99,16 +100,18 @@ export function PriceChip({
       <span className="inline-flex items-center gap-2 rounded-pill border border-hairline bg-white px-3 py-1 text-xs font-semibold uppercase tracking-micro text-brand shadow-card">
         <span>{`${prefix} ${formattedTotal}`}</span>
         <span className="text-text-muted">{chipSuffix}</span>
-        <button
+        <Button
           type="button"
-          className="rounded-full border border-transparent bg-surface-2 px-2 py-0.5 text-[10px] font-semibold text-brand transition hover:bg-surface-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+          variant="outline"
+          size="sm"
+          className="min-h-0 rounded-full border-transparent bg-surface-2 px-2 py-0.5 text-[10px] font-semibold text-brand hover:bg-surface-3"
           onClick={() => setIsOpen((prev) => !prev)}
           onMouseEnter={() => setIsOpen(true)}
           onMouseLeave={() => setIsOpen(false)}
           aria-expanded={isOpen}
         >
           {t('pricing.breakdown', 'Breakdown')}
-        </button>
+        </Button>
       </span>
       {isOpen && (
         <div

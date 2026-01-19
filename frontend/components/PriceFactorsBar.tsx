@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import Image from 'next/image';
 import { useMemo } from 'react';
 import type { ItemizationLine, PreflightResponse } from '@/types/engines';
+import { Button } from '@/components/ui/Button';
 
 export type PriceFactorKind =
   | 'base'
@@ -181,11 +182,13 @@ export function PriceFactorsBar({ preflight, currency = 'USD', isLoading = false
       aria-busy={busy || undefined}
     >
       {items.map((item) => (
-        <button
+        <Button
           key={item.id}
           type="button"
+          variant="outline"
+          size="sm"
           onClick={onNavigate ? () => onNavigate(item.kind) : undefined}
-          className="inline-flex items-center gap-2 rounded-[10px] border border-hairline bg-white px-3 py-2 text-[12px] leading-4 tracking-[0.08em] text-text-secondary transition hover:border-text-muted hover:bg-surface-2 focus:outline-none focus:ring-2 focus:ring-ring"
+          className="min-h-0 h-auto items-center gap-2 rounded-[10px] border-hairline bg-white px-3 py-2 text-[12px] leading-4 tracking-[0.08em] text-text-secondary hover:border-text-muted hover:bg-surface-2"
           title={item.tooltip}
         >
           {item.icon && (
@@ -200,7 +203,7 @@ export function PriceFactorsBar({ preflight, currency = 'USD', isLoading = false
           >
             {formatAmount(item.amount, formatter, item.emphasizeSign)}
           </span>
-        </button>
+        </Button>
       ))}
 
       {typeof preflight?.total === 'number' && (

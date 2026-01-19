@@ -325,9 +325,11 @@ export function HeaderBar() {
         )}
       >
         <div className="flex items-center gap-3 md:gap-8">
-          <button
+          <Button
             type="button"
-            className="inline-flex items-center justify-center text-text-primary transition hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+            variant="ghost"
+            size="sm"
+            className="min-h-0 h-9 w-9 p-0 text-text-primary hover:bg-transparent hover:text-text-secondary md:hidden"
             aria-label={t('workspace.header.mobileToggle', 'Open menu')}
             onClick={() => setMobileMenuOpen(true)}
           >
@@ -336,7 +338,7 @@ export function HeaderBar() {
               <line x1="3" y1="12" x2="21" y2="12" />
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
-          </button>
+          </Button>
           <LogoMark />
           <nav
             className="hidden items-center gap-5 text-sm font-medium text-text-muted md:flex"
@@ -404,11 +406,13 @@ export function HeaderBar() {
           </Chip>
           {email ? (
             <div className="relative">
-              <button
+              <Button
                 ref={avatarRef}
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => setAccountMenuOpen((prev) => !prev)}
-                className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#dce4ff] bg-gradient-to-br from-[#dfe6ff] via-white/95 to-white text-sm font-semibold text-text-primary shadow-card transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="h-10 w-10 min-h-0 rounded-full border border-[#dce4ff] bg-gradient-to-br from-[#dfe6ff] via-white/95 to-white p-0 text-sm font-semibold text-text-primary shadow-card hover:brightness-110"
                 aria-haspopup="menu"
                 aria-expanded={accountMenuOpen}
               >
@@ -418,7 +422,7 @@ export function HeaderBar() {
                     <path d="m2.2 4.6 3.8 3.8 3.8-3.8" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </span>
-              </button>
+              </Button>
               {accountMenuOpen && (
                 <div
                   ref={menuRef}
@@ -455,14 +459,16 @@ export function HeaderBar() {
                       );
                     })}
                   </nav>
-                  <button
+                  <Button
                     type="button"
-                    className="flex w-full items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-between px-3 py-2 text-sm font-medium text-text-secondary hover:bg-surface-2 hover:text-text-primary"
                     onClick={handleSignOut}
                   >
                     {t('workspace.header.signOut', 'Sign out')}
                     <span className="text-[11px] uppercase tracking-micro text-text-muted">⌘⇧Q</span>
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
@@ -501,9 +507,11 @@ export function HeaderBar() {
               <Image src="/assets/branding/logo-mark.svg" alt="MaxVideoAI" width={32} height={32} priority />
               <span>{brand}</span>
             </Link>
-            <button
+            <Button
               type="button"
-              className="rounded-full border border-hairline bg-white p-2 text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              variant="outline"
+              size="sm"
+              className="min-h-0 h-9 w-9 rounded-full border-hairline bg-white p-2 text-text-primary"
               aria-label={t('workspace.header.mobileClose', 'Close menu')}
               onClick={() => setMobileMenuOpen(false)}
             >
@@ -511,7 +519,7 @@ export function HeaderBar() {
                 <line x1="6" y1="6" x2="18" y2="18" />
                 <line x1="18" y1="6" x2="6" y2="18" />
               </svg>
-            </button>
+            </Button>
           </div>
           <div className="mx-auto mt-5 max-w-sm space-y-5">
             <div className="flex justify-end">

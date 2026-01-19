@@ -22,6 +22,7 @@ import {
 import { Chip } from '@/components/ui/Chip';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { Button } from '@/components/ui/Button';
 
 type NavItemDefinition = {
   id: string;
@@ -239,10 +240,12 @@ export function AppSidebar() {
         )}
         aria-label={t('workspace.sidebar.aria.controls', 'Sidebar controls')}
       >
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={handleCollapsedToggle}
-          className="flex h-10 w-10 items-center justify-center rounded-input border border-hairline bg-white/70 text-text-secondary transition hover:-translate-y-0.5 hover:bg-white/80 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="h-10 w-10 min-h-0 rounded-input border border-hairline bg-white/70 p-0 text-text-secondary hover:-translate-y-0.5 hover:bg-white/80 hover:text-text-primary"
         >
           <UIIcon icon={collapsed ? PanelRightOpen : PanelLeftOpen} size={20} />
           <span className="sr-only">
@@ -250,13 +253,15 @@ export function AppSidebar() {
               ? t('workspace.sidebar.aria.expand', 'Expand sidebar')
               : t('workspace.sidebar.aria.collapse', 'Collapse sidebar')}
           </span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={handlePinToggle}
           className={clsx(
-            'flex h-10 w-10 items-center justify-center rounded-input border border-hairline bg-white/70 text-text-secondary transition hover:bg-white/80 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            'h-10 w-10 min-h-0 rounded-input border border-hairline bg-white/70 p-0 text-text-secondary hover:bg-white/80 hover:text-text-primary',
             collapsed ? 'pointer-events-none opacity-0' : 'opacity-100'
           )}
           aria-hidden={collapsed}
@@ -268,7 +273,7 @@ export function AppSidebar() {
               ? t('workspace.sidebar.aria.unpin', 'Unpin sidebar')
               : t('workspace.sidebar.aria.pin', 'Pin sidebar open')}
           </span>
-        </button>
+        </Button>
       </div>
 
       <div className="flex flex-1 flex-col">

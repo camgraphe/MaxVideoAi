@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Button } from '@/components/ui/Button';
 
 type CopyPromptButtonProps = {
   prompt: string;
@@ -28,14 +29,16 @@ export function CopyPromptButton({
   };
 
   return (
-    <button
+    <Button
       type="button"
+      variant="outline"
+      size="sm"
       onClick={handleCopy}
-      className="rounded-input border border-border px-3 py-2 text-xs font-semibold uppercase tracking-micro text-text-primary transition hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
+      className="px-3 py-2 text-xs font-semibold uppercase tracking-micro text-text-primary hover:bg-bg"
       aria-label={copyLabel}
       disabled={disabled}
     >
       {copied ? copiedLabel : copyLabel}
-    </button>
+    </Button>
   );
 }
