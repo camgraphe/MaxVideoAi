@@ -558,7 +558,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         <link rel="preconnect" href="https://v3b.fal.media" crossOrigin="anonymous" />
         {lcpPosterSrc ? <link rel="preload" as="image" href={lcpPosterSrc} fetchPriority="high" media="(max-width: 767px)" /> : null}
       </Head>
-      <section className="container-page section max-w-6xl stack-gap-xl items-center text-center">
+      <section className="container-page section max-w-6xl stack-gap-lg items-center pt-10 pb-10 text-center sm:pt-12 sm:pb-12 lg:pt-14 lg:pb-14">
         <div className="flex flex-wrap items-center justify-center gap-4">
           {badges.map((badge) => (
             <span key={badge} className="rounded-pill border border-hairline bg-surface px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary">
@@ -582,15 +582,10 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
           >
             {hero.primaryCta}
           </ButtonLink>
-          <ButtonLink href="#how-it-works" variant="outline" size="lg" linkComponent={Link}>
+          <ButtonLink href="/examples" variant="outline" size="lg" linkComponent={Link}>
             {hero.secondaryCta}
           </ButtonLink>
         </div>
-        <p className="mt-2 text-center text-sm text-muted-foreground">
-          <Link href="/pricing" className="underline underline-offset-2">
-            Preview pricing
-          </Link>
-        </p>
         <div className="grid w-full grid-gap-sm sm:grid-cols-2">
           {heroTileConfigs.map((tile, index) => (
             <HeroMediaTile
@@ -612,6 +607,11 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
             />
           ))}
         </div>
+        <p className="text-center text-sm text-muted-foreground">
+          <Link href="/pricing" className="underline underline-offset-2">
+            Preview pricing
+          </Link>
+        </p>
       </section>
 
       <section className="border-t border-hairline bg-surface/90 text-text-secondary section-compact">

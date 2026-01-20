@@ -320,7 +320,7 @@ const en: Dictionary = {
       title: 'The right engine for every shot.',
       subtitle: 'Professional AI video, minus the hassle. Price before you generate. One hub for your work.',
       primaryCta: 'Start a render',
-      secondaryCta: 'See how it works',
+      secondaryCta: 'See examples',
     },
     worksWith: {
       label: 'Works with',
