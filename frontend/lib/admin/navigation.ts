@@ -5,6 +5,15 @@ export type AdminNavItem = {
   icon: string;
 };
 
+export type AdminNavBadgeTone = 'info' | 'warn';
+
+export type AdminNavBadge = {
+  label: string;
+  tone?: AdminNavBadgeTone;
+};
+
+export type AdminNavBadgeMap = Record<string, AdminNavBadge[]>;
+
 export type AdminNavGroup = {
   id: string;
   label: string;

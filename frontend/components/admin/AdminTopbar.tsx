@@ -6,6 +6,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { ChevronRight, PanelLeftOpen } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
+import { TopbarSearch } from '@/components/admin/TopbarSearch';
 import type { AdminNavGroup } from '@/lib/admin/navigation';
 import { findAdminNavMatch } from '@/lib/admin/navigation';
 
@@ -23,7 +24,7 @@ export function AdminTopbar({ navGroups, onMenuOpen }: AdminTopbarProps) {
 
   return (
     <header className="sticky top-0 z-20 border-b border-hairline bg-surface/90 backdrop-blur">
-      <div className="mx-auto flex min-h-[64px] w-full max-w-6xl items-center gap-3 px-6 py-3">
+      <div className="mx-auto flex min-h-[56px] w-full max-w-6xl flex-wrap items-center gap-3 px-6 py-2">
         <Button
           type="button"
           variant="ghost"
@@ -34,7 +35,7 @@ export function AdminTopbar({ navGroups, onMenuOpen }: AdminTopbarProps) {
           <UIIcon icon={PanelLeftOpen} size={18} />
           <span className="sr-only">Open navigation</span>
         </Button>
-        <nav aria-label="Breadcrumbs" className="flex-1">
+        <nav aria-label="Breadcrumbs" className="min-w-0 flex-1">
           <ol className="flex items-center gap-2 text-sm text-text-muted">
             <li>
               <Link href="/admin" className="font-semibold text-text-primary hover:text-text-primary">
@@ -63,6 +64,9 @@ export function AdminTopbar({ navGroups, onMenuOpen }: AdminTopbarProps) {
             ) : null}
           </ol>
         </nav>
+        <div className="w-full md:w-auto">
+          <TopbarSearch />
+        </div>
       </div>
     </header>
   );
