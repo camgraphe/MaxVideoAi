@@ -25,19 +25,22 @@ Defined in:
 - `frontend/src/styles/tokens.css` as CSS variables
 
 Palette:
-- `bg`: `#F8F9FA`
+- `bg`: `#F7F8FA`
 - `surface`: `#FFFFFF`
-- `border`: `#D1D5DB`
-- `hairline`: `#E5E7EB`
-- `text-primary`: `#111111`
-- `text-secondary`: `#374151`
-- `text-muted`: `#6B7280`
-- `accent`: `#4F5D75`
-- `accentSoft`: `#61708B`
-- `ring`: `#9DA7B8`
+- `surface-2`: `#F7F8FA`
+- `surface-3`: `#EEF1F5`
+- `border`: `#C2CAD6`
+- `hairline`: `#EEF1F5`
+- `text-primary`: `#131A22`
+- `text-secondary`: `#5D6B7A`
+- `text-muted`: `#7A8797`
+- `brand`: `#426AAE`
+- `accent`: `#0EA5E9`
+- `accent-subtle`: `#E0F2FE`
+- `ring`: `rgba(14, 165, 233, 0.35)`
 
 Notes:
-- Global body background uses a light gradient: `#F8F9FA -> #F3F5F7` in `frontend/app/globals.css`.
+- Global body background uses `var(--bg)` -> `var(--surface-3)` in `frontend/app/globals.css`.
 - Scrollbar track uses `hairline`; thumb is a semi-transparent slate in `frontend/app/globals.css`.
 
 ### Engine pictogram colors (light / dark)
@@ -184,12 +187,10 @@ Extensions (valeurs derivees / hors collection initiale)
 
 * `color.light.accent.accentActive` - `#0169A3`
 
-> Note (accent: palette actuelle vs palette cible)
+> Note (accent)
 >
-> * Palette actuelle (code) : `accent = #4F5D75` (accent neutre/bleute deja present dans l'UI)
-> * Palette cible (Figma/doc) : `accent = #0EA5E9` (cyan premium)
->
-> Decision (ce doc) : on adopte la palette cible comme reference. Le but est de migrer vers ces valeurs **sans casser l'UI**, en commencant par les primitives (buttons/links/chips/focus) et en gardant uniquement les exceptions branding/marketing.
+> * Palette actuelle (code) : `accent = #0EA5E9` (cyan premium)
+> * Regle d'usage : **CTA = brand** (primary blue), **accent = focus / petits highlights**.
 
 #### Neutral (6)
 
@@ -245,17 +246,17 @@ Extensions (valeurs derivees / hors collection initiale)
 * `color.dark.neutral.50` - `#E7ECF3`
 * `color.dark.neutral.100` - `#C9D2DE`
 * `color.dark.neutral.300` - `#6B778A`
-* `color.dark.neutral.600` - `#2A3440`
-* `color.dark.neutral.900` - `#0B0F14`
+* `color.dark.neutral.600` - `#24303B`
+* `color.dark.neutral.900` - `#0E1218`
 
 Neutral extensions (dark) - valeurs UI utiles hors 6-step
 
-* `color.dark.neutralExt.surface` - `#141B24`
-* `color.dark.neutralExt.surface2` - `#1B2430`
-* `color.dark.neutralExt.surface3` - `#0F141C`
-* `color.dark.neutralExt.border` - `#253041`
-* `color.dark.neutralExt.hairline` - `#1E2734`
-* `color.dark.neutralExt.borderHover` - `#3B4A5F`
+* `color.dark.neutralExt.surface` - `#16202B`
+* `color.dark.neutralExt.surface2` - `#1C2734`
+* `color.dark.neutralExt.surface3` - `#121821`
+* `color.dark.neutralExt.border` - `#1F2A36`
+* `color.dark.neutralExt.hairline` - `#1A232E`
+* `color.dark.neutralExt.borderHover` - `#2D3A4C`
 
 #### Semantic (4)
 
@@ -338,6 +339,14 @@ Note: textes sur media = `text-on-media-*`.
 * `ui.surfaceOnMediaDark80` - `rgba(0, 0, 0, 0.80)`
 
 Note: scrims fonces pour lisibilite sur media. Usage Tailwind = `bg-surface-on-media-dark-*`.
+
+#### Preview outline (composite preview)
+
+* `ui.previewOutlineIdle` - `rgba(0, 0, 0, 0.10)` (meme base que `ui.surfaceOnMediaDark10`)
+* `ui.previewOutlineHover` - `rgba(14, 165, 233, 0.35)`
+* `ui.previewOutlineActive` - `rgba(14, 165, 233, 0.60)`
+
+Note: idle discret, accent reserve au hover/active.
 
 #### Borders
 
@@ -433,22 +442,22 @@ Note: utiliser `var(--chart-active)` / `var(--chart-charges)` dans les composant
 
 #### Surfaces & layout
 
-* `ui.bg` - `#0B0F14` (= `color.dark.neutral.900`)
-* `ui.surface` - `#141B24` (= `color.dark.neutralExt.surface`)
-* `ui.surface2` - `#1B2430` (= `color.dark.neutralExt.surface2`)
-* `ui.surface3` - `#0F141C` (= `color.dark.neutralExt.surface3`)
-* `ui.surfaceHover` - `#1B2430`
-* `ui.surfaceDisabled` - `#0B0F14`
+* `ui.bg` - `#0E1218`
+* `ui.surface` - `#16202B`
+* `ui.surface2` - `#1C2734`
+* `ui.surface3` - `#121821`
+* `ui.surfaceHover` - `#1F2A38`
+* `ui.surfaceDisabled` - `#0E1218`
 
 #### Glass / translucent surfaces
 
-* `ui.surfaceGlass95` - `rgba(20, 27, 36, 0.95)`
-* `ui.surfaceGlass90` - `rgba(20, 27, 36, 0.90)`
-* `ui.surfaceGlass85` - `rgba(20, 27, 36, 0.85)`
-* `ui.surfaceGlass80` - `rgba(20, 27, 36, 0.80)`
-* `ui.surfaceGlass75` - `rgba(20, 27, 36, 0.75)`
-* `ui.surfaceGlass70` - `rgba(20, 27, 36, 0.70)`
-* `ui.surfaceGlass60` - `rgba(20, 27, 36, 0.60)`
+* `ui.surfaceGlass95` - `rgba(22, 32, 43, 0.95)`
+* `ui.surfaceGlass90` - `rgba(22, 32, 43, 0.90)`
+* `ui.surfaceGlass85` - `rgba(22, 32, 43, 0.85)`
+* `ui.surfaceGlass80` - `rgba(22, 32, 43, 0.80)`
+* `ui.surfaceGlass75` - `rgba(22, 32, 43, 0.75)`
+* `ui.surfaceGlass70` - `rgba(22, 32, 43, 0.70)`
+* `ui.surfaceGlass60` - `rgba(22, 32, 43, 0.60)`
 
 Note: les chips "on-media" peuvent rester en `bg-white/xx` (art/brand), mais l'UI standard doit utiliser ces tokens.
 
@@ -492,12 +501,20 @@ Note: textes sur media = `text-on-media-*`.
 
 Note: scrims fonces pour lisibilite sur media. Usage Tailwind = `bg-surface-on-media-dark-*`.
 
+#### Preview outline (composite preview)
+
+* `ui.previewOutlineIdle` - `rgba(0, 0, 0, 0.00)`
+* `ui.previewOutlineHover` - `rgba(14, 165, 233, 0.35)`
+* `ui.previewOutlineActive` - `rgba(14, 165, 233, 0.55)`
+
+Note: idle invisible, accent reserve au hover/active.
+
 #### Borders
 
-* `ui.border` - `#253041` (= `color.dark.neutralExt.border`)
-* `ui.hairline` - `#1E2734` (= `color.dark.neutralExt.hairline`)
-* `ui.borderHover` - `#3B4A5F` (= `color.dark.neutralExt.borderHover`)
-* `ui.borderDisabled` - `#1E2734`
+* `ui.border` - `#1F2A36`
+* `ui.hairline` - `#1A232E`
+* `ui.borderHover` - `#2D3A4C`
+* `ui.borderDisabled` - `#1A232E`
 
 #### Text
 
@@ -535,8 +552,8 @@ Note: scrims fonces pour lisibilite sur media. Usage Tailwind = `bg-surface-on-m
 
 #### Loading / placeholders
 
-* `ui.placeholder` - `#2A3440`
-* `ui.skeleton` - `#2A3440`
+* `ui.placeholder` - `#24303B`
+* `ui.skeleton` - `#24303B`
 
 Note: `bg-placeholder` pour surfaces vides, `bg-skeleton` pour barres/shimmer.
 
@@ -573,8 +590,8 @@ Note: utiliser `var(--chart-active)` / `var(--chart-charges)` dans les composant
 
 #### Shadows
 
-* `ui.shadowCard` - `0 1px 2px rgba(0,0,0,.35), 0 10px 24px rgba(0,0,0,.30)`
-* `ui.shadowFloat` - `0 14px 40px rgba(0,0,0,.45)`
+* `ui.shadowCard` - `0 1px 2px rgba(0,0,0,.28), 0 8px 20px rgba(0,0,0,.22)`
+* `ui.shadowFloat` - `0 12px 32px rgba(0,0,0,.32)`
 
 ---
 
@@ -711,7 +728,7 @@ Interactive
 Overlays / loading (notation)
 
 * `ui.overlayBg` -> `color.dark.neutral.900 @ 75%`
-* `ui.overlaySurface` -> `ui.surface`
+* `ui.overlaySurface` -> token dedie (`#141B24`)
 * `ui.overlayInk` -> `ui.onSurface`
 * `ui.overlayMuted` -> `ui.onSurfaceMuted`
 * `ui.placeholder` -> `color.dark.neutral.600`
@@ -775,7 +792,7 @@ Puis une section "UI theme tokens" (Light / Dark) montrant :
 
 ## 5.1) Mapping implementation (Figma -> CSS vars -> Tailwind)
 
-Objectif : rendre explicite le chemin de verite, pour eviter les divergences (ex: **accent en code = `#4F5D75` aujourd'hui**, alors que la palette cible propose `#0EA5E9`).
+Objectif : rendre explicite le chemin de verite, pour eviter les divergences entre Figma, tokens CSS et Tailwind.
 
 ### A) Figma variables (source design)
 
@@ -827,18 +844,10 @@ Objectif : rendre explicite le chemin de verite, pour eviter les divergences (ex
 
 Note: cote CSS vars on peut garder `--text-primary` etc. et, cote Figma, `ui.textPrimary` (camelCase). Les deux coexistent tant que le mapping est explicite.
 
-### E) Palette actuelle vs palette cible (accent)
+### E) Accent (etat actuel + regle d'usage)
 
-* Palette actuelle (code) : `accent = #4F5D75` (accent neutre/bleute, deja present)
-* Palette cible (Figma/doc) : `accent = #0EA5E9` (cyan premium)
-
-Decision (ce doc) : la palette cible est la reference design. La migration se fait **progressivement** (primitives UI d'abord) pour eviter toute regression visuelle.
-
-Regle de migration (anti-flou) :
-
-1. On ne "cyanifie" pas tout d'un coup : on migre d'abord `Button(primary)`, `Link`, `Focus ring`, `Chip accent`.
-2. Les surfaces/neutrals restent stables (elles changent seulement si on le decide explicitement).
-3. Branding engines + marketing art restent des exceptions.
+* Palette actuelle (code + doc) : `accent = #0EA5E9`
+* Regle d'usage : **CTA = brand**, **accent = focus / petits highlights**.
 
 ---
 
@@ -896,7 +905,7 @@ Regle : toute nouvelle UI ou nouvelle page ne doit pas ajouter de nouveaux hex d
 
 ## 8) Autres tokens CSS (spacing, radius, layout, motion)
 
-Cette section liste ce qui existe deja en tokens/vars (valeurs connues) et ce qui pourrait etre tokenise.
+Cette section liste les tokens non-couleurs deja presents dans `tokens.css` et leur usage recommande.
 
 ### Deja en place (valeurs connues)
 
@@ -912,7 +921,10 @@ Cette section liste ce qui existe deja en tokens/vars (valeurs connues) et ce qu
 * Shadows
   * `tokens.css`
     * `--shadow-card` = `0 1px 2px rgba(16,24,40,.06), 0 6px 16px rgba(16,24,40,.06)`
-    * `--shadow-float` = `0 6px 16px rgba(16,24,40,.08)` *(a ajouter)*
+    * `--shadow-float` = `0 6px 16px rgba(16,24,40,.08)`
+    * Dark overrides:
+      * `--shadow-card` = `0 1px 2px rgba(0,0,0,.28), 0 8px 20px rgba(0,0,0,.22)`
+      * `--shadow-float` = `0 12px 32px rgba(0,0,0,.32)`
   * `tailwind.config.ts`
     * `theme.extend.boxShadow.card` = `0 1px 2px rgba(16,24,40,.06), 0 6px 16px rgba(16,24,40,.06)`
     * `theme.extend.boxShadow.float` = `0 6px 16px rgba(16,24,40,.08)`
@@ -925,8 +937,8 @@ Cette section liste ce qui existe deja en tokens/vars (valeurs connues) et ce qu
   * `letterSpacing.micro` = `0.08em`
   * `letterSpacing.tiny` = `0.02em`
 * Legacy text vars (tokens.css)
-  * `--text` = `#111111`
-  * `--muted` = `#6B7280`
+  * `--text` = `var(--text-primary)`
+  * `--muted` = `var(--text-muted)`
 * Layout
   * `--header-height` = `72px` (globals.css)
 * Motion (tailwind.config.ts)
@@ -937,14 +949,9 @@ Cette section liste ce qui existe deja en tokens/vars (valeurs connues) et ce qu
   * `--overlay-*` (ProcessingOverlay.tsx)
 
 
-### A tokeniser (propositions prioritaires)
+### Standards d'usage (non-couleurs)
 
-> Objectif : ajouter des tokens **non-couleur** de façon *additive* (zéro régression). On ne remplace pas l’existant tout de suite :
-> - On ajoute d’abord les variables dans `tokens.css` + un mapping Tailwind (quand on le décide).
-> - On les utilise sur les **nouvelles pages / nouveaux composants**.
-> - On migre progressivement les anciens one-offs ensuite.
-
-#### Phase 1 — layout/spacing (le plus rentable)
+> Ces tokens existent deja dans `tokens.css`. Ils sont la reference pour les nouvelles pages/composants.
 
 - Spacing scale (subset "design")
   - `--space-1` = `4px`
@@ -959,8 +966,8 @@ Cette section liste ce qui existe deja en tokens/vars (valeurs connues) et ce qu
 - Layout sizing
   - `--container-max` = `1280px`
   - `--content-max` = `1120px`
-  - `--page-padding-x` = `16px` *(mobile baseline; on peut augmenter via breakpoints Tailwind)*
-  - `--section-padding-y` = `72px` *(mobile; desktop = `88px`)*
+  - `--page-padding-x` = `16px` (mobile baseline)
+  - `--section-padding-y` = `72px` (mobile) / `88px` (desktop)
   - `--stack-gap` = `20px`
   - `--stack-gap-sm` = `12px`
   - `--stack-gap-lg` = `32px`
@@ -971,41 +978,27 @@ Cette section liste ce qui existe deja en tokens/vars (valeurs connues) et ce qu
   - `--grid-gap-xl` = `48px`
   - `--card-pad` = `16px`
 
-> Notes :
-> - On garde la scale Tailwind par défaut, mais ce subset sert de **référence design** (anti-drift).
-> - `--page-padding-x` peut être surchargé via `md:`/`lg:` côté Tailwind au lieu de variables responsives.
-> - Spacing doux (migration) : utiliser `--section-padding-y` (72/88) pour les sections standard, sans toucher aux heroes.
-
-#### Phase 2 — sizing UI (cohérence composants)
-
-- Form sizing
+- Sizing UI
   - `--input-height` = `40px`
   - `--button-height` = `40px`
   - `--chip-height` = `28px`
   - `--badge-height` = `24px`
   - `--icon-size` = `20px`
 
-#### Phase 3 — borders & focus (cohérence accessibilité)
-
-- Border widths
+- Borders & focus
   - `--border-width` = `1px`
   - `--border-strong` = `2px`
   - `--ring-width` = `2px`
   - `--ring-offset` = `2px`
 
-#### Phase 4 — radius extensions (si besoin)
-
 - Radius extensions
   - `--radius-sm` = `8px`
-  - `--radius-md` = `10px` *(alias of `--radius-input`)*
-  - `--radius-lg` = `12px` *(alias of `--radius-card`)*
-  - `--radius-xl` = `16px` *(recommended for modals/popovers)*
-  - `--radius-panel` = `12px` *(alias possible de `--radius-card`)*
+  - `--radius-md` = `10px` (alias `--radius-input`)
+  - `--radius-lg` = `12px` (alias `--radius-card`)
+  - `--radius-xl` = `16px`
+  - `--radius-panel` = `12px`
 
-> Hard rule: `rounded-full`/`pill` uniquement pour micro-UI (chips/badges). Jamais pour gros CTA ou grands conteneurs. Preferer `input/card/xl` pour boutons, panneaux et overlays.
-> Note: des `rounded-[16px]` existent deja en code; si on veut les normaliser, utiliser `--radius-xl = 16px`.
-
-#### Phase 5 — motion (design system, pas par fichier)
+> Hard rule: `rounded-full`/`pill` uniquement pour micro-UI (chips/badges). Jamais pour gros CTA ou grands conteneurs.
 
 - Motion
   - `--duration-fast` = `160ms`
@@ -1016,22 +1009,16 @@ Cette section liste ce qui existe deja en tokens/vars (valeurs connues) et ce qu
   - `--ease-exit` = `cubic-bezier(0.7, 0, 0.84, 0)`
   - `--blur-overlay` = `12px`
 
-#### Phase 5b — typography scale (eviter les tailles ad-hoc)
-
-- Font sizes + line heights (proposition)
+- Typography scale
   - `--text-xs` = `12px` / `--leading-xs` = `16px`
   - `--text-sm` = `14px` / `--leading-sm` = `20px`
   - `--text-base` = `16px` / `--leading-base` = `24px`
   - `--text-lg` = `18px` / `--leading-lg` = `26px`
   - `--text-xl` = `20px` / `--leading-xl` = `28px`
 
-#### Phase 5c — opacity tokens (coherence UI)
-
-- Opacity (proposition)
+- Opacity
   - `--opacity-muted` = `0.7`
   - `--opacity-disabled` = `0.5`
-
-#### Phase 6 — z-index layers (éviter les magic numbers)
 
 - Z-index layers
   - `--z-header` = `50`
@@ -1125,123 +1112,7 @@ Objectif : ajouter des standards simples, applicables sans casser l'existant. On
 
 ---
 
-## 11) Refonte - plan d'action (additive, sans tout casser)
-
-Objectif : corriger la derive visuelle avec des changements progressifs. Cette section est la reference pour toutes les PR UI.
-
-### Principes
-- Source de verite : `tokens.css` (runtime + theming) et `tailwind.config.ts` (consommation).
-- Aucun nouveau hex UI (voir regle section 7).
-- Migration progressive : nouvelles pages d'abord, legacy ensuite.
-
-### Phase 1 - Standardiser les tokens (fondations)
-- Ajouter/valider les tokens non-couleur (spacing, radius, shadows, motion, states).
-- Completer les tokens manquants (`--shadow-float`, `ui.*Hover`, `ui.*Disabled`, `ui.ring`).
-- Documenter chaque token dans ce guide.
-
-### Phase 2 - Primitives UI (source unique)
-- Creer des composants de base : `Button`, `Input`, `Card`, `Badge`, `Link`, `Overlay`.
-- Chaque primitive consomme uniquement les tokens `ui.*`.
-- Interdire les variantes ad-hoc dans les nouvelles features.
-
-### Phase 3 - Layout & spacing standard
-- Ajouter des utilities : `.container-page`, `.section`, `.stack-gap`, `.grid-gap` (via `@layer components`).
-- Appliquer aux nouvelles pages et sections principales.
-- Adopter la cible "spacing doux" : `py-16`/`py-20` pour sections standard.
-
-### Phase 4 - Migration par zones (priorite)
-- Zone 1 : homepage marketing, pricing, docs (fort impact visuel).
-- Zone 2 : composants partages (cards, nav, badges, tables).
-- Zone 3 : pages secondaires.
-
-### Phase 5 - Qualite + garde-fous
-- Checklist PR : pas de `bg-[#...]`, `text-[#...]`, `border-[#...]` dans l'UI.
-- Exceptions limitees (branding + marketing art).
-- Audit trimestriel : top 10 fichiers UI avec le plus d'hex.
-
-### Definition of Done (UI refonte)
-- Tokens `ui.*` utilises partout dans l'UI standard.
-- Aucune nouvelle couleur hardcodee hors exceptions.
-- Spacing, radius, shadows, motion sont centralises.
-
----
-
-## 11.1) Plan detaille (rollout safe)
-
-Objectif : appliquer la refonte sans big-bang. Chaque etape est additive et verifiee avant la suivante.
-
-### Etape 0 - Baseline + guardrails
-- Scope : documentation + regles d'equipe.
-- Actions :
-  - Garder la regle "no new UI hex".
-  - Lister les pages "golden" pour QA visuel (homepage, pricing, models, app).
-- Checks :
-  - Screenshots avant (desktop + mobile).
-  - Liste des exceptions (branding + marketing art).
-- Exit criteria :
-  - Baseline validee et partagee.
-
-### Etape 1 - Tokens non-couleur (additifs)
-- Scope : `tokens.css` + `tailwind.config.ts`.
-- Actions :
-  - Ajouter `--shadow-float`, spacing subset, motion vars, z-index vars.
-  - Exposer des keys Tailwind pour consommation progressive.
-- Checks :
-  - Aucun changement visuel (additif).
-- Exit criteria :
-  - Tokens disponibles + doc mise a jour.
-
-### Etape 2 - Primitives UI (source unique)
-- Scope : components UI (Button/Input/Card/Badge/Link/Overlay).
-- Actions :
-  - Creer primitives avec variantes (default/outline/ghost).
-  - Focus/disabled standardises via tokens.
-- Checks :
-  - Snapshots des primitives (light/dark si dispo).
-- Exit criteria :
-  - Primitives utilisees sur nouvelles features.
-
-### Etape 3 - Layout standard (container/section/spacing)
-- Scope : utilities `container-page`, `section`, `stack-gap`.
-- Actions :
-  - Ajouter utilities via `@layer components`.
-  - Appliquer sur 1-2 pages marketing "pilotes".
-- Checks :
-  - Pas de regression d'alignement / overlap.
-- Exit criteria :
-  - Pages pilotes valident le standard.
-
-### Etape 4 - Migration zones a fort impact
-- Scope : homepage marketing, pricing, docs.
-- Actions :
-  - Remplacer spacing ad-hoc par tokens/utilities.
-  - Remplacer boutons/links par primitives.
-- Checks :
-  - Comparatif avant/apres sur mobile + desktop.
-- Exit criteria :
-  - Regression visuelle < seuil accepte.
-
-### Etape 5 - Reste de l'UI
-- Scope : composants partages + pages secondaires.
-- Actions :
-  - Migrer par lots (cards, nav, tables, modals).
-  - Supprimer exceptions legacy au fur et a mesure.
-- Checks :
-  - QA visuel par lot.
-- Exit criteria :
-  - Exceptions reduites a branding/marketing art.
-
-### Etape 6 - Stabilisation + governance
-- Scope : process.
-- Actions :
-  - Checklist PR obligatoire.
-  - Audit trimestriel des usages `bg-[#...]`.
-- Exit criteria :
-  - Pas de drift sur 2 sprints.
-
----
-
-## 12) Accessibilite, theming, QA
+## 11) Accessibilite, theming, QA
 
 Cette section fixe les regles transverses (a11y, structure, dark) a respecter pendant la refonte.
 
@@ -1279,7 +1150,7 @@ Cette section fixe les regles transverses (a11y, structure, dark) a respecter pe
 
 ---
 
-## 13) Visual system & art direction
+## 12) Visual system & art direction
 
 Cette section complete la bible UI pour la coherence visuelle (branding, art, hierarchie).
 

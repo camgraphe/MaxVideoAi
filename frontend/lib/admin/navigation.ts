@@ -28,6 +28,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     items: [
       { id: 'hub-health', label: 'Hub & Health', href: '/admin', icon: 'dashboard' },
       { id: 'service-notice', label: 'Service notice', href: '/admin/system', icon: 'bell' },
+      { id: 'theme-tokens', label: 'Theme tokens', href: '/admin/theme', icon: 'palette' },
     ],
   },
   {

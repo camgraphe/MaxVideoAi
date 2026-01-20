@@ -1,4 +1,5 @@
 import { query } from '@/lib/db';
+import { EMPTY_THEME_TOKENS, normalizeThemeTokens, type ThemeTokensSetting } from '@/lib/theme-tokens';
 
 const DEFAULT_SERVICE_NOTICE = {
   enabled: false,
@@ -18,6 +19,7 @@ export type ServiceNoticeSetting = {
 };
 
 const SERVICE_NOTICE_KEY = 'service_notice';
+const THEME_TOKENS_KEY = 'theme_tokens';
 
 export async function getServiceNoticeSetting(): Promise<ServiceNoticeSetting> {
   if (!process.env.DATABASE_URL) {
@@ -65,5 +67,42 @@ export async function setServiceNoticeSetting(
       DO UPDATE SET value = EXCLUDED.value, updated_at = NOW(), updated_by = EXCLUDED.updated_by
     `,
     [SERVICE_NOTICE_KEY, JSON.stringify(payload), adminUserId ?? null]
+  );
+}
+
+export async function getThemeTokensSetting(): Promise<ThemeTokensSetting> {
+  if (!process.env.DATABASE_URL) {
+    return EMPTY_THEME_TOKENS;
+  }
+  try {
+    const rows = await query<{ value: unknown }>('SELECT value FROM app_settings WHERE key = $1 LIMIT 1', [
+      THEME_TOKENS_KEY,
+    ]);
+    if (!rows.length || !rows[0].value) {
+      return EMPTY_THEME_TOKENS;
+    }
+    return normalizeThemeTokens(rows[0].value);
+  } catch (error) {
+    console.error('[theme-tokens] failed to load settings', error);
+    return EMPTY_THEME_TOKENS;
+  }
+}
+
+export async function setThemeTokensSetting(
+  setting: ThemeTokensSetting,
+  adminUserId?: string | null
+): Promise<void> {
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL not configured; cannot update theme tokens');
+  }
+  const payload = normalizeThemeTokens(setting);
+  await query(
+    `
+      INSERT INTO app_settings (key, value, updated_at, updated_by)
+      VALUES ($1, $2::jsonb, NOW(), $3)
+      ON CONFLICT (key)
+      DO UPDATE SET value = EXCLUDED.value, updated_at = NOW(), updated_by = EXCLUDED.updated_by
+    `,
+    [THEME_TOKENS_KEY, JSON.stringify(payload), adminUserId ?? null]
   );
 }

@@ -68,6 +68,11 @@ const SECTION_GROUPS: Array<{
         description: 'Broadcast dashboard banners during supplier incidents.',
         href: '/admin/system',
       },
+      {
+        title: 'Theme tokens',
+        description: 'Adjust global UI colors, radius, spacing, and shadows.',
+        href: '/admin/theme',
+      },
     ],
   },
   {
