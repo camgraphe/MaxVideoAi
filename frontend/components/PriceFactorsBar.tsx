@@ -3,8 +3,10 @@
 import clsx from 'clsx';
 import Image from 'next/image';
 import { useMemo } from 'react';
+import { Wallet } from 'lucide-react';
 import type { ItemizationLine, PreflightResponse } from '@/types/engines';
 import { Button } from '@/components/ui/Button';
+import { UIIcon } from '@/components/ui/UIIcon';
 
 export type PriceFactorKind =
   | 'base'
@@ -192,7 +194,11 @@ export function PriceFactorsBar({ preflight, currency = 'USD', isLoading = false
           title={item.tooltip}
         >
           {item.icon && (
-            <Image src={item.icon} alt="" width={16} height={16} className="h-4 w-4" aria-hidden />
+            item.icon === '/assets/icons/wallet.svg' ? (
+              <UIIcon icon={Wallet} size={16} className="text-text-primary" />
+            ) : (
+              <Image src={item.icon} alt="" width={16} height={16} className="h-4 w-4" aria-hidden />
+            )
           )}
           <span className="uppercase text-text-muted">{item.label}</span>
           <span

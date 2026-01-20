@@ -6,7 +6,7 @@ import { Chip } from '@/components/ui/Chip';
 import { NAV_ITEMS } from '@/components/AppSidebar';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, useId } from 'react';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, Wallet } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
@@ -201,18 +201,44 @@ export function HeaderBar() {
     }
   };
 
-    const handleSignOut = () => {
-      setAccountMenuOpen(false);
-      setLogoutIntent();
-      setEmail(null);
-      setWallet(null);
-      setMember(null);
-      setIsAdmin(false);
-      clearLastKnownAccount();
-      writeLastKnownUserId(null);
-      sendSignOutRequest();
-      window.location.href = '/';
+  const handleSignOut = () => {
+    setAccountMenuOpen(false);
+    setLogoutIntent();
+    setEmail(null);
+    setWallet(null);
+    setMember(null);
+    setIsAdmin(false);
+    clearLastKnownAccount();
+    writeLastKnownUserId(null);
+    sendSignOutRequest();
+    window.location.href = '/';
+  };
+
+  const openWalletPrompt = () => {
+    if (walletPromptCloseTimeout.current) {
+      clearTimeout(walletPromptCloseTimeout.current);
+      walletPromptCloseTimeout.current = null;
+    }
+    setWalletPromptOpen(true);
+  };
+
+  const scheduleWalletPromptClose = () => {
+    if (walletPromptCloseTimeout.current) {
+      clearTimeout(walletPromptCloseTimeout.current);
+    }
+    walletPromptCloseTimeout.current = setTimeout(() => {
+      setWalletPromptOpen(false);
+      walletPromptCloseTimeout.current = null;
+    }, 200);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (walletPromptCloseTimeout.current) {
+        clearTimeout(walletPromptCloseTimeout.current);
+      }
     };
+  }, []);
 
   useEffect(() => {
     let isActive = true;
@@ -308,32 +334,6 @@ export function HeaderBar() {
   ] as const;
   const isAuthenticated = Boolean(email);
 
-  const openWalletPrompt = () => {
-    if (walletPromptCloseTimeout.current) {
-      clearTimeout(walletPromptCloseTimeout.current);
-      walletPromptCloseTimeout.current = null;
-    }
-    setWalletPromptOpen(true);
-  };
-
-  const scheduleWalletPromptClose = () => {
-    if (walletPromptCloseTimeout.current) {
-      clearTimeout(walletPromptCloseTimeout.current);
-    }
-    walletPromptCloseTimeout.current = setTimeout(() => {
-      setWalletPromptOpen(false);
-      walletPromptCloseTimeout.current = null;
-    }, 200);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (walletPromptCloseTimeout.current) {
-        clearTimeout(walletPromptCloseTimeout.current);
-      }
-    };
-  }, []);
-
   return (
     <>
       {showServiceNotice ? (
@@ -383,25 +383,6 @@ export function HeaderBar() {
           <div className="hidden md:block">
             <AppLanguageToggle />
           </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="hidden h-9 w-9 p-0 text-text-primary hover:bg-surface-2 md:inline-flex"
-            aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
-            onClick={() => {
-              const nextTheme = theme === 'dark' ? 'light' : 'dark';
-              setTheme(nextTheme);
-              if (nextTheme === 'dark') {
-                document.documentElement.setAttribute('data-theme', 'dark');
-              } else {
-                document.documentElement.removeAttribute('data-theme');
-              }
-              window.localStorage.setItem(themeStorageKey, nextTheme);
-            }}
-          >
-            <UIIcon icon={theme === 'dark' ? Sun : Moon} size={18} strokeWidth={1.75} />
-          </Button>
           <div className="relative" onMouseEnter={openWalletPrompt} onMouseLeave={scheduleWalletPromptClose}>
             <Link
               href="/billing"
@@ -411,16 +392,16 @@ export function HeaderBar() {
               onFocus={openWalletPrompt}
               onBlur={scheduleWalletPromptClose}
             >
-              <Image src="/assets/icons/wallet.svg" alt="" width={16} height={16} aria-hidden />
+              <UIIcon icon={Wallet} size={16} className="text-text-primary" />
               <span className="text-sm font-semibold tracking-normal text-text-primary">
                 {wallet ? `$${wallet.balance.toFixed(2)}` : authResolved ? '--' : '...'}
               </span>
             </Link>
-            {walletPromptOpen && (
+            {walletPromptOpen ? (
               <div
                 id={walletPromptId}
                 role="status"
-              className="absolute right-0 top-full z-10 mt-2 w-64 rounded-card border border-hairline bg-surface p-3 text-left text-xs text-text-primary shadow-card"
+                className="absolute right-0 top-full z-10 mt-2 w-64 rounded-card border border-hairline bg-surface p-3 text-left text-xs text-text-primary shadow-card"
                 onMouseEnter={openWalletPrompt}
                 onMouseLeave={scheduleWalletPromptClose}
               >
@@ -441,8 +422,27 @@ export function HeaderBar() {
                   {t('workspace.header.walletTopUp.cta', 'Top up now')}
                 </ButtonLink>
               </div>
-            )}
+            ) : null}
           </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="hidden h-9 w-9 p-0 text-text-primary hover:bg-surface-2 md:inline-flex"
+            aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+            onClick={() => {
+              const nextTheme = theme === 'dark' ? 'light' : 'dark';
+              setTheme(nextTheme);
+              if (nextTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+              } else {
+                document.documentElement.removeAttribute('data-theme');
+              }
+              window.localStorage.setItem(themeStorageKey, nextTheme);
+            }}
+          >
+            <UIIcon icon={theme === 'dark' ? Sun : Moon} size={18} strokeWidth={1.75} />
+          </Button>
           <Chip className="hidden px-2.5 py-1 text-[12px] md:inline-flex" variant="outline">
             {member?.tier ?? (authResolved ? '--' : '...')}
           </Chip>
@@ -603,7 +603,7 @@ export function HeaderBar() {
               <div className="stack-gap-sm">
                 <div className="flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3">
                   <span className="flex items-center gap-2 text-base font-semibold text-text-primary">
-                    <WalletGlyph size={18} className="text-text-primary" />
+                    <UIIcon icon={Wallet} size={18} className="text-text-primary" />
                     {wallet ? `$${wallet.balance.toFixed(2)}` : '--'}
                   </span>
                 </div>
@@ -666,26 +666,5 @@ function LogoMark() {
       <Image src="/assets/branding/logo-mark.svg" alt="MaxVideoAI" width={28} height={28} priority />
       <span className="text-lg font-semibold tracking-tight text-text-primary">MaxVideo AI</span>
     </Link>
-  );
-}
-
-function WalletGlyph({ size = 16, className }: { size?: number; className?: string }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className={className}
-    >
-      <path d="M3.5 7.75c0-1.1.9-2 2-2h12.25a1.5 1.5 0 0 1 0 3H4.5a1 1 0 0 1-1-1Z" />
-      <rect x="3.5" y="9.5" width="17" height="8.5" rx="2.25" />
-      <path d="M17 13.25h1.5" />
-    </svg>
   );
 }

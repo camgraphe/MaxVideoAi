@@ -1,9 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import clsx from 'clsx';
+import { Globe } from 'lucide-react';
 import { LOCALE_COOKIE } from '@/lib/i18n/constants';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { UIIcon } from '@/components/ui/UIIcon';
 
 type Locale = 'en' | 'fr' | 'es';
 
@@ -24,6 +27,9 @@ export function AppLanguageToggle() {
   const pathname = usePathname();
   const { locale, t } = useI18n();
   const [pendingLocale, setPendingLocale] = useState<Locale>(locale);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const [, startTransition] = useTransition();
 
   useEffect(() => {
@@ -34,6 +40,7 @@ export function AppLanguageToggle() {
 
   const handleChange = (value: Locale) => {
     setPendingLocale(value);
+    setMenuOpen(false);
     const maxAge = 60 * 60 * 24 * 365;
     document.cookie = `${LOCALE_COOKIE}=${value}; path=/; max-age=${maxAge}; SameSite=Lax`;
     document.cookie = `NEXT_LOCALE=${value}; path=/; max-age=${maxAge}; SameSite=Lax`;
@@ -43,26 +50,74 @@ export function AppLanguageToggle() {
     });
   };
 
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handlePointer = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node | null;
+      if (buttonRef.current?.contains(target) || menuRef.current?.contains(target)) return;
+      setMenuOpen(false);
+    };
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handlePointer);
+    document.addEventListener('touchstart', handlePointer);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handlePointer);
+      document.removeEventListener('touchstart', handlePointer);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [menuOpen]);
+
+  const currentLabel = options.find((option) => option.locale === pendingLocale)?.label ?? pendingLocale.toUpperCase();
+
   return (
     <div className="relative text-xs font-medium text-text-secondary">
-      <select
-        value={pendingLocale}
-        onChange={(event) => handleChange(event.target.value as Locale)}
-        className="appearance-none rounded-full border border-hairline bg-gradient-to-r from-surface via-surface-2 to-surface px-4 py-1.5 pr-8 text-xs font-semibold text-text-primary shadow-[0_2px_8px_rgba(15,23,42,0.12)] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={() => setMenuOpen((prev) => !prev)}
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
         aria-label={t('workspace.languageToggle.ariaLabel', 'Select language')}
+        title={currentLabel}
+        className="inline-flex h-9 w-9 items-center justify-center rounded-full text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        {options.map((option) => (
-          <option key={option.locale} value={option.locale} aria-label={option.label} title={option.label}>
-            {FLAG_MAP[option.locale]}
-          </option>
-        ))}
-      </select>
-      <span
-        aria-hidden
-        className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-text-muted"
-      >
-        ▾
-      </span>
+        <UIIcon icon={Globe} size={18} strokeWidth={1.75} />
+      </button>
+      {menuOpen ? (
+        <div
+          ref={menuRef}
+          role="menu"
+          className="absolute right-0 mt-2 w-44 rounded-card border border-hairline bg-surface p-2 text-sm text-text-primary shadow-card"
+        >
+          {options.map((option) => {
+            const isActive = option.locale === pendingLocale;
+            return (
+              <button
+                key={option.locale}
+                type="button"
+                role="menuitemradio"
+                aria-checked={isActive}
+                onClick={() => handleChange(option.locale)}
+                className={clsx(
+                  'flex w-full items-center justify-between rounded-input px-3 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  isActive ? 'bg-surface-2 text-text-primary' : 'text-text-secondary hover:bg-surface-2 hover:text-text-primary'
+                )}
+              >
+                <span className="flex items-center gap-2">
+                  <span aria-hidden>{FLAG_MAP[option.locale]}</span>
+                  <span>{option.label}</span>
+                </span>
+                {isActive ? <span className="text-xs text-text-muted">Active</span> : null}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
     </div>
   );
 }

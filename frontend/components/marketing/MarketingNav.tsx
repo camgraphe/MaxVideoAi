@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import clsx from 'clsx';
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { Link, usePathname } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -11,27 +11,17 @@ import { supabase } from '@/lib/supabaseClient';
 import { NAV_ITEMS } from '@/components/AppSidebar';
 import { Button } from '@/components/ui/Button';
 import { setLogoutIntent } from '@/lib/logout-intent';
-import {
-  clearLastKnownAccount,
-  readLastKnownUserId,
-  readLastKnownWallet,
-  writeLastKnownUserId,
-  writeLastKnownWallet,
-} from '@/lib/last-known';
+import { clearLastKnownAccount, writeLastKnownUserId } from '@/lib/last-known';
 
 export function MarketingNav() {
   const pathname = usePathname();
   const { t } = useI18n();
   const [email, setEmail] = useState<string | null>(null);
-  const [wallet, setWallet] = useState<{ balance: number } | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
-  const [walletPromptOpen, setWalletPromptOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const avatarRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const walletPromptCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const walletPromptId = useId();
   const brand = t('nav.brand', 'MaxVideo AI') ?? 'MaxVideo AI';
   const defaultLinks: Array<{ key: string; href: string }> = [
     { key: 'models', href: '/models' },
@@ -49,13 +39,6 @@ export function MarketingNav() {
   const isAuthenticated = Boolean(email);
 
   useEffect(() => {
-    const storedWallet = readLastKnownWallet();
-    if (storedWallet) {
-      setWallet((current) => current ?? { balance: storedWallet.balance });
-    }
-  }, []);
-
-  useEffect(() => {
     let mounted = true;
     const fetchAccountState = async (token?: string | null, userId?: string | null) => {
       if (!token) {
@@ -64,21 +47,11 @@ export function MarketingNav() {
       }
       const headers = { Authorization: `Bearer ${token}` };
       try {
-        const [walletRes, adminRes] = await Promise.all([
-          fetch('/api/wallet', { headers }),
-          fetch('/api/admin/access', { headers, cache: 'no-store' }),
-        ]);
-        const walletJson = await walletRes.json().catch(() => null);
+        const [adminRes] = await Promise.all([fetch('/api/admin/access', { headers, cache: 'no-store' })]);
         const adminJson = await adminRes.json().catch(() => null);
         if (!mounted) return;
         const nextAdmin = Boolean(adminRes.ok && adminJson?.ok);
         setIsAdmin(nextAdmin);
-        const balance = typeof walletJson?.balance === 'number' ? walletJson.balance : null;
-        if (balance !== null) {
-          setWallet({ balance });
-          const currency = typeof walletJson?.currency === 'string' ? walletJson.currency : undefined;
-          writeLastKnownWallet({ balance, currency }, userId ?? readLastKnownUserId());
-        }
       } catch {
         // Keep last known values on transient failures.
       }
@@ -114,31 +87,15 @@ export function MarketingNav() {
         clearLastKnownAccount();
         writeLastKnownUserId(null);
         setEmail(null);
-        setWallet(null);
         setIsAdmin(false);
         return;
       }
       const userId = applySession(session ?? null);
       void fetchAccountState(session?.access_token, userId ?? session?.user?.id ?? null);
     });
-    const handleInvalidate = async () => {
-      const { data } = await supabase.auth.getSession();
-      const session = data.session ?? null;
-      const userId = session?.user?.id ?? null;
-      if (userId) {
-        writeLastKnownUserId(userId);
-      }
-      await fetchAccountState(session?.access_token, userId);
-    };
-    window.addEventListener('wallet:invalidate', handleInvalidate);
     return () => {
       mounted = false;
       subscription.subscription.unsubscribe();
-      window.removeEventListener('wallet:invalidate', handleInvalidate);
-      if (walletPromptCloseTimeout.current) {
-        clearTimeout(walletPromptCloseTimeout.current);
-        walletPromptCloseTimeout.current = null;
-      }
     };
   }, []);
 
@@ -151,7 +108,6 @@ export function MarketingNav() {
     }
     setLogoutIntent();
     setEmail(null);
-    setWallet(null);
     clearLastKnownAccount();
     writeLastKnownUserId(null);
     void supabase.auth.signOut().catch(() => undefined);
@@ -197,15 +153,6 @@ export function MarketingNav() {
   }, [accountMenuOpen]);
 
   useEffect(() => {
-    return () => {
-      if (walletPromptCloseTimeout.current) {
-        clearTimeout(walletPromptCloseTimeout.current);
-        walletPromptCloseTimeout.current = null;
-      }
-    };
-  }, []);
-
-  useEffect(() => {
     if (!mobileMenuOpen) {
       document.body.style.removeProperty('overflow');
       return;
@@ -226,24 +173,6 @@ export function MarketingNav() {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
-
-  const openWalletPrompt = () => {
-    if (walletPromptCloseTimeout.current) {
-      clearTimeout(walletPromptCloseTimeout.current);
-      walletPromptCloseTimeout.current = null;
-    }
-    setWalletPromptOpen(true);
-  };
-
-  const scheduleWalletPromptClose = () => {
-    if (walletPromptCloseTimeout.current) {
-      clearTimeout(walletPromptCloseTimeout.current);
-    }
-    walletPromptCloseTimeout.current = setTimeout(() => {
-      setWalletPromptOpen(false);
-      walletPromptCloseTimeout.current = null;
-    }, 200);
-  };
 
   const initials = useMemo(() => {
     if (!email) return '?';
@@ -311,57 +240,10 @@ export function MarketingNav() {
         </nav>
         <div className="flex items-center gap-4">
           <div className="hidden md:block">
-            <LanguageToggle />
+            <LanguageToggle variant="icon" />
           </div>
           {isAuthenticated ? (
             <>
-              <div className="hidden items-center gap-4 md:flex">
-                <div
-                  className="relative"
-                  onMouseEnter={openWalletPrompt}
-                  onMouseLeave={scheduleWalletPromptClose}
-                  onFocusCapture={openWalletPrompt}
-                  onBlurCapture={scheduleWalletPromptClose}
-                >
-                  <Link
-                    href="/billing"
-                    prefetch={false}
-                    className="flex items-center gap-2 rounded-pill border border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary transition hover:border-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    aria-describedby={walletPromptOpen ? walletPromptId : undefined}
-                  >
-                    <WalletGlyph size={16} className="text-text-primary" />
-                    <span className="text-sm font-semibold tracking-normal text-text-primary">
-                      {wallet ? `$${wallet.balance.toFixed(2)}` : '--'}
-                    </span>
-                  </Link>
-                  {walletPromptOpen && (
-                    <div
-                      id={walletPromptId}
-                      role="status"
-                    className="absolute right-0 top-full z-10 mt-2 w-64 rounded-card border border-hairline bg-surface p-3 text-left text-xs text-text-primary shadow-card"
-                      onMouseEnter={openWalletPrompt}
-                      onMouseLeave={scheduleWalletPromptClose}
-                    >
-                      <p className="text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
-                        {t('workspace.header.walletTopUp.label', 'Top up available')}
-                      </p>
-                      <p className="mt-1 text-sm text-text-primary">
-                        {t(
-                          'workspace.header.walletTopUp.copy',
-                          'Click to add funds and keep generating without interruption.'
-                        )}
-                      </p>
-                      <Link
-                        href="/billing"
-                        prefetch={false}
-                className="mt-3 inline-flex w-full items-center justify-center rounded-input bg-brand px-3 py-2 text-sm font-semibold text-on-brand shadow-card transition hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        {t('workspace.header.walletTopUp.cta', 'Top up now')}
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              </div>
               <Link
                 href="/app"
                 prefetch={false}
@@ -499,7 +381,7 @@ export function MarketingNav() {
           </div>
           <div className="mx-auto mt-5 max-w-sm stack-gap-lg">
             <div className="flex justify-end">
-              <LanguageToggle />
+              <LanguageToggle variant="icon" />
             </div>
             <nav className="flex flex-col gap-2 text-base font-semibold text-text-primary">
               {links.map((item) => (
@@ -518,12 +400,6 @@ export function MarketingNav() {
             </nav>
             {isAuthenticated ? (
               <div className="stack-gap-sm">
-                <div className="flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3">
-                  <span className="flex items-center gap-2 text-base font-semibold text-text-primary">
-                    <WalletGlyph size={18} className="text-text-primary" />
-                    {wallet ? `$${wallet.balance.toFixed(2)}` : '--'}
-                  </span>
-                </div>
                 <Link
                   href="/app"
                   prefetch={false}
@@ -565,26 +441,5 @@ export function MarketingNav() {
         </div>
       ) : null}
     </>
-  );
-}
-
-function WalletGlyph({ size = 16, className }: { size?: number; className?: string }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className={className}
-    >
-      <path d="M3.5 7.75c0-1.1.9-2 2-2h12.25a1.5 1.5 0 0 1 0 3H4.5a1 1 0 0 1-1-1Z" />
-      <rect x="3.5" y="9.5" width="17" height="8.5" rx="2.25" />
-      <circle cx="16.25" cy="13.75" r="1" />
-    </svg>
   );
 }
