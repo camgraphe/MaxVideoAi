@@ -211,25 +211,11 @@ export function MarketingNav() {
     <header className="sticky top-0 z-40 border-b border-hairline bg-surface">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-6">
-          <Link
-            href="/"
-            className="flex items-center gap-4 font-display text-base font-semibold tracking-tight text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
-          >
-            <Image
-              src="/assets/branding/logo-mark.svg"
-              alt="MaxVideoAI"
-              width={32}
-              height={32}
-              className="h-8 w-8"
-              priority
-            />
-            <span>{brand}</span>
-          </Link>
           <Button
             type="button"
             size="sm"
             variant="ghost"
-            className="min-h-0 h-9 w-9 rounded-full border border-hairline bg-surface-glass-80 p-2 text-text-primary hover:bg-surface-2 md:hidden"
+            className="min-h-0 h-9 w-9 rounded-full border border-hairline bg-surface-glass-80 p-2 text-text-primary hover:bg-surface-2 lg:hidden"
             aria-label={t('nav.mobileToggle', 'Open menu')}
             onClick={() => setMobileMenuOpen(true)}
           >
@@ -239,7 +225,21 @@ export function MarketingNav() {
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </Button>
-          <nav aria-label="Primary" className="hidden items-center gap-6 text-sm font-medium text-text-secondary md:flex">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-lg font-semibold tracking-tight text-text-primary whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+          >
+            <Image
+              src="/assets/branding/logo-mark.svg"
+              alt="MaxVideoAI"
+              width={28}
+              height={28}
+              className="h-7 w-7"
+              priority
+            />
+            <span>{brand}</span>
+          </Link>
+          <nav aria-label="Primary" className="hidden items-center gap-6 text-sm font-medium text-text-secondary lg:flex">
             {links.map((item) => {
               const isActive = pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href + '/'));
               return (
@@ -247,7 +247,7 @@ export function MarketingNav() {
                   key={item.key}
                   href={item.href}
                   className={clsx(
-                    'transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
+                    'whitespace-nowrap transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
                     isActive ? 'text-text-primary' : undefined
                   )}
                 >
@@ -257,7 +257,7 @@ export function MarketingNav() {
             })}
           </nav>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 whitespace-nowrap">
           <div className="hidden items-center gap-1 md:flex">
             <LanguageToggle variant="icon" />
             <Button
@@ -371,14 +371,14 @@ export function MarketingNav() {
             <>
               <Link
                 href="/login?next=/app"
-                className="hidden text-sm font-medium text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg md:inline-flex"
+                className="inline-flex whitespace-nowrap text-sm font-medium text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
               >
                 {login}
               </Link>
               <Link
                 href="/app"
                 prefetch={false}
-                  className="inline-flex items-center rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-on-brand shadow-card transition transform-gpu hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                  className="inline-flex items-center whitespace-nowrap rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-on-brand shadow-card transition transform-gpu hover:bg-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
               >
                 {cta}
               </Link>
@@ -389,22 +389,7 @@ export function MarketingNav() {
     </header>
       {mobileMenuOpen ? (
         <div className="fixed inset-0 z-50 bg-surface-glass-95 px-4 py-6 sm:px-6">
-          <div className="mx-auto flex max-w-sm items-center justify-between">
-            <Link
-              href="/"
-              className="flex items-center gap-4 font-display text-base font-semibold text-text-primary"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Image
-                src="/assets/branding/logo-mark.svg"
-                alt="MaxVideoAI"
-                width={28}
-                height={28}
-                className="h-7 w-7"
-                priority
-              />
-              <span>{brand}</span>
-            </Link>
+          <div className="mx-auto flex max-w-sm items-center justify-end">
             <Button
               type="button"
               size="sm"
