@@ -172,11 +172,11 @@ export function AppSidebar() {
           href={item.href}
           prefetch={false}
           className={clsx(
-            'group relative flex w-full items-center rounded-card px-2 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-            collapsedNav ? 'justify-center gap-0' : 'gap-4 px-3',
+            'group relative flex w-full items-center rounded-card px-2 py-1.5 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            collapsedNav ? 'justify-center' : 'gap-3 px-3',
             active
-              ? 'bg-surface-2 text-text-primary'
-              : 'text-text-muted hover:bg-surface-2 hover:text-text-primary'
+              ? 'text-text-primary'
+              : 'text-text-muted hover:bg-surface-2/60 hover:text-text-primary'
           )}
           aria-current={active ? 'page' : undefined}
           aria-describedby={collapsedNav ? tooltipId : undefined}
@@ -190,15 +190,15 @@ export function AppSidebar() {
           />
           <span
             className={clsx(
-              'flex items-center justify-center rounded-card border transition-colors duration-150',
-              collapsedNav ? 'h-10 w-10' : 'h-12 w-12',
+              'flex items-center justify-center rounded-input transition-colors duration-150',
+              collapsedNav ? 'h-9 w-9' : 'h-9 w-9',
               active
-                ? 'border-text-muted bg-surface-2 text-text-primary'
-                : 'border-transparent bg-surface/80 text-text-muted group-hover:bg-surface-2 group-hover:text-text-primary'
+                ? 'text-text-primary'
+                : 'text-text-muted group-hover:bg-surface-2/60 group-hover:text-text-primary'
             )}
             aria-hidden
           >
-            <UIIcon icon={IconComponent} size={collapsedNav ? 20 : 22} />
+            <UIIcon icon={IconComponent} size={20} />
           </span>
           {!collapsedNav && (
             <span className="flex items-center gap-2">
@@ -255,40 +255,33 @@ export function AppSidebar() {
           </span>
         </Button>
 
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={handlePinToggle}
-          className={clsx(
-            'h-10 w-10 min-h-0 rounded-input border border-hairline bg-surface/70 p-0 text-text-secondary hover:bg-surface/80 hover:text-text-primary',
-            collapsed ? 'pointer-events-none opacity-0' : 'opacity-100'
-          )}
-          aria-hidden={collapsed}
-          tabIndex={collapsed ? -1 : 0}
-        >
-          <UIIcon icon={pinned ? PinOff : Pin} size={18} />
-          <span className="sr-only">
-            {pinned
-              ? t('workspace.sidebar.aria.unpin', 'Unpin sidebar')
-              : t('workspace.sidebar.aria.pin', 'Pin sidebar open')}
-          </span>
-        </Button>
+        {!collapsed ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handlePinToggle}
+            className="h-10 w-10 min-h-0 rounded-input border border-hairline bg-surface/70 p-0 text-text-secondary hover:bg-surface/80 hover:text-text-primary"
+          >
+            <UIIcon icon={pinned ? PinOff : Pin} size={18} />
+            <span className="sr-only">
+              {pinned
+                ? t('workspace.sidebar.aria.unpin', 'Unpin sidebar')
+                : t('workspace.sidebar.aria.pin', 'Pin sidebar open')}
+            </span>
+          </Button>
+        ) : null}
       </div>
 
       <div className="flex flex-1 flex-col">
         <nav
           aria-label={t('workspace.sidebar.aria.menu', 'App menu')}
           className={clsx(
-            'flex flex-1 items-start justify-start overflow-y-auto px-2 pb-6',
-            collapsed && 'pt-2'
+            'flex flex-1 items-start justify-start overflow-y-auto px-2 pb-6 pt-2'
           )}
         >
           <ul
-            className={clsx(
-              'w-full',
-              collapsed ? 'flex flex-col items-center gap-1.5' : 'mt-4 flex flex-col gap-1.5'
-            )}
+            className="mt-2 w-full flex flex-col gap-1.5"
           >
             {navigationItems.map((item) => renderNavItem(item, collapsed, tooltipBaseId))}
           </ul>

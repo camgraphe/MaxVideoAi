@@ -434,7 +434,7 @@ export function HeaderBar() {
                 aria-expanded={accountMenuOpen}
               >
                 {initials}
-                <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border border-border bg-surface text-[10px] text-text-muted shadow-sm">
+                <span className="absolute -bottom-0.5 left-1/2 flex h-4 w-4 -translate-x-1/2 items-center justify-center text-[10px] text-text-muted opacity-40">
                   <svg viewBox="0 0 12 12" aria-hidden="true" className="h-2.5 w-2.5">
                     <path d="m2.2 4.6 3.8 3.8 3.8-3.8" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>

@@ -210,51 +210,53 @@ export function MarketingNav() {
     <>
     <header className="sticky top-0 z-40 border-b border-hairline bg-surface">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link
-          href="/"
-          className="flex items-center gap-4 font-display text-base font-semibold tracking-tight text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
-        >
-          <Image
-            src="/assets/branding/logo-mark.svg"
-            alt="MaxVideoAI"
-            width={32}
-            height={32}
-            className="h-8 w-8"
-            priority
-          />
-          <span>{brand}</span>
-        </Link>
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          className="min-h-0 h-9 w-9 rounded-full border border-hairline bg-surface-glass-80 p-2 text-text-primary hover:bg-surface-2 md:hidden"
-          aria-label={t('nav.mobileToggle', 'Open menu')}
-          onClick={() => setMobileMenuOpen(true)}
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <line x1="3" y1="18" x2="21" y2="18" />
-          </svg>
-        </Button>
-        <nav aria-label="Primary" className="hidden items-center gap-6 text-sm font-medium text-text-secondary md:flex">
-          {links.map((item) => {
-            const isActive = pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href + '/'));
-            return (
-              <Link
-                key={item.key}
-                href={item.href}
-                className={clsx(
-                  'transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
-                  isActive ? 'text-text-primary' : undefined
-                )}
-              >
-                {t(`nav.linkLabels.${item.key}`, item.key)}
-              </Link>
-            );
-          })}
-        </nav>
+        <div className="flex items-center gap-6">
+          <Link
+            href="/"
+            className="flex items-center gap-4 font-display text-base font-semibold tracking-tight text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+          >
+            <Image
+              src="/assets/branding/logo-mark.svg"
+              alt="MaxVideoAI"
+              width={32}
+              height={32}
+              className="h-8 w-8"
+              priority
+            />
+            <span>{brand}</span>
+          </Link>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className="min-h-0 h-9 w-9 rounded-full border border-hairline bg-surface-glass-80 p-2 text-text-primary hover:bg-surface-2 md:hidden"
+            aria-label={t('nav.mobileToggle', 'Open menu')}
+            onClick={() => setMobileMenuOpen(true)}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </Button>
+          <nav aria-label="Primary" className="hidden items-center gap-6 text-sm font-medium text-text-secondary md:flex">
+            {links.map((item) => {
+              const isActive = pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href + '/'));
+              return (
+                <Link
+                  key={item.key}
+                  href={item.href}
+                  className={clsx(
+                    'transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
+                    isActive ? 'text-text-primary' : undefined
+                  )}
+                >
+                  {t(`nav.linkLabels.${item.key}`, item.key)}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
         <div className="flex items-center gap-3">
           <div className="hidden items-center gap-1 md:flex">
             <LanguageToggle variant="icon" />
