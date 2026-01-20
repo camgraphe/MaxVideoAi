@@ -12,11 +12,21 @@ export interface EnginePictogram {
 
 const DEFAULT_TEXT_COLOR = '#1F2633';
 
+function brandColorVar(brandId: string, tone: 'bg' | 'ink'): string {
+  return `var(--engine-${brandId}-${tone})`;
+}
+
 const BRAND_PICTOGRAMS: Record<string, EnginePictogram> = {
-  'google-veo': { code: 'Ve', backgroundColor: '#CDE7FF', textColor: DEFAULT_TEXT_COLOR },
-  openai: { code: 'So', backgroundColor: '#E4D7FF', textColor: DEFAULT_TEXT_COLOR },
-  pika: { code: 'Pi', backgroundColor: '#FADCE6', textColor: DEFAULT_TEXT_COLOR },
-  minimax: { code: 'Mi', backgroundColor: '#FFE7F0', textColor: DEFAULT_TEXT_COLOR },
+  'google-veo': { code: 'Ve', backgroundColor: brandColorVar('google-veo', 'bg'), textColor: brandColorVar('google-veo', 'ink') },
+  openai: { code: 'So', backgroundColor: brandColorVar('openai', 'bg'), textColor: brandColorVar('openai', 'ink') },
+  pika: { code: 'Pi', backgroundColor: brandColorVar('pika', 'bg'), textColor: brandColorVar('pika', 'ink') },
+  minimax: { code: 'Mi', backgroundColor: brandColorVar('minimax', 'bg'), textColor: brandColorVar('minimax', 'ink') },
+  kling: { code: 'Kl', backgroundColor: brandColorVar('kling', 'bg'), textColor: brandColorVar('kling', 'ink') },
+  wan: { code: 'Wa', backgroundColor: brandColorVar('wan', 'bg'), textColor: brandColorVar('wan', 'ink') },
+  luma: { code: 'Lu', backgroundColor: brandColorVar('luma', 'bg'), textColor: brandColorVar('luma', 'ink') },
+  runway: { code: 'Rw', backgroundColor: brandColorVar('runway', 'bg'), textColor: brandColorVar('runway', 'ink') },
+  lightricks: { code: 'Lt', backgroundColor: brandColorVar('lightricks', 'bg'), textColor: brandColorVar('lightricks', 'ink') },
+  google: { code: 'Go', backgroundColor: brandColorVar('google', 'bg'), textColor: brandColorVar('google', 'ink') },
 };
 
 const ENGINE_PICTOGRAMS: Record<string, EnginePictogram> = {

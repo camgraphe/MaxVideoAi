@@ -68,6 +68,7 @@ main {
   height: 0;
 }
 
+
 .shadow-card {
   box-shadow: theme('boxShadow.card');
 }

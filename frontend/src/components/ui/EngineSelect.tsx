@@ -555,7 +555,7 @@ export function EngineSelect({
           <label className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[12px]')}>
             {copy.choose}
           </label>
-          <div className="flex min-w-0 items-stretch gap-2">
+          <div className="flex min-w-0 flex-col gap-2 2xl:flex-row 2xl:items-stretch">
             <button
               id={triggerId}
               ref={triggerRef}
@@ -596,7 +596,7 @@ export function EngineSelect({
               className={clsx(
                 'min-w-0 rounded-input border border-border bg-surface font-medium text-brand transition hover:border-border-hover hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 isBarVariant
-                  ? 'max-w-[45%] px-2.5 py-1.5 text-[11px] sm:max-w-none sm:px-3 sm:py-2 sm:text-[12px]'
+                  ? 'w-full px-2.5 py-1.5 text-[11px] sm:px-3 sm:py-2 sm:text-[12px] 2xl:w-auto 2xl:max-w-[45%]'
                   : 'px-4 py-3 text-sm'
               )}
             >
@@ -887,6 +887,7 @@ function BrowseEnginesModal({
     };
   }, []);
 
+
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -964,6 +965,7 @@ function BrowseEnginesModal({
     [onClose]
   );
 
+
   const FilterChip = ({
     active,
     onClick,
@@ -998,7 +1000,7 @@ function BrowseEnginesModal({
       aria-modal="true"
       onClick={handleBackdropClick}
     >
-      <div className="relative flex h-full max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-modal border border-border bg-surface shadow-float">
+      <div className="relative flex max-h-[95vh] w-full max-w-6xl flex-col overflow-y-auto rounded-modal border border-border bg-surface shadow-float">
         <button
           type="button"
           onClick={onClose}
@@ -1010,9 +1012,7 @@ function BrowseEnginesModal({
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="max-w-xl space-y-2">
               <h2 className="text-xl font-semibold text-text-primary">{modalCopy.title}</h2>
-              <p className="text-sm text-text-secondary">
-                {modalCopy.subtitle}
-              </p>
+              <p className="text-sm text-text-secondary">{modalCopy.subtitle}</p>
             </div>
             <div className="flex flex-col items-end gap-2">
               <a
@@ -1061,7 +1061,7 @@ function BrowseEnginesModal({
             </div>
           </div>
         </header>
-        <div className="flex-1 overflow-y-auto bg-surface px-6 py-6">
+        <div className="bg-surface px-6 py-6">
           <div className="grid grid-gap-sm md:grid-cols-2">
             {filteredEngines.map((engine) => {
               const guide = (copy.guides ?? DEFAULT_ENGINE_GUIDE)[engine.id];
@@ -1099,13 +1099,15 @@ function BrowseEnginesModal({
                             {copy.avgDuration.replace('{value}', avgDurationLabel)}
                           </span>
                         )}
-                        {engine.status && <span className="rounded-input border border-border px-2 py-0.5 uppercase tracking-micro">{engine.status}</span>}
+                        {engine.status && (
+                          <span className="rounded-input border border-border px-2 py-0.5 uppercase tracking-micro">
+                            {engine.status}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
-                  <p className="text-sm leading-6 text-text-secondary">
-                    {description}
-                  </p>
+                  <p className="text-sm leading-6 text-text-secondary">{description}</p>
                   <div className="flex flex-wrap gap-2">
                     {combinedBadges.map((badge) => (
                       <span
@@ -1118,7 +1120,10 @@ function BrowseEnginesModal({
                   </div>
                   <div className="flex flex-wrap items-center gap-4 text-xs text-text-muted">
                     <span>
-                      Modes: {getModeDisplayOrder(engine.id, engine.modes).map((entry) => getModeLabel(engine.id, entry, modeLabelOverrides)).join(' / ')}
+                      Modes:{' '}
+                      {getModeDisplayOrder(engine.id, engine.modes)
+                        .map((entry) => getModeLabel(engine.id, entry, modeLabelOverrides))
+                        .join(' / ')}
                     </span>
                     <span>
                       Max {engine.maxDurationSec}s / Res {engine.resolutions.join(' / ')}
@@ -1133,9 +1138,7 @@ function BrowseEnginesModal({
               </div>
             )}
           </div>
-          <p className="mt-6 text-center text-[11px] text-text-muted">
-            {modalCopy.disclaimer}
-          </p>
+          <p className="mt-6 text-center text-[11px] text-text-muted">{modalCopy.disclaimer}</p>
         </div>
       </div>
     </div>,

@@ -441,13 +441,13 @@ const PREFERRED_ENGINE_ORDER = ['sora-2', 'veo', 'kling', 'wan', 'pika', 'hailuo
 const normalizeFilterId = (value: string) => value.trim().toLowerCase();
 
 const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
-  'sora-2': { bg: 'bg-[#F4EEFF]', text: 'text-[#5C3DC4]' },
-  veo: { bg: 'bg-[#E7F1FF]', text: 'text-[#1A4D91]' },
-  pika: { bg: 'bg-[#FFEFF8]', text: 'text-[#C42F7A]' },
-  hailuo: { bg: 'bg-[#FFF4E6]', text: 'text-[#B05600]' },
-  kling: { bg: 'bg-[#E6F4FF]', text: 'text-[#0F4C81]' },
-  wan: { bg: 'bg-[#F2EAFE]', text: 'text-[#6B2BAA]' },
-  'ltx-2': { bg: 'bg-[#E6F9FF]', text: 'text-[#0A6C80]' },
+  'sora-2': { bg: 'var(--engine-openai-bg)', text: 'var(--engine-openai-ink)' },
+  veo: { bg: 'var(--engine-google-veo-bg)', text: 'var(--engine-google-veo-ink)' },
+  pika: { bg: 'var(--engine-pika-bg)', text: 'var(--engine-pika-ink)' },
+  hailuo: { bg: 'var(--engine-minimax-bg)', text: 'var(--engine-minimax-ink)' },
+  kling: { bg: 'var(--engine-kling-bg)', text: 'var(--engine-kling-ink)' },
+  wan: { bg: 'var(--engine-wan-bg)', text: 'var(--engine-wan-ink)' },
+  'ltx-2': { bg: 'var(--engine-lightricks-bg)', text: 'var(--engine-lightricks-ink)' },
 };
 
 const ENGINE_MODEL_LINKS: Record<string, string> = {
@@ -673,7 +673,7 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
                       'flex h-9 items-center justify-center rounded-full border px-3 text-[11px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                       selectedEngine
                         ? 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:text-text-primary'
-                        : 'border-transparent bg-text-primary text-on-inverse shadow-card'
+                        : 'border-hairline bg-surface-2 text-text-primary shadow-card'
                     )}
                   >
                     {engineFilterAllLabel}
@@ -691,9 +691,10 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
                           isActive
                             ? 'border-transparent bg-text-primary text-on-inverse shadow-card'
                             : palette
-                              ? clsx('border border-surface-on-media-dark-10 hover:opacity-90', palette.bg, palette.text)
+                              ? 'border border-surface-on-media-dark-10 hover:opacity-90'
                               : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:text-text-primary'
                         )}
+                        style={palette ? { backgroundColor: palette.bg, color: palette.text } : undefined}
                       >
                         {engine.label}
                       </Link>

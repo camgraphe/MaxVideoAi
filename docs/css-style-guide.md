@@ -40,6 +40,37 @@ Notes:
 - Global body background uses a light gradient: `#F8F9FA -> #F3F5F7` in `frontend/app/globals.css`.
 - Scrollbar track uses `hairline`; thumb is a semi-transparent slate in `frontend/app/globals.css`.
 
+### Engine pictogram colors (light / dark)
+Defined in `frontend/src/styles/tokens.css` and consumed by `frontend/src/lib/engine-branding.ts` + `frontend/components/ui/EngineIcon.tsx`.
+
+Light tokens:
+- `--engine-google-veo-bg`: `#CDE7FF` / `--engine-google-veo-ink`: `#1F2633`
+- `--engine-openai-bg`: `#E4D7FF` / `--engine-openai-ink`: `#1F2633`
+- `--engine-pika-bg`: `#FADCE6` / `--engine-pika-ink`: `#1F2633`
+- `--engine-minimax-bg`: `#FFE7F0` / `--engine-minimax-ink`: `#1F2633`
+- `--engine-kling-bg`: `#E6F5EB` / `--engine-kling-ink`: `#1F2633`
+- `--engine-wan-bg`: `#E2F7F4` / `--engine-wan-ink`: `#1F2633`
+- `--engine-luma-bg`: `#FFF2DC` / `--engine-luma-ink`: `#1F2633`
+- `--engine-runway-bg`: `#E9EEF5` / `--engine-runway-ink`: `#1F2633`
+- `--engine-lightricks-bg`: `#F2E9FF` / `--engine-lightricks-ink`: `#1F2633`
+- `--engine-google-bg`: `#DCE9FF` / `--engine-google-ink`: `#1F2633`
+
+Dark tokens:
+- `--engine-google-veo-bg`: `#1F3B5C` / `--engine-google-veo-ink`: `#EAF2FF`
+- `--engine-openai-bg`: `#332546` / `--engine-openai-ink`: `#F1E9FF`
+- `--engine-pika-bg`: `#4A2A37` / `--engine-pika-ink`: `#FFE6F1`
+- `--engine-minimax-bg`: `#4A2734` / `--engine-minimax-ink`: `#FFE6F1`
+- `--engine-kling-bg`: `#203B2F` / `--engine-kling-ink`: `#E4F5EA`
+- `--engine-wan-bg`: `#1E3D38` / `--engine-wan-ink`: `#E0FBF7`
+- `--engine-luma-bg`: `#3F2F1F` / `--engine-luma-ink`: `#FFE9C7`
+- `--engine-runway-bg`: `#27313D` / `--engine-runway-ink`: `#E7EDF5`
+- `--engine-lightricks-bg`: `#36284D` / `--engine-lightricks-ink`: `#EFE5FF`
+- `--engine-google-bg`: `#243B5A` / `--engine-google-ink`: `#EAF2FF`
+
+Notes:
+- These tokens are the source of truth for engine colors in dark mode (no pastel light values in dark).
+- If a brandId is missing, add tokens + mapping in `frontend/src/lib/engine-branding.ts`.
+
 ### Typography
 Defined in `frontend/tailwind.config.ts`:
 - `font-sans` / `font-display`: `"Geist"`, `"Inter"`, `system-ui`, `sans-serif`
