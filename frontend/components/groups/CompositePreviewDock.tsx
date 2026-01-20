@@ -58,7 +58,7 @@ const GRID_CLASS: Record<VideoGroup['layout'], string> = {
 };
 
 const ICON_BUTTON_BASE =
-  'flex h-9 w-9 items-center justify-center rounded-lg border border-hairline/70 shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:translate-y-px';
+  'flex h-9 w-9 items-center justify-center rounded-lg border border-hairline/50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:translate-y-px';
 
 function isVideo(item: VideoItem): boolean {
   const hint = typeof item.meta?.mediaType === 'string' ? String(item.meta.mediaType).toLowerCase() : null;
@@ -124,6 +124,7 @@ export function CompositePreviewDock({
     const parent = target.parentElement;
     if (!parent) return;
     let frame = 0;
+    let observer: ResizeObserver | null = null;
     const updatePreviewSize = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
@@ -143,10 +144,17 @@ export function CompositePreviewDock({
 
     updatePreviewSize();
     window.addEventListener('resize', updatePreviewSize);
+    if (typeof ResizeObserver !== 'undefined') {
+      observer = new ResizeObserver(() => updatePreviewSize());
+      observer.observe(parent);
+    }
 
     return () => {
       cancelAnimationFrame(frame);
       window.removeEventListener('resize', updatePreviewSize);
+      if (observer) {
+        observer.disconnect();
+      }
     };
   }, []);
 
@@ -444,8 +452,8 @@ export function CompositePreviewDock({
           <div
             ref={previewRef}
             className={clsx(
-              'relative w-full max-w-[960px] rounded-card border border-dashed border-border/70 bg-placeholder',
-              isSingleLayout ? 'overflow-hidden p-0' : 'p-[8px]'
+              'relative w-full max-w-[960px] rounded-card bg-placeholder',
+              isSingleLayout ? 'overflow-hidden p-0' : 'border border-hairline p-[8px]'
             )}
             style={{ aspectRatio: '16 / 9' }}
           >
@@ -485,6 +493,8 @@ export function CompositePreviewDock({
                   const itemKey = item.id ? `${item.id}-${index}` : `dock-item-${index}`;
                   const isVideoReady = Boolean(readyItems[itemKey]);
                   const showSafariThumb = isSafari && item.thumb;
+                  const shouldZoom = item.aspect === '16:9';
+                  const mediaFitClass = shouldZoom ? 'object-cover scale-[1.02]' : 'object-contain';
                   const itemStatus: 'completed' | 'pending' | 'error' = (() => {
                     if (itemStatusRaw === 'completed' || itemStatusRaw === 'ready') return 'completed';
                     if (itemStatusRaw === 'failed' || itemStatusRaw === 'error') return 'error';
@@ -520,7 +530,9 @@ export function CompositePreviewDock({
                                 alt=""
                                 fill
                                 className={clsx(
-                                  'object-contain pointer-events-none transition-opacity duration-150',
+                                  'pointer-events-none transition-opacity duration-150',
+                                  mediaFitClass,
+                                  shouldZoom ? 'transition-transform' : null,
                                   isVideoReady ? 'opacity-0' : 'opacity-100'
                                 )}
                               />
@@ -530,7 +542,9 @@ export function CompositePreviewDock({
                               src={item.url}
                               poster={item.thumb}
                               className={clsx(
-                                'h-full w-full object-contain',
+                                'h-full w-full',
+                                mediaFitClass,
+                                shouldZoom ? 'transition-transform duration-150' : null,
                                 isSafari ? 'transition-opacity duration-150' : null,
                                 isSafari && !isVideoReady ? 'opacity-0' : 'opacity-100'
                               )}
@@ -547,7 +561,7 @@ export function CompositePreviewDock({
                             src={item.thumb}
                             alt=""
                             fill
-                            className="object-contain pointer-events-none"
+                            className={clsx('pointer-events-none', mediaFitClass, shouldZoom ? 'transition-transform' : null)}
                             onLoadingComplete={() => markReady(itemKey)}
                           />
                         ) : (
@@ -567,8 +581,10 @@ export function CompositePreviewDock({
                       <div className="pointer-events-none block" style={{ width: '100%', aspectRatio: '16 / 9' }} aria-hidden />
                       <div
                         className={clsx(
-                          'pointer-events-none absolute inset-0 border border-surface-on-media-10 transition group-hover:border-surface-on-media-30',
-                          isSingleLayout ? 'rounded-none' : 'rounded-card'
+                          'pointer-events-none absolute inset-0 border transition',
+                          isSingleLayout
+                            ? 'border-transparent rounded-none'
+                            : 'border-preview-outline-idle rounded-card group-hover:border-preview-outline-hover'
                         )}
                       />
                       {itemStatus !== 'completed' && !showGroupError ? (
@@ -601,7 +617,7 @@ export function CompositePreviewDock({
           <div className="mt-3 flex w-full max-w-[960px]">
             <div
               ref={toolbarRef}
-              className="flex w-full items-center justify-center rounded-card border border-hairline/70 bg-surface-glass-75 px-3 py-2 shadow-sm backdrop-blur"
+              className="flex w-full items-center justify-center rounded-card border border-hairline/50 bg-surface-glass-80 px-3 py-2 shadow-sm backdrop-blur"
             >
               {toolbarControls}
             </div>

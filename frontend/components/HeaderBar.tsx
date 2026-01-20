@@ -6,6 +6,7 @@ import { Chip } from '@/components/ui/Chip';
 import { NAV_ITEMS } from '@/components/AppSidebar';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, useId } from 'react';
+import { Moon, Sun } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
@@ -13,6 +14,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { setLogoutIntent } from '@/lib/logout-intent';
 import { usePathname } from 'next/navigation';
 import { Button, ButtonLink } from '@/components/ui/Button';
+import { UIIcon } from '@/components/ui/UIIcon';
 import {
   clearLastKnownAccount,
   readLastKnownMember,
@@ -33,10 +35,12 @@ export function HeaderBar() {
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [walletPromptOpen, setWalletPromptOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const avatarRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const walletPromptCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const walletPromptId = useId();
+  const themeStorageKey = 'mv-theme';
   const brand = t('nav.brand', 'MaxVideo AI') ?? 'MaxVideo AI';
   const loginLabel = t('nav.login', 'Log in');
   const ctaLabel = t('nav.cta', 'Start a render');
@@ -66,6 +70,18 @@ export function HeaderBar() {
     const storedTier = storedMember?.tier;
     if (storedTier) {
       setMember((current) => current ?? { tier: storedTier });
+    }
+  }, []);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const stored = window.localStorage.getItem(themeStorageKey);
+    const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+    const resolved = stored === 'dark' || stored === 'light' ? stored : prefersDark ? 'dark' : 'light';
+    setTheme(resolved);
+    if (resolved === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
     }
   }, []);
   useEffect(() => {
@@ -360,6 +376,25 @@ export function HeaderBar() {
           <div className="hidden md:block">
             <AppLanguageToggle />
           </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="hidden h-9 w-9 p-0 text-text-primary hover:bg-surface-2 md:inline-flex"
+            aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+            onClick={() => {
+              const nextTheme = theme === 'dark' ? 'light' : 'dark';
+              setTheme(nextTheme);
+              if (nextTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+              } else {
+                document.documentElement.removeAttribute('data-theme');
+              }
+              window.localStorage.setItem(themeStorageKey, nextTheme);
+            }}
+          >
+            <UIIcon icon={theme === 'dark' ? Sun : Moon} size={18} strokeWidth={1.75} />
+          </Button>
           <div className="relative" onMouseEnter={openWalletPrompt} onMouseLeave={scheduleWalletPromptClose}>
             <Link
               href="/billing"
@@ -378,11 +413,11 @@ export function HeaderBar() {
               <div
                 id={walletPromptId}
                 role="status"
-                className="absolute right-0 top-full z-10 mt-2 w-64 rounded-card border border-hairline bg-surface p-3 text-left text-xs text-text-secondary shadow-card"
+              className="absolute right-0 top-full z-10 mt-2 w-64 rounded-card border border-hairline bg-surface p-3 text-left text-xs text-text-primary shadow-card"
                 onMouseEnter={openWalletPrompt}
                 onMouseLeave={scheduleWalletPromptClose}
               >
-                <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+                <p className="text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
                   {t('workspace.header.walletTopUp.label', 'Top up available')}
                 </p>
                 <p className="mt-1 text-sm text-text-primary">
@@ -426,7 +461,7 @@ export function HeaderBar() {
               {accountMenuOpen && (
                 <div
                   ref={menuRef}
-                  className="absolute right-0 mt-3 w-56 rounded-card border border-hairline bg-surface p-3 text-sm text-text-secondary shadow-card"
+                  className="absolute right-0 mt-3 w-56 rounded-card border border-hairline bg-surface p-3 text-sm text-text-primary shadow-card"
                   role="menu"
                 >
                   <div className="mb-3 rounded-input bg-bg px-3 py-2">
@@ -446,12 +481,12 @@ export function HeaderBar() {
                           key={item.id}
                           href={item.href}
                           role="menuitem"
-                          className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           onClick={() => setAccountMenuOpen(false)}
                         >
                           <span>{label}</span>
                           {badgeLabel ? (
-                            <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
+                              <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-text-primary">
                               {badgeLabel}
                             </span>
                           ) : null}
@@ -463,7 +498,7 @@ export function HeaderBar() {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="w-full justify-between px-3 py-2 text-sm font-medium text-text-secondary hover:bg-surface-2 hover:text-text-primary"
+                    className="w-full justify-between px-3 py-2 text-sm font-medium text-text-primary hover:bg-surface-2"
                     onClick={handleSignOut}
                   >
                     {t('workspace.header.signOut', 'Sign out')}

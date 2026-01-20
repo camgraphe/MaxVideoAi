@@ -13,7 +13,6 @@ import { adaptGroupSummary } from '@/lib/video-group-adapter';
 import { useResultProvider } from '@/hooks/useResultProvider';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
 import { normalizeGroupSummaries, normalizeGroupSummary } from '@/lib/normalize-group-summary';
-import { Button } from '@/components/ui/Button';
 import dynamic from 'next/dynamic';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { FEATURES } from '@/content/feature-flags';

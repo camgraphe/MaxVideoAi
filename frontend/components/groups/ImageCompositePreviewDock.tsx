@@ -44,7 +44,7 @@ interface ImageCompositePreviewDockProps {
 }
 
 const ICON_BUTTON_BASE =
-  'flex h-9 w-9 items-center justify-center rounded-lg border border-hairline/70 shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:translate-y-px';
+  'flex h-9 w-9 items-center justify-center rounded-lg border border-hairline/50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:translate-y-px';
 
 export function ImageCompositePreviewDock({
   entry,
@@ -215,7 +215,7 @@ export function ImageCompositePreviewDock({
             )}
           </div>
           <div className="mt-3 flex w-full">
-            <div className="flex w-full items-center justify-center rounded-card border border-hairline/70 bg-surface-glass-75 px-3 py-2 shadow-sm backdrop-blur">
+            <div className="flex w-full items-center justify-center rounded-card border border-hairline/50 bg-surface-glass-80 px-3 py-2 shadow-sm backdrop-blur">
               {toolbar}
             </div>
           </div>

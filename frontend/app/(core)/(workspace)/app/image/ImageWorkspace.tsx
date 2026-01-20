@@ -30,7 +30,6 @@ import type { MediaLightboxEntry } from '@/components/MediaLightbox';
 import { ImageCompositePreviewDock, type ImageCompositePreviewEntry } from '@/components/groups/ImageCompositePreviewDock';
 import { GroupViewerModal } from '@/components/groups/GroupViewerModal';
 import { buildVideoGroupFromImageRun } from '@/lib/image-groups';
-import { normalizeGroupSummary } from '@/lib/normalize-group-summary';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import {
   formatAspectRatioLabel,
@@ -38,7 +37,6 @@ import {
   getNanoBananaDefaultAspectRatio,
 } from '@/lib/image/aspectRatios';
 import { authFetch } from '@/lib/authFetch';
-import { adaptGroupSummary } from '@/lib/video-group-adapter';
 
 const NANO_BANANA_ENGINE_IDS = new Set(['nano-banana', 'nano-banana-pro']);
 const NANO_BANANA_ALIAS_PREFIXES = ['fal-ai/nano-banana'];
@@ -850,13 +848,6 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
 
   const closeViewer = useCallback(() => setViewerGroup(null), []);
 
-  const handleOpenGalleryGroup = useCallback((group: GroupSummary) => {
-    const hasMedia = group.previews.some((preview) => preview.thumbUrl || preview.videoUrl);
-    if (!hasMedia) return;
-    const normalized = normalizeGroupSummary(group);
-    setViewerGroup(adaptGroupSummary(normalized, 'fal'));
-  }, []);
-
   const handleSaveVariantToLibrary = useCallback(async (entry: MediaLightboxEntry) => {
     const mediaUrl = entry.videoUrl ?? entry.thumbUrl;
     if (!mediaUrl) {
@@ -1477,6 +1468,112 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
 
   const historyEntries = combinedHistory;
 
+  const handleSelectGalleryGroup = useCallback(
+    (group: GroupSummary) => {
+      const applyEntryDefaults = (entry: HistoryEntry) => {
+        const engineMatch = entry.engineId ? findImageEngine(engines, entry.engineId) : null;
+        if (engineMatch) {
+          setEngineId(engineMatch.id);
+          if (entry.mode) {
+            setMode(engineMatch.modes.includes(entry.mode) ? entry.mode : engineMatch.modes[0] ?? 't2i');
+          }
+        } else if (entry.mode) {
+          setMode(entry.mode);
+        }
+        if (typeof entry.prompt === 'string') {
+          setPrompt(entry.prompt);
+        }
+        if (engineMatch && isNanoBananaEngine(engineMatch)) {
+          const options = getNanoBananaAspectRatios(entry.mode);
+          const fallback = getNanoBananaDefaultAspectRatio(entry.mode);
+          const nextAspect = entry.aspectRatio && options.includes(entry.aspectRatio) ? entry.aspectRatio : fallback;
+          setAspectRatio(nextAspect);
+        }
+      };
+
+      const fetchSnapshot = (jobId: string | null | undefined) => {
+        if (!jobId) return;
+        void authFetch(`/api/jobs/${encodeURIComponent(jobId)}`)
+          .then(async (response) => {
+            const payload = (await response.json().catch(() => null)) as
+              | { ok?: boolean; settingsSnapshot?: unknown }
+              | null;
+            if (!response.ok || !payload?.ok || !payload.settingsSnapshot) return;
+            applyImageSettingsSnapshot(payload.settingsSnapshot);
+          })
+          .catch(() => undefined);
+      };
+
+      const heroJobId = group.hero.jobId ?? group.hero.job?.jobId ?? group.id;
+      const heroUrl =
+        group.hero.thumbUrl ??
+        group.hero.videoUrl ??
+        group.previews.find((preview) => preview.thumbUrl ?? preview.videoUrl)?.thumbUrl ??
+        group.previews.find((preview) => preview.videoUrl ?? preview.thumbUrl)?.videoUrl ??
+        null;
+      const matchById = heroJobId
+        ? historyEntries.find((entry) => entry.id === heroJobId || entry.jobId === heroJobId)
+        : null;
+      const matchByUrl =
+        !matchById && heroUrl
+          ? historyEntries.find((entry) => entry.images.some((image) => image.url === heroUrl))
+          : null;
+      const match = matchById ?? matchByUrl;
+      if (match) {
+        const index = heroUrl ? match.images.findIndex((image) => image.url === heroUrl) : -1;
+        setSelectedPreviewEntryId(match.id);
+        setSelectedPreviewImageIndex(index >= 0 ? index : 0);
+        applyEntryDefaults(match);
+        fetchSnapshot(match.jobId ?? heroJobId);
+        return;
+      }
+
+      const previewUrls = group.previews
+        .map((preview) => preview.thumbUrl ?? preview.videoUrl)
+        .filter((url): url is string => Boolean(url));
+      if (!previewUrls.length && heroUrl) {
+        previewUrls.push(heroUrl);
+      }
+      if (!previewUrls.length) return;
+
+      const createdAt = Date.parse(group.createdAt ?? '');
+      const entry: HistoryEntry = {
+        id: group.id,
+        jobId: heroJobId ?? group.id,
+        engineId: group.hero.engineId ?? '',
+        engineLabel: group.hero.engineLabel ?? 'Image generation',
+        mode: 't2i',
+        prompt: group.hero.prompt ?? '',
+        createdAt: Number.isNaN(createdAt) ? Date.now() : createdAt,
+        description: group.hero.message ?? null,
+        images: previewUrls.map((url) => ({ url })),
+        aspectRatio: group.hero.aspectRatio ?? group.previews[0]?.aspectRatio ?? null,
+      };
+
+      setLocalHistory((prev) => {
+        if (prev.some((existing) => existing.id === entry.id)) return prev;
+        return [entry, ...prev].slice(0, 24);
+      });
+      const fallbackIndex = heroUrl ? previewUrls.findIndex((url) => url === heroUrl) : -1;
+      setSelectedPreviewEntryId(entry.id);
+      setSelectedPreviewImageIndex(fallbackIndex >= 0 ? fallbackIndex : 0);
+      applyEntryDefaults(entry);
+      fetchSnapshot(entry.jobId ?? heroJobId);
+    },
+    [
+      applyImageSettingsSnapshot,
+      engines,
+      historyEntries,
+      setAspectRatio,
+      setEngineId,
+      setLocalHistory,
+      setMode,
+      setPrompt,
+      setSelectedPreviewEntryId,
+      setSelectedPreviewImageIndex,
+    ]
+  );
+
   const previewEntry = (() => {
     if (selectedPreviewEntryId) {
       const match = historyEntries.find((entry) => entry.id === selectedPreviewEntryId);
@@ -1918,7 +2015,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
               feedType="image"
               activeGroups={pendingGroups}
               jobFilter={isImageJob}
-              onOpenGroup={handleOpenGalleryGroup}
+              onOpenGroup={handleSelectGalleryGroup}
               variant="desktop"
             />
           </div>
@@ -1931,7 +2028,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
             feedType="image"
             activeGroups={pendingGroups}
             jobFilter={isImageJob}
-            onOpenGroup={handleOpenGalleryGroup}
+            onOpenGroup={handleSelectGalleryGroup}
             variant="mobile"
           />
         </div>

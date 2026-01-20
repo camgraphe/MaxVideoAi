@@ -563,7 +563,7 @@ export function EngineSelect({
               onClick={toggleOpen}
               onKeyDown={handleTriggerKeyDown}
               className={clsx(
-                'flex min-w-0 flex-1 items-center justify-between gap-4 rounded-input border border-hairline bg-white text-left text-text-primary shadow-sm transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                'flex min-w-0 flex-1 items-center justify-between gap-4 rounded-input border border-border bg-surface text-left text-text-primary shadow-sm transition hover:border-border-hover hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 isBarVariant ? 'px-2.5 py-1.5 text-[12px] sm:px-3 sm:py-2 sm:text-[13px]' : 'px-4 py-3 text-sm'
               )}
               aria-haspopup="listbox"
@@ -594,7 +594,7 @@ export function EngineSelect({
               type="button"
               onClick={() => setBrowseOpen(true)}
               className={clsx(
-                'min-w-0 rounded-input border border-hairline bg-white font-medium text-brand transition hover:border-text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                'min-w-0 rounded-input border border-border bg-surface font-medium text-brand transition hover:border-border-hover hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 isBarVariant
                   ? 'max-w-[45%] px-2.5 py-1.5 text-[11px] sm:max-w-none sm:px-3 sm:py-2 sm:text-[12px]'
                   : 'px-4 py-3 text-sm'
@@ -622,7 +622,7 @@ export function EngineSelect({
                         isBarVariant ? 'text-[10px]' : 'text-[12px]',
                         active
                           ? 'border-brand bg-brand text-on-brand'
-                          : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                          : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-2'
                       )}
                     >
                       {getVariantLabel(entry)}
@@ -651,7 +651,7 @@ export function EngineSelect({
                         isBarVariant ? 'text-[10px]' : 'text-[12px]',
                         active
                           ? 'border-brand bg-brand text-on-brand'
-                          : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
+                          : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-2'
                       )}
                     >
                       {getModeLabel(selectedEngine?.id, candidate, modeLabelOverrides)}
@@ -675,7 +675,7 @@ export function EngineSelect({
                 className="fixed z-[9999]"
                 style={{ top: position.top, left: position.left, minWidth: Math.max(position.width, 280) }}
               >
-                <div className="overflow-hidden rounded-card border border-border bg-white shadow-float">
+                <div className="overflow-hidden rounded-card border border-border bg-surface shadow-float">
                   <div className="flex items-center justify-between gap-4 border-b border-hairline px-3 py-2 text-[12px] text-text-muted">
                     <span>Engines</span>
                     <button
@@ -796,8 +796,8 @@ export function EngineSelect({
                       mode === candidate && supported
                         ? 'border-brand bg-brand text-on-brand'
                         : supported
-                          ? 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2'
-                          : 'cursor-not-allowed border-hairline bg-white text-text-muted/60'
+                          ? 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-2'
+                          : 'cursor-not-allowed border-border bg-surface text-text-muted/60'
                     )}
                   >
                     {getModeLabel(selectedEngine?.id, candidate, modeLabelOverrides)}
@@ -980,7 +980,7 @@ function BrowseEnginesModal({
         'rounded-input border px-3 py-1.5 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         active
           ? 'border-brand bg-brand text-on-brand'
-          : 'border-hairline bg-white text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary'
+          : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-2 hover:text-text-primary'
       )}
     >
       {children}
@@ -998,11 +998,11 @@ function BrowseEnginesModal({
       aria-modal="true"
       onClick={handleBackdropClick}
     >
-      <div className="relative flex h-full max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-modal border border-border bg-white shadow-float">
+      <div className="relative flex h-full max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-modal border border-border bg-surface shadow-float">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full border border-hairline bg-white/80 px-3 py-1 text-xs font-medium text-text-secondary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="absolute right-4 top-4 rounded-full border border-hairline bg-surface-glass-90 px-3 py-1 text-xs font-medium text-text-secondary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {modalCopy.close}
         </button>
@@ -1032,7 +1032,7 @@ function BrowseEnginesModal({
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder={modalCopy.searchPlaceholder}
-                className="w-full rounded-input border border-border bg-white px-3 py-3 text-sm text-text-primary shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full rounded-input border border-border bg-surface px-3 py-3 text-sm text-text-primary shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
             </div>
             <div className="flex flex-wrap gap-2">
@@ -1061,7 +1061,7 @@ function BrowseEnginesModal({
             </div>
           </div>
         </header>
-        <div className="flex-1 overflow-y-auto bg-white px-6 py-6">
+        <div className="flex-1 overflow-y-auto bg-surface px-6 py-6">
           <div className="grid grid-gap-sm md:grid-cols-2">
             {filteredEngines.map((engine) => {
               const guide = (copy.guides ?? DEFAULT_ENGINE_GUIDE)[engine.id];

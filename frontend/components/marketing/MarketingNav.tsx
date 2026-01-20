@@ -326,11 +326,11 @@ export function MarketingNav() {
                     <div
                       id={walletPromptId}
                       role="status"
-                      className="absolute right-0 top-full z-10 mt-2 w-64 rounded-card border border-hairline bg-surface p-3 text-left text-xs text-text-secondary shadow-card"
+                    className="absolute right-0 top-full z-10 mt-2 w-64 rounded-card border border-hairline bg-surface p-3 text-left text-xs text-text-primary shadow-card"
                       onMouseEnter={openWalletPrompt}
                       onMouseLeave={scheduleWalletPromptClose}
                     >
-                      <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+                      <p className="text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
                         {t('workspace.header.walletTopUp.label', 'Top up available')}
                       </p>
                       <p className="mt-1 text-sm text-text-primary">
@@ -373,7 +373,7 @@ export function MarketingNav() {
                 {accountMenuOpen && (
                   <div
                     ref={menuRef}
-                    className="absolute right-0 mt-3 w-56 rounded-card border border-hairline bg-surface p-3 text-sm text-text-secondary shadow-card"
+                  className="absolute right-0 mt-3 w-56 rounded-card border border-hairline bg-surface p-3 text-sm text-text-primary shadow-card"
                     role="menu"
                   >
                     <div className="mb-3 rounded-input bg-bg px-3 py-2">
@@ -396,12 +396,12 @@ export function MarketingNav() {
                             key={item.id}
                             href={item.href}
                             prefetch={false}
-                            className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             onClick={() => setAccountMenuOpen(false)}
                           >
                             <span>{label}</span>
                             {badgeLabel ? (
-                              <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
+                              <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-text-primary">
                                 {badgeLabel}
                               </span>
                             ) : null}
@@ -413,7 +413,7 @@ export function MarketingNav() {
                       type="button"
                       size="sm"
                       variant="ghost"
-                      className="min-h-0 h-auto w-full justify-between rounded-input px-3 py-2 text-sm font-medium text-text-secondary hover:bg-surface-2"
+                      className="min-h-0 h-auto w-full justify-between rounded-input px-3 py-2 text-sm font-medium text-text-primary hover:bg-surface-2"
                       onClick={() => signOut({ closeAccountMenu: true })}
                     >
                       {t('workspace.header.signOut', 'Sign out')}
