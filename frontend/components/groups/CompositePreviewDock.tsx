@@ -288,7 +288,9 @@ export function CompositePreviewDock({
           title={isPlaying ? controls.play.on : controls.play.off}
           aria-pressed={isPlaying}
         >
-          <UIIcon icon={isPlaying ? Pause : Play} />
+          <span className="inline-flex h-4 w-4 items-center justify-center">
+            <UIIcon icon={isPlaying ? Pause : Play} size={16} />
+          </span>
           <span className="sr-only">{isPlaying ? controls.play.on : controls.play.off}</span>
         </Button>
       ),
@@ -310,7 +312,9 @@ export function CompositePreviewDock({
           title={isMuted ? controls.mute.on : controls.mute.off}
           aria-pressed={isMuted}
         >
-          <UIIcon icon={isMuted ? VolumeX : Volume2} />
+          <span className="inline-flex h-4 w-4 items-center justify-center">
+            <UIIcon icon={isMuted ? VolumeX : Volume2} size={16} />
+          </span>
           <span className="sr-only">{isMuted ? controls.mute.on : controls.mute.off}</span>
         </Button>
       ),
@@ -333,7 +337,9 @@ export function CompositePreviewDock({
           aria-pressed={isLooping}
         >
           <span className="relative inline-flex">
-            <UIIcon icon={Repeat} />
+            <span className="inline-flex h-4 w-4 items-center justify-center">
+              <UIIcon icon={Repeat} size={16} />
+            </span>
             {!isLooping ? (
               <span
                 aria-hidden="true"
@@ -358,7 +364,9 @@ export function CompositePreviewDock({
           aria-label={controls.download.aria}
           title={controls.download.label}
         >
-          <UIIcon icon={Download} />
+          <span className="inline-flex h-4 w-4 items-center justify-center">
+            <UIIcon icon={Download} size={16} />
+          </span>
           <span className="sr-only">{controls.download.label}</span>
         </Button>
       ),
@@ -376,7 +384,9 @@ export function CompositePreviewDock({
           aria-label={controls.modal.aria}
           title={controls.modal.label}
         >
-          <UIIcon icon={ExternalLink} />
+          <span className="inline-flex h-4 w-4 items-center justify-center">
+            <UIIcon icon={ExternalLink} size={16} />
+          </span>
           <span className="sr-only">{controls.modal.label}</span>
         </Button>
       ),

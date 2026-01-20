@@ -4,12 +4,14 @@ import Image from 'next/image';
 import clsx from 'clsx';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
+import { Moon, Sun } from 'lucide-react';
 import { Link, usePathname } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 import { supabase } from '@/lib/supabaseClient';
 import { NAV_ITEMS } from '@/components/AppSidebar';
 import { Button } from '@/components/ui/Button';
+import { UIIcon } from '@/components/ui/UIIcon';
 import { setLogoutIntent } from '@/lib/logout-intent';
 import { clearLastKnownAccount, writeLastKnownUserId } from '@/lib/last-known';
 
@@ -20,6 +22,7 @@ export function MarketingNav() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const avatarRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const brand = t('nav.brand', 'MaxVideo AI') ?? 'MaxVideo AI';
@@ -37,6 +40,20 @@ export function MarketingNav() {
   const cta = t('nav.cta', 'Start a render');
   const generateLabel = t('nav.generate', 'Generate');
   const isAuthenticated = Boolean(email);
+  const themeStorageKey = 'mv-theme';
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const stored = window.localStorage.getItem(themeStorageKey);
+    const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+    const resolved = stored === 'dark' || stored === 'light' ? stored : prefersDark ? 'dark' : 'light';
+    setTheme(resolved);
+    if (resolved === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -238,9 +255,30 @@ export function MarketingNav() {
             );
           })}
         </nav>
-        <div className="flex items-center gap-4">
-          <div className="hidden md:block">
+        <div className="flex items-center gap-3">
+          <div className="hidden items-center gap-1 md:flex">
             <LanguageToggle variant="icon" />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-9 w-9 p-0 text-text-primary hover:bg-surface-2"
+              aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+              onClick={() => {
+                const nextTheme = theme === 'dark' ? 'light' : 'dark';
+                setTheme(nextTheme);
+                if (nextTheme === 'dark') {
+                  document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                  document.documentElement.removeAttribute('data-theme');
+                }
+                window.localStorage.setItem(themeStorageKey, nextTheme);
+              }}
+            >
+              <span className="inline-flex h-4 w-4 items-center justify-center">
+                <UIIcon icon={theme === 'dark' ? Sun : Moon} size={16} strokeWidth={1.75} />
+              </span>
+            </Button>
           </div>
           {isAuthenticated ? (
             <>

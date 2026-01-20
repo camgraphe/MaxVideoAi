@@ -110,7 +110,9 @@ export function ImageCompositePreviewDock({
             className={clsx(ICON_BUTTON_BASE, 'p-0 text-state-warning', 'disabled:opacity-50')}
             aria-label={isRemovingFromLibrary ? removingLabel : removeFromLibraryLabel}
           >
-            <UIIcon icon={Minus} size={18} />
+            <span className="inline-flex h-4 w-4 items-center justify-center">
+              <UIIcon icon={Minus} size={16} />
+            </span>
             <span className="sr-only">{isRemovingFromLibrary ? removingLabel : removeFromLibraryLabel}</span>
           </Button>
         </span>
@@ -125,7 +127,9 @@ export function ImageCompositePreviewDock({
             className={clsx(ICON_BUTTON_BASE, 'p-0 text-brand', 'disabled:opacity-50')}
             aria-label={isSavingToLibrary ? savingLabel : addToLibraryLabel}
           >
-            <UIIcon icon={Plus} size={18} />
+            <span className="inline-flex h-4 w-4 items-center justify-center">
+              <UIIcon icon={Plus} size={16} />
+            </span>
             <span className="sr-only">{isSavingToLibrary ? savingLabel : addToLibraryLabel}</span>
           </Button>
         </span>
@@ -140,7 +144,9 @@ export function ImageCompositePreviewDock({
           className={clsx(ICON_BUTTON_BASE, 'p-0 text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
           aria-label={downloadLabel}
         >
-          <UIIcon icon={Download} />
+          <span className="inline-flex h-4 w-4 items-center justify-center">
+            <UIIcon icon={Download} size={16} />
+          </span>
           <span className="sr-only">{downloadLabel}</span>
         </Button>
       </span>
@@ -154,7 +160,9 @@ export function ImageCompositePreviewDock({
           className={clsx(ICON_BUTTON_BASE, 'p-0 text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
           aria-label={copyLabel}
         >
-          <UIIcon icon={Copy} />
+          <span className="inline-flex h-4 w-4 items-center justify-center">
+            <UIIcon icon={Copy} size={16} />
+          </span>
           <span className="sr-only">{copyLabel}</span>
         </Button>
       </span>
@@ -168,7 +176,9 @@ export function ImageCompositePreviewDock({
           className={clsx(ICON_BUTTON_BASE, 'p-0 text-text-secondary hover:text-text-primary', 'disabled:opacity-50')}
           aria-label={modalLabel}
         >
-          <UIIcon icon={ExternalLink} />
+          <span className="inline-flex h-4 w-4 items-center justify-center">
+            <UIIcon icon={ExternalLink} size={16} />
+          </span>
           <span className="sr-only">{modalLabel}</span>
         </Button>
       </span>

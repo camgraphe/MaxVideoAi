@@ -9,6 +9,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import type { Locale } from '@/lib/i18n/types';
 import { LOCALE_COOKIE } from '@/lib/i18n/constants';
 import localizedSlugConfig from '@/config/localized-slugs.json';
+import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 
 const FLAG_MAP: Record<Locale, string> = {
@@ -176,18 +177,22 @@ function resolveEnglishPath(pathname: string, currentLocale: Locale): string {
 
   return (
     <div className="relative text-xs font-medium text-text-secondary">
-      <button
+      <Button
         ref={buttonRef}
         type="button"
+        variant="ghost"
+        size="sm"
         onClick={() => setMenuOpen((prev) => !prev)}
         aria-haspopup="menu"
         aria-expanded={menuOpen}
         aria-label={label}
         title={currentLabel}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-full text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="h-9 w-9 p-0 text-text-primary hover:bg-surface-2"
       >
-        <UIIcon icon={Globe} size={18} strokeWidth={1.75} />
-      </button>
+        <span className="inline-flex h-4 w-4 items-center justify-center">
+          <UIIcon icon={Globe} size={16} strokeWidth={1.75} />
+        </span>
+      </Button>
       {menuOpen ? (
         <div
           ref={menuRef}

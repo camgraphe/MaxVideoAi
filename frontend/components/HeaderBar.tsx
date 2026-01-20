@@ -2,7 +2,6 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
-import { Chip } from '@/components/ui/Chip';
 import { NAV_ITEMS } from '@/components/AppSidebar';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, useId } from 'react';
@@ -17,10 +16,8 @@ import { Button, ButtonLink } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 import {
   clearLastKnownAccount,
-  readLastKnownMember,
   readLastKnownUserId,
   readLastKnownWallet,
-  writeLastKnownMember,
   writeLastKnownUserId,
   writeLastKnownWallet,
 } from '@/lib/last-known';
@@ -31,7 +28,6 @@ export function HeaderBar() {
   const [email, setEmail] = useState<string | null>(null);
   const [authResolved, setAuthResolved] = useState(false);
   const [wallet, setWallet] = useState<{ balance: number } | null>(null);
-  const [member, setMember] = useState<{ tier: string } | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [walletPromptOpen, setWalletPromptOpen] = useState(false);
@@ -67,11 +63,6 @@ export function HeaderBar() {
     if (storedWallet) {
       setWallet((current) => current ?? { balance: storedWallet.balance });
     }
-    const storedMember = readLastKnownMember();
-    const storedTier = storedMember?.tier;
-    if (storedTier) {
-      setMember((current) => current ?? { tier: storedTier });
-    }
   }, []);
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -90,13 +81,11 @@ export function HeaderBar() {
     const fetchAccountState = async (token?: string | null, userId?: string | null) => {
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
       try {
-        const [walletRes, memberRes, adminRes] = await Promise.all([
+        const [walletRes, adminRes] = await Promise.all([
           fetch('/api/wallet', { headers, cache: 'no-store' }),
-          fetch('/api/member-status', { headers, cache: 'no-store' }),
           fetch('/api/admin/access', { headers, cache: 'no-store' }),
         ]);
         const walletJson = await walletRes.json().catch(() => null);
-        const memberJson = await memberRes.json().catch(() => null);
         const adminJson = await adminRes.json().catch(() => null);
         if (!mounted) return;
         const nextAdmin = Boolean(adminRes.ok && adminJson?.ok);
@@ -110,17 +99,6 @@ export function HeaderBar() {
               { balance: nextBalance, currency: nextCurrency },
               userId ?? readLastKnownUserId()
             );
-          }
-        }
-        if (memberRes.ok) {
-          const nextTier = typeof memberJson?.tier === 'string' ? memberJson.tier : null;
-          if (nextTier) {
-            setMember({ tier: nextTier });
-            const nextSavings =
-              typeof memberJson?.savingsPct === 'number' && Number.isFinite(memberJson.savingsPct)
-                ? memberJson.savingsPct
-                : undefined;
-            writeLastKnownMember({ tier: nextTier, savingsPct: nextSavings }, userId ?? readLastKnownUserId());
           }
         }
       } catch {
@@ -154,7 +132,6 @@ export function HeaderBar() {
         writeLastKnownUserId(null);
         setEmail(null);
         setWallet(null);
-        setMember(null);
         setIsAdmin(false);
         setAuthResolved(true);
         return;
@@ -206,7 +183,6 @@ export function HeaderBar() {
     setLogoutIntent();
     setEmail(null);
     setWallet(null);
-    setMember(null);
     setIsAdmin(false);
     clearLastKnownAccount();
     writeLastKnownUserId(null);
@@ -379,10 +355,7 @@ export function HeaderBar() {
           </nav>
         </div>
 
-        <div className="flex items-center gap-4 text-xs text-text-muted">
-          <div className="hidden md:block">
-            <AppLanguageToggle />
-          </div>
+        <div className="flex items-center gap-3 text-xs text-text-muted">
           <div className="relative" onMouseEnter={openWalletPrompt} onMouseLeave={scheduleWalletPromptClose}>
             <Link
               href="/billing"
@@ -424,28 +397,30 @@ export function HeaderBar() {
               </div>
             ) : null}
           </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="hidden h-9 w-9 p-0 text-text-primary hover:bg-surface-2 md:inline-flex"
-            aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
-            onClick={() => {
-              const nextTheme = theme === 'dark' ? 'light' : 'dark';
-              setTheme(nextTheme);
-              if (nextTheme === 'dark') {
-                document.documentElement.setAttribute('data-theme', 'dark');
-              } else {
-                document.documentElement.removeAttribute('data-theme');
-              }
-              window.localStorage.setItem(themeStorageKey, nextTheme);
-            }}
-          >
-            <UIIcon icon={theme === 'dark' ? Sun : Moon} size={18} strokeWidth={1.75} />
-          </Button>
-          <Chip className="hidden px-2.5 py-1 text-[12px] md:inline-flex" variant="outline">
-            {member?.tier ?? (authResolved ? '--' : '...')}
-          </Chip>
+          <div className="hidden items-center gap-1 md:flex">
+            <AppLanguageToggle />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-9 w-9 p-0 text-text-primary hover:bg-surface-2"
+              aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+              onClick={() => {
+                const nextTheme = theme === 'dark' ? 'light' : 'dark';
+                setTheme(nextTheme);
+                if (nextTheme === 'dark') {
+                  document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                  document.documentElement.removeAttribute('data-theme');
+                }
+                window.localStorage.setItem(themeStorageKey, nextTheme);
+              }}
+            >
+              <span className="inline-flex h-4 w-4 items-center justify-center">
+                <UIIcon icon={theme === 'dark' ? Sun : Moon} size={16} strokeWidth={1.75} />
+              </span>
+            </Button>
+          </div>
           {email ? (
             <div className="relative">
               <Button
