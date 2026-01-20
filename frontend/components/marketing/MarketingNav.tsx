@@ -24,6 +24,7 @@ export function MarketingNav() {
   const { t } = useI18n();
   const [email, setEmail] = useState<string | null>(null);
   const [wallet, setWallet] = useState<{ balance: number } | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [walletPromptOpen, setWalletPromptOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -57,15 +58,25 @@ export function MarketingNav() {
   useEffect(() => {
     let mounted = true;
     const fetchAccountState = async (token?: string | null, userId?: string | null) => {
-      if (!token) return;
+      if (!token) {
+        setIsAdmin(false);
+        return;
+      }
       const headers = { Authorization: `Bearer ${token}` };
       try {
-        const walletRes = await fetch('/api/wallet', { headers }).then((response) => response.json());
+        const [walletRes, adminRes] = await Promise.all([
+          fetch('/api/wallet', { headers }),
+          fetch('/api/admin/access', { headers, cache: 'no-store' }),
+        ]);
+        const walletJson = await walletRes.json().catch(() => null);
+        const adminJson = await adminRes.json().catch(() => null);
         if (!mounted) return;
-        const balance = typeof walletRes?.balance === 'number' ? walletRes.balance : null;
+        const nextAdmin = Boolean(adminRes.ok && adminJson?.ok);
+        setIsAdmin(nextAdmin);
+        const balance = typeof walletJson?.balance === 'number' ? walletJson.balance : null;
         if (balance !== null) {
           setWallet({ balance });
-          const currency = typeof walletRes?.currency === 'string' ? walletRes.currency : undefined;
+          const currency = typeof walletJson?.currency === 'string' ? walletJson.currency : undefined;
           writeLastKnownWallet({ balance, currency }, userId ?? readLastKnownUserId());
         }
       } catch {
@@ -104,6 +115,7 @@ export function MarketingNav() {
         writeLastKnownUserId(null);
         setEmail(null);
         setWallet(null);
+        setIsAdmin(false);
         return;
       }
       const userId = applySession(session ?? null);
@@ -408,6 +420,16 @@ export function MarketingNav() {
                           </Link>
                         );
                       })}
+                      {isAdmin ? (
+                        <Link
+                          href="/admin"
+                          prefetch={false}
+                          className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          onClick={() => setAccountMenuOpen(false)}
+                        >
+                          <span>Admin</span>
+                        </Link>
+                      ) : null}
                     </nav>
                     <Button
                       type="button"

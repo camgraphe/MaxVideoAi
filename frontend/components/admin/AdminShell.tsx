@@ -1,11 +1,32 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import useSWR from 'swr';
 import type { AdminNavBadgeMap, AdminNavGroup } from '@/lib/admin/navigation';
+import { buildAdminBadges } from '@/lib/admin/badges';
+import type { AdminHealthSnapshot } from '@/lib/admin/types';
 import { SidebarNav } from '@/components/admin/SidebarNav';
 import { AdminTopbar } from '@/components/admin/AdminTopbar';
+
+type AdminHealthResponse =
+  | {
+      ok: true;
+      health: AdminHealthSnapshot;
+    }
+  | {
+      ok: false;
+      error?: string;
+    };
+
+const fetchJson = async (url: string): Promise<AdminHealthResponse> => {
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) {
+    return { ok: false, error: res.statusText };
+  }
+  return (await res.json()) as AdminHealthResponse;
+};
 
 type AdminShellProps = {
   navGroups: AdminNavGroup[];
@@ -16,6 +37,12 @@ type AdminShellProps = {
 export function AdminShell({ navGroups, navBadges, children }: AdminShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const { data } = useSWR<AdminHealthResponse>('/api/admin/health', fetchJson, {
+    refreshInterval: 30000,
+    revalidateOnFocus: false,
+  });
+  const liveBadges = data?.ok ? buildAdminBadges(data.health) : undefined;
+  const mergedBadges = useMemo(() => liveBadges ?? navBadges, [liveBadges, navBadges]);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -44,7 +71,7 @@ export function AdminShell({ navGroups, navBadges, children }: AdminShellProps) 
       <div className="flex min-h-screen">
         <SidebarNav
           groups={navGroups}
-          badges={navBadges}
+          badges={mergedBadges}
           mobileOpen={mobileOpen}
           onMobileClose={() => setMobileOpen(false)}
         />

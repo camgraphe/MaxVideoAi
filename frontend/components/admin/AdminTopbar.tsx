@@ -1,12 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { ChevronRight, PanelLeftOpen } from 'lucide-react';
+import { ChevronRight, Command, PanelLeftOpen } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { TopbarSearch } from '@/components/admin/TopbarSearch';
+import { AdminCommandPalette } from '@/components/admin/AdminCommandPalette';
 import type { AdminNavGroup } from '@/lib/admin/navigation';
 import { findAdminNavMatch } from '@/lib/admin/navigation';
 
@@ -16,6 +17,7 @@ type AdminTopbarProps = {
 };
 
 export function AdminTopbar({ navGroups, onMenuOpen }: AdminTopbarProps) {
+  const [commandOpen, setCommandOpen] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const match = useMemo(() => findAdminNavMatch(pathname, navGroups), [pathname, navGroups]);
@@ -64,10 +66,22 @@ export function AdminTopbar({ navGroups, onMenuOpen }: AdminTopbarProps) {
             ) : null}
           </ol>
         </nav>
-        <div className="w-full md:w-auto">
+        <div className="flex w-full flex-wrap items-center gap-2 md:w-auto">
           <TopbarSearch />
+          <button
+            type="button"
+            onClick={() => setCommandOpen(true)}
+            className="flex items-center gap-2 rounded-input border border-hairline bg-surface px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-text-muted transition hover:bg-surface-2"
+          >
+            <UIIcon icon={Command} size={14} />
+            Command
+            <span className="rounded-full border border-hairline px-1.5 py-0.5 text-[9px] font-semibold text-text-tertiary">
+              Cmd+K
+            </span>
+          </button>
         </div>
       </div>
+      <AdminCommandPalette navGroups={navGroups} open={commandOpen} onOpenChange={setCommandOpen} />
     </header>
   );
 }

@@ -32,6 +32,7 @@ export function HeaderBar() {
   const [authResolved, setAuthResolved] = useState(false);
   const [wallet, setWallet] = useState<{ balance: number } | null>(null);
   const [member, setMember] = useState<{ tier: string } | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [walletPromptOpen, setWalletPromptOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -89,13 +90,17 @@ export function HeaderBar() {
     const fetchAccountState = async (token?: string | null, userId?: string | null) => {
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
       try {
-        const [walletRes, memberRes] = await Promise.all([
+        const [walletRes, memberRes, adminRes] = await Promise.all([
           fetch('/api/wallet', { headers, cache: 'no-store' }),
           fetch('/api/member-status', { headers, cache: 'no-store' }),
+          fetch('/api/admin/access', { headers, cache: 'no-store' }),
         ]);
         const walletJson = await walletRes.json().catch(() => null);
         const memberJson = await memberRes.json().catch(() => null);
+        const adminJson = await adminRes.json().catch(() => null);
         if (!mounted) return;
+        const nextAdmin = Boolean(adminRes.ok && adminJson?.ok);
+        setIsAdmin(nextAdmin);
         if (walletRes.ok) {
           const nextBalance = typeof walletJson?.balance === 'number' ? walletJson.balance : null;
           if (nextBalance !== null) {
@@ -150,6 +155,7 @@ export function HeaderBar() {
         setEmail(null);
         setWallet(null);
         setMember(null);
+        setIsAdmin(false);
         setAuthResolved(true);
         return;
       }
@@ -195,17 +201,18 @@ export function HeaderBar() {
     }
   };
 
-  const handleSignOut = () => {
-    setAccountMenuOpen(false);
-    setLogoutIntent();
-    setEmail(null);
-    setWallet(null);
-    setMember(null);
-    clearLastKnownAccount();
-    writeLastKnownUserId(null);
-    sendSignOutRequest();
-    window.location.href = '/';
-  };
+    const handleSignOut = () => {
+      setAccountMenuOpen(false);
+      setLogoutIntent();
+      setEmail(null);
+      setWallet(null);
+      setMember(null);
+      setIsAdmin(false);
+      clearLastKnownAccount();
+      writeLastKnownUserId(null);
+      sendSignOutRequest();
+      window.location.href = '/';
+    };
 
   useEffect(() => {
     let isActive = true;
@@ -493,6 +500,16 @@ export function HeaderBar() {
                         </Link>
                       );
                     })}
+                    {isAdmin ? (
+                      <Link
+                        href="/admin"
+                        role="menuitem"
+                        className="flex items-center justify-between rounded-input px-3 py-2 text-sm font-medium text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        onClick={() => setAccountMenuOpen(false)}
+                      >
+                        <span>Admin</span>
+                      </Link>
+                    ) : null}
                   </nav>
                   <Button
                     type="button"
