@@ -167,7 +167,7 @@ export function HeroMediaTile({
   }, [lightboxOpen]);
 
   const content = (
-    <figure className="group relative overflow-hidden rounded-[28px] border border-surface-on-media-70 bg-surface shadow-card">
+    <figure className="group relative overflow-hidden rounded-[28px] border border-preview-outline-idle bg-surface shadow-card">
       <div className="relative aspect-[16/9] w-full">
         {showAudioIcon ? (
           <AudioEqualizerBadge tone="light" size="sm" label="Audio enabled" />
