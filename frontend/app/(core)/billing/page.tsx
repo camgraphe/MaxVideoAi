@@ -702,11 +702,11 @@ export default function BillingPage() {
                     </span>
                     <div className="relative z-10 flex items-center justify-between gap-4">
                       <div className="flex flex-col">
-                        <span className="text-base font-semibold">
+                        <span className="text-base font-semibold text-on-inverse">
                           {copy.wallet.addFunds.replace('{amount}', formatUsdAmount(tier.amountCents))}
                         </span>
                         {topupQuotes[tier.amountCents] && normalizedChargeCurrency !== 'USD' && (
-                          <span className="text-xs text-on-media-80">
+                          <span className="text-xs text-on-media-90">
                             ≈ {formatLocalAmount(topupQuotes[tier.amountCents].amountMinor, topupQuotes[tier.amountCents].currency)}
                           </span>
                         )}
