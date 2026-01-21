@@ -36,9 +36,20 @@ export function ExamplesOrbitCallout({ heading, description, ctaLabel, eyebrow, 
 
   return (
     <div className="container-page max-w-6xl">
-      <div className="relative overflow-hidden rounded-[40px] border border-hairline bg-surface-glass-75 p-8 shadow-card sm:p-12">
+      <div
+        className={clsx(
+          styles.calloutShell,
+          'relative overflow-hidden rounded-[40px] border border-hairline bg-surface-glass-75 p-8 shadow-card sm:p-12'
+        )}
+      >
         <div className={clsx(styles.cardGlow, 'pointer-events-none absolute inset-0')} aria-hidden />
-        <div className="pointer-events-none absolute -inset-px rounded-[42px] bg-gradient-to-b from-white/40 via-transparent to-white/20 opacity-80" aria-hidden />
+        <div
+          className={clsx(
+            styles.calloutMist,
+            'pointer-events-none absolute -inset-px rounded-[42px] bg-gradient-to-b from-white/40 via-transparent to-white/20 opacity-80'
+          )}
+          aria-hidden
+        />
         <div className="relative z-10 grid grid-gap-xl lg:grid-cols-[1.05fr_1fr] lg:items-center">
           <div className="stack-gap-lg text-center lg:text-left">
             {eyebrow ? (

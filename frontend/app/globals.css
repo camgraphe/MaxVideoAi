@@ -98,6 +98,43 @@ main {
   background: var(--brand);
 }
 
+:root[data-theme='dark'] .halo-hero,
+:root[data-theme='dark'] .halo-workspace-left,
+:root[data-theme='dark'] .halo-workspace-bottom {
+  position: relative;
+}
+
+:root[data-theme='dark'] .halo-hero::before,
+:root[data-theme='dark'] .halo-workspace-left::before,
+:root[data-theme='dark'] .halo-workspace-bottom::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+:root[data-theme='dark'] .halo-hero > *,
+:root[data-theme='dark'] .halo-workspace-left > *,
+:root[data-theme='dark'] .halo-workspace-bottom > * {
+  position: relative;
+  z-index: 1;
+}
+
+:root[data-theme='dark'] .halo-hero::before {
+  background: radial-gradient(620px 360px at 50% 10%, rgba(91, 124, 250, 0.24), transparent 72%);
+}
+
+:root[data-theme='dark'] .halo-workspace-left::before {
+  background: radial-gradient(460px 320px at 22% 50%, rgba(91, 124, 250, 0.18), transparent 70%);
+}
+
+:root[data-theme='dark'] .halo-workspace-bottom::before {
+  background:
+    radial-gradient(640px 360px at 50% 118%, rgba(91, 124, 250, 0.28), transparent 72%),
+    radial-gradient(520px 260px at 78% 120%, rgba(91, 124, 250, 0.22), transparent 70%);
+}
+
 [data-theme="dark"] .chip-price {
   border-color: var(--on-brand);
   color: var(--on-brand);

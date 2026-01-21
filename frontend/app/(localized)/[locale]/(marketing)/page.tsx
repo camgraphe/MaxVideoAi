@@ -539,7 +539,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         <link rel="preconnect" href="https://v3b.fal.media" crossOrigin="anonymous" />
         {lcpPosterSrc ? <link rel="preload" as="image" href={lcpPosterSrc} fetchPriority="high" media="(max-width: 767px)" /> : null}
       </Head>
-      <section className="container-page section max-w-6xl stack-gap-lg items-center pt-10 pb-10 text-center sm:pt-12 sm:pb-12 lg:pt-14 lg:pb-14">
+      <section className="container-page section max-w-6xl stack-gap-lg items-center pt-10 pb-10 text-center sm:pt-12 sm:pb-12 lg:pt-14 lg:pb-14 halo-hero">
         <div className="flex flex-wrap items-center justify-center gap-4">
           {badges.map((badge) => (
             <span key={badge} className="rounded-pill border border-hairline bg-surface px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary">
@@ -609,13 +609,13 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         </div>
       </section>
 
-      <section className="border-t border-hairline bg-bg text-left section pt-10 pb-0 sm:pt-12 lg:pt-16">
-        <div className="container-page flex max-w-7xl flex-col-reverse items-center gap-[var(--grid-gap-xl)] text-center lg:flex-row lg:items-stretch">
-          <div className="w-full sm:max-w-[62ch] stack-gap-lg text-center lg:w-[40%] lg:self-center">
+      <section className="border-t border-hairline bg-bg section pt-10 pb-0 sm:pt-12 lg:pt-16 halo-workspace-left">
+        <div className="container-page flex max-w-7xl flex-col-reverse items-center gap-[var(--grid-gap-xl)] lg:flex-row lg:items-stretch">
+          <div className="w-full sm:max-w-[62ch] stack-gap-lg text-left lg:w-[40%] lg:self-center">
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{heroScreenshot.title}</h2>
             <p className="text-sm text-text-secondary sm:text-base">{heroScreenshot.body}</p>
           </div>
-          <div className="relative w-full max-w-6xl lg:w-[65%] lg:max-w-none lg:self-end -mt-2 sm:-mt-4 lg:-mt-6">
+          <div className="relative w-full max-w-6xl lg:w-[65%] lg:max-w-none lg:self-end mt-2 sm:mt-4 lg:mt-6">
             <div className="overflow-hidden rounded-t-[16px] shadow-float">
               <Image
                 src="/assets/marketing/app-dashboard.webp"
@@ -632,7 +632,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
       </section>
       <section className="border-t border-hairline bg-surface section">
         <div className="stack-gap-lg">
-          <section id="how-it-works" className="container-page max-w-6xl scroll-mt-32">
+          <section id="how-it-works" className="container-page max-w-7xl scroll-mt-32">
             <ProofTabs pricingRules={pricingRulesLite} />
           </section>
 
@@ -663,13 +663,18 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         <CompareEnginesCarousel engines={compareEngines} copy={compareCarouselCopy} />
       </section>
 
-      <section className="border-t border-hairline bg-bg section">
+      <section className="border-t border-hairline bg-bg section halo-workspace-bottom">
         <div className="stack-gap-lg">
           <section className="container-page max-w-6xl">
             <div className="mb-6 flex items-center justify-center gap-4">
               <div className="text-center">
-                <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{waysSection.title}</h2>
-                <p className="text-sm text-text-secondary sm:text-base">{waysSection.subtitle}</p>
+                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
+                  {waysSection.eyebrow}
+                </span>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight text-text-primary sm:text-5xl lg:text-6xl">
+                  {waysSection.title}
+                </h2>
+                <p className="mt-3 text-sm text-text-secondary sm:text-base">{waysSection.subtitle}</p>
               </div>
             </div>
             <div className="grid grid-gap lg:grid-cols-2">
@@ -731,12 +736,14 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
           </section>
         </div>
       </section>
-      <section className="container-page section max-w-6xl pb-6">
-        <div className="rounded-card border border-hairline bg-surface/70 p-6 text-center shadow-card">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Partners</p>
-          <h2 className="mt-2 text-lg font-semibold text-text-primary">Featured on</h2>
-          <div className="mt-4 flex justify-center">
-            <PartnerBadges className="justify-center opacity-90 transition hover:opacity-100" />
+      <section className="border-t border-hairline bg-surface section">
+        <div className="container-page max-w-6xl">
+          <div className="rounded-card border border-hairline bg-surface/70 p-6 text-center shadow-card">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Partners</p>
+            <h2 className="mt-2 text-lg font-semibold text-text-primary">Featured on</h2>
+            <div className="mt-4 flex justify-center">
+              <PartnerBadges className="justify-center opacity-90 transition hover:opacity-100" />
+            </div>
           </div>
         </div>
       </section>

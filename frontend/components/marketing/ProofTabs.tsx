@@ -20,9 +20,9 @@ export function ProofTabs({ pricingRules }: ProofTabsProps) {
   const priceChipSuffix = t('home.priceChipSuffix', 'Price before you generate.');
 
   return (
-    <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+    <section className="mx-auto w-full px-4 sm:px-6 lg:px-8">
       <div className="rounded-card border border-hairline bg-surface p-6 shadow-card sm:p-8">
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap justify-center gap-4">
           {tabs.map((tab) => {
             const isActive = tab.id === activeId;
             return (
@@ -44,12 +44,14 @@ export function ProofTabs({ pricingRules }: ProofTabsProps) {
           })}
         </div>
         <div className="mt-6 stack-gap">
-          <div>
+          <div className="text-center">
             <h3 className="text-xl font-semibold text-text-primary sm:text-2xl">{activeTab.heading}</h3>
-            <p className="mt-2 max-w-3xl text-base text-text-secondary sm:text-lg">{activeTab.body}</p>
+            <p className="mt-2 mx-auto max-w-3xl text-base text-text-secondary sm:text-lg">{activeTab.body}</p>
           </div>
           {activeTab.id === 'price' && (
-            <PriceChip {...DEFAULT_MARKETING_SCENARIO} suffix={priceChipSuffix} pricingRules={pricingRules} />
+            <div className="flex justify-center">
+              <PriceChip {...DEFAULT_MARKETING_SCENARIO} suffix={priceChipSuffix} pricingRules={pricingRules} />
+            </div>
           )}
         </div>
       </div>

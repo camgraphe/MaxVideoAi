@@ -36,6 +36,53 @@
       "workflows": "Flujos de trabajo",
       "docs": "Documentación",
       "blog": "Blog"
+    },
+    "dropdown": {
+      "allModels": "Todos los modelos",
+      "allExamples": "Todos los ejemplos",
+      "viewAll": "Ver todo",
+      "models": {
+        "items": {
+          "sora-2": "Sora 2",
+          "veo-3-1": "Veo 3.1",
+          "kling-2-6-pro": "Kling 2.6 Pro",
+          "ltx-2": "LTX-2",
+          "ltx-2-fast": "LTX-2 Fast",
+          "pika-text-to-video": "Pika Text-to-Video",
+          "wan-2-6": "Wan 2.6",
+          "minimax-hailuo-02-text": "MiniMax Hailuo 02"
+        }
+      },
+      "examples": {
+        "items": {
+          "sora-2": "Sora 2",
+          "veo-3-1": "Veo 3.1",
+          "kling-2-6-pro": "Kling 2.6 Pro",
+          "ltx-2": "LTX-2",
+          "pika-text-to-video": "Pika Text-to-Video",
+          "wan-2-6": "Wan 2.6",
+          "minimax-hailuo-02-text": "MiniMax Hailuo 02"
+        }
+      },
+      "workflows": {
+        "items": {
+          "overview": "Resumen de workflows",
+          "pick": "Elegir un workflow"
+        }
+      },
+      "docs": {
+        "items": {
+          "get-started": "Primeros pasos",
+          "brand-safety": "Seguridad de marca"
+        }
+      },
+      "blog": {
+        "items": {
+          "compare-ai-video-engines": "Comparar motores de video IA",
+          "sora-2-sequenced-prompts": "Prompts secuenciados de Sora 2",
+          "veo-3-updates": "Actualizaciones de Veo 3"
+        }
+      }
     }
   },
   "aiVideoEngines": {
@@ -248,6 +295,7 @@
       }
     ],
     "waysSection": {
+      "eyebrow": "Espacio de trabajo",
       "title": "Todo reside en el espacio de trabajo.",
       "subtitle": "Compositor, cartera, historial de trabajos y galería permanecen uno junto al otro para que tu equipo se mantenga alineado."
     },

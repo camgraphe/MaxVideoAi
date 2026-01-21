@@ -3,6 +3,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { defaultLocale, type AppLocale } from '@/i18n/locales';
 import modelRoster from '@/config/model-roster.json';
+import { MARKETING_EXAMPLE_SLUGS } from '@/config/navigation';
 import {
   BLOG_ENTRIES,
   BLOG_SLUG_MAP,
@@ -643,6 +644,10 @@ const DYNAMIC_ROUTE_GENERATORS: Record<string, DynamicRouteGenerator> = {
       lastModified: formatLastModified(doc.updatedAt) ?? getGitLastModified(doc.sourcePath),
     }));
   },
+  '/examples/[model]': async () =>
+    MARKETING_EXAMPLE_SLUGS.map((model) => ({
+      englishPath: `/examples/${model}`,
+    })),
   '/models/[slug]': async () =>
     modelRoster
       .filter((model) => Boolean(model?.modelSlug))

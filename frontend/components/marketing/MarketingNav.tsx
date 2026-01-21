@@ -4,7 +4,7 @@ import Image from 'next/image';
 import clsx from 'clsx';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { Moon, Sun } from 'lucide-react';
+import { ChevronDown, Moon, Sun } from 'lucide-react';
 import { Link, usePathname } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { setLogoutIntent } from '@/lib/logout-intent';
 import { clearLastKnownAccount, writeLastKnownUserId } from '@/lib/last-known';
+import { MARKETING_NAV_DROPDOWNS } from '@/config/navigation';
 
 export function MarketingNav() {
   const pathname = usePathname();
@@ -22,6 +23,7 @@ export function MarketingNav() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileDropdownOpen, setMobileDropdownOpen] = useState<Record<string, boolean>>({});
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const avatarRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -172,6 +174,7 @@ export function MarketingNav() {
   useEffect(() => {
     if (!mobileMenuOpen) {
       document.body.style.removeProperty('overflow');
+      setMobileDropdownOpen({});
       return;
     }
     document.body.style.overflow = 'hidden';
@@ -189,6 +192,7 @@ export function MarketingNav() {
 
   useEffect(() => {
     setMobileMenuOpen(false);
+    setMobileDropdownOpen({});
   }, [pathname]);
 
   const initials = useMemo(() => {
@@ -242,17 +246,61 @@ export function MarketingNav() {
           <nav aria-label="Primary" className="hidden items-center gap-6 text-sm font-medium text-text-secondary lg:flex">
             {links.map((item) => {
               const isActive = pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href + '/'));
+              const dropdown = MARKETING_NAV_DROPDOWNS[item.key];
+              const label = t(`nav.linkLabels.${item.key}`, item.key);
+              if (!dropdown) {
+                return (
+                  <Link
+                    key={item.key}
+                    href={item.href}
+                    className={clsx(
+                      'whitespace-nowrap transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
+                      isActive ? 'text-text-primary' : undefined
+                    )}
+                  >
+                    {label}
+                  </Link>
+                );
+              }
+              const allLabel = t(dropdown.allLabelKey, dropdown.allLabelFallback);
               return (
-                <Link
-                  key={item.key}
-                  href={item.href}
-                  className={clsx(
-                    'whitespace-nowrap transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
-                    isActive ? 'text-text-primary' : undefined
-                  )}
-                >
-                  {t(`nav.linkLabels.${item.key}`, item.key)}
-                </Link>
+                <div key={item.key} className="relative group">
+                  <Link
+                    href={item.href}
+                    aria-haspopup="menu"
+                    className={clsx(
+                      'inline-flex items-center gap-1 whitespace-nowrap transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
+                      isActive ? 'text-text-primary' : undefined
+                    )}
+                  >
+                    <span>{label}</span>
+                    <UIIcon icon={ChevronDown} size={14} strokeWidth={1.6} className="text-text-muted" />
+                  </Link>
+                  <div className="invisible absolute left-0 top-full z-20 pt-2 opacity-0 transition duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                    <div className="min-w-[240px] rounded-card border border-hairline bg-surface p-3 shadow-card">
+                      <nav className="flex flex-col gap-1" role="menu" aria-label={label}>
+                        {dropdown.items.map((entry) => (
+                          <Link
+                            key={entry.key}
+                            href={entry.href}
+                            className="rounded-input px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            role="menuitem"
+                          >
+                            {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
+                          </Link>
+                        ))}
+                      </nav>
+                      <div className="mt-2 border-t border-hairline pt-2">
+                        <Link
+                          href={dropdown.allHref}
+                          className="flex items-center gap-2 rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {allLabel}
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               );
             })}
           </nav>
@@ -408,20 +456,74 @@ export function MarketingNav() {
             <div className="flex justify-end">
               <LanguageToggle variant="icon" />
             </div>
-            <nav className="flex flex-col gap-2 text-base font-semibold text-text-primary">
-              {links.map((item) => (
-                <Link
-                  key={item.key}
-                  href={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={clsx(
-                    'rounded-2xl border border-hairline px-4 py-3',
-                    pathname === item.href ? 'bg-surface-2 text-text-primary' : 'bg-surface'
-                  )}
-                >
-                  {t(`nav.linkLabels.${item.key}`, item.key)}
-                </Link>
-              ))}
+            <nav className="flex flex-col gap-3 text-base font-semibold text-text-primary">
+              {links.map((item) => {
+                const dropdown = MARKETING_NAV_DROPDOWNS[item.key];
+                const label = t(`nav.linkLabels.${item.key}`, item.key);
+                if (!dropdown) {
+                  return (
+                    <Link
+                      key={item.key}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={clsx(
+                        'rounded-2xl border border-hairline px-4 py-3',
+                        pathname === item.href ? 'bg-surface-2 text-text-primary' : 'bg-surface'
+                      )}
+                    >
+                      {label}
+                    </Link>
+                  );
+                }
+                const allLabel = t(dropdown.allLabelKey, dropdown.allLabelFallback);
+                const panelId = `mobile-${item.key}-panel`;
+                const isOpen = Boolean(mobileDropdownOpen[item.key]);
+                return (
+                  <div key={item.key} className="rounded-2xl border border-hairline bg-surface px-4 py-3">
+                    <button
+                      type="button"
+                      className="flex w-full items-center justify-between text-left text-sm font-semibold text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      aria-expanded={isOpen}
+                      aria-controls={panelId}
+                      onClick={() =>
+                        setMobileDropdownOpen((prev) => ({
+                          ...prev,
+                          [item.key]: !prev[item.key],
+                        }))
+                      }
+                    >
+                      <span>{label}</span>
+                      <UIIcon
+                        icon={ChevronDown}
+                        size={14}
+                        strokeWidth={1.6}
+                        className={clsx('text-text-muted transition-transform', isOpen ? 'rotate-180' : undefined)}
+                      />
+                    </button>
+                    {isOpen ? (
+                      <div id={panelId} className="mt-2 flex flex-col gap-1 text-sm font-medium text-text-secondary">
+                        {dropdown.items.map((entry) => (
+                          <Link
+                            key={entry.key}
+                            href={entry.href}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="rounded-input px-2 py-2 transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
+                          </Link>
+                        ))}
+                        <Link
+                          href={dropdown.allHref}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="mt-1 rounded-input px-2 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {allLabel}
+                        </Link>
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
             </nav>
             {isAuthenticated ? (
               <div className="stack-gap-sm">

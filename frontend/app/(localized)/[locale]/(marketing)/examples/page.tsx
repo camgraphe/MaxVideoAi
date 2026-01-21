@@ -8,6 +8,7 @@ import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { listExamples, listExamplesPage, type ExampleSort } from '@/server/videos';
 import { listFalEngines } from '@/config/falEngines';
+import { MARKETING_EXAMPLE_SLUGS } from '@/config/navigation';
 import { ExamplesGalleryGrid, type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
@@ -77,6 +78,7 @@ const ENGINE_META = (() => {
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || SITE_BASE_URL;
 const GALLERY_SLUG_MAP = buildSlugMap('gallery');
+const EXAMPLE_MODEL_SLUG_SET = new Set(MARKETING_EXAMPLE_SLUGS);
 const DEFAULT_SORT: ExampleSort = 'playlist';
 const ALLOWED_QUERY_KEYS = new Set(['sort', 'engine', 'page']);
 const EXAMPLES_PAGE_SIZE = 60;
@@ -176,7 +178,7 @@ function resolveCanonicalEngineParam(raw: string | string[] | undefined): string
   return descriptor?.id.toLowerCase() ?? canonicalEngineParam.toLowerCase();
 }
 
-function resolveEngineLabel(raw: string | string[] | undefined): string | null {
+export function resolveEngineLabel(raw: string | string[] | undefined): string | null {
   const engineParam = Array.isArray(raw) ? raw[0] : raw;
   const engineParamValue = typeof engineParam === 'string' ? engineParam.trim() : '';
   if (!engineParamValue) return null;
@@ -198,6 +200,14 @@ function buildExamplesCanonical(baseCanonical: string, engineParam: string, page
   return suffix ? `${baseCanonical}?${suffix}` : baseCanonical;
 }
 
+function resolveExampleCanonicalSlug(engineId: string | null | undefined): string | null {
+  if (!engineId) return null;
+  const normalized = engineId.trim().toLowerCase();
+  const modelSlug = ENGINE_MODEL_LINKS[normalized];
+  if (!modelSlug) return null;
+  return EXAMPLE_MODEL_SLUG_SET.has(modelSlug) ? modelSlug : null;
+}
+
 export async function generateMetadata({
   params,
   searchParams,
@@ -207,19 +217,40 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const locale = params.locale;
   const t = await getTranslations({ locale, namespace: 'gallery.meta' });
-  const metadataUrls = buildMetadataUrls(locale, GALLERY_SLUG_MAP, { englishPath: '/examples' });
   const collapsedEngineParam = resolveCanonicalEngineParam(searchParams.engine);
   const engineLabel = resolveEngineLabel(searchParams.engine);
+  const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
+  const sort = getSort(sortParam);
+  const hasNonDefaultSort = sort !== DEFAULT_SORT;
   const pageParam = Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page;
   const parsedPage = pageParam ? Number.parseInt(pageParam, 10) : NaN;
   const normalizedPage = Number.isFinite(parsedPage) && parsedPage > 1 ? parsedPage : null;
   const latest = await listExamples('date-desc', 20);
   const firstWithThumb = latest.find((video) => Boolean(video.thumbUrl));
   const ogImage = toAbsoluteUrl(firstWithThumb?.thumbUrl) ?? `${SITE}/og/price-before.png`;
-  const canonical = buildExamplesCanonical(metadataUrls.canonical, collapsedEngineParam, normalizedPage);
+  const canonicalExampleSlug = resolveExampleCanonicalSlug(collapsedEngineParam);
+  const hasExtraFilters = hasNonDefaultSort || Boolean(normalizedPage && normalizedPage > 1);
+  const shouldNoindex = Boolean(collapsedEngineParam) && (hasExtraFilters || !canonicalExampleSlug);
   const title = engineLabel ? t('title_engine', { engineName: engineLabel }) : t('title');
   const description = engineLabel ? t('description_engine', { engineName: engineLabel }) : t('description');
 
+  if (canonicalExampleSlug) {
+    return buildSeoMetadata({
+      locale,
+      title,
+      description,
+      englishPath: `/examples/${canonicalExampleSlug}`,
+      image: ogImage,
+      imageAlt: 'MaxVideo AI — Examples gallery preview',
+      robots: {
+        index: !shouldNoindex,
+        follow: true,
+      },
+    });
+  }
+
+  const metadataUrls = buildMetadataUrls(locale, GALLERY_SLUG_MAP, { englishPath: '/examples' });
+  const canonical = buildExamplesCanonical(metadataUrls.canonical, '', normalizedPage);
   return buildSeoMetadata({
     locale,
     title,
@@ -230,7 +261,7 @@ export async function generateMetadata({
     imageAlt: 'MaxVideo AI — Examples gallery preview',
     canonicalOverride: canonical,
     robots: {
-      index: true,
+      index: !shouldNoindex,
       follow: true,
     },
   });
@@ -238,6 +269,7 @@ export async function generateMetadata({
 
 type ExamplesPageProps = {
   searchParams: Record<string, string | string[] | undefined>;
+  engineFromPath?: string;
 };
 
 // Labels will be localized from dictionary at render time
@@ -331,7 +363,7 @@ function resolveFilterDescriptor(
   return { id: targetId, label, brandId };
 }
 
-export default async function ExamplesPage({ searchParams }: ExamplesPageProps) {
+export default async function ExamplesPage({ searchParams, engineFromPath }: ExamplesPageProps) {
   const { locale, dictionary } = await resolveDictionary();
   const content = dictionary.examples;
   const engineFilterLabel = (content as { engineFilterLabel?: string })?.engineFilterLabel ?? 'Engines';
@@ -391,7 +423,7 @@ export default async function ExamplesPage({ searchParams }: ExamplesPageProps) 
     if (sort !== DEFAULT_SORT) {
       redirectedQuery.set('sort', sort);
     }
-    if (collapsedEngineParam) {
+    if (collapsedEngineParam && !engineFromPath) {
       redirectedQuery.set('engine', collapsedEngineParam);
     }
     if (targetPage > 1) {
@@ -453,7 +485,7 @@ const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
 const ENGINE_MODEL_LINKS: Record<string, string> = {
   'sora-2': 'sora-2',
   veo: 'veo-3-1',
-  kling: 'kling-2-5-turbo',
+  kling: 'kling-2-6-pro',
   wan: 'wan-2-6',
   pika: 'pika-text-to-video',
   hailuo: 'minimax-hailuo-02-text',

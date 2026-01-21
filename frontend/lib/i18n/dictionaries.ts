@@ -39,7 +39,7 @@ type Dictionary = {
     proofTabs: Array<{ id: string; label: string; heading: string; body: string }>;
     whyCards: Array<{ title: string; body: string }>;
     ways: Array<{ title: string; description: string; bullets: string[] }>;
-    waysSection: { title: string; subtitle: string };
+    waysSection: { title: string; subtitle: string; eyebrow?: string };
     examplesCallout?: {
       eyebrow?: string;
       title: string;
@@ -388,6 +388,7 @@ const en: Dictionary = {
       },
     ],
     waysSection: {
+      eyebrow: 'Workspace',
       title: 'Everything lives in the workspace.',
       subtitle: 'Composer, wallet, job history, and gallery stay side-by-side so your team stays aligned.',
     },

@@ -36,6 +36,53 @@
       "workflows": "Workflows",
       "docs": "Docs",
       "blog": "Blog"
+    },
+    "dropdown": {
+      "allModels": "All models",
+      "allExamples": "All examples",
+      "viewAll": "View all",
+      "models": {
+        "items": {
+          "sora-2": "Sora 2",
+          "veo-3-1": "Veo 3.1",
+          "kling-2-6-pro": "Kling 2.6 Pro",
+          "ltx-2": "LTX-2",
+          "ltx-2-fast": "LTX-2 Fast",
+          "pika-text-to-video": "Pika Text-to-Video",
+          "wan-2-6": "Wan 2.6",
+          "minimax-hailuo-02-text": "MiniMax Hailuo 02"
+        }
+      },
+      "examples": {
+        "items": {
+          "sora-2": "Sora 2",
+          "veo-3-1": "Veo 3.1",
+          "kling-2-6-pro": "Kling 2.6 Pro",
+          "ltx-2": "LTX-2",
+          "pika-text-to-video": "Pika Text-to-Video",
+          "wan-2-6": "Wan 2.6",
+          "minimax-hailuo-02-text": "MiniMax Hailuo 02"
+        }
+      },
+      "workflows": {
+        "items": {
+          "overview": "Workflows overview",
+          "pick": "Pick a workflow"
+        }
+      },
+      "docs": {
+        "items": {
+          "get-started": "Get started",
+          "brand-safety": "Brand safety"
+        }
+      },
+      "blog": {
+        "items": {
+          "compare-ai-video-engines": "Compare AI video engines",
+          "sora-2-sequenced-prompts": "Sora 2 sequenced prompts",
+          "veo-3-updates": "Veo 3 updates"
+        }
+      }
     }
   },
   "footer": {
@@ -168,6 +215,7 @@
       }
     ],
     "waysSection": {
+      "eyebrow": "Workspace",
       "title": "Everything lives in the workspace.",
       "subtitle": "Composer, wallet, job history, and gallery stay side-by-side so your team stays aligned."
     },

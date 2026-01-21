@@ -27,6 +27,11 @@ export const routing = defineRouting({
       fr: '/galerie',
       es: '/galeria',
     },
+    '/examples/[model]': {
+      en: '/examples/[model]',
+      fr: '/galerie/[model]',
+      es: '/galeria/[model]',
+    },
     '/ai-video-engines': {
       en: '/ai-video-engines',
       fr: '/comparatif',
