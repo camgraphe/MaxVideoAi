@@ -41,7 +41,7 @@ export function PromptPreview({
   const displayPrompt = expanded ? cleanPrompt : collapsed;
 
   return (
-    <div className="rounded-card border border-border bg-surface-glass-90 p-6 shadow-card backdrop-blur">
+    <div className="rounded-card border border-border bg-surface-glass-90 p-6 shadow-card">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <p className="text-xs uppercase tracking-micro text-text-muted">{promptLabel}</p>
         <CopyPromptButton prompt={cleanPrompt} copyLabel={copyLabel} copiedLabel={copiedLabel} />

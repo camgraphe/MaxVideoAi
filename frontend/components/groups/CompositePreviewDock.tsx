@@ -627,7 +627,7 @@ export function CompositePreviewDock({
           <div className="mt-3 flex w-full max-w-[960px]">
             <div
               ref={toolbarRef}
-              className="flex w-full items-center justify-center rounded-card border border-hairline/50 bg-surface-glass-80 px-3 py-2 shadow-sm backdrop-blur"
+              className="flex w-full items-center justify-center rounded-card border border-hairline/50 bg-surface-glass-80 px-3 py-2 shadow-sm"
             >
               {toolbarControls}
             </div>

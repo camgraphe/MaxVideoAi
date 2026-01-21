@@ -785,7 +785,7 @@
     },
     "note": "Les tarifs Fal évoluent vite : vérifiez la pastille Prix-Avant ou votre clé directe avant chaque lancement.",
     "detail": {
-      "backLabel": "← Retour aux modèles",
+      "backLabel": "← Retour",
       "examplesLinkLabel": "Voir des exemples",
       "pricingLinkLabel": "Comparer les tarifs",
       "overviewTitle": "Aperçu",
@@ -1517,6 +1517,8 @@
           "modeAll": "Mode : Tous",
           "modeValue": "Mode : {value}",
           "resolutionAll": "Résolution : Toutes",
+          "viewModel": "Voir la page du modèle",
+          "viewExamples": "Voir les exemples",
           "empty": "Aucun moteur ne correspond encore à vos filtres. Ajustez-les ou effacez la recherche pour explorer tout le catalogue.",
           "disclaimer": "Les logos sont utilisés à titre descriptif uniquement. Les marques appartiennent à leurs propriétaires.",
           "descriptionFallback": "Moteur polyvalent prêt pour les workflows « prix avant génération ». Consultez les spécifications et lancez vos rendus en toute confiance."

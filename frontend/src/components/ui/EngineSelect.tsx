@@ -18,6 +18,9 @@ import { Chip } from './Chip';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import type { FalEngineEntry } from '@/config/falEngines';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { Link } from '@/i18n/navigation';
+import { normalizeEngineId } from '@/lib/engine-alias';
+import { DEFAULT_ENGINE_GUIDE, type EngineGuideEntry } from '@/lib/engine-guides';
 
 const MODE_LABELS: Record<Mode, string> = {
   t2v: 'Text -> Video',
@@ -62,11 +65,6 @@ const VEO_ENGINE_IDS = ['veo-3-1', 'veo-3-1-fast'] as const;
 const VEO_ENGINE_SET = new Set<string>(VEO_ENGINE_IDS);
 const MODE_VARIANT_ENGINE_IDS = ['veo-3-1-first-last'] as const;
 const MODE_VARIANT_ENGINE_SET = new Set<string>(MODE_VARIANT_ENGINE_IDS);
-
-type EngineGuideEntry = {
-  description: string;
-  badges: string[];
-};
 
 const DEFAULT_MODE_OPTIONS: Mode[] = ['t2v', 'i2v', 'r2v'];
 
@@ -133,59 +131,6 @@ interface EngineSelectProps {
   className?: string;
 }
 
-const DEFAULT_ENGINE_GUIDE: Record<string, EngineGuideEntry> = {
-  'pika-text-to-video': {
-    description:
-      'Pika 2.2 handles stylized prompts or uploaded stills in one card — perfect for quick loops and product explainers.',
-    badges: ['Text prompts', 'Image input', 'Fast queue'],
-  },
-  'sora-2': {
-    description:
-      'OpenAI Sora 2 handles cinematic narratives with lip-sync and audio - ideal for hero renders.',
-    badges: ['Audio native', 'Cinematic', 'Remix'],
-  },
-  'sora-2-pro': {
-    description:
-      'Sora 2 Pro unlocks higher resolutions, synced dialogue, and image-to-video control for top-tier productions.',
-    badges: ['1080p', 'Audio native', 'Lip-sync'],
-  },
-  'veo-3-1': {
-    description:
-      'Veo 3.1 now handles direct prompts or reference stills. Swap between text-to-video and image-to-video without leaving the queue.',
-    badges: ['Text prompts', 'Multi reference', 'Audio native'],
-  },
-  'veo-3-1-fast': {
-    description:
-      'Veo 3.1 Fast now handles quick text prompts or single-image animations with optional audio.',
-    badges: ['Text prompts', 'Image-to-video', 'Audio option'],
-  },
-  'veo-3-1-first-last': {
-    description:
-      'Upload first and last frames, describe the bridge, and toggle between Veo 3.1 and Veo 3.1 Fast for the transition.',
-    badges: ['Two frames', 'Audio option', 'Standard & Fast'],
-  },
-  'minimax-hailuo-02-text': {
-    description:
-      'Hailuo 02 Standard handles stylized text prompts or animated reference stills with prompt optimiser support.',
-    badges: ['Prompt optimiser', 'Image input', '6–10s silent'],
-  },
-  'kling-2-5-turbo': {
-    description:
-      'Kling 2.5 Turbo lives in one card with Pro text, Pro image, and Standard image-to-video modes for cinematic shots or budget loops.',
-    badges: ['Text prompts', 'Image-to-video', 'Standard tier'],
-  },
-  'wan-2-5': {
-    description:
-      'Wan 2.5 handles 5 or 10 second clips with optional background audio plus prompt expansion when you need extra detail.',
-    badges: ['Audio option', '5s or 10s', '480p–1080p'],
-  },
-  'wan-2-6': {
-    description:
-      'Wan 2.6 merges text, image, and reference-to-video in one card with multi-shot prompting and 720p/1080p tiers.',
-    badges: ['Text prompts', 'Image input', 'Reference video'],
-  },
-};
-
 const DEFAULT_ENGINE_SELECT_COPY = {
   avgDuration: 'Avg {value}',
   choose: 'Choose engine',
@@ -203,6 +148,8 @@ const DEFAULT_ENGINE_SELECT_COPY = {
     modeAll: 'Mode: All',
     modeValue: 'Mode: {value}',
     resolutionAll: 'Resolution: All',
+    viewModel: 'View model page',
+    viewExamples: 'View examples',
     empty:
       'No engines match your filters yet. Adjust the filters or clear the search to explore the full catalogue.',
     disclaimer: 'Logos are used for descriptive purposes only. Trademarks belong to their respective owners.',
@@ -865,6 +812,8 @@ function BrowseEnginesModal({
   engineMeta,
 }: BrowseEnginesModalProps) {
   const modalCopy = copy.modal;
+  const viewModelLabel = modalCopy.viewModel ?? DEFAULT_ENGINE_SELECT_COPY.modal.viewModel;
+  const viewExamplesLabel = modalCopy.viewExamples ?? DEFAULT_ENGINE_SELECT_COPY.modal.viewExamples;
   const [portalElement, setPortalElement] = useState<HTMLDivElement | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [modeFilter, setModeFilter] = useState<ModeFilter>('all');
@@ -906,7 +855,34 @@ function BrowseEnginesModal({
     engines.forEach((engine) => {
       engine.resolutions?.forEach((resolution) => set.add(resolution));
     });
-    return Array.from(set).sort((a, b) => a.localeCompare(b));
+
+    const resolutionRank = (value: Resolution) => {
+      const raw = value.toString().toLowerCase();
+      const explicit: Record<string, number> = {
+        auto: -1,
+        portrait_hd: 720,
+        landscape_hd: 720,
+        square_hd: 720,
+      };
+
+      if (raw in explicit) return explicit[raw];
+      if (raw.endsWith('k')) {
+        const numeric = Number(raw.replace('k', ''));
+        return Number.isFinite(numeric) ? numeric * 1000 : 0;
+      }
+
+      const match = raw.match(/(\d+)\s*p/);
+      if (match) return Number(match[1]);
+      const fallback = Number(raw.replace(/[^\d.]/g, ''));
+      return Number.isFinite(fallback) ? fallback : 0;
+    };
+
+    return Array.from(set).sort((a, b) => {
+      const aRank = resolutionRank(a);
+      const bRank = resolutionRank(b);
+      if (aRank !== bRank) return bRank - aRank;
+      return a.localeCompare(b);
+    });
   }, [engines]);
 
   const searchValue = searchTerm.trim().toLowerCase();
@@ -1072,66 +1048,104 @@ function BrowseEnginesModal({
               const badges = guide?.badges ?? [];
               const labsBadgeNeeded = engine.isLab && !badges.some((badge) => badge === 'Labs');
               const combinedBadges = labsBadgeNeeded ? [...badges, 'Labs'] : badges;
-              const meta = engineMeta?.get(engine.id);
+              const canonicalId = normalizeEngineId(engine.id) ?? engine.id;
+              const meta = engineMeta?.get(canonicalId);
               const name = meta?.marketingName ?? engine.label ?? engine.id;
               const versionLabel = meta?.versionLabel ?? engine.version ?? '-';
               const description = guide?.description ?? meta?.seo.description ?? modalCopy.descriptionFallback;
               const avgDurationLabel = formatAvgDuration(engine.avgDurationMs);
+              const modelSlug = meta?.modelSlug;
+              const modelHref = modelSlug ? `/models/${modelSlug}` : null;
+              const allowExamples = meta?.category !== 'image' && meta?.type !== 'image';
+              const examplesHref = modelSlug && allowExamples ? `/examples?engine=${encodeURIComponent(modelSlug)}` : null;
+              const showModelLink = Boolean(modelHref);
+              const showExamplesLink = Boolean(examplesHref);
 
               return (
                 <Card
                   key={engine.id}
                   className={clsx(
-                    'flex cursor-pointer flex-col gap-4 p-5 transition hover:border-text-muted hover:bg-surface-2 hover:shadow-float',
+                    'flex cursor-pointer flex-col gap-4 overflow-hidden p-5 transition hover:border-text-muted hover:bg-surface-2 hover:shadow-float',
                     isSelected && 'border-brand bg-surface-2 shadow-float'
                   )}
                   onClick={() => onSelect(engine.id)}
                 >
-                  <div className="flex items-start gap-4">
-                    <EngineIcon engine={engine} size={44} className="shrink-0" />
-                    <div className="flex flex-1 items-start justify-between gap-4">
-                      <div className="space-y-1">
-                        <h3 className="text-base font-semibold text-text-primary">{name}</h3>
-                        <p className="text-xs uppercase tracking-micro text-text-muted">
-                          {engine.provider} - {versionLabel}
-                        </p>
+                  <div className="flex flex-1 flex-col gap-4">
+                    <div className="flex items-start gap-4">
+                      <EngineIcon engine={engine} size={44} className="shrink-0" />
+                      <div className="flex flex-1 items-start justify-between gap-4">
+                        <div className="space-y-1">
+                          <h3 className="text-base font-semibold text-text-primary">{name}</h3>
+                          <p className="text-xs uppercase tracking-micro text-text-muted">
+                            {engine.provider} - {versionLabel}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 text-[11px] text-text-muted">
+                          {avgDurationLabel && (
+                            <span className="rounded-input border border-border px-2 py-0.5">
+                              {copy.avgDuration.replace('{value}', avgDurationLabel)}
+                            </span>
+                          )}
+                          {engine.status && (
+                            <span className="rounded-input border border-border px-2 py-0.5 uppercase tracking-micro">
+                              {engine.status}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex flex-col items-end gap-1 text-[11px] text-text-muted">
-                        {avgDurationLabel && (
-                          <span className="rounded-input border border-border px-2 py-0.5">
-                            {copy.avgDuration.replace('{value}', avgDurationLabel)}
-                          </span>
+                    </div>
+                    <p className="text-sm leading-6 text-text-secondary">{description}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {combinedBadges.map((badge) => (
+                        <span
+                          key={badge}
+                          className="inline-flex items-center rounded-full bg-bg px-3 py-1 text-[12px] font-medium text-text-secondary"
+                        >
+                          {badge}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-4 text-xs text-text-muted">
+                      <span>
+                        Modes:{' '}
+                        {getModeDisplayOrder(engine.id, engine.modes)
+                          .map((entry) => getModeLabel(engine.id, entry, modeLabelOverrides))
+                          .join(' / ')}
+                      </span>
+                      <span>
+                        Max {engine.maxDurationSec}s / Res {engine.resolutions.join(' / ')}
+                      </span>
+                    </div>
+                  </div>
+                  {(showModelLink || showExamplesLink) && (
+                    <div className="mt-auto -mx-5 -mb-5 border-t border-hairline">
+                      <div className="flex text-xs font-semibold">
+                        {modelHref && (
+                          <Link
+                            href={modelHref}
+                            className={clsx(
+                              'flex-1 px-4 py-2 text-center text-text-secondary transition hover:text-text-primary',
+                              showExamplesLink ? 'border-r border-hairline' : null,
+                              'bg-surface',
+                              'hover:bg-surface-2'
+                            )}
+                            onClick={(event) => event.stopPropagation()}
+                          >
+                            {viewModelLabel}
+                          </Link>
                         )}
-                        {engine.status && (
-                          <span className="rounded-input border border-border px-2 py-0.5 uppercase tracking-micro">
-                            {engine.status}
-                          </span>
+                        {examplesHref && (
+                          <Link
+                            href={examplesHref}
+                            className="flex-1 bg-surface px-4 py-2 text-center text-text-secondary transition hover:bg-surface-2 hover:text-text-primary"
+                            onClick={(event) => event.stopPropagation()}
+                          >
+                            {viewExamplesLabel}
+                          </Link>
                         )}
                       </div>
                     </div>
-                  </div>
-                  <p className="text-sm leading-6 text-text-secondary">{description}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {combinedBadges.map((badge) => (
-                      <span
-                        key={badge}
-                        className="inline-flex items-center rounded-full bg-bg px-3 py-1 text-[12px] font-medium text-text-secondary"
-                      >
-                        {badge}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-text-muted">
-                    <span>
-                      Modes:{' '}
-                      {getModeDisplayOrder(engine.id, engine.modes)
-                        .map((entry) => getModeLabel(engine.id, entry, modeLabelOverrides))
-                        .join(' / ')}
-                    </span>
-                    <span>
-                      Max {engine.maxDurationSec}s / Res {engine.resolutions.join(' / ')}
-                    </span>
-                  </div>
+                  )}
                 </Card>
               );
             })}

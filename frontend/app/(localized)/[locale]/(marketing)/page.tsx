@@ -11,14 +11,12 @@ import { TextLink } from '@/components/ui/TextLink';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
 import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
-import { MosaicBackdrop, type MosaicBackdropMedia } from '@/components/marketing/MosaicBackdrop';
-import type { CompareEngineCard } from '@/components/marketing/CompareEnginesCarousel';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { PartnerBadges } from '@/components/marketing/PartnerBadges';
 import { getHomepageSlots, HERO_SLOT_KEYS } from '@/server/homepage';
 import { normalizeEngineId } from '@/lib/engine-alias';
-import { listExamples } from '@/server/videos';
 import { listFalEngines } from '@/config/falEngines';
+import type { CompareEngineEntry } from '@/components/marketing/CompareEnginesCarousel';
 import type { EngineCaps } from '@/types/engines';
 import type { AppLocale } from '@/i18n/locales';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
@@ -370,6 +368,11 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
   const trust = home.trust;
   const waysSection = home.waysSection;
   const compareCopy = home.compare ?? null;
+  const compareCarouselCopy = {
+    ...(compareCopy ?? {}),
+    viewModel: dictionary.workspace?.generate?.engineSelect?.modal?.viewModel,
+    viewExamples: dictionary.workspace?.generate?.engineSelect?.modal?.viewExamples,
+  };
   const homepageSlots = await getHomepageSlots();
   const falEngines = listFalEngines();
   const compareEngineIndex = new Map(falEngines.map((entry) => [entry.modelSlug, entry]));
@@ -378,35 +381,13 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
     if (!entry) {
       return null;
     }
-    const meta = COMPARE_ENGINE_META[slug] ?? { maxDuration: '—', audio: '—', bestFor: '—' };
-    const name = entry.cardTitle ?? entry.marketingName ?? entry.engine.label;
-    const bg = entry.media?.imagePath ?? '/hero/veo3.jpg';
     return {
-      key: slug,
-      name,
-      maxDuration: meta.maxDuration,
-      audio: meta.audio,
-      bestFor: meta.bestFor,
-      href: { pathname: '/models/[slug]', params: { slug } },
-      bg,
+      engine: entry,
+      meta: COMPARE_ENGINE_META[slug] ?? null,
     };
   })
     .filter(Boolean)
-    .map((item) => item as CompareEngineCard);
-  const BACKDROP_EXAMPLE_LIMIT = 72;
-  const proofBackgroundMedia = (await listExamples('date-desc', BACKDROP_EXAMPLE_LIMIT)).flatMap<MosaicBackdropMedia>((video) => {
-    const posterUrl = video.thumbUrl ?? null;
-    if (!posterUrl) {
-      return [];
-    }
-    return [
-      {
-        posterUrl,
-        videoUrl: video.videoUrl ?? null,
-        alt: video.promptExcerpt ?? video.prompt ?? null,
-      },
-    ];
-  });
+    .map((item) => item as CompareEngineEntry);
 
   const heroTileConfigs = HERO_SLOT_KEYS.map((key, index) => {
     const slot = homepageSlots.hero.find((entry) => entry.key === key);
@@ -614,7 +595,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         </p>
       </section>
 
-      <section className="border-t border-hairline bg-surface/90 text-text-secondary section-compact">
+      <section className="border-t border-hairline bg-surface text-text-secondary section-compact">
         <div className="container-page flex max-w-6xl flex-col items-center gap-4 text-center">
           <span className="rounded-pill border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
             {worksWith.label}
@@ -628,27 +609,28 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         </div>
       </section>
 
-      <section className="border-t border-hairline bg-surface text-left section">
-        <div className="container-page flex max-w-7xl flex-col-reverse items-center gap-[var(--grid-gap-xl)] text-center lg:flex-row lg:items-center lg:text-left">
-          <div className="w-full sm:max-w-[62ch] stack-gap-lg lg:w-[40%]">
+      <section className="border-t border-hairline bg-bg text-left section pt-10 pb-0 sm:pt-12 lg:pt-16">
+        <div className="container-page flex max-w-7xl flex-col-reverse items-center gap-[var(--grid-gap-xl)] text-center lg:flex-row lg:items-stretch">
+          <div className="w-full sm:max-w-[62ch] stack-gap-lg text-center lg:w-[40%] lg:self-center">
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{heroScreenshot.title}</h2>
             <p className="text-sm text-text-secondary sm:text-base">{heroScreenshot.body}</p>
           </div>
-          <div className="relative w-full max-w-4xl">
-            <div className="relative mx-auto aspect-[3/2] w-full overflow-hidden rounded-[48px] border border-hairline bg-surface shadow-[0_60px_160px_-60px_rgba(28,37,65,0.6)]">
+          <div className="relative w-full max-w-6xl lg:w-[65%] lg:max-w-none lg:self-end -mt-2 sm:-mt-4 lg:-mt-6">
+            <div className="overflow-hidden rounded-t-[16px] shadow-float">
               <Image
-                src="/assets/marketing/monitor-mockup-app.png"
+                src="/assets/marketing/app-dashboard.webp"
                 alt={heroScreenshot.alt}
-                fill
-                sizes="(min-width: 1280px) 960px, (min-width: 1024px) 720px, 100vw"
+              width={3072}
+              height={2170}
+                sizes="(min-width: 1280px) 1040px, (min-width: 1024px) 820px, 100vw"
                 priority
-                className="object-contain object-center lg:scale-[1.08]"
+                className="w-full h-auto"
               />
             </div>
           </div>
         </div>
       </section>
-      <MosaicBackdrop media={proofBackgroundMedia} className="section">
+      <section className="border-t border-hairline bg-surface section">
         <div className="stack-gap-lg">
           <section id="how-it-works" className="container-page max-w-6xl scroll-mt-32">
             <ProofTabs pricingRules={pricingRulesLite} />
@@ -664,19 +646,28 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
               ))}
             </div>
           </section>
+        </div>
+      </section>
 
-          <ExamplesOrbitCallout
-            engines={orbitEngines}
-            heading={examplesCalloutCopy.title}
-            description={examplesCalloutCopy.subtitle ?? ''}
-            ctaLabel={examplesCalloutCopy.cta}
-            eyebrow={examplesCalloutCopy.eyebrow}
-          />
-          <CompareEnginesCarousel engines={compareEngines} copy={compareCopy ?? undefined} />
+      <section className="border-t border-hairline bg-bg section">
+        <ExamplesOrbitCallout
+          engines={orbitEngines}
+          heading={examplesCalloutCopy.title}
+          description={examplesCalloutCopy.subtitle ?? ''}
+          ctaLabel={examplesCalloutCopy.cta}
+          eyebrow={examplesCalloutCopy.eyebrow}
+        />
+      </section>
 
+      <section className="border-t border-hairline bg-surface section">
+        <CompareEnginesCarousel engines={compareEngines} copy={compareCarouselCopy} />
+      </section>
+
+      <section className="border-t border-hairline bg-bg section">
+        <div className="stack-gap-lg">
           <section className="container-page max-w-6xl">
-            <div className="mb-6 flex items-center justify-between gap-4">
-              <div>
+            <div className="mb-6 flex items-center justify-center gap-4">
+              <div className="text-center">
                 <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{waysSection.title}</h2>
                 <p className="text-sm text-text-secondary sm:text-base">{waysSection.subtitle}</p>
               </div>
@@ -739,13 +730,13 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
             </div>
           </section>
         </div>
-      </MosaicBackdrop>
-      <section className="container-page section max-w-6xl">
-        <div className="rounded-card border border-hairline bg-surface/70 p-6 shadow-card">
+      </section>
+      <section className="container-page section max-w-6xl pb-6">
+        <div className="rounded-card border border-hairline bg-surface/70 p-6 text-center shadow-card">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Partners</p>
           <h2 className="mt-2 text-lg font-semibold text-text-primary">Featured on</h2>
-          <div className="mt-4">
-            <PartnerBadges className="opacity-90 transition hover:opacity-100" />
+          <div className="mt-4 flex justify-center">
+            <PartnerBadges className="justify-center opacity-90 transition hover:opacity-100" />
           </div>
         </div>
       </section>

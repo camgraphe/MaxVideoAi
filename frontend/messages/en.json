@@ -701,7 +701,7 @@
   },
     "note": "",
     "detail": {
-      "backLabel": "← Back to models",
+      "backLabel": "← Back",
       "examplesLinkLabel": "See examples",
       "pricingLinkLabel": "Compare pricing",
       "overviewTitle": "Overview",
@@ -1506,6 +1506,8 @@
           "modeAll": "Mode: All",
           "modeValue": "Mode: {value}",
           "resolutionAll": "Resolution: All",
+          "viewModel": "View model page",
+          "viewExamples": "View examples",
           "empty": "No engines match your filters yet. Adjust the filters or clear the search to explore the full catalogue.",
           "disclaimer": "Logos are used for descriptive purposes only. Trademarks belong to their respective owners.",
           "descriptionFallback": "Versatile engine ready for price-before-you-generate workflows. Review specs and run with confidence."

@@ -269,7 +269,7 @@ export function HeroMediaTile({
           }}
         >
           <div
-            className="relative w-full max-w-4xl rounded-[32px] border border-surface-on-media-20 bg-surface-glass-95 p-4 text-left shadow-2xl backdrop-blur"
+            className="relative w-full max-w-4xl rounded-[32px] border border-surface-on-media-20 bg-surface-glass-95 p-4 text-left shadow-float"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4 border-b border-hairline pb-4 pr-14">

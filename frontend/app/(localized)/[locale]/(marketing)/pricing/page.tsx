@@ -411,7 +411,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           </div>
         </section>
 
-        <section className="rounded-card border border-hairline bg-surface/80 p-4 text-sm text-text-secondary shadow-card">
+        <section className="rounded-card border border-hairline bg-surface p-4 text-sm text-text-secondary shadow-card">
           <div className="flex flex-wrap items-center gap-4">
             <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{exploreTitle}</span>
             <div className="flex flex-wrap gap-2">
@@ -431,7 +431,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           </div>
         </section>
 
-        <section className="rounded-card border border-hairline bg-surface/90 p-6 text-sm text-text-secondary shadow-card">
+        <section className="rounded-card border border-hairline bg-surface p-6 text-sm text-text-secondary shadow-card">
           <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
             {content.calculator?.title ?? 'Preview prices in the app'}
           </h2>

@@ -24,6 +24,7 @@ import { listEnginePricingOverrides } from '@/server/engine-settings';
 import { serializeJsonLd } from '../model-jsonld';
 import { ButtonLink } from '@/components/ui/Button';
 import { TextLink } from '@/components/ui/TextLink';
+import { BackLink } from '@/components/video/BackLink';
 
 type PageParams = {
   params: {
@@ -1103,6 +1104,7 @@ function Sora2PageLayout({
   const whatFlowSteps = copy.whatFlowSteps;
   const quickStartTitle = copy.quickStartTitle;
   const quickStartBlocks = copy.quickStartBlocks;
+  const breadcrumbModelLabel = localizedContent.marketingName ?? engine.marketingName ?? heroTitle;
   const howToLatamTitle = copy.howToLatamTitle;
   const howToLatamSteps = copy.howToLatamSteps;
   const specSections = applyPricingSection(copy.specSections, locale, pricingItems);
@@ -1225,9 +1227,23 @@ function Sora2PageLayout({
       <main className="container-page max-w-6xl section">
         <div className="stack-gap-lg">
           <div className="stack-gap-sm">
-            <Link href={localizeModelsPath()} className="text-sm font-semibold text-brand hover:text-brandHover">
-              {backLabel}
-            </Link>
+            <nav className="flex flex-wrap items-center gap-2 text-sm text-text-muted">
+              <BackLink
+                href={localizeModelsPath()}
+                label={backLabel}
+                className="font-semibold text-brand hover:text-brandHover"
+              />
+              <span aria-hidden className="text-text-muted">
+                /
+              </span>
+              <Link href={localizeModelsPath()} className="font-semibold text-text-secondary hover:text-text-primary">
+                {resolvedBreadcrumb.models}
+              </Link>
+              <span aria-hidden className="text-text-muted">
+                /
+              </span>
+              <span className="font-semibold text-text-muted">{breadcrumbModelLabel}</span>
+            </nav>
 
             <section className="stack-gap rounded-3xl border border-hairline bg-surface/80 p-6 shadow-card sm:p-8">
           <div className="stack-gap-lg">

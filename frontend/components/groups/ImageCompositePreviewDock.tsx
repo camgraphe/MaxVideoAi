@@ -225,7 +225,7 @@ export function ImageCompositePreviewDock({
             )}
           </div>
           <div className="mt-3 flex w-full">
-            <div className="flex w-full items-center justify-center rounded-card border border-hairline/50 bg-surface-glass-80 px-3 py-2 shadow-sm backdrop-blur">
+            <div className="flex w-full items-center justify-center rounded-card border border-hairline/50 bg-surface-glass-80 px-3 py-2 shadow-sm">
               {toolbar}
             </div>
           </div>

@@ -47,42 +47,6 @@
   }
 }
 
-@keyframes portalBreath {
-  0%,
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-    box-shadow: 0 30px 110px -58px rgba(13, 17, 28, 0.7);
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.06);
-    box-shadow: 0 46px 150px -60px rgba(18, 22, 36, 0.85);
-  }
-}
-
-@keyframes portalRipple {
-  0%,
-  100% {
-    transform: scale(0.82);
-    opacity: 0.26;
-  }
-  50% {
-    transform: scale(1.08);
-    opacity: 0.52;
-  }
-}
-
-@keyframes portalWave {
-  0%,
-  100% {
-    transform: rotate(0deg) scale(0.95);
-    opacity: 0.4;
-  }
-  50% {
-    transform: rotate(180deg) scale(1.05);
-    opacity: 0.6;
-  }
-}
-
 .orbitField {
   --orbit-spin: 0deg;
   animation: orbitSpin 36s linear infinite;
@@ -122,64 +86,40 @@
   .orbitField {
     display: none;
   }
-  .portalButton {
+}
+
+@media (max-width: 1024px) {
+  .orbitField,
+  .orbitIcon,
+  .orbitLine {
     animation: none;
   }
 }
 
-.portalButton {
-  transform: translate(-50%, -50%);
-  border: 1px solid rgba(255, 255, 255, 0.48);
-  background:
-    radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.42), rgba(226, 232, 240, 0.12) 55%, rgba(99, 107, 131, 0.14)),
-    radial-gradient(circle at 70% 70%, rgba(45, 50, 65, 0.95), rgba(18, 22, 35, 0.92) 65%, rgba(12, 15, 24, 0.92));
-  box-shadow: 0 28px 100px -60px rgba(18, 21, 30, 0.7);
-  overflow: hidden;
-  transition: transform 240ms ease, box-shadow 240ms ease;
-  animation: portalBreath 7s ease-in-out infinite;
+.cardGlow {
+  background: radial-gradient(circle at top, rgba(66, 106, 174, 0.22), transparent 58%);
 }
 
-.portalButton::before,
-.portalButton::after {
-  content: '';
-  position: absolute;
-  border-radius: 9999px;
+:global([data-theme='dark']) .cardGlow {
+  background: radial-gradient(circle at top, rgba(91, 124, 250, 0.22), transparent 58%);
 }
 
-.portalButton::before {
-  inset: -18%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.32), transparent 65%);
-  opacity: 0.42;
-  animation: portalRipple 8s ease-in-out infinite;
-}
-
-.portalButton::after {
-  inset: -6%;
-  background: conic-gradient(
-    from 45deg,
-    rgba(255, 255, 255, 0.16),
-    rgba(136, 142, 168, 0.32),
-    rgba(255, 255, 255, 0.12),
-    rgba(102, 109, 135, 0.28),
-    rgba(255, 255, 255, 0.16)
+.convergenceField {
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(66, 106, 174, 0.22) 0deg 0.8deg,
+    transparent 0.8deg 8deg
   );
-  filter: blur(4px);
-  opacity: 0.46;
-  animation: portalWave 12s linear infinite;
-  mix-blend-mode: screen;
-  transition: opacity 220ms ease;
+  mask-image: radial-gradient(circle, transparent 0 32%, rgba(0, 0, 0, 0.8) 40%, transparent 72%);
+  opacity: 0.35;
+  filter: blur(0.2px);
 }
 
-.portalButton:hover {
-  animation: none;
-  transform: translate(-50%, -50%) scale(1.12);
-  box-shadow: 0 44px 150px -60px rgba(20, 24, 38, 0.85);
-}
-
-.portalButton:hover::before {
-  opacity: 0.55;
-}
-
-.portalButton:hover::after {
-  opacity: 0.62;
+:global([data-theme='dark']) .convergenceField {
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(91, 124, 250, 0.24) 0deg 0.8deg,
+    transparent 0.8deg 8deg
+  );
+  opacity: 0.42;
 }

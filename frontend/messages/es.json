@@ -785,7 +785,7 @@
     },
     "note": "Los precios de Fal cambian rápido; confirma la pastilla Precio-Antes o tu clave directa antes de lanzar.",
     "detail": {
-      "backLabel": "← Volver a los modelos",
+      "backLabel": "← Volver",
       "examplesLinkLabel": "Ver ejemplos",
       "pricingLinkLabel": "Comparar precios",
       "overviewTitle": "Resumen",
@@ -1503,6 +1503,8 @@
           "modeAll": "Modo: Todos",
           "modeValue": "Modo: {value}",
           "resolutionAll": "Resolución: Todas",
+          "viewModel": "Ver página del modelo",
+          "viewExamples": "Ver ejemplos",
           "empty": "Ningún motor coincide todavía con tus filtros. Ajusta los filtros o borra la búsqueda para explorar todo el catálogo.",
           "disclaimer": "Los logotipos se usan solo con fines descriptivos. Las marcas pertenecen a sus respectivos dueños.",
           "descriptionFallback": "Motor versátil listo para flujos «precio antes de generar». Revisa las especificaciones y lanza tus renders con confianza."
