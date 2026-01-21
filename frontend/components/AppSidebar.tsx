@@ -229,7 +229,7 @@ export function AppSidebar() {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className={clsx(
-        'relative hidden min-h-[calc(100vh-var(--header-height))] md:flex flex-col border-r border-hairline bg-surface/70 backdrop-blur-md transition-[width] duration-300 ease-in-out',
+        'relative hidden min-h-[calc(100vh-var(--header-height))] md:flex flex-col border-r border-hairline bg-surface transition-[width] duration-300 ease-in-out',
         collapsed ? 'w-[78px]' : 'w-64'
       )}
     >

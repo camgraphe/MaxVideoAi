@@ -129,6 +129,7 @@ interface EngineSelectProps {
   showModeSelect?: boolean;
   modeLayout?: 'inline' | 'stacked';
   variant?: 'card' | 'bar';
+  density?: 'default' | 'compact';
   className?: string;
 }
 
@@ -232,6 +233,7 @@ export function EngineSelect({
   showModeSelect = true,
   modeLayout = 'inline',
   variant = 'card',
+  density = 'default',
   className,
 }: EngineSelectProps) {
   const { t } = useI18n();
@@ -502,6 +504,7 @@ export function EngineSelect({
 
   const isBarVariant = variant === 'bar';
   const isStackedMode = modeLayout === 'stacked';
+  const isCompact = density === 'compact';
   const shouldShowModes = showModeSelect && displayedModeOptions.length > 0;
 
   const activeOptionId =
@@ -515,8 +518,8 @@ export function EngineSelect({
   const containerClassName = clsx(
     isBarVariant
       ? isStackedMode
-        ? 'flex min-w-0 flex-col gap-2'
-        : 'flex min-w-0 flex-wrap items-center gap-2 sm:gap-4'
+        ? clsx('flex min-w-0 flex-col', isCompact ? 'gap-1.5' : 'gap-2')
+        : clsx('flex min-w-0 flex-wrap items-center gap-2', isCompact ? 'sm:gap-3' : 'sm:gap-4')
       : 'relative stack-gap-lg p-5',
     className
   );
@@ -546,16 +549,16 @@ export function EngineSelect({
           'flex flex-wrap',
           isBarVariant
             ? isStackedMode
-              ? 'w-full items-start gap-2 sm:gap-4'
-              : 'flex-1 items-center gap-2 sm:gap-4'
+              ? clsx('w-full items-start gap-2', isCompact ? 'sm:gap-3' : 'sm:gap-4')
+              : clsx('flex-1 items-center gap-2', isCompact ? 'sm:gap-3' : 'sm:gap-4')
             : 'gap-6'
         )}
       >
-        <div className={clsx('flex-1 min-w-0', isBarVariant ? 'space-y-1.5' : 'space-y-2 sm:min-w-[240px]')}>
+        <div className={clsx('flex-1 min-w-0', isBarVariant ? (isCompact ? 'space-y-1' : 'space-y-1.5') : 'space-y-2 sm:min-w-[240px]')}>
           <label className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[12px]')}>
             {copy.choose}
           </label>
-          <div className="flex min-w-0 flex-col gap-2 2xl:flex-row 2xl:items-stretch">
+          <div className={clsx('flex min-w-0 flex-col 2xl:flex-row 2xl:items-stretch', isCompact ? 'gap-1.5' : 'gap-2')}>
             <button
               id={triggerId}
               ref={triggerRef}
@@ -605,11 +608,11 @@ export function EngineSelect({
           </div>
 
           {showVariantSelector && (
-            <div className={clsx(isBarVariant ? 'space-y-1' : 'space-y-2')}>
+            <div className={clsx(isBarVariant ? (isCompact ? 'space-y-0.5' : 'space-y-1') : 'space-y-2')}>
               <span className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[11px]')}>
                 {copy.variant}
               </span>
-              <div className="flex flex-wrap gap-2">
+              <div className={clsx('flex flex-wrap', isCompact ? 'gap-1.5' : 'gap-2')}>
                 {variantEngines.map((entry) => {
                   const active = entry.id === selectedEngine.id;
                   return (
@@ -634,11 +637,11 @@ export function EngineSelect({
           )}
 
           {showModeVariantSelector && (
-            <div className={clsx(isBarVariant ? 'space-y-1' : 'space-y-2')}>
+            <div className={clsx(isBarVariant ? (isCompact ? 'space-y-0.5' : 'space-y-1') : 'space-y-2')}>
               <span className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[11px]')}>
                 {copy.variant}
               </span>
-              <div className="flex flex-wrap gap-2">
+              <div className={clsx('flex flex-wrap', isCompact ? 'gap-1.5' : 'gap-2')}>
                 {modeVariantOptions.map((candidate) => {
                   const active = mode === candidate;
                   return (

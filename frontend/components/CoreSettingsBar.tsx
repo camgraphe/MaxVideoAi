@@ -86,10 +86,10 @@ function SelectGroup({
 }) {
   if (!options.length) return null;
   return (
-    <label className={clsx('flex min-w-0 flex-col gap-1', className)}>
+    <div className={clsx('flex min-w-0 flex-col gap-1', className)}>
       <span className="text-[10px] uppercase tracking-micro text-text-muted">{label}</span>
       <SelectMenu options={options} value={value} onChange={onChange} disabled={disabled} />
-    </label>
+    </div>
   );
 }
 

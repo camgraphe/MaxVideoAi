@@ -81,6 +81,41 @@ main {
   @apply ring-2 ring-offset-2 ring-offset-bg ring-ring;
 }
 
+.chip-price {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--brand);
+  color: var(--brand);
+  background-color: var(--surface);
+}
+
+.chip-price::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--brand);
+}
+
+[data-theme="dark"] .member-status-pill[aria-pressed="true"] {
+  background: var(--brand) !important;
+  color: var(--on-brand) !important;
+  box-shadow: 0 10px 25px -12px rgba(91, 124, 250, 0.6) !important;
+}
+
+[data-theme="dark"] .member-status-pill[aria-pressed="true"]:hover {
+  background: var(--brand-hover) !important;
+}
+
+[data-theme="dark"] .price-estimator-border {
+  border-color: var(--hairline);
+}
+
+[data-theme="dark"] .price-estimator-surface {
+  box-shadow: none;
+}
+
 @layer components {
   .container-page {
     @apply mx-auto w-full px-4 sm:px-6 lg:px-8;

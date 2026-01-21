@@ -12,6 +12,8 @@ import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import { selectPricingRule, type PricingRuleLite } from '@/lib/pricing-rules';
 import { applyEnginePricingOverride, buildPricingDefinition } from '@/lib/pricing-definition';
 import { Button } from '@/components/ui/Button';
+import { EngineSelect } from '@/components/ui/EngineSelect';
+import { SelectMenu, type SelectOption } from '@/components/ui/SelectMenu';
 
 type MemberTier = 'Member' | 'Plus' | 'Pro';
 
@@ -86,6 +88,28 @@ type EngineOptionOverrides = {
   sortIndexOverride?: number;
   showDuration?: boolean;
 };
+
+function SelectGroup({
+  label,
+  options,
+  value,
+  onChange,
+  className,
+}: {
+  label: string;
+  options: SelectOption[];
+  value: SelectOption['value'];
+  onChange: (value: SelectOption['value']) => void;
+  className?: string;
+}) {
+  if (!options.length) return null;
+  return (
+    <div className={clsx('flex min-w-0 flex-col gap-1', className)}>
+      <span className="text-[10px] uppercase tracking-micro text-text-muted">{label}</span>
+      <SelectMenu options={options} value={value} onChange={onChange} />
+    </div>
+  );
+}
 
 function centsToDollars(cents?: number | null) {
   if (typeof cents !== 'number' || Number.isNaN(cents)) return null;
@@ -428,8 +452,28 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
     });
   }, [descriptions, kernel, pricingRules, pricingEngineMap]);
 
+  const engineSelectOptions = useMemo(() => {
+    return engineOptions
+      .map((option) => {
+        const entry = FAL_ENGINE_REGISTRY.find((candidate) => candidate.id === option.baseEngineId);
+        const engineCaps = entry?.engine;
+        if (!engineCaps) return null;
+        if (engineCaps.id === option.id) {
+          return { ...engineCaps, availability: option.availability };
+        }
+        return {
+          ...engineCaps,
+          id: option.id,
+          label: option.label,
+          availability: option.availability,
+        };
+      })
+      .filter((entry): entry is EngineCaps => Boolean(entry));
+  }, [engineOptions]);
+
   const [selectedEngineId, setSelectedEngineId] = useState(() => engineOptions[0]?.id ?? '');
   const selectedEngine = useMemo(() => engineOptions.find((option) => option.id === selectedEngineId) ?? engineOptions[0], [engineOptions, selectedEngineId]);
+  const [engineMode, setEngineMode] = useState<Mode>('t2v');
 
   useEffect(() => {
     if (!engineOptions.length) return;
@@ -503,6 +547,30 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
       ? selectedEngine.durationOptions.filter((option) => option.value <= cap)
       : selectedEngine.durationOptions;
   }, [selectedEngine, selectedResolution]);
+
+  const durationSelectOptions = useMemo<SelectOption[]>(() => {
+    if (!selectedEngine) return [];
+    if (filteredDurationOptions.length) {
+      return filteredDurationOptions.map((option) => ({
+        value: option.value,
+        label: option.label,
+      }));
+    }
+    const min = selectedEngine.minDuration;
+    const max = selectedEngine.maxDuration;
+    return Array.from({ length: max - min + 1 }, (_, index) => {
+      const value = min + index;
+      return { value, label: `${value}s` };
+    });
+  }, [filteredDurationOptions, selectedEngine]);
+
+  const resolutionSelectOptions = useMemo<SelectOption[]>(() => {
+    if (!selectedEngine?.resolutions?.length) return [];
+    return selectedEngine.resolutions.map((option) => ({
+      value: option.value,
+      label: option.label,
+    }));
+  }, [selectedEngine]);
 
   const pricingMemberTier = (memberTier.toLowerCase() as PricingMemberTier);
 
@@ -603,10 +671,10 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
   const memberBenefitCopy = memberBenefits.get(memberTier);
 
   return (
-    <div className="stack-gap-lg">
+    <div className="flex flex-col gap-3 sm:gap-5">
       <div
         className={clsx(
-          'relative overflow-hidden rounded-[32px] border p-6 shadow-[0_20px_60px_-25px_rgba(17,24,39,0.35)] sm:p-8 lg:p-10',
+          'price-estimator-border relative overflow-hidden rounded-[32px] border p-4 shadow-[0_20px_60px_-25px_rgba(17,24,39,0.35)] sm:p-6 lg:p-8',
           isLite
             ? 'border-hairline bg-surface-glass-95'
             : 'border-surface-on-media-40 bg-gradient-to-br from-surface via-surface-glass-95 to-surface-2'
@@ -618,63 +686,38 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
             <div className="absolute -right-24 bottom-[-120px] h-80 w-80 rounded-full bg-[#7c4dff]/12 blur-[160px]" />
           </div>
         )}
-        <div className="relative grid grid-gap-lg lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="stack-gap-lg">
-            <div className="space-y-2">
+        <div className="relative grid gap-2 sm:gap-3 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="flex flex-col gap-1.5 sm:gap-2">
+            <div className="space-y-0.5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
                 {t('pricing.estimator.configureLabel', 'Configure')}
               </p>
-              <h3 className="text-2xl font-semibold text-text-primary sm:text-3xl">
+              <h3 className="text-lg font-semibold text-text-primary sm:text-xl">
                 {dictionary.pricing.estimator.title}
               </h3>
-              <p className="text-sm text-text-secondary sm:text-base">{dictionary.pricing.estimator.subtitle}</p>
+              <p className="text-sm text-text-secondary sm:text-[13px]">{dictionary.pricing.estimator.subtitle}</p>
             </div>
 
-            <div className="grid grid-gap">
-              <div className="rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
-                <div className="flex items-center justify-between">
-                  <label
-                    htmlFor={engineId}
-                    className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted"
-                  >
-                    {fields.engine}
-                  </label>
-                  {selectedEngine && (
-                    <span
-                      className={clsx(
-                        'inline-flex items-center rounded-pill border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-micro',
-                        AVAILABILITY_BADGE_CLASS[selectedEngine.availability]
-                      )}
-                    >
-                      {availabilityLabels[selectedEngine.availability] ?? selectedEngine.availability}
-                    </span>
-                  )}
-                </div>
-                <div className="mt-3">
-                  <div className="relative">
-                    <select
-                      id={engineId}
-                      value={selectedEngine?.id ?? ''}
-                      onChange={(event) => setSelectedEngineId(event.target.value)}
-                      className="w-full appearance-none rounded-[16px] border border-transparent bg-surface px-4 py-3 pr-12 text-sm font-semibold text-text-primary shadow-[0_1px_3px_rgba(15,23,42,0.1)] transition focus:border-ring focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-                    >
-                      {engineOptions.map((option) => (
-                        <option key={option.id} value={option.id} disabled={option.availability === 'paused'}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-text-muted/60">
-                      <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </span>
-                  </div>
+            <div className="grid gap-1.5 sm:gap-2">
+              <div className="price-estimator-border price-estimator-surface relative rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur focus-within:z-20 sm:p-2.5">
+                <div className="mt-0.5">
+                  <EngineSelect
+                    engines={engineSelectOptions}
+                    engineId={selectedEngine?.id ?? ''}
+                    onEngineChange={setSelectedEngineId}
+                    mode={engineMode}
+                    onModeChange={setEngineMode}
+                    showModeSelect={false}
+                    showBillingNote={false}
+                    variant="bar"
+                    density="compact"
+                    className="w-full"
+                  />
                   {selectedEngine?.description ? (
-                    <p className="mt-3 text-xs text-text-muted">{selectedEngine.description}</p>
+                    <p className="mt-0.5 hidden text-xs text-text-muted sm:block">{selectedEngine.description}</p>
                   ) : null}
                   {selectedEngine?.audioIncluded ? (
-                    <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-hairline bg-surface-2 px-3 py-1 text-[11px] font-semibold text-text-secondary">
+                    <div className="mt-0.5 hidden items-center gap-2 rounded-full border border-hairline bg-surface-2 px-3 py-1 text-[11px] font-semibold text-text-secondary sm:inline-flex">
                       <span className="text-[9px] leading-none text-text-muted">●</span>
                       <span>{t('pricing.estimator.audioIncluded', 'Audio included by default')}</span>
                     </div>
@@ -684,7 +727,7 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                       href={selectedEngine.availabilityLink}
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-2 inline-flex text-[11px] font-medium text-text-muted underline underline-offset-4 transition hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                      className="mt-1 hidden text-[11px] font-medium text-text-muted underline underline-offset-4 transition hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white sm:inline-flex"
                     >
                       {selectedEngine.availability === 'waitlist'
                         ? t('pricing.estimator.joinWaitlist', 'Join waitlist')
@@ -694,36 +737,17 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                 </div>
               </div>
 
-              <div className="grid grid-gap sm:grid-cols-2">
+              <div className="grid gap-1.5 sm:gap-2 sm:grid-cols-2">
                 {selectedEngine?.showResolution !== false ? (
-                  <div className="rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
-                    <label
-                      htmlFor={resolutionId}
-                      className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted"
-                    >
-                      {fields.resolution}
-                    </label>
-                    <div className="relative mt-3">
-                      <select
-                        id={resolutionId}
-                        value={selectedResolution}
-                        onChange={(event) => setSelectedResolution(event.target.value)}
-                        className="w-full appearance-none rounded-[16px] border border-transparent bg-surface px-4 py-3 pr-12 text-sm font-semibold text-text-primary shadow-[0_1px_3px_rgba(15,23,42,0.1)] transition focus:border-ring focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-                      >
-                        {selectedEngine?.resolutions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {`${option.label} — ${formatCurrency(option.rate, selectedEngine.currency)}${selectedEngine.rateUnit ?? '/s'}`}
-                          </option>
-                        ))}
-                      </select>
-                      <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-text-muted/60">
-                        <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                          <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </span>
-                    </div>
+                  <div className="price-estimator-border price-estimator-surface relative rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur focus-within:z-20 sm:p-2.5">
+                    <SelectGroup
+                      label={fields.resolution}
+                      options={resolutionSelectOptions}
+                      value={selectedResolution}
+                      onChange={(value) => setSelectedResolution(String(value))}
+                    />
                     {activeResolution ? (
-                      <p className="mt-3 text-xs text-text-muted">
+                      <p className="mt-0.5 text-xs text-text-muted">
                         {t('pricing.estimator.engineRateLabel', 'Engine rate')}{' '}
                         {formatCurrency(rate, currency)}
                         {selectedEngine?.rateUnit ?? '/s'}
@@ -731,114 +755,47 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                     ) : null}
                   </div>
                 ) : (
-                  <div className="rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
+                  <div className="price-estimator-border price-estimator-surface relative rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur focus-within:z-20 sm:p-2.5">
                     <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
                       {t('pricing.estimator.engineRateLabel', 'Engine rate')}
                     </span>
-                    <p className="mt-3 text-2xl font-semibold text-text-primary">
+                    <p className="mt-1 text-2xl font-semibold text-text-primary">
                       {formatCurrency(rate, currency)}
                       {selectedEngine?.rateUnit ?? ''}
                     </p>
-                    <p className="mt-2 text-xs text-text-muted">
+                    <p className="mt-1 text-xs text-text-muted">
                       {t('pricing.estimator.perImageLabel', 'Applies per generated image inside Generate.')}
                     </p>
                   </div>
                 )}
 
                 {selectedEngine?.showDuration !== false ? (
-                  <div className="rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
-                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">{fields.duration}</span>
-                    {filteredDurationOptions.length ? (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {filteredDurationOptions.map((option) => {
-                          const selected = option.value === duration;
-                          return (
-                            <Button
-                              key={option.value}
-                              type="button"
-                              size="sm"
-                              variant={selected ? 'primary' : 'ghost'}
-                              onClick={() => setDuration(option.value)}
-                              className={clsx(
-                                'min-h-0 h-auto rounded-full px-3 py-1.5 text-sm font-medium',
-                                selected
-                                  ? 'shadow-[0_10px_30px_-12px_rgba(66,106,174,0.55)]'
-                                  : 'bg-surface-glass-70 text-text-secondary hover:bg-surface'
-                              )}
-                              aria-pressed={selected}
-                            >
-                              {option.label}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="mt-4 stack-gap-sm">
-                        <input
-                          id={durationId}
-                          type="range"
-                          min={selectedEngine.minDuration}
-                          max={selectedEngine.maxDuration}
-                          step={1}
-                          value={duration}
-                          onChange={(event) => setDuration(Number(event.target.value))}
-                          className="range-input"
-                          aria-valuemin={selectedEngine.minDuration}
-                          aria-valuemax={selectedEngine.maxDuration}
-                          aria-valuenow={duration}
-                        />
-                        <div className="flex items-center justify-between text-xs text-text-muted">
-                          <span>{selectedEngine.minDuration}s</span>
-                          <span>{durationDisplay}</span>
-                          <span>{selectedEngine.maxDuration}s</span>
-                        </div>
-                      </div>
-                    )}
-                    {filteredDurationOptions.length ? (
-                      <p className="mt-3 text-xs text-text-muted">
-                        {t('pricing.estimator.durationRangeLabel', 'Available')} •{' '}
-                        {filteredDurationOptions.map((option) => option.label).join(' · ')}
-                      </p>
-                    ) : (
-                      <p className="mt-3 text-xs text-text-muted">
-                        {t('pricing.estimator.durationRangeLabel', 'Range')} {selectedEngine.minDuration}s – {selectedEngine.maxDuration}s
-                      </p>
-                    )}
+                  <div className="price-estimator-border price-estimator-surface relative rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur focus-within:z-20 sm:p-2.5">
+                    <SelectGroup
+                      label={fields.duration}
+                      options={durationSelectOptions}
+                      value={duration}
+                      onChange={(value) => setDuration(Number(value))}
+                    />
+                    <p className="mt-0.5 hidden text-xs text-text-muted sm:block">
+                      {t('pricing.estimator.durationRangeLabel', 'Available')} •{' '}
+                      {durationSelectOptions.map((option) => option.label).join(' · ')}
+                    </p>
                   </div>
                 ) : null}
 
                 {selectedEngine?.audioToggle ? (
-                  <div className="rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
-                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
-                      {t('pricing.estimator.audioLabel', 'Audio')}
-                    </span>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {[
+                  <div className="price-estimator-border price-estimator-surface relative rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur focus-within:z-20 sm:p-2.5">
+                    <SelectGroup
+                      label={t('pricing.estimator.audioLabel', 'Audio')}
+                      options={[
                         { value: true, label: t('pricing.estimator.audioOn', 'On') },
                         { value: false, label: t('pricing.estimator.audioOff', 'Off') },
-                      ].map((option) => {
-                        const selected = audioEnabled === option.value;
-                        return (
-                          <Button
-                            key={String(option.value)}
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setAudioEnabled(option.value)}
-                            className={clsx(
-                              'min-h-0 h-auto rounded-full px-3 py-1.5 text-sm font-medium',
-                              selected
-                                ? 'bg-brand text-on-brand shadow-[0_10px_30px_-12px_rgba(66,106,174,0.55)]'
-                                : 'bg-surface-glass-70 text-text-secondary hover:bg-surface'
-                            )}
-                            aria-pressed={selected}
-                          >
-                            {option.label}
-                          </Button>
-                        );
-                      })}
-                    </div>
-                    <p className="mt-3 text-xs text-text-muted">
+                      ]}
+                      value={audioEnabled}
+                      onChange={(value) => setAudioEnabled(Boolean(value))}
+                    />
+                    <p className="mt-0.5 hidden text-xs text-text-muted sm:block">
                       {t('pricing.estimator.audioHint', 'Price updates when audio is toggled.')}
                     </p>
                   </div>
@@ -846,55 +803,23 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
               </div>
             </div>
 
-            <fieldset className="rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur">
-              <legend className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
-                {fields.memberStatus}
-              </legend>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {MEMBER_ORDER.map((tier) => {
-                  const selected = tier === memberTier;
-                  return (
-                    <Button
-                      key={tier}
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setMemberTier(tier)}
-                      className={clsx(
-                        'min-h-0 h-auto rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-micro',
-                        selected
-                          ? 'bg-text-primary !text-on-inverse shadow-[0_10px_25px_-12px_rgba(17,24,39,0.6)] hover:bg-text-primary hover:!text-on-inverse'
-                          : 'bg-surface-glass-70 !text-text-disabled hover:bg-surface-2 hover:!text-text-primary'
-                      )}
-                      aria-pressed={selected}
-                    >
-                      {memberNames.get(tier) ?? tier}
-                    </Button>
-                  );
-                })}
-              </div>
-              {memberBenefitCopy ? <p className="mt-3 text-xs text-text-muted">{memberBenefitCopy}</p> : null}
-              <p className="mt-2 text-[11px] text-text-muted" aria-label={memberTooltipLabel} title={memberTooltipLabel}>
-                {memberTooltipLabel}
-              </p>
-            </fieldset>
           </div>
 
           <aside className="flex flex-col gap-6">
-            <div className="rounded-[28px] border border-surface-on-media-70 bg-surface-glass-95 p-6 text-sm text-text-secondary shadow-[0_28px_60px_-24px_rgba(15,23,42,0.3)] sm:p-7">
-              <div className="stack-gap-lg">
+            <div className="price-estimator-border rounded-[28px] border border-surface-on-media-70 bg-surface-glass-95 p-4 text-sm text-text-secondary shadow-[0_28px_60px_-24px_rgba(15,23,42,0.3)] sm:p-5">
+              <div className="stack-gap-sm">
                 <div className="stack-gap-sm">
                   <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
                     {estimateLabels.heading}
                   </span>
-                  <p className="text-5xl font-semibold tracking-tight text-text-primary">
+                  <p className="text-4xl font-semibold tracking-tight text-text-primary sm:text-5xl">
                     {formatCurrency(pricing.total, currency)}
                   </p>
                   <p className="text-xs uppercase tracking-[0.3em] text-text-muted">
                     {priceChipSuffix ?? t('pricing.priceChipSuffix', 'Price before you generate.')}
                   </p>
                 </div>
-                <div>
+                <div className="grid grid-gap-sm sm:grid-gap">
                   <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
                     {t('pricing.estimator.engineLabel', 'Engine')}
                   </span>
@@ -930,14 +855,47 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                     </div>
                   )}
                 </div>
-                <div>
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
-                    {estimateLabels.memberChipPrefix}
-                  </span>
-                  <p className="text-base font-semibold text-text-primary">
-                    {memberTier === 'Member' ? memberNames.get('Member') ?? 'Member' : `${discountPercent}%`}
-                  </p>
-                  {memberBenefitCopy ? <p className="mt-1 text-xs text-text-muted">{memberBenefitCopy}</p> : null}
+                <div className="grid grid-gap-sm sm:grid-gap">
+                  <div>
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
+                      {estimateLabels.memberChipPrefix}
+                    </span>
+                    <p className="text-base font-semibold text-text-primary">
+                      {memberTier === 'Member' ? memberNames.get('Member') ?? 'Member' : `${discountPercent}%`}
+                    </p>
+                    {memberBenefitCopy ? <p className="mt-1 text-xs text-text-muted">{memberBenefitCopy}</p> : null}
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-text-muted">
+                      {fields.memberStatus}
+                    </span>
+                    <div className="mt-2 flex flex-wrap gap-1 sm:mt-3 sm:gap-1.5">
+                      {MEMBER_ORDER.map((tier) => {
+                        const selected = tier === memberTier;
+                        return (
+                          <Button
+                            key={tier}
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setMemberTier(tier)}
+                            className={clsx(
+                              'member-status-pill min-h-0 h-auto rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-micro',
+                              selected
+                                ? 'bg-text-primary !text-on-inverse shadow-[0_10px_25px_-12px_rgba(17,24,39,0.6)] hover:bg-text-primary hover:!text-on-inverse'
+                                : 'bg-surface-glass-70 !text-text-disabled hover:bg-surface-2 hover:!text-text-primary'
+                            )}
+                            aria-pressed={selected}
+                          >
+                            {memberNames.get(tier) ?? tier}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                    <p className="mt-1 text-[11px] text-text-muted sm:mt-2" aria-label={memberTooltipLabel} title={memberTooltipLabel}>
+                      {memberTooltipLabel}
+                    </p>
+                  </div>
                 </div>
                 {selectedEngine?.audioIncluded ? (
                   <p className="text-xs font-semibold text-text-secondary">
@@ -946,15 +904,6 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                 ) : null}
                 <p className="text-xs text-text-muted">{chargedNote}</p>
               </div>
-            </div>
-
-            <div className="rounded-[24px] border border-surface-on-media-70 bg-surface-glass-90 p-5 text-sm text-text-secondary shadow-[0_14px_30px_-22px_rgba(15,23,42,0.35)]">
-              <p className="font-semibold text-text-primary">
-                {t('pricing.estimator.memberReminder', 'Need invoice routing or team wallets?')}
-              </p>
-              <p className="mt-2 text-xs text-text-muted">
-                {t('pricing.estimator.memberReminderBody', 'Enable shared wallets and member tiers in Settings → Billing to automatically apply discounts.')}
-              </p>
             </div>
           </aside>
         </div>

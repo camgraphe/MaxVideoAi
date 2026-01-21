@@ -337,39 +337,6 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
           ) : null}
         </header>
 
-        <section className="rounded-card border border-hairline bg-surface/80 p-4 text-sm text-text-secondary shadow-card">
-          <div className="flex flex-wrap items-center gap-4">
-            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{exploreTitle}</span>
-            <div className="flex flex-wrap gap-2">
-              {exploreLinks.map((link) => {
-                const key = `${link.label}-${typeof link.href === 'string' ? link.href : link.href.pathname}`;
-                return (
-                <Link
-                  key={key}
-                  href={link.href}
-                  className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-xs font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
-                >
-                  {link.label}
-                </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-card border border-hairline bg-surface/90 p-6 text-sm text-text-secondary shadow-card">
-          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
-            {content.calculator?.title ?? 'Preview prices in the app'}
-          </h2>
-          <p className="mt-2">
-            {content.calculator?.description ??
-              'Open the generator to see the exact price before you create a video.'}
-          </p>
-          <TextLink href={generatorHref} prefetch={false} className="mt-3 gap-1 text-sm" linkComponent={Link}>
-            {content.calculator?.cta ?? 'Open the generator'} <span aria-hidden>→</span>
-          </TextLink>
-        </section>
-
         <section id="estimator" className="scroll-mt-28">
           <div className="mx-auto max-w-4xl">
             <PriceEstimator pricingRules={pricingRulesLite} enginePricingOverrides={enginePricingOverrides} />
@@ -388,6 +355,7 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
             </span>
           </div>
         </section>
+
         <section aria-labelledby="example-costs">
           <h2 id="example-costs" className="scroll-mt-28 text-2xl font-semibold text-text-primary sm:text-3xl">
             {exampleCosts.title ?? DEFAULT_EXAMPLE_COSTS.title}
@@ -425,6 +393,56 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
             ))}
           </div>
         </section>
+
+        <section className="rounded-card border border-hairline bg-surface p-6 shadow-card">
+          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
+            {member.title}
+            <FlagPill live={FEATURES.pricing.memberTiers} className="ml-3" />
+          </h2>
+          <p className="mt-2 text-sm text-text-secondary">{member.subtitle}</p>
+          <div className="mt-6 grid grid-gap-sm md:grid-cols-3">
+            {formattedTiers.map((tier) => (
+              <div key={tier.name} className="rounded-card border border-hairline bg-surface-2 p-4">
+                <p className="text-sm font-semibold text-text-primary">{tier.name}</p>
+                <p className="mt-1 text-xs uppercase tracking-micro text-text-muted">{tier.requirement}</p>
+                <p className="mt-3 text-sm text-text-secondary">{tier.benefit}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-card border border-hairline bg-surface/80 p-4 text-sm text-text-secondary shadow-card">
+          <div className="flex flex-wrap items-center gap-4">
+            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{exploreTitle}</span>
+            <div className="flex flex-wrap gap-2">
+              {exploreLinks.map((link) => {
+                const key = `${link.label}-${typeof link.href === 'string' ? link.href : link.href.pathname}`;
+                return (
+                <Link
+                  key={key}
+                  href={link.href}
+                  className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-xs font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
+                >
+                  {link.label}
+                </Link>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-card border border-hairline bg-surface/90 p-6 text-sm text-text-secondary shadow-card">
+          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
+            {content.calculator?.title ?? 'Preview prices in the app'}
+          </h2>
+          <p className="mt-2">
+            {content.calculator?.description ??
+              'Open the generator to see the exact price before you create a video.'}
+          </p>
+          <TextLink href={generatorHref} prefetch={false} className="mt-3 gap-1 text-sm" linkComponent={Link}>
+            {content.calculator?.cta ?? 'Open the generator'} <span aria-hidden>→</span>
+          </TextLink>
+        </section>
         {priceFactors.points?.length ? (
           <section aria-labelledby="price-factors">
             <h2 id="price-factors" className="text-2xl font-semibold text-text-primary sm:text-3xl">
@@ -453,27 +471,10 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
                 </li>
               ))}
             </ul>
-          ) : (
-            <p className="mt-4 text-sm text-text-secondary">{teams.comingSoonNote}</p>
-          )}
-        </section>
-
-        <section className="rounded-card border border-hairline bg-surface p-6 shadow-card">
-          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
-            {member.title}
-            <FlagPill live={FEATURES.pricing.memberTiers} className="ml-3" />
-          </h2>
-          <p className="mt-2 text-sm text-text-secondary">{member.subtitle}</p>
-          <div className="mt-6 grid grid-gap-sm md:grid-cols-3">
-            {formattedTiers.map((tier) => (
-              <div key={tier.name} className="rounded-card border border-hairline bg-surface-2 p-4">
-                <p className="text-sm font-semibold text-text-primary">{tier.name}</p>
-                <p className="mt-1 text-xs uppercase tracking-micro text-text-muted">{tier.requirement}</p>
-                <p className="mt-3 text-sm text-text-secondary">{tier.benefit}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        ) : (
+          <p className="mt-4 text-sm text-text-secondary">{teams.comingSoonNote}</p>
+        )}
+      </section>
 
         <section className="grid grid-gap lg:grid-cols-[1.1fr_0.9fr]">
           <article

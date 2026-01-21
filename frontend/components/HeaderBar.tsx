@@ -328,7 +328,7 @@ export function HeaderBar() {
             type="button"
             variant="ghost"
             size="sm"
-            className="min-h-0 h-9 w-9 p-0 text-text-primary hover:bg-transparent hover:text-text-secondary md:hidden"
+            className="min-h-0 h-9 w-9 rounded-full border border-hairline bg-surface-glass-80 p-2 text-text-primary hover:bg-surface-2 md:hidden"
             aria-label={t('workspace.header.mobileToggle', 'Open menu')}
             onClick={() => setMobileMenuOpen(true)}
           >
@@ -523,22 +523,13 @@ export function HeaderBar() {
         </div>
       </header>
       {mobileMenuOpen ? (
-        <div className="fixed inset-0 z-50 bg-surface/95 px-4 py-6 sm:px-6">
-          <div className="mx-auto flex max-w-sm items-center justify-between">
-            <Link
-              href="/"
-              className="flex items-center gap-4 font-display text-base font-semibold tracking-tight text-text-primary"
-              onClick={() => setMobileMenuOpen(false)}
-              aria-label={t('workspace.header.logoAria', 'Go to marketing homepage')}
-            >
-              <Image src="/assets/branding/logo-mark.svg" alt="MaxVideoAI" width={32} height={32} priority />
-              <span>{brand}</span>
-            </Link>
+        <div className="fixed inset-0 z-50 bg-surface-glass-95 px-4 py-6 sm:px-6">
+          <div className="mx-auto flex max-w-sm items-center justify-end">
             <Button
               type="button"
-              variant="outline"
               size="sm"
-              className="min-h-0 h-9 w-9 rounded-full border-hairline bg-surface p-2 text-text-primary"
+              variant="ghost"
+              className="min-h-0 h-9 w-9 rounded-full border border-hairline bg-surface p-2 text-text-primary"
               aria-label={t('workspace.header.mobileClose', 'Close menu')}
               onClick={() => setMobileMenuOpen(false)}
             >
@@ -574,56 +565,24 @@ export function HeaderBar() {
                 );
               })}
             </nav>
-            {isAuthenticated ? (
+            {isAuthenticated ? null : (
               <div className="stack-gap-sm">
-                <div className="flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3">
-                  <span className="flex items-center gap-2 text-base font-semibold text-text-primary">
-                    <UIIcon icon={Wallet} size={18} className="text-text-primary" />
-                    {wallet ? `$${wallet.balance.toFixed(2)}` : '--'}
-                  </span>
-                </div>
-                <ButtonLink
-                  href="/app"
-                  prefetch={false}
-                  size="lg"
-                  className="w-full text-base shadow-card"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {generateLabel}
-                </ButtonLink>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="lg"
-                  className="w-full text-base"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    handleSignOut();
-                  }}
-                >
-                  {t('workspace.header.signOut', 'Sign out')}
-                </Button>
-              </div>
-            ) : (
-              <div className="stack-gap-sm">
-                <ButtonLink
+                <Link
                   href="/login?next=/app"
                   variant="outline"
-                  size="lg"
-                  className="w-full text-base shadow-card"
+                  className="block rounded-2xl border border-hairline px-4 py-3 text-center text-base font-semibold text-text-primary shadow-card"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {loginLabel}
-                </ButtonLink>
-                <ButtonLink
+                </Link>
+                <Link
                   href="/app"
                   prefetch={false}
-                  size="lg"
-                  className="w-full text-base shadow-card"
+                  className="block rounded-2xl bg-brand px-4 py-3 text-center text-base font-semibold text-on-brand shadow-card"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {ctaLabel}
-                </ButtonLink>
+                </Link>
               </div>
             )}
           </div>

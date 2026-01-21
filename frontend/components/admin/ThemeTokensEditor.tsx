@@ -61,6 +61,14 @@ export function ThemeTokensEditor({ initialSetting }: ThemeTokensEditorProps) {
   }, [values]);
 
   useEffect(() => {
+    if (mode === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+  }, [mode]);
+
+  useEffect(() => {
     return () => {
       if (styleRef.current) {
         styleRef.current.remove();
@@ -385,7 +393,27 @@ function toNumberValue(value: string, unit: string) {
 }
 
 function resolveComputedTokens(mode: ThemeMode) {
-  const target = mode === 'light' ? document.documentElement : createDarkProbe();
+  if (mode === 'light') {
+    const root = document.documentElement;
+    const previousTheme = root.getAttribute('data-theme');
+    if (previousTheme !== null) {
+      root.removeAttribute('data-theme');
+    }
+    const styles = getComputedStyle(root);
+    const output: Record<string, string> = {};
+    THEME_TOKEN_DEFS.forEach((token) => {
+      const value = styles.getPropertyValue(`--${token.key}`).trim();
+      if (value) {
+        output[token.key] = value;
+      }
+    });
+    if (previousTheme !== null) {
+      root.setAttribute('data-theme', previousTheme);
+    }
+    return output;
+  }
+
+  const target = createDarkProbe();
   const styles = getComputedStyle(target);
   const output: Record<string, string> = {};
   THEME_TOKEN_DEFS.forEach((token) => {
@@ -394,9 +422,7 @@ function resolveComputedTokens(mode: ThemeMode) {
       output[token.key] = value;
     }
   });
-  if (mode === 'dark') {
-    target.remove();
-  }
+  target.remove();
   return output;
 }
 

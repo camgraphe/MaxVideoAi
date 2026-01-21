@@ -246,7 +246,10 @@ export function Composer({
             <span className="text-sm font-medium text-text-primary">{promptLabel}</span>
             <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
               {formattedPrice && (
-                <Chip variant="outline" className="px-3 py-1.5">
+                <Chip
+                  variant="outline"
+                  className="chip-price px-3 py-1.5 font-semibold shadow-sm"
+                >
                   {composerCopy.priceLabel.replace('{amount}', formattedPrice)}
                 </Chip>
               )}

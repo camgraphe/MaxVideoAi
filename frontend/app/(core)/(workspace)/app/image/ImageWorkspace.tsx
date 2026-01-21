@@ -471,10 +471,10 @@ function SelectGroup({
 }) {
   if (!options.length) return null;
   return (
-    <label className="flex min-w-0 flex-col gap-1">
+    <div className="flex min-w-0 flex-col gap-1">
       <span className="text-[10px] uppercase tracking-micro text-text-muted">{label}</span>
       <SelectMenu options={options} value={value} onChange={onChange} disabled={disabled} />
-    </label>
+    </div>
   );
 }
 
@@ -1775,7 +1775,10 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
                       <span className="text-sm font-medium text-text-primary">{resolvedCopy.composer.promptLabel}</span>
                       <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
                         <span>{promptCharCount}</span>
-                        <Chip variant={pricingValidating ? 'ghost' : 'outline'} className="px-3 py-1.5">
+                        <Chip
+                          variant={pricingValidating ? 'ghost' : 'outline'}
+                          className="chip-price px-3 py-1.5 font-semibold shadow-sm"
+                        >
                           {pricingValidating ? resolvedCopy.engine.priceCalculating : composerPriceLabel}
                         </Chip>
                       </div>
