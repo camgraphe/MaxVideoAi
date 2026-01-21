@@ -98,6 +98,15 @@ main {
   background: var(--brand);
 }
 
+[data-theme="dark"] .chip-price {
+  border-color: var(--on-brand);
+  color: var(--on-brand);
+}
+
+[data-theme="dark"] .chip-price::before {
+  background: var(--on-brand);
+}
+
 [data-theme="dark"] .member-status-pill[aria-pressed="true"] {
   background: var(--brand) !important;
   color: var(--on-brand) !important;
