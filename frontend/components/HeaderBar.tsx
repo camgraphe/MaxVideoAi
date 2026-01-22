@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { NAV_ITEMS } from '@/components/AppSidebar';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, useId } from 'react';
-import { Moon, Sun, Wallet } from 'lucide-react';
+import { ChevronDown, Moon, Sun, Wallet } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
@@ -21,6 +21,36 @@ import {
   writeLastKnownUserId,
   writeLastKnownWallet,
 } from '@/lib/last-known';
+import { MARKETING_NAV_DROPDOWNS } from '@/config/navigation';
+import type { LocalizedLinkHref } from '@/i18n/navigation';
+
+function resolveLocalizedHref(href: LocalizedLinkHref): string {
+  if (typeof href === 'string') {
+    return href;
+  }
+  const pathname = typeof href.pathname === 'string' ? href.pathname : '';
+  const params = 'params' in href ? href.params : undefined;
+  let resolved = pathname;
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      resolved = resolved.replace(`[${key}]`, encodeURIComponent(String(value)));
+    });
+  }
+  const query = 'query' in href ? href.query : undefined;
+  if (query) {
+    const search = new URLSearchParams();
+    Object.entries(query).forEach(([key, value]) => {
+      if (typeof value === 'string' || typeof value === 'number') {
+        search.set(key, String(value));
+      }
+    });
+    const suffix = search.toString();
+    if (suffix) {
+      resolved = `${resolved}?${suffix}`;
+    }
+  }
+  return resolved;
+}
 
 export function HeaderBar() {
   const { t } = useI18n();
@@ -32,7 +62,10 @@ export function HeaderBar() {
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [walletPromptOpen, setWalletPromptOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileDropdownOpen, setMobileDropdownOpen] = useState<Record<string, boolean>>({});
+  const [desktopDropdownOpen, setDesktopDropdownOpen] = useState<string | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const desktopDropdownCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const avatarRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const walletPromptCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -274,6 +307,7 @@ export function HeaderBar() {
   useEffect(() => {
     if (!mobileMenuOpen) {
       document.body.style.removeProperty('overflow');
+      setMobileDropdownOpen({});
       return;
     }
     document.body.style.overflow = 'hidden';
@@ -288,6 +322,31 @@ export function HeaderBar() {
       document.removeEventListener('keydown', handleKey);
     };
   }, [mobileMenuOpen]);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setMobileDropdownOpen({});
+    setDesktopDropdownOpen(null);
+    if (desktopDropdownCloseTimeout.current) {
+      window.clearTimeout(desktopDropdownCloseTimeout.current);
+      desktopDropdownCloseTimeout.current = null;
+    }
+  }, [pathname]);
+
+  const closeDesktopDropdown = (delay = 0) => {
+    if (desktopDropdownCloseTimeout.current) {
+      window.clearTimeout(desktopDropdownCloseTimeout.current);
+      desktopDropdownCloseTimeout.current = null;
+    }
+    if (delay <= 0) {
+      setDesktopDropdownOpen(null);
+      return;
+    }
+    desktopDropdownCloseTimeout.current = window.setTimeout(() => {
+      setDesktopDropdownOpen(null);
+      desktopDropdownCloseTimeout.current = null;
+    }, delay);
+  };
 
   const initials = useMemo(() => {
     if (!email) return '?';
@@ -343,15 +402,82 @@ export function HeaderBar() {
             className="hidden items-center gap-6 text-sm font-medium text-text-muted md:flex"
             aria-label={t('workspace.header.marketingNav', 'Marketing navigation')}
           >
-            {marketingLinks.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="transition-colors hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
-              >
-                {t(`nav.linkLabels.${item.key}`, item.key)}
-              </Link>
-            ))}
+            {marketingLinks.map((item) => {
+              const dropdown = MARKETING_NAV_DROPDOWNS[item.key];
+              const label = t(`nav.linkLabels.${item.key}`, item.key);
+              if (!dropdown) {
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="transition-colors hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                  >
+                    {label}
+                  </Link>
+                );
+              }
+              const isOpen = desktopDropdownOpen === item.key;
+              const allLabel = t(dropdown.allLabelKey, dropdown.allLabelFallback);
+              return (
+                <div
+                  key={item.href}
+                  className="relative"
+                  onMouseEnter={() => setDesktopDropdownOpen(item.key)}
+                  onMouseLeave={() => closeDesktopDropdown()}
+                  onFocus={() => setDesktopDropdownOpen(item.key)}
+                  onBlur={(event) => {
+                    const next = event.relatedTarget as Node | null;
+                    if (!event.currentTarget.contains(next)) {
+                      closeDesktopDropdown();
+                    }
+                  }}
+                >
+                  <Link
+                    href={item.href}
+                    aria-haspopup="menu"
+                    className="inline-flex items-center gap-1 transition-colors hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                    onClick={() => closeDesktopDropdown(200)}
+                  >
+                    <span>{label}</span>
+                    <UIIcon icon={ChevronDown} size={14} strokeWidth={1.6} className="text-text-muted" />
+                  </Link>
+                  <div
+                    className={clsx(
+                      'absolute left-0 top-full z-20 pt-2 transition duration-150',
+                      isOpen ? 'visible opacity-100' : 'invisible opacity-0'
+                    )}
+                  >
+                    <div className="min-w-[240px] rounded-card border border-hairline bg-surface p-3 shadow-card">
+                      <nav className="flex flex-col gap-1" role="menu" aria-label={label}>
+                        {dropdown.items.map((entry) => {
+                          const href = resolveLocalizedHref(entry.href);
+                          return (
+                            <Link
+                              key={entry.key}
+                              href={href}
+                              className="rounded-input px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              role="menuitem"
+                              onClick={() => closeDesktopDropdown(200)}
+                            >
+                              {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
+                            </Link>
+                          );
+                        })}
+                      </nav>
+                      <div className="mt-2 border-t border-hairline pt-2">
+                        <Link
+                          href={resolveLocalizedHref(dropdown.allHref)}
+                          className="flex items-center gap-2 rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          onClick={() => closeDesktopDropdown(200)}
+                        >
+                          {allLabel}
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </nav>
         </div>
 
@@ -543,25 +669,79 @@ export function HeaderBar() {
             <div className="flex justify-end">
               <AppLanguageToggle />
             </div>
-            <nav className="flex flex-col gap-2 text-base font-semibold text-text-primary">
+            <nav className="flex flex-col gap-3 text-base font-semibold text-text-primary">
               {marketingLinks.map((item) => {
+                const dropdown = MARKETING_NAV_DROPDOWNS[item.key];
                 const label = t(`nav.linkLabels.${item.key}`, item.key);
-                const href = item.href;
-                const currentPath = pathname ?? '';
-                const isActive = currentPath === href || currentPath.startsWith(`${href}/`);
+                if (!dropdown) {
+                  const href = item.href;
+                  const currentPath = pathname ?? '';
+                  const isActive = currentPath === href || currentPath.startsWith(`${href}/`);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      prefetch={false}
+                      className={clsx(
+                        'rounded-2xl border border-hairline px-4 py-3',
+                        isActive ? 'bg-surface-2 text-text-primary' : 'bg-surface'
+                      )}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {label}
+                    </Link>
+                  );
+                }
+                const panelId = `mobile-${item.key}-panel`;
+                const isOpen = Boolean(mobileDropdownOpen[item.key]);
+                const allLabel = t(dropdown.allLabelKey, dropdown.allLabelFallback);
                 return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    prefetch={false}
-                    className={clsx(
-                      'rounded-2xl border border-hairline px-4 py-3',
-                      isActive ? 'bg-surface-2 text-text-primary' : 'bg-surface'
-                    )}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {label}
-                  </Link>
+                  <div key={item.href} className="rounded-2xl border border-hairline bg-surface px-4 py-3">
+                    <button
+                      type="button"
+                      className="flex w-full items-center justify-between text-left text-sm font-semibold text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      aria-expanded={isOpen}
+                      aria-controls={panelId}
+                      onClick={() =>
+                        setMobileDropdownOpen((prev) => ({
+                          ...prev,
+                          [item.key]: !prev[item.key],
+                        }))
+                      }
+                    >
+                      <span>{label}</span>
+                      <UIIcon
+                        icon={ChevronDown}
+                        size={14}
+                        strokeWidth={1.6}
+                        className={clsx('text-text-muted transition-transform', isOpen ? 'rotate-180' : undefined)}
+                      />
+                    </button>
+                    {isOpen ? (
+                      <div id={panelId} className="mt-2 flex flex-col gap-1 text-sm font-medium text-text-secondary">
+                        {dropdown.items.map((entry) => {
+                          const href = resolveLocalizedHref(entry.href);
+                          return (
+                            <Link
+                              key={entry.key}
+                              href={href}
+                              onClick={() => setMobileMenuOpen(false)}
+                              className="rounded-input px-2 py-2 transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            >
+                              {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
+                            </Link>
+                          );
+                        })}
+                        <Link
+                          href={resolveLocalizedHref(dropdown.allHref)}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="mt-1 rounded-input px-2 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {allLabel}
+                        </Link>
+                      </div>
+                    ) : null}
+                  </div>
                 );
               })}
             </nav>

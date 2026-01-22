@@ -351,8 +351,8 @@
   },
   "pricing": {
     "hero": {
-      "title": "Price before you generate. Pay only for what you run. Start with Starter Credits ($10). No subscription. No lock-in.",
-      "subtitle": "Every estimate updates live as you adjust engines, durations, and outputs. Wallet balances sync across teams with daily status checks.",
+      "title": "Price before you generate. Pay only for what you run.",
+      "subtitle": "Start with Starter Credits ($10).\nNo subscription. No lock-in.",
       "link": {
         "before": "See how pricing compares across engines in our ",
         "label": "AI video comparison",
@@ -1124,6 +1124,12 @@
       "subtitle": "Want to create a video like this?",
       "body": "Start a render from this prompt or load it in the workspace to remix with your preferred engine, duration, or audio settings.",
       "cta": "Start a render →"
+    },
+    "recreate": {
+      "title": "Recreate this video",
+      "body": "Load this render in your workspace with the original settings prefilled.",
+      "cta": "Recreate in Workspace",
+      "microcopy": "Loads prompt + engine + duration + audio."
     },
     "blog": {
       "title": "Keep leveling up",

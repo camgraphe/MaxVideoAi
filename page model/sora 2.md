@@ -105,7 +105,7 @@ No monthly subscription is required: you top up a wallet and only pay for what y
 ## Sora 2 Example Gallery
 
 Below on this page, you’ll see a **live gallery of Sora 2 examples** powered by MaxVideoAI – real outputs rendered using the same engine and settings you have access to.
-You can also explore more clips in the main [Examples gallery](/examples?engine=sora-2).
+You can also explore more clips in the main [Examples gallery](/examples/sora-2).
 
 Each card in the gallery shows:
 

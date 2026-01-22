@@ -431,8 +431,8 @@
   },
   "pricing": {
     "hero": {
-      "title": "Consulta el precio antes de generar. Paga solo por lo que ejecutes. Comienza con Créditos iniciales ($10). Sin suscripción. Sin compromiso.",
-      "subtitle": "Cada estimación se actualiza en tiempo real al ajustar motores, duraciones y salidas. Los saldos de la billetera se sincronizan entre equipos con comprobaciones diarias de estado.",
+      "title": "Consulta el precio antes de generar. Paga solo por lo que ejecutes.",
+      "subtitle": "Comienza con Créditos iniciales ($10).\nSin suscripción. Sin compromiso.",
       "link": {
         "before": "Compara los precios entre motores en nuestra ",
         "label": "guía comparativa de video IA",
@@ -1128,6 +1128,12 @@
       "subtitle": "¿Quieres generar un video como este?",
       "body": "Inicia un render con este prompt o cárgalo en el workspace para remezclarlo con tu motor, duración o audio preferido.",
       "cta": "Iniciar un render →"
+    },
+    "recreate": {
+      "title": "Recrear este video",
+      "body": "Carga este render en tu workspace con los ajustes originales.",
+      "cta": "Recrear en Workspace",
+      "microcopy": "Carga prompt + engine + duración + audio."
     },
     "blog": {
       "title": "Sigue mejorando",

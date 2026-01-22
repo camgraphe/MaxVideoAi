@@ -10,6 +10,7 @@ import { EngineIcon } from '@/components/ui/EngineIcon';
 import type { FalEngineEntry } from '@/config/falEngines';
 import type { Mode } from '@/types/engines';
 import { DEFAULT_ENGINE_GUIDE } from '@/lib/engine-guides';
+import { getExamplesHref } from '@/lib/examples-links';
 
 type CompareCopy = {
   title?: string;
@@ -241,7 +242,7 @@ export function CompareEnginesCarousel({ engines, copy }: CompareEnginesCarousel
             .join(' / ');
           const modelHref = `/models/${engine.modelSlug}`;
           const allowExamples = engine.category !== 'image' && engine.type !== 'image';
-          const examplesHref = allowExamples ? `/examples?engine=${encodeURIComponent(engine.modelSlug)}` : null;
+          const examplesHref = allowExamples ? getExamplesHref(engine.modelSlug) : null;
           const handleClick = () => router.push(modelHref);
           const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
             if (event.key === 'Enter' || event.key === ' ') {

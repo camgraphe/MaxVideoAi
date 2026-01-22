@@ -78,7 +78,7 @@ Outline the in-app flow (pick engine → choose T2V/I2V → set duration/aspect 
 ## {{Engine Name}} Example Gallery
 
 - Note that the page shows a live gallery powered by MaxVideoAI (same engine and settings users get).  
-- Link to the broader Examples gallery filtered to this engine: `/examples?engine={{engine-slug}}`.  
+- Link to the broader Examples gallery filtered to this engine: `/examples/{{engine-slug}}`.  
 - Explain what each card shows (preview, engine/duration, one-line description, CTA).
 
 **CTA under the gallery**  
@@ -131,7 +131,7 @@ Encourage iterative prompting and comparing with adjacent engines in the same UI
 
 - Hero + dual CTAs (primary “Start generating with {{Engine Name}}”, secondary compare link).  
 - Mention availability (EU/UK/worldwide) and pay-as-you-go wallet.  
-- Link to `/examples?engine={{engine-slug}}` for the filtered gallery.  
+- Link to `/examples/{{engine-slug}}` for the filtered gallery.  
 - Keep tone: practical, benefit-first, plain English (no hype).  
 - Keep section order consistent with this template for SEO/internal links.  
 - Use real, current specs from config when you fill in placeholders.  
@@ -149,7 +149,7 @@ Encourage iterative prompting and comparing with adjacent engines in the same UI
 - **Fill this template in EN**: create `page model/{{engine}}.md` as the source doc with real specs/prompts/CTAs.  
 - **Create locale JSON**: add `content/models/en/{{engine}}.json`, `content/models/es/{{engine}}.json` (ES Latam), and `content/models/fr/{{engine}}.json` with finalized copy and CTAs. Mirror keys/structure already used in other model JSON files.  
 - **Hook into the model page**: ensure the slug (`{{engine}}`) matches the expected path in `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/page.tsx` and any config entries.  
-- **Examples filter**: if you want the gallery to show relevant clips, make sure the engine slug is usable via `/examples?engine={{engine}}` and that playlists/indexable videos include that engine.  
+- **Examples filter**: if you want the gallery to show relevant clips, make sure the engine slug is usable via `/examples/{{engine}}` and that playlists/indexable videos include that engine.  
 - **Translations**: avoid idioms; keep sentences short to ease FR + ES localization. If you add new strings outside the JSON, update translation files accordingly.  
 - **QA before publish**: validate hero CTAs, compare link (if pro variant), gallery renders, SEO/meta, and that JSON-LD on `/video/[id]` pages reflects the new engine’s outputs.  
 - Ensure any demo prompt has a corresponding real clip in the gallery if shown.

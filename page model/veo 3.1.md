@@ -148,7 +148,7 @@ No monthly subscription: top up your MaxVideoAI wallet and only pay for what you
 
 See a handful of live Veo 3.1 renders powered by the same settings you have in MaxVideoAI.
 
-【View all Veo 3.1 examples → `/examples?engine=veo-3-1`】
+【View all Veo 3.1 examples → `/examples/veo-3-1`】
 
 Each card in the gallery shows:
 

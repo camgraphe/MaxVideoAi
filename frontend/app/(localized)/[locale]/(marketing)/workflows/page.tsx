@@ -12,6 +12,7 @@ import { localePathnames } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { getTranslations } from 'next-intl/server';
+import { getExamplesHref } from '@/lib/examples-links';
 
 const WORKFLOWS_SLUG_MAP = buildSlugMap('workflows');
 const MODELS_BASE_SLUG_MAP = buildSlugMap('models');
@@ -73,7 +74,7 @@ export default async function WorkflowsPage({ params }: { params: { locale: AppL
             title: 'Ads creative',
             description: '6–12s cuts, product hero shots, end-cards. Great with Veo 3.1.',
             bullets: ['16:9 / 9:16 variants', 'Logo lockups & simple supers', 'Optional voice-over'],
-            href: '/examples?engine=veo',
+            href: getExamplesHref('veo') ?? '/examples',
             cta: 'Browse examples →',
           },
         ];

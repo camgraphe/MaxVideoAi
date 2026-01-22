@@ -87,6 +87,28 @@ const POSTER_PLACEHOLDERS: Record<string, string> = {
   '16:9': '/assets/frames/thumb-16x9.svg',
   '1:1': '/assets/frames/thumb-1x1.svg',
 };
+const PREFERRED_ENGINE_ORDER = ['sora-2', 'veo', 'kling', 'wan', 'pika', 'hailuo', 'ltx-2'];
+const normalizeFilterId = (value: string) => value.trim().toLowerCase();
+
+const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
+  'sora-2': { bg: 'var(--engine-openai-bg)', text: 'var(--engine-openai-ink)' },
+  veo: { bg: 'var(--engine-google-veo-bg)', text: 'var(--engine-google-veo-ink)' },
+  pika: { bg: 'var(--engine-pika-bg)', text: 'var(--engine-pika-ink)' },
+  hailuo: { bg: 'var(--engine-minimax-bg)', text: 'var(--engine-minimax-ink)' },
+  kling: { bg: 'var(--engine-kling-bg)', text: 'var(--engine-kling-ink)' },
+  wan: { bg: 'var(--engine-wan-bg)', text: 'var(--engine-wan-ink)' },
+  'ltx-2': { bg: 'var(--engine-lightricks-bg)', text: 'var(--engine-lightricks-ink)' },
+};
+
+const ENGINE_MODEL_LINKS: Record<string, string> = {
+  'sora-2': 'sora-2',
+  veo: 'veo-3-1',
+  kling: 'kling-2-6-pro',
+  wan: 'wan-2-6',
+  pika: 'pika-text-to-video',
+  hailuo: 'minimax-hailuo-02-text',
+  'ltx-2': 'ltx-2',
+};
 
 function getPlaceholderPoster(aspect?: string | null): string {
   if (!aspect) return POSTER_PLACEHOLDERS['16:9'];
@@ -469,29 +491,6 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
     return acc;
   }, new Map());
 
-const PREFERRED_ENGINE_ORDER = ['sora-2', 'veo', 'kling', 'wan', 'pika', 'hailuo', 'ltx-2'];
-const normalizeFilterId = (value: string) => value.trim().toLowerCase();
-
-const ENGINE_FILTER_STYLES: Record<string, { bg: string; text: string }> = {
-  'sora-2': { bg: 'var(--engine-openai-bg)', text: 'var(--engine-openai-ink)' },
-  veo: { bg: 'var(--engine-google-veo-bg)', text: 'var(--engine-google-veo-ink)' },
-  pika: { bg: 'var(--engine-pika-bg)', text: 'var(--engine-pika-ink)' },
-  hailuo: { bg: 'var(--engine-minimax-bg)', text: 'var(--engine-minimax-ink)' },
-  kling: { bg: 'var(--engine-kling-bg)', text: 'var(--engine-kling-ink)' },
-  wan: { bg: 'var(--engine-wan-bg)', text: 'var(--engine-wan-ink)' },
-  'ltx-2': { bg: 'var(--engine-lightricks-bg)', text: 'var(--engine-lightricks-ink)' },
-};
-
-const ENGINE_MODEL_LINKS: Record<string, string> = {
-  'sora-2': 'sora-2',
-  veo: 'veo-3-1',
-  kling: 'kling-2-6-pro',
-  wan: 'wan-2-6',
-  pika: 'pika-text-to-video',
-  hailuo: 'minimax-hailuo-02-text',
-  'ltx-2': 'ltx-2',
-};
-
   const engineFilterOptions = PREFERRED_ENGINE_ORDER.map((preferredId) => {
     const key = normalizeFilterId(preferredId);
     const existing = engineFilterMap.get(key);
@@ -687,65 +686,67 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
       </Head>
       <main className="container-page max-w-7xl section">
         <div className="stack-gap-lg">
-          <header className="max-w-3xl stack-gap-sm">
-            <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
-            <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
-            <p className="text-sm leading-relaxed text-text-secondary/90">{heroBody}</p>
-          </header>
+          <section className="halo-hero halo-hero-offset stack-gap-lg text-center">
+            <header className="mx-auto max-w-3xl stack-gap-sm text-center">
+              <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
+              <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
+              <p className="text-sm leading-relaxed text-text-secondary/90">{heroBody}</p>
+            </header>
 
-          <section className="flex flex-wrap items-center gap-4 text-xs text-text-secondary">
-            {engineFilterOptions.length ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-semibold uppercase tracking-micro text-text-muted">{engineFilterLabel}</span>
-                <div className="flex flex-wrap items-center gap-1">
-                  <Link
-                    href={{ pathname: '/examples', query: buildQueryParams(DEFAULT_SORT, null, 1) }}
-                    rel="nofollow"
-                    className={clsx(
-                      'flex h-9 items-center justify-center rounded-full border px-3 text-[11px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                      selectedEngine
-                        ? 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:text-text-primary'
-                        : 'border-hairline bg-surface-2 text-text-primary shadow-card'
-                    )}
-                  >
-                    {engineFilterAllLabel}
-                  </Link>
-                  {engineFilterOptions.map((engine) => {
-                    const isActive = selectedEngine === engine.id;
-                    const palette = ENGINE_FILTER_STYLES[engine.id.toLowerCase()] ?? null;
-                    return (
-                      <Link
-                        key={engine.id}
-                        href={{ pathname: '/examples', query: buildQueryParams(DEFAULT_SORT, engine.id, 1) }}
-                        rel="nofollow"
-                        className={clsx(
-                          'flex h-9 items-center justify-center rounded-full border px-4 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                          isActive
-                            ? 'border-transparent bg-text-primary text-on-inverse shadow-card'
-                            : palette
-                              ? 'border border-surface-on-media-dark-10 hover:opacity-90'
-                              : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:text-text-primary'
-                        )}
-                        style={palette ? { backgroundColor: palette.bg, color: palette.text } : undefined}
-                      >
-                        {engine.label}
-                      </Link>
-                    );
-                  })}
+            <section className="flex flex-wrap items-center justify-center gap-4 text-xs text-text-secondary">
+              {engineFilterOptions.length ? (
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <span className="font-semibold uppercase tracking-micro text-text-muted">{engineFilterLabel}</span>
+                  <div className="flex flex-wrap items-center justify-center gap-1">
+                    <Link
+                      href={{ pathname: '/examples', query: buildQueryParams(DEFAULT_SORT, null, 1) }}
+                      rel="nofollow"
+                      className={clsx(
+                        'flex h-9 items-center justify-center rounded-full border px-3 text-[11px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                        selectedEngine
+                          ? 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:text-text-primary'
+                          : 'border-hairline bg-surface-2 text-text-primary shadow-card'
+                      )}
+                    >
+                      {engineFilterAllLabel}
+                    </Link>
+                    {engineFilterOptions.map((engine) => {
+                      const isActive = selectedEngine === engine.id;
+                      const palette = ENGINE_FILTER_STYLES[engine.id.toLowerCase()] ?? null;
+                      return (
+                        <Link
+                          key={engine.id}
+                          href={{ pathname: '/examples', query: buildQueryParams(DEFAULT_SORT, engine.id, 1) }}
+                          rel="nofollow"
+                          className={clsx(
+                            'flex h-9 items-center justify-center rounded-full border px-4 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                            isActive
+                              ? 'border-transparent bg-text-primary text-bg shadow-card'
+                              : palette
+                                ? 'border border-surface-on-media-dark-10 hover:opacity-90'
+                                : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:text-text-primary'
+                          )}
+                          style={!isActive && palette ? { backgroundColor: palette.bg, color: palette.text } : undefined}
+                        >
+                          {engine.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </div>
+              ) : null}
+            </section>
+            {selectedEngine && modelPath ? (
+              <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-text-secondary">
+                <Link href={modelPath} className="font-semibold text-brand hover:text-brandHover">
+                  {engineModelLinkLabel}
+                </Link>
+                <Link href={pricingPath} className="font-semibold text-brand hover:text-brandHover">
+                  {pricingLinkLabel}
+                </Link>
               </div>
             ) : null}
           </section>
-          {selectedEngine && modelPath ? (
-            <div className="flex flex-wrap items-center gap-4 text-sm text-text-secondary">
-              <Link href={modelPath} className="font-semibold text-brand hover:text-brandHover">
-                {engineModelLinkLabel}
-              </Link>
-              <Link href={pricingPath} className="font-semibold text-brand hover:text-brandHover">
-                {pricingLinkLabel}
-              </Link>
-            </div>
-          ) : null}
 
           <section className="overflow-hidden rounded-[12px] border border-hairline bg-surface/80 shadow-card">
             <ExamplesGalleryGrid examples={clientVideos} loadMoreLabel={loadMoreLabel} />

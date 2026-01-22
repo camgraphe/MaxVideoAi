@@ -23,10 +23,12 @@ export function MarketingNav() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [desktopDropdownOpen, setDesktopDropdownOpen] = useState<string | null>(null);
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState<Record<string, boolean>>({});
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const avatarRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const desktopDropdownCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const brand = t('nav.brand', 'MaxVideo AI') ?? 'MaxVideo AI';
   const defaultLinks: Array<{ key: string; href: string }> = [
     { key: 'models', href: '/models' },
@@ -193,7 +195,27 @@ export function MarketingNav() {
   useEffect(() => {
     setMobileMenuOpen(false);
     setMobileDropdownOpen({});
+    setDesktopDropdownOpen(null);
+    if (desktopDropdownCloseTimeout.current) {
+      window.clearTimeout(desktopDropdownCloseTimeout.current);
+      desktopDropdownCloseTimeout.current = null;
+    }
   }, [pathname]);
+
+  const closeDesktopDropdown = (delay = 0) => {
+    if (desktopDropdownCloseTimeout.current) {
+      window.clearTimeout(desktopDropdownCloseTimeout.current);
+      desktopDropdownCloseTimeout.current = null;
+    }
+    if (delay <= 0) {
+      setDesktopDropdownOpen(null);
+      return;
+    }
+    desktopDropdownCloseTimeout.current = window.setTimeout(() => {
+      setDesktopDropdownOpen(null);
+      desktopDropdownCloseTimeout.current = null;
+    }, delay);
+  };
 
   const initials = useMemo(() => {
     if (!email) return '?';
@@ -263,8 +285,21 @@ export function MarketingNav() {
                 );
               }
               const allLabel = t(dropdown.allLabelKey, dropdown.allLabelFallback);
+              const isOpen = desktopDropdownOpen === item.key;
               return (
-                <div key={item.key} className="relative group">
+                <div
+                  key={item.key}
+                  className="relative"
+                  onMouseEnter={() => setDesktopDropdownOpen(item.key)}
+                  onMouseLeave={() => closeDesktopDropdown()}
+                  onFocus={() => setDesktopDropdownOpen(item.key)}
+                  onBlur={(event) => {
+                    const next = event.relatedTarget as Node | null;
+                    if (!event.currentTarget.contains(next)) {
+                      closeDesktopDropdown();
+                    }
+                  }}
+                >
                   <Link
                     href={item.href}
                     aria-haspopup="menu"
@@ -272,11 +307,17 @@ export function MarketingNav() {
                       'inline-flex items-center gap-1 whitespace-nowrap transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
                       isActive ? 'text-text-primary' : undefined
                     )}
+                    onClick={() => closeDesktopDropdown(200)}
                   >
                     <span>{label}</span>
                     <UIIcon icon={ChevronDown} size={14} strokeWidth={1.6} className="text-text-muted" />
                   </Link>
-                  <div className="invisible absolute left-0 top-full z-20 pt-2 opacity-0 transition duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                  <div
+                    className={clsx(
+                      'absolute left-0 top-full z-20 pt-2 transition duration-150',
+                      isOpen ? 'visible opacity-100' : 'invisible opacity-0'
+                    )}
+                  >
                     <div className="min-w-[240px] rounded-card border border-hairline bg-surface p-3 shadow-card">
                       <nav className="flex flex-col gap-1" role="menu" aria-label={label}>
                         {dropdown.items.map((entry) => (
@@ -285,6 +326,7 @@ export function MarketingNav() {
                             href={entry.href}
                             className="rounded-input px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             role="menuitem"
+                            onClick={() => closeDesktopDropdown(200)}
                           >
                             {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
                           </Link>
@@ -294,6 +336,7 @@ export function MarketingNav() {
                         <Link
                           href={dropdown.allHref}
                           className="flex items-center gap-2 rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          onClick={() => closeDesktopDropdown(200)}
                         >
                           {allLabel}
                         </Link>

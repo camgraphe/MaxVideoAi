@@ -25,6 +25,7 @@ import { serializeJsonLd } from '../model-jsonld';
 import { ButtonLink } from '@/components/ui/Button';
 import { TextLink } from '@/components/ui/TextLink';
 import { BackLink } from '@/components/video/BackLink';
+import { getExamplesHref } from '@/lib/examples-links';
 
 type PageParams = {
   params: {
@@ -1088,7 +1089,7 @@ function Sora2PageLayout({
     return `/${modelsBase}${slugPart}`.replace(/\/{2,}/g, '/');
   };
   const galleryEngineSlug = engineSlug;
-  const examplesLinkHref = { pathname: '/examples', query: { engine: galleryEngineSlug } };
+  const examplesLinkHref = getExamplesHref(galleryEngineSlug) ?? '/examples';
   const pricingLinkHref = { pathname: '/pricing' };
   const primaryCta = copy.primaryCta ?? localizedContent.hero?.ctaPrimary?.label ?? 'Start generating';
   const primaryCtaHref = copy.primaryCtaHref ?? localizedContent.hero?.ctaPrimary?.href ?? '/app?engine=sora-2';
@@ -1455,67 +1456,61 @@ function Sora2PageLayout({
               {copy.galleryIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.galleryIntro}</p> : null}
               {copy.galleryAllCta ? (
                 <p className="text-base leading-relaxed text-text-secondary">
-                  <Link
-                    href={`/examples?engine=${encodeURIComponent(galleryEngineSlug)}`}
-                    className="font-semibold text-brand hover:text-brandHover"
-                  >
+                  <Link href={examplesLinkHref} className="font-semibold text-brand hover:text-brandHover">
                     {copy.galleryAllCta}
                   </Link>
                 </p>
               ) : null}
-            <div className="stack-gap">
-              <div className="overflow-x-auto pb-2">
-                <div className="flex min-w-full gap-4">
-                  {galleryVideos.slice(0, 6).map((video) => (
-                    <article
-                      key={video.id}
-                      className="flex w-64 shrink-0 flex-col overflow-hidden rounded-2xl border border-hairline bg-surface shadow-card"
-                    >
-                      <Link href={video.href} className="group relative block aspect-video bg-placeholder">
-                        {video.optimizedPosterUrl || video.rawPosterUrl ? (
-                          <Image
-                            src={video.optimizedPosterUrl ?? video.rawPosterUrl ?? ''}
-                            alt={
-                              video.prompt
-                                ? `MaxVideoAI ${video.engineLabel} example – ${video.prompt}`
-                                : `MaxVideoAI ${video.engineLabel} example`
-                            }
-                            fill
-                            className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
-                            sizes="256px"
-                            quality={70}
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-skeleton text-xs font-semibold text-text-muted">
-                            No preview
-                          </div>
-                        )}
-                      </Link>
-                      <div className="space-y-1 px-4 py-3">
-                        <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-                          {video.engineLabel} · {video.durationSec}s
-                        </p>
-                        <p className="text-sm font-semibold leading-snug text-text-primary line-clamp-2">{video.prompt}</p>
-                        {video.recreateHref && copy.recreateLabel ? (
-                          <TextLink href={video.recreateHref} className="text-[11px]" linkComponent={Link}>
-                            {copy.recreateLabel}
-                          </TextLink>
-                        ) : null}
-                      </div>
-                    </article>
-                  ))}
+              <div className="stack-gap">
+                <div className="overflow-x-auto pb-2">
+                  <div className="flex min-w-full gap-4">
+                    {galleryVideos.slice(0, 6).map((video) => (
+                      <article
+                        key={video.id}
+                        className="flex w-64 shrink-0 flex-col overflow-hidden rounded-2xl border border-hairline bg-surface shadow-card"
+                      >
+                        <Link href={video.href} className="group relative block aspect-video bg-placeholder">
+                          {video.optimizedPosterUrl || video.rawPosterUrl ? (
+                            <Image
+                              src={video.optimizedPosterUrl ?? video.rawPosterUrl ?? ''}
+                              alt={
+                                video.prompt
+                                  ? `MaxVideoAI ${video.engineLabel} example – ${video.prompt}`
+                                  : `MaxVideoAI ${video.engineLabel} example`
+                              }
+                              fill
+                              className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+                              sizes="256px"
+                              quality={70}
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-skeleton text-xs font-semibold text-text-muted">
+                              No preview
+                            </div>
+                          )}
+                        </Link>
+                        <div className="space-y-1 px-4 py-3">
+                          <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
+                            {video.engineLabel} · {video.durationSec}s
+                          </p>
+                          <p className="text-sm font-semibold leading-snug text-text-primary line-clamp-2">{video.prompt}</p>
+                          {video.recreateHref && copy.recreateLabel ? (
+                            <TextLink href={video.recreateHref} className="text-[11px]" linkComponent={Link}>
+                              {copy.recreateLabel}
+                            </TextLink>
+                          ) : null}
+                        </div>
+                      </article>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
             </>
           ) : (
             <div className="mt-4 rounded-2xl border border-dashed border-hairline bg-surface/60 px-4 py-4 text-sm text-text-secondary">
               {copy.galleryIntro ?? 'Sora 2 examples will appear here soon.'}{' '}
               {copy.galleryAllCta ? (
-                <Link
-                  href={`/examples?engine=${encodeURIComponent(galleryEngineSlug)}`}
-                  className="font-semibold text-brand hover:text-brandHover"
-                >
+                <Link href={examplesLinkHref} className="font-semibold text-brand hover:text-brandHover">
                   {copy.galleryAllCta}
                 </Link>
               ) : null}
@@ -2052,7 +2047,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
         href: '/generate',
       }
     : null;
-  const examplesLinkHref = { pathname: '/examples', query: { engine: engine.modelSlug ?? slug } };
+  const examplesLinkHref = getExamplesHref(engine.modelSlug ?? slug) ?? '/examples';
   const pricingLinkHref = { pathname: '/pricing' };
 
   const heroPosterSrc = localizedContent.seo.image ?? engine.media?.imagePath ?? null;

@@ -320,12 +320,23 @@ export default async function PricingPage({ params }: { params: { locale: AppLoc
 
   const faqJsonLdEntries = faq.entries.slice(0, 6);
 
+  const heroTitleLines = (content.hero.title ?? '').split('\n').map((line) => line.trim()).filter(Boolean);
+  const heroSubtitleLines = (content.hero.subtitle ?? '').split('\n').map((line) => line.trim()).filter(Boolean);
+  const heroHeadline = heroTitleLines[0] ?? content.hero.title;
+  const heroSupportingLines = heroTitleLines.slice(1).concat(heroSubtitleLines);
+
   return (
     <main className="container-page max-w-6xl section">
       <div className="stack-gap-lg">
-        <header className="max-w-3xl stack-gap-sm">
-          <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
-          <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
+        <header className="halo-hero halo-hero-offset mx-auto max-w-3xl stack-gap-sm text-center">
+          <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{heroHeadline}</h1>
+          {heroSupportingLines.length ? (
+            <div className="space-y-2 text-base leading-relaxed text-text-secondary">
+              {heroSupportingLines.map((line) => (
+                <p key={line}>{line}</p>
+              ))}
+            </div>
+          ) : null}
           {heroLink ? (
             <p className="text-base leading-relaxed text-text-secondary">
               {heroLink.before}

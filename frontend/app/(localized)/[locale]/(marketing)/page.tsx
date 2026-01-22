@@ -22,6 +22,7 @@ import type { AppLocale } from '@/i18n/locales';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { computePricingSnapshot, listPricingRules } from '@/lib/pricing';
 import type { PricingRuleLite } from '@/lib/pricing-rules';
+import { getExamplesHref } from '@/lib/examples-links';
 
 const ProofTabs = dynamic(
   () =>
@@ -584,7 +585,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
               detailMeta={tile.detailMeta}
               authenticatedHref="/generate"
               guestHref="/login?next=/generate"
-              overlayHref={tile.examplesSlug ? `/examples?engine=${encodeURIComponent(tile.examplesSlug)}` : undefined}
+              overlayHref={getExamplesHref(tile.examplesSlug) ?? undefined}
             />
           ))}
         </div>
@@ -609,7 +610,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
         </div>
       </section>
 
-      <section className="border-t border-hairline bg-bg section pt-10 pb-0 sm:pt-12 lg:pt-16 halo-workspace-left">
+      <section className="border-t border-hairline bg-bg section pt-10 pb-6 sm:pt-12 sm:pb-8 lg:pt-16 lg:pb-0 halo-workspace-left">
         <div className="container-page flex max-w-7xl flex-col-reverse items-center gap-[var(--grid-gap-xl)] lg:flex-row lg:items-stretch">
           <div className="w-full sm:max-w-[62ch] stack-gap-lg text-left lg:w-[40%] lg:self-center">
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{heroScreenshot.title}</h2>

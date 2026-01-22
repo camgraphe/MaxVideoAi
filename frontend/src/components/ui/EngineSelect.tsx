@@ -21,6 +21,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { Link } from '@/i18n/navigation';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { DEFAULT_ENGINE_GUIDE, type EngineGuideEntry } from '@/lib/engine-guides';
+import { getExamplesHref } from '@/lib/examples-links';
 
 const MODE_LABELS: Record<Mode, string> = {
   t2v: 'Text -> Video',
@@ -1057,7 +1058,7 @@ function BrowseEnginesModal({
               const modelSlug = meta?.modelSlug;
               const modelHref = modelSlug ? `/models/${modelSlug}` : null;
               const allowExamples = meta?.category !== 'image' && meta?.type !== 'image';
-              const examplesHref = modelSlug && allowExamples ? `/examples?engine=${encodeURIComponent(modelSlug)}` : null;
+              const examplesHref = modelSlug && allowExamples ? getExamplesHref(modelSlug) : null;
               const showModelLink = Boolean(modelHref);
               const showExamplesLink = Boolean(examplesHref);
 

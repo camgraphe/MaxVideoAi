@@ -7,8 +7,8 @@ import { notFound } from 'next/navigation';
 import Script from 'next/script';
 import { headers } from 'next/headers';
 import { getVideoById, type GalleryVideo } from '@/server/videos';
-import { PromptPreview } from '@/components/video/PromptPreview';
 import { BackLink } from '@/components/video/BackLink';
+import { CopyPromptButton } from '@/components/CopyPromptButton';
 import { resolveDictionary } from '@/lib/i18n/server';
 import type { Dictionary } from '@/lib/i18n/types';
 import { localeRegions, type AppLocale } from '@/i18n/locales';
@@ -91,6 +91,12 @@ const DEFAULT_VIDEO_COPY = {
     body: 'Start a render from this prompt or load it in the workspace to remix with your preferred engine, duration, or audio settings.',
     cta: 'Start a render →',
   },
+  recreate: {
+    title: 'Recreate this video',
+    body: 'Load this render in your workspace with the original settings prefilled.',
+    cta: 'Recreate in Workspace →',
+    microcopy: 'Loads prompt + engine + duration + audio.',
+  },
   blog: {
     title: 'Keep leveling up',
     message: 'Learn more about AI video creation — visit our blog for tips, engine comparisons, and creative use cases.',
@@ -111,6 +117,13 @@ function formatPrompt(prompt?: string | null, maxLength = 320): string {
   if (!clean) return 'AI-generated video created with MaxVideoAI.';
   if (clean.length <= maxLength) return clean;
   return `${clean.slice(0, maxLength - 1)}…`;
+}
+
+function formatPromptPreview(prompt: string, fallback: string, maxLength = 220): string {
+  const clean = prompt.replace(/\s+/g, ' ').trim();
+  if (!clean) return fallback;
+  if (clean.length <= maxLength) return clean;
+  return `${clean.slice(0, Math.max(1, maxLength - 1))}…`;
 }
 
 function toDurationIso(seconds?: number | null): string {
@@ -218,6 +231,10 @@ function resolveVideoCopy(dictionary: Dictionary): VideoPageCopy {
     create: {
       ...DEFAULT_VIDEO_COPY.create,
       ...(overrides.create ?? {}),
+    },
+    recreate: {
+      ...DEFAULT_VIDEO_COPY.recreate,
+      ...(overrides.recreate ?? {}),
     },
     blog: {
       ...DEFAULT_VIDEO_COPY.blog,
@@ -499,7 +516,7 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
   const engineEntry = resolveEngineEntry(video.engineId);
   const engineLabel = video.engineLabel ?? copy.hero.titleFallback;
   const heroHeading = video.promptExcerpt || video.prompt || engineLabel;
-  const heroIntro = renderTemplate(copy.hero.intro, { engine: engineLabel });
+  const heroTitle = engineLabel || heroHeading || copy.hero.titleFallback;
   const engineDescription = engineEntry?.seo?.description ?? copy.details.engineDescriptionFallback;
   const engineSlug = engineEntry?.modelSlug ?? normalizeEngineId(video.engineId ?? '') ?? '';
   const engineLink = engineSlug
@@ -513,13 +530,17 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
   const aspectDisplay = formatAspectDisplay(video.aspectRatio, copy);
   const createdDisplay = formatDateDisplay(video.createdAt, locale);
   const audioDisplay = describeAudio(video.hasAudio, copy);
+  const promptPreview = formatPromptPreview(video.promptExcerpt || video.prompt || '', copy.hero.promptFallback, 220);
 
-  const containerStyle: CSSProperties = {};
+  const heroMaxHeightVh = 50;
+  const containerStyle: CSSProperties = {
+    maxHeight: `${heroMaxHeightVh}vh`,
+    width: '100%',
+  };
   if (aspect) {
     containerStyle.aspectRatio = `${aspect.width} / ${aspect.height}`;
-  }
-  if (isPortrait) {
-    containerStyle.maxWidth = '50%';
+    const maxWidth = heroMaxHeightVh * (aspect.width / aspect.height);
+    containerStyle.maxWidth = `${maxWidth.toFixed(2)}vh`;
     containerStyle.margin = '0 auto';
   }
 
@@ -557,55 +578,113 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
         <BackLink href={backHref} label={copy.backLink} className="transition hover:text-text-secondary" />
       </div>
       <article className="space-y-12">
-        <section className="grid grid-gap-lg lg:grid-cols-2 lg:items-start">
-          <div className="lg:order-1">
-            <div
-              className="relative overflow-hidden rounded-card border border-border bg-black shadow-card"
-              style={containerStyle}
-            >
-              {video.videoUrl ? (
-                <video
-                  controls
-                  poster={playbackPoster}
-                  className="h-full w-full object-contain"
-                  playsInline
-                  preload="metadata"
-                  style={aspect ? { aspectRatio: `${aspect.width} / ${aspect.height}` } : undefined}
+        <section className="mx-auto w-full max-w-5xl rounded-[32px] border border-surface-on-media-20 bg-surface-glass-95 p-4 shadow-float">
+          <div className="border-b border-hairline pb-4">
+            <div className="grid w-full gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+              <div className="min-w-0 space-y-2">
+                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-micro text-text-muted">
+                  {engineLink ? (
+                    <Link
+                      href={engineLink}
+                      className="inline-flex items-center gap-1 rounded-full bg-surface-glass-90 px-2 py-0.5 text-[11px] font-semibold text-brand shadow-sm transition hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <span>{copy.details.engineCta}</span>
+                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
+                        <path
+                          d="M4 12L12 4M5 4h7v7"
+                          stroke="currentColor"
+                          strokeWidth="1.6"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </Link>
+                  ) : null}
+                </div>
+                <h1 className="text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">{heroTitle}</h1>
+              </div>
+              <div className="flex flex-col items-start gap-1 sm:items-end sm:text-right">
+                <span className="text-[11px] text-text-secondary">{copy.recreate.microcopy}</span>
+                <ButtonLink
+                  href={`/app?from=${encodeURIComponent(video.id)}`}
+                  size="sm"
+                  className="rounded-pill px-4 py-2 text-xs font-semibold uppercase tracking-micro whitespace-nowrap"
                 >
-                  <source src={video.videoUrl} type="video/mp4" />
-                </video>
-              ) : (
-                <Image
-                  src={playbackPoster}
-                  alt={heroHeading}
-                  fill
-                  className="object-contain"
-                  style={aspect ? { aspectRatio: `${aspect.width} / ${aspect.height}` } : undefined}
-                  sizes="(min-width: 1024px) 640px, 100vw"
-                />
-              )}
+                  {copy.recreate.cta}
+                </ButtonLink>
+              </div>
             </div>
           </div>
-          <div className="space-y-4 lg:order-none">
-            <p className="text-sm font-semibold uppercase tracking-micro text-text-muted">
-              {engineLabel ?? video.engineId ?? 'MaxVideoAI'}
-            </p>
-            <h1 className="text-3xl font-semibold tracking-tight text-text-primary">{heroHeading}</h1>
-            <p className="text-base leading-relaxed text-text-secondary">{heroIntro}</p>
-            <PromptPreview
-              prompt={prompt}
-              promptLabel={copy.hero.promptLabel}
-              promptFallback={copy.hero.promptFallback}
-              showMoreLabel={copy.hero.showMore}
-              showLessLabel={copy.hero.showLess}
-              copyLabel={copy.hero.copy}
-              copiedLabel={copy.hero.copied}
-            />
+          <div className="mt-4 overflow-hidden rounded-3xl border border-hairline bg-black" style={containerStyle}>
+            {video.videoUrl ? (
+              <video
+                controls
+                poster={playbackPoster}
+                className="h-full w-full object-contain"
+                playsInline
+                preload="metadata"
+                style={aspect ? { aspectRatio: `${aspect.width} / ${aspect.height}` } : undefined}
+              >
+                <source src={video.videoUrl} type="video/mp4" />
+              </video>
+            ) : (
+              <Image
+                src={playbackPoster}
+                alt={heroTitle}
+                fill
+                className="object-contain"
+                style={aspect ? { aspectRatio: `${aspect.width} / ${aspect.height}` } : undefined}
+                sizes="(min-width: 1024px) 720px, 100vw"
+              />
+            )}
           </div>
         </section>
-        <section className="grid grid-gap-lg lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
+
+        <section className="mx-auto w-full max-w-5xl space-y-6">
           <div className="rounded-card border border-border bg-surface-glass-90 p-6 shadow-card backdrop-blur">
-            <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-text-primary">{copy.details.title}</h2>
+            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-text-secondary">
+              <div className="flex items-center gap-2">
+                <span className="uppercase tracking-micro text-text-muted">{copy.details.priceTotalLabel}</span>
+                <span className="font-semibold text-text-primary">{totalPriceDisplay}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="uppercase tracking-micro text-text-muted">{copy.details.durationLabel}</span>
+                <span className="font-semibold text-text-primary">{durationDisplay}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="uppercase tracking-micro text-text-muted">{copy.details.aspectLabel}</span>
+                <span className="font-semibold text-text-primary">{aspectDisplay}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="uppercase tracking-micro text-text-muted">{copy.details.audioLabel}</span>
+                <span className="font-semibold text-text-primary">
+                  {audioDisplay.charAt(0).toUpperCase() + audioDisplay.slice(1)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="uppercase tracking-micro text-text-muted">{copy.details.createdLabel}</span>
+                <span className="font-semibold text-text-primary">{createdDisplay}</span>
+              </div>
+            </div>
+            {discountNote ? <p className="mt-2 text-xs font-semibold text-brand">{discountNote}</p> : null}
+            <div className="mt-5 border-t border-hairline pt-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs uppercase tracking-micro text-text-muted">{copy.hero.promptLabel}</p>
+                <CopyPromptButton prompt={prompt} copyLabel={copy.hero.copy} copiedLabel={copy.hero.copied} />
+              </div>
+              <p className="mt-2 text-sm text-text-secondary">{promptPreview}</p>
+              <details className="group mt-3">
+                <summary className="flex cursor-pointer items-center gap-2 text-xs font-semibold uppercase tracking-micro text-text-muted">
+                  <span className="group-open:hidden">{copy.hero.showMore}</span>
+                  <span className="hidden group-open:inline">{copy.hero.showLess}</span>
+                </summary>
+                <p className="mt-2 whitespace-pre-line text-sm text-text-secondary">
+                  {prompt || copy.hero.promptFallback}
+                </p>
+              </details>
+            </div>
+            <div className="mt-5 border-t border-hairline pt-4">
               {engineLink ? (
                 <Link
                   href={engineLink}
@@ -625,48 +704,34 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
                   <p className="mt-1 text-sm text-text-secondary">{engineDescription}</p>
                 </div>
               )}
-              <dl className="grid grid-gap-sm text-sm text-text-secondary sm:grid-cols-2">
-                <div>
-                  <dt className="text-xs uppercase tracking-micro text-text-muted">{copy.details.priceTotalLabel}</dt>
-                  <dd className="mt-1 text-base font-medium text-text-primary">{totalPriceDisplay}</dd>
-                  {discountNote ? (
-                    <p className="mt-1 text-xs font-semibold text-brand">{discountNote}</p>
-                  ) : null}
-                </div>
-                <div>
-                  <dt className="text-xs uppercase tracking-micro text-text-muted">{copy.details.durationLabel}</dt>
-                  <dd className="mt-1 text-base font-medium text-text-primary">{durationDisplay}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs uppercase tracking-micro text-text-muted">{copy.details.aspectLabel}</dt>
-                  <dd className="mt-1 text-base font-medium text-text-primary">{aspectDisplay}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs uppercase tracking-micro text-text-muted">{copy.details.createdLabel}</dt>
-                  <dd className="mt-1 text-base font-medium text-text-primary">{createdDisplay}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs uppercase tracking-micro text-text-muted">{copy.details.audioLabel}</dt>
-                  <dd className="mt-1 text-base font-medium text-text-primary">
-                    {audioDisplay.charAt(0).toUpperCase() + audioDisplay.slice(1)}
-                  </dd>
-                </div>
-              </dl>
-              <div>
-                <ButtonLink href={pricingPath} variant="outline" className="w-full">
-                  {copy.details.cta}
-                </ButtonLink>
-                <p className="mt-2 text-xs text-text-secondary">{copy.details.ctaDescription}</p>
-              </div>
             </div>
           </div>
-          <div className="space-y-4">
+
+          <div className="rounded-card border border-border bg-surface-glass-90 p-6 shadow-card backdrop-blur">
+            <p className="text-xs uppercase tracking-micro text-text-muted">{copy.recreate.title}</p>
+            <p className="mt-2 text-sm text-text-secondary">{copy.recreate.body}</p>
+            <ButtonLink href={`/app?from=${encodeURIComponent(video.id)}`} size="lg" className="mt-4 w-full">
+              {copy.recreate.cta}
+            </ButtonLink>
+            <p className="mt-2 text-xs text-text-secondary">{copy.recreate.microcopy}</p>
+          </div>
+        </section>
+
+        <section className="mx-auto w-full max-w-5xl">
+          <div className="grid grid-gap-lg lg:grid-cols-3">
             <div className="rounded-card border border-border bg-surface-glass-90 p-6 shadow-card backdrop-blur">
               <p className="text-xs uppercase tracking-micro text-text-muted">{copy.create.title}</p>
               <h3 className="mt-1 text-lg font-semibold text-text-primary">{copy.create.subtitle}</h3>
               <p className="mt-2 text-sm text-text-secondary">{copy.create.body}</p>
               <ButtonLink href={`/app?from=${encodeURIComponent(video.id)}`} size="lg" className="mt-4 w-full">
                 {copy.create.cta}
+              </ButtonLink>
+            </div>
+            <div className="rounded-card border border-border bg-surface-glass-90 p-6 shadow-card backdrop-blur">
+              <h3 className="text-lg font-semibold text-text-primary">{copy.details.cta}</h3>
+              <p className="mt-2 text-sm text-text-secondary">{copy.details.ctaDescription}</p>
+              <ButtonLink href={pricingPath} variant="outline" className="mt-4 w-full">
+                {copy.details.cta}
               </ButtonLink>
             </div>
             <div className="rounded-card border border-border bg-surface-glass-90 p-6 shadow-card backdrop-blur">

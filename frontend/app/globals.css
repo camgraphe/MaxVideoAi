@@ -135,6 +135,11 @@ main {
     radial-gradient(520px 260px at 78% 120%, rgba(91, 124, 250, 0.22), transparent 70%);
 }
 
+.halo-hero-offset {
+  margin-top: calc(var(--section-padding-y) * -1);
+  padding-top: var(--section-padding-y);
+}
+
 [data-theme="dark"] .chip-price {
   border-color: var(--on-brand);
   color: var(--on-brand);
