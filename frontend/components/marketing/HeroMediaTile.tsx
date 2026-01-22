@@ -137,27 +137,44 @@ export function HeroMediaTile({
       setShouldRenderVideo(true);
       return;
     }
-    const delayMs = priority ? 2000 : 0;
+    const delayMs = priority ? 4000 : 0;
     let idleHandle: number | null = null;
     let timeoutHandle: number | null = null;
     let scheduled = false;
-    const scheduleVideo = () => {
+    const cleanupInteraction = () => {
+      window.removeEventListener('pointerdown', handleInteraction);
+      window.removeEventListener('pointermove', handleInteraction);
+      window.removeEventListener('scroll', handleInteraction);
+      window.removeEventListener('keydown', handleInteraction);
+    };
+    const startVideo = () => {
       if (scheduled) return;
       scheduled = true;
+      setShouldRenderVideo(true);
+      cleanupInteraction();
+    };
+    const handleInteraction = () => {
+      startVideo();
+    };
+    const scheduleVideo = () => {
+      if (scheduled) return;
       if (delayMs <= 0) {
-        setShouldRenderVideo(true);
+        const idleWindow = window as typeof window & {
+          requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+          cancelIdleCallback?: (handle: number) => void;
+        };
+        if (typeof idleWindow.requestIdleCallback === 'function') {
+          idleHandle = idleWindow.requestIdleCallback(startVideo, { timeout: 300 });
+        } else {
+          timeoutHandle = window.setTimeout(startVideo, 0);
+        }
         return;
       }
-      const run = () => setShouldRenderVideo(true);
-      const idleWindow = window as typeof window & {
-        requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
-        cancelIdleCallback?: (handle: number) => void;
-      };
-      if (typeof idleWindow.requestIdleCallback === 'function') {
-        idleHandle = idleWindow.requestIdleCallback(run, { timeout: delayMs });
-      } else {
-        timeoutHandle = window.setTimeout(run, delayMs);
-      }
+      window.addEventListener('pointerdown', handleInteraction, { passive: true });
+      window.addEventListener('pointermove', handleInteraction, { passive: true });
+      window.addEventListener('scroll', handleInteraction, { passive: true });
+      window.addEventListener('keydown', handleInteraction);
+      timeoutHandle = window.setTimeout(startVideo, delayMs);
     };
     const observer = new IntersectionObserver(
       (entries) => {
@@ -171,6 +188,7 @@ export function HeroMediaTile({
     observer.observe(node);
     return () => {
       observer.disconnect();
+      cleanupInteraction();
       if (idleHandle !== null) {
         (window as typeof window & { cancelIdleCallback?: (handle: number) => void }).cancelIdleCallback?.(idleHandle);
       }
