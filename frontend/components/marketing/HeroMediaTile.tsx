@@ -6,6 +6,7 @@ import { Link } from '@/i18n/navigation';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { Button } from '@/components/ui/Button';
 import { supabase } from '@/lib/supabaseClient';
+import { buildNextImageProxyUrl } from '@/lib/media-helpers';
 
 interface HeroMediaTileProps {
   label: string;
@@ -59,6 +60,7 @@ export function HeroMediaTile({
   const [shouldRenderVideo, setShouldRenderVideo] = useState<boolean>(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const videoPosterSrc = buildNextImageProxyUrl(posterSrc, { width: 1200, quality: 80 }) ?? posterSrc;
 
   useEffect(() => {
     if (!authenticatedHref && !guestHref) {
@@ -137,7 +139,8 @@ export function HeroMediaTile({
       setShouldRenderVideo(true);
       return;
     }
-    const delayMs = priority ? 4000 : 0;
+    const requireInteraction = Boolean(priority);
+    const delayMs = requireInteraction ? 0 : 0;
     let idleHandle: number | null = null;
     let timeoutHandle: number | null = null;
     let scheduled = false;
@@ -158,6 +161,13 @@ export function HeroMediaTile({
     };
     const scheduleVideo = () => {
       if (scheduled) return;
+      if (requireInteraction) {
+        window.addEventListener('pointerdown', handleInteraction, { passive: true });
+        window.addEventListener('pointermove', handleInteraction, { passive: true });
+        window.addEventListener('scroll', handleInteraction, { passive: true });
+        window.addEventListener('keydown', handleInteraction);
+        return;
+      }
       if (delayMs <= 0) {
         const idleWindow = window as typeof window & {
           requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
@@ -228,7 +238,7 @@ export function HeroMediaTile({
             loop
             playsInline
             preload={priority ? 'none' : 'metadata'}
-            poster={posterSrc}
+            poster={videoPosterSrc}
             aria-label={alt}
           >
             <source src={videoSrc} type="video/mp4" />
