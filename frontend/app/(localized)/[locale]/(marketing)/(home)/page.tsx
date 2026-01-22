@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import dynamic from 'next/dynamic';
-import Image from 'next/image';
+import Image, { getImageProps } from 'next/image';
 import { Link } from '@/i18n/navigation';
 import Script from 'next/script';
 import { getTranslations } from 'next-intl/server';
@@ -138,6 +138,26 @@ const HERO_TILES: readonly HeroTileConfig[] = [
     examplesSlug: 'minimax-hailuo-02',
   },
 ] as const;
+
+const HERO_POSTER_WIDTH = 1200;
+const HERO_POSTER_HEIGHT = 675;
+const HERO_POSTER_QUALITY = 80;
+
+function buildOptimizedPoster(src: string): string {
+  if (!src) return src;
+  if (src.startsWith('/_next/image') || src.includes('/_next/image?')) {
+    return src;
+  }
+  const { props } = getImageProps({
+    src,
+    alt: '',
+    width: HERO_POSTER_WIDTH,
+    height: HERO_POSTER_HEIGHT,
+    quality: HERO_POSTER_QUALITY,
+    priority: true,
+  });
+  return props.src;
+}
 
 const WORKS_WITH_BRANDS = [
   'Sora 2',
@@ -397,6 +417,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
     const label = slot?.title || video?.engineLabel || fallback.label;
     const videoSrc = video?.videoUrl ?? fallback.videoSrc;
     const posterSrc = video?.thumbUrl ?? fallback.posterSrc;
+    const videoPosterSrc = buildOptimizedPoster(posterSrc);
     const adminPriceLabel = slot?.subtitle?.trim() || null;
     const alt = video?.promptExcerpt || fallback.alt;
     const engineId = normalizeEngineId(video?.engineId ?? fallback.engineId) ?? fallback.engineId;
@@ -423,6 +444,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
       label,
       videoSrc,
       posterSrc,
+      videoPosterSrc,
       alt,
       showAudioIcon: fallback.showAudioIcon ?? false,
       engineId,
@@ -564,6 +586,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
               priceLabel={tile.adminPriceLabel ?? heroPriceMap[tile.id] ?? tile.fallbackPriceLabel}
               videoSrc={tile.videoSrc}
               posterSrc={tile.posterSrc}
+              videoPosterSrc={tile.videoPosterSrc}
               alt={tile.alt}
               showAudioIcon={tile.showAudioIcon}
               priority={index === 0}

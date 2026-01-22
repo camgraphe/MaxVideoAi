@@ -11,6 +11,7 @@ interface HeroMediaTileProps {
   priceLabel: string;
   videoSrc: string;
   posterSrc: string;
+  videoPosterSrc?: string;
   alt: string;
   showAudioIcon?: boolean;
   badge?: string;
@@ -34,6 +35,7 @@ export function HeroMediaTile({
   priceLabel,
   videoSrc,
   posterSrc,
+  videoPosterSrc,
   alt,
   showAudioIcon,
   badge,
@@ -56,6 +58,7 @@ export function HeroMediaTile({
   const ctaHref = authenticatedHref ?? guestHref ?? null;
   const cardHref = detailHref ? null : ctaHref;
   const [shouldRenderVideo, setShouldRenderVideo] = useState<boolean>(false);
+  const [isVideoReady, setIsVideoReady] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -71,6 +74,7 @@ export function HeroMediaTile({
   useEffect(() => {
     if (prefersReducedMotion) {
       setShouldRenderVideo(false);
+      setIsVideoReady(false);
       return;
     }
     if (typeof window === 'undefined') return;
@@ -93,6 +97,12 @@ export function HeroMediaTile({
   }, [prefersReducedMotion]);
 
   useEffect(() => {
+    if (!shouldRenderVideo) {
+      setIsVideoReady(false);
+    }
+  }, [shouldRenderVideo]);
+
+  useEffect(() => {
     if (!lightboxOpen) return;
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -109,38 +119,42 @@ export function HeroMediaTile({
   }, [lightboxOpen]);
 
   const content = (
-    <figure className="group relative overflow-hidden rounded-[28px] border border-preview-outline-idle bg-surface shadow-card">
+    <figure className="group relative w-full overflow-hidden rounded-[28px] border border-preview-outline-idle bg-surface shadow-card">
       <div className="relative aspect-[16/9] w-full">
         {showAudioIcon ? (
           <AudioEqualizerBadge tone="light" size="sm" label="Audio enabled" />
         ) : null}
+        <Image
+          src={posterSrc}
+          alt={alt}
+          fill
+          priority={priority}
+          fetchPriority={priority ? 'high' : undefined}
+          loading={priority ? 'eager' : 'lazy'}
+          decoding="async"
+          quality={80}
+          sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 40vw"
+          className={`object-cover transition-opacity duration-300 ${
+            shouldRenderVideo && !prefersReducedMotion && isVideoReady ? 'opacity-0' : 'opacity-100'
+          }`}
+        />
         {shouldRenderVideo && !prefersReducedMotion ? (
           <video
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+            className={`absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03] ${
+              isVideoReady ? 'opacity-100 visible' : 'opacity-0 invisible'
+            }`}
             autoPlay
             muted
             loop
             playsInline
-            preload="metadata"
-            poster={posterSrc}
+            preload={priority ? 'metadata' : 'none'}
+            poster={videoPosterSrc ?? posterSrc}
             aria-label={alt}
+            onLoadedData={() => setIsVideoReady(true)}
           >
             <source src={videoSrc} type="video/mp4" />
           </video>
-        ) : (
-          <Image
-            src={posterSrc}
-            alt={alt}
-            fill
-            priority={priority}
-            fetchPriority={priority ? 'high' : undefined}
-            loading={priority ? 'eager' : 'lazy'}
-            decoding="async"
-            quality={80}
-            sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 40vw"
-            className="object-cover"
-          />
-        )}
+        ) : null}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-2 bg-gradient-to-t from-black/65 via-black/35 to-transparent p-4 text-left text-on-inverse">
           {badge ? (
             <span className="inline-flex h-6 items-center rounded-pill border border-surface-on-media-50 bg-surface-on-media-15 px-3 text-[11px] font-semibold uppercase tracking-micro text-on-inverse">
