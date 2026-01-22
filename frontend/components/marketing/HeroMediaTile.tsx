@@ -134,13 +134,11 @@ export function HeroMediaTile({
           decoding="async"
           quality={80}
           sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 40vw"
-          className={`object-cover transition-opacity duration-300 ${
-            shouldRenderVideo && !prefersReducedMotion && isVideoReady ? 'opacity-0' : 'opacity-100'
-          }`}
+          className="object-cover"
         />
         {shouldRenderVideo && !prefersReducedMotion ? (
           <video
-            className={`absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03] ${
+            className={`absolute inset-0 h-full w-full scale-[0.999] object-cover transition duration-500 group-hover:scale-[1.03] ${
               isVideoReady ? 'opacity-100 visible' : 'opacity-0 invisible'
             }`}
             autoPlay
