@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { Button } from '@/components/ui/Button';
-import { buildNextImageProxyUrl } from '@/lib/media-helpers';
+import { supabase } from '@/lib/supabaseClient';
 
 interface HeroMediaTileProps {
   label: string;
@@ -23,17 +23,12 @@ interface HeroMediaTileProps {
   detailHref?: string | null;
   generateHref?: string | null;
   modelHref?: string | null;
-  isAuthenticated?: boolean;
-  syncPlayback?: boolean;
   detailMeta?: {
     prompt?: string | null;
     engineLabel?: string | null;
     durationSec?: number | null;
   } | null;
 }
-
-const HERO_BLUR_DATA_URL =
-  'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSI5Ij48cmVjdCB3aWR0aD0iMTYiIGhlaWdodD0iOSIgZmlsbD0iIzBiMGIwYiIvPjwvc3ZnPg==';
 
 export function HeroMediaTile({
   label,
@@ -51,8 +46,6 @@ export function HeroMediaTile({
   detailHref,
   generateHref,
   modelHref,
-  isAuthenticated,
-  syncPlayback,
   detailMeta,
 }: HeroMediaTileProps) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
@@ -61,21 +54,68 @@ export function HeroMediaTile({
     }
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   });
-  const ctaHref = (() => {
-    if (!authenticatedHref && !guestHref) {
-      return null;
-    }
-    if (typeof isAuthenticated === 'boolean') {
-      return isAuthenticated ? authenticatedHref ?? guestHref ?? null : guestHref ?? authenticatedHref ?? null;
-    }
-    return guestHref ?? authenticatedHref ?? null;
-  })();
+  const [ctaHref, setCtaHref] = useState<string | null>(() => guestHref ?? authenticatedHref ?? null);
   const cardHref = detailHref ? null : ctaHref;
   const [shouldRenderVideo, setShouldRenderVideo] = useState<boolean>(false);
-  const [videoReady, setVideoReady] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const videoPosterSrc = buildNextImageProxyUrl(posterSrc, { width: 1200, quality: 80 }) ?? posterSrc;
+
+  useEffect(() => {
+    if (!authenticatedHref && !guestHref) {
+      setCtaHref(null);
+      return;
+    }
+    let mounted = true;
+    const resolveHref = (sessionPresent: boolean) => {
+      const next = sessionPresent ? authenticatedHref ?? guestHref ?? null : guestHref ?? authenticatedHref ?? null;
+      if (mounted) {
+        setCtaHref(next);
+      }
+    };
+    const runAuthCheck = () => {
+      supabase.auth
+        .getSession()
+        .then(({ data }) => {
+          resolveHref(Boolean(data.session));
+        })
+        .catch(() => {
+          resolveHref(false);
+        });
+    };
+
+    let cancelScheduledAuthCheck: (() => void) | null = null;
+    if (typeof window === 'undefined') {
+      runAuthCheck();
+    } else {
+      const idleWindow = window as typeof window & {
+        requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+        cancelIdleCallback?: (handle: number) => void;
+      };
+      if (typeof idleWindow.requestIdleCallback === 'function') {
+        const handle = idleWindow.requestIdleCallback(
+          () => {
+            runAuthCheck();
+          },
+          { timeout: 500 }
+        );
+        cancelScheduledAuthCheck = () => idleWindow.cancelIdleCallback?.(handle);
+      } else {
+        const rafHandle = window.requestAnimationFrame(() => {
+          runAuthCheck();
+        });
+        cancelScheduledAuthCheck = () => window.cancelAnimationFrame(rafHandle);
+      }
+    }
+
+    const { data: authSubscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      resolveHref(Boolean(session));
+    });
+    return () => {
+      mounted = false;
+      authSubscription?.subscription.unsubscribe();
+      cancelScheduledAuthCheck?.();
+    };
+  }, [authenticatedHref, guestHref]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -97,88 +137,18 @@ export function HeroMediaTile({
       setShouldRenderVideo(true);
       return;
     }
-    const syncEnabled = Boolean(syncPlayback);
-    const requireInteraction = Boolean(priority);
-    const delayMs = requireInteraction ? 0 : 0;
-    let idleHandle: number | null = null;
-    let timeoutHandle: number | null = null;
-    let scheduled = false;
-    const cleanupInteraction = () => {
-      window.removeEventListener('pointerdown', handleInteraction);
-      window.removeEventListener('pointermove', handleInteraction);
-      window.removeEventListener('scroll', handleInteraction);
-      window.removeEventListener('keydown', handleInteraction);
-    };
-    const startVideo = (fromSync = false) => {
-      if (scheduled) return;
-      scheduled = true;
-      setShouldRenderVideo(true);
-      cleanupInteraction();
-      if (timeoutHandle !== null) {
-        window.clearTimeout(timeoutHandle);
-        timeoutHandle = null;
-      }
-      if (syncEnabled && priority && !fromSync) {
-        // noop; legacy sync behavior removed
-      }
-    };
-    const handleInteraction = () => {
-      startVideo();
-    };
-    const scheduleVideo = () => {
-      if (scheduled) return;
-      if (requireInteraction) {
-        window.addEventListener('pointerdown', handleInteraction, { passive: true });
-        window.addEventListener('pointermove', handleInteraction, { passive: true });
-        window.addEventListener('scroll', handleInteraction, { passive: true });
-        window.addEventListener('keydown', handleInteraction);
-        return;
-      }
-      if (delayMs <= 0) {
-        const idleWindow = window as typeof window & {
-          requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
-          cancelIdleCallback?: (handle: number) => void;
-        };
-        if (typeof idleWindow.requestIdleCallback === 'function') {
-          idleHandle = idleWindow.requestIdleCallback(() => startVideo(), { timeout: 300 });
-        } else {
-          timeoutHandle = window.setTimeout(() => startVideo(), 0);
-        }
-        return;
-      }
-      window.addEventListener('pointerdown', handleInteraction, { passive: true });
-      window.addEventListener('pointermove', handleInteraction, { passive: true });
-      window.addEventListener('scroll', handleInteraction, { passive: true });
-      window.addEventListener('keydown', handleInteraction);
-      timeoutHandle = window.setTimeout(startVideo, delayMs);
-    };
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
-          scheduleVideo();
+          setShouldRenderVideo(true);
           observer.disconnect();
         }
       },
       { rootMargin: '200px' }
     );
     observer.observe(node);
-    return () => {
-      observer.disconnect();
-      cleanupInteraction();
-      if (idleHandle !== null) {
-        (window as typeof window & { cancelIdleCallback?: (handle: number) => void }).cancelIdleCallback?.(idleHandle);
-      }
-      if (timeoutHandle !== null) {
-        window.clearTimeout(timeoutHandle);
-      }
-    };
-  }, [prefersReducedMotion, priority, syncPlayback]);
-
-  useEffect(() => {
-    if (!shouldRenderVideo) {
-      setVideoReady(false);
-    }
-  }, [shouldRenderVideo]);
+    return () => observer.disconnect();
+  }, [prefersReducedMotion]);
 
   useEffect(() => {
     if (!lightboxOpen) return;
@@ -203,42 +173,18 @@ export function HeroMediaTile({
           <AudioEqualizerBadge tone="light" size="sm" label="Audio enabled" />
         ) : null}
         {shouldRenderVideo && !prefersReducedMotion ? (
-          <>
-            <Image
-              src={posterSrc}
-              alt={alt}
-              fill
-              priority={priority}
-              fetchPriority={priority ? 'high' : undefined}
-              loading={priority ? 'eager' : 'lazy'}
-              decoding="async"
-              quality={80}
-              sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 40vw"
-              placeholder="blur"
-              blurDataURL={HERO_BLUR_DATA_URL}
-              className="object-cover transition-opacity duration-500"
-              style={{ opacity: videoReady ? 0 : 1 }}
-            />
-            <video
-              className="absolute inset-0 h-full w-full object-cover transition-opacity transition-transform duration-500 group-hover:scale-[1.03]"
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload={priority ? 'none' : 'metadata'}
-              poster={videoPosterSrc}
-              aria-label={alt}
-              style={{ opacity: videoReady ? 1 : 0 }}
-              onLoadedData={() => setVideoReady(true)}
-              onCanPlay={() => setVideoReady(true)}
-              onError={() => {
-                setVideoReady(false);
-                setShouldRenderVideo(false);
-              }}
-            >
-              <source src={videoSrc} type="video/mp4" />
-            </video>
-          </>
+          <video
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster={posterSrc}
+            aria-label={alt}
+          >
+            <source src={videoSrc} type="video/mp4" />
+          </video>
         ) : (
           <Image
             src={posterSrc}
@@ -250,8 +196,6 @@ export function HeroMediaTile({
             decoding="async"
             quality={80}
             sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 40vw"
-            placeholder="blur"
-            blurDataURL={HERO_BLUR_DATA_URL}
             className="object-cover"
           />
         )}

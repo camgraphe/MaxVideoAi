@@ -1,32 +1,12 @@
 import { MarketingFooter } from '@/components/marketing/MarketingFooter';
 import { MarketingNav } from '@/components/marketing/MarketingNav';
-import { createSupabaseServerClient } from '@/lib/supabase-ssr';
-import { isUserAdmin } from '@/server/admin';
+import { PublicSessionWatchdog } from '@/components/auth/PublicSessionWatchdog';
 
-export default async function MarketingLayout({ children }: { children: React.ReactNode }) {
-  let initialEmail: string | null = null;
-  let initialUserId: string | null = null;
-  let initialIsAdmin = false;
-
-  try {
-    const supabase = createSupabaseServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    initialEmail = user?.email ?? null;
-    initialUserId = user?.id ?? null;
-    if (initialUserId) {
-      initialIsAdmin = await isUserAdmin(initialUserId);
-    }
-  } catch {
-    initialEmail = null;
-    initialUserId = null;
-    initialIsAdmin = false;
-  }
-
+export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-bg">
-      <MarketingNav initialEmail={initialEmail} initialIsAdmin={initialIsAdmin} initialUserId={initialUserId} />
+      <PublicSessionWatchdog />
+      <MarketingNav />
       <main className="flex-1">{children}</main>
       <MarketingFooter />
     </div>

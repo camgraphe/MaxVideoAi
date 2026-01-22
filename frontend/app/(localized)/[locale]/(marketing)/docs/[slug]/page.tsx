@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 import { getContentEntries, getEntryBySlug } from '@/lib/content/markdown';
 import type { AppLocale } from '@/i18n/locales';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
-import '../docs-prose.css';
 
 interface Params {
   locale?: AppLocale;

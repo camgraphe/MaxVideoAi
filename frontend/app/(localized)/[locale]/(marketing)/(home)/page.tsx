@@ -21,7 +21,6 @@ import type { AppLocale } from '@/i18n/locales';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { computePricingSnapshot, listPricingRules } from '@/lib/pricing';
 import type { PricingRuleLite } from '@/lib/pricing-rules';
-import { createSupabaseServerClient } from '@/lib/supabase-ssr';
 
 const ProofTabs = dynamic(
   () =>
@@ -80,55 +79,6 @@ type HeroTileConfig = {
   examplesSlug?: string | null;
   adminPriceLabel?: string | null;
 };
-
-function normalizeMediaUrl(value?: string | null): string | null {
-  const trimmed = value?.trim();
-  if (!trimmed || trimmed === 'null' || trimmed === 'undefined') return null;
-  return trimmed;
-}
-
-function parseAmzDate(value: string): Date | null {
-  const match = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/.exec(value);
-  if (!match) return null;
-  const [, year, month, day, hour, minute, second] = match;
-  return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second)));
-}
-
-function isExpiredSignedUrl(value: string): boolean {
-  try {
-    const url = new URL(value, 'https://example.com');
-    const amzDate = url.searchParams.get('X-Amz-Date');
-    const amzExpires = url.searchParams.get('X-Amz-Expires');
-    if (amzDate && amzExpires) {
-      const date = parseAmzDate(amzDate);
-      const expiresSec = Number.parseInt(amzExpires, 10);
-      if (date && Number.isFinite(expiresSec)) {
-        return Date.now() > date.getTime() + expiresSec * 1000;
-      }
-    }
-    const expires = url.searchParams.get('Expires');
-    if (expires) {
-      const epoch = Number.parseInt(expires, 10);
-      if (Number.isFinite(epoch)) {
-        return Date.now() > epoch * 1000;
-      }
-      const parsed = Date.parse(expires);
-      if (!Number.isNaN(parsed)) {
-        return Date.now() > parsed;
-      }
-    }
-  } catch {
-    return false;
-  }
-  return false;
-}
-
-function pickMediaUrl(preferred: string | null | undefined, fallback: string): string {
-  const candidate = normalizeMediaUrl(preferred);
-  if (!candidate) return fallback;
-  if (isExpiredSignedUrl(candidate)) return fallback;
-  return candidate;
-}
 
 const HERO_TILES: readonly HeroTileConfig[] = [
   {
@@ -388,16 +338,6 @@ async function resolveHeroTilePrices(tiles: HeroTilePricingInput[]) {
 
 export default async function HomePage({ params }: { params: { locale: AppLocale } }) {
   const { dictionary } = await resolveDictionary({ locale: params.locale });
-  let isAuthenticated = false;
-  try {
-    const supabase = createSupabaseServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    isAuthenticated = Boolean(user);
-  } catch {
-    isAuthenticated = false;
-  }
   const home = dictionary.home;
   const pricingRules = await listPricingRules();
   const pricingRulesLite: PricingRuleLite[] = pricingRules.map((rule) => ({
@@ -453,8 +393,8 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
     const fallback = HERO_TILES[index] ?? HERO_TILES[0];
     const video = slot?.video ?? null;
     const label = slot?.title || video?.engineLabel || fallback.label;
-    const videoSrc = pickMediaUrl(video?.videoUrl, fallback.videoSrc);
-    const posterSrc = pickMediaUrl(video?.thumbUrl, fallback.posterSrc);
+    const videoSrc = video?.videoUrl ?? fallback.videoSrc;
+    const posterSrc = video?.thumbUrl ?? fallback.posterSrc;
     const adminPriceLabel = slot?.subtitle?.trim() || null;
     const alt = video?.promptExcerpt || fallback.alt;
     const engineId = normalizeEngineId(video?.engineId ?? fallback.engineId) ?? fallback.engineId;
@@ -631,8 +571,6 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
               detailMeta={tile.detailMeta}
               authenticatedHref="/generate"
               guestHref="/login?next=/generate"
-              isAuthenticated={isAuthenticated}
-              syncPlayback={false}
               overlayHref={tile.generateHref ?? undefined}
             />
           ))}

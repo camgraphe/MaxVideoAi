@@ -3,10 +3,12 @@
 import Image from 'next/image';
 import clsx from 'clsx';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { Session } from '@supabase/supabase-js';
 import { ChevronDown, Moon, Sun } from 'lucide-react';
 import { Link, usePathname } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
+import { supabase } from '@/lib/supabaseClient';
 import { NAV_ITEMS } from '@/components/AppSidebar';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
@@ -14,17 +16,11 @@ import { setLogoutIntent } from '@/lib/logout-intent';
 import { clearLastKnownAccount, writeLastKnownUserId } from '@/lib/last-known';
 import { MARKETING_NAV_DROPDOWNS } from '@/config/navigation';
 
-type MarketingNavProps = {
-  initialEmail?: string | null;
-  initialIsAdmin?: boolean;
-  initialUserId?: string | null;
-};
-
-export function MarketingNav({ initialEmail = null, initialIsAdmin = false, initialUserId = null }: MarketingNavProps) {
+export function MarketingNav() {
   const pathname = usePathname();
   const { t } = useI18n();
-  const [email, setEmail] = useState<string | null>(initialEmail);
-  const [isAdmin, setIsAdmin] = useState(Boolean(initialIsAdmin));
+  const [email, setEmail] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [desktopDropdownOpen, setDesktopDropdownOpen] = useState<string | null>(null);
@@ -75,12 +71,65 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false, init
   };
 
   useEffect(() => {
-    setEmail(initialEmail ?? null);
-    setIsAdmin(Boolean(initialIsAdmin));
-    if (initialUserId) {
-      writeLastKnownUserId(initialUserId);
-    }
-  }, [initialEmail, initialIsAdmin, initialUserId]);
+    let mounted = true;
+    const fetchAccountState = async (token?: string | null) => {
+      if (!token) {
+        setIsAdmin(false);
+        return;
+      }
+      const headers = { Authorization: `Bearer ${token}` };
+      try {
+        const [adminRes] = await Promise.all([fetch('/api/admin/access', { headers, cache: 'no-store' })]);
+        const adminJson = await adminRes.json().catch(() => null);
+        if (!mounted) return;
+        const nextAdmin = Boolean(adminRes.ok && adminJson?.ok);
+        setIsAdmin(nextAdmin);
+      } catch {
+        // Keep last known values on transient failures.
+      }
+    };
+
+    const applySession = (session: Session | null) => {
+      if (!mounted) return null;
+      const userId = session?.user?.id ?? null;
+      if (userId) {
+        writeLastKnownUserId(userId);
+      }
+      setEmail(session?.user?.email ?? null);
+      return userId;
+    };
+
+    supabase.auth
+      .getSession()
+      .then(async ({ data }) => {
+        const session = data.session ?? null;
+        applySession(session);
+        if (!mounted) return;
+        void fetchAccountState(session?.access_token);
+      })
+      .catch(() => {
+        if (mounted) {
+          setEmail(null);
+        }
+      });
+
+    const { data: subscription } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const eventType = event as string;
+      if (eventType === 'SIGNED_OUT' || eventType === 'USER_DELETED') {
+        clearLastKnownAccount();
+        writeLastKnownUserId(null);
+        setEmail(null);
+        setIsAdmin(false);
+        return;
+      }
+      applySession(session ?? null);
+      void fetchAccountState(session?.access_token);
+    });
+    return () => {
+      mounted = false;
+      subscription.subscription.unsubscribe();
+    };
+  }, []);
 
   const signOut = ({ closeAccountMenu, closeMobileMenu }: { closeAccountMenu?: boolean; closeMobileMenu?: boolean } = {}) => {
     if (closeAccountMenu) {
@@ -91,9 +140,9 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false, init
     }
     setLogoutIntent();
     setEmail(null);
-    setIsAdmin(false);
     clearLastKnownAccount();
     writeLastKnownUserId(null);
+    void supabase.auth.signOut().catch(() => undefined);
     const payload = JSON.stringify({});
     if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
       const blob = new Blob([payload], { type: 'application/json' });

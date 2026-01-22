@@ -23,8 +23,6 @@ export default async function RootLayout({ children }: RootLayoutProps) {
     <html lang={locale} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://maxvideoai.com" />
-        <link rel="preconnect" href="https://videohub-uploads-us.s3.amazonaws.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://v3b.fal.media" crossOrigin="anonymous" />
         {themeStyle ? <style id="theme-tokens" dangerouslySetInnerHTML={{ __html: themeStyle }} /> : null}
         {GTM_ID ? (
           <Script
