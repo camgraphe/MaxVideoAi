@@ -21,6 +21,7 @@ import type { AppLocale } from '@/i18n/locales';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { computePricingSnapshot, listPricingRules } from '@/lib/pricing';
 import type { PricingRuleLite } from '@/lib/pricing-rules';
+import { createSupabaseServerClient } from '@/lib/supabase-ssr';
 
 const ProofTabs = dynamic(
   () =>
@@ -338,6 +339,16 @@ async function resolveHeroTilePrices(tiles: HeroTilePricingInput[]) {
 
 export default async function HomePage({ params }: { params: { locale: AppLocale } }) {
   const { dictionary } = await resolveDictionary({ locale: params.locale });
+  let isAuthenticated = false;
+  try {
+    const supabase = createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    isAuthenticated = Boolean(user);
+  } catch {
+    isAuthenticated = false;
+  }
   const home = dictionary.home;
   const pricingRules = await listPricingRules();
   const pricingRulesLite: PricingRuleLite[] = pricingRules.map((rule) => ({
@@ -571,6 +582,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
               detailMeta={tile.detailMeta}
               authenticatedHref="/generate"
               guestHref="/login?next=/generate"
+              isAuthenticated={isAuthenticated}
               overlayHref={tile.generateHref ?? undefined}
             />
           ))}

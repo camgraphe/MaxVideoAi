@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { Button } from '@/components/ui/Button';
-import { supabase } from '@/lib/supabaseClient';
 import { buildNextImageProxyUrl } from '@/lib/media-helpers';
 
 interface HeroMediaTileProps {
@@ -24,6 +23,7 @@ interface HeroMediaTileProps {
   detailHref?: string | null;
   generateHref?: string | null;
   modelHref?: string | null;
+  isAuthenticated?: boolean;
   detailMeta?: {
     prompt?: string | null;
     engineLabel?: string | null;
@@ -47,6 +47,7 @@ export function HeroMediaTile({
   detailHref,
   generateHref,
   modelHref,
+  isAuthenticated,
   detailMeta,
 }: HeroMediaTileProps) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
@@ -55,69 +56,20 @@ export function HeroMediaTile({
     }
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   });
-  const [ctaHref, setCtaHref] = useState<string | null>(() => guestHref ?? authenticatedHref ?? null);
+  const ctaHref = (() => {
+    if (!authenticatedHref && !guestHref) {
+      return null;
+    }
+    if (typeof isAuthenticated === 'boolean') {
+      return isAuthenticated ? authenticatedHref ?? guestHref ?? null : guestHref ?? authenticatedHref ?? null;
+    }
+    return guestHref ?? authenticatedHref ?? null;
+  })();
   const cardHref = detailHref ? null : ctaHref;
   const [shouldRenderVideo, setShouldRenderVideo] = useState<boolean>(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const videoPosterSrc = buildNextImageProxyUrl(posterSrc, { width: 1200, quality: 80 }) ?? posterSrc;
-
-  useEffect(() => {
-    if (!authenticatedHref && !guestHref) {
-      setCtaHref(null);
-      return;
-    }
-    let mounted = true;
-    const resolveHref = (sessionPresent: boolean) => {
-      const next = sessionPresent ? authenticatedHref ?? guestHref ?? null : guestHref ?? authenticatedHref ?? null;
-      if (mounted) {
-        setCtaHref(next);
-      }
-    };
-    const runAuthCheck = () => {
-      supabase.auth
-        .getSession()
-        .then(({ data }) => {
-          resolveHref(Boolean(data.session));
-        })
-        .catch(() => {
-          resolveHref(false);
-        });
-    };
-
-    let cancelScheduledAuthCheck: (() => void) | null = null;
-    if (typeof window === 'undefined') {
-      runAuthCheck();
-    } else {
-      const idleWindow = window as typeof window & {
-        requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
-        cancelIdleCallback?: (handle: number) => void;
-      };
-      if (typeof idleWindow.requestIdleCallback === 'function') {
-        const handle = idleWindow.requestIdleCallback(
-          () => {
-            runAuthCheck();
-          },
-          { timeout: 500 }
-        );
-        cancelScheduledAuthCheck = () => idleWindow.cancelIdleCallback?.(handle);
-      } else {
-        const rafHandle = window.requestAnimationFrame(() => {
-          runAuthCheck();
-        });
-        cancelScheduledAuthCheck = () => window.cancelAnimationFrame(rafHandle);
-      }
-    }
-
-    const { data: authSubscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      resolveHref(Boolean(session));
-    });
-    return () => {
-      mounted = false;
-      authSubscription?.subscription.unsubscribe();
-      cancelScheduledAuthCheck?.();
-    };
-  }, [authenticatedHref, guestHref]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
