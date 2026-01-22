@@ -22,6 +22,8 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { computePricingSnapshot, listPricingRules } from '@/lib/pricing';
 import type { PricingRuleLite } from '@/lib/pricing-rules';
 
+export const revalidate = 60;
+
 const ProofTabs = dynamic(
   () =>
     import('@/components/marketing/ProofTabs').then((mod) => ({

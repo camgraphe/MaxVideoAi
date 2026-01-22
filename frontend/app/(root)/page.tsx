@@ -3,6 +3,8 @@ import LocaleLayout from '../(localized)/[locale]/layout';
 import HomePage, { generateMetadata as generateLocalizedMetadata } from '../(localized)/[locale]/(marketing)/(home)/page';
 import { DEFAULT_LOCALE } from '../default-locale-wrapper';
 
+export const revalidate = 60;
+
 export async function generateMetadata(): Promise<Metadata> {
   return generateLocalizedMetadata({ params: { locale: DEFAULT_LOCALE } });
 }
