@@ -1108,6 +1108,8 @@
       "priceTotalValue": "{value}",
       "priceTotalUnknown": "Unavailable",
       "audioLabel": "Audio",
+      "pricingEyebrow": "Pricing",
+      "pricingBody": "Compare engine rates and plan budgets before you render.",
       "cta": "Compare pricing",
       "ctaDescription": "Explore all engine rates",
       "discountAppliedLabel": "Member discount applied",

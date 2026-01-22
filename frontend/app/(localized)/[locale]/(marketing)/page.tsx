@@ -408,12 +408,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
       fallback.examplesSlug ??
       (engineId.includes('/') ? null : engineId);
     const detailHref = video?.id ? `/video/${encodeURIComponent(video.id)}` : null;
-    const generateHref =
-      video?.id && engineId
-        ? `/app?from=${encodeURIComponent(video.id)}&engine=${encodeURIComponent(engineId)}`
-        : video?.id
-          ? `/app?from=${encodeURIComponent(video.id)}`
-          : null;
+    const generateHref = video?.id ? `/app?from=${encodeURIComponent(video.id)}` : null;
     const modelHref = canonicalSlug ? `/models/${encodeURIComponent(canonicalSlug)}` : null;
     const detailMeta = video
       ? {
@@ -585,7 +580,7 @@ export default async function HomePage({ params }: { params?: { locale?: AppLoca
               detailMeta={tile.detailMeta}
               authenticatedHref="/generate"
               guestHref="/login?next=/generate"
-              overlayHref={getExamplesHref(tile.examplesSlug) ?? undefined}
+              overlayHref={tile.generateHref ?? undefined}
             />
           ))}
         </div>

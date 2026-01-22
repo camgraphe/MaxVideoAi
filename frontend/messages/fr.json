@@ -1119,6 +1119,8 @@
       "priceTotalValue": "{value}",
       "priceTotalUnknown": "Indisponible",
       "audioLabel": "Audio",
+      "pricingEyebrow": "Tarifs",
+      "pricingBody": "Comparez les tarifs des moteurs et planifiez vos budgets avant de lancer.",
       "cta": "Comparer les tarifs",
       "ctaDescription": "Parcourez tous les moteurs",
       "discountAppliedLabel": "Remise membre appliquée",

@@ -59,6 +59,17 @@ export function MarketingNav() {
     }
   }, []);
 
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    if (nextTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    window.localStorage.setItem(themeStorageKey, nextTheme);
+  };
+
   useEffect(() => {
     let mounted = true;
     const fetchAccountState = async (token?: string | null, userId?: string | null) => {
@@ -357,16 +368,7 @@ export function MarketingNav() {
               size="sm"
               className="h-9 w-9 p-0 text-text-primary hover:bg-surface-2"
               aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
-              onClick={() => {
-                const nextTheme = theme === 'dark' ? 'light' : 'dark';
-                setTheme(nextTheme);
-                if (nextTheme === 'dark') {
-                  document.documentElement.setAttribute('data-theme', 'dark');
-                } else {
-                  document.documentElement.removeAttribute('data-theme');
-                }
-                window.localStorage.setItem(themeStorageKey, nextTheme);
-              }}
+              onClick={toggleTheme}
             >
               <span className="inline-flex h-4 w-4 items-center justify-center">
                 <UIIcon icon={theme === 'dark' ? Sun : Moon} size={16} strokeWidth={1.75} />
@@ -496,8 +498,20 @@ export function MarketingNav() {
             </Button>
           </div>
           <div className="mx-auto mt-5 max-w-sm stack-gap-lg">
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
               <LanguageToggle variant="icon" />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-9 w-9 p-0 text-text-primary hover:bg-surface-2"
+                aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+                onClick={toggleTheme}
+              >
+                <span className="inline-flex h-4 w-4 items-center justify-center">
+                  <UIIcon icon={theme === 'dark' ? Sun : Moon} size={16} strokeWidth={1.75} />
+                </span>
+              </Button>
             </div>
             <nav className="flex flex-col gap-3 text-base font-semibold text-text-primary">
               {links.map((item) => {

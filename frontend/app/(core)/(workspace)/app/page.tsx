@@ -74,6 +74,23 @@ type SharedVideoPayload = {
   createdAt: string;
 };
 
+function coerceNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string') {
+    const parsed = Number.parseFloat(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function normalizeSharedVideoPayload(raw: SharedVideoPayload): SharedVideoPayload {
+  const durationSec = coerceNumber(raw.durationSec) ?? 0;
+  return {
+    ...raw,
+    durationSec,
+  };
+}
+
 function toVideoAspect(value?: string | null): VideoItem['aspect'] {
   switch (value) {
     case '9:16':
@@ -1180,6 +1197,7 @@ useEffect(() => {
 }, [fromVideoId]);
   const [renders, setRenders] = useState<LocalRender[]>([]);
   const [sharedPrompt, setSharedPrompt] = useState<string | null>(null);
+  const [sharedVideoSettings, setSharedVideoSettings] = useState<SharedVideoPayload | null>(null);
   const [selectedPreview, setSelectedPreview] = useState<{
     localKey?: string;
     batchId?: string;
@@ -2554,11 +2572,12 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
         if (!res.ok) return;
         const json = await res.json();
         if (!json?.ok || !json.video || cancelled) return;
-        const video = json.video as SharedVideoPayload;
+        const video = normalizeSharedVideoPayload(json.video as SharedVideoPayload);
         const overrideGroup = mapSharedVideoToGroup(video, provider);
         setCompositeOverride(overrideGroup);
         setCompositeOverrideSummary(null);
         setSharedPrompt(video.prompt ?? video.promptExcerpt ?? null);
+        setSharedVideoSettings(video);
         setSelectedPreview({
           id: video.id,
           videoUrl: video.videoUrl ?? undefined,
@@ -2587,6 +2606,7 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
   useEffect(() => {
     if (!compositeOverride) {
       setSharedPrompt(null);
+      setSharedVideoSettings(null);
     }
   }, [compositeOverride]);
 
@@ -3004,6 +3024,42 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
     },
     [applyVideoSettingsSnapshot]
   );
+
+  useEffect(() => {
+    if (!sharedVideoSettings) return;
+    const durationSec =
+      typeof sharedVideoSettings.durationSec === 'number' && sharedVideoSettings.durationSec > 0
+        ? sharedVideoSettings.durationSec
+        : null;
+    const aspectRatio =
+      typeof sharedVideoSettings.aspectRatio === 'string' && sharedVideoSettings.aspectRatio.trim().length
+        ? sharedVideoSettings.aspectRatio.trim()
+        : '16:9';
+    const promptValue = sharedVideoSettings.prompt ?? sharedVideoSettings.promptExcerpt ?? '';
+    applyVideoSettingsSnapshot({
+      schemaVersion: 1,
+      surface: 'video',
+      engineId: sharedVideoSettings.engineId,
+      engineLabel: sharedVideoSettings.engineLabel,
+      inputMode: 't2v',
+      prompt: promptValue,
+      negativePrompt: null,
+      core: {
+        durationSec,
+        durationOption: null,
+        numFrames: null,
+        aspectRatio,
+        resolution: null,
+        fps: null,
+        iterationCount: 1,
+        audio: null,
+      },
+      advanced: { cfgScale: null, loop: null },
+      refs: { imageUrl: null, referenceImages: null, firstFrameUrl: null, lastFrameUrl: null, inputs: null },
+      meta: { derived: true },
+    });
+    void hydrateVideoSettingsFromJob(sharedVideoSettings.id);
+  }, [applyVideoSettingsSnapshot, hydrateVideoSettingsFromJob, sharedVideoSettings]);
 
   useEffect(() => {
     if (!requestedJobId) return;
@@ -4649,8 +4705,8 @@ const handleRefreshJob = useCallback(async (jobId: string) => {
               <CompositePreviewDock
                 group={compositeGroup}
                 isLoading={isGenerationLoading && !compositeGroup}
-                copyPrompt={sharedPrompt}
-                onCopyPrompt={sharedPrompt ? handleCopySharedPrompt : undefined}
+                copyPrompt={sharedVideoSettings ? null : sharedPrompt}
+                onCopyPrompt={sharedVideoSettings ? undefined : sharedPrompt ? handleCopySharedPrompt : undefined}
                 showTitle={false}
                 engineSettings={
                   <EngineSettingsBar

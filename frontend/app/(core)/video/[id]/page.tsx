@@ -58,27 +58,29 @@ const DEFAULT_VIDEO_COPY = {
       'Use the engine card, pricing link, and blog resources below to compare models or start a similar run in your workspace.',
     ],
   },
-  details: {
-    title: 'Render details',
-    engineLabel: 'Engine',
-    engineDescriptionFallback: 'Browse the full spec sheet for this model.',
-    engineCta: 'Open model page',
-    engineUnavailable: 'Engine unavailable',
-    durationLabel: 'Duration',
-    durationValue: '{value} seconds',
-    durationUnknown: 'Unknown',
-    aspectLabel: 'Aspect ratio',
-    aspectAuto: 'Auto',
-    createdLabel: 'Created',
-    priceTotalLabel: 'Render cost',
-    priceTotalValue: '{value}',
-    priceTotalUnknown: 'Unavailable',
-    audioLabel: 'Audio',
-    cta: 'Compare pricing',
-    ctaDescription: 'Explore all engine rates',
-    discountAppliedLabel: 'Member discount applied',
-    discountSavedLabel: 'Saved {amount}',
-    discountPercentLabel: '{percent} off',
+    details: {
+      title: 'Render details',
+      engineLabel: 'Engine',
+      engineDescriptionFallback: 'Browse the full spec sheet for this model.',
+      engineCta: 'Open model page',
+      engineUnavailable: 'Engine unavailable',
+      durationLabel: 'Duration',
+      durationValue: '{value} seconds',
+      durationUnknown: 'Unknown',
+      aspectLabel: 'Aspect ratio',
+      aspectAuto: 'Auto',
+      createdLabel: 'Created',
+      priceTotalLabel: 'Render cost',
+      priceTotalValue: '{value}',
+      priceTotalUnknown: 'Unavailable',
+      audioLabel: 'Audio',
+      pricingEyebrow: 'Pricing',
+      pricingBody: 'Compare engine rates and plan budgets before you render.',
+      cta: 'Compare pricing',
+      ctaDescription: 'Explore all engine rates',
+      discountAppliedLabel: 'Member discount applied',
+      discountSavedLabel: 'Saved {amount}',
+      discountPercentLabel: '{percent} off',
     discountTierLabel: '{tier} tier',
   },
   audioStates: {
@@ -667,7 +669,6 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
                 <span className="font-semibold text-text-primary">{createdDisplay}</span>
               </div>
             </div>
-            {discountNote ? <p className="mt-2 text-xs font-semibold text-brand">{discountNote}</p> : null}
             <div className="mt-5 border-t border-hairline pt-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-xs uppercase tracking-micro text-text-muted">{copy.hero.promptLabel}</p>
@@ -707,38 +708,46 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
             </div>
           </div>
 
-          <div className="rounded-card border border-border bg-surface-glass-90 p-6 shadow-card backdrop-blur">
-            <p className="text-xs uppercase tracking-micro text-text-muted">{copy.recreate.title}</p>
-            <p className="mt-2 text-sm text-text-secondary">{copy.recreate.body}</p>
-            <ButtonLink href={`/app?from=${encodeURIComponent(video.id)}`} size="lg" className="mt-4 w-full">
-              {copy.recreate.cta}
-            </ButtonLink>
-            <p className="mt-2 text-xs text-text-secondary">{copy.recreate.microcopy}</p>
-          </div>
         </section>
 
         <section className="mx-auto w-full max-w-5xl">
           <div className="grid grid-gap-lg lg:grid-cols-3">
-            <div className="rounded-card border border-border bg-surface-glass-90 p-6 shadow-card backdrop-blur">
+            <div className="flex h-full flex-col rounded-card border border-border bg-surface-glass-90 p-6 shadow-card backdrop-blur">
               <p className="text-xs uppercase tracking-micro text-text-muted">{copy.create.title}</p>
               <h3 className="mt-1 text-lg font-semibold text-text-primary">{copy.create.subtitle}</h3>
               <p className="mt-2 text-sm text-text-secondary">{copy.create.body}</p>
-              <ButtonLink href={`/app?from=${encodeURIComponent(video.id)}`} size="lg" className="mt-4 w-full">
+              <ButtonLink
+                href={`/app?from=${encodeURIComponent(video.id)}`}
+                size="lg"
+                variant="outline"
+                className="mt-auto w-full bg-white text-text-primary hover:bg-white/90"
+              >
                 {copy.create.cta}
               </ButtonLink>
             </div>
-            <div className="rounded-card border border-border bg-surface-glass-90 p-6 shadow-card backdrop-blur">
-              <h3 className="text-lg font-semibold text-text-primary">{copy.details.cta}</h3>
+            <div className="flex h-full flex-col rounded-card border border-border bg-surface-glass-90 p-6 shadow-card backdrop-blur">
+              <p className="text-xs uppercase tracking-micro text-text-muted">{copy.details.pricingEyebrow}</p>
+              <h3 className="mt-1 text-lg font-semibold text-text-primary">{copy.details.cta}</h3>
               <p className="mt-2 text-sm text-text-secondary">{copy.details.ctaDescription}</p>
-              <ButtonLink href={pricingPath} variant="outline" className="mt-4 w-full">
-                {copy.details.cta}
+              <p className="mt-2 text-sm text-text-secondary">{copy.details.pricingBody}</p>
+              <ButtonLink
+                href={pricingPath}
+                variant="outline"
+                className="mt-auto w-full bg-white text-text-primary hover:bg-white/90"
+              >
+                {copy.details.cta} →
               </ButtonLink>
             </div>
-            <div className="rounded-card border border-border bg-surface-glass-90 p-6 shadow-card backdrop-blur">
-              <h3 className="text-lg font-semibold text-text-primary">{copy.blog.title}</h3>
+            <div className="flex h-full flex-col rounded-card border border-border bg-surface-glass-90 p-6 shadow-card backdrop-blur">
+              <p className="text-xs uppercase tracking-micro text-text-muted">{copy.blog.title}</p>
+              <h3 className="mt-1 text-lg font-semibold text-text-primary">{copy.blog.cta}</h3>
               <p className="mt-2 text-sm text-text-secondary">{copy.blog.message}</p>
-              <ButtonLink href={blogPath} variant="outline" className="mt-4 w-full">
-                {copy.blog.cta}
+              <ButtonLink
+                href={blogPath}
+                variant="outline"
+                className="mt-auto w-full bg-white text-text-primary hover:bg-white/90"
+              >
+                {copy.blog.cta} →
               </ButtonLink>
             </div>
           </div>
