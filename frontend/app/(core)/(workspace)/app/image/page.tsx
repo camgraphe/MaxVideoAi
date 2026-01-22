@@ -15,6 +15,8 @@ export const metadata: Metadata = {
   },
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function ImageGeneratePage() {
   const imageEntries = listFalEngines().filter((engine) => (engine.category ?? 'video') === 'image');
   if (!imageEntries.length) {

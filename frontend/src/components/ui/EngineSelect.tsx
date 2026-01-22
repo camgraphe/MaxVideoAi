@@ -20,7 +20,7 @@ import type { FalEngineEntry } from '@/config/falEngines';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { Link } from '@/i18n/navigation';
 import { normalizeEngineId } from '@/lib/engine-alias';
-import { DEFAULT_ENGINE_GUIDE, type EngineGuideEntry } from '@/lib/engine-guides';
+import { DEFAULT_ENGINE_GUIDE } from '@/lib/engine-guides';
 import { getExamplesHref } from '@/lib/examples-links';
 
 const MODE_LABELS: Record<Mode, string> = {

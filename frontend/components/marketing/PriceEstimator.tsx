@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import clsx from 'clsx';
 import type { EngineAvailability, EngineCaps, EngineInputField, EnginePricingDetails, Mode } from '@/types/engines';
 import { computePricingSnapshot, type MemberTier as PricingMemberTier, type PricingKernel } from '@maxvideoai/pricing';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getPricingKernel } from '@/lib/pricing-kernel';
-import { AVAILABILITY_BADGE_CLASS } from '@/lib/availability';
 import { getPartnerByEngineId } from '@/lib/brand-partners';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import { selectPricingRule, type PricingRuleLite } from '@/lib/pricing-rules';
@@ -364,9 +363,6 @@ function formatCurrency(value: number, currency: string) {
 }
 
 export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOverrides }: PriceEstimatorProps) {
-  const engineId = useId();
-  const durationId = useId();
-  const resolutionId = useId();
   const { t, dictionary } = useI18n();
   const kernel = getPricingKernel();
 
@@ -385,7 +381,6 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
   }) as Record<string, string>;
 
   const descriptions = dictionary.pricing.estimator.descriptions;
-  const availabilityLabels = dictionary.models.availabilityLabels;
   const pricingEngineMap = useMemo(() => {
     const map = new Map<string, EngineCaps>();
     FAL_ENGINE_REGISTRY.forEach((entry) => {
@@ -787,10 +782,10 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                 {selectedEngine?.audioToggle ? (
                   <div className="price-estimator-border price-estimator-surface relative rounded-[24px] border border-surface-on-media-60 bg-surface-glass-85 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur focus-within:z-20 sm:p-2.5">
                     <SelectGroup
-                      label={t('pricing.estimator.audioLabel', 'Audio')}
+                      label={t('pricing.estimator.audioLabel', 'Audio') ?? 'Audio'}
                       options={[
-                        { value: true, label: t('pricing.estimator.audioOn', 'On') },
-                        { value: false, label: t('pricing.estimator.audioOff', 'Off') },
+                        { value: true, label: t('pricing.estimator.audioOn', 'On') ?? 'On' },
+                        { value: false, label: t('pricing.estimator.audioOff', 'Off') ?? 'Off' },
                       ]}
                       value={audioEnabled}
                       onChange={(value) => setAudioEnabled(Boolean(value))}
