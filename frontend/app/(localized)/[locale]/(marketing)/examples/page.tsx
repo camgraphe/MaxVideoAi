@@ -114,7 +114,6 @@ function getPlaceholderPoster(aspect?: string | null): string {
   const normalized = aspect.trim();
   return POSTER_PLACEHOLDERS[normalized] ?? POSTER_PLACEHOLDERS['16:9'];
 }
-const EXAMPLES_INITIAL_BATCH = 12;
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -505,7 +504,7 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
       count: 0,
     };
   });
-const selectedOption =
+  const selectedOption =
     collapsedEngineParam && engineFilterOptions.length
       ? engineFilterOptions.find((option) => option.key === normalizeFilterId(collapsedEngineParam))
       : null;
@@ -520,50 +519,50 @@ const selectedOption =
       : locale === 'es'
         ? `Ver modelo ${selectedEngineLabel}`
         : `View ${selectedEngineLabel} model`;
-  const pricingLinkLabel = locale === 'fr' ? 'Comparer les tarifs' : locale === 'es' ? 'Comparar precios' : 'Compare pricing';
+  const pricingLinkLabel =
+    locale === 'fr' ? 'Comparer les tarifs' : locale === 'es' ? 'Comparar precios' : 'Compare pricing';
 
-const videos = selectedEngine
-  ? allVideos.filter((video) => {
-      const canonicalEngineId = resolveEngineLinkId(video.engineId);
-      if (!canonicalEngineId) return false;
-      const engineMeta = ENGINE_META.get(canonicalEngineId.toLowerCase()) ?? null;
-      const descriptor = resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engineLabel);
-      if (!descriptor) return false;
-      return descriptor.id.toLowerCase() === selectedEngine.toLowerCase();
-    })
-  : allVideos;
-const videoLinkEntries = videos.slice(0, 120).map((video) => {
-  const excerpt = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render', 12);
-  const suffix = video.id.replace(/^[^a-z0-9]+/gi, '').slice(-6).toUpperCase();
-  return {
-    id: video.id,
-    label: excerpt.length ? excerpt : `MaxVideoAI render ${suffix}`,
-  };
-});
+  const videos = selectedEngine
+    ? allVideos.filter((video) => {
+        const canonicalEngineId = resolveEngineLinkId(video.engineId);
+        if (!canonicalEngineId) return false;
+        const engineMeta = ENGINE_META.get(canonicalEngineId.toLowerCase()) ?? null;
+        const descriptor = resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engineLabel);
+        if (!descriptor) return false;
+        return descriptor.id.toLowerCase() === selectedEngine.toLowerCase();
+      })
+    : allVideos;
+  const videoLinkEntries = videos.slice(0, 120).map((video) => {
+    const excerpt = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render', 12);
+    const suffix = video.id.replace(/^[^a-z0-9]+/gi, '').slice(-6).toUpperCase();
+    return {
+      id: video.id,
+      label: excerpt.length ? excerpt : `MaxVideoAI render ${suffix}`,
+    };
+  });
 
-const clientVideos: ExampleGalleryVideo[] = videos.map((video) => {
-  const canonicalEngineId = resolveEngineLinkId(video.engineId);
-  const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
-  const engineMeta = engineKey ? ENGINE_META.get(engineKey) : null;
-  const priceLabel = formatPrice(video.finalPriceCents ?? null, video.currency ?? null);
-  const promptDisplay = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render');
-  return {
-    id: video.id,
-    href: `/video/${encodeURIComponent(video.id)}`,
-    engineLabel: engineMeta?.label ?? video.engineLabel ?? 'Engine',
-    engineIconId: engineMeta?.id ?? canonicalEngineId ?? video.engineId ?? 'engine',
-    engineBrandId: engineMeta?.brandId,
-    priceLabel,
-    prompt: promptDisplay,
-    aspectRatio: video.aspectRatio ?? null,
-    durationSec: video.durationSec,
-    hasAudio: video.hasAudio,
-    optimizedPosterUrl: video.thumbUrl ? buildOptimizedPosterUrl(video.thumbUrl) : null,
-    rawPosterUrl: video.thumbUrl ?? getPlaceholderPoster(video.aspectRatio),
-    videoUrl: video.videoUrl ?? null,
-  };
-});
-const initialClientVideos = clientVideos.slice(0, EXAMPLES_INITIAL_BATCH);
+  const clientVideos: ExampleGalleryVideo[] = videos.map((video) => {
+    const canonicalEngineId = resolveEngineLinkId(video.engineId);
+    const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
+    const engineMeta = engineKey ? ENGINE_META.get(engineKey) : null;
+    const priceLabel = formatPrice(video.finalPriceCents ?? null, video.currency ?? null);
+    const promptDisplay = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render');
+    return {
+      id: video.id,
+      href: `/video/${encodeURIComponent(video.id)}`,
+      engineLabel: engineMeta?.label ?? video.engineLabel ?? 'Engine',
+      engineIconId: engineMeta?.id ?? canonicalEngineId ?? video.engineId ?? 'engine',
+      engineBrandId: engineMeta?.brandId,
+      priceLabel,
+      prompt: promptDisplay,
+      aspectRatio: video.aspectRatio ?? null,
+      durationSec: video.durationSec,
+      hasAudio: video.hasAudio,
+      optimizedPosterUrl: video.thumbUrl ? buildOptimizedPosterUrl(video.thumbUrl) : null,
+      rawPosterUrl: video.thumbUrl ?? getPlaceholderPoster(video.aspectRatio),
+      videoUrl: video.videoUrl ?? null,
+    };
+  });
   const hasPreviousPage = currentPage > 1;
   const hasNextPage = currentPage < totalPages;
   const buildQueryParams = (
