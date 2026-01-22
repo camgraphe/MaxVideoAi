@@ -1,5 +1,5 @@
 import { query } from '@/lib/db';
-import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import { ensureBillingSchema } from '@/lib/schema';
 import { getVideosByIds, type GalleryVideo } from '@/server/videos';
 
@@ -359,4 +359,9 @@ export async function getHomepageSlots(): Promise<{
   return { hero: heroSlots, gallery: gallerySlots };
 }
 
-export const getHomepageSlotsCached = cache(getHomepageSlots);
+const HOMEPAGE_SLOTS_CACHE_KEY = 'homepage-slots';
+const HOMEPAGE_SLOTS_REVALIDATE_SECONDS = 60;
+
+export const getHomepageSlotsCached = unstable_cache(getHomepageSlots, [HOMEPAGE_SLOTS_CACHE_KEY], {
+  revalidate: HOMEPAGE_SLOTS_REVALIDATE_SECONDS,
+});

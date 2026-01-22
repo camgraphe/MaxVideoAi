@@ -1,4 +1,5 @@
 import { query } from '@/lib/db';
+import { unstable_cache } from 'next/cache';
 import { EMPTY_THEME_TOKENS, normalizeThemeTokens, type ThemeTokensSetting } from '@/lib/theme-tokens';
 
 const DEFAULT_SERVICE_NOTICE = {
@@ -87,6 +88,13 @@ export async function getThemeTokensSetting(): Promise<ThemeTokensSetting> {
     return EMPTY_THEME_TOKENS;
   }
 }
+
+const THEME_TOKENS_CACHE_KEY = 'theme-tokens';
+const THEME_TOKENS_REVALIDATE_SECONDS = 300;
+
+export const getThemeTokensSettingCached = unstable_cache(getThemeTokensSetting, [THEME_TOKENS_CACHE_KEY], {
+  revalidate: THEME_TOKENS_REVALIDATE_SECONDS,
+});
 
 export async function setThemeTokensSetting(
   setting: ThemeTokensSetting,

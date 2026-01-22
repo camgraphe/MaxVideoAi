@@ -5,7 +5,7 @@ import './globals.css';
 import { GtmLazyLoader } from '@/components/analytics/GtmLazyLoader';
 import { resolveLocale } from '@/lib/i18n/server';
 import { buildThemeTokensStyle } from '@/lib/theme-tokens';
-import { getThemeTokensSetting } from '@/server/app-settings';
+import { getThemeTokensSettingCached } from '@/server/app-settings';
 
 type RootLayoutProps = {
   children: ReactNode;
@@ -16,7 +16,7 @@ const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID ?? process.env.GTM_ID ?? '';
 export default async function RootLayout({ children }: RootLayoutProps) {
   noStore();
   const locale = await resolveLocale();
-  const themeTokens = await getThemeTokensSetting();
+  const themeTokens = await getThemeTokensSettingCached();
   const themeStyle = buildThemeTokensStyle(themeTokens);
 
   return (
