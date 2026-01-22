@@ -12,7 +12,7 @@ import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
 import { HeroMediaTile } from '@/components/marketing/HeroMediaTile';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { PartnerBadges } from '@/components/marketing/PartnerBadges';
-import { getHomepageSlots, HERO_SLOT_KEYS } from '@/server/homepage';
+import { getHomepageSlotsCached, HERO_SLOT_KEYS } from '@/server/homepage';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { listFalEngines } from '@/config/falEngines';
 import type { CompareEngineEntry } from '@/components/marketing/CompareEnginesCarousel';
@@ -372,7 +372,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
     viewModel: dictionary.workspace?.generate?.engineSelect?.modal?.viewModel,
     viewExamples: dictionary.workspace?.generate?.engineSelect?.modal?.viewExamples,
   };
-  const homepageSlots = await getHomepageSlots();
+  const homepageSlots = await getHomepageSlotsCached();
   const falEngines = listFalEngines();
   const compareEngineIndex = new Map(falEngines.map((entry) => [entry.modelSlug, entry]));
   const compareEngines = COMPARE_ENGINE_PRIORITY.map((slug) => {

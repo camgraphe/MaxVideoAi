@@ -1,4 +1,5 @@
 import { query } from '@/lib/db';
+import { cache } from 'react';
 import { ensureBillingSchema } from '@/lib/schema';
 import { getVideosByIds, type GalleryVideo } from '@/server/videos';
 
@@ -357,3 +358,5 @@ export async function getHomepageSlots(): Promise<{
 
   return { hero: heroSlots, gallery: gallerySlots };
 }
+
+export const getHomepageSlotsCached = cache(getHomepageSlots);

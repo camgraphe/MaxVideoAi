@@ -1,9 +1,9 @@
-import { getHomepageSlots } from '@/server/homepage';
+import { getHomepageSlotsCached } from '@/server/homepage';
 
 const DEFAULT_LCP_POSTER = '/hero/sora2.jpg';
 
 export default async function Head() {
-  const homepageSlots = await getHomepageSlots();
+  const homepageSlots = await getHomepageSlotsCached();
   const lcpPosterSrc = homepageSlots.hero[0]?.video?.thumbUrl ?? DEFAULT_LCP_POSTER;
 
   return (
