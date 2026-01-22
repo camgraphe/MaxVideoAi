@@ -137,18 +137,48 @@ export function HeroMediaTile({
       setShouldRenderVideo(true);
       return;
     }
+    const delayMs = priority ? 2000 : 0;
+    let idleHandle: number | null = null;
+    let timeoutHandle: number | null = null;
+    let scheduled = false;
+    const scheduleVideo = () => {
+      if (scheduled) return;
+      scheduled = true;
+      if (delayMs <= 0) {
+        setShouldRenderVideo(true);
+        return;
+      }
+      const run = () => setShouldRenderVideo(true);
+      const idleWindow = window as typeof window & {
+        requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+        cancelIdleCallback?: (handle: number) => void;
+      };
+      if (typeof idleWindow.requestIdleCallback === 'function') {
+        idleHandle = idleWindow.requestIdleCallback(run, { timeout: delayMs });
+      } else {
+        timeoutHandle = window.setTimeout(run, delayMs);
+      }
+    };
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
-          setShouldRenderVideo(true);
+          scheduleVideo();
           observer.disconnect();
         }
       },
       { rootMargin: '200px' }
     );
     observer.observe(node);
-    return () => observer.disconnect();
-  }, [prefersReducedMotion]);
+    return () => {
+      observer.disconnect();
+      if (idleHandle !== null) {
+        (window as typeof window & { cancelIdleCallback?: (handle: number) => void }).cancelIdleCallback?.(idleHandle);
+      }
+      if (timeoutHandle !== null) {
+        window.clearTimeout(timeoutHandle);
+      }
+    };
+  }, [prefersReducedMotion, priority]);
 
   useEffect(() => {
     if (!lightboxOpen) return;
@@ -179,7 +209,7 @@ export function HeroMediaTile({
             muted
             loop
             playsInline
-            preload="metadata"
+            preload={priority ? 'none' : 'metadata'}
             poster={posterSrc}
             aria-label={alt}
           >
