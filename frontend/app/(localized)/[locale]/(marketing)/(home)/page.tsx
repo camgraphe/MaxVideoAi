@@ -404,8 +404,8 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
     const fallback = HERO_TILES[index] ?? HERO_TILES[0];
     const video = slot?.video ?? null;
     const label = slot?.title || video?.engineLabel || fallback.label;
-    const videoSrc = video?.videoUrl ?? fallback.videoSrc;
-    const posterSrc = video?.thumbUrl ?? fallback.posterSrc;
+    const videoSrc = video?.videoUrl || fallback.videoSrc;
+    const posterSrc = video?.thumbUrl || fallback.posterSrc;
     const adminPriceLabel = slot?.subtitle?.trim() || null;
     const alt = video?.promptExcerpt || fallback.alt;
     const engineId = normalizeEngineId(video?.engineId ?? fallback.engineId) ?? fallback.engineId;
