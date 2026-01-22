@@ -337,8 +337,8 @@ async function resolveHeroTilePrices(tiles: HeroTilePricingInput[]) {
   return Object.fromEntries(entries);
 }
 
-export default async function HomePage({ params }: { params?: { locale?: AppLocale } } = {}) {
-  const { dictionary } = await resolveDictionary({ locale: params?.locale });
+export default async function HomePage({ params }: { params: { locale: AppLocale } }) {
+  const { dictionary } = await resolveDictionary({ locale: params.locale });
   const home = dictionary.home;
   const pricingRules = await listPricingRules();
   const pricingRulesLite: PricingRuleLite[] = pricingRules.map((rule) => ({

@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function RootPage() {
   return (
     <LocaleLayout params={{ locale: DEFAULT_LOCALE }}>
-      <HomePage />
+      <HomePage params={{ locale: DEFAULT_LOCALE }} />
     </LocaleLayout>
   );
 }
