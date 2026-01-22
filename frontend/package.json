@@ -71,6 +71,12 @@
     "unist-util-visit": "^5.0.0",
     "zod": "^3.23.8"
   },
+  "browserslist": [
+    "Chrome >= 111",
+    "Edge >= 111",
+    "Firefox >= 111",
+    "Safari >= 16.4"
+  ],
   "lint-staged": {
     "*.{ts,tsx,js,jsx,md,mdx,json}": [
       "node ../scripts/seo-guard.mjs"

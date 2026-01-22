@@ -1,6 +1,5 @@
-@tailwind base;
+@config "../../../../../tailwind.prose.config.ts";
 @tailwind components;
-@tailwind utilities;
 
 @layer components {
   .blog-prose {

@@ -24,12 +24,16 @@ interface HeroMediaTileProps {
   generateHref?: string | null;
   modelHref?: string | null;
   isAuthenticated?: boolean;
+  syncPlayback?: boolean;
   detailMeta?: {
     prompt?: string | null;
     engineLabel?: string | null;
     durationSec?: number | null;
   } | null;
 }
+
+const HERO_BLUR_DATA_URL =
+  'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSI5Ij48cmVjdCB3aWR0aD0iMTYiIGhlaWdodD0iOSIgZmlsbD0iIzBiMGIwYiIvPjwvc3ZnPg==';
 
 export function HeroMediaTile({
   label,
@@ -48,6 +52,7 @@ export function HeroMediaTile({
   generateHref,
   modelHref,
   isAuthenticated,
+  syncPlayback,
   detailMeta,
 }: HeroMediaTileProps) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
@@ -67,6 +72,7 @@ export function HeroMediaTile({
   })();
   const cardHref = detailHref ? null : ctaHref;
   const [shouldRenderVideo, setShouldRenderVideo] = useState<boolean>(false);
+  const [videoReady, setVideoReady] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const videoPosterSrc = buildNextImageProxyUrl(posterSrc, { width: 1200, quality: 80 }) ?? posterSrc;
@@ -91,7 +97,10 @@ export function HeroMediaTile({
       setShouldRenderVideo(true);
       return;
     }
-    const requireInteraction = Boolean(priority);
+    const syncEnabled = Boolean(syncPlayback);
+    const syncEventName = 'mv:hero-play';
+    const syncStateKey = '__mvHeroPlay__';
+    const requireInteraction = syncEnabled ? Boolean(priority) : Boolean(priority);
     const delayMs = requireInteraction ? 0 : 0;
     let idleHandle: number | null = null;
     let timeoutHandle: number | null = null;
@@ -102,17 +111,38 @@ export function HeroMediaTile({
       window.removeEventListener('scroll', handleInteraction);
       window.removeEventListener('keydown', handleInteraction);
     };
-    const startVideo = () => {
+    const startVideo = (fromSync = false) => {
       if (scheduled) return;
       scheduled = true;
       setShouldRenderVideo(true);
       cleanupInteraction();
+      if (timeoutHandle !== null) {
+        window.clearTimeout(timeoutHandle);
+        timeoutHandle = null;
+      }
+      if (syncEnabled && priority && !fromSync) {
+        (window as typeof window & Record<string, boolean>)[syncStateKey] = true;
+        window.dispatchEvent(new Event(syncEventName));
+      }
+    };
+    const handleSyncPlay = () => {
+      startVideo(true);
     };
     const handleInteraction = () => {
       startVideo();
     };
     const scheduleVideo = () => {
       if (scheduled) return;
+      if (syncEnabled) {
+        if (!priority) {
+          return;
+        }
+        window.addEventListener('pointerdown', handleInteraction, { passive: true });
+        window.addEventListener('pointermove', handleInteraction, { passive: true });
+        window.addEventListener('scroll', handleInteraction, { passive: true });
+        window.addEventListener('keydown', handleInteraction);
+        return;
+      }
       if (requireInteraction) {
         window.addEventListener('pointerdown', handleInteraction, { passive: true });
         window.addEventListener('pointermove', handleInteraction, { passive: true });
@@ -148,6 +178,13 @@ export function HeroMediaTile({
       { rootMargin: '200px' }
     );
     observer.observe(node);
+    if (syncEnabled) {
+      const syncState = (window as typeof window & Record<string, boolean>)[syncStateKey];
+      if (syncState) {
+        startVideo(true);
+      }
+      window.addEventListener(syncEventName, handleSyncPlay);
+    }
     return () => {
       observer.disconnect();
       cleanupInteraction();
@@ -157,8 +194,17 @@ export function HeroMediaTile({
       if (timeoutHandle !== null) {
         window.clearTimeout(timeoutHandle);
       }
+      if (syncEnabled) {
+        window.removeEventListener(syncEventName, handleSyncPlay);
+      }
     };
-  }, [prefersReducedMotion, priority]);
+  }, [prefersReducedMotion, priority, syncPlayback]);
+
+  useEffect(() => {
+    if (!shouldRenderVideo) {
+      setVideoReady(false);
+    }
+  }, [shouldRenderVideo]);
 
   useEffect(() => {
     if (!lightboxOpen) return;
@@ -183,18 +229,38 @@ export function HeroMediaTile({
           <AudioEqualizerBadge tone="light" size="sm" label="Audio enabled" />
         ) : null}
         {shouldRenderVideo && !prefersReducedMotion ? (
-          <video
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload={priority ? 'none' : 'metadata'}
-            poster={videoPosterSrc}
-            aria-label={alt}
-          >
-            <source src={videoSrc} type="video/mp4" />
-          </video>
+          <>
+            <Image
+              src={posterSrc}
+              alt={alt}
+              fill
+              priority={priority}
+              fetchPriority={priority ? 'high' : undefined}
+              loading={priority ? 'eager' : 'lazy'}
+              decoding="async"
+              quality={80}
+              sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 40vw"
+              placeholder="blur"
+              blurDataURL={HERO_BLUR_DATA_URL}
+              className="object-cover transition-opacity duration-500"
+              style={{ opacity: videoReady ? 0 : 1 }}
+            />
+            <video
+              className="absolute inset-0 h-full w-full object-cover transition-opacity transition-transform duration-500 group-hover:scale-[1.03]"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload={priority ? 'none' : 'metadata'}
+              poster={videoPosterSrc}
+              aria-label={alt}
+              style={{ opacity: videoReady ? 1 : 0 }}
+              onLoadedData={() => setVideoReady(true)}
+              onCanPlay={() => setVideoReady(true)}
+            >
+              <source src={videoSrc} type="video/mp4" />
+            </video>
+          </>
         ) : (
           <Image
             src={posterSrc}
@@ -206,6 +272,8 @@ export function HeroMediaTile({
             decoding="async"
             quality={80}
             sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 40vw"
+            placeholder="blur"
+            blurDataURL={HERO_BLUR_DATA_URL}
             className="object-cover"
           />
         )}
