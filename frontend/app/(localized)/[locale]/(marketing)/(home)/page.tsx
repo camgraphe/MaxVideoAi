@@ -583,8 +583,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
               authenticatedHref="/generate"
               guestHref="/login?next=/generate"
               isAuthenticated={isAuthenticated}
-              syncPlayback
-              syncAutoplayDelayMs={900}
+              syncPlayback={false}
               overlayHref={tile.generateHref ?? undefined}
             />
           ))}
