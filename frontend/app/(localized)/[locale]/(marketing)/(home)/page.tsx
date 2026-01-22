@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import Head from 'next/head';
 import { Link } from '@/i18n/navigation';
 import Script from 'next/script';
 import { getTranslations } from 'next-intl/server';
@@ -525,15 +524,8 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
       },
     },
   };
-  const lcpPosterSrc = heroTileConfigs[0]?.posterSrc ?? HERO_TILES[0].posterSrc;
-
   return (
     <div>
-      <Head>
-        <link rel="preconnect" href="https://videohub-uploads-us.s3.amazonaws.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://v3b.fal.media" crossOrigin="anonymous" />
-        {lcpPosterSrc ? <link rel="preload" as="image" href={lcpPosterSrc} fetchPriority="high" media="(max-width: 767px)" /> : null}
-      </Head>
       <section className="container-page section max-w-6xl stack-gap-lg items-center pt-10 pb-10 text-center sm:pt-12 sm:pb-12 lg:pt-14 lg:pb-14 halo-hero">
         <div className="flex flex-wrap items-center justify-center gap-4">
           {badges.map((badge) => (

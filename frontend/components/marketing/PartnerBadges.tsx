@@ -11,12 +11,12 @@ type PartnerBadgeEntry = {
 const PARTNER_BADGES: PartnerBadgeEntry[] = [
   {
     id: 'taaft-featured',
-    html: '<a href="https://theresanaiforthat.com/ai/maxvideoai/?ref=featured&v=8201228" target="_blank" rel="nofollow"><img width="300" src="https://media.theresanaiforthat.com/featured-on-taaft.png?width=600" alt="Featured on There\'s An AI For That"></a>',
+    html: '<a href="https://theresanaiforthat.com/ai/maxvideoai/?ref=featured&v=8201228" target="_blank" rel="nofollow"><img width="300" loading="lazy" decoding="async" src="https://media.theresanaiforthat.com/featured-on-taaft.png?width=600" alt="Featured on There\'s An AI For That"></a>',
   },
   {
     id: 'startup-fame-featured',
     className: 'max-w-[224px] aspect-[224/36]',
-    html: '<a href="https://startupfa.me/s/maxvideoai?utm_source=maxvideoai.com" target="_blank"><img src="https://startupfa.me/badges/featured-badge-small.webp" alt="MaxVideoAI - Featured on Startup Fame" width="224" height="36" /></a>',
+    html: '<a href="https://startupfa.me/s/maxvideoai?utm_source=maxvideoai.com" target="_blank"><img src="https://startupfa.me/badges/featured-badge-small.webp" alt="MaxVideoAI - Featured on Startup Fame" width="224" height="36" loading="lazy" decoding="async" /></a>',
   },
 ];
 

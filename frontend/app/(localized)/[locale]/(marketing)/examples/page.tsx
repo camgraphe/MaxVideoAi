@@ -1,6 +1,5 @@
 import clsx from 'clsx';
 import type { Metadata } from 'next';
-import Head from 'next/head';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
@@ -565,7 +564,6 @@ const clientVideos: ExampleGalleryVideo[] = videos.map((video) => {
   };
 });
 const initialClientVideos = clientVideos.slice(0, EXAMPLES_INITIAL_BATCH);
-const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClientVideos[0]?.rawPosterUrl ?? null;
   const hasPreviousPage = currentPage > 1;
   const hasNextPage = currentPage < totalPages;
   const buildQueryParams = (
@@ -679,11 +677,6 @@ const lcpPosterSrc = initialClientVideos[0]?.optimizedPosterUrl ?? initialClient
 
   return (
     <>
-      <Head>
-        <link rel="preconnect" href="https://videohub-uploads-us.s3.amazonaws.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://v3b.fal.media" crossOrigin="anonymous" />
-        {lcpPosterSrc ? <link rel="preload" as="image" href={lcpPosterSrc} fetchPriority="high" /> : null}
-      </Head>
       <main className="container-page max-w-7xl section">
         <div className="stack-gap-lg">
           <section className="halo-hero halo-hero-offset stack-gap-lg text-center">

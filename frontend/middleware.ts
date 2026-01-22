@@ -535,7 +535,12 @@ function shouldStripQueryParams(pathWithoutLocale: string): boolean {
 
 function isTrackingParam(key: string): boolean {
   const normalized = key.toLowerCase();
-  return normalized.startsWith('utm_') || normalized === 'gclid' || normalized === 'fbclid';
+  return (
+    normalized.startsWith('utm_') ||
+    normalized === 'gclid' ||
+    normalized === 'fbclid' ||
+    normalized === 'nolocale'
+  );
 }
 
 function hasTrackingParams(params: URLSearchParams): boolean {
