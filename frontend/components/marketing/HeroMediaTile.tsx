@@ -231,6 +231,10 @@ export function HeroMediaTile({
               style={{ opacity: videoReady ? 1 : 0 }}
               onLoadedData={() => setVideoReady(true)}
               onCanPlay={() => setVideoReady(true)}
+              onError={() => {
+                setVideoReady(false);
+                setShouldRenderVideo(false);
+              }}
             >
               <source src={videoSrc} type="video/mp4" />
             </video>
