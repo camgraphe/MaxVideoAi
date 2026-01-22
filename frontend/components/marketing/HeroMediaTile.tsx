@@ -156,9 +156,9 @@ export function HeroMediaTile({
           cancelIdleCallback?: (handle: number) => void;
         };
         if (typeof idleWindow.requestIdleCallback === 'function') {
-          idleHandle = idleWindow.requestIdleCallback(startVideo, { timeout: 300 });
+          idleHandle = idleWindow.requestIdleCallback(() => startVideo(), { timeout: 300 });
         } else {
-          timeoutHandle = window.setTimeout(startVideo, 0);
+          timeoutHandle = window.setTimeout(() => startVideo(), 0);
         }
         return;
       }
