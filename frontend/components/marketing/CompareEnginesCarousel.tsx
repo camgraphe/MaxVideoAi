@@ -243,11 +243,12 @@ export function CompareEnginesCarousel({ engines, copy }: CompareEnginesCarousel
           const modelHref = `/models/${engine.modelSlug}`;
           const allowExamples = engine.category !== 'image' && engine.type !== 'image';
           const examplesHref = allowExamples ? getExamplesHref(engine.modelSlug) : null;
-          const handleClick = () => router.push(modelHref);
+          const modelRoute = modelHref as unknown as Parameters<typeof router.push>[0];
+          const handleClick = () => router.push(modelRoute);
           const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
             if (event.key === 'Enter' || event.key === ' ') {
               event.preventDefault();
-              router.push(modelHref);
+              router.push(modelRoute);
             }
           };
 

@@ -22,7 +22,6 @@ import type { AppLocale } from '@/i18n/locales';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { computePricingSnapshot, listPricingRules } from '@/lib/pricing';
 import type { PricingRuleLite } from '@/lib/pricing-rules';
-import { getExamplesHref } from '@/lib/examples-links';
 
 const ProofTabs = dynamic(
   () =>

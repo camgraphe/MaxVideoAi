@@ -65,16 +65,14 @@ export function HeaderBar() {
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState<Record<string, boolean>>({});
   const [desktopDropdownOpen, setDesktopDropdownOpen] = useState<string | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const desktopDropdownCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const desktopDropdownCloseTimeout = useRef<number | null>(null);
   const avatarRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const walletPromptCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const walletPromptCloseTimeout = useRef<number | null>(null);
   const walletPromptId = useId();
   const themeStorageKey = 'mv-theme';
-  const brand = t('nav.brand', 'MaxVideo AI') ?? 'MaxVideo AI';
   const loginLabel = t('nav.login', 'Log in');
   const ctaLabel = t('nav.cta', 'Start a render');
-  const generateLabel = t('nav.generate', 'Generate');
   const serviceNoticeEnv = process.env.NEXT_PUBLIC_SERVICE_NOTICE;
   const envNotice =
     serviceNoticeEnv && serviceNoticeEnv.toLowerCase() === 'off'
@@ -236,7 +234,7 @@ export function HeaderBar() {
 
   const openWalletPrompt = () => {
     if (walletPromptCloseTimeout.current) {
-      clearTimeout(walletPromptCloseTimeout.current);
+      window.clearTimeout(walletPromptCloseTimeout.current);
       walletPromptCloseTimeout.current = null;
     }
     setWalletPromptOpen(true);
@@ -244,9 +242,9 @@ export function HeaderBar() {
 
   const scheduleWalletPromptClose = () => {
     if (walletPromptCloseTimeout.current) {
-      clearTimeout(walletPromptCloseTimeout.current);
+      window.clearTimeout(walletPromptCloseTimeout.current);
     }
-    walletPromptCloseTimeout.current = setTimeout(() => {
+    walletPromptCloseTimeout.current = window.setTimeout(() => {
       setWalletPromptOpen(false);
       walletPromptCloseTimeout.current = null;
     }, 200);
@@ -255,7 +253,7 @@ export function HeaderBar() {
   useEffect(() => {
     return () => {
       if (walletPromptCloseTimeout.current) {
-        clearTimeout(walletPromptCloseTimeout.current);
+        window.clearTimeout(walletPromptCloseTimeout.current);
       }
     };
   }, []);
@@ -763,7 +761,6 @@ export function HeaderBar() {
               <div className="stack-gap-sm">
                 <Link
                   href="/login?next=/app"
-                  variant="outline"
                   className="block rounded-2xl border border-hairline px-4 py-3 text-center text-base font-semibold text-text-primary shadow-card"
                   onClick={() => setMobileMenuOpen(false)}
                 >

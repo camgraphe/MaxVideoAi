@@ -28,7 +28,7 @@ export function MarketingNav() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const avatarRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const desktopDropdownCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const desktopDropdownCloseTimeout = useRef<number | null>(null);
   const brand = t('nav.brand', 'MaxVideo AI') ?? 'MaxVideo AI';
   const defaultLinks: Array<{ key: string; href: string }> = [
     { key: 'models', href: '/models' },
@@ -72,7 +72,7 @@ export function MarketingNav() {
 
   useEffect(() => {
     let mounted = true;
-    const fetchAccountState = async (token?: string | null, userId?: string | null) => {
+    const fetchAccountState = async (token?: string | null) => {
       if (!token) {
         setIsAdmin(false);
         return;
@@ -103,9 +103,9 @@ export function MarketingNav() {
       .getSession()
       .then(async ({ data }) => {
         const session = data.session ?? null;
-        const userId = applySession(session);
+        applySession(session);
         if (!mounted) return;
-        void fetchAccountState(session?.access_token, userId ?? session?.user?.id ?? null);
+        void fetchAccountState(session?.access_token);
       })
       .catch(() => {
         if (mounted) {
@@ -122,8 +122,8 @@ export function MarketingNav() {
         setIsAdmin(false);
         return;
       }
-      const userId = applySession(session ?? null);
-      void fetchAccountState(session?.access_token, userId ?? session?.user?.id ?? null);
+      applySession(session ?? null);
+      void fetchAccountState(session?.access_token);
     });
     return () => {
       mounted = false;

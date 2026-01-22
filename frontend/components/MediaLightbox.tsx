@@ -465,7 +465,7 @@ export function MediaLightbox({
                   <div className="mt-3 flex flex-wrap gap-2">
                     <ButtonLink
                       linkComponent="a"
-                      href={mediaUrl ?? undefined}
+                      href={mediaUrl ?? '#'}
                       target="_blank"
                       rel="noreferrer"
                       variant="outline"

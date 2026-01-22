@@ -28,7 +28,7 @@ const JOB_STATUS_COMMANDS: CommandItem[] = [
 ];
 
 function buildCommands(navGroups: AdminNavGroup[], router: ReturnType<typeof useRouter>): CommandItem[] {
-  const navItems = navGroups.flatMap((group) =>
+  const navItems: CommandItem[] = navGroups.flatMap((group) =>
     group.items.map((item) => ({
       id: item.id,
       label: item.label,
@@ -38,7 +38,7 @@ function buildCommands(navGroups: AdminNavGroup[], router: ReturnType<typeof use
     }))
   );
 
-  const quick = [
+  const quick: CommandItem[] = [
     {
       id: 'go-admin',
       label: 'Admin dashboard',

@@ -165,7 +165,7 @@ export function ThemeTokensEditor({ initialSetting }: ThemeTokensEditorProps) {
           <h1 className="text-2xl font-semibold text-text-primary">Personnalisation globale</h1>
           <p className="text-sm text-text-secondary">
             Ajustez les tokens UI pour tous les ecrans. Les changements sont appliques immediatement sur cette page,
-            puis sauvegardes pour l'ensemble du site.
+            puis sauvegardes pour l&apos;ensemble du site.
           </p>
         </header>
 

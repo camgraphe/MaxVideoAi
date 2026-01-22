@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ElementType, ReactNode } from 'react';
 import Link from 'next/link';
 import clsx from 'clsx';
-import type { LinkProps } from 'next/link';
+import type { LocalizedLinkHref } from '@/i18n/navigation';
 
 type ButtonVariant = 'primary' | 'outline' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -42,7 +42,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 });
 
 type ButtonLinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & {
-  href: LinkProps['href'];
+  href: LocalizedLinkHref;
   children: ReactNode;
   variant?: ButtonVariant;
   size?: ButtonSize;

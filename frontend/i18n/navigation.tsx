@@ -1,5 +1,12 @@
 import NextLink, { type LinkProps as NextLinkProps } from 'next/link';
-import type { PropsWithChildren, ReactElement, ReactNode, ComponentType, ComponentProps } from 'react';
+import type {
+  PropsWithChildren,
+  ReactElement,
+  ReactNode,
+  ComponentType,
+  ComponentProps,
+  AnchorHTMLAttributes,
+} from 'react';
 import { createNavigation } from 'next-intl/navigation';
 import { routing } from '@/i18n/routing';
 
@@ -17,7 +24,8 @@ export type LocalizedLinkHref =
     };
 
 type LocalizedLinkProps = PropsWithChildren<
-  Omit<NextLinkProps, 'href' | 'hrefLang'> & {
+  Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href' | 'hrefLang'> &
+    Omit<NextLinkProps, 'href' | 'hrefLang'> & {
     href: LocalizedLinkHref;
     className?: string;
     rel?: string;

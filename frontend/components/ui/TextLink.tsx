@@ -1,12 +1,13 @@
 import type { AnchorHTMLAttributes, ElementType, ReactNode } from 'react';
 import Link from 'next/link';
 import clsx from 'clsx';
-import type { LinkProps } from 'next/link';
+import type { LocalizedLinkHref } from '@/i18n/navigation';
 
 type TextLinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & {
-  href: LinkProps['href'];
+  href: LocalizedLinkHref;
   children: ReactNode;
   linkComponent?: ElementType;
+  prefetch?: boolean;
 };
 
 const baseClasses =
