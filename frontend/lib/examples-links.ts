@@ -1,4 +1,5 @@
 import { MARKETING_EXAMPLE_SLUGS } from '@/config/navigation';
+import { normalizeEngineId } from '@/lib/engine-alias';
 
 const EXAMPLE_SLUG_SET = new Set(MARKETING_EXAMPLE_SLUGS.map((slug) => slug.toLowerCase()));
 const EXAMPLE_SLUG_ALIASES: Record<string, string> = {
@@ -18,13 +19,20 @@ const EXAMPLE_SLUG_ALIASES: Record<string, string> = {
   'wan-2-5': 'wan-2-6',
 };
 
-export function getExamplesHref(engineSlug?: string | null): string | null {
+export function resolveExampleCanonicalSlug(engineSlug?: string | null): string | null {
   if (!engineSlug) return null;
-  const normalized = engineSlug.trim().toLowerCase();
+  const normalizedRaw = normalizeEngineId(engineSlug) ?? engineSlug;
+  const normalized = normalizedRaw.trim().toLowerCase();
   if (!normalized) return null;
   const candidate = EXAMPLE_SLUG_ALIASES[normalized] ?? normalized;
-  if (EXAMPLE_SLUG_SET.has(candidate)) {
-    return `/examples/${candidate}`;
+  return EXAMPLE_SLUG_SET.has(candidate) ? candidate : null;
+}
+
+export function getExamplesHref(engineSlug?: string | null): string | null {
+  if (!engineSlug) return null;
+  const canonicalSlug = resolveExampleCanonicalSlug(engineSlug);
+  if (canonicalSlug) {
+    return `/examples/${canonicalSlug}`;
   }
   return `/examples?engine=${encodeURIComponent(engineSlug)}`;
 }

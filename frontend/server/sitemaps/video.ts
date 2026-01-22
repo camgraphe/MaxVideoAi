@@ -2,10 +2,9 @@ import { NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { listExamples } from '@/server/videos';
-import { normalizeEngineId } from '@/lib/engine-alias';
+import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://maxvideoai.com').replace(/\/$/, '');
-const EXAMPLES_PAGE_SIZE = 60;
 
 function escapeXml(value: string): string {
   return value
@@ -27,30 +26,10 @@ function formatSitemapDate(value?: string | number | Date | null): string | null
   return date.toISOString().slice(0, 10);
 }
 
-function resolveExamplesEngineParam(engineId: string | null | undefined): string | null {
-  if (!engineId) return null;
-  const normalized = (normalizeEngineId(engineId) ?? engineId).trim().toLowerCase();
-  if (!normalized) return null;
-  if (normalized.startsWith('veo-3') || normalized.startsWith('veo3')) return 'veo';
-  if (normalized.startsWith('sora-2')) return 'sora-2';
-  if (normalized.startsWith('pika')) return 'pika';
-  if (normalized.includes('hailuo')) return 'hailuo';
-  if (normalized.startsWith('kling')) return 'kling';
-  if (normalized.startsWith('wan')) return 'wan';
-  if (normalized.startsWith('ltx')) return 'ltx-2';
-  return normalized;
-}
-
-function buildExamplesLoc(engineParam: string | null, page: number): string {
-  const params = new URLSearchParams();
-  if (engineParam) {
-    params.set('engine', engineParam);
-  }
-  if (page > 1) {
-    params.set('page', String(page));
-  }
-  const suffix = params.toString();
-  return suffix ? `${SITE}/examples?${suffix}` : `${SITE}/examples`;
+function buildExamplesLoc(engineId: string | null | undefined): string | null {
+  const canonicalSlug = resolveExampleCanonicalSlug(engineId);
+  if (!canonicalSlug) return null;
+  return `${SITE}/examples/${canonicalSlug}`;
 }
 
 export async function generateVideoSitemapResponse(): Promise<NextResponse> {
@@ -63,11 +42,10 @@ export async function generateVideoSitemapResponse(): Promise<NextResponse> {
     const videos = await listExamples('playlist', 5000);
 
     const grouped = new Map<string, typeof videos>();
-    videos.forEach((video, index) => {
+    videos.forEach((video) => {
       if (!video.videoUrl) return;
-      const engineParam = resolveExamplesEngineParam(video.engineId);
-      const page = Math.floor(index / EXAMPLES_PAGE_SIZE) + 1;
-      const loc = buildExamplesLoc(engineParam, page);
+      const loc = buildExamplesLoc(video.engineId);
+      if (!loc) return;
       const entry = grouped.get(loc);
       if (entry) {
         entry.push(video);
