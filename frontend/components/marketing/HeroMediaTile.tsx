@@ -25,6 +25,7 @@ interface HeroMediaTileProps {
   modelHref?: string | null;
   isAuthenticated?: boolean;
   syncPlayback?: boolean;
+  syncAutoplayDelayMs?: number;
   detailMeta?: {
     prompt?: string | null;
     engineLabel?: string | null;
@@ -53,6 +54,7 @@ export function HeroMediaTile({
   modelHref,
   isAuthenticated,
   syncPlayback,
+  syncAutoplayDelayMs,
   detailMeta,
 }: HeroMediaTileProps) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
@@ -102,6 +104,7 @@ export function HeroMediaTile({
     const syncStateKey = '__mvHeroPlay__';
     const requireInteraction = syncEnabled ? Boolean(priority) : Boolean(priority);
     const delayMs = requireInteraction ? 0 : 0;
+    const syncDelayMs = typeof syncAutoplayDelayMs === 'number' ? syncAutoplayDelayMs : 900;
     let idleHandle: number | null = null;
     let timeoutHandle: number | null = null;
     let scheduled = false;
@@ -141,6 +144,9 @@ export function HeroMediaTile({
         window.addEventListener('pointermove', handleInteraction, { passive: true });
         window.addEventListener('scroll', handleInteraction, { passive: true });
         window.addEventListener('keydown', handleInteraction);
+        if (syncDelayMs >= 0) {
+          timeoutHandle = window.setTimeout(() => startVideo(), syncDelayMs);
+        }
         return;
       }
       if (requireInteraction) {
