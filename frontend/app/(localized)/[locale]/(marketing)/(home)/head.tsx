@@ -1,10 +1,12 @@
+import { buildNextImageProxyUrl } from '@/lib/media-helpers';
 import { getHomepageSlots } from '@/server/homepage';
 
 const DEFAULT_LCP_POSTER = '/hero/sora2.jpg';
 
 export default async function Head() {
   const homepageSlots = await getHomepageSlots();
-  const lcpPosterSrc = homepageSlots.hero[0]?.video?.thumbUrl ?? DEFAULT_LCP_POSTER;
+  const rawPosterSrc = homepageSlots.hero[0]?.video?.thumbUrl ?? DEFAULT_LCP_POSTER;
+  const lcpPosterSrc = buildNextImageProxyUrl(rawPosterSrc, { width: 1200, quality: 80 }) ?? rawPosterSrc;
 
   return (
     <>

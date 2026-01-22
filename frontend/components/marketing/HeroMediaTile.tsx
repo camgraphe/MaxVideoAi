@@ -6,6 +6,7 @@ import { Link } from '@/i18n/navigation';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { Button } from '@/components/ui/Button';
 import { supabase } from '@/lib/supabaseClient';
+import { buildNextImageProxyUrl } from '@/lib/media-helpers';
 
 interface HeroMediaTileProps {
   label: string;
@@ -29,6 +30,9 @@ interface HeroMediaTileProps {
     durationSec?: number | null;
   } | null;
 }
+
+const HERO_BLUR_DATA_URL =
+  'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSI5Ij48cmVjdCB3aWR0aD0iMTYiIGhlaWdodD0iOSIgZmlsbD0iIzBiMGIwYiIvPjwvc3ZnPg==';
 
 export function HeroMediaTile({
   label,
@@ -57,8 +61,10 @@ export function HeroMediaTile({
   const [ctaHref, setCtaHref] = useState<string | null>(() => guestHref ?? authenticatedHref ?? null);
   const cardHref = detailHref ? null : ctaHref;
   const [shouldRenderVideo, setShouldRenderVideo] = useState<boolean>(false);
+  const [videoReady, setVideoReady] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const videoPosterSrc = buildNextImageProxyUrl(posterSrc, { width: 1200, quality: 80 }) ?? posterSrc;
 
   useEffect(() => {
     if (!authenticatedHref && !guestHref) {
@@ -151,6 +157,12 @@ export function HeroMediaTile({
   }, [prefersReducedMotion]);
 
   useEffect(() => {
+    if (!shouldRenderVideo) {
+      setVideoReady(false);
+    }
+  }, [shouldRenderVideo]);
+
+  useEffect(() => {
     if (!lightboxOpen) return;
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -172,33 +184,39 @@ export function HeroMediaTile({
         {showAudioIcon ? (
           <AudioEqualizerBadge tone="light" size="sm" label="Audio enabled" />
         ) : null}
+        <Image
+          src={posterSrc}
+          alt={alt}
+          fill
+          priority={priority}
+          fetchPriority={priority ? 'high' : undefined}
+          loading={priority ? 'eager' : 'lazy'}
+          decoding="async"
+          quality={80}
+          sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 40vw"
+          placeholder="blur"
+          blurDataURL={HERO_BLUR_DATA_URL}
+          className="object-cover transition-opacity duration-500"
+          style={{ opacity: videoReady ? 0 : 1 }}
+        />
         {shouldRenderVideo && !prefersReducedMotion ? (
           <video
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+            className="absolute inset-0 h-full w-full object-cover transition-opacity transition-transform duration-500 group-hover:scale-[1.03]"
             autoPlay
             muted
             loop
             playsInline
             preload="metadata"
-            poster={posterSrc}
+            poster={videoPosterSrc}
             aria-label={alt}
+            style={{ opacity: videoReady ? 1 : 0 }}
+            onLoadedData={() => setVideoReady(true)}
+            onCanPlay={() => setVideoReady(true)}
+            onError={() => setVideoReady(false)}
           >
             <source src={videoSrc} type="video/mp4" />
           </video>
-        ) : (
-          <Image
-            src={posterSrc}
-            alt={alt}
-            fill
-            priority={priority}
-            fetchPriority={priority ? 'high' : undefined}
-            loading={priority ? 'eager' : 'lazy'}
-            decoding="async"
-            quality={80}
-            sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 40vw"
-            className="object-cover"
-          />
-        )}
+        ) : null}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-2 bg-gradient-to-t from-black/65 via-black/35 to-transparent p-4 text-left text-on-inverse">
           {badge ? (
             <span className="inline-flex h-6 items-center rounded-pill border border-surface-on-media-50 bg-surface-on-media-15 px-3 text-[11px] font-semibold uppercase tracking-micro text-on-inverse">
