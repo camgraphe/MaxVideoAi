@@ -59,7 +59,7 @@ const GRID_CLASS: Record<VideoGroup['layout'], string> = {
 };
 
 const ICON_BUTTON_BASE =
-  'flex h-9 w-9 items-center justify-center rounded-lg border border-hairline/50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:translate-y-px';
+  'flex h-9 w-9 items-center justify-center rounded-lg border border-surface-on-media-25 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:translate-y-px';
 
 function isVideo(item: VideoItem): boolean {
   const hint = typeof item.meta?.mediaType === 'string' ? String(item.meta.mediaType).toLowerCase() : null;
@@ -473,10 +473,10 @@ export function CompositePreviewDock({
         <div className="flex flex-col items-center">
           <div
             ref={previewRef}
-            className={clsx(
-              'relative w-full max-w-[960px] rounded-card bg-placeholder',
-              isSingleLayout ? 'overflow-hidden p-0' : 'border border-hairline p-[8px]'
-            )}
+              className={clsx(
+                'relative w-full max-w-[960px] rounded-card bg-placeholder',
+                isSingleLayout ? 'overflow-hidden p-0' : 'border border-surface-on-media-25 p-[8px]'
+              )}
             style={{ aspectRatio: '16 / 9' }}
           >
             {showSkeleton ? (
@@ -643,7 +643,7 @@ export function CompositePreviewDock({
           <div className="mt-3 flex w-full max-w-[960px]">
             <div
               ref={toolbarRef}
-              className="flex w-full items-center justify-center rounded-card border border-hairline/50 bg-surface-glass-80 px-3 py-2 shadow-sm"
+              className="flex w-full items-center justify-center rounded-card border border-surface-on-media-25 bg-surface-glass-80 px-3 py-2 shadow-sm"
             >
               {toolbarControls}
             </div>

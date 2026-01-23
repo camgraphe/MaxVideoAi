@@ -44,7 +44,7 @@ interface ImageCompositePreviewDockProps {
 }
 
 const ICON_BUTTON_BASE =
-  'flex h-9 w-9 items-center justify-center rounded-lg border border-hairline/50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:translate-y-px';
+  'flex h-9 w-9 items-center justify-center rounded-lg border border-surface-on-media-25 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:translate-y-px';
 
 export function ImageCompositePreviewDock({
   entry,
@@ -209,7 +209,7 @@ export function ImageCompositePreviewDock({
       <div className="px-4 py-4">
         <div className="flex flex-col items-center">
           <div
-            className="relative w-full overflow-hidden rounded-card border border-hairline bg-placeholder max-h-[320px] sm:max-h-[420px]"
+            className="relative w-full overflow-hidden rounded-card border border-surface-on-media-25 bg-placeholder max-h-[320px] sm:max-h-[420px]"
             style={{ aspectRatio: aspectRatioCss ?? '1 / 1' }}
           >
             {selected ? (
@@ -225,7 +225,7 @@ export function ImageCompositePreviewDock({
             )}
           </div>
           <div className="mt-3 flex w-full">
-            <div className="flex w-full items-center justify-center rounded-card border border-hairline/50 bg-surface-glass-80 px-3 py-2 shadow-sm">
+            <div className="flex w-full items-center justify-center rounded-card border border-surface-on-media-25 bg-surface-glass-80 px-3 py-2 shadow-sm">
               {toolbar}
             </div>
           </div>

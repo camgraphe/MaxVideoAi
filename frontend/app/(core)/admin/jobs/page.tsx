@@ -99,7 +99,7 @@ function buildFiltersQuery(filters: UiFilters): string {
 
 function JobFilters({ filters }: { filters: UiFilters }) {
   return (
-    <form className="space-y-4 rounded-2xl border border-border/60 bg-surface-glass-95 p-5 shadow-card" method="get">
+    <form className="space-y-4 rounded-2xl border border-surface-on-media-25 bg-surface-glass-95 p-5 shadow-card" method="get">
       <div className="grid grid-gap-sm md:grid-cols-2 lg:grid-cols-3">
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
           Job ID
@@ -108,7 +108,7 @@ function JobFilters({ filters }: { filters: UiFilters }) {
             name="jobId"
             defaultValue={filters.jobId}
             placeholder="job_1234 or provider id"
-            className="mt-1 w-full rounded-lg border border-border/70 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+            className="mt-1 w-full rounded-lg border border-surface-on-media-25 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </label>
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
@@ -118,7 +118,7 @@ function JobFilters({ filters }: { filters: UiFilters }) {
             name="userId"
             defaultValue={filters.userId}
             placeholder="Supabase user id"
-            className="mt-1 w-full rounded-lg border border-border/70 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+            className="mt-1 w-full rounded-lg border border-surface-on-media-25 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </label>
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
@@ -128,7 +128,7 @@ function JobFilters({ filters }: { filters: UiFilters }) {
             name="engineId"
             defaultValue={filters.engineId}
             placeholder="engine id or label"
-            className="mt-1 w-full rounded-lg border border-border/70 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+            className="mt-1 w-full rounded-lg border border-surface-on-media-25 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </label>
       </div>
@@ -139,7 +139,7 @@ function JobFilters({ filters }: { filters: UiFilters }) {
           <select
             name="status"
             defaultValue={filters.status}
-            className="mt-1 w-full rounded-lg border border-border/70 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+            className="mt-1 w-full rounded-lg border border-surface-on-media-25 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
           >
             <option value="">All</option>
             {['pending', 'running', 'completed', 'failed'].map((value) => (
@@ -155,7 +155,7 @@ function JobFilters({ filters }: { filters: UiFilters }) {
             type="date"
             name="from"
             defaultValue={filters.from}
-            className="mt-1 w-full rounded-lg border border-border/70 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+            className="mt-1 w-full rounded-lg border border-surface-on-media-25 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </label>
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
@@ -164,7 +164,7 @@ function JobFilters({ filters }: { filters: UiFilters }) {
             type="date"
             name="to"
             defaultValue={filters.to}
-            className="mt-1 w-full rounded-lg border border-border/70 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
+            className="mt-1 w-full rounded-lg border border-surface-on-media-25 bg-bg px-3 py-2 text-sm text-text-primary focus:border-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </label>
       </div>
