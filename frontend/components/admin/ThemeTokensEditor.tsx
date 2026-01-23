@@ -263,6 +263,44 @@ export function ThemeTokensEditor({ initialSetting }: ThemeTokensEditorProps) {
             <p className="text-sm font-semibold text-text-primary">Card title</p>
             <p className="mt-1 text-xs text-text-muted">Secondary copy on surface 2.</p>
           </div>
+          <div className="rounded-card border border-border bg-surface p-4 shadow-card">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs uppercase tracking-micro text-text-muted">Status</p>
+              <span className="rounded-full bg-accent-subtle px-2 py-0.5 text-[10px] font-semibold text-accent">
+                Active
+              </span>
+            </div>
+            <p className="mt-2 text-sm text-text-secondary">
+              Compact summary to validate contrast and spacing.
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <Button size="sm">Primary</Button>
+              <Button size="sm" variant="ghost">
+                Ghost
+              </Button>
+            </div>
+          </div>
+          <div className="rounded-card border border-border bg-surface-2 p-4">
+            <p className="text-xs uppercase tracking-micro text-text-muted">Form field</p>
+            <input
+              type="text"
+              placeholder="Placeholder text"
+              className="mt-2 w-full rounded-input border border-border bg-surface px-3 py-2 text-sm text-text-primary shadow-inner focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="rounded-input border border-border bg-surface px-3 py-2 text-xs text-text-secondary">
+                Select
+              </div>
+              <div className="rounded-input border border-border bg-surface px-3 py-2 text-xs text-text-secondary">
+                Toggle
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="chip">Neutral</span>
+            <span className="chip">Muted</span>
+            <span className="chip chip--accent">Accent</span>
+          </div>
           <div className="rounded-card border border-hairline bg-surface-3 p-4">
             <p className="text-sm text-text-secondary">Supporting panel</p>
           </div>
