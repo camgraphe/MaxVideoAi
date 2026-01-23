@@ -1744,22 +1744,32 @@ function Sora2PageLayout({
             <div className="grid grid-gap-sm md:grid-cols-3">
               {relatedEngines.map((entry) => {
                 const label = entry.marketingName ?? entry.engine.label;
+                const currentLabel = breadcrumbModelLabel || heroTitle || engine.marketingName || engine.engine.label;
+                const compareTemplate =
+                  locale === 'fr'
+                    ? 'Comparer {a} vs {b} →'
+                    : locale === 'es'
+                      ? 'Comparar {a} vs {b} →'
+                      : 'Compare {a} vs {b} →';
+                const fallbackCompare = compareTemplate
+                  .replace('{a}', currentLabel)
+                  .replace('{b}', label);
                 const ctaLabel =
                   engineSlug === 'veo-3-1-first-last'
                     ? entry.modelSlug === 'veo-3-1'
                       ? 'Explore Veo 3.1 →'
                       : entry.modelSlug === 'veo-3-1-fast'
                         ? 'Explore Veo 3.1 Fast →'
-                      : entry.modelSlug === 'sora-2'
-                        ? 'Explore Sora 2 →'
-                        : copy.comparisonCta ?? 'View model →'
+                        : entry.modelSlug === 'sora-2'
+                          ? 'Explore Sora 2 →'
+                          : fallbackCompare
                     : engineSlug === 'wan-2-6'
                       ? entry.modelSlug === 'sora-2'
-                        ? relatedCtaSora2 ?? secondaryCta ?? copy.comparisonCta ?? 'View model →'
+                        ? relatedCtaSora2 ?? secondaryCta ?? fallbackCompare
                         : entry.modelSlug === 'sora-2-pro'
-                          ? relatedCtaSora2Pro ?? copy.comparisonCta ?? 'View model →'
-                          : copy.comparisonCta ?? 'View model →'
-                      : copy.comparisonCta ?? 'View model →';
+                          ? relatedCtaSora2Pro ?? fallbackCompare
+                          : fallbackCompare
+                      : fallbackCompare;
                 return (
                   <article
                     key={entry.modelSlug}
