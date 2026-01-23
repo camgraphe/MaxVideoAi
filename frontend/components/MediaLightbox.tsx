@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
+import { CopyPromptButton } from '@/components/CopyPromptButton';
 import { Button, ButtonLink } from '@/components/ui/Button';
 
 export interface MediaLightboxEntry {
@@ -61,6 +62,26 @@ function aspectRatioClass(aspectRatio?: string | null): string {
     }
   }
   return 'aspect-[16/9]';
+}
+
+function isVerticalAspect(aspectRatio?: string | null): boolean {
+  if (!aspectRatio) return false;
+  const value = aspectRatio.toLowerCase();
+  if (!value.includes(':')) return false;
+  const [w, h] = value.split(':').map((part) => Number(part));
+  if (!Number.isFinite(w) || !Number.isFinite(h) || h === 0) return false;
+  return h > w;
+}
+
+function formatPromptPreview(prompt: string, maxLength = 220): string {
+  const normalized = prompt.replace(/\s+/g, ' ').trim();
+  if (!normalized) return '';
+  if (normalized.length <= maxLength) return normalized;
+  return `${normalized.slice(0, maxLength).trim()}…`;
+}
+
+function isUuidLike(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
 
 export function MediaLightbox({
@@ -317,6 +338,24 @@ export function MediaLightbox({
   );
 
   const hasAtLeastOneVideo = useMemo(() => entries.some((entry) => Boolean(entry.videoUrl)), [entries]);
+  const specs = useMemo(() => {
+    const next: Array<{ label: string; value: string }> = [];
+    if (title) {
+      next.push({ label: 'Group', value: title });
+    }
+    if (subtitle) {
+      next.push({ label: 'Created', value: subtitle });
+    }
+    const existing = new Set(next.map((item) => item.label.toLowerCase()));
+    metadata.forEach((item) => {
+      const key = item.label.toLowerCase();
+      if (!existing.has(key)) {
+        next.push(item);
+        existing.add(key);
+      }
+    });
+    return next;
+  }, [metadata, subtitle, title]);
 
   return (
     <div
@@ -329,40 +368,24 @@ export function MediaLightbox({
         }
       }}
     >
-      <div className="relative max-h-full w-full max-w-5xl overflow-y-auto rounded-modal border border-border bg-surface p-6 shadow-float">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={onClose}
-          className="absolute right-5 top-5 border-border bg-surface px-3 py-1 text-sm font-medium text-text-secondary hover:bg-bg"
-        >
-          Close
-        </Button>
+      <div className="relative max-h-full w-full max-w-5xl overflow-y-auto p-5">
+        {!hasAtLeastOneVideo ? (
+          <p className="mt-3 rounded-input border border-dashed border-border bg-bg px-3 py-2 text-sm text-text-muted">
+            Media will be available once the render completes.
+          </p>
+        ) : null}
 
-        <header className="pr-14">
-          <h2 className="text-xl font-semibold text-text-primary">{title}</h2>
-          {subtitle ? <p className="mt-1 text-sm text-text-secondary">{subtitle}</p> : null}
-          {!hasAtLeastOneVideo ? (
-            <p className="mt-2 rounded-input border border-dashed border-border bg-bg px-3 py-2 text-sm text-text-muted">
-              Media will be available once the render completes.
-            </p>
-          ) : null}
-        </header>
-
-        {metadata.length > 0 && (
-          <section className="mt-5 grid grid-gap-sm text-sm text-text-secondary md:grid-cols-2">
-            {metadata.map((item) => (
-              <div key={item.label}>
-                <p className="text-xs uppercase tracking-micro text-text-muted">{item.label}</p>
-                <p className="mt-1 text-text-primary">{item.value}</p>
-              </div>
-            ))}
-          </section>
-        )}
-
-        <section className="mt-6 space-y-4">
-          {entries.map((entry) => {
+        <section className="relative mt-6 space-y-4">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onClose}
+            className="absolute right-0 top-0 rounded-pill border-border bg-surface px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary hover:bg-bg"
+          >
+            Close
+          </Button>
+          {entries.map((entry, index) => {
             const aspectClass = aspectRatioClass(entry.aspectRatio);
             const videoUrl = entry.videoUrl ?? undefined;
             const thumbUrl = entry.thumbUrl ?? undefined;
@@ -375,6 +398,18 @@ export function MediaLightbox({
                 : isProcessing
                   ? 'Processing'
                   : undefined;
+            const statusLabel =
+              entry.status === 'pending' ? 'Processing' : entry.status === 'failed' ? 'Failed' : entry.status === 'completed' ? 'Ready' : null;
+            const createdLabel = entry.createdAt
+              ? (() => {
+                  try {
+                    return new Intl.DateTimeFormat(undefined, { dateStyle: 'short', timeStyle: 'short' }).format(new Date(entry.createdAt));
+                  } catch {
+                    return entry.createdAt;
+                  }
+                })()
+              : null;
+            const isVertical = isVerticalAspect(entry.aspectRatio);
             const refreshState = refreshStates[entry.id];
             const isRefreshing = Boolean(refreshState?.loading);
             const refreshError = refreshState?.error ?? null;
@@ -398,71 +433,177 @@ export function MediaLightbox({
                   : undefined;
             const isIndexingLoading = Boolean(indexingState?.loading);
             const indexingError = indexingState?.error ?? null;
+            const showPrompt = Boolean(prompt) && index === 0;
+            const entrySpecs = [
+              ...(entry.jobId ? [{ label: 'Job', value: entry.jobId }] : []),
+              ...specs,
+            ].filter((item) => {
+              if (!item.value) return false;
+              const normalized = item.label.toLowerCase();
+              return (
+                normalized !== 'engine' &&
+                normalized !== 'duration' &&
+                normalized !== 'batch' &&
+                normalized !== 'created' &&
+                normalized !== 'date'
+              );
+            });
 
             return (
               <article
                 key={entry.id}
-                className="rounded-card border border-border bg-surface-glass-90 p-4 shadow-card md:flex md:items-start md:gap-4"
+                className="rounded-[24px] border border-hairline bg-surface-glass-95 p-5 shadow-card backdrop-blur"
               >
-                <div className={clsx('relative overflow-hidden rounded-card bg-placeholder md:w-[360px] md:flex-shrink-0', aspectClass)}>
-                  {videoUrl ? (
-                    <video
-                      key={videoUrl}
-                      src={videoUrl}
-                      poster={thumbUrl}
-                      className="absolute inset-0 h-full w-full object-cover"
-                      controls
-                      playsInline
-                      autoPlay
-                      muted
-                    />
-                  ) : thumbUrl ? (
-                    <Image src={thumbUrl} alt="" fill className="object-cover" />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-surface-2 via-surface to-surface-2 text-[12px] font-medium uppercase tracking-micro text-text-muted">
-                    Preview unavailable
-                  </div>
-                )}
-                {entry.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available" /> : null}
-                {isProcessing && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-on-media-dark-45 px-3 text-center text-[11px] text-on-inverse backdrop-blur-sm">
-                      <span className="uppercase tracking-micro">Processing…</span>
-                      {entry.message ? <span className="mt-1 line-clamp-2 text-on-media-80">{entry.message}</span> : null}
-                      {progressLabel ? <span className="mt-1 text-[12px] font-semibold text-on-inverse">{progressLabel}</span> : null}
+                <div className="border-b border-hairline pb-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-base font-semibold text-text-primary">{entry.label}</h3>
+                        {statusLabel ? (
+                          <span className="rounded-input border border-border bg-bg px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
+                            {statusLabel}
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-text-secondary">
+                        {entry.engineLabel ? (
+                          <div className="flex items-center gap-2">
+                            <span className="uppercase tracking-micro text-text-muted">Engine</span>
+                            <span className="font-semibold text-text-primary">{entry.engineLabel}</span>
+                          </div>
+                        ) : null}
+                        {typeof entry.durationSec === 'number' ? (
+                          <div className="flex items-center gap-2">
+                            <span className="uppercase tracking-micro text-text-muted">Duration</span>
+                            <span className="font-semibold text-text-primary">{entry.durationSec}s</span>
+                          </div>
+                        ) : null}
+                        {entry.aspectRatio ? (
+                          <div className="flex items-center gap-2">
+                            <span className="uppercase tracking-micro text-text-muted">Aspect</span>
+                            <span className="font-semibold text-text-primary">{entry.aspectRatio}</span>
+                          </div>
+                        ) : null}
+                        {entry.hasAudio ? (
+                          <div className="flex items-center gap-2">
+                            <span className="uppercase tracking-micro text-text-muted">Audio</span>
+                            <span className="font-semibold text-text-primary">Yes</span>
+                          </div>
+                        ) : null}
+                        {createdLabel ? (
+                          <div className="flex items-center gap-2">
+                            <span className="uppercase tracking-micro text-text-muted">Created</span>
+                            <span className="font-semibold text-text-primary">{createdLabel}</span>
+                          </div>
+                        ) : null}
+                      </div>
                     </div>
-                  )}
+                  <div className="flex items-start">
+                    {index === 0 ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={onClose}
+                        className="rounded-pill border-border bg-surface px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary hover:bg-bg"
+                      >
+                        Close
+                      </Button>
+                    ) : null}
+                  </div>
+                </div>
                 </div>
 
-                <div className="mt-4 flex-1 md:mt-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-base font-semibold text-text-primary">{entry.label}</h3>
-                    {entry.engineLabel ? (
-                      <span className="rounded-input border border-border bg-bg px-2 py-0.5 text-xs text-text-secondary">
-                        {entry.engineLabel}
-                      </span>
-                    ) : null}
-                    {typeof entry.durationSec === 'number' ? (
-                      <span className="rounded-input border border-border bg-bg px-2 py-0.5 text-xs text-text-secondary">
-                        {entry.durationSec}s
-                      </span>
-                    ) : null}
-                    {entry.createdAt ? (
-                      <span className="rounded-input border border-border bg-bg px-2 py-0.5 text-xs text-text-secondary">
-                        {(() => {
-                          try {
-                            return new Intl.DateTimeFormat(undefined, {
-                              dateStyle: 'short',
-                              timeStyle: 'short',
-                            }).format(new Date(entry.createdAt!));
-                          } catch {
-                            return entry.createdAt;
-                          }
-                        })()}
-                      </span>
+                <div className="mt-3">
+                  <div
+                    className={clsx(
+                      'relative mx-auto w-full max-w-3xl overflow-hidden rounded-3xl border border-hairline bg-black',
+                      aspectClass,
+                      isVertical ? 'max-h-[42vh]' : 'max-h-[48vh]'
+                    )}
+                  >
+                    {videoUrl ? (
+                      <video
+                        key={videoUrl}
+                        src={videoUrl}
+                        poster={thumbUrl}
+                        className="absolute inset-0 h-full w-full object-contain"
+                        controls
+                        playsInline
+                        autoPlay
+                        muted
+                      />
+                    ) : thumbUrl ? (
+                      <Image src={thumbUrl} alt="" fill className="object-contain" />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-surface-2 via-surface to-surface-2 text-[12px] font-medium uppercase tracking-micro text-text-muted">
+                        Preview unavailable
+                      </div>
+                    )}
+                    {entry.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available" /> : null}
+                    {isProcessing && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-on-media-dark-45 px-3 text-center text-[11px] text-on-inverse backdrop-blur-sm">
+                        <span className="uppercase tracking-micro">Processing…</span>
+                        {entry.message ? <span className="mt-1 line-clamp-2 text-on-media-80">{entry.message}</span> : null}
+                        {progressLabel ? <span className="mt-1 text-[12px] font-semibold text-on-inverse">{progressLabel}</span> : null}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {entrySpecs.length > 0 ? (
+                  <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-text-secondary">
+                    {entrySpecs.map((item) => (
+                      <div key={`${entry.id}-${item.label}`} className="flex items-center gap-2">
+                        <span className="uppercase tracking-micro text-text-muted">{item.label}</span>
+                        <span className="font-semibold text-text-primary">{item.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+
+                {showPrompt ? (
+                  <div className="mt-4 border-t border-hairline pt-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Prompt</p>
+                      <CopyPromptButton prompt={prompt ?? ''} copyLabel="Copy" copiedLabel="Copied" />
+                    </div>
+                    <p className="mt-2 text-sm text-text-secondary">
+                      {formatPromptPreview(prompt ?? '')}
+                    </p>
+                    {prompt && prompt.trim().length > 220 ? (
+                      <details className="group mt-3">
+                        <summary className="flex cursor-pointer items-center gap-2 text-xs font-semibold uppercase tracking-micro text-text-muted">
+                          <span className="group-open:hidden">Show more</span>
+                          <span className="hidden group-open:inline">Show less</span>
+                        </summary>
+                        <p className="mt-2 whitespace-pre-line text-sm text-text-secondary">{prompt}</p>
+                      </details>
                     ) : null}
                   </div>
+                ) : null}
 
-                  <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-4 border-t border-hairline pt-3">
+                  <div className="flex flex-wrap items-center justify-center gap-2 sm:flex-nowrap">
+                    {canRefresh ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          void handleRefreshEntry(entry).catch(() => undefined);
+                        }}
+                        disabled={isRefreshing}
+                        className={clsx(
+                          'px-3 py-2 text-[11px] font-semibold uppercase tracking-micro',
+                          isRefreshing
+                            ? 'border-border bg-bg text-text-muted'
+                            : 'border-brand bg-surface-2 text-brand hover:bg-surface-3 hover:text-brand'
+                        )}
+                      >
+                        {isRefreshing ? 'Checking...' : 'Refresh status'}
+                      </Button>
+                    ) : null}
                     <ButtonLink
                       linkComponent="a"
                       href={mediaUrl ?? '#'}
@@ -471,10 +612,8 @@ export function MediaLightbox({
                       variant="outline"
                       size="sm"
                       className={clsx(
-                        'px-3 py-1.5 text-sm font-medium',
-                        mediaUrl
-                          ? 'border-border bg-surface text-text-secondary hover:bg-bg'
-                          : 'pointer-events-none border-border/60 bg-bg text-text-muted'
+                        'px-3 py-2 text-[11px] font-semibold uppercase tracking-micro',
+                        !mediaUrl && 'pointer-events-none border-border/60 bg-bg text-text-muted'
                       )}
                     >
                       Open
@@ -486,14 +625,29 @@ export function MediaLightbox({
                       onClick={() => handleDownloadEntry(entry, mediaUrl)}
                       disabled={!mediaUrl || isDownloading}
                       className={clsx(
-                        'px-3 py-1.5 text-sm font-medium',
+                        'px-3 py-2 text-[11px] font-semibold uppercase tracking-micro',
+                        !mediaUrl && 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
+                      )}
+                    >
+                      {isDownloading ? 'Downloading…' : 'Download'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleCopyLink(entry.id, mediaUrl)}
+                      disabled={!mediaUrl}
+                      className={clsx(
+                        'px-3 py-2 text-[11px] font-semibold uppercase tracking-micro',
                         mediaUrl
                           ? 'border-border bg-surface text-text-secondary hover:bg-bg disabled:cursor-not-allowed'
                           : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
                       )}
                     >
-                      {isDownloading ? 'Downloading…' : 'Download'}
+                      {copiedId === entry.id ? 'Link copied' : 'Copy link'}
                     </Button>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2">
                     {onRemixEntry ? (
                       <Button
                         type="button"
@@ -502,7 +656,7 @@ export function MediaLightbox({
                         onClick={() => onRemixEntry(entry)}
                         disabled={!canRemix}
                         className={clsx(
-                          'px-3 py-1.5 text-sm font-medium',
+                          'px-3 py-2 text-[11px] font-semibold uppercase tracking-micro',
                           canRemix
                             ? 'border-border bg-surface text-text-secondary hover:bg-bg'
                             : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
@@ -519,7 +673,7 @@ export function MediaLightbox({
                         onClick={() => onUseTemplate(entry)}
                         disabled={!canTemplate}
                         className={clsx(
-                          'px-3 py-1.5 text-sm font-medium',
+                          'px-3 py-2 text-[11px] font-semibold uppercase tracking-micro',
                           canTemplate
                             ? 'border-border bg-surface text-text-secondary hover:bg-bg'
                             : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
@@ -528,21 +682,6 @@ export function MediaLightbox({
                         {templateLabel ?? 'Use as template'}
                       </Button>
                     ) : null}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleCopyLink(entry.id, mediaUrl)}
-                      disabled={!mediaUrl}
-                      className={clsx(
-                        'px-3 py-1.5 text-sm font-medium',
-                        mediaUrl
-                          ? 'border-border bg-surface text-text-secondary hover:bg-bg disabled:cursor-not-allowed'
-                          : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
-                      )}
-                    >
-                      {copiedId === entry.id ? 'Link copied' : 'Copy link'}
-                    </Button>
                     {onSaveToLibrary ? (
                       <Button
                         type="button"
@@ -551,7 +690,7 @@ export function MediaLightbox({
                         onClick={() => handleSaveEntryToLibrary(entry, mediaUrl)}
                         disabled={!mediaUrl || libraryState?.loading}
                         className={clsx(
-                          'px-3 py-1.5 text-sm font-medium',
+                          'px-3 py-2 text-[11px] font-semibold uppercase tracking-micro',
                           mediaUrl
                             ? 'border-brand bg-surface-2 text-brand hover:bg-surface-3 hover:text-brand'
                             : 'cursor-not-allowed border-border/60 bg-bg text-text-muted'
@@ -566,87 +705,43 @@ export function MediaLightbox({
                               : 'Save to library'}
                       </Button>
                     ) : null}
-                    {canRefresh ? (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          void handleRefreshEntry(entry).catch(() => undefined);
-                        }}
-                        disabled={isRefreshing}
-                        className={clsx(
-                          'px-3 py-1.5 text-sm font-medium',
-                          isRefreshing
-                            ? 'border-border bg-bg text-text-muted'
-                            : 'border-brand bg-surface-2 text-brand hover:bg-surface-3 hover:text-brand'
-                        )}
-                      >
-                        {isRefreshing ? 'Checking...' : 'Refresh status'}
-                      </Button>
-                    ) : null}
                   </div>
-
-                  {entry.message && !isProcessing ? (
-                    <p className="mt-3 text-sm text-text-secondary">{entry.message}</p>
-                  ) : null}
-                  {downloadError ? (
-                    <p className="mt-2 text-xs text-state-warning">{downloadError}</p>
-                  ) : null}
-                  {refreshError ? (
-                    <p className="mt-2 text-xs text-state-warning">{refreshError}</p>
-                  ) : null}
-                  {libraryState?.error ? (
-                    <p className="mt-2 text-xs text-state-warning">{libraryState.error}</p>
-                  ) : null}
-                  {allowIndexingControls && onToggleIndexable && entry.jobId && typeof displayIndexable === 'boolean' ? (
-                    <div className="mt-3 flex flex-col gap-1 text-sm text-text-secondary">
-                      <label className="inline-flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          className="h-4 w-4 rounded border border-border accent-brand"
-                          checked={displayIndexable}
-                          onChange={() => handleIndexingToggle(entry, displayIndexable)}
-                          disabled={isIndexingLoading}
-                        />
-                        <span>{displayIndexable ? 'Included in indexing' : 'Excluded from indexing'}</span>
-                      </label>
-                      <p className="text-xs text-text-muted">
-                        Uncheck to keep this video out of public galleries and SEO feeds.
-                      </p>
-                      {isIndexingLoading ? <span className="text-xs text-text-muted">Saving…</span> : null}
-                      {indexingError ? <span className="text-xs text-state-warning">{indexingError}</span> : null}
-                    </div>
-                  ) : null}
                 </div>
+
+                {entry.message && !isProcessing && !isUuidLike(entry.message.trim()) ? (
+                  <p className="mt-3 text-sm text-text-secondary">{entry.message}</p>
+                ) : null}
+                {downloadError ? (
+                  <p className="mt-2 text-xs text-state-warning">{downloadError}</p>
+                ) : null}
+                {refreshError ? (
+                  <p className="mt-2 text-xs text-state-warning">{refreshError}</p>
+                ) : null}
+                {libraryState?.error ? (
+                  <p className="mt-2 text-xs text-state-warning">{libraryState.error}</p>
+                ) : null}
+                {allowIndexingControls && onToggleIndexable && entry.jobId && typeof displayIndexable === 'boolean' ? (
+                  <div className="mt-3 flex flex-col gap-1 text-sm text-text-secondary">
+                    <label className="inline-flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border border-border accent-brand"
+                        checked={displayIndexable}
+                        onChange={() => handleIndexingToggle(entry, displayIndexable)}
+                        disabled={isIndexingLoading}
+                      />
+                      <span>{displayIndexable ? 'Included in indexing' : 'Excluded from indexing'}</span>
+                    </label>
+                    <p className="text-xs text-text-muted">Uncheck to keep this video out of public galleries and SEO feeds.</p>
+                    {isIndexingLoading ? <span className="text-xs text-text-muted">Saving…</span> : null}
+                    {indexingError ? <span className="text-xs text-state-warning">{indexingError}</span> : null}
+                  </div>
+                ) : null}
               </article>
             );
           })}
         </section>
 
-        {prompt ? (
-          <section className="mt-6">
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="text-sm font-semibold uppercase tracking-micro text-text-muted">Prompt</h3>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                if (navigator?.clipboard) {
-                  void navigator.clipboard.writeText(prompt).catch(() => undefined);
-                }
-              }}
-              className="border-border bg-surface px-3 py-1 text-xs font-medium text-text-secondary hover:bg-bg"
-            >
-              Copy
-            </Button>
-            </div>
-            <div className="mt-2 max-h-[180px] overflow-y-auto rounded-input border border-border bg-bg px-4 py-3 text-sm text-text-primary">
-              <pre className="whitespace-pre-wrap break-words font-sans">{prompt}</pre>
-            </div>
-          </section>
-        ) : null}
       </div>
     </div>
   );
