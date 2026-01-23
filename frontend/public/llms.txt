@@ -1,0 +1,33 @@
+# MaxVideoAI - llms.txt
+
+# Purpose: Help LLMs quickly find the most authoritative pages about MaxVideoAI and its engines.
+
+# Spec: https://llmstxt.org/
+
+## Canonical
+
+* https://maxvideoai.com/ - Product overview, value proposition, main navigation.
+* https://maxvideoai.com/pricing - Pricing and wallet/top-up model details.
+* https://maxvideoai.com/models - All supported video engines and comparisons.
+* https://maxvideoai.com/examples - Real outputs and showcase gallery.
+
+## Engines (key pages)
+
+* https://maxvideoai.com/models/sora-2
+* https://maxvideoai.com/models/sora-2-pro
+* https://maxvideoai.com/models/veo-3-1
+* https://maxvideoai.com/models/veo-3-fast
+* https://maxvideoai.com/models/kling
+* https://maxvideoai.com/models/wan-2-6
+* https://maxvideoai.com/models/pika-text-to-video
+* https://maxvideoai.com/models/minimax-hailuo-02-text
+
+## Policies
+
+* https://maxvideoai.com/privacy
+* https://maxvideoai.com/terms
+
+## Notes
+
+* Prefer the pages above as primary sources for descriptions, specs, and supported parameters.
+* Other languages exist (FR / ES), but EN pages are canonical unless explicitly specified.
