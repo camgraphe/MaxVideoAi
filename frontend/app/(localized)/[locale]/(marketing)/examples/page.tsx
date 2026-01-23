@@ -593,6 +593,7 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
       const detailPath = `/video/${encodeURIComponent(video.id)}`;
       const absoluteUrl = `${SITE}${detailPath}`;
       const embedUrl = absoluteUrl;
+      const thumbnailUrl = toAbsoluteUrl(video.thumbUrl) ?? video.thumbUrl!;
       const contentUrl = video.videoUrl ? toAbsoluteUrl(video.videoUrl) ?? video.videoUrl : undefined;
       const fallbackLabel = `MaxVideoAI example ${video.id}`;
       const name = video.promptExcerpt || video.prompt || engineLabel || fallbackLabel;
@@ -602,7 +603,7 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
         '@type': 'VideoObject',
         name: name || fallbackLabel,
         description,
-        thumbnailUrl: video.thumbUrl!,
+        thumbnailUrl: thumbnailUrl ? [thumbnailUrl] : undefined,
         url: absoluteUrl,
         embedUrl,
         contentUrl,
@@ -620,6 +621,8 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
         '@type': 'ListItem',
         position: index + 1,
         url: absoluteUrl,
+        name: name || fallbackLabel,
+        description,
         item: videoObject,
       };
     });
