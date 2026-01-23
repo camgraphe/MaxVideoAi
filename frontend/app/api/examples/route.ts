@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
-import { listExamplesPage, type ExampleSort } from '@/server/videos';
+import { listExamplesPage, type ExampleSort, type GalleryVideo } from '@/server/videos';
 import { listFalEngines } from '@/config/falEngines';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
@@ -176,29 +176,29 @@ function buildModelHref(locale: AppLocale, slug: string): string {
   return `${prefix}/${segment}/${slug}`.replace(/\/{2,}/g, '/');
 }
 
-function toExampleCard(video: any, locale: AppLocale) {
-  const canonicalEngineId = resolveEngineLinkId(video.engine_id ?? video.engineId);
-  const engineKey = canonicalEngineId?.toLowerCase() ?? video.engine_id?.toLowerCase() ?? '';
-  const engineMeta = engineKey ? ENGINE_META.get(engineKey) : null;
-  const descriptor = canonicalEngineId ? resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engine_label) : null;
-  const priceLabel = formatPrice(video.final_price_cents ?? video.finalPriceCents ?? null, video.currency ?? null);
+function toExampleCard(video: GalleryVideo, locale: AppLocale) {
+  const canonicalEngineId = resolveEngineLinkId(video.engineId);
+  const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
+  const engineMeta = engineKey ? ENGINE_META.get(engineKey) ?? null : null;
+  const descriptor = canonicalEngineId ? resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engineLabel) : null;
+  const priceLabel = formatPrice(video.finalPriceCents ?? null, video.currency ?? null);
   const promptDisplay = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render');
   const modelSlug = engineMeta?.modelSlug ?? (descriptor ? ENGINE_MODEL_LINKS[descriptor.id.toLowerCase()] : null);
   const modelHref = modelSlug ? buildModelHref(locale, modelSlug) : null;
   return {
-    id: video.job_id ?? video.id,
-    href: `/video/${encodeURIComponent(video.job_id ?? video.id)}`,
-    engineLabel: engineMeta?.label ?? video.engine_label ?? video.engineLabel ?? 'Engine',
-    engineIconId: engineMeta?.id ?? canonicalEngineId ?? video.engine_id ?? video.engineId ?? 'engine',
+    id: video.id,
+    href: `/video/${encodeURIComponent(video.id)}`,
+    engineLabel: engineMeta?.label ?? video.engineLabel ?? 'Engine',
+    engineIconId: engineMeta?.id ?? canonicalEngineId ?? video.engineId ?? 'engine',
     engineBrandId: engineMeta?.brandId,
     priceLabel,
     prompt: promptDisplay,
-    aspectRatio: video.aspect_ratio ?? video.aspectRatio ?? null,
-    durationSec: video.duration_sec ?? video.durationSec,
-    hasAudio: Boolean(video.has_audio ?? video.hasAudio),
-    optimizedPosterUrl: video.thumb_url || video.thumbUrl ? buildOptimizedPosterUrl(video.thumb_url ?? video.thumbUrl) : null,
-    rawPosterUrl: video.thumb_url ?? video.thumbUrl ?? getPlaceholderPoster(video.aspect_ratio ?? video.aspectRatio),
-    videoUrl: video.video_url ?? video.videoUrl ?? null,
+    aspectRatio: video.aspectRatio ?? null,
+    durationSec: video.durationSec,
+    hasAudio: video.hasAudio,
+    optimizedPosterUrl: video.thumbUrl ? buildOptimizedPosterUrl(video.thumbUrl) : null,
+    rawPosterUrl: video.thumbUrl ?? getPlaceholderPoster(video.aspectRatio ?? null),
+    videoUrl: video.videoUrl ?? null,
     modelHref,
   };
 }

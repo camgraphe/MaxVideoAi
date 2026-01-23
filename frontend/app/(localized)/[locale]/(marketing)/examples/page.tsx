@@ -555,7 +555,7 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
   const clientVideos: ExampleGalleryVideo[] = filteredEntries.map(({ video, index }) => {
     const canonicalEngineId = resolveEngineLinkId(video.engineId);
     const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
-    const engineMeta = engineKey ? ENGINE_META.get(engineKey) : null;
+    const engineMeta = engineKey ? ENGINE_META.get(engineKey) ?? null : null;
     const descriptor = canonicalEngineId ? resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engineLabel) : null;
     const priceLabel = formatPrice(video.finalPriceCents ?? null, video.currency ?? null);
     const promptDisplay = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render');
