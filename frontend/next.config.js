@@ -6,6 +6,8 @@ const CONTENT_GLOBS = [
   '../content/fr/blog/**/*',
   '../content/es/blog/**/*',
   '../content/docs/**/*',
+  '../content/fr/docs/**/*',
+  '../content/es/docs/**/*',
   '../content/models/**/*',
 ];
 const SITEMAP_RUNTIME_GLOBS = [

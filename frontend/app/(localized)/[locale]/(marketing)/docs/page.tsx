@@ -15,6 +15,14 @@ const DOCS_SLUG_MAP = buildSlugMap('docs');
 
 export const revalidate = 60 * 10;
 
+async function getDocsEntries(locale: AppLocale) {
+  const localized = await getContentEntries(`content/${locale}/docs`);
+  if (localized.length > 0) {
+    return localized;
+  }
+  return getContentEntries('content/docs');
+}
+
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
   const title = 'Docs — Onboarding, Brand Safety, Refunds & API Webhooks';
@@ -42,7 +50,7 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
   const { dictionary } = await resolveDictionary({ locale });
   const content = dictionary.docs;
   const sections = content.sections;
-  const docs = await getContentEntries('content/docs');
+  const docs = await getDocsEntries(locale);
 
   const tocLinks = [
     { href: '#onboarding', label: 'Onboarding' },

@@ -34,8 +34,9 @@ function readModelLocales(slug: string): Set<AppLocale> {
     if (locale === 'en') {
       return;
     }
-    const candidate = path.join(CONTENT_ROOT, locale, 'models', `${slug}.json`);
-    if (fs.existsSync(candidate)) {
+    const candidate = path.join(CONTENT_ROOT, 'models', locale, `${slug}.json`);
+    const legacyCandidate = path.join(CONTENT_ROOT, locale, 'models', `${slug}.json`);
+    if (fs.existsSync(candidate) || fs.existsSync(legacyCandidate)) {
       supported.add(locale);
     }
   });
