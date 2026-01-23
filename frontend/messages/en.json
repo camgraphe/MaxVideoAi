@@ -966,9 +966,23 @@
     "cta": "Generate similar video"
   },
   "docs": {
+    "meta": {
+      "title": "Docs — Onboarding, Brand Safety, Refunds & API Webhooks",
+      "description": "Start here for onboarding, price system and refunds. Learn about brand-safe filters and see webhook/API references. Deeper guides live in the authenticated workspace.",
+      "imageAlt": "Docs — MaxVideoAI"
+    },
     "hero": {
       "title": "Documentation",
       "subtitle": "Start here for onboarding, brand safety, works-with notices, and refund policies. Deeper integration guides live in the authenticated workspace."
+    },
+    "toc": {
+      "title": "On this page",
+      "onboarding": "Onboarding",
+      "pricing": "Price system",
+      "refunds": "Refunds",
+      "safety": "Brand safety",
+      "api": "API references",
+      "library": "Library"
     },
     "sections": [
       {
@@ -1017,6 +1031,110 @@
         ]
       }
     ],
+    "apiNotice": {
+      "public": "Public summary available below.",
+      "private": "Full API docs require authentication inside the workspace."
+    },
+    "onboardingChecklist": {
+      "title": "Onboarding checklist",
+      "items": [
+        "✅ Fill the brand brief (tone, goals, deliverables).",
+        "✅ Add 1–3 example prompts and reference assets.",
+        "✅ Set default aspect ratios and audio preference."
+      ],
+      "note": "You can edit the brief anytime; updates apply to everyone in the workspace."
+    },
+    "pricingCallout": "✅ You always see the price before you render.",
+    "refundsTimeline": {
+      "title": "Refunds timeline",
+      "steps": [
+        "1) Job fails → the system flags the incident.",
+        "2) Auto-refund → wallet credited within minutes.",
+        "3) Receipt → itemised record with a short incident note."
+      ],
+      "note": "You only pay for successful jobs. Refunds appear in the job feed and receipts."
+    },
+    "refundsCallout": "✅ Failed jobs are auto-refunded within minutes; receipts include a short incident note.",
+    "safetyQuick": {
+      "title": "Quick overview",
+      "items": [
+        "• Default blocks: illegal content, explicit sexual content, hate/harassment, doxxing.",
+        "• Media checks: risky uploads/outputs are quarantined for review.",
+        "• Admin controls: request allowlists or restricted keywords per workspace."
+      ],
+      "note": "Sensitive cases route to human review with an audit trail and simple escalation options."
+    },
+    "safetyCallout": "⚠️ Sensitive use-cases may require an admin allowlist or human review.",
+    "seeAlsoLabel": "See also:",
+    "seeAlso": {
+      "onboarding": [
+        { "href": "/workflows#express-vs-workflows", "label": "Workflows overview" },
+        { "href": "/examples", "label": "Examples gallery" }
+      ],
+      "pricing": [
+        { "href": "/pricing#estimator", "label": "Pricing estimator" },
+        { "href": "/pricing#example-costs", "label": "Example costs" }
+      ],
+      "refunds": [
+        { "href": "/pricing#refunds-protections", "label": "Refunds & protections" },
+        { "href": "/legal/terms", "label": "Terms" }
+      ],
+      "safety": [
+        { "href": "/workflows#express-vs-workflows", "label": "Workflows overview" },
+        { "href": "/models", "label": "Models roster" }
+      ],
+      "api": [
+        { "href": "/pricing#estimator", "label": "Estimator inputs" },
+        { "href": "/examples", "label": "Example payloads" }
+      ],
+      "library": [
+        { "href": "/workflows", "label": "Workflows" },
+        { "href": "/models", "label": "Models" }
+      ]
+    },
+    "library": {
+      "heading": "Library",
+      "liveLabel": "Live",
+      "comingSoonLabel": "Coming soon",
+      "summaryLive": "Browse reusable assets, presets, and reference prompts for your team.",
+      "summarySoon": "Documentation coming soon."
+    },
+    "feedback": {
+      "srTitle": "Feedback",
+      "prompt": "Was this page helpful?",
+      "yes": "Yes",
+      "no": "No",
+      "backToTop": "Back to top"
+    },
+    "lastUpdatedLabel": "Last updated:",
+    "jsonLd": {
+      "collectionName": "Docs — Onboarding, Brand Safety, Refunds & API Webhooks",
+      "hasPart": {
+        "onboarding": "Onboarding",
+        "pricing": "Price system",
+        "refunds": "Refunds",
+        "safety": "Brand safety",
+        "api": "API references",
+        "library": "Library"
+      },
+      "about": ["onboarding", "refund policy", "brand safety", "webhooks", "api references"],
+      "breadcrumbHome": "Home",
+      "breadcrumbDocs": "Docs",
+      "faq": [
+        {
+          "question": "Do Starter Credits expire?",
+          "answer": "No. Credits roll forward month to month and sync across teammates with access."
+        },
+        {
+          "question": "How fast are failed renders refunded?",
+          "answer": "Refunds are processed automatically within minutes; each job includes a short incident note for finance."
+        },
+        {
+          "question": "Can we override brand-safety for specific projects?",
+          "answer": "Yes. Admins can request custom allowlists or restricted keywords per workspace; sensitive cases route to human review with an audit trail."
+        }
+      ]
+    },
     "empty": "Documentation coming soon.",
     "libraryHeading": "Library"
   },

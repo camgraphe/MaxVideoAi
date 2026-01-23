@@ -8,6 +8,7 @@ import { Callout } from '@/components/Callout';
 import DocsTocActive from './components/DocsTocActive';
 import type { AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
+import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://maxvideoai.com';
@@ -25,8 +26,11 @@ async function getDocsEntries(locale: AppLocale) {
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
-  const title = 'Docs — Onboarding, Brand Safety, Refunds & API Webhooks';
+  const { dictionary } = await resolveDictionary({ locale });
+  const metaCopy = dictionary.docs?.meta ?? {};
+  const title = metaCopy.title ?? 'Docs — Onboarding, Brand Safety, Refunds & API Webhooks';
   const description =
+    metaCopy.description ??
     'Start here for onboarding, price system and refunds. Learn about brand-safe filters and see webhook/API references. Deeper guides live in the authenticated workspace.';
   const ogImage = `${SITE}/og/price-before.png`;
 
@@ -50,51 +54,28 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
   const { dictionary } = await resolveDictionary({ locale });
   const content = dictionary.docs;
   const sections = content.sections;
+  const metadataUrls = buildMetadataUrls(locale, DOCS_SLUG_MAP, { englishPath: '/docs' });
   const docs = await getDocsEntries(locale);
-
+  const toc = content.toc ?? {};
+  const sectionOrder = ['onboarding', 'pricing', 'refunds', 'safety', 'api'] as const;
   const tocLinks = [
-    { href: '#onboarding', label: 'Onboarding' },
-    { href: '#pricing', label: 'Price system' },
-    { href: '#refunds', label: 'Refunds' },
-    { href: '#safety', label: 'Brand safety' },
-    { href: '#api', label: 'API references' },
-    { href: '#library', label: 'Library' },
+    { id: 'onboarding', label: toc.onboarding ?? sections?.[0]?.title ?? 'Onboarding' },
+    { id: 'pricing', label: toc.pricing ?? sections?.[1]?.title ?? 'Price system' },
+    { id: 'refunds', label: toc.refunds ?? sections?.[2]?.title ?? 'Refunds' },
+    { id: 'safety', label: toc.safety ?? sections?.[3]?.title ?? 'Brand safety' },
+    { id: 'api', label: toc.api ?? sections?.[4]?.title ?? 'API references' },
+    { id: 'library', label: toc.library ?? content.libraryHeading ?? 'Library' },
   ];
-
-  const sectionIdMap: Record<string, string> = {
-    Brief: 'onboarding',
-    'Price system': 'pricing',
-    Refunds: 'refunds',
-    'Brand-safe filters': 'safety',
-    'API references': 'api',
-  };
-
-  const seeAlsoLinks: Record<string, Array<{ href: string; label: string }>> = {
-    onboarding: [
-      { href: '/workflows#express-vs-workflows', label: 'Workflows overview' },
-      { href: '/examples', label: 'Examples gallery' },
-    ],
-    pricing: [
-      { href: '/pricing#estimator', label: 'Pricing estimator' },
-      { href: '/pricing#example-costs', label: 'Example costs' },
-    ],
-    refunds: [
-      { href: '/pricing#refunds-protections', label: 'Refunds & protections' },
-      { href: '/legal/terms', label: 'Terms' },
-    ],
-    safety: [
-      { href: '/workflows#express-vs-workflows', label: 'Workflows overview' },
-      { href: '/models', label: 'Models roster' },
-    ],
-    api: [
-      { href: '/pricing#estimator', label: 'Estimator inputs' },
-      { href: '/examples', label: 'Example payloads' },
-    ],
-    library: [
-      { href: '/workflows', label: 'Workflows' },
-      { href: '/models', label: 'Models' },
-    ],
-  };
+  const seeAlsoLinks = (content.seeAlso ?? {}) as Record<string, Array<{ href: string; label: string }>>;
+  const onboardingChecklist = content.onboardingChecklist ?? {};
+  const refundsTimeline = content.refundsTimeline ?? {};
+  const safetyQuick = content.safetyQuick ?? {};
+  const apiNotice = content.apiNotice ?? {};
+  const libraryCopy = content.library ?? {};
+  const feedbackCopy = content.feedback ?? {};
+  const jsonLdCopy = content.jsonLd ?? {};
+  const lastUpdatedLabel = content.lastUpdatedLabel ?? 'Last updated:';
+  const apiNoticeLabel = FEATURES.docs.apiPublicRefs ? apiNotice.public : apiNotice.private;
 
   return (
     <main id="top" className="scroll-smooth">
@@ -110,8 +91,8 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
               <div className="flex flex-wrap gap-2 text-muted-foreground">
                 {tocLinks.map((link) => (
                   <a
-                    key={link.href}
-                    href={link.href}
+                    key={link.id}
+                    href={`#${link.id}`}
                     className="underline underline-offset-2 text-muted-foreground transition-colors hover:text-text-primary"
                   >
                     {link.label}
@@ -121,12 +102,14 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
             </div>
             <div className="mt-4 sm:grid sm:grid-cols-[220px_1fr] sm:gap-6">
               <aside className="hidden sm:block sm:sticky sm:top-24 sm:h-max sm:self-start sm:rounded-xl sm:border sm:border-hairline sm:bg-surface sm:p-4 sm:text-sm sm:text-text-secondary">
-                <div className="mb-2 text-sm font-semibold text-text-primary">On this page</div>
+                <div className="mb-2 text-sm font-semibold text-text-primary">
+                  {toc.title ?? 'On this page'}
+                </div>
                 <ul className="space-y-1">
                   {tocLinks.map((link) => (
-                    <li key={link.href}>
+                    <li key={link.id}>
                       <a
-                        href={link.href}
+                        href={`#${link.id}`}
                         className="text-muted-foreground transition-colors hover:underline hover:text-text-primary"
                       >
                         {link.label}
@@ -138,8 +121,8 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
               <div className="stack-gap-lg">
                 <DocsTocActive />
                 <section className="grid grid-gap lg:grid-cols-2">
-                  {sections.map((section) => {
-                    const sectionId = sectionIdMap[section.title] ?? undefined;
+                  {sections.map((section, index) => {
+                    const sectionId = sectionOrder[index] ?? undefined;
                     return (
                       <article
                         key={section.title}
@@ -149,7 +132,7 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
                         <h2 className="text-lg font-semibold text-text-primary">{section.title}</h2>
                         {sectionId === 'api' ? (
                           <p className="mt-1 text-xs text-text-muted">
-                            {FEATURES.docs.apiPublicRefs ? 'Public summary available below.' : 'Full API docs require authentication inside the workspace.'}
+                            {apiNoticeLabel ?? ''}
                           </p>
                         ) : null}
                         <ul className="mt-4 stack-gap-sm text-sm text-text-secondary">
@@ -186,67 +169,71 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
                         {sectionId === 'onboarding' ? (
                           <section aria-labelledby="onboarding-checklist" className="mt-4">
                             <h3 id="onboarding-checklist" className="text-base font-semibold text-text-primary">
-                              Onboarding checklist
+                              {onboardingChecklist.title ?? 'Onboarding checklist'}
                             </h3>
                             <ul className="mt-2 space-y-1.5 text-sm text-text-secondary">
-                              <li>✅ Fill the brand brief (tone, goals, deliverables).</li>
-                              <li>✅ Add 1–3 example prompts and reference assets.</li>
-                              <li>✅ Set default aspect ratios and audio preference.</li>
+                              {(onboardingChecklist.items ?? []).map((item: string) => (
+                                <li key={item}>{item}</li>
+                              ))}
                             </ul>
                             <p className="mt-2 text-xs text-text-muted">
-                              You can edit the brief anytime; updates apply to everyone in the workspace.
+                              {onboardingChecklist.note ?? ''}
                             </p>
                           </section>
                         ) : null}
                         {sectionId === 'pricing' ? (
-                          <Callout tone="success">✅ You always see the price before you render.</Callout>
+                          <Callout tone="success">{content.pricingCallout ?? '✅ You always see the price before you render.'}</Callout>
                         ) : null}
                         {sectionId === 'refunds' ? (
                           <section aria-labelledby="refunds-timeline" className="mt-4">
                             <h3 id="refunds-timeline" className="text-base font-semibold text-text-primary">
-                              Refunds timeline
+                              {refundsTimeline.title ?? 'Refunds timeline'}
                             </h3>
                             <ol className="mt-2 space-y-1.5 text-sm text-text-secondary">
-                              <li>1) Job fails → the system flags the incident.</li>
-                              <li>2) Auto-refund → wallet credited within minutes.</li>
-                              <li>3) Receipt → itemised record with a short incident note.</li>
+                              {(refundsTimeline.steps ?? []).map((item: string) => (
+                                <li key={item}>{item}</li>
+                              ))}
                             </ol>
                             <p className="mt-2 text-xs text-text-muted">
-                              You only pay for successful jobs. Refunds appear in the job feed and receipts.
+                              {refundsTimeline.note ?? ''}
                             </p>
                           </section>
                         ) : null}
                         {sectionId === 'refunds' ? (
                           <Callout tone="success">
-                            ✅ Failed jobs are auto-refunded within minutes; receipts include a short incident note.
+                            {content.refundsCallout ?? '✅ Failed jobs are auto-refunded within minutes; receipts include a short incident note.'}
                           </Callout>
                         ) : null}
                         {sectionId === 'safety' ? (
                           <section aria-labelledby="safety-quick" className="mt-4">
                             <h3 id="safety-quick" className="text-base font-semibold text-text-primary">
-                              Quick overview
+                              {safetyQuick.title ?? 'Quick overview'}
                             </h3>
                             <ul className="mt-2 space-y-1.5 text-sm text-text-muted">
-                              <li>• Default blocks: illegal content, explicit sexual content, hate/harassment, doxxing.</li>
-                              <li>• Media checks: risky uploads/outputs are quarantined for review.</li>
-                              <li>• Admin controls: request allowlists or restricted keywords per workspace.</li>
+                              {(safetyQuick.items ?? []).map((item: string) => (
+                                <li key={item}>{item}</li>
+                              ))}
                             </ul>
                             <p className="mt-2 text-xs text-text-muted">
-                              Sensitive cases route to human review with an audit trail and simple escalation options.
+                              {safetyQuick.note ?? ''}
                             </p>
                           </section>
                         ) : null}
                         {sectionId === 'safety' ? (
-                          <Callout tone="warn">⚠️ Sensitive use-cases may require an admin allowlist or human review.</Callout>
+                          <Callout tone="warn">
+                            {content.safetyCallout ?? '⚠️ Sensitive use-cases may require an admin allowlist or human review.'}
+                          </Callout>
                         ) : null}
                         {sectionId && seeAlsoLinks[sectionId]?.length ? (
                           <p className="mt-3 text-sm">
-                            <span className="text-muted-foreground">See also:</span>{' '}
+                            <span className="text-muted-foreground">
+                              {content.seeAlsoLabel ?? 'See also:'}
+                            </span>{' '}
                             {seeAlsoLinks[sectionId].map((link, linkIndex) => (
                               <span key={link.href}>
-                                <a className="underline underline-offset-2" href={link.href}>
+                                <Link className="underline underline-offset-2" href={link.href}>
                                   {link.label}
-                                </a>
+                                </Link>
                                 {linkIndex < seeAlsoLinks[sectionId].length - 1 ? ', ' : null}
                               </span>
                             ))}
@@ -259,14 +246,18 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
 
                 <section id="library" className="scroll-mt-28">
                   <h2 className="flex items-center gap-2 text-xl font-semibold text-text-primary">
-                    {content.libraryHeading ?? 'Library'}
+                    {libraryCopy.heading ?? content.libraryHeading ?? 'Library'}
                     <FlagPill live={FEATURES.docs.libraryDocs} />
-                    <span className="sr-only">{FEATURES.docs.libraryDocs ? 'Live' : 'Coming soon'}</span>
+                    <span className="sr-only">
+                      {FEATURES.docs.libraryDocs
+                        ? libraryCopy.liveLabel ?? 'Live'
+                        : libraryCopy.comingSoonLabel ?? 'Coming soon'}
+                    </span>
                   </h2>
                   <p className="mt-2 text-sm text-text-secondary">
                     {FEATURES.docs.libraryDocs
-                      ? 'Browse reusable assets, presets, and reference prompts for your team.'
-                      : 'Documentation coming soon.'}
+                      ? libraryCopy.summaryLive ?? 'Browse reusable assets, presets, and reference prompts for your team.'
+                      : libraryCopy.summarySoon ?? 'Documentation coming soon.'}
                   </p>
                   {FEATURES.docs.libraryDocs && docs.length > 0 ? (
                     <ul className="mt-4 stack-gap-sm text-sm text-text-secondary">
@@ -282,12 +273,14 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
                   ) : null}
                   {seeAlsoLinks.library?.length ? (
                     <p className="mt-3 text-sm">
-                      <span className="text-muted-foreground">See also:</span>{' '}
+                      <span className="text-muted-foreground">
+                        {content.seeAlsoLabel ?? 'See also:'}
+                      </span>{' '}
                       {seeAlsoLinks.library.map((link, linkIndex) => (
                         <span key={link.href}>
-                          <a className="underline underline-offset-2" href={link.href}>
+                          <Link className="underline underline-offset-2" href={link.href}>
                             {link.label}
-                          </a>
+                          </Link>
                           {linkIndex < seeAlsoLinks.library.length - 1 ? ', ' : null}
                         </span>
                       ))}
@@ -299,24 +292,28 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
           </nav>
           <section aria-labelledby="docs-feedback">
             <h3 id="docs-feedback" className="sr-only">
-              Feedback
+              {feedbackCopy.srTitle ?? 'Feedback'}
             </h3>
             <div className="flex flex-col gap-4 rounded-xl border border-hairline bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-text-muted">Was this page helpful?</p>
+              <p className="text-sm text-text-muted">
+                {feedbackCopy.prompt ?? 'Was this page helpful?'}
+              </p>
               <div className="flex items-center gap-2">
                 <Link href="/contact" className="rounded-md border border-hairline px-3 py-1.5 text-sm hover:shadow-sm">
-                  Yes
+                  {feedbackCopy.yes ?? 'Yes'}
                 </Link>
                 <Link href="/contact" className="rounded-md border border-hairline px-3 py-1.5 text-sm hover:shadow-sm">
-                  No
+                  {feedbackCopy.no ?? 'No'}
                 </Link>
                 <a href="#top" className="ml-2 text-sm underline underline-offset-2">
-                  Back to top
+                  {feedbackCopy.backToTop ?? 'Back to top'}
                 </a>
               </div>
             </div>
           </section>
-          <p className="text-xs text-text-muted">Last updated: {new Date().toISOString().slice(0, 10)}</p>
+          <p className="text-xs text-text-muted">
+            {lastUpdatedLabel} {new Date().toISOString().slice(0, 10)}
+          </p>
         </div>
         <script
           type="application/ld+json"
@@ -325,17 +322,42 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'CollectionPage',
-              name: 'Docs — Onboarding, Brand Safety, Refunds & API Webhooks',
-              url: `${SITE}/docs`,
+              name: jsonLdCopy.collectionName ?? content.meta?.title ?? 'Docs — Onboarding, Brand Safety, Refunds & API Webhooks',
+              url: metadataUrls.canonical,
               hasPart: [
-                { '@type': 'WebPage', name: 'Onboarding', url: `${SITE}/docs#onboarding` },
-                { '@type': 'WebPage', name: 'Price system', url: `${SITE}/docs#pricing` },
-                { '@type': 'WebPage', name: 'Refunds', url: `${SITE}/docs#refunds` },
-                { '@type': 'WebPage', name: 'Brand safety', url: `${SITE}/docs#safety` },
-                { '@type': 'WebPage', name: 'API references', url: `${SITE}/docs#api` },
-                { '@type': 'WebPage', name: 'Library', url: `${SITE}/docs#library` },
+                {
+                  '@type': 'WebPage',
+                  name: jsonLdCopy.hasPart?.onboarding ?? toc.onboarding ?? 'Onboarding',
+                  url: `${metadataUrls.canonical}#onboarding`,
+                },
+                {
+                  '@type': 'WebPage',
+                  name: jsonLdCopy.hasPart?.pricing ?? toc.pricing ?? 'Price system',
+                  url: `${metadataUrls.canonical}#pricing`,
+                },
+                {
+                  '@type': 'WebPage',
+                  name: jsonLdCopy.hasPart?.refunds ?? toc.refunds ?? 'Refunds',
+                  url: `${metadataUrls.canonical}#refunds`,
+                },
+                {
+                  '@type': 'WebPage',
+                  name: jsonLdCopy.hasPart?.safety ?? toc.safety ?? 'Brand safety',
+                  url: `${metadataUrls.canonical}#safety`,
+                },
+                {
+                  '@type': 'WebPage',
+                  name: jsonLdCopy.hasPart?.api ?? toc.api ?? 'API references',
+                  url: `${metadataUrls.canonical}#api`,
+                },
+                {
+                  '@type': 'WebPage',
+                  name: jsonLdCopy.hasPart?.library ?? toc.library ?? 'Library',
+                  url: `${metadataUrls.canonical}#library`,
+                },
               ],
-              about: ['onboarding', 'refund policy', 'brand safety', 'webhooks', 'api references'],
+              about:
+                jsonLdCopy.about ?? ['onboarding', 'refund policy', 'brand safety', 'webhooks', 'api references'],
               publisher: {
                 '@type': 'Organization',
                 name: 'MaxVideo AI',
@@ -352,8 +374,13 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
               '@context': 'https://schema.org',
               '@type': 'BreadcrumbList',
               itemListElement: [
-                { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE}/` },
-                { '@type': 'ListItem', position: 2, name: 'Docs', item: `${SITE}/docs` },
+                { '@type': 'ListItem', position: 1, name: jsonLdCopy.breadcrumbHome ?? 'Home', item: `${SITE}/` },
+                {
+                  '@type': 'ListItem',
+                  position: 2,
+                  name: jsonLdCopy.breadcrumbDocs ?? 'Docs',
+                  item: metadataUrls.canonical,
+                },
               ],
             }),
           }}
@@ -365,32 +392,14 @@ export default async function DocsIndexPage({ params }: { params: { locale: AppL
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'FAQPage',
-              mainEntity: [
-                {
-                  '@type': 'Question',
-                  name: 'Do Starter Credits expire?',
-                  acceptedAnswer: {
-                    '@type': 'Answer',
-                    text: 'No. Credits roll forward month to month and sync across teammates with access.',
-                  },
+              mainEntity: (jsonLdCopy.faq ?? []).map((entry: { question: string; answer: string }) => ({
+                '@type': 'Question',
+                name: entry.question,
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: entry.answer,
                 },
-                {
-                  '@type': 'Question',
-                  name: 'How fast are failed renders refunded?',
-                  acceptedAnswer: {
-                    '@type': 'Answer',
-                    text: 'Refunds are processed automatically within minutes; each job includes a short incident note for finance.',
-                  },
-                },
-                {
-                  '@type': 'Question',
-                  name: 'Can we override brand-safety for specific projects?',
-                  acceptedAnswer: {
-                    '@type': 'Answer',
-                    text: 'Yes. Admins can request custom allowlists or restricted keywords per workspace; sensitive cases route to human review with an audit trail.',
-                  },
-                },
-              ],
+              })),
             }),
           }}
         />

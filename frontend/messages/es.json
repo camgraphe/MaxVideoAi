@@ -970,9 +970,23 @@
     "cta": "Generar video similar"
   },
   "docs": {
+    "meta": {
+      "title": "Docs — Onboarding, seguridad de marca, reembolsos y webhooks API",
+      "description": "Empieza aquí para onboarding, sistema de precios y reembolsos. Descubre los filtros brand-safe y las referencias de webhook/API. Las guías avanzadas viven en el workspace autenticado.",
+      "imageAlt": "Docs — MaxVideoAI"
+    },
     "hero": {
       "title": "Documentación",
       "subtitle": "Comience aquí para la incorporación, la seguridad de marca, los avisos de compatibilidad y las políticas de reembolso. Las guías de integración más detalladas están en el espacio de trabajo autenticado."
+    },
+    "toc": {
+      "title": "En esta página",
+      "onboarding": "Onboarding",
+      "pricing": "Sistema de precios",
+      "refunds": "Reembolsos",
+      "safety": "Seguridad de marca",
+      "api": "Referencias API",
+      "library": "Biblioteca"
     },
     "sections": [
       {
@@ -1021,8 +1035,112 @@
         ]
       }
     ],
+    "apiNotice": {
+      "public": "Resumen público disponible abajo.",
+      "private": "La documentación completa de la API requiere autenticación en el workspace."
+    },
+    "onboardingChecklist": {
+      "title": "Checklist de onboarding",
+      "items": [
+        "✅ Completa el brief de marca (tono, objetivos, entregables).",
+        "✅ Añade 1–3 prompts de ejemplo y activos de referencia.",
+        "✅ Define ratios por defecto y preferencia de audio."
+      ],
+      "note": "Puedes editar el brief en cualquier momento; los cambios aplican a todo el workspace."
+    },
+    "pricingCallout": "✅ Siempre ves el precio antes de renderizar.",
+    "refundsTimeline": {
+      "title": "Cronología de reembolsos",
+      "steps": [
+        "1) El job falla → el sistema marca el incidente.",
+        "2) Reembolso automático → wallet acreditado en minutos.",
+        "3) Recibo → registro detallado con una breve nota del incidente."
+      ],
+      "note": "Solo pagas por jobs exitosos. Los reembolsos aparecen en el feed y en los recibos."
+    },
+    "refundsCallout": "✅ Los jobs fallidos se reembolsan automáticamente en minutos; los recibos incluyen una breve nota del incidente.",
+    "safetyQuick": {
+      "title": "Resumen rápido",
+      "items": [
+        "• Bloqueos por defecto: contenido ilegal, sexual explícito, odio/hostigamiento, doxxing.",
+        "• Revisiones de medios: uploads/renders de riesgo se ponen en cuarentena para revisión.",
+        "• Controles admin: solicitar allowlists o palabras clave restringidas por workspace."
+      ],
+      "note": "Los casos sensibles pasan a revisión humana con trazabilidad y opciones de escalado."
+    },
+    "safetyCallout": "⚠️ Algunos casos sensibles pueden requerir una allowlist admin o revisión humana.",
+    "seeAlsoLabel": "Ver también:",
+    "seeAlso": {
+      "onboarding": [
+        { "href": "/es/workflows#express-vs-workflows", "label": "Resumen de workflows" },
+        { "href": "/es/galeria", "label": "Galería de ejemplos" }
+      ],
+      "pricing": [
+        { "href": "/es/precios#estimator", "label": "Estimador de precios" },
+        { "href": "/es/precios#example-costs", "label": "Ejemplos de costos" }
+      ],
+      "refunds": [
+        { "href": "/es/precios#refunds-protections", "label": "Reembolsos y protecciones" },
+        { "href": "/legal/terms", "label": "Términos" }
+      ],
+      "safety": [
+        { "href": "/es/workflows#express-vs-workflows", "label": "Resumen de workflows" },
+        { "href": "/es/modelos", "label": "Catálogo de modelos" }
+      ],
+      "api": [
+        { "href": "/es/precios#estimator", "label": "Entradas del estimador" },
+        { "href": "/es/galeria", "label": "Ejemplos de payloads" }
+      ],
+      "library": [
+        { "href": "/es/workflows", "label": "Workflows" },
+        { "href": "/es/modelos", "label": "Modelos" }
+      ]
+    },
+    "library": {
+      "heading": "Biblioteca",
+      "liveLabel": "En vivo",
+      "comingSoonLabel": "Próximamente",
+      "summaryLive": "Explora activos reutilizables, presets y prompts de referencia para tu equipo.",
+      "summarySoon": "Documentación próximamente."
+    },
+    "feedback": {
+      "srTitle": "Comentarios",
+      "prompt": "¿Te fue útil esta página?",
+      "yes": "Sí",
+      "no": "No",
+      "backToTop": "Volver arriba"
+    },
+    "lastUpdatedLabel": "Última actualización:",
+    "jsonLd": {
+      "collectionName": "Docs — Onboarding, seguridad de marca, reembolsos y webhooks API",
+      "hasPart": {
+        "onboarding": "Onboarding",
+        "pricing": "Sistema de precios",
+        "refunds": "Reembolsos",
+        "safety": "Seguridad de marca",
+        "api": "Referencias API",
+        "library": "Biblioteca"
+      },
+      "about": ["onboarding", "política de reembolsos", "seguridad de marca", "webhooks", "referencias api"],
+      "breadcrumbHome": "Inicio",
+      "breadcrumbDocs": "Docs",
+      "faq": [
+        {
+          "question": "¿Los Starter Credits caducan?",
+          "answer": "No. Los créditos se acumulan mes a mes y se sincronizan entre miembros con acceso."
+        },
+        {
+          "question": "¿Qué tan rápido se reembolsan los renders fallidos?",
+          "answer": "Los reembolsos se procesan automáticamente en minutos; cada job incluye una breve nota del incidente para finanzas."
+        },
+        {
+          "question": "¿Podemos anular el brand-safety para proyectos específicos?",
+          "answer": "Sí. Los admins pueden solicitar allowlists o palabras clave restringidas por workspace; los casos sensibles pasan a revisión humana con trazabilidad."
+        }
+      ]
+    },
     "empty": "Documentación próximamente.",
-    "libraryHeading": "Library"
+    "libraryHeading": "Biblioteca"
   },
   "blog": {
     "hero": {

@@ -977,9 +977,23 @@
     "cta": "Générer une vidéo similaire"
   },
   "docs": {
+    "meta": {
+      "title": "Docs — Onboarding, sécurité de marque, remboursements & webhooks API",
+      "description": "Commencez ici pour l’onboarding, le système tarifaire et les remboursements. Découvrez les filtres brand-safe et les références webhook/API. Les guides avancés sont dans l’espace authentifié.",
+      "imageAlt": "Docs — MaxVideoAI"
+    },
     "hero": {
       "title": "Documentation MaxVideoAI",
       "subtitle": "Commencez ici pour l'intégration, la sécurité de la marque, les avis de compatibilité et les politiques de remboursement. Des guides d'intégration plus approfondis se trouvent dans l'espace de travail authentifié."
+    },
+    "toc": {
+      "title": "Sur cette page",
+      "onboarding": "Onboarding",
+      "pricing": "Système tarifaire",
+      "refunds": "Remboursements",
+      "safety": "Sécurité de marque",
+      "api": "Références API",
+      "library": "Bibliothèque"
     },
     "sections": [
       {
@@ -1028,6 +1042,110 @@
         ]
       }
     ],
+    "apiNotice": {
+      "public": "Résumé public ci-dessous.",
+      "private": "Les docs API complètes nécessitent une authentification dans le workspace."
+    },
+    "onboardingChecklist": {
+      "title": "Checklist d’onboarding",
+      "items": [
+        "✅ Remplir le brief de marque (ton, objectifs, livrables).",
+        "✅ Ajouter 1–3 prompts d’exemple et des assets de référence.",
+        "✅ Définir les ratios par défaut et la préférence audio."
+      ],
+      "note": "Vous pouvez modifier le brief à tout moment; les mises à jour s’appliquent à tout le workspace."
+    },
+    "pricingCallout": "✅ Vous voyez toujours le prix avant de lancer un rendu.",
+    "refundsTimeline": {
+      "title": "Chronologie des remboursements",
+      "steps": [
+        "1) Le job échoue → le système signale l’incident.",
+        "2) Remboursement automatique → wallet crédité en quelques minutes.",
+        "3) Reçu → relevé détaillé avec une courte note d’incident."
+      ],
+      "note": "Vous ne payez que les jobs réussis. Les remboursements apparaissent dans le feed et les reçus."
+    },
+    "refundsCallout": "✅ Les jobs échoués sont remboursés automatiquement en quelques minutes; les reçus incluent une courte note d’incident.",
+    "safetyQuick": {
+      "title": "Aperçu rapide",
+      "items": [
+        "• Blocs par défaut : contenu illégal, sexuel explicite, haine/harcèlement, doxxing.",
+        "• Vérifications média : uploads/rendus risqués mis en quarantaine pour revue.",
+        "• Contrôles admin : demander des allowlists ou mots-clés restreints par workspace."
+      ],
+      "note": "Les cas sensibles passent en revue humaine avec piste d’audit et options d’escalade."
+    },
+    "safetyCallout": "⚠️ Certains usages sensibles peuvent exiger une allowlist admin ou une revue humaine.",
+    "seeAlsoLabel": "Voir aussi :",
+    "seeAlso": {
+      "onboarding": [
+        { "href": "/fr/workflows#express-vs-workflows", "label": "Aperçu des workflows" },
+        { "href": "/fr/galerie", "label": "Galerie d’exemples" }
+      ],
+      "pricing": [
+        { "href": "/fr/tarifs#estimator", "label": "Estimateur de prix" },
+        { "href": "/fr/tarifs#example-costs", "label": "Exemples de coûts" }
+      ],
+      "refunds": [
+        { "href": "/fr/tarifs#refunds-protections", "label": "Remboursements & protections" },
+        { "href": "/legal/terms", "label": "Conditions" }
+      ],
+      "safety": [
+        { "href": "/fr/workflows#express-vs-workflows", "label": "Aperçu des workflows" },
+        { "href": "/fr/modeles", "label": "Catalogue des modèles" }
+      ],
+      "api": [
+        { "href": "/fr/tarifs#estimator", "label": "Entrées de l’estimateur" },
+        { "href": "/fr/galerie", "label": "Exemples de payloads" }
+      ],
+      "library": [
+        { "href": "/fr/workflows", "label": "Workflows" },
+        { "href": "/fr/modeles", "label": "Modèles" }
+      ]
+    },
+    "library": {
+      "heading": "Bibliothèque",
+      "liveLabel": "En ligne",
+      "comingSoonLabel": "À venir",
+      "summaryLive": "Parcourez des assets réutilisables, des presets et des prompts de référence pour votre équipe.",
+      "summarySoon": "Documentation à venir."
+    },
+    "feedback": {
+      "srTitle": "Retour",
+      "prompt": "Cette page vous a-t-elle été utile ?",
+      "yes": "Oui",
+      "no": "Non",
+      "backToTop": "Retour en haut"
+    },
+    "lastUpdatedLabel": "Dernière mise à jour :",
+    "jsonLd": {
+      "collectionName": "Docs — Onboarding, sécurité de marque, remboursements & webhooks API",
+      "hasPart": {
+        "onboarding": "Onboarding",
+        "pricing": "Système tarifaire",
+        "refunds": "Remboursements",
+        "safety": "Sécurité de marque",
+        "api": "Références API",
+        "library": "Bibliothèque"
+      },
+      "about": ["onboarding", "politique de remboursement", "sécurité de marque", "webhooks", "références api"],
+      "breadcrumbHome": "Accueil",
+      "breadcrumbDocs": "Docs",
+      "faq": [
+        {
+          "question": "Les Starter Credits expirent-ils ?",
+          "answer": "Non. Les crédits se reportent de mois en mois et se synchronisent entre coéquipiers avec accès."
+        },
+        {
+          "question": "À quelle vitesse les rendus échoués sont-ils remboursés ?",
+          "answer": "Les remboursements sont traités automatiquement en quelques minutes; chaque job inclut une courte note d’incident pour la finance."
+        },
+        {
+          "question": "Peut-on contourner le brand-safety pour des projets spécifiques ?",
+          "answer": "Oui. Les admins peuvent demander des allowlists ou des mots-clés restreints par workspace; les cas sensibles passent en revue humaine avec une piste d’audit."
+        }
+      ]
+    },
     "empty": "Documentation à venir.",
     "libraryHeading": "Bibliothèque"
   },
