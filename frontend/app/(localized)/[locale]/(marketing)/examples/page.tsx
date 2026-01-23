@@ -77,6 +77,7 @@ const ENGINE_META = (() => {
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || SITE_BASE_URL;
 const GALLERY_SLUG_MAP = buildSlugMap('gallery');
+const MODEL_SLUG_MAP = buildSlugMap('models');
 const EXAMPLE_MODEL_SLUG_SET = new Set(MARKETING_EXAMPLE_SLUGS);
 const DEFAULT_SORT: ExampleSort = 'playlist';
 const ALLOWED_QUERY_KEYS = new Set(['sort', 'engine', 'page']);
@@ -113,6 +114,12 @@ function getPlaceholderPoster(aspect?: string | null): string {
   if (!aspect) return POSTER_PLACEHOLDERS['16:9'];
   const normalized = aspect.trim();
   return POSTER_PLACEHOLDERS[normalized] ?? POSTER_PLACEHOLDERS['16:9'];
+}
+
+function buildModelHref(locale: AppLocale, slug: string): string {
+  const prefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
+  const segment = MODEL_SLUG_MAP[locale] ?? MODEL_SLUG_MAP.en ?? 'models';
+  return `${prefix}/${segment}/${slug}`.replace(/\/{2,}/g, '/');
 }
 
 export const dynamic = 'force-dynamic';
@@ -522,16 +529,20 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
   const pricingLinkLabel =
     locale === 'fr' ? 'Comparer les tarifs' : locale === 'es' ? 'Comparar precios' : 'Compare pricing';
 
-  const videos = selectedEngine
-    ? allVideos.filter((video) => {
-        const canonicalEngineId = resolveEngineLinkId(video.engineId);
-        if (!canonicalEngineId) return false;
-        const engineMeta = ENGINE_META.get(canonicalEngineId.toLowerCase()) ?? null;
-        const descriptor = resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engineLabel);
-        if (!descriptor) return false;
-        return descriptor.id.toLowerCase() === selectedEngine.toLowerCase();
-      })
-    : allVideos;
+  const filteredEntries = selectedEngine
+    ? allVideos
+        .map((video, index) => {
+          const canonicalEngineId = resolveEngineLinkId(video.engineId);
+          if (!canonicalEngineId) return null;
+          const engineMeta = ENGINE_META.get(canonicalEngineId.toLowerCase()) ?? null;
+          const descriptor = resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engineLabel);
+          if (!descriptor) return null;
+          if (descriptor.id.toLowerCase() !== selectedEngine.toLowerCase()) return null;
+          return { video, index };
+        })
+        .filter((entry): entry is { video: typeof allVideos[number]; index: number } => Boolean(entry))
+    : allVideos.map((video, index) => ({ video, index }));
+  const videos = filteredEntries.map((entry) => entry.video);
   const videoLinkEntries = videos.slice(0, 120).map((video) => {
     const excerpt = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render', 12);
     const suffix = video.id.replace(/^[^a-z0-9]+/gi, '').slice(-6).toUpperCase();
@@ -541,12 +552,16 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
     };
   });
 
-  const clientVideos: ExampleGalleryVideo[] = videos.map((video) => {
+  const clientVideos: ExampleGalleryVideo[] = filteredEntries.map(({ video, index }) => {
     const canonicalEngineId = resolveEngineLinkId(video.engineId);
     const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
     const engineMeta = engineKey ? ENGINE_META.get(engineKey) : null;
+    const descriptor = canonicalEngineId ? resolveFilterDescriptor(canonicalEngineId, engineMeta, video.engineLabel) : null;
     const priceLabel = formatPrice(video.finalPriceCents ?? null, video.currency ?? null);
     const promptDisplay = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render');
+    const modelSlug =
+      engineMeta?.modelSlug ?? (descriptor ? ENGINE_MODEL_LINKS[descriptor.id.toLowerCase()] : null);
+    const modelHref = modelSlug ? buildModelHref(locale as AppLocale, modelSlug) : null;
     return {
       id: video.id,
       href: `/video/${encodeURIComponent(video.id)}`,
@@ -561,8 +576,15 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
       optimizedPosterUrl: video.thumbUrl ? buildOptimizedPosterUrl(video.thumbUrl) : null,
       rawPosterUrl: video.thumbUrl ?? getPlaceholderPoster(video.aspectRatio),
       videoUrl: video.videoUrl ?? null,
+      modelHref,
+      sourceIndex: index,
     };
   });
+  const initialExamples = clientVideos.slice(0, 12);
+  const initialMaxIndex = initialExamples.reduce((max, video) => Math.max(max, video.sourceIndex ?? -1), -1);
+  const pageOffsetStart = offset;
+  const pageOffsetEnd = offset + allVideos.length;
+  const nextOffsetStart = pageOffsetStart + Math.max(0, initialMaxIndex + 1);
   const hasPreviousPage = currentPage > 1;
   const hasNextPage = currentPage < totalPages;
   const buildQueryParams = (
@@ -696,6 +718,7 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
                     <Link
                       href={{ pathname: '/examples', query: buildQueryParams(DEFAULT_SORT, null, 1) }}
                       rel="nofollow"
+                      scroll={false}
                       className={clsx(
                         'flex h-9 items-center justify-center rounded-full border px-3 text-[11px] font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                         selectedEngine
@@ -713,6 +736,7 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
                           key={engine.id}
                           href={{ pathname: '/examples', query: buildQueryParams(DEFAULT_SORT, engine.id, 1) }}
                           rel="nofollow"
+                          scroll={false}
                           className={clsx(
                             'flex h-9 items-center justify-center rounded-full border px-4 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                             isActive
@@ -744,7 +768,15 @@ export default async function ExamplesPage({ searchParams, engineFromPath }: Exa
           </section>
 
           <section className="overflow-hidden rounded-[12px] border border-hairline bg-surface/80 shadow-card">
-            <ExamplesGalleryGrid examples={clientVideos} loadMoreLabel={loadMoreLabel} />
+            <ExamplesGalleryGrid
+              initialExamples={initialExamples}
+              loadMoreLabel={loadMoreLabel}
+              sort={sort}
+              engineFilter={selectedEngine?.toLowerCase() ?? null}
+              initialOffset={nextOffsetStart}
+              pageOffsetEnd={pageOffsetEnd}
+              locale={locale}
+            />
           </section>
 
           {totalPages > 1 ? (

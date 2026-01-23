@@ -3,11 +3,31 @@ import ExamplesGalleryGridClient, { type ExampleGalleryVideo } from './ExamplesG
 export type { ExampleGalleryVideo } from './ExamplesGalleryGrid.client';
 
 export function ExamplesGalleryGrid({
-  examples,
+  initialExamples,
   loadMoreLabel = 'Load more examples',
+  sort,
+  engineFilter,
+  initialOffset,
+  pageOffsetEnd,
+  locale,
 }: {
-  examples: ExampleGalleryVideo[];
+  initialExamples: ExampleGalleryVideo[];
   loadMoreLabel?: string;
+  sort: 'playlist' | 'date-desc' | 'date-asc' | 'duration-asc' | 'duration-desc' | 'engine-asc';
+  engineFilter?: string | null;
+  initialOffset: number;
+  pageOffsetEnd: number;
+  locale: string;
 }) {
-  return <ExamplesGalleryGridClient examples={examples} loadMoreLabel={loadMoreLabel} />;
+  return (
+    <ExamplesGalleryGridClient
+      initialExamples={initialExamples}
+      loadMoreLabel={loadMoreLabel}
+      sort={sort}
+      engineFilter={engineFilter}
+      initialOffset={initialOffset}
+      pageOffsetEnd={pageOffsetEnd}
+      locale={locale}
+    />
+  );
 }
