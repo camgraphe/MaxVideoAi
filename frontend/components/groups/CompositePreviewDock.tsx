@@ -10,6 +10,7 @@ import { ProcessingOverlay } from '@/components/groups/ProcessingOverlay';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
+import { parseAspectRatio } from '@/lib/aspect';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
 const DEFAULT_PREVIEW_COPY = {
@@ -66,6 +67,17 @@ function isVideo(item: VideoItem): boolean {
   if (hint === 'image') return false;
   const url = item.url.toLowerCase();
   return url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.mov');
+}
+
+function resolveAspectHint(item: VideoItem): string | null {
+  const original =
+    item.meta && typeof item.meta === 'object' && 'originalAspectRatio' in item.meta
+      ? (item.meta as Record<string, unknown>).originalAspectRatio
+      : null;
+  if (typeof original === 'string' && original.trim()) {
+    return original.trim().replace(/x/gi, ':');
+  }
+  return item.aspect ?? null;
 }
 
 export function CompositePreviewDock({
@@ -503,7 +515,11 @@ export function CompositePreviewDock({
                   const itemKey = item.id ? `${item.id}-${index}` : `dock-item-${index}`;
                   const isVideoReady = Boolean(readyItems[itemKey]);
                   const showSafariThumb = isSafari && item.thumb;
-                  const shouldZoom = item.aspect === '16:9';
+                  const aspectHint = resolveAspectHint(item);
+                  const parsedAspect = parseAspectRatio(aspectHint?.replace('/', ':') ?? null);
+                  const aspectRatio = parsedAspect ? parsedAspect.width / parsedAspect.height : null;
+                  const isSixteenByNine = aspectRatio ? Math.abs(aspectRatio - 16 / 9) < 0.02 : item.aspect === '16:9';
+                  const shouldZoom = isSixteenByNine;
                   const mediaFitClass = shouldZoom ? 'object-cover scale-[1.02]' : 'object-contain';
                   const itemStatus: 'completed' | 'pending' | 'error' = (() => {
                     if (itemStatusRaw === 'completed' || itemStatusRaw === 'ready') return 'completed';
