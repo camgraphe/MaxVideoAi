@@ -2,12 +2,12 @@
 
 import clsx from 'clsx';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
+import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 
 export type SelectOption = {
   value: string | number | boolean;
-  label: string;
+  label: string | ReactNode;
   disabled?: boolean;
 };
 
@@ -17,6 +17,8 @@ interface SelectMenuProps {
   onChange: (value: string | number | boolean) => void;
   disabled?: boolean;
   className?: string;
+  hideChevron?: boolean;
+  buttonClassName?: string;
 }
 
 const BUTTON_BASE =
@@ -36,7 +38,15 @@ function findFirstEnabled(options: SelectOption[]): number {
   return options.findIndex((option) => !option.disabled);
 }
 
-export function SelectMenu({ options, value, onChange, disabled = false, className }: SelectMenuProps) {
+export function SelectMenu({
+  options,
+  value,
+  onChange,
+  disabled = false,
+  className,
+  hideChevron = false,
+  buttonClassName,
+}: SelectMenuProps) {
   const [open, setOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -47,6 +57,7 @@ export function SelectMenu({ options, value, onChange, disabled = false, classNa
     [options, value]
   );
   const selectedOption = options[selectedIndex] ?? options[0];
+  const selectedLabel = selectedOption?.label ?? String(value);
 
   useEffect(() => {
     if (!open) return;
@@ -139,19 +150,29 @@ export function SelectMenu({ options, value, onChange, disabled = false, classNa
           setOpen((prev) => !prev);
         }}
         onKeyDown={handleTriggerKeyDown}
-        className={clsx(BUTTON_BASE, disabled && 'cursor-not-allowed opacity-60')}
+        className={clsx(BUTTON_BASE, disabled && 'cursor-not-allowed opacity-60', buttonClassName)}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-disabled={disabled}
       >
-        <span className="truncate">{selectedOption?.label ?? String(value)}</span>
-        <svg
-          aria-hidden
-          viewBox="0 0 20 20"
-          className={clsx('h-4 w-4 text-text-muted transition-transform', open && 'rotate-180')}
-        >
-          <path d="m6 8 4 4 4-4" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        <span className="min-w-0 flex-1">
+          {typeof selectedLabel === 'string' ? <span className="truncate">{selectedLabel}</span> : selectedLabel}
+        </span>
+        {!hideChevron ? (
+          <svg
+            aria-hidden
+            viewBox="0 0 20 20"
+            className={clsx('h-4 w-4 text-text-muted transition-transform', open && 'rotate-180')}
+          >
+            <path
+              d="m6 8 4 4 4-4"
+              stroke="currentColor"
+              strokeWidth={1.6}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        ) : null}
       </Button>
       {open ? (
         <div className="absolute left-0 right-0 z-[50] mt-2 max-h-60 overflow-y-auto rounded-card border border-border bg-surface p-1 shadow-card backdrop-blur">
@@ -186,7 +207,13 @@ export function SelectMenu({ options, value, onChange, disabled = false, classNa
                       isHighlighted && !option.disabled && !isSelected && 'bg-surface-2'
                     )}
                   >
-                    <span className="truncate">{option.label}</span>
+                    <span className="min-w-0 flex-1">
+                      {typeof option.label === 'string' ? (
+                        <span className="truncate">{option.label}</span>
+                      ) : (
+                        option.label
+                      )}
+                    </span>
                   </Button>
                 </li>
               );

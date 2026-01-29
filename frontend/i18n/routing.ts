@@ -37,6 +37,21 @@ export const routing = defineRouting({
       fr: '/comparatif',
       es: '/comparativa',
     },
+    '/ai-video-engines/[slug]': {
+      en: '/ai-video-engines/[slug]',
+      fr: '/comparatif/[slug]',
+      es: '/comparativa/[slug]',
+    },
+    '/ai-video-engines/best-for': {
+      en: '/ai-video-engines/best-for',
+      fr: '/comparatif/best-for',
+      es: '/comparativa/best-for',
+    },
+    '/ai-video-engines/best-for/[usecase]': {
+      en: '/ai-video-engines/best-for/[usecase]',
+      fr: '/comparatif/best-for/[usecase]',
+      es: '/comparativa/best-for/[usecase]',
+    },
     '/blog': {
       en: '/blog',
       fr: '/blog',

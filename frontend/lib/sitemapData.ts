@@ -12,6 +12,7 @@ import {
 } from '@/lib/i18n/paths';
 import { getContentEntries } from '@/lib/content/markdown';
 import { SITEMAP_MANUAL_TIMESTAMPS } from '@/config/sitemap-timestamps';
+import compareConfig from '@/config/compare-config.json';
 
 export type SitemapEntry = {
   url: string;
@@ -656,6 +657,16 @@ const DYNAMIC_ROUTE_GENERATORS: Record<string, DynamicRouteGenerator> = {
         lastModified: getModelLastModified(model.modelSlug),
         locales: LOCALES.filter((locale) => hasModelLocale(model.modelSlug, locale)),
       })),
+  '/ai-video-engines/[slug]': async () =>
+    (compareConfig.trophyComparisons ?? []).map((slug) => ({
+      englishPath: `/ai-video-engines/${slug}`,
+      locales: LOCALES,
+    })),
+  '/ai-video-engines/best-for/[usecase]': async () =>
+    (compareConfig.bestForPages ?? []).map((entry: { slug: string }) => ({
+      englishPath: `/ai-video-engines/best-for/${entry.slug}`,
+      locales: LOCALES,
+    })),
 };
 
 function validateLocaleCounts(entries: CanonicalPathEntry[]): void {

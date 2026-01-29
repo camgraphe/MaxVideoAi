@@ -19,6 +19,8 @@
     "vercel-build": "NEXT_SKIP_ESLINT=1 npm --prefix frontend run build && rm -rf frontend/.next/cache frontend/tsconfig.tsbuildinfo",
     "model:generate": "node scripts/generate-model-roster.mjs",
     "model:check": "node scripts/validate-model-roster.mjs",
+    "engine:catalog": "tsx scripts/build-engine-catalog.ts",
+    "jobs:export": "tsx scripts/export-latest-jobs.ts",
     "test-videos:process": "node scripts/process-video-gallery.mjs",
     "test-videos:serve": "node scripts/serve-video-gallery.mjs",
     "test:validate": "tsx --test \"tests/**/*.test.ts\""

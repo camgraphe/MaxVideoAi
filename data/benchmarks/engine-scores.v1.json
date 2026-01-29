@@ -1,0 +1,84 @@
+{
+  "version": "v1",
+  "last_updated": "2026-01-27",
+  "method": "manual-v1-placeholder",
+  "scores": [
+    {
+      "modelSlug": "sora-2",
+      "fidelity": 9.0,
+      "motion": 8.5,
+      "anatomy": 8.5,
+      "textRendering": 7.0,
+      "consistency": 8.0,
+      "lipsyncQuality": 7.5,
+      "sequencingQuality": 7.0,
+      "last_updated": "2026-01-27"
+    },
+    {
+      "modelSlug": "veo-3-1",
+      "fidelity": 8.5,
+      "motion": 8.0,
+      "anatomy": 7.8,
+      "textRendering": 7.0,
+      "consistency": 7.8,
+      "lipsyncQuality": 7.5,
+      "sequencingQuality": 7.2,
+      "last_updated": "2026-01-27"
+    },
+    {
+      "modelSlug": "kling-2-6-pro",
+      "fidelity": 8.0,
+      "motion": 7.8,
+      "anatomy": 7.5,
+      "textRendering": 6.5,
+      "consistency": 7.2,
+      "lipsyncQuality": null,
+      "sequencingQuality": null,
+      "last_updated": "2026-01-27"
+    },
+    {
+      "modelSlug": "wan-2-6",
+      "fidelity": 7.5,
+      "motion": 7.0,
+      "anatomy": 7.0,
+      "textRendering": 6.0,
+      "consistency": 6.8,
+      "lipsyncQuality": null,
+      "sequencingQuality": null,
+      "last_updated": "2026-01-27"
+    },
+    {
+      "modelSlug": "ltx-2",
+      "fidelity": 7.2,
+      "motion": 7.0,
+      "anatomy": 6.8,
+      "textRendering": 6.0,
+      "consistency": 6.6,
+      "lipsyncQuality": null,
+      "sequencingQuality": null,
+      "last_updated": "2026-01-27"
+    },
+    {
+      "modelSlug": "pika-text-to-video",
+      "fidelity": 6.8,
+      "motion": 6.8,
+      "anatomy": 6.2,
+      "textRendering": 5.8,
+      "consistency": 6.0,
+      "lipsyncQuality": null,
+      "sequencingQuality": null,
+      "last_updated": "2026-01-27"
+    },
+    {
+      "modelSlug": "minimax-hailuo-02-text",
+      "fidelity": 6.5,
+      "motion": 6.5,
+      "anatomy": 6.0,
+      "textRendering": 5.8,
+      "consistency": 6.0,
+      "lipsyncQuality": null,
+      "sequencingQuality": null,
+      "last_updated": "2026-01-27"
+    }
+  ]
+}

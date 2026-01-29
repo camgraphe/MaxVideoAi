@@ -774,7 +774,10 @@ export function PriceEstimator({ variant = 'full', pricingRules, enginePricingOv
                     />
                     <p className="mt-0.5 hidden text-xs text-text-muted sm:block">
                       {t('pricing.estimator.durationRangeLabel', 'Available')} •{' '}
-                      {durationSelectOptions.map((option) => option.label).join(' · ')}
+                      {durationSelectOptions
+                        .map((option) => (typeof option.label === 'string' ? option.label : ''))
+                        .filter(Boolean)
+                        .join(' · ')}
                     </p>
                   </div>
                 ) : null}

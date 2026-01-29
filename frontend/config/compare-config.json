@@ -1,0 +1,132 @@
+{
+  "trophyComparisons": [
+    "sora-2-vs-veo-3-1",
+    "sora-2-vs-kling-2-6-pro",
+    "veo-3-1-vs-kling-2-6-pro",
+    "sora-2-vs-wan-2-6",
+    "veo-3-1-vs-wan-2-6",
+    "kling-2-6-pro-vs-wan-2-6",
+    "sora-2-vs-ltx-2",
+    "veo-3-1-vs-ltx-2",
+    "pika-text-to-video-vs-minimax-hailuo-02-text",
+    "pika-text-to-video-vs-kling-2-6-pro"
+  ],
+  "bestForPages": [
+    {
+      "slug": "ugc-ads",
+      "title": "Best for UGC ads / social ads",
+      "tier": 1,
+      "topPicks": ["veo-3-1", "sora-2", "ltx-2-fast"]
+    },
+    {
+      "slug": "product-videos",
+      "title": "Best for product videos / ecommerce",
+      "tier": 1,
+      "topPicks": ["sora-2", "ltx-2", "veo-3-1"]
+    },
+    {
+      "slug": "lipsync-dialogue",
+      "title": "Best for lipsync / dialogue",
+      "tier": 1,
+      "topPicks": ["sora-2", "veo-3-1", "kling-2-6-pro"]
+    },
+    {
+      "slug": "cinematic-realism",
+      "title": "Best for cinematic realism",
+      "tier": 1,
+      "topPicks": ["sora-2", "veo-3-1", "kling-2-6-pro"]
+    },
+    {
+      "slug": "fast-drafts",
+      "title": "Best for fast drafts / cheapest iterations",
+      "tier": 2,
+      "topPicks": ["ltx-2-fast", "pika-text-to-video", "minimax-hailuo-02-text"]
+    },
+    {
+      "slug": "vertical-shorts",
+      "title": "Best for vertical shorts",
+      "tier": 2,
+      "topPicks": ["ltx-2-fast", "veo-3-1", "pika-text-to-video"]
+    },
+    {
+      "slug": "image-to-video",
+      "title": "Best for image-to-video",
+      "tier": 2,
+      "topPicks": ["sora-2", "veo-3-1", "kling-2-6-pro"]
+    },
+    {
+      "slug": "stylized-anime",
+      "title": "Best for stylized / anime / illustration",
+      "tier": 2,
+      "topPicks": ["kling-2-6-pro", "pika-text-to-video", "minimax-hailuo-02-text"]
+    }
+  ],
+  "relatedComparisons": {
+    "sora-2-vs-veo-3-1": [
+      "sora-2-vs-kling-2-6-pro",
+      "veo-3-1-vs-kling-2-6-pro",
+      "sora-2-vs-wan-2-6"
+    ],
+    "sora-2-vs-kling-2-6-pro": [
+      "sora-2-vs-veo-3-1",
+      "kling-2-6-pro-vs-wan-2-6",
+      "sora-2-vs-wan-2-6"
+    ],
+    "veo-3-1-vs-kling-2-6-pro": [
+      "sora-2-vs-veo-3-1",
+      "kling-2-6-pro-vs-wan-2-6",
+      "veo-3-1-vs-wan-2-6"
+    ],
+    "sora-2-vs-wan-2-6": [
+      "sora-2-vs-veo-3-1",
+      "kling-2-6-pro-vs-wan-2-6",
+      "veo-3-1-vs-wan-2-6"
+    ],
+    "veo-3-1-vs-wan-2-6": [
+      "sora-2-vs-veo-3-1",
+      "kling-2-6-pro-vs-wan-2-6",
+      "sora-2-vs-wan-2-6"
+    ],
+    "kling-2-6-pro-vs-wan-2-6": [
+      "sora-2-vs-kling-2-6-pro",
+      "veo-3-1-vs-kling-2-6-pro",
+      "sora-2-vs-wan-2-6"
+    ],
+    "sora-2-vs-ltx-2": [
+      "veo-3-1-vs-ltx-2",
+      "sora-2-vs-veo-3-1",
+      "sora-2-vs-kling-2-6-pro"
+    ],
+    "veo-3-1-vs-ltx-2": [
+      "sora-2-vs-ltx-2",
+      "veo-3-1-vs-kling-2-6-pro",
+      "veo-3-1-vs-wan-2-6"
+    ],
+    "pika-text-to-video-vs-minimax-hailuo-02-text": [
+      "pika-text-to-video-vs-kling-2-6-pro",
+      "sora-2-vs-veo-3-1",
+      "veo-3-1-vs-ltx-2"
+    ],
+    "pika-text-to-video-vs-kling-2-6-pro": [
+      "pika-text-to-video-vs-minimax-hailuo-02-text",
+      "veo-3-1-vs-kling-2-6-pro",
+      "sora-2-vs-kling-2-6-pro"
+    ]
+  },
+  "showdowns": {
+    "sora-2-vs-veo-3-1": [
+      {
+        "prompt": "A cinematic product shot of a matte black coffee grinder on a marble counter, soft morning light, slow dolly-in, shallow depth of field.",
+        "left": { "label": "Sora 2", "jobId": "job_74677d4f-9f28-4e47-b230-64accef8e239" },
+        "right": { "label": "Veo 3.1", "jobId": "job_a3e088db-b1e2-430f-83b3-2efce518c282" }
+      }
+    ],
+    "pika-text-to-video-vs-minimax-hailuo-02-text": [
+      {
+        "prompt": "A playful stop-motion style loop of colorful paper cutouts forming a smiling face, bold shadows, 4 seconds.",
+        "left": { "label": "Pika 2.2", "jobId": "job_af053cfc-3164-4e25-9f5a-8a89f006617e" },
+        "right": { "label": "MiniMax Hailuo 02" }
+      }
+    ]
+  }
+}

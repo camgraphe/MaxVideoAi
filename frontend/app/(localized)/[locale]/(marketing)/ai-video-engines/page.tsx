@@ -4,11 +4,15 @@ import type { ReactNode } from 'react';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import { FAQSchema } from '@/components/seo/FAQSchema';
+import { ButtonLink } from '@/components/ui/Button';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveDictionary } from '@/lib/i18n/server';
+import compareConfig from '@/config/compare-config.json';
 
 const COMPARE_SLUG_MAP = buildSlugMap('compare');
+const DEFAULT_COMPARE_SLUG =
+  (compareConfig.trophyComparisons as string[] | undefined)?.[0] ?? 'sora-2-vs-veo-3-1';
 
 const LINK_TARGETS = {
   article: { href: { pathname: '/blog/[slug]', params: { slug: 'compare-ai-video-engines' } } },
@@ -68,6 +72,8 @@ const DEFAULT_CONTENT = {
     title: 'Compare the top video generators',
     intro:
       'Whether you need frontier fidelity or budget-friendly loops, MaxVideoAI keeps each engine ready for production workloads.',
+    ctaLabel: 'Open the live comparison',
+    ctaDescription: 'See the side-by-side comparator for the most requested matchup.',
     cards: [
       {
         label: 'Sora 2',
@@ -233,6 +239,18 @@ export default async function AiVideoEnginesPage() {
                 </ul>
               </article>
             ))}
+          </div>
+          <div className="stack-gap-sm rounded-card border border-hairline bg-surface/90 p-5 text-sm text-text-secondary shadow-card">
+            {comparison.ctaDescription ? (
+              <p className="text-sm text-text-secondary">{comparison.ctaDescription}</p>
+            ) : null}
+            <ButtonLink
+              href={{ pathname: '/ai-video-engines/[slug]', params: { slug: DEFAULT_COMPARE_SLUG } }}
+              size="sm"
+              linkComponent={Link}
+            >
+              {comparison.ctaLabel ?? 'Open the live comparison'}
+            </ButtonLink>
           </div>
         </section>
 
