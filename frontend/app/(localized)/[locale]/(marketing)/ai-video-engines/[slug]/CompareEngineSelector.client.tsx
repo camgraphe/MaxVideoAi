@@ -62,13 +62,17 @@ export function CompareEngineSelector({ options, value, otherValue, side }: Comp
       options={resolvedOptions}
       value={value}
       hideChevron
-      buttonClassName="min-w-0 rounded-full border border-hairline bg-surface-2 px-3 py-1 text-[12px] font-semibold text-text-primary shadow-none transition hover:bg-surface-2/80"
+      buttonClassName="w-full max-w-[220px] min-w-0 rounded-full border border-hairline bg-surface-2 px-3 py-1 text-[12px] font-semibold text-text-primary shadow-none transition hover:bg-surface-2/80 sm:max-w-none sm:min-w-[280px] md:min-w-[320px]"
       onChange={(next) => {
         const nextValue = String(next);
         if (!nextValue || nextValue === value) return;
         if (nextValue === otherValue) return;
-        const slug = side === 'left' ? `${nextValue}-vs-${otherValue}` : `${otherValue}-vs-${nextValue}`;
-        router.push({ pathname: '/ai-video-engines/[slug]', params: { slug } });
+        const leftSlug = side === 'left' ? nextValue : otherValue;
+        const rightSlug = side === 'left' ? otherValue : nextValue;
+        const sorted = [leftSlug, rightSlug].sort();
+        const slug = `${sorted[0]}-vs-${sorted[1]}`;
+        const query = leftSlug === sorted[0] ? undefined : { order: leftSlug };
+        router.push({ pathname: '/ai-video-engines/[slug]', params: { slug }, query }, { scroll: false });
       }}
     />
   );

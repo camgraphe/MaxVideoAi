@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
+import path from 'node:path';
+import { promises as fs } from 'node:fs';
 import { Link } from '@/i18n/navigation';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
@@ -12,6 +14,8 @@ import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
 import { ModelsGallery } from '@/components/marketing/ModelsGallery';
 import { getEnginePictogram } from '@/lib/engine-branding';
 import { getEngineLocalized } from '@/lib/models/i18n';
+import engineCatalog from '@/config/engine-catalog.json';
+import compareConfig from '@/config/compare-config.json';
 
 const MODELS_SLUG_MAP = buildSlugMap('models');
 const DEFAULT_INTRO = {
@@ -57,6 +61,118 @@ const DEFAULT_ENGINE_TYPE_LABELS = {
   image: 'Image to Video',
   default: 'AI Video Engine',
 } as const;
+
+type EngineCatalogEntry = (typeof engineCatalog)[number];
+
+type EngineKeySpecsEntry = {
+  modelSlug?: string;
+  engineId?: string;
+  keySpecs?: Record<string, unknown>;
+};
+
+type EngineKeySpecsFile = {
+  specs?: EngineKeySpecsEntry[];
+};
+
+async function loadEngineKeySpecs(): Promise<Map<string, Record<string, unknown>>> {
+  const candidates = [
+    path.join(process.cwd(), 'data', 'benchmarks', 'engine-key-specs.v1.json'),
+    path.join(process.cwd(), '..', 'data', 'benchmarks', 'engine-key-specs.v1.json'),
+  ];
+  for (const candidate of candidates) {
+    try {
+      const raw = await fs.readFile(candidate, 'utf8');
+      const data = JSON.parse(raw) as EngineKeySpecsFile;
+      const map = new Map<string, Record<string, unknown>>();
+      (data.specs ?? []).forEach((entry) => {
+        const key = entry.modelSlug ?? entry.engineId;
+        if (key && entry.keySpecs) {
+          map.set(key, entry.keySpecs);
+        }
+      });
+      return map;
+    } catch {
+      // keep trying
+    }
+  }
+  return new Map();
+}
+
+function getCatalogBySlug() {
+  return new Map<string, EngineCatalogEntry>(engineCatalog.map((entry) => [entry.modelSlug, entry]));
+}
+
+function resolveSupported(value: unknown) {
+  if (value == null) return null;
+  const normalized = String(value).trim().toLowerCase();
+  if (normalized === 'supported' || normalized === 'yes' || normalized === 'true') return true;
+  if (normalized === 'not supported' || normalized === 'no' || normalized === 'false') return false;
+  return null;
+}
+
+function extractMaxResolution(value?: string | null, fallback?: string[]) {
+  const candidates = [value ?? '', ...(fallback ?? [])];
+  let max = 0;
+  candidates.forEach((entry) => {
+    const normalized = entry.toLowerCase();
+    if (normalized.includes('4k')) {
+      max = Math.max(max, 2160);
+      return;
+    }
+    const matches = normalized.match(/(\d{3,4})/g) ?? [];
+    matches.forEach((match) => {
+      const num = Number(match);
+      if (!Number.isNaN(num)) max = Math.max(max, num);
+    });
+  });
+  if (!max) return { label: 'Data pending', value: null };
+  return { label: `${max}p`, value: max };
+}
+
+function extractMaxDuration(value?: string | null, fallback?: number | null) {
+  if (typeof value === 'string') {
+    const match = value.match(/(\d+(?:\.\d+)?)/);
+    if (match) {
+      const num = Number(match[1]);
+      if (!Number.isNaN(num)) return { label: `${num}s`, value: num };
+    }
+  }
+  if (typeof fallback === 'number') {
+    return { label: `${fallback}s`, value: fallback };
+  }
+  return { label: 'Data pending', value: null };
+}
+
+function getMinPricePerSecond(entry?: EngineCatalogEntry | null) {
+  if (!entry?.engine) return null;
+  const perSecond = entry.engine.pricingDetails?.perSecondCents;
+  const candidates: number[] = [];
+  if (typeof perSecond?.default === 'number') {
+    candidates.push(perSecond.default);
+    const audioOffDelta = entry.engine.pricingDetails?.addons?.audio_off?.perSecondCents;
+    if (typeof audioOffDelta === 'number') {
+      candidates.push(perSecond.default + audioOffDelta);
+    }
+  }
+  if (perSecond?.byResolution) {
+    Object.values(perSecond.byResolution).forEach((value) => {
+      if (typeof value === 'number') candidates.push(value);
+    });
+  }
+  if (typeof entry.engine.pricing?.base === 'number') {
+    candidates.push(Math.round(entry.engine.pricing.base * 100));
+  }
+  if (!candidates.length) return null;
+  return Math.min(...candidates);
+}
+
+function formatPriceFrom(entry?: EngineCatalogEntry | null) {
+  const cents = getMinPricePerSecond(entry);
+  if (typeof cents === 'number') {
+    return `$${(cents / 100).toFixed(2)}/s`;
+  }
+  return 'Data pending';
+}
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
@@ -160,6 +276,8 @@ export default async function ModelsPage() {
       versionLabel?: string;
     }
   >;
+  const keySpecsMap = await loadEngineKeySpecs();
+  const catalogBySlug = getCatalogBySlug();
 
   const priorityOrder = [
     'sora-2',
@@ -187,6 +305,29 @@ export default async function ModelsPage() {
     .filter((entry) => !priorityOrder.includes(entry.modelSlug))
     .sort((a, b) => getEngineDisplayName(a).localeCompare(getEngineDisplayName(b)));
   const engines = [...priorityEngines, ...remainingEngines];
+
+  const popularComparisonSlugs = (compareConfig.trophyComparisons as string[] | undefined)?.slice(0, 6) ?? [];
+  const popularComparisons = popularComparisonSlugs
+    .map((slug) => {
+      const parts = slug.split('-vs-');
+      if (parts.length !== 2) return null;
+      const [leftSlug, rightSlug] = parts;
+      const leftName =
+        catalogBySlug.get(leftSlug)?.marketingName ??
+        engineIndex.get(leftSlug)?.marketingName ??
+        engineIndex.get(leftSlug)?.engine.label ??
+        leftSlug;
+      const rightName =
+        catalogBySlug.get(rightSlug)?.marketingName ??
+        engineIndex.get(rightSlug)?.marketingName ??
+        engineIndex.get(rightSlug)?.engine.label ??
+        rightSlug;
+      return {
+        slug,
+        label: `${leftName} vs ${rightName}`,
+      };
+    })
+    .filter((entry): entry is { slug: string; label: string } => Boolean(entry));
 
   const localizedMap = new Map<string, Awaited<ReturnType<typeof getEngineLocalized>>>(
     await Promise.all(
@@ -226,6 +367,37 @@ export default async function ModelsPage() {
     const displayName =
       localized?.marketingName ?? meta?.displayName ?? engine.cardTitle ?? getEngineDisplayName(engine);
     const description = localized?.hero?.intro ?? localized?.overview ?? meta?.description ?? engineType;
+    const catalogEntry = catalogBySlug.get(engine.modelSlug) ?? null;
+    const keySpecs = keySpecsMap.get(engine.modelSlug) ?? {};
+    const modes = new Set(catalogEntry?.engine?.modes ?? engine.engine.modes ?? []);
+    const t2v = resolveSupported((keySpecs as Record<string, unknown>).textToVideo) ?? modes.has('t2v');
+    const i2v = resolveSupported((keySpecs as Record<string, unknown>).imageToVideo) ?? modes.has('i2v');
+    const v2v = resolveSupported((keySpecs as Record<string, unknown>).videoToVideo) ?? modes.has('v2v');
+    const firstLast =
+      resolveSupported((keySpecs as Record<string, unknown>).firstLastFrame) ??
+      Boolean(catalogEntry?.engine?.keyframes);
+    const lipSync = resolveSupported((keySpecs as Record<string, unknown>).lipSync);
+    const audioSupported =
+      resolveSupported((keySpecs as Record<string, unknown>).audioOutput) ??
+      (catalogEntry?.engine?.audio == null ? null : Boolean(catalogEntry.engine.audio));
+    const maxResolution = extractMaxResolution(
+      (keySpecs as Record<string, string>).maxResolution,
+      catalogEntry?.engine?.resolutions
+    );
+    const maxDuration = extractMaxDuration(
+      (keySpecs as Record<string, string>).maxDuration,
+      catalogEntry?.engine?.maxDurationSec ?? null
+    );
+    const priceFrom = formatPriceFrom(catalogEntry);
+    const capabilities = [
+      t2v ? 'T2V' : null,
+      i2v ? 'I2V' : null,
+      v2v ? 'V2V' : null,
+      firstLast ? 'First/Last' : null,
+      lipSync ? 'Lip sync' : null,
+    ].filter(Boolean) as string[];
+    const compareDisabled = ['nano-banana', 'nano-banana-pro'].includes(engine.modelSlug);
+    const strengths = catalogEntry?.bestFor ?? null;
     const pictogram = getEnginePictogram({
       id: engine.engine.id,
       brandId: engine.brandId ?? engine.engine.brandId,
@@ -242,6 +414,30 @@ export default async function ModelsPage() {
       href: { pathname: '/models/[slug]', params: { slug: engine.modelSlug } },
       backgroundColor: pictogram.backgroundColor,
       textColor: pictogram.textColor,
+      strengths,
+      capabilities: capabilities.slice(0, 3),
+      snapshot: {
+        priceFrom: priceFrom === 'Data pending' ? null : priceFrom,
+        maxDuration: maxDuration.label === 'Data pending' ? null : maxDuration.label,
+        maxResolution: maxResolution.label === 'Data pending' ? null : maxResolution.label,
+        audio: audioSupported == null ? 'Data pending' : audioSupported ? 'Yes' : 'No',
+      },
+      compareDisabled,
+      filterMeta: {
+        t2v,
+        i2v,
+        v2v,
+        firstLast,
+        extend,
+        lipSync,
+        audio: Boolean(audioSupported),
+        maxResolution: maxResolution.value,
+        maxDuration: maxDuration.value,
+        priceFrom: (() => {
+          const cents = getMinPricePerSecond(catalogEntry);
+          return typeof cents === 'number' ? cents / 100 : null;
+        })(),
+      },
     };
   });
 
@@ -255,12 +451,40 @@ export default async function ModelsPage() {
           </h2>
           <p className="sm:max-w-[62ch] text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
           <p className="sm:max-w-[62ch] text-sm text-text-secondary">{heroBody}</p>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <Link
+              href={{ pathname: '/models', query: { compare: '1' } }}
+              className="inline-flex items-center rounded-full bg-text-primary px-4 py-2 text-xs font-semibold uppercase tracking-micro text-bg shadow-card transition hover:opacity-90"
+            >
+              Compare
+            </Link>
+            <span className="inline-flex items-center rounded-full border border-hairline bg-surface px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary">
+              Watermark-free exports on MaxVideoAI
+            </span>
+          </div>
         </header>
         <section className="stack-gap-lg rounded-3xl border border-hairline bg-surface/90 p-6 text-sm text-text-secondary shadow-card sm:p-8">
           {introParagraphs.map((paragraph) => (
             <p key={paragraph}>{paragraph}</p>
           ))}
           <ModelsGallery cards={modelCards} ctaLabel={cardCtaLabel} />
+          {popularComparisons.length ? (
+            <div className="rounded-3xl border border-hairline bg-surface/80 p-4 shadow-card">
+              <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Popular comparisons</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {popularComparisons.map((entry) => (
+                  <Link
+                    key={entry.slug}
+                    href={{ pathname: '/ai-video-engines/[slug]', params: { slug: entry.slug } }}
+                    prefetch={false}
+                    className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary transition hover:border-text-muted hover:text-text-primary"
+                  >
+                    {entry.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : null}
           <div className="grid grid-gap-sm lg:grid-cols-3">
             {introCards.map((card) => (
               <div

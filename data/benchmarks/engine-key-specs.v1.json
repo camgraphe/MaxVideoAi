@@ -1,0 +1,456 @@
+{
+  "version": "v1",
+  "last_updated": "2026-01-27",
+  "specs": [
+    {
+      "modelSlug": "sora-2",
+      "sources": [
+        "https://maxvideoai.com/models/sora-2",
+        "https://platform.openai.com/docs/models/sora-2",
+        "https://openai.com/index/sora-2/",
+        "https://openai.com/index/launching-sora-responsibly/",
+        "https://www.tomsguide.com/ai/sora-2-vs-google-veo-3-1-i-tested-both-and-the-winner-blew-me-away"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not supported",
+        "firstLastFrame": "Not supported",
+        "referenceImageStyle": "Supported",
+        "referenceVideo": "Not supported",
+        "maxResolution": "720p (1280×720 landscape; 720×1280 portrait)",
+        "maxDuration": "12s",
+        "aspectRatios": [
+          "16:9",
+          "9:16"
+        ],
+        "fpsOptions": [
+          24
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported",
+        "cameraMotionControls": "Basic",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
+      "modelSlug": "sora-2-pro",
+      "sources": [
+        "https://maxvideoai.com/models/sora-2-pro",
+        "https://openai.com/index/sora-2-pro/",
+        "https://openai.com/index/launching-sora-responsibly/",
+        "https://fal.ai/models/fal-ai/sora/v2.0/pro/text-to-video/api"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Supported",
+        "firstLastFrame": "Not supported",
+        "referenceImageStyle": "Supported",
+        "referenceVideo": "Not supported",
+        "maxResolution": "1080p (1920×1080) or 720p",
+        "maxDuration": "12s",
+        "aspectRatios": [
+          "16:9",
+          "9:16"
+        ],
+        "fpsOptions": [
+          24
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported",
+        "cameraMotionControls": "Basic",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
+      "modelSlug": "veo-3-1",
+      "sources": [
+        "https://maxvideoai.com/models/veo-3-1",
+        "https://ai.google.dev/gemini-api/docs/video",
+        "https://docs.cloud.google.com/vertex-ai/generative-ai/docs/video/generate-videos",
+        "https://docs.cloud.google.com/vertex-ai/generative-ai/docs/video/video-extend",
+        "https://cloud.google.com/blog/products/ai-machine-learning/ultimate-prompting-guide-for-veo-3-1",
+        "https://curiousrefuge.com/blog/veo-3-1-quality-review"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Supported",
+        "firstLastFrame": "Not supported",
+        "referenceImageStyle": "Supported",
+        "referenceVideo": "Supported",
+        "maxResolution": "1080p",
+        "maxDuration": "8s",
+        "aspectRatios": [
+          "16:9",
+          "9:16"
+        ],
+        "fpsOptions": [
+          "24 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported",
+        "cameraMotionControls": "Advanced",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
+      "modelSlug": "veo-3-1-fast",
+      "sources": [
+        "https://maxvideoai.com/models/veo-3-1-fast",
+        "https://ai.google.dev/gemini-api/docs/video",
+        "https://docs.cloud.google.com/vertex-ai/generative-ai/docs/video/video-extend",
+        "https://replicate.com/google/veo-3.1-fast",
+        "https://curiousrefuge.com/blog/veo-3-1-fast-review"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Supported",
+        "firstLastFrame": "Not supported",
+        "referenceImageStyle": "Supported",
+        "referenceVideo": "Supported",
+        "maxResolution": "1080p",
+        "maxDuration": "8s",
+        "aspectRatios": [
+          "16:9",
+          "9:16"
+        ],
+        "fpsOptions": [
+          "24 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported",
+        "cameraMotionControls": "Advanced",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
+      "modelSlug": "veo-3-1-first-last",
+      "sources": [
+        "https://maxvideoai.com/models/veo-3-1-first-last",
+        "https://maxvideoai.com/fr/modeles/veo-3-1-premiere-derniere",
+        "https://ai.google.dev/gemini-api/docs/video",
+        "https://cloud.google.com/blog/products/ai-machine-learning/ultimate-prompting-guide-for-veo-3-1"
+      ],
+      "keySpecs": {
+        "textToVideo": "Not supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not supported",
+        "firstLastFrame": "Supported",
+        "referenceImageStyle": "Supported",
+        "referenceVideo": "Not supported",
+        "maxResolution": "1080p",
+        "maxDuration": "8s",
+        "aspectRatios": [
+          "16:9",
+          "9:16"
+        ],
+        "fpsOptions": [
+          "24 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported",
+        "cameraMotionControls": "Advanced",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
+      "modelSlug": "ltx-2",
+      "sources": [
+        "https://maxvideoai.com/models/ltx-2",
+        "https://fal.ai/models/fal-ai/ltx-video/v2.0/pro/text-to-video",
+        "https://fal.ai/models/fal-ai/ltx-video/v2.0/pro/text-to-video/api",
+        "https://github.com/Lightricks/LTX-Video",
+        "https://curiousrefuge.com/blog/ltx-2-review"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not supported",
+        "firstLastFrame": "Not supported",
+        "referenceImageStyle": "Supported",
+        "referenceVideo": "Not supported",
+        "maxResolution": "4K",
+        "maxDuration": "10s",
+        "aspectRatios": [
+          "16:9"
+        ],
+        "fpsOptions": [
+          "25 fps",
+          "50 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported",
+        "cameraMotionControls": "Basic",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
+      "modelSlug": "ltx-2-fast",
+      "sources": [
+        "https://maxvideoai.com/models/ltx-2-fast",
+        "https://fal.ai/models/fal-ai/ltx-video/v2.0/fast/text-to-video",
+        "https://fal.ai/models/fal-ai/ltx-video/v2.0/fast/text-to-video/api"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not supported",
+        "firstLastFrame": "Not supported",
+        "referenceImageStyle": "Supported",
+        "referenceVideo": "Not supported",
+        "maxResolution": "4K",
+        "maxDuration": "20s",
+        "aspectRatios": [
+          "16:9"
+        ],
+        "fpsOptions": [
+          "25 fps",
+          "50 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported",
+        "cameraMotionControls": "Basic",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
+      "modelSlug": "wan-2-6",
+      "sources": [
+        "https://maxvideoai.com/models/wan-2-6",
+        "https://fal.ai/models/fal-ai/wan/v2.6/text-to-video/api",
+        "https://fal.ai/models/fal-ai/wan/v2.6/reference-to-video/api"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Supported",
+        "firstLastFrame": "Not supported",
+        "referenceImageStyle": "Supported",
+        "referenceVideo": "Supported",
+        "maxResolution": "1080p",
+        "maxDuration": "15s",
+        "aspectRatios": [
+          "16:9",
+          "9:16",
+          "1:1"
+        ],
+        "fpsOptions": [
+          24
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Not supported",
+        "lipSync": "Supported",
+        "cameraMotionControls": "Basic",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
+      "modelSlug": "wan-2-5",
+      "sources": [
+        "https://maxvideoai.com/models/wan-2-5",
+        "https://curiousrefuge.com/blog/wan-2-5-review"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not supported",
+        "firstLastFrame": "Not supported",
+        "referenceImageStyle": "Supported",
+        "referenceVideo": "Not supported",
+        "maxResolution": "1080p",
+        "maxDuration": "10s",
+        "aspectRatios": [
+          "16:9",
+          "9:16",
+          "1:1"
+        ],
+        "fpsOptions": [
+          "24 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Not supported",
+        "lipSync": "Not supported",
+        "cameraMotionControls": "Basic",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
+      "modelSlug": "kling-2-6-pro",
+      "sources": [
+        "https://maxvideoai.com/models/kling-2-6-pro",
+        "https://fal.ai/models/fal-ai/kling-video/v2.6/pro/text-to-video",
+        "https://fal.ai/learn/devs/prompt-guide-kling-2.6",
+        "https://replicate.com/kwaivgi/kling-v2.6"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not supported",
+        "firstLastFrame": "Not supported",
+        "referenceImageStyle": "Supported",
+        "referenceVideo": "Supported",
+        "maxResolution": "1080p",
+        "maxDuration": "10s",
+        "aspectRatios": [
+          "16:9",
+          "9:16",
+          "1:1"
+        ],
+        "fpsOptions": [
+          24
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported",
+        "cameraMotionControls": "Advanced",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
+      "modelSlug": "kling-2-5-turbo",
+      "sources": [
+        "https://maxvideoai.com/models/kling-2-5-turbo",
+        "https://curiousrefuge.com/blog/kling-2-5-turbo-review",
+        "https://fal.ai/models/fal-ai/kling-video/v2.5/turbo/text-to-video/llms.txt"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not supported",
+        "firstLastFrame": "Not supported",
+        "referenceImageStyle": "Supported",
+        "referenceVideo": "Not supported",
+        "maxResolution": "1080p",
+        "maxDuration": "10s",
+        "aspectRatios": [
+          "16:9",
+          "9:16",
+          "1:1"
+        ],
+        "fpsOptions": [
+          "24 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Not supported",
+        "nativeAudioGeneration": "Not supported",
+        "lipSync": "Not supported",
+        "cameraMotionControls": "Basic",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
+      "modelSlug": "pika-text-to-video",
+      "sources": [
+        "https://maxvideoai.com/models/pika-text-to-video",
+        "https://maxvideoai.com/fr/modeles/pika-text-to-video",
+        "https://helpx.adobe.com/firefly/web/firefly-video-editor/generate-videos/generate-videos-with-pika-22.html",
+        "https://pika.art/faq",
+        "https://curiousrefuge.com/blog/pika-2-2-review"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not supported",
+        "firstLastFrame": "Supported",
+        "referenceImageStyle": "Supported",
+        "referenceVideo": "Not supported",
+        "maxResolution": "1080p",
+        "maxDuration": "10s",
+        "aspectRatios": [
+          "1:1",
+          "16:9",
+          "9:16"
+        ],
+        "fpsOptions": [
+          24
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Not supported",
+        "nativeAudioGeneration": "Not supported",
+        "lipSync": "Not supported",
+        "cameraMotionControls": "Basic",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
+      "modelSlug": "minimax-hailuo-02-text",
+      "sources": [
+        "https://maxvideoai.com/models/minimax-hailuo-02-text",
+        "https://fal.ai/models/fal-ai/minimax/hailuo-02/standard/text-to-video/api",
+        "https://fal.ai/models/fal-ai/minimax/hailuo-02/standard/image-to-video/api",
+        "https://maxvideoai.com/examples/minimax-hailuo-02-text"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not supported",
+        "firstLastFrame": "Supported",
+        "referenceImageStyle": "Supported",
+        "referenceVideo": "Not supported",
+        "maxResolution": "768p",
+        "maxDuration": "10s",
+        "aspectRatios": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "2:1"
+        ],
+        "fpsOptions": [
+          24
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Not supported",
+        "nativeAudioGeneration": "Not supported",
+        "lipSync": "Not supported",
+        "cameraMotionControls": "Basic",
+        "watermark": "No (MaxVideoAI)"
+      }
+    }
+  ]
+}

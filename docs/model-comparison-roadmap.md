@@ -161,24 +161,73 @@ Définitions (pour éviter les débats):
 **Décision V1 :** pas de page type “tableur/Excel”. Les pages compare doivent être **app-like** et alignées avec le style MaxVideoAI.
 
 **Ce qui doit dominer (app-like)**
-- 2 cards hero (A vs B) : nom/logo, “best for”, **Overall score**, mini pillar bars, CTA “Generate”.
-- Chips visibles : Audio, Lipsync, Sequencing, Price/s, Observed speed (avg + p95).
-- Row “Winner badges” : Best Fidelity / Best Motion / Best Value / Best Lipsync / Best Sequencing.
-- Showdown (optionnel mais clé) : same prompt, A vs B côte‑à‑côte (1–3 max).
+- 2 cards hero (A vs B) : sélecteurs, **Overall score**, CTA “Generate”.
+- Ligne “Strengths: …” (neutre, pas “Best for”).
+- Scorecard “Side‑by‑Side” (11 critères) avec tooltips SEO.
+- Showdown (clé) : mêmes prompts, A vs B côte‑à‑côte (3 prompts v1).
 
 **Où vont les specs (sans effet Excel)**
-- Module compact **sous le fold** (10 lignes max).
-- Mobile : accordion “setting rows” (label gauche, valeur droite, chips/tooltips).
-- Desktop : table courte et aérée ou “spec rows”, **jamais** une grille dense.
+- Section “Key Specs (Side‑by‑Side)” avec micro‑texte SEO.
+- Table compacte, 3 colonnes, responsive à 840px.
+- Valeurs propres : **Supported / Not supported / Data pending** (pas de “-” brut).
 
 **Reuse vs create**
 - Réutiliser au maximum : cards, chips, typographies, CTA blocks, gallery.
 - Créer uniquement les blocs compare spécifiques :
-  - layout 2‑col compare
-  - dual totals (Overall Default + Overall Audio/Sequencing)
-  - winner badges
-  - compact spec module
-  - showdown gallery
+  - scorecard side‑by‑side (11 critères)
+  - key specs side‑by‑side
+  - showdown template (prompts SSR + placeholders)
+  - FAQ programmatic + JSON‑LD
+
+---
+
+## 8) Template actuel (aligné prod/SEO)
+
+### A) Intro + scorecard
+- H1 “A vs B”
+- Intro EN générique (future‑proof) sous le H1.
+- H2 **“Scorecard (Side‑by‑Side)”** + micro‑texte.
+- 11 critères (EN) + tooltips :
+  1. Prompt Adherence
+  2. Visual Quality *(incl. artifacts & flicker)*
+  3. Motion Realism
+  4. Temporal Consistency
+  5. Human Fidelity
+  6. Text & UI Legibility
+  7. Audio & Lip Sync
+  8. Multi‑Shot Sequencing
+  9. Controllability
+  10. Speed & Stability
+  11. Pricing
+
+### B) Key Specs (Side‑by‑Side)
+- H2 **“Key Specs (Side‑by‑Side)”** + micro‑texte SEO.
+- Ordre (v1) :
+  - Pricing (MaxVideoAI) + subline “Audio off: $X/s” si dispo
+  - Text‑to‑Video / Image‑to‑Video / Video‑to‑Video
+  - First/Last frame (1 ligne)
+  - Reference image / style reference
+  - Reference video (Data pending)
+  - Extend / Continue
+  - Loop
+  - Inpaint / Mask editing
+  - Max resolution / Max duration / Aspect ratios / FPS options
+  - Output format (Data pending)
+  - Audio output / Native audio generation / Lip sync
+  - Camera / motion controls
+  - Multi‑shot / Sequencing
+  - Watermark: **No (MaxVideoAI)**
+
+### C) Showdown (same prompt) — SEO programmatic
+- 3 prompts SSR (UGC/lip sync, motion/physics, hands+text).
+- Sub‑text + micro‑note “Showing up to 3 prompt pairs for clarity.”
+- Prompt visible + copy button.
+- Placeholder vidéos possibles (random gallery) avec label “Placeholder example — prompt render coming soon”.
+- CTA discrets : **Try this prompt:** + chips engine.
+
+### D) FAQ programmatic (SSR + JSON‑LD)
+- 10 Q/A dynamiques + 1 Q/A “Biggest differences” (3 bullets).
+- JSON‑LD FAQPage + BreadcrumbList.
 
 ---
 
@@ -226,13 +275,21 @@ Définitions (pour éviter les débats):
 - `buildSeoMetadata` + `buildMetadataUrls` avec `englishPath` = `/ai-video-engines/<slug>`
 
 ### Accès
-- Header : **Models** (dropdown) → “Compare engines”
-- Hub `/ai-video-engines` :
-  - blocs “Popular comparisons”
-  - bloc “Best for X” (liste)
-- Page `/models/<engine>` : CTA “Compare” (pré-remplie avec l’engine actuel) + “Best for X” (2–3 liens)
-- Page 1v1 : liens “Deep dive” vers les 2 pages `/models` concernées
-- Footer : lien “Compare engines” + “Best for X” + “Popular comparisons”
+**Point d’entrée principal = /models (mode Compare)**
+- **Bouton “Compare”** en haut de `/models` (près du titre/hero).
+- **Toggle “Compare mode”** → affiche les **checkbox** sur les cards.
+- Dès que **2 engines** sont sélectionnés → **barre sticky** (haut ou bas) :
+  - “Selected: A + B”
+  - Boutons : **Compare**, **Swap**, **Clear**
+- **URL canonique** : `/comparatif/<slugA>-vs-<slugB>` avec **ordre déterministe (tri alpha des slugs)** pour éviter A/B vs B/A.
+
+**Liens internes (SEO propre)**
+- Ligne **“Popular comparisons”** (3–6 paires) sous le hero `/models` + hub `/ai-video-engines`.
+- Page 1v1 : liens “Deep dive” vers les 2 pages `/models` concernées.
+- Footer : lien “Compare engines” + “Popular comparisons”.
+
+**Best-for (plus tard)**
+- Accès depuis hub compare et /models via section dédiée “Best for …”.
 
 ---
 
@@ -404,20 +461,34 @@ Label UI : “Observed (last 7 days on MaxVideoAI)”.
    Ajouter `data/benchmarks/engine-scores.v1.json` + brancher avg/p95 (Observed 7d).
 3) **Slugs & listes curées**  
    Centraliser `trophyComparisons`, `bestForPages`, `relatedComparisons` (config unique).
-4) **Routing & i18n**  
-   Ajouter routes 1v1 + best-for + mapping i18n + metadata/hreflang.
-5) **UI compare (app-like)**  
-   Hero cards, chips, winner badges, dual totals, spec module compact.
-6) **Showdown**  
+4) **Routing & canonique**  
+   - Route 1v1: `/ai-video-engines/[slug]` (EN d’abord)  
+   - Redirection **A-vs-B → B-vs-A** si ordre non canonique  
+   - Mapping i18n prêt mais **non activé** tant que les paths ne sont pas validés
+5) **/models = point d’entrée Compare (MVP)**  
+   - Bouton “Compare” + **toggle Compare mode**  
+   - Checkbox cards  
+   - Sticky bar (Selected + Compare/Swap/Clear)  
+   - URL canonique triée
+6) **Cards /models = snapshot stable**  
+   - Key specs (from $/s, max duration, max res, audio)  
+   - 3 tags capabilities (T2V / I2V / V2V + diff.)  
+   - “Strengths: …”  
+   - **Pas** de scores pairwise sur card
+7) **UI compare (app-like)**  
+   Hero cards, chips, winner badges, scorecard 11 critères, key specs side‑by‑side.
+8) **Showdown**  
    Section face‑à‑face (1–3 max) avec lazy‑load.
-7) **Best‑for (structure + 1 pilote)**  
-   Loader MDX + 1 page pilote.
-8) **Compare “golden page”**  
+9) **Filtres /models (client-side)**  
+   - Modes / audio / resolution / duration / price  
+   - **Noindex** pour vues filtrées si exposées  
+   - (Option) 3–6 landing pages SEO éditorialisées
+10) **Compare “golden page”**  
    1 page 1v1 exemplaire + CTAs /models + Generate.
-9) **Sitemap + QA**  
+11) **Sitemap + QA**  
    Pages curées seulement + checks canonical/hreflang/anti‑thin.
-10) **Scale v1**  
-   Publier 8–12 Best‑for + 8–10 1v1 + interlinking.
+12) **Scale v1**  
+   Publier 8–10 1v1 + interlinking + (plus tard) Best‑for.
 
 ### Étape A — Design & composants (UI)
 - Pages 1v1 : CompareHero, EngineCards, PillarBars, HighlightBlocks (Audio/Sequencing), CompactSpecTable, WinnerBadges, RelatedComparisons, ShowdownGallery
