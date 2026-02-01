@@ -145,6 +145,19 @@ export function ModelsGallery({
     setCompareMode(searchParams.get('compare') === '1');
   }, [searchParams]);
 
+  useEffect(() => {
+    const handler = (event: Event) => {
+      if (!(event instanceof CustomEvent)) return;
+      const enabled = Boolean(event.detail?.enabled);
+      setCompareMode(enabled);
+      if (!enabled) {
+        setSelectedIds([]);
+      }
+    };
+    window.addEventListener('models-compare-mode', handler as EventListener);
+    return () => window.removeEventListener('models-compare-mode', handler as EventListener);
+  }, []);
+
   const cardById = useMemo(() => new Map(cards.map((card) => [card.id, card])), [cards]);
   const selectedCards = selectedIds.map((id) => cardById.get(id)).filter(Boolean);
 
@@ -156,6 +169,19 @@ export function ModelsGallery({
     const target = query ? `${pathname}?${query}` : pathname;
     nextRouter.push(target, { scroll: false });
     setCompareMode(true);
+  }, [compareMode, nextRouter, pathname, searchParams]);
+
+  const disableCompareMode = useCallback(() => {
+    if (!compareMode) return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('compare');
+    const query = params.toString();
+    const target = query ? `${pathname}?${query}` : pathname;
+    nextRouter.push(target, { scroll: false });
+    setCompareMode(false);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('models-compare-mode', { detail: { enabled: false } }));
+    }
   }, [compareMode, nextRouter, pathname, searchParams]);
 
   const clearFilters = () => {
@@ -272,7 +298,10 @@ export function ModelsGallery({
     setSelectedIds((current) => (current.length === 2 ? [current[1], current[0]] : current));
   };
 
-  const handleClear = () => setSelectedIds([]);
+  const handleClear = () => {
+    setSelectedIds([]);
+    disableCompareMode();
+  };
 
   const compareHref = useMemo(() => {
     if (selectedIds.length !== 2) return null;
@@ -285,24 +314,7 @@ export function ModelsGallery({
 
   return (
     <>
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-hairline bg-surface/80 px-4 py-3 text-sm text-text-secondary shadow-card">
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-semibold uppercase tracking-micro text-text-muted" id="models-compare-toggle">
-            Filters
-          </span>
-        </div>
-        {hasActiveFilters ? (
-          <button
-            type="button"
-            onClick={clearFilters}
-            className="text-xs font-semibold text-text-secondary underline decoration-transparent underline-offset-4 transition hover:text-text-primary hover:decoration-current"
-          >
-            Clear filters
-          </button>
-        ) : null}
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-8 flex flex-wrap gap-2" id="models-compare-toggle">
         <SelectMenu
           options={SORT_OPTIONS}
           value={selectedSort}
@@ -333,6 +345,15 @@ export function ModelsGallery({
           onChange={(value) => setSelectedPrice(String(value))}
           buttonClassName="rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
         />
+        {hasActiveFilters ? (
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="rounded-full border border-hairline px-3 py-1 text-xs font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
+          >
+            Clear filters
+          </button>
+        ) : null}
       </div>
 
       <div className="mt-8 grid grid-gap sm:grid-cols-2 xl:grid-cols-3">
@@ -353,8 +374,9 @@ export function ModelsGallery({
       ) : null}
 
       {compareMode ? (
-        <div className="fixed inset-x-4 bottom-6 z-40 mx-auto max-w-4xl rounded-2xl border border-hairline bg-surface/95 px-4 py-3 shadow-2xl backdrop-blur">
-          <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+        <div className="fixed inset-x-4 bottom-6 z-40 mx-auto max-w-4xl rounded-2xl border border-white/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(255,255,255,0.78))] px-4 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.22),0_6px_16px_rgba(15,23,42,0.16)] backdrop-blur dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.92),rgba(2,6,23,0.9))]">
+          <span className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-[linear-gradient(180deg,rgba(255,255,255,0.7),transparent)] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.08),transparent)]" />
+          <div className="relative flex flex-wrap items-center justify-between gap-3 text-sm">
             <div className="font-semibold text-text-primary">
               {selectedCards.length === 2
                 ? `Selected: ${selectedCards[0]?.label} + ${selectedCards[1]?.label}`
@@ -363,17 +385,8 @@ export function ModelsGallery({
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                onClick={handleSwap}
-                className="rounded-full border border-hairline px-3 py-1 text-xs font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
-                disabled={selectedCards.length !== 2}
-              >
-                Swap
-              </button>
-              <button
-                type="button"
                 onClick={handleClear}
                 className="rounded-full border border-hairline px-3 py-1 text-xs font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
-                disabled={selectedCards.length === 0}
               >
                 Clear
               </button>
@@ -417,7 +430,20 @@ function ModelCard({
   type RouterPushInput = Parameters<typeof router.push>[0];
   const background = card.backgroundColor ?? 'var(--surface-2)';
   const textColor = card.textColor ?? 'var(--text-primary)';
+  const gradientBackground = `linear-gradient(140deg, color-mix(in srgb, ${background} 96%, white 4%) 0%, color-mix(in srgb, ${background} 78%, white 22%) 48%, color-mix(in srgb, ${background} 55%, white 45%) 100%)`;
+  const gradientBackgroundDark = `linear-gradient(140deg, color-mix(in srgb, ${background} 62%, #000 38%) 0%, color-mix(in srgb, ${background} 42%, #000 58%) 55%, #0b0f17 100%)`;
+  const accentGlow = `radial-gradient(120% 90% at 10% 0%, color-mix(in srgb, ${background} 72%, white 28%) 0%, transparent 62%)`;
+  const accentGlowDark = `radial-gradient(120% 90% at 10% 0%, color-mix(in srgb, ${background} 48%, #000 52%) 0%, transparent 60%)`;
+  const separatorLine = `linear-gradient(90deg, transparent, color-mix(in srgb, ${background} 45%, white 55%), transparent)`;
+  const separatorLineDark = `linear-gradient(90deg, transparent, color-mix(in srgb, ${background} 48%, #000 52%), transparent)`;
+  const separatorGlow = `radial-gradient(circle at center, color-mix(in srgb, ${background} 38%, white 62%), transparent 70%)`;
+  const separatorGlowDark = `radial-gradient(circle at center, rgba(0,0,0,0.7), transparent 70%)`;
+  const cardSolid = `color-mix(in srgb, ${background} 96%, white 4%)`;
+  const cardSolidDark = `color-mix(in srgb, ${background} 52%, #000 48%)`;
+  const cardBg = `${accentGlow}, ${gradientBackground}`;
+  const cardBgDark = `${accentGlowDark}, ${gradientBackgroundDark}`;
   const normalizedCtaLabel = normalizeCtaLabel(ctaLabel);
+  const hideCompare = card.label.length > 14;
   const handleCompareToggle = (event: React.MouseEvent | React.ChangeEvent) => {
     event.stopPropagation();
     if (card.compareDisabled) return;
@@ -448,28 +474,53 @@ function ModelCard({
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
-      className={`flex min-h-[11rem] cursor-pointer flex-col justify-between rounded-2xl border border-surface-on-media-dark-5 p-4 text-text-primary shadow-lg transition hover:border-surface-on-media-dark-10 hover:shadow-xl ${
+      className={`group relative isolate flex min-h-[11.5rem] cursor-pointer flex-col justify-between overflow-hidden rounded-[22px] border border-white/20 bg-[color:var(--card-solid)] bg-[image:var(--card-bg)] p-5 text-text-primary shadow-[0_12px_30px_rgba(15,23,42,0.12),0_2px_8px_rgba(15,23,42,0.08)] transition hover:shadow-[0_16px_40px_rgba(15,23,42,0.16),0_4px_12px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-[color:var(--card-solid-dark)] dark:bg-[image:var(--card-bg-dark)] ${
         selected ? 'ring-2 ring-emerald-500/40' : ''
       }`}
-      style={{ backgroundColor: background, color: textColor }}
+      style={
+        {
+          color: textColor,
+          '--card-bg': cardBg,
+          '--card-bg-dark': cardBgDark,
+          '--card-sep-line': separatorLine,
+          '--card-sep-line-dark': separatorLineDark,
+          '--card-sep-glow': separatorGlow,
+          '--card-sep-glow-dark': separatorGlowDark,
+          '--card-solid': cardSolid,
+          '--card-solid-dark': cardSolidDark,
+        } as React.CSSProperties
+      }
       aria-label={`${normalizedCtaLabel} ${card.label}`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-hairline bg-surface-2 text-sm font-semibold text-text-primary">
-            {typeof card.overallScore === 'number' ? card.overallScore.toFixed(1) : '—'}
-          </div>
-          <h3 className="text-lg font-semibold leading-snug text-text-primary sm:text-xl">{card.label}</h3>
+      <span className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.55),transparent_70%)] dark:bg-[radial-gradient(circle_at_top,rgba(0,0,0,0.95),transparent_70%)]" />
+      <span className="pointer-events-none absolute inset-x-0 top-[84px] h-[1px] bg-white/40 dark:bg-white/15" />
+      <span className="pointer-events-none absolute inset-x-0 bottom-16 h-10 bg-[radial-gradient(circle_at_bottom,rgba(255,255,255,0.2),transparent_70%)] dark:bg-[radial-gradient(circle_at_bottom,rgba(0,0,0,0.75),transparent_70%)]" />
+      <div className="relative z-10 flex flex-wrap items-start gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-white/70 text-[17px] font-semibold text-text-primary shadow-sm dark:border-white/15 dark:bg-black/80 dark:text-white/90">
+          {typeof card.overallScore === 'number' ? card.overallScore.toFixed(1) : '—'}
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
+          <h3
+            className={`truncate text-[18px] font-semibold leading-tight text-text-primary dark:text-white/90 sm:text-[20px] ${
+              hideCompare ? 'pr-10' : ''
+            }`}
+          >
+            {card.label}
+          </h3>
           {card.provider ? (
-            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">· {card.provider}</span>
+            <span className="rounded-full border border-white/35 bg-white/70 px-1.5 py-[2px] text-[8px] font-semibold uppercase tracking-micro text-text-secondary dark:border-white/15 dark:bg-black/80 dark:text-white/70">
+              {card.provider}
+            </span>
           ) : null}
         </div>
-        <div className="flex items-center gap-2">
+        {!card.compareDisabled ? (
           <label
-            className={`mt-1 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-micro ${
-              card.compareDisabled ? 'cursor-not-allowed text-text-muted/60' : 'text-text-muted'
-            }`}
-            title={card.compareDisabled ? 'Compare not available for this engine' : 'Select to compare'}
+            className="ml-auto flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-micro transition ${
+              selected
+                ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                : 'border-white/40 bg-white/70 text-text-secondary hover:border-text-muted hover:text-text-primary dark:border-white/15 dark:bg-black/80 dark:text-white/75 dark:hover:text-white/90'
+            }"
+            title="Select to compare"
             onClick={(event) => event.stopPropagation()}
           >
             <input
@@ -477,44 +528,48 @@ function ModelCard({
               checked={selected}
               onChange={handleCompareToggle}
               onClick={(event) => event.stopPropagation()}
-              disabled={card.compareDisabled}
-              className="h-4 w-4 rounded border border-surface-on-media-dark-10 text-emerald-600 accent-emerald-500"
+              className="h-4 w-4 rounded border border-surface-on-media-dark-10 text-emerald-600 accent-emerald-500 dark:border-white/30 dark:bg-black/80"
               aria-label={`Select ${card.label} to compare`}
             />
-            Compare
+            {!hideCompare ? <span className="hidden sm:inline">Compare</span> : null}
           </label>
-        </div>
+        ) : null}
       </div>
 
-      <div className="mt-3">
+      <div className="relative z-10 mt-3 pt-4">
+        <span className="pointer-events-none absolute inset-x-4 top-0 h-[2px] bg-[image:var(--card-sep-line)] opacity-75 dark:bg-[image:var(--card-sep-line-dark)] dark:opacity-40" />
+        <span className="pointer-events-none absolute inset-x-10 top-0 h-8 bg-[image:var(--card-sep-glow)] opacity-35 dark:bg-[image:var(--card-sep-glow-dark)] dark:opacity-20" />
         {card.strengths?.length ? (
-          <p className="mt-1 text-xs text-text-secondary">
-            Strengths: {card.strengths.join(', ')}
+          <p className="mt-1 flex items-center gap-2 text-xs text-text-secondary dark:text-white/75">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/75 text-[11px] text-text-primary dark:bg-black/80 dark:text-white/90">
+              ★
+            </span>
+            <span>Strengths: {card.strengths.join(', ')}</span>
           </p>
         ) : null}
         {card.stats ? (
-          <dl className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-text-secondary sm:grid-cols-3">
+          <dl className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-text-secondary sm:grid-cols-3">
             <div>
-              <dt className="text-[10px] font-semibold uppercase tracking-micro text-text-muted">From</dt>
-              <dd className="font-semibold text-text-primary">{card.stats.priceFrom ?? '—'}</dd>
+              <dt className="text-[10px] font-semibold uppercase tracking-micro text-text-muted dark:text-white/85">From</dt>
+              <dd className="text-[16px] font-semibold text-text-primary dark:text-white/95">{card.stats.priceFrom ?? '—'}</dd>
             </div>
             <div>
               <dt
-                className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-micro text-text-muted"
+                className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-micro text-text-muted dark:text-white/85"
                 aria-label="Max duration"
               >
                 Max dur.
               </dt>
-              <dd className="font-semibold text-text-primary">{card.stats.maxDuration ?? '—'}</dd>
+              <dd className="text-[16px] font-semibold text-text-primary dark:text-white/95">{card.stats.maxDuration ?? '—'}</dd>
             </div>
             <div>
               <dt
-                className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-micro text-text-muted"
+                className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-micro text-text-muted dark:text-white/85"
                 aria-label="Max resolution"
               >
                 Max res.
               </dt>
-              <dd className="font-semibold text-text-primary">{card.stats.maxResolution ?? '—'}</dd>
+              <dd className="text-[16px] font-semibold text-text-primary dark:text-white/95">{card.stats.maxResolution ?? '—'}</dd>
             </div>
           </dl>
         ) : null}
@@ -523,16 +578,16 @@ function ModelCard({
             {card.capabilities?.map((cap) => {
               const tooltip = CAPABILITY_TOOLTIPS[cap] ?? cap;
               return (
-                <span key={cap} className="relative group">
+                <span key={cap} className="group/chip relative">
                   <span
                     aria-label={tooltip}
-                    className="rounded-pill border border-surface-on-media-dark-10 bg-bg px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-secondary"
+                    className="rounded-pill border border-surface-on-media-dark-10 bg-bg px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-secondary dark:border-white/15 dark:bg-black/80 dark:text-white/90"
                   >
                     {cap}
                   </span>
                   <span
                     role="tooltip"
-                    className="pointer-events-none absolute left-1/2 top-full z-20 mt-1 -translate-x-1/2 whitespace-nowrap rounded-full border border-hairline bg-surface px-2 py-1 text-[10px] font-medium text-text-secondary opacity-0 shadow-card transition-opacity duration-150 group-hover:opacity-100"
+                    className="pointer-events-none absolute left-1/2 top-full z-20 mt-1 -translate-x-1/2 whitespace-nowrap rounded-full border border-hairline bg-surface px-2 py-1 text-[10px] font-medium text-text-secondary opacity-0 shadow-card transition-opacity duration-150 group-hover/chip:opacity-100 dark:bg-surface-2 dark:text-white/65"
                   >
                     {tooltip}
                   </span>
@@ -544,37 +599,47 @@ function ModelCard({
                 inline
                 tone="muted"
                 size="sm"
-                className="ml-1"
+                className="ml-1 dark:!text-white/90"
                 label="Audio available"
               />
             ) : null}
           </div>
         ) : null}
-        <p className="mt-2 text-xs text-text-secondary">{card.description}</p>
+      </div>
+
+      <div className="relative z-10 mt-3 pt-4">
+        <span className="pointer-events-none absolute inset-x-4 top-0 h-[2px] bg-[image:var(--card-sep-line)] opacity-70 dark:bg-[image:var(--card-sep-line-dark)] dark:opacity-35" />
+        <span className="pointer-events-none absolute inset-x-10 top-0 h-8 bg-[image:var(--card-sep-glow)] opacity-30 dark:bg-[image:var(--card-sep-glow-dark)] dark:opacity-20" />
+        <p className="text-[14px] text-text-primary/80 line-clamp-2 dark:text-white/75">{card.description}</p>
         {card.priceNote ? (
           card.priceNoteHref ? (
             <Link
               href={card.priceNoteHref}
               prefetch={false}
-              className="mt-2 inline-flex text-xs font-semibold text-text-secondary hover:text-text-primary"
+              className="mt-2 inline-flex text-xs font-semibold text-text-secondary hover:text-text-primary dark:text-white/65 dark:hover:text-white/80"
               onClick={(event) => event.stopPropagation()}
             >
               {card.priceNote}
             </Link>
           ) : (
-            <span className="mt-2 inline-flex text-xs font-semibold text-text-secondary">{card.priceNote}</span>
+            <span className="mt-2 inline-flex text-xs font-semibold text-text-secondary dark:text-white/65">
+              {card.priceNote}
+            </span>
           )
         ) : null}
+        <div className="mt-3 flex items-center justify-end">
+          <Link
+            href={card.href}
+            prefetch={false}
+            className="inline-flex items-center gap-2 rounded-full border border-text-primary/40 bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-micro text-text-primary shadow-sm transition hover:border-text-primary/60 hover:text-text-primary dark:border-white/25 dark:bg-black/30 dark:text-white/80 dark:hover:border-white/40 dark:hover:bg-black/40"
+            aria-label={`Explore ${card.label}`}
+            onClick={(event) => event.stopPropagation()}
+          >
+            {normalizedCtaLabel.replace(/\s*→\s*$/, '')}
+            <span className="transition-transform duration-150 group-hover:translate-x-0.5">→</span>
+          </Link>
+        </div>
       </div>
-      <Link
-        href={card.href}
-        prefetch={false}
-        className="mt-3 inline-flex items-center rounded-full px-2 py-1 text-sm font-semibold text-text-primary/80 underline decoration-transparent underline-offset-4 transition hover:decoration-current focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-        aria-label={`Explore ${card.label}`}
-        onClick={(event) => event.stopPropagation()}
-      >
-        {normalizedCtaLabel}
-      </Link>
     </article>
   );
 }

@@ -716,9 +716,6 @@ export default async function ModelsPage() {
               See full model details below, or select two engines for a side-by-side comparison.
             </p>
           </div>
-          <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-            Watermark-free exports on MaxVideoAI
-          </span>
         </header>
 
         <section id="models-grid" className="stack-gap-md scroll-mt-24">

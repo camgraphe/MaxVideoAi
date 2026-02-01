@@ -1324,6 +1324,11 @@ export default async function CompareDetailPage({
   return (
     <div className="container-page max-w-6xl section">
       <div className="stack-gap-xl">
+        <div className="text-sm text-text-muted">
+          <Link href={modelsHref} className="font-semibold text-brand hover:text-brandHover">
+            ← Back to models
+          </Link>
+        </div>
         <header className="text-center">
           <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Compare engines</p>
           <h1 className="mt-2 text-3xl font-semibold text-text-primary sm:text-5xl">
