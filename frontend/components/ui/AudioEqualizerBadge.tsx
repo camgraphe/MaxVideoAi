@@ -4,8 +4,9 @@ import styles from './audio-badge.module.css';
 type AudioEqualizerBadgeProps = {
   className?: string;
   label?: string;
-  tone?: 'dark' | 'light';
+  tone?: 'dark' | 'light' | 'muted';
   size?: 'sm' | 'md';
+  inline?: boolean;
 };
 
 /**
@@ -17,13 +18,15 @@ export function AudioEqualizerBadge({
   label = 'Audio available',
   tone = 'dark',
   size = 'md',
+  inline = false,
 }: AudioEqualizerBadgeProps) {
   return (
     <span
       className={clsx(
         styles.badge,
-        'absolute bottom-3 right-3',
+        inline ? 'relative' : 'absolute bottom-3 right-3',
         tone === 'light' ? styles.light : styles.dark,
+        tone === 'muted' ? styles.muted : null,
         size === 'sm' ? styles.sm : styles.md,
         className
       )}

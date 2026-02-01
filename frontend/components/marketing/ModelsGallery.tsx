@@ -1,28 +1,35 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useRouter } from '@/i18n/navigation';
 import { usePathname, useSearchParams, useRouter as useNextRouter } from 'next/navigation';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
+import { SelectMenu, type SelectOption } from '@/components/ui/SelectMenu';
+import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 
 export type ModelGalleryCard = {
   id: string;
   label: string;
+  provider?: string | null;
   description: string;
   versionLabel?: string;
+  overallScore?: number | null;
   priceNote?: string | null;
   priceNoteHref?: string | null;
   href: LocalizedLinkHref;
   backgroundColor?: string | null;
   textColor?: string | null;
-  strengths?: string | null;
+  strengths?: string[];
   capabilities?: string[];
-  snapshot?: {
+  stats?: {
     priceFrom?: string | null;
     maxDuration?: string | null;
     maxResolution?: string | null;
-    audio?: string | null;
   };
+  statsLabels?: {
+    duration?: string;
+  };
+  audioAvailable?: boolean;
   compareDisabled?: boolean;
   filterMeta?: {
     t2v?: boolean;
@@ -41,37 +48,59 @@ export type ModelGalleryCard = {
 const INITIAL_COUNT = 6;
 const LOAD_COUNT = 6;
 const CTA_ARROW = '→';
-const FILTER_GROUPS = {
-  modes: [
-    { id: 't2v', label: 'T2V' },
-    { id: 'i2v', label: 'I2V' },
-    { id: 'v2v', label: 'V2V' },
-    { id: 'firstLast', label: 'First/Last' },
-    { id: 'extend', label: 'Extend' },
-    { id: 'lipSync', label: 'Lip sync' },
-  ],
-  audio: [{ id: 'audio', label: 'Audio' }],
-  resolution: [
-    { id: '720', label: '720p+' },
-    { id: '1080', label: '1080p+' },
-    { id: '2160', label: '4K' },
-  ],
-  duration: [
-    { id: '8', label: '≤8s' },
-    { id: '10-15', label: '10–15s' },
-    { id: '20', label: '20s+' },
-  ],
-  price: [
-    { id: 'cheap', label: '$' },
-    { id: 'mid', label: '$$' },
-    { id: 'premium', label: '$$$' },
-  ],
-} as const;
+const MODE_OPTIONS: SelectOption[] = [
+  { value: 'all', label: 'Mode: All' },
+  { value: 't2v', label: 'Mode: T2V' },
+  { value: 'i2v', label: 'Mode: I2V' },
+  { value: 'v2v', label: 'Mode: V2V' },
+  { value: 'firstLast', label: 'Mode: First/Last' },
+  { value: 'extend', label: 'Mode: Extend' },
+  { value: 'lipSync', label: 'Mode: Lip sync' },
+  { value: 'audio', label: 'Mode: Audio' },
+];
+
+const FORMAT_OPTIONS: SelectOption[] = [
+  { value: 'all', label: 'Format: All' },
+  { value: '720', label: 'Format: 720p+' },
+  { value: '1080', label: 'Format: 1080p+' },
+  { value: '2160', label: 'Format: 4K' },
+];
+
+const DURATION_OPTIONS: SelectOption[] = [
+  { value: 'all', label: 'Duration: All' },
+  { value: '8', label: 'Duration: ≤8s' },
+  { value: '10-15', label: 'Duration: 10–15s' },
+  { value: '20', label: 'Duration: 20s+' },
+];
+
+const PRICE_OPTIONS: SelectOption[] = [
+  { value: 'all', label: 'Price: All' },
+  { value: 'cheap', label: 'Price: $' },
+  { value: 'mid', label: 'Price: $$' },
+  { value: 'premium', label: 'Price: $$$' },
+];
+
+const SORT_OPTIONS: SelectOption[] = [
+  { value: 'featured', label: 'Sort: Featured' },
+  { value: 'score', label: 'Sort: Score' },
+  { value: 'price', label: 'Sort: Price' },
+  { value: 'duration', label: 'Sort: Duration' },
+  { value: 'resolution', label: 'Sort: Resolution' },
+  { value: 'name', label: 'Sort: Name' },
+];
+
+const CAPABILITY_TOOLTIPS: Record<string, string> = {
+  T2V: 'Text-to-video',
+  I2V: 'Image-to-video',
+  V2V: 'Video-to-video',
+  'First/Last': 'First frame / last frame',
+  Extend: 'Extend / continue',
+};
 
 function normalizeCtaLabel(label: string): string {
   const trimmed = label.trim();
-  if (!trimmed.length) {
-    return `Explore model ${CTA_ARROW}`;
+  if (!trimmed.length || trimmed.toLowerCase().startsWith('explore')) {
+    return `Full details ${CTA_ARROW}`;
   }
   return trimmed.endsWith(CTA_ARROW) ? trimmed : `${trimmed} ${CTA_ARROW}`;
 }
@@ -90,11 +119,11 @@ export function ModelsGallery({
   const nextRouter = useNextRouter();
   const [compareMode, setCompareMode] = useState(searchParams.get('compare') === '1');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [modeFilters, setModeFilters] = useState<Set<string>>(new Set());
-  const [audioFilters, setAudioFilters] = useState<Set<string>>(new Set());
-  const [resolutionFilters, setResolutionFilters] = useState<Set<string>>(new Set());
-  const [durationFilters, setDurationFilters] = useState<Set<string>>(new Set());
-  const [priceFilters, setPriceFilters] = useState<Set<string>>(new Set());
+  const [selectedMode, setSelectedMode] = useState('all');
+  const [selectedFormat, setSelectedFormat] = useState('all');
+  const [selectedDuration, setSelectedDuration] = useState('all');
+  const [selectedPrice, setSelectedPrice] = useState('all');
+  const [selectedSort, setSelectedSort] = useState('featured');
 
   const appendCards = useCallback(
     (maxCount: number) => {
@@ -119,109 +148,111 @@ export function ModelsGallery({
   const cardById = useMemo(() => new Map(cards.map((card) => [card.id, card])), [cards]);
   const selectedCards = selectedIds.map((id) => cardById.get(id)).filter(Boolean);
 
-  const toggleCompareMode = () => {
+  const enableCompareMode = useCallback(() => {
+    if (compareMode) return;
     const params = new URLSearchParams(searchParams.toString());
-    if (compareMode) {
-      params.delete('compare');
-    } else {
-      params.set('compare', '1');
-    }
+    params.set('compare', '1');
     const query = params.toString();
     const target = query ? `${pathname}?${query}` : pathname;
     nextRouter.push(target, { scroll: false });
-    setCompareMode(!compareMode);
-  };
-
-  const toggleFilterValue = (value: string, setState: Dispatch<SetStateAction<Set<string>>>) => {
-    setState((prev) => {
-      const next = new Set(prev);
-      if (next.has(value)) {
-        next.delete(value);
-      } else {
-        next.add(value);
-      }
-      return next;
-    });
-  };
+    setCompareMode(true);
+  }, [compareMode, nextRouter, pathname, searchParams]);
 
   const clearFilters = () => {
-    setModeFilters(new Set());
-    setAudioFilters(new Set());
-    setResolutionFilters(new Set());
-    setDurationFilters(new Set());
-    setPriceFilters(new Set());
+    setSelectedMode('all');
+    setSelectedFormat('all');
+    setSelectedDuration('all');
+    setSelectedPrice('all');
   };
 
   const hasActiveFilters =
-    modeFilters.size ||
-    audioFilters.size ||
-    resolutionFilters.size ||
-    durationFilters.size ||
-    priceFilters.size;
+    selectedMode !== 'all' ||
+    selectedFormat !== 'all' ||
+    selectedDuration !== 'all' ||
+    selectedPrice !== 'all';
 
   const filteredCards = useMemo(() => {
     return cards.filter((card) => {
       const meta = card.filterMeta;
       if (!meta) return !hasActiveFilters;
-      if (modeFilters.size) {
-        for (const mode of modeFilters) {
-          if (!meta[mode as keyof typeof meta]) return false;
+      if (selectedMode !== 'all') {
+        if (selectedMode === 'audio') {
+          if (!meta.audio) return false;
+        } else if (!meta[selectedMode as keyof typeof meta]) {
+          return false;
         }
       }
-      if (audioFilters.size) {
-        if (!meta.audio) return false;
-      }
-      if (resolutionFilters.size) {
+      if (selectedFormat !== 'all') {
         if (!meta.maxResolution) return false;
-        const passes = Array.from(resolutionFilters).some((value) => {
-          const threshold = Number(value);
-          return meta.maxResolution != null && meta.maxResolution >= threshold;
-        });
-        if (!passes) return false;
+        const threshold = Number(selectedFormat);
+        if (meta.maxResolution == null || meta.maxResolution < threshold) return false;
       }
-      if (durationFilters.size) {
+      if (selectedDuration !== 'all') {
         if (!meta.maxDuration) return false;
-        const passes = Array.from(durationFilters).some((value) => {
-          if (value === '8') return meta.maxDuration <= 8;
-          if (value === '10-15') return meta.maxDuration >= 10 && meta.maxDuration <= 15;
-          if (value === '20') return meta.maxDuration >= 20;
-          return false;
-        });
-        if (!passes) return false;
+        if (selectedDuration === '8' && meta.maxDuration > 8) return false;
+        if (selectedDuration === '10-15' && (meta.maxDuration < 10 || meta.maxDuration > 15)) return false;
+        if (selectedDuration === '20' && meta.maxDuration < 20) return false;
       }
-      if (priceFilters.size) {
+      if (selectedPrice !== 'all') {
         if (meta.priceFrom == null) return false;
-        const passes = Array.from(priceFilters).some((value) => {
-          if (value === 'cheap') return meta.priceFrom <= 0.08;
-          if (value === 'mid') return meta.priceFrom > 0.08 && meta.priceFrom <= 0.2;
-          if (value === 'premium') return meta.priceFrom > 0.2;
-          return false;
-        });
-        if (!passes) return false;
+        if (selectedPrice === 'cheap' && meta.priceFrom > 0.08) return false;
+        if (selectedPrice === 'mid' && !(meta.priceFrom > 0.08 && meta.priceFrom <= 0.2)) return false;
+        if (selectedPrice === 'premium' && meta.priceFrom <= 0.2) return false;
       }
       return true;
     });
-  }, [cards, durationFilters, modeFilters, audioFilters, resolutionFilters, priceFilters, hasActiveFilters]);
+  }, [cards, hasActiveFilters, selectedMode, selectedFormat, selectedDuration, selectedPrice]);
+
+  const sortedCards = useMemo(() => {
+    const sortable = [...filteredCards];
+    const compareNumbers = (a?: number | null, b?: number | null, direction: 'asc' | 'desc' = 'desc') => {
+      const aVal =
+        typeof a === 'number' ? a : direction === 'asc' ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
+      const bVal =
+        typeof b === 'number' ? b : direction === 'asc' ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
+      return direction === 'asc' ? aVal - bVal : bVal - aVal;
+    };
+    switch (selectedSort) {
+      case 'score':
+        sortable.sort((a, b) => compareNumbers(a.overallScore ?? null, b.overallScore ?? null, 'desc'));
+        break;
+      case 'price':
+        sortable.sort((a, b) => compareNumbers(a.filterMeta?.priceFrom ?? null, b.filterMeta?.priceFrom ?? null, 'asc'));
+        break;
+      case 'duration':
+        sortable.sort((a, b) => compareNumbers(a.filterMeta?.maxDuration ?? null, b.filterMeta?.maxDuration ?? null, 'desc'));
+        break;
+      case 'resolution':
+        sortable.sort((a, b) => compareNumbers(a.filterMeta?.maxResolution ?? null, b.filterMeta?.maxResolution ?? null, 'desc'));
+        break;
+      case 'name':
+        sortable.sort((a, b) => a.label.localeCompare(b.label));
+        break;
+      default:
+        break;
+    }
+    return sortable;
+  }, [filteredCards, selectedSort]);
 
   useEffect(() => {
-    if (visibleCount >= filteredCards.length) return undefined;
+    if (visibleCount >= sortedCards.length) return undefined;
     const node = observerRef.current;
     if (!node) return undefined;
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
-          appendCards(filteredCards.length);
+          appendCards(sortedCards.length);
         }
       },
       { rootMargin: '300px 0px' }
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, [appendCards, filteredCards.length, visibleCount]);
+  }, [appendCards, sortedCards.length, visibleCount]);
 
   useEffect(() => {
-    setVisibleCount(Math.min(INITIAL_COUNT, filteredCards.length));
-  }, [filteredCards.length]);
+    setVisibleCount(Math.min(INITIAL_COUNT, sortedCards.length));
+  }, [sortedCards.length]);
 
   const handleToggleCard = (id: string) => {
     const card = cardById.get(id);
@@ -256,18 +287,8 @@ export function ModelsGallery({
     <>
       <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-hairline bg-surface/80 px-4 py-3 text-sm text-text-secondary shadow-card">
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={toggleCompareMode}
-            className={`
-              inline-flex items-center gap-2 rounded-full border px-4 py-1 text-xs font-semibold uppercase tracking-micro transition
-              ${compareMode ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600' : 'border-hairline bg-surface text-text-primary'}
-            `}
-          >
-            Compare mode
-          </button>
-          <span className="text-xs text-text-muted">
-            Select two engines to open a side-by-side comparison.
+          <span className="text-xs font-semibold uppercase tracking-micro text-text-muted" id="models-compare-toggle">
+            Filters
           </span>
         </div>
         {hasActiveFilters ? (
@@ -281,81 +302,41 @@ export function ModelsGallery({
         ) : null}
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
-        {FILTER_GROUPS.modes.map((filter) => (
-          <button
-            key={filter.id}
-            type="button"
-            onClick={() => toggleFilterValue(filter.id, setModeFilters)}
-            className={`rounded-pill border px-3 py-1 transition ${
-              modeFilters.has(filter.id)
-                ? 'border-text-primary bg-text-primary text-bg'
-                : 'border-hairline bg-surface text-text-secondary hover:border-text-muted'
-            }`}
-          >
-            {filter.label}
-          </button>
-        ))}
-        {FILTER_GROUPS.audio.map((filter) => (
-          <button
-            key={filter.id}
-            type="button"
-            onClick={() => toggleFilterValue(filter.id, setAudioFilters)}
-            className={`rounded-pill border px-3 py-1 transition ${
-              audioFilters.has(filter.id)
-                ? 'border-text-primary bg-text-primary text-bg'
-                : 'border-hairline bg-surface text-text-secondary hover:border-text-muted'
-            }`}
-          >
-            {filter.label}
-          </button>
-        ))}
-        {FILTER_GROUPS.resolution.map((filter) => (
-          <button
-            key={filter.id}
-            type="button"
-            onClick={() => toggleFilterValue(filter.id, setResolutionFilters)}
-            className={`rounded-pill border px-3 py-1 transition ${
-              resolutionFilters.has(filter.id)
-                ? 'border-text-primary bg-text-primary text-bg'
-                : 'border-hairline bg-surface text-text-secondary hover:border-text-muted'
-            }`}
-          >
-            {filter.label}
-          </button>
-        ))}
-        {FILTER_GROUPS.duration.map((filter) => (
-          <button
-            key={filter.id}
-            type="button"
-            onClick={() => toggleFilterValue(filter.id, setDurationFilters)}
-            className={`rounded-pill border px-3 py-1 transition ${
-              durationFilters.has(filter.id)
-                ? 'border-text-primary bg-text-primary text-bg'
-                : 'border-hairline bg-surface text-text-secondary hover:border-text-muted'
-            }`}
-          >
-            {filter.label}
-          </button>
-        ))}
-        {FILTER_GROUPS.price.map((filter) => (
-          <button
-            key={filter.id}
-            type="button"
-            onClick={() => toggleFilterValue(filter.id, setPriceFilters)}
-            className={`rounded-pill border px-3 py-1 transition ${
-              priceFilters.has(filter.id)
-                ? 'border-text-primary bg-text-primary text-bg'
-                : 'border-hairline bg-surface text-text-secondary hover:border-text-muted'
-            }`}
-          >
-            {filter.label}
-          </button>
-        ))}
+      <div className="mt-4 flex flex-wrap gap-2">
+        <SelectMenu
+          options={SORT_OPTIONS}
+          value={selectedSort}
+          onChange={(value) => setSelectedSort(String(value))}
+          buttonClassName="rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
+        />
+        <SelectMenu
+          options={MODE_OPTIONS}
+          value={selectedMode}
+          onChange={(value) => setSelectedMode(String(value))}
+          buttonClassName="rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
+        />
+        <SelectMenu
+          options={FORMAT_OPTIONS}
+          value={selectedFormat}
+          onChange={(value) => setSelectedFormat(String(value))}
+          buttonClassName="rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
+        />
+        <SelectMenu
+          options={DURATION_OPTIONS}
+          value={selectedDuration}
+          onChange={(value) => setSelectedDuration(String(value))}
+          buttonClassName="rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
+        />
+        <SelectMenu
+          options={PRICE_OPTIONS}
+          value={selectedPrice}
+          onChange={(value) => setSelectedPrice(String(value))}
+          buttonClassName="rounded-full border-hairline bg-surface-glass-80 px-3 py-1 text-xs font-medium text-text-secondary hover:border-text-muted hover:bg-surface-2 hover:text-text-primary"
+        />
       </div>
 
       <div className="mt-8 grid grid-gap sm:grid-cols-2 xl:grid-cols-3">
-        {filteredCards.slice(0, visibleCount).map((card) => (
+        {sortedCards.slice(0, visibleCount).map((card) => (
           <ModelCard
             key={card.id}
             card={card}
@@ -363,10 +344,11 @@ export function ModelsGallery({
             compareMode={compareMode}
             selected={selectedIds.includes(card.id)}
             onToggle={() => handleToggleCard(card.id)}
+            onActivateCompare={enableCompareMode}
           />
         ))}
       </div>
-      {visibleCount < filteredCards.length ? (
+      {visibleCount < sortedCards.length ? (
         <div ref={observerRef} className="h-4 w-full" aria-hidden />
       ) : null}
 
@@ -422,18 +404,28 @@ function ModelCard({
   compareMode,
   selected,
   onToggle,
+  onActivateCompare,
 }: {
   card: ModelGalleryCard;
   ctaLabel: string;
   compareMode: boolean;
   selected: boolean;
   onToggle: () => void;
+  onActivateCompare: () => void;
 }) {
   const router = useRouter();
   type RouterPushInput = Parameters<typeof router.push>[0];
   const background = card.backgroundColor ?? 'var(--surface-2)';
   const textColor = card.textColor ?? 'var(--text-primary)';
   const normalizedCtaLabel = normalizeCtaLabel(ctaLabel);
+  const handleCompareToggle = (event: React.MouseEvent | React.ChangeEvent) => {
+    event.stopPropagation();
+    if (card.compareDisabled) return;
+    if (!compareMode) {
+      onActivateCompare();
+    }
+    onToggle();
+  };
   const handleClick = () => {
     if (compareMode) {
       onToggle();
@@ -462,58 +454,103 @@ function ModelCard({
       style={{ backgroundColor: background, color: textColor }}
       aria-label={`${normalizedCtaLabel} ${card.label}`}
     >
-      <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-micro text-text-secondary">
-        <span>{card.versionLabel}</span>
-        <div className="flex items-center gap-2">
-          {compareMode && !card.compareDisabled ? (
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                onToggle();
-              }}
-              className={`flex h-6 w-6 items-center justify-center rounded-full border text-[11px] transition ${
-                selected
-                  ? 'border-emerald-500 bg-emerald-500 text-white'
-                  : 'border-surface-on-media-dark-10 bg-bg text-text-secondary'
-              }`}
-              aria-pressed={selected}
-              aria-label={`Select ${card.label}`}
-            >
-              {selected ? '✓' : ''}
-            </button>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-hairline bg-surface-2 text-sm font-semibold text-text-primary">
+            {typeof card.overallScore === 'number' ? card.overallScore.toFixed(1) : '—'}
+          </div>
+          <h3 className="text-lg font-semibold leading-snug text-text-primary sm:text-xl">{card.label}</h3>
+          {card.provider ? (
+            <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">· {card.provider}</span>
           ) : null}
-          <span className="rounded-full border border-surface-on-media-dark-10 px-2 py-1 text-[10px] font-semibold text-text-secondary">
-            MaxVideoAI
-          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <label
+            className={`mt-1 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-micro ${
+              card.compareDisabled ? 'cursor-not-allowed text-text-muted/60' : 'text-text-muted'
+            }`}
+            title={card.compareDisabled ? 'Compare not available for this engine' : 'Select to compare'}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <input
+              type="checkbox"
+              checked={selected}
+              onChange={handleCompareToggle}
+              onClick={(event) => event.stopPropagation()}
+              disabled={card.compareDisabled}
+              className="h-4 w-4 rounded border border-surface-on-media-dark-10 text-emerald-600 accent-emerald-500"
+              aria-label={`Select ${card.label} to compare`}
+            />
+            Compare
+          </label>
         </div>
       </div>
+
       <div className="mt-3">
-        <h3 className="text-lg font-semibold leading-snug text-text-primary sm:text-xl">{card.label}</h3>
-        <p className="mt-1 text-sm text-text-secondary">{card.description}</p>
-        {card.snapshot ? (
-          <div className="mt-2 flex flex-wrap gap-2 text-[11px] font-semibold text-text-secondary">
-            {card.snapshot.priceFrom ? <span>From {card.snapshot.priceFrom}</span> : null}
-            {card.snapshot.maxDuration ? <span>{card.snapshot.maxDuration} max</span> : null}
-            {card.snapshot.maxResolution ? <span>{card.snapshot.maxResolution}</span> : null}
-            {card.snapshot.audio ? <span>Audio {card.snapshot.audio}</span> : null}
-          </div>
+        {card.strengths?.length ? (
+          <p className="mt-1 text-xs text-text-secondary">
+            Strengths: {card.strengths.join(', ')}
+          </p>
         ) : null}
-        {card.capabilities?.length ? (
-          <div className="mt-2 flex flex-wrap gap-1">
-            {card.capabilities.map((cap) => (
-              <span
-                key={cap}
-                className="rounded-pill border border-surface-on-media-dark-10 bg-bg px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-secondary"
+        {card.stats ? (
+          <dl className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-text-secondary sm:grid-cols-3">
+            <div>
+              <dt className="text-[10px] font-semibold uppercase tracking-micro text-text-muted">From</dt>
+              <dd className="font-semibold text-text-primary">{card.stats.priceFrom ?? '—'}</dd>
+            </div>
+            <div>
+              <dt
+                className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-micro text-text-muted"
+                aria-label="Max duration"
               >
-                {cap}
-              </span>
-            ))}
+                Max dur.
+              </dt>
+              <dd className="font-semibold text-text-primary">{card.stats.maxDuration ?? '—'}</dd>
+            </div>
+            <div>
+              <dt
+                className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-micro text-text-muted"
+                aria-label="Max resolution"
+              >
+                Max res.
+              </dt>
+              <dd className="font-semibold text-text-primary">{card.stats.maxResolution ?? '—'}</dd>
+            </div>
+          </dl>
+        ) : null}
+        {card.capabilities?.length || card.audioAvailable ? (
+          <div className="mt-2 flex flex-wrap items-center gap-1">
+            {card.capabilities?.map((cap) => {
+              const tooltip = CAPABILITY_TOOLTIPS[cap] ?? cap;
+              return (
+                <span key={cap} className="relative group">
+                  <span
+                    aria-label={tooltip}
+                    className="rounded-pill border border-surface-on-media-dark-10 bg-bg px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-secondary"
+                  >
+                    {cap}
+                  </span>
+                  <span
+                    role="tooltip"
+                    className="pointer-events-none absolute left-1/2 top-full z-20 mt-1 -translate-x-1/2 whitespace-nowrap rounded-full border border-hairline bg-surface px-2 py-1 text-[10px] font-medium text-text-secondary opacity-0 shadow-card transition-opacity duration-150 group-hover:opacity-100"
+                  >
+                    {tooltip}
+                  </span>
+                </span>
+              );
+            })}
+            {card.audioAvailable ? (
+              <AudioEqualizerBadge
+                inline
+                tone="muted"
+                size="sm"
+                className="ml-1"
+                label="Audio available"
+              />
+            ) : null}
           </div>
         ) : null}
-        {card.strengths ? (
-          <p className="mt-2 text-xs text-text-secondary">Strengths: {card.strengths}</p>
-        ) : null}
+        <p className="mt-2 text-xs text-text-secondary">{card.description}</p>
         {card.priceNote ? (
           card.priceNoteHref ? (
             <Link

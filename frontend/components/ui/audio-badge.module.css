@@ -19,6 +19,11 @@
   color: rgba(255, 255, 255, 0.96);
 }
 
+.muted {
+  color: rgba(96, 107, 122, 0.78);
+  filter: none;
+}
+
 .sm,
 .md {
   width: auto;
