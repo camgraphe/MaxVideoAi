@@ -515,11 +515,9 @@ function ModelCard({
         </div>
         {!card.compareDisabled ? (
           <label
-            className="ml-auto flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-micro transition ${
-              selected
-                ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                : 'border-white/40 bg-white/70 text-text-secondary hover:border-text-muted hover:text-text-primary dark:border-white/15 dark:bg-black/80 dark:text-white/75 dark:hover:text-white/90'
-            }"
+            className={`ml-auto flex items-center gap-2 px-0 py-0 text-[10px] font-semibold uppercase tracking-micro transition ${
+              selected ? 'text-emerald-600 dark:text-emerald-400' : 'text-text-secondary dark:text-white/75'
+            }`}
             title="Select to compare"
             onClick={(event) => event.stopPropagation()}
           >
@@ -528,10 +526,10 @@ function ModelCard({
               checked={selected}
               onChange={handleCompareToggle}
               onClick={(event) => event.stopPropagation()}
-              className="h-4 w-4 rounded border border-surface-on-media-dark-10 text-emerald-600 accent-emerald-500 dark:border-white/30 dark:bg-black/80"
+              className="h-4 w-4 rounded border border-text-muted/60 bg-transparent text-emerald-600 accent-emerald-500 dark:border-white/40"
               aria-label={`Select ${card.label} to compare`}
             />
-            {!hideCompare ? <span className="hidden sm:inline">Compare</span> : null}
+            {!hideCompare ? <span>Compare</span> : null}
           </label>
         ) : null}
       </div>
@@ -636,6 +634,7 @@ function ModelCard({
             onClick={(event) => event.stopPropagation()}
           >
             {normalizedCtaLabel.replace(/\s*→\s*$/, '')}
+            <span className="sr-only"> — {card.label}</span>
             <span className="transition-transform duration-150 group-hover:translate-x-0.5">→</span>
           </Link>
         </div>

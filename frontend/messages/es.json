@@ -828,8 +828,8 @@
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "v2.6 Pro"
       },
-      "title": "Modelos de video IA: compara + precios visibles | MaxVideoAI",
-      "description": "Compara motores de video IA: precio por clip, audio, duración máx. y resolución. Elige el mejor modelo antes de generar."
+      "title": "Comparar modelos de video IA: precios, límites y ejemplos | MaxVideoAI",
+      "description": "Compara modelos de video IA con precios en vivo y límites reales, luego elige 2 motores para una página lado a lado con specs, prompts y ejemplos clonables."
     },
     "note": "Los precios de Fal cambian rápido; confirma la pastilla Precio-Antes o tu clave directa antes de lanzar.",
     "detail": {

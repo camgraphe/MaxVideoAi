@@ -3,6 +3,8 @@ import Script from 'next/script';
 import path from 'node:path';
 import { promises as fs } from 'node:fs';
 import { Link } from '@/i18n/navigation';
+import { UIIcon } from '@/components/ui/UIIcon';
+import { Clapperboard, Copy, Film, Sparkles, Timer, Wand2, Wallet } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
@@ -16,45 +18,7 @@ import { ModelsCompareHeroToggle } from '@/components/marketing/ModelsCompareHer
 import { getEnginePictogram } from '@/lib/engine-branding';
 import { getEngineLocalized } from '@/lib/models/i18n';
 import engineCatalog from '@/config/engine-catalog.json';
-import compareConfig from '@/config/compare-config.json';
-
 const MODELS_SLUG_MAP = buildSlugMap('models');
-const DEFAULT_INTRO = {
-  paragraphs: [
-    'Each engine in this catalog is wired into the MaxVideoAI workspace with monitored latency, price tracking, and fallbacks. We add models as soon as providers open real capacity—not waitlist demos—so you know what can ship to production today.',
-    'Pick an engine to see the prompt presets, duration limits, and current route we use to keep renders flowing, then duplicate it into your own workspace.',
-  ],
-  cards: [
-    {
-      emoji: '🎬',
-      title: 'When to choose Sora',
-      body: 'Reach for Sora 2 or Sora 2 Pro when you need cinematic physics, character continuity, or audio baked directly into the render. These tiers cost more per second but deliver hero-quality footage.',
-    },
-    {
-      emoji: '🎯',
-      title: 'When to choose Veo',
-      body: 'Veo 3 tiers provide precise framing controls and tone presets, plus fast variants for iteration. They are ideal for ad cuts, b-roll, and campaigns that demand consistent camera moves.',
-    },
-    {
-      emoji: '⚡',
-      title: 'When to choose Pika or MiniMax',
-      body: 'Pika 2.2 excels at stylised loops and social edits, while MiniMax Hailuo 02 keeps budgets low for volume runs. Both complement Sora and Veo when you need fast alternates or lightweight briefs.',
-    },
-    {
-      emoji: '🖼️',
-      title: 'When to choose Nano Banana',
-      body: 'Storyboard or edit photoreal stills before jumping into motion. Nano Banana shares the same wallet and prompt lab, so you can prep Veo/Sora shots with text-to-image or reference edits.',
-    },
-  ],
-  cta: {
-    title: 'Need a side-by-side?',
-    before: 'Read the ',
-    comparisonLabel: 'Sora vs Veo vs Pika comparison guide',
-    middle: ' for detailed quality notes, price ranges, and timing benchmarks, then clone any render from the ',
-    examplesLabel: 'examples gallery',
-    after: ' to start with a proven prompt.',
-  },
-} as const;
 
 const DEFAULT_ENGINE_TYPE_LABELS = {
   textImage: 'Text + Image to Video',
@@ -452,27 +416,7 @@ export default async function ModelsPage() {
   const content = dictionary.models;
   const heroTitle = 'Compare AI video models with live pricing';
   const heroSubhead =
-    content.hero?.subtitle ??
-    'Browse Sora, Veo, Kling, Pika, Wan and MiniMax — see real outputs, key limits, and cost per second in one workspace.';
-  const HERO_BODY_FALLBACK =
-    'Browse every AI video engine available in MaxVideoAI, including Sora 2, Veo 3.1, Pika 2.2, Kling, Luma, Wan and MiniMax Hailuo. Each model page includes real examples, specs, pricing and prompt tips so you can choose the right engine for your shot.';
-  const heroBody =
-    typeof content.hero?.body === 'string' && content.hero.body.trim().length ? content.hero.body : HERO_BODY_FALLBACK;
-  const introContent = content.intro ?? null;
-  const introParagraphs =
-    Array.isArray(introContent?.paragraphs) && introContent.paragraphs.length
-      ? introContent.paragraphs
-      : DEFAULT_INTRO.paragraphs;
-  const introCards =
-    Array.isArray(introContent?.cards) && introContent.cards.length ? introContent.cards : DEFAULT_INTRO.cards;
-  const introCta = {
-    title: introContent?.cta?.title ?? DEFAULT_INTRO.cta.title,
-    before: introContent?.cta?.before ?? DEFAULT_INTRO.cta.before,
-    comparisonLabel: introContent?.cta?.comparisonLabel ?? DEFAULT_INTRO.cta.comparisonLabel,
-    middle: introContent?.cta?.middle ?? DEFAULT_INTRO.cta.middle,
-    examplesLabel: introContent?.cta?.examplesLabel ?? DEFAULT_INTRO.cta.examplesLabel,
-    after: introContent?.cta?.after ?? DEFAULT_INTRO.cta.after,
-  };
+    content.hero?.subtitle ?? 'Live $/s + real limits + examples — then compare two engines side by side.';
   const cardCtaLabel = content.cardCtaLabel ?? 'Explore model';
   const engineTypeLabels = {
     ...DEFAULT_ENGINE_TYPE_LABELS,
@@ -518,29 +462,6 @@ export default async function ModelsPage() {
     .sort((a, b) => getEngineDisplayName(a).localeCompare(getEngineDisplayName(b)));
   const engines = [...priorityEngines, ...remainingEngines];
 
-  const popularComparisonSlugs = (compareConfig.trophyComparisons as string[] | undefined)?.slice(0, 6) ?? [];
-  const popularComparisons = popularComparisonSlugs
-    .map((slug) => {
-      const parts = slug.split('-vs-');
-      if (parts.length !== 2) return null;
-      const [leftSlug, rightSlug] = parts;
-      const leftName =
-        catalogBySlug.get(leftSlug)?.marketingName ??
-        engineIndex.get(leftSlug)?.marketingName ??
-        engineIndex.get(leftSlug)?.engine.label ??
-        leftSlug;
-      const rightName =
-        catalogBySlug.get(rightSlug)?.marketingName ??
-        engineIndex.get(rightSlug)?.marketingName ??
-        engineIndex.get(rightSlug)?.engine.label ??
-        rightSlug;
-      return {
-        slug,
-        label: `${leftName} vs ${rightName}`,
-      };
-    })
-    .filter((entry): entry is { slug: string; label: string } => Boolean(entry));
-
   const localizedMap = new Map<string, Awaited<ReturnType<typeof getEngineLocalized>>>(
     await Promise.all(
       engines.map(async (engine) => {
@@ -549,26 +470,6 @@ export default async function ModelsPage() {
       })
     )
   );
-
-  const quickLinkSlugs = [
-    'sora-2',
-    'sora-2-pro',
-    'veo-3-1',
-    'veo-3-1-first-last',
-    'pika-text-to-video',
-    'kling-2-5-turbo',
-    'kling-2-6-pro',
-    'wan-2-6',
-    'wan-2-5',
-    'ltx-2-fast',
-    'ltx-2',
-    'minimax-hailuo-02-text',
-    'nano-banana',
-    'nano-banana-pro',
-  ];
-  const quickLinks = quickLinkSlugs
-    .map((slug) => engineIndex.get(slug))
-    .filter((entry): entry is FalEngineEntry => Boolean(entry));
 
   const modelCards = engines.map((engine) => {
     const meta = engineMetaCopy[engine.modelSlug] ?? engineMetaCopy[engine.id] ?? null;
@@ -691,10 +592,110 @@ export default async function ModelsPage() {
   });
 
   const heroBullets = [
-    'Live $/s, max duration, and max resolution per engine',
-    'Real examples + prompt presets you can clone',
-    'Use Compare mode, then open a model page for full specs & prompt examples.',
+    'Click any model for full specs, prompt presets, and examples.',
+    'Compare engines side by side with specs and prompts',
   ];
+
+  const cardBySlug = new Map(modelCards.map((card) => [card.id, card]));
+  const quickCompareShortcuts = [
+    { a: 'sora-2', b: 'veo-3-1', micro: 'cinematic vs ad-ready' },
+    { a: 'sora-2', b: 'kling-2-6-pro', micro: 'cinematic vs control' },
+    { a: 'veo-3-1', b: 'kling-2-6-pro', micro: 'ads vs motion' },
+    { a: 'sora-2', b: 'wan-2-6', micro: 'premium vs fast' },
+    { a: 'veo-3-1', b: 'wan-2-6', micro: 'ads vs budget' },
+    { a: 'kling-2-6-pro', b: 'wan-2-6', micro: 'motion vs speed' },
+  ];
+
+  const outcomeTiles = [
+    {
+      title: 'Cinematic / hero shots',
+      description: 'Character continuity, cinematic physics, premium look.',
+      engines: ['sora-2', 'sora-2-pro', 'kling-2-6-pro'],
+      icon: Film,
+    },
+    {
+      title: 'Ads & marketing cuts',
+      description: 'Precise framing, consistent camera moves, fast variants.',
+      engines: ['veo-3-1', 'veo-3-1-fast'],
+      icon: Clapperboard,
+    },
+    {
+      title: 'Fast iteration (cheap tests)',
+      description: 'Try lots of versions quickly before you commit.',
+      engines: ['wan-2-5', 'minimax-hailuo-02-text', 'pika-text-to-video'],
+      icon: Timer,
+    },
+    {
+      title: 'Stylized / social edits',
+      description: 'Stylized motion, loops, social-first look.',
+      engines: ['pika-text-to-video', 'wan-2-6'],
+      icon: Sparkles,
+    },
+    {
+      title: 'High-res / 4K deliverables',
+      description: 'When max resolution matters.',
+      engines: ['ltx-2-fast', 'ltx-2'],
+      icon: Wand2,
+    },
+    {
+      title: 'Storyboard & still-first workflows',
+      description: 'Prep frames and references before motion.',
+      engines: ['nano-banana', 'nano-banana-pro'],
+      icon: Copy,
+    },
+  ];
+
+  const faqItems = [
+    {
+      question: 'How pricing is calculated',
+      answer:
+        'We show an estimated $/s for each engine based on current public pricing and our internal normalization. Final cost can vary by provider tier and generation settings.',
+    },
+    {
+      question: 'Why max duration differs per engine',
+      answer:
+        'Max duration depends on provider limits, tier (fast/pro), and generation mode (text-to-video, image-to-video, extend/continue). We display the latest known limits per engine.',
+    },
+    {
+      question: 'What Compare mode shows (specs + prompts + examples)',
+      answer:
+        'Compare mode opens a side-by-side page with key specs, strengths, and example renders. When available, it uses the same prompt template so you can judge outputs more fairly.',
+    },
+    {
+      question: 'How to use model pages (full details)',
+      answer:
+        'Each model page includes full specs, supported modes (T2V/I2V/V2V), and a prompt section you can copy to reproduce results or iterate quickly.',
+    },
+    {
+      question: 'How often data is updated',
+      answer:
+        'We update model limits and pricing references as providers change their published info and as we test new versions. If something looks off, the model page notes the last refresh.',
+    },
+  ];
+
+  const itemListJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: modelCards.map((card, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: card.label,
+      url: `${SITE_BASE_URL}${modelsPath}/${card.id}`,
+    })),
+  };
+
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer,
+      },
+    })),
+  };
 
   return (
     <main className="container-page max-w-6xl section">
@@ -711,103 +712,202 @@ export default async function ModelsPage() {
             ))}
           </ul>
           <div className="mt-4 flex flex-col items-center gap-2">
-            <ModelsCompareHeroToggle />
-            <p className="text-xs text-text-muted">
-              See full model details below, or select two engines for a side-by-side comparison.
-            </p>
+            <ModelsCompareHeroToggle label="Enter Compare Mode" className="px-7 py-3 text-sm" />
           </div>
         </header>
 
         <section id="models-grid" className="stack-gap-md scroll-mt-24">
+          <h2 className="sr-only">AI video and image models you can compare on MaxVideoAI</h2>
           <ModelsGallery cards={modelCards} ctaLabel={cardCtaLabel} />
         </section>
-
-        <section className="stack-gap-lg rounded-3xl border border-hairline bg-surface/90 p-6 text-sm text-text-secondary shadow-card sm:p-8">
-          <div className="stack-gap-sm">
-            <h3 className="text-base font-semibold text-text-primary">How MaxVideoAI routes models</h3>
-            {introParagraphs.map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
-            ))}
-            <p>{heroBody}</p>
-          </div>
-          {popularComparisons.length ? (
-            <div className="rounded-3xl border border-hairline bg-surface/80 p-4 shadow-card">
-              <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Popular comparisons</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {popularComparisons.map((entry) => (
-                  <Link
-                    key={entry.slug}
-                    href={{ pathname: '/ai-video-engines/[slug]', params: { slug: entry.slug } }}
-                    prefetch={false}
-                    className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary transition hover:border-text-muted hover:text-text-primary"
-                  >
-                    {entry.label}
-                  </Link>
-                ))}
-              </div>
+        <p className="text-sm text-text-secondary text-center">
+          Compare AI video and image engines side-by-side with live pricing, real limits, and examples you can clone.
+        </p>
+        <div className="stack-gap-xl py-4 sm:py-10">
+          <section className="rounded-2xl border border-hairline bg-slate-50/60 p-6 shadow-card dark:bg-white/5 sm:p-8">
+            <div className="stack-gap-xs">
+              <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">Quick compare shortcuts</h2>
+              <p className="text-sm text-text-secondary">
+                Pick a popular matchup to preload Compare mode (or open the comparison page).
+              </p>
             </div>
-          ) : null}
-          <div className="grid grid-gap-sm lg:grid-cols-3">
-            {introCards.map((card) => (
-              <div
-                key={card.title}
-                className="rounded-2xl border border-hairline bg-gradient-to-br from-bg via-surface to-bg p-5 shadow-card"
-              >
-                <div className="flex items-center gap-4">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-2 text-lg">
-                    {card.emoji ?? '🎬'}
-                  </span>
-                  <h4 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{card.title}</h4>
+            <div className="mt-6 flex gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:overflow-visible">
+              {quickCompareShortcuts.map((shortcut) => {
+                const leftCard = cardBySlug.get(shortcut.a);
+                const rightCard = cardBySlug.get(shortcut.b);
+                const leftLabel = leftCard?.label ?? shortcut.a;
+                const rightLabel = rightCard?.label ?? shortcut.b;
+                const leftColor = leftCard?.backgroundColor ?? 'var(--text-muted)';
+                const rightColor = rightCard?.backgroundColor ?? 'var(--text-muted)';
+                return (
+                  <Link
+                    key={`${shortcut.a}-${shortcut.b}`}
+                    href={{ pathname: '/ai-video-engines/[slug]', params: { slug: `${shortcut.a}-vs-${shortcut.b}` } }}
+                    prefetch={false}
+                    className="min-w-[220px] rounded-2xl border border-hairline bg-bg/70 px-4 py-3 text-xs font-semibold text-text-primary shadow-sm transition hover:-translate-y-0.5 hover:border-text-muted"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="flex items-center gap-1">
+                        <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: leftColor }} />
+                        <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: rightColor }} />
+                      </span>
+                      <span className="truncate">
+                        {leftLabel} vs {rightLabel}
+                      </span>
+                    </div>
+                    <span className="mt-1 block text-[10px] font-medium text-text-muted">{shortcut.micro}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-hairline bg-slate-50/60 p-6 shadow-card dark:bg-white/5 sm:p-8">
+            <div className="stack-gap-xs">
+              <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">Choose by outcome</h2>
+              <p className="text-sm text-text-secondary">
+                Start from the result you want — then pick an engine.
+              </p>
+            </div>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {outcomeTiles.map((tile) => (
+                <div
+                  key={tile.title}
+                  className="rounded-2xl border border-hairline bg-bg/70 p-4 shadow-sm"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2 text-text-primary">
+                      <UIIcon icon={tile.icon} size={16} />
+                    </span>
+                    <h3 className="text-sm font-semibold text-text-primary">{tile.title}</h3>
+                  </div>
+                  <p className="mt-2 text-sm text-text-secondary">{tile.description}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {tile.engines.map((slug) => {
+                      const card = cardBySlug.get(slug);
+                      if (!card) return null;
+                      const color = card.backgroundColor ?? 'var(--text-muted)';
+                      return (
+                        <Link
+                          key={slug}
+                          href={{ pathname: '/models/[slug]', params: { slug } }}
+                          prefetch={false}
+                          className="inline-flex items-center rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-micro text-text-primary shadow-sm transition hover:-translate-y-0.5 dark:text-white/90"
+                          style={{
+                            borderColor: color,
+                            backgroundColor: `color-mix(in srgb, ${color} 18%, transparent)`,
+                          }}
+                        >
+                          {card.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </div>
-                <p className="mt-3 text-sm">{card.body}</p>
-              </div>
-            ))}
-          </div>
-          <div className="rounded-3xl border border-dashed border-hairline bg-bg/70 p-4">
-            <h4 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{introCta.title}</h4>
-            <p className="mt-2">
-              {introCta.before}
-              <Link
-                href={{ pathname: '/blog/[slug]', params: { slug: 'compare-ai-video-engines' } }}
-                className="font-semibold text-brand hover:text-brandHover"
-              >
-                {introCta.comparisonLabel}
-              </Link>
-              {introCta.middle}
-              <Link href="/examples" className="font-semibold text-brand hover:text-brandHover">
-                {introCta.examplesLabel}
-              </Link>
-              {introCta.after}
-            </p>
-          </div>
+              ))}
+            </div>
+          </section>
 
-          {quickLinks.length ? (
-            <div className="rounded-3xl border border-hairline bg-surface/80 p-4 shadow-card">
-              <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Popular engines</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {quickLinks.map((entry) => (
-                  <Link
-                    key={entry.modelSlug}
-                    href={{ pathname: '/models/[slug]', params: { slug: entry.modelSlug } }}
-                    prefetch={false}
-                    className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-xs font-semibold uppercase tracking-micro text-text-secondary transition hover:border-text-muted hover:text-text-primary"
-                    aria-label={`View ${entry.marketingName ?? entry.engine.label}`}
-                  >
-                    {entry.marketingName ?? entry.engine.label}
-                  </Link>
-                ))}
+          <section className="rounded-2xl border border-hairline bg-slate-50/60 p-6 shadow-card dark:bg-white/5 sm:p-8">
+            <div className="stack-gap-xs">
+              <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">How MaxVideoAI stays reliable</h2>
+              <p className="text-sm text-text-secondary">
+                The essentials that keep your comparisons consistent and production-ready.
+              </p>
+            </div>
+            <div className="mt-6 grid gap-4 sm:grid-cols-3">
+              {[
+                {
+                  title: 'Live pricing',
+                  body: 'We track $/s so you see real cost before you generate.',
+                  icon: Wallet,
+                },
+                {
+                  title: 'Real limits',
+                  body: 'Duration, max resolution, formats… shown per engine.',
+                  icon: Clapperboard,
+                },
+                {
+                  title: 'Examples you can clone',
+                  body: 'Duplicate prompts and settings from real renders.',
+                  icon: Copy,
+                },
+              ].map((item) => (
+                <div key={item.title} className="rounded-2xl border border-hairline bg-bg/70 p-4 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2 text-text-primary">
+                      <UIIcon icon={item.icon} size={16} />
+                    </span>
+                    <h3 className="text-sm font-semibold text-text-primary">{item.title}</h3>
+                  </div>
+                  <p className="mt-2 text-sm text-text-secondary">{item.body}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 grid gap-3">
+              {faqItems.map((item) => (
+                <details key={item.question} className="rounded-xl border border-hairline bg-bg/70 p-3">
+                  <summary className="cursor-pointer">
+                    <h3 className="inline text-sm font-semibold text-text-primary">{item.question}</h3>
+                  </summary>
+                  <p className="mt-2 text-sm text-text-secondary">{item.answer}</p>
+                </details>
+              ))}
+            </div>
+          </section>
+
+          <section className="relative overflow-hidden rounded-2xl border border-slate-200/70 bg-white/60 p-6 shadow-card dark:border-white/10 dark:bg-white/5 sm:p-8">
+            <span className="pointer-events-none absolute -left-16 -top-16 h-64 w-64 rounded-full bg-purple-400/20 blur-3xl" />
+            <span className="pointer-events-none absolute -bottom-16 -right-16 h-64 w-64 rounded-full bg-sky-400/20 blur-3xl" />
+            <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+              <div className="max-w-xl">
+                <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">Start generating in seconds</h2>
+                <p className="mt-2 text-sm text-text-secondary">
+                  Pick a model above, then generate — or browse proven prompts and outputs before you commit.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
+                  {['Live pricing', 'Clone prompts', 'Compare side-by-side'].map((pill) => (
+                    <span
+                      key={pill}
+                      className="inline-flex items-center gap-2 rounded-full border border-hairline bg-surface/80 px-3 py-1"
+                    >
+                      <span className="h-1.5 w-1.5 rounded-full bg-text-muted" aria-hidden="true" />
+                      {pill}
+                    </span>
+                  ))}
+                </div>
+                <p className="mt-3 text-xs text-text-muted">
+                  Same prompt presets • Live pricing • Side-by-side comparisons
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <Link
+                  href="/app"
+                  className="inline-flex items-center rounded-full bg-text-primary px-5 py-3 text-xs font-semibold uppercase tracking-micro text-bg transition hover:opacity-90"
+                  aria-label="Generate now (opens workspace)"
+                >
+                  Generate now
+                </Link>
+                <Link
+                  href="/examples"
+                  className="inline-flex items-center rounded-full border border-text-primary/40 bg-transparent px-5 py-3 text-xs font-semibold uppercase tracking-micro text-text-primary transition hover:border-text-primary/60"
+                  aria-label="Browse examples (opens gallery)"
+                >
+                  Browse examples
+                </Link>
               </div>
             </div>
-          ) : null}
-        </section>
-        {content.note ? (
-          <p className="rounded-3xl border border-dashed border-hairline bg-bg/70 px-6 py-4 text-sm text-text-secondary">
-            {content.note}
-          </p>
-        ) : null}
+          </section>
+        </div>
       </div>
       <Script id="models-breadcrumb-jsonld" type="application/ld+json">
         {JSON.stringify(breadcrumbJsonLd)}
+      </Script>
+      <Script id="models-itemlist-jsonld" type="application/ld+json">
+        {JSON.stringify(itemListJsonLd)}
+      </Script>
+      <Script id="models-faq-jsonld" type="application/ld+json">
+        {JSON.stringify(faqJsonLd)}
       </Script>
     </main>
   );
