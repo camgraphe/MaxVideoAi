@@ -660,7 +660,8 @@ function ModelCard({
   const cardBg = `${accentGlow}, ${gradientBackground}`;
   const cardBgDark = `${accentGlowDark}, ${gradientBackgroundDark}`;
   const normalizedCtaLabel = normalizeCtaLabel(ctaLabel);
-  const hideCompare = card.label.length > 14;
+  const compareLabelExceptions = new Set(['veo-3-1-first-last', 'kling-2-5-turbo']);
+  const hideCompare = card.label.length > 14 && !compareLabelExceptions.has(card.id);
   const handleCompareToggle = (event: React.MouseEvent | React.ChangeEvent) => {
     event.stopPropagation();
     if (card.compareDisabled) return;
@@ -712,15 +713,10 @@ function ModelCard({
       <span className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.55),transparent_70%)] dark:bg-[radial-gradient(circle_at_top,rgba(0,0,0,0.95),transparent_70%)]" />
       <span className="pointer-events-none absolute inset-x-0 top-[84px] h-[1px] bg-white/40 dark:bg-white/15" />
       <span className="pointer-events-none absolute inset-x-0 bottom-16 h-10 bg-[radial-gradient(circle_at_bottom,rgba(255,255,255,0.2),transparent_70%)] dark:bg-[radial-gradient(circle_at_bottom,rgba(0,0,0,0.75),transparent_70%)]" />
-      <div className="relative z-10 flex flex-wrap items-start gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-white/70 text-[17px] font-semibold text-text-primary shadow-sm dark:border-white/15 dark:bg-black/80 dark:text-white/90">
-          {typeof card.overallScore === 'number' ? card.overallScore.toFixed(1) : '—'}
-        </div>
+      <div className="relative z-10 flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
           <h3
-            className={`truncate text-[18px] font-semibold leading-tight text-text-primary dark:text-white/90 sm:text-[20px] ${
-              hideCompare ? 'pr-10' : ''
-            }`}
+            className="truncate text-[20px] font-semibold leading-tight text-text-primary dark:text-white/90 sm:text-[22px]"
           >
             {card.label}
           </h3>
@@ -730,25 +726,9 @@ function ModelCard({
             </span>
           ) : null}
         </div>
-        {!card.compareDisabled ? (
-          <label
-            className={`ml-auto flex items-center gap-2 px-0 py-0 text-[10px] font-semibold uppercase tracking-micro transition ${
-              selected ? 'text-emerald-600 dark:text-emerald-400' : 'text-text-secondary dark:text-white/75'
-            }`}
-            title={compareTooltip}
-            onClick={(event) => event.stopPropagation()}
-          >
-            <input
-              type="checkbox"
-              checked={selected}
-              onChange={handleCompareToggle}
-              onClick={(event) => event.stopPropagation()}
-              className="h-4 w-4 rounded border border-text-muted/60 bg-transparent text-emerald-600 accent-emerald-500 dark:border-white/40"
-              aria-label={formatTemplate(compareAria, { engine: card.label })}
-            />
-            {!hideCompare ? <span>{compareLabel}</span> : null}
-          </label>
-        ) : null}
+        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-white/70 text-[17px] font-semibold text-text-primary shadow-sm dark:border-white/15 dark:bg-black/80 dark:text-white/90">
+          {typeof card.overallScore === 'number' ? card.overallScore.toFixed(1) : '—'}
+        </div>
       </div>
 
       <div className="relative z-10 mt-3 pt-4">
@@ -765,14 +745,14 @@ function ModelCard({
           </p>
         ) : null}
         {card.stats ? (
-          <dl className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-text-secondary sm:grid-cols-3">
-            <div>
+          <dl className="mt-3 grid grid-cols-2 gap-y-2 text-[11px] text-text-secondary divide-x divide-black/15 dark:divide-white/20 sm:grid-cols-3">
+            <div className="px-3 first:pl-0">
               <dt className="text-[10px] font-semibold uppercase tracking-micro text-text-muted dark:text-white/85">
                 {statsLabels.from}
               </dt>
               <dd className="text-[16px] font-semibold text-text-primary dark:text-white/95">{card.stats.priceFrom ?? '—'}</dd>
             </div>
-            <div>
+            <div className="px-3 first:pl-0">
               <dt
                 className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-micro text-text-muted dark:text-white/85"
                 aria-label={card.statsLabels?.duration ? statsLabels.typeLong : statsLabels.maxDurLong}
@@ -781,7 +761,7 @@ function ModelCard({
               </dt>
               <dd className="text-[16px] font-semibold text-text-primary dark:text-white/95">{card.stats.maxDuration ?? '—'}</dd>
             </div>
-            <div>
+            <div className="px-3 first:pl-0">
               <dt
                 className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-micro text-text-muted dark:text-white/85"
                 aria-label={statsLabels.maxResLong}
@@ -846,11 +826,30 @@ function ModelCard({
             </span>
           )
         ) : null}
-        <div className="mt-3 flex items-center justify-end">
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {!card.compareDisabled ? (
+            <label
+              className={`flex items-center gap-2 px-0 py-0 text-[10px] font-semibold uppercase tracking-micro transition ${
+                selected ? 'text-emerald-600 dark:text-emerald-400' : 'text-text-secondary dark:text-white/75'
+              }`}
+              title={compareTooltip}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <input
+                type="checkbox"
+                checked={selected}
+                onChange={handleCompareToggle}
+                onClick={(event) => event.stopPropagation()}
+                className="h-4 w-4 rounded border border-text-muted/60 bg-transparent text-emerald-600 accent-emerald-500 dark:border-white/40"
+                aria-label={formatTemplate(compareAria, { engine: card.label })}
+              />
+              {!hideCompare ? <span>{compareLabel}</span> : null}
+            </label>
+          ) : null}
           <Link
             href={card.href}
             prefetch={false}
-            className="inline-flex items-center gap-2 rounded-full border border-text-primary/40 bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-micro text-text-primary shadow-sm transition hover:border-text-primary/60 hover:text-text-primary dark:border-white/25 dark:bg-black/30 dark:text-white/80 dark:hover:border-white/40 dark:hover:bg-black/40"
+            className="ml-auto inline-flex items-center gap-2 rounded-full border border-text-primary/40 bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-micro text-text-primary shadow-sm transition hover:border-text-primary/60 hover:text-text-primary dark:border-white/25 dark:bg-black/30 dark:text-white/80 dark:hover:border-white/40 dark:hover:bg-black/40"
             aria-label={`${normalizedCtaLabel.replace(/\s*→\s*$/, '')} — ${card.label}`}
             onClick={(event) => event.stopPropagation()}
           >
