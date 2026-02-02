@@ -69,18 +69,34 @@ export function LanguageToggle({ variant = 'select' }: { variant?: LanguageToggl
     document.cookie = `${LOCALE_COOKIE}=${value}; path=/; max-age=${maxAge}; SameSite=Lax`;
     document.cookie = `NEXT_LOCALE=${value}; path=/; max-age=${maxAge}; SameSite=Lax`;
     startTransition(() => {
+      const rawPathname =
+        typeof window !== 'undefined' && window.location?.pathname
+          ? window.location.pathname
+          : pathname;
       const slugParam = params?.slug;
       let slugValue = Array.isArray(slugParam) ? slugParam[0] : slugParam;
-      if (!slugValue && typeof pathname === 'string') {
-        const m = pathname.match(/^\/(?:en|fr|es)?\/(?:models|modeles|modelos)\/([^\/?#]+)/i);
+      const isModelPage = typeof rawPathname === 'string'
+        ? /^\/(?:en|fr|es)?\/(?:models|modeles|modelos)\/[^\/?#]+/i.test(rawPathname)
+        : false;
+      const isComparePage = typeof rawPathname === 'string'
+        ? /^\/(?:en|fr|es)?\/(?:ai-video-engines|comparatif|comparativa)\/[^\/?#]+/i.test(rawPathname)
+        : false;
+      if (!slugValue && typeof rawPathname === 'string') {
+        const m = rawPathname.match(
+          /^\/(?:en|fr|es)?\/(?:models|modeles|modelos|ai-video-engines|comparatif|comparativa)\/([^\/?#]+)/i
+        );
         if (m && m[1]) slugValue = m[1];
       }
-      if (slugValue) {
+      if (slugValue && isComparePage) {
+        router.replace({ pathname: '/ai-video-engines/[slug]', params: { slug: slugValue } }, { locale: value });
+        return;
+      }
+      if (slugValue && isModelPage) {
         router.replace({ pathname: '/models/[slug]', params: { slug: slugValue } }, { locale: value });
         return;
       }
-      const targetPath = pathname && pathname.length ? pathname : '/';
-      if (shouldBypassLocale(pathname)) {
+      const targetPath = rawPathname && rawPathname.length ? rawPathname : '/';
+      if (shouldBypassLocale(rawPathname)) {
         router.refresh();
         return;
       }

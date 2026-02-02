@@ -145,6 +145,11 @@
       "sora-2-vs-kling-2-6-pro"
     ]
   },
+  "showdownOverrides": {
+    "sora-2-pro": {
+      "motion-physics": "job_20b54ee7-ec03-47d4-b1ca-2fef046093f8"
+    }
+  },
   "showdowns": {
     "sora-2-vs-veo-3-1": [
       {

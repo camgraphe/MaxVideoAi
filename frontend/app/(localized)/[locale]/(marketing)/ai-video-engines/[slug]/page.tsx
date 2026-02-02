@@ -52,6 +52,7 @@ type EngineCatalogEntry = {
     maxDurationSec?: number;
     resolutions?: string[];
     aspectRatios?: string[];
+    fps?: number[];
     audio?: boolean;
     extend?: boolean;
     keyframes?: boolean;
@@ -61,6 +62,11 @@ type EngineCatalogEntry = {
       perSecondCents?: {
         default?: number;
         byResolution?: Record<string, number>;
+      };
+      addons?: {
+        audio_off?: {
+          perSecondCents?: number;
+        };
       };
     };
     pricing?: {
@@ -126,9 +132,13 @@ type ShowdownEntry = {
 };
 
 const TROPHY_COMPARISONS = compareConfig.trophyComparisons as string[];
+const RELATED_COMPARISONS =
+  (compareConfig as { relatedComparisons?: Record<string, string[]> }).relatedComparisons ?? {};
 const EXCLUDED_ENGINE_SLUGS = new Set(['nano-banana', 'nano-banana-pro']);
 const SHOWDOWNS =
   (compareConfig as { showdowns?: Record<string, Array<ShowdownEntry | null>> }).showdowns ?? {};
+const SHOWDOWN_OVERRIDES =
+  (compareConfig as { showdownOverrides?: Record<string, Record<string, string>> }).showdownOverrides ?? {};
 const CATALOG = engineCatalog as EngineCatalogEntry[];
 const CATALOG_BY_SLUG = new Map(CATALOG.map((entry) => [entry.modelSlug, entry]));
 const ENGINE_OPTIONS = [...CATALOG]
@@ -533,7 +543,7 @@ function resolvePricingDisplay(entry: EngineCatalogEntry) {
   const baseCents = getPricePerSecondCents(entry);
   if (typeof baseCents === 'number') {
     const audioOff = resolveAudioOffPrice(entry);
-    const audioOffDelta = perSecond?.addons?.audio_off?.perSecondCents;
+    const audioOffDelta = entry.engine?.pricingDetails?.addons?.audio_off?.perSecondCents;
     const audioOffCents =
       typeof audioOffDelta === 'number' && typeof perSecond?.default === 'number'
         ? perSecond.default + audioOffDelta
@@ -739,7 +749,13 @@ function pickOutputDifference(
 
 type ComparePageCopy = {
   meta?: { title?: string; description?: string; titleFallback?: string; descriptionFallback?: string };
-  hero?: { back?: string; kicker?: string; intro?: string };
+  hero?: {
+    back?: string;
+    kicker?: string;
+    intro?: string;
+    takeawaysTitle?: string;
+    lastUpdatedLabel?: string;
+  };
   scorecard?: {
     title?: string;
     subtitle?: string;
@@ -760,10 +776,13 @@ type ComparePageCopy = {
     placeholder?: string;
     copyPrompt?: string;
     copied?: string;
+    expandPrompt?: string;
+    collapsePrompt?: string;
   };
   keySpecs?: { title?: string; subtitle?: string; keyLabel?: string };
   specLabels?: Record<string, string>;
   showdown?: { title?: string; subtitle?: string; note?: string; footer?: string };
+  related?: { title?: string; subtitle?: string };
   faq?: {
     title?: string;
     subtitle?: string;
@@ -821,9 +840,10 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const canonicalInfo = getCanonicalCompareSlug(slug);
   const resolved = canonicalInfo ? resolveEngines(canonicalInfo.canonicalSlug) : null;
   const titleTemplate =
-    compareCopy.meta?.title ?? '{left} vs {right}: specs, pricing & prompt test';
+    compareCopy.meta?.title ?? '{left} vs {right} — Side-by-Side Specs, Pricing & Prompt Test | MaxVideoAI';
   const titleFallback =
-    compareCopy.meta?.titleFallback ?? 'Compare AI video engines: specs, pricing & prompt test';
+    compareCopy.meta?.titleFallback ??
+    'Compare AI video engines — Side-by-Side Specs, Pricing & Prompt Test | MaxVideoAI';
   const descriptionTemplate =
     compareCopy.meta?.description ??
     'Compare {left} vs {right} on MaxVideoAI with identical prompts, key specs, and a scorecard across 11 criteria.';
@@ -910,6 +930,8 @@ export default async function CompareDetailPage({
     opensGenerator: compareCopy.labels?.opensGenerator ?? 'Opens the generator pre-filled.',
     whatTests: compareCopy.labels?.whatTests ?? 'What it tests',
     placeholder: compareCopy.labels?.placeholder ?? '',
+    expandPrompt: compareCopy.labels?.expandPrompt ?? 'Show full prompt',
+    collapsePrompt: compareCopy.labels?.collapsePrompt ?? 'Hide full prompt',
   };
   const slug = params.slug;
   const canonicalInfo = getCanonicalCompareSlug(slug);
@@ -922,11 +944,13 @@ export default async function CompareDetailPage({
   }
   const localePrefix = localePathnames[activeLocale] ? `/${localePathnames[activeLocale]}` : '';
   const modelsBase = MODELS_SLUG_MAP[activeLocale] ?? MODELS_SLUG_MAP.en ?? 'models';
+  const compareBase = COMPARE_SLUG_MAP[activeLocale] ?? COMPARE_SLUG_MAP.en ?? 'ai-video-engines';
   const modelsHref = `${localePrefix}/${modelsBase}`.replace(/\/{2,}/g, '/');
   const canonicalSlug = canonicalInfo.canonicalSlug;
   if (canonicalSlug !== slug) {
-    const compareBase = COMPARE_SLUG_MAP[activeLocale] ?? COMPARE_SLUG_MAP.en ?? 'ai-video-engines';
-    const query = canonicalInfo.leftSlug ? `?order=${canonicalInfo.leftSlug}` : '';
+    const requestedOrder = typeof searchParams?.order === 'string' ? searchParams.order : null;
+    const orderParam = requestedOrder ?? canonicalInfo.leftSlug;
+    const query = orderParam ? `?order=${orderParam}` : '';
     redirect(`${localePrefix}/${compareBase}/${canonicalSlug}${query}`.replace(/\/{2,}/g, '/'));
   }
   let { left, right } = resolved;
@@ -982,6 +1006,17 @@ export default async function CompareDetailPage({
     if (byPrompt) return byPrompt;
     return null;
   });
+  const overrideJobs = new Set<string>();
+  COMPARE_SHOWDOWNS.forEach((template) => {
+    const leftOverride = SHOWDOWN_OVERRIDES[left.modelSlug]?.[template.id];
+    if (leftOverride) overrideJobs.add(leftOverride);
+    const rightOverride = SHOWDOWN_OVERRIDES[right.modelSlug]?.[template.id];
+    if (rightOverride) overrideJobs.add(rightOverride);
+  });
+  const overrideVideos =
+    overrideJobs.size && isDatabaseConfigured()
+      ? await getVideosByIds(Array.from(overrideJobs))
+      : new Map<string, GalleryVideo>();
   const hasMedia = (side?: ShowdownSide | null) => Boolean(side?.videoUrl || side?.posterUrl);
   const fallbackByTemplateId = new Map<string, { left?: GalleryVideo; right?: GalleryVideo }>();
   if (isDatabaseConfigured()) {
@@ -1015,23 +1050,28 @@ export default async function CompareDetailPage({
     }
   }
 
+  type ShowdownSlot = (typeof COMPARE_SHOWDOWNS)[number] & { left: ShowdownSide; right: ShowdownSide };
   const showdownSlots = COMPARE_SHOWDOWNS.map((template, index) => {
     const entry = orderedShowdowns[index];
     const fallback = fallbackByTemplateId.get(template.id);
     const fallbackLeft = fallback?.left;
     const fallbackRight = fallback?.right;
+    const leftOverrideId = SHOWDOWN_OVERRIDES[left.modelSlug]?.[template.id];
+    const rightOverrideId = SHOWDOWN_OVERRIDES[right.modelSlug]?.[template.id];
+    const leftOverrideVideo = leftOverrideId ? overrideVideos.get(leftOverrideId) : undefined;
+    const rightOverrideVideo = rightOverrideId ? overrideVideos.get(rightOverrideId) : undefined;
     const leftSide = {
       label: formatEngineName(left),
       ...(entry?.left ?? {}),
-      videoUrl: entry?.left?.videoUrl ?? fallbackLeft?.videoUrl,
-      posterUrl: entry?.left?.posterUrl ?? fallbackLeft?.thumbUrl,
+      videoUrl: entry?.left?.videoUrl ?? leftOverrideVideo?.videoUrl ?? fallbackLeft?.videoUrl,
+      posterUrl: entry?.left?.posterUrl ?? leftOverrideVideo?.thumbUrl ?? fallbackLeft?.thumbUrl,
       placeholder: false,
     };
     const rightSide = {
       label: formatEngineName(right),
       ...(entry?.right ?? {}),
-      videoUrl: entry?.right?.videoUrl ?? fallbackRight?.videoUrl,
-      posterUrl: entry?.right?.posterUrl ?? fallbackRight?.thumbUrl,
+      videoUrl: entry?.right?.videoUrl ?? rightOverrideVideo?.videoUrl ?? fallbackRight?.videoUrl,
+      posterUrl: entry?.right?.posterUrl ?? rightOverrideVideo?.thumbUrl ?? fallbackRight?.thumbUrl,
       placeholder: false,
     };
     leftSide.placeholder = !hasMedia(leftSide);
@@ -1042,7 +1082,7 @@ export default async function CompareDetailPage({
       left: leftSide,
       right: rightSide,
     };
-  }).filter((entry): entry is typeof COMPARE_SHOWDOWNS[number] & { left: ShowdownSide; right: ShowdownSide } => Boolean(entry));
+  }).filter(Boolean) as ShowdownSlot[];
   const leftAccent = getEngineAccent(left);
   const rightAccent = getEngineAccent(right);
   const leftButtonStyle = getEngineButtonStyle(left);
@@ -1075,6 +1115,11 @@ export default async function CompareDetailPage({
     { label: specLabels.referenceVideo ?? 'Reference video', left: leftSpecs.referenceVideo, right: rightSpecs.referenceVideo },
     { label: specLabels.maxResolution ?? 'Max resolution', left: leftSpecs.maxResolution, right: rightSpecs.maxResolution },
     { label: specLabels.maxDuration ?? 'Max duration', left: leftSpecs.maxDuration, right: rightSpecs.maxDuration },
+    {
+      label: specLabels.avgRenderTime ?? 'Avg render time',
+      left: formatSpeedChip(left),
+      right: formatSpeedChip(right),
+    },
     { label: specLabels.aspectRatios ?? 'Aspect ratios', left: leftSpecs.aspectRatios, right: rightSpecs.aspectRatios },
     { label: specLabels.fpsOptions ?? 'FPS options', left: leftSpecs.fpsOptions, right: rightSpecs.fpsOptions },
     { label: specLabels.outputFormats ?? 'Output format', left: leftSpecs.outputFormats, right: rightSpecs.outputFormats },
@@ -1092,6 +1137,18 @@ export default async function CompareDetailPage({
     },
     { label: specLabels.watermark ?? 'Watermark', left: leftSpecs.watermark, right: rightSpecs.watermark },
   ].filter((row) => !(isPending(row.left) && isPending(row.right)));
+
+  const relatedSlugs = RELATED_COMPARISONS[canonicalSlug] ?? [];
+  const relatedLinks = relatedSlugs
+    .map((pairSlug) => {
+      const resolvedPair = resolveEngines(pairSlug);
+      if (!resolvedPair) return null;
+      return {
+        href: `${localePrefix}/${compareBase}/${pairSlug}`.replace(/\/{2,}/g, '/'),
+        label: `${formatEngineName(resolvedPair.left)} vs ${formatEngineName(resolvedPair.right)}`,
+      };
+    })
+    .filter((item): item is { href: string; label: string } => Boolean(item));
 
   const validatingLabel = compareCopy.faq?.validating ?? 'still being validated';
   const formatFaqValue = (value: string) => (isPending(value) ? validatingLabel : value);
@@ -1123,7 +1180,7 @@ export default async function CompareDetailPage({
   const faqLipRight = formatFaqValue(rightSpecs.lipSync);
   const faqPricingTemplate =
     compareCopy.faq?.pricingDiff ??
-    'Pricing: {left} starts at {leftValue} vs {right} starts at {rightValue}.';
+    'Pricing varies by engine and settings (duration, resolution, audio). Currently, {left} starts at {leftValue} vs {right} starts at {rightValue}.';
   const faqPricingDiff = formatTemplate(faqPricingTemplate, {
     left: formatEngineName(left),
     right: formatEngineName(right),
@@ -1164,7 +1221,6 @@ export default async function CompareDetailPage({
     outputTemplates,
     validatingLabel
   );
-
   const faqTemplates = compareCopy.faq ?? {};
   const faqItems = [
     {
@@ -1191,7 +1247,7 @@ export default async function CompareDetailPage({
       question: faqTemplates.q3 ?? 'Which is cheaper on MaxVideoAI?',
       answer: formatTemplate(
         faqTemplates.a3 ??
-          'Pricing varies by mode and preset. Currently, {left} starts at {leftValue} and {right} starts at {rightValue} (see “Pricing (MaxVideoAI)” for details).',
+          'Pricing varies by engine and settings (duration, resolution, audio). Currently, {left} starts at {leftValue} and {right} starts at {rightValue} (see “Pricing (MaxVideoAI)” for details).',
         {
           left: formatEngineName(left),
           right: formatEngineName(right),
@@ -1300,7 +1356,7 @@ export default async function CompareDetailPage({
   const faqJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: faqJsonLdItems.map((item) => ({
+    mainEntity: faqJsonLdItems.slice(0, 6).map((item) => ({
       '@type': 'Question',
       name: item.question,
       acceptedAnswer: {
@@ -1510,7 +1566,7 @@ export default async function CompareDetailPage({
   const resolutionTemplate =
     summaryCopy.resolutionTemplate ??
     'Max resolution: {engine} ({leftValue} vs {rightValue}).';
-  const specWinnerRow = (() => {
+  const specWinnerRow: { id: string; icon: string; label: string; value: string; accent: OverallTone } | null = (() => {
     const valueForSupport = (label: string, leftValue: string, rightValue: string) => {
       const leftIsSupported = leftValue.toLowerCase() === 'supported';
       const rightIsSupported = rightValue.toLowerCase() === 'supported';
@@ -1949,7 +2005,20 @@ export default async function CompareDetailPage({
                           copiedLabel={compareCopy.labels?.copied ?? 'Copied'}
                         />
                       </div>
-                      <p className="mt-2 text-text-primary">{entry.prompt}</p>
+                      <details className="group mt-2">
+                        <summary className="cursor-pointer list-none">
+                          <p className="line-clamp-3 whitespace-pre-line text-text-primary group-open:hidden">
+                            {entry.prompt}
+                          </p>
+                          <span className="mt-2 inline-flex text-xs font-semibold text-brand group-open:hidden">
+                            {labels.expandPrompt}
+                          </span>
+                          <span className="hidden text-xs font-semibold text-brand group-open:inline-flex">
+                            {labels.collapsePrompt}
+                          </span>
+                        </summary>
+                        <p className="mt-2 whitespace-pre-wrap text-text-primary">{entry.prompt}</p>
+                      </details>
                     </div>
                     <div className="grid grid-gap lg:grid-cols-2">
                       {renderShowdownMedia(
@@ -1971,12 +2040,16 @@ export default async function CompareDetailPage({
                       <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{labels.tryPrompt}</span>
                       <Link
                         href={buildGenerateHref(left.modelSlug, entry.prompt, entry.aspectRatio, entry.mode)}
+                        rel="nofollow"
+                        prefetch={false}
                         className="rounded-full border border-hairline bg-surface px-3 py-1 text-xs font-semibold text-text-primary transition hover:bg-surface-2"
                       >
                         {formatEngineShortName(left)}
                       </Link>
                       <Link
                         href={buildGenerateHref(right.modelSlug, entry.prompt, entry.aspectRatio, entry.mode)}
+                        rel="nofollow"
+                        prefetch={false}
                         className="rounded-full border border-hairline bg-surface px-3 py-1 text-xs font-semibold text-text-primary transition hover:bg-surface-2"
                       >
                         {formatEngineShortName(right)}
@@ -1991,6 +2064,29 @@ export default async function CompareDetailPage({
               {compareCopy.showdown?.footer ??
                 'This side-by-side AI video comparison uses identical prompts to highlight differences in motion, realism, human fidelity, and text legibility. For full specs, controls, and more prompt examples, open each engine profile.'}
             </p>
+          </section>
+        ) : null}
+
+        {relatedLinks.length ? (
+          <section className="stack-gap-sm">
+            <h2 className="text-2xl font-semibold text-text-primary">
+              {compareCopy.related?.title ?? 'Related comparisons'}
+            </h2>
+            <p className="text-sm text-text-secondary">
+              {compareCopy.related?.subtitle ??
+                'Explore a few more popular side-by-side matchups.'}
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {relatedLinks.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="rounded-card border border-hairline bg-surface px-4 py-3 text-sm font-semibold text-text-primary transition hover:bg-surface-2"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
           </section>
         ) : null}
 

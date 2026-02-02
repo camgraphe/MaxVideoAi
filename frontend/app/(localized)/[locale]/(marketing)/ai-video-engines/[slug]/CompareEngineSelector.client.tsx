@@ -71,7 +71,7 @@ export function CompareEngineSelector({ options, value, otherValue, side }: Comp
         const rightSlug = side === 'left' ? otherValue : nextValue;
         const sorted = [leftSlug, rightSlug].sort();
         const slug = `${sorted[0]}-vs-${sorted[1]}`;
-        const query = leftSlug === sorted[0] ? undefined : { order: leftSlug };
+        const query = { order: leftSlug };
         router.push({ pathname: '/ai-video-engines/[slug]', params: { slug }, query }, { scroll: false });
       }}
     />

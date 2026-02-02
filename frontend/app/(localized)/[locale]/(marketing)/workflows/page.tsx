@@ -238,7 +238,7 @@ export default async function WorkflowsPage({ params }: { params: { locale: AppL
                     />
                     {entry.label}
                   </span>
-                  <span className="text-xs text-text-muted transition group-hover:text-text-primary">View -></span>
+                  <span className="text-xs text-text-muted transition group-hover:text-text-primary">View &rarr;</span>
                 </Link>
               );
               })}

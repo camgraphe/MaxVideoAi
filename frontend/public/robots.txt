@@ -11,6 +11,7 @@ Allow: /favicon.ico
 # Sensitive areas
 Disallow: /api/
 Disallow: /admin/
+Disallow: /app
 Disallow: /draft
 Disallow: /test
 Disallow: /private/

@@ -187,38 +187,73 @@ export function ModelsGallery({
   copy?: ModelsGalleryCopy;
 }) {
   const filtersCopy = copy?.filters ?? {};
+  const sortBase = DEFAULT_COPY.filters.sort ?? { options: {} };
+  const modeBase = DEFAULT_COPY.filters.mode ?? { options: {} };
+  const formatBase = DEFAULT_COPY.filters.format ?? { options: {} };
+  const durationBase = DEFAULT_COPY.filters.duration ?? { options: {} };
+  const priceBase = DEFAULT_COPY.filters.price ?? { options: {} };
   const sortCopy = {
-    ...DEFAULT_COPY.filters.sort,
+    ...sortBase,
     ...filtersCopy.sort,
-    options: { ...DEFAULT_COPY.filters.sort.options, ...(filtersCopy.sort?.options ?? {}) },
+    options: { ...(sortBase.options ?? {}), ...(filtersCopy.sort?.options ?? {}) },
   };
   const modeCopy = {
-    ...DEFAULT_COPY.filters.mode,
+    ...modeBase,
     ...filtersCopy.mode,
-    options: { ...DEFAULT_COPY.filters.mode.options, ...(filtersCopy.mode?.options ?? {}) },
+    options: { ...(modeBase.options ?? {}), ...(filtersCopy.mode?.options ?? {}) },
   };
   const formatCopy = {
-    ...DEFAULT_COPY.filters.format,
+    ...formatBase,
     ...filtersCopy.format,
-    options: { ...DEFAULT_COPY.filters.format.options, ...(filtersCopy.format?.options ?? {}) },
+    options: { ...(formatBase.options ?? {}), ...(filtersCopy.format?.options ?? {}) },
   };
   const durationCopy = {
-    ...DEFAULT_COPY.filters.duration,
+    ...durationBase,
     ...filtersCopy.duration,
-    options: { ...DEFAULT_COPY.filters.duration.options, ...(filtersCopy.duration?.options ?? {}) },
+    options: { ...(durationBase.options ?? {}), ...(filtersCopy.duration?.options ?? {}) },
   };
   const priceCopy = {
-    ...DEFAULT_COPY.filters.price,
+    ...priceBase,
     ...filtersCopy.price,
-    options: { ...DEFAULT_COPY.filters.price.options, ...(filtersCopy.price?.options ?? {}) },
+    options: { ...(priceBase.options ?? {}), ...(filtersCopy.price?.options ?? {}) },
   };
   const compareLabel = copy?.compareLabel ?? DEFAULT_COPY.compareLabel;
   const compareTooltip = copy?.compareTooltip ?? DEFAULT_COPY.compareTooltip;
   const compareAria = copy?.compareAria ?? DEFAULT_COPY.compareAria;
   const strengthsLabel = copy?.strengthsLabel ?? DEFAULT_COPY.strengthsLabel;
-  const statsLabels = { ...DEFAULT_COPY.stats, ...(copy?.stats ?? {}) };
+  const statsDefaults: Required<NonNullable<ModelsGalleryCopy['stats']>> = {
+    from: 'From',
+    maxDurShort: 'Max dur.',
+    maxDurLong: 'Max duration',
+    maxResShort: 'Max res.',
+    maxResLong: 'Max resolution',
+    typeShort: 'Type',
+    typeLong: 'Type',
+  };
+  const statsOverride = copy?.stats ?? {};
+  const statsLabels: Required<NonNullable<ModelsGalleryCopy['stats']>> = {
+    from: statsOverride.from ?? statsDefaults.from,
+    maxDurShort: statsOverride.maxDurShort ?? statsDefaults.maxDurShort,
+    maxDurLong: statsOverride.maxDurLong ?? statsDefaults.maxDurLong,
+    maxResShort: statsOverride.maxResShort ?? statsDefaults.maxResShort,
+    maxResLong: statsOverride.maxResLong ?? statsDefaults.maxResLong,
+    typeShort: statsOverride.typeShort ?? statsDefaults.typeShort,
+    typeLong: statsOverride.typeLong ?? statsDefaults.typeLong,
+  };
   const audioAvailableLabel = copy?.audioAvailableLabel ?? DEFAULT_COPY.audioAvailableLabel;
-  const compareBar = { ...DEFAULT_COPY.compareBar, ...(copy?.compareBar ?? {}) };
+  const compareBarDefaults: Required<NonNullable<ModelsGalleryCopy['compareBar']>> = {
+    selectedTemplate: 'Selected: {left} + {right}',
+    selectTwo: 'Select two engines to compare',
+    clear: 'Clear',
+    compare: 'Compare',
+  };
+  const compareBarOverride = copy?.compareBar ?? {};
+  const compareBar: Required<NonNullable<ModelsGalleryCopy['compareBar']>> = {
+    selectedTemplate: compareBarOverride.selectedTemplate ?? compareBarDefaults.selectedTemplate,
+    selectTwo: compareBarOverride.selectTwo ?? compareBarDefaults.selectTwo,
+    clear: compareBarOverride.clear ?? compareBarDefaults.clear,
+    compare: compareBarOverride.compare ?? compareBarDefaults.compare,
+  };
   const capabilityTooltips = { ...DEFAULT_COPY.capabilityTooltips, ...(copy?.capabilityTooltips ?? {}) };
   const filterClearLabel = filtersCopy.clear ?? DEFAULT_COPY.filters.clear;
 
@@ -267,7 +302,7 @@ export function ModelsGallery({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const nextRouter = useNextRouter();
-  const [compareMode, setCompareMode] = useState(searchParams.get('compare') === '1');
+  const [compareMode, setCompareMode] = useState(searchParams?.get('compare') === '1');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [selectedMode, setSelectedMode] = useState('all');
   const [selectedFormat, setSelectedFormat] = useState('all');
@@ -292,7 +327,7 @@ export function ModelsGallery({
   }, [compareMode]);
 
   useEffect(() => {
-    setCompareMode(searchParams.get('compare') === '1');
+    setCompareMode(searchParams?.get('compare') === '1');
   }, [searchParams]);
 
   useEffect(() => {
@@ -313,20 +348,22 @@ export function ModelsGallery({
 
   const enableCompareMode = useCallback(() => {
     if (compareMode) return;
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() ?? '');
     params.set('compare', '1');
     const query = params.toString();
-    const target = query ? `${pathname}?${query}` : pathname;
+    const currentPath = pathname ?? '/models';
+    const target = query ? `${currentPath}?${query}` : currentPath;
     nextRouter.push(target, { scroll: false });
     setCompareMode(true);
   }, [compareMode, nextRouter, pathname, searchParams]);
 
   const disableCompareMode = useCallback(() => {
     if (!compareMode) return;
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() ?? '');
     params.delete('compare');
     const query = params.toString();
-    const target = query ? `${pathname}?${query}` : pathname;
+    const currentPath = pathname ?? '/models';
+    const target = query ? `${currentPath}?${query}` : currentPath;
     nextRouter.push(target, { scroll: false });
     setCompareMode(false);
     if (typeof window !== 'undefined') {

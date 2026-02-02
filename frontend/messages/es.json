@@ -27,14 +27,14 @@
         "href": "/blog"
       }
     ],
-    "login": "Iniciar sesi\u00f3n",
+    "login": "Iniciar sesión",
     "cta": "Iniciar renderizado",
     "linkLabels": {
       "models": "Modelos",
       "examples": "Ejemplos",
       "pricing": "Precios",
       "workflows": "Flujos de trabajo",
-      "docs": "Documentaci\u00f3n",
+      "docs": "Documentación",
       "blog": "Blog"
     },
     "dropdown": {
@@ -67,7 +67,7 @@
       },
       "workflows": {
         "items": {
-          "how": "C\u00f3mo funciona",
+          "how": "Cómo funciona",
           "capabilities": "Lo que puedes hacer",
           "examples": "Ejemplos",
           "faq": "FAQ"
@@ -90,61 +90,61 @@
   },
   "aiVideoEngines": {
     "meta": {
-      "title": "Motores de video IA \u2014 Sora, Veo, Pika | MaxVideoAI",
+      "title": "Motores de video IA — Sora, Veo, Pika | MaxVideoAI",
       "description": "Compara disponibilidad, latencia y rutas de cumplimiento para Sora 2, Veo 3, Pika y MiniMax en Europa."
     },
     "hero": {
-      "title": "Ejecuta generadores de video IA en Europa \u2014 Sora 2, Veo 3, Pika y m\u00e1s",
-      "intro": "MaxVideoAI mantiene los motores texto\u2011a\u2011video en regla, monitorizados y listos para producci\u00f3n en equipos europeos. Usa este hub para entender la disponibilidad, comparar compromisos creativos y lanzar proyectos con las garant\u00edas adecuadas desde el primer d\u00eda.",
-      "secondary": "\u00bfNo sabes qu\u00e9 modelo elegir? Lee nuestra {{article:comparativa}}."
+      "title": "Ejecuta generadores de video IA en Europa — Sora 2, Veo 3, Pika y más",
+      "intro": "MaxVideoAI mantiene los motores texto‑a‑video en regla, monitorizados y listos para producción en equipos europeos. Usa este hub para entender la disponibilidad, comparar compromisos creativos y lanzar proyectos con las garantías adecuadas desde el primer día.",
+      "secondary": "¿No sabes qué modelo elegir? Lee nuestra {{article:comparativa}}."
     },
     "sections": [
       {
         "title": "Disponibilidad de Sora 2 y alternativas",
-        "body": "Sora 2 sigue despleg\u00e1ndose por fases, as\u00ed que MaxVideoAI gestiona todo el rastro de verificaci\u00f3n, la conformidad regional y el enrutado predictivo cuando la capacidad fluct\u00faa. Los productores pueden comparar storyboards con las {{sora:referencias de Sora 2}} y pasar a presets Sora 2 Pro o secuencias Veo 3 cuando la rapidez pesa m\u00e1s que la fidelidad de frontera. Documentamos estructuras de prompts, aprobaciones de material y mejores pr\u00e1cticas de postproducci\u00f3n para que cada brief cumpla con la revisi\u00f3n de OpenAI sin retrasar entregas. Los equipos regionales reciben adem\u00e1s notas semanales sobre audio, duraci\u00f3n y trazabilidad para sectores regulados."
+        "body": "Sora 2 sigue desplegándose por fases, así que MaxVideoAI gestiona todo el rastro de verificación, la conformidad regional y el enrutado predictivo cuando la capacidad fluctúa. Los productores pueden comparar storyboards con las {{sora:referencias de Sora 2}} y pasar a presets Sora 2 Pro o secuencias Veo 3 cuando la rapidez pesa más que la fidelidad de frontera. Documentamos estructuras de prompts, aprobaciones de material y mejores prácticas de postproducción para que cada brief cumpla con la revisión de OpenAI sin retrasar entregas. Los equipos regionales reciben además notas semanales sobre audio, duración y trazabilidad para sectores regulados."
       },
       {
-        "title": "Veo 3: texto a video cinem\u00e1tico",
-        "body": "Veo 3.1 equilibra precisi\u00f3n de storyboard y movimiento pulido, sobre todo en piezas con voz en off sincronizada. Nuestro enrutado mantiene una latencia predecible y permite comparar el preset r\u00e1pido con la cola est\u00e1ndar antes de reservar estudio. Revisa las \u00faltimas restricciones, formatos y ejemplos con narraci\u00f3n en la {{veo:gu\u00eda de Veo 3.1}} o usa la variante Fast cuando la velocidad manda. El workspace muestra adem\u00e1s un registro de cambios para que editores vean cu\u00e1ndo var\u00edan los controles de movimiento, la calidad de audio o las pol\u00edticas."
+        "title": "Veo 3: texto a video cinemático",
+        "body": "Veo 3.1 equilibra precisión de storyboard y movimiento pulido, sobre todo en piezas con voz en off sincronizada. Nuestro enrutado mantiene una latencia predecible y permite comparar el preset rápido con la cola estándar antes de reservar estudio. Revisa las últimas restricciones, formatos y ejemplos con narración en la {{veo:guía de Veo 3.1}} o usa la variante Fast cuando la velocidad manda. El workspace muestra además un registro de cambios para que editores vean cuándo varían los controles de movimiento, la calidad de audio o las políticas."
       },
       {
-        "title": "Pika 2.2 para social r\u00e1pido",
-        "body": "Cuando hace falta generar loops divertidos o clips cortos, Pika 2.2 entrega varios formatos con costes contenidos. MaxVideoAI publica presets curados para saltar de reels verticales a piezas cuadradas sin salir del workspace. Compara texto\u2011a\u2011video e imagen\u2011a\u2011video en nuestra {{pika:gu\u00eda r\u00e1pida de Pika}} y reutiliza bancos de prompts ya aprobados para campa\u00f1as seguras para la marca. Controles diarios de calidad detectan derivas de estilo o artefactos para decidir si regenerar, escalar o pasar el archivo a un animador."
+        "title": "Pika 2.2 para social rápido",
+        "body": "Cuando hace falta generar loops divertidos o clips cortos, Pika 2.2 entrega varios formatos con costes contenidos. MaxVideoAI publica presets curados para saltar de reels verticales a piezas cuadradas sin salir del workspace. Compara texto‑a‑video e imagen‑a‑video en nuestra {{pika:guía rápida de Pika}} y reutiliza bancos de prompts ya aprobados para campañas seguras para la marca. Controles diarios de calidad detectan derivas de estilo o artefactos para decidir si regenerar, escalar o pasar el archivo a un animador."
       },
       {
-        "title": "C\u00f3mo MaxVideoAI orquesta Fal.ai",
-        "body": "Fal.ai impulsa la columna multi\u2011motor de MaxVideoAI y nos permite escalar sin perder una interfaz coherente. Nuestra capa de orquestaci\u00f3n mantiene los prompts portables, registra cada render y expone diagn\u00f3sticos para saber cu\u00e1ndo reintentar o cambiar a otro motor como {{veoFast:Veo 3.1 Fast}} o {{hailuo:MiniMax Hailuo}} para estilos m\u00e1s art\u00edsticos. Los equipos acceden en un mismo espacio a tarifas, auditor\u00edas y notas de cumplimiento, con playbooks autom\u00e1ticos para aumentar prioridad o cambiar regi\u00f3n cuando sube la demanda."
+        "title": "Cómo MaxVideoAI orquesta Fal.ai",
+        "body": "Fal.ai impulsa la columna multi‑motor de MaxVideoAI y nos permite escalar sin perder una interfaz coherente. Nuestra capa de orquestación mantiene los prompts portables, registra cada render y expone diagnósticos para saber cuándo reintentar o cambiar a otro motor como {{veoFast:Veo 3.1 Fast}} o {{hailuo:MiniMax Hailuo}} para estilos más artísticos. Los equipos acceden en un mismo espacio a tarifas, auditorías y notas de cumplimiento, con playbooks automáticos para aumentar prioridad o cambiar región cuando sube la demanda."
       }
     ],
     "comparison": {
       "title": "Compara los principales generadores",
-      "intro": "Ya sea fidelidad extrema o loops econ\u00f3micos, MaxVideoAI mantiene cada motor listo para producci\u00f3n.",
+      "intro": "Ya sea fidelidad extrema o loops económicos, MaxVideoAI mantiene cada motor listo para producción.",
       "cards": [
         {
           "label": "Sora 2",
-          "title": "M\u00e1xima fidelidad",
+          "title": "Máxima fidelidad",
           "points": [
             "Modelo frontier con audio nativo",
-            "Revisi\u00f3n estricta y colas m\u00e1s largas",
-            "Ideal para campa\u00f1as hero y briefs cinematogr\u00e1ficos"
+            "Revisión estricta y colas más largas",
+            "Ideal para campañas hero y briefs cinematográficos"
           ]
         },
         {
           "label": "Veo 3.1",
-          "title": "Velocidad cinem\u00e1tica",
+          "title": "Velocidad cinemática",
           "points": [
-            "Equilibra precisi\u00f3n de storyboard e iteraci\u00f3n veloz",
-            "Cambio sencillo entre colas est\u00e1ndar y r\u00e1pidas",
+            "Equilibra precisión de storyboard e iteración veloz",
+            "Cambio sencillo entre colas estándar y rápidas",
             "Audio listo para entrevistas, anuncios y explainers"
           ]
         },
         {
           "label": "Pika 2.2",
-          "title": "Loops sociales expr\u00e9s",
+          "title": "Loops sociales exprés",
           "points": [
             "Renders texto o imagen a video casi al instante",
             "Perfecto para reels, teasers y conceptos divertidos",
-            "Cr\u00e9ditos asequibles para experimentar"
+            "Créditos asequibles para experimentar"
           ]
         }
       ]
@@ -152,20 +152,20 @@
     "faqTitle": "Preguntas frecuentes sobre enrutado IA",
     "faq": [
       {
-        "question": "\u00bfMaxVideoAI ofrece facturaci\u00f3n europea para Fal.ai?",
-        "answer": "S\u00ed. Emitimos facturas en EUR o GBP y las conciliamos con el uso de Fal.ai, evitando filiales en EE.\u00a0UU. o tarjetas prepago."
+        "question": "¿MaxVideoAI ofrece facturación europea para Fal.ai?",
+        "answer": "Sí. Emitimos facturas en EUR o GBP y las conciliamos con el uso de Fal.ai, evitando filiales en EE. UU. o tarjetas prepago."
       },
       {
-        "question": "\u00bfCu\u00e1nto se tarda en arrancar un proyecto con Sora 2?",
-        "answer": "La mayor\u00eda de equipos empiezan a hacer prompts en dos d\u00edas laborables. Disponemos de plantillas de onboarding y presets Veo o Pika de apoyo hasta que se activa Sora."
+        "question": "¿Cuánto se tarda en arrancar un proyecto con Sora 2?",
+        "answer": "La mayoría de equipos empiezan a hacer prompts en dos días laborables. Disponemos de plantillas de onboarding y presets Veo o Pika de apoyo hasta que se activa Sora."
       },
       {
-        "question": "\u00bfPuedo seguir los cambios de los modelos sin revisar toda la documentaci\u00f3n?",
-        "answer": "El workspace destaca en tiempo real la latencia, los l\u00edmites y las pol\u00edticas, as\u00ed sabes cu\u00e1ndo reintentar o pasar a otro motor."
+        "question": "¿Puedo seguir los cambios de los modelos sin revisar toda la documentación?",
+        "answer": "El workspace destaca en tiempo real la latencia, los límites y las políticas, así sabes cuándo reintentar o pasar a otro motor."
       }
     ],
     "cta": {
-      "body": "\u00bfBuscas recetas de prompts encadenadas? Consulta las \u00faltimas gu\u00edas del {{blog:blog de MaxVideoAI}} para walkthroughs narrativos y novedades de motores."
+      "body": "¿Buscas recetas de prompts encadenadas? Consulta las últimas guías del {{blog:blog de MaxVideoAI}} para walkthroughs narrativos y novedades de motores."
     }
   },
   "footer": {
@@ -175,7 +175,7 @@
         "href": "/blog"
       },
       {
-        "label": "T\u00e9rminos",
+        "label": "Términos",
         "href": "/legal/terms"
       },
       {
@@ -191,23 +191,23 @@
         "href": "/legal/takedown"
       }
     ],
-    "brandNote": "Centro independiente para video profesional con IA - precio antes de generar, mantente con los motores m\u00e1s recientes, un espacio de trabajo para cada plano. Funciona con Sora 2, Veo 3.1, Pika 2.2, MiniMax Hailuo 02, and more. Trademarks belong to their owners.",
+    "brandNote": "Centro independiente para video profesional con IA - precio antes de generar, mantente con los motores más recientes, un espacio de trabajo para cada plano. Funciona con Sora 2, Veo 3.1, Pika 2.2, MiniMax Hailuo 02, and more. Trademarks belong to their owners.",
     "languageLabel": "Idioma",
     "languages": [
       {
         "locale": "en",
-        "label": "Ingl\u00e9s"
+        "label": "Inglés"
       },
       {
         "locale": "fr",
-        "label": "Franc\u00e9s"
+        "label": "Francés"
       },
       {
         "locale": "es",
-        "label": "Espa\u00f1ol"
+        "label": "Español"
       }
     ],
-    "crawlerNote": "MaxVideoAI permite que los rastreadores de IA (GPTBot, OAI-SearchBot, Google-Extended y CCBot) indexen las p\u00e1ginas p\u00fablicas de modelos y la documentaci\u00f3n con fines educativos y de investigaci\u00f3n."
+    "crawlerNote": "MaxVideoAI permite que los rastreadores de IA (GPTBot, OAI-SearchBot, Google-Extended y CCBot) indexen las páginas públicas de modelos y la documentación con fines educativos y de investigación."
   },
   "home": {
     "badges": [
@@ -236,41 +236,41 @@
         "Nano Banana"
       ],
       "caption": "Centro independiente. Las marcas registradas pertenecen a sus propietarios.",
-      "availabilityNotice": "La disponibilidad puede variar seg\u00fan el proveedor; las fichas de precio se actualizan autom\u00e1ticamente."
+      "availabilityNotice": "La disponibilidad puede variar según el proveedor; las fichas de precio se actualizan automáticamente."
     },
     "heroScreenshot": {
       "title": "Todos los controles en una sola vista.",
-      "body": "El compositor, los precios en vivo, la barra de galer\u00eda y el feed de trabajos permanecen juntos para que puedas ajustar las instrucciones, revisar los resultados y supervisar la cola sin salir de la pantalla.",
-      "alt": "Espacio de trabajo de MaxVideo AI que muestra el compositor, la ficha de precio en vivo y la vista previa de la galer\u00eda en un \u00fanico panel."
+      "body": "El compositor, los precios en vivo, la barra de galería y el feed de trabajos permanecen juntos para que puedas ajustar las instrucciones, revisar los resultados y supervisar la cola sin salir de la pantalla.",
+      "alt": "Espacio de trabajo de MaxVideo AI que muestra el compositor, la ficha de precio en vivo y la vista previa de la galería en un único panel."
     },
     "proofTabs": [
       {
         "id": "workspace",
-        "label": "\u00c1rea de trabajo",
-        "heading": "Comienza en el mismo espacio que usamos cada d\u00eda.",
-        "body": "Elige un motor, define duraci\u00f3n y resoluci\u00f3n y el compositor muestra los campos que necesita. Sin lista de espera ni maquetas."
+        "label": "Área de trabajo",
+        "heading": "Comienza en el mismo espacio que usamos cada día.",
+        "body": "Elige un motor, define duración y resolución y el compositor muestra los campos que necesita. Sin lista de espera ni maquetas."
       },
       {
         "id": "price",
         "label": "Precio",
         "heading": "El precio del wallet se actualiza antes de pulsar Generar.",
-        "body": "Ajusta la configuraci\u00f3n y mira la pastilla \u00abEste render\u00bb en vivo antes de confirmar. Solo se carga si el render termina."
+        "body": "Ajusta la configuración y mira la pastilla «Este render» en vivo antes de confirmar. Solo se carga si el render termina."
       },
       {
         "id": "tracking",
         "label": "Seguimiento",
-        "heading": "El feed registra cada salida autom\u00e1ticamente.",
-        "body": "Revisa renders, compara tomas y descarga desde la galer\u00eda en cuanto terminan."
+        "heading": "El feed registra cada salida automáticamente.",
+        "body": "Revisa renders, compara tomas y descarga desde la galería en cuanto terminan."
       }
     ],
     "whyCards": [
       {
-        "title": "Producto en producci\u00f3n, no una hoja de ruta.",
-        "body": "Entra y usa el mismo workspace que empleamos internamente: precios, compositor, wallet e historial est\u00e1n activos hoy mismo."
+        "title": "Producto en producción, no una hoja de ruta.",
+        "body": "Entra y usa el mismo workspace que empleamos internamente: precios, compositor, wallet e historial están activos hoy mismo."
       },
       {
-        "title": "Facturaci\u00f3n centrada en el wallet.",
-        "body": "Recarga una vez, controla el gasto desde el encabezado y recibe reembolsos autom\u00e1ticos si falla un render."
+        "title": "Facturación centrada en el wallet.",
+        "body": "Recarga una vez, controla el gasto desde el encabezado y recibe reembolsos automáticos si falla un render."
       },
       {
         "title": "Todos tus motores en un solo lugar.",
@@ -280,9 +280,9 @@
     "ways": [
       {
         "title": "Generar",
-        "description": "Prompts con referencias, controles de audio y par\u00e1metros espec\u00edficos por modelo, siempre con precio en vivo.",
+        "description": "Prompts con referencias, controles de audio y parámetros específicos por modelo, siempre con precio en vivo.",
         "bullets": [
-          "La pastilla de precio se actualiza cuando ajustas duraci\u00f3n o resoluci\u00f3n.",
+          "La pastilla de precio se actualiza cuando ajustas duración o resolución.",
           "Sube referencias visuales o reutiliza assets de tu biblioteca.",
           "Encola varias iteraciones y sigue el progreso en tiempo real."
         ]
@@ -291,7 +291,7 @@
         "title": "Revisar y entregar",
         "description": "Bloquea la mejor toma, descarga archivos y comparte enlaces sin salir del workspace.",
         "bullets": [
-          "La galer\u00eda alinea cada render para compararlos al instante.",
+          "La galería alinea cada render para compararlos al instante.",
           "El feed mantiene notas, iteraciones y estados juntos.",
           "Descarga renders, miniaturas y metadatos al momento."
         ]
@@ -300,25 +300,25 @@
     "waysSection": {
       "eyebrow": "Espacio de trabajo",
       "title": "Todo reside en el espacio de trabajo.",
-      "subtitle": "Compositor, cartera, historial de trabajos y galer\u00eda permanecen uno junto al otro para que tu equipo se mantenga alineado."
+      "subtitle": "Compositor, cartera, historial de trabajos y galería permanecen uno junto al otro para que tu equipo se mantenga alineado."
     },
     "examplesCallout": {
-      "eyebrow": "Galer\u00eda en vivo",
-      "title": "Ve c\u00f3mo cada motor interpreta el mismo encargo.",
-      "subtitle": "Observa renders reales orbitar alrededor del CTA y ve directamente a la p\u00e1gina de Ejemplos para clonar los ajustes para tu proyecto.",
+      "eyebrow": "Galería en vivo",
+      "title": "Ve cómo cada motor interpreta el mismo encargo.",
+      "subtitle": "Observa renders reales orbitar alrededor del CTA y ve directamente a la página de Ejemplos para clonar los ajustes para tu proyecto.",
       "cta": "Explorar ejemplos en vivo"
     },
     "gallery": {
-      "title": "Galer\u00eda",
-      "subtitle": "Capturado directamente desde el espacio de trabajo en vivo \u2014 pasa el cursor para previsualizar, toca para ampliar.",
+      "title": "Galería",
+      "subtitle": "Capturado directamente desde el espacio de trabajo en vivo — pasa el cursor para previsualizar, toca para ampliar.",
       "caption": "Motor asignado para este render.",
-      "hoverLabel": "Previsualizaci\u00f3n en bucle al pasar el cursor",
+      "hoverLabel": "Previsualización en bucle al pasar el cursor",
       "items": [
         {
           "id": "veo-teaser",
-          "label": "Veo 3 \u00b7 Teaser de lanzamiento",
-          "description": "Iluminaci\u00f3n narrativa con audio para el reveal de campa\u00f1a.",
-          "alt": "Teaser cinematogr\u00e1fico de Google Veo 3.",
+          "label": "Veo 3 · Teaser de lanzamiento",
+          "description": "Iluminación narrativa con audio para el reveal de campaña.",
+          "alt": "Teaser cinematográfico de Google Veo 3.",
           "meta": {
             "slug": "veo-3-1",
             "pricing": {
@@ -336,9 +336,9 @@
         },
         {
           "id": "veo31-fast-demo",
-          "label": "Veo 3.1 Fast \u00b7 Bridge entre frames",
-          "description": "Puente de 8 s entre el primer y \u00faltimo frame con Veo 3.1 Fast.",
-          "alt": "Ejemplo de transici\u00f3n Veo 3.1 Fast.",
+          "label": "Veo 3.1 Fast · Bridge entre frames",
+          "description": "Puente de 8 s entre el primer y último frame con Veo 3.1 Fast.",
+          "alt": "Ejemplo de transición Veo 3.1 Fast.",
           "meta": {
             "slug": "veo-3-1-fast",
             "pricing": {
@@ -356,9 +356,9 @@
         },
         {
           "id": "minimax-hailuo",
-          "label": "MiniMax Hailuo 02 \u00b7 Boceto conceptual",
-          "description": "Optimizador de prompts activado para fijar un storyboard antes del render h\u00e9roe.",
-          "alt": "Animaci\u00f3n conceptual MiniMax Hailuo Standard.",
+          "label": "MiniMax Hailuo 02 · Boceto conceptual",
+          "description": "Optimizador de prompts activado para fijar un storyboard antes del render héroe.",
+          "alt": "Animación conceptual MiniMax Hailuo Standard.",
           "meta": {
             "slug": "minimax-hailuo-02-text",
             "pricing": {
@@ -378,55 +378,55 @@
     },
     "pricing": {
       "badge": "Precios",
-      "title": "Los Cr\u00e9ditos iniciales desbloquean el espacio de trabajo completo.",
-      "body": "Recarga $10 y ejecuta tus primeros renders inmediatamente. A\u00f1ade $10 / $25 / $50 siempre que necesites m\u00e1s saldo en la billetera.",
+      "title": "Los Créditos iniciales desbloquean el espacio de trabajo completo.",
+      "body": "Recarga $10 y ejecuta tus primeros renders inmediatamente. Añade $10 / $25 / $50 siempre que necesites más saldo en la billetera.",
       "link": "Ir a precios"
     },
     "trust": {
       "badge": "Operaciones",
       "points": [
         "Hub independiente: conecta cuentas de proveedores existentes o usa las nuestras.",
-        "Reembolsos autom\u00e1ticos en renders fallidos con recibos detallados.",
+        "Reembolsos automáticos en renders fallidos con recibos detallados.",
         "Correos diarios de estado mantienen a los equipos al tanto del gasto y la salud de la cola.",
         "Las marcas y logotipos pertenecen a sus propietarios; los enrutamos de forma responsable."
       ]
     },
     "faq": {
       "title": "Preguntas frecuentes",
-      "description": "Respuestas r\u00e1pidas a las dudas m\u00e1s habituales.",
+      "description": "Respuestas rápidas a las dudas más habituales.",
       "items": [
         {
-          "q": "\u00bfSora 2 est\u00e1 disponible en la UE?",
+          "q": "¿Sora 2 está disponible en la UE?",
           "a": "La disponibilidad de Sora 2 es limitada. MaxVideoAI enruta tu brief hacia los motores con capacidad hoy y guarda presets listos para Sora en cuanto se abra la capacidad."
         },
         {
-          "q": "\u00bfPuedo activar audio?",
-          "a": "S\u00ed. Los motores destacados admiten el toggle de audio en el compositor y la pastilla de precio se actualiza al activarlo."
+          "q": "¿Puedo activar audio?",
+          "a": "Sí. Los motores destacados admiten el toggle de audio en el compositor y la pastilla de precio se actualiza al activarlo."
         },
         {
-          "q": "\u00bfC\u00f3mo funciona el precio?",
-          "a": "Ves la ficha \u201cEste render\u201d antes de lanzar. Carga 10\u00a0$ para empezar y recarga cuando quieras. Cada job tiene un recibo detallado."
+          "q": "¿Cómo funciona el precio?",
+          "a": "Ves la ficha “Este render” antes de lanzar. Carga 10 $ para empezar y recarga cuando quieras. Cada job tiene un recibo detallado."
         },
         {
-          "q": "\u00bfCu\u00e1l es la pol\u00edtica de reembolso?",
-          "a": "Los renders fallidos se reembolsan autom\u00e1ticamente en tu billetera con un recibo detallado. Controlas el gasto en todo momento."
+          "q": "¿Cuál es la política de reembolso?",
+          "a": "Los renders fallidos se reembolsan automáticamente en tu billetera con un recibo detallado. Controlas el gasto en todo momento."
         }
       ]
     },
-    "priceChipSuffix": "Sin suscripci\u00f3n. Pago por uso.",
+    "priceChipSuffix": "Sin suscripción. Pago por uso.",
     "meta": {
-      "title": "Precios \u2013 Cr\u00e9ditos pay-as-you-go para Sora, Veo, Pika & Kling | MaxVideoAI",
-      "description": "Explora precios por uso de MaxVideoAI. Estima Sora, Veo, Pika y Kling antes de generar, inicia con 10 USD en cr\u00e9ditos y paga solo si el render resulta exitoso."
+      "title": "Precios – Créditos pay-as-you-go para Sora, Veo, Pika & Kling | MaxVideoAI",
+      "description": "Explora precios por uso de MaxVideoAI. Estima Sora, Veo, Pika y Kling antes de generar, inicia con 10 USD en créditos y paga solo si el render resulta exitoso."
     },
     "compare": {
       "title": "Compara motores de un vistazo",
-      "subtitle": "Duraci\u00f3n m\u00e1x \u00b7 Audio \u00b7 Mejor uso",
+      "subtitle": "Duración máx · Audio · Mejor uso",
       "ariaPrev": "Desplazar a la tarjeta anterior",
       "ariaNext": "Desplazar a la siguiente tarjeta",
       "ariaPrefix": "Ver presets de",
-      "seePresets": "Ver presets \u2192",
+      "seePresets": "Ver presets →",
       "statLabels": {
-        "max": "Duraci\u00f3n m\u00e1x",
+        "max": "Duración máx",
         "audio": "Audio",
         "bestFor": "Ideal para"
       }
@@ -435,10 +435,10 @@
   "pricing": {
     "hero": {
       "title": "Consulta el precio antes de generar. Paga solo por lo que ejecutes.",
-      "subtitle": "Comienza con Cr\u00e9ditos iniciales ($10).\nSin suscripci\u00f3n. Sin compromiso.",
+      "subtitle": "Comienza con Créditos iniciales ($10).\nSin suscripción. Sin compromiso.",
       "link": {
         "before": "Compara los precios entre motores en nuestra ",
-        "label": "gu\u00eda comparativa de video IA",
+        "label": "guía comparativa de video IA",
         "after": "."
       }
     },
@@ -449,57 +449,57 @@
     },
     "estimator": {
       "title": "Calculadora de costes",
-      "subtitle": "Elige el motor, la duraci\u00f3n y la resoluci\u00f3n para ver el precio antes de poner el render en cola. Se cobra solo si tiene \u00e9xito.",
-      "walletLink": "\u00bfQuieres ver los precios en la app antes de generar?",
+      "subtitle": "Elige el motor, la duración y la resolución para ver el precio antes de poner el render en cola. Se cobra solo si tiene éxito.",
+      "walletLink": "¿Quieres ver los precios en la app antes de generar?",
       "walletLinkCta": "Abrir el generador",
-      "chargedNote": "Se carga solo si el render tiene \u00e9xito.",
+      "chargedNote": "Se carga solo si el render tiene éxito.",
       "audioIncluded": "Audio incluido por defecto.",
       "fields": {
         "engine": "Motor",
-        "resolution": "Resoluci\u00f3n",
-        "duration": "Duraci\u00f3n (segundos)",
+        "resolution": "Resolución",
+        "duration": "Duración (segundos)",
         "memberStatus": "Estado de miembro"
       },
       "estimateLabels": {
-        "heading": "Estimaci\u00f3n",
+        "heading": "Estimación",
         "base": "Base",
         "discount": "Descuento",
-        "memberChipPrefix": "Precio miembro \u2014 Ahorras"
+        "memberChipPrefix": "Precio miembro — Ahorras"
       },
       "descriptions": {
         "sora-2": "Remix de texto/imagen con audio nativo.",
-        "veo-3-1": "Alterna entre texto\u2192video y referencia multi-imagen en el mismo motor.",
+        "veo-3-1": "Alterna entre texto→video y referencia multi-imagen en el mismo motor.",
         "veo-3-1-first-last": "Puentea frames inicial y final con Veo 3.1 o su modo Fast.",
-        "veo-3-1-first-last-fast": "Encamina First/Last por Veo 3.1 Fast para iteraciones m\u00e1s baratas.",
-        "pika-text-to-video": "Bucle social r\u00e1pido con subt\u00edtulos y ajustes amigables para remix.",
+        "veo-3-1-first-last-fast": "Encamina First/Last por Veo 3.1 Fast para iteraciones más baratas.",
+        "pika-text-to-video": "Bucle social rápido con subtítulos y ajustes amigables para remix.",
         "minimax-hailuo-02-text": "Bocetos optimizados por prompt antes del render principal."
       },
       "engineRateLabel": "Tarifa del motor",
-      "durationLabel": "Duraci\u00f3n",
-      "resolutionLabel": "Resoluci\u00f3n",
+      "durationLabel": "Duración",
+      "resolutionLabel": "Resolución",
       "perImageLabel": "Se aplica por imagen generada dentro de Generate."
     },
     "wallet": {
       "title": "Billetera",
-      "description": "Financia tu billetera con Cr\u00e9ditos iniciales ($10) o a\u00f1ade $10 / $25 / $50 a la vez. La recarga autom\u00e1tica opcional mantiene los renders en marcha.",
+      "description": "Financia tu billetera con Créditos iniciales ($10) o añade $10 / $25 / $50 a la vez. La recarga automática opcional mantiene los renders en marcha.",
       "points": [
-        "Cr\u00e9ditos iniciales ($10) para empezar al instante.",
-        "A\u00f1ade fondos en incrementos de $10, $25 o $50 cuando los necesites.",
-        "Recarga autom\u00e1tica opcional con alertas cuando el saldo cae por debajo de tu umbral."
+        "Créditos iniciales ($10) para empezar al instante.",
+        "Añade fondos en incrementos de $10, $25 o $50 cuando los necesites.",
+        "Recarga automática opcional con alertas cuando el saldo cae por debajo de tu umbral."
       ],
       "balanceLabel": "Saldo de la billetera",
-      "balanceHelper": "Los Cr\u00e9ditos iniciales empiezan en $10. Las billeteras compartidas se sincronizan autom\u00e1ticamente.",
-      "autoTopUpLabel": "Recarga autom\u00e1tica cuando el saldo baja de $10",
+      "balanceHelper": "Los Créditos iniciales empiezan en $10. Las billeteras compartidas se sincronizan automáticamente.",
+      "autoTopUpLabel": "Recarga automática cuando el saldo baja de $10",
       "autoTopUpHint": "Los correos diarios de estado mantienen a finanzas informadas.",
-      "addLabel": "A\u00f1adir ${amount}"
+      "addLabel": "Añadir ${amount}"
     },
     "examples": {
       "title": "Costos de ejemplo",
       "subtitle": "Ejecuciones realistas para planificar. Los precios cambian cuando evolucionan los motores.",
       "labels": {
         "engine": "Motor",
-        "duration": "Duraci\u00f3n",
-        "resolution": "Resoluci\u00f3n",
+        "duration": "Duración",
+        "resolution": "Resolución",
         "audio": "Audio"
       },
       "cards": [
@@ -507,7 +507,7 @@
           "title": "Clip social (vertical)",
           "engine": "Pika 2.2",
           "duration": "5 s",
-          "resolution": "1080\u00d71920",
+          "resolution": "1080×1920",
           "audio": "Silencioso",
           "note": "Se cobra solo si termina correctamente.",
           "pricingScenario": {
@@ -518,10 +518,10 @@
           }
         },
         {
-          "title": "Test cinematogr\u00e1fico (horizontal)",
+          "title": "Test cinematográfico (horizontal)",
           "engine": "Veo 3.1",
           "duration": "8 s",
-          "resolution": "1920\u00d71080",
+          "resolution": "1920×1080",
           "audio": "Incluido",
           "note": "Precio visible antes de generar.",
           "pricingScenario": {
@@ -535,9 +535,9 @@
           "title": "Narrativa Sora 2 (voz en off)",
           "engine": "Sora 2",
           "duration": "12 s",
-          "resolution": "1280\u00d7720",
+          "resolution": "1280×720",
           "audio": "Incluido",
-          "note": "Reembolso autom\u00e1tico si falla.",
+          "note": "Reembolso automático si falla.",
           "pricingScenario": {
             "engineId": "sora-2",
             "durationSec": 12,
@@ -548,37 +548,37 @@
       ]
     },
     "priceFactors": {
-      "title": "Qu\u00e9 afecta el precio",
+      "title": "Qué afecta el precio",
       "points": [
-        "La duraci\u00f3n escala de forma lineal (4 s / 8 s / 12 s).",
-        "La resoluci\u00f3n incrementa el costo en 1080p frente a 720p.",
-        "El audio a\u00f1ade un peque\u00f1o recargo en los motores compatibles.",
+        "La duración escala de forma lineal (4 s / 8 s / 12 s).",
+        "La resolución incrementa el costo en 1080p frente a 720p.",
+        "El audio añade un pequeño recargo en los motores compatibles.",
         "El nivel del motor (Sora/Veo/Pika/MiniMax) define la tarifa base."
       ]
     },
     "teams": {
       "title": "Equipos",
-      "description": "Aprobaciones basadas en roles, billeteras compartidas y entregas se implementar\u00e1n pr\u00f3ximamente. \u00danete a la beta para probar los controles de equipo antes.",
-      "comingSoonNote": "Las funciones de equipos est\u00e1n en beta privada. Contacta con support@maxvideoai.com para unirte al despliegue.",
+      "description": "Aprobaciones basadas en roles, billeteras compartidas y entregas se implementarán próximamente. Únete a la beta para probar los controles de equipo antes.",
+      "comingSoonNote": "Las funciones de equipos están en beta privada. Contacta con support@maxvideoai.com para unirte al despliegue.",
       "points": [
         "Billeteras compartidos basados en roles con aprobaciones para finanzas, productores y stakeholders.",
-        "Res\u00famenes diarios automatizados sobre gasto, reembolsos y salud de la cola.",
+        "Resúmenes diarios automatizados sobre gasto, reembolsos y salud de la cola.",
         "Entregas a Google Drive, OneDrive y Dropbox."
       ]
     },
     "member": {
       "title": "Estado de miembro",
-      "subtitle": "Los descuentos se actualizan al instante cuando los administradores editan los umbrales en Ajustes \u2192 Facturaci\u00f3n \u2192 Niveles de miembro.",
+      "subtitle": "Los descuentos se actualizan al instante cuando los administradores editan los umbrales en Ajustes → Facturación → Niveles de miembro.",
       "tiers": [
         {
           "name": "Member",
-          "requirement": "Estado base aplicado autom\u00e1ticamente.",
-          "benefit": "Tarifa est\u00e1ndar. La ficha muestra \u201cPrecio miembro\u201d."
+          "requirement": "Estado base aplicado automáticamente.",
+          "benefit": "Tarifa estándar. La ficha muestra “Precio miembro”."
         },
         {
           "name": "Plus",
-          "requirement": "Umbral configurado en Facturaci\u00f3n.",
-          "requirementThreshold": "Umbral configurado en Facturaci\u00f3n.",
+          "requirement": "Umbral configurado en Facturación.",
+          "requirementThreshold": "Umbral configurado en Facturación.",
           "benefit": "Descuento de workspace definido por el admin.",
           "benefitDiscount": "Descuento de workspace definido por el admin."
         },
@@ -586,69 +586,69 @@
           "name": "Pro",
           "requirement": "Umbral alto fijado por tu equipo financiero.",
           "requirementThreshold": "Umbral alto fijado por tu equipo financiero.",
-          "benefit": "Descuento configurado en Facturaci\u00f3n.",
-          "benefitDiscount": "Descuento configurado en Facturaci\u00f3n."
+          "benefit": "Descuento configurado en Facturación.",
+          "benefitDiscount": "Descuento configurado en Facturación."
         }
       ],
-      "chipBase": "Precio para miembros \u2014 Ahorras",
-      "tooltip": "El estado se actualiza diariamente seg\u00fan tus gastos de los \u00faltimos 30 d\u00edas.",
-      "requirementDefault": "Estado predefinido \u2014 se aplica autom\u00e1ticamente",
-      "requirementThreshold": "Umbral definido por el admin: {amount} (\u00faltimos 30 d\u00edas)",
+      "chipBase": "Precio para miembros — Ahorras",
+      "tooltip": "El estado se actualiza diariamente según tus gastos de los últimos 30 días.",
+      "requirementDefault": "Estado predefinido — se aplica automáticamente",
+      "requirementThreshold": "Umbral definido por el admin: {amount} (últimos 30 días)",
       "benefitBase": "Tarifa base",
       "benefitDiscount": "Ahorra {percent}% en cada render"
     },
     "refunds": {
       "title": "Reembolsos y protecciones",
       "points": [
-        "Reembolsos autom\u00e1ticos cuando las renderizaciones fallan o los proveedores incumplen los SLA.",
-        "Recibos desglosados con motor, duraci\u00f3n, resoluci\u00f3n y complementos.",
-        "Protecciones de la billetera con Cr\u00e9ditos recargables opcionales que requieren varios aprobadores.",
-        "La tarifa de la aplicaci\u00f3n se reconoce de inmediato; la parte del proveedor se liquida al realizar el pago.",
+        "Reembolsos automáticos cuando las renderizaciones fallan o los proveedores incumplen los SLA.",
+        "Recibos desglosados con motor, duración, resolución y complementos.",
+        "Protecciones de la billetera con Créditos recargables opcionales que requieren varios aprobadores.",
+        "La tarifa de la aplicación se reconoce de inmediato; la parte del proveedor se liquida al realizar el pago.",
         "Cada intento de renderizado incluye una clave de idempotencia para evitar cargos duplicados."
       ]
     },
     "faq": {
-      "title": "FAQ r\u00e1pida",
+      "title": "FAQ rápida",
       "entries": [
         {
-          "question": "\u00bfC\u00f3mo funcionan los cr\u00e9ditos?",
-          "answer": "Los Starter Credits a\u00f1aden 10 $ a tu wallet. G\u00e1stalos como efectivo y recarga cuando quieras m\u00e1s ejecuciones."
+          "question": "¿Cómo funcionan los créditos?",
+          "answer": "Los Starter Credits añaden 10 $ a tu wallet. Gástalos como efectivo y recarga cuando quieras más ejecuciones."
         },
         {
-          "question": "\u00bfCaducan?",
+          "question": "¿Caducan?",
           "answer": "No caducan. Los saldos se arrastran mes a mes y se sincronizan entre los miembros autorizados."
         },
         {
-          "question": "\u00bfQu\u00e9 pasa si un render falla?",
-          "answer": "Los renders fallidos se reembolsan autom\u00e1ticamente en cuesti\u00f3n de minutos. Solo pagas cuando el job termina."
+          "question": "¿Qué pasa si un render falla?",
+          "answer": "Los renders fallidos se reembolsan automáticamente en cuestión de minutos. Solo pagas cuando el job termina."
         },
         {
-          "question": "\u00bfQu\u00e9 son los descuentos de miembro?",
-          "answer": "Gasta 50 $ en 30 d\u00edas para ahorrar 5 %, 200 $ para ahorrar 10 %. El ahorro se aplica autom\u00e1ticamente a cada ejecuci\u00f3n elegible."
+          "question": "¿Qué son los descuentos de miembro?",
+          "answer": "Gasta 50 $ en 30 días para ahorrar 5 %, 200 $ para ahorrar 10 %. El ahorro se aplica automáticamente a cada ejecución elegible."
         }
       ]
     },
     "supplementalFaq": [
       {
-        "question": "\u00bfPuedo usar Sora 2 en Europa?",
-        "answer": "El acceso directo sigue siendo solo por invitaci\u00f3n. MaxVideoAI ofrece acceso de pago al renderizado de Sora 2 desde Europa a trav\u00e9s de nuestro hub."
+        "question": "¿Puedo usar Sora 2 en Europa?",
+        "answer": "El acceso directo sigue siendo solo por invitación. MaxVideoAI ofrece acceso de pago al renderizado de Sora 2 desde Europa a través de nuestro hub."
       },
       {
-        "question": "\u00bfLos videos llevan marca de agua?",
+        "question": "¿Los videos llevan marca de agua?",
         "answer": "No. Los renders producidos mediante MaxVideoAI se entregan sin watermark."
       }
     ],
     "priceChipSuffix": "Precio antes de generar.",
-    "priceChipPrefix": "Esta renderizaci\u00f3n",
+    "priceChipPrefix": "Esta renderización",
     "meta": {
-      "title": "Precios de video IA \u2014 Pago por uso | MaxVideoAI",
-      "description": "Ver precio antes de generar. Compara costes (Sora, Veo, Kling, Pika). Paga solo por renders completados \u2014 sin suscripci\u00f3n. Precios por clip."
+      "title": "Precios de video IA — Pago por uso | MaxVideoAI",
+      "description": "Ver precio antes de generar. Compara costes (Sora, Veo, Kling, Pika). Paga solo por renders completados — sin suscripción. Precios por clip."
     }
   },
   "workflows": {
     "meta": {
       "title": "Flujo de trabajo de video IA: genera variantes con precio en vivo | MaxVideoAI",
-      "description": "Genera videos IA en un solo espacio: elige un motor, ajusta la duraci\u00f3n, la resoluci\u00f3n y el formato, previsualiza el precio, genera hasta 4 variantes, copia prompts y descarga."
+      "description": "Genera videos IA en un solo espacio: elige un motor, ajusta la duración, la resolución y el formato, previsualiza el precio, genera hasta 4 variantes, copia prompts y descarga."
     },
     "hero": {
       "title": "Workflows",
@@ -658,7 +658,7 @@
       "tertiaryCta": "Comparar modelos"
     },
     "how": {
-      "title": "C\u00f3mo funciona (en vivo)",
+      "title": "Cómo funciona (en vivo)",
       "steps": [
         {
           "title": "Elegir motor y modo",
@@ -666,7 +666,7 @@
         },
         {
           "title": "Configurar el plano",
-          "description": "Duraci\u00f3n, formato, resoluci\u00f3n, iteraciones y audio cuando est\u00e1 disponible."
+          "description": "Duración, formato, resolución, iteraciones y audio cuando está disponible."
         },
         {
           "title": "Escribir el prompt + agregar referencias",
@@ -683,11 +683,11 @@
       "items": [
         {
           "title": "Precio antes de generar en vivo",
-          "description": "El chip de precio se actualiza al cambiar la configuraci\u00f3n."
+          "description": "El chip de precio se actualiza al cambiar la configuración."
         },
         {
-          "title": "Genera 1-4 variantes por ejecuci\u00f3n",
-          "description": "Las iteraciones crean varias tomas en una sola ejecuci\u00f3n."
+          "title": "Genera 1-4 variantes por ejecución",
+          "description": "Las iteraciones crean varias tomas en una sola ejecución."
         },
         {
           "title": "Copia el prompt de cualquier resultado",
@@ -703,13 +703,13 @@
         },
         {
           "title": "Historial que puedes revisar",
-          "description": "Encuentra tus ejecuciones en /jobs y la galer\u00eda p\u00fablica."
+          "description": "Encuentra tus ejecuciones en /jobs y la galería pública."
         }
       ]
     },
     "examples": {
       "title": "Ejemplos (prompts reales que puedes reutilizar)",
-      "subtitle": "Abre un ejemplo -> reutiliza el prompt -> ejec\u00fatalo en /app.",
+      "subtitle": "Abre un ejemplo -> reutiliza el prompt -> ejecútalo en /app.",
       "items": [
         {
           "label": "Sora 2",
@@ -757,23 +757,23 @@
       "title": "FAQ (en vivo)",
       "items": [
         {
-          "question": "\u00bfC\u00f3mo funciona \"precio antes de generar\"?",
-          "answer": "El chip de precio se actualiza cuando cambias motor, duraci\u00f3n y resoluci\u00f3n. Solo se cobra si el render se completa."
+          "question": "¿Cómo funciona \"precio antes de generar\"?",
+          "answer": "El chip de precio se actualiza cuando cambias motor, duración y resolución. Solo se cobra si el render se completa."
         },
         {
-          "question": "\u00bfQu\u00e9 significan las iteraciones?",
-          "answer": "Las iteraciones generan 1-4 variantes en una sola ejecuci\u00f3n con los mismos ajustes."
+          "question": "¿Qué significan las iteraciones?",
+          "answer": "Las iteraciones generan 1-4 variantes en una sola ejecución con los mismos ajustes."
         },
         {
-          "question": "\u00bfPor qu\u00e9 las opciones de duraci\u00f3n/resoluci\u00f3n/formato var\u00edan seg\u00fan el motor?",
-          "answer": "Cada motor expone sus propios l\u00edmites, por eso la interfaz solo muestra lo que admite."
+          "question": "¿Por qué las opciones de duración/resolución/formato varían según el motor?",
+          "answer": "Cada motor expone sus propios límites, por eso la interfaz solo muestra lo que admite."
         },
         {
-          "question": "\u00bfCu\u00e1ndo hay audio disponible?",
-          "answer": "El audio aparece solo en motores que lo soportan, con un interruptor cuando est\u00e1 disponible."
+          "question": "¿Cuándo hay audio disponible?",
+          "answer": "El audio aparece solo en motores que lo soportan, con un interruptor cuando está disponible."
         },
         {
-          "question": "\u00bfD\u00f3nde encuentro ejecuciones pasadas?",
+          "question": "¿Dónde encuentro ejecuciones pasadas?",
           "answer": "Abre /jobs para tu historial y /examples para prompts reutilizables."
         }
       ]
@@ -788,51 +788,51 @@
   "models": {
     "hero": {
       "title": "Compara todos los modelos de video IA en un solo workspace",
-      "subtitle": "Compara todos los modelos de v\u00eddeo IA disponibles en MaxVideoAI.",
-      "body": "MaxVideoAI te deja comparar cada motor de video IA serio en paralelo: Sora\u00a02, Veo\u00a03.1, Pika\u00a02.2, Kling, Wan, MiniMax y m\u00e1s. Consulta ejemplos reales, especificaciones y precios en vivo para elegir el modelo correcto para cada plano en lugar de fiarte de demos con lista de espera."
+      "subtitle": "Compara todos los modelos de vídeo IA disponibles en MaxVideoAI.",
+      "body": "MaxVideoAI te deja comparar cada motor de video IA serio en paralelo: Sora 2, Veo 3.1, Pika 2.2, Kling, Wan, MiniMax y más. Consulta ejemplos reales, especificaciones y precios en vivo para elegir el modelo correcto para cada plano en lugar de fiarte de demos con lista de espera."
     },
     "intro": {
       "paragraphs": [
-        "Cada motor de este cat\u00e1logo est\u00e1 conectado al workspace de MaxVideoAI con latencia monitorizada, seguimiento de precios y planes de respaldo. A\u00f1adimos modelos en cuanto los proveedores abren capacidad real, no demos limitadas, para saber qu\u00e9 puede entrar en producci\u00f3n hoy.",
-        "Elige un motor para ver los presets de prompt, los l\u00edmites de duraci\u00f3n y la ruta actual que usamos para mantener la cola en marcha, luego dupl\u00edcalo en tu espacio."
+        "Cada motor de este catálogo está conectado al workspace de MaxVideoAI con latencia monitorizada, seguimiento de precios y planes de respaldo. Añadimos modelos en cuanto los proveedores abren capacidad real, no demos limitadas, para saber qué puede entrar en producción hoy.",
+        "Elige un motor para ver los presets de prompt, los límites de duración y la ruta actual que usamos para mantener la cola en marcha, luego duplícalo en tu espacio."
       ],
       "cards": [
         {
-          "emoji": "\ud83c\udfac",
-          "title": "Cu\u00e1ndo elegir Sora",
-          "body": "Usa Sora 2 o Sora 2 Pro para f\u00edsica cinematogr\u00e1fica, continuidad de personajes o audio integrado."
+          "emoji": "🎬",
+          "title": "Cuándo elegir Sora",
+          "body": "Usa Sora 2 o Sora 2 Pro para física cinematográfica, continuidad de personajes o audio integrado."
         },
         {
-          "emoji": "\ud83c\udfaf",
-          "title": "Cu\u00e1ndo elegir Veo",
-          "body": "Veo 3 ofrece control de c\u00e1mara preciso y variantes r\u00e1pidas para iterar. Perfecto para anuncios y campa\u00f1as con movimientos coherentes."
+          "emoji": "🎯",
+          "title": "Cuándo elegir Veo",
+          "body": "Veo 3 ofrece control de cámara preciso y variantes rápidas para iterar. Perfecto para anuncios y campañas con movimientos coherentes."
         },
         {
-          "emoji": "\u26a1",
-          "title": "Cu\u00e1ndo elegir Pika o MiniMax",
+          "emoji": "⚡",
+          "title": "Cuándo elegir Pika o MiniMax",
           "body": "Pika 2.2 destaca en loops estilizados, MiniMax Hailuo 02 mantiene bajos los presupuestos para ejecuciones masivas."
         },
         {
-          "emoji": "\ud83d\uddbc\ufe0f",
-          "title": "Cu\u00e1ndo elegir Nano Banana",
-          "body": "Boceta o edita fotogramas fotorrealistas antes de pasar a movimiento. Nano Banana comparte wallet y prompt lab, as\u00ed preparas tomas para Veo/Sora con texto\u2192imagen o ediciones de referencia."
+          "emoji": "🖼️",
+          "title": "Cuándo elegir Nano Banana",
+          "body": "Boceta o edita fotogramas fotorrealistas antes de pasar a movimiento. Nano Banana comparte wallet y prompt lab, así preparas tomas para Veo/Sora con texto→imagen o ediciones de referencia."
         }
       ],
       "cta": {
-        "title": "\u00bfNecesitas una comparativa?",
+        "title": "¿Necesitas una comparativa?",
         "before": "Lee la ",
-        "comparisonLabel": "gu\u00eda Sora vs Veo vs Pika",
+        "comparisonLabel": "guía Sora vs Veo vs Pika",
         "middle": " para ver notas de calidad, precios y benchmarks; luego clona un render de la ",
-        "examplesLabel": "galer\u00eda de ejemplos",
+        "examplesLabel": "galería de ejemplos",
         "after": " para empezar con un prompt validado."
       }
     },
-    "cardCtaLabel": "Detalles completos \u2192",
+    "cardCtaLabel": "Detalles completos →",
     "cardAriaPrefix": "Detalles completos",
     "engineTypeLabels": {
       "textImage": "Texto + imagen a video",
       "text": "Texto a video",
-      "image": "Generaci\u00f3n de im\u00e1genes (Texto & Imagen\u2192Imagen)",
+      "image": "Generación de imágenes (Texto & Imagen→Imagen)",
       "default": "Motor IA"
     },
     "availabilityLabels": {
@@ -844,70 +844,70 @@
     "meta": {
       "sora-2": {
         "displayName": "OpenAI Sora 2",
-        "description": "Texto\u2192Video y remezclas con audio nativo a trav\u00e9s del enrutamiento de Fal.",
+        "description": "Texto→Video y remezclas con audio nativo a través del enrutamiento de Fal.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "v2"
       },
       "sora-2-pro": {
         "displayName": "OpenAI Sora 2 Pro",
-        "description": "Sincronizaci\u00f3n labial cinematogr\u00e1fica con salida 1080p y control de Imagen\u2192Video para equipos premium.",
+        "description": "Sincronización labial cinematográfica con salida 1080p y control de Imagen→Video para equipos premium.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "Pro"
       },
       "veo-3-1": {
         "displayName": "Google Veo 3.1",
-        "description": "Control de referencia a video con gu\u00eda de sujeto mediante varias im\u00e1genes.",
+        "description": "Control de referencia a video con guía de sujeto mediante varias imágenes.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "Veo 3.1"
       },
       "veo-3-1-fast": {
-        "displayName": "Google Veo 3.1 R\u00e1pido",
-        "description": "Prompts de texto r\u00e1pidos o animaci\u00f3n de una sola imagen de referencia con audio opcional.",
+        "displayName": "Google Veo 3.1 Rápido",
+        "description": "Prompts de texto rápidos o animación de una sola imagen de referencia con audio opcional.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
-        "versionLabel": "Veo 3.1 R\u00e1pido"
+        "versionLabel": "Veo 3.1 Rápido"
       },
       "veo-3-1-first-last": {
         "displayName": "Google Veo 3.1 First/Last",
-        "description": "Sube el primer y el \u00faltimo fotograma para crear transiciones cinem\u00e1ticas con audio opcional.",
+        "description": "Sube el primer y el último fotograma para crear transiciones cinemáticas con audio opcional.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "First/Last"
       },
       "pika-text-to-video": {
-        "displayName": "Pika 2.2 \u00b7 Texto e Imagen\u2192Video",
-        "description": "Bucles para redes sociales desde prompts o im\u00e1genes subidas con iteraci\u00f3n r\u00e1pida.",
+        "displayName": "Pika 2.2 · Texto e Imagen→Video",
+        "description": "Bucles para redes sociales desde prompts o imágenes subidas con iteración rápida.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "2.2"
       },
       "minimax-hailuo-02-text": {
-        "displayName": "MiniMax Hailuo 02 Est\u00e1ndar \u00b7 Texto e Imagen\u2192Video",
-        "description": "Borradores con optimizador o animaci\u00f3n basada en referencias en un solo motor.",
+        "displayName": "MiniMax Hailuo 02 Estándar · Texto e Imagen→Video",
+        "description": "Borradores con optimizador o animación basada en referencias en un solo motor.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
-        "versionLabel": "Est\u00e1ndar"
+        "versionLabel": "Estándar"
       },
       "ltx-2-fast": {
         "displayName": "LTX-2 Fast",
-        "description": "Clips de 6\u201320 s desde texto o imagen con audio nativo, hasta 4K.",
+        "description": "Clips de 6–20 s desde texto o imagen con audio nativo, hasta 4K.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "Fast"
       },
       "ltx-2": {
         "displayName": "LTX-2 Pro",
-        "description": "Clips 6\u201310 s de alta fidelidad con audio, hasta 4K a 25/50 fps.",
+        "description": "Clips 6–10 s de alta fidelidad con audio, hasta 4K a 25/50 fps.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "Pro"
       },
       "kling-2-6-pro": {
         "displayName": "Kling 2.6 Pro",
-        "description": "Clips cinem\u00e1ticos cortos con di\u00e1logo y ambiente nativos.",
+        "description": "Clips cinemáticos cortos con diálogo y ambiente nativos.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "v2.6 Pro"
       },
-      "title": "Comparar modelos de video IA: precios, l\u00edmites y ejemplos | MaxVideoAI",
-      "description": "Compara modelos de video IA con precios en vivo y l\u00edmites reales, luego elige 2 motores para una p\u00e1gina lado a lado con specs, prompts y ejemplos clonables."
+      "title": "Comparar modelos de video IA: precios, límites y ejemplos | MaxVideoAI",
+      "description": "Compara modelos de video IA con precios en vivo y límites reales, luego elige 2 motores para una página lado a lado con specs, prompts y ejemplos clonables."
     },
-    "note": "Los precios de Fal cambian r\u00e1pido; confirma la pastilla Precio-Antes o tu clave directa antes de lanzar.",
+    "note": "Los precios de Fal cambian rápido; confirma la pastilla Precio-Antes o tu clave directa antes de lanzar.",
     "detail": {
-      "backLabel": "\u2190 Volver",
+      "backLabel": "← Volver",
       "examplesLinkLabel": "Ver ejemplos",
       "pricingLinkLabel": "Comparar precios",
       "overviewTitle": "Resumen",
@@ -915,7 +915,7 @@
         "brand": "Marca",
         "engineId": "ID del motor",
         "slug": "Slug",
-        "logoPolicy": "Pol\u00edtica de logotipo",
+        "logoPolicy": "Política de logotipo",
         "platformPrice": "Precios en vivo dentro del workspace Generate."
       },
       "logoPolicies": {
@@ -936,7 +936,7 @@
     "listing": {
       "hero": {
         "title": "Compara modelos de video IA con precios en vivo",
-        "subtitle": "Precio $/s en vivo + l\u00edmites reales + ejemplos \u2014 luego compara dos motores lado a lado.",
+        "subtitle": "Precio $/s en vivo + límites reales + ejemplos — luego compara dos motores lado a lado.",
         "bullets": [
           "Haz clic en cualquier modelo para ver specs completas, presets de prompt y ejemplos.",
           "Compara motores lado a lado con specs y prompts"
@@ -945,16 +945,16 @@
       },
       "grid": {
         "srTitle": "Modelos de video e imagen IA que puedes comparar en MaxVideoAI",
-        "bridgeText": "Compara motores de video e imagen IA lado a lado con precios en vivo, l\u00edmites reales y ejemplos clonables."
+        "bridgeText": "Compara motores de video e imagen IA lado a lado con precios en vivo, límites reales y ejemplos clonables."
       },
       "quickCompare": {
-        "title": "Atajos de comparaci\u00f3n",
-        "subtitle": "Elige un duelo popular para precargar el modo Comparar (o abrir la p\u00e1gina de comparaci\u00f3n).",
+        "title": "Atajos de comparación",
+        "subtitle": "Elige un duelo popular para precargar el modo Comparar (o abrir la página de comparación).",
         "shortcuts": [
           "cine vs anuncios",
           "cine vs control",
           "anuncios vs movimiento",
-          "premium vs r\u00e1pido",
+          "premium vs rápido",
           "anuncios vs presupuesto",
           "movimiento vs velocidad"
         ]
@@ -964,15 +964,15 @@
         "subtitle": "Parte del resultado que quieres y luego elige un motor.",
         "tiles": [
           {
-            "title": "Planos cinematogr\u00e1ficos / hero",
-            "description": "Continuidad de personajes, f\u00edsica cinem\u00e1tica, look premium."
+            "title": "Planos cinematográficos / hero",
+            "description": "Continuidad de personajes, física cinemática, look premium."
           },
           {
             "title": "Cortes de anuncios y marketing",
-            "description": "Encuadre preciso, movimientos consistentes, variantes r\u00e1pidas."
+            "description": "Encuadre preciso, movimientos consistentes, variantes rápidas."
           },
           {
-            "title": "Iteraci\u00f3n r\u00e1pida (tests baratos)",
+            "title": "Iteración rápida (tests baratos)",
             "description": "Prueba muchas versiones antes de comprometerte."
           },
           {
@@ -981,7 +981,7 @@
           },
           {
             "title": "Entregables 4K / alta res",
-            "description": "Cuando la resoluci\u00f3n m\u00e1xima importa."
+            "description": "Cuando la resolución máxima importa."
           },
           {
             "title": "Storyboard y workflows still-first",
@@ -990,16 +990,16 @@
         ]
       },
       "reliability": {
-        "title": "C\u00f3mo MaxVideoAI se mantiene confiable",
-        "subtitle": "Lo esencial para comparaciones consistentes y listas para producci\u00f3n.",
+        "title": "Cómo MaxVideoAI se mantiene confiable",
+        "subtitle": "Lo esencial para comparaciones consistentes y listas para producción.",
         "items": [
           {
             "title": "Precios en vivo",
             "body": "Seguimos el $/s para ver el costo real antes de generar."
           },
           {
-            "title": "L\u00edmites reales",
-            "body": "Duraci\u00f3n, resoluci\u00f3n m\u00e1x., formatos\u2026 mostrados por motor."
+            "title": "Límites reales",
+            "body": "Duración, resolución máx., formatos… mostrados por motor."
           },
           {
             "title": "Ejemplos clonables",
@@ -1008,24 +1008,24 @@
         ],
         "faq": [
           {
-            "question": "C\u00f3mo se calcula el precio",
-            "answer": "Mostramos un $/s estimado por motor basado en precios p\u00fablicos y nuestra normalizaci\u00f3n interna. El costo final puede variar seg\u00fan el tier del proveedor y los ajustes de generaci\u00f3n."
+            "question": "Cómo se calcula el precio",
+            "answer": "Mostramos un $/s estimado por motor basado en precios públicos y nuestra normalización interna. El costo final puede variar según el tier del proveedor y los ajustes de generación."
           },
           {
-            "question": "Por qu\u00e9 la duraci\u00f3n m\u00e1xima difiere por motor",
-            "answer": "La duraci\u00f3n m\u00e1xima depende de l\u00edmites del proveedor, del tier (fast/pro) y del modo (texto a video, imagen a video, extend/continue). Mostramos los l\u00edmites m\u00e1s recientes por motor."
+            "question": "Por qué la duración máxima difiere por motor",
+            "answer": "La duración máxima depende de límites del proveedor, del tier (fast/pro) y del modo (texto a video, imagen a video, extend/continue). Mostramos los límites más recientes por motor."
           },
           {
-            "question": "Qu\u00e9 muestra el modo Comparar (specs + prompts + ejemplos)",
-            "answer": "El modo Comparar abre una p\u00e1gina lado a lado con specs clave, fortalezas y renders de ejemplo. Cuando est\u00e1 disponible, usa el mismo template de prompt para comparar con mayor claridad."
+            "question": "Qué muestra el modo Comparar (specs + prompts + ejemplos)",
+            "answer": "El modo Comparar abre una página lado a lado con specs clave, fortalezas y renders de ejemplo. Cuando está disponible, usa el mismo template de prompt para comparar con mayor claridad."
           },
           {
-            "question": "C\u00f3mo usar las p\u00e1ginas de modelo (detalles completos)",
-            "answer": "Cada p\u00e1gina de modelo incluye specs completas, modos soportados (T2V/I2V/V2V) y una secci\u00f3n de prompts que puedes copiar para reproducir o iterar r\u00e1pido."
+            "question": "Cómo usar las páginas de modelo (detalles completos)",
+            "answer": "Cada página de modelo incluye specs completas, modos soportados (T2V/I2V/V2V) y una sección de prompts que puedes copiar para reproducir o iterar rápido."
           },
           {
-            "question": "Con qu\u00e9 frecuencia se actualizan los datos",
-            "answer": "Actualizamos l\u00edmites y referencias de precio cuando los proveedores cambian su info p\u00fablica y cuando probamos nuevas versiones. Si algo parece incorrecto, la p\u00e1gina del modelo indica la \u00faltima actualizaci\u00f3n."
+            "question": "Con qué frecuencia se actualizan los datos",
+            "answer": "Actualizamos límites y referencias de precio cuando los proveedores cambian su info pública y cuando probamos nuevas versiones. Si algo parece incorrecto, la página del modelo indica la última actualización."
           }
         ]
       },
@@ -1037,7 +1037,7 @@
           "Clonar prompts",
           "Comparar lado a lado"
         ],
-        "microcopy": "Mismos presets de prompt \u2022 Precios en vivo \u2022 Comparaciones lado a lado",
+        "microcopy": "Mismos presets de prompt • Precios en vivo • Comparaciones lado a lado",
         "primaryLabel": "Generar ahora",
         "secondaryLabel": "Ver ejemplos"
       }
@@ -1049,10 +1049,10 @@
       "strengthsLabel": "Fortalezas",
       "stats": {
         "from": "Desde",
-        "maxDurShort": "Dur. m\u00e1x.",
-        "maxDurLong": "Duraci\u00f3n m\u00e1xima",
-        "maxResShort": "Res. m\u00e1x.",
-        "maxResLong": "Resoluci\u00f3n m\u00e1xima",
+        "maxDurShort": "Dur. máx.",
+        "maxDurLong": "Duración máxima",
+        "maxResShort": "Res. máx.",
+        "maxResLong": "Resolución máxima",
         "typeShort": "Tipo",
         "typeLong": "Tipo"
       },
@@ -1062,10 +1062,10 @@
           "label": "Ordenar",
           "options": {
             "featured": "Destacados",
-            "score": "Puntuaci\u00f3n",
+            "score": "Puntuación",
             "price": "Precio",
-            "duration": "Duraci\u00f3n",
-            "resolution": "Resoluci\u00f3n",
+            "duration": "Duración",
+            "resolution": "Resolución",
             "name": "Nombre"
           }
         },
@@ -1076,7 +1076,7 @@
             "t2v": "T2V",
             "i2v": "I2V",
             "v2v": "V2V",
-            "firstLast": "Primera/\u00daltima",
+            "firstLast": "Primera/Última",
             "extend": "Extender",
             "lipSync": "Lip sync",
             "audio": "Audio"
@@ -1092,11 +1092,11 @@
           }
         },
         "duration": {
-          "label": "Duraci\u00f3n",
+          "label": "Duración",
           "options": {
             "all": "Todas",
-            "8": "\u22648s",
-            "10-15": "10\u201315s",
+            "8": "≤8s",
+            "10-15": "10–15s",
             "20": "20s+"
           }
         },
@@ -1121,7 +1121,7 @@
         "T2V": "Texto a video",
         "I2V": "Imagen a video",
         "V2V": "Video a video",
-        "First/Last": "Primer fotograma / \u00faltimo fotograma",
+        "First/Last": "Primer fotograma / último fotograma",
         "Extend": "Extender / continuar"
       },
       "scoreLabels": {
@@ -1132,7 +1132,7 @@
         "anatomy": "Fidelidad humana",
         "textRendering": "Legibilidad de texto y UI",
         "lipsyncQuality": "Audio y lip sync",
-        "sequencingQuality": "Secuenciaci\u00f3n multi\u2011plano",
+        "sequencingQuality": "Secuenciación multi‑plano",
         "controllability": "Controlabilidad",
         "speedStability": "Velocidad y estabilidad",
         "pricing": "Precio"
@@ -1143,21 +1143,21 @@
         "capabilityFallback": "video IA",
         "conjunction": "y",
         "useCases": {
-          "sora-2": "escenas cinem\u00e1ticas y continuidad de personajes",
-          "sora-2-pro": "planos cinem\u00e1ticos premium y escenas hero",
+          "sora-2": "escenas cinemáticas y continuidad de personajes",
+          "sora-2-pro": "planos cinemáticos premium y escenas hero",
           "veo-3-1": "tomas para anuncios y encuadre preciso",
-          "veo-3-1-fast": "cortes publicitarios r\u00e1pidos e iteraci\u00f3n veloz",
+          "veo-3-1-fast": "cortes publicitarios rápidos e iteración veloz",
           "veo-3-1-first-last": "planos tipo storyboard con frames fijos",
-          "kling-2-6-pro": "clips cinematogr\u00e1ficos con movimiento realista",
-          "kling-2-5-turbo": "iteraciones r\u00e1pidas con buena adherencia al prompt",
+          "kling-2-6-pro": "clips cinematográficos con movimiento realista",
+          "kling-2-5-turbo": "iteraciones rápidas con buena adherencia al prompt",
           "wan-2-6": "prompts estructurados y transiciones limpias",
-          "wan-2-5": "tests de prompts econ\u00f3micos",
+          "wan-2-5": "tests de prompts económicos",
           "pika-text-to-video": "clips sociales estilizados",
-          "ltx-2": "iteraci\u00f3n r\u00e1pida con motion responsivo",
-          "ltx-2-fast": "tests r\u00e1pidos e iteraci\u00f3n veloz",
-          "minimax-hailuo-02-text": "tests de concepto econ\u00f3micos",
+          "ltx-2": "iteración rápida con motion responsivo",
+          "ltx-2-fast": "tests rápidos e iteración veloz",
+          "minimax-hailuo-02-text": "tests de concepto económicos",
           "nano-banana": "storyboards y workflows still-first",
-          "nano-banana-pro": "stills de campa\u00f1a y ediciones tipogr\u00e1ficas"
+          "nano-banana-pro": "stills de campaña y ediciones tipográficas"
         },
         "capabilityKeywords": {
           "T2V": "texto a video",
@@ -1165,8 +1165,8 @@
           "V2V": "video a video",
           "Lip sync": "lip sync",
           "Audio": "audio nativo",
-          "First/Last": "control de primer/\u00faltimo frame",
-          "Extend": "workflows de extensi\u00f3n"
+          "First/Last": "control de primer/último frame",
+          "Extend": "workflows de extensión"
         }
       }
     }
@@ -1179,13 +1179,13 @@
     "hero": {
       "title": "Ejemplos de video IA que puedes clonar.",
       "subtitle": "Pasa el cursor para reproducir en bucle, haz clic para ampliar. Cada clip previsualiza el movimiento y el estilo que puedes dirigir en MaxVideoAI.",
-      "body": "Explora ejemplos de v\u00eddeo IA generados con Sora 2, Veo 3.1, Pika 2.2, Kling, Wan y otros motores. Cada clip muestra el prompt, el formato y la duraci\u00f3n para comparar r\u00e1pidamente c\u00f3mo cada modelo maneja el movimiento, el encuadre y la narrativa."
+      "body": "Explora ejemplos de vídeo IA generados con Sora 2, Veo 3.1, Pika 2.2, Kling, Wan y otros motores. Cada clip muestra el prompt, el formato y la duración para comparar rápidamente cómo cada modelo maneja el movimiento, el encuadre y la narrativa."
     },
     "items": [
       {
-        "title": "Sora 2 cinematogr\u00e1fico",
-        "engine": "Sora 2 \u00b7 Text-to-video \u00b7 16:9",
-        "description": "Pasada cinematogr\u00e1fica que captura iluminaci\u00f3n atmosf\u00e9rica y paralaje.",
+        "title": "Sora 2 cinematográfico",
+        "engine": "Sora 2 · Text-to-video · 16:9",
+        "description": "Pasada cinematográfica que captura iluminación atmosférica y paralaje.",
         "alt": "Clip de ejemplo de Sora 2.",
         "meta": {
           "slug": "sora-2",
@@ -1203,8 +1203,8 @@
       },
       {
         "title": "Flythrough de marca Veo 3",
-        "engine": "Veo 3.1 \u00b7 Image-to-video \u00b7 16:9",
-        "description": "Flythrough con mucha profundidad que destaca el control de c\u00e1mara.",
+        "engine": "Veo 3.1 · Image-to-video · 16:9",
+        "description": "Flythrough con mucha profundidad que destaca el control de cámara.",
         "alt": "Clip de ejemplo de Veo 3.",
         "meta": {
           "slug": "veo-3-1",
@@ -1222,8 +1222,8 @@
       },
       {
         "title": "Storyboard Veo 3.1 Fast",
-        "engine": "Veo 3.1 Fast \u00b7 Text-to-video \u00b7 16:9",
-        "description": "Cola r\u00e1pida con audio opcional para iterar motion antes del render final.",
+        "engine": "Veo 3.1 Fast · Text-to-video · 16:9",
+        "description": "Cola rápida con audio opcional para iterar motion antes del render final.",
         "alt": "Clip de ejemplo de Veo 3.1 Fast.",
         "meta": {
           "slug": "veo-3-1-fast",
@@ -1241,8 +1241,8 @@
       },
       {
         "title": "Bucle social Pika 2.2",
-        "engine": "Pika 2.2 \u00b7 Text-to-video \u00b7 16:9",
-        "description": "Bucle social de ritmo r\u00e1pido con acentos de movimiento estilizados.",
+        "engine": "Pika 2.2 · Text-to-video · 16:9",
+        "description": "Bucle social de ritmo rápido con acentos de movimiento estilizados.",
         "alt": "Clip de ejemplo de Pika 2.2.",
         "meta": {
           "slug": "pika-text-to-video",
@@ -1260,7 +1260,7 @@
       },
       {
         "title": "Passe conceptual MiniMax Hailuo",
-        "engine": "MiniMax Hailuo 02 \u00b7 Texto/Imagen\u2192Video \u00b7 16:9",
+        "engine": "MiniMax Hailuo 02 · Texto/Imagen→Video · 16:9",
         "description": "Passe de arte animado que parte de un fotograma de referencia y conserva el encuadre.",
         "alt": "Clip de ejemplo de MiniMax Hailuo Standard.",
         "meta": {
@@ -1282,16 +1282,16 @@
   },
   "docs": {
     "meta": {
-      "title": "Docs \u2014 Onboarding, seguridad de marca, reembolsos y webhooks API",
-      "description": "Empieza aqu\u00ed para onboarding, sistema de precios y reembolsos. Descubre los filtros brand-safe y las referencias de webhook/API. Las gu\u00edas avanzadas viven en el workspace autenticado.",
-      "imageAlt": "Docs \u2014 MaxVideoAI"
+      "title": "Docs — Onboarding, seguridad de marca, reembolsos y webhooks API",
+      "description": "Empieza aquí para onboarding, sistema de precios y reembolsos. Descubre los filtros brand-safe y las referencias de webhook/API. Las guías avanzadas viven en el workspace autenticado.",
+      "imageAlt": "Docs — MaxVideoAI"
     },
     "hero": {
-      "title": "Documentaci\u00f3n",
-      "subtitle": "Comience aqu\u00ed para la incorporaci\u00f3n, la seguridad de marca, los avisos de compatibilidad y las pol\u00edticas de reembolso. Las gu\u00edas de integraci\u00f3n m\u00e1s detalladas est\u00e1n en el espacio de trabajo autenticado."
+      "title": "Documentación",
+      "subtitle": "Comience aquí para la incorporación, la seguridad de marca, los avisos de compatibilidad y las políticas de reembolso. Las guías de integración más detalladas están en el espacio de trabajo autenticado."
     },
     "toc": {
-      "title": "En esta p\u00e1gina",
+      "title": "En esta página",
       "onboarding": "Onboarding",
       "pricing": "Sistema de precios",
       "refunds": "Reembolsos",
@@ -1310,21 +1310,21 @@
       {
         "title": "Sistema de precios",
         "items": [
-          "Previsualiza el precio exacto antes de renderizar. La pastilla se ajusta con duraci\u00f3n, resoluci\u00f3n y descuentos autom\u00e1ticos.",
-          "Los Starter Credits (10\u00a0$) y los estados Member / Plus / Pro se recalculan a diario."
+          "Previsualiza el precio exacto antes de renderizar. La pastilla se ajusta con duración, resolución y descuentos automáticos.",
+          "Los Starter Credits (10 $) y los estados Member / Plus / Pro se recalculan a diario."
         ]
       },
       {
         "title": "Reembolsos",
         "items": [
-          "Si un render falla, tu wallet se reembolsa en cuesti\u00f3n de minutos e incluimos una nota breve del incidente.",
-          "Los recibos detallan motor, duraci\u00f3n, resoluci\u00f3n y el ID del job para entregarlo f\u00e1cilmente a finanzas.",
+          "Si un render falla, tu wallet se reembolsa en cuestión de minutos e incluimos una nota breve del incidente.",
+          "Los recibos detallan motor, duración, resolución y el ID del job para entregarlo fácilmente a finanzas.",
           {
             "type": "link",
             "before": "Para los detalles legales consulta ",
-            "terms": "los T\u00e9rminos",
+            "terms": "los Términos",
             "and": " y ",
-            "privacy": "la Pol\u00edtica de privacidad",
+            "privacy": "la Política de privacidad",
             "after": "."
           }
         ]
@@ -1332,8 +1332,8 @@
       {
         "title": "Filtros brand-safe",
         "items": [
-          "Bloqueamos por defecto prompts, subidas y salidas riesgosas para que el equipo cumpla las pol\u00edticas sin vigilancia extra.",
-          "Los casos sensibles pasan a revisi\u00f3n humana con trazabilidad y opciones de escalado simples.",
+          "Bloqueamos por defecto prompts, subidas y salidas riesgosas para que el equipo cumpla las políticas sin vigilancia extra.",
+          "Los casos sensibles pasan a revisión humana con trazabilidad y opciones de escalado simples.",
           "Los administradores pueden pedir listas personalizadas de permitidos o bloqueados por workspace."
         ]
       },
@@ -1341,46 +1341,46 @@
         "title": "Referencias API",
         "items": [
           "Callbacks webhook para renders, reembolsos y actualizaciones de cola.",
-          "Las referencias REST y GraphQL viven en la documentaci\u00f3n autenticada.",
-          "Los ejemplos de SDK cubren Node.js, Python y verificaci\u00f3n directa de webhooks."
+          "Las referencias REST y GraphQL viven en la documentación autenticada.",
+          "Los ejemplos de SDK cubren Node.js, Python y verificación directa de webhooks."
         ]
       }
     ],
     "apiNotice": {
-      "public": "Resumen p\u00fablico disponible abajo.",
-      "private": "La documentaci\u00f3n completa de la API requiere autenticaci\u00f3n en el workspace."
+      "public": "Resumen público disponible abajo.",
+      "private": "La documentación completa de la API requiere autenticación en el workspace."
     },
     "onboardingChecklist": {
       "title": "Checklist de onboarding",
       "items": [
-        "\u2705 Completa el brief de marca (tono, objetivos, entregables).",
-        "\u2705 A\u00f1ade 1\u20133 prompts de ejemplo y activos de referencia.",
-        "\u2705 Define ratios por defecto y preferencia de audio."
+        "✅ Completa el brief de marca (tono, objetivos, entregables).",
+        "✅ Añade 1–3 prompts de ejemplo y activos de referencia.",
+        "✅ Define ratios por defecto y preferencia de audio."
       ],
       "note": "Puedes editar el brief en cualquier momento; los cambios aplican a todo el workspace."
     },
-    "pricingCallout": "\u2705 Siempre ves el precio antes de renderizar.",
+    "pricingCallout": "✅ Siempre ves el precio antes de renderizar.",
     "refundsTimeline": {
-      "title": "Cronolog\u00eda de reembolsos",
+      "title": "Cronología de reembolsos",
       "steps": [
-        "1) El job falla \u2192 el sistema marca el incidente.",
-        "2) Reembolso autom\u00e1tico \u2192 wallet acreditado en minutos.",
-        "3) Recibo \u2192 registro detallado con una breve nota del incidente."
+        "1) El job falla → el sistema marca el incidente.",
+        "2) Reembolso automático → wallet acreditado en minutos.",
+        "3) Recibo → registro detallado con una breve nota del incidente."
       ],
       "note": "Solo pagas por jobs exitosos. Los reembolsos aparecen en el feed y en los recibos."
     },
-    "refundsCallout": "\u2705 Los jobs fallidos se reembolsan autom\u00e1ticamente en minutos; los recibos incluyen una breve nota del incidente.",
+    "refundsCallout": "✅ Los jobs fallidos se reembolsan automáticamente en minutos; los recibos incluyen una breve nota del incidente.",
     "safetyQuick": {
-      "title": "Resumen r\u00e1pido",
+      "title": "Resumen rápido",
       "items": [
-        "\u2022 Bloqueos por defecto: contenido ilegal, sexual expl\u00edcito, odio/hostigamiento, doxxing.",
-        "\u2022 Revisiones de medios: uploads/renders de riesgo se ponen en cuarentena para revisi\u00f3n.",
-        "\u2022 Controles admin: solicitar allowlists o palabras clave restringidas por workspace."
+        "• Bloqueos por defecto: contenido ilegal, sexual explícito, odio/hostigamiento, doxxing.",
+        "• Revisiones de medios: uploads/renders de riesgo se ponen en cuarentena para revisión.",
+        "• Controles admin: solicitar allowlists o palabras clave restringidas por workspace."
       ],
-      "note": "Los casos sensibles pasan a revisi\u00f3n humana con trazabilidad y opciones de escalado."
+      "note": "Los casos sensibles pasan a revisión humana con trazabilidad y opciones de escalado."
     },
-    "safetyCallout": "\u26a0\ufe0f Algunos casos sensibles pueden requerir una allowlist admin o revisi\u00f3n humana.",
-    "seeAlsoLabel": "Ver tambi\u00e9n:",
+    "safetyCallout": "⚠️ Algunos casos sensibles pueden requerir una allowlist admin o revisión humana.",
+    "seeAlsoLabel": "Ver también:",
     "seeAlso": {
       "onboarding": [
         {
@@ -1389,7 +1389,7 @@
         },
         {
           "href": "/es/galeria",
-          "label": "Galer\u00eda de ejemplos"
+          "label": "Galería de ejemplos"
         }
       ],
       "pricing": [
@@ -1409,7 +1409,7 @@
         },
         {
           "href": "/legal/terms",
-          "label": "T\u00e9rminos"
+          "label": "Términos"
         }
       ],
       "safety": [
@@ -1419,7 +1419,7 @@
         },
         {
           "href": "/es/modelos",
-          "label": "Cat\u00e1logo de modelos"
+          "label": "Catálogo de modelos"
         }
       ],
       "api": [
@@ -1446,20 +1446,20 @@
     "library": {
       "heading": "Biblioteca",
       "liveLabel": "En vivo",
-      "comingSoonLabel": "Pr\u00f3ximamente",
+      "comingSoonLabel": "Próximamente",
       "summaryLive": "Explora activos reutilizables, presets y prompts de referencia para tu equipo.",
-      "summarySoon": "Documentaci\u00f3n pr\u00f3ximamente."
+      "summarySoon": "Documentación próximamente."
     },
     "feedback": {
       "srTitle": "Comentarios",
-      "prompt": "\u00bfTe fue \u00fatil esta p\u00e1gina?",
-      "yes": "S\u00ed",
+      "prompt": "¿Te fue útil esta página?",
+      "yes": "Sí",
       "no": "No",
       "backToTop": "Volver arriba"
     },
-    "lastUpdatedLabel": "\u00daltima actualizaci\u00f3n:",
+    "lastUpdatedLabel": "Última actualización:",
     "jsonLd": {
-      "collectionName": "Docs \u2014 Onboarding, seguridad de marca, reembolsos y webhooks API",
+      "collectionName": "Docs — Onboarding, seguridad de marca, reembolsos y webhooks API",
       "hasPart": {
         "onboarding": "Onboarding",
         "pricing": "Sistema de precios",
@@ -1470,7 +1470,7 @@
       },
       "about": [
         "onboarding",
-        "pol\u00edtica de reembolsos",
+        "política de reembolsos",
         "seguridad de marca",
         "webhooks",
         "referencias api"
@@ -1479,45 +1479,45 @@
       "breadcrumbDocs": "Docs",
       "faq": [
         {
-          "question": "\u00bfLos Starter Credits caducan?",
-          "answer": "No. Los cr\u00e9ditos se acumulan mes a mes y se sincronizan entre miembros con acceso."
+          "question": "¿Los Starter Credits caducan?",
+          "answer": "No. Los créditos se acumulan mes a mes y se sincronizan entre miembros con acceso."
         },
         {
-          "question": "\u00bfQu\u00e9 tan r\u00e1pido se reembolsan los renders fallidos?",
-          "answer": "Los reembolsos se procesan autom\u00e1ticamente en minutos; cada job incluye una breve nota del incidente para finanzas."
+          "question": "¿Qué tan rápido se reembolsan los renders fallidos?",
+          "answer": "Los reembolsos se procesan automáticamente en minutos; cada job incluye una breve nota del incidente para finanzas."
         },
         {
-          "question": "\u00bfPodemos anular el brand-safety para proyectos espec\u00edficos?",
-          "answer": "S\u00ed. Los admins pueden solicitar allowlists o palabras clave restringidas por workspace; los casos sensibles pasan a revisi\u00f3n humana con trazabilidad."
+          "question": "¿Podemos anular el brand-safety para proyectos específicos?",
+          "answer": "Sí. Los admins pueden solicitar allowlists o palabras clave restringidas por workspace; los casos sensibles pasan a revisión humana con trazabilidad."
         }
       ]
     },
-    "empty": "Documentaci\u00f3n pr\u00f3ximamente.",
+    "empty": "Documentación próximamente.",
     "libraryHeading": "Biblioteca"
   },
   "blog": {
     "hero": {
       "title": "El blog de MaxVideo AI.",
-      "subtitle": "Noticias sobre motores, historias de clientes, gu\u00edas de prompts y buenas pr\u00e1cticas de precio antes de generar. Suscr\u00edbase en la aplicaci\u00f3n para recibir actualizaciones en su resumen de cola.",
+      "subtitle": "Noticias sobre motores, historias de clientes, guías de prompts y buenas prácticas de precio antes de generar. Suscríbase en la aplicación para recibir actualizaciones en su resumen de cola.",
       "eyebrow": "El diario del estudio",
-      "ctaLabel": "\u00daltimas novedades de Sora \u2192"
+      "ctaLabel": "Últimas novedades de Sora →"
     },
-    "empty": "Publicaciones del blog pr\u00f3ximamente.",
-    "cta": "Leer m\u00e1s",
+    "empty": "Publicaciones del blog próximamente.",
+    "cta": "Leer más",
     "intro": {
       "lead": "El diario de MaxVideoAI recoge todo lo que aprendemos al rutear motores de video de vanguardia para producciones reales. Documentamos patrones de prompts, cambios de precio, variaciones de latencia y workflows para que las agencias sigan a tiempo cuando rotan los modelos.",
       "cards": [
         {
-          "title": "An\u00e1lisis de modelos",
+          "title": "Análisis de modelos",
           "body": "Comparativas y notas de capacidades sobre Sora 2, Veo 3, Pika 2.2, MiniMax Hailuo 02 y los motores que vienen."
         },
         {
-          "title": "T\u00e1cticas de workflow",
-          "body": "Secuencias de prompts, integraci\u00f3n de audio y guardarra\u00edles de precios para historias de marca sin malgastar cr\u00e9ditos."
+          "title": "Tácticas de workflow",
+          "body": "Secuencias de prompts, integración de audio y guardarraíles de precios para historias de marca sin malgastar créditos."
         },
         {
           "title": "Historias de clientes",
-          "body": "C\u00f3mo estudios y marketers en Europa y Norteam\u00e9rica despliegan el mismo brief en m\u00faltiples motores."
+          "body": "Cómo estudios y marketers en Europa y Norteamérica despliegan el mismo brief en múltiples motores."
         }
       ]
     },
@@ -1525,58 +1525,58 @@
       "title": "FAQ del blog",
       "items": [
         {
-          "question": "\u00bfCon qu\u00e9 frecuencia publican nuevos art\u00edculos?",
-          "answer": "Publicamos cada semana (a veces dos) conforme cambian los motores. Suscr\u00edbete desde la app para recibir un resumen cuando haya novedades."
+          "question": "¿Con qué frecuencia publican nuevos artículos?",
+          "answer": "Publicamos cada semana (a veces dos) conforme cambian los motores. Suscríbete desde la app para recibir un resumen cuando haya novedades."
         },
         {
-          "question": "\u00bfPuedo sugerir un tema o pedir cobertura?",
-          "answer": "S\u00ed; env\u00eda tus ideas a press@maxvideo.ai e incluye renders de referencia si puedes. Priorizamos historias que ayuden a los equipos de producci\u00f3n."
+          "question": "¿Puedo sugerir un tema o pedir cobertura?",
+          "answer": "Sí; envía tus ideas a press@maxvideo.ai e incluye renders de referencia si puedes. Priorizamos historias que ayuden a los equipos de producción."
         },
         {
-          "question": "\u00bfD\u00f3nde encuentro las notas de versi\u00f3n?",
-          "answer": "Las novedades del producto viven en el changelog y las actualizaciones de API en la documentaci\u00f3n para desarrolladores. El blog cubre gu\u00edas y aprendizajes de campo."
+          "question": "¿Dónde encuentro las notas de versión?",
+          "answer": "Las novedades del producto viven en el changelog y las actualizaciones de API en la documentación para desarrolladores. El blog cubre guías y aprendizajes de campo."
         }
       ],
-      "footnote": "\u00bfNecesitas m\u00e1s detalles? Escribe a press@maxvideo.ai y lo derivaremos al productor adecuado."
+      "footnote": "¿Necesitas más detalles? Escribe a press@maxvideo.ai y lo derivaremos al productor adecuado."
     }
   },
   "videoPage": {
-    "backLink": "\u2190 Volver",
+    "backLink": "← Volver",
     "hero": {
       "titleFallback": "Render MaxVideoAI",
-      "intro": "Este video se gener\u00f3 con {engine} en MaxVideoAI \u2014 descubre c\u00f3mo producir renders similares a continuaci\u00f3n.",
+      "intro": "Este video se generó con {engine} en MaxVideoAI — descubre cómo producir renders similares a continuación.",
       "promptLabel": "Prompt",
       "promptFallback": "Prompt no disponible.",
       "copy": "Copiar prompt",
-      "copied": "\u00a1Copiado!",
-      "showMore": "Ver m\u00e1s",
+      "copied": "¡Copiado!",
+      "showMore": "Ver más",
       "showLess": "Ver menos"
     },
     "seo": {
       "title": "Desglose del render",
-      "promptFallback": "una escena cinem\u00e1tica generada por IA",
+      "promptFallback": "una escena cinemática generada por IA",
       "durationPhrase": "un clip de {value} segundos",
       "durationFallback": "un clip breve",
       "aspectPhrase": "un formato {value}",
       "aspectFallback": "un formato adaptable",
       "sentences": [
-        "Este video generado por IA muestra {promptStyle} y proviene directamente de nuestra playlist p\u00fablica de Ejemplos.",
-        "{engineName} gestion\u00f3 este render dentro de MaxVideoAI, entregando {durationLabel} con {aspectRatioLabel} y {audioState}.",
-        "La secuencia destaca un movimiento coherente, iluminaci\u00f3n n\u00edtida y reflejos naturales para que los equipos creativos eval\u00faen el modelo.",
-        "El estilo del prompt mantiene se\u00f1ales de {promptTone} que puedes remezclar o ampliar con referencias visuales, narraci\u00f3n o upscale.",
-        "Utiliza la tarjeta del motor, el enlace de precios y el blog para comparar modelos o iniciar una ejecuci\u00f3n similar."
+        "Este video generado por IA muestra {promptStyle} y proviene directamente de nuestra playlist pública de Ejemplos.",
+        "{engineName} gestionó este render dentro de MaxVideoAI, entregando {durationLabel} con {aspectRatioLabel} y {audioState}.",
+        "La secuencia destaca un movimiento coherente, iluminación nítida y reflejos naturales para que los equipos creativos evalúen el modelo.",
+        "El estilo del prompt mantiene señales de {promptTone} que puedes remezclar o ampliar con referencias visuales, narración o upscale.",
+        "Utiliza la tarjeta del motor, el enlace de precios y el blog para comparar modelos o iniciar una ejecución similar."
       ]
     },
     "details": {
       "title": "Detalles del render",
       "engineLabel": "Motor",
       "engineDescriptionFallback": "Consulta la ficha completa de este modelo.",
-      "engineCta": "Abrir p\u00e1gina del modelo",
+      "engineCta": "Abrir página del modelo",
       "engineUnavailable": "Motor no disponible",
-      "durationLabel": "Duraci\u00f3n",
+      "durationLabel": "Duración",
       "durationValue": "{value} segundos",
       "durationUnknown": "Desconocida",
-      "aspectLabel": "Relaci\u00f3n",
+      "aspectLabel": "Relación",
       "aspectAuto": "Auto",
       "createdLabel": "Creado el",
       "priceTotalLabel": "Costo del render",
@@ -1598,42 +1598,42 @@
     },
     "create": {
       "title": "Crea la tuya",
-      "subtitle": "\u00bfQuieres generar un video como este?",
-      "body": "Inicia un render con este prompt o c\u00e1rgalo en el workspace para remezclarlo con tu motor, duraci\u00f3n o audio preferido.",
-      "cta": "Iniciar un render \u2192"
+      "subtitle": "¿Quieres generar un video como este?",
+      "body": "Inicia un render con este prompt o cárgalo en el workspace para remezclarlo con tu motor, duración o audio preferido.",
+      "cta": "Iniciar un render →"
     },
     "recreate": {
       "title": "Recrear este video",
       "body": "Carga este render en tu workspace con los ajustes originales.",
       "cta": "Recrear en Workspace",
-      "microcopy": "Carga prompt + engine + duraci\u00f3n + audio."
+      "microcopy": "Carga prompt + engine + duración + audio."
     },
     "blog": {
       "title": "Sigue mejorando",
-      "message": "Aprende m\u00e1s sobre video con IA \u2014 visita nuestro blog para consejos, comparativas de motores y casos creativos.",
+      "message": "Aprende más sobre video con IA — visita nuestro blog para consejos, comparativas de motores y casos creativos.",
       "cta": "Visitar el blog"
     }
   },
   "about": {
     "hero": {
       "title": "Confianza discreta para equipos de video con IA.",
-      "subtitle": "MaxVideo AI es el n\u00facleo independiente para la producci\u00f3n de video con IA. Enrutamos al motor adecuado para cada plano, mostramos el precio antes de generar y mantenemos a su equipo en control sin bloqueo de proveedor."
+      "subtitle": "MaxVideo AI es el núcleo independiente para la producción de video con IA. Enrutamos al motor adecuado para cada plano, mostramos el precio antes de generar y mantenemos a su equipo en control sin bloqueo de proveedor."
     },
     "paragraphs": [
       "Creemos que los equipos profesionales merecen claridad antes de iniciar el render. Eso significa transparencia de precios, enrutamiento fiable y contexto compartido entre creativos, productores y stakeholders.",
-      "La independencia importa: nos mantenemos neutrales entre motores, nos integramos con Sora 2, Veo 3.1, Veo 3 Fast, Pika 2.2, MiniMax Hailuo 02, Hunyuan Image y betas rotativas, y listamos marcas s\u00f3lo para describir compatibilidad.",
-      "El producto est\u00e1 dise\u00f1ado para equipos que necesitan precisi\u00f3n sin ruido. Interfaz discreta, ajustes predefinidos premium, controles precisos y etiquetas de precio antes de generar que mantienen a finanzas en el bucle."
+      "La independencia importa: nos mantenemos neutrales entre motores, nos integramos con Sora 2, Veo 3.1, Veo 3 Fast, Pika 2.2, MiniMax Hailuo 02, Hunyuan Image y betas rotativas, y listamos marcas sólo para describir compatibilidad.",
+      "El producto está diseñado para equipos que necesitan precisión sin ruido. Interfaz discreta, ajustes predefinidos premium, controles precisos y etiquetas de precio antes de generar que mantienen a finanzas en el bucle."
     ],
-    "note": "Las marcas registradas y signos de servicio son propiedad de sus respectivos propietarios. MaxVideo AI se mantiene independiente para que usted pueda mantenerse al d\u00eda sin cambiar de plataforma."
+    "note": "Las marcas registradas y signos de servicio son propiedad de sus respectivos propietarios. MaxVideo AI se mantiene independiente para que usted pueda mantenerse al día sin cambiar de plataforma."
   },
   "contact": {
     "hero": {
       "title": "Contacte con el equipo.",
-      "subtitle": "\u00bfNecesita soporte, incorporaci\u00f3n empresarial o informaci\u00f3n de prensa? Env\u00ede una nota y le responderemos en un d\u00eda laborable."
+      "subtitle": "¿Necesita soporte, incorporación empresarial o información de prensa? Envíe una nota y le responderemos en un día laborable."
     },
     "form": {
       "name": "Nombre",
-      "email": "Correo electr\u00f3nico",
+      "email": "Correo electrónico",
       "topic": "Asunto",
       "selectPlaceholder": "Seleccione un tema",
       "topics": [
@@ -1656,13 +1656,13 @@
       ],
       "message": "Mensaje",
       "submit": "Enviar mensaje",
-      "alt": "\u00bfPrefiere el correo electr\u00f3nico? Escriba a {email}."
+      "alt": "¿Prefiere el correo electrónico? Escriba a {email}."
     }
   },
   "legal": {
     "terms": {
-      "title": "T\u00e9rminos del servicio",
-      "intro": "Estos t\u00e9rminos constituyen el Acuerdo de Usuario actualmente vigente.",
+      "title": "Términos del servicio",
+      "intro": "Estos términos constituyen el Acuerdo de Usuario actualmente vigente.",
       "sections": [
         {
           "heading": "1. Panorama general",
@@ -1674,45 +1674,45 @@
         },
         {
           "heading": "3. Uso y cumplimiento",
-          "body": "Usa MaxVideo AI solo cumpliendo las leyes aplicables, respeta los l\u00edmites de licencia, no subas recursos ilegales o que infrinjan derechos y no intentes generar contenido prohibido o inseguro. Podemos revisar, bloquear o eliminar renders y suspender el acceso cuando las piezas violen estos T\u00e9rminos o nuestras pol\u00edticas."
+          "body": "Usa MaxVideo AI solo cumpliendo las leyes aplicables, respeta los límites de licencia, no subas recursos ilegales o que infrinjan derechos y no intentes generar contenido prohibido o inseguro. Podemos revisar, bloquear o eliminar renders y suspender el acceso cuando las piezas violen estos Términos o nuestras políticas."
         },
         {
           "heading": "4. Contenido del usuario y medios generados",
-          "body": "Tus cargas (fotos, logotipos, material de referencia, prompts) siguen siendo de tu propiedad. Podemos almacenar, procesar y mostrar esos elementos \u00fanicamente para producir el render texto-a-video o imagen-a-video solicitado y para entregar las funciones del workspace que habilites. Para cada medio generado, otorgas a MaxVideoAI una licencia mundial, no exclusiva, libre de regal\u00edas, transferible y sublicenciable para alojar, reproducir, indexar, exhibir y usar los videos con el fin de operar el servicio, mejorar el enrutamiento y los modelos, realizar revisiones de seguridad y presentar la galer\u00eda de Examples, las p\u00e1ginas de modelos u otras activaciones de marketing. Puedes marcar un render como privado dentro de tu workspace o solicitar su desindexaci\u00f3n contactando al soporte si no existe un interruptor de privacidad, y atenderemos esa solicitud. Conservas la propiedad de tus prompts, cargas, descripciones y activos de marca, mientras que MaxVideoAI mantiene la propiedad de la plataforma, las interfaces, las transformaciones y las mejoras t\u00e9cnicas construidas sobre el servicio."
+          "body": "Tus cargas (fotos, logotipos, material de referencia, prompts) siguen siendo de tu propiedad. Podemos almacenar, procesar y mostrar esos elementos únicamente para producir el render texto-a-video o imagen-a-video solicitado y para entregar las funciones del workspace que habilites. Para cada medio generado, otorgas a MaxVideoAI una licencia mundial, no exclusiva, libre de regalías, transferible y sublicenciable para alojar, reproducir, indexar, exhibir y usar los videos con el fin de operar el servicio, mejorar el enrutamiento y los modelos, realizar revisiones de seguridad y presentar la galería de Examples, las páginas de modelos u otras activaciones de marketing. Puedes marcar un render como privado dentro de tu workspace o solicitar su desindexación contactando al soporte si no existe un interruptor de privacidad, y atenderemos esa solicitud. Conservas la propiedad de tus prompts, cargas, descripciones y activos de marca, mientras que MaxVideoAI mantiene la propiedad de la plataforma, las interfaces, las transformaciones y las mejoras técnicas construidas sobre el servicio."
         },
         {
-          "heading": "5. Facturaci\u00f3n",
-          "body": "El wallet solo se carga cuando el render se completa con \u00e9xito. Los fallos se reembolsan autom\u00e1ticamente."
+          "heading": "5. Facturación",
+          "body": "El wallet solo se carga cuando el render se completa con éxito. Los fallos se reembolsan automáticamente."
         },
         {
           "heading": "6. Responsabilidad",
-          "body": "MaxVideo AI se proporciona tal cual. Limitamos la responsabilidad al m\u00e1ximo permitido por ley."
+          "body": "MaxVideo AI se proporciona tal cual. Limitamos la responsabilidad al máximo permitido por ley."
         }
       ]
     },
     "privacy": {
-      "title": "Pol\u00edtica de privacidad",
-      "intro": "Aspectos destacados de nuestras pr\u00e1cticas de privacidad. La versi\u00f3n legal definitiva se publicar\u00e1 aqu\u00ed.",
+      "title": "Política de privacidad",
+      "intro": "Aspectos destacados de nuestras prácticas de privacidad. La versión legal definitiva se publicará aquí.",
       "sections": [
         {
           "heading": "1. Datos que recopilamos",
-          "body": "Detalles del workspace, m\u00e9tricas de uso e informaci\u00f3n de facturaci\u00f3n necesarios para prestar el servicio."
+          "body": "Detalles del workspace, métricas de uso e información de facturación necesarios para prestar el servicio."
         },
         {
-          "heading": "2. C\u00f3mo usamos los datos",
-          "body": "Operar el enrutamiento, mejorar la calidad del producto y comunicar actualizaciones cr\u00edticas."
+          "heading": "2. Cómo usamos los datos",
+          "body": "Operar el enrutamiento, mejorar la calidad del producto y comunicar actualizaciones críticas."
         },
         {
           "heading": "3. Almacenamiento y seguridad",
-          "body": "Guardamos los datos en sistemas cifrados con acceso de m\u00ednimo privilegio. Los assets de render expiran seg\u00fan la pol\u00edtica del workspace."
+          "body": "Guardamos los datos en sistemas cifrados con acceso de mínimo privilegio. Los assets de render expiran según la política del workspace."
         },
         {
-          "heading": "4. Compartici\u00f3n",
+          "heading": "4. Compartición",
           "body": "Solo compartimos datos con los proveedores de motores necesarios para rutear renders. Nunca vendemos datos de clientes."
         },
         {
           "heading": "5. Tus opciones",
-          "body": "Solicita exportaci\u00f3n o eliminaci\u00f3n cuando quieras escribiendo a support@maxvideo.ai. Los administradores controlan las ventanas de retenci\u00f3n."
+          "body": "Solicita exportación o eliminación cuando quieras escribiendo a support@maxvideo.ai. Los administradores controlan las ventanas de retención."
         }
       ]
     }
@@ -1720,30 +1720,30 @@
   "changelog": {
     "hero": {
       "title": "Registro de cambios",
-      "subtitle": "Cada actualizaci\u00f3n de motor, mejora del flujo de trabajo y ajuste de precios \u2014 publicado semanalmente. Suscr\u00edbase dentro de la aplicaci\u00f3n para recibir alertas."
+      "subtitle": "Cada actualización de motor, mejora del flujo de trabajo y ajuste de precios — publicado semanalmente. Suscríbase dentro de la aplicación para recibir alertas."
     },
     "entries": [
       {
         "date": "2024-06-12",
         "title": "Plantillas Veo + transparencia de cola",
-        "body": "A\u00f1adimos enrutamiento Veo V2, indicador de longitud de cola en la pastilla Precio-Antes y avisos para wallets compartidos."
+        "body": "Añadimos enrutamiento Veo V2, indicador de longitud de cola en la pastilla Precio-Antes y avisos para wallets compartidos."
       },
       {
         "date": "2024-06-05",
-        "title": "Automatizaci\u00f3n de reembolsos",
-        "body": "Los reembolsos autom\u00e1ticos ahora se disparan en menos de 90 segundos cuando un render falla o un proveedor devuelve error."
+        "title": "Automatización de reembolsos",
+        "body": "Los reembolsos automáticos ahora se disparan en menos de 90 segundos cuando un render falla o un proveedor devuelve error."
       },
       {
         "date": "2024-05-29",
         "title": "Entrega del kit de marca",
-        "body": "Los Workflows exportan los kits de marca a FCPXML y AE JSON para los equipos de postproducci\u00f3n."
+        "body": "Los Workflows exportan los kits de marca a FCPXML y AE JSON para los equipos de postproducción."
       }
     ]
   },
   "status": {
     "hero": {
       "title": "Estado",
-      "subtitle": "Indicadores en tiempo real de la salud de la cola, proveedores de enrutamiento y sistemas de facturaci\u00f3n. Suscr\u00edbase dentro de la aplicaci\u00f3n para recibir alertas de incidentes."
+      "subtitle": "Indicadores en tiempo real de la salud de la cola, proveedores de enrutamiento y sistemas de facturación. Suscríbase dentro de la aplicación para recibir alertas de incidentes."
     },
     "systems": [
       {
@@ -1764,42 +1764,42 @@
       {
         "name": "Callbacks & webhooks",
         "status": "Degraded",
-        "detail": "Reintentos de webhooks con retraso de ~2 minutos. En investigaci\u00f3n."
+        "detail": "Reintentos de webhooks con retraso de ~2 minutos. En investigación."
       }
     ],
     "incidents": [
       {
         "date": "2024-06-10",
         "title": "Latencia del proveedor Pika",
-        "summary": "Retrasos en la cola de Pika durante 34 minutos. Se dispararon reembolsos autom\u00e1ticos para los renders afectados.",
+        "summary": "Retrasos en la cola de Pika durante 34 minutos. Se dispararon reembolsos automáticos para los renders afectados.",
         "status": "Resolved"
       }
     ]
   },
   "systemMessages": {
-    "refundInitiated": "Se est\u00e1 reembolsando tu pago. Puede tardar entre 5\u201310 d\u00edas laborables en aparecer en tu extracto.",
-    "partialRefund": "Hemos emitido un reembolso parcial de {refundedAmount}. El restante {remainingAmount} permanecer\u00e1 en tu extracto.",
-    "paymentRetried": "Hemos reintentado tu pago de forma segura; no se te cobrar\u00e1 dos veces."
+    "refundInitiated": "Se está reembolsando tu pago. Puede tardar entre 5–10 días laborables en aparecer en tu extracto.",
+    "partialRefund": "Hemos emitido un reembolso parcial de {refundedAmount}. El restante {remainingAmount} permanecerá en tu extracto.",
+    "paymentRetried": "Hemos reintentado tu pago de forma segura; no se te cobrará dos veces."
   },
   "gallery": {
     "meta": {
       "title": "Ejemplos de video IA + precios visibles | MaxVideoAI",
-      "description": "Explora ejemplos reales con prompts, duraci\u00f3n, info de audio y precios por clip. Clona cualquier toma en tu workspace en segundos.",
-      "title_engine": "Ejemplos de video IA \u2014 {engineName} | MaxVideoAI",
-      "description_engine": "Explora ejemplos de video {engineName} con prompts, duraci\u00f3n, info de audio y precios por clip. Clona cualquier toma en el workspace."
+      "description": "Explora ejemplos reales con prompts, duración, info de audio y precios por clip. Clona cualquier toma en tu workspace en segundos.",
+      "title_engine": "Ejemplos de video IA — {engineName} | MaxVideoAI",
+      "description_engine": "Explora ejemplos de video {engineName} con prompts, duración, info de audio y precios por clip. Clona cualquier toma en el workspace."
     }
   },
   "workspace": {
     "header": {
-      "marketingNav": "Navegaci\u00f3n de marketing",
+      "marketingNav": "Navegación de marketing",
       "walletLabel": "Billetera",
       "memberFallback": "Miembro",
-      "signedIn": "Sesi\u00f3n iniciada",
-      "primaryNav": "Navegaci\u00f3n principal",
-      "signOut": "Cerrar sesi\u00f3n",
+      "signedIn": "Sesión iniciada",
+      "primaryNav": "Navegación principal",
+      "signOut": "Cerrar sesión",
       "createAccount": "Crear cuenta",
-      "signIn": "Iniciar sesi\u00f3n",
-      "logoAria": "Ir a la p\u00e1gina de marketing"
+      "signIn": "Iniciar sesión",
+      "logoAria": "Ir a la página de marketing"
     },
     "sidebar": {
       "aria": {
@@ -1808,14 +1808,14 @@
         "collapse": "Contraer barra lateral",
         "pin": "Fijar barra lateral abierta",
         "unpin": "Soltar barra lateral",
-        "menu": "Men\u00fa de la app",
+        "menu": "Menú de la app",
         "home": "Ir al inicio"
       },
       "links": {
         "dashboard": "Panel",
         "generate": "Generar video",
         "jobs": "Jobs",
-        "billing": "Facturaci\u00f3n",
+        "billing": "Facturación",
         "settings": "Ajustes"
       },
       "badges": {
@@ -1831,72 +1831,72 @@
         "noEngines": "No hay motores disponibles."
       },
       "gallery": {
-        "empty": "Inicia un render para llenar la galer\u00eda. Las variantes de cada ejecuci\u00f3n aparecer\u00e1n aqu\u00ed."
+        "empty": "Inicia un render para llenar la galería. Las variantes de cada ejecución aparecerán aquí."
       },
       "wallet": {
-        "insufficient": "Saldo insuficiente. A\u00f1ade fondos para seguir creando.",
-        "insufficientWithAmount": "Saldo insuficiente. A\u00f1ade al menos {amount} para continuar."
+        "insufficient": "Saldo insuficiente. Añade fondos para seguir creando.",
+        "insufficientWithAmount": "Saldo insuficiente. Añade al menos {amount} para continuar."
       },
       "topUp": {
-        "title": "A\u00f1adir cr\u00e9ditos",
-        "presetsLabel": "A\u00f1adir cr\u00e9ditos",
+        "title": "Añadir créditos",
+        "presetsLabel": "Añadir créditos",
         "otherAmountLabel": "Otro importe",
-        "minLabel": "M\u00edn. {amount}",
+        "minLabel": "Mín. {amount}",
         "close": "Cerrar",
-        "maybeLater": "M\u00e1s tarde",
-        "submit": "A\u00f1adir fondos",
-        "submitting": "Iniciando recarga\u2026"
+        "maybeLater": "Más tarde",
+        "submit": "Añadir fondos",
+        "submitting": "Iniciando recarga…"
       },
       "assetLibrary": {
         "title": "Selecciona imagen de referencia",
         "refresh": "Actualizar",
         "close": "Cerrar",
         "fieldFallback": "Imagen de referencia",
-        "empty": "A\u00fan no hay im\u00e1genes guardadas. Sube una referencia para verla aqu\u00ed."
+        "empty": "Aún no hay imágenes guardadas. Sube una referencia para verla aquí."
       },
       "processing": {
-        "title": "Procesando\u2026",
-        "errorTitle": "El render fall\u00f3",
+        "title": "Procesando…",
+        "errorTitle": "El render falló",
         "takeLabel": "Toma {current}/{total}",
         "phrases": [
-          "Enrutando tu render entre los proveedores\u2026",
-          "Preparando las pistas de movimiento\u2026",
-          "Uniendo fotogramas para la vista previa\u2026",
-          "Ejecutando las comprobaciones de seguridad antes de la entrega\u2026"
+          "Enrutando tu render entre los proveedores…",
+          "Preparando las pistas de movimiento…",
+          "Uniendo fotogramas para la vista previa…",
+          "Ejecutando las comprobaciones de seguridad antes de la entrega…"
         ]
       },
       "assetSlots": {
-        "imageCtaLabel": "Generar im\u00e1genes de referencia",
+        "imageCtaLabel": "Generar imágenes de referencia",
         "imageCtaHref": "/app/image"
       },
       "controls": {
         "core": {
           "title": "Ajustes principales",
-          "subtitle": "Duraci\u00f3n, formato y resoluci\u00f3n"
+          "subtitle": "Duración, formato y resolución"
         },
         "frames": {
           "label": "Fotogramas",
           "options": "Opciones: {options}",
           "unit": "{count} fotogramas",
-          "hint": "Los fotogramas controlan la duraci\u00f3n del clip; se env\u00edan tal cual sin convertirlos a segundos."
+          "hint": "Los fotogramas controlan la duración del clip; se envían tal cual sin convertirlos a segundos."
         },
         "duration": {
-          "optionsLabel": "Duraci\u00f3n",
-          "maxLabel": "M\u00e1x. {seconds}s",
-          "rangeLabel": "Duraci\u00f3n \u2014 segundos",
-          "rangeHint": "M\u00edn. {min}s \u00b7 M\u00e1x. {max}s",
-          "managed": "La duraci\u00f3n la gestiona directamente este motor."
+          "optionsLabel": "Duración",
+          "maxLabel": "Máx. {seconds}s",
+          "rangeLabel": "Duración — segundos",
+          "rangeHint": "Mín. {min}s · Máx. {max}s",
+          "managed": "La duración la gestiona directamente este motor."
         },
         "resolution": {
-          "label": "Resoluci\u00f3n",
+          "label": "Resolución",
           "auto": "Auto",
-          "hd": "\u2022 HD",
-          "fullHd": "\u2022 Full HD",
-          "ultraHd": "\u2022 Ultra HD",
-          "proSuffix": "\u2022 Pro"
+          "hd": "• HD",
+          "fullHd": "• Full HD",
+          "ultraHd": "• Ultra HD",
+          "proSuffix": "• Pro"
         },
         "aspect": {
-          "label": "Relaci\u00f3n de aspecto",
+          "label": "Relación de aspecto",
           "options": {
             "auto": "Auto",
             "source": "Fuente",
@@ -1967,52 +1967,52 @@
           },
           "copyPrompt": "Copiar prompt"
         },
-        "placeholder": "\u2014"
+        "placeholder": "—"
       },
       "galleryRail": {
-        "title": "\u00daltimos renders",
+        "title": "Últimos renders",
         "viewAll": "Ver todo",
-        "curated": "Los renders de muestra del equipo MaxVideo se muestran aqu\u00ed hasta que generes tus propios videos.",
-        "error": "No se pudieron cargar los \u00faltimos renders. Intenta de nuevo.",
+        "curated": "Los renders de muestra del equipo MaxVideo se muestran aquí hasta que generes tus propios videos.",
+        "error": "No se pudieron cargar los últimos renders. Intenta de nuevo.",
         "retry": "Reintentar",
-        "imageCta": "Generar im\u00e1genes",
+        "imageCta": "Generar imágenes",
         "snackbar": {
           "samples": "No se pueden quitar los clips de muestra.",
-          "removed": "Eliminado de la galer\u00eda.",
-          "failed": "No se pudo eliminar de la galer\u00eda."
+          "removed": "Eliminado de la galería.",
+          "failed": "No se pudo eliminar de la galería."
         }
       },
       "composer": {
         "title": "Compositor",
-        "subtitle": "Mejora el prompt \u00b7 Repeticiones no destructivas",
+        "subtitle": "Mejora el prompt · Repeticiones no destructivas",
         "badges": {
           "payg": "Pago por uso",
           "priceBefore": "Precio antes de generar",
           "alwaysCurrent": "Siempre actualizado"
         },
         "priceLabel": "Este render: {amount}",
-        "memberLabel": "Precio miembro \u2014 Ahorras {percent} %",
+        "memberLabel": "Precio miembro — Ahorras {percent} %",
         "labels": {
           "required": "Obligatorio",
           "optional": "Opcional"
         },
         "prompt": {
-          "placeholder": "Describe la escena\u2026",
-          "placeholderWithImage": "Describe c\u00f3mo debe moverse / transformarse la imagen\u2026"
+          "placeholder": "Describe la escena…",
+          "placeholderWithImage": "Describe cómo debe moverse / transformarse la imagen…"
         },
         "negativePrompt": {
-          "placeholder": "Elementos a evitar\u2026",
+          "placeholder": "Elementos a evitar…",
           "requiredHint": "Obligatorio"
         },
         "shortcuts": {
-          "generate": "Cmd+Enter \u2022 Generar",
-          "price": "G \u2022 Precio antes",
-          "seed": "S \u2022 Bloquear semilla"
+          "generate": "Cmd+Enter • Generar",
+          "price": "G • Precio antes",
+          "seed": "S • Bloquear semilla"
         },
-        "iterationsLabel": "\u00d7{count}",
+        "iterationsLabel": "×{count}",
         "button": {
           "idle": "Generar",
-          "loading": "Comprobando precio\u2026"
+          "loading": "Comprobando precio…"
         }
       },
       "engineSelect": {
@@ -2025,36 +2025,36 @@
         "modal": {
           "close": "Cerrar",
           "title": "Elige el motor adecuado para tu toma",
-          "subtitle": "Cada modelo tiene sus ventajas: algunos son r\u00e1pidos, otros m\u00e1s cinematogr\u00e1ficos o experimentales. Encuentra el que se ajuste a tu proyecto y genera con confianza.",
+          "subtitle": "Cada modelo tiene sus ventajas: algunos son rápidos, otros más cinematográficos o experimentales. Encuentra el que se ajuste a tu proyecto y genera con confianza.",
           "searchPlaceholder": "Busca por motor, proveedor o capacidad",
           "modeAll": "Modo: Todos",
           "modeValue": "Modo: {value}",
-          "resolutionAll": "Resoluci\u00f3n: Todas",
-          "viewModel": "Ver p\u00e1gina del modelo",
+          "resolutionAll": "Resolución: Todas",
+          "viewModel": "Ver página del modelo",
           "viewExamples": "Ver ejemplos",
-          "empty": "Ning\u00fan motor coincide todav\u00eda con tus filtros. Ajusta los filtros o borra la b\u00fasqueda para explorar todo el cat\u00e1logo.",
-          "disclaimer": "Los logotipos se usan solo con fines descriptivos. Las marcas pertenecen a sus respectivos due\u00f1os.",
-          "descriptionFallback": "Motor vers\u00e1til listo para flujos \u00abprecio antes de generar\u00bb. Revisa las especificaciones y lanza tus renders con confianza."
+          "empty": "Ningún motor coincide todavía con tus filtros. Ajusta los filtros o borra la búsqueda para explorar todo el catálogo.",
+          "disclaimer": "Los logotipos se usan solo con fines descriptivos. Las marcas pertenecen a sus respectivos dueños.",
+          "descriptionFallback": "Motor versátil listo para flujos «precio antes de generar». Revisa las especificaciones y lanza tus renders con confianza."
         },
         "guides": {
           "pika-text-to-video": {
-            "description": "Pika 2.2 maneja prompts estilizados o un \u00fanico still cargado en la misma tarjeta \u2014 ideal para loops expr\u00e9s y demos de producto.",
+            "description": "Pika 2.2 maneja prompts estilizados o un único still cargado en la misma tarjeta — ideal para loops exprés y demos de producto.",
             "badges": [
               "Prompts de texto",
               "Entrada de imagen",
-              "Cola r\u00e1pida"
+              "Cola rápida"
             ]
           },
           "sora-2": {
-            "description": "OpenAI Sora 2 cubre narrativas cinematogr\u00e1ficas con lipsync y audio nativo \u2014 perfecto para renders h\u00e9roe.",
+            "description": "OpenAI Sora 2 cubre narrativas cinematográficas con lipsync y audio nativo — perfecto para renders héroe.",
             "badges": [
               "Audio nativo",
-              "Cinem\u00e1tico",
+              "Cinemático",
               "Remix"
             ]
           },
           "sora-2-pro": {
-            "description": "Sora 2 Pro desbloquea resoluciones mayores, di\u00e1logo sincronizado y control imagen\u2192video para producciones premium.",
+            "description": "Sora 2 Pro desbloquea resoluciones mayores, diálogo sincronizado y control imagen→video para producciones premium.",
             "badges": [
               "1080p",
               "Audio nativo",
@@ -2062,7 +2062,7 @@
             ]
           },
           "veo-3-1": {
-            "description": "Veo 3.1 ya acepta prompts directos o referencias. Cambia entre texto\u2192video e imagen\u2192video sin salir de la cola.",
+            "description": "Veo 3.1 ya acepta prompts directos o referencias. Cambia entre texto→video e imagen→video sin salir de la cola.",
             "badges": [
               "Prompts de texto",
               "Multi referencia",
@@ -2070,18 +2070,18 @@
             ]
           },
           "veo-3-1-fast": {
-            "description": "Veo 3.1 Fast maneja prompts r\u00e1pidos o la animaci\u00f3n de una sola imagen con audio opcional.",
+            "description": "Veo 3.1 Fast maneja prompts rápidos o la animación de una sola imagen con audio opcional.",
             "badges": [
               "Prompts de texto",
-              "Imagen\u2192video",
-              "Opci\u00f3n de audio"
+              "Imagen→video",
+              "Opción de audio"
             ]
           },
           "veo-3-1-first-last": {
-            "description": "Sube primer y \u00faltimo frame, describe el puente y alterna entre Veo 3.1 y la versi\u00f3n Fast.",
+            "description": "Sube primer y último frame, describe el puente y alterna entre Veo 3.1 y la versión Fast.",
             "badges": [
               "Dos frames",
-              "Opci\u00f3n de audio",
+              "Opción de audio",
               "Standard & Fast"
             ]
           },
@@ -2090,27 +2090,27 @@
             "badges": [
               "Optimizador de prompts",
               "Entrada de imagen",
-              "6\u201310 s sin audio"
+              "6–10 s sin audio"
             ]
           },
           "kling-2-5-turbo": {
-            "description": "Kling 2.5 Turbo re\u00fane los modos Pro texto, Pro imagen y Standard para pasar de tomas cinem\u00e1ticas a loops baratos.",
+            "description": "Kling 2.5 Turbo reúne los modos Pro texto, Pro imagen y Standard para pasar de tomas cinemáticas a loops baratos.",
             "badges": [
               "Prompts de texto",
-              "Imagen\u2192video",
-              "Nivel est\u00e1ndar"
+              "Imagen→video",
+              "Nivel estándar"
             ]
           },
           "wan-2-5": {
-            "description": "Wan 2.5 genera clips de 5 o 10 s con audio opcional y expansi\u00f3n de prompt cuando tus briefs son cortos.",
+            "description": "Wan 2.5 genera clips de 5 o 10 s con audio opcional y expansión de prompt cuando tus briefs son cortos.",
             "badges": [
-              "Opci\u00f3n de audio",
+              "Opción de audio",
               "5 s o 10 s",
-              "480p\u20131080p"
+              "480p–1080p"
             ]
           },
           "wan-2-6": {
-            "description": "Wan 2.6 re\u00fane texto, imagen y referencia a video en una sola tarjeta, con prompts multi-shot y niveles 720p/1080p.",
+            "description": "Wan 2.6 reúne texto, imagen y referencia a video en una sola tarjeta, con prompts multi-shot y niveles 720p/1080p.",
             "badges": [
               "Prompts de texto",
               "Imagen de referencia",
@@ -2125,26 +2125,26 @@
       "sections": {
         "video": "Jobs de video",
         "image": "Jobs de imagen",
-        "videoEmpty": "Todav\u00eda no hay jobs de video.",
-        "imageEmpty": "Todav\u00eda no hay jobs de imagen."
+        "videoEmpty": "Todavía no hay jobs de video.",
+        "imageEmpty": "Todavía no hay jobs de imagen."
       },
       "teams": {
         "title": "Equipos",
         "srLive": "Activo",
-        "srSoon": "Pr\u00f3ximamente",
-        "live": "Billeteras compartidas, aprobaciones y presupuestos est\u00e1n activos en tu espacio de trabajo.",
-        "beta": "Pr\u00f3ximamente \u2014 billeteras compartidas, aprobaciones y presupuestos. \u00danete a la beta en {email}.",
+        "srSoon": "Próximamente",
+        "live": "Billeteras compartidas, aprobaciones y presupuestos están activos en tu espacio de trabajo.",
+        "beta": "Próximamente — billeteras compartidas, aprobaciones y presupuestos. Únete a la beta en {email}.",
         "email": "support@maxvideoai.com"
       },
-      "curated": "Los renders iniciales seleccionados por el equipo MaxVideo aparecen aqu\u00ed hasta que generes tus propios clips.",
+      "curated": "Los renders iniciales seleccionados por el equipo MaxVideo aparecen aquí hasta que generes tus propios clips.",
       "error": "No se pudieron cargar los trabajos.",
       "retry": "Reintentar",
-      "empty": "Todav\u00eda no hay renders. Inicia una generaci\u00f3n para llenar tu historial.",
-      "loadMore": "Cargar m\u00e1s",
-      "loading": "Cargando\u2026",
+      "empty": "Todavía no hay renders. Inicia una generación para llenar tu historial.",
+      "loadMore": "Cargar más",
+      "loading": "Cargando…",
       "actions": {
         "addToLibrary": "Agregar a la biblioteca",
-        "saving": "Guardando\u2026"
+        "saving": "Guardando…"
       }
     },
     "dashboard": {
@@ -2154,13 +2154,13 @@
         "videoTitle": "Crear video",
         "videoSubtitle": "Elige motor y modo, y lanza un render.",
         "imageTitle": "Crear imagen",
-        "imageSubtitle": "Genera im\u00e1genes o ediciones con los motores de imagen.",
+        "imageSubtitle": "Genera imágenes o ediciones con los motores de imagen.",
         "engineLabel": "Motor",
         "newVideo": "Nuevo video",
-        "useLastVideo": "Usar \u00faltimos ajustes de video",
+        "useLastVideo": "Usar últimos ajustes de video",
         "startVideoTemplate": "Empezar desde plantilla",
         "newImage": "Nueva imagen",
-        "useLastImage": "Usar \u00faltimos ajustes de imagen",
+        "useLastImage": "Usar últimos ajustes de imagen",
         "startImageTemplate": "Empezar desde plantilla"
       },
       "modes": {
@@ -2181,7 +2181,7 @@
       "recent": {
         "title": "Renders recientes",
         "viewAll": "Abrir biblioteca",
-        "empty": "A\u00fan no hay renders. Inicia una generaci\u00f3n para llenar tu biblioteca.",
+        "empty": "Aún no hay renders. Inicia una generación para llenar tu biblioteca.",
         "tabs": {
           "all": "Todos",
           "completed": "Completados",
@@ -2194,23 +2194,23 @@
         "spend30": "Gasto 30d",
         "avgCost": "Costo medio",
         "runway": "Runway",
-        "runwayFallback": "La estimaci\u00f3n de runway necesita renders completados.",
-        "mostUsed": "M\u00e1s usado"
+        "runwayFallback": "La estimación de runway necesita renders completados.",
+        "mostUsed": "Más usado"
       },
       "quickStarts": {
-        "title": "Arranques r\u00e1pidos",
-        "empty": "Guarda un render como plantilla para reutilizarlo aqu\u00ed.",
+        "title": "Arranques rápidos",
+        "empty": "Guarda un render como plantilla para reutilizarlo aquí.",
         "use": "Usar",
         "manage": "Abrir biblioteca",
         "remove": "Eliminar",
         "meta": {
           "engine": "Motor",
           "format": "Formato",
-          "duration": "Duraci\u00f3n",
+          "duration": "Duración",
           "audio": "Audio",
-          "audioOn": "S\u00ed",
+          "audioOn": "Sí",
           "audioOff": "No",
-          "audioUnknown": "\u2014",
+          "audioUnknown": "—",
           "price": "Precio",
           "formatAuto": "Auto"
         },
@@ -2224,63 +2224,63 @@
       },
       "actions": {
         "retry": "Reintentar",
-        "loadMore": "Cargar m\u00e1s",
+        "loadMore": "Cargar más",
         "download": "Descargar",
         "remix": "Remixar",
         "template": "Usar como plantilla",
         "noPreview": "Sin vista previa"
       },
       "lightbox": {
-        "groupTitle": "Grupo \u00d7{count}",
+        "groupTitle": "Grupo ×{count}",
         "jobTitle": "Render {id}",
         "metadata": {
           "created": "Creado",
-          "heroDuration": "Duraci\u00f3n del hero",
+          "heroDuration": "Duración del hero",
           "engine": "Motor",
-          "duration": "Duraci\u00f3n",
+          "duration": "Duración",
           "status": "Estado",
           "notProvided": "Sin datos"
         },
         "statusFallback": "N/D",
-        "versionLabel": "Versi\u00f3n {index}"
+        "versionLabel": "Versión {index}"
       }
     },
     "billing": {
-      "title": "Facturaci\u00f3n",
+      "title": "Facturación",
       "hero": {
         "title": "Precio antes de generar.",
-        "subtitle": "Paga solo por lo que ejecutes. Comienza con Cr\u00e9ditos iniciales (10 $). Sin suscripci\u00f3n. Sin compromiso.",
+        "subtitle": "Paga solo por lo que ejecutes. Comienza con Créditos iniciales (10 $). Sin suscripción. Sin compromiso.",
         "liveMode": "Modo en vivo",
         "testMode": "Modo de prueba"
       },
       "wallet": {
         "title": "Billetera",
-        "description": "Cr\u00e9ditos iniciales (10 $). Recarga una vez y paga cada render al centavo. Cualquier saldo sin usar sigue siendo tuyo.",
-        "addFunds": "A\u00f1adir {amount}",
+        "description": "Créditos iniciales (10 $). Recarga una vez y paga cada render al centavo. Cualquier saldo sin usar sigue siendo tuyo.",
+        "addFunds": "Añadir {amount}",
         "quickAmount": "{amount}",
         "customLabel": "Monto personalizado (USD)",
-        "customPlaceholder": "Introduce un monto (m\u00edn. $10)",
-        "customHint": "Recarga m\u00ednima: $10.",
-        "customCta": "A\u00f1adir monto",
-        "customInvalid": "Introduce un monto v\u00e1lido.",
-        "customMin": "M\u00ednimo: $10.",
-        "autoTopUp": "Activar recarga autom\u00e1tica (opcional)",
+        "customPlaceholder": "Introduce un monto (mín. $10)",
+        "customHint": "Recarga mínima: $10.",
+        "customCta": "Añadir monto",
+        "customInvalid": "Introduce un monto válido.",
+        "customMin": "Mínimo: $10.",
+        "autoTopUp": "Activar recarga automática (opcional)",
         "lowBalance": "Tu saldo es bajo. Recarga para seguir creando.",
         "currencyLabel": "Moneda de cobro",
-        "currencyLoading": "Detectando monedas\u2026",
-        "currencyLoadError": "No se pudieron cargar las monedas. Se usar\u00e1 USD.",
+        "currencyLoading": "Detectando monedas…",
+        "currencyLoadError": "No se pudieron cargar las monedas. Se usará USD.",
         "currencyDetected": "Detectado {currency}",
         "currencyOverride": "Cobro en {selected} (auto: {detected})",
-        "quoteLoading": "Calculando totales\u2026",
+        "quoteLoading": "Calculando totales…",
         "quoteError": "No se pudieron obtener tasas. El monto se confirma al pagar."
       },
       "membership": {
         "title": "Estado de miembro",
-        "description": "Estado autom\u00e1tico \u2014 sin suscripci\u00f3n. Se calcula sobre los \u00faltimos 30 d\u00edas. Se actualiza a diario seg\u00fan tu gasto.",
+        "description": "Estado automático — sin suscripción. Se calcula sobre los últimos 30 días. Se actualiza a diario según tu gasto.",
         "defaultTier": "Miembro",
         "savingsChip": "Ahorra {percent} %",
-        "defaultLine": "{tier}: tarifa est\u00e1ndar en cada render.",
-        "thresholdLine": "{tier}: gasta {amount} / 30 d\u00edas para ahorrar {percent} % en cada render elegible.",
+        "defaultLine": "{tier}: tarifa estándar en cada render.",
+        "thresholdLine": "{tier}: gasta {amount} / 30 días para ahorrar {percent} % en cada render elegible.",
         "labels": {
           "member": "Miembro",
           "plus": "Plus",
@@ -2289,38 +2289,38 @@
       },
       "teams": {
         "title": "Para equipos",
-        "description": "Billetera compartido y roles. Un \u00fanico saldo para todos. Presupuestos blandos/duros por proyecto. Resumen diario por correo.",
+        "description": "Billetera compartido y roles. Un único saldo para todos. Presupuestos blandos/duros por proyecto. Resumen diario por correo.",
         "actions": {
-          "invite": "Invitar compa\u00f1eros",
+          "invite": "Invitar compañeros",
           "budgets": "Definir presupuestos"
         },
         "note": "Nota: en billeteras compartidas, el estado aplica a todos.",
-        "comingSoon": "Pr\u00f3ximamente \u2014 billeteras unificadas, aprobaciones por rol y control de presupuestos. \u00danete a la beta en {email}.",
+        "comingSoon": "Próximamente — billeteras unificadas, aprobaciones por rol y control de presupuestos. Únete a la beta en {email}.",
         "contactEmail": "support@maxvideoai.com",
         "statusLive": "En vivo",
-        "statusSoon": "Pr\u00f3ximamente"
+        "statusSoon": "Próximamente"
       },
       "estimator": {
         "title": "Calculadora de costes",
-        "summary": "Selecciona Motor \u00b7 Duraci\u00f3n \u00b7 Resoluci\u00f3n \u2192 Este render: {value} (estimaci\u00f3n)",
-        "estimateLoading": "\u2026",
-        "estimateMissing": "\u2014",
+        "summary": "Selecciona Motor · Duración · Resolución → Este render: {value} (estimación)",
+        "estimateLoading": "…",
+        "estimateMissing": "—",
         "fields": {
           "engine": "Motor",
           "mode": "Modo",
-          "duration": "Duraci\u00f3n (s)",
-          "resolution": "Resoluci\u00f3n"
+          "duration": "Duración (s)",
+          "resolution": "Resolución"
         },
-        "note": "Solo se cobra si el render tiene \u00e9xito.",
-        "memberChipSavings": "Precio miembro \u2014 Ahorra {percent} %",
+        "note": "Solo se cobra si el render tiene éxito.",
+        "memberChipSavings": "Precio miembro — Ahorra {percent} %",
         "memberChipBase": "Precio miembro"
       },
       "receipts": {
         "title": "Recibos",
-        "subtitle": "Detallados por motor, duraci\u00f3n y resoluci\u00f3n. IVA incluido cuando aplica.",
-        "empty": "A\u00fan no hay recibos.",
-        "loading": "Cargando\u2026",
-        "loadMore": "Cargar m\u00e1s",
+        "subtitle": "Detallados por motor, duración y resolución. IVA incluido cuando aplica.",
+        "empty": "Aún no hay recibos.",
+        "loading": "Cargando…",
+        "loadMore": "Cargar más",
         "exportCsv": "Exportar CSV",
         "typeLabels": {
           "charge": "Cargo",
@@ -2336,56 +2336,56 @@
       "refunds": {
         "title": "Reembolsos y protecciones",
         "points": [
-          "Render fallido: reembolso autom\u00e1tico.",
-          "Control de presupuesto: l\u00edmites suaves/duros por proyecto.",
-          "Sin bloqueo de proveedor: funciona con los motores l\u00edderes; las marcas pertenecen a sus due\u00f1os."
+          "Render fallido: reembolso automático.",
+          "Control de presupuesto: límites suaves/duros por proyecto.",
+          "Sin bloqueo de proveedor: funciona con los motores líderes; las marcas pertenecen a sus dueños."
         ]
       },
       "faq": {
         "title": "Micro-FAQ",
         "entries": [
           {
-            "question": "\u00bfNecesito suscripci\u00f3n?",
+            "question": "¿Necesito suscripción?",
             "answer": "No. Pago por uso."
           },
           {
-            "question": "\u00bfPuedo comprar un \u00fanico render peque\u00f1o?",
-            "answer": "S\u00ed \u2014 se descuenta de tus 10 $ iniciales por ejecuci\u00f3n."
+            "question": "¿Puedo comprar un único render pequeño?",
+            "answer": "Sí — se descuenta de tus 10 $ iniciales por ejecución."
           },
           {
-            "question": "\u00bfCaducan mis cr\u00e9ditos?",
+            "question": "¿Caducan mis créditos?",
             "answer": "No, mientras la cuenta siga activa."
           },
           {
-            "question": "\u00bfC\u00f3mo funcionan los descuentos?",
-            "answer": "El estado de miembro se aplica autom\u00e1ticamente seg\u00fan tu gasto de los \u00faltimos 30 d\u00edas."
+            "question": "¿Cómo funcionan los descuentos?",
+            "answer": "El estado de miembro se aplica automáticamente según tu gasto de los últimos 30 días."
           }
         ],
-        "footnote": "IVA incluido cuando aplica. Reembolsos en renders fallidos. \u201cFunciona con\u201d indica compatibilidad; las marcas pertenecen a sus due\u00f1os."
+        "footnote": "IVA incluido cuando aplica. Reembolsos en renders fallidos. “Funciona con” indica compatibilidad; las marcas pertenecen a sus dueños."
       },
       "toasts": {
-        "success": "Pago realizado con \u00e9xito. Fondos a\u00f1adidos a tu billetera.",
+        "success": "Pago realizado con éxito. Fondos añadidos a tu billetera.",
         "cancelled": "Pago cancelado. No se aplicaron cargos."
       },
       "errors": {
         "loadReceipts": "No se pudieron cargar los recibos",
-        "loadMore": "No se pudieron cargar m\u00e1s recibos",
+        "loadMore": "No se pudieron cargar más recibos",
         "loadEngines": "No se pudieron cargar los motores.",
-        "estimator": "La calculadora fall\u00f3",
+        "estimator": "La calculadora falló",
         "lowBalance": "Tu saldo es bajo. Recarga para seguir creando."
       }
     },
     "image": {
       "hero": {
-        "eyebrow": "Workspace de im\u00e1genes",
-        "title": "Generar im\u00e1genes",
+        "eyebrow": "Workspace de imágenes",
+        "title": "Generar imágenes",
         "subtitle": "Crea y edita visuales de alta fidelidad con Nano Banana y los motores de Fal."
       },
       "preview": {
-        "eyebrow": "Previsualizaci\u00f3n",
-        "title": "\u00daltimo resultado",
-        "emptyTitle": "A\u00fan no hay vista previa.",
-        "emptyDescription": "Ejecuta una generaci\u00f3n para ver aqu\u00ed la \u00faltima imagen.",
+        "eyebrow": "Previsualización",
+        "title": "Último resultado",
+        "emptyTitle": "Aún no hay vista previa.",
+        "emptyDescription": "Ejecuta una generación para ver aquí la última imagen.",
         "download": "Descargar",
         "copy": "Copiar enlace",
         "copied": "Copiado",
@@ -2393,8 +2393,8 @@
       },
       "engine": {
         "eyebrow": "Motor",
-        "priceCalculating": "Calculando precio\u2026",
-        "priceLabel": "{amount} / ejecuci\u00f3n"
+        "priceCalculating": "Calculando precio…",
+        "priceLabel": "{amount} / ejecución"
       },
       "modeTabs": {
         "generate": "Crear",
@@ -2402,26 +2402,26 @@
       },
       "composer": {
         "promptLabel": "Prompt",
-        "promptPlaceholder": "Describe la imagen que quieres generar\u2026",
-        "promptPlaceholderWithImage": "Describe c\u00f3mo debe editarse / transformarse la imagen\u2026",
+        "promptPlaceholder": "Describe la imagen que quieres generar…",
+        "promptPlaceholderWithImage": "Describe cómo debe editarse / transformarse la imagen…",
         "charCount": "{count} caracteres",
-        "presetsHint": "Elige un preset \u00b7 1\u20138 por ejecuci\u00f3n",
-        "numImagesLabel": "N\u00famero de im\u00e1genes",
+        "presetsHint": "Elige un preset · 1–8 por ejecución",
+        "numImagesLabel": "Número de imágenes",
         "numImagesCount": "{count} {unit}",
         "numImagesUnit": {
           "singular": "imagen",
-          "plural": "im\u00e1genes"
+          "plural": "imágenes"
         },
-        "resolutionLabel": "Resoluci\u00f3n",
-        "resolutionHint": "Itera en 1K/2K y pasa a 4K para el final (el precio se ajusta autom\u00e1ticamente).",
-        "resolutionLockedLabel": "Resoluci\u00f3n bloqueada por este motor.",
+        "resolutionLabel": "Resolución",
+        "resolutionHint": "Itera en 1K/2K y pasa a 4K para el final (el precio se ajusta automáticamente).",
+        "resolutionLockedLabel": "Resolución bloqueada por este motor.",
         "estimatedCost": "Costo estimado: {amount}",
-        "referenceLabel": "Im\u00e1genes de referencia",
-        "referenceHelper": "Opcional \u00b7 hasta {count} im\u00e1genes",
-        "referenceNote": "Arrastra y suelta, pega, sube desde tu dispositivo o abre la biblioteca. Obligatorio en modo Edici\u00f3n.",
+        "referenceLabel": "Imágenes de referencia",
+        "referenceHelper": "Opcional · hasta {count} imágenes",
+        "referenceNote": "Arrastra y suelta, pega, sube desde tu dispositivo o abre la biblioteca. Obligatorio en modo Edición.",
         "referenceButton": "Biblioteca",
         "referenceSlotLabel": "Ranura {index}",
-        "referenceSlotHint": "Suelta una imagen, s\u00fabela o elige una de tu biblioteca.",
+        "referenceSlotHint": "Suelta una imagen, súbela o elige una de tu biblioteca.",
         "referenceSlotNameFallback": "Imagen",
         "referenceSlotActions": {
           "upload": "Subir",
@@ -2432,39 +2432,39 @@
       },
       "history": {
         "eyebrow": "Run reciente",
-        "empty": "Lanza una generaci\u00f3n para completar el historial. Cada variante aparecer\u00e1 aqu\u00ed.",
+        "empty": "Lanza una generación para completar el historial. Cada variante aparecerá aquí.",
         "runsLabel": {
           "zero": "Sin runs",
           "other": "{count} runs"
         },
         "noPreview": "Sin vista previa",
-        "loadMore": "Cargar m\u00e1s",
-        "refreshing": "Actualizando historial\u2026"
+        "loadMore": "Cargar más",
+        "refreshing": "Actualizando historial…"
       },
       "runButton": {
-        "idle": "Generar im\u00e1genes",
-        "running": "Generando\u2026"
+        "idle": "Generar imágenes",
+        "running": "Generando…"
       },
       "errors": {
         "onlyImages": "Solo se aceptan archivos de imagen.",
         "uploadFailed": "No se pudo subir la imagen. Intenta de nuevo.",
-        "fileTooLarge": "La imagen supera el l\u00edmite de {maxMB} MB. Comprime o elige un archivo m\u00e1s ligero.",
-        "unauthorized": "Sesi\u00f3n expirada \u2014 inicia sesi\u00f3n de nuevo y reintenta la carga.",
+        "fileTooLarge": "La imagen supera el límite de {maxMB} MB. Comprime o elige un archivo más ligero.",
+        "unauthorized": "Sesión expirada — inicia sesión de nuevo y reintenta la carga.",
         "promptMissing": "El prompt es obligatorio.",
-        "referenceMissing": "Agrega al menos una imagen de referencia para el modo Edici\u00f3n.",
-        "generic": "La generaci\u00f3n de imagen fall\u00f3."
+        "referenceMissing": "Agrega al menos una imagen de referencia para el modo Edición.",
+        "generic": "La generación de imagen falló."
       },
       "messages": {
         "success": "Se generaron {count} imagen(es)."
       },
       "general": {
-        "uploading": "Subiendo\u2026",
+        "uploading": "Subiendo…",
         "cancelUpload": "Cancelar carga",
         "emptyEngines": "No hay motores de imagen disponibles."
       },
       "library": {
         "button": "Biblioteca",
-        "empty": "A\u00fan no guardaste recursos. S\u00fabelos desde el compositor o desde esta p\u00e1gina.",
+        "empty": "Aún no guardaste recursos. Súbelos desde el compositor o desde esta página.",
         "overlay": "Usar esta imagen",
         "assetFallback": "Recurso",
         "modal": {
@@ -2472,7 +2472,7 @@
           "description": "Elige una imagen que ya importaste.",
           "close": "Cerrar",
           "error": "No se pudieron cargar los recursos. Intenta de nuevo.",
-          "empty": "A\u00fan no guardaste recursos. S\u00fabelos desde el compositor o desde esta p\u00e1gina."
+          "empty": "Aún no guardaste recursos. Súbelos desde el compositor o desde esta página."
         }
       }
     },
@@ -2489,15 +2489,15 @@
         "title": "Recursos de la biblioteca",
         "countLabel": "{count}",
         "loadError": "No se pudieron cargar los recursos importados.",
-        "empty": "A\u00fan no tienes recursos importados. S\u00fabelos desde el compositor o arr\u00e1stralos aqu\u00ed.",
+        "empty": "Aún no tienes recursos importados. Súbelos desde el compositor o arrástralos aquí.",
         "deleteError": "No se pudo eliminar esta imagen.",
         "deleteButton": "Eliminar",
-        "deleting": "Eliminando\u2026",
+        "deleting": "Eliminando…",
         "assetFallback": "Recurso"
       }
     },
     "settings": {
-      "title": "Configuraci\u00f3n",
+      "title": "Configuración",
       "tabs": {
         "account": "Cuenta",
         "team": "Equipo",
@@ -2536,32 +2536,32 @@
       "team": {
         "title": "Equipo",
         "srLive": "Disponible",
-        "srSoon": "Pr\u00f3ximamente",
+        "srSoon": "Próximamente",
         "liveDescription": "Gestiona miembros, roles, presupuestos e integraciones.",
         "invite": "Invitar miembro",
         "createProject": "Crear proyecto",
-        "upcomingPrefix": "Muy pronto \u2014 billeteras compartidas, aprobaciones y presupuestos. \u00danete a la beta en ",
+        "upcomingPrefix": "Muy pronto — billeteras compartidas, aprobaciones y presupuestos. Únete a la beta en ",
         "upcomingEmail": "support@maxvideoai.com",
         "upcomingSuffix": "."
       },
       "privacy": {
         "title": "Privacidad y seguridad",
-        "allowIndexLabel": "Permitir indexaci\u00f3n por defecto",
-        "allowIndexDescription": "Los nuevos videos pueden aparecer en la galer\u00eda, sitemap y b\u00fasquedas. Cada render puede ajustarse de forma individual.",
-        "saving": "Guardando preferencia\u2026",
-        "disableHint": "Desactiva esta opci\u00f3n si prefieres que todo quede privado. Los videos publicados mantienen su estado actual.",
+        "allowIndexLabel": "Permitir indexación por defecto",
+        "allowIndexDescription": "Los nuevos videos pueden aparecer en la galería, sitemap y búsquedas. Cada render puede ajustarse de forma individual.",
+        "saving": "Guardando preferencia…",
+        "disableHint": "Desactiva esta opción si prefieres que todo quede privado. Los videos publicados mantienen su estado actual.",
         "preferenceError": "No se pudo actualizar la preferencia"
       },
       "notifications": {
         "title": "Notificaciones",
-        "comingSoon": "Pr\u00f3ximamente \u2014 res\u00famenes por email y web push para gasto, colas y estado de jobs.",
-        "srSoon": "Pr\u00f3ximamente",
+        "comingSoon": "Próximamente — resúmenes por email y web push para gasto, colas y estado de jobs.",
+        "srSoon": "Próximamente",
         "srLive": "Disponible",
         "marketing": {
           "title": "Emails de marketing",
           "description": "Recibe novedades, lanzamientos y consejos. Puedes darte de baja cuando quieras.",
-          "lastUpdatedPrefix": "\u00daltima actualizaci\u00f3n:",
-          "confirmPending": "Necesitamos confirmaci\u00f3n \u2014 revisa tu bandeja de entrada."
+          "lastUpdatedPrefix": "Última actualización:",
+          "confirmPending": "Necesitamos confirmación — revisa tu bandeja de entrada."
         },
         "toggles": {
           "jobDone": "Job completado",
@@ -2576,76 +2576,78 @@
     }
   },
   "auth": {
-    "back": "Atr\u00e1s",
+    "back": "Atrás",
     "tabs": {
-      "signin": "Iniciar sesi\u00f3n",
+      "signin": "Iniciar sesión",
       "signup": "Crear cuenta"
     },
     "modes": {
       "signup": {
         "title": "Crea tu cuenta de workspace",
-        "description": "Obt\u00e9n acceso inmediato a MaxVideoAI. Confirmaremos tu correo antes del primer render."
+        "description": "Obtén acceso inmediato a MaxVideoAI. Confirmaremos tu correo antes del primer render."
       },
       "signin": {
         "title": "Accede a tu workspace",
-        "description": "Inicia sesi\u00f3n con Google o correo para retomar tus proyectos."
+        "description": "Inicia sesión con Google o correo para retomar tus proyectos."
       },
       "reset": {
-        "title": "Restablece tu contrase\u00f1a",
+        "title": "Restablece tu contraseña",
         "description": "Te enviaremos un enlace seguro para restablecerla."
       }
     },
     "google": "Continuar con Google",
     "divider": "Acceso por correo",
     "fields": {
-      "email": "Correo electr\u00f3nico",
-      "password": "Contrase\u00f1a",
-      "confirmPassword": "Confirmar contrase\u00f1a"
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar contraseña"
     },
     "placeholders": {
       "email": "tu@empresa.com",
       "passwordNew": "Al menos 6 caracteres",
-      "password": "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
+      "password": "••••••••"
     },
-    "forgotPassword": "\u00bfOlvidaste tu contrase\u00f1a?",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
     "actions": {
-      "signin": "Iniciar sesi\u00f3n con correo",
+      "signin": "Iniciar sesión con correo",
       "signup": "Crear cuenta",
       "reset": "Enviar enlace"
     },
     "links": {
-      "backToSignIn": "Volver a iniciar sesi\u00f3n",
+      "backToSignIn": "Volver a iniciar sesión",
       "newAccount": "Crear una cuenta nueva",
-      "haveAccount": "\u00bfYa tienes cuenta? Inicia sesi\u00f3n"
+      "haveAccount": "¿Ya tienes cuenta? Inicia sesión"
     },
     "terms": {
-      "prefix": "He le\u00eddo y acepto ",
-      "termsLabel": "los T\u00e9rminos de servicio",
+      "prefix": "He leído y acepto ",
+      "termsLabel": "los Términos de servicio",
       "infix": " y la ",
-      "privacyLabel": "Pol\u00edtica de privacidad",
+      "privacyLabel": "Política de privacidad",
       "suffix": ".",
-      "error": "Debes aceptar los t\u00e9rminos y la pol\u00edtica de privacidad para continuar.",
-      "age": "Confirmo que tengo al menos {age} a\u00f1os.",
-      "marketing": "S\u00ed, quiero recibir correos ocasionales sobre el producto. Puedo cancelar cuando quiera."
+      "error": "Debes aceptar los términos y la política de privacidad para continuar.",
+      "age": "Confirmo que tengo al menos {age} años.",
+      "marketing": "Sí, quiero recibir correos ocasionales sobre el producto. Puedo cancelar cuando quiera."
     },
     "signupSuggestion": {
-      "title": "\u00bfNuevo aqu\u00ed?",
+      "title": "¿Nuevo aquí?",
       "body": "Crea una cuenta con {email} sin volver a escribir tus datos.",
       "accept": "Crear esta cuenta",
-      "decline": "Lo intentar\u00e9 m\u00e1s tarde"
+      "decline": "Lo intentaré más tarde"
     }
   },
   "comparePage": {
     "meta": {
-      "title": "{left} vs {right}: specs, precios y prueba de prompt | MaxVideoAI",
-      "titleFallback": "Comparar motores de video IA: specs, precios y prueba de prompt | MaxVideoAI",
-      "description": "Compara {left} vs {right} en MaxVideoAI con prompts id\u00e9nticos, specs clave y un scorecard en 11 criterios.",
-      "descriptionFallback": "Comparaci\u00f3n lado a lado de motores de video IA con m\u00e9tricas y gu\u00eda de MaxVideoAI."
+      "title": "{left} vs {right} — Especificaciones, precios y test de prompts | MaxVideoAI",
+      "titleFallback": "Comparar motores de vídeo IA — Especificaciones, precios y test de prompts | MaxVideoAI",
+      "description": "Compara {left} vs {right} en MaxVideoAI con prompts idénticos, specs clave y un scorecard en 11 criterios.",
+      "descriptionFallback": "Comparación lado a lado de motores de video IA con métricas y guía de MaxVideoAI."
     },
     "hero": {
       "back": "Volver a modelos",
       "kicker": "Comparar motores",
-      "intro": "Esta p\u00e1gina compara {left} vs {right} en MaxVideoAI usando los mismos prompts, renders lado a lado, specs clave y un scorecard en 11 criterios. \u00dasala para elegir r\u00e1pido y luego abre el perfil de cada motor para specs completas y ejemplos de prompts."
+      "intro": "Esta página compara {left} vs {right} en MaxVideoAI usando los mismos prompts, renders lado a lado, specs clave y un scorecard en 11 criterios. Úsala para elegir rápido y luego abre el perfil de cada motor para specs completas y ejemplos de prompts.",
+      "takeawaysTitle": "Puntos clave",
+      "lastUpdatedLabel": "Actualizado"
     },
     "scorecard": {
       "title": "Scorecard (lado a lado)",
@@ -2663,14 +2665,16 @@
       "prompt": "Prompt",
       "tryPrompt": "Prueba este prompt:",
       "opensGenerator": "Abre el generador con el prompt cargado.",
-      "whatTests": "Qu\u00e9 eval\u00faa",
-      "placeholder": "Ejemplo provisional \u2014 render del prompt pronto",
+      "whatTests": "Qué evalúa",
+      "placeholder": "Ejemplo provisional — render del prompt pronto",
       "copyPrompt": "Copiar prompt",
-      "copied": "Copiado"
+      "copied": "Copiado",
+      "expandPrompt": "Ver prompt completo",
+      "collapsePrompt": "Ocultar prompt completo"
     },
     "keySpecs": {
       "title": "Especificaciones clave (lado a lado)",
-      "subtitle": "Compara las especificaciones clave de modelos de video IA (precios, entradas, resoluci\u00f3n, duraci\u00f3n, formatos, audio y controles). Es un resumen \u2014 abre el perfil para ver el set completo y ejemplos de prompts.",
+      "subtitle": "Compara las especificaciones clave de modelos de video IA (precios, entradas, resolución, duración, formatos, audio y controles). Es un resumen — abre el perfil para ver el set completo y ejemplos de prompts.",
       "keyLabel": "Spec clave"
     },
     "specLabels": {
@@ -2678,82 +2682,83 @@
       "textToVideo": "Texto a video",
       "imageToVideo": "Imagen a video",
       "videoToVideo": "Video a video",
-      "firstLastFrame": "Primer/\u00faltimo fotograma",
+      "firstLastFrame": "Primer/último fotograma",
       "referenceImageStyle": "Imagen de referencia / estilo",
       "referenceVideo": "Video de referencia",
-      "maxResolution": "Resoluci\u00f3n m\u00e1x.",
-      "maxDuration": "Duraci\u00f3n m\u00e1x.",
+      "maxResolution": "Resolución máx.",
+      "maxDuration": "Duración máx.",
       "aspectRatios": "Relaciones de aspecto",
       "fpsOptions": "Opciones de FPS",
       "outputFormats": "Formato de salida",
       "audioOutput": "Salida de audio",
-      "nativeAudioGeneration": "Generaci\u00f3n de audio nativa",
+      "nativeAudioGeneration": "Generación de audio nativa",
       "lipSync": "Lip sync",
-      "cameraMotionControls": "Controles de c\u00e1mara / movimiento",
-      "watermark": "Marca de agua"
+      "cameraMotionControls": "Controles de cámara / movimiento",
+      "watermark": "Marca de agua",
+      "avgRenderTime": "Tiempo medio de render"
     },
     "showdown": {
       "title": "Showdown (mismo prompt)",
-      "subtitle": "Renders lado a lado del mismo prompt en MaxVideoAI. Los prompts son id\u00e9nticos; los resultados pueden variar seg\u00fan el modelo.",
+      "subtitle": "Renders lado a lado del mismo prompt en MaxVideoAI. Los prompts son idénticos; los resultados pueden variar según el modelo.",
       "note": "Mostrando hasta 3 pares de prompts para claridad.",
-      "footer": "Esta comparaci\u00f3n lado a lado usa prompts id\u00e9nticos para resaltar diferencias en movimiento, realismo, fidelidad humana y legibilidad del texto. Para specs completas, controles y m\u00e1s ejemplos, abre cada perfil de motor."
+      "footer": "Esta comparación lado a lado usa prompts idénticos para resaltar diferencias en movimiento, realismo, fidelidad humana y legibilidad del texto. Para specs completas, controles y más ejemplos, abre cada perfil de motor."
     },
     "faq": {
       "title": "FAQ",
-      "subtitle": "Respuestas r\u00e1pidas sobre {left} vs {right} en MaxVideoAI (precios, modos, specs y por qu\u00e9 difieren los resultados).",
-      "validating": "a\u00fan en validaci\u00f3n",
-      "pricingDiff": "Los precios var\u00edan por modo y preset. Actualmente, {left} empieza en {leftValue} y {right} en {rightValue} (ver \u201cPrecios (MaxVideoAI)\u201d para detalles).",
+      "subtitle": "Respuestas rápidas sobre {left} vs {right} en MaxVideoAI (precios, modos, specs y por qué difieren los resultados).",
+      "validating": "aún en validación",
+      "pricingDiff": "Los precios varían según el motor y los ajustes (duración, resolución, audio). Actualmente, {left} parte de {leftValue} vs {right} parte de {rightValue}.",
       "capabilityDiff": "{label}: {left} es {leftValue} vs {right} es {rightValue}.",
-      "capabilityPending": "{label}: ambos est\u00e1n {status}.",
+      "capabilityPending": "{label}: ambos están {status}.",
       "outputDiff": "{label}: {left} es {leftValue} vs {right} es {rightValue}.",
-      "outputPending": "{label}: datos a\u00fan en validaci\u00f3n para uno o ambos motores.",
+      "outputPending": "{label}: datos aún en validación para uno o ambos motores.",
       "capabilityLabel": "Capacidad",
-      "outputLabel": "Resoluci\u00f3n m\u00e1x.",
-      "q1": "\u00bfQu\u00e9 son {left} y {right}?",
-      "a1": "{left} y {right} son motores de generaci\u00f3n de video IA disponibles en MaxVideoAI. Esta p\u00e1gina los compara lado a lado usando los mismos prompts, specs clave y los datos anteriores.",
-      "q2": "\u00bfCu\u00e1l es mejor: {left} o {right}?",
-      "a2": "Depende de tu flujo de trabajo. Usa el scorecard y los showdowns con el mismo prompt para comparar adherencia al prompt, realismo del movimiento, fidelidad humana y legibilidad del texto \u2014 luego abre cada perfil para los detalles completos.",
-      "q3": "\u00bfCu\u00e1l es m\u00e1s barato en MaxVideoAI?",
-      "a3": "Los precios var\u00edan por modo y preset. Actualmente, {left} empieza en {leftValue} y {right} en {rightValue} (ver \u201cPrecios (MaxVideoAI)\u201d para detalles).",
-      "q4": "\u00bfCu\u00e1les son las mayores diferencias entre {left} y {right}?",
-      "q5": "\u00bfSoportan Texto a video / Imagen a video / Video a video?",
-      "a5": "En MaxVideoAI: Texto a video es {t2vLeft} vs {t2vRight}; Imagen a video es {i2vLeft} vs {i2vRight}; Video a video es {v2vLeft} vs {v2vRight}. Algunos campos a\u00fan pueden estar en validaci\u00f3n.",
-      "q6": "\u00bfSoportan Primer/\u00faltimo fotograma o referencias?",
-      "a6": "Primer/\u00faltimo fotograma es {firstLeft} vs {firstRight}. Imagen/estilo de referencia es {refImgLeft} vs {refImgRight}; video de referencia es {refVidLeft} vs {refVidRight}.",
-      "q7": "\u00bfCu\u00e1l es la resoluci\u00f3n m\u00e1x., duraci\u00f3n y relaciones de aspecto?",
-      "a7": "Salida m\u00e1x.: {resLeft} / {durLeft} para {left} y {resRight} / {durRight} para {right}. Las relaciones de aspecto incluyen {arLeft} vs {arRight} (ver Especificaciones clave para la lista completa).",
-      "q8": "\u00bfSoportan generaci\u00f3n de audio y lip sync?",
-      "a8": "Salida de audio es {audioOutLeft} vs {audioOutRight}. Generaci\u00f3n de audio nativa es {audioGenLeft} vs {audioGenRight}, y lip sync es {lipLeft} vs {lipRight} (algunos campos a\u00fan pueden estar en validaci\u00f3n).",
-      "q9": "\u00bfMaxVideoAI a\u00f1ade marca de agua?",
-      "a9": "No. Las exportaciones de MaxVideoAI son sin marca de agua (\u201cWatermark: No (MaxVideoAI)\u201d).",
-      "q10": "\u00bfPor qu\u00e9 los resultados se ven diferentes con el mismo prompt?",
-      "a10": "Incluso con prompts id\u00e9nticos, los modelos interpretan las instrucciones de forma distinta y usan datos de entrenamiento diferentes. Por eso existe la secci\u00f3n Showdown: mismo prompt, salidas lado a lado.",
-      "q11": "\u00bfD\u00f3nde encuentro specs completas, controles y m\u00e1s ejemplos de prompts?",
-      "a11": "Abre los perfiles completos para specs, controles y m\u00e1s prompts: /models/{leftSlug} y /models/{rightSlug}. Tambi\u00e9n puedes explorar m\u00e1s resultados en las galer\u00edas."
+      "outputLabel": "Resolución máx.",
+      "q1": "¿Qué son {left} y {right}?",
+      "a1": "{left} y {right} son motores de generación de video IA disponibles en MaxVideoAI. Esta página los compara lado a lado usando los mismos prompts, specs clave y los datos anteriores.",
+      "q2": "¿Cuál es mejor: {left} o {right}?",
+      "a2": "Depende de tu flujo de trabajo. Usa el scorecard y los showdowns con el mismo prompt para comparar adherencia al prompt, realismo del movimiento, fidelidad humana y legibilidad del texto — luego abre cada perfil para los detalles completos.",
+      "q3": "¿Cuál es más barato en MaxVideoAI?",
+      "a3": "Los precios varían según el motor y los ajustes (duración, resolución, audio). Actualmente, {left} parte de {leftValue} y {right} parte de {rightValue} (consulta “Precios (MaxVideoAI)” para más detalles).",
+      "q4": "¿Cuáles son las mayores diferencias entre {left} y {right}?",
+      "q5": "¿Soportan Texto a video / Imagen a video / Video a video?",
+      "a5": "En MaxVideoAI: Texto a video es {t2vLeft} vs {t2vRight}; Imagen a video es {i2vLeft} vs {i2vRight}; Video a video es {v2vLeft} vs {v2vRight}. Algunos campos aún pueden estar en validación.",
+      "q6": "¿Soportan Primer/último fotograma o referencias?",
+      "a6": "Primer/último fotograma es {firstLeft} vs {firstRight}. Imagen/estilo de referencia es {refImgLeft} vs {refImgRight}; video de referencia es {refVidLeft} vs {refVidRight}.",
+      "q7": "¿Cuál es la resolución máx., duración y relaciones de aspecto?",
+      "a7": "Salida máx.: {resLeft} / {durLeft} para {left} y {resRight} / {durRight} para {right}. Las relaciones de aspecto incluyen {arLeft} vs {arRight} (ver Especificaciones clave para la lista completa).",
+      "q8": "¿Soportan generación de audio y lip sync?",
+      "a8": "Salida de audio es {audioOutLeft} vs {audioOutRight}. Generación de audio nativa es {audioGenLeft} vs {audioGenRight}, y lip sync es {lipLeft} vs {lipRight} (algunos campos aún pueden estar en validación).",
+      "q9": "¿MaxVideoAI añade marca de agua?",
+      "a9": "No. Las exportaciones de MaxVideoAI son sin marca de agua (“Watermark: No (MaxVideoAI)”).",
+      "q10": "¿Por qué los resultados se ven diferentes con el mismo prompt?",
+      "a10": "Incluso con prompts idénticos, los modelos interpretan las instrucciones de forma distinta y usan datos de entrenamiento diferentes. Por eso existe la sección Showdown: mismo prompt, salidas lado a lado.",
+      "q11": "¿Dónde encuentro specs completas, controles y más ejemplos de prompts?",
+      "a11": "Abre los perfiles completos para specs, controles y más prompts: /models/{leftSlug} y /models/{rightSlug}. También puedes explorar más resultados en las galerías."
     },
     "summary": {
-      "scorecardLabel": "L\u00edder en scorecard",
-      "pricingLabel": "M\u00e1s barato en MaxVideoAI",
-      "durationLabel": "Duraci\u00f3n m\u00e1x.",
-      "scorecardTemplate": "L\u00edder en scorecard: {engine} lidera {wins}/{total}{best}.",
-      "pricingTemplate": "M\u00e1s barato: {engine} ({pricing}).",
-      "durationTemplate": "Duraci\u00f3n m\u00e1x.: {engine} ({duration}).",
+      "scorecardLabel": "Líder en scorecard",
+      "pricingLabel": "Más barato en MaxVideoAI",
+      "durationLabel": "Duración máx.",
+      "scorecardTemplate": "Líder en scorecard: {engine} lidera {wins}/{total}{best}.",
+      "pricingTemplate": "Más barato: {engine} ({pricing}).",
+      "durationTemplate": "Duración máx.: {engine} ({duration}).",
       "specTemplate": "{label}: {engine} ({leftValue} vs {rightValue}).",
-      "resolutionTemplate": "Resoluci\u00f3n m\u00e1x.: {engine} ({leftValue} vs {rightValue}).",
+      "resolutionTemplate": "Resolución máx.: {engine} ({leftValue} vs {rightValue}).",
       "bestLabel": "mejor"
     },
     "metrics": {
       "prompt_adherence": {
         "label": "Adherencia al prompt",
-        "tooltip": "alineaci\u00f3n al prompt / seguimiento de instrucciones"
+        "tooltip": "alineación al prompt / seguimiento de instrucciones"
       },
       "visual_quality": {
         "label": "Calidad visual",
-        "tooltip": "calidad de imagen / est\u00e9tica / realismo / artefactos / parpadeo"
+        "tooltip": "calidad de imagen / estética / realismo / artefactos / parpadeo"
       },
       "motion_realism": {
         "label": "Realismo del movimiento",
-        "tooltip": "suavidad del movimiento / plausibilidad f\u00edsica"
+        "tooltip": "suavidad del movimiento / plausibilidad física"
       },
       "temporal_consistency": {
         "label": "Consistencia temporal",
@@ -2769,27 +2774,31 @@
       },
       "audio_lip_sync": {
         "label": "Audio y lip sync",
-        "tooltip": "calidad del lip sync / sincronizaci\u00f3n del di\u00e1logo"
+        "tooltip": "calidad del lip sync / sincronización del diálogo"
       },
       "multi_shot_sequencing": {
-        "label": "Secuenciaci\u00f3n multi-shot",
+        "label": "Secuenciación multi-shot",
         "tooltip": "continuidad entre tomas / multi-shot"
       },
       "controllability": {
         "label": "Controlabilidad",
-        "tooltip": "control de c\u00e1mara / seguimiento de restricciones"
+        "tooltip": "control de cámara / seguimiento de restricciones"
       },
       "speed_stability": {
         "label": "Velocidad y estabilidad",
-        "tooltip": "latencia / tasa de \u00e9xito"
+        "tooltip": "latencia / tasa de éxito"
       },
       "pricing": {
         "label": "Precio",
-        "tooltip": "precio por segundo / cr\u00e9ditos / coste estimado"
+        "tooltip": "precio por segundo / créditos / coste estimado"
       }
     },
     "breadcrumb": {
       "root": "Comparaciones"
+    },
+    "related": {
+      "title": "Comparaciones relacionadas",
+      "subtitle": "Explora más comparativas populares lado a lado."
     }
   }
 }

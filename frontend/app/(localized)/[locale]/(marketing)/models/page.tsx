@@ -458,7 +458,7 @@ export default async function ModelsPage() {
     ],
   };
   const content = dictionary.models;
-  const galleryCopy = (content.gallery ?? {}) as {
+  const galleryCopy = (content.gallery ?? {}) as unknown as {
     scoreLabels?: Record<keyof EngineScore, string>;
     valueSentence?: {
       template?: string;
@@ -617,7 +617,7 @@ export default async function ModelsPage() {
       resolveSupported((keySpecs as Record<string, unknown>).firstLastFrame) ??
       Boolean(catalogEntry?.engine?.keyframes);
     const extend = Boolean(catalogEntry?.engine?.extend);
-    const lipSync = resolveSupported((keySpecs as Record<string, unknown>).lipSync);
+    const lipSync = resolveSupported((keySpecs as Record<string, unknown>).lipSync) ?? undefined;
     const audioSupported =
       resolveSupported((keySpecs as Record<string, unknown>).audioOutput) ??
       (catalogEntry?.engine?.audio == null ? null : Boolean(catalogEntry.engine.audio));

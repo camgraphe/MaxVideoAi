@@ -13,7 +13,7 @@ export function ModelsCompareHeroToggle({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const compareMode = searchParams.get('compare') === '1';
+  const compareMode = searchParams?.get('compare') === '1';
   const [localActive, setLocalActive] = useState(compareMode);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export function ModelsCompareHeroToggle({
   }, []);
 
   const toggleCompare = () => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() ?? '');
     const next = !localActive;
     setLocalActive(next);
     if (!next) {
@@ -39,7 +39,8 @@ export function ModelsCompareHeroToggle({
       params.set('compare', '1');
     }
     const query = params.toString();
-    const target = query ? `${pathname}?${query}` : pathname;
+    const currentPath = pathname ?? '/models';
+    const target = query ? `${currentPath}?${query}` : currentPath;
     router.push(target, { scroll: false });
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('models-compare-mode', { detail: { enabled: next } }));

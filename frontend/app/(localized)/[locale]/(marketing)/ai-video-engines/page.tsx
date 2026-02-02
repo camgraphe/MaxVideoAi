@@ -188,7 +188,7 @@ export default async function AiVideoEnginesPage() {
   const content = dictionary.aiVideoEngines ?? DEFAULT_CONTENT;
   const hero = content.hero ?? DEFAULT_CONTENT.hero;
   const sections: SectionCopy[] = Array.isArray(content.sections) && content.sections.length ? content.sections : DEFAULT_CONTENT.sections;
-  const comparison = content.comparison ?? DEFAULT_CONTENT.comparison;
+  const comparison = (content.comparison ?? DEFAULT_CONTENT.comparison) as typeof DEFAULT_CONTENT.comparison;
   const faqItems = Array.isArray(content.faq) && content.faq.length ? content.faq : DEFAULT_CONTENT.faq;
   const faqTitle = content.faqTitle ?? DEFAULT_CONTENT.faqTitle;
   const cta = content.cta ?? DEFAULT_CONTENT.cta;

@@ -86,8 +86,10 @@ export function CompareScoreboard({
       {rows.map((row) => {
         const leftIsNA = typeof row.leftValue !== 'number';
         const rightIsNA = typeof row.rightValue !== 'number';
-        const leftWidth = leftIsNA ? '0%' : `${row.leftValue * 10}%`;
-        const rightWidth = rightIsNA ? '0%' : `${row.rightValue * 10}%`;
+        const leftValue = leftIsNA ? 0 : row.leftValue ?? 0;
+        const rightValue = rightIsNA ? 0 : row.rightValue ?? 0;
+        const leftWidth = leftIsNA ? '0%' : `${leftValue * 10}%`;
+        const rightWidth = rightIsNA ? '0%' : `${rightValue * 10}%`;
         const leftBarClass =
           leftIsNA
             ? 'bg-transparent'
