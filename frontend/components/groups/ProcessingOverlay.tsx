@@ -151,6 +151,11 @@ export function ProcessingOverlay({
           --overlay-ink: rgba(30, 41, 59, 0.92);
           --overlay-muted: rgba(100, 116, 139, 0.78);
         }
+        :global([data-theme='dark']) .processing-overlay--light {
+          --overlay-bg: rgba(10, 14, 23, 0.9);
+          --overlay-ink: rgba(226, 232, 240, 0.95);
+          --overlay-muted: rgba(203, 213, 225, 0.82);
+        }
         .processing-overlay::before {
           content: '';
           position: absolute;
@@ -177,6 +182,10 @@ export function ProcessingOverlay({
         .processing-overlay--light .processing-overlay__spinner {
           border: 3px solid rgba(148, 163, 184, 0.3);
           border-top-color: rgba(51, 94, 234, 0.9);
+        }
+        :global([data-theme='dark']) .processing-overlay--light .processing-overlay__spinner {
+          border: 3px solid rgba(255, 255, 255, 0.22);
+          border-top-color: rgba(255, 255, 255, 0.85);
         }
         @keyframes spinner {
           0% {
