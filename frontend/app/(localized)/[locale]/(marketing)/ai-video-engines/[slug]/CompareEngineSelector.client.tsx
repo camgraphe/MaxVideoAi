@@ -1,8 +1,9 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useLocale } from 'next-intl';
 import { SelectMenu, type SelectOption } from '@/components/ui/SelectMenu';
-import { useRouter } from '@/i18n/navigation';
+import { getPathname, useRouter } from '@/i18n/navigation';
 import engineCatalog from '@/config/engine-catalog.json';
 
 type CompareEngineSelectorProps = {
@@ -14,6 +15,7 @@ type CompareEngineSelectorProps = {
 
 export function CompareEngineSelector({ options, value, otherValue, side }: CompareEngineSelectorProps) {
   const router = useRouter();
+  const locale = useLocale();
   const brandBySlug = useMemo(() => {
     const catalog = engineCatalog as Array<{ modelSlug: string; brandId?: string | null; marketingName?: string }>;
     return new Map(catalog.map((entry) => [entry.modelSlug, entry.brandId ?? null]));
@@ -71,8 +73,12 @@ export function CompareEngineSelector({ options, value, otherValue, side }: Comp
         const rightSlug = side === 'left' ? otherValue : nextValue;
         const sorted = [leftSlug, rightSlug].sort();
         const slug = `${sorted[0]}-vs-${sorted[1]}`;
-        const query = { order: leftSlug };
-        router.push({ pathname: '/ai-video-engines/[slug]', params: { slug }, query }, { scroll: false });
+        const basePath = getPathname({
+          href: { pathname: '/ai-video-engines/[slug]', params: { slug } },
+          locale,
+        });
+        const href = `${basePath}?order=${encodeURIComponent(leftSlug)}`;
+        router.push(href as never, { scroll: false });
       }}
     />
   );

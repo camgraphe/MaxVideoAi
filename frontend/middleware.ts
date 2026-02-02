@@ -341,9 +341,17 @@ export async function middleware(req: NextRequest) {
   let response: NextResponse;
 
   if (isMarketingPath) {
-    if ((isBotRequest || bypassLocaleRedirect) && !hasLocalePrefix(pathname)) {
+    const defaultPrefix = localePathnames[defaultLocale];
+    if (!hasLocalePrefix(pathname) && !localeFromPath && !defaultPrefix) {
       const rewriteUrl = req.nextUrl.clone();
-      const defaultPrefix = localePathnames[defaultLocale];
+      const suffix = pathname === '/' ? '' : pathname;
+      rewriteUrl.pathname = `/${defaultLocale}${suffix}`;
+      if (bypassLocaleRedirect) {
+        rewriteUrl.searchParams.delete('nolocale');
+      }
+      response = NextResponse.rewrite(rewriteUrl);
+    } else if ((isBotRequest || bypassLocaleRedirect) && !hasLocalePrefix(pathname)) {
+      const rewriteUrl = req.nextUrl.clone();
       if (defaultPrefix) {
         const suffix = pathname === '/' ? '' : pathname;
         rewriteUrl.pathname = `/${defaultPrefix}${suffix}`;

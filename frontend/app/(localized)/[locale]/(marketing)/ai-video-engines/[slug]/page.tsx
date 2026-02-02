@@ -20,6 +20,7 @@ import { CompareEngineSelector } from './CompareEngineSelector.client';
 import { CompareScoreboard } from './CompareScoreboard.client';
 import { CopyPromptButton } from './CopyPromptButton.client';
 import { getLatestVideoByPromptAndEngine, getVideosByIds, type GalleryVideo } from '@/server/videos';
+import { fetchEngineAverageDurations } from '@/server/generate-metrics';
 
 const SITE_BASE = (process.env.NEXT_PUBLIC_SITE_URL ?? process.env.SITE_URL ?? 'https://maxvideoai.com').replace(
   /\/+$/,
@@ -146,6 +147,12 @@ const ENGINE_OPTIONS = [...CATALOG]
   .map((entry) => ({ value: entry.modelSlug, label: entry.marketingName }))
   .sort((a, b) => a.label.localeCompare(b.label, 'en'));
 
+function reverseCompareSlug(slug: string) {
+  const parts = slug.split('-vs-');
+  if (parts.length !== 2) return null;
+  return `${parts[1]}-vs-${parts[0]}`;
+}
+
 function formatTemplate(template: string, values: Record<string, string>) {
   return template.replace(/\{(\w+)\}/g, (_, key) => values[key] ?? '');
 }
@@ -178,6 +185,17 @@ function formatEngineShortName(entry: EngineCatalogEntry): string {
     return words.slice(1).join(' ');
   }
   return words.slice(1).join(' ');
+}
+
+function formatEngineMetaName(entry: EngineCatalogEntry): string {
+  let name = formatEngineName(entry);
+  name = name.replace(/^(openai|google|minimax)\s+/i, '');
+  name = name.replace(/\s+text\s*&\s*image\s+to\s+video$/i, '');
+  name = name.replace(/\s+text\s+to\s+video$/i, '');
+  name = name.replace(/\s+image\s+to\s+video$/i, '');
+  name = name.replace(/\s+standard$/i, '');
+  name = name.replace(/\s+text$/i, '');
+  return name.trim();
 }
 
 type EngineAccent = {
@@ -235,6 +253,9 @@ function resolveEngines(slug: string) {
   const parts = slug.split('-vs-');
   if (parts.length !== 2) return null;
   const [leftSlug, rightSlug] = parts;
+  if (EXCLUDED_ENGINE_SLUGS.has(leftSlug) || EXCLUDED_ENGINE_SLUGS.has(rightSlug)) {
+    return null;
+  }
   const left = CATALOG_BY_SLUG.get(leftSlug);
   const right = CATALOG_BY_SLUG.get(rightSlug);
   if (!left || !right) return null;
@@ -851,8 +872,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     compareCopy.meta?.descriptionFallback ?? 'Side-by-side comparison of AI video engines with MaxVideoAI metrics and guidance.';
   const title = resolved
     ? formatTemplate(titleTemplate, {
-        left: formatEngineName(resolved.left),
-        right: formatEngineName(resolved.right),
+        left: formatEngineMetaName(resolved.left),
+        right: formatEngineMetaName(resolved.right),
       })
     : titleFallback;
   const description = resolved
@@ -901,13 +922,19 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   }
 
   const canonicalSlug = canonicalInfo?.canonicalSlug ?? slug;
-  return buildSeoMetadata({
+  const meta = buildSeoMetadata({
     locale,
     title,
     description,
     englishPath: `/ai-video-engines/${canonicalSlug}`,
     robots,
   });
+  return {
+    ...meta,
+    title: { absolute: title },
+    openGraph: meta.openGraph ? { ...meta.openGraph, title } : meta.openGraph,
+    twitter: meta.twitter ? { ...meta.twitter, title } : meta.twitter,
+  };
 }
 
 export default async function CompareDetailPage({
@@ -958,6 +985,12 @@ export default async function CompareDetailPage({
   if (requestedOrder && requestedOrder === right.modelSlug) {
     [left, right] = [right, left];
   }
+  const averageDurations = isDatabaseConfigured() ? await fetchEngineAverageDurations() : [];
+  const averageMap = new Map(averageDurations.map((entry) => [entry.engineId, entry.averageDurationMs]));
+  const leftAverage = averageMap.get(left.engineId) ?? left.engine?.avgDurationMs ?? null;
+  const rightAverage = averageMap.get(right.engineId) ?? right.engine?.avgDurationMs ?? null;
+  left = { ...left, engine: { ...left.engine, avgDurationMs: leftAverage } };
+  right = { ...right, engine: { ...right.engine, avgDurationMs: rightAverage } };
   const scores = await loadEngineScores();
   const keySpecs = await loadEngineKeySpecs();
   const leftScore = scores.get(left.modelSlug) ?? scores.get(left.engineId) ?? null;
@@ -986,7 +1019,10 @@ export default async function CompareDetailPage({
       : overallTone === 'left'
         ? 'bg-orange-500 text-white'
         : 'bg-surface-2 text-text-primary';
-  const showdowns = await hydrateShowdowns(SHOWDOWNS[canonicalSlug] ?? []);
+  const reversedShowdownSlug = reverseCompareSlug(canonicalSlug);
+  const showdowns = await hydrateShowdowns(
+    SHOWDOWNS[canonicalSlug] ?? (reversedShowdownSlug ? SHOWDOWNS[reversedShowdownSlug] : []) ?? []
+  );
   const normalizePrompt = (value?: string | null) => (value ?? '').trim().toLowerCase();
   const normalizedShowdowns = showdowns.filter(
     (entry): entry is ShowdownEntry => Boolean(entry)
@@ -1049,7 +1085,6 @@ export default async function CompareDetailPage({
       await Promise.all(lookupTasks);
     }
   }
-
   type ShowdownSlot = (typeof COMPARE_SHOWDOWNS)[number] & { left: ShowdownSide; right: ShowdownSide };
   const showdownSlots = COMPARE_SHOWDOWNS.map((template, index) => {
     const entry = orderedShowdowns[index];

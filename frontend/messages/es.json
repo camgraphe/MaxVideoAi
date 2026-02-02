@@ -902,7 +902,7 @@
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "v2.6 Pro"
       },
-      "title": "Comparar modelos de video IA: precios, límites y ejemplos | MaxVideoAI",
+    "title": "Modelos de video IA: precios y límites | MaxVideoAI",
       "description": "Compara modelos de video IA con precios en vivo y límites reales, luego elige 2 motores para una página lado a lado con specs, prompts y ejemplos clonables."
     },
     "note": "Los precios de Fal cambian rápido; confirma la pastilla Precio-Antes o tu clave directa antes de lanzar.",
@@ -2637,8 +2637,8 @@
   },
   "comparePage": {
     "meta": {
-      "title": "{left} vs {right} — Especificaciones, precios y test de prompts | MaxVideoAI",
-      "titleFallback": "Comparar motores de vídeo IA — Especificaciones, precios y test de prompts | MaxVideoAI",
+      "title": "{left} vs {right} — Specs y precios | MaxVideoAI",
+      "titleFallback": "Motores de video IA — Specs y precios | MaxVideoAI",
       "description": "Compara {left} vs {right} en MaxVideoAI con prompts idénticos, specs clave y un scorecard en 11 criterios.",
       "descriptionFallback": "Comparación lado a lado de motores de video IA con métricas y guía de MaxVideoAI."
     },

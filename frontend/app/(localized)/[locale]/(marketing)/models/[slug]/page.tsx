@@ -267,6 +267,7 @@ function buildSoftwareSchema({
   };
 }
 const MODELS_BASE_PATH_MAP = buildSlugMap('models');
+const COMPARE_BASE_PATH_MAP = buildSlugMap('compare');
 
 function buildDetailSlugMap(slug: string) {
   return locales.reduce<Record<AppLocale, string>>((acc, locale) => {
@@ -1088,6 +1089,12 @@ function Sora2PageLayout({
     const slugPart = targetSlug ? `/${targetSlug.replace(/^\/+/, '')}` : '';
     return `/${modelsBase}${slugPart}`.replace(/\/{2,}/g, '/');
   };
+  const compareBase = (COMPARE_BASE_PATH_MAP[locale] ?? 'ai-video-engines').replace(/^\/+|\/+$/g, '');
+  const localizeComparePath = (pairSlug: string, orderSlug?: string) => {
+    const slugPart = pairSlug ? `/${pairSlug.replace(/^\/+/, '')}` : '';
+    const orderParam = orderSlug ? `?order=${encodeURIComponent(orderSlug)}` : '';
+    return `/${compareBase}${slugPart}${orderParam}`.replace(/\/{2,}/g, '/');
+  };
   const galleryEngineSlug = engineSlug;
   const examplesLinkHref = getExamplesHref(galleryEngineSlug) ?? '/examples';
   const pricingLinkHref = { pathname: '/pricing' };
@@ -1770,6 +1777,8 @@ function Sora2PageLayout({
                           ? relatedCtaSora2Pro ?? fallbackCompare
                           : fallbackCompare
                       : fallbackCompare;
+                const compareSlug = [engineSlug, entry.modelSlug].sort().join('-vs-');
+                const compareHref = localizeComparePath(compareSlug, engineSlug);
                 return (
                   <article
                     key={entry.modelSlug}
@@ -1782,7 +1791,7 @@ function Sora2PageLayout({
                     <p className="mt-2 text-sm text-text-secondary line-clamp-3">
                       {entry.seo?.description ?? localizedContent.overview ?? ''}
                     </p>
-                    <TextLink href={localizeModelsPath(entry.modelSlug)} className="mt-4 gap-1 text-sm" linkComponent={Link}>
+                    <TextLink href={compareHref} className="mt-4 gap-1 text-sm" linkComponent={Link}>
                       {ctaLabel}
                     </TextLink>
                   </article>
@@ -1931,6 +1940,15 @@ export default async function ModelDetailPage({ params }: PageParams) {
   const localizeModelsPath = (targetSlug?: string) => {
     const slugPart = targetSlug ? `/${targetSlug.replace(/^\/+/, '')}` : '';
     return `/${modelsBase}${slugPart}`.replace(/\/{2,}/g, '/');
+  };
+  const compareBase = (COMPARE_BASE_PATH_MAP[activeLocale as AppLocale] ?? 'ai-video-engines').replace(
+    /^\/+|\/+$/g,
+    ''
+  );
+  const localizeComparePath = (pairSlug: string, orderSlug?: string) => {
+    const slugPart = pairSlug ? `/${pairSlug.replace(/^\/+/, '')}` : '';
+    const orderParam = orderSlug ? `?order=${encodeURIComponent(orderSlug)}` : '';
+    return `/${compareBase}${slugPart}${orderParam}`.replace(/\/{2,}/g, '/');
   };
   const localizedContent = await getEngineLocalized(slug, activeLocale);
   const detailSlugMap = buildDetailSlugMap(slug);
@@ -2375,6 +2393,8 @@ export default async function ModelDetailPage({ params }: PageParams) {
                 }
                 return `Try ${label}`;
               })();
+              const compareSlug = [slug, candidate.modelSlug].sort().join('-vs-');
+              const compareHref = localizeComparePath(compareSlug, slug);
               return (
                 <article key={candidate.modelSlug} className="rounded-2xl border border-hairline bg-surface/90 p-5 shadow-card">
                   <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{candidate.brandId}</p>
@@ -2383,7 +2403,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
                     {candidate.seo?.description ?? 'Latency, pricing, and prompt guides are documented on the detail page.'}
                   </p>
                   <TextLink
-                    href={localizeModelsPath(candidate.modelSlug)}
+                    href={compareHref}
                     className="mt-4 gap-1 text-sm"
                     linkComponent={Link}
                   >

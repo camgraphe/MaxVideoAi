@@ -818,7 +818,7 @@
         "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "v2.6 Pro"
       },
-      "title": "Compare AI Video Models: Live Pricing, Limits & Examples | MaxVideoAI",
+    "title": "AI Video Models: Pricing & Limits | MaxVideoAI",
       "description": "Compare AI video models with live pricing and real limits, then select two engines to open a side-by-side page with specs, prompts, and cloneable examples."
     },
     "note": "",
@@ -2660,8 +2660,8 @@
   },
   "comparePage": {
     "meta": {
-      "title": "{left} vs {right} — Side-by-Side Specs, Pricing & Prompt Test | MaxVideoAI",
-      "titleFallback": "Compare AI video engines — Side-by-Side Specs, Pricing & Prompt Test | MaxVideoAI",
+      "title": "{left} vs {right} — Specs & Pricing | MaxVideoAI",
+      "titleFallback": "AI video engines — Specs & Pricing | MaxVideoAI",
       "description": "Compare {left} vs {right} on MaxVideoAI with identical prompts, key specs, and a scorecard across 11 criteria.",
       "descriptionFallback": "Side-by-side comparison of AI video engines with MaxVideoAI metrics and guidance."
     },
