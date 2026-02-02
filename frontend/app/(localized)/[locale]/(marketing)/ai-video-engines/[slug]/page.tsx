@@ -19,7 +19,7 @@ import { ButtonLink } from '@/components/ui/Button';
 import { CompareEngineSelector } from './CompareEngineSelector.client';
 import { CompareScoreboard } from './CompareScoreboard.client';
 import { CopyPromptButton } from './CopyPromptButton.client';
-import { getVideosByIds, listExamples, type GalleryVideo } from '@/server/videos';
+import { getLatestVideoByPromptAndEngine, getVideosByIds, type GalleryVideo } from '@/server/videos';
 
 const SITE_BASE = (process.env.NEXT_PUBLIC_SITE_URL ?? process.env.SITE_URL ?? 'https://maxvideoai.com').replace(
   /\/+$/,
@@ -27,7 +27,6 @@ const SITE_BASE = (process.env.NEXT_PUBLIC_SITE_URL ?? process.env.SITE_URL ?? '
 );
 const COMPARE_SLUG_MAP = buildSlugMap('compare');
 const MODELS_SLUG_MAP = buildSlugMap('models');
-const ALLOW_SHOWDOWN_FALLBACK = SITE_BASE.includes('localhost') || SITE_BASE.includes('127.0.0.1');
 
 interface Params {
   locale?: AppLocale;
@@ -120,6 +119,7 @@ type ShowdownSide = {
 };
 
 type ShowdownEntry = {
+  slotId?: string;
   prompt?: string;
   left: ShowdownSide;
   right: ShowdownSide;
@@ -128,7 +128,7 @@ type ShowdownEntry = {
 const TROPHY_COMPARISONS = compareConfig.trophyComparisons as string[];
 const EXCLUDED_ENGINE_SLUGS = new Set(['nano-banana', 'nano-banana-pro']);
 const SHOWDOWNS =
-  (compareConfig as { showdowns?: Record<string, ShowdownEntry[]> }).showdowns ?? {};
+  (compareConfig as { showdowns?: Record<string, Array<ShowdownEntry | null>> }).showdowns ?? {};
 const CATALOG = engineCatalog as EngineCatalogEntry[];
 const CATALOG_BY_SLUG = new Map(CATALOG.map((entry) => [entry.modelSlug, entry]));
 const ENGINE_OPTIONS = [...CATALOG]
@@ -291,9 +291,12 @@ async function loadEngineKeySpecs(): Promise<Map<string, EngineKeySpecsEntry>> {
   return new Map();
 }
 
-async function hydrateShowdowns(entries: ShowdownEntry[]): Promise<ShowdownEntry[]> {
+async function hydrateShowdowns(
+  entries: Array<ShowdownEntry | null>
+): Promise<Array<ShowdownEntry | null>> {
   const jobIds = new Set<string>();
   entries.forEach((entry) => {
+    if (!entry) return;
     if (entry.left.jobId) jobIds.add(entry.left.jobId);
     if (entry.right.jobId) jobIds.add(entry.right.jobId);
   });
@@ -303,6 +306,7 @@ async function hydrateShowdowns(entries: ShowdownEntry[]): Promise<ShowdownEntry
   try {
     const videos = await getVideosByIds(Array.from(jobIds));
     return entries.map((entry) => {
+      if (!entry) return entry;
       const leftVideo = entry.left.jobId ? videos.get(entry.left.jobId) : null;
       const rightVideo = entry.right.jobId ? videos.get(entry.right.jobId) : null;
       return {
@@ -322,21 +326,6 @@ async function hydrateShowdowns(entries: ShowdownEntry[]): Promise<ShowdownEntry
   } catch {
     return entries;
   }
-}
-
-function pickEngineExamples(examples: GalleryVideo[], engine: EngineCatalogEntry, count = 2): GalleryVideo[] {
-  const normalizedSlug = normalizeEngineId(engine.modelSlug) ?? engine.modelSlug;
-  const allowedEngineIds = new Set(
-    [normalizedSlug, engine.modelSlug, engine.engineId, engine.engine?.id]
-      .map((id) => (id ? id.toString().trim().toLowerCase() : ''))
-      .filter(Boolean)
-  );
-  const filtered = examples.filter((video) => {
-    const normalized = normalizeEngineId(video.engineId)?.trim().toLowerCase();
-    return normalized ? allowedEngineIds.has(normalized) : false;
-  });
-  const shuffled = [...filtered].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count);
 }
 
 function formatYesNo(value?: boolean) {
@@ -641,17 +630,25 @@ function renderShowdownMedia(
   side: ShowdownSide,
   fallbackLabel: string,
   placeholderLabel: string,
-  noPreviewLabel: string
+  noPreviewLabel: string,
+  aspectRatio?: string
 ) {
   const label = side.label ?? fallbackLabel;
   const emptyLabel = side.placeholder ? placeholderLabel : noPreviewLabel;
+  const isPortrait = aspectRatio === '9:16';
+  const mediaClass = isPortrait ? 'object-contain' : 'object-cover';
   return (
     <div className="stack-gap-sm">
       <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{label}</p>
-      <div className="relative aspect-video overflow-hidden rounded-card border border-hairline bg-placeholder">
+      <div
+        className={clsx(
+          'relative aspect-video overflow-hidden rounded-card border border-hairline',
+          isPortrait ? 'bg-black/10 dark:bg-black/40' : 'bg-placeholder'
+        )}
+      >
         {side.videoUrl ? (
           <video
-            className="h-full w-full object-cover"
+            className={clsx('h-full w-full', mediaClass)}
             controls
             preload="none"
             poster={side.posterUrl}
@@ -664,7 +661,7 @@ function renderShowdownMedia(
             src={side.posterUrl}
             alt={`${label} showdown frame`}
             loading="lazy"
-            className="h-full w-full object-cover"
+            className={clsx('h-full w-full', mediaClass)}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-text-muted">
@@ -912,7 +909,7 @@ export default async function CompareDetailPage({
     tryPrompt: compareCopy.labels?.tryPrompt ?? 'Try this prompt:',
     opensGenerator: compareCopy.labels?.opensGenerator ?? 'Opens the generator pre-filled.',
     whatTests: compareCopy.labels?.whatTests ?? 'What it tests',
-    placeholder: compareCopy.labels?.placeholder ?? 'Placeholder example — prompt render coming soon',
+    placeholder: compareCopy.labels?.placeholder ?? '',
   };
   const slug = params.slug;
   const canonicalInfo = getCanonicalCompareSlug(slug);
@@ -966,37 +963,79 @@ export default async function CompareDetailPage({
         ? 'bg-orange-500 text-white'
         : 'bg-surface-2 text-text-primary';
   const showdowns = await hydrateShowdowns(SHOWDOWNS[canonicalSlug] ?? []);
-  const hasMedia = (side: ShowdownSide) => Boolean(side.videoUrl || side.posterUrl);
-  let exampleVideos: GalleryVideo[] = [];
-  if (ALLOW_SHOWDOWN_FALLBACK) {
-    try {
-      exampleVideos = await listExamples('date-desc', 80);
-    } catch {
-      exampleVideos = [];
+  const normalizePrompt = (value?: string | null) => (value ?? '').trim().toLowerCase();
+  const normalizedShowdowns = showdowns.filter(
+    (entry): entry is ShowdownEntry => Boolean(entry)
+  );
+  const showdownsByPrompt = new Map(
+    normalizedShowdowns.map((entry) => [normalizePrompt(entry.prompt), entry])
+  );
+  const showdownsBySlotId = new Map(
+    normalizedShowdowns
+      .filter((entry) => Boolean(entry.slotId))
+      .map((entry) => [entry.slotId as string, entry])
+  );
+  const orderedShowdowns = COMPARE_SHOWDOWNS.map((template) => {
+    const bySlot = showdownsBySlotId.get(template.id);
+    if (bySlot) return bySlot;
+    const byPrompt = showdownsByPrompt.get(normalizePrompt(template.prompt));
+    if (byPrompt) return byPrompt;
+    return null;
+  });
+  const hasMedia = (side?: ShowdownSide | null) => Boolean(side?.videoUrl || side?.posterUrl);
+  const fallbackByTemplateId = new Map<string, { left?: GalleryVideo; right?: GalleryVideo }>();
+  if (isDatabaseConfigured()) {
+    const lookupTasks: Array<Promise<void>> = [];
+    COMPARE_SHOWDOWNS.forEach((template, index) => {
+      const entry = orderedShowdowns[index];
+      const needsLeft = !hasMedia(entry?.left);
+      const needsRight = !hasMedia(entry?.right);
+      if (!needsLeft && !needsRight) return;
+      if (needsLeft) {
+        lookupTasks.push(
+          getLatestVideoByPromptAndEngine(template.prompt, left.modelSlug).then((video) => {
+            if (!video) return;
+            const current = fallbackByTemplateId.get(template.id) ?? {};
+            fallbackByTemplateId.set(template.id, { ...current, left: video });
+          })
+        );
+      }
+      if (needsRight) {
+        lookupTasks.push(
+          getLatestVideoByPromptAndEngine(template.prompt, right.modelSlug).then((video) => {
+            if (!video) return;
+            const current = fallbackByTemplateId.get(template.id) ?? {};
+            fallbackByTemplateId.set(template.id, { ...current, right: video });
+          })
+        );
+      }
+    });
+    if (lookupTasks.length) {
+      await Promise.all(lookupTasks);
     }
   }
-  const leftExamplePool = ALLOW_SHOWDOWN_FALLBACK ? pickEngineExamples(exampleVideos, left, 3) : [];
-  const rightExamplePool = ALLOW_SHOWDOWN_FALLBACK ? pickEngineExamples(exampleVideos, right, 3) : [];
 
   const showdownSlots = COMPARE_SHOWDOWNS.map((template, index) => {
-    const entry = showdowns[index];
-    const fallbackLeft = leftExamplePool[index % Math.max(leftExamplePool.length, 1)];
-    const fallbackRight = rightExamplePool[index % Math.max(rightExamplePool.length, 1)];
+    const entry = orderedShowdowns[index];
+    const fallback = fallbackByTemplateId.get(template.id);
+    const fallbackLeft = fallback?.left;
+    const fallbackRight = fallback?.right;
     const leftSide = {
       label: formatEngineName(left),
       ...(entry?.left ?? {}),
       videoUrl: entry?.left?.videoUrl ?? fallbackLeft?.videoUrl,
       posterUrl: entry?.left?.posterUrl ?? fallbackLeft?.thumbUrl,
-      placeholder: ALLOW_SHOWDOWN_FALLBACK && !entry?.left?.videoUrl && !entry?.left?.posterUrl,
+      placeholder: false,
     };
     const rightSide = {
       label: formatEngineName(right),
       ...(entry?.right ?? {}),
       videoUrl: entry?.right?.videoUrl ?? fallbackRight?.videoUrl,
       posterUrl: entry?.right?.posterUrl ?? fallbackRight?.thumbUrl,
-      placeholder: ALLOW_SHOWDOWN_FALLBACK && !entry?.right?.videoUrl && !entry?.right?.posterUrl,
+      placeholder: false,
     };
-    if (!ALLOW_SHOWDOWN_FALLBACK && (!hasMedia(leftSide) || !hasMedia(rightSide))) return null;
+    leftSide.placeholder = !hasMedia(leftSide);
+    rightSide.placeholder = !hasMedia(rightSide);
     return {
       ...template,
       prompt: entry?.prompt ?? template.prompt,
@@ -1913,8 +1952,20 @@ export default async function CompareDetailPage({
                       <p className="mt-2 text-text-primary">{entry.prompt}</p>
                     </div>
                     <div className="grid grid-gap lg:grid-cols-2">
-                      {renderShowdownMedia(entry.left, formatEngineName(left), labels.placeholder, labels.placeholder)}
-                      {renderShowdownMedia(entry.right, formatEngineName(right), labels.placeholder, labels.placeholder)}
+                      {renderShowdownMedia(
+                        entry.left,
+                        formatEngineName(left),
+                        labels.placeholder,
+                        labels.placeholder,
+                        entry.aspectRatio
+                      )}
+                      {renderShowdownMedia(
+                        entry.right,
+                        formatEngineName(right),
+                        labels.placeholder,
+                        labels.placeholder,
+                        entry.aspectRatio
+                      )}
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-sm text-text-secondary">
                       <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{labels.tryPrompt}</span>

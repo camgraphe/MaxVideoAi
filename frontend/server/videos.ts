@@ -122,6 +122,23 @@ export async function getVideosByIds(videoIds: string[]): Promise<Map<string, Ga
   return map;
 }
 
+export async function getLatestVideoByPromptAndEngine(
+  prompt: string,
+  engineId: string
+): Promise<GalleryVideo | null> {
+  const rows = await query<VideoRow>(
+    `
+      ${BASE_SELECT}
+      WHERE prompt = $1
+        AND engine_id = $2
+      ORDER BY created_at DESC
+      LIMIT 1
+    `,
+    [prompt, engineId]
+  );
+  return rows[0] ? mapRow(rows[0]) : null;
+}
+
 export async function listPlaylistVideos(slug: string, limit: number): Promise<GalleryVideo[]> {
   const rows = await query<VideoRow & { order_index: number }>(
     `

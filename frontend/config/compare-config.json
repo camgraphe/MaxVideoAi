@@ -16,49 +16,81 @@
       "slug": "ugc-ads",
       "title": "Best for UGC ads / social ads",
       "tier": 1,
-      "topPicks": ["veo-3-1", "sora-2", "ltx-2-fast"]
+      "topPicks": [
+        "veo-3-1",
+        "sora-2",
+        "ltx-2-fast"
+      ]
     },
     {
       "slug": "product-videos",
       "title": "Best for product videos / ecommerce",
       "tier": 1,
-      "topPicks": ["sora-2", "ltx-2", "veo-3-1"]
+      "topPicks": [
+        "sora-2",
+        "ltx-2",
+        "veo-3-1"
+      ]
     },
     {
       "slug": "lipsync-dialogue",
       "title": "Best for lipsync / dialogue",
       "tier": 1,
-      "topPicks": ["sora-2", "veo-3-1", "kling-2-6-pro"]
+      "topPicks": [
+        "sora-2",
+        "veo-3-1",
+        "kling-2-6-pro"
+      ]
     },
     {
       "slug": "cinematic-realism",
       "title": "Best for cinematic realism",
       "tier": 1,
-      "topPicks": ["sora-2", "veo-3-1", "kling-2-6-pro"]
+      "topPicks": [
+        "sora-2",
+        "veo-3-1",
+        "kling-2-6-pro"
+      ]
     },
     {
       "slug": "fast-drafts",
       "title": "Best for fast drafts / cheapest iterations",
       "tier": 2,
-      "topPicks": ["ltx-2-fast", "pika-text-to-video", "minimax-hailuo-02-text"]
+      "topPicks": [
+        "ltx-2-fast",
+        "pika-text-to-video",
+        "minimax-hailuo-02-text"
+      ]
     },
     {
       "slug": "vertical-shorts",
       "title": "Best for vertical shorts",
       "tier": 2,
-      "topPicks": ["ltx-2-fast", "veo-3-1", "pika-text-to-video"]
+      "topPicks": [
+        "ltx-2-fast",
+        "veo-3-1",
+        "pika-text-to-video"
+      ]
     },
     {
       "slug": "image-to-video",
       "title": "Best for image-to-video",
       "tier": 2,
-      "topPicks": ["sora-2", "veo-3-1", "kling-2-6-pro"]
+      "topPicks": [
+        "sora-2",
+        "veo-3-1",
+        "kling-2-6-pro"
+      ]
     },
     {
       "slug": "stylized-anime",
       "title": "Best for stylized / anime / illustration",
       "tier": 2,
-      "topPicks": ["kling-2-6-pro", "pika-text-to-video", "minimax-hailuo-02-text"]
+      "topPicks": [
+        "kling-2-6-pro",
+        "pika-text-to-video",
+        "minimax-hailuo-02-text"
+      ]
     }
   ],
   "relatedComparisons": {
@@ -116,16 +148,420 @@
   "showdowns": {
     "sora-2-vs-veo-3-1": [
       {
-        "prompt": "A cinematic product shot of a matte black coffee grinder on a marble counter, soft morning light, slow dolly-in, shallow depth of field.",
-        "left": { "label": "Sora 2", "jobId": "job_74677d4f-9f28-4e47-b230-64accef8e239" },
-        "right": { "label": "Veo 3.1", "jobId": "job_a3e088db-b1e2-430f-83b3-2efce518c282" }
+        "slotId": "motion-physics",
+        "prompt": "Wide 16:9 cinematic action shot, a runner sprints through a rainy city street at night, water splashes realistically with each step, reflections on wet asphalt, handheld tracking camera following from the side. Dynamic motion with believable inertia and physics, no rubbery limbs, no wobbling background, stable scene geometry, minimal temporal flicker, sharp details despite fast movement, realistic motion blur.",
+        "left": {
+          "label": "OpenAI Sora 2",
+          "jobId": "job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b"
+        },
+        "right": {
+          "label": "Google Veo 3.1",
+          "jobId": "job_b3187535-7c87-4616-a8ec-2c635d44ff58"
+        }
+      },
+      {
+        "slotId": "ugc-lipsync",
+        "prompt": "Vertical 9:16 TikTok-style UGC selfie video, handheld smartphone feel, natural indoor daylight near a window. A friendly creator speaks directly to camera with natural blinking, subtle head nods, and a warm smile. Add small human imperfections: a tiny hesitation, a soft breath, a quick smile mid-sentence, and a micro-pause before the last line. Realistic skin texture, stable identity, no face warping, minimal flicker, clean audio with natural room tone.\n\nNo subtitles. No on-screen text. No logos. No watermarks.\n\nThe creator says (exactly, with the same pacing and hesitations):\n“Okay, so… um… quick thing. If you’re feeling stuck, just do the tiniest first step… like, set a two-minute timer and start. (smiles) That’s it. You’ll be surprised how fast it gets easier.”",
+        "left": {
+          "label": "OpenAI Sora 2",
+          "jobId": "job_55c36d3f-8591-4e32-a6a3-dbf191706d18"
+        },
+        "right": {
+          "label": "Google Veo 3.1",
+          "jobId": "job_b197fc68-0bb7-4a24-9720-0ff721642446"
+        }
+      },
+      {
+        "slotId": "hands-text",
+        "prompt": "Wide 16:9 full-body unboxing video in a clean studio/kitchen setting. A person is fully visible (head-to-toe or at least head-to-knees) standing behind a minimalist tabletop. They unbox a small generic gadget from a plain matte cardboard box: peel the seal, open the lid, remove the inner tray, take out the device and accessories, and lay everything neatly on the table. The person occasionally lifts the item toward the camera for a closer look, then places it back down.\n\nRealism requirements: natural body proportions, stable identity, realistic skin and clothing fabric, no face warping, no unnatural limb bending. Hands must be highly realistic: correct finger count, natural grip, believable pressure/contact with the box and device, consistent shadows, no extra fingers, no “floating” objects. Keep object geometry stable, no wobbling background, minimal temporal flicker.\n\nCamera: single continuous shot, tripod-stable, slight cinematic push-in (very slow), eye-level or slightly above table height. Natural soft daylight, clean shadows, realistic materials and textures. No logos, no brand names, no watermarks. No subtitles.\n\nOptional on-screen title at the top (perfectly readable and stable, no jitter):\n\"UNBOXING — FIRST LOOK\"",
+        "left": {
+          "label": "OpenAI Sora 2",
+          "jobId": "job_d1b582c3-bdaf-46ce-99ed-b9939de89a81"
+        },
+        "right": {
+          "label": "Google Veo 3.1",
+          "jobId": "job_5981bbec-f5e9-4163-9c65-093df7e296f5"
+        }
       }
     ],
     "pika-text-to-video-vs-minimax-hailuo-02-text": [
       {
-        "prompt": "A playful stop-motion style loop of colorful paper cutouts forming a smiling face, bold shadows, 4 seconds.",
-        "left": { "label": "Pika 2.2", "jobId": "job_af053cfc-3164-4e25-9f5a-8a89f006617e" },
-        "right": { "label": "MiniMax Hailuo 02" }
+        "slotId": "motion-physics",
+        "prompt": "Wide 16:9 cinematic action shot, a runner sprints through a rainy city street at night, water splashes realistically with each step, reflections on wet asphalt, handheld tracking camera following from the side. Dynamic motion with believable inertia and physics, no rubbery limbs, no wobbling background, stable scene geometry, minimal temporal flicker, sharp details despite fast movement, realistic motion blur.",
+        "left": {
+          "label": "Pika 2.2 Text & Image to Video",
+          "jobId": "job_18bcd151-e747-4a60-8a67-42a028890ef2"
+        },
+        "right": {
+          "label": "MiniMax Hailuo 02 Standard",
+          "jobId": "job_0ec5b210-47ff-4eed-9a43-4b0061e20dc7"
+        }
+      },
+      {
+        "slotId": "ugc-lipsync",
+        "prompt": "Vertical 9:16 TikTok-style UGC selfie video, handheld smartphone feel, natural indoor daylight near a window. A friendly creator speaks directly to camera with natural blinking, subtle head nods, and a warm smile. Add small human imperfections: a tiny hesitation, a soft breath, a quick smile mid-sentence, and a micro-pause before the last line. Realistic skin texture, stable identity, no face warping, minimal flicker, clean audio with natural room tone.\n\nNo subtitles. No on-screen text. No logos. No watermarks.\n\nThe creator says (exactly, with the same pacing and hesitations):\n“Okay, so… um… quick thing. If you’re feeling stuck, just do the tiniest first step… like, set a two-minute timer and start. (smiles) That’s it. You’ll be surprised how fast it gets easier.”",
+        "left": {
+          "label": "Pika 2.2 Text & Image to Video",
+          "jobId": "job_df68f2a6-4223-4721-811c-efb85de01c46"
+        },
+        "right": {
+          "label": "MiniMax Hailuo 02 Standard",
+          "jobId": "job_be5bff74-eec5-4fb9-80c7-e6f28d317cb7"
+        }
+      },
+      {
+        "slotId": "hands-text",
+        "prompt": "Wide 16:9 full-body unboxing video in a clean studio/kitchen setting. A person is fully visible (head-to-toe or at least head-to-knees) standing behind a minimalist tabletop. They unbox a small generic gadget from a plain matte cardboard box: peel the seal, open the lid, remove the inner tray, take out the device and accessories, and lay everything neatly on the table. The person occasionally lifts the item toward the camera for a closer look, then places it back down.\n\nRealism requirements: natural body proportions, stable identity, realistic skin and clothing fabric, no face warping, no unnatural limb bending. Hands must be highly realistic: correct finger count, natural grip, believable pressure/contact with the box and device, consistent shadows, no extra fingers, no “floating” objects. Keep object geometry stable, no wobbling background, minimal temporal flicker.\n\nCamera: single continuous shot, tripod-stable, slight cinematic push-in (very slow), eye-level or slightly above table height. Natural soft daylight, clean shadows, realistic materials and textures. No logos, no brand names, no watermarks. No subtitles.\n\nOptional on-screen title at the top (perfectly readable and stable, no jitter):\n\"UNBOXING — FIRST LOOK\"",
+        "left": {
+          "label": "Pika 2.2 Text & Image to Video",
+          "jobId": "job_fc1e363c-6b1d-42b2-ae15-1a151213120d"
+        },
+        "right": {
+          "label": "MiniMax Hailuo 02 Standard",
+          "jobId": "job_96c348e2-cce5-4d09-9340-25bbe74d9873"
+        }
+      }
+    ],
+    "sora-2-vs-kling-2-6-pro": [
+      {
+        "slotId": "motion-physics",
+        "prompt": "Wide 16:9 cinematic action shot, a runner sprints through a rainy city street at night, water splashes realistically with each step, reflections on wet asphalt, handheld tracking camera following from the side. Dynamic motion with believable inertia and physics, no rubbery limbs, no wobbling background, stable scene geometry, minimal temporal flicker, sharp details despite fast movement, realistic motion blur.",
+        "left": {
+          "label": "OpenAI Sora 2",
+          "jobId": "job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b"
+        },
+        "right": {
+          "label": "Kling 2.6 Pro",
+          "jobId": "job_1d118936-8d52-45ef-b9fa-8d1a76eacb28"
+        }
+      },
+      {
+        "slotId": "ugc-lipsync",
+        "prompt": "Vertical 9:16 TikTok-style UGC selfie video, handheld smartphone feel, natural indoor daylight near a window. A friendly creator speaks directly to camera with natural blinking, subtle head nods, and a warm smile. Add small human imperfections: a tiny hesitation, a soft breath, a quick smile mid-sentence, and a micro-pause before the last line. Realistic skin texture, stable identity, no face warping, minimal flicker, clean audio with natural room tone.\n\nNo subtitles. No on-screen text. No logos. No watermarks.\n\nThe creator says (exactly, with the same pacing and hesitations):\n“Okay, so… um… quick thing. If you’re feeling stuck, just do the tiniest first step… like, set a two-minute timer and start. (smiles) That’s it. You’ll be surprised how fast it gets easier.”",
+        "left": {
+          "label": "OpenAI Sora 2",
+          "jobId": "job_55c36d3f-8591-4e32-a6a3-dbf191706d18"
+        },
+        "right": {
+          "label": "Kling 2.6 Pro",
+          "jobId": "job_488b21b1-766e-4760-9a24-cd6eb402a7e7"
+        }
+      },
+      {
+        "slotId": "hands-text",
+        "prompt": "Wide 16:9 full-body unboxing video in a clean studio/kitchen setting. A person is fully visible (head-to-toe or at least head-to-knees) standing behind a minimalist tabletop. They unbox a small generic gadget from a plain matte cardboard box: peel the seal, open the lid, remove the inner tray, take out the device and accessories, and lay everything neatly on the table. The person occasionally lifts the item toward the camera for a closer look, then places it back down.\n\nRealism requirements: natural body proportions, stable identity, realistic skin and clothing fabric, no face warping, no unnatural limb bending. Hands must be highly realistic: correct finger count, natural grip, believable pressure/contact with the box and device, consistent shadows, no extra fingers, no “floating” objects. Keep object geometry stable, no wobbling background, minimal temporal flicker.\n\nCamera: single continuous shot, tripod-stable, slight cinematic push-in (very slow), eye-level or slightly above table height. Natural soft daylight, clean shadows, realistic materials and textures. No logos, no brand names, no watermarks. No subtitles.\n\nOptional on-screen title at the top (perfectly readable and stable, no jitter):\n\"UNBOXING — FIRST LOOK\"",
+        "left": {
+          "label": "OpenAI Sora 2",
+          "jobId": "job_d1b582c3-bdaf-46ce-99ed-b9939de89a81"
+        },
+        "right": {
+          "label": "Kling 2.6 Pro",
+          "jobId": "job_e52f6a9d-023b-4f51-9037-361939c00177"
+        }
+      }
+    ],
+    "sora-2-vs-wan-2-6": [
+      {
+        "slotId": "motion-physics",
+        "prompt": "Wide 16:9 cinematic action shot, a runner sprints through a rainy city street at night, water splashes realistically with each step, reflections on wet asphalt, handheld tracking camera following from the side. Dynamic motion with believable inertia and physics, no rubbery limbs, no wobbling background, stable scene geometry, minimal temporal flicker, sharp details despite fast movement, realistic motion blur.",
+        "left": {
+          "label": "OpenAI Sora 2",
+          "jobId": "job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b"
+        },
+        "right": {
+          "label": "Wan 2.6 Text & Image to Video",
+          "jobId": "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"
+        }
+      },
+      {
+        "slotId": "ugc-lipsync",
+        "prompt": "Vertical 9:16 TikTok-style UGC selfie video, handheld smartphone feel, natural indoor daylight near a window. A friendly creator speaks directly to camera with natural blinking, subtle head nods, and a warm smile. Add small human imperfections: a tiny hesitation, a soft breath, a quick smile mid-sentence, and a micro-pause before the last line. Realistic skin texture, stable identity, no face warping, minimal flicker, clean audio with natural room tone.\n\nNo subtitles. No on-screen text. No logos. No watermarks.\n\nThe creator says (exactly, with the same pacing and hesitations):\n“Okay, so… um… quick thing. If you’re feeling stuck, just do the tiniest first step… like, set a two-minute timer and start. (smiles) That’s it. You’ll be surprised how fast it gets easier.”",
+        "left": {
+          "label": "OpenAI Sora 2",
+          "jobId": "job_55c36d3f-8591-4e32-a6a3-dbf191706d18"
+        },
+        "right": {
+          "label": "Wan 2.6 Text & Image to Video",
+          "jobId": "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"
+        }
+      },
+      {
+        "slotId": "hands-text",
+        "prompt": "Wide 16:9 full-body unboxing video in a clean studio/kitchen setting. A person is fully visible (head-to-toe or at least head-to-knees) standing behind a minimalist tabletop. They unbox a small generic gadget from a plain matte cardboard box: peel the seal, open the lid, remove the inner tray, take out the device and accessories, and lay everything neatly on the table. The person occasionally lifts the item toward the camera for a closer look, then places it back down.\n\nRealism requirements: natural body proportions, stable identity, realistic skin and clothing fabric, no face warping, no unnatural limb bending. Hands must be highly realistic: correct finger count, natural grip, believable pressure/contact with the box and device, consistent shadows, no extra fingers, no “floating” objects. Keep object geometry stable, no wobbling background, minimal temporal flicker.\n\nCamera: single continuous shot, tripod-stable, slight cinematic push-in (very slow), eye-level or slightly above table height. Natural soft daylight, clean shadows, realistic materials and textures. No logos, no brand names, no watermarks. No subtitles.\n\nOptional on-screen title at the top (perfectly readable and stable, no jitter):\n\"UNBOXING — FIRST LOOK\"",
+        "left": {
+          "label": "OpenAI Sora 2",
+          "jobId": "job_d1b582c3-bdaf-46ce-99ed-b9939de89a81"
+        },
+        "right": {
+          "label": "Wan 2.6 Text & Image to Video",
+          "jobId": "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"
+        }
+      }
+    ],
+    "kling-2-6-pro-vs-wan-2-6": [
+      {
+        "slotId": "motion-physics",
+        "prompt": "Wide 16:9 cinematic action shot, a runner sprints through a rainy city street at night, water splashes realistically with each step, reflections on wet asphalt, handheld tracking camera following from the side. Dynamic motion with believable inertia and physics, no rubbery limbs, no wobbling background, stable scene geometry, minimal temporal flicker, sharp details despite fast movement, realistic motion blur.",
+        "left": {
+          "label": "Kling 2.6 Pro",
+          "jobId": "job_1d118936-8d52-45ef-b9fa-8d1a76eacb28"
+        },
+        "right": {
+          "label": "Wan 2.6 Text & Image to Video",
+          "jobId": "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"
+        }
+      },
+      {
+        "slotId": "ugc-lipsync",
+        "prompt": "Vertical 9:16 TikTok-style UGC selfie video, handheld smartphone feel, natural indoor daylight near a window. A friendly creator speaks directly to camera with natural blinking, subtle head nods, and a warm smile. Add small human imperfections: a tiny hesitation, a soft breath, a quick smile mid-sentence, and a micro-pause before the last line. Realistic skin texture, stable identity, no face warping, minimal flicker, clean audio with natural room tone.\n\nNo subtitles. No on-screen text. No logos. No watermarks.\n\nThe creator says (exactly, with the same pacing and hesitations):\n“Okay, so… um… quick thing. If you’re feeling stuck, just do the tiniest first step… like, set a two-minute timer and start. (smiles) That’s it. You’ll be surprised how fast it gets easier.”",
+        "left": {
+          "label": "Kling 2.6 Pro",
+          "jobId": "job_488b21b1-766e-4760-9a24-cd6eb402a7e7"
+        },
+        "right": {
+          "label": "Wan 2.6 Text & Image to Video",
+          "jobId": "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"
+        }
+      },
+      {
+        "slotId": "hands-text",
+        "prompt": "Wide 16:9 full-body unboxing video in a clean studio/kitchen setting. A person is fully visible (head-to-toe or at least head-to-knees) standing behind a minimalist tabletop. They unbox a small generic gadget from a plain matte cardboard box: peel the seal, open the lid, remove the inner tray, take out the device and accessories, and lay everything neatly on the table. The person occasionally lifts the item toward the camera for a closer look, then places it back down.\n\nRealism requirements: natural body proportions, stable identity, realistic skin and clothing fabric, no face warping, no unnatural limb bending. Hands must be highly realistic: correct finger count, natural grip, believable pressure/contact with the box and device, consistent shadows, no extra fingers, no “floating” objects. Keep object geometry stable, no wobbling background, minimal temporal flicker.\n\nCamera: single continuous shot, tripod-stable, slight cinematic push-in (very slow), eye-level or slightly above table height. Natural soft daylight, clean shadows, realistic materials and textures. No logos, no brand names, no watermarks. No subtitles.\n\nOptional on-screen title at the top (perfectly readable and stable, no jitter):\n\"UNBOXING — FIRST LOOK\"",
+        "left": {
+          "label": "Kling 2.6 Pro",
+          "jobId": "job_e52f6a9d-023b-4f51-9037-361939c00177"
+        },
+        "right": {
+          "label": "Wan 2.6 Text & Image to Video",
+          "jobId": "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"
+        }
+      }
+    ],
+    "sora-2-vs-ltx-2": [
+      {
+        "slotId": "motion-physics",
+        "prompt": "Wide 16:9 cinematic action shot, a runner sprints through a rainy city street at night, water splashes realistically with each step, reflections on wet asphalt, handheld tracking camera following from the side. Dynamic motion with believable inertia and physics, no rubbery limbs, no wobbling background, stable scene geometry, minimal temporal flicker, sharp details despite fast movement, realistic motion blur.",
+        "left": {
+          "label": "OpenAI Sora 2",
+          "jobId": "job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b"
+        },
+        "right": {
+          "label": "LTX Video 2.0 Pro",
+          "jobId": "job_a8b82fc8-03af-49b8-99d4-186f497eb358"
+        }
+      },
+      {
+        "slotId": "ugc-lipsync",
+        "prompt": "Vertical 9:16 TikTok-style UGC selfie video, handheld smartphone feel, natural indoor daylight near a window. A friendly creator speaks directly to camera with natural blinking, subtle head nods, and a warm smile. Add small human imperfections: a tiny hesitation, a soft breath, a quick smile mid-sentence, and a micro-pause before the last line. Realistic skin texture, stable identity, no face warping, minimal flicker, clean audio with natural room tone.\n\nNo subtitles. No on-screen text. No logos. No watermarks.\n\nThe creator says (exactly, with the same pacing and hesitations):\n“Okay, so… um… quick thing. If you’re feeling stuck, just do the tiniest first step… like, set a two-minute timer and start. (smiles) That’s it. You’ll be surprised how fast it gets easier.”",
+        "left": {
+          "label": "OpenAI Sora 2",
+          "jobId": "job_55c36d3f-8591-4e32-a6a3-dbf191706d18"
+        },
+        "right": {
+          "label": "LTX Video 2.0 Pro",
+          "jobId": "job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9"
+        }
+      },
+      {
+        "slotId": "hands-text",
+        "prompt": "Wide 16:9 full-body unboxing video in a clean studio/kitchen setting. A person is fully visible (head-to-toe or at least head-to-knees) standing behind a minimalist tabletop. They unbox a small generic gadget from a plain matte cardboard box: peel the seal, open the lid, remove the inner tray, take out the device and accessories, and lay everything neatly on the table. The person occasionally lifts the item toward the camera for a closer look, then places it back down.\n\nRealism requirements: natural body proportions, stable identity, realistic skin and clothing fabric, no face warping, no unnatural limb bending. Hands must be highly realistic: correct finger count, natural grip, believable pressure/contact with the box and device, consistent shadows, no extra fingers, no “floating” objects. Keep object geometry stable, no wobbling background, minimal temporal flicker.\n\nCamera: single continuous shot, tripod-stable, slight cinematic push-in (very slow), eye-level or slightly above table height. Natural soft daylight, clean shadows, realistic materials and textures. No logos, no brand names, no watermarks. No subtitles.\n\nOptional on-screen title at the top (perfectly readable and stable, no jitter):\n\"UNBOXING — FIRST LOOK\"",
+        "left": {
+          "label": "OpenAI Sora 2",
+          "jobId": "job_d1b582c3-bdaf-46ce-99ed-b9939de89a81"
+        },
+        "right": {
+          "label": "LTX Video 2.0 Pro",
+          "jobId": "job_15cd3e9d-67d6-4378-8d76-11e3734d3a43"
+        }
+      }
+    ],
+    "pika-text-to-video-vs-kling-2-6-pro": [
+      {
+        "slotId": "motion-physics",
+        "prompt": "Wide 16:9 cinematic action shot, a runner sprints through a rainy city street at night, water splashes realistically with each step, reflections on wet asphalt, handheld tracking camera following from the side. Dynamic motion with believable inertia and physics, no rubbery limbs, no wobbling background, stable scene geometry, minimal temporal flicker, sharp details despite fast movement, realistic motion blur.",
+        "left": {
+          "label": "Pika 2.2 Text & Image to Video",
+          "jobId": "job_18bcd151-e747-4a60-8a67-42a028890ef2"
+        },
+        "right": {
+          "label": "Kling 2.6 Pro",
+          "jobId": "job_1d118936-8d52-45ef-b9fa-8d1a76eacb28"
+        }
+      },
+      {
+        "slotId": "ugc-lipsync",
+        "prompt": "Vertical 9:16 TikTok-style UGC selfie video, handheld smartphone feel, natural indoor daylight near a window. A friendly creator speaks directly to camera with natural blinking, subtle head nods, and a warm smile. Add small human imperfections: a tiny hesitation, a soft breath, a quick smile mid-sentence, and a micro-pause before the last line. Realistic skin texture, stable identity, no face warping, minimal flicker, clean audio with natural room tone.\n\nNo subtitles. No on-screen text. No logos. No watermarks.\n\nThe creator says (exactly, with the same pacing and hesitations):\n“Okay, so… um… quick thing. If you’re feeling stuck, just do the tiniest first step… like, set a two-minute timer and start. (smiles) That’s it. You’ll be surprised how fast it gets easier.”",
+        "left": {
+          "label": "Pika 2.2 Text & Image to Video",
+          "jobId": "job_df68f2a6-4223-4721-811c-efb85de01c46"
+        },
+        "right": {
+          "label": "Kling 2.6 Pro",
+          "jobId": "job_488b21b1-766e-4760-9a24-cd6eb402a7e7"
+        }
+      },
+      {
+        "slotId": "hands-text",
+        "prompt": "Wide 16:9 full-body unboxing video in a clean studio/kitchen setting. A person is fully visible (head-to-toe or at least head-to-knees) standing behind a minimalist tabletop. They unbox a small generic gadget from a plain matte cardboard box: peel the seal, open the lid, remove the inner tray, take out the device and accessories, and lay everything neatly on the table. The person occasionally lifts the item toward the camera for a closer look, then places it back down.\n\nRealism requirements: natural body proportions, stable identity, realistic skin and clothing fabric, no face warping, no unnatural limb bending. Hands must be highly realistic: correct finger count, natural grip, believable pressure/contact with the box and device, consistent shadows, no extra fingers, no “floating” objects. Keep object geometry stable, no wobbling background, minimal temporal flicker.\n\nCamera: single continuous shot, tripod-stable, slight cinematic push-in (very slow), eye-level or slightly above table height. Natural soft daylight, clean shadows, realistic materials and textures. No logos, no brand names, no watermarks. No subtitles.\n\nOptional on-screen title at the top (perfectly readable and stable, no jitter):\n\"UNBOXING — FIRST LOOK\"",
+        "left": {
+          "label": "Pika 2.2 Text & Image to Video",
+          "jobId": "job_fc1e363c-6b1d-42b2-ae15-1a151213120d"
+        },
+        "right": {
+          "label": "Kling 2.6 Pro",
+          "jobId": "job_e52f6a9d-023b-4f51-9037-361939c00177"
+        }
+      }
+    ],
+    "veo-3-1-vs-kling-2-6-pro": [
+      {
+        "slotId": "motion-physics",
+        "prompt": "Wide 16:9 cinematic action shot, a runner sprints through a rainy city street at night, water splashes realistically with each step, reflections on wet asphalt, handheld tracking camera following from the side. Dynamic motion with believable inertia and physics, no rubbery limbs, no wobbling background, stable scene geometry, minimal temporal flicker, sharp details despite fast movement, realistic motion blur.",
+        "left": {
+          "label": "Google Veo 3.1",
+          "jobId": "job_b3187535-7c87-4616-a8ec-2c635d44ff58"
+        },
+        "right": {
+          "label": "Kling 2.6 Pro",
+          "jobId": "job_1d118936-8d52-45ef-b9fa-8d1a76eacb28"
+        }
+      },
+      {
+        "slotId": "ugc-lipsync",
+        "prompt": "Vertical 9:16 TikTok-style UGC selfie video, handheld smartphone feel, natural indoor daylight near a window. A friendly creator speaks directly to camera with natural blinking, subtle head nods, and a warm smile. Add small human imperfections: a tiny hesitation, a soft breath, a quick smile mid-sentence, and a micro-pause before the last line. Realistic skin texture, stable identity, no face warping, minimal flicker, clean audio with natural room tone.\n\nNo subtitles. No on-screen text. No logos. No watermarks.\n\nThe creator says (exactly, with the same pacing and hesitations):\n“Okay, so… um… quick thing. If you’re feeling stuck, just do the tiniest first step… like, set a two-minute timer and start. (smiles) That’s it. You’ll be surprised how fast it gets easier.”",
+        "left": {
+          "label": "Google Veo 3.1",
+          "jobId": "job_b197fc68-0bb7-4a24-9720-0ff721642446"
+        },
+        "right": {
+          "label": "Kling 2.6 Pro",
+          "jobId": "job_488b21b1-766e-4760-9a24-cd6eb402a7e7"
+        }
+      },
+      {
+        "slotId": "hands-text",
+        "prompt": "Wide 16:9 full-body unboxing video in a clean studio/kitchen setting. A person is fully visible (head-to-toe or at least head-to-knees) standing behind a minimalist tabletop. They unbox a small generic gadget from a plain matte cardboard box: peel the seal, open the lid, remove the inner tray, take out the device and accessories, and lay everything neatly on the table. The person occasionally lifts the item toward the camera for a closer look, then places it back down.\n\nRealism requirements: natural body proportions, stable identity, realistic skin and clothing fabric, no face warping, no unnatural limb bending. Hands must be highly realistic: correct finger count, natural grip, believable pressure/contact with the box and device, consistent shadows, no extra fingers, no “floating” objects. Keep object geometry stable, no wobbling background, minimal temporal flicker.\n\nCamera: single continuous shot, tripod-stable, slight cinematic push-in (very slow), eye-level or slightly above table height. Natural soft daylight, clean shadows, realistic materials and textures. No logos, no brand names, no watermarks. No subtitles.\n\nOptional on-screen title at the top (perfectly readable and stable, no jitter):\n\"UNBOXING — FIRST LOOK\"",
+        "left": {
+          "label": "Google Veo 3.1",
+          "jobId": "job_5981bbec-f5e9-4163-9c65-093df7e296f5"
+        },
+        "right": {
+          "label": "Kling 2.6 Pro",
+          "jobId": "job_e52f6a9d-023b-4f51-9037-361939c00177"
+        }
+      }
+    ],
+    "veo-3-1-vs-wan-2-6": [
+      {
+        "slotId": "motion-physics",
+        "prompt": "Wide 16:9 cinematic action shot, a runner sprints through a rainy city street at night, water splashes realistically with each step, reflections on wet asphalt, handheld tracking camera following from the side. Dynamic motion with believable inertia and physics, no rubbery limbs, no wobbling background, stable scene geometry, minimal temporal flicker, sharp details despite fast movement, realistic motion blur.",
+        "left": {
+          "label": "Google Veo 3.1",
+          "jobId": "job_b3187535-7c87-4616-a8ec-2c635d44ff58"
+        },
+        "right": {
+          "label": "Wan 2.6 Text & Image to Video",
+          "jobId": "job_110f0282-bf5e-4d58-ab34-8b117c94d4e4"
+        }
+      },
+      {
+        "slotId": "ugc-lipsync",
+        "prompt": "Vertical 9:16 TikTok-style UGC selfie video, handheld smartphone feel, natural indoor daylight near a window. A friendly creator speaks directly to camera with natural blinking, subtle head nods, and a warm smile. Add small human imperfections: a tiny hesitation, a soft breath, a quick smile mid-sentence, and a micro-pause before the last line. Realistic skin texture, stable identity, no face warping, minimal flicker, clean audio with natural room tone.\n\nNo subtitles. No on-screen text. No logos. No watermarks.\n\nThe creator says (exactly, with the same pacing and hesitations):\n“Okay, so… um… quick thing. If you’re feeling stuck, just do the tiniest first step… like, set a two-minute timer and start. (smiles) That’s it. You’ll be surprised how fast it gets easier.”",
+        "left": {
+          "label": "Google Veo 3.1",
+          "jobId": "job_b197fc68-0bb7-4a24-9720-0ff721642446"
+        },
+        "right": {
+          "label": "Wan 2.6 Text & Image to Video",
+          "jobId": "job_7bfe7823-5794-4a41-9869-2bb4458a9bc7"
+        }
+      },
+      {
+        "slotId": "hands-text",
+        "prompt": "Wide 16:9 full-body unboxing video in a clean studio/kitchen setting. A person is fully visible (head-to-toe or at least head-to-knees) standing behind a minimalist tabletop. They unbox a small generic gadget from a plain matte cardboard box: peel the seal, open the lid, remove the inner tray, take out the device and accessories, and lay everything neatly on the table. The person occasionally lifts the item toward the camera for a closer look, then places it back down.\n\nRealism requirements: natural body proportions, stable identity, realistic skin and clothing fabric, no face warping, no unnatural limb bending. Hands must be highly realistic: correct finger count, natural grip, believable pressure/contact with the box and device, consistent shadows, no extra fingers, no “floating” objects. Keep object geometry stable, no wobbling background, minimal temporal flicker.\n\nCamera: single continuous shot, tripod-stable, slight cinematic push-in (very slow), eye-level or slightly above table height. Natural soft daylight, clean shadows, realistic materials and textures. No logos, no brand names, no watermarks. No subtitles.\n\nOptional on-screen title at the top (perfectly readable and stable, no jitter):\n\"UNBOXING — FIRST LOOK\"",
+        "left": {
+          "label": "Google Veo 3.1",
+          "jobId": "job_5981bbec-f5e9-4163-9c65-093df7e296f5"
+        },
+        "right": {
+          "label": "Wan 2.6 Text & Image to Video",
+          "jobId": "job_2c795d5a-f8fb-4359-9d15-fbc65678327d"
+        }
+      }
+    ],
+    "veo-3-1-vs-ltx-2": [
+      {
+        "slotId": "motion-physics",
+        "prompt": "Wide 16:9 cinematic action shot, a runner sprints through a rainy city street at night, water splashes realistically with each step, reflections on wet asphalt, handheld tracking camera following from the side. Dynamic motion with believable inertia and physics, no rubbery limbs, no wobbling background, stable scene geometry, minimal temporal flicker, sharp details despite fast movement, realistic motion blur.",
+        "left": {
+          "label": "Google Veo 3.1",
+          "jobId": "job_b3187535-7c87-4616-a8ec-2c635d44ff58"
+        },
+        "right": {
+          "label": "LTX Video 2.0 Pro",
+          "jobId": "job_a8b82fc8-03af-49b8-99d4-186f497eb358"
+        }
+      },
+      {
+        "slotId": "ugc-lipsync",
+        "prompt": "Vertical 9:16 TikTok-style UGC selfie video, handheld smartphone feel, natural indoor daylight near a window. A friendly creator speaks directly to camera with natural blinking, subtle head nods, and a warm smile. Add small human imperfections: a tiny hesitation, a soft breath, a quick smile mid-sentence, and a micro-pause before the last line. Realistic skin texture, stable identity, no face warping, minimal flicker, clean audio with natural room tone.\n\nNo subtitles. No on-screen text. No logos. No watermarks.\n\nThe creator says (exactly, with the same pacing and hesitations):\n“Okay, so… um… quick thing. If you’re feeling stuck, just do the tiniest first step… like, set a two-minute timer and start. (smiles) That’s it. You’ll be surprised how fast it gets easier.”",
+        "left": {
+          "label": "Google Veo 3.1",
+          "jobId": "job_b197fc68-0bb7-4a24-9720-0ff721642446"
+        },
+        "right": {
+          "label": "LTX Video 2.0 Pro",
+          "jobId": "job_bd3c3bd3-00a1-4bf4-9047-73ca60d554e9"
+        }
+      },
+      {
+        "slotId": "hands-text",
+        "prompt": "Wide 16:9 full-body unboxing video in a clean studio/kitchen setting. A person is fully visible (head-to-toe or at least head-to-knees) standing behind a minimalist tabletop. They unbox a small generic gadget from a plain matte cardboard box: peel the seal, open the lid, remove the inner tray, take out the device and accessories, and lay everything neatly on the table. The person occasionally lifts the item toward the camera for a closer look, then places it back down.\n\nRealism requirements: natural body proportions, stable identity, realistic skin and clothing fabric, no face warping, no unnatural limb bending. Hands must be highly realistic: correct finger count, natural grip, believable pressure/contact with the box and device, consistent shadows, no extra fingers, no “floating” objects. Keep object geometry stable, no wobbling background, minimal temporal flicker.\n\nCamera: single continuous shot, tripod-stable, slight cinematic push-in (very slow), eye-level or slightly above table height. Natural soft daylight, clean shadows, realistic materials and textures. No logos, no brand names, no watermarks. No subtitles.\n\nOptional on-screen title at the top (perfectly readable and stable, no jitter):\n\"UNBOXING — FIRST LOOK\"",
+        "left": {
+          "label": "Google Veo 3.1",
+          "jobId": "job_5981bbec-f5e9-4163-9c65-093df7e296f5"
+        },
+        "right": {
+          "label": "LTX Video 2.0 Pro",
+          "jobId": "job_15cd3e9d-67d6-4378-8d76-11e3734d3a43"
+        }
+      }
+    ],
+    "kling-2-5-turbo-vs-sora-2": [
+      {
+        "slotId": "motion-physics",
+        "prompt": "Wide 16:9 cinematic action shot, a runner sprints through a rainy city street at night, water splashes realistically with each step, reflections on wet asphalt, handheld tracking camera following from the side. Dynamic motion with believable inertia and physics, no rubbery limbs, no wobbling background, stable scene geometry, minimal temporal flicker, sharp details despite fast movement, realistic motion blur.",
+        "left": {
+          "label": "Kling 2.5 Turbo",
+          "jobId": "job_ae3eb8d1-7e4e-4977-bd1f-cf797f189902"
+        },
+        "right": {
+          "label": "OpenAI Sora 2",
+          "jobId": "job_ad6b652f-8cb2-4b65-9bff-e88adbae6a1b"
+        }
+      },
+      {
+        "slotId": "ugc-lipsync",
+        "prompt": "Vertical 9:16 TikTok-style UGC selfie video, handheld smartphone feel, natural indoor daylight near a window. A friendly creator speaks directly to camera with natural blinking, subtle head nods, and a warm smile. Add small human imperfections: a tiny hesitation, a soft breath, a quick smile mid-sentence, and a micro-pause before the last line. Realistic skin texture, stable identity, no face warping, minimal flicker, clean audio with natural room tone.\n\nNo subtitles. No on-screen text. No logos. No watermarks.\n\nThe creator says (exactly, with the same pacing and hesitations):\n“Okay, so… um… quick thing. If you’re feeling stuck, just do the tiniest first step… like, set a two-minute timer and start. (smiles) That’s it. You’ll be surprised how fast it gets easier.”",
+        "left": {
+          "label": "Kling 2.5 Turbo",
+          "jobId": "job_1dbd7203-3503-49e7-9a69-c51fe7224688"
+        },
+        "right": {
+          "label": "OpenAI Sora 2",
+          "jobId": "job_55c36d3f-8591-4e32-a6a3-dbf191706d18"
+        }
+      },
+      {
+        "slotId": "hands-text",
+        "prompt": "Wide 16:9 full-body unboxing video in a clean studio/kitchen setting. A person is fully visible (head-to-toe or at least head-to-knees) standing behind a minimalist tabletop. They unbox a small generic gadget from a plain matte cardboard box: peel the seal, open the lid, remove the inner tray, take out the device and accessories, and lay everything neatly on the table. The person occasionally lifts the item toward the camera for a closer look, then places it back down.\n\nRealism requirements: natural body proportions, stable identity, realistic skin and clothing fabric, no face warping, no unnatural limb bending. Hands must be highly realistic: correct finger count, natural grip, believable pressure/contact with the box and device, consistent shadows, no extra fingers, no “floating” objects. Keep object geometry stable, no wobbling background, minimal temporal flicker.\n\nCamera: single continuous shot, tripod-stable, slight cinematic push-in (very slow), eye-level or slightly above table height. Natural soft daylight, clean shadows, realistic materials and textures. No logos, no brand names, no watermarks. No subtitles.\n\nOptional on-screen title at the top (perfectly readable and stable, no jitter):\n\"UNBOXING — FIRST LOOK\"",
+        "left": {
+          "label": "Kling 2.5 Turbo",
+          "jobId": "job_5cb5517a-06c1-4b5e-8420-9fc43afb7943"
+        },
+        "right": {
+          "label": "OpenAI Sora 2",
+          "jobId": "job_d1b582c3-bdaf-46ce-99ed-b9939de89a81"
+        }
       }
     ]
   }
