@@ -2,7 +2,15 @@
 
 import { useState } from 'react';
 
-export function CopyPromptButton({ prompt }: { prompt: string }) {
+export function CopyPromptButton({
+  prompt,
+  copyLabel = 'Copy prompt',
+  copiedLabel = 'Copied',
+}: {
+  prompt: string;
+  copyLabel?: string;
+  copiedLabel?: string;
+}) {
   const [copied, setCopied] = useState(false);
 
   return (
@@ -19,7 +27,7 @@ export function CopyPromptButton({ prompt }: { prompt: string }) {
       }}
       className="rounded-full border border-hairline bg-surface-2 px-3 py-1 text-[11px] font-semibold text-text-secondary transition hover:bg-surface-3"
     >
-      {copied ? 'Copied' : 'Copy prompt'}
+      {copied ? copiedLabel : copyLabel}
     </button>
   );
 }

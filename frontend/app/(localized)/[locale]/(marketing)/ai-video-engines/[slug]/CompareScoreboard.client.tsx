@@ -16,14 +16,16 @@ type CompareScoreboardProps = {
   rightLabel: string;
   metrics: CompareMetric[];
   className?: string;
+  naLabel?: string;
+  pendingLabel?: string;
 };
 
 function clampScore(value: number) {
   return Math.max(0, Math.min(10, value));
 }
 
-function formatScore(value: number | null) {
-  if (typeof value !== 'number') return 'N/A';
+function formatScore(value: number | null, naLabel: string) {
+  if (typeof value !== 'number') return naLabel;
   return value.toFixed(1);
 }
 
@@ -38,6 +40,8 @@ export function CompareScoreboard({
   rightLabel,
   metrics,
   className,
+  naLabel = 'N/A',
+  pendingLabel = 'Data pending',
 }: CompareScoreboardProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [animateBars, setAnimateBars] = useState(false);
@@ -129,9 +133,9 @@ export function CompareScoreboard({
               <div className="flex items-center gap-1 text-[11px] font-semibold text-text-primary sm:text-xs">
                 <span
                   className={clsx('w-8 text-right tabular-nums', leftIsNA && 'text-text-muted')}
-                  title={leftIsNA ? 'Data pending' : undefined}
+                  title={leftIsNA ? pendingLabel : undefined}
                 >
-                  {formatScore(row.leftValue)}
+                  {formatScore(row.leftValue, naLabel)}
                 </span>
               </div>
             </div>
@@ -156,9 +160,9 @@ export function CompareScoreboard({
               <div className="flex items-center gap-1 text-[11px] font-semibold text-text-primary sm:text-xs">
                 <span
                   className={clsx('w-8 tabular-nums', rightIsNA && 'text-text-muted')}
-                  title={rightIsNA ? 'Data pending' : undefined}
+                  title={rightIsNA ? pendingLabel : undefined}
                 >
-                  {formatScore(row.rightValue)}
+                  {formatScore(row.rightValue, naLabel)}
                 </span>
               </div>
             <div className="relative h-[7px] w-full max-w-[120px] sm:max-w-[160px] lg:max-w-[180px] overflow-hidden rounded-full bg-surface-5">

@@ -206,6 +206,11 @@ const SCORE_LABELS: Array<{ key: keyof EngineScore; label: string }> = [
   { key: 'speedStability', label: 'Speed & Stability' },
   { key: 'pricing', label: 'Pricing' },
 ];
+const SCORE_LABEL_KEYS = SCORE_LABELS.map((entry) => entry.key);
+const DEFAULT_SCORE_LABEL_MAP = SCORE_LABELS.reduce((acc, entry) => {
+  acc[entry.key] = entry.label;
+  return acc;
+}, {} as Record<keyof EngineScore, string>);
 
 function computeOverall(score?: EngineScore | null) {
   if (!score) return null;
@@ -217,9 +222,9 @@ function computeOverall(score?: EngineScore | null) {
   return Math.round(avg * 10) / 10;
 }
 
-function deriveStrengths(score?: EngineScore | null) {
+function deriveStrengths(score?: EngineScore | null, labels: Array<{ key: keyof EngineScore; label: string }> = SCORE_LABELS) {
   if (!score) return [];
-  const entries = SCORE_LABELS.map((entry) => {
+  const entries = labels.map((entry) => {
     const value = score[entry.key];
     return typeof value === 'number' ? { label: entry.label, value } : null;
   }).filter((entry): entry is { label: string; value: number } => Boolean(entry));
@@ -294,6 +299,28 @@ const USE_CASE_MAP: Record<string, string> = {
   'nano-banana-pro': 'campaign stills and typography-focused edits',
 };
 
+const DEFAULT_VALUE_SENTENCE = 'Best for {useCase} with strong {strengths} in {capabilities} workflows.';
+const DEFAULT_CAPABILITY_KEYWORDS: Record<string, string> = {
+  T2V: 'text-to-video',
+  I2V: 'image-to-video',
+  V2V: 'video-to-video',
+  'Lip sync': 'lip sync',
+  Audio: 'native audio',
+  'First/Last': 'first/last frame control',
+  Extend: 'extend workflows',
+};
+
+function formatTemplate(template: string, values: Record<string, string>) {
+  return template.replace(/\{(\w+)\}/g, (_, key) => values[key] ?? '');
+}
+
+function joinWithConjunction(values: string[], conjunction: string) {
+  if (!values.length) return '';
+  if (values.length === 1) return values[0];
+  if (values.length === 2) return `${values[0]} ${conjunction} ${values[1]}`;
+  return `${values.slice(0, -1).join(', ')} ${conjunction} ${values[values.length - 1]}`;
+}
+
 const SPEC_TOKEN_REGEX = /(\$\d+|\d+(?:\.\d+)?\s*s|\d+\s*seconds?|\d+\s*fps|\d+\s*p|\d+\s*×\s*\d+|4k|1080p|720p|2160p|\d+–\d+\s*s)/gi;
 const PAREN_SPEC_REGEX = /\([^)]*?(\d|p|fps|\$)[^)]*\)/gi;
 
@@ -311,21 +338,15 @@ function sanitizeDescription(text: string) {
   return withoutFragments.replace(/\s+$/, '').trim();
 }
 
-function capabilityKeywords(capabilities: string[]) {
-  const map: Record<string, string> = {
-    T2V: 'text-to-video',
-    I2V: 'image-to-video',
-    V2V: 'video-to-video',
-    'Lip sync': 'lip sync',
-    Audio: 'native audio',
-    'First/Last': 'first/last frame control',
-    Extend: 'extend workflows',
-  };
+function capabilityKeywords(
+  capabilities: string[],
+  map: Record<string, string>,
+  conjunction: string,
+  fallback: string
+) {
   const translated = capabilities.map((cap) => map[cap] ?? cap.toLowerCase());
-  if (!translated.length) return 'AI video';
-  if (translated.length === 1) return translated[0];
-  if (translated.length === 2) return `${translated[0]} and ${translated[1]}`;
-  return `${translated.slice(0, -1).join(', ')} and ${translated[translated.length - 1]}`;
+  if (!translated.length) return fallback;
+  return joinWithConjunction(translated, conjunction);
 }
 
 function buildValueSentence({
@@ -333,30 +354,53 @@ function buildValueSentence({
   strengths,
   capabilities,
   fallback,
+  template,
+  strengthsFallback,
+  capabilityFallback,
+  conjunction,
+  useCaseMap,
+  capabilityMap,
 }: {
   slug: string;
   strengths: string[];
   capabilities: string[];
   fallback: string;
+  template: string;
+  strengthsFallback: string;
+  capabilityFallback: string;
+  conjunction: string;
+  useCaseMap: Record<string, string>;
+  capabilityMap: Record<string, string>;
 }) {
-  const useCase = USE_CASE_MAP[slug] ?? fallback;
+  const useCase = useCaseMap[slug] ?? fallback;
   const cleanedUseCase = sanitizeDescription(useCase);
-  const strengthsText = strengths.length ? strengths.join(' and ') : 'reliable outputs';
-  const capabilityText = capabilityKeywords(capabilities);
-  return `Best for ${cleanedUseCase} with strong ${strengthsText} in ${capabilityText} workflows.`;
+  const strengthsText = strengths.length ? joinWithConjunction(strengths, conjunction) : strengthsFallback;
+  const capabilityText = capabilityKeywords(capabilities, capabilityMap, conjunction, capabilityFallback);
+  return formatTemplate(template, {
+    useCase: cleanedUseCase,
+    strengths: strengthsText,
+    capabilities: capabilityText,
+  });
 }
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
   const locale = params.locale;
   const t = await getTranslations({ locale, namespace: 'models.meta' });
-  return buildSeoMetadata({
+  const title = t('title');
+  const meta = buildSeoMetadata({
     locale,
-    title: t('title'),
+    title,
     description: t('description'),
     hreflangGroup: 'models',
     slugMap: MODELS_SLUG_MAP,
     imageAlt: 'Model lineup overview with Price-Before chip.',
   });
+  return {
+    ...meta,
+    title: { absolute: title },
+    openGraph: meta.openGraph ? { ...meta.openGraph, title } : meta.openGraph,
+    twitter: meta.twitter ? { ...meta.twitter, title } : meta.twitter,
+  };
 }
 
 type EngineTypeKey = 'textImage' | 'text' | 'image' | 'default';
@@ -414,9 +458,62 @@ export default async function ModelsPage() {
     ],
   };
   const content = dictionary.models;
-  const heroTitle = 'Compare AI video models with live pricing';
+  const galleryCopy = (content.gallery ?? {}) as {
+    scoreLabels?: Record<keyof EngineScore, string>;
+    valueSentence?: {
+      template?: string;
+      strengthsFallback?: string;
+      capabilityFallback?: string;
+      conjunction?: string;
+      useCases?: Record<string, string>;
+      capabilityKeywords?: Record<string, string>;
+    };
+    stats?: {
+      typeShort?: string;
+    };
+  };
+  const listingCopy = (content.listing ?? {}) as {
+    hero?: {
+      title?: string;
+      subtitle?: string;
+      bullets?: string[];
+      compareLabel?: string;
+    };
+    grid?: {
+      srTitle?: string;
+      bridgeText?: string;
+    };
+    quickCompare?: {
+      title?: string;
+      subtitle?: string;
+      shortcuts?: string[];
+    };
+    chooseOutcome?: {
+      title?: string;
+      subtitle?: string;
+      tiles?: { title?: string; description?: string }[];
+    };
+    reliability?: {
+      title?: string;
+      subtitle?: string;
+      items?: { title?: string; body?: string }[];
+      faq?: { question?: string; answer?: string }[];
+    };
+    cta?: {
+      title?: string;
+      subtitle?: string;
+      pills?: string[];
+      microcopy?: string;
+      primaryLabel?: string;
+      secondaryLabel?: string;
+    };
+  };
+  const heroTitle =
+    listingCopy.hero?.title ?? content.hero?.title ?? 'Compare AI video models with live pricing';
   const heroSubhead =
-    content.hero?.subtitle ?? 'Live $/s + real limits + examples — then compare two engines side by side.';
+    listingCopy.hero?.subtitle ??
+    content.hero?.subtitle ??
+    'Live $/s + real limits + examples — then compare two engines side by side.';
   const cardCtaLabel = content.cardCtaLabel ?? 'Explore model';
   const engineTypeLabels = {
     ...DEFAULT_ENGINE_TYPE_LABELS,
@@ -471,6 +568,18 @@ export default async function ModelsPage() {
     )
   );
 
+  const scoreLabelMap = { ...DEFAULT_SCORE_LABEL_MAP, ...(galleryCopy.scoreLabels ?? {}) };
+  const scoreLabels = SCORE_LABEL_KEYS.map((key) => ({
+    key,
+    label: scoreLabelMap[key] ?? DEFAULT_SCORE_LABEL_MAP[key],
+  }));
+  const valueTemplate = galleryCopy.valueSentence?.template ?? DEFAULT_VALUE_SENTENCE;
+  const strengthsFallback = galleryCopy.valueSentence?.strengthsFallback ?? 'reliable outputs';
+  const capabilityFallback = galleryCopy.valueSentence?.capabilityFallback ?? 'AI video';
+  const conjunction = galleryCopy.valueSentence?.conjunction ?? 'and';
+  const useCaseMap = { ...USE_CASE_MAP, ...(galleryCopy.valueSentence?.useCases ?? {}) };
+  const capabilityMap = { ...DEFAULT_CAPABILITY_KEYWORDS, ...(galleryCopy.valueSentence?.capabilityKeywords ?? {}) };
+
   const modelCards = engines.map((engine) => {
     const meta = engineMetaCopy[engine.modelSlug] ?? engineMetaCopy[engine.id] ?? null;
     const localized = localizedMap.get(engine.modelSlug);
@@ -485,7 +594,7 @@ export default async function ModelsPage() {
     const scoreEntry =
       scoresMap.get(engine.modelSlug) ?? scoresMap.get(engine.engine.id) ?? scoresMap.get(engine.id) ?? null;
     const overallScore = computeOverall(scoreEntry);
-    const strengths = deriveStrengths(scoreEntry);
+    const strengths = deriveStrengths(scoreEntry, scoreLabels);
     const providerId = (engine.brandId ?? engine.engine.brandId ?? catalogEntry?.brandId ?? '').toString().toLowerCase();
     const providerLabel = formatProviderLabel(engine, catalogEntry);
     const engineName = stripProvider(displayName, providerLabel, providerId) || displayName;
@@ -541,6 +650,12 @@ export default async function ModelsPage() {
       strengths,
       capabilities: capabilityKeywordsList,
       fallback: bestForFallback,
+      template: valueTemplate,
+      strengthsFallback,
+      capabilityFallback,
+      conjunction,
+      useCaseMap,
+      capabilityMap,
     });
     const microDescription = clampDescription(generatedDescription, 120);
     const pictogram = getEnginePictogram({
@@ -569,7 +684,7 @@ export default async function ModelsPage() {
         maxResolution: maxResolution.label === 'Data pending' ? '—' : maxResolution.label,
       },
       statsLabels: {
-        duration: isImageOnly ? 'Type' : undefined,
+        duration: isImageOnly ? galleryCopy.stats?.typeShort ?? 'Type' : undefined,
       },
       audioAvailable: Boolean(audioSupported),
       compareDisabled,
@@ -591,61 +706,64 @@ export default async function ModelsPage() {
     };
   });
 
-  const heroBullets = [
-    'Click any model for full specs, prompt presets, and examples.',
-    'Compare engines side by side with specs and prompts',
-  ];
+  const heroBullets =
+    listingCopy.hero?.bullets ?? [
+      'Click any model for full specs, prompt presets, and examples.',
+      'Compare engines side by side with specs and prompts',
+    ];
 
   const cardBySlug = new Map(modelCards.map((card) => [card.id, card]));
+  const quickCompareMicroLabels = listingCopy.quickCompare?.shortcuts ?? [];
   const quickCompareShortcuts = [
-    { a: 'sora-2', b: 'veo-3-1', micro: 'cinematic vs ad-ready' },
-    { a: 'sora-2', b: 'kling-2-6-pro', micro: 'cinematic vs control' },
-    { a: 'veo-3-1', b: 'kling-2-6-pro', micro: 'ads vs motion' },
-    { a: 'sora-2', b: 'wan-2-6', micro: 'premium vs fast' },
-    { a: 'veo-3-1', b: 'wan-2-6', micro: 'ads vs budget' },
-    { a: 'kling-2-6-pro', b: 'wan-2-6', micro: 'motion vs speed' },
+    { a: 'sora-2', b: 'veo-3-1', micro: quickCompareMicroLabels[0] ?? 'cinematic vs ad-ready' },
+    { a: 'sora-2', b: 'kling-2-6-pro', micro: quickCompareMicroLabels[1] ?? 'cinematic vs control' },
+    { a: 'veo-3-1', b: 'kling-2-6-pro', micro: quickCompareMicroLabels[2] ?? 'ads vs motion' },
+    { a: 'sora-2', b: 'wan-2-6', micro: quickCompareMicroLabels[3] ?? 'premium vs fast' },
+    { a: 'veo-3-1', b: 'wan-2-6', micro: quickCompareMicroLabels[4] ?? 'ads vs budget' },
+    { a: 'kling-2-6-pro', b: 'wan-2-6', micro: quickCompareMicroLabels[5] ?? 'motion vs speed' },
   ];
 
+  const outcomeCopy = listingCopy.chooseOutcome?.tiles ?? [];
   const outcomeTiles = [
     {
-      title: 'Cinematic / hero shots',
-      description: 'Character continuity, cinematic physics, premium look.',
+      title: outcomeCopy[0]?.title ?? 'Cinematic / hero shots',
+      description: outcomeCopy[0]?.description ?? 'Character continuity, cinematic physics, premium look.',
       engines: ['sora-2', 'sora-2-pro', 'kling-2-6-pro'],
       icon: Film,
     },
     {
-      title: 'Ads & marketing cuts',
-      description: 'Precise framing, consistent camera moves, fast variants.',
+      title: outcomeCopy[1]?.title ?? 'Ads & marketing cuts',
+      description: outcomeCopy[1]?.description ?? 'Precise framing, consistent camera moves, fast variants.',
       engines: ['veo-3-1', 'veo-3-1-fast'],
       icon: Clapperboard,
     },
     {
-      title: 'Fast iteration (cheap tests)',
-      description: 'Try lots of versions quickly before you commit.',
+      title: outcomeCopy[2]?.title ?? 'Fast iteration (cheap tests)',
+      description: outcomeCopy[2]?.description ?? 'Try lots of versions quickly before you commit.',
       engines: ['wan-2-5', 'minimax-hailuo-02-text', 'pika-text-to-video'],
       icon: Timer,
     },
     {
-      title: 'Stylized / social edits',
-      description: 'Stylized motion, loops, social-first look.',
+      title: outcomeCopy[3]?.title ?? 'Stylized / social edits',
+      description: outcomeCopy[3]?.description ?? 'Stylized motion, loops, social-first look.',
       engines: ['pika-text-to-video', 'wan-2-6'],
       icon: Sparkles,
     },
     {
-      title: 'High-res / 4K deliverables',
-      description: 'When max resolution matters.',
+      title: outcomeCopy[4]?.title ?? 'High-res / 4K deliverables',
+      description: outcomeCopy[4]?.description ?? 'When max resolution matters.',
       engines: ['ltx-2-fast', 'ltx-2'],
       icon: Wand2,
     },
     {
-      title: 'Storyboard & still-first workflows',
-      description: 'Prep frames and references before motion.',
+      title: outcomeCopy[5]?.title ?? 'Storyboard & still-first workflows',
+      description: outcomeCopy[5]?.description ?? 'Prep frames and references before motion.',
       engines: ['nano-banana', 'nano-banana-pro'],
       icon: Copy,
     },
   ];
 
-  const faqItems = [
+  const fallbackFaqItems = [
     {
       question: 'How pricing is calculated',
       answer:
@@ -672,6 +790,22 @@ export default async function ModelsPage() {
         'We update model limits and pricing references as providers change their published info and as we test new versions. If something looks off, the model page notes the last refresh.',
     },
   ];
+  const faqItems =
+    listingCopy.reliability?.faq?.length && listingCopy.reliability.faq.every((item) => item.question && item.answer)
+      ? listingCopy.reliability.faq
+      : fallbackFaqItems;
+
+  const fallbackReliabilityItems = [
+    { title: 'Live pricing', body: 'We track $/s so you see real cost before you generate.' },
+    { title: 'Real limits', body: 'Duration, max resolution, formats… shown per engine.' },
+    { title: 'Examples you can clone', body: 'Duplicate prompts and settings from real renders.' },
+  ];
+  const reliabilityItems =
+    listingCopy.reliability?.items && listingCopy.reliability.items.length === 3
+      ? listingCopy.reliability.items
+      : fallbackReliabilityItems;
+
+  const ctaPills = listingCopy.cta?.pills ?? ['Live pricing', 'Clone prompts', 'Compare side-by-side'];
 
   const itemListJsonLd = {
     '@context': 'https://schema.org',
@@ -712,23 +846,32 @@ export default async function ModelsPage() {
             ))}
           </ul>
           <div className="mt-4 flex flex-col items-center gap-2">
-            <ModelsCompareHeroToggle label="Enter Compare Mode" className="px-7 py-3 text-sm" />
+            <ModelsCompareHeroToggle
+              label={listingCopy.hero?.compareLabel ?? 'Enter Compare Mode'}
+              className="px-7 py-3 text-sm"
+            />
           </div>
         </header>
 
         <section id="models-grid" className="stack-gap-md scroll-mt-24">
-          <h2 className="sr-only">AI video and image models you can compare on MaxVideoAI</h2>
-          <ModelsGallery cards={modelCards} ctaLabel={cardCtaLabel} />
+          <h2 className="sr-only">
+            {listingCopy.grid?.srTitle ?? 'AI video and image models you can compare on MaxVideoAI'}
+          </h2>
+          <ModelsGallery cards={modelCards} ctaLabel={cardCtaLabel} copy={content.gallery} />
         </section>
         <p className="text-sm text-text-secondary text-center">
-          Compare AI video and image engines side-by-side with live pricing, real limits, and examples you can clone.
+          {listingCopy.grid?.bridgeText ??
+            'Compare AI video and image engines side-by-side with live pricing, real limits, and examples you can clone.'}
         </p>
         <div className="stack-gap-xl py-4 sm:py-10">
           <section className="rounded-2xl border border-hairline bg-slate-50/60 p-6 shadow-card dark:bg-white/5 sm:p-8">
             <div className="stack-gap-xs">
-              <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">Quick compare shortcuts</h2>
+              <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
+                {listingCopy.quickCompare?.title ?? 'Quick compare shortcuts'}
+              </h2>
               <p className="text-sm text-text-secondary">
-                Pick a popular matchup to preload Compare mode (or open the comparison page).
+                {listingCopy.quickCompare?.subtitle ??
+                  'Pick a popular matchup to preload Compare mode (or open the comparison page).'}
               </p>
             </div>
             <div className="mt-6 flex gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:overflow-visible">
@@ -764,9 +907,11 @@ export default async function ModelsPage() {
 
           <section className="rounded-2xl border border-hairline bg-slate-50/60 p-6 shadow-card dark:bg-white/5 sm:p-8">
             <div className="stack-gap-xs">
-              <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">Choose by outcome</h2>
+              <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
+                {listingCopy.chooseOutcome?.title ?? 'Choose by outcome'}
+              </h2>
               <p className="text-sm text-text-secondary">
-                Start from the result you want — then pick an engine.
+                {listingCopy.chooseOutcome?.subtitle ?? 'Start from the result you want — then pick an engine.'}
               </p>
             </div>
             <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -810,28 +955,19 @@ export default async function ModelsPage() {
 
           <section className="rounded-2xl border border-hairline bg-slate-50/60 p-6 shadow-card dark:bg-white/5 sm:p-8">
             <div className="stack-gap-xs">
-              <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">How MaxVideoAI stays reliable</h2>
+              <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
+                {listingCopy.reliability?.title ?? 'How MaxVideoAI stays reliable'}
+              </h2>
               <p className="text-sm text-text-secondary">
-                The essentials that keep your comparisons consistent and production-ready.
+                {listingCopy.reliability?.subtitle ??
+                  'The essentials that keep your comparisons consistent and production-ready.'}
               </p>
             </div>
             <div className="mt-6 grid gap-4 sm:grid-cols-3">
               {[
-                {
-                  title: 'Live pricing',
-                  body: 'We track $/s so you see real cost before you generate.',
-                  icon: Wallet,
-                },
-                {
-                  title: 'Real limits',
-                  body: 'Duration, max resolution, formats… shown per engine.',
-                  icon: Clapperboard,
-                },
-                {
-                  title: 'Examples you can clone',
-                  body: 'Duplicate prompts and settings from real renders.',
-                  icon: Copy,
-                },
+                { ...reliabilityItems[0], icon: Wallet },
+                { ...reliabilityItems[1], icon: Clapperboard },
+                { ...reliabilityItems[2], icon: Copy },
               ].map((item) => (
                 <div key={item.title} className="rounded-2xl border border-hairline bg-bg/70 p-4 shadow-sm">
                   <div className="flex items-center gap-3">
@@ -861,12 +997,15 @@ export default async function ModelsPage() {
             <span className="pointer-events-none absolute -bottom-16 -right-16 h-64 w-64 rounded-full bg-sky-400/20 blur-3xl" />
             <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
               <div className="max-w-xl">
-                <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">Start generating in seconds</h2>
+                <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
+                  {listingCopy.cta?.title ?? 'Start generating in seconds'}
+                </h2>
                 <p className="mt-2 text-sm text-text-secondary">
-                  Pick a model above, then generate — or browse proven prompts and outputs before you commit.
+                  {listingCopy.cta?.subtitle ??
+                    'Pick a model above, then generate — or browse proven prompts and outputs before you commit.'}
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
-                  {['Live pricing', 'Clone prompts', 'Compare side-by-side'].map((pill) => (
+                  {ctaPills.map((pill) => (
                     <span
                       key={pill}
                       className="inline-flex items-center gap-2 rounded-full border border-hairline bg-surface/80 px-3 py-1"
@@ -877,7 +1016,7 @@ export default async function ModelsPage() {
                   ))}
                 </div>
                 <p className="mt-3 text-xs text-text-muted">
-                  Same prompt presets • Live pricing • Side-by-side comparisons
+                  {listingCopy.cta?.microcopy ?? 'Same prompt presets • Live pricing • Side-by-side comparisons'}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-3">
@@ -886,14 +1025,14 @@ export default async function ModelsPage() {
                   className="inline-flex items-center rounded-full bg-text-primary px-5 py-3 text-xs font-semibold uppercase tracking-micro text-bg transition hover:opacity-90"
                   aria-label="Generate now (opens workspace)"
                 >
-                  Generate now
+                  {listingCopy.cta?.primaryLabel ?? 'Generate now'}
                 </Link>
                 <Link
                   href="/examples"
                   className="inline-flex items-center rounded-full border border-text-primary/40 bg-transparent px-5 py-3 text-xs font-semibold uppercase tracking-micro text-text-primary transition hover:border-text-primary/60"
                   aria-label="Browse examples (opens gallery)"
                 >
-                  Browse examples
+                  {listingCopy.cta?.secondaryLabel ?? 'Browse examples'}
                 </Link>
               </div>
             </div>
