@@ -1,28 +1,108 @@
 import type { Metadata } from 'next';
 import { Link } from '@/i18n/navigation';
-import clsx from 'clsx';
 import { resolveDictionary } from '@/lib/i18n/server';
-import { listAvailableModels } from '@/lib/model-roster';
-import { AVAILABILITY_BADGE_CLASS } from '@/lib/availability';
-import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
-import { FEATURES } from '@/content/feature-flags';
-import { FlagPill } from '@/components/FlagPill';
+import { ButtonLink } from '@/components/ui/Button';
 import type { AppLocale } from '@/i18n/locales';
-import { localePathnames } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { getTranslations } from 'next-intl/server';
-import { getExamplesHref } from '@/lib/examples-links';
 
 const WORKFLOWS_SLUG_MAP = buildSlugMap('workflows');
-const MODELS_BASE_SLUG_MAP = buildSlugMap('models');
 
 export const revalidate = 60 * 10;
 
-function buildModelPath(locale: AppLocale, slug: string) {
-  const prefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
-  const base = MODELS_BASE_SLUG_MAP[locale] ?? MODELS_BASE_SLUG_MAP.en ?? 'models';
-  return `${prefix}/${base}/${slug}`.replace(/\/{2,}/g, '/');
+type WorkflowExampleEntry = { label: string; slug: string; brandId: string };
+type WorkflowStep = { title: string; description: string };
+type WorkflowFeature = { title: string; description: string };
+type WorkflowFaq = { question: string; answer: string };
+
+const FALLBACK_STEPS: WorkflowStep[] = [
+  {
+    title: 'Choose engine & mode',
+    description: 'Text-to-video, image-to-video, plus references when supported.',
+  },
+  {
+    title: 'Set shot settings',
+    description: 'Duration, aspect, resolution, iterations, and audio when available.',
+  },
+  {
+    title: 'Write prompt + add references',
+    description: 'Add a prompt and optional reference assets.',
+  },
+  {
+    title: 'Generate + review variants',
+    description: 'Preview a grid, copy prompts, and download per clip.',
+  },
+];
+
+const FALLBACK_FEATURES: WorkflowFeature[] = [
+  {
+    title: 'Live price-before-you-generate',
+    description: 'The price chip updates as settings change.',
+  },
+  {
+    title: 'Generate 1-4 variants per run',
+    description: 'Iterations create multiple takes in one go.',
+  },
+  {
+    title: 'Copy prompt from any result',
+    description: 'Reuse prompts directly from past takes.',
+  },
+  {
+    title: 'Continue / Refine',
+    description: 'Prefill settings from a chosen take and iterate.',
+  },
+  {
+    title: 'Per-clip downloads',
+    description: 'Download each clip individually.',
+  },
+  {
+    title: 'History you can revisit',
+    description: 'Find runs in /jobs and the public gallery.',
+  },
+];
+
+const FALLBACK_EXAMPLES: WorkflowExampleEntry[] = [
+  { label: 'Sora 2', slug: 'sora-2', brandId: 'openai' },
+  { label: 'Veo 3.1', slug: 'veo-3-1', brandId: 'google-veo' },
+  { label: 'Kling 2.6 Pro', slug: 'kling-2-6-pro', brandId: 'kling' },
+  { label: 'Pika Text-to-Video', slug: 'pika-text-to-video', brandId: 'pika' },
+  { label: 'Wan 2.6', slug: 'wan-2-6', brandId: 'wan' },
+  { label: 'LTX-2', slug: 'ltx-2', brandId: 'lightricks' },
+  { label: 'LTX-2 Fast', slug: 'ltx-2-fast', brandId: 'lightricks' },
+  { label: 'MiniMax Hailuo 02', slug: 'minimax-hailuo-02-text', brandId: 'minimax' },
+];
+
+const FALLBACK_FAQ: WorkflowFaq[] = [
+  {
+    question: 'How does \"price before you generate\" work?',
+    answer: 'The price chip updates as you change engine, duration, and resolution. You are charged only on success.',
+  },
+  {
+    question: 'What do iterations mean?',
+    answer: 'Iterations generate 1-4 variants in a single run using the same settings.',
+  },
+  {
+    question: 'Why do duration/resolution/aspect options differ by engine?',
+    answer: 'Each engine exposes its own caps, so the UI only shows what that engine supports.',
+  },
+  {
+    question: 'When is audio available?',
+    answer: 'Audio appears only on engines that support it, with a toggle when available.',
+  },
+  {
+    question: 'Where do I find past runs?',
+    answer: 'Open /jobs for your history and /examples for curated prompts you can reuse.',
+  },
+];
+
+function serializeJsonLd(data: unknown): string {
+  return JSON.stringify(data)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
 }
 
 export async function generateMetadata({ params }: { params: { locale: AppLocale } }): Promise<Metadata> {
@@ -34,7 +114,7 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     description: t('description'),
     hreflangGroup: 'workflows',
     slugMap: WORKFLOWS_SLUG_MAP,
-    imageAlt: 'Workflows — MaxVideo AI',
+    imageAlt: 'Workflows - MaxVideo AI',
     robots: {
       index: true,
       follow: true,
@@ -45,186 +125,170 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
 export default async function WorkflowsPage({ params }: { params: { locale: AppLocale } }) {
   const locale = params.locale;
   const { dictionary } = await resolveDictionary({ locale });
-  const activeLocale = locale;
   const content = dictionary.workflows;
-  const models = listAvailableModels(true);
-  const availabilityLabels = dictionary.models.availabilityLabels;
-  const expressFeatures =
-    Array.isArray(content.express.features) && content.express.features.length
-      ? content.express.features
-      : [
-          'Template library with prompt scaffolds and guardrails',
-          'Caption burn-in and optional voice-over generation',
-          'Auto ratio exports for 16:9, 1:1, 9:16, 4:5',
-        ];
-  const workflowsFeatures =
-    Array.isArray(content.workflows.features) && content.workflows.features.length
-      ? content.workflows.features
-      : [
-          'Price before you generate',
-          'Delivery: Google Drive, OneDrive, Dropbox',
-          'Nano Banana image hand-offs',
-        ];
-  const pickSection = content.pick ?? null;
-  const useCaseCards =
-    Array.isArray(pickSection?.cards) && pickSection.cards.length
-      ? pickSection.cards
-      : [
-          {
-            title: 'Ads creative',
-            description: '6–12s cuts, product hero shots, end-cards. Great with Veo 3.1.',
-            bullets: ['16:9 / 9:16 variants', 'Logo lockups & simple supers', 'Optional voice-over'],
-            href: getExamplesHref('veo') ?? '/examples',
-            cta: 'Browse examples →',
-          },
-        ];
-  const modelRoster = content.modelRoster ?? {
-    title: 'Model roster',
-    description: 'Choose the model that matches your workflow stage. Availability badges stay in sync with the global roster.',
+  const steps: WorkflowStep[] =
+    Array.isArray(content.how?.steps) && content.how.steps.length ? content.how.steps : FALLBACK_STEPS;
+  const features: WorkflowFeature[] =
+    Array.isArray(content.capabilities?.items) && content.capabilities.items.length
+      ? content.capabilities.items
+      : FALLBACK_FEATURES;
+  const exampleEntries: WorkflowExampleEntry[] =
+    Array.isArray(content.examples?.items) && content.examples.items.length ? content.examples.items : FALLBACK_EXAMPLES;
+  const faqItems: WorkflowFaq[] = Array.isArray(content.faq?.items) && content.faq.items.length ? content.faq.items : FALLBACK_FAQ;
+
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((entry) => ({
+      '@type': 'Question',
+      name: entry.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: entry.answer,
+      },
+    })),
   };
 
   return (
     <div className="container-page max-w-5xl section">
-      <div className="stack-gap-lg">
+      <div className="stack-gap-xl">
         <header className="stack-gap-sm">
-          <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
-          <p className="sm:max-w-[62ch] text-sm text-text-muted">{content.hero.subtitle}</p>
-          {content.hero.notice ? (
-            <p className="text-xs text-text-muted">{content.hero.notice}</p>
-          ) : !(FEATURES.delivery.drive && FEATURES.delivery.onedrive && FEATURES.delivery.dropbox) ? (
-            <p className="text-xs text-text-muted">Additional delivery integrations are rolling out gradually.</p>
-          ) : null}
-        </header>
-        <section aria-labelledby="express-vs-workflows" className="stack-gap-sm">
-          <h2 id="express-vs-workflows" className="scroll-mt-28 sr-only">
-            Express vs Workflows
-          </h2>
-          <div className="grid grid-cols-1 grid-gap-sm md:grid-cols-2">
-            <div className="rounded-card border border-hairline bg-surface p-5 shadow-card">
-              <div className="flex items-center gap-4">
-                <div aria-hidden className="flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-sm">
-                  ⚡
-                </div>
-                <div>
-                  <h3 className="text-base font-semibold text-text-primary">{content.express.badge}</h3>
-                  <p className="text-sm text-text-secondary">{content.express.title}</p>
-                </div>
-              </div>
-              <ul className="mt-3 space-y-1.5 text-sm text-text-secondary">
-                {expressFeatures.map((feature) => (
-                  <li key={feature}>• {feature}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="rounded-card border border-hairline bg-surface p-5 shadow-card">
-              <div className="flex items-center gap-4">
-                <div aria-hidden className="flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-sm">
-                  🧩
-                </div>
-                <div>
-                  <h3 className="text-base font-semibold text-text-primary">{content.workflows.badge}</h3>
-                  <p className="text-sm text-text-secondary">{content.workflows.title}</p>
-                </div>
-              </div>
-              <ul className="mt-3 space-y-1.5 text-sm text-text-secondary">
-                {workflowsFeatures.map((feature, index) => {
-                  const showPill =
-                    index === 0 ||
-                    feature.toLowerCase().includes('price before') ||
-                    feature.toLowerCase().includes('delivery');
-                  const live =
-                    index === 0
-                      ? true
-                      : feature.toLowerCase().includes('delivery')
-                        ? FEATURES.delivery.drive && FEATURES.delivery.onedrive && FEATURES.delivery.dropbox
-                        : FEATURES.marketing.nanoBananaImage;
-                  return (
-                    <li key={feature} className="flex flex-wrap items-center gap-2">
-                      <span>• {feature}</span>
-                      {showPill ? (
-                        <>
-                          <FlagPill live={live} />
-                          <span className="sr-only">{live ? 'Live' : 'Coming soon'}</span>
-                        </>
-                      ) : null}
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </div>
-        </section>
-        <section aria-labelledby="pick-a-workflow" className="stack-gap-sm">
-          <h2 id="pick-a-workflow" className="text-lg font-semibold text-text-primary">
-            {pickSection?.title ?? 'Pick a workflow'}
-          </h2>
-          <p className="text-sm text-text-secondary">
-            {pickSection?.subtitle ?? 'Start from a common use case. You can swap engines later.'}
+          <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">
+            {content.hero?.title ?? 'Workflows'}
+          </h1>
+          <p className="sm:max-w-[62ch] text-sm text-text-muted">
+            {content.hero?.subtitle ??
+              'Your repeatable AI video workflow: pick an engine, set the shot, preview price, and generate variants you can reuse.'}
           </p>
-          <div className="grid grid-cols-1 grid-gap-sm md:grid-cols-3">
-            {useCaseCards.map((card) => {
-              const cardCta = (card as { cta?: string })?.cta;
-              return (
-                <a
-                  key={card.title}
-                  href={card.href ?? '#'}
-                  className="rounded-card border border-hairline bg-surface p-5 shadow-card transition hover:bg-surface-2 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                >
-                  <div className="text-base font-semibold text-text-primary">{card.title}</div>
-                  <p className="mt-1 text-sm text-text-secondary">{card.description}</p>
-                  <ul className="mt-3 space-y-1.5 text-sm text-text-secondary">
-                    {(card.bullets ?? []).map((bullet) => (
-                      <li key={bullet}>• {bullet}</li>
-                    ))}
-                  </ul>
-                  <div className="mt-3 text-sm font-semibold text-brand underline underline-offset-2">
-                    {cardCta ?? 'Browse examples →'}
+          <div className="flex flex-wrap gap-3">
+            <ButtonLink href="/app" size="lg" className="shadow-card" linkComponent={Link}>
+              {content.hero?.primaryCta ?? 'Generate now'}
+            </ButtonLink>
+            <ButtonLink href="/examples" variant="outline" size="lg" linkComponent={Link}>
+              {content.hero?.secondaryCta ?? 'Browse examples'}
+            </ButtonLink>
+            <Link
+              href="/models"
+              className="text-sm font-semibold text-text-secondary underline underline-offset-4 transition hover:text-text-primary"
+            >
+              {content.hero?.tertiaryCta ?? 'Compare models'}
+            </Link>
+          </div>
+        </header>
+
+        <section id="how-it-works" className="rounded-2xl border border-hairline bg-surface/80 p-6 shadow-card">
+          <div className="stack-gap-sm">
+            <h2 className="text-xl font-semibold text-text-primary sm:text-2xl">
+              {content.how?.title ?? 'How it works (live)'}
+            </h2>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {steps.map((step, index) => (
+                <div key={step.title} className="rounded-2xl border border-hairline bg-surface p-4">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full border border-hairline text-xs font-semibold text-text-muted">
+                      {index + 1}
+                    </span>
+                    <h3 className="text-sm font-semibold text-text-primary">{step.title}</h3>
                   </div>
-                </a>
-              );
-            })}
+                  <p className="mt-2 text-sm text-text-secondary">{step.description}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
-        <section className="stack-gap-sm rounded-card border border-hairline bg-surface/90 p-6 shadow-card">
-          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{modelRoster.title ?? 'Model roster'}</h2>
-          <p className="text-sm text-text-secondary">{modelRoster.description ?? ''}</p>
-          <div className="grid grid-gap-sm sm:grid-cols-2">
-            {models.map((model) => {
-              const brand = PARTNER_BRAND_MAP.get(model.brandId);
-              const availabilityLabel = availabilityLabels[model.availability] ?? model.availability;
-              const modelHref = buildModelPath(activeLocale, model.modelSlug);
-              const showAvailabilityBadge = model.availability !== 'limited';
-              return (
+
+        <section id="what-you-can-do" className="rounded-2xl border border-hairline bg-surface/80 p-6 shadow-card">
+          <div className="stack-gap-sm">
+            <h2 className="text-xl font-semibold text-text-primary sm:text-2xl">
+              {content.capabilities?.title ?? 'What you can do today'}
+            </h2>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {features.map((feature) => (
+                <div key={feature.title} className="rounded-2xl border border-hairline bg-surface p-4">
+                  <h3 className="text-sm font-semibold text-text-primary">{feature.title}</h3>
+                  <p className="mt-2 text-sm text-text-secondary">{feature.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="examples" className="rounded-2xl border border-hairline bg-surface/80 p-6 shadow-card">
+          <div className="stack-gap-sm">
+            <h2 className="text-xl font-semibold text-text-primary sm:text-2xl">
+              {content.examples?.title ?? 'Examples (real prompts you can reuse)'}
+            </h2>
+            <p className="text-sm text-text-secondary">
+              {content.examples?.subtitle ?? 'Open an example -> reuse the prompt -> run it in /app.'}
+            </p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {exampleEntries.map((entry) => {
+                const accentId = entry.brandId || 'google';
+                return (
                 <Link
-                  key={model.modelSlug}
-                  href={modelHref}
-                  className="rounded-card border border-hairline bg-surface p-4 transition hover:border-text-muted hover:bg-surface-2 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                  key={entry.slug}
+                  href={{ pathname: '/examples/[model]', params: { model: entry.slug } }}
+                  className="group flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3 text-left transition hover:bg-surface-2 hover:shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <h3 className="text-sm font-semibold text-text-primary">{model.marketingName}</h3>
-                      <p className="text-xs uppercase tracking-micro text-text-muted">{model.versionLabel}</p>
-                    </div>
-                    {showAvailabilityBadge ? (
-                      <span
-                        className={clsx(
-                          'rounded-pill border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-micro text-text-secondary',
-                          AVAILABILITY_BADGE_CLASS[model.availability]
-                        )}
-                      >
-                        {availabilityLabel}
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="mt-2 text-xs text-text-secondary">
-                    {brand ? `${brand.label}` : model.brandId} · <span className="text-brand">view details</span>
-                  </p>
+                  <span className="flex items-center gap-2 text-sm font-semibold text-text-primary">
+                    <span
+                      aria-hidden
+                      className="h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: `var(--engine-${accentId}-bg)` }}
+                    />
+                    {entry.label}
+                  </span>
+                  <span className="text-xs text-text-muted transition group-hover:text-text-primary">View -></span>
                 </Link>
               );
-            })}
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section id="faq" className="rounded-2xl border border-hairline bg-surface/80 p-6 shadow-card">
+          <div className="stack-gap-sm">
+            <h2 className="text-xl font-semibold text-text-primary sm:text-2xl">
+              {content.faq?.title ?? 'FAQ (live)'}
+            </h2>
+            <div className="space-y-3">
+              {faqItems.map((entry) => (
+                <details
+                  key={entry.question}
+                  className="group rounded-2xl border border-hairline bg-surface px-4 py-3"
+                >
+                  <summary className="cursor-pointer list-none text-sm font-semibold text-text-primary">
+                    {entry.question}
+                  </summary>
+                  <p className="mt-2 text-sm text-text-secondary">{entry.answer}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-hairline bg-surface/80 p-6 shadow-card">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-text-primary sm:text-2xl">
+                {content.cta?.title ?? 'Start generating in seconds'}
+              </h2>
+              <p className="mt-2 text-sm text-text-secondary">
+                {content.cta?.subtitle ?? 'Pick an engine, set your shot, preview price, generate variants.'}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <ButtonLink href="/app" size="lg" className="shadow-card" linkComponent={Link}>
+                {content.cta?.primaryCta ?? 'Generate now'}
+              </ButtonLink>
+              <ButtonLink href="/examples" variant="outline" size="lg" linkComponent={Link}>
+                {content.cta?.secondaryCta ?? 'Browse examples'}
+              </ButtonLink>
+            </div>
           </div>
         </section>
       </div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(faqJsonLd) }} />
     </div>
   );
 }

@@ -51,6 +51,7 @@ const EXAMPLES_MENU: LabeledSlug[] = [
   { slug: 'veo-3-1', label: 'Veo 3.1' },
   { slug: 'kling-2-6-pro', label: 'Kling 2.6 Pro' },
   { slug: 'ltx-2', label: 'LTX-2' },
+  { slug: 'ltx-2-fast', label: 'LTX-2 Fast' },
   { slug: 'pika-text-to-video', label: 'Pika Text-to-Video' },
   { slug: 'wan-2-6', label: 'Wan 2.6' },
   { slug: 'minimax-hailuo-02-text', label: 'MiniMax Hailuo 02' },
@@ -72,8 +73,10 @@ export const MARKETING_NAV_EXAMPLES: MarketingNavItem[] = EXAMPLES_MENU.map((ite
 }));
 
 export const MARKETING_NAV_WORKFLOWS: MarketingNavItem[] = [
-  { key: 'overview', label: 'Workflows overview', href: '/workflows#express-vs-workflows' },
-  { key: 'pick', label: 'Pick a workflow', href: '/workflows#pick-a-workflow' },
+  { key: 'how', label: 'How it works', href: '/workflows#how-it-works' },
+  { key: 'capabilities', label: 'What you can do', href: '/workflows#what-you-can-do' },
+  { key: 'examples', label: 'Examples', href: '/workflows#examples' },
+  { key: 'faq', label: 'FAQ', href: '/workflows#faq' },
 ];
 
 export const MARKETING_NAV_DOCS: MarketingNavItem[] = [
