@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
@@ -23,6 +24,9 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
 }
 
 export default function BestForHubPage() {
+  if (!BEST_FOR_PAGES.length) {
+    notFound();
+  }
   return (
     <div className="container-page max-w-4xl section">
       <div className="stack-gap-lg">

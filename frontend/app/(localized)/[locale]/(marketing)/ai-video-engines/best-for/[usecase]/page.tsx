@@ -92,6 +92,9 @@ async function resolveAvailableLocales(slug: string): Promise<AppLocale[]> {
 }
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+  if (!BEST_FOR_PAGES.length) {
+    notFound();
+  }
   const locale = params.locale ?? 'en';
   const entry = getEntry(params.usecase);
   const content = await getBestForEntry(locale, params.usecase);
