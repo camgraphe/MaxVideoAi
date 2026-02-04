@@ -7,33 +7,48 @@
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg"
   },
   "hero": {
-    "title": "Sora 2 – AI Text-to-Video & Image-to-Video in MaxVideoAI (720p, 4–12s)",
-    "intro": "Sora 2 – Cinematic AI Video, Directly in MaxVideoAI (4–12s, 720p)",
-    "badge": "720p · 4–12s · Text or Image input",
+    "title": "OpenAI Sora 2 — cinematic text-to-video & image-to-video with sound",
+    "intro": "Fast, polished clips for ads, UGC-style shots, and storyboards — iterate in seconds.",
+    "badge": "720p · 4/8/12s · Text→Video · Image→Video · 16:9/9:16 · Audio included",
     "ctaPrimary": {
-      "label": "Start generating with Sora 2",
+      "label": "Generate with Sora 2",
       "href": "/app?engine=sora-2"
     },
     "secondaryLinks": [
       {
-        "label": "Compare Sora 2 vs Sora 2 Pro (1080p) →",
+        "label": "Compare vs Sora 2 Pro (1080p)",
         "href": "/models/sora-2-pro"
       }
     ]
   },
   "custom": {
+    "heroSpecChips": [
+      { "label": "720p", "icon": "resolution" },
+      { "label": "4/8/12s", "icon": "duration" },
+      { "label": "Text→Video", "icon": "textToVideo" },
+      { "label": "Image→Video", "icon": "imageToVideo" },
+      { "label": "16:9/9:16", "icon": "aspectRatio" },
+      { "label": "Audio included", "icon": "audio" }
+    ],
+    "heroTrustLine": "Available on MaxVideoAI · Pay-as-you-go · Price shown before you generate",
     "heroDesc1": "Create short, cinematic videos with Sora 2 straight from your browser. MaxVideoAI gives you instant access to Sora 2 text-to-video and image-to-video, with transparent per-second pricing and a workspace built for testing, prototyping and producing social-ready clips.",
     "heroDesc2": "Describe your scene, choose a duration (4, 8 or 12 seconds), pick 16:9 or 9:16, and let Sora 2 generate polished footage you can use in ads, content or client work.",
-    "secondaryCta": "Compare Sora 2 vs Sora 2 Pro (1080p) →",
-    "whyTitle": "Why Sora 2 is powerful inside MaxVideoAI:",
+    "secondaryCta": "Compare vs Sora 2 Pro (1080p)",
+    "whyTitle": "Why Sora 2 is powerful",
     "heroHighlights": [
-      "Text → Video and Image → Video in one place",
-      "Multi-shot / sequenced prompts for mini-stories in a single clip",
-      "Pay-as-you-go pricing – you only pay for the seconds you generate",
-      "Available in Europe, UK and worldwide, no invite required",
-      "Designed to sit alongside Veo, Pika, Kling, Wan, MiniMax Hailuo, etc."
+      "Cinematic camera behavior in seconds||best in short 4–12s beats",
+      "Text→Video + Image→Video||speed or consistency, depending on your starting point",
+      "Multi-beat clips||Shot 1/2/3 prompts work surprisingly well",
+      "Rewards structured prompts||shot list > adjective soup",
+      "Perfect for rapid iteration||test ideas, pacing, and mood fast"
     ],
     "bestUseCasesTitle": "Best use cases",
+    "bestUseCaseChips": [
+      { "label": "Short cinematic ads", "icon": "ads" },
+      { "label": "UGC-style lifestyle clips", "icon": "ugc" },
+      { "label": "Product hero visuals", "icon": "product" },
+      { "label": "Storyboards & concept tests", "icon": "storyboard" }
+    ],
     "bestUseCases": [
       "Short cinematic ads",
       "UGC-style lifestyle clips",
@@ -52,7 +67,7 @@
       "5. See the final price per clip before you generate.",
       "6. Compare against other engines in the same GUI."
     ],
-    "specTitle": "Real Specs – Sora 2 in MaxVideoAI (720p, 4–12s)",
+    "specTitle": "Real Specs — OpenAI Sora 2",
     "specNote": "These specs describe Sora 2 exactly as you can use it today via MaxVideoAI – not theoretical capabilities.",
     "specSections": [
       {
@@ -97,7 +112,6 @@
       }
     ],
     "specValueProp": "Key value proposition: Sora 2 in MaxVideoAI is the fastest way to test ideas, prototypes and social concepts – you get studio-style motion & sound at a predictable cost per second.",
-    "microCta": "Start generating with Sora 2 →",
     "galleryTitle": "Example Gallery: Real Sora 2 Outputs",
     "galleryIntro": "See a handful of live Sora 2 renders powered by the same settings you have in MaxVideoAI.",
     "gallerySceneCta": "Open this scene in Generate and adapt it with your own brand →",
@@ -174,13 +188,13 @@
       "Do not generate real people or public figures (no celebrities, politicians, etc.).",
       "No minors, sexual content, hateful content or graphic violence.",
       "Don’t use another person’s likeness without consent.",
-      "Some prompts and input images will be blocked if they violate these principles."
-    ],
-    "safetyInterpretation": [
+      "Some prompts and input images will be blocked if they violate these principles.",
       "Generic characters and scenes are fine.",
-      "Famous people or sensitive prompts may be blocked."
+      "Famous people or sensitive prompts may be blocked.",
+      "This is how both MaxVideoAI and Sora 2 stay usable and safe for professionals."
     ],
-    "safetyNote": "This is how both MaxVideoAI and Sora 2 stay usable and safe for professionals.",
+    "safetyInterpretation": [],
+    "safetyNote": null,
     "comparisonTitle": "Sora 2 vs Sora 2 Pro – Quick Overview",
     "comparisonPoints": [
       "Sora 2 is your fast 720p idea machine.",
@@ -213,6 +227,29 @@
     ],
     "relatedTitle": "Explore other models",
     "relatedSubtitle": "Compare pricing, latency, and output options across other engines available in MaxVideoAI.",
+    "relatedItems": [
+      {
+        "brand": "openai",
+        "title": "OpenAI Sora 2 Pro",
+        "description": "Create longer, more immersive AI videos from text or images using Sora 2 Pro. Native voice, ambient sound, prompt chaining, and advanced control via MaxVideoAI.",
+        "modelSlug": "sora-2-pro",
+        "ctaLabel": "Compare OpenAI Sora 2 vs OpenAI Sora 2 Pro →"
+      },
+      {
+        "brand": "google-veo",
+        "title": "Google Veo 3.1",
+        "description": "Generate cinematic 8-second videos with native audio using Veo 3.1 by Google DeepMind on MaxVideoAI. Reference-to-video guidance, multi-image fidelity, pay-as-you-go pricing from $0.52/s.",
+        "modelSlug": "veo-3-1",
+        "ctaLabel": "Compare OpenAI Sora 2 vs Google Veo 3.1 →"
+      },
+      {
+        "brand": "google-veo",
+        "title": "Google Veo 3.1 Fast",
+        "description": "Use Veo 3.1 Fast for affordable, fast AI video generation. Up to 8-second clips with optional native audio—ideal for social formats and iterative testing.",
+        "modelSlug": "veo-3-1-fast",
+        "ctaLabel": "Compare OpenAI Sora 2 vs Google Veo 3.1 Fast →"
+      }
+    ],
     "finalPara1": "Sora 2 in MaxVideoAI gives you a direct, pay-as-you-go way to use one of the most impressive short-form video models available – without infrastructure setup or guesswork.",
     "finalPara2": "Use it to explore ideas, build mini-sequences, and test creative directions fast. When you need more resolution or control, you can always step up to Sora 2 Pro.",
     "finalButton": "Start generating with Sora 2 now →"

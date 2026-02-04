@@ -1,3 +1,5 @@
+import path from 'node:path';
+import { promises as fs } from 'node:fs';
 import { Link } from '@/i18n/navigation';
 import Image from 'next/image';
 import Head from 'next/head';
@@ -23,9 +25,24 @@ import { applyEnginePricingOverride } from '@/lib/pricing-definition';
 import { listEnginePricingOverrides } from '@/server/engine-settings';
 import { serializeJsonLd } from '../model-jsonld';
 import { ButtonLink } from '@/components/ui/Button';
+import { Chip } from '@/components/ui/Chip';
 import { TextLink } from '@/components/ui/TextLink';
+import { UIIcon } from '@/components/ui/UIIcon';
 import { BackLink } from '@/components/video/BackLink';
 import { getExamplesHref } from '@/lib/examples-links';
+import {
+  Box,
+  Check,
+  Clock,
+  Crop,
+  Image as ImageIcon,
+  LayoutGrid,
+  Megaphone,
+  Monitor,
+  Type,
+  Users,
+  Volume2,
+} from 'lucide-react';
 
 type PageParams = {
   params: {
@@ -71,11 +88,56 @@ const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null
 type SpecSection = { title: string; items: string[] };
 type LocalizedFaqEntry = { question: string; answer: string };
 type QuickStartBlock = { title: string; subtitle?: string | null; steps: string[] };
+type HeroSpecIconKey = 'resolution' | 'duration' | 'textToVideo' | 'imageToVideo' | 'aspectRatio' | 'audio';
+type HeroSpecChip = { label: string; icon?: HeroSpecIconKey | null };
+type BestUseCaseIconKey = 'ads' | 'ugc' | 'product' | 'storyboard';
+type BestUseCaseChip = { label: string; icon?: BestUseCaseIconKey | null };
+type RelatedItem = {
+  brand: string;
+  title: string;
+  description: string;
+  modelSlug?: string | null;
+  ctaLabel?: string | null;
+  href?: string | null;
+};
+type EngineKeySpecsEntry = {
+  modelSlug?: string;
+  engineId?: string;
+  keySpecs?: Record<string, unknown>;
+  sources?: string[];
+};
+type EngineKeySpecsFile = {
+  version?: string;
+  last_updated?: string;
+  specs?: EngineKeySpecsEntry[];
+};
+type KeySpecKey =
+  | 'pricePerSecond'
+  | 'textToVideo'
+  | 'imageToVideo'
+  | 'videoToVideo'
+  | 'firstLastFrame'
+  | 'referenceImageStyle'
+  | 'referenceVideo'
+  | 'maxResolution'
+  | 'maxDuration'
+  | 'aspectRatios'
+  | 'fpsOptions'
+  | 'outputFormats'
+  | 'audioOutput'
+  | 'nativeAudioGeneration'
+  | 'lipSync'
+  | 'cameraMotionControls'
+  | 'watermark';
+type KeySpecRow = { label: string; value: string };
+type KeySpecValues = Record<KeySpecKey, string>;
 
 type SoraCopy = {
   heroTitle: string | null;
   heroSubtitle: string | null;
   heroBadge: string | null;
+  heroSpecChips: HeroSpecChip[];
+  heroTrustLine: string | null;
   heroDesc1: string | null;
   heroDesc2: string | null;
   primaryCta: string | null;
@@ -85,6 +147,7 @@ type SoraCopy = {
   whyTitle: string | null;
   heroHighlights: string[];
   bestUseCasesTitle: string | null;
+  bestUseCaseChips: BestUseCaseChip[];
   bestUseCases: string[];
   whatTitle: string | null;
   whatIntro1: string | null;
@@ -141,6 +204,7 @@ type SoraCopy = {
   relatedCtaSora2Pro: string | null;
   relatedTitle: string | null;
   relatedSubtitle: string | null;
+  relatedItems: RelatedItem[];
   finalPara1: string | null;
   finalPara2: string | null;
   finalButton: string | null;
@@ -169,6 +233,43 @@ const AVAILABILITY_SCHEMA_MAP: Record<string, string> = {
   waitlist: 'https://schema.org/PreOrder',
   paused: 'https://schema.org/Discontinued',
 };
+const HERO_SPEC_ICON_MAP = {
+  resolution: Monitor,
+  duration: Clock,
+  textToVideo: Type,
+  imageToVideo: ImageIcon,
+  aspectRatio: Crop,
+  audio: Volume2,
+} as const;
+const BEST_USE_CASE_ICON_MAP = {
+  ads: Megaphone,
+  ugc: Users,
+  product: Box,
+  storyboard: LayoutGrid,
+} as const;
+const FULL_BLEED_SECTION =
+  "relative isolate before:absolute before:inset-y-0 before:left-1/2 before:right-1/2 before:-ml-[50vw] before:-mr-[50vw] before:content-[''] before:-z-10";
+const SECTION_BG_A = 'before:bg-[#F6F7FB]';
+const SECTION_BG_B = 'before:bg-[#EDF1F7]';
+const KEY_SPEC_ROW_DEFS: Array<{ key: KeySpecKey; label: string }> = [
+  { key: 'pricePerSecond', label: 'Price / second' },
+  { key: 'textToVideo', label: 'Text-to-Video' },
+  { key: 'imageToVideo', label: 'Image-to-Video' },
+  { key: 'videoToVideo', label: 'Video-to-Video' },
+  { key: 'firstLastFrame', label: 'First/Last frame' },
+  { key: 'referenceImageStyle', label: 'Reference image / style reference' },
+  { key: 'referenceVideo', label: 'Reference video' },
+  { key: 'maxResolution', label: 'Max resolution' },
+  { key: 'maxDuration', label: 'Max duration' },
+  { key: 'aspectRatios', label: 'Aspect ratios' },
+  { key: 'fpsOptions', label: 'FPS options' },
+  { key: 'outputFormats', label: 'Output format' },
+  { key: 'audioOutput', label: 'Audio output' },
+  { key: 'nativeAudioGeneration', label: 'Native audio generation' },
+  { key: 'lipSync', label: 'Lip sync' },
+  { key: 'cameraMotionControls', label: 'Camera / motion controls' },
+  { key: 'watermark', label: 'Watermark' },
+];
 
 function resolveProviderInfo(engine: FalEngineEntry) {
   const fallback = PARTNER_BRAND_MAP.get(engine.brandId);
@@ -462,6 +563,157 @@ function applyPricingSection(sections: SpecSection[], locale: AppLocale, pricing
   return next;
 }
 
+async function loadEngineKeySpecs(): Promise<Map<string, EngineKeySpecsEntry>> {
+  const candidates = [
+    path.join(process.cwd(), 'data', 'benchmarks', 'engine-key-specs.v1.json'),
+    path.join(process.cwd(), '..', 'data', 'benchmarks', 'engine-key-specs.v1.json'),
+  ];
+  for (const candidate of candidates) {
+    try {
+      const raw = await fs.readFile(candidate, 'utf8');
+      const data = JSON.parse(raw) as EngineKeySpecsFile;
+      const map = new Map<string, EngineKeySpecsEntry>();
+      (data.specs ?? []).forEach((entry) => {
+        const key = entry.modelSlug ?? entry.engineId;
+        if (key) {
+          map.set(key, entry);
+        }
+      });
+      return map;
+    } catch {
+      // keep trying
+    }
+  }
+  return new Map();
+}
+
+function resolveKeySpecValue(
+  specs: Record<string, unknown> | undefined,
+  key: string,
+  fallback: string
+): string {
+  if (!specs || !(key in specs)) return fallback;
+  const value = (specs as Record<string, unknown>)[key];
+  if (Array.isArray(value)) {
+    return value.length ? value.join(' / ') : fallback;
+  }
+  if (value == null) return fallback;
+  const normalized = String(value).trim();
+  if (/^(yes|true)$/i.test(normalized)) return 'Supported';
+  if (/^(no|false)$/i.test(normalized)) return 'Not supported';
+  return normalized;
+}
+
+function resolveStatus(value?: boolean | null) {
+  if (value === true) return 'Supported';
+  if (value === false) return 'Not supported';
+  return 'Data pending';
+}
+
+function resolveModeSupported(engineCaps: EngineCaps | undefined, mode: string) {
+  const modes = engineCaps?.modes ?? [];
+  if (!modes.length) return 'Data pending';
+  return modes.includes(mode) ? 'Supported' : 'Not supported';
+}
+
+function formatMaxResolution(engineCaps: EngineCaps | undefined) {
+  const resolutions = engineCaps?.resolutions ?? [];
+  const numeric = resolutions
+    .map((value) => {
+      const match = String(value).match(/(\d+)/);
+      return match ? Number(match[1]) : null;
+    })
+    .filter((value): value is number => value != null);
+  if (!numeric.length) return resolutions.join(', ') || 'Data pending';
+  const max = Math.max(...numeric);
+  return `${max}p`;
+}
+
+function formatDuration(engineCaps: EngineCaps | undefined) {
+  const max = engineCaps?.maxDurationSec;
+  return typeof max === 'number' ? `${max}s max` : 'Data pending';
+}
+
+function formatAspectRatios(engineCaps: EngineCaps | undefined) {
+  const ratios = engineCaps?.aspectRatios ?? [];
+  return ratios.length ? ratios.join(' / ') : 'Data pending';
+}
+
+function formatFps(engineCaps: EngineCaps | undefined) {
+  const fps = engineCaps?.fps ?? [];
+  return fps.length ? fps.join(' / ') : 'Data pending';
+}
+
+function getPricePerSecondCents(engineCaps: EngineCaps | undefined): number | null {
+  const perSecond = engineCaps?.pricingDetails?.perSecondCents;
+  const byResolution = perSecond?.byResolution ? Object.values(perSecond.byResolution) : [];
+  const cents = perSecond?.default ?? (byResolution.length ? Math.min(...byResolution) : null);
+  if (typeof cents === 'number') {
+    return cents;
+  }
+  const base = engineCaps?.pricing?.base;
+  if (typeof base === 'number') {
+    return Math.round(base * 100);
+  }
+  return null;
+}
+
+function formatPricePerSecond(engineCaps: EngineCaps | undefined): string {
+  const cents = getPricePerSecondCents(engineCaps);
+  if (typeof cents === 'number') {
+    return `$${(cents / 100).toFixed(2)}/s`;
+  }
+  return 'Data pending';
+}
+
+function buildSpecValues(entry: FalEngineEntry, specs: Record<string, unknown> | undefined): KeySpecValues {
+  const engineCaps = entry.engine;
+  return {
+    pricePerSecond: formatPricePerSecond(engineCaps),
+    textToVideo: resolveKeySpecValue(specs, 'textToVideo', resolveModeSupported(engineCaps, 't2v')),
+    imageToVideo: resolveKeySpecValue(specs, 'imageToVideo', resolveModeSupported(engineCaps, 'i2v')),
+    videoToVideo: resolveKeySpecValue(specs, 'videoToVideo', resolveModeSupported(engineCaps, 'v2v')),
+    firstLastFrame: resolveKeySpecValue(specs, 'firstLastFrame', resolveStatus(engineCaps?.keyframes)),
+    referenceImageStyle: resolveKeySpecValue(specs, 'referenceImageStyle', resolveModeSupported(engineCaps, 'r2v')),
+    referenceVideo: resolveKeySpecValue(specs, 'referenceVideo', 'Data pending'),
+    maxResolution: resolveKeySpecValue(specs, 'maxResolution', formatMaxResolution(engineCaps)),
+    maxDuration: resolveKeySpecValue(specs, 'maxDuration', formatDuration(engineCaps)),
+    aspectRatios: resolveKeySpecValue(specs, 'aspectRatios', formatAspectRatios(engineCaps)),
+    fpsOptions: resolveKeySpecValue(specs, 'fpsOptions', formatFps(engineCaps)),
+    outputFormats: resolveKeySpecValue(specs, 'outputFormats', 'Data pending'),
+    audioOutput: resolveKeySpecValue(specs, 'audioOutput', resolveStatus(engineCaps?.audio)),
+    nativeAudioGeneration: resolveKeySpecValue(specs, 'nativeAudioGeneration', resolveStatus(engineCaps?.audio)),
+    lipSync: resolveKeySpecValue(specs, 'lipSync', 'Data pending'),
+    cameraMotionControls: resolveKeySpecValue(
+      specs,
+      'cameraMotionControls',
+      resolveStatus(engineCaps?.motionControls)
+    ),
+    watermark: resolveKeySpecValue(specs, 'watermark', 'No (MaxVideoAI)'),
+  };
+}
+
+function isPending(value: string) {
+  return value.trim().toLowerCase() === 'data pending';
+}
+
+function isUnsupported(value: string) {
+  const normalized = value.trim().toLowerCase();
+  return normalized === 'not supported' || normalized === 'unsupported';
+}
+
+function isSupported(value: string) {
+  return value.trim().toLowerCase() === 'supported';
+}
+
+function normalizeMaxResolution(value: string) {
+  const matchP = value.match(/(\d{3,4}p)/i);
+  if (matchP) return matchP[1];
+  const matchK = value.match(/(\d+)\s?k/i);
+  if (matchK) return `${matchK[1]}K`;
+  return value;
+}
+
 type DetailCopy = {
   backLabel: string;
   examplesLinkLabel: string;
@@ -598,6 +850,51 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
       return blocks;
     }, []);
   };
+  const getHeroSpecChips = (): HeroSpecChip[] => {
+    const value = custom['heroSpecChips'];
+    if (!Array.isArray(value)) return [];
+    return value.reduce<HeroSpecChip[]>((chips, entry) => {
+      if (!entry || typeof entry !== 'object') return chips;
+      const obj = entry as Record<string, unknown>;
+      const label = typeof obj.label === 'string' ? obj.label.trim() : '';
+      if (!label) return chips;
+      const rawIcon = typeof obj.icon === 'string' ? obj.icon.trim() : '';
+      const icon = (rawIcon in HERO_SPEC_ICON_MAP ? rawIcon : null) as HeroSpecIconKey | null;
+      chips.push({ label, icon });
+      return chips;
+    }, []);
+  };
+  const getRelatedItems = (): RelatedItem[] => {
+    const value = custom['relatedItems'];
+    if (!Array.isArray(value)) return [];
+    return value.reduce<RelatedItem[]>((items, entry) => {
+      if (!entry || typeof entry !== 'object') return items;
+      const obj = entry as Record<string, unknown>;
+      const brand = typeof obj.brand === 'string' ? obj.brand.trim() : '';
+      const title = typeof obj.title === 'string' ? obj.title.trim() : '';
+      const description = typeof obj.description === 'string' ? obj.description.trim() : '';
+      if (!brand || !title || !description) return items;
+      const modelSlug = typeof obj.modelSlug === 'string' ? obj.modelSlug.trim() : null;
+      const ctaLabel = typeof obj.ctaLabel === 'string' ? obj.ctaLabel.trim() : null;
+      const href = typeof obj.href === 'string' ? obj.href.trim() : null;
+      items.push({ brand, title, description, modelSlug, ctaLabel, href });
+      return items;
+    }, []);
+  };
+  const getBestUseCaseChips = (): BestUseCaseChip[] => {
+    const value = custom['bestUseCaseChips'];
+    if (!Array.isArray(value)) return [];
+    return value.reduce<BestUseCaseChip[]>((chips, entry) => {
+      if (!entry || typeof entry !== 'object') return chips;
+      const obj = entry as Record<string, unknown>;
+      const label = typeof obj.label === 'string' ? obj.label.trim() : '';
+      if (!label) return chips;
+      const rawIcon = typeof obj.icon === 'string' ? obj.icon.trim() : '';
+      const icon = (rawIcon in BEST_USE_CASE_ICON_MAP ? rawIcon : null) as BestUseCaseIconKey | null;
+      chips.push({ label, icon });
+      return chips;
+    }, []);
+  };
 
   const fallbackSpecSections = (): SpecSection[] => {
     if (!localized.technicalOverview || !localized.technicalOverview.length) return [];
@@ -619,6 +916,7 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
 
   const bestUseCasesTitle = localized.bestUseCases?.title ?? getString('bestUseCasesTitle') ?? 'Best use cases';
   const bestUseCases = localized.bestUseCases?.items ?? getStringArray('bestUseCases');
+  const bestUseCaseChips = getBestUseCaseChips();
   const heroHighlights = getStringArray('heroHighlights').length
     ? getStringArray('heroHighlights')
     : (bestUseCases ?? []).slice(0, 4);
@@ -642,6 +940,8 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
     heroTitle: localized.hero?.title ?? getString('heroTitle'),
     heroSubtitle: localized.hero?.intro ?? getString('heroSubtitle'),
     heroBadge: localized.hero?.badge ?? getString('heroBadge'),
+    heroSpecChips: getHeroSpecChips(),
+    heroTrustLine: getString('heroTrustLine'),
     heroDesc1: getString('heroDesc1'),
     heroDesc2: getString('heroDesc2'),
     primaryCta: localized.hero?.ctaPrimary?.label ?? getString('primaryCta'),
@@ -658,6 +958,7 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
     whyTitle: getString('whyTitle'),
     heroHighlights,
     bestUseCasesTitle,
+    bestUseCaseChips,
     bestUseCases,
     whatTitle: getString('whatTitle'),
     whatIntro1: getString('whatIntro1'),
@@ -714,6 +1015,7 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
     relatedCtaSora2Pro: getString('relatedCtaSora2Pro'),
     relatedTitle: getString('relatedTitle'),
     relatedSubtitle: getString('relatedSubtitle'),
+    relatedItems: getRelatedItems(),
     finalPara1: getString('finalPara1'),
     finalPara2: getString('finalPara2'),
     finalButton: getString('finalButton'),
@@ -998,6 +1300,16 @@ async function renderSoraModelPage({
     .sort((a, b) => (a.family === engine.family ? -1 : 0) - (b.family === engine.family ? -1 : 0))
     .slice(0, 3);
   const faqEntries = localizedContent.faqs.length ? localizedContent.faqs : copy.faqs;
+  const keySpecsMap = await loadEngineKeySpecs();
+  const keySpecsEntry =
+    keySpecsMap.get(engine.modelSlug) ?? keySpecsMap.get(engine.id) ?? null;
+  const keySpecValues = keySpecsEntry ? buildSpecValues(engine, keySpecsEntry.keySpecs) : null;
+  const keySpecRows: KeySpecRow[] = keySpecValues
+    ? KEY_SPEC_ROW_DEFS.map(({ key, label }) => ({
+        label,
+        value: key === 'maxResolution' ? normalizeMaxResolution(keySpecValues[key]) : keySpecValues[key],
+      })).filter((row) => !isPending(row.value) && !isUnsupported(row.value))
+    : [];
 
   return (
     <Sora2PageLayout
@@ -1013,6 +1325,7 @@ async function renderSoraModelPage({
       galleryCtaHref={galleryCtaHref}
       relatedEngines={relatedEngines}
       faqEntries={faqEntries}
+      keySpecRows={keySpecRows}
       engineSlug={engine.modelSlug}
       locale={locale}
       canonicalUrl={canonicalUrl}
@@ -1037,6 +1350,7 @@ function Sora2PageLayout({
   galleryCtaHref,
   relatedEngines,
   faqEntries,
+  keySpecRows,
   engineSlug,
   locale,
   canonicalUrl,
@@ -1057,6 +1371,7 @@ function Sora2PageLayout({
   galleryCtaHref: string;
   relatedEngines: FalEngineEntry[];
   faqEntries: LocalizedFaqEntry[];
+  keySpecRows: KeySpecRow[];
   engineSlug: string;
   locale: AppLocale;
   canonicalUrl: string;
@@ -1083,6 +1398,9 @@ function Sora2PageLayout({
   const heroBadge = copy.heroBadge ?? localizedContent.hero?.badge ?? null;
   const heroDesc1 = copy.heroDesc1 ?? localizedContent.overview ?? localizedContent.seo.description ?? null;
   const heroDesc2 = copy.heroDesc2;
+  const heroSpecChips = copy.heroSpecChips;
+  const heroTrustLine = copy.heroTrustLine;
+  const showHeroDescriptions = heroSpecChips.length === 0;
   const isEsLocale = locale === 'es';
   const modelsBase = (MODELS_BASE_PATH_MAP[locale] ?? 'models').replace(/^\/+|\/+$/g, '');
   const localizeModelsPath = (targetSlug?: string) => {
@@ -1109,6 +1427,7 @@ function Sora2PageLayout({
 
   const heroHighlights = copy.heroHighlights;
   const bestUseCases = copy.bestUseCases.length ? copy.bestUseCases : localizedContent.bestUseCases?.items ?? [];
+  const bestUseCaseChips = copy.bestUseCaseChips;
   const whatFlowSteps = copy.whatFlowSteps;
   const quickStartTitle = copy.quickStartTitle;
   const quickStartBlocks = copy.quickStartBlocks;
@@ -1132,6 +1451,7 @@ function Sora2PageLayout({
   const comparisonPoints = copy.comparisonPoints;
   const relatedCtaSora2 = copy.relatedCtaSora2;
   const relatedCtaSora2Pro = copy.relatedCtaSora2Pro;
+  const relatedItems = copy.relatedItems;
   const faqTitle = copy.faqTitle ?? 'FAQ';
   const faqList = faqEntries.map((entry) => ({
     question: entry.question,
@@ -1142,8 +1462,17 @@ function Sora2PageLayout({
   const heroPosterAbsolute = toAbsoluteUrl(heroMedia.posterUrl ?? localizedContent.seo.image ?? null);
   const heroVideoAbsolute = heroMedia.videoUrl ? toAbsoluteUrl(heroMedia.videoUrl) : null;
   const durationIso = heroMedia.durationSec ? `PT${Math.round(heroMedia.durationSec)}S` : undefined;
-  const hasSpecs = specSections.length > 0;
+  const hasKeySpecRows = keySpecRows.length > 0;
+  const hasSpecs = specSections.length > 0 || hasKeySpecRows;
   const hasExamples = galleryVideos.length > 0;
+  const hasWhatSection = Boolean(
+    copy.whatTitle ||
+      copy.whatIntro1 ||
+      copy.whatIntro2 ||
+      quickStartTitle ||
+      quickStartBlocks.length ||
+      whatFlowSteps.length
+  );
   const hasTextSection = promptPatternSteps.length > 0 || Boolean(copy.promptSkeleton || copy.promptSkeletonNote);
   const hasImageSection = imageToVideoSteps.length > 0 || imageToVideoUseCases.length > 0;
   const hasTipsSection = strengths.length > 0 || boundaries.length > 0 || Boolean(copy.tipsTitle);
@@ -1152,14 +1481,20 @@ function Sora2PageLayout({
   const isImageEngine = engine.type === 'image';
   const textAnchorId = isImageEngine ? 'text-to-image' : 'text-to-video';
   const imageAnchorId = isImageEngine ? 'image-to-image' : 'image-to-video';
+  const imageWorkflowAnchorId = 'image-workflow';
   const tocItems = [
     { id: 'specs', label: 'Specs', visible: hasSpecs },
-    { id: 'examples', label: 'Examples', visible: hasExamples },
-    { id: textAnchorId, label: isImageEngine ? 'Text to Image' : 'Text to Video', visible: hasTextSection },
-    { id: imageAnchorId, label: isImageEngine ? 'Image to Image' : 'Image to Video', visible: hasImageSection },
+    { id: textAnchorId, label: 'Examples', visible: hasExamples },
+    { id: 'examples', label: 'What it is', visible: hasWhatSection },
+    { id: imageAnchorId, label: 'Prompting', visible: hasTextSection },
+    {
+      id: imageWorkflowAnchorId,
+      label: isImageEngine ? 'Image to Image' : 'Image to Video',
+      visible: hasImageSection,
+    },
     { id: 'tips', label: 'Tips', visible: hasTipsSection },
-    { id: 'safety', label: 'Safety', visible: hasSafetySection },
     { id: 'faq', label: 'FAQ', visible: hasFaqSection },
+    { id: 'safety', label: 'Safety', visible: hasSafetySection },
   ].filter((item) => item.visible);
   const productSchema = buildProductSchema({
     engine,
@@ -1254,15 +1589,33 @@ function Sora2PageLayout({
             </nav>
 
             <section className="stack-gap rounded-3xl border border-hairline bg-surface/80 p-6 shadow-card sm:p-8">
-          <div className="stack-gap-lg">
+              <div className="stack-gap-lg">
             <div className="stack-gap-sm text-center">
               <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">
                 {heroTitle}
               </h1>
-              <h2 className="text-lg font-semibold text-text-primary">
-                {heroSubtitle}
-              </h2>
-              {heroBadge ? (
+              {heroSubtitle ? (
+                <p className="text-base leading-relaxed text-text-secondary sm:text-lg">
+                  {heroSubtitle}
+                </p>
+              ) : null}
+              {heroSpecChips.length ? (
+                <div className="flex flex-wrap justify-center gap-2">
+                  {heroSpecChips.map((chip, index) => {
+                    const Icon = chip.icon ? HERO_SPEC_ICON_MAP[chip.icon] : null;
+                    return (
+                      <Chip
+                        key={`${chip.label}-${index}`}
+                        variant="outline"
+                        className="!border-accent-alt/40 !bg-accent-alt px-3 py-1 text-[11px] font-semibold normal-case tracking-normal !text-on-accent-alt shadow-card"
+                      >
+                        {Icon ? <UIIcon icon={Icon} size={14} className="text-on-accent-alt" /> : null}
+                        <span>{chip.label}</span>
+                      </Chip>
+                    );
+                  })}
+                </div>
+              ) : heroBadge ? (
                 <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-hairline bg-surface/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-micro text-text-secondary shadow-card">
                   {heroBadge.split('·').map((chunk, index, arr) => (
                     <span key={`${chunk}-${index}`} className="flex items-center gap-2">
@@ -1272,8 +1625,12 @@ function Sora2PageLayout({
                   ))}
                 </div>
               ) : null}
-              {heroDesc1 ? <p className="text-base leading-relaxed text-text-secondary">{heroDesc1}</p> : null}
-              {heroDesc2 ? <p className="text-base leading-relaxed text-text-secondary">{heroDesc2}</p> : null}
+              {showHeroDescriptions && heroDesc1 ? (
+                <p className="text-base leading-relaxed text-text-secondary">{heroDesc1}</p>
+              ) : null}
+              {showHeroDescriptions && heroDesc2 ? (
+                <p className="text-base leading-relaxed text-text-secondary">{heroDesc2}</p>
+              ) : null}
             </div>
             <div className="flex flex-wrap justify-center gap-4">
               <ButtonLink
@@ -1295,14 +1652,16 @@ function Sora2PageLayout({
                 </ButtonLink>
               ) : null}
             </div>
-            <div className="flex flex-wrap justify-center gap-4 text-sm">
-              <Link href={examplesLinkHref} className="font-semibold text-brand hover:text-brandHover">
-                {examplesLinkLabel}
-              </Link>
-              <Link href={pricingLinkHref} className="font-semibold text-brand hover:text-brandHover">
-                {pricingLinkLabel}
-              </Link>
-            </div>
+            {!heroSpecChips.length ? (
+              <div className="flex flex-wrap justify-center gap-4 text-sm">
+                <Link href={pricingLinkHref} className="font-semibold text-brand hover:text-brandHover">
+                  {pricingLinkLabel}
+                </Link>
+              </div>
+            ) : null}
+            {heroTrustLine ? (
+              <p className="text-center text-xs font-semibold text-text-muted">{heroTrustLine}</p>
+            ) : null}
             {isEsLocale && howToLatamTitle && howToLatamSteps.length ? (
               <section className="rounded-2xl border border-hairline bg-surface/70 p-5 shadow-card">
                 <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{howToLatamTitle}</h2>
@@ -1313,47 +1672,79 @@ function Sora2PageLayout({
                 </ol>
               </section>
             ) : null}
-            <div className="flex justify-center">
-              <div className="w-full max-w-5xl">
-                <MediaPreview media={heroMedia} label={heroTitle} />
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+              <div className="flex justify-center">
+                <div className="w-full max-w-5xl">
+                  <MediaPreview media={heroMedia} label={heroTitle} />
+                </div>
               </div>
-            </div>
-            <div className="stack-gap-sm rounded-2xl border border-hairline bg-bg px-4 py-3">
-              {copy.whyTitle ? <p className="text-sm font-semibold text-text-primary">{copy.whyTitle}</p> : null}
-              {heroHighlights.length ? (
-                <ul className="grid gap-2 text-sm text-text-secondary sm:grid-cols-2">
-                  {heroHighlights.map((item) => (
-                    <li key={item} className="flex items-start gap-2">
-                      <span className="mt-[6px] h-1.5 w-1.5 rounded-full bg-text-muted" aria-hidden />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </div>
-            {bestUseCases.length ? (
-              <div className="space-y-2 rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-                {copy.bestUseCasesTitle ? (
-                  <p className="text-sm font-semibold text-text-primary">{copy.bestUseCasesTitle}</p>
+              <div className="flex flex-col gap-4">
+                {bestUseCases.length || bestUseCaseChips.length ? (
+                  <div className="space-y-2 rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
+                    {copy.bestUseCasesTitle ? (
+                      <p className="text-sm font-semibold text-text-primary">{copy.bestUseCasesTitle}</p>
+                    ) : null}
+                    {bestUseCaseChips.length ? (
+                      <div className="flex flex-wrap gap-2">
+                        {bestUseCaseChips.map((chip, index) => {
+                          const Icon = chip.icon ? BEST_USE_CASE_ICON_MAP[chip.icon] : null;
+                          return (
+                            <Chip
+                              key={`${chip.label}-${index}`}
+                              variant="outline"
+                              className="px-3 py-1 text-[11px] font-semibold normal-case tracking-normal text-text-secondary"
+                            >
+                              {Icon ? <UIIcon icon={Icon} size={14} className="text-text-muted" /> : null}
+                              <span>{chip.label}</span>
+                            </Chip>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <ul className="grid gap-1 text-sm text-text-secondary sm:grid-cols-2 lg:grid-cols-1">
+                        {bestUseCases.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 ) : null}
-                <ul className="grid gap-1 text-sm text-text-secondary sm:grid-cols-2">
-                  {bestUseCases.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
+                {copy.whyTitle || heroHighlights.length ? (
+                  <div className="stack-gap-sm rounded-2xl border border-hairline bg-bg px-4 py-3">
+                    {copy.whyTitle ? <p className="text-sm font-semibold text-text-primary">{copy.whyTitle}</p> : null}
+                    {heroHighlights.length ? (
+                      <ul className="grid gap-2 text-sm text-text-secondary sm:grid-cols-2 lg:grid-cols-1">
+                        {heroHighlights.map((item) => {
+                          const [title, detail] = item.split('||');
+                          const trimmedTitle = title?.trim();
+                          const trimmedDetail = detail?.trim();
+                          return (
+                            <li key={item} className="flex items-start gap-2">
+                              <span className="mt-[6px] h-1.5 w-1.5 rounded-full bg-text-muted" aria-hidden />
+                              {trimmedDetail ? (
+                                <span>
+                                  <strong className="font-semibold">{trimmedTitle}</strong>
+                                  {trimmedDetail ? ` (${trimmedDetail})` : null}
+                                </span>
+                              ) : (
+                                <span>{item}</span>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
-            ) : null}
-          </div>
+            </div>
+              </div>
             </section>
           </div>
 
         {tocItems.length ? (
-          <nav
-            className="rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
-            aria-label="Model page navigation"
-          >
-            <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Jump to section</p>
-            <div className="mt-3 flex flex-wrap gap-2">
+          <nav className="flex justify-center" aria-label="Model page navigation">
+            <div className="flex flex-wrap justify-center gap-2">
               {tocItems.map((item) => (
                 <a
                   key={item.id}
@@ -1367,82 +1758,71 @@ function Sora2PageLayout({
           </nav>
         ) : null}
 
-        <section id="examples" className="stack-gap">
-          {copy.whatTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.whatTitle}</h2> : null}
-          {copy.whatIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro1}</p> : null}
-          {copy.whatIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro2}</p> : null}
-          {quickStartTitle && quickStartBlocks.length ? (
-            <div className="stack-gap rounded-2xl border border-hairline bg-surface/70 p-4 shadow-card">
-              <h3 className="text-base font-semibold text-text-primary">{quickStartTitle}</h3>
-              <div className="stack-gap">
-                {quickStartBlocks.map((block) => (
-                  <div key={block.title} className="space-y-2">
-                    <p className="text-sm font-semibold text-text-primary">
-                      {block.title}
-                      {block.subtitle ? <span className="text-text-secondary"> — {block.subtitle}</span> : null}
-                    </p>
-                    <ol className="list-decimal space-y-1 pl-5 text-sm text-text-secondary">
-                      {block.steps.map((step) => (
-                        <li key={step}>{step}</li>
-                      ))}
-                    </ol>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : null}
-          {whatFlowSteps.length ? (
-            <>
-              {copy.whatFlowTitle ? (
-                <p className="text-base font-semibold text-text-primary">{copy.whatFlowTitle}</p>
-              ) : null}
-              <ol className="space-y-2 rounded-2xl border border-hairline bg-surface/70 p-4 text-sm text-text-secondary">
-                {whatFlowSteps.map((step) => (
-                  <li key={step}>{step}</li>
-                ))}
-              </ol>
-            </>
-          ) : null}
-        </section>
-
-        {specSections.length ? (
-          <section id="specs" className="stack-gap">
-            {copy.specTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.specTitle}</h2> : null}
+        {hasSpecs ? (
+          <section
+            id="specs"
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} stack-gap py-6 sm:py-8`}
+          >
+            {copy.specTitle ? (
+              <h2 className="mt-2 text-center text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
+                {copy.specTitle}
+              </h2>
+            ) : null}
             {copy.specNote ? (
-              <blockquote className="rounded-2xl border border-hairline bg-surface-2 px-4 py-3 text-sm text-text-secondary">
+              <blockquote className="rounded-2xl border border-hairline bg-surface-2 px-4 py-3 text-center text-sm text-text-secondary">
                 {copy.specNote}
               </blockquote>
             ) : null}
-            <div className="grid grid-gap-sm md:grid-cols-2">
-              {specSections.map((section) => (
-                <article
-                  key={section.title}
-                  className="space-y-2 rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
-                >
-                  <h3 className="text-lg font-semibold text-text-primary">{section.title}</h3>
-                  <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                    {section.items.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </article>
-              ))}
-            </div>
+            {keySpecRows.length ? (
+              <div className="grid gap-x-4 gap-y-2 border-t border-hairline/70 pt-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {keySpecRows.map((row, index) => (
+                  <div
+                    key={row.label}
+                    className={`flex items-start gap-3 border-hairline/70 py-2 pr-2 ${
+                      index < keySpecRows.length - 1 ? 'border-b' : ''
+                    }`}
+                  >
+                    <span className="mt-[2px] inline-flex h-2 w-2 rounded-full bg-text-muted/60" aria-hidden />
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+                        {row.label}
+                      </span>
+                      <span className="text-sm font-semibold leading-snug text-text-primary">
+                        {isSupported(row.value) ? (
+                          <span className="inline-flex items-center gap-1 text-emerald-600">
+                            <UIIcon icon={Check} size={14} className="text-emerald-600" />
+                            <span className="sr-only">Supported</span>
+                          </span>
+                        ) : (
+                          row.value
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+            {specSections.length ? (
+              <div className="grid grid-gap-sm md:grid-cols-2">
+                {specSections.map((section) => (
+                  <article
+                    key={section.title}
+                    className="space-y-2 rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
+                  >
+                    <h3 className="text-lg font-semibold text-text-primary">{section.title}</h3>
+                    <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                      {section.items.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </article>
+                ))}
+              </div>
+            ) : null}
             {copy.specValueProp ? (
               <p className="text-sm font-semibold text-text-primary">{copy.specValueProp}</p>
             ) : null}
           </section>
-        ) : null}
-
-        {copy.microCta ? (
-          <div className="flex justify-center">
-            <Link
-              href={primaryCtaHref}
-              className="text-sm font-semibold text-brand transition hover:text-brandHover"
-            >
-              {copy.microCta}
-            </Link>
-          </div>
         ) : null}
 
         {quickPricingTitle && quickPricingItems.length ? (
@@ -1456,7 +1836,10 @@ function Sora2PageLayout({
           </section>
         ) : null}
 
-        <section id={textAnchorId} className="stack-gap">
+        <section
+          id={textAnchorId}
+          className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} stack-gap py-6 sm:py-8`}
+        >
           {copy.galleryTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.galleryTitle}</h2> : null}
           {galleryVideos.length ? (
             <>
@@ -1535,7 +1918,51 @@ function Sora2PageLayout({
           </div>
         </section>
 
-        <section id={imageAnchorId} className="stack-gap">
+        <section
+          id="examples"
+          className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} stack-gap py-6 sm:py-8`}
+        >
+          {copy.whatTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.whatTitle}</h2> : null}
+          {copy.whatIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro1}</p> : null}
+          {copy.whatIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro2}</p> : null}
+          {quickStartTitle && quickStartBlocks.length ? (
+            <div className="stack-gap rounded-2xl border border-hairline bg-surface/70 p-4 shadow-card">
+              <h3 className="text-base font-semibold text-text-primary">{quickStartTitle}</h3>
+              <div className="stack-gap">
+                {quickStartBlocks.map((block) => (
+                  <div key={block.title} className="space-y-2">
+                    <p className="text-sm font-semibold text-text-primary">
+                      {block.title}
+                      {block.subtitle ? <span className="text-text-secondary"> — {block.subtitle}</span> : null}
+                    </p>
+                    <ol className="list-decimal space-y-1 pl-5 text-sm text-text-secondary">
+                      {block.steps.map((step) => (
+                        <li key={step}>{step}</li>
+                      ))}
+                    </ol>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+          {whatFlowSteps.length ? (
+            <>
+              {copy.whatFlowTitle ? (
+                <p className="text-base font-semibold text-text-primary">{copy.whatFlowTitle}</p>
+              ) : null}
+              <ol className="space-y-2 rounded-2xl border border-hairline bg-surface/70 p-4 text-sm text-text-secondary">
+                {whatFlowSteps.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ol>
+            </>
+          ) : null}
+        </section>
+
+        <section
+          id={imageAnchorId}
+          className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} stack-gap py-6 sm:py-8`}
+        >
           {copy.promptTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.promptTitle}</h2> : null}
           {copy.promptIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.promptIntro}</p> : null}
           <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
@@ -1562,7 +1989,10 @@ function Sora2PageLayout({
           </div>
         </section>
 
-        <section className="stack-gap">
+        <section
+          id={imageWorkflowAnchorId}
+          className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} stack-gap py-6 sm:py-8`}
+        >
           {copy.imageTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.imageTitle}</h2> : null}
           {copy.imageIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.imageIntro}</p> : null}
           <div className="grid grid-gap-sm lg:grid-cols-2">
@@ -1587,7 +2017,7 @@ function Sora2PageLayout({
           </div>
         </section>
 
-        <section className="stack-gap">
+        <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} stack-gap py-6 sm:py-8`}>
           {copy.multishotTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.multishotTitle}</h2> : null}
           {copy.multishotIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.multishotIntro1}</p> : null}
           {copy.multishotIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.multishotIntro2}</p> : null}
@@ -1600,46 +2030,49 @@ function Sora2PageLayout({
           </div>
         </section>
 
-      {copy.demoTitle || copy.demoPrompt.length || copy.demoNotes.length ? (
-        <section className="stack-gap-lg">
-          {copy.demoTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.demoTitle}</h2> : null}
-          <div className="grid grid-gap lg:grid-cols-2 lg:items-start">
-            <div className="rounded-2xl border border-hairline bg-surface/80 p-3 shadow-card lg:order-2">
-              {demoMedia ? (
-                <MediaPreview media={demoMedia} label={copy.demoTitle ?? 'Sora 2 demo'} />
-              ) : (
-                <div className="flex h-full min-h-[280px] items-center justify-center rounded-xl border border-dashed border-hairline bg-bg text-sm text-text-secondary">
-                  {copy.galleryIntro ?? 'Demo clip coming soon.'}
-                </div>
-              )}
+        {copy.demoTitle || copy.demoPrompt.length || copy.demoNotes.length ? (
+          <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} stack-gap-lg py-6 sm:py-8`}>
+            {copy.demoTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.demoTitle}</h2> : null}
+            <div className="grid grid-gap lg:grid-cols-2 lg:items-start">
+              <div className="rounded-2xl border border-hairline bg-surface/80 p-3 shadow-card lg:order-2">
+                {demoMedia ? (
+                  <MediaPreview media={demoMedia} label={copy.demoTitle ?? 'Sora 2 demo'} />
+                ) : (
+                  <div className="flex h-full min-h-[280px] items-center justify-center rounded-xl border border-dashed border-hairline bg-bg text-sm text-text-secondary">
+                    {copy.galleryIntro ?? 'Demo clip coming soon.'}
+                  </div>
+                )}
+              </div>
+              <div className="stack-gap rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card lg:order-1">
+                {copy.demoPromptLabel ? (
+                  <p className="text-sm font-semibold text-text-primary">{copy.demoPromptLabel}</p>
+                ) : null}
+                {copy.demoPrompt.length ? (
+                  <div className="rounded-xl border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
+                    {copy.demoPrompt.map((line) => (
+                      <p key={line} className="mt-2 first:mt-0">
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+                ) : null}
+                {copy.demoNotes.length ? (
+                  <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                    {copy.demoNotes.map((note) => (
+                      <li key={note}>{note}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
             </div>
-            <div className="stack-gap rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card lg:order-1">
-              {copy.demoPromptLabel ? (
-                <p className="text-sm font-semibold text-text-primary">{copy.demoPromptLabel}</p>
-              ) : null}
-              {copy.demoPrompt.length ? (
-                <div className="rounded-xl border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
-                  {copy.demoPrompt.map((line) => (
-                    <p key={line} className="mt-2 first:mt-0">
-                      {line}
-                    </p>
-                  ))}
-                </div>
-              ) : null}
-              {copy.demoNotes.length ? (
-                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                  {copy.demoNotes.map((note) => (
-                    <li key={note}>{note}</li>
-                  ))}
-                </ul>
-              ) : null}
-            </div>
-          </div>
-        </section>
-      ) : null}
+          </section>
+        ) : null}
 
         {copy.tipsTitle || strengths.length || boundaries.length ? (
-          <section id="tips" className="stack-gap-lg">
+          <section
+            id="tips"
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} stack-gap-lg py-6 sm:py-8`}
+          >
             {copy.tipsTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.tipsTitle}</h2> : null}
             <div className="grid grid-gap-sm lg:grid-cols-2">
               {strengths.length ? (
@@ -1675,31 +2108,8 @@ function Sora2PageLayout({
           </section>
         ) : null}
 
-        {copy.safetyTitle || safetyRules.length ? (
-          <section id="safety" className="stack-gap">
-            {copy.safetyTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.safetyTitle}</h2> : null}
-            <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-              {safetyRules.length ? (
-                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                  {safetyRules.map((rule) => (
-                    <li key={rule}>{rule}</li>
-                  ))}
-                </ul>
-              ) : null}
-              {safetyInterpretation.length ? (
-                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                  {safetyInterpretation.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              ) : null}
-            </div>
-            {copy.safetyNote ? <p className="text-sm text-text-secondary">{copy.safetyNote}</p> : null}
-          </section>
-        ) : null}
-
         {copy.comparisonTitle || comparisonPoints.length ? (
-          <section className="stack-gap">
+          <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} stack-gap py-6 sm:py-8`}>
             {copy.comparisonTitle ? (
               <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.comparisonTitle}</h2>
             ) : null}
@@ -1724,8 +2134,97 @@ function Sora2PageLayout({
           </section>
         ) : null}
 
+        {relatedItems.length || relatedEngines.length ? (
+          <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} stack-gap py-6 sm:py-8`}>
+            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
+              {copy.relatedTitle ?? 'Explore other models'}
+            </h2>
+            {copy.relatedSubtitle ? <p className="text-sm text-text-secondary">{copy.relatedSubtitle}</p> : null}
+            <div className="grid grid-gap-sm md:grid-cols-3">
+              {(relatedItems.length
+                ? relatedItems.map((item) => {
+                    const compareSlug = item.modelSlug
+                      ? [engineSlug, item.modelSlug].sort().join('-vs-')
+                      : null;
+                    const compareHref = item.href
+                      ? item.href
+                      : compareSlug
+                        ? localizeComparePath(compareSlug, engineSlug)
+                        : localizeModelsPath(item.modelSlug ?? '');
+                    const label = item.ctaLabel ?? 'Compare →';
+                    return (
+                      <article
+                        key={`${item.brand}-${item.title}`}
+                        className="rounded-2xl border border-hairline bg-surface/90 p-4 shadow-card transition hover:-translate-y-1 hover:border-text-muted"
+                      >
+                        <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+                          {item.brand}
+                        </p>
+                        <h3 className="mt-2 text-lg font-semibold text-text-primary">{item.title}</h3>
+                        <p className="mt-2 text-sm text-text-secondary line-clamp-3">{item.description}</p>
+                        <TextLink href={compareHref} className="mt-4 gap-1 text-sm" linkComponent={Link}>
+                          {label}
+                        </TextLink>
+                      </article>
+                    );
+                  })
+                : relatedEngines.map((entry) => {
+                    const label = entry.marketingName ?? entry.engine.label;
+                    const currentLabel = breadcrumbModelLabel || heroTitle || engine.marketingName || engine.engine.label;
+                    const compareTemplate =
+                      locale === 'fr'
+                        ? 'Comparer {a} vs {b} →'
+                        : locale === 'es'
+                          ? 'Comparar {a} vs {b} →'
+                          : 'Compare {a} vs {b} →';
+                    const fallbackCompare = compareTemplate
+                      .replace('{a}', currentLabel)
+                      .replace('{b}', label);
+                    const ctaLabel =
+                      engineSlug === 'veo-3-1-first-last'
+                        ? entry.modelSlug === 'veo-3-1'
+                          ? 'Explore Veo 3.1 →'
+                          : entry.modelSlug === 'veo-3-1-fast'
+                            ? 'Explore Veo 3.1 Fast →'
+                            : entry.modelSlug === 'sora-2'
+                              ? 'Explore Sora 2 →'
+                              : fallbackCompare
+                        : engineSlug === 'wan-2-6'
+                          ? entry.modelSlug === 'sora-2'
+                            ? relatedCtaSora2 ?? secondaryCta ?? fallbackCompare
+                            : entry.modelSlug === 'sora-2-pro'
+                              ? relatedCtaSora2Pro ?? fallbackCompare
+                              : fallbackCompare
+                          : fallbackCompare;
+                    const compareSlug = [engineSlug, entry.modelSlug].sort().join('-vs-');
+                    const compareHref = localizeComparePath(compareSlug, engineSlug);
+                    return (
+                      <article
+                        key={entry.modelSlug}
+                        className="rounded-2xl border border-hairline bg-surface/90 p-4 shadow-card transition hover:-translate-y-1 hover:border-text-muted"
+                      >
+                        <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{entry.brandId}</p>
+                        <h3 className="mt-2 text-lg font-semibold text-text-primary">
+                          {label}
+                        </h3>
+                        <p className="mt-2 text-sm text-text-secondary line-clamp-3">
+                          {entry.seo?.description ?? localizedContent.overview ?? ''}
+                        </p>
+                        <TextLink href={compareHref} className="mt-4 gap-1 text-sm" linkComponent={Link}>
+                          {ctaLabel}
+                        </TextLink>
+                      </article>
+                    );
+                  }))}
+            </div>
+          </section>
+        ) : null}
+
         {faqList.length ? (
-          <section id="faq" className="stack-gap">
+          <section
+            id="faq"
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} stack-gap py-6 sm:py-8`}
+          >
             {faqTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{faqTitle}</h2> : null}
             <div className="grid grid-gap-sm md:grid-cols-2">
               {faqList.map((entry) => (
@@ -1742,62 +2241,29 @@ function Sora2PageLayout({
         ) : null}
         <FAQSchema questions={faqJsonLdEntries} />
 
-        {relatedEngines.length ? (
-          <section className="stack-gap">
-            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
-              {copy.relatedTitle ?? 'Explore other models'}
-            </h2>
-            {copy.relatedSubtitle ? <p className="text-sm text-text-secondary">{copy.relatedSubtitle}</p> : null}
-            <div className="grid grid-gap-sm md:grid-cols-3">
-              {relatedEngines.map((entry) => {
-                const label = entry.marketingName ?? entry.engine.label;
-                const currentLabel = breadcrumbModelLabel || heroTitle || engine.marketingName || engine.engine.label;
-                const compareTemplate =
-                  locale === 'fr'
-                    ? 'Comparer {a} vs {b} →'
-                    : locale === 'es'
-                      ? 'Comparar {a} vs {b} →'
-                      : 'Compare {a} vs {b} →';
-                const fallbackCompare = compareTemplate
-                  .replace('{a}', currentLabel)
-                  .replace('{b}', label);
-                const ctaLabel =
-                  engineSlug === 'veo-3-1-first-last'
-                    ? entry.modelSlug === 'veo-3-1'
-                      ? 'Explore Veo 3.1 →'
-                      : entry.modelSlug === 'veo-3-1-fast'
-                        ? 'Explore Veo 3.1 Fast →'
-                        : entry.modelSlug === 'sora-2'
-                          ? 'Explore Sora 2 →'
-                          : fallbackCompare
-                    : engineSlug === 'wan-2-6'
-                      ? entry.modelSlug === 'sora-2'
-                        ? relatedCtaSora2 ?? secondaryCta ?? fallbackCompare
-                        : entry.modelSlug === 'sora-2-pro'
-                          ? relatedCtaSora2Pro ?? fallbackCompare
-                          : fallbackCompare
-                      : fallbackCompare;
-                const compareSlug = [engineSlug, entry.modelSlug].sort().join('-vs-');
-                const compareHref = localizeComparePath(compareSlug, engineSlug);
-                return (
-                  <article
-                    key={entry.modelSlug}
-                    className="rounded-2xl border border-hairline bg-surface/90 p-4 shadow-card transition hover:-translate-y-1 hover:border-text-muted"
-                  >
-                    <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{entry.brandId}</p>
-                    <h3 className="mt-2 text-lg font-semibold text-text-primary">
-                      {label}
-                    </h3>
-                    <p className="mt-2 text-sm text-text-secondary line-clamp-3">
-                      {entry.seo?.description ?? localizedContent.overview ?? ''}
-                    </p>
-                    <TextLink href={compareHref} className="mt-4 gap-1 text-sm" linkComponent={Link}>
-                      {ctaLabel}
-                    </TextLink>
-                  </article>
-                );
-              })}
+        {copy.safetyTitle || safetyRules.length ? (
+          <section
+            id="safety"
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} stack-gap py-6 sm:py-8`}
+          >
+            {copy.safetyTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.safetyTitle}</h2> : null}
+            <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
+              {safetyRules.length ? (
+                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                  {safetyRules.map((rule) => (
+                    <li key={rule}>{rule}</li>
+                  ))}
+                </ul>
+              ) : null}
+              {safetyInterpretation.length ? (
+                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                  {safetyInterpretation.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              ) : null}
             </div>
+            {copy.safetyNote ? <p className="text-sm text-text-secondary">{copy.safetyNote}</p> : null}
           </section>
         ) : null}
 
