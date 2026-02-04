@@ -853,7 +853,13 @@ type ComparePageCopy = {
   breadcrumb?: { root?: string };
 };
 
-export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Params;
+  searchParams?: { order?: string };
+}): Promise<Metadata> {
   const locale = params.locale ?? 'en';
   const { dictionary } = await resolveDictionary({ locale });
   const compareCopy = (dictionary.comparePage ?? {}) as ComparePageCopy;
@@ -919,6 +925,9 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     if (pendingRatio >= 0.35) {
       robots = { index: false, follow: true };
     }
+  }
+  if (typeof searchParams?.order === 'string' && searchParams.order.trim()) {
+    robots = { index: false, follow: true };
   }
 
   const canonicalSlug = canonicalInfo?.canonicalSlug ?? slug;
