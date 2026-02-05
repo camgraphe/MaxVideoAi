@@ -9,9 +9,18 @@ import type {
 } from 'react';
 import { createNavigation } from 'next-intl/navigation';
 import { routing } from '@/i18n/routing';
+import { defaultLocale, localePathnames } from '@/i18n/locales';
 
 const BYPASS_PREFIXES = ['/app', '/dashboard', '/jobs', '/billing', '/settings', '/generate', '/login', '/legal'];
 const EXTERNAL_HREF_PATTERN = /^(?:[a-z][a-z0-9+\-.]*:|\/\/)/i;
+const LOCALE_PREFIXES = Object.values(localePathnames).filter((prefix): prefix is string => Boolean(prefix && prefix.length));
+const LOCALE_PREFIX_REGEX = LOCALE_PREFIXES.length ? new RegExp(`^/(${LOCALE_PREFIXES.join('|')})(/|$)`, 'i') : null;
+const DEFAULT_LOCALE_SEGMENT = defaultLocale;
+const SHOULD_STRIP_DEFAULT =
+  (!localePathnames[defaultLocale] || localePathnames[defaultLocale] === '') && Boolean(DEFAULT_LOCALE_SEGMENT);
+const DEFAULT_LOCALE_REGEX = SHOULD_STRIP_DEFAULT
+  ? new RegExp(`^/${DEFAULT_LOCALE_SEGMENT}(/|$)`, 'i')
+  : null;
 
 const { Link: LocalizedLink, redirect, usePathname, useRouter, getPathname } = createNavigation(routing);
 
@@ -51,17 +60,43 @@ function shouldBypassLocalization(href: LocalizedLinkHref): boolean {
   if (EXTERNAL_HREF_PATTERN.test(value)) {
     return true;
   }
+  if (LOCALE_PREFIX_REGEX && LOCALE_PREFIX_REGEX.test(value)) {
+    return true;
+  }
   return BYPASS_PREFIXES.some((prefix) => value.startsWith(prefix));
+}
+
+function stripDefaultLocalePrefix(pathname: string): string {
+  if (!DEFAULT_LOCALE_REGEX) {
+    return pathname;
+  }
+  if (!DEFAULT_LOCALE_REGEX.test(pathname)) {
+    return pathname;
+  }
+  const stripped = pathname.replace(DEFAULT_LOCALE_REGEX, '/');
+  return stripped === '' ? '/' : stripped;
+}
+
+function normalizeHref(href: LocalizedLinkHref): LocalizedLinkHref {
+  if (typeof href === 'string') {
+    return stripDefaultLocalePrefix(href);
+  }
+  if ('pathname' in href && typeof href.pathname === 'string') {
+    return { ...href, pathname: stripDefaultLocalePrefix(href.pathname) };
+  }
+  return href;
 }
 
 export function Link({ children, className, rel, hrefLang, ...rest }: LocalizedLinkProps): ReactElement {
   const normalizedHrefLang =
     typeof hrefLang === 'string' && hrefLang.trim().length ? hrefLang : undefined;
+  const normalizedHref = normalizeHref(rest.href);
+  const normalizedRest = { ...rest, href: normalizedHref };
 
-  if (shouldBypassLocalization(rest.href)) {
+  if (shouldBypassLocalization(normalizedRest.href)) {
     return (
       <NextLink
-        {...(rest as unknown as NextLinkProps)}
+        {...(normalizedRest as unknown as NextLinkProps)}
         locale={false}
         className={className}
         rel={rel}
@@ -78,7 +113,7 @@ export function Link({ children, className, rel, hrefLang, ...rest }: LocalizedL
 
   return (
     <Localized
-      {...(rest as unknown as ComponentProps<typeof LocalizedLink>)}
+      {...(normalizedRest as unknown as ComponentProps<typeof LocalizedLink>)}
       className={className}
       rel={rel}
       hrefLang={normalizedHrefLang}

@@ -77,7 +77,8 @@ export function CompareEngineSelector({ options, value, otherValue, side }: Comp
           href: { pathname: '/ai-video-engines/[slug]', params: { slug } },
           locale,
         });
-        const href = `${basePath}?order=${encodeURIComponent(leftSlug)}`;
+        const order = sorted[0] === leftSlug ? null : leftSlug;
+        const href = order ? `${basePath}?order=${encodeURIComponent(order)}` : basePath;
         router.push(href as never, { scroll: false });
       }}
     />

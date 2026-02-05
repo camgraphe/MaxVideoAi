@@ -164,11 +164,11 @@ export default async function WorkflowsPage({ params }: { params: { locale: AppL
             <ButtonLink href="/app" size="lg" className="shadow-card" linkComponent={Link}>
               {content.hero?.primaryCta ?? 'Generate now'}
             </ButtonLink>
-            <ButtonLink href="/examples" variant="outline" size="lg" linkComponent={Link}>
+            <ButtonLink href={{ pathname: '/examples' }} variant="outline" size="lg" linkComponent={Link}>
               {content.hero?.secondaryCta ?? 'Browse examples'}
             </ButtonLink>
             <Link
-              href="/models"
+              href={{ pathname: '/models' }}
               className="text-sm font-semibold text-text-secondary underline underline-offset-4 transition hover:text-text-primary"
             >
               {content.hero?.tertiaryCta ?? 'Compare models'}
@@ -281,7 +281,7 @@ export default async function WorkflowsPage({ params }: { params: { locale: AppL
               <ButtonLink href="/app" size="lg" className="shadow-card" linkComponent={Link}>
                 {content.cta?.primaryCta ?? 'Generate now'}
               </ButtonLink>
-              <ButtonLink href="/examples" variant="outline" size="lg" linkComponent={Link}>
+              <ButtonLink href={{ pathname: '/examples' }} variant="outline" size="lg" linkComponent={Link}>
                 {content.cta?.secondaryCta ?? 'Browse examples'}
               </ButtonLink>
             </div>

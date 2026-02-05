@@ -574,7 +574,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
           >
             {hero.primaryCta}
           </ButtonLink>
-          <ButtonLink href="/examples" variant="outline" size="lg" linkComponent={Link}>
+          <ButtonLink href={{ pathname: '/examples' }} variant="outline" size="lg" linkComponent={Link}>
             {hero.secondaryCta}
           </ButtonLink>
         </div>
@@ -601,7 +601,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
           ))}
         </div>
         <p className="text-center text-sm text-muted-foreground">
-          <Link href="/pricing" className="underline underline-offset-2">
+          <Link href={{ pathname: '/pricing' }} className="underline underline-offset-2">
             Preview pricing
           </Link>
         </p>
@@ -724,7 +724,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
                     pricingRules={pricingRulesLite}
                   />
                 </div>
-                <TextLink href="/pricing" className="mt-6 text-sm" linkComponent={Link}>
+                <TextLink href={{ pathname: '/pricing' }} className="mt-6 text-sm" linkComponent={Link}>
                   {pricing.link}
                 </TextLink>
                 <p className="mt-3 text-sm text-muted-foreground">

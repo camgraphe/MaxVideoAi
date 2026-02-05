@@ -1,5 +1,6 @@
 import { MARKETING_EXAMPLE_SLUGS } from '@/config/navigation';
 import { normalizeEngineId } from '@/lib/engine-alias';
+import type { LocalizedLinkHref } from '@/i18n/navigation';
 
 const EXAMPLE_SLUG_SET = new Set(MARKETING_EXAMPLE_SLUGS.map((slug) => slug.toLowerCase()));
 const EXAMPLE_SLUG_ALIASES: Record<string, string> = {
@@ -28,11 +29,11 @@ export function resolveExampleCanonicalSlug(engineSlug?: string | null): string 
   return EXAMPLE_SLUG_SET.has(candidate) ? candidate : null;
 }
 
-export function getExamplesHref(engineSlug?: string | null): string | null {
+export function getExamplesHref(engineSlug?: string | null): LocalizedLinkHref | null {
   if (!engineSlug) return null;
   const canonicalSlug = resolveExampleCanonicalSlug(engineSlug);
   if (canonicalSlug) {
-    return `/examples/${canonicalSlug}`;
+    return { pathname: '/examples/[model]', params: { model: canonicalSlug } };
   }
-  return `/examples?engine=${encodeURIComponent(engineSlug)}`;
+  return { pathname: '/examples', query: { engine: engineSlug } };
 }

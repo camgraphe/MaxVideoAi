@@ -473,12 +473,13 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
       dynamicTemplates.add(template.template);
       return;
     }
-    if (seen.has(template.template)) {
+    const normalizedTemplate = normalizeCompareEnglishPath(template.template);
+    if (seen.has(normalizedTemplate)) {
       return;
     }
-    seen.add(template.template);
-    const lastModified = getRouteLastModified(template.template, template.sourceFile);
-    entries.push({ englishPath: template.template, lastModified });
+    seen.add(normalizedTemplate);
+    const lastModified = getRouteLastModified(normalizedTemplate, template.sourceFile);
+    entries.push({ englishPath: normalizedTemplate, lastModified });
   });
 
   for (const template of Array.from(dynamicTemplates)) {
@@ -495,22 +496,31 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
       continue;
     }
     generated.forEach((entry) => {
-      if (!entry?.englishPath || seen.has(entry.englishPath)) {
+      if (!entry?.englishPath) {
         return;
       }
-      seen.add(entry.englishPath);
-      entries.push(entry);
+      const normalizedPath = normalizeCompareEnglishPath(entry.englishPath);
+      if (seen.has(normalizedPath)) {
+        return;
+      }
+      seen.add(normalizedPath);
+      entries.push({ ...entry, englishPath: normalizedPath });
     });
   }
 
   EXTRA_CANONICAL_PATHS.forEach((extra) => {
-    if (!extra?.englishPath || seen.has(extra.englishPath)) {
+    if (!extra?.englishPath) {
       return;
     }
-    seen.add(extra.englishPath);
+    const normalizedPath = normalizeCompareEnglishPath(extra.englishPath);
+    if (seen.has(normalizedPath)) {
+      return;
+    }
+    seen.add(normalizedPath);
     entries.push({
       ...extra,
-      lastModified: extra.lastModified ?? getRouteLastModified(extra.englishPath),
+      englishPath: normalizedPath,
+      lastModified: extra.lastModified ?? getRouteLastModified(normalizedPath),
     });
   });
 
@@ -631,6 +641,32 @@ function safeReadDir(directory: string): fs.Dirent[] {
   }
 }
 
+function canonicalizeCompareSlug(slug: string): string {
+  const parts = slug.split('-vs-');
+  if (parts.length !== 2) return slug;
+  const [left, right] = parts;
+  return [left, right].sort().join('-vs-');
+}
+
+function normalizeCompareEnglishPath(pathname: string): string {
+  if (!pathname.startsWith('/ai-video-engines/')) {
+    return pathname;
+  }
+  const trimmed = pathname.split('?')[0]?.replace(/\/+$/, '') || '';
+  if (!trimmed) {
+    return pathname;
+  }
+  const slug = trimmed.slice('/ai-video-engines/'.length);
+  if (!slug || slug.includes('/')) {
+    return pathname;
+  }
+  if (!slug.includes('-vs-')) {
+    return pathname;
+  }
+  const canonicalSlug = canonicalizeCompareSlug(slug);
+  return `/ai-video-engines/${canonicalSlug}`;
+}
+
 const DYNAMIC_ROUTE_GENERATORS: Record<string, DynamicRouteGenerator> = {
   '/blog/[slug]': async () =>
     BLOG_ENTRIES.map((entry) => ({
@@ -658,7 +694,9 @@ const DYNAMIC_ROUTE_GENERATORS: Record<string, DynamicRouteGenerator> = {
         locales: LOCALES.filter((locale) => hasModelLocale(model.modelSlug, locale)),
       })),
   '/ai-video-engines/[slug]': async () =>
-    (compareConfig.trophyComparisons ?? []).map((slug) => ({
+    Array.from(
+      new Set((compareConfig.trophyComparisons ?? []).map((slug) => canonicalizeCompareSlug(slug)))
+    ).map((slug) => ({
       englishPath: `/ai-video-engines/${slug}`,
       locales: LOCALES,
     })),

@@ -13,6 +13,7 @@ export function ModelsCompareHeroToggle({
   const compareHref = {
     pathname: '/ai-video-engines/[slug]',
     params: { slug: compareSlug },
+    query: { order: 'sora-2' },
   } as const;
 
   return (

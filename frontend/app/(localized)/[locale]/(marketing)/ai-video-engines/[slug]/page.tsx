@@ -163,7 +163,8 @@ export async function generateStaticParams(): Promise<Params[]> {
   const params: Params[] = [];
   locales.forEach((locale) => {
     TROPHY_COMPARISONS.forEach((slug) => {
-      params.push({ locale, slug });
+      const canonical = getCanonicalCompareSlug(slug)?.canonicalSlug ?? slug;
+      params.push({ locale, slug: canonical });
     });
   });
   return params;
@@ -272,6 +273,25 @@ function getCanonicalCompareSlug(slug: string) {
     leftSlug,
     rightSlug,
   };
+}
+
+function resolveExcludedCompareRedirect({
+  slug,
+  order,
+  locale,
+}: {
+  slug: string;
+  order?: string | null;
+  locale: AppLocale;
+}) {
+  const parts = slug.split('-vs-');
+  if (parts.length !== 2) return null;
+  const excluded = parts.filter((part) => EXCLUDED_ENGINE_SLUGS.has(part));
+  if (!excluded.length) return null;
+  const preferred = order && excluded.includes(order) ? order : excluded[0];
+  const localePrefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
+  const modelsBase = MODELS_SLUG_MAP[locale] ?? MODELS_SLUG_MAP.en ?? 'models';
+  return `${localePrefix}/${modelsBase}/${preferred}`.replace(/\/{2,}/g, '/');
 }
 
 async function loadEngineScores(): Promise<Map<string, EngineScore>> {
@@ -938,12 +958,7 @@ export async function generateMetadata({
     englishPath: `/ai-video-engines/${canonicalSlug}`,
     robots,
   });
-  return {
-    ...meta,
-    title: { absolute: title },
-    openGraph: meta.openGraph ? { ...meta.openGraph, title } : meta.openGraph,
-    twitter: meta.twitter ? { ...meta.twitter, title } : meta.twitter,
-  };
+  return meta;
 }
 
 export default async function CompareDetailPage({
@@ -974,6 +989,15 @@ export default async function CompareDetailPage({
   if (!canonicalInfo) {
     notFound();
   }
+  const requestedOrder = typeof searchParams?.order === 'string' ? searchParams.order : null;
+  const excludedRedirect = resolveExcludedCompareRedirect({
+    slug: canonicalInfo.canonicalSlug,
+    order: requestedOrder,
+    locale: activeLocale,
+  });
+  if (excludedRedirect) {
+    redirect(excludedRedirect);
+  }
   const resolved = resolveEngines(slug);
   if (!resolved) {
     notFound();
@@ -981,16 +1005,14 @@ export default async function CompareDetailPage({
   const localePrefix = localePathnames[activeLocale] ? `/${localePathnames[activeLocale]}` : '';
   const modelsBase = MODELS_SLUG_MAP[activeLocale] ?? MODELS_SLUG_MAP.en ?? 'models';
   const compareBase = COMPARE_SLUG_MAP[activeLocale] ?? COMPARE_SLUG_MAP.en ?? 'ai-video-engines';
-  const modelsHref = `${localePrefix}/${modelsBase}`.replace(/\/{2,}/g, '/');
+  const modelsHref = `/${modelsBase}`.replace(/\/{2,}/g, '/');
   const canonicalSlug = canonicalInfo.canonicalSlug;
   if (canonicalSlug !== slug) {
-    const requestedOrder = typeof searchParams?.order === 'string' ? searchParams.order : null;
     const orderParam = requestedOrder ?? canonicalInfo.leftSlug;
     const query = orderParam ? `?order=${orderParam}` : '';
     redirect(`${localePrefix}/${compareBase}/${canonicalSlug}${query}`.replace(/\/{2,}/g, '/'));
   }
   let { left, right } = resolved;
-  const requestedOrder = typeof searchParams?.order === 'string' ? searchParams.order : null;
   if (requestedOrder && requestedOrder === right.modelSlug) {
     [left, right] = [right, left];
   }
@@ -1187,8 +1209,9 @@ export default async function CompareDetailPage({
     .map((pairSlug) => {
       const resolvedPair = resolveEngines(pairSlug);
       if (!resolvedPair) return null;
+      const canonicalPair = getCanonicalCompareSlug(pairSlug)?.canonicalSlug ?? pairSlug;
       return {
-        href: `${localePrefix}/${compareBase}/${pairSlug}`.replace(/\/{2,}/g, '/'),
+        href: { pathname: '/ai-video-engines/[slug]', params: { slug: canonicalPair } },
         label: `${formatEngineName(resolvedPair.left)} vs ${formatEngineName(resolvedPair.right)}`,
       };
     })
@@ -1932,7 +1955,7 @@ export default async function CompareDetailPage({
                   })}
                 </ButtonLink>
                 <Link
-                  href={`/models/${left.modelSlug}`}
+                  href={{ pathname: '/models/[slug]', params: { slug: left.modelSlug } }}
                   className="text-xs font-semibold text-brand hover:text-brandHover"
                 >
                   {compareCopy.scorecard?.fullProfile ?? 'Full engine profile'}
@@ -1953,7 +1976,7 @@ export default async function CompareDetailPage({
                   })}
                 </ButtonLink>
                 <Link
-                  href={`/models/${right.modelSlug}`}
+                  href={{ pathname: '/models/[slug]', params: { slug: right.modelSlug } }}
                   className="text-xs font-semibold text-brand hover:text-brandHover"
                 >
                   {compareCopy.scorecard?.fullProfile ?? 'Full engine profile'}

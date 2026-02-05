@@ -9,6 +9,20 @@ const DEFAULT_OG_WIDTH = 1200;
 const DEFAULT_OG_HEIGHT = 630;
 const SITE_NAME = 'MaxVideoAI';
 const TWITTER_HANDLE = '@MaxVideoAI';
+const BRAND_REGEX = /maxvideo\s*ai/i;
+
+function normalizeTitleInput(value: string): string {
+  return value.replace(/\s+/g, ' ').trim();
+}
+
+function buildSeoTitle(input: string): string {
+  const normalized = normalizeTitleInput(input);
+  if (!normalized) return SITE_NAME;
+  if (BRAND_REGEX.test(normalized)) {
+    return normalized;
+  }
+  return `${normalized} — ${SITE_NAME}`;
+}
 
 type OpenGraphMetadata = NonNullable<Metadata['openGraph']> & { type?: string };
 type OgType = string;
@@ -62,7 +76,7 @@ export function buildSeoMetadata({
   openGraph: openGraphOverrides,
   twitter: twitterOverrides,
 }: BuildSeoMetadataOptions): Metadata {
-  const safeTitle = buildMetaTitle(title);
+  const safeTitle = buildMetaTitle(buildSeoTitle(title));
   const safeDescription = buildMetaDescription(description);
   const resolvedEnglishPath = englishPath ?? (hreflangGroup ? getHreflangEnglishPath(hreflangGroup) : undefined);
   const metadataUrls = buildMetadataUrls(locale, slugMap, {
@@ -119,7 +133,7 @@ export function buildSeoMetadata({
   mergedTwitter.images = normalizedTwitterImages.length ? normalizedTwitterImages : baseTwitter.images;
 
   const meta: Metadata = {
-    title: safeTitle,
+    title: { absolute: safeTitle },
     description: safeDescription,
     alternates: {
       canonical,
