@@ -487,10 +487,6 @@ export function ModelsGallery({
     });
   };
 
-  const handleSwap = () => {
-    setSelectedIds((current) => (current.length === 2 ? [current[1], current[0]] : current));
-  };
-
   const handleClear = () => {
     setSelectedIds([]);
     disableCompareMode();

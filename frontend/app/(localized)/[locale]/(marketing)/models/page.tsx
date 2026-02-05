@@ -583,7 +583,6 @@ export default async function ModelsPage() {
     const versionLabel = localized?.versionLabel ?? meta?.versionLabel ?? engine.versionLabel ?? '';
     const displayName =
       localized?.marketingName ?? meta?.displayName ?? engine.cardTitle ?? getEngineDisplayName(engine);
-    const description = localized?.hero?.intro ?? localized?.overview ?? meta?.description ?? engineType;
     const catalogEntry = catalogBySlug.get(engine.modelSlug) ?? null;
     const keySpecs = keySpecsMap.get(engine.modelSlug) ?? {};
     const scoreEntry =

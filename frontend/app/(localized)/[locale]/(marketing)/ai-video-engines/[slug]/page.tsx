@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import Image from 'next/image';
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import path from 'node:path';
@@ -11,7 +12,6 @@ import { resolveDictionary } from '@/lib/i18n/server';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { isDatabaseConfigured } from '@/lib/db';
-import { normalizeEngineId } from '@/lib/engine-alias';
 import compareConfig from '@/config/compare-config.json';
 import { COMPARE_SHOWDOWNS } from '@/config/compare-showdowns';
 import engineCatalog from '@/config/engine-catalog.json';
@@ -379,19 +379,6 @@ async function hydrateShowdowns(
   }
 }
 
-function formatYesNo(value?: boolean) {
-  if (value == null) return '-';
-  return value ? 'Yes' : 'No';
-}
-
-function formatPricePerSecond(entry: EngineCatalogEntry): string {
-  const cents = getPricePerSecondCents(entry);
-  if (typeof cents === 'number') {
-    return `$${(cents / 100).toFixed(2)}/s`;
-  }
-  return 'Data pending';
-}
-
 function getPricePerSecondCents(entry: EngineCatalogEntry): number | null {
   const perSecond = entry.engine?.pricingDetails?.perSecondCents;
   const byResolution = perSecond?.byResolution ? Object.values(perSecond.byResolution) : [];
@@ -438,27 +425,6 @@ function formatAspectRatios(entry: EngineCatalogEntry) {
 function formatFps(entry: EngineCatalogEntry) {
   const fps = entry.engine?.fps ?? [];
   return fps.length ? fps.join(' / ') : 'Data pending';
-}
-
-function formatInputs(entry: EngineCatalogEntry) {
-  const modes = entry.engine?.modes ?? [];
-  const labels = new Set<string>();
-  modes.forEach((mode) => {
-    if (mode === 't2v') labels.add('Text');
-    if (mode === 'i2v') labels.add('Image');
-    if (mode === 'r2v') labels.add('Reference');
-  });
-  return labels.size ? Array.from(labels).join(' / ') : 'Data pending';
-}
-
-function formatControls(entry: EngineCatalogEntry) {
-  const params = entry.engine?.params ?? {};
-  const controls: string[] = [];
-  if ('seed' in params || 'seed_locked' in params || 'seedLock' in params) controls.push('Seed');
-  if ('negative_prompt' in params || 'negativePrompt' in params) controls.push('Negative prompt');
-  if (entry.engine?.extend) controls.push('Extend');
-  if ('inpaint' in params || 'mask' in params) controls.push('Inpaint');
-  return controls.length ? controls.join(' / ') : 'Data pending';
 }
 
 function resolveStatus(value?: boolean | null) {
@@ -708,11 +674,13 @@ function renderShowdownMedia(
             <source src={side.videoUrl} />
           </video>
         ) : side.posterUrl ? (
-          <img
+          <Image
             src={side.posterUrl}
             alt={`${label} showdown frame`}
-            loading="lazy"
+            fill
+            sizes="(max-width: 1024px) 100vw, 50vw"
             className={clsx('h-full w-full', mediaClass)}
+            loading="lazy"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-text-muted">
@@ -1036,7 +1004,6 @@ export default async function CompareDetailPage({
   const rightPricingDisplay = resolvePricingDisplay(right);
   const leftOverall = computeOverall(leftScore);
   const rightOverall = computeOverall(rightScore);
-  const updatedAt = leftScore?.last_updated ?? rightScore?.last_updated ?? null;
   const overallTone = resolveOverallTone(leftOverall, rightOverall);
   const leftOverallClass =
     overallTone === 'left'
@@ -1882,8 +1849,6 @@ export default async function CompareDetailPage({
               </p>
             </div>
             <CompareScoreboard
-              leftLabel={formatEngineName(left)}
-              rightLabel={formatEngineName(right)}
               metrics={comparisonMetrics}
               className="mt-6"
               naLabel={labels.na}

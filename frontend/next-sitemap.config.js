@@ -59,7 +59,13 @@ async function fetchSlugsFromDb(tableName, basePath) {
         lastmod: row.updated_at ? new Date(row.updated_at).toISOString() : undefined,
       }));
   } catch (error) {
-    console.warn(`[next-sitemap] skipped ${tableName} slugs`, error.message || error);
+    const message = error && typeof error === 'object' && 'message' in error ? error.message : String(error);
+    const code = error && typeof error === 'object' && 'code' in error ? error.code : null;
+    const isMissingRelation =
+      code === '42P01' || /relation\s+\"?.+\"?\s+does not exist/i.test(message);
+    if (!isMissingRelation) {
+      console.warn(`[next-sitemap] skipped ${tableName} slugs`, message || error);
+    }
     return [];
   } finally {
     try {

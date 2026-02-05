@@ -1,4 +1,4 @@
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 const REQUIRED_KEYS = [
   'FAL_KEY',
@@ -21,4 +21,3 @@ export async function GET() {
     headers: { 'content-type': 'application/json' },
   });
 }
-
