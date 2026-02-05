@@ -164,6 +164,9 @@ type SoraCopy = {
   specValueProp: string | null;
   quickPricingTitle: string | null;
   quickPricingItems: string[];
+  hideQuickPricing: boolean;
+  showPricePerSecondInSpecs: boolean;
+  hidePricingSection: boolean;
   microCta: string | null;
   galleryTitle: string | null;
   galleryIntro: string | null;
@@ -251,6 +254,7 @@ const FULL_BLEED_SECTION =
   "relative isolate before:absolute before:inset-y-0 before:left-1/2 before:right-1/2 before:-ml-[50vw] before:-mr-[50vw] before:content-[''] before:-z-10";
 const SECTION_BG_A = 'before:bg-[#F6F7FB]';
 const SECTION_BG_B = 'before:bg-[#EDF1F7]';
+const SECTION_PAD = 'px-6 py-6 sm:px-8 sm:py-8';
 const KEY_SPEC_ROW_DEFS: Array<{ key: KeySpecKey; label: string }> = [
   { key: 'pricePerSecond', label: 'Price / second' },
   { key: 'textToVideo', label: 'Text-to-Video' },
@@ -795,6 +799,7 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
     const value = custom[key];
     return typeof value === 'string' && value.trim().length ? value : null;
   };
+  const getBoolean = (key: string): boolean => custom[key] === true;
   const getStringArray = (key: string): string[] => {
     const value = custom[key];
     if (Array.isArray(value)) {
@@ -975,6 +980,9 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
     specValueProp: getString('specValueProp'),
     quickPricingTitle: getString('quickPricingTitle'),
     quickPricingItems: getStringArray('quickPricingItems'),
+    hideQuickPricing: getBoolean('hideQuickPricing'),
+    showPricePerSecondInSpecs: getBoolean('showPricePerSecondInSpecs'),
+    hidePricingSection: getBoolean('hidePricingSection'),
     microCta: getString('microCta'),
     galleryTitle: getString('galleryTitle'),
     galleryIntro: getString('galleryIntro'),
@@ -1300,12 +1308,16 @@ async function renderSoraModelPage({
     .sort((a, b) => (a.family === engine.family ? -1 : 0) - (b.family === engine.family ? -1 : 0))
     .slice(0, 3);
   const faqEntries = localizedContent.faqs.length ? localizedContent.faqs : copy.faqs;
+  const showPricePerSecondInSpecs = copy.showPricePerSecondInSpecs;
   const keySpecsMap = await loadEngineKeySpecs();
   const keySpecsEntry =
     keySpecsMap.get(engine.modelSlug) ?? keySpecsMap.get(engine.id) ?? null;
   const keySpecValues = keySpecsEntry ? buildSpecValues(engine, keySpecsEntry.keySpecs) : null;
+  const keySpecDefs = showPricePerSecondInSpecs
+    ? KEY_SPEC_ROW_DEFS
+    : KEY_SPEC_ROW_DEFS.filter((row) => row.key !== 'pricePerSecond');
   const keySpecRows: KeySpecRow[] = keySpecValues
-    ? KEY_SPEC_ROW_DEFS.map(({ key, label }) => ({
+    ? keySpecDefs.map(({ key, label }) => ({
         label,
         value: key === 'maxResolution' ? normalizeMaxResolution(keySpecValues[key]) : keySpecValues[key],
       })).filter((row) => !isPending(row.value) && !isUnsupported(row.value))
@@ -1434,7 +1446,9 @@ function Sora2PageLayout({
   const breadcrumbModelLabel = localizedContent.marketingName ?? engine.marketingName ?? heroTitle;
   const howToLatamTitle = copy.howToLatamTitle;
   const howToLatamSteps = copy.howToLatamSteps;
-  const specSections = applyPricingSection(copy.specSections, locale, pricingItems);
+  const specSections = copy.hidePricingSection
+    ? copy.specSections
+    : applyPricingSection(copy.specSections, locale, pricingItems);
   const quickPricingTitle = copy.quickPricingTitle;
   const promptPatternSteps = copy.promptPatternSteps.length
     ? copy.promptPatternSteps
@@ -1485,7 +1499,6 @@ function Sora2PageLayout({
   const tocItems = [
     { id: 'specs', label: 'Specs', visible: hasSpecs },
     { id: textAnchorId, label: 'Examples', visible: hasExamples },
-    { id: 'examples', label: 'What it is', visible: hasWhatSection },
     { id: imageAnchorId, label: 'Prompting', visible: hasTextSection },
     {
       id: imageWorkflowAnchorId,
@@ -1493,6 +1506,7 @@ function Sora2PageLayout({
       visible: hasImageSection,
     },
     { id: 'tips', label: 'Tips', visible: hasTipsSection },
+    { id: 'examples', label: 'What it is', visible: hasWhatSection },
     { id: 'faq', label: 'FAQ', visible: hasFaqSection },
     { id: 'safety', label: 'Safety', visible: hasSafetySection },
   ].filter((item) => item.visible);
@@ -1761,7 +1775,7 @@ function Sora2PageLayout({
         {hasSpecs ? (
           <section
             id="specs"
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} stack-gap py-6 sm:py-8`}
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap`}
           >
             {copy.specTitle ? (
               <h2 className="mt-2 text-center text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
@@ -1774,7 +1788,7 @@ function Sora2PageLayout({
               </blockquote>
             ) : null}
             {keySpecRows.length ? (
-              <div className="grid gap-x-4 gap-y-2 border-t border-hairline/70 pt-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2 border-t border-hairline/70 pt-3 lg:grid-cols-3 xl:grid-cols-4">
                 {keySpecRows.map((row, index) => (
                   <div
                     key={row.label}
@@ -1803,7 +1817,7 @@ function Sora2PageLayout({
               </div>
             ) : null}
             {specSections.length ? (
-              <div className="grid grid-gap-sm md:grid-cols-2">
+              <div className="grid grid-gap-sm grid-cols-2">
                 {specSections.map((section) => (
                   <article
                     key={section.title}
@@ -1825,7 +1839,7 @@ function Sora2PageLayout({
           </section>
         ) : null}
 
-        {quickPricingTitle && quickPricingItems.length ? (
+        {!copy.hideQuickPricing && quickPricingTitle && quickPricingItems.length ? (
           <section className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-5 shadow-card">
             <h3 className="text-lg font-semibold text-text-primary">{quickPricingTitle}</h3>
             <ul className="space-y-1 text-sm text-text-secondary">
@@ -1838,7 +1852,7 @@ function Sora2PageLayout({
 
         <section
           id={textAnchorId}
-          className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} stack-gap py-6 sm:py-8`}
+          className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap`}
         >
           {copy.galleryTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.galleryTitle}</h2> : null}
           {galleryVideos.length ? (
@@ -1906,62 +1920,23 @@ function Sora2PageLayout({
               ) : null}
             </div>
           )}
-          <div className="mt-4">
-            <ButtonLink
-              href={galleryCtaHref}
-              size="lg"
-              className="shadow-card"
-              linkComponent={Link}
-            >
-              {copy.gallerySceneCta ?? (isImageEngine ? 'Open this still in the Image lab →' : 'Open this scene in Generate →')}
-            </ButtonLink>
-          </div>
-        </section>
-
-        <section
-          id="examples"
-          className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} stack-gap py-6 sm:py-8`}
-        >
-          {copy.whatTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.whatTitle}</h2> : null}
-          {copy.whatIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro1}</p> : null}
-          {copy.whatIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro2}</p> : null}
-          {quickStartTitle && quickStartBlocks.length ? (
-            <div className="stack-gap rounded-2xl border border-hairline bg-surface/70 p-4 shadow-card">
-              <h3 className="text-base font-semibold text-text-primary">{quickStartTitle}</h3>
-              <div className="stack-gap">
-                {quickStartBlocks.map((block) => (
-                  <div key={block.title} className="space-y-2">
-                    <p className="text-sm font-semibold text-text-primary">
-                      {block.title}
-                      {block.subtitle ? <span className="text-text-secondary"> — {block.subtitle}</span> : null}
-                    </p>
-                    <ol className="list-decimal space-y-1 pl-5 text-sm text-text-secondary">
-                      {block.steps.map((step) => (
-                        <li key={step}>{step}</li>
-                      ))}
-                    </ol>
-                  </div>
-                ))}
-              </div>
+          {copy.gallerySceneCta ? (
+            <div className="mt-4">
+              <ButtonLink
+                href={galleryCtaHref}
+                size="lg"
+                className="shadow-card"
+                linkComponent={Link}
+              >
+                {copy.gallerySceneCta}
+              </ButtonLink>
             </div>
-          ) : null}
-          {whatFlowSteps.length ? (
-            <>
-              {copy.whatFlowTitle ? (
-                <p className="text-base font-semibold text-text-primary">{copy.whatFlowTitle}</p>
-              ) : null}
-              <ol className="space-y-2 rounded-2xl border border-hairline bg-surface/70 p-4 text-sm text-text-secondary">
-                {whatFlowSteps.map((step) => (
-                  <li key={step}>{step}</li>
-                ))}
-              </ol>
-            </>
           ) : null}
         </section>
 
         <section
           id={imageAnchorId}
-          className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} stack-gap py-6 sm:py-8`}
+          className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap`}
         >
           {copy.promptTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.promptTitle}</h2> : null}
           {copy.promptIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.promptIntro}</p> : null}
@@ -1991,7 +1966,7 @@ function Sora2PageLayout({
 
         <section
           id={imageWorkflowAnchorId}
-          className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} stack-gap py-6 sm:py-8`}
+          className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap`}
         >
           {copy.imageTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.imageTitle}</h2> : null}
           {copy.imageIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.imageIntro}</p> : null}
@@ -2017,7 +1992,7 @@ function Sora2PageLayout({
           </div>
         </section>
 
-        <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} stack-gap py-6 sm:py-8`}>
+        <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap`}>
           {copy.multishotTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.multishotTitle}</h2> : null}
           {copy.multishotIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.multishotIntro1}</p> : null}
           {copy.multishotIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.multishotIntro2}</p> : null}
@@ -2031,7 +2006,7 @@ function Sora2PageLayout({
         </section>
 
         {copy.demoTitle || copy.demoPrompt.length || copy.demoNotes.length ? (
-          <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} stack-gap-lg py-6 sm:py-8`}>
+          <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap-lg`}>
             {copy.demoTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.demoTitle}</h2> : null}
             <div className="grid grid-gap lg:grid-cols-2 lg:items-start">
               <div className="rounded-2xl border border-hairline bg-surface/80 p-3 shadow-card lg:order-2">
@@ -2071,7 +2046,7 @@ function Sora2PageLayout({
         {copy.tipsTitle || strengths.length || boundaries.length ? (
           <section
             id="tips"
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} stack-gap-lg py-6 sm:py-8`}
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap-lg`}
           >
             {copy.tipsTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.tipsTitle}</h2> : null}
             <div className="grid grid-gap-sm lg:grid-cols-2">
@@ -2108,8 +2083,49 @@ function Sora2PageLayout({
           </section>
         ) : null}
 
+        <section
+          id="examples"
+          className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap`}
+        >
+          {copy.whatTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.whatTitle}</h2> : null}
+          {copy.whatIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro1}</p> : null}
+          {copy.whatIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro2}</p> : null}
+          {quickStartTitle && quickStartBlocks.length ? (
+            <div className="stack-gap rounded-2xl border border-hairline bg-surface/70 p-4 shadow-card">
+              <h3 className="text-base font-semibold text-text-primary">{quickStartTitle}</h3>
+              <div className="stack-gap">
+                {quickStartBlocks.map((block) => (
+                  <div key={block.title} className="space-y-2">
+                    <p className="text-sm font-semibold text-text-primary">
+                      {block.title}
+                      {block.subtitle ? <span className="text-text-secondary"> — {block.subtitle}</span> : null}
+                    </p>
+                    <ol className="list-decimal space-y-1 pl-5 text-sm text-text-secondary">
+                      {block.steps.map((step) => (
+                        <li key={step}>{step}</li>
+                      ))}
+                    </ol>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+          {whatFlowSteps.length ? (
+            <>
+              {copy.whatFlowTitle ? (
+                <p className="text-base font-semibold text-text-primary">{copy.whatFlowTitle}</p>
+              ) : null}
+              <ol className="space-y-2 rounded-2xl border border-hairline bg-surface/70 p-4 text-sm text-text-secondary">
+                {whatFlowSteps.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ol>
+            </>
+          ) : null}
+        </section>
+
         {copy.comparisonTitle || comparisonPoints.length ? (
-          <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} stack-gap py-6 sm:py-8`}>
+          <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap`}>
             {copy.comparisonTitle ? (
               <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.comparisonTitle}</h2>
             ) : null}
@@ -2135,7 +2151,7 @@ function Sora2PageLayout({
         ) : null}
 
         {relatedItems.length || relatedEngines.length ? (
-          <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} stack-gap py-6 sm:py-8`}>
+          <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap`}>
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
               {copy.relatedTitle ?? 'Explore other models'}
             </h2>
@@ -2223,7 +2239,7 @@ function Sora2PageLayout({
         {faqList.length ? (
           <section
             id="faq"
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} stack-gap py-6 sm:py-8`}
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap`}
           >
             {faqTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{faqTitle}</h2> : null}
             <div className="grid grid-gap-sm md:grid-cols-2">
@@ -2244,7 +2260,7 @@ function Sora2PageLayout({
         {copy.safetyTitle || safetyRules.length ? (
           <section
             id="safety"
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} stack-gap py-6 sm:py-8`}
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap`}
           >
             {copy.safetyTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.safetyTitle}</h2> : null}
             <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">

@@ -33,6 +33,9 @@
     "heroTrustLine": "Available on MaxVideoAI · Pay-as-you-go · Price shown before you generate",
     "heroDesc1": "Create short, cinematic videos with Sora 2 straight from your browser. MaxVideoAI gives you instant access to Sora 2 text-to-video and image-to-video, with transparent per-second pricing and a workspace built for testing, prototyping and producing social-ready clips.",
     "heroDesc2": "Describe your scene, choose a duration (4, 8 or 12 seconds), pick 16:9 or 9:16, and let Sora 2 generate polished footage you can use in ads, content or client work.",
+    "hideQuickPricing": true,
+    "showPricePerSecondInSpecs": true,
+    "hidePricingSection": false,
     "secondaryCta": "Compare vs Sora 2 Pro (1080p)",
     "whyTitle": "Why Sora 2 is powerful",
     "heroHighlights": [
@@ -71,22 +74,6 @@
     "specNote": "These specs describe Sora 2 exactly as you can use it today via MaxVideoAI – not theoretical capabilities.",
     "specSections": [
       {
-        "title": "Duration & Output",
-        "items": [
-          "Durations: 4 s, 8 s, 12 s (you choose)",
-          "Output resolution: 720p (1280×720)",
-          "Need 1080p? Switch to Sora 2 Pro in the same interface."
-        ]
-      },
-      {
-        "title": "Aspect Ratios",
-        "items": [
-          "16:9 – classic horizontal / YouTube / web video",
-          "9:16 – vertical / TikTok / Reels / Shorts",
-          "Both are supported in Text→Video and Image→Video."
-        ]
-      },
-      {
         "title": "Inputs & File Types",
         "items": [
           "Text prompts – short, cinematic descriptions in one to three sentences",
@@ -100,21 +87,10 @@
           "Sora 2 returns a video with audio – useful if you want a self-contained clip straight out of the engine.",
           "If you want to control or replace the sound: mute or swap the track in your editor, or use Sora 2 Pro, which exposes an audio toggle in the UI."
         ]
-      },
-      {
-        "title": "Pricing",
-        "items": [
-          "Sora 2 uses a simple per-second pricing model:",
-          "Internal config: perSecondCents = 12",
-          "That’s $0.12 per second of video: 4s ≈ $0.48; 8s ≈ $0.96; 12s ≈ $1.44",
-          "No monthly subscription: top up a wallet and only pay for what you generate."
-        ]
       }
     ],
-    "specValueProp": "Key value proposition: Sora 2 in MaxVideoAI is the fastest way to test ideas, prototypes and social concepts – you get studio-style motion & sound at a predictable cost per second.",
     "galleryTitle": "Example Gallery: Real Sora 2 Outputs",
     "galleryIntro": "See a handful of live Sora 2 renders powered by the same settings you have in MaxVideoAI.",
-    "gallerySceneCta": "Open this scene in Generate and adapt it with your own brand →",
     "galleryAllCta": "View all Sora 2 examples →",
     "recreateLabel": "Recreate this shot →",
     "promptTitle": "How to Write a Good Sora 2 Prompt",
