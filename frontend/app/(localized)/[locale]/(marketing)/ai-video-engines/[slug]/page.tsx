@@ -1215,7 +1215,9 @@ export default async function CompareDetailPage({
         label: `${formatEngineName(resolvedPair.left)} vs ${formatEngineName(resolvedPair.right)}`,
       };
     })
-    .filter((item): item is { href: string; label: string } => Boolean(item));
+    .filter(
+      (item): item is { href: { pathname: string; params: { slug: string } }; label: string } => Boolean(item)
+    );
 
   const validatingLabel = compareCopy.faq?.validating ?? 'still being validated';
   const formatFaqValue = (value: string) => (isPending(value) ? validatingLabel : value);
@@ -2146,7 +2148,7 @@ export default async function CompareDetailPage({
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {relatedLinks.map((item) => (
                 <Link
-                  key={item.href}
+                  key={item.href.params.slug}
                   href={item.href}
                   className="rounded-card border border-hairline bg-surface px-4 py-3 text-sm font-semibold text-text-primary transition hover:bg-surface-2"
                 >
