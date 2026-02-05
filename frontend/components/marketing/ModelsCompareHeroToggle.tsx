@@ -9,9 +9,10 @@ export function ModelsCompareHeroToggle({
   label?: string;
   className?: string;
 }) {
+  const compareSlug = ['sora-2', 'kling-2-6-pro'].sort().join('-vs-');
   const compareHref = {
     pathname: '/ai-video-engines/[slug]',
-    params: { slug: 'sora-2-vs-kling-2-6-pro' },
+    params: { slug: compareSlug },
   } as const;
 
   return (

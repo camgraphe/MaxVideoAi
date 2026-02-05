@@ -882,10 +882,12 @@ export default async function ModelsPage() {
                 const rightLabel = rightCard?.label ?? shortcut.b;
                 const leftColor = leftCard?.backgroundColor ?? 'var(--text-muted)';
                 const rightColor = rightCard?.backgroundColor ?? 'var(--text-muted)';
+                const sorted = [shortcut.a, shortcut.b].sort();
+                const compareSlug = `${sorted[0]}-vs-${sorted[1]}`;
                 return (
                   <Link
                     key={`${shortcut.a}-${shortcut.b}`}
-                    href={{ pathname: '/ai-video-engines/[slug]', params: { slug: `${shortcut.a}-vs-${shortcut.b}` } }}
+                    href={{ pathname: '/ai-video-engines/[slug]', params: { slug: compareSlug } }}
                     prefetch={false}
                     className="min-w-[220px] rounded-2xl border border-hairline bg-bg/70 px-4 py-3 text-xs font-semibold text-text-primary shadow-sm transition hover:-translate-y-0.5 hover:border-text-muted"
                   >

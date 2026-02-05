@@ -1090,10 +1090,9 @@ function Sora2PageLayout({
     return `/${modelsBase}${slugPart}`.replace(/\/{2,}/g, '/');
   };
   const compareBase = (COMPARE_BASE_PATH_MAP[locale] ?? 'ai-video-engines').replace(/^\/+|\/+$/g, '');
-  const localizeComparePath = (pairSlug: string, orderSlug?: string) => {
+  const localizeComparePath = (pairSlug: string) => {
     const slugPart = pairSlug ? `/${pairSlug.replace(/^\/+/, '')}` : '';
-    const orderParam = orderSlug ? `?order=${encodeURIComponent(orderSlug)}` : '';
-    return `/${compareBase}${slugPart}${orderParam}`.replace(/\/{2,}/g, '/');
+    return `/${compareBase}${slugPart}`.replace(/\/{2,}/g, '/');
   };
   const galleryEngineSlug = engineSlug;
   const examplesLinkHref = getExamplesHref(galleryEngineSlug) ?? '/examples';
@@ -1778,7 +1777,7 @@ function Sora2PageLayout({
                           : fallbackCompare
                       : fallbackCompare;
                 const compareSlug = [engineSlug, entry.modelSlug].sort().join('-vs-');
-                const compareHref = localizeComparePath(compareSlug, engineSlug);
+                const compareHref = localizeComparePath(compareSlug);
                 return (
                   <article
                     key={entry.modelSlug}
@@ -1945,10 +1944,9 @@ export default async function ModelDetailPage({ params }: PageParams) {
     /^\/+|\/+$/g,
     ''
   );
-  const localizeComparePath = (pairSlug: string, orderSlug?: string) => {
+  const localizeComparePath = (pairSlug: string) => {
     const slugPart = pairSlug ? `/${pairSlug.replace(/^\/+/, '')}` : '';
-    const orderParam = orderSlug ? `?order=${encodeURIComponent(orderSlug)}` : '';
-    return `/${compareBase}${slugPart}${orderParam}`.replace(/\/{2,}/g, '/');
+    return `/${compareBase}${slugPart}`.replace(/\/{2,}/g, '/');
   };
   const localizedContent = await getEngineLocalized(slug, activeLocale);
   const detailSlugMap = buildDetailSlugMap(slug);
@@ -2394,7 +2392,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
                 return `Try ${label}`;
               })();
               const compareSlug = [slug, candidate.modelSlug].sort().join('-vs-');
-              const compareHref = localizeComparePath(compareSlug, slug);
+              const compareHref = localizeComparePath(compareSlug);
               return (
                 <article key={candidate.modelSlug} className="rounded-2xl border border-hairline bg-surface/90 p-5 shadow-card">
                   <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{candidate.brandId}</p>
