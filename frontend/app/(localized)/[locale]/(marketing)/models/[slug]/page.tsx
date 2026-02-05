@@ -255,6 +255,7 @@ const FULL_BLEED_SECTION =
 const SECTION_BG_A = 'before:bg-[#F6F7FB]';
 const SECTION_BG_B = 'before:bg-[#EDF1F7]';
 const SECTION_PAD = 'px-6 py-6 sm:px-8 sm:py-8';
+const FULL_BLEED_CONTENT = 'relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-[100vw]';
 const KEY_SPEC_ROW_DEFS: Array<{ key: KeySpecKey; label: string }> = [
   { key: 'pricePerSecond', label: 'Price / second' },
   { key: 'textToVideo', label: 'Text-to-Video' },
@@ -1852,86 +1853,88 @@ function Sora2PageLayout({
 
         <section
           id={textAnchorId}
-          className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap`}
+          className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} py-6 sm:py-8`}
         >
-          {copy.galleryTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.galleryTitle}</h2> : null}
-          {galleryVideos.length ? (
-            <>
-              {copy.galleryIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.galleryIntro}</p> : null}
-              {copy.galleryAllCta ? (
-                <p className="text-base leading-relaxed text-text-secondary">
+          <div className={`${FULL_BLEED_CONTENT} px-6 sm:px-8`}>
+            {copy.galleryTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.galleryTitle}</h2> : null}
+            {galleryVideos.length ? (
+              <>
+                {copy.galleryIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.galleryIntro}</p> : null}
+                {copy.galleryAllCta ? (
+                  <p className="text-base leading-relaxed text-text-secondary">
+                    <Link href={examplesLinkHref} className="font-semibold text-brand hover:text-brandHover">
+                      {copy.galleryAllCta}
+                    </Link>
+                  </p>
+                ) : null}
+                <div className="stack-gap">
+                  <div className="overflow-x-auto pb-2">
+                    <div className="flex min-w-full gap-4">
+                      {galleryVideos.slice(0, 6).map((video) => (
+                        <article
+                          key={video.id}
+                          className="flex w-64 shrink-0 flex-col overflow-hidden rounded-2xl border border-hairline bg-surface shadow-card"
+                        >
+                          <Link href={video.href} className="group relative block aspect-video bg-placeholder">
+                            {video.optimizedPosterUrl || video.rawPosterUrl ? (
+                              <Image
+                                src={video.optimizedPosterUrl ?? video.rawPosterUrl ?? ''}
+                                alt={
+                                  video.prompt
+                                    ? `MaxVideoAI ${video.engineLabel} example – ${video.prompt}`
+                                    : `MaxVideoAI ${video.engineLabel} example`
+                                }
+                                fill
+                                className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+                                sizes="256px"
+                                quality={70}
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-skeleton text-xs font-semibold text-text-muted">
+                                No preview
+                              </div>
+                            )}
+                          </Link>
+                          <div className="space-y-1 px-4 py-3">
+                            <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
+                              {video.engineLabel} · {video.durationSec}s
+                            </p>
+                            <p className="text-sm font-semibold leading-snug text-text-primary line-clamp-2">{video.prompt}</p>
+                            {video.recreateHref && copy.recreateLabel ? (
+                              <TextLink href={video.recreateHref} className="text-[11px]" linkComponent={Link}>
+                                {copy.recreateLabel}
+                              </TextLink>
+                            ) : null}
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="mt-4 rounded-2xl border border-dashed border-hairline bg-surface/60 px-4 py-4 text-sm text-text-secondary">
+                {copy.galleryIntro ?? 'Sora 2 examples will appear here soon.'}{' '}
+                {copy.galleryAllCta ? (
                   <Link href={examplesLinkHref} className="font-semibold text-brand hover:text-brandHover">
                     {copy.galleryAllCta}
                   </Link>
-                </p>
-              ) : null}
-              <div className="stack-gap">
-                <div className="overflow-x-auto pb-2">
-                  <div className="flex min-w-full gap-4">
-                    {galleryVideos.slice(0, 6).map((video) => (
-                      <article
-                        key={video.id}
-                        className="flex w-64 shrink-0 flex-col overflow-hidden rounded-2xl border border-hairline bg-surface shadow-card"
-                      >
-                        <Link href={video.href} className="group relative block aspect-video bg-placeholder">
-                          {video.optimizedPosterUrl || video.rawPosterUrl ? (
-                            <Image
-                              src={video.optimizedPosterUrl ?? video.rawPosterUrl ?? ''}
-                              alt={
-                                video.prompt
-                                  ? `MaxVideoAI ${video.engineLabel} example – ${video.prompt}`
-                                  : `MaxVideoAI ${video.engineLabel} example`
-                              }
-                              fill
-                              className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
-                              sizes="256px"
-                              quality={70}
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-skeleton text-xs font-semibold text-text-muted">
-                              No preview
-                            </div>
-                          )}
-                        </Link>
-                        <div className="space-y-1 px-4 py-3">
-                          <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-                            {video.engineLabel} · {video.durationSec}s
-                          </p>
-                          <p className="text-sm font-semibold leading-snug text-text-primary line-clamp-2">{video.prompt}</p>
-                          {video.recreateHref && copy.recreateLabel ? (
-                            <TextLink href={video.recreateHref} className="text-[11px]" linkComponent={Link}>
-                              {copy.recreateLabel}
-                            </TextLink>
-                          ) : null}
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                </div>
+                ) : null}
               </div>
-            </>
-          ) : (
-            <div className="mt-4 rounded-2xl border border-dashed border-hairline bg-surface/60 px-4 py-4 text-sm text-text-secondary">
-              {copy.galleryIntro ?? 'Sora 2 examples will appear here soon.'}{' '}
-              {copy.galleryAllCta ? (
-                <Link href={examplesLinkHref} className="font-semibold text-brand hover:text-brandHover">
-                  {copy.galleryAllCta}
-                </Link>
-              ) : null}
-            </div>
-          )}
-          {copy.gallerySceneCta ? (
-            <div className="mt-4">
-              <ButtonLink
-                href={galleryCtaHref}
-                size="lg"
-                className="shadow-card"
-                linkComponent={Link}
-              >
-                {copy.gallerySceneCta}
-              </ButtonLink>
-            </div>
-          ) : null}
+            )}
+            {copy.gallerySceneCta ? (
+              <div className="mt-4">
+                <ButtonLink
+                  href={galleryCtaHref}
+                  size="lg"
+                  className="shadow-card"
+                  linkComponent={Link}
+                >
+                  {copy.gallerySceneCta}
+                </ButtonLink>
+              </div>
+            ) : null}
+          </div>
         </section>
 
         <section
