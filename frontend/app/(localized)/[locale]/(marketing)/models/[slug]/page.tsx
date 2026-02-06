@@ -619,6 +619,27 @@ async function buildPricingItems(engine: EngineCaps, locale: AppLocale): Promise
   return items;
 }
 
+async function buildPricePerSecondLabel(engine: EngineCaps, locale: AppLocale): Promise<string | null> {
+  const resolution = resolveDefaultResolution(engine);
+  if (!resolution) return null;
+  const durationOptions = selectQuickDurations(engine);
+  const durationSec = durationOptions[0] ?? 5;
+  try {
+    const snapshot = await computePricingSnapshot({
+      engine,
+      durationSec,
+      resolution,
+      membershipTier: 'member',
+    });
+    const seconds = typeof snapshot.base.seconds === 'number' ? snapshot.base.seconds : durationSec;
+    if (!seconds) return null;
+    const perSecond = snapshot.totalCents / seconds / 100;
+    return `${formatPerSecond(locale, snapshot.currency ?? 'USD', perSecond)}/s`;
+  } catch {
+    return null;
+  }
+}
+
 async function buildQuickPricingItems(engine: EngineCaps, locale: AppLocale): Promise<string[]> {
   const durations = selectQuickDurations(engine);
   const resolution = resolveDefaultResolution(engine);
@@ -770,10 +791,18 @@ function formatPricePerSecond(engineCaps: EngineCaps | undefined): string {
   return 'Data pending';
 }
 
-function buildSpecValues(entry: FalEngineEntry, specs: Record<string, unknown> | undefined): KeySpecValues {
+function buildSpecValues(
+  entry: FalEngineEntry,
+  specs: Record<string, unknown> | undefined,
+  pricePerSecondOverride?: string | null
+): KeySpecValues {
   const engineCaps = entry.engine;
   return {
-    pricePerSecond: formatPricePerSecond(engineCaps),
+    pricePerSecond: resolveKeySpecValue(
+      specs,
+      'pricePerSecond',
+      pricePerSecondOverride ?? formatPricePerSecond(engineCaps)
+    ),
     textToVideo: resolveKeySpecValue(specs, 'textToVideo', resolveModeSupported(engineCaps, 't2v')),
     imageToVideo: resolveKeySpecValue(specs, 'imageToVideo', resolveModeSupported(engineCaps, 'i2v')),
     videoToVideo: resolveKeySpecValue(specs, 'videoToVideo', resolveModeSupported(engineCaps, 'v2v')),
@@ -1412,7 +1441,10 @@ async function renderSoraModelPage({
   const keySpecsMap = await loadEngineKeySpecs();
   const keySpecsEntry =
     keySpecsMap.get(engine.modelSlug) ?? keySpecsMap.get(engine.id) ?? null;
-  const keySpecValues = keySpecsEntry ? buildSpecValues(engine, keySpecsEntry.keySpecs) : null;
+  const pricePerSecondLabel = await buildPricePerSecondLabel(pricingEngine, locale);
+  const keySpecValues = keySpecsEntry
+    ? buildSpecValues(engine, keySpecsEntry.keySpecs, pricePerSecondLabel)
+    : null;
   const keySpecDefs = showPricePerSecondInSpecs
     ? KEY_SPEC_ROW_DEFS
     : KEY_SPEC_ROW_DEFS.filter((row) => row.key !== 'pricePerSecond');
@@ -1554,9 +1586,7 @@ function Sora2PageLayout({
   const breadcrumbModelLabel = localizedContent.marketingName ?? engine.marketingName ?? heroTitle;
   const howToLatamTitle = copy.howToLatamTitle;
   const howToLatamSteps = copy.howToLatamSteps;
-  const specSections = copy.hidePricingSection
-    ? copy.specSections
-    : applyPricingSection(copy.specSections, locale, pricingItems);
+  const specSections = copy.specSections;
   const quickPricingTitle = copy.quickPricingTitle;
   const promptPatternSteps = copy.promptPatternSteps.length
     ? copy.promptPatternSteps
@@ -1958,40 +1988,28 @@ function Sora2PageLayout({
           </div>
         ) : null}
 
-        {!copy.hideQuickPricing && quickPricingTitle && quickPricingItems.length ? (
-          <section className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-5 shadow-card">
-            <h3 className="text-lg font-semibold text-text-primary">{quickPricingTitle}</h3>
-            <ul className="space-y-1 text-sm text-text-secondary">
-              {quickPricingItems.map((item) => (
-                <li key={item}>• {item}</li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
-
         <section
           id={textAnchorId}
-          className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} py-6 sm:py-8`}
+          className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} py-4 sm:py-5`}
         >
           <div className={`${FULL_BLEED_CONTENT} px-6 sm:px-8`}>
-            {copy.galleryTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.galleryTitle}</h2> : null}
+            {copy.galleryTitle ? (
+              <h2 className="mt-0 text-center text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
+                {copy.galleryTitle}
+              </h2>
+            ) : null}
             {galleryVideos.length ? (
               <>
-                {copy.galleryIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.galleryIntro}</p> : null}
-                {copy.galleryAllCta ? (
-                  <p className="text-base leading-relaxed text-text-secondary">
-                    <Link href={examplesLinkHref} className="font-semibold text-brand hover:text-brandHover">
-                      {copy.galleryAllCta}
-                    </Link>
-                  </p>
+                {copy.galleryIntro ? (
+                  <p className="text-center text-base leading-relaxed text-text-secondary">{copy.galleryIntro}</p>
                 ) : null}
-                <div className="stack-gap">
+                <div className="mt-4 stack-gap">
                   <div className="overflow-x-auto pb-2">
                     <div className="flex min-w-full gap-4">
                       {galleryVideos.slice(0, 6).map((video) => (
                         <article
                           key={video.id}
-                          className="flex w-64 shrink-0 flex-col overflow-hidden rounded-2xl border border-hairline bg-surface shadow-card"
+                          className="flex w-80 shrink-0 flex-col overflow-hidden rounded-2xl border border-hairline bg-surface shadow-card"
                         >
                           <Link href={video.href} className="group relative block aspect-video bg-placeholder">
                             {video.optimizedPosterUrl || video.rawPosterUrl ? (
@@ -2004,7 +2022,7 @@ function Sora2PageLayout({
                                 }
                                 fill
                                 className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
-                                sizes="256px"
+                                sizes="320px"
                                 quality={70}
                               />
                             ) : (
@@ -2017,7 +2035,6 @@ function Sora2PageLayout({
                             <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
                               {video.engineLabel} · {video.durationSec}s
                             </p>
-                            <p className="text-sm font-semibold leading-snug text-text-primary line-clamp-2">{video.prompt}</p>
                             {video.recreateHref && copy.recreateLabel ? (
                               <TextLink href={video.recreateHref} className="text-[11px]" linkComponent={Link}>
                                 {copy.recreateLabel}
@@ -2029,6 +2046,13 @@ function Sora2PageLayout({
                     </div>
                   </div>
                 </div>
+                {copy.galleryAllCta ? (
+                  <p className="mt-4 text-center text-base leading-relaxed text-text-secondary">
+                    <Link href={examplesLinkHref} className="font-semibold text-brand hover:text-brandHover">
+                      {copy.galleryAllCta}
+                    </Link>
+                  </p>
+                ) : null}
               </>
             ) : (
               <div className="mt-4 rounded-2xl border border-dashed border-hairline bg-surface/60 px-4 py-4 text-sm text-text-secondary">
@@ -2041,7 +2065,7 @@ function Sora2PageLayout({
               </div>
             )}
             {copy.gallerySceneCta ? (
-              <div className="mt-4">
+              <div className="mt-6">
                 <ButtonLink
                   href={galleryCtaHref}
                   size="lg"
