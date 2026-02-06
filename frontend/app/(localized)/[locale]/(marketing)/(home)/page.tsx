@@ -371,7 +371,8 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
     currency: rule.currency ?? 'USD',
   }));
   const seoDescription =
-    home.meta?.description ?? 'Generate cinematic AI videos via Sora 2, Veo 3, Pika 2.2, and more from one hub.';
+    home.meta?.description ??
+    'Create AI video with Sora 2, Veo 3.1 and Kling from one workspace. Compare engines side-by-side with the same prompt, then generate instantly.';
   const defaultBadges = ['PAY-AS-YOU-GO', 'PRICE-BEFORE', 'ALWAYS-CURRENT'];
   const badges = Array.isArray(home.badges) && home.badges.length ? home.badges : defaultBadges;
   const hero = home.hero;
