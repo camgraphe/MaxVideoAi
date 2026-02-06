@@ -1,6 +1,6 @@
 import { buildFalProxyUrl } from '@/lib/fal-proxy';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 export async function GET() {
   try {
@@ -17,4 +17,3 @@ export async function GET() {
     );
   }
 }
-

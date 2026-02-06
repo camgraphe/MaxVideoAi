@@ -1,6 +1,6 @@
 import { route as falRoute } from '@fal-ai/server-proxy/nextjs';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 const apiKey = process.env.FAL_KEY ?? process.env.FAL_API_KEY;
 if (!apiKey) {

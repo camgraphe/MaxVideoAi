@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import Image from 'next/image';
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import path from 'node:path';
@@ -11,7 +12,6 @@ import { resolveDictionary } from '@/lib/i18n/server';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { isDatabaseConfigured } from '@/lib/db';
-import { normalizeEngineId } from '@/lib/engine-alias';
 import compareConfig from '@/config/compare-config.json';
 import { COMPARE_SHOWDOWNS } from '@/config/compare-showdowns';
 import engineCatalog from '@/config/engine-catalog.json';
@@ -163,7 +163,8 @@ export async function generateStaticParams(): Promise<Params[]> {
   const params: Params[] = [];
   locales.forEach((locale) => {
     TROPHY_COMPARISONS.forEach((slug) => {
-      params.push({ locale, slug });
+      const canonical = getCanonicalCompareSlug(slug)?.canonicalSlug ?? slug;
+      params.push({ locale, slug: canonical });
     });
   });
   return params;
@@ -274,6 +275,25 @@ function getCanonicalCompareSlug(slug: string) {
   };
 }
 
+function resolveExcludedCompareRedirect({
+  slug,
+  order,
+  locale,
+}: {
+  slug: string;
+  order?: string | null;
+  locale: AppLocale;
+}) {
+  const parts = slug.split('-vs-');
+  if (parts.length !== 2) return null;
+  const excluded = parts.filter((part) => EXCLUDED_ENGINE_SLUGS.has(part));
+  if (!excluded.length) return null;
+  const preferred = order && excluded.includes(order) ? order : excluded[0];
+  const localePrefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
+  const modelsBase = MODELS_SLUG_MAP[locale] ?? MODELS_SLUG_MAP.en ?? 'models';
+  return `${localePrefix}/${modelsBase}/${preferred}`.replace(/\/{2,}/g, '/');
+}
+
 async function loadEngineScores(): Promise<Map<string, EngineScore>> {
   const candidates = [
     path.join(process.cwd(), 'data', 'benchmarks', 'engine-scores.v1.json'),
@@ -359,19 +379,6 @@ async function hydrateShowdowns(
   }
 }
 
-function formatYesNo(value?: boolean) {
-  if (value == null) return '-';
-  return value ? 'Yes' : 'No';
-}
-
-function formatPricePerSecond(entry: EngineCatalogEntry): string {
-  const cents = getPricePerSecondCents(entry);
-  if (typeof cents === 'number') {
-    return `$${(cents / 100).toFixed(2)}/s`;
-  }
-  return 'Data pending';
-}
-
 function getPricePerSecondCents(entry: EngineCatalogEntry): number | null {
   const perSecond = entry.engine?.pricingDetails?.perSecondCents;
   const byResolution = perSecond?.byResolution ? Object.values(perSecond.byResolution) : [];
@@ -418,27 +425,6 @@ function formatAspectRatios(entry: EngineCatalogEntry) {
 function formatFps(entry: EngineCatalogEntry) {
   const fps = entry.engine?.fps ?? [];
   return fps.length ? fps.join(' / ') : 'Data pending';
-}
-
-function formatInputs(entry: EngineCatalogEntry) {
-  const modes = entry.engine?.modes ?? [];
-  const labels = new Set<string>();
-  modes.forEach((mode) => {
-    if (mode === 't2v') labels.add('Text');
-    if (mode === 'i2v') labels.add('Image');
-    if (mode === 'r2v') labels.add('Reference');
-  });
-  return labels.size ? Array.from(labels).join(' / ') : 'Data pending';
-}
-
-function formatControls(entry: EngineCatalogEntry) {
-  const params = entry.engine?.params ?? {};
-  const controls: string[] = [];
-  if ('seed' in params || 'seed_locked' in params || 'seedLock' in params) controls.push('Seed');
-  if ('negative_prompt' in params || 'negativePrompt' in params) controls.push('Negative prompt');
-  if (entry.engine?.extend) controls.push('Extend');
-  if ('inpaint' in params || 'mask' in params) controls.push('Inpaint');
-  return controls.length ? controls.join(' / ') : 'Data pending';
 }
 
 function resolveStatus(value?: boolean | null) {
@@ -688,11 +674,13 @@ function renderShowdownMedia(
             <source src={side.videoUrl} />
           </video>
         ) : side.posterUrl ? (
-          <img
+          <Image
             src={side.posterUrl}
             alt={`${label} showdown frame`}
-            loading="lazy"
+            fill
+            sizes="(max-width: 1024px) 100vw, 50vw"
             className={clsx('h-full w-full', mediaClass)}
+            loading="lazy"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-text-muted">
@@ -938,12 +926,7 @@ export async function generateMetadata({
     englishPath: `/ai-video-engines/${canonicalSlug}`,
     robots,
   });
-  return {
-    ...meta,
-    title: { absolute: title },
-    openGraph: meta.openGraph ? { ...meta.openGraph, title } : meta.openGraph,
-    twitter: meta.twitter ? { ...meta.twitter, title } : meta.twitter,
-  };
+  return meta;
 }
 
 export default async function CompareDetailPage({
@@ -974,6 +957,15 @@ export default async function CompareDetailPage({
   if (!canonicalInfo) {
     notFound();
   }
+  const requestedOrder = typeof searchParams?.order === 'string' ? searchParams.order : null;
+  const excludedRedirect = resolveExcludedCompareRedirect({
+    slug: canonicalInfo.canonicalSlug,
+    order: requestedOrder,
+    locale: activeLocale,
+  });
+  if (excludedRedirect) {
+    redirect(excludedRedirect);
+  }
   const resolved = resolveEngines(slug);
   if (!resolved) {
     notFound();
@@ -981,16 +973,14 @@ export default async function CompareDetailPage({
   const localePrefix = localePathnames[activeLocale] ? `/${localePathnames[activeLocale]}` : '';
   const modelsBase = MODELS_SLUG_MAP[activeLocale] ?? MODELS_SLUG_MAP.en ?? 'models';
   const compareBase = COMPARE_SLUG_MAP[activeLocale] ?? COMPARE_SLUG_MAP.en ?? 'ai-video-engines';
-  const modelsHref = `${localePrefix}/${modelsBase}`.replace(/\/{2,}/g, '/');
+  const modelsHref = `/${modelsBase}`.replace(/\/{2,}/g, '/');
   const canonicalSlug = canonicalInfo.canonicalSlug;
   if (canonicalSlug !== slug) {
-    const requestedOrder = typeof searchParams?.order === 'string' ? searchParams.order : null;
     const orderParam = requestedOrder ?? canonicalInfo.leftSlug;
     const query = orderParam ? `?order=${orderParam}` : '';
     redirect(`${localePrefix}/${compareBase}/${canonicalSlug}${query}`.replace(/\/{2,}/g, '/'));
   }
   let { left, right } = resolved;
-  const requestedOrder = typeof searchParams?.order === 'string' ? searchParams.order : null;
   if (requestedOrder && requestedOrder === right.modelSlug) {
     [left, right] = [right, left];
   }
@@ -1014,7 +1004,6 @@ export default async function CompareDetailPage({
   const rightPricingDisplay = resolvePricingDisplay(right);
   const leftOverall = computeOverall(leftScore);
   const rightOverall = computeOverall(rightScore);
-  const updatedAt = leftScore?.last_updated ?? rightScore?.last_updated ?? null;
   const overallTone = resolveOverallTone(leftOverall, rightOverall);
   const leftOverallClass =
     overallTone === 'left'
@@ -1187,12 +1176,15 @@ export default async function CompareDetailPage({
     .map((pairSlug) => {
       const resolvedPair = resolveEngines(pairSlug);
       if (!resolvedPair) return null;
+      const canonicalPair = getCanonicalCompareSlug(pairSlug)?.canonicalSlug ?? pairSlug;
       return {
-        href: `${localePrefix}/${compareBase}/${pairSlug}`.replace(/\/{2,}/g, '/'),
+        href: { pathname: '/ai-video-engines/[slug]', params: { slug: canonicalPair } },
         label: `${formatEngineName(resolvedPair.left)} vs ${formatEngineName(resolvedPair.right)}`,
       };
     })
-    .filter((item): item is { href: string; label: string } => Boolean(item));
+    .filter(
+      (item): item is { href: { pathname: string; params: { slug: string } }; label: string } => Boolean(item)
+    );
 
   const validatingLabel = compareCopy.faq?.validating ?? 'still being validated';
   const formatFaqValue = (value: string) => (isPending(value) ? validatingLabel : value);
@@ -1857,8 +1849,6 @@ export default async function CompareDetailPage({
               </p>
             </div>
             <CompareScoreboard
-              leftLabel={formatEngineName(left)}
-              rightLabel={formatEngineName(right)}
               metrics={comparisonMetrics}
               className="mt-6"
               naLabel={labels.na}
@@ -1932,7 +1922,7 @@ export default async function CompareDetailPage({
                   })}
                 </ButtonLink>
                 <Link
-                  href={`/models/${left.modelSlug}`}
+                  href={{ pathname: '/models/[slug]', params: { slug: left.modelSlug } }}
                   className="text-xs font-semibold text-brand hover:text-brandHover"
                 >
                   {compareCopy.scorecard?.fullProfile ?? 'Full engine profile'}
@@ -1953,7 +1943,7 @@ export default async function CompareDetailPage({
                   })}
                 </ButtonLink>
                 <Link
-                  href={`/models/${right.modelSlug}`}
+                  href={{ pathname: '/models/[slug]', params: { slug: right.modelSlug } }}
                   className="text-xs font-semibold text-brand hover:text-brandHover"
                 >
                   {compareCopy.scorecard?.fullProfile ?? 'Full engine profile'}
@@ -2123,7 +2113,7 @@ export default async function CompareDetailPage({
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {relatedLinks.map((item) => (
                 <Link
-                  key={item.href}
+                  key={item.href.params.slug}
                   href={item.href}
                   className="rounded-card border border-hairline bg-surface px-4 py-3 text-sm font-semibold text-text-primary transition hover:bg-surface-2"
                 >

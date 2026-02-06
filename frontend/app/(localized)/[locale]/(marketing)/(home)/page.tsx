@@ -371,7 +371,8 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
     currency: rule.currency ?? 'USD',
   }));
   const seoDescription =
-    home.meta?.description ?? 'Generate cinematic AI videos via Sora 2, Veo 3, Pika 2.2, and more from one hub.';
+    home.meta?.description ??
+    'Create AI video with Sora 2, Veo 3.1 and Kling from one workspace. Compare engines side-by-side with the same prompt, then generate instantly.';
   const defaultBadges = ['PAY-AS-YOU-GO', 'PRICE-BEFORE', 'ALWAYS-CURRENT'];
   const badges = Array.isArray(home.badges) && home.badges.length ? home.badges : defaultBadges;
   const hero = home.hero;
@@ -574,7 +575,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
           >
             {hero.primaryCta}
           </ButtonLink>
-          <ButtonLink href="/examples" variant="outline" size="lg" linkComponent={Link}>
+          <ButtonLink href={{ pathname: '/examples' }} variant="outline" size="lg" linkComponent={Link}>
             {hero.secondaryCta}
           </ButtonLink>
         </div>
@@ -601,7 +602,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
           ))}
         </div>
         <p className="text-center text-sm text-muted-foreground">
-          <Link href="/pricing" className="underline underline-offset-2">
+          <Link href={{ pathname: '/pricing' }} className="underline underline-offset-2">
             Preview pricing
           </Link>
         </p>
@@ -724,7 +725,7 @@ export default async function HomePage({ params }: { params: { locale: AppLocale
                     pricingRules={pricingRulesLite}
                   />
                 </div>
-                <TextLink href="/pricing" className="mt-6 text-sm" linkComponent={Link}>
+                <TextLink href={{ pathname: '/pricing' }} className="mt-6 text-sm" linkComponent={Link}>
                   {pricing.link}
                 </TextLink>
                 <p className="mt-3 text-sm text-muted-foreground">

@@ -13,7 +13,7 @@
   "scripts": {
     "dev": "npm --prefix frontend run dev",
     "start": "node mock-server.js",
-    "healthcheck": "ts-node scripts/healthcheck.ts",
+    "healthcheck": "tsx scripts/healthcheck.ts",
     "sanitize:jobs": "node scripts/sanitize-jobs.js",
     "lint:exposure": "node scripts/check-public-exposure.mjs",
     "vercel-build": "NEXT_SKIP_ESLINT=1 npm --prefix frontend run build && rm -rf frontend/.next/cache frontend/tsconfig.tsbuildinfo",
@@ -28,7 +28,6 @@
   "packageManager": "pnpm@10.18.2+sha512.9fb969fa749b3ade6035e0f109f0b8a60b5d08a1a87fdf72e337da90dcc93336e2280ca4e44f2358a649b83c17959e9993e777c2080879f3801e6f0d999ad3dd",
   "devDependencies": {
     "@types/pg": "^8.10.2",
-    "ts-node": "^10.9.2",
     "tsx": "^4.20.6"
   }
 }

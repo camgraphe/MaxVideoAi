@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { promises as fs } from 'node:fs';
-import { Link } from '@/i18n/navigation';
+import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import Image from 'next/image';
 import Head from 'next/head';
 import { notFound } from 'next/navigation';
@@ -50,6 +50,104 @@ type PageParams = {
     slug: string;
   };
 };
+
+function buildCanonicalComparePath({
+  compareBase,
+  pairSlug,
+  orderSlug,
+}: {
+  compareBase: string;
+  pairSlug: string;
+  orderSlug?: string;
+}): string {
+  const sanitizedBase = compareBase.replace(/^\/+|\/+$/g, '');
+  const normalizedPair = pairSlug ? pairSlug.replace(/^\/+/, '') : '';
+  if (!normalizedPair) {
+    return `/${sanitizedBase}`.replace(/\/{2,}/g, '/');
+  }
+  const parts = normalizedPair
+    .split('-vs-')
+    .map((part) => part.replace(/^\/+|\/+$/g, ''))
+    .filter(Boolean);
+  let canonicalPair = normalizedPair;
+  let orderParam = '';
+  if (parts.length === 2) {
+    const sorted = [...parts].sort();
+    canonicalPair = `${sorted[0]}-vs-${sorted[1]}`;
+    if (orderSlug && sorted.includes(orderSlug) && orderSlug !== sorted[0]) {
+      orderParam = `?order=${encodeURIComponent(orderSlug)}`;
+    }
+  } else if (orderSlug) {
+    orderParam = `?order=${encodeURIComponent(orderSlug)}`;
+  }
+  return `/${sanitizedBase}/${canonicalPair}${orderParam}`.replace(/\/{2,}/g, '/');
+}
+
+const LOCALE_PREFIX_PATTERN = /^\/(fr|es)(?=\/)/i;
+const NON_LOCALIZED_PREFIXES = [
+  '/app',
+  '/dashboard',
+  '/jobs',
+  '/billing',
+  '/settings',
+  '/generate',
+  '/login',
+  '/auth',
+  '/video',
+];
+
+function stripLocalePrefix(pathname: string): string {
+  return pathname.replace(LOCALE_PREFIX_PATTERN, '');
+}
+
+function resolveExamplesHrefFromRaw(rawHref?: string | null): LocalizedLinkHref | null {
+  if (!rawHref) return null;
+  let pathname = rawHref;
+  let search = '';
+  try {
+    const url = new URL(rawHref, SITE);
+    pathname = url.pathname || rawHref;
+    search = url.search || '';
+  } catch {
+    const [pathPart, queryPart] = rawHref.split('?');
+    pathname = pathPart || rawHref;
+    search = queryPart ? `?${queryPart}` : '';
+  }
+  const normalizedPath = stripLocalePrefix(pathname);
+  if (!normalizedPath.startsWith('/examples')) {
+    return null;
+  }
+  const segments = normalizedPath.split('/').filter(Boolean);
+  const modelSlug = segments[1];
+  const params = new URLSearchParams(search);
+  const engineSlug = params.get('engine');
+  const candidate = modelSlug || engineSlug;
+  return candidate ? getExamplesHref(candidate) : { pathname: '/examples' };
+}
+
+function resolveNonLocalizedHref(rawHref?: string | null): string | null {
+  if (!rawHref) return null;
+  let pathname = rawHref;
+  let search = '';
+  let hash = '';
+  try {
+    const url = new URL(rawHref, SITE);
+    pathname = url.pathname || rawHref;
+    search = url.search || '';
+    hash = url.hash || '';
+  } catch {
+    const [pathPart, hashPart] = rawHref.split('#');
+    const [pathOnly, queryPart] = pathPart.split('?');
+    pathname = pathOnly || rawHref;
+    search = queryPart ? `?${queryPart}` : '';
+    hash = hashPart ? `#${hashPart}` : '';
+  }
+  const normalizedPath = stripLocalePrefix(pathname);
+  if (!NON_LOCALIZED_PREFIXES.some((prefix) => normalizedPath.startsWith(prefix))) {
+    return null;
+  }
+  return `${normalizedPath}${search}${hash}`;
+}
 
 export const dynamicParams = false;
 export const revalidate = 300;
@@ -374,6 +472,7 @@ function buildSoftwareSchema({
 }
 const MODELS_BASE_PATH_MAP = buildSlugMap('models');
 const COMPARE_BASE_PATH_MAP = buildSlugMap('compare');
+const COMPARE_EXCLUDED_SLUGS = new Set(['nano-banana', 'nano-banana-pro']);
 
 function buildDetailSlugMap(slug: string) {
   return locales.reduce<Record<AppLocale, string>>((acc, locale) => {
@@ -1422,20 +1521,28 @@ function Sora2PageLayout({
   };
   const compareBase = (COMPARE_BASE_PATH_MAP[locale] ?? 'ai-video-engines').replace(/^\/+|\/+$/g, '');
   const localizeComparePath = (pairSlug: string, orderSlug?: string) => {
-    const slugPart = pairSlug ? `/${pairSlug.replace(/^\/+/, '')}` : '';
-    const orderParam = orderSlug ? `?order=${encodeURIComponent(orderSlug)}` : '';
-    return `/${compareBase}${slugPart}${orderParam}`.replace(/\/{2,}/g, '/');
+    return buildCanonicalComparePath({ compareBase, pairSlug, orderSlug });
   };
   const galleryEngineSlug = engineSlug;
-  const examplesLinkHref = getExamplesHref(galleryEngineSlug) ?? '/examples';
+  const examplesLinkHref = getExamplesHref(galleryEngineSlug) ?? { pathname: '/examples' };
   const pricingLinkHref = { pathname: '/pricing' };
   const primaryCta = copy.primaryCta ?? localizedContent.hero?.ctaPrimary?.label ?? 'Start generating';
   const primaryCtaHref = copy.primaryCtaHref ?? localizedContent.hero?.ctaPrimary?.href ?? '/app?engine=sora-2';
   const secondaryCta = copy.secondaryCta;
   const secondaryCtaHref = copy.secondaryCtaHref ?? '/models/sora-2-pro';
-  const localizedSecondaryCtaHref = secondaryCtaHref?.startsWith('/models')
-    ? localizeModelsPath(secondaryCtaHref.replace(/^\/models\/?/, ''))
-    : secondaryCtaHref;
+  const normalizeCtaHref = (href?: string | null): LocalizedLinkHref | null => {
+    if (!href) return null;
+    const examplesHref = resolveExamplesHrefFromRaw(href);
+    if (examplesHref) return examplesHref;
+    const nonLocalizedHref = resolveNonLocalizedHref(href);
+    if (nonLocalizedHref) return nonLocalizedHref;
+    if (href.startsWith('/models')) {
+      return localizeModelsPath(href.replace(/^\/models\/?/, ''));
+    }
+    return href;
+  };
+  const normalizedPrimaryCtaHref = normalizeCtaHref(primaryCtaHref) ?? primaryCtaHref;
+  const localizedSecondaryCtaHref = normalizeCtaHref(secondaryCtaHref);
   const heroPosterPreload = heroMedia.posterUrl ? buildOptimizedPosterUrl(heroMedia.posterUrl) ?? heroMedia.posterUrl : null;
 
   const heroHighlights = copy.heroHighlights;
@@ -1587,7 +1694,7 @@ function Sora2PageLayout({
           <div className="stack-gap-sm">
             <nav className="flex flex-wrap items-center gap-2 text-sm text-text-muted">
               <BackLink
-                href={localizeModelsPath()}
+                href={modelsPathname}
                 label={backLabel}
                 className="font-semibold text-brand hover:text-brandHover"
               />
@@ -1649,7 +1756,7 @@ function Sora2PageLayout({
             </div>
             <div className="flex flex-wrap justify-center gap-4">
               <ButtonLink
-                href={primaryCtaHref}
+                href={normalizedPrimaryCtaHref}
                 size="lg"
                 className="shadow-card"
                 linkComponent={Link}
@@ -1838,6 +1945,17 @@ function Sora2PageLayout({
               <p className="text-sm font-semibold text-text-primary">{copy.specValueProp}</p>
             ) : null}
           </section>
+        ) : null}
+
+        {copy.microCta ? (
+          <div className="flex justify-center">
+            <Link
+              href={normalizedPrimaryCtaHref}
+              className="text-sm font-semibold text-brand transition hover:text-brandHover"
+            >
+              {copy.microCta}
+            </Link>
+          </div>
         ) : null}
 
         {!copy.hideQuickPricing && quickPricingTitle && quickPricingItems.length ? (
@@ -2142,7 +2260,7 @@ function Sora2PageLayout({
               ) : null}
               {copy.comparisonCta ? (
                 <ButtonLink
-                  href={secondaryCtaHref}
+                  href={localizedSecondaryCtaHref ?? secondaryCtaHref}
                   className="shadow-card"
                   linkComponent={Link}
                 >
@@ -2196,9 +2314,16 @@ function Sora2PageLayout({
                         : locale === 'es'
                           ? 'Comparar {a} vs {b} →'
                           : 'Compare {a} vs {b} →';
+                    const exploreTemplate =
+                      locale === 'fr'
+                        ? 'Découvrir {a} →'
+                        : locale === 'es'
+                          ? 'Explorar {a} →'
+                          : 'Explore {a} →';
                     const fallbackCompare = compareTemplate
                       .replace('{a}', currentLabel)
                       .replace('{b}', label);
+                    const fallbackExplore = exploreTemplate.replace('{a}', label);
                     const ctaLabel =
                       engineSlug === 'veo-3-1-first-last'
                         ? entry.modelSlug === 'veo-3-1'
@@ -2215,8 +2340,13 @@ function Sora2PageLayout({
                               ? relatedCtaSora2Pro ?? fallbackCompare
                               : fallbackCompare
                           : fallbackCompare;
+                    const canCompare =
+                      !COMPARE_EXCLUDED_SLUGS.has(engineSlug) && !COMPARE_EXCLUDED_SLUGS.has(entry.modelSlug);
                     const compareSlug = [engineSlug, entry.modelSlug].sort().join('-vs-');
-                    const compareHref = localizeComparePath(compareSlug, engineSlug);
+                    const compareHref = canCompare
+                      ? localizeComparePath(compareSlug, engineSlug)
+                      : localizeModelsPath(entry.modelSlug);
+                    const linkLabel = canCompare ? ctaLabel : fallbackExplore;
                     return (
                       <article
                         key={entry.modelSlug}
@@ -2230,7 +2360,7 @@ function Sora2PageLayout({
                           {entry.seo?.description ?? localizedContent.overview ?? ''}
                         </p>
                         <TextLink href={compareHref} className="mt-4 gap-1 text-sm" linkComponent={Link}>
-                          {ctaLabel}
+                          {linkLabel}
                         </TextLink>
                       </article>
                     );
@@ -2290,7 +2420,7 @@ function Sora2PageLayout({
           {copy.finalPara1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.finalPara1}</p> : null}
           {copy.finalPara2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.finalPara2}</p> : null}
           <ButtonLink
-            href={primaryCtaHref}
+            href={normalizedPrimaryCtaHref}
             size="lg"
             className="w-fit shadow-card"
             linkComponent={Link}
@@ -2431,9 +2561,18 @@ export default async function ModelDetailPage({ params }: PageParams) {
     ''
   );
   const localizeComparePath = (pairSlug: string, orderSlug?: string) => {
-    const slugPart = pairSlug ? `/${pairSlug.replace(/^\/+/, '')}` : '';
-    const orderParam = orderSlug ? `?order=${encodeURIComponent(orderSlug)}` : '';
-    return `/${compareBase}${slugPart}${orderParam}`.replace(/\/{2,}/g, '/');
+    return buildCanonicalComparePath({ compareBase, pairSlug, orderSlug });
+  };
+  const normalizeHeroCtaHref = (href?: string | null): LocalizedLinkHref | null => {
+    if (!href) return null;
+    const examplesHref = resolveExamplesHrefFromRaw(href);
+    if (examplesHref) return examplesHref;
+    const nonLocalizedHref = resolveNonLocalizedHref(href);
+    if (nonLocalizedHref) return nonLocalizedHref;
+    if (href.startsWith('/models')) {
+      return localizeModelsPath(href.replace(/^\/models\/?/, ''));
+    }
+    return href;
   };
   const localizedContent = await getEngineLocalized(slug, activeLocale);
   const detailSlugMap = buildDetailSlugMap(slug);
@@ -2500,11 +2639,14 @@ export default async function ModelDetailPage({ params }: PageParams) {
   const tips = localizedContent.tips;
   const compareLink = localizedContent.compareLink;
   const compareLinkHref =
-    compareLink?.href && compareLink.href.startsWith('/models')
-      ? localizeModelsPath(compareLink.href.replace(/^\/models\/?/, ''))
-      : compareLink?.href ?? null;
+    compareLink?.href ? normalizeHeroCtaHref(compareLink.href) ?? compareLink.href : null;
   const heroPrimaryCta = heroContent?.ctaPrimary;
+  const heroPrimaryHref = heroPrimaryCta?.href ? normalizeHeroCtaHref(heroPrimaryCta.href) ?? heroPrimaryCta.href : null;
   const secondaryCtas = heroContent?.secondaryLinks ?? [];
+  const normalizedSecondaryCtas = secondaryCtas.map((cta) => ({
+    ...cta,
+    href: cta?.href ? normalizeHeroCtaHref(cta.href) ?? cta.href : cta?.href,
+  }));
   const brand = PARTNER_BRAND_MAP.get(engine.brandId);
   const promptEntries =
     localizedContent.prompts.length > 0
@@ -2560,7 +2702,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
         href: '/generate',
       }
     : null;
-  const examplesLinkHref = getExamplesHref(engine.modelSlug ?? slug) ?? '/examples';
+  const examplesLinkHref = getExamplesHref(engine.modelSlug ?? slug) ?? { pathname: '/examples' };
   const pricingLinkHref = { pathname: '/pricing' };
 
   const heroPosterSrc = localizedContent.seo.image ?? engine.media?.imagePath ?? null;
@@ -2652,9 +2794,9 @@ export default async function ModelDetailPage({ params }: PageParams) {
           <div className="stack-gap-sm">
             {(heroPrimaryCta?.label || secondaryCtas.length) ? (
               <div className="flex flex-wrap gap-4">
-                {heroPrimaryCta?.label && heroPrimaryCta.href ? (
+                {heroPrimaryCta?.label && heroPrimaryHref ? (
                   <ButtonLink
-                    href={heroPrimaryCta.href}
+                    href={heroPrimaryHref}
                     size="lg"
                     className="shadow-card"
                     linkComponent={Link}
@@ -2662,19 +2804,25 @@ export default async function ModelDetailPage({ params }: PageParams) {
                     {heroPrimaryCta.label}
                   </ButtonLink>
                 ) : null}
-                {secondaryCtas
-                  .filter((cta): cta is { label: string; href: string } => Boolean(cta.label && cta.href))
-                  .map((cta) => (
-                    <ButtonLink
-                      key={`${cta.href}-${cta.label}`}
-                      href={cta.href!}
-                      variant="outline"
-                      size="lg"
-                      linkComponent={Link}
-                    >
-                      {cta.label}
-                    </ButtonLink>
-                  ))}
+                {normalizedSecondaryCtas
+                  .filter(
+                    (cta): cta is { label: string; href: LocalizedLinkHref } =>
+                      Boolean(cta.label && cta.href)
+                  )
+                  .map((cta) => {
+                    const hrefKey = typeof cta.href === 'string' ? cta.href : cta.href.pathname ?? '';
+                    return (
+                      <ButtonLink
+                        key={`${hrefKey}-${cta.label}`}
+                        href={cta.href}
+                        variant="outline"
+                        size="lg"
+                        linkComponent={Link}
+                      >
+                        {cta.label}
+                      </ButtonLink>
+                    );
+                  })}
               </div>
             ) : null}
             <div className="flex flex-wrap gap-4 text-sm">
@@ -2878,8 +3026,13 @@ export default async function ModelDetailPage({ params }: PageParams) {
                 }
                 return `Try ${label}`;
               })();
+              const compareDisabled =
+                COMPARE_EXCLUDED_SLUGS.has(slug) || COMPARE_EXCLUDED_SLUGS.has(candidate.modelSlug);
               const compareSlug = [slug, candidate.modelSlug].sort().join('-vs-');
-              const compareHref = localizeComparePath(compareSlug, slug);
+              const compareHref = compareDisabled
+                ? localizeModelsPath(candidate.modelSlug)
+                : localizeComparePath(compareSlug, slug);
+              const linkLabel = compareDisabled ? relatedCopy.cta : ctaLabel;
               return (
                 <article key={candidate.modelSlug} className="rounded-2xl border border-hairline bg-surface/90 p-5 shadow-card">
                   <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{candidate.brandId}</p>
@@ -2892,7 +3045,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
                     className="mt-4 gap-1 text-sm"
                     linkComponent={Link}
                   >
-                    {ctaLabel} <span aria-hidden>→</span>
+                    {linkLabel} <span aria-hidden>→</span>
                   </TextLink>
                 </article>
               );

@@ -42,8 +42,10 @@ export function MarketingFooter() {
   const headerLinks = normalizedLinks.filter((item) => !isPolicyLink(item));
   const discoveryLinks: FooterLink[] = [
     { label: 'Models', href: '/models', locale: true },
+    { label: 'Comparisons', href: '/ai-video-engines', locale: true },
     { label: 'Examples', href: '/examples', locale: true },
     { label: 'Pricing', href: '/pricing', locale: true },
+    { label: 'Status', href: '/status', locale: true },
     { label: 'About', href: '/about', locale: true },
     { label: 'Contact', href: '/contact', locale: true },
     { label: 'Blog', href: '/blog', locale: true },

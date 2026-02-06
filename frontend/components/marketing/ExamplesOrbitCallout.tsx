@@ -59,7 +59,7 @@ export function ExamplesOrbitCallout({ heading, description, ctaLabel, eyebrow, 
             ) : null}
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{heading}</h2>
             <p className="text-sm text-text-secondary sm:text-base">{description}</p>
-            <ButtonLink href="/examples" size="lg" className="shadow-card" linkComponent={Link}>
+            <ButtonLink href={{ pathname: '/examples' }} size="lg" className="shadow-card" linkComponent={Link}>
               {ctaLabel}
             </ButtonLink>
           </div>

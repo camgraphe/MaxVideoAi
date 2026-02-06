@@ -9,10 +9,12 @@ import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveDictionary } from '@/lib/i18n/server';
 import compareConfig from '@/config/compare-config.json';
+import { listFalEngines } from '@/config/falEngines';
 
 const COMPARE_SLUG_MAP = buildSlugMap('compare');
 const DEFAULT_COMPARE_SLUG =
   (compareConfig.trophyComparisons as string[] | undefined)?.[0] ?? 'sora-2-vs-veo-3-1';
+const EXCLUDED_COMPARE_SLUGS = new Set(['nano-banana', 'nano-banana-pro']);
 
 const LINK_TARGETS = {
   article: { href: { pathname: '/blog/[slug]', params: { slug: 'compare-ai-video-engines' } } },
@@ -193,6 +195,26 @@ export default async function AiVideoEnginesPage() {
   const faqTitle = content.faqTitle ?? DEFAULT_CONTENT.faqTitle;
   const cta = content.cta ?? DEFAULT_CONTENT.cta;
   const faqJsonLdEntries = faqItems.slice(0, 6);
+  const compareEngines = listFalEngines()
+    .filter((engine) => engine.modelSlug && !EXCLUDED_COMPARE_SLUGS.has(engine.modelSlug))
+    .filter((engine) => engine.category !== 'image');
+  const compareLabelBySlug = new Map(
+    compareEngines.map((engine) => [engine.modelSlug, engine.marketingName ?? engine.engine.label])
+  );
+  const comparePairs = compareEngines
+    .map((engine) => engine.modelSlug)
+    .filter((slug): slug is string => Boolean(slug))
+    .sort()
+    .flatMap((leftSlug, index, slugs) =>
+      slugs.slice(index + 1).map((rightSlug) => {
+        const labelLeft = compareLabelBySlug.get(leftSlug) ?? leftSlug;
+        const labelRight = compareLabelBySlug.get(rightSlug) ?? rightSlug;
+        return {
+          slug: `${leftSlug}-vs-${rightSlug}`,
+          label: `${labelLeft} vs ${labelRight}`,
+        };
+      })
+    );
 
   return (
     <div className="container-page max-w-4xl section">
@@ -253,6 +275,26 @@ export default async function AiVideoEnginesPage() {
             </ButtonLink>
           </div>
         </section>
+
+        {comparePairs.length ? (
+          <section className="stack-gap-sm">
+            <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">Browse all comparisons</h2>
+            <p className="text-sm text-text-secondary">
+              Open any canonical matchup without changing the display order.
+            </p>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {comparePairs.map((pair) => (
+                <Link
+                  key={pair.slug}
+                  href={{ pathname: '/ai-video-engines/[slug]', params: { slug: pair.slug } }}
+                  className="rounded-card border border-hairline bg-surface px-3 py-2 text-sm font-semibold text-text-primary transition hover:border-text-muted"
+                >
+                  {pair.label}
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <section className="stack-gap">
           <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{faqTitle}</h2>

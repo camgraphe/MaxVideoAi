@@ -395,12 +395,7 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
     slugMap: MODELS_SLUG_MAP,
     imageAlt: 'Model lineup overview with Price-Before chip.',
   });
-  return {
-    ...meta,
-    title: { absolute: title },
-    openGraph: meta.openGraph ? { ...meta.openGraph, title } : meta.openGraph,
-    twitter: meta.twitter ? { ...meta.twitter, title } : meta.twitter,
-  };
+  return meta;
 }
 
 type EngineTypeKey = 'textImage' | 'text' | 'image' | 'default';
@@ -588,7 +583,6 @@ export default async function ModelsPage() {
     const versionLabel = localized?.versionLabel ?? meta?.versionLabel ?? engine.versionLabel ?? '';
     const displayName =
       localized?.marketingName ?? meta?.displayName ?? engine.cardTitle ?? getEngineDisplayName(engine);
-    const description = localized?.hero?.intro ?? localized?.overview ?? meta?.description ?? engineType;
     const catalogEntry = catalogBySlug.get(engine.modelSlug) ?? null;
     const keySpecs = keySpecsMap.get(engine.modelSlug) ?? {};
     const scoreEntry =
@@ -882,10 +876,16 @@ export default async function ModelsPage() {
                 const rightLabel = rightCard?.label ?? shortcut.b;
                 const leftColor = leftCard?.backgroundColor ?? 'var(--text-muted)';
                 const rightColor = rightCard?.backgroundColor ?? 'var(--text-muted)';
+                const sorted = [shortcut.a, shortcut.b].sort();
+                const compareSlug = `${sorted[0]}-vs-${sorted[1]}`;
+                const order = sorted[0] === shortcut.a ? undefined : shortcut.a;
+                const compareHref = order
+                  ? { pathname: '/ai-video-engines/[slug]', params: { slug: compareSlug }, query: { order } }
+                  : { pathname: '/ai-video-engines/[slug]', params: { slug: compareSlug } };
                 return (
                   <Link
                     key={`${shortcut.a}-${shortcut.b}`}
-                    href={{ pathname: '/ai-video-engines/[slug]', params: { slug: `${shortcut.a}-vs-${shortcut.b}` } }}
+                    href={compareHref}
                     prefetch={false}
                     className="min-w-[220px] rounded-2xl border border-hairline bg-bg/70 px-4 py-3 text-xs font-semibold text-text-primary shadow-sm transition hover:-translate-y-0.5 hover:border-text-muted"
                   >
@@ -1028,7 +1028,7 @@ export default async function ModelsPage() {
                   {listingCopy.cta?.primaryLabel ?? 'Generate now'}
                 </Link>
                 <Link
-                  href="/examples"
+                  href={{ pathname: '/examples' }}
                   className="inline-flex items-center rounded-full border border-text-primary/40 bg-transparent px-5 py-3 text-xs font-semibold uppercase tracking-micro text-text-primary transition hover:border-text-primary/60"
                   aria-label="Browse examples (opens gallery)"
                 >

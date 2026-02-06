@@ -1056,7 +1056,7 @@ function BrowseEnginesModal({
               const description = guide?.description ?? meta?.seo.description ?? modalCopy.descriptionFallback;
               const avgDurationLabel = formatAvgDuration(engine.avgDurationMs);
               const modelSlug = meta?.modelSlug;
-              const modelHref = modelSlug ? `/models/${modelSlug}` : null;
+              const modelHref = modelSlug ? { pathname: '/models/[slug]', params: { slug: modelSlug } } : null;
               const allowExamples = meta?.category !== 'image' && meta?.type !== 'image';
               const examplesHref = modelSlug && allowExamples ? getExamplesHref(modelSlug) : null;
               const showModelLink = Boolean(modelHref);

@@ -240,7 +240,7 @@ export function CompareEnginesCarousel({ engines, copy }: CompareEnginesCarousel
           const modes = getModeDisplayOrder(engine.id, engine.engine.modes)
             .map((mode) => getModeLabel(engine.id, mode))
             .join(' / ');
-          const modelHref = `/models/${engine.modelSlug}`;
+          const modelHref = { pathname: '/models/[slug]', params: { slug: engine.modelSlug } };
           const allowExamples = engine.category !== 'image' && engine.type !== 'image';
           const examplesHref = allowExamples ? getExamplesHref(engine.modelSlug) : null;
           const modelRoute = modelHref as unknown as Parameters<typeof router.push>[0];

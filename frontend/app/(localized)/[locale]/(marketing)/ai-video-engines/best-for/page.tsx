@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
@@ -24,9 +23,6 @@ export async function generateMetadata({ params }: { params: { locale: AppLocale
 }
 
 export default function BestForHubPage() {
-  if (!BEST_FOR_PAGES.length) {
-    notFound();
-  }
   return (
     <div className="container-page max-w-4xl section">
       <div className="stack-gap-lg">
@@ -38,20 +34,26 @@ export default function BestForHubPage() {
           </p>
         </header>
 
-        <div className="grid grid-gap sm:grid-cols-2">
-          {BEST_FOR_PAGES.map((entry) => (
-            <article key={entry.slug} className="rounded-card border border-hairline bg-surface p-5 shadow-card">
-              <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Tier {entry.tier}</p>
-              <h2 className="mt-2 text-lg font-semibold text-text-primary">{entry.title}</h2>
-              <Link
-                href={{ pathname: '/ai-video-engines/best-for/[usecase]', params: { usecase: entry.slug } }}
-                className="mt-3 inline-flex text-sm font-semibold text-brand hover:text-brandHover"
-              >
-                View guide →
-              </Link>
-            </article>
-          ))}
-        </div>
+        {BEST_FOR_PAGES.length ? (
+          <div className="grid grid-gap sm:grid-cols-2">
+            {BEST_FOR_PAGES.map((entry) => (
+              <article key={entry.slug} className="rounded-card border border-hairline bg-surface p-5 shadow-card">
+                <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Tier {entry.tier}</p>
+                <h2 className="mt-2 text-lg font-semibold text-text-primary">{entry.title}</h2>
+                <Link
+                  href={{ pathname: '/ai-video-engines/best-for/[usecase]', params: { usecase: entry.slug } }}
+                  className="mt-3 inline-flex text-sm font-semibold text-brand hover:text-brandHover"
+                >
+                  View guide →
+                </Link>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-card border border-hairline bg-surface p-6 text-sm text-text-secondary shadow-card">
+            More guides are on the way.
+          </div>
+        )}
       </div>
     </div>
   );

@@ -96,6 +96,7 @@ const QUERY_PARAM_ALLOWLISTS = {
   examples: new Set(['sort', 'engine', 'page']),
   login: new Set(['next']),
   video: new Set(['from']),
+  compare: new Set(['order']),
 };
 const FUZZY_REDIRECT_TARGETS: Array<{ slug: string; destination: string }> = [
   { slug: 'models', destination: '/models' },
@@ -141,7 +142,7 @@ const EXACT_LOCALE_REDIRECTS: Record<string, string> = {
 const handleI18nRouting = createMiddleware({
   ...routing,
   localeDetection: true,
-  alternateLinks: true,
+  alternateLinks: false,
 });
 
 const LOCALE_SET = new Set(locales);
@@ -574,6 +575,13 @@ function shouldMarkTrackingNoindex(req: NextRequest, pathname: string, isAdminRo
 function resolveQueryAllowlist(pathWithoutLocale: string): Set<string> | null {
   if (pathWithoutLocale === '/examples') {
     return QUERY_PARAM_ALLOWLISTS.examples;
+  }
+  if (
+    pathWithoutLocale.startsWith('/ai-video-engines') ||
+    pathWithoutLocale.startsWith('/comparatif') ||
+    pathWithoutLocale.startsWith('/comparativa')
+  ) {
+    return QUERY_PARAM_ALLOWLISTS.compare;
   }
   if (pathWithoutLocale === '/login') {
     return QUERY_PARAM_ALLOWLISTS.login;

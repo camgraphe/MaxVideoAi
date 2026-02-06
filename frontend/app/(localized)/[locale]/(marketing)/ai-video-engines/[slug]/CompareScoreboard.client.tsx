@@ -12,8 +12,6 @@ export type CompareMetric = {
 };
 
 type CompareScoreboardProps = {
-  leftLabel: string;
-  rightLabel: string;
   metrics: CompareMetric[];
   className?: string;
   naLabel?: string;
@@ -36,8 +34,6 @@ function winnerSide(left: number | null, right: number | null): 'left' | 'right'
 }
 
 export function CompareScoreboard({
-  leftLabel,
-  rightLabel,
   metrics,
   className,
   naLabel = 'N/A',
