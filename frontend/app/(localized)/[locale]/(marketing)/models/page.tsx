@@ -17,6 +17,7 @@ import { ModelsGallery } from '@/components/marketing/ModelsGallery';
 import { ModelsCompareHeroToggle } from '@/components/marketing/ModelsCompareHeroToggle';
 import { getEnginePictogram } from '@/lib/engine-branding';
 import { getEngineLocalized } from '@/lib/models/i18n';
+import { computeMarketingPriceRange } from '@/lib/pricing-marketing';
 import engineCatalog from '@/config/engine-catalog.json';
 const MODELS_SLUG_MAP = buildSlugMap('models');
 
@@ -562,6 +563,14 @@ export default async function ModelsPage() {
       })
     )
   );
+  const pricingRangeMap = new Map(
+    await Promise.all(
+      engines.map(async (engine) => {
+        const range = await computeMarketingPriceRange(engine.engine, { durationSec: 5, memberTier: 'member' });
+        return [engine.modelSlug, range] as const;
+      })
+    )
+  );
 
   const scoreLabelMap = { ...DEFAULT_SCORE_LABEL_MAP, ...(galleryCopy.scoreLabels ?? {}) };
   const scoreLabels = SCORE_LABEL_KEYS.map((key) => ({
@@ -623,7 +632,9 @@ export default async function ModelsPage() {
       (keySpecs as Record<string, string>).maxDuration,
       catalogEntry?.engine?.maxDurationSec ?? null
     );
-    const priceFrom = formatPriceFrom(catalogEntry);
+    const pricingRange = pricingRangeMap.get(engine.modelSlug) ?? null;
+    const priceFromCents = pricingRange?.min.cents ?? getMinPricePerSecond(catalogEntry);
+    const priceFrom = typeof priceFromCents === 'number' ? `$${(priceFromCents / 100).toFixed(2)}/s` : 'Data pending';
     const capabilityKeywordsList = [
       t2v ? 'T2V' : null,
       i2v ? 'I2V' : null,
@@ -693,8 +704,7 @@ export default async function ModelsPage() {
         maxResolution: maxResolution.value,
         maxDuration: maxDuration.value,
         priceFrom: (() => {
-          const cents = getMinPricePerSecond(catalogEntry);
-          return typeof cents === 'number' ? cents / 100 : null;
+          return typeof priceFromCents === 'number' ? priceFromCents / 100 : null;
         })(),
       },
     };
