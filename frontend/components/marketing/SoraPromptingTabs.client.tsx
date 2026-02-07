@@ -145,7 +145,7 @@ const TABS = [
     label: 'Storyboard',
     title: 'Storyboard prompt (multi-shot / shot list)',
     description:
-      'Use this when you want a mini-story in one clip. A storyboard prompt (aka multi-shot / shot list prompt) gives Sora clear timing, camera direction, and continuity.',
+      'Use this when you want a mini-story in one clip. A storyboard prompt (aka multi-shot / shot list prompt) gives Sora clear timing, camera direction, and continuity. Also called shot-list or sequenced prompts.',
     copy: STORYBOARD_TEMPLATE,
   },
 ];
@@ -307,9 +307,6 @@ export function SoraPromptingTabs({
                           {STORYBOARD_TEMPLATE}
                         </pre>
                       </div>
-                      <p className="sr-only">
-                        storyboard prompt, multi-shot prompt, shot list prompt, sequenced prompt.
-                      </p>
                     </div>
                   )}
                 </article>

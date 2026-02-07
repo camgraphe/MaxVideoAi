@@ -362,9 +362,9 @@ const BEST_USE_CASE_ICON_MAP = {
 const FULL_BLEED_SECTION =
   "relative isolate before:absolute before:inset-y-0 before:left-1/2 before:right-1/2 before:-ml-[50vw] before:-mr-[50vw] before:content-[''] before:-z-[2] after:absolute after:inset-y-0 after:left-1/2 after:right-1/2 after:-ml-[50vw] after:-mr-[50vw] after:content-[''] after:-z-[1]";
 const SECTION_BG_A =
-  'before:bg-surface-2/70 dark:before:bg-surface-2/30 before:border-t before:border-hairline/80 shadow-[inset_0_12px_18px_-14px_rgba(15,23,42,0.18)] dark:shadow-[inset_0_12px_18px_-14px_rgba(0,0,0,0.45)] after:opacity-0 dark:after:opacity-100 dark:after:bg-[radial-gradient(900px_680px_at_5%_-10%,_rgba(91,124,250,0.06),_transparent_70%),_radial-gradient(720px_520px_at_95%_0%,_rgba(34,197,94,0.05),_transparent_70%),_radial-gradient(900px_700px_at_55%_85%,_rgba(236,72,153,0.05),_transparent_75%),_radial-gradient(720px_520px_at_40%_35%,_rgba(250,204,21,0.045),_transparent_75%),_radial-gradient(800px_600px_at_85%_60%,_rgba(59,130,246,0.045),_transparent_75%)] dark:after:mix-blend-screen';
+  'before:bg-surface-2/70 dark:before:bg-surface-2/30 before:border-t before:border-hairline/80 dark:before:border-transparent before:shadow-[inset_0_16px_24px_-18px_rgba(15,23,42,0.12)] dark:before:shadow-[inset_0_16px_24px_-18px_rgba(0,0,0,0.30)] after:opacity-0 dark:after:opacity-100 dark:after:bg-[radial-gradient(900px_680px_at_5%_-10%,_rgba(91,124,250,0.06),_transparent_70%),_radial-gradient(720px_520px_at_95%_0%,_rgba(34,197,94,0.05),_transparent_70%),_radial-gradient(900px_700px_at_55%_85%,_rgba(236,72,153,0.05),_transparent_75%),_radial-gradient(720px_520px_at_40%_35%,_rgba(250,204,21,0.045),_transparent_75%),_radial-gradient(800px_600px_at_85%_60%,_rgba(59,130,246,0.045),_transparent_75%)] dark:after:mix-blend-screen';
 const SECTION_BG_B =
-  'before:bg-surface-3/70 dark:before:bg-surface-3/30 before:border-t before:border-hairline/80 shadow-[inset_0_12px_18px_-14px_rgba(15,23,42,0.18)] dark:shadow-[inset_0_12px_18px_-14px_rgba(0,0,0,0.45)] after:opacity-0 dark:after:opacity-100 dark:after:bg-[radial-gradient(900px_680px_at_5%_-10%,_rgba(91,124,250,0.06),_transparent_70%),_radial-gradient(720px_520px_at_95%_0%,_rgba(34,197,94,0.05),_transparent_70%),_radial-gradient(900px_700px_at_55%_85%,_rgba(236,72,153,0.05),_transparent_75%),_radial-gradient(720px_520px_at_40%_35%,_rgba(250,204,21,0.045),_transparent_75%),_radial-gradient(800px_600px_at_85%_60%,_rgba(59,130,246,0.045),_transparent_75%)] dark:after:mix-blend-screen';
+  'before:bg-surface-3/70 dark:before:bg-surface-3/30 before:border-t before:border-hairline/80 dark:before:border-transparent before:shadow-[inset_0_16px_24px_-18px_rgba(15,23,42,0.12)] dark:before:shadow-[inset_0_16px_24px_-18px_rgba(0,0,0,0.30)] after:opacity-0 dark:after:opacity-100 dark:after:bg-[radial-gradient(900px_680px_at_5%_-10%,_rgba(91,124,250,0.06),_transparent_70%),_radial-gradient(720px_520px_at_95%_0%,_rgba(34,197,94,0.05),_transparent_70%),_radial-gradient(900px_700px_at_55%_85%,_rgba(236,72,153,0.05),_transparent_75%),_radial-gradient(720px_520px_at_40%_35%,_rgba(250,204,21,0.045),_transparent_75%),_radial-gradient(800px_600px_at_85%_60%,_rgba(59,130,246,0.045),_transparent_75%)] dark:after:mix-blend-screen';
 const HERO_BG =
   'before:bg-surface-2/70 dark:before:bg-surface-2/30 after:opacity-0 dark:after:opacity-100 dark:after:bg-[radial-gradient(900px_680px_at_5%_-10%,_rgba(91,124,250,0.06),_transparent_70%),_radial-gradient(720px_520px_at_95%_0%,_rgba(34,197,94,0.05),_transparent_70%),_radial-gradient(900px_700px_at_55%_85%,_rgba(236,72,153,0.05),_transparent_75%),_radial-gradient(720px_520px_at_40%_35%,_rgba(250,204,21,0.045),_transparent_75%),_radial-gradient(800px_600px_at_85%_60%,_rgba(59,130,246,0.045),_transparent_75%)] dark:after:mix-blend-screen';
 const SECTION_PAD = 'px-6 py-9 sm:px-8 sm:py-12';
@@ -1985,11 +1985,11 @@ function Sora2PageLayout({
 
         {tocItems.length ? (
           <nav
-            className={`${FULL_BLEED_SECTION} sticky top-[calc(var(--header-height)-8px)] z-40 border-b border-hairline bg-surface before:bg-surface`}
+            className={`${FULL_BLEED_SECTION} sticky top-[calc(var(--header-height)-8px)] z-30 border-b border-hairline bg-surface before:bg-surface`}
             aria-label="Model page sections"
           >
             <div className="mx-auto w-full max-w-6xl px-6 sm:px-8">
-              <div className="flex flex-wrap justify-center gap-2 py-0.5">
+              <div className="flex flex-wrap justify-center gap-2 py-2">
                 {tocItems.map((item) => (
                   <a
                     key={item.id}
@@ -2941,7 +2941,7 @@ function MediaPreview({
             ))}
           </ul>
         ) : null}
-        {!hidePrompt && promptLabel ? (
+        {!hidePrompt && promptLabel && promptLabel.trim() && promptLabel.trim() !== label.trim() ? (
           <p className="text-xs font-semibold text-text-secondary">{promptLabel}</p>
         ) : null}
         {!hidePrompt && promptLines.length ? (
