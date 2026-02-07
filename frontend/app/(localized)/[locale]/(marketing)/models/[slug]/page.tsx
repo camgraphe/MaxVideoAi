@@ -365,7 +365,8 @@ const SECTION_BG_A =
   'before:bg-gradient-to-b before:from-[#F9FAFD] before:to-[#F3F4FA] before:border-t before:border-hairline/80 shadow-[inset_0_12px_18px_-14px_rgba(15,23,42,0.35)]';
 const SECTION_BG_B =
   'before:bg-gradient-to-b before:from-[#F7F8FC] before:to-[#F1F3F9] before:border-t before:border-hairline/80 shadow-[inset_0_12px_18px_-14px_rgba(15,23,42,0.35)]';
-const SECTION_PAD = 'px-6 py-6 sm:px-8 sm:py-8';
+const SECTION_PAD = 'px-6 py-9 sm:px-8 sm:py-12';
+const SECTION_SCROLL_MARGIN = 'scroll-mt-[calc(var(--header-height)+64px)]';
 const FULL_BLEED_CONTENT = 'relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-[100vw]';
 const KEY_SPEC_ROW_DEFS: Array<{ key: KeySpecKey; label: string }> = [
   { key: 'pricePerSecond', label: 'Price / second' },
@@ -1501,6 +1502,8 @@ async function renderSoraModelPage({
       relatedEngines={relatedEngines}
       faqEntries={faqEntries}
       keySpecRows={keySpecRows}
+      keySpecValues={keySpecValues}
+      pricePerSecondLabel={pricePerSecondLabel}
       engineSlug={engine.modelSlug}
       locale={locale}
       canonicalUrl={canonicalUrl}
@@ -1526,6 +1529,8 @@ function Sora2PageLayout({
   relatedEngines,
   faqEntries,
   keySpecRows,
+  keySpecValues,
+  pricePerSecondLabel,
   engineSlug,
   locale,
   canonicalUrl,
@@ -1547,6 +1552,8 @@ function Sora2PageLayout({
   relatedEngines: FalEngineEntry[];
   faqEntries: LocalizedFaqEntry[];
   keySpecRows: KeySpecRow[];
+  keySpecValues: KeySpecValues | null;
+  pricePerSecondLabel: string | null;
   engineSlug: string;
   locale: AppLocale;
   canonicalUrl: string;
@@ -1576,6 +1583,17 @@ function Sora2PageLayout({
   const heroSpecChips = copy.heroSpecChips;
   const heroTrustLine = copy.heroTrustLine;
   const showHeroDescriptions = heroSpecChips.length === 0;
+  const heroPrice = keySpecValues?.pricePerSecond ?? pricePerSecondLabel ?? formatPricePerSecond(engine);
+  const heroDuration =
+    typeof heroMedia.durationSec === 'number'
+      ? `${heroMedia.durationSec}s`
+      : keySpecValues?.maxDuration ?? 'Data pending';
+  const heroFormat = heroMedia.aspectRatio ?? keySpecValues?.aspectRatios ?? 'Data pending';
+  const heroMetaLines = [
+    { label: 'Price', value: heroPrice },
+    { label: 'Duration', value: heroDuration },
+    { label: 'Format', value: heroFormat },
+  ].filter((line) => Boolean(line.value));
   const isEsLocale = locale === 'es';
   const modelsBase = (MODELS_BASE_PATH_MAP[locale] ?? 'models').replace(/^\/+|\/+$/g, '');
   const localizeModelsPath = (targetSlug?: string) => {
@@ -1697,14 +1715,15 @@ function Sora2PageLayout({
   const textAnchorId = isImageEngine ? 'text-to-image' : 'text-to-video';
   const imageAnchorId = isImageEngine ? 'image-to-image' : 'image-to-video';
   const imageWorkflowAnchorId = 'image-workflow';
+  const compareAnchorId = isSoraPrompting ? 'compare' : imageWorkflowAnchorId;
   const tocItems = [
     { id: 'specs', label: 'Specs', visible: hasSpecs },
     { id: textAnchorId, label: 'Examples', visible: hasExamples },
     { id: imageAnchorId, label: 'Prompting', visible: hasTextSection },
     { id: 'tips', label: 'Tips', visible: hasTipsSection },
     {
-      id: imageWorkflowAnchorId,
-      label: isImageEngine ? 'Image to Image' : 'Image to Video',
+      id: compareAnchorId,
+      label: isSoraPrompting ? 'Compare' : isImageEngine ? 'Image to Image' : 'Image to Video',
       visible: hasImageSection,
     },
     { id: 'safety', label: 'Safety', visible: hasSafetySection },
@@ -1781,9 +1800,9 @@ function Sora2PageLayout({
           />
         ))}
       </Head>
-      <main className="container-page max-w-6xl section pb-0">
+      <main className="container-page max-w-6xl pb-0 pt-5 sm:pt-7">
         <div className="stack-gap-lg gap-0">
-          <div className="stack-gap-sm">
+          <div className="stack-gap-xs">
             <nav className="flex flex-wrap items-center gap-2 text-sm text-text-muted">
               <BackLink
                 href={modelsPathname}
@@ -1889,24 +1908,30 @@ function Sora2PageLayout({
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
               <div className="flex justify-center">
                 <div className="w-full max-w-5xl">
-                  <MediaPreview media={heroMedia} label={heroTitle} />
+                  <MediaPreview
+                    media={heroMedia}
+                    label={heroTitle}
+                    hideLabel
+                    hidePrompt
+                    metaLines={heroMetaLines}
+                  />
                 </div>
               </div>
               <div className="flex flex-col gap-4">
                 {bestUseCases.length || bestUseCaseChips.length ? (
-                  <div className="space-y-2 rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
+                  <div className="space-y-1.5 rounded-2xl border border-hairline bg-surface/80 p-3 shadow-card">
                     {copy.bestUseCasesTitle ? (
-                      <p className="text-sm font-semibold text-text-primary">{copy.bestUseCasesTitle}</p>
+                      <p className="text-xs font-semibold text-text-primary">{copy.bestUseCasesTitle}</p>
                     ) : null}
                     {bestUseCaseChips.length ? (
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1.5">
                         {bestUseCaseChips.map((chip, index) => {
                           const Icon = chip.icon ? BEST_USE_CASE_ICON_MAP[chip.icon] : null;
                           return (
                             <Chip
                               key={`${chip.label}-${index}`}
                               variant="outline"
-                              className="px-3 py-1 text-[11px] font-semibold normal-case tracking-normal text-text-secondary"
+                              className="px-2.5 py-0.5 text-[10px] font-semibold normal-case tracking-normal text-text-secondary"
                             >
                               {Icon ? <UIIcon icon={Icon} size={14} className="text-text-muted" /> : null}
                               <span>{chip.label}</span>
@@ -1915,7 +1940,7 @@ function Sora2PageLayout({
                         })}
                       </div>
                     ) : (
-                      <ul className="grid gap-1 text-sm text-text-secondary sm:grid-cols-2 lg:grid-cols-1">
+                      <ul className="grid gap-1 text-xs text-text-secondary sm:grid-cols-2 lg:grid-cols-1">
                         {bestUseCases.map((item) => (
                           <li key={item}>{item}</li>
                         ))}
@@ -1924,10 +1949,10 @@ function Sora2PageLayout({
                   </div>
                 ) : null}
                 {copy.whyTitle || heroHighlights.length ? (
-                  <div className="stack-gap-sm rounded-2xl border border-hairline bg-bg px-4 py-3">
-                    {copy.whyTitle ? <p className="text-sm font-semibold text-text-primary">{copy.whyTitle}</p> : null}
+                  <div className="stack-gap-sm rounded-2xl border border-hairline bg-bg px-3 py-2.5">
+                    {copy.whyTitle ? <p className="text-xs font-semibold text-text-primary">{copy.whyTitle}</p> : null}
                     {heroHighlights.length ? (
-                      <ul className="grid gap-2 text-sm text-text-secondary sm:grid-cols-2 lg:grid-cols-1">
+                      <ul className="grid gap-1.5 text-xs text-text-secondary sm:grid-cols-2 lg:grid-cols-1">
                         {heroHighlights.map((item) => {
                           const [title, detail] = item.split('||');
                           const trimmedTitle = title?.trim();
@@ -1980,7 +2005,7 @@ function Sora2PageLayout({
         {hasSpecs ? (
           <section
             id="specs"
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap`}
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
           >
             {copy.specTitle ? (
               <h2 className="mt-2 text-center text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
@@ -2146,7 +2171,7 @@ function Sora2PageLayout({
 
         <section
           id={textAnchorId}
-          className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} py-4 sm:py-5`}
+          className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN}`}
         >
           <div className={`${FULL_BLEED_CONTENT} px-6 sm:px-8`}>
             {copy.galleryTitle ? (
@@ -2237,7 +2262,7 @@ function Sora2PageLayout({
 
         <section
           id={imageAnchorId}
-          className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap`}
+          className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
         >
           {isSoraPrompting ? (
             <div className="stack-gap-lg">
@@ -2334,7 +2359,7 @@ function Sora2PageLayout({
         ) : null}
 
         {isSoraPrompting ? (
-          <section id="tips" className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap-lg`}>
+          <section id="tips" className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap-lg`}>
             <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
               Tips &amp; quick fixes (plain English)
             </h2>
@@ -2421,7 +2446,10 @@ function Sora2PageLayout({
         ) : null}
 
         {isSoraPrompting ? (
-          <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap-lg`}>
+          <section
+            id={compareAnchorId}
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap-lg`}
+          >
             <h2 className="mt-2 flex flex-wrap items-center gap-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
               <span>Sora vs Sora Pro</span>
               <TextLink
@@ -2451,7 +2479,7 @@ function Sora2PageLayout({
               </div>
             </div>
             {isSoraPrompting && (relatedItems.length || relatedEngines.length) ? (
-              <div id={imageWorkflowAnchorId} className="stack-gap">
+              <div className="stack-gap">
                 <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
                   Compare Sora 2 vs other AI video models
                 </h2>
@@ -2531,8 +2559,8 @@ function Sora2PageLayout({
 
         {!isSoraPrompting ? (
           <section
-            id={imageWorkflowAnchorId}
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap`}
+            id={compareAnchorId}
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
           >
             {copy.imageTitle ? (
               <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
@@ -2733,26 +2761,24 @@ function Sora2PageLayout({
         {isSoraPrompting ? (
           <section
             id="safety"
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap`}
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
           >
-            <ResponsiveDetails
-              openOnDesktop
-              className="rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
-              summaryClassName="cursor-pointer text-sm font-semibold text-text-primary"
-              summary="Safety & people / likeness (practical version)"
-            >
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-text-secondary">
+            <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
+              Safety &amp; people / likeness (practical version)
+            </h2>
+            <div className="rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
+              <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
                 <li>Don’t generate real people or public figures (celebrities, politicians, etc.).</li>
                 <li>No minors, sexual content, hateful content, or graphic violence.</li>
                 <li>Don’t use someone’s likeness without consent.</li>
                 <li>Some prompts and reference images may be blocked — generic characters and scenes are fine.</li>
               </ul>
-            </ResponsiveDetails>
+            </div>
           </section>
         ) : copy.safetyTitle || safetyRules.length ? (
           <section
             id="safety"
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap`}
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
           >
             {copy.safetyTitle ? (
               <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
@@ -2783,7 +2809,7 @@ function Sora2PageLayout({
         {faqList.length ? (
           <section
             id="faq"
-            className={`${FULL_BLEED_SECTION} ${isSoraPrompting ? SECTION_BG_A : SECTION_BG_B} ${SECTION_PAD} stack-gap`}
+            className={`${FULL_BLEED_SECTION} ${isSoraPrompting ? SECTION_BG_A : SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
           >
             {faqTitle ? (
               <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{faqTitle}</h2>
@@ -2829,11 +2855,17 @@ function MediaPreview({
   label,
   promptLabel,
   promptLines = [],
+  hideLabel = false,
+  hidePrompt = false,
+  metaLines = [],
 }: {
   media: FeaturedMedia;
   label: string;
   promptLabel?: string;
   promptLines?: string[];
+  hideLabel?: boolean;
+  hidePrompt?: boolean;
+  metaLines?: Array<{ label: string; value: string }>;
 }) {
   const posterSrc = media.posterUrl ?? null;
   const aspect = media.aspectRatio ?? '16:9';
@@ -2891,12 +2923,26 @@ function MediaPreview({
               </span>
             ) : null}
           </div>
-        </div>
       </div>
+    </div>
       <figcaption className="space-y-1 px-4 py-3">
-        <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{label}</p>
-        {promptLabel ? <p className="text-xs font-semibold text-text-secondary">{promptLabel}</p> : null}
-        {promptLines.length ? (
+        {!hideLabel ? <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{label}</p> : null}
+        {metaLines.length ? (
+          <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold text-text-secondary">
+            {metaLines.map((line) => (
+              <li key={line.label} className="flex items-center gap-1">
+                <span className="text-[10px] font-semibold uppercase tracking-micro text-text-muted">
+                  {line.label}
+                </span>
+                <span>{line.value}</span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        {!hidePrompt && promptLabel ? (
+          <p className="text-xs font-semibold text-text-secondary">{promptLabel}</p>
+        ) : null}
+        {!hidePrompt && promptLines.length ? (
           <div className="space-y-2 text-sm text-text-primary">
             {promptLines.map((line) => (
               <p key={line} className="leading-relaxed">
@@ -2905,7 +2951,7 @@ function MediaPreview({
             ))}
           </div>
         ) : null}
-        {promptLines.length === 0 && media.prompt ? (
+        {!hidePrompt && promptLines.length === 0 && media.prompt ? (
           <p className="text-sm font-semibold leading-snug text-text-primary">{media.prompt}</p>
         ) : null}
         {media.href ? (
