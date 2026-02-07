@@ -99,48 +99,7 @@
     ],
     "specTitle": "Real Specs – Veo 3.1 First/Last in MaxVideoAI",
     "specNote": "Reflects the current first/last-frame route in MaxVideoAI.",
-    "specSections": [
-      {
-        "title": "Duration & Output",
-        "items": [
-          "UI options: 4 s, 6 s, 8 s",
-          "Model limit: ~8 s for first/last image-to-video",
-          "720p (1280×720) or 1080p (1920×1080)",
-          "24 fps cinematic cadence"
-        ]
-      },
-      {
-        "title": "Aspect Ratios",
-        "items": [
-          "16:9 – landscape",
-          "9:16 – vertical (Reels, TikTok, Shorts)",
-          "1:1 – square"
-        ]
-      },
-      {
-        "title": "Inputs & File Types",
-        "items": [
-          "First frame (required): PNG/JPG/JPEG/WebP/GIF/AVIF",
-          "Last frame (required): same formats",
-          "Prompt: describe how to animate between the frames; include action, style, camera, pacing, audio"
-        ]
-      },
-      {
-        "title": "Audio",
-        "items": [
-          "Audio ON: native ambience/SFX/dialogue across the transition",
-          "Audio OFF: silent renders, cheaper and ready for your own mix"
-        ]
-      },
-      {
-        "title": "Pricing",
-        "items": [
-          "Follows Veo 3.1 per-second config (e.g., ~ $0.20/s audio off, ~$0.40/s audio on)",
-          "Examples: 4 s ≈ $0.80–$1.60, 6 s ≈ $1.20–$2.40, 8 s ≈ $1.60–$3.20",
-          "Live wallet chip shows exact price before render — always check the live price chip in Generate for the current rate."
-        ]
-      }
-    ],
+    "specSections": [],
     "specValueProp": "A directed start–end transition engine with optional native audio, priced per second like Veo 3.1.",
     "galleryTitle": "Example Gallery: Veo 3.1 First/Last",
     "galleryIntro": "Real transitions: sketch → final render, office → rooftop, wireframe UI → high-fidelity UI.",

@@ -159,55 +159,7 @@
     ],
     "specTitle": "Real Specs – Kling 2.5 Turbo in MaxVideoAI (1080p, 5–10s)",
     "specNote": "This describes Kling 2.5 Turbo as used in MaxVideoAI.",
-    "specSections": [
-      {
-        "title": "Duration & Output",
-        "items": [
-          "5 s or 10 s per clip",
-          "1080p Full HD (1920×1080)",
-          "Short, high-impact beats"
-        ]
-      },
-      {
-        "title": "Aspect Ratios",
-        "items": [
-          "16:9 – landscape",
-          "9:16 – vertical",
-          "1:1 – square"
-        ]
-      },
-      {
-        "title": "Inputs & File Types",
-        "items": [
-          "Text prompts (1–2 focused sentences; include camera/subject/environment/style)",
-          "Image input: one still (PNG/JPG/WEBP), merge refs if needed",
-          "Negative prompt optional to block text/logos/extra people"
-        ]
-      },
-      {
-        "title": "Audio",
-        "items": [
-          "Video-only, silent output",
-          "Add music/VO/SFX in your editor or pair with audio engines"
-        ]
-      },
-      {
-        "title": "Quality Tiers",
-        "items": [
-          "Pro Text: highest fidelity text→video",
-          "Pro Image: full 1080p image→video",
-          "Standard Image: cheaper image→video for loops and bulk variants"
-        ]
-      },
-      {
-        "title": "Pricing",
-        "items": [
-          "Shown per 5s/10s in the UI",
-          "Examples: Pro ~ $0.35 / $0.70; Standard ~ $0.21 / $0.42",
-          "Price-before-render chip in Generate shows live rate"
-        ]
-      }
-    ],
+    "specSections": [],
     "specValueProp": "Kling 2.5 Turbo is a silent 1080p engine for cinematic short beats with strong motion and physics.",
     "galleryTitle": "Example Gallery: Kling 2.5 Turbo",
     "galleryIntro": "Actual runs from the current Kling route in MaxVideoAI.",

@@ -904,6 +904,34 @@ function buildAutoHeroSpecChips(values: KeySpecValues | null): HeroSpecChip[] {
   return chips.slice(0, 6);
 }
 
+function formatSupportLabel(value: string) {
+  if (isSupported(value)) return 'Supported';
+  if (isUnsupported(value)) return 'Not supported';
+  if (isPending(value)) return 'Data pending';
+  return value;
+}
+
+function buildAutoSpecSections(values: KeySpecValues | null): SpecSection[] {
+  if (!values) return [];
+  const inputs: string[] = [];
+  const audio: string[] = [];
+
+  inputs.push(`Text → Video: ${formatSupportLabel(values.textToVideo)}`);
+  inputs.push(`Image → Video: ${formatSupportLabel(values.imageToVideo)}`);
+  inputs.push(`Video → Video: ${formatSupportLabel(values.videoToVideo)}`);
+  inputs.push(`Reference image / style: ${formatSupportLabel(values.referenceImageStyle)}`);
+  inputs.push(`Reference video: ${formatSupportLabel(values.referenceVideo)}`);
+
+  audio.push(`Audio output: ${formatSupportLabel(values.audioOutput)}`);
+  audio.push(`Native audio: ${formatSupportLabel(values.nativeAudioGeneration)}`);
+  audio.push(`Lip sync: ${formatSupportLabel(values.lipSync)}`);
+
+  return [
+    { title: 'Inputs & file types', items: inputs },
+    { title: 'Audio', items: audio },
+  ];
+}
+
 const DEFAULT_VIDEO_TROUBLESHOOTING = [
   'Feels random / inconsistent → simplify to: subject + action + camera + lighting. Re-run 2–3 takes.',
   'Motion looks weird → reduce movement: one camera move, slower action, fewer props.',
@@ -1771,7 +1799,11 @@ function Sora2PageLayout({
   const breadcrumbModelLabel = localizedContent.marketingName ?? engine.marketingName ?? heroTitle;
   const howToLatamTitle = copy.howToLatamTitle;
   const howToLatamSteps = copy.howToLatamSteps;
-  const specSections = copy.specSections;
+  const specSections = copy.specSections.length
+    ? copy.specSections
+    : isVideoEngine
+      ? buildAutoSpecSections(keySpecValues)
+      : copy.specSections;
   const quickPricingTitle = copy.quickPricingTitle;
   const promptPatternSteps = copy.promptPatternSteps;
   const imageToVideoSteps = copy.imageFlow;

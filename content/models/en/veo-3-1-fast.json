@@ -155,52 +155,7 @@
     ],
     "specTitle": "Real Specs – Veo 3.1 Fast in MaxVideoAI (720p/1080p, 4–8s)",
     "specNote": "These specs describe Veo 3.1 Fast exactly as you can use it today via MaxVideoAI.",
-    "specSections": [
-      {
-        "title": "Duration & Output",
-        "items": [
-          "Durations: 4 s, 6 s, 8 s",
-          "Output resolution: 720p or 1080p",
-          "Frame rate: 24 fps"
-        ]
-      },
-      {
-        "title": "Aspect Ratios",
-        "items": [
-          "16:9 – horizontal clips for web and video inserts",
-          "9:16 – vertical clips for feeds, stories and paid social"
-        ]
-      },
-      {
-        "title": "Inputs & File Types",
-        "items": [
-          "Text prompts: single-scene, sensory descriptions (tight wording)",
-          "Reference image: PNG/JPG/WebP; ~10 MB; one image animated into a short clip",
-          "No multi-image reference or first/last frame chaining in this tier"
-        ]
-      },
-      {
-        "title": "Audio",
-        "items": [
-          "Audio on: ambient sound, light SFX and short dialogue lines",
-          "Audio off: cheaper silent clips when you’ll add sound later",
-          "Treat audio as a rough mix suitable for social-ready clips"
-        ]
-      },
-      {
-        "title": "Pricing",
-        "items": [
-          "Per-second; example config: audio on ≈$0.15/s; audio off ≈$0.10/s",
-          "No subscription: use the MaxVideoAI wallet and live price chip to compare tiers"
-        ]
-      },
-      {
-        "title": "Render timing",
-        "items": [
-          "Fast queue targets; live estimates shown in the jobs rail so you can A/B quickly"
-        ]
-      }
-    ],
+    "specSections": [],
     "specValueProp": "Veo 3.1 Fast is your rapid-fire test bench: same cinematic language as Veo 3.1, lower cost, faster turnaround.",
     "galleryTitle": "Example Gallery: Real Veo 3.1 Fast Outputs",
     "galleryIntro": "Explore clips generated with Veo 3.1 Fast using the same presets you have.",

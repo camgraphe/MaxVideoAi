@@ -157,49 +157,7 @@
     ],
     "specTitle": "Real Specs – Pika 2.2 in MaxVideoAI (720p/1080p, 5–10s)",
     "specNote": "These specs describe Pika 2.2 exactly as you can use it today via MaxVideoAI.",
-    "specSections": [
-      {
-        "title": "Duration & Output",
-        "items": [
-          "Durations: 5 s and 10 s",
-          "Output: 720p (1280×720) or 1080p (1920×1080)",
-          "Tuned for short, high-impact clips"
-        ]
-      },
-      {
-        "title": "Aspect Ratios",
-        "items": [
-          "16:9 – horizontal for web/YouTube",
-          "9:16 – vertical for TikTok/Reels/Shorts",
-          "1:1 – square for feed posts and profiles"
-        ]
-      },
-      {
-        "title": "Inputs & File Types",
-        "items": [
-          "Text prompts with punchy, visual language",
-          "Reference image: PNG/JPG/JPEG/WebP/GIF/AVIF; ~25 MB; single still animated into 5–10 s",
-          "No video input; start from stills or text"
-        ]
-      },
-      {
-        "title": "Audio",
-        "items": [
-          "No audio track generated (silent MP4-style clips)",
-          "Add music/VO/SFX in your editor or rerun in an audio-capable engine if needed"
-        ]
-      },
-      {
-        "title": "Pricing",
-        "items": [
-          "Per-second model in MaxVideoAI",
-          "Example: perSecondCents720 = 4; perSecondCents1080 = 9",
-          "720p (~$0.04/s): 5s ≈ $0.20; 10s ≈ $0.40",
-          "1080p (~$0.09/s): 5s ≈ $0.45; 10s ≈ $0.90",
-          "Wallet shared across engines; compare live price before running"
-        ]
-      }
-    ],
+    "specSections": [],
     "specValueProp": "Pika 2.2 is the stylized, silent short-clip engine: fast to iterate with seeds and negative prompts, perfect for social feeds and motion inserts.",
     "galleryTitle": "Pika 2.2 Example Gallery",
     "galleryIntro": "Curated clips generated with the same settings you have in MaxVideoAI.",

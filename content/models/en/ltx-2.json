@@ -124,52 +124,7 @@
     ],
     "specTitle": "Real Specs – LTX-2 Pro in MaxVideoAI",
     "specNote": "Specs reflect the live Fal routing today.",
-    "specSections": [
-      {
-        "title": "Duration & Output",
-        "items": [
-          "Durations: 6, 8, 10 seconds",
-          "Frame rate: 25 or 50 fps",
-          "For the best balance, treat 6–10s as the hero-shot range; stitch multiple clips for longer arcs."
-        ]
-      },
-      {
-        "title": "Resolution",
-        "items": [
-          "1080p (1920×1080)",
-          "1440p (2560×1440)",
-          "2160p / 4K (3840×2160)"
-        ]
-      },
-      {
-        "title": "Aspect Ratio",
-        "items": [
-          "16:9 (horizontal) for widescreen and social crops"
-        ]
-      },
-      {
-        "title": "Inputs & File Types",
-        "items": [
-          "Text prompts (director-style instructions)",
-          "Image → Video: single still (PNG/JPG/WebP), ~25 MB",
-          "Supports seed and negative prompts"
-        ]
-      },
-      {
-        "title": "Audio",
-        "items": [
-          "Native audio on by default – dialogue/narration, SFX, ambience and a subtle music bed generated in one pass",
-          "Toggle off for silent drafts or bespoke sound design"
-        ]
-      },
-      {
-        "title": "Pricing",
-        "items": [
-          "$0.06/s @1080p; $0.12/s @1440p; $0.24/s @4K",
-          "Wallet-based pay-as-you-go"
-        ]
-      }
-    ],
+    "specSections": [],
     "whatTitle": "How LTX-2 Pro works in MaxVideoAI",
     "whatIntro1": "Choose text or image mode, set 6–10 seconds, pick resolution and fps, then prompt. Audio is on by default and can be toggled off.",
     "whatIntro2": "Use Pro when you need the cleanest detail and synced sound for premium work.",

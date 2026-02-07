@@ -157,57 +157,7 @@
     ],
     "specTitle": "Real Specs – Veo 3.1 in MaxVideoAI (720p/1080p, 4–8s)",
     "specNote": "These specs describe Veo 3.1 exactly as you can use it today via MaxVideoAI – not theoretical lab demos.",
-    "specSections": [
-      {
-        "title": "Duration & Output",
-        "items": [
-          "Durations: 4 s, 6 s, 8 s",
-          "Output resolution: 720p (1280x720) or 1080p (1920x1080)",
-          "Frame rate: 24 fps cinematic cadence"
-        ]
-      },
-      {
-        "title": "Aspect Ratios",
-        "items": [
-          "16:9 – horizontal / web video",
-          "9:16 – vertical / Reels / Shorts / TikTok",
-          "1:1 – square / feed placements"
-        ]
-      },
-      {
-        "title": "Inputs & File Types",
-        "items": [
-          "Text prompts written like a shot list (1–3 sentences for single-beat clips; Shot 1/2/3 for 8s sequences)",
-          "Reference images: PNG, JPG, WebP; up to 4 stills to lock identity, wardrobe and lighting",
-          "Image → Video: animate a single still (from Nano Banana or your own assets) into a 4–8s shot",
-          "No direct video input in this configuration; use Extend and sequencing for longer arcs"
-        ]
-      },
-      {
-        "title": "Audio",
-        "items": [
-          "Native audio on by default (VO, ambience, SFX)",
-          "Toggle audio off for cheaper silent renders when you will design sound later",
-          "Treat Veo audio as a first-draft soundtrack, then polish timing and loudness in post"
-        ]
-      },
-      {
-        "title": "Pricing",
-        "items": [
-          "Per-second model inside MaxVideoAI",
-          "Example config: perSecondCentsAudioOn = 40; perSecondCentsAudioOff = 20",
-          "Audio on (~$0.40/s): 4s ≈ $1.60; 6s ≈ $2.40; 8s ≈ $3.20",
-          "Audio off (~$0.20/s): 4s ≈ $0.80; 6s ≈ $1.20; 8s ≈ $1.60",
-          "No subscription: top up your MaxVideoAI wallet and preview price before render"
-        ]
-      },
-      {
-        "title": "Render timing",
-        "items": [
-          "Add observed render-time note here (e.g., live queue estimates shown in-app for expected start/finish)"
-        ]
-      }
-    ],
+    "specSections": [],
     "specValueProp": "Veo 3.1 in MaxVideoAI gives you framing presets, native audio control, seeds and Extend—so it behaves like a directable camera, not a black box.",
     "galleryTitle": "Example Gallery: Real Veo 3.1 Outputs",
     "galleryIntro": "See live Veo 3.1 renders powered by the same settings you have in MaxVideoAI.",

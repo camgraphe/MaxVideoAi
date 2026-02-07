@@ -125,45 +125,7 @@
     ],
     "specTitle": "Real Specs – Kling 2.6 Pro in MaxVideoAI",
     "specNote": "Specs reflect the live Fal routing today.",
-    "specSections": [
-      {
-        "title": "Duration & Output",
-        "items": [
-          "Durations: 5 or 10 seconds",
-          "Resolution: 1080p"
-        ]
-      },
-      {
-        "title": "Aspect Ratios",
-        "items": [
-          "16:9 — cinematic landscape",
-          "9:16 — vertical for social",
-          "1:1 — square feed placements"
-        ]
-      },
-      {
-        "title": "Inputs",
-        "items": [
-          "Text prompts with concise scene direction",
-          "Image → Video: single still (PNG/JPG/WebP)"
-        ]
-      },
-      {
-        "title": "Audio",
-        "items": [
-          "Native audio on by default – dialogue/narration, SFX, ambience and a music bed generated together with the visuals",
-          "Toggle audio off when adding your own mix or for silent previs renders",
-          "Languages: English and Chinese speech supported in this routing"
-        ]
-      },
-      {
-        "title": "Pricing",
-        "items": [
-          "~$0.07/s audio off; ~$0.14/s audio on",
-          "Wallet-based pay-as-you-go"
-        ]
-      }
-    ],
+    "specSections": [],
     "whatTitle": "How Kling 2.6 Pro works in MaxVideoAI",
     "whatIntro1": "Pick text or image mode, set 5 or 10 seconds at 1080p, choose aspect (16:9/9:16/1:1), toggle audio, and prompt.",
     "whatIntro2": "Use Kling 2.6 Pro when you need dialogue-ready clips with strong motion and synced ambience.",

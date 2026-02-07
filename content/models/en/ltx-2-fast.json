@@ -134,53 +134,7 @@
     ],
     "specTitle": "Real Specs – LTX-2 Fast in MaxVideoAI",
     "specNote": "Specs reflect the live routing via Fal today.",
-    "specSections": [
-      {
-        "title": "Duration & Output",
-        "items": [
-          "Durations: 6, 8, 10, 12, 14, 16, 18, 20 seconds",
-          "12–20s: constrained to 1080p at 25 fps",
-          "Frame rate options: 25 or 50 fps",
-          "Best balance at 6–10s for full 4K/50 fps; use 12–20s when you’re fine with 1080p/25"
-        ]
-      },
-      {
-        "title": "Resolution",
-        "items": [
-          "1080p (1920×1080)",
-          "1440p (2560×1440)",
-          "2160p / 4K (3840×2160)"
-        ]
-      },
-      {
-        "title": "Aspect Ratio",
-        "items": [
-          "16:9 (horizontal); best for social landscape or widescreen crops"
-        ]
-      },
-      {
-        "title": "Inputs & File Types",
-        "items": [
-          "Text prompts (shot-level instructions)",
-          "Image → Video: single still (PNG/JPG/WebP), ~25 MB",
-          "Negative prompt and seed supported"
-        ]
-      },
-      {
-        "title": "Audio",
-        "items": [
-          "Native audio enabled by default",
-          "Toggle off for silent drafts"
-        ]
-      },
-      {
-        "title": "Pricing",
-        "items": [
-          "$0.04/s @1080p; $0.08/s @1440p; $0.16/s @4K",
-          "Wallet-based pay-as-you-go inside MaxVideoAI"
-        ]
-      }
-    ],
+    "specSections": [],
     "whatTitle": "How LTX-2 Fast works in MaxVideoAI",
     "whatIntro1": "Pick text or image mode, set 6–20 seconds, choose resolution and fps, then prompt. Audio is on by default and can be toggled off.",
     "whatIntro2": "For 12–20s runs we automatically constrain to 1080p/25 fps to keep routes stable.",

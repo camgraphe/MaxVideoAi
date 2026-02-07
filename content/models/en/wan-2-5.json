@@ -160,54 +160,7 @@
     ],
     "specTitle": "Real Specs – Wan 2.5 in MaxVideoAI (480p–1080p, 5–10s)",
     "specNote": "These specs describe Wan 2.5 exactly as you can use it today via MaxVideoAI.",
-    "specSections": [
-      {
-        "title": "Duration & Output",
-        "items": [
-          "Durations: 5 s and 10 s",
-          "Resolutions: 480p, 720p, 1080p (24 fps)"
-        ]
-      },
-      {
-        "title": "Aspect Ratios",
-        "items": [
-          "16:9 – horizontal for web/YouTube",
-          "9:16 – vertical for TikTok/Reels/Shorts",
-          "1:1 – square for feeds and profiles"
-        ]
-      },
-      {
-        "title": "Inputs & File Types",
-        "items": [
-          "Text prompts (single scene or short mini-sequence)",
-          "Image → Video: one still (PNG/JPG/JPEG/WebP/GIF/AVIF), ~25 MB, animated into 5/10 s",
-          "Audio input: WAV/MP3, 3–30 s, ~15 MB; trimmed/looped to match the clip"
-        ]
-      },
-      {
-        "title": "Audio",
-        "items": [
-          "Native audio if no track is uploaded",
-          "Uploaded audio becomes the main soundtrack, trimmed or looped",
-          "Use uploads for beat-accurate timing; use native for quick drafts"
-        ]
-      },
-      {
-        "title": "Prompt Expansion",
-        "items": [
-          "Optional LLM rewrite of short prompts",
-          "Enable for exploration; disable for literal control"
-        ]
-      },
-      {
-        "title": "Pricing",
-        "items": [
-          "$0.05/s (480p), $0.10/s (720p), $0.15/s (1080p)",
-          "Examples: 5s @1080p ≈ $0.75; 10s ≈ $1.50",
-          "Runs from the shared MaxVideoAI wallet with live rates shown"
-        ]
-      }
-    ],
+    "specSections": [],
     "specValueProp": "Wan 2.5 is the audio-ready short-form engine for 5–10s beats where visuals and sound need to land together.",
     "galleryTitle": "Wan 2.5 Example Gallery",
     "galleryIntro": "Clips generated with the exact configuration you have access to in MaxVideoAI.",

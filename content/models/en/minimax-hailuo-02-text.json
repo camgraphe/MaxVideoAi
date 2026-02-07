@@ -156,46 +156,7 @@
     ],
     "specTitle": "Real Specs – MiniMax Hailuo 02 in MaxVideoAI (512p/768p, 6–10s)",
     "specNote": "Specs as used today in MaxVideoAI.",
-    "specSections": [
-      {
-        "title": "Duration & Output",
-        "items": [
-          "Durations: 6 s or 10 s",
-          "Resolutions: 512p or 768p",
-          "Routes tuned for speed and cost"
-        ]
-      },
-      {
-        "title": "Aspect Ratios",
-        "items": [
-          "16:9 – horizontal",
-          "9:16 – vertical",
-          "1:1 – square"
-        ]
-      },
-      {
-        "title": "Inputs & File Types",
-        "items": [
-          "Text prompts (English, Chinese, etc.)",
-          "Reference image: PNG/JPG/JPEG/WebP/GIF/AVIF (~25 MB)",
-          "Optional end frame to land on a specific layout"
-        ]
-      },
-      {
-        "title": "Audio",
-        "items": [
-          "Silent-only output",
-          "Plan to add audio in post or pair with audio engines"
-        ]
-      },
-      {
-        "title": "Pricing",
-        "items": [
-          "Budget-friendly; live per-job prices visible in Generate",
-          "Compare against Pika, Veo Fast, Wan 2.5 before rendering"
-        ]
-      }
-    ],
+    "specSections": [],
     "specValueProp": "MiniMax Hailuo 02 is a fast, physics-savvy draft engine for cheap, silent motion tests.",
     "galleryTitle": "MiniMax Hailuo 02 Example Gallery",
     "galleryIntro": "See text and image runs rendered with the same configuration you have.",
