@@ -159,22 +159,6 @@
       "Reuse key elements (same subject, same setting, consistent lighting).",
       "Avoid jumping through five different locations in 8 seconds—keep it focused."
     ],
-    "demoTitle": "Demo: One Sequenced Prompt",
-    "demoPromptLabel": "Prompt – 8 second cinematic lifestyle commercial (16:9)",
-    "demoPrompt": [
-      "8 second cinematic lifestyle commercial of a man in his 30s using a sleek smartwatch while jogging at sunrise in an urban park.",
-      "Shot 1 (2 s): close-up of the watch on his wrist, sunlight reflecting off the glass as he adjusts the strap.",
-      "Shot 2 (4 s): side-angle tracking shot as he runs along the path, warm light flaring behind skyscrapers.",
-      "Shot 3 (2 s): close-up of him glancing at the screen, subtle smile, breath visible in cool morning air.",
-      "Lighting: golden hour, cinematic natural tones.",
-      "Audio: rhythmic ambient footsteps + faint upbeat music.",
-      "Camera: dynamic handheld tracking, 50 mm lens look.",
-      "Negative: no logos, no slow-motion, no text overlays."
-    ],
-    "demoNotes": [
-      "Shows shot transitions, consistent environment and props, clear camera motion in each segment, and a complete story beat in under 10 seconds.",
-      "Use the same 3-beat structure for skincare, SaaS, fitness, or any micro-story."
-    ],
     "tipsTitle": "Tips & Limitations in Plain English",
     "strengths": [
       "Short, vivid moments",
@@ -201,7 +185,6 @@
       "Famous people or sensitive prompts may be blocked.",
       "This is how both MaxVideoAI and Sora 2 stay usable and safe for professionals."
     ],
-    "safetyInterpretation": [],
     "safetyNote": null,
     "comparisonTitle": "Sora 2 vs Sora 2 Pro – Quick Overview",
     "comparisonPoints": [
@@ -264,20 +247,49 @@
     "promptingGlobalPrinciples": [
       "1 shot = 1 camera move + 1 subject action",
       "Use visual anchors (specific nouns > vague adjectives)",
+      "Keep characters consistent across shots",
+      "Start from an image for maximum control",
       "Iterate: change one thing at a time"
     ],
     "promptingEngineWhy": [
       "Too many beats can cause drift — keep each clip to 2–3 clear actions.",
-      "Image→Video locks the first frame; prompt controls motion + timing.",
-      "Reference image rules are strict — clean stills, correct aspect ratio, no logos or readable text.",
-      "Audio cues help pacing — describe 1–2 key sounds.",
-      "Dialogue works best when short; long lines can drift."
+      "Image-to-video locks the first frame composition; prompt controls motion and timing.",
+      "Reference image rules are strict — clean stills, no logos, no readable text.",
+      "Audio cues help pacing; describe 1–2 key sounds for rhythm."
     ],
     "promptingTabNotes": {
       "quick": "Quick = variations. Use for fast iteration.",
       "structured": "Structured = consistency. Use when you need reliable results.",
-      "pro": "Pro = continuity. Use for precise, repeatable looks.",
-      "storyboard": "Storyboard = beat timing. Use for mini-stories in one clip."
-    }
+      "pro": "Pro = continuity. Use for precise, repeatable looks."
+    },
+    "promptingTitle": "How to Write a Great Sora 2 Prompt",
+    "promptingIntro": "Sora 2 works best when you brief it like a cinematographer: one clear shot, simple timing, and visible actions.",
+    "promptingTip": "Tip: duration + aspect ratio are set in the UI — your prompt controls subject, action, camera, lighting, style, and sound.",
+    "promptingGuideLabel": "OpenAI Developers",
+    "promptingGuideUrl": "https://developers.openai.com/cookbook/examples/sora/sora2_prompting_guide/",
+    "tipsIntro": "Sora is most predictable when you keep the shot simple, readable, and physical.",
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want variations.",
+        "copy": "[Style] + [Subject] + [Setting] + [Lighting] + [Mood / palette]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (best for reliable results)",
+        "description": "Separate information so the model can follow it consistently.",
+        "copy": "Subject:\n[Who/what + 1 clear action or pose.]\n\nSetting:\n[Where + time of day + 2–3 visual anchors.]\n\nComposition:\n- Framing: [wide / medium / close-up]\n- Angle: [eye-level / low / high]\n- Lens feel: [e.g., 35mm natural, shallow DOF]\n\nLighting + palette:\n[Key light + 2–3 palette anchors]\n\nStyle constraints:\nNo logos. No readable text. Clean background."
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Pro prompt (ultra-specific \"studio brief\")",
+        "description": "Use this when you need a very specific look or continuity across shots.",
+        "copy": "Project / intent:\n[One-line goal for the still.]\n\nSubject:\n[Who/what + wardrobe/materials + 2–3 distinctive traits.]\n\nLocation / set:\n[Where + time of day + weather. Add 3 visual anchors.]\n\nComposition:\n- Framing + angle\n- Lens feel + depth of field\n- Look: [clean digital / subtle film grain / soft bloom]\n\nLighting & grade:\n- Key light\n- Contrast\n- Palette anchors (3–5)\n\nConstraints:\nNo logos. No readable text. No overlays."
+      }
+    ]
   }
 }

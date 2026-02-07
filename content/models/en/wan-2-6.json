@@ -33,12 +33,30 @@
   },
   "technicalOverviewTitle": "Technical overview",
   "technicalOverview": [
-    { "label": "Duration", "body": "Text/Image: 5, 10, 15 s · Reference: 5 or 10 s" },
-    { "label": "Resolution", "body": "720p or 1080p" },
-    { "label": "Aspect ratios", "body": "T2V/R2V: 16:9, 9:16, 1:1, 4:3, 3:4 · I2V: auto from image" },
-    { "label": "Inputs", "body": "Text prompts, single image still, or 1–3 reference videos" },
-    { "label": "Audio", "body": "Optional audio URL on Text/Image modes; disabled on Reference mode" },
-    { "label": "Pricing", "body": "$0.13/s (720p), $0.20/s (1080p)" }
+    {
+      "label": "Duration",
+      "body": "Text/Image: 5, 10, 15 s · Reference: 5 or 10 s"
+    },
+    {
+      "label": "Resolution",
+      "body": "720p or 1080p"
+    },
+    {
+      "label": "Aspect ratios",
+      "body": "T2V/R2V: 16:9, 9:16, 1:1, 4:3, 3:4 · I2V: auto from image"
+    },
+    {
+      "label": "Inputs",
+      "body": "Text prompts, single image still, or 1–3 reference videos"
+    },
+    {
+      "label": "Audio",
+      "body": "Optional audio URL on Text/Image modes; disabled on Reference mode"
+    },
+    {
+      "label": "Pricing",
+      "body": "$0.13/s (720p), $0.20/s (1080p)"
+    }
   ],
   "promptStructure": {
     "title": "Prompting Wan 2.6",
@@ -76,9 +94,18 @@
     }
   ],
   "faqs": [
-    { "q": "Does Wan 2.6 support audio?", "a": "Audio URLs are optional for Text and Image modes. Reference mode does not support audio uploads." },
-    { "q": "How many reference videos can I upload?", "a": "1–3 MP4/MOV references. Tag them in the prompt as @Video1, @Video2, and @Video3." },
-    { "q": "What durations are supported?", "a": "Text and Image modes: 5, 10, or 15 seconds. Reference mode: 5 or 10 seconds." }
+    {
+      "q": "Does Wan 2.6 support audio?",
+      "a": "Audio URLs are optional for Text and Image modes. Reference mode does not support audio uploads."
+    },
+    {
+      "q": "How many reference videos can I upload?",
+      "a": "1–3 MP4/MOV references. Tag them in the prompt as @Video1, @Video2, and @Video3."
+    },
+    {
+      "q": "What durations are supported?",
+      "a": "Text and Image modes: 5, 10, or 15 seconds. Reference mode: 5 or 10 seconds."
+    }
   ],
   "custom": {
     "whyTitle": "Why Wan 2.6 is powerful inside MaxVideoAI",
@@ -164,17 +191,6 @@
     ],
     "promptSkeleton": "Shot 1 [0-3s] ... Shot 2 [3-8s] ... Shot 3 [8-15s] ... lighting, camera, motion.",
     "promptSkeletonNote": "For R2V, place @Video1/@Video2/@Video3 in the prompt to anchor subjects.",
-    "demoTitle": "Ready-to-render example",
-    "demoPromptLabel": "Ready-to-render example (multi-shot, 15s, 16:9, 1080p)",
-    "demoPrompt": [
-      "Global look: elegant thriller, rainy night, soft neon, 35mm, fine film grain, cinematic depth of field, smooth camera, blue/amber palette.",
-      "Shot 1 [0–4s]: slow push-in through a wet alley, reflections on the ground, a silhouette in the distance, hazy atmosphere.",
-      "Shot 2 [4–10s]: cut to close-up of hands opening a sealed envelope on a wooden table, warm side light, very shallow focus.",
-      "Shot 3 [10–15s]: a door opens into an overexposed white room, burst of light, fine dust in the beam, fade to black."
-    ],
-    "demoNotes": [
-      "Audio option: URL to a soft ambient bed (3–15s), low volume."
-    ],
     "tipsTitle": "Tips & limitations",
     "strengths": [
       "Multi-shot control for mini narratives",
@@ -197,9 +213,18 @@
     "relatedCtaSora2Pro": "Compare Wan 2.6 vs Sora 2 Pro →",
     "faqTitle": "FAQ – Wan 2.6 in MaxVideoAI",
     "faqs": [
-      { "q": "Does Wan 2.6 support audio?", "a": "Audio URLs are optional for Text and Image modes. Reference mode does not support audio uploads." },
-      { "q": "How many reference videos can I upload?", "a": "1–3 MP4/MOV references. Tag them as @Video1, @Video2, and @Video3 in the prompt." },
-      { "q": "What durations are supported?", "a": "Text and Image modes: 5, 10, or 15 seconds. Reference mode: 5 or 10 seconds." }
+      {
+        "q": "Does Wan 2.6 support audio?",
+        "a": "Audio URLs are optional for Text and Image modes. Reference mode does not support audio uploads."
+      },
+      {
+        "q": "How many reference videos can I upload?",
+        "a": "1–3 MP4/MOV references. Tag them as @Video1, @Video2, and @Video3 in the prompt."
+      },
+      {
+        "q": "What durations are supported?",
+        "a": "Text and Image modes: 5, 10, or 15 seconds. Reference mode: 5 or 10 seconds."
+      }
     ],
     "relatedTitle": "Explore other models",
     "relatedSubtitle": "Compare price, latency and output options across the MaxVideoAI catalog.",
@@ -245,6 +270,48 @@
       "Camera too jittery → replace \"dynamic\" with \"slow, smooth, controlled\" + specify \"single take\"",
       "Beats feel inconsistent → repeat anchors (lens, location, time of day, wardrobe) in each beat",
       "Look deviates from the key visual (I2V) → say \"same scene / same subject\", then ask only for motion"
+    ],
+    "promptingTitle": "How to Write a Great Wan 2.6 Prompt",
+    "promptingIntro": "Describe the subject, composition, lighting, and style in clear, concrete terms.",
+    "promptingTip": "Tip: resolution + aspect ratio are set in the UI — your prompt controls subject, composition, lighting, style, and mood.",
+    "promptingGlobalPrinciples": [
+      "Describe the subject, composition, and lighting clearly.",
+      "Use visual anchors (specific nouns > vague adjectives).",
+      "Iterate: change one thing at a time."
+    ],
+    "tipsIntro": "Image generation is most predictable when you keep the frame simple, readable, and physically grounded.",
+    "promptingEngineWhy": [
+      "Keep prompts focused: one subject, one action, one camera angle.",
+      "Use concrete visual anchors (props, textures, lighting cues).",
+      "Iterate by changing a single variable per take."
+    ],
+    "promptingTabNotes": {
+      "quick": "Quick = variations. Use for fast iteration.",
+      "structured": "Structured = consistency. Use when you need reliable results.",
+      "pro": "Pro = style control. Use for precise, repeatable looks."
+    },
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want variations.",
+        "copy": "[Style] + [Subject] + [Setting] + [Lighting] + [Mood / palette]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (best for reliable results)",
+        "description": "Separate information so the model can follow it consistently.",
+        "copy": "Subject:\n[Who/what + 1 clear action or pose.]\n\nSetting:\n[Where + time of day + 2–3 visual anchors.]\n\nComposition:\n- Framing: [wide / medium / close-up]\n- Angle: [eye-level / low / high]\n- Lens feel: [e.g., 35mm natural, shallow DOF]\n\nLighting + palette:\n[Key light + 2–3 palette anchors]\n\nStyle constraints:\nNo logos. No readable text. Clean background."
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Pro prompt (ultra-specific \"studio brief\")",
+        "description": "Use this when you need a very specific look or continuity across shots.",
+        "copy": "Project / intent:\n[One-line goal for the still.]\n\nSubject:\n[Who/what + wardrobe/materials + 2–3 distinctive traits.]\n\nLocation / set:\n[Where + time of day + weather. Add 3 visual anchors.]\n\nComposition:\n- Framing + angle\n- Lens feel + depth of field\n- Look: [clean digital / subtle film grain / soft bloom]\n\nLighting & grade:\n- Key light\n- Contrast\n- Palette anchors (3–5)\n\nConstraints:\nNo logos. No readable text. No overlays."
+      }
     ]
   }
 }

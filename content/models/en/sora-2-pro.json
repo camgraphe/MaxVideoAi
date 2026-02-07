@@ -104,20 +104,6 @@
       "Specify camera per beat: push-in, crane up, handheld glide.",
       "Write the transition in the prompt (match cut, whip pan, crossfade)."
     ],
-    "demoTitle": "Demo: 12s 1080p Product Film",
-    "demoPromptLabel": "Prompt – Wearable tech launch (16:9, audio on)",
-    "demoPrompt": [
-      "Scene 1 (4s): Macro close-up of a titanium smartwatch rotating on a glossy turntable, soft studio light, voice-over: 'Introducing Aurum Pro.'",
-      "Scene 2 (4s): Lifestyle shot of a runner checking the watch at blue hour in a city rooftop track, camera dolly-in, ambient city hum + subtle synth pulse.",
-      "Scene 3 (4s): UI close-up of the watch face animating, hand interacts, match cut to product floating on black, audio swell then resolves.",
-      "Transitions: match cut between scenes, gentle crossfade on audio layers.",
-      "Audio: voice-over + ambient + light synth bed.",
-      "Format: 1080p, 16:9."
-    ],
-    "demoNotes": [
-      "Demonstrates camera control, audio cues, and consistency across product + lifestyle + UI beats.",
-      "Use the same structure for premium client cutdowns: intro, context, hero close."
-    ],
     "tipsTitle": "Tips & Limitations",
     "strengths": [
       "1080p delivery for premium outputs",
@@ -179,21 +165,50 @@
     "promptingGlobalPrinciples": [
       "1 shot = 1 camera move + 1 subject action",
       "Use visual anchors (specific nouns > vague adjectives)",
+      "Keep characters consistent across shots",
+      "Start from an image for maximum control",
       "Iterate: change one thing at a time"
     ],
     "promptingEngineWhy": [
       "Too many beats can cause drift — keep each clip to 2–3 clear actions.",
-      "Image→Video locks the first frame; prompt controls motion + timing.",
-      "Reference image rules are strict — clean stills, correct aspect ratio, no logos or readable text.",
-      "Audio cues help pacing — describe 1–2 key sounds.",
-      "Dialogue works best when short; long lines can drift."
+      "Image-to-video locks the first frame composition; prompt controls motion and timing.",
+      "Reference image rules are strict — clean stills, no logos, no readable text.",
+      "Audio cues help pacing; describe 1–2 key sounds for rhythm."
     ],
     "promptingTabNotes": {
       "quick": "Quick = variations. Use for fast iteration.",
       "structured": "Structured = consistency. Use when you need reliable results.",
-      "pro": "Pro = continuity. Use for precise, repeatable looks.",
-      "storyboard": "Storyboard = beat timing. Use for mini-stories in one clip."
-    }
+      "pro": "Pro = continuity. Use for precise, repeatable looks."
+    },
+    "promptingTitle": "How to Write a Great Sora 2 Pro Prompt",
+    "promptingIntro": "Sora 2 Pro works best when you brief it like a cinematographer: one clear shot, simple timing, and visible actions.",
+    "promptingTip": "Tip: duration + aspect ratio are set in the UI — your prompt controls subject, action, camera, lighting, style, and sound.",
+    "promptingGuideLabel": "OpenAI Developers",
+    "promptingGuideUrl": "https://developers.openai.com/cookbook/examples/sora/sora2_prompting_guide/",
+    "tipsIntro": "Sora is most predictable when you keep the shot simple, readable, and physical.",
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want variations.",
+        "copy": "[Style] + [Subject] + [Setting] + [Lighting] + [Mood / palette]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (best for reliable results)",
+        "description": "Separate information so the model can follow it consistently.",
+        "copy": "Subject:\n[Who/what + 1 clear action or pose.]\n\nSetting:\n[Where + time of day + 2–3 visual anchors.]\n\nComposition:\n- Framing: [wide / medium / close-up]\n- Angle: [eye-level / low / high]\n- Lens feel: [e.g., 35mm natural, shallow DOF]\n\nLighting + palette:\n[Key light + 2–3 palette anchors]\n\nStyle constraints:\nNo logos. No readable text. Clean background."
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Pro prompt (ultra-specific \"studio brief\")",
+        "description": "Use this when you need a very specific look or continuity across shots.",
+        "copy": "Project / intent:\n[One-line goal for the still.]\n\nSubject:\n[Who/what + wardrobe/materials + 2–3 distinctive traits.]\n\nLocation / set:\n[Where + time of day + weather. Add 3 visual anchors.]\n\nComposition:\n- Framing + angle\n- Lens feel + depth of field\n- Look: [clean digital / subtle film grain / soft bloom]\n\nLighting & grade:\n- Key light\n- Contrast\n- Palette anchors (3–5)\n\nConstraints:\nNo logos. No readable text. No overlays."
+      }
+    ]
   },
   "bestUseCases": {
     "title": "Best Use Cases",

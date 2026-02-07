@@ -34,12 +34,30 @@
   },
   "technicalOverviewTitle": "Technical overview",
   "technicalOverview": [
-    { "label": "Duration", "body": "5 s or 10 s per render" },
-    { "label": "Resolution", "body": "720p or 1080p" },
-    { "label": "Aspect ratios", "body": "1:1, 16:9, 9:16" },
-    { "label": "Inputs", "body": "Text → Video; Image → Video from a single still" },
-    { "label": "Audio", "body": "No audio track is generated (silent by design)" },
-    { "label": "Controls", "body": "Seeds and negative prompts to keep style consistent and suppress artifacts" },
+    {
+      "label": "Duration",
+      "body": "5 s or 10 s per render"
+    },
+    {
+      "label": "Resolution",
+      "body": "720p or 1080p"
+    },
+    {
+      "label": "Aspect ratios",
+      "body": "1:1, 16:9, 9:16"
+    },
+    {
+      "label": "Inputs",
+      "body": "Text → Video; Image → Video from a single still"
+    },
+    {
+      "label": "Audio",
+      "body": "No audio track is generated (silent by design)"
+    },
+    {
+      "label": "Controls",
+      "body": "Seeds and negative prompts to keep style consistent and suppress artifacts"
+    },
     {
       "label": "Pricing",
       "body": "Per-second; example: ~$0.04/s @720p, ~$0.09/s @1080p; wallet-based pay-as-you-go"
@@ -82,11 +100,26 @@
     }
   ],
   "faqs": [
-    { "q": "Does Pika 2.2 generate audio?", "a": "No. Pika 2.2 in MaxVideoAI always outputs silent clips. Add sound in post or use an audio-capable engine when needed." },
-    { "q": "Which duration should I use: 5 or 10 seconds?", "a": "5s for punchy hooks and quick loops; 10s when you need a bit more room for build-up or parallax." },
-    { "q": "Can Pika 2.2 do vertical video?", "a": "Yes. Choose 9:16 for TikTok, Reels, Shorts and Stories; keep the subject centered for safe crops." },
-    { "q": "How do seeds and negative prompts help?", "a": "Reuse a seed to keep iterations related; use negative prompts to block text/logos/extra characters/watermarks." },
-    { "q": "When should I use another engine instead?", "a": "For photoreal people/products or native audio, use Sora 2 or Veo 3.1; for sound-ready short clips, consider Wan 2.5." }
+    {
+      "q": "Does Pika 2.2 generate audio?",
+      "a": "No. Pika 2.2 in MaxVideoAI always outputs silent clips. Add sound in post or use an audio-capable engine when needed."
+    },
+    {
+      "q": "Which duration should I use: 5 or 10 seconds?",
+      "a": "5s for punchy hooks and quick loops; 10s when you need a bit more room for build-up or parallax."
+    },
+    {
+      "q": "Can Pika 2.2 do vertical video?",
+      "a": "Yes. Choose 9:16 for TikTok, Reels, Shorts and Stories; keep the subject centered for safe crops."
+    },
+    {
+      "q": "How do seeds and negative prompts help?",
+      "a": "Reuse a seed to keep iterations related; use negative prompts to block text/logos/extra characters/watermarks."
+    },
+    {
+      "q": "When should I use another engine instead?",
+      "a": "For photoreal people/products or native audio, use Sora 2 or Veo 3.1; for sound-ready short clips, consider Wan 2.5."
+    }
   ],
   "custom": {
     "heroDesc1": "Use Pika 2.2 to generate stylized 5s or 10s clips in up to 1080p from text or a single reference image. See the price per clip before you run, then recreate proven examples in one click.",
@@ -207,20 +240,6 @@
       "Use 5s for punchy moments; 10s for a bit of build-up/payoff",
       "Chain loops in your timeline for longer animations or carousels"
     ],
-    "demoTitle": "Demo: One Prompt for Pika 2.2",
-    "demoPromptLabel": "5 second pixel-art loop (1:1, 1080p)",
-    "demoPrompt": [
-      "5 second seamless looping pixel-art animation of a tiny wizard stirring a glowing cauldron in a cozy 1:1 cottage interior.",
-      "Camera locked medium shot framing the table.",
-      "Bubbles rise in a repeating pattern as books float gently in the background, soft parallax on the shelves.",
-      "Warm candlelight, chunky retro pixels, limited 16-color palette, no text/logos/UI."
-    ],
-    "demoNotes": [
-      "Clear subject in a single environment",
-      "Strong stylistic direction (pixel-art, retro palette)",
-      "Simple, repeatable motion for a clean loop",
-      "No conflicting instructions about camera or multiple locations"
-    ],
     "tipsTitle": "Tips & Limitations in Plain English",
     "strengths": [
       "Stylized animation (anime, illustration, pixel, comic, toon, stylized 3D)",
@@ -255,16 +274,73 @@
     "comparisonCta": "Compare Pika 2.2 vs MiniMax Hailuo 02 →",
     "faqTitle": "FAQ – Pika 2.2 in MaxVideoAI",
     "faqs": [
-      { "q": "Does Pika 2.2 generate audio?", "a": "No. Clips are silent; add your own soundtrack or use an audio-capable engine." },
-      { "q": "Which duration should I pick?", "a": "5s for hooks/loops; 10s for a bit more narrative or parallax." },
-      { "q": "Can I do vertical video?", "a": "Yes, select 9:16 and keep the subject centered for safe crops." },
-      { "q": "How do seeds and negatives help?", "a": "Seeds keep iterations related; negative prompts block text/logos/extra characters/watermarks." },
-      { "q": "When to switch engines?", "a": "Use Sora/Veo for photoreal or audio; Wan 2.5 for sound-ready; Sora 2 Pro/Veo 3.1 for high-end hero shots." }
+      {
+        "q": "Does Pika 2.2 generate audio?",
+        "a": "No. Clips are silent; add your own soundtrack or use an audio-capable engine."
+      },
+      {
+        "q": "Which duration should I pick?",
+        "a": "5s for hooks/loops; 10s for a bit more narrative or parallax."
+      },
+      {
+        "q": "Can I do vertical video?",
+        "a": "Yes, select 9:16 and keep the subject centered for safe crops."
+      },
+      {
+        "q": "How do seeds and negatives help?",
+        "a": "Seeds keep iterations related; negative prompts block text/logos/extra characters/watermarks."
+      },
+      {
+        "q": "When to switch engines?",
+        "a": "Use Sora/Veo for photoreal or audio; Wan 2.5 for sound-ready; Sora 2 Pro/Veo 3.1 for high-end hero shots."
+      }
     ],
     "relatedTitle": "Explore other models",
     "relatedSubtitle": "Compare pricing, latency, and output options across the rest of the MaxVideoAI catalog.",
     "finalPara1": "Pika 2.2 in MaxVideoAI is your stylized, silent workhorse for fast loops and expressive animation.",
     "finalPara2": "Draft hooks here, then translate winners to Sora or Veo when you need realism or native audio.",
-    "finalButton": "Open Generate"
+    "finalButton": "Open Generate",
+    "promptingTitle": "How to Write a Great Pika 2.2 Prompt",
+    "promptingIntro": "Describe the subject, composition, lighting, and style in clear, concrete terms.",
+    "promptingTip": "Tip: resolution + aspect ratio are set in the UI — your prompt controls subject, composition, lighting, style, and mood.",
+    "promptingGlobalPrinciples": [
+      "Describe the subject, composition, and lighting clearly.",
+      "Use visual anchors (specific nouns > vague adjectives).",
+      "Iterate: change one thing at a time."
+    ],
+    "tipsIntro": "Image generation is most predictable when you keep the frame simple, readable, and physically grounded.",
+    "promptingEngineWhy": [
+      "Keep prompts focused: one subject, one action, one camera angle.",
+      "Use concrete visual anchors (props, textures, lighting cues).",
+      "Iterate by changing a single variable per take."
+    ],
+    "promptingTabNotes": {
+      "quick": "Quick = variations. Use for fast iteration.",
+      "structured": "Structured = consistency. Use when you need reliable results.",
+      "pro": "Pro = style control. Use for precise, repeatable looks."
+    },
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want variations.",
+        "copy": "[Style] + [Subject] + [Setting] + [Lighting] + [Mood / palette]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (best for reliable results)",
+        "description": "Separate information so the model can follow it consistently.",
+        "copy": "Subject:\n[Who/what + 1 clear action or pose.]\n\nSetting:\n[Where + time of day + 2–3 visual anchors.]\n\nComposition:\n- Framing: [wide / medium / close-up]\n- Angle: [eye-level / low / high]\n- Lens feel: [e.g., 35mm natural, shallow DOF]\n\nLighting + palette:\n[Key light + 2–3 palette anchors]\n\nStyle constraints:\nNo logos. No readable text. Clean background."
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Pro prompt (ultra-specific \"studio brief\")",
+        "description": "Use this when you need a very specific look or continuity across shots.",
+        "copy": "Project / intent:\n[One-line goal for the still.]\n\nSubject:\n[Who/what + wardrobe/materials + 2–3 distinctive traits.]\n\nLocation / set:\n[Where + time of day + weather. Add 3 visual anchors.]\n\nComposition:\n- Framing + angle\n- Lens feel + depth of field\n- Look: [clean digital / subtle film grain / soft bloom]\n\nLighting & grade:\n- Key light\n- Contrast\n- Palette anchors (3–5)\n\nConstraints:\nNo logos. No readable text. No overlays."
+      }
+    ]
   }
 }

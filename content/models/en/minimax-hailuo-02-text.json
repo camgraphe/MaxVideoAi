@@ -34,12 +34,30 @@
   },
   "technicalOverviewTitle": "Technical overview",
   "technicalOverview": [
-    { "label": "Duration", "body": "6 s or 10 s per clip" },
-    { "label": "Resolution", "body": "512p or 768p" },
-    { "label": "Aspect ratios", "body": "16:9, 9:16, 1:1" },
-    { "label": "Inputs", "body": "Text prompts; optional reference image; optional end frame" },
-    { "label": "Modes", "body": "Text-to-video and Image-to-video" },
-    { "label": "Audio", "body": "Silent output (no native or uploaded audio)" },
+    {
+      "label": "Duration",
+      "body": "6 s or 10 s per clip"
+    },
+    {
+      "label": "Resolution",
+      "body": "512p or 768p"
+    },
+    {
+      "label": "Aspect ratios",
+      "body": "16:9, 9:16, 1:1"
+    },
+    {
+      "label": "Inputs",
+      "body": "Text prompts; optional reference image; optional end frame"
+    },
+    {
+      "label": "Modes",
+      "body": "Text-to-video and Image-to-video"
+    },
+    {
+      "label": "Audio",
+      "body": "Silent output (no native or uploaded audio)"
+    },
     {
       "label": "Pricing",
       "body": "Budget-friendly; wallet-based live pricing in Generate"
@@ -82,11 +100,26 @@
     }
   ],
   "faqs": [
-    { "q": "Why choose MiniMax over premium engines?", "a": "Great motion/physics at lower per-second cost, ideal for volume ads, explainers and experiments without burning budget." },
-    { "q": "What prompt style works best?", "a": "2–3 sentences covering subject, environment, camera and physics; one main idea per clip." },
-    { "q": "Does it support vertical video?", "a": "Yes—16:9, 9:16, 1:1 are available in MaxVideoAI." },
-    { "q": "Does it support audio?", "a": "No. Hailuo 02 outputs silent video; add sound in post or pair with audio-capable engines." },
-    { "q": "What if I need 1080p?", "a": "Use Hailuo 02 for drafts at 512p/768p, then upscale or rerun the prompt in 1080p engines (Veo, Kling, Wan, Sora 2 Pro)." }
+    {
+      "q": "Why choose MiniMax over premium engines?",
+      "a": "Great motion/physics at lower per-second cost, ideal for volume ads, explainers and experiments without burning budget."
+    },
+    {
+      "q": "What prompt style works best?",
+      "a": "2–3 sentences covering subject, environment, camera and physics; one main idea per clip."
+    },
+    {
+      "q": "Does it support vertical video?",
+      "a": "Yes—16:9, 9:16, 1:1 are available in MaxVideoAI."
+    },
+    {
+      "q": "Does it support audio?",
+      "a": "No. Hailuo 02 outputs silent video; add sound in post or pair with audio-capable engines."
+    },
+    {
+      "q": "What if I need 1080p?",
+      "a": "Use Hailuo 02 for drafts at 512p/768p, then upscale or rerun the prompt in 1080p engines (Veo, Kling, Wan, Sora 2 Pro)."
+    }
   ],
   "custom": {
     "heroDesc1": "Generate fast, physics-aware drafts at 512p/768p from text or a single image, with optional end frame to lock the landing.",
@@ -200,18 +233,6 @@
       "Beat 1: establish; Beat 2: motion/transition; Beat 3: hero frame",
       "Keep to one environment/style per clip"
     ],
-    "demoTitle": "Demo Prompt – 10s city drift (9:16)",
-    "demoPromptLabel": "10s city drift",
-    "demoPrompt": [
-      "10s vertical shot drifting through a neon-soaked city street at night, stylized but grounded in real physics.",
-      "Camera floats forward above puddles, reflections rippling as people/umbrellas pass in soft focus.",
-      "Wind gusts send trash and steam swirling; painterly look, saturated colors, no text/logos."
-    ],
-    "demoNotes": [
-      "Single environment with physics cues",
-      "Easy to loop as a background",
-      "Silent output ready for your own track"
-    ],
     "tipsTitle": "Tips & Limitations in Plain English",
     "strengths": [
       "Strong physics/motion for short clips",
@@ -249,16 +270,73 @@
     "comparisonCta": "Compare MiniMax vs Pika 2.2 →",
     "faqTitle": "FAQ – MiniMax Hailuo 02 in MaxVideoAI",
     "faqs": [
-      { "q": "Why choose MiniMax instead of premium engines?", "a": "Strong motion/physics at lower cost; ideal for volume ads and experiments." },
-      { "q": "What prompt style works best?", "a": "Short, motion-forward: subject, environment, camera, physics; one idea per clip." },
-      { "q": "Can it do vertical video?", "a": "Yes—16:9, 9:16, 1:1 available in MaxVideoAI." },
-      { "q": "Does it support audio?", "a": "No. Outputs are silent; add sound in post or via audio engines." },
-      { "q": "What if I need 1080p?", "a": "Draft in Hailuo 02 (512p/768p), then upscale or rerun in 1080p engines like Veo/Kling/Wan/Sora 2 Pro." }
+      {
+        "q": "Why choose MiniMax instead of premium engines?",
+        "a": "Strong motion/physics at lower cost; ideal for volume ads and experiments."
+      },
+      {
+        "q": "What prompt style works best?",
+        "a": "Short, motion-forward: subject, environment, camera, physics; one idea per clip."
+      },
+      {
+        "q": "Can it do vertical video?",
+        "a": "Yes—16:9, 9:16, 1:1 available in MaxVideoAI."
+      },
+      {
+        "q": "Does it support audio?",
+        "a": "No. Outputs are silent; add sound in post or via audio engines."
+      },
+      {
+        "q": "What if I need 1080p?",
+        "a": "Draft in Hailuo 02 (512p/768p), then upscale or rerun in 1080p engines like Veo/Kling/Wan/Sora 2 Pro."
+      }
     ],
     "relatedTitle": "Explore other models",
     "relatedSubtitle": "Compare pricing, latency, and output options across MaxVideoAI.",
     "finalPara1": "MiniMax Hailuo 02 is your fast, physics-savvy sketch engine for testing motion and transitions cheaply.",
     "finalPara2": "Use it to explore ideas, then promote winners to higher-end models for audio and 1080p finals.",
-    "finalButton": "Open Generate"
+    "finalButton": "Open Generate",
+    "promptingTitle": "How to Write a Great MiniMax Hailuo 02 Prompt",
+    "promptingIntro": "Describe the subject, composition, lighting, and style in clear, concrete terms.",
+    "promptingTip": "Tip: resolution + aspect ratio are set in the UI — your prompt controls subject, composition, lighting, style, and mood.",
+    "promptingGlobalPrinciples": [
+      "Describe the subject, composition, and lighting clearly.",
+      "Use visual anchors (specific nouns > vague adjectives).",
+      "Iterate: change one thing at a time."
+    ],
+    "tipsIntro": "Image generation is most predictable when you keep the frame simple, readable, and physically grounded.",
+    "promptingEngineWhy": [
+      "Keep prompts focused: one subject, one action, one camera angle.",
+      "Use concrete visual anchors (props, textures, lighting cues).",
+      "Iterate by changing a single variable per take."
+    ],
+    "promptingTabNotes": {
+      "quick": "Quick = variations. Use for fast iteration.",
+      "structured": "Structured = consistency. Use when you need reliable results.",
+      "pro": "Pro = style control. Use for precise, repeatable looks."
+    },
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want variations.",
+        "copy": "[Style] + [Subject] + [Setting] + [Lighting] + [Mood / palette]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (best for reliable results)",
+        "description": "Separate information so the model can follow it consistently.",
+        "copy": "Subject:\n[Who/what + 1 clear action or pose.]\n\nSetting:\n[Where + time of day + 2–3 visual anchors.]\n\nComposition:\n- Framing: [wide / medium / close-up]\n- Angle: [eye-level / low / high]\n- Lens feel: [e.g., 35mm natural, shallow DOF]\n\nLighting + palette:\n[Key light + 2–3 palette anchors]\n\nStyle constraints:\nNo logos. No readable text. Clean background."
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Pro prompt (ultra-specific \"studio brief\")",
+        "description": "Use this when you need a very specific look or continuity across shots.",
+        "copy": "Project / intent:\n[One-line goal for the still.]\n\nSubject:\n[Who/what + wardrobe/materials + 2–3 distinctive traits.]\n\nLocation / set:\n[Where + time of day + weather. Add 3 visual anchors.]\n\nComposition:\n- Framing + angle\n- Lens feel + depth of field\n- Look: [clean digital / subtle film grain / soft bloom]\n\nLighting & grade:\n- Key light\n- Contrast\n- Palette anchors (3–5)\n\nConstraints:\nNo logos. No readable text. No overlays."
+      }
+    ]
   }
 }

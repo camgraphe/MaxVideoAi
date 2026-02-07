@@ -33,16 +33,34 @@
   },
   "technicalOverviewTitle": "Technical overview",
   "technicalOverview": [
-    { "label": "Duration", "body": "4 s, 6 s, 8 s per render" },
-    { "label": "Resolution", "body": "720p or 1080p at 24 fps" },
-    { "label": "Formats", "body": "16:9 and 9:16 (no 1:1 in this tier)" },
-    { "label": "Inputs", "body": "Text → Video; Image → Video from a single still" },
-    { "label": "Audio", "body": "Optional native audio (VO, ambience, SFX) via per-job toggle" },
+    {
+      "label": "Duration",
+      "body": "4 s, 6 s, 8 s per render"
+    },
+    {
+      "label": "Resolution",
+      "body": "720p or 1080p at 24 fps"
+    },
+    {
+      "label": "Formats",
+      "body": "16:9 and 9:16 (no 1:1 in this tier)"
+    },
+    {
+      "label": "Inputs",
+      "body": "Text → Video; Image → Video from a single still"
+    },
+    {
+      "label": "Audio",
+      "body": "Optional native audio (VO, ambience, SFX) via per-job toggle"
+    },
     {
       "label": "Pricing",
       "body": "Per-second; example: audio on ≈$0.15/s, audio off ≈$0.10/s; pay-as-you-go wallet"
     },
-    { "label": "Render timing", "body": "Short queue times; live estimates shown in the jobs rail" }
+    {
+      "label": "Render timing",
+      "body": "Short queue times; live estimates shown in the jobs rail"
+    }
   ],
   "promptStructure": {
     "title": "Text-to-Video with Veo 3.1 Fast",
@@ -222,19 +240,6 @@
       "Promote the best to Veo 3.1 for higher fidelity and audio depth.",
       "Stay single-scene in Fast; use other Veo tiers for multi-beat control."
     ],
-    "demoTitle": "Demo: One Prompt Pattern for Veo 3.1 Fast",
-    "demoPromptLabel": "6 second vertical mood loop (9:16, 1080p)",
-    "demoPrompt": [
-      "6 second vertical loop of a young woman working late at a minimalist desk in front of a big window, city lights blurred in the background.",
-      "Camera: slow handheld drift left and right, staying on her face and laptop.",
-      "Lighting: cool blue from outside, warm desk lamp on her hands.",
-      "Audio: quiet typing, distant city hum, no dialogue."
-    ],
-    "demoNotes": [
-      "One clear subject and single environment.",
-      "Simple camera motion that loops cleanly.",
-      "Audio supports the mood without complicating the scene."
-    ],
     "tipsTitle": "Tips & Limitations in Plain English",
     "strengths": [
       "Speed and price for A/B tests and explorations",
@@ -293,6 +298,48 @@
     "relatedSubtitle": "Compare price tiers, latency, and prompt presets across the rest of the catalog.",
     "finalPara1": "Veo 3.1 Fast in MaxVideoAI is your rapid-fire test bench for Veo prompts.",
     "finalPara2": "Same cinematic language, lower stakes, and quality that’s ready for social delivery.",
-    "finalButton": "Open Generate"
+    "finalButton": "Open Generate",
+    "promptingTitle": "How to Write a Great Google Veo 3.1 Fast Prompt",
+    "promptingIntro": "Describe the subject, composition, lighting, and style in clear, concrete terms.",
+    "promptingTip": "Tip: resolution + aspect ratio are set in the UI — your prompt controls subject, composition, lighting, style, and mood.",
+    "promptingGlobalPrinciples": [
+      "Describe the subject, composition, and lighting clearly.",
+      "Use visual anchors (specific nouns > vague adjectives).",
+      "Iterate: change one thing at a time."
+    ],
+    "tipsIntro": "Image generation is most predictable when you keep the frame simple, readable, and physically grounded.",
+    "promptingEngineWhy": [
+      "Keep prompts focused: one subject, one action, one camera angle.",
+      "Use concrete visual anchors (props, textures, lighting cues).",
+      "Iterate by changing a single variable per take."
+    ],
+    "promptingTabNotes": {
+      "quick": "Quick = variations. Use for fast iteration.",
+      "structured": "Structured = consistency. Use when you need reliable results.",
+      "pro": "Pro = style control. Use for precise, repeatable looks."
+    },
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want variations.",
+        "copy": "[Style] + [Subject] + [Setting] + [Lighting] + [Mood / palette]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (best for reliable results)",
+        "description": "Separate information so the model can follow it consistently.",
+        "copy": "Subject:\n[Who/what + 1 clear action or pose.]\n\nSetting:\n[Where + time of day + 2–3 visual anchors.]\n\nComposition:\n- Framing: [wide / medium / close-up]\n- Angle: [eye-level / low / high]\n- Lens feel: [e.g., 35mm natural, shallow DOF]\n\nLighting + palette:\n[Key light + 2–3 palette anchors]\n\nStyle constraints:\nNo logos. No readable text. Clean background."
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Pro prompt (ultra-specific \"studio brief\")",
+        "description": "Use this when you need a very specific look or continuity across shots.",
+        "copy": "Project / intent:\n[One-line goal for the still.]\n\nSubject:\n[Who/what + wardrobe/materials + 2–3 distinctive traits.]\n\nLocation / set:\n[Where + time of day + weather. Add 3 visual anchors.]\n\nComposition:\n- Framing + angle\n- Lens feel + depth of field\n- Look: [clean digital / subtle film grain / soft bloom]\n\nLighting & grade:\n- Key light\n- Contrast\n- Palette anchors (3–5)\n\nConstraints:\nNo logos. No readable text. No overlays."
+      }
+    ]
   }
 }

@@ -5,10 +5,11 @@ import clsx from 'clsx';
 import { Button } from '@/components/ui/Button';
 import { CopyPromptButton } from '@/components/CopyPromptButton';
 
-const DEVELOPER_GUIDE_URL =
+const DEFAULT_GUIDE_URL =
   'https://developers.openai.com/cookbook/examples/sora/sora2_prompting_guide/';
 
 type TabId = 'quick' | 'structured' | 'pro' | 'storyboard';
+type PromptingMode = 'video' | 'image';
 
 const DEFAULT_GLOBAL_PRINCIPLES = [
   '1 shot = 1 camera move + 1 subject action',
@@ -17,10 +18,9 @@ const DEFAULT_GLOBAL_PRINCIPLES = [
 ];
 
 const DEFAULT_ENGINE_WHY = [
-  'Too many beats can cause drift — keep each clip to 2–3 clear actions.',
-  'Image-to-video locks the first frame composition; prompt controls motion and timing.',
-  'Reference image rules are strict — clean stills, no logos, no readable text.',
-  'Audio cues help pacing; describe 1–2 key sounds for rhythm.',
+  'Keep prompts focused: one subject, one action, one camera move.',
+  'Use concrete visual anchors (props, textures, lighting cues).',
+  'Iterate by changing a single variable per take.',
 ];
 
 const DEFAULT_TAB_NOTES: Record<TabId, string> = {
@@ -118,7 +118,7 @@ Constraints:
 No logos. No readable text. No subtitles/overlays. No jump cuts. No slow-motion.`;
 
 
-const TABS = [
+const VIDEO_TABS = [
   {
     id: 'quick' as TabId,
     label: 'Quick',
@@ -150,6 +150,72 @@ const TABS = [
   },
 ];
 
+const IMAGE_QUICK_TEMPLATE =
+  '[Style] + [Subject] + [Setting] + [Lighting] + [Mood / palette]';
+
+const IMAGE_STRUCTURED_TEMPLATE = `Subject:
+[Who/what + 1 clear action or pose.]
+
+Setting:
+[Where + time of day + 2–3 visual anchors.]
+
+Composition:
+- Framing: [wide / medium / close-up]
+- Angle: [eye-level / low / high]
+- Lens feel: [e.g., 35mm natural, shallow DOF]
+
+Lighting + palette:
+[Key light + 2–3 palette anchors]
+
+Style constraints:
+No logos. No readable text. Clean background.`;
+
+const IMAGE_PRO_TEMPLATE = `Project / intent:
+[One-line goal for the still.]
+
+Subject:
+[Who/what + wardrobe/materials + 2–3 distinctive traits.]
+
+Location / set:
+[Where + time of day + weather. Add 3 visual anchors.]
+
+Composition:
+- Framing + angle
+- Lens feel + depth of field
+- Look: [clean digital / subtle film grain / soft bloom]
+
+Lighting & grade:
+- Key light
+- Contrast
+- Palette anchors (3–5)
+
+Constraints:
+No logos. No readable text. No overlays.`;
+
+const IMAGE_TABS = [
+  {
+    id: 'quick' as TabId,
+    label: 'Quick',
+    title: 'Quick prompt (fast iteration)',
+    description: 'Use 1–2 sentences when you want variations.',
+    copy: IMAGE_QUICK_TEMPLATE,
+  },
+  {
+    id: 'structured' as TabId,
+    label: 'Structured',
+    title: 'Structured prompt (best for reliable results)',
+    description: 'Separate information so the model can follow it consistently.',
+    copy: IMAGE_STRUCTURED_TEMPLATE,
+  },
+  {
+    id: 'pro' as TabId,
+    label: 'Pro',
+    title: 'Pro prompt (ultra-specific "studio brief")',
+    description: 'Use this when you need a very specific look or continuity across shots.',
+    copy: IMAGE_PRO_TEMPLATE,
+  },
+];
+
 function buildPanelId(id: TabId) {
   return `prompting-panel-${id}`;
 }
@@ -160,13 +226,35 @@ function buildTabId(id: TabId) {
 
 type PromptingTabNotes = Partial<Record<TabId, string>>;
 
+type PromptingTab = {
+  id: TabId;
+  label: string;
+  title: string;
+  description?: string;
+  copy: string;
+};
+
 type SoraPromptingTabsProps = {
+  title?: string;
+  intro?: string;
+  tip?: string;
+  guideLabel?: string;
+  guideUrl?: string;
+  mode?: PromptingMode;
+  tabs?: PromptingTab[];
   globalPrinciples?: string[];
   engineWhy?: string[];
   tabNotes?: PromptingTabNotes;
 };
 
 export function SoraPromptingTabs({
+  title,
+  intro,
+  tip,
+  guideLabel,
+  guideUrl,
+  mode = 'video',
+  tabs,
   globalPrinciples,
   engineWhy,
   tabNotes,
@@ -176,34 +264,49 @@ export function SoraPromptingTabs({
     ...DEFAULT_TAB_NOTES,
     ...(tabNotes ?? {}),
   };
+  const resolvedTabs = (tabs && tabs.length ? tabs : mode === 'image' ? IMAGE_TABS : VIDEO_TABS).filter(Boolean);
   const globalRules = globalPrinciples?.length ? globalPrinciples : DEFAULT_GLOBAL_PRINCIPLES;
   const engineRules = engineWhy?.length ? engineWhy : DEFAULT_ENGINE_WHY;
+  const resolvedTitle =
+    title ?? (mode === 'image' ? 'How to Write a Great Image Prompt' : 'How to Write a Great Video Prompt');
+  const resolvedIntro =
+    intro ??
+    (mode === 'image'
+      ? 'Describe the subject, composition, lighting, and style in clear, concrete terms.'
+      : 'Works best when you brief it like a cinematographer: one clear shot, simple timing, and visible actions.');
+  const resolvedTip =
+    tip ??
+    (mode === 'image'
+      ? 'Tip: resolution + aspect ratio are set in the UI — your prompt controls subject, composition, lighting, style, and mood.'
+      : 'Tip: duration + aspect ratio are set in the UI — your prompt controls subject, action, camera, lighting, style, and sound.');
+  const resolvedGuideUrl = guideUrl === null ? undefined : guideUrl ?? (mode === 'video' ? DEFAULT_GUIDE_URL : undefined);
+  const resolvedGuideLabel =
+    resolvedGuideUrl
+      ? guideLabel ?? (mode === 'video' ? 'Developers guide' : 'Learn more')
+      : undefined;
 
   return (
     <div className="stack-gap">
       <div className="stack-gap-sm text-center">
         <div className="flex flex-wrap items-center justify-center gap-3">
-          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">How to Write a Great Sora 2 Prompt</h2>
-          <a
-            href={DEVELOPER_GUIDE_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="text-xs font-semibold uppercase tracking-micro text-text-muted hover:text-text-primary"
-          >
-            OpenAI Developers
-          </a>
+          <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">{resolvedTitle}</h2>
+          {resolvedGuideUrl ? (
+            <a
+              href={resolvedGuideUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs font-semibold uppercase tracking-micro text-text-muted hover:text-text-primary"
+            >
+              {resolvedGuideLabel ?? 'Learn more'}
+            </a>
+          ) : null}
         </div>
-        <p className="text-base leading-relaxed text-text-secondary">
-          Sora 2 works best when you brief it like a cinematographer: one clear shot, simple timing, and visible actions.
-        </p>
-        <p className="text-sm text-text-secondary">
-          Tip: duration + aspect ratio are set in the UI — your prompt controls subject, action, camera, lighting, style,
-          and sound.
-        </p>
+        {resolvedIntro ? <p className="text-base leading-relaxed text-text-secondary">{resolvedIntro}</p> : null}
+        {resolvedTip ? <p className="text-sm text-text-secondary">{resolvedTip}</p> : null}
       </div>
 
       <div className="flex flex-wrap gap-2" role="tablist" aria-label="Prompt levels">
-        {TABS.map((tab) => {
+        {resolvedTabs.map((tab) => {
           const isActive = tab.id === activeId;
           return (
             <Button
@@ -229,7 +332,7 @@ export function SoraPromptingTabs({
 
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="lg:col-span-7">
-          {TABS.map((tab) => {
+          {resolvedTabs.map((tab) => {
             const isActive = tab.id === activeId;
             const note = mergedTabNotes[tab.id];
             return (
@@ -245,70 +348,26 @@ export function SoraPromptingTabs({
                   <header className="flex flex-wrap items-start justify-between gap-3">
                     <div className="space-y-1">
                       <h3 className="text-lg font-semibold text-text-primary">{tab.title}</h3>
-                      <p className="text-sm text-text-secondary">{tab.description}</p>
+                      {tab.description ? <p className="text-sm text-text-secondary">{tab.description}</p> : null}
                       {note ? <p className="text-xs text-text-muted">{note}</p> : null}
                     </div>
                     <CopyPromptButton prompt={tab.copy} copyLabel="Copy template" />
                   </header>
 
-                  {tab.id === 'quick' && (
-                    <div className="stack-gap-sm">
-                      <div className="rounded-xl border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
-                        <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Template</p>
-                        <p className="mt-2">
-                          <span className="font-semibold text-text-primary">[Style]</span> +{' '}
-                          <span className="font-semibold text-text-primary">[Subject doing 1 clear action]</span> +{' '}
-                          <span className="font-semibold text-text-primary">[Where]</span> +{' '}
-                          <span className="font-semibold text-text-primary">[Camera move]</span> +{' '}
-                          <span className="font-semibold text-text-primary">[Lighting]</span> +{' '}
-                          <span className="font-semibold text-text-primary">[Sound cue]</span>
-                        </p>
-                      </div>
+                  <div className="stack-gap-sm">
+                    <div className="rounded-xl border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
+                      <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+                        Template (copy/paste)
+                      </p>
+                      <pre className="mt-2 whitespace-pre-wrap font-mono text-sm text-text-primary">{tab.copy}</pre>
+                    </div>
+                    {tab.id === 'quick' && mode === 'video' ? (
                       <div className="rounded-xl border border-hairline bg-surface-2 px-4 py-3 text-sm text-text-secondary">
                         <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Example</p>
                         <p className="mt-2">{QUICK_EXAMPLE}</p>
                       </div>
-                    </div>
-                  )}
-
-                  {tab.id === 'structured' && (
-                    <div className="stack-gap-sm max-h-[520px] overflow-auto">
-                      <div className="rounded-xl border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
-                        <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
-                          Template (copy/paste)
-                        </p>
-                        <pre className="mt-2 whitespace-pre-wrap font-mono text-sm text-text-primary">
-                          {STRUCTURED_TEMPLATE}
-                        </pre>
-                      </div>
-                    </div>
-                  )}
-
-                  {tab.id === 'pro' && (
-                    <div className="stack-gap-sm">
-                      <div className="rounded-xl border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
-                        <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
-                          Pro prompt template (film crew brief)
-                        </p>
-                        <pre className="mt-2 whitespace-pre-wrap font-mono text-sm text-text-primary">
-                          {PRO_TEMPLATE}
-                        </pre>
-                      </div>
-                    </div>
-                  )}
-
-                  {tab.id === 'storyboard' && (
-                    <div className="stack-gap-sm">
-                      <div className="rounded-xl border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
-                        <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
-                          Template (copy/paste)
-                        </p>
-                        <pre className="mt-2 whitespace-pre-wrap font-mono text-sm text-text-primary">
-                          {STORYBOARD_TEMPLATE}
-                        </pre>
-                      </div>
-                    </div>
-                  )}
+                    ) : null}
+                  </div>
                 </article>
               </div>
             );

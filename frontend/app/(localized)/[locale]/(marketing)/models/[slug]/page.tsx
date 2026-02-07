@@ -233,6 +233,16 @@ type KeySpecKey =
 type KeySpecRow = { label: string; value: string };
 type KeySpecValues = Record<KeySpecKey, string>;
 
+type PromptingTabId = 'quick' | 'structured' | 'pro' | 'storyboard';
+
+type PromptingTab = {
+  id: PromptingTabId;
+  label: string;
+  title: string;
+  description?: string;
+  copy: string;
+};
+
 type SoraCopy = {
   heroTitle: string | null;
   heroSubtitle: string | null;
@@ -279,6 +289,12 @@ type SoraCopy = {
   promptPatternSteps: string[];
   promptSkeleton: string | null;
   promptSkeletonNote: string | null;
+  promptingTitle?: string | null;
+  promptingIntro?: string | null;
+  promptingTip?: string | null;
+  promptingGuideLabel?: string | null;
+  promptingGuideUrl?: string | null;
+  promptingTabs: PromptingTab[];
   imageTitle: string | null;
   imageIntro: string | null;
   imageFlow: string[];
@@ -292,6 +308,7 @@ type SoraCopy = {
   demoPrompt: string[];
   demoNotes: string[];
   tipsTitle: string | null;
+  tipsIntro: string | null;
   strengths: string[];
   boundaries: string[];
   troubleshootingTitle: string | null;
@@ -995,6 +1012,27 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
       storyboard: pick('storyboard'),
     };
   };
+  const getPromptingTabs = (): PromptingTab[] => {
+    const value = custom['promptingTabs'];
+    if (!Array.isArray(value)) return [];
+    return value.reduce<PromptingTab[]>((tabs, entry) => {
+      if (!entry || typeof entry !== 'object') return tabs;
+      const obj = entry as Record<string, unknown>;
+      const id = typeof obj.id === 'string' ? obj.id : null;
+      const label = typeof obj.label === 'string' ? obj.label : null;
+      const title = typeof obj.title === 'string' ? obj.title : null;
+      const copy = typeof obj.copy === 'string' ? obj.copy : null;
+      if (!id || !label || !title || !copy) return tabs;
+      tabs.push({
+        id: id as PromptingTabId,
+        label,
+        title,
+        description: typeof obj.description === 'string' ? obj.description : undefined,
+        copy,
+      });
+      return tabs;
+    }, []);
+  };
   const getQuickStartBlocks = (): QuickStartBlock[] => {
     const value = custom['quickStartBlocks'];
     if (!Array.isArray(value)) return [];
@@ -1100,6 +1138,13 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
   const promptingGlobalPrinciples = getStringArray('promptingGlobalPrinciples');
   const promptingEngineWhy = getStringArray('promptingEngineWhy');
   const promptingTabNotes = getPromptingTabNotes();
+  const promptingTabs = getPromptingTabs();
+  const promptingTitle = getString('promptingTitle');
+  const promptingIntro = getString('promptingIntro');
+  const promptingTip = getString('promptingTip');
+  const promptingGuideLabel = getString('promptingGuideLabel');
+  const promptingGuideUrl = getString('promptingGuideUrl');
+  const tipsIntro = getString('tipsIntro');
 
   return {
     heroTitle: localized.hero?.title ?? getString('heroTitle'),
@@ -1154,6 +1199,12 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
     promptPatternSteps,
     promptSkeleton,
     promptSkeletonNote,
+    promptingTitle,
+    promptingIntro,
+    promptingTip,
+    promptingGuideLabel,
+    promptingGuideUrl,
+    promptingTabs,
     imageTitle: getString('imageTitle'),
     imageIntro: getString('imageIntro'),
     imageFlow: getStringArray('imageFlow'),
@@ -1167,7 +1218,10 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
     demoPrompt: getStringArray('demoPrompt'),
     demoNotes: getStringArray('demoNotes'),
     tipsTitle: getString('tipsTitle'),
-    strengths: getStringArray('strengths'),
+    tipsIntro,
+    strengths: getStringArray('strengths').length
+      ? getStringArray('strengths')
+      : localized.tips?.items ?? [],
     boundaries: getStringArray('boundaries'),
     troubleshootingTitle: getString('troubleshootingTitle'),
     troubleshootingItems: getStringArray('troubleshootingItems'),
@@ -1189,6 +1243,11 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
     finalButton: getString('finalButton'),
     faqTitle: getString('faqTitle'),
     faqs: getFaqs(),
+    promptingTitle,
+    promptingIntro,
+    promptingTip,
+    promptingGuideLabel,
+    promptingGuideUrl,
     promptingGlobalPrinciples,
     promptingEngineWhy,
     promptingTabNotes,
@@ -1653,6 +1712,7 @@ function Sora2PageLayout({
   const relatedCtaSora2Pro = copy.relatedCtaSora2Pro;
   const relatedItems = copy.relatedItems;
   const isSoraPrompting = engine.modelSlug === 'sora-2' || engine.modelSlug === 'sora-2-pro';
+  const isVideoEngine = engine.type === 'video';
   const baseFaqList = faqEntries.map((entry) => ({
     question: entry.question,
     answer: entry.answer,
@@ -1709,7 +1769,7 @@ function Sora2PageLayout({
     );
   const hasImageSection = isSoraPrompting || imageToVideoSteps.length > 0 || imageToVideoUseCases.length > 0;
   const hasTipsSection =
-    isSoraPrompting || strengths.length > 0 || boundaries.length > 0 || Boolean(copy.tipsTitle);
+    strengths.length > 0 || boundaries.length > 0 || Boolean(copy.tipsTitle || copy.tipsIntro);
   const hasSafetySection =
     isSoraPrompting || safetyRules.length > 0 || safetyInterpretation.length > 0 || Boolean(copy.safetyTitle);
   const hasFaqSection = isSoraPrompting || faqList.length > 0;
@@ -2266,13 +2326,20 @@ function Sora2PageLayout({
           id={imageAnchorId}
           className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
         >
-          {isSoraPrompting ? (
+          {isVideoEngine ? (
             <div className="stack-gap-lg">
-              <SoraPromptingTabs
-                globalPrinciples={copy.promptingGlobalPrinciples}
-                engineWhy={copy.promptingEngineWhy}
-                tabNotes={copy.promptingTabNotes}
-              />
+                <SoraPromptingTabs
+                  title={copy.promptingTitle ?? undefined}
+                  intro={copy.promptingIntro ?? undefined}
+                  tip={copy.promptingTip ?? undefined}
+                  guideLabel={copy.promptingGuideLabel ?? undefined}
+                  guideUrl={copy.promptingGuideUrl ?? undefined}
+                  mode="video"
+                  tabs={copy.promptingTabs.length ? copy.promptingTabs : undefined}
+                  globalPrinciples={copy.promptingGlobalPrinciples}
+                  engineWhy={copy.promptingEngineWhy}
+                  tabNotes={copy.promptingTabNotes}
+                />
               {copy.demoTitle || copy.demoPrompt.length ? (
                 <div className="stack-gap-lg">
                   {copy.demoTitle ? (
@@ -2285,6 +2352,7 @@ function Sora2PageLayout({
                       <MediaPreview
                         media={demoMedia}
                         label={copy.demoTitle ?? 'Sora 2 demo'}
+                        hideLabel
                         promptLabel={copy.demoPromptLabel ?? undefined}
                         promptLines={copy.demoPrompt}
                       />
@@ -2298,39 +2366,43 @@ function Sora2PageLayout({
               ) : null}
             </div>
           ) : (
-            <>
-              {copy.promptTitle ? (
-                <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-                  {copy.promptTitle}
-                </h2>
-              ) : null}
-              {copy.promptIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.promptIntro}</p> : null}
-              <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-                {promptPatternSteps.length ? (
-                  <div className="space-y-2">
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {promptPatternSteps.map((step, index) => (
-                        <div
-                          key={step}
-                          className="flex items-start gap-4 rounded-xl bg-bg px-3 py-2 text-sm text-text-secondary"
-                        >
-                          <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-surface-2 text-[11px] font-semibold text-text-primary">
-                            {index + 1}
-                          </span>
-                          <span>{step}</span>
-                        </div>
+            <div className="stack-gap-lg">
+                <SoraPromptingTabs
+                  title={copy.promptingTitle ?? undefined}
+                  intro={copy.promptingIntro ?? undefined}
+                  tip={copy.promptingTip ?? undefined}
+                  guideLabel={copy.promptingGuideLabel ?? undefined}
+                  guideUrl={copy.promptingGuideUrl ?? undefined}
+                  mode="image"
+                  tabs={copy.promptingTabs.length ? copy.promptingTabs : undefined}
+                  globalPrinciples={copy.promptingGlobalPrinciples}
+                  engineWhy={copy.promptingEngineWhy}
+                  tabNotes={copy.promptingTabNotes}
+                />
+              {(copy.promptTitle || copy.promptIntro || promptPatternSteps.length || copy.promptSkeleton) ? (
+                <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
+                  {copy.promptTitle ? (
+                    <h3 className="text-base font-semibold text-text-primary">{copy.promptTitle}</h3>
+                  ) : null}
+                  {copy.promptIntro ? (
+                    <p className="text-sm text-text-secondary">{copy.promptIntro}</p>
+                  ) : null}
+                  {promptPatternSteps.length ? (
+                    <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                      {promptPatternSteps.map((step) => (
+                        <li key={step}>{step}</li>
                       ))}
+                    </ul>
+                  ) : null}
+                  {copy.promptSkeleton || copy.promptSkeletonNote ? (
+                    <div className="rounded-xl border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
+                      {copy.promptSkeleton ? <p className="mt-2 italic">{copy.promptSkeleton}</p> : null}
+                      {copy.promptSkeletonNote ? <p className="mt-2">{copy.promptSkeletonNote}</p> : null}
                     </div>
-                  </div>
-                ) : null}
-                {copy.promptSkeleton || copy.promptSkeletonNote ? (
-                  <div className="rounded-xl border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
-                    {copy.promptSkeleton ? <p className="mt-2 italic">{copy.promptSkeleton}</p> : null}
-                    {copy.promptSkeletonNote ? <p className="mt-2">{copy.promptSkeletonNote}</p> : null}
-                  </div>
-                ) : null}
-              </div>
-            </>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
           )}
         </section>
 
@@ -2363,11 +2435,11 @@ function Sora2PageLayout({
         {isSoraPrompting ? (
           <section id="tips" className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap-lg`}>
             <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-              Tips &amp; quick fixes
+              {copy.tipsTitle ?? 'Tips & quick fixes'}
             </h2>
-            <p className="text-center text-base leading-relaxed text-text-secondary">
-              Sora is most predictable when you keep the shot simple, readable, and physical.
-            </p>
+            {copy.tipsIntro ? (
+              <p className="text-center text-base leading-relaxed text-text-secondary">{copy.tipsIntro}</p>
+            ) : null}
             <div className="grid grid-gap-sm lg:grid-cols-3">
               <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
                 <h3 className="text-base font-semibold text-text-primary">What works best</h3>
@@ -2875,6 +2947,8 @@ function MediaPreview({
   const isValidAspect = Number.isFinite(w) && Number.isFinite(h) && h > 0 && w > 0;
   const paddingBottom = isValidAspect ? `${(h / w) * 100}%` : '56.25%';
   const isVertical = isValidAspect ? w < h : false;
+  const normalizedPromptLabel = promptLabel?.trim() ?? '';
+  const displayPromptLabel = /^prompt\b/i.test(normalizedPromptLabel) ? 'Prompt' : normalizedPromptLabel;
   const figureClassName = [
     'group relative overflow-hidden rounded-[22px] border border-hairline bg-surface shadow-card',
     isVertical ? 'mx-auto max-w-sm' : '',
@@ -2941,8 +3015,11 @@ function MediaPreview({
             ))}
           </ul>
         ) : null}
-        {!hidePrompt && promptLabel && promptLabel.trim() && promptLabel.trim() !== label.trim() ? (
-          <p className="text-xs font-semibold text-text-secondary">{promptLabel}</p>
+        {!hidePrompt &&
+        displayPromptLabel &&
+        displayPromptLabel.toLowerCase() !== label.trim().toLowerCase() &&
+        !/demo/i.test(displayPromptLabel) ? (
+          <p className="text-xs font-semibold text-text-secondary">{displayPromptLabel}</p>
         ) : null}
         {!hidePrompt && promptLines.length ? (
           <div className="space-y-2 text-sm text-text-primary">
