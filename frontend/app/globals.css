@@ -23,6 +23,10 @@ body {
   background: linear-gradient(180deg, var(--bg) 0%, var(--surface-3) 100%);
 }
 
+[data-theme="dark"] body {
+  background: linear-gradient(180deg, var(--bg) 0%, var(--surface-3) 100%);
+}
+
 a[href="https://dang.ai/"] {
   width: 1px;
   height: 1px;
