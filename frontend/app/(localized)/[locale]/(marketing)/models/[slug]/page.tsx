@@ -880,6 +880,30 @@ function normalizeMaxResolution(value: string) {
   return value;
 }
 
+function buildAutoHeroSpecChips(values: KeySpecValues | null): HeroSpecChip[] {
+  if (!values) return [];
+  const chips: HeroSpecChip[] = [];
+  const add = (label: string | null, icon: HeroSpecIconKey | null) => {
+    if (!label) return;
+    chips.push({ label, icon });
+  };
+
+  const resolution = values.maxResolution && !isPending(values.maxResolution)
+    ? normalizeMaxResolution(values.maxResolution)
+    : null;
+  const duration = values.maxDuration && !isPending(values.maxDuration) ? values.maxDuration.replace(' max', '') : null;
+  const aspect = values.aspectRatios && !isPending(values.aspectRatios) ? values.aspectRatios : null;
+
+  if (isSupported(values.textToVideo)) add('Text→Video', 'textToVideo');
+  if (isSupported(values.imageToVideo)) add('Image→Video', 'imageToVideo');
+  if (resolution) add(resolution, 'resolution');
+  if (duration) add(duration, 'duration');
+  if (aspect) add(aspect, 'aspectRatio');
+  if (isSupported(values.audioOutput) || isSupported(values.nativeAudioGeneration)) add('Audio', 'audio');
+
+  return chips.slice(0, 6);
+}
+
 type DetailCopy = {
   backLabel: string;
   examplesLinkLabel: string;
@@ -1641,7 +1665,7 @@ function Sora2PageLayout({
   const heroBadge = copy.heroBadge ?? localizedContent.hero?.badge ?? null;
   const heroDesc1 = copy.heroDesc1 ?? localizedContent.overview ?? localizedContent.seo.description ?? null;
   const heroDesc2 = copy.heroDesc2;
-  const heroSpecChips = copy.heroSpecChips;
+  const heroSpecChips = copy.heroSpecChips.length ? copy.heroSpecChips : buildAutoHeroSpecChips(keySpecValues);
   const heroTrustLine = copy.heroTrustLine;
   const showHeroDescriptions = heroSpecChips.length === 0;
   const heroPrice = keySpecValues?.pricePerSecond ?? pricePerSecondLabel ?? formatPricePerSecond(engine);

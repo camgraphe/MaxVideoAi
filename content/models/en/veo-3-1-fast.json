@@ -299,19 +299,19 @@
     "finalPara1": "Veo 3.1 Fast in MaxVideoAI is your rapid-fire test bench for Veo prompts.",
     "finalPara2": "Same cinematic language, lower stakes, and quality that’s ready for social delivery.",
     "finalButton": "Open Generate",
-    "promptingTitle": "How to Write a Great Google Veo 3.1 Fast Prompt",
-    "promptingIntro": "Describe the subject, composition, lighting, and style in clear, concrete terms.",
-    "promptingTip": "Tip: resolution + aspect ratio are set in the UI — your prompt controls subject, composition, lighting, style, and mood.",
+    "promptingTitle": "How to Write a Great Veo 3.1 Fast Prompt",
+    "promptingIntro": "Veo Fast performs best with short, concrete prompts and clear camera direction.",
+    "promptingTip": "Tip: duration + aspect ratio are set in the UI — your prompt controls subject, action, camera, lighting, style, and sound.",
     "promptingGlobalPrinciples": [
       "Describe the subject, composition, and lighting clearly.",
       "Use visual anchors (specific nouns > vague adjectives).",
       "Iterate: change one thing at a time."
     ],
-    "tipsIntro": "Image generation is most predictable when you keep the frame simple, readable, and physically grounded.",
+    "tipsIntro": "Veo Fast is most predictable when you keep the shot simple, readable, and physical.",
     "promptingEngineWhy": [
-      "Keep prompts focused: one subject, one action, one camera angle.",
-      "Use concrete visual anchors (props, textures, lighting cues).",
-      "Iterate by changing a single variable per take."
+      "Optimized for speed and volume — keep beats simple and short.",
+      "Clear camera language (framing + motion) improves consistency.",
+      "Use concrete visual anchors to reduce drift."
     ],
     "promptingTabNotes": {
       "quick": "Quick = variations. Use for fast iteration.",
@@ -340,6 +340,8 @@
         "description": "Use this when you need a very specific look or continuity across shots.",
         "copy": "Project / intent:\n[One-line goal for the still.]\n\nSubject:\n[Who/what + wardrobe/materials + 2–3 distinctive traits.]\n\nLocation / set:\n[Where + time of day + weather. Add 3 visual anchors.]\n\nComposition:\n- Framing + angle\n- Lens feel + depth of field\n- Look: [clean digital / subtle film grain / soft bloom]\n\nLighting & grade:\n- Key light\n- Contrast\n- Palette anchors (3–5)\n\nConstraints:\nNo logos. No readable text. No overlays."
       }
-    ]
+    ],
+    "promptingGuideLabel": "Google DeepMind",
+    "promptingGuideUrl": "https://deepmind.google/technologies/veo/"
   }
 }

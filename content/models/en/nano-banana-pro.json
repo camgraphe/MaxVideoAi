@@ -201,6 +201,7 @@
         "description": "Use this when you need a very specific look or continuity across shots.",
         "copy": "Project / intent:\n[One-line goal for the still.]\n\nSubject:\n[Who/what + wardrobe/materials + 2–3 distinctive traits.]\n\nLocation / set:\n[Where + time of day + weather. Add 3 visual anchors.]\n\nComposition:\n- Framing + angle\n- Lens feel + depth of field\n- Look: [clean digital / subtle film grain / soft bloom]\n\nLighting & grade:\n- Key light\n- Contrast\n- Palette anchors (3–5)\n\nConstraints:\nNo logos. No readable text. No overlays."
       }
-    ]
+    ],
+    "promptingGuideLabel": "Learn more"
   }
 }

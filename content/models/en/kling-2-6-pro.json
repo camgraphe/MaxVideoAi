@@ -202,19 +202,18 @@
       "One reference still for I2V; no multi-image or per-character voice control yet"
     ],
     "promptingTitle": "How to Write a Great Kling 2.6 Pro Prompt",
-    "promptingIntro": "Works best when you brief it like a cinematographer: one clear shot, simple timing, and visible actions.",
+    "promptingIntro": "Kling responds best to crisp subject/action descriptions and a clear camera plan.",
     "promptingTip": "Tip: duration + aspect ratio are set in the UI — your prompt controls subject, action, camera, lighting, style, and sound.",
     "promptingGlobalPrinciples": [
       "1 shot = 1 camera move + 1 subject action",
       "Use visual anchors (specific nouns > vague adjectives)",
       "Iterate: change one thing at a time"
     ],
-    "tipsIntro": "Video generation is most predictable when you keep the shot simple, readable, and physical.",
+    "tipsIntro": "Kling is most predictable when you keep the shot simple, readable, and physical.",
     "promptingEngineWhy": [
-      "Too many beats can cause drift — keep each clip to 2–3 clear actions.",
-      "Image-to-video locks the first frame composition; prompt controls motion and timing.",
-      "Reference image rules are strict — clean stills, no logos, no readable text.",
-      "Audio cues help pacing; describe 1–2 key sounds for rhythm."
+      "Kling favors structured prompts with clear camera motion.",
+      "Short beats (2–3 actions) reduce drift.",
+      "Use concrete visual anchors to stabilize style."
     ],
     "promptingTabNotes": {
       "quick": "Quick = variations. Use for fast iteration.",
@@ -254,9 +253,11 @@
         "id": "storyboard",
         "label": "Storyboard",
         "title": "Storyboard prompt (multi-shot / shot list)",
-        "description": "Use this when you want a mini-story in one clip. A storyboard prompt (aka multi-shot / shot list prompt) gives Sora clear timing, camera direction, and continuity. Also called shot-list or sequenced prompts.",
+        "description": "Use this when you want a mini-story in one clip. A storyboard prompt (aka multi-shot / shot list prompt) gives clear timing, camera direction, and continuity. Also called shot-list or sequenced prompts.",
         "copy": "Storyboard / shot list prompt\nDuration: [4/8/12s] • Aspect: [16:9 or 9:16]\n\nScene + continuity:\n[Same subject + same location + same wardrobe/props + same lighting throughout.]\n\nShot 1 (0–2s):\n[Framing + subject action + camera move]\n\nShot 2 (2–6s):\n[Framing + subject action + camera move]\n\nShot 3 (6–8/12s):\n[Framing + final action/reveal + camera move or settle]\n\nLighting + mood:\n[Golden hour / soft daylight / neon night… + 2–3 palette anchors]\n\nSound (if supported):\n[Ambience + 1–2 SFX cues + optional music vibe]\n\nConstraints:\nNo logos. No readable text. No subtitles/overlays. No jump cuts. No slow-motion."
       }
-    ]
+    ],
+    "promptingGuideLabel": "Kling by Kuaishou",
+    "promptingGuideUrl": "https://www.kuaishou.com/en"
   }
 }

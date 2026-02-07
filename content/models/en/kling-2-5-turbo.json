@@ -311,18 +311,18 @@
     "finalPara2": "Use it when camera work and motion carry the story, then layer audio in post or pair with audio engines.",
     "finalButton": "Open Generate",
     "promptingTitle": "How to Write a Great Kling 2.5 Turbo Prompt",
-    "promptingIntro": "Describe the subject, composition, lighting, and style in clear, concrete terms.",
-    "promptingTip": "Tip: resolution + aspect ratio are set in the UI — your prompt controls subject, composition, lighting, style, and mood.",
+    "promptingIntro": "Kling Turbo performs best with short, concrete prompts and clear motion cues.",
+    "promptingTip": "Tip: duration + aspect ratio are set in the UI — your prompt controls subject, action, camera, lighting, style, and sound.",
     "promptingGlobalPrinciples": [
       "Describe the subject, composition, and lighting clearly.",
       "Use visual anchors (specific nouns > vague adjectives).",
       "Iterate: change one thing at a time."
     ],
-    "tipsIntro": "Image generation is most predictable when you keep the frame simple, readable, and physically grounded.",
+    "tipsIntro": "Kling Turbo is most predictable when you keep the shot simple, readable, and physical.",
     "promptingEngineWhy": [
-      "Keep prompts focused: one subject, one action, one camera angle.",
-      "Use concrete visual anchors (props, textures, lighting cues).",
-      "Iterate by changing a single variable per take."
+      "Optimized for speed — keep prompts short and focused.",
+      "Clear camera language improves consistency.",
+      "Avoid too many beats in one clip."
     ],
     "promptingTabNotes": {
       "quick": "Quick = variations. Use for fast iteration.",
@@ -351,6 +351,8 @@
         "description": "Use this when you need a very specific look or continuity across shots.",
         "copy": "Project / intent:\n[One-line goal for the still.]\n\nSubject:\n[Who/what + wardrobe/materials + 2–3 distinctive traits.]\n\nLocation / set:\n[Where + time of day + weather. Add 3 visual anchors.]\n\nComposition:\n- Framing + angle\n- Lens feel + depth of field\n- Look: [clean digital / subtle film grain / soft bloom]\n\nLighting & grade:\n- Key light\n- Contrast\n- Palette anchors (3–5)\n\nConstraints:\nNo logos. No readable text. No overlays."
       }
-    ]
+    ],
+    "promptingGuideLabel": "Kling by Kuaishou",
+    "promptingGuideUrl": "https://www.kuaishou.com/en"
   }
 }
