@@ -1631,6 +1631,7 @@ function Sora2PageLayout({
   const relatedCtaSora2Pro = copy.relatedCtaSora2Pro;
   const relatedItems = copy.relatedItems;
   const isSoraPrompting = engine.modelSlug === 'sora-2' || engine.modelSlug === 'sora-2-pro';
+  const isSora2 = engine.modelSlug === 'sora-2';
   const baseFaqList = faqEntries.map((entry) => ({
     question: entry.question,
     answer: entry.answer,
@@ -2019,6 +2020,21 @@ function Sora2PageLayout({
                 ))}
               </div>
             ) : null}
+            {isSora2 && primaryCtaHref ? (
+              <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-hairline bg-surface/80 px-4 py-3 shadow-card">
+                <ButtonLink href={primaryCtaHref} size="md" className="shadow-card" linkComponent={Link}>
+                  {specsPrimaryCtaLabel}
+                </ButtonLink>
+                <TextLink
+                  href={soraCompareHref}
+                  className="text-sm font-semibold text-brand hover:text-brandHover"
+                  linkComponent={Link}
+                >
+                  Compare vs Sora 2 Pro (1080p) →
+                </TextLink>
+                <p className="w-full text-xs text-text-muted">Need 1080p or more control? Compare Sora 2 vs Pro.</p>
+              </div>
+            ) : null}
             {specSections.length ? (
               <div className="grid grid-gap-sm grid-cols-2">
                 {specSections.map((section) => {
@@ -2328,6 +2344,15 @@ function Sora2PageLayout({
                 )}
               </div>
             </div>
+            {isSora2 ? (
+              <TextLink
+                href={soraCompareHref}
+                className="w-fit text-sm font-semibold text-brand hover:text-brandHover"
+                linkComponent={Link}
+              >
+                Compare Sora 2 vs Sora 2 Pro →
+              </TextLink>
+            ) : null}
           </section>
         ) : null}
 
@@ -3047,10 +3072,13 @@ export default async function ModelDetailPage({ params }: PageParams) {
   const heroPrimaryCta = heroContent?.ctaPrimary;
   const heroPrimaryHref = heroPrimaryCta?.href ? normalizeHeroCtaHref(heroPrimaryCta.href) ?? heroPrimaryCta.href : null;
   const secondaryCtas = heroContent?.secondaryLinks ?? [];
-  const normalizedSecondaryCtas = secondaryCtas.map((cta) => ({
+  const heroSecondaryCtas = secondaryCtas.map((cta) => ({
     ...cta,
     href: cta?.href ? normalizeHeroCtaHref(cta.href) ?? cta.href : cta?.href,
   }));
+  const heroSecondaryCtas = isSora2 ? [] : heroSecondaryCtas;
+  const soraCompareHref = localizeComparePath(['sora-2', 'sora-2-pro'].sort().join('-vs-'), 'sora-2');
+  const specsPrimaryCtaLabel = primaryCta ? (primaryCta.includes('→') ? primaryCta : `${primaryCta} →`) : 'Generate with Sora 2 →';
   const brand = PARTNER_BRAND_MAP.get(engine.brandId);
   const promptEntries =
     localizedContent.prompts.length > 0
@@ -3196,7 +3224,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
           </div>
 
           <div className="stack-gap-sm">
-            {(heroPrimaryCta?.label || secondaryCtas.length) ? (
+            {(heroPrimaryCta?.label || heroSecondaryCtas.length) ? (
               <div className="flex flex-wrap gap-4">
                 {heroPrimaryCta?.label && heroPrimaryHref ? (
                   <ButtonLink
@@ -3208,7 +3236,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
                     {heroPrimaryCta.label}
                   </ButtonLink>
                 ) : null}
-                {normalizedSecondaryCtas
+                {heroSecondaryCtas
                   .filter(
                     (cta): cta is { label: string; href: LocalizedLinkHref } =>
                       Boolean(cta.label && cta.href)
