@@ -29,6 +29,8 @@ import { Chip } from '@/components/ui/Chip';
 import { TextLink } from '@/components/ui/TextLink';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { BackLink } from '@/components/video/BackLink';
+import { SoraPromptingTabs } from '@/components/marketing/SoraPromptingTabs.client';
+import { ResponsiveDetails } from '@/components/ui/ResponsiveDetails.client';
 import { getExamplesHref } from '@/lib/examples-links';
 import {
   Box,
@@ -39,6 +41,7 @@ import {
   LayoutGrid,
   Megaphone,
   Monitor,
+  ChevronDown,
   Type,
   Users,
   Volume2,
@@ -311,6 +314,14 @@ type SoraCopy = {
   finalButton: string | null;
   faqTitle: string | null;
   faqs: LocalizedFaqEntry[];
+  promptingGlobalPrinciples: string[];
+  promptingEngineWhy: string[];
+  promptingTabNotes: {
+    quick?: string;
+    structured?: string;
+    pro?: string;
+    storyboard?: string;
+  };
 };
 
 export function generateStaticParams() {
@@ -967,6 +978,18 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
       })
       .filter((section): section is SpecSection => Boolean(section));
   };
+  const getPromptingTabNotes = (): SoraCopy['promptingTabNotes'] => {
+    const value = custom['promptingTabNotes'];
+    if (!value || typeof value !== 'object') return {};
+    const obj = value as Record<string, unknown>;
+    const pick = (key: string) => (typeof obj[key] === 'string' ? obj[key] : undefined);
+    return {
+      quick: pick('quick'),
+      structured: pick('structured'),
+      pro: pick('pro'),
+      storyboard: pick('storyboard'),
+    };
+  };
   const getQuickStartBlocks = (): QuickStartBlock[] => {
     const value = custom['quickStartBlocks'];
     if (!Array.isArray(value)) return [];
@@ -1069,6 +1092,9 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
       : localized.promptStructure?.steps ?? [];
   const promptSkeleton = getString('promptSkeleton') ?? localized.promptStructure?.quote ?? null;
   const promptSkeletonNote = getString('promptSkeletonNote') ?? localized.promptStructure?.description ?? null;
+  const promptingGlobalPrinciples = getStringArray('promptingGlobalPrinciples');
+  const promptingEngineWhy = getStringArray('promptingEngineWhy');
+  const promptingTabNotes = getPromptingTabNotes();
 
   return {
     heroTitle: localized.hero?.title ?? getString('heroTitle'),
@@ -1158,6 +1184,9 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
     finalButton: getString('finalButton'),
     faqTitle: getString('faqTitle'),
     faqs: getFaqs(),
+    promptingGlobalPrinciples,
+    promptingEngineWhy,
+    promptingTabNotes,
   };
 }
 
@@ -1588,12 +1617,9 @@ function Sora2PageLayout({
   const howToLatamSteps = copy.howToLatamSteps;
   const specSections = copy.specSections;
   const quickPricingTitle = copy.quickPricingTitle;
-  const promptPatternSteps = copy.promptPatternSteps.length
-    ? copy.promptPatternSteps
-    : localizedContent.promptStructure?.steps ?? [];
+  const promptPatternSteps = copy.promptPatternSteps;
   const imageToVideoSteps = copy.imageFlow;
   const imageToVideoUseCases = copy.imageWhy;
-  const miniFilmTips = copy.multishotTips;
   const strengths = copy.strengths;
   const boundaries = copy.boundaries;
   const troubleshootingTitle = copy.troubleshootingTitle;
@@ -1604,11 +1630,39 @@ function Sora2PageLayout({
   const relatedCtaSora2 = copy.relatedCtaSora2;
   const relatedCtaSora2Pro = copy.relatedCtaSora2Pro;
   const relatedItems = copy.relatedItems;
-  const faqTitle = copy.faqTitle ?? 'FAQ';
-  const faqList = faqEntries.map((entry) => ({
+  const isSoraPrompting = engine.modelSlug === 'sora-2' || engine.modelSlug === 'sora-2-pro';
+  const baseFaqList = faqEntries.map((entry) => ({
     question: entry.question,
     answer: entry.answer,
   }));
+  const soraFaqList = [
+    {
+      question: 'Is Sora available in Europe / the UK?',
+      answer: 'Yes — you can generate from Europe, the UK, and most supported locations.',
+    },
+    {
+      question: 'Can Sora generate 1080p videos?',
+      answer: 'This tier outputs 720p. For 1080p, use Sora Pro.',
+    },
+    {
+      question: 'Does Sora support image-to-video?',
+      answer: 'Yes. Upload a single reference frame (up to ~50 MB) and prompt motion + timing.',
+    },
+    {
+      question: 'Can I remix or extend an existing video?',
+      answer: 'Not in this configuration. It’s text → video and image → video only. Generate multiple clips for longer edits.',
+    },
+    {
+      question: 'How do I keep outputs consistent (brand look)?',
+      answer: 'Use a reference image, name your palette and lighting, and reuse the same prompt structure across takes.',
+    },
+    {
+      question: 'Does Sora support audio and lip sync?',
+      answer: 'Audio is included. Lip sync works best with short lines (long speeches can drift).',
+    },
+  ];
+  const faqTitle = (isSoraPrompting ? 'FAQ' : copy.faqTitle) ?? 'FAQ';
+  const faqList = isSoraPrompting ? soraFaqList : baseFaqList;
   const faqJsonLdEntries = faqList.slice(0, 6);
   const pageDescription = heroDesc1 ?? heroSubtitle ?? localizedContent.seo.description ?? heroTitle;
   const heroPosterAbsolute = toAbsoluteUrl(heroMedia.posterUrl ?? localizedContent.seo.image ?? null);
@@ -1617,19 +1671,26 @@ function Sora2PageLayout({
   const hasKeySpecRows = keySpecRows.length > 0;
   const hasSpecs = specSections.length > 0 || hasKeySpecRows;
   const hasExamples = galleryVideos.length > 0;
-  const hasWhatSection = Boolean(
-    copy.whatTitle ||
-      copy.whatIntro1 ||
-      copy.whatIntro2 ||
-      quickStartTitle ||
-      quickStartBlocks.length ||
-      whatFlowSteps.length
-  );
-  const hasTextSection = promptPatternSteps.length > 0 || Boolean(copy.promptSkeleton || copy.promptSkeletonNote);
-  const hasImageSection = imageToVideoSteps.length > 0 || imageToVideoUseCases.length > 0;
-  const hasTipsSection = strengths.length > 0 || boundaries.length > 0 || Boolean(copy.tipsTitle);
-  const hasSafetySection = safetyRules.length > 0 || safetyInterpretation.length > 0 || Boolean(copy.safetyTitle);
-  const hasFaqSection = faqList.length > 0;
+  const hasTextSection =
+    isSoraPrompting ||
+    promptPatternSteps.length > 0 ||
+    Boolean(copy.promptTitle || copy.promptIntro || copy.promptSkeleton || copy.promptSkeletonNote);
+  const hasWhatSection =
+    !isSoraPrompting &&
+    Boolean(
+      copy.whatTitle ||
+        copy.whatIntro1 ||
+        copy.whatIntro2 ||
+        quickStartTitle ||
+        quickStartBlocks.length ||
+        whatFlowSteps.length
+    );
+  const hasImageSection = isSoraPrompting || imageToVideoSteps.length > 0 || imageToVideoUseCases.length > 0;
+  const hasTipsSection =
+    isSoraPrompting || strengths.length > 0 || boundaries.length > 0 || Boolean(copy.tipsTitle);
+  const hasSafetySection =
+    isSoraPrompting || safetyRules.length > 0 || safetyInterpretation.length > 0 || Boolean(copy.safetyTitle);
+  const hasFaqSection = isSoraPrompting || faqList.length > 0;
   const isImageEngine = engine.type === 'image';
   const textAnchorId = isImageEngine ? 'text-to-image' : 'text-to-video';
   const imageAnchorId = isImageEngine ? 'image-to-image' : 'image-to-video';
@@ -1638,15 +1699,14 @@ function Sora2PageLayout({
     { id: 'specs', label: 'Specs', visible: hasSpecs },
     { id: textAnchorId, label: 'Examples', visible: hasExamples },
     { id: imageAnchorId, label: 'Prompting', visible: hasTextSection },
+    { id: 'tips', label: 'Tips', visible: hasTipsSection },
     {
       id: imageWorkflowAnchorId,
       label: isImageEngine ? 'Image to Image' : 'Image to Video',
       visible: hasImageSection,
     },
-    { id: 'tips', label: 'Tips', visible: hasTipsSection },
-    { id: 'examples', label: 'What it is', visible: hasWhatSection },
-    { id: 'faq', label: 'FAQ', visible: hasFaqSection },
     { id: 'safety', label: 'Safety', visible: hasSafetySection },
+    { id: 'faq', label: 'FAQ', visible: hasFaqSection },
   ].filter((item) => item.visible);
   const productSchema = buildProductSchema({
     engine,
@@ -1895,17 +1955,22 @@ function Sora2PageLayout({
           </div>
 
         {tocItems.length ? (
-          <nav className="flex justify-center" aria-label="Model page navigation">
-            <div className="flex flex-wrap justify-center gap-2">
-              {tocItems.map((item) => (
-                <a
-                  key={item.id}
-                  href={`#${item.id}`}
-                  className="inline-flex items-center rounded-full border border-hairline px-3 py-1 text-sm font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
-                >
-                  {item.label}
-                </a>
-              ))}
+          <nav
+            className={`${FULL_BLEED_SECTION} sticky top-[calc(var(--header-height)-8px)] z-40 border-b border-hairline bg-surface`}
+            aria-label="Model page sections"
+          >
+            <div className={`${FULL_BLEED_CONTENT} px-6 sm:px-8`}>
+              <div className="flex flex-wrap justify-center gap-2 py-0.5">
+                {tocItems.map((item) => (
+                  <a
+                    key={item.id}
+                    href={`#${item.id}`}
+                    className="inline-flex items-center rounded-full border border-hairline bg-surface/90 px-3 py-1 text-xs font-semibold text-text-secondary transition hover:border-text-muted hover:text-text-primary"
+                  >
+                    {item.label}
+                  </a>
+                ))}
+              </div>
             </div>
           </nav>
         ) : null}
@@ -1926,20 +1991,20 @@ function Sora2PageLayout({
               </blockquote>
             ) : null}
             {keySpecRows.length ? (
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2 border-t border-hairline/70 pt-3 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="mx-auto grid max-w-5xl grid-cols-2 gap-x-3 gap-y-1.5 border-t border-hairline/70 pt-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
                 {keySpecRows.map((row, index) => (
                   <div
                     key={row.label}
-                    className={`flex items-start gap-3 border-hairline/70 py-2 pr-2 ${
+                    className={`flex items-start gap-2 border-hairline/70 py-1.5 pr-1 ${
                       index < keySpecRows.length - 1 ? 'border-b' : ''
                     }`}
                   >
-                    <span className="mt-[2px] inline-flex h-2 w-2 rounded-full bg-text-muted/60" aria-hidden />
+                    <span className="mt-[3px] inline-flex h-1.5 w-1.5 rounded-full bg-text-muted/60" aria-hidden />
                     <div className="flex flex-col gap-1">
-                      <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+                      <span className="text-[10px] font-semibold uppercase tracking-micro text-text-muted">
                         {row.label}
                       </span>
-                      <span className="text-sm font-semibold leading-snug text-text-primary">
+                      <span className="text-[13px] font-semibold leading-snug text-text-primary">
                         {isSupported(row.value) ? (
                           <span className="inline-flex items-center gap-1 text-emerald-600">
                             <UIIcon icon={Check} size={14} className="text-emerald-600" />
@@ -1956,19 +2021,107 @@ function Sora2PageLayout({
             ) : null}
             {specSections.length ? (
               <div className="grid grid-gap-sm grid-cols-2">
-                {specSections.map((section) => (
-                  <article
-                    key={section.title}
-                    className="space-y-2 rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
-                  >
-                    <h3 className="text-lg font-semibold text-text-primary">{section.title}</h3>
-                    <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                      {section.items.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </article>
-                ))}
+                {specSections.map((section) => {
+                  const normalizedTitle = section.title.toLowerCase();
+                  const isInputsCard =
+                    isSoraPrompting && normalizedTitle.startsWith('inputs & file types');
+                  const isAudioCard = isSoraPrompting && normalizedTitle.startsWith('audio');
+
+                  if (isInputsCard) {
+                    return (
+                      <article
+                        key={section.title}
+                        className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
+                      >
+                        <details className="group rounded-xl px-0 py-0 text-sm text-text-secondary">
+                          <summary className="cursor-pointer list-none text-lg font-semibold text-text-primary">
+                            <span className="flex items-center justify-between gap-3">
+                              <span>Inputs &amp; file types</span>
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
+                                Details
+                                <UIIcon
+                                  icon={ChevronDown}
+                                  size={14}
+                                  className="text-text-muted transition group-open:rotate-180"
+                                />
+                              </span>
+                            </span>
+                          </summary>
+                          <div className="mt-2 stack-gap-sm">
+                            <p className="text-sm text-text-secondary">
+                              Start from text or a single reference image — then prompt motion + timing.
+                            </p>
+                            <ul className="list-disc space-y-1 pl-5">
+                              <li>
+                                Text → Video: 1–3 sentences. Think shot description: subject + action + camera + vibe.
+                              </li>
+                              <li>
+                                Image → Video: upload one still to lock the look, then describe motion + timing.
+                              </li>
+                              <li>
+                                Reference images showing real people are blocked — use characters, non-human subjects,
+                                or product shots.
+                              </li>
+                            </ul>
+                          </div>
+                        </details>
+                      </article>
+                    );
+                  }
+
+                  if (isAudioCard) {
+                    return (
+                      <article
+                        key={section.title}
+                        className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
+                      >
+                        <details className="group rounded-xl px-0 py-0 text-sm text-text-secondary">
+                          <summary className="cursor-pointer list-none text-lg font-semibold text-text-primary">
+                            <span className="flex items-center justify-between gap-3">
+                              <span>Audio (included)</span>
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
+                                Details
+                                <UIIcon
+                                  icon={ChevronDown}
+                                  size={14}
+                                  className="text-text-muted transition group-open:rotate-180"
+                                />
+                              </span>
+                            </span>
+                          </summary>
+                          <div className="mt-2 stack-gap-sm">
+                            <p className="text-sm text-text-secondary">
+                              Audio ships with the clip — use 1–2 sound cues to make it feel intentional.
+                            </p>
+                            <ul className="list-disc space-y-1 pl-5">
+                              <li>
+                                Add 1–2 key sound cues as pacing anchors (e.g., distant traffic hiss, packaging
+                                crinkle, footsteps on wet pavement).
+                              </li>
+                              <li>
+                                Lip sync works best with short, punchy lines — long speeches can drift.
+                              </li>
+                            </ul>
+                          </div>
+                        </details>
+                      </article>
+                    );
+                  }
+
+                  return (
+                    <article
+                      key={section.title}
+                      className="space-y-2 rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
+                    >
+                      <h3 className="text-lg font-semibold text-text-primary">{section.title}</h3>
+                      <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                        {section.items.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    </article>
+                  );
+                })}
               </div>
             ) : null}
             {copy.specValueProp ? (
@@ -1987,6 +2140,7 @@ function Sora2PageLayout({
             </Link>
           </div>
         ) : null}
+
 
         <section
           id={textAnchorId}
@@ -2083,117 +2237,153 @@ function Sora2PageLayout({
           id={imageAnchorId}
           className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap`}
         >
-          {copy.promptTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.promptTitle}</h2> : null}
-          {copy.promptIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.promptIntro}</p> : null}
-          <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-            {promptPatternSteps.length ? (
-              <div className="space-y-2">
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {promptPatternSteps.map((step, index) => (
-                    <div key={step} className="flex items-start gap-4 rounded-xl bg-bg px-3 py-2 text-sm text-text-secondary">
-                      <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-surface-2 text-[11px] font-semibold text-text-primary">
-                        {index + 1}
-                      </span>
-                      <span>{step}</span>
-                    </div>
-                  ))}
+          {isSoraPrompting ? (
+            <div className="stack-gap-lg">
+              <SoraPromptingTabs
+                globalPrinciples={copy.promptingGlobalPrinciples}
+                engineWhy={copy.promptingEngineWhy}
+                tabNotes={copy.promptingTabNotes}
+              />
+              {copy.demoTitle || copy.demoPrompt.length ? (
+                <div className="stack-gap-lg">
+                  {copy.demoTitle ? (
+                    <h2 className="mt-2 text-center text-2xl font-semibold text-text-primary sm:mt-0 sm:text-3xl">
+                      {copy.demoTitle}
+                    </h2>
+                  ) : null}
+                  <div className="mx-auto w-full max-w-5xl">
+                    {demoMedia ? (
+                      <MediaPreview
+                        media={demoMedia}
+                        label={copy.demoTitle ?? 'Sora 2 demo'}
+                        promptLabel={copy.demoPromptLabel ?? undefined}
+                        promptLines={copy.demoPrompt}
+                      />
+                    ) : (
+                      <div className="flex h-full min-h-[280px] items-center justify-center rounded-xl border border-dashed border-hairline bg-bg text-sm text-text-secondary">
+                        {copy.galleryIntro ?? 'Demo clip coming soon.'}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ) : null}
-            {copy.promptSkeleton || copy.promptSkeletonNote ? (
-              <div className="rounded-xl border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
-                {copy.promptSkeleton ? <p className="mt-2 italic">{copy.promptSkeleton}</p> : null}
-                {copy.promptSkeletonNote ? <p className="mt-2">{copy.promptSkeletonNote}</p> : null}
-              </div>
-            ) : null}
-          </div>
-        </section>
-
-        <section
-          id={imageWorkflowAnchorId}
-          className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap`}
-        >
-          {copy.imageTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.imageTitle}</h2> : null}
-          {copy.imageIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.imageIntro}</p> : null}
-          <div className="grid grid-gap-sm lg:grid-cols-2">
-            {imageToVideoSteps.length ? (
+              ) : null}
+            </div>
+          ) : (
+            <>
+              {copy.promptTitle ? (
+                <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
+                  {copy.promptTitle}
+                </h2>
+              ) : null}
+              {copy.promptIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.promptIntro}</p> : null}
               <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-                <ol className="list-decimal space-y-2 pl-5 text-sm text-text-secondary">
-                  {imageToVideoSteps.map((step) => (
-                    <li key={step}>{step}</li>
-                  ))}
-                </ol>
+                {promptPatternSteps.length ? (
+                  <div className="space-y-2">
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {promptPatternSteps.map((step, index) => (
+                        <div
+                          key={step}
+                          className="flex items-start gap-4 rounded-xl bg-bg px-3 py-2 text-sm text-text-secondary"
+                        >
+                          <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-surface-2 text-[11px] font-semibold text-text-primary">
+                            {index + 1}
+                          </span>
+                          <span>{step}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                {copy.promptSkeleton || copy.promptSkeletonNote ? (
+                  <div className="rounded-xl border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
+                    {copy.promptSkeleton ? <p className="mt-2 italic">{copy.promptSkeleton}</p> : null}
+                    {copy.promptSkeletonNote ? <p className="mt-2">{copy.promptSkeletonNote}</p> : null}
+                  </div>
+                ) : null}
               </div>
-            ) : null}
-            {imageToVideoUseCases.length ? (
-              <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                  {imageToVideoUseCases.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-          </div>
+            </>
+          )}
         </section>
 
-        <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap`}>
-          {copy.multishotTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.multishotTitle}</h2> : null}
-          {copy.multishotIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.multishotIntro1}</p> : null}
-          {copy.multishotIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.multishotIntro2}</p> : null}
-          <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-            <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-              {miniFilmTips.map((tip) => (
-                <li key={tip}>{tip}</li>
-              ))}
-            </ul>
-          </div>
-        </section>
-
-        {copy.demoTitle || copy.demoPrompt.length || copy.demoNotes.length ? (
+        {!isSoraPrompting && (copy.demoTitle || copy.demoPrompt.length || copy.demoNotes.length) ? (
           <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap-lg`}>
-            {copy.demoTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.demoTitle}</h2> : null}
-            <div className="grid grid-gap lg:grid-cols-2 lg:items-start">
-              <div className="rounded-2xl border border-hairline bg-surface/80 p-3 shadow-card lg:order-2">
+            {copy.demoTitle ? (
+              <h2 className="mt-2 text-center text-2xl font-semibold text-text-primary sm:mt-0 sm:text-3xl">
+                {copy.demoTitle}
+              </h2>
+            ) : null}
+            <div className="stack-gap-lg">
+              <div className="mx-auto w-full max-w-5xl">
                 {demoMedia ? (
-                  <MediaPreview media={demoMedia} label={copy.demoTitle ?? 'Sora 2 demo'} />
+                  <MediaPreview
+                    media={demoMedia}
+                    label={copy.demoTitle ?? 'Sora 2 demo'}
+                    promptLabel={copy.demoPromptLabel ?? undefined}
+                    promptLines={copy.demoPrompt}
+                  />
                 ) : (
                   <div className="flex h-full min-h-[280px] items-center justify-center rounded-xl border border-dashed border-hairline bg-bg text-sm text-text-secondary">
                     {copy.galleryIntro ?? 'Demo clip coming soon.'}
                   </div>
                 )}
               </div>
-              <div className="stack-gap rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card lg:order-1">
-                {copy.demoPromptLabel ? (
-                  <p className="text-sm font-semibold text-text-primary">{copy.demoPromptLabel}</p>
-                ) : null}
-                {copy.demoPrompt.length ? (
-                  <div className="rounded-xl border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
-                    {copy.demoPrompt.map((line) => (
-                      <p key={line} className="mt-2 first:mt-0">
-                        {line}
-                      </p>
-                    ))}
-                  </div>
-                ) : null}
-                {copy.demoNotes.length ? (
-                  <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                    {copy.demoNotes.map((note) => (
-                      <li key={note}>{note}</li>
-                    ))}
-                  </ul>
-                ) : null}
-              </div>
             </div>
           </section>
         ) : null}
 
-        {copy.tipsTitle || strengths.length || boundaries.length ? (
+        {isSoraPrompting ? (
+          <section id="tips" className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap-lg`}>
+            <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
+              Tips &amp; quick fixes (plain English)
+            </h2>
+            <p className="text-base leading-relaxed text-text-secondary">
+              Sora is most predictable when you keep the shot simple, readable, and physical.
+            </p>
+            <div className="grid grid-gap-sm lg:grid-cols-3">
+              <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
+                <h3 className="text-base font-semibold text-text-primary">What works best</h3>
+                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                  <li>One clear subject + one visible action</li>
+                  <li>Simple environments with 2–3 visual anchors</li>
+                  <li>One main camera move (push-in, pan, handheld, tracking — pick one)</li>
+                  <li>Short beats (4–12 seconds): one moment, not a full storyline</li>
+                  <li>For storyboard / shot list prompts: 2–3 beats max in one clip</li>
+                </ul>
+              </div>
+              <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
+                <h3 className="text-base font-semibold text-text-primary">Common problems → fast fixes</h3>
+                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                  <li>Feels random / inconsistent → simplify to: subject + action + camera + lighting. Re-run 2–3 takes.</li>
+                  <li>Motion looks weird → reduce movement: one camera move, slower action, fewer props.</li>
+                  <li>Subject drifts off-brand → start from a reference image and lock palette + lighting.</li>
+                  <li>Text looks wrong → avoid readable signage, tiny UI, micro labels. Keep text off-screen.</li>
+                  <li>Dialogue drifts → keep lines short and punchy; avoid long monologues.</li>
+                </ul>
+              </div>
+              <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
+                <h3 className="text-base font-semibold text-text-primary">Hard limits to keep in mind</h3>
+                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                  <li>Output is short-form (4 / 8 / 12 seconds). For longer edits, stitch multiple clips.</li>
+                  <li>This tier is 720p (use Pro for higher resolution).</li>
+                  <li>No video input here — start from text or a single reference image.</li>
+                  <li>
+                    <strong>Reference image requirements are strict (Image→Video):</strong> use <strong>one clean still image</strong> that matches your target aspect ratio. Avoid <strong>real people</strong>, <strong>logos/watermarks</strong>, <strong>readable text</strong>, and <strong>collages</strong> — some uploads may be blocked.
+                  </li>
+                  <li>No fixed seeds — iteration = re-run + refine.</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+        ) : copy.tipsTitle || strengths.length || boundaries.length ? (
           <section
             id="tips"
             className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap-lg`}
           >
-            {copy.tipsTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.tipsTitle}</h2> : null}
+            {copy.tipsTitle ? (
+              <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
+                {copy.tipsTitle}
+              </h2>
+            ) : null}
             <div className="grid grid-gap-sm lg:grid-cols-2">
               {strengths.length ? (
                 <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
@@ -2228,10 +2418,148 @@ function Sora2PageLayout({
           </section>
         ) : null}
 
-        <section
-          id="examples"
-          className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap`}
-        >
+        {isSoraPrompting ? (
+          <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap`}>
+            <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
+              Sora vs Sora Pro (quick guide)
+            </h2>
+            <div className="grid grid-gap-sm lg:grid-cols-2">
+              <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
+                <h3 className="text-base font-semibold text-text-primary">Use Sora when you want:</h3>
+                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                  <li>Fast idea → clip iteration</li>
+                  <li>Storyboards, concepts, UGC-style beats, short ads</li>
+                  <li>A quick first pass where 720p is enough</li>
+                </ul>
+              </div>
+              <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
+                <h3 className="text-base font-semibold text-text-primary">Use Sora Pro when you need:</h3>
+                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                  <li>Higher resolution output</li>
+                  <li>More control for finals (including audio control in the UI)</li>
+                  <li>Cleaner final takes after you’ve validated the idea</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+        ) : null}
+
+        {isSoraPrompting && (relatedItems.length || relatedEngines.length) ? (
+          <section id={imageWorkflowAnchorId} className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap`}>
+            <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
+              Compare Sora 2 vs other AI video models
+            </h2>
+            <p className="text-base leading-relaxed text-text-secondary">
+              Not sure if Sora 2 is the best fit for your shot? These side-by-side comparisons break down the tradeoffs —
+              <strong> price per second, resolution, audio, speed, and motion style</strong> — so you can pick the right
+              engine fast.
+            </p>
+            <p className="text-sm text-text-secondary">Each page includes real outputs and practical best-use cases.</p>
+            <div className="grid grid-gap-sm md:grid-cols-3">
+              {(relatedItems.length
+                ? relatedItems
+                : relatedEngines.map((entry) => ({
+                    brand: entry.brandId,
+                    title: entry.marketingName ?? entry.engine.label,
+                    modelSlug: entry.modelSlug,
+                  }))
+              )
+                .filter((entry) => Boolean(entry.modelSlug))
+                .map((entry) => {
+                  const label = entry.title ?? '';
+                  const compareBaseSlug = 'sora-2';
+                  const compareSlug = [compareBaseSlug, entry.modelSlug].sort().join('-vs-');
+                  const compareHref = localizeComparePath(compareSlug, compareBaseSlug);
+                  const descriptionBySlug: Record<string, string> = {
+                    'sora-2-pro':
+                      'Need higher resolution or more control for finals? Sora 2 Pro is the upgrade path from Sora 2 when you’re done storyboarding and want cleaner deliverables.',
+                    'veo-3-1':
+                      'Veo 3.1 is strong for cinematic short-form with a different motion feel. Compare it to Sora 2 if you’re optimizing for audio, style, or a specific look.',
+                    'veo-3-1-fast':
+                      'Veo 3.1 Fast is built for cheaper, faster iteration. Compare it to Sora 2 if you want quick volume testing for ads and social.',
+                  };
+                  const ctaBySlug: Record<string, string> = {
+                    'sora-2-pro': 'Compare OpenAI Sora 2 vs OpenAI Sora 2 Pro →',
+                    'veo-3-1': 'Compare OpenAI Sora 2 vs Google Veo 3.1 →',
+                    'veo-3-1-fast': 'Compare OpenAI Sora 2 vs Google Veo 3.1 Fast →',
+                  };
+                  const description =
+                    descriptionBySlug[entry.modelSlug ?? ''] ??
+                    `Compare Sora 2 vs ${label} on price, resolution, audio, speed, and motion style.`;
+                  const ctaLabel = ctaBySlug[entry.modelSlug ?? ''] ?? `Compare Sora 2 vs ${label} →`;
+                  return (
+                    <article
+                      key={entry.modelSlug}
+                      className="rounded-2xl border border-hairline bg-surface/90 p-4 shadow-card transition hover:-translate-y-1 hover:border-text-muted"
+                    >
+                      {entry.brand ? (
+                        <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+                          {entry.brand}
+                        </p>
+                      ) : null}
+                      <h3 className="mt-2 text-lg font-semibold text-text-primary">Sora 2 vs {label}</h3>
+                      <p className="mt-2 text-sm text-text-secondary line-clamp-2">{description}</p>
+                      <TextLink
+                        href={compareHref}
+                        className="mt-4 gap-1 text-sm font-semibold text-brand hover:text-brandHover"
+                        linkComponent={Link}
+                      >
+                        {ctaLabel}
+                      </TextLink>
+                    </article>
+                  );
+                })}
+            </div>
+            <ButtonLink
+              href={normalizedPrimaryCtaHref}
+              size="lg"
+              className="w-fit shadow-card"
+              linkComponent={Link}
+            >
+              Generate Sora 2 in MaxVideoAI →
+            </ButtonLink>
+          </section>
+        ) : null}
+
+        {!isSoraPrompting ? (
+          <section
+            id={imageWorkflowAnchorId}
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap`}
+          >
+            {copy.imageTitle ? (
+              <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
+                {copy.imageTitle}
+              </h2>
+            ) : null}
+            {copy.imageIntro ? <p className="text-base leading-relaxed text-text-secondary">{copy.imageIntro}</p> : null}
+            <div className="grid grid-gap-sm lg:grid-cols-2">
+              {imageToVideoSteps.length ? (
+                <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
+                  <ol className="list-decimal space-y-2 pl-5 text-sm text-text-secondary">
+                    {imageToVideoSteps.map((step) => (
+                      <li key={step}>{step}</li>
+                    ))}
+                  </ol>
+                </div>
+              ) : null}
+              {imageToVideoUseCases.length ? (
+                <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
+                  <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                    {imageToVideoUseCases.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+          </section>
+        ) : null}
+
+        {!isSoraPrompting ? (
+          <section
+            id="examples"
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap`}
+          >
           {copy.whatTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.whatTitle}</h2> : null}
           {copy.whatIntro1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro1}</p> : null}
           {copy.whatIntro2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.whatIntro2}</p> : null}
@@ -2267,9 +2595,10 @@ function Sora2PageLayout({
               </ol>
             </>
           ) : null}
-        </section>
+          </section>
+        ) : null}
 
-        {copy.comparisonTitle || comparisonPoints.length ? (
+        {!isSoraPrompting && (copy.comparisonTitle || comparisonPoints.length) ? (
           <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap`}>
             {copy.comparisonTitle ? (
               <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.comparisonTitle}</h2>
@@ -2295,7 +2624,7 @@ function Sora2PageLayout({
           </section>
         ) : null}
 
-        {relatedItems.length || relatedEngines.length ? (
+        {!isSoraPrompting && (relatedItems.length || relatedEngines.length) ? (
           <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap`}>
             <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">
               {copy.relatedTitle ?? 'Explore other models'}
@@ -2393,33 +2722,35 @@ function Sora2PageLayout({
           </section>
         ) : null}
 
-        {faqList.length ? (
-          <section
-            id="faq"
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap`}
-          >
-            {faqTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{faqTitle}</h2> : null}
-            <div className="grid grid-gap-sm md:grid-cols-2">
-              {faqList.map((entry) => (
-                <article
-                  key={entry.question}
-                  className="rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
-                >
-                  <h3 className="text-sm font-semibold text-text-primary">{entry.question}</h3>
-                  <p className="mt-2 text-sm text-text-secondary">{entry.answer}</p>
-                </article>
-              ))}
-            </div>
-          </section>
-        ) : null}
-        <FAQSchema questions={faqJsonLdEntries} />
-
-        {copy.safetyTitle || safetyRules.length ? (
+        {isSoraPrompting ? (
           <section
             id="safety"
             className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap`}
           >
-            {copy.safetyTitle ? <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{copy.safetyTitle}</h2> : null}
+            <ResponsiveDetails
+              openOnDesktop
+              className="rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
+              summaryClassName="cursor-pointer text-sm font-semibold text-text-primary"
+              summary="Safety & people / likeness (practical version)"
+            >
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                <li>Don’t generate real people or public figures (celebrities, politicians, etc.).</li>
+                <li>No minors, sexual content, hateful content, or graphic violence.</li>
+                <li>Don’t use someone’s likeness without consent.</li>
+                <li>Some prompts and reference images may be blocked — generic characters and scenes are fine.</li>
+              </ul>
+            </ResponsiveDetails>
+          </section>
+        ) : copy.safetyTitle || safetyRules.length ? (
+          <section
+            id="safety"
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap`}
+          >
+            {copy.safetyTitle ? (
+              <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
+                {copy.safetyTitle}
+              </h2>
+            ) : null}
             <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
               {safetyRules.length ? (
                 <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
@@ -2440,25 +2771,62 @@ function Sora2PageLayout({
           </section>
         ) : null}
 
-        <section className="stack-gap-sm rounded-3xl border border-hairline bg-surface/90 px-6 py-6 text-text-primary shadow-card sm:px-8">
-          {copy.finalPara1 ? <p className="text-base leading-relaxed text-text-secondary">{copy.finalPara1}</p> : null}
-          {copy.finalPara2 ? <p className="text-base leading-relaxed text-text-secondary">{copy.finalPara2}</p> : null}
-          <ButtonLink
-            href={normalizedPrimaryCtaHref}
-            size="lg"
-            className="w-fit shadow-card"
-            linkComponent={Link}
+
+        {faqList.length ? (
+          <section
+            id="faq"
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap`}
           >
-            {copy.finalButton ?? primaryCta}
-          </ButtonLink>
-        </section>
+            {faqTitle ? (
+              <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{faqTitle}</h2>
+            ) : null}
+            {isSoraPrompting ? (
+              <div className="stack-gap-sm">
+                {faqList.map((entry) => (
+                  <ResponsiveDetails
+                    openOnDesktop
+                    key={entry.question}
+                    className="rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
+                    summaryClassName="cursor-pointer text-sm font-semibold text-text-primary"
+                    summary={entry.question}
+                  >
+                    <p className="mt-2 text-sm text-text-secondary">{entry.answer}</p>
+                  </ResponsiveDetails>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-gap-sm md:grid-cols-2">
+                {faqList.map((entry) => (
+                  <article
+                    key={entry.question}
+                    className="rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
+                  >
+                    <h3 className="text-sm font-semibold text-text-primary">{entry.question}</h3>
+                    <p className="mt-2 text-sm text-text-secondary">{entry.answer}</p>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        ) : null}
+        <FAQSchema questions={faqJsonLdEntries} />
         </div>
       </main>
     </>
   );
 }
 
-function MediaPreview({ media, label }: { media: FeaturedMedia; label: string }) {
+function MediaPreview({
+  media,
+  label,
+  promptLabel,
+  promptLines = [],
+}: {
+  media: FeaturedMedia;
+  label: string;
+  promptLabel?: string;
+  promptLines?: string[];
+}) {
   const posterSrc = media.posterUrl ?? null;
   const aspect = media.aspectRatio ?? '16:9';
   const [w, h] = aspect.split(':').map(Number);
@@ -2519,7 +2887,19 @@ function MediaPreview({ media, label }: { media: FeaturedMedia; label: string })
       </div>
       <figcaption className="space-y-1 px-4 py-3">
         <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{label}</p>
-        {media.prompt ? <p className="text-sm font-semibold leading-snug text-text-primary">{media.prompt}</p> : null}
+        {promptLabel ? <p className="text-xs font-semibold text-text-secondary">{promptLabel}</p> : null}
+        {promptLines.length ? (
+          <div className="space-y-2 text-sm text-text-primary">
+            {promptLines.map((line) => (
+              <p key={line} className="leading-relaxed">
+                {line}
+              </p>
+            ))}
+          </div>
+        ) : null}
+        {promptLines.length === 0 && media.prompt ? (
+          <p className="text-sm font-semibold leading-snug text-text-primary">{media.prompt}</p>
+        ) : null}
         {media.href ? (
           <TextLink href={media.href} className="gap-1 text-xs" linkComponent={Link}>
             View render →
