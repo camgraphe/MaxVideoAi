@@ -362,9 +362,9 @@ const BEST_USE_CASE_ICON_MAP = {
 const FULL_BLEED_SECTION =
   "relative isolate before:absolute before:inset-y-0 before:left-1/2 before:right-1/2 before:-ml-[50vw] before:-mr-[50vw] before:content-[''] before:-z-10";
 const SECTION_BG_A =
-  'before:bg-gradient-to-b before:from-[#F9FAFD] before:to-[#F3F4FA] before:border-t before:border-hairline/80 shadow-[inset_0_12px_18px_-14px_rgba(15,23,42,0.35)]';
+  'before:bg-surface-2/70 before:border-t before:border-hairline/80 shadow-[inset_0_12px_18px_-14px_rgba(15,23,42,0.18)] dark:shadow-[inset_0_12px_18px_-14px_rgba(0,0,0,0.55)]';
 const SECTION_BG_B =
-  'before:bg-gradient-to-b before:from-[#F7F8FC] before:to-[#F1F3F9] before:border-t before:border-hairline/80 shadow-[inset_0_12px_18px_-14px_rgba(15,23,42,0.35)]';
+  'before:bg-surface-3/70 before:border-t before:border-hairline/80 shadow-[inset_0_12px_18px_-14px_rgba(15,23,42,0.18)] dark:shadow-[inset_0_12px_18px_-14px_rgba(0,0,0,0.55)]';
 const SECTION_PAD = 'px-6 py-9 sm:px-8 sm:py-12';
 const SECTION_SCROLL_MARGIN = 'scroll-mt-[calc(var(--header-height)+64px)]';
 const FULL_BLEED_CONTENT = 'relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-[100vw]';
@@ -1800,7 +1800,7 @@ function Sora2PageLayout({
           />
         ))}
       </Head>
-      <main className="container-page max-w-6xl pb-0 pt-5 sm:pt-7">
+      <main className="container-page model-page max-w-6xl pb-0 pt-5 sm:pt-7">
         <div className="stack-gap-lg gap-0">
           <div className="stack-gap-xs">
             <nav className="flex flex-wrap items-center gap-2 text-sm text-text-muted">
@@ -1983,7 +1983,7 @@ function Sora2PageLayout({
 
         {tocItems.length ? (
           <nav
-            className={`${FULL_BLEED_SECTION} sticky top-[calc(var(--header-height)-8px)] z-40 border-b border-hairline bg-white before:bg-white`}
+            className={`${FULL_BLEED_SECTION} sticky top-[calc(var(--header-height)-8px)] z-40 border-b border-hairline bg-surface before:bg-surface`}
             aria-label="Model page sections"
           >
             <div className="mx-auto w-full max-w-6xl px-6 sm:px-8">
@@ -2182,7 +2182,7 @@ function Sora2PageLayout({
             {galleryVideos.length ? (
               <>
                 {copy.galleryIntro ? (
-                  <p className="text-center text-base leading-relaxed text-text-secondary">{copy.galleryIntro}</p>
+                  <p className="mt-2 text-center text-base leading-relaxed text-text-secondary">{copy.galleryIntro}</p>
                 ) : null}
                 <div className="mt-4 stack-gap">
                   <div className="overflow-x-auto pb-2">
@@ -2361,9 +2361,9 @@ function Sora2PageLayout({
         {isSoraPrompting ? (
           <section id="tips" className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap-lg`}>
             <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-              Tips &amp; quick fixes (plain English)
+              Tips &amp; quick fixes
             </h2>
-            <p className="text-base leading-relaxed text-text-secondary">
+            <p className="text-center text-base leading-relaxed text-text-secondary">
               Sora is most predictable when you keep the shot simple, readable, and physical.
             </p>
             <div className="grid grid-gap-sm lg:grid-cols-3">
@@ -2450,16 +2450,16 @@ function Sora2PageLayout({
             id={compareAnchorId}
             className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap-lg`}
           >
-            <h2 className="mt-2 flex flex-wrap items-center gap-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-              <span>Sora vs Sora Pro</span>
-              <TextLink
-                href={localizeModelsPath('sora-2-pro')}
-                className="text-sm font-semibold text-brand hover:text-brandHover"
-                linkComponent={Link}
-              >
-                View Sora 2 Pro details →
-              </TextLink>
+            <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
+              Sora vs Sora Pro
             </h2>
+            <TextLink
+              href={localizeModelsPath('sora-2-pro')}
+              className="mx-auto text-sm font-semibold text-brand hover:text-brandHover"
+              linkComponent={Link}
+            >
+              View Sora 2 Pro details →
+            </TextLink>
             <div className="grid grid-gap-sm lg:grid-cols-2">
               <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
                 <h3 className="text-base font-semibold text-text-primary">Use Sora when you want:</h3>
@@ -2479,16 +2479,16 @@ function Sora2PageLayout({
               </div>
             </div>
             {isSoraPrompting && (relatedItems.length || relatedEngines.length) ? (
-              <div className="stack-gap">
-                <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
+              <div className="mt-10 stack-gap sm:mt-12">
+                <h2 className="mt-8 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
                   Compare Sora 2 vs other AI video models
                 </h2>
-                <p className="text-base leading-relaxed text-text-secondary">
+                <p className="text-center text-base leading-relaxed text-text-secondary">
                   Not sure if Sora 2 is the best fit for your shot? These side-by-side comparisons break down the tradeoffs —
                   <strong> price per second, resolution, audio, speed, and motion style</strong> — so you can pick the right
                   engine fast.
                 </p>
-                <p className="text-sm text-text-secondary">Each page includes real outputs and practical best-use cases.</p>
+                <p className="text-center text-sm text-text-secondary">Each page includes real outputs and practical best-use cases.</p>
                 <div className="grid grid-gap-sm md:grid-cols-3">
                   {(relatedItems.length
                     ? relatedItems
@@ -2764,7 +2764,7 @@ function Sora2PageLayout({
             className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
           >
             <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-              Safety &amp; people / likeness (practical version)
+              Safety &amp; people / likeness
             </h2>
             <div className="rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
               <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">

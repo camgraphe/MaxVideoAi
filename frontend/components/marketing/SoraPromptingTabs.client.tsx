@@ -181,8 +181,8 @@ export function SoraPromptingTabs({
 
   return (
     <div className="stack-gap">
-      <div className="stack-gap-sm">
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="stack-gap-sm text-center">
+        <div className="flex flex-wrap items-center justify-center gap-3">
           <h2 className="text-2xl font-semibold text-text-primary sm:text-3xl">How to Write a Great Sora 2 Prompt</h2>
           <a
             href={DEVELOPER_GUIDE_URL}
@@ -334,14 +334,6 @@ export function SoraPromptingTabs({
                 <li key={rule}>{rule}</li>
               ))}
             </ul>
-            <a
-              href={DEVELOPER_GUIDE_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="text-xs font-semibold uppercase tracking-micro text-text-muted hover:text-text-primary"
-            >
-              Learn more
-            </a>
           </div>
         </aside>
       </div>

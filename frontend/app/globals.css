@@ -173,6 +173,11 @@ main {
     max-width: var(--container-max);
   }
 
+  .model-page h2,
+  .model-page h3 {
+    @apply text-center;
+  }
+
   .container-content {
     max-width: var(--content-max);
   }
