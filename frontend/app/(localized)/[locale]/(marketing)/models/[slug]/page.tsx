@@ -361,8 +361,10 @@ const BEST_USE_CASE_ICON_MAP = {
 } as const;
 const FULL_BLEED_SECTION =
   "relative isolate before:absolute before:inset-y-0 before:left-1/2 before:right-1/2 before:-ml-[50vw] before:-mr-[50vw] before:content-[''] before:-z-10";
-const SECTION_BG_A = 'before:bg-[#F6F7FB]';
-const SECTION_BG_B = 'before:bg-[#EDF1F7]';
+const SECTION_BG_A =
+  'before:bg-gradient-to-b before:from-[#F9FAFD] before:to-[#F3F4FA] before:border-t before:border-hairline/80 shadow-[inset_0_12px_18px_-14px_rgba(15,23,42,0.35)]';
+const SECTION_BG_B =
+  'before:bg-gradient-to-b before:from-[#F7F8FC] before:to-[#F1F3F9] before:border-t before:border-hairline/80 shadow-[inset_0_12px_18px_-14px_rgba(15,23,42,0.35)]';
 const SECTION_PAD = 'px-6 py-6 sm:px-8 sm:py-8';
 const FULL_BLEED_CONTENT = 'relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-[100vw]';
 const KEY_SPEC_ROW_DEFS: Array<{ key: KeySpecKey; label: string }> = [
@@ -1779,8 +1781,8 @@ function Sora2PageLayout({
           />
         ))}
       </Head>
-      <main className="container-page max-w-6xl section">
-        <div className="stack-gap-lg">
+      <main className="container-page max-w-6xl section pb-0">
+        <div className="stack-gap-lg gap-0">
           <div className="stack-gap-sm">
             <nav className="flex flex-wrap items-center gap-2 text-sm text-text-muted">
               <BackLink
@@ -1800,7 +1802,7 @@ function Sora2PageLayout({
               <span className="font-semibold text-text-muted">{breadcrumbModelLabel}</span>
             </nav>
 
-            <section className="stack-gap rounded-3xl border border-hairline bg-surface/80 p-6 shadow-card sm:p-8">
+            <section className="stack-gap rounded-3xl bg-surface/80 p-6 sm:p-8">
               <div className="stack-gap-lg">
             <div className="stack-gap-sm text-center">
               <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">
@@ -2332,7 +2334,7 @@ function Sora2PageLayout({
         ) : null}
 
         {isSoraPrompting ? (
-          <section id="tips" className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap-lg`}>
+          <section id="tips" className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap-lg`}>
             <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
               Tips &amp; quick fixes (plain English)
             </h2>
@@ -2419,9 +2421,16 @@ function Sora2PageLayout({
         ) : null}
 
         {isSoraPrompting ? (
-          <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap`}>
-            <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-              Sora vs Sora Pro (quick guide)
+          <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap-lg`}>
+            <h2 className="mt-2 flex flex-wrap items-center gap-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
+              <span>Sora vs Sora Pro</span>
+              <TextLink
+                href={localizeModelsPath('sora-2-pro')}
+                className="text-sm font-semibold text-brand hover:text-brandHover"
+                linkComponent={Link}
+              >
+                View Sora 2 Pro details →
+              </TextLink>
             </h2>
             <div className="grid grid-gap-sm lg:grid-cols-2">
               <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
@@ -2441,83 +2450,82 @@ function Sora2PageLayout({
                 </ul>
               </div>
             </div>
-          </section>
-        ) : null}
-
-        {isSoraPrompting && (relatedItems.length || relatedEngines.length) ? (
-          <section id={imageWorkflowAnchorId} className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap`}>
-            <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-              Compare Sora 2 vs other AI video models
-            </h2>
-            <p className="text-base leading-relaxed text-text-secondary">
-              Not sure if Sora 2 is the best fit for your shot? These side-by-side comparisons break down the tradeoffs —
-              <strong> price per second, resolution, audio, speed, and motion style</strong> — so you can pick the right
-              engine fast.
-            </p>
-            <p className="text-sm text-text-secondary">Each page includes real outputs and practical best-use cases.</p>
-            <div className="grid grid-gap-sm md:grid-cols-3">
-              {(relatedItems.length
-                ? relatedItems
-                : relatedEngines.map((entry) => ({
-                    brand: entry.brandId,
-                    title: entry.marketingName ?? entry.engine.label,
-                    modelSlug: entry.modelSlug,
-                  }))
-              )
-                .filter((entry) => Boolean(entry.modelSlug))
-                .map((entry) => {
-                  const label = entry.title ?? '';
-                  const compareBaseSlug = 'sora-2';
-                  const compareSlug = [compareBaseSlug, entry.modelSlug].sort().join('-vs-');
-                  const compareHref = localizeComparePath(compareSlug, compareBaseSlug);
-                  const descriptionBySlug: Record<string, string> = {
-                    'sora-2-pro':
-                      'Need higher resolution or more control for finals? Sora 2 Pro is the upgrade path from Sora 2 when you’re done storyboarding and want cleaner deliverables.',
-                    'veo-3-1':
-                      'Veo 3.1 is strong for cinematic short-form with a different motion feel. Compare it to Sora 2 if you’re optimizing for audio, style, or a specific look.',
-                    'veo-3-1-fast':
-                      'Veo 3.1 Fast is built for cheaper, faster iteration. Compare it to Sora 2 if you want quick volume testing for ads and social.',
-                  };
-                  const ctaBySlug: Record<string, string> = {
-                    'sora-2-pro': 'Compare OpenAI Sora 2 vs OpenAI Sora 2 Pro →',
-                    'veo-3-1': 'Compare OpenAI Sora 2 vs Google Veo 3.1 →',
-                    'veo-3-1-fast': 'Compare OpenAI Sora 2 vs Google Veo 3.1 Fast →',
-                  };
-                  const description =
-                    descriptionBySlug[entry.modelSlug ?? ''] ??
-                    `Compare Sora 2 vs ${label} on price, resolution, audio, speed, and motion style.`;
-                  const ctaLabel = ctaBySlug[entry.modelSlug ?? ''] ?? `Compare Sora 2 vs ${label} →`;
-                  return (
-                    <article
-                      key={entry.modelSlug}
-                      className="rounded-2xl border border-hairline bg-surface/90 p-4 shadow-card transition hover:-translate-y-1 hover:border-text-muted"
-                    >
-                      {entry.brand ? (
-                        <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
-                          {entry.brand}
-                        </p>
-                      ) : null}
-                      <h3 className="mt-2 text-lg font-semibold text-text-primary">Sora 2 vs {label}</h3>
-                      <p className="mt-2 text-sm text-text-secondary line-clamp-2">{description}</p>
-                      <TextLink
-                        href={compareHref}
-                        className="mt-4 gap-1 text-sm font-semibold text-brand hover:text-brandHover"
-                        linkComponent={Link}
-                      >
-                        {ctaLabel}
-                      </TextLink>
-                    </article>
-                  );
-                })}
-            </div>
-            <ButtonLink
-              href={normalizedPrimaryCtaHref}
-              size="lg"
-              className="w-fit shadow-card"
-              linkComponent={Link}
-            >
-              Generate Sora 2 in MaxVideoAI →
-            </ButtonLink>
+            {isSoraPrompting && (relatedItems.length || relatedEngines.length) ? (
+              <div id={imageWorkflowAnchorId} className="stack-gap">
+                <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
+                  Compare Sora 2 vs other AI video models
+                </h2>
+                <p className="text-base leading-relaxed text-text-secondary">
+                  Not sure if Sora 2 is the best fit for your shot? These side-by-side comparisons break down the tradeoffs —
+                  <strong> price per second, resolution, audio, speed, and motion style</strong> — so you can pick the right
+                  engine fast.
+                </p>
+                <p className="text-sm text-text-secondary">Each page includes real outputs and practical best-use cases.</p>
+                <div className="grid grid-gap-sm md:grid-cols-3">
+                  {(relatedItems.length
+                    ? relatedItems
+                    : relatedEngines.map((entry) => ({
+                        brand: entry.brandId,
+                        title: entry.marketingName ?? entry.engine.label,
+                        modelSlug: entry.modelSlug,
+                      }))
+                  )
+                    .filter((entry) => Boolean(entry.modelSlug))
+                    .map((entry) => {
+                      const label = entry.title ?? '';
+                      const compareBaseSlug = 'sora-2';
+                      const compareSlug = [compareBaseSlug, entry.modelSlug].sort().join('-vs-');
+                      const compareHref = localizeComparePath(compareSlug, compareBaseSlug);
+                      const descriptionBySlug: Record<string, string> = {
+                        'sora-2-pro':
+                          'Need higher resolution or more control for finals? Sora 2 Pro is the upgrade path from Sora 2 when you’re done storyboarding and want cleaner deliverables.',
+                        'veo-3-1':
+                          'Veo 3.1 is strong for cinematic short-form with a different motion feel. Compare it to Sora 2 if you’re optimizing for audio, style, or a specific look.',
+                        'veo-3-1-fast':
+                          'Veo 3.1 Fast is built for cheaper, faster iteration. Compare it to Sora 2 if you want quick volume testing for ads and social.',
+                      };
+                      const ctaBySlug: Record<string, string> = {
+                        'sora-2-pro': 'Compare OpenAI Sora 2 vs OpenAI Sora 2 Pro →',
+                        'veo-3-1': 'Compare OpenAI Sora 2 vs Google Veo 3.1 →',
+                        'veo-3-1-fast': 'Compare OpenAI Sora 2 vs Google Veo 3.1 Fast →',
+                      };
+                      const description =
+                        descriptionBySlug[entry.modelSlug ?? ''] ??
+                        `Compare Sora 2 vs ${label} on price, resolution, audio, speed, and motion style.`;
+                      const ctaLabel = ctaBySlug[entry.modelSlug ?? ''] ?? `Compare Sora 2 vs ${label} →`;
+                      return (
+                        <article
+                          key={entry.modelSlug}
+                          className="rounded-2xl border border-hairline bg-surface/90 p-4 shadow-card transition hover:-translate-y-1 hover:border-text-muted"
+                        >
+                          {entry.brand ? (
+                            <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
+                              {entry.brand}
+                            </p>
+                          ) : null}
+                          <h3 className="mt-2 text-lg font-semibold text-text-primary">Sora 2 vs {label}</h3>
+                          <p className="mt-2 text-sm text-text-secondary line-clamp-2">{description}</p>
+                          <TextLink
+                            href={compareHref}
+                            className="mt-4 gap-1 text-sm font-semibold text-brand hover:text-brandHover"
+                            linkComponent={Link}
+                          >
+                            {ctaLabel}
+                          </TextLink>
+                        </article>
+                      );
+                    })}
+                </div>
+                <ButtonLink
+                  href={normalizedPrimaryCtaHref}
+                  size="lg"
+                  className="w-fit shadow-card"
+                  linkComponent={Link}
+                >
+                  Generate Sora 2 in MaxVideoAI →
+                </ButtonLink>
+              </div>
+            ) : null}
           </section>
         ) : null}
 
@@ -2725,7 +2733,7 @@ function Sora2PageLayout({
         {isSoraPrompting ? (
           <section
             id="safety"
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap`}
+            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap`}
           >
             <ResponsiveDetails
               openOnDesktop
@@ -2775,7 +2783,7 @@ function Sora2PageLayout({
         {faqList.length ? (
           <section
             id="faq"
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap`}
+            className={`${FULL_BLEED_SECTION} ${isSoraPrompting ? SECTION_BG_A : SECTION_BG_B} ${SECTION_PAD} stack-gap`}
           >
             {faqTitle ? (
               <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{faqTitle}</h2>
