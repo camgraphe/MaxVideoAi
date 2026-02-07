@@ -904,6 +904,56 @@ function buildAutoHeroSpecChips(values: KeySpecValues | null): HeroSpecChip[] {
   return chips.slice(0, 6);
 }
 
+const DEFAULT_VIDEO_TROUBLESHOOTING = [
+  'Feels random / inconsistent → simplify to: subject + action + camera + lighting. Re-run 2–3 takes.',
+  'Motion looks weird → reduce movement: one camera move, slower action, fewer props.',
+  'Subject drifts off-brand → start from a reference image and lock palette + lighting.',
+  'Text looks wrong → avoid readable signage, tiny UI, micro labels. Keep text off-screen.',
+  'Dialogue drifts → keep lines short and punchy; avoid long monologues.',
+];
+
+const DEFAULT_VIDEO_SAFETY = [
+  'Don’t generate real people or public figures (celebrities, politicians, etc.).',
+  'No minors, sexual content, hateful content, or graphic violence.',
+  'Don’t use someone’s likeness without consent.',
+  'Some prompts and reference images may be blocked — generic characters and scenes are fine.',
+];
+
+function buildVideoBoundaries(values: KeySpecValues | null): string[] {
+  if (!values) {
+    return [
+      'Output is short-form. For longer edits, stitch multiple clips.',
+      'Resolution is capped on this tier.',
+      'No video input here — start from text or a single reference image.',
+      'No fixed seeds — iteration = re-run + refine.',
+    ];
+  }
+  const items: string[] = [];
+  const duration = values.maxDuration && !isPending(values.maxDuration) ? values.maxDuration : null;
+  const resolution = values.maxResolution && !isPending(values.maxResolution) ? normalizeMaxResolution(values.maxResolution) : null;
+  if (duration) {
+    items.push(`Output is short-form (${duration}). For longer edits, stitch multiple clips.`);
+  }
+  if (resolution) {
+    items.push(`Resolution tops out at ${resolution} for this tier.`);
+  }
+  if (isUnsupported(values.videoToVideo)) {
+    items.push('No video input here — start from text or a single reference image.');
+  }
+  if (isUnsupported(values.imageToVideo)) {
+    items.push('Image-to-video is not supported on this tier.');
+  }
+  if (isUnsupported(values.audioOutput)) {
+    items.push('No native audio in this tier.');
+  }
+  if (!items.length) {
+    items.push('No fixed seeds — iteration = re-run + refine.');
+  } else if (!items.some((item) => item.toLowerCase().includes('seed'))) {
+    items.push('No fixed seeds — iteration = re-run + refine.');
+  }
+  return items;
+}
+
 type DetailCopy = {
   backLabel: string;
   examplesLinkLabel: string;
@@ -1726,10 +1776,11 @@ function Sora2PageLayout({
   const imageToVideoSteps = copy.imageFlow;
   const imageToVideoUseCases = copy.imageWhy;
   const strengths = copy.strengths;
-  const boundaries = copy.boundaries;
-  const troubleshootingTitle = copy.troubleshootingTitle;
-  const troubleshootingItems = copy.troubleshootingItems;
-  const safetyRules = copy.safetyRules;
+  const boundaries = copy.boundaries.length ? copy.boundaries : isVideoEngine ? buildVideoBoundaries(keySpecValues) : [];
+  const troubleshootingTitle = copy.troubleshootingTitle ?? (isVideoEngine ? 'Common problems → fast fixes' : null);
+  const troubleshootingItems =
+    copy.troubleshootingItems.length ? copy.troubleshootingItems : isVideoEngine ? DEFAULT_VIDEO_TROUBLESHOOTING : [];
+  const safetyRules = copy.safetyRules.length ? copy.safetyRules : isVideoEngine ? DEFAULT_VIDEO_SAFETY : [];
   const safetyInterpretation = copy.safetyInterpretation;
   const comparisonPoints = copy.comparisonPoints;
   const relatedCtaSora2 = copy.relatedCtaSora2;
@@ -1793,7 +1844,7 @@ function Sora2PageLayout({
     );
   const hasImageSection = isSoraPrompting || imageToVideoSteps.length > 0 || imageToVideoUseCases.length > 0;
   const hasTipsSection =
-    strengths.length > 0 || boundaries.length > 0 || Boolean(copy.tipsTitle || copy.tipsIntro);
+    strengths.length > 0 || boundaries.length > 0 || troubleshootingItems.length > 0 || Boolean(copy.tipsTitle || copy.tipsIntro);
   const hasSafetySection =
     isSoraPrompting || safetyRules.length > 0 || safetyInterpretation.length > 0 || Boolean(copy.safetyTitle);
   const hasFaqSection = isSoraPrompting || faqList.length > 0;
@@ -2456,7 +2507,7 @@ function Sora2PageLayout({
           </section>
         ) : null}
 
-        {isSoraPrompting ? (
+        {hasTipsSection ? (
           <section id="tips" className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap-lg`}>
             <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
               {copy.tipsTitle ?? 'Tips & quick fixes'}
@@ -2465,53 +2516,9 @@ function Sora2PageLayout({
               <p className="text-center text-base leading-relaxed text-text-secondary">{copy.tipsIntro}</p>
             ) : null}
             <div className="grid grid-gap-sm lg:grid-cols-3">
-              <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-                <h3 className="text-base font-semibold text-text-primary">What works best</h3>
-                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                  <li>One clear subject + one visible action</li>
-                  <li>Simple environments with 2–3 visual anchors</li>
-                  <li>One main camera move (push-in, pan, handheld, tracking — pick one)</li>
-                  <li>Short beats (4–12 seconds): one moment, not a full storyline</li>
-                  <li>For storyboard / shot list prompts: 2–3 beats max in one clip</li>
-                </ul>
-              </div>
-              <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-                <h3 className="text-base font-semibold text-text-primary">Common problems → fast fixes</h3>
-                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                  <li>Feels random / inconsistent → simplify to: subject + action + camera + lighting. Re-run 2–3 takes.</li>
-                  <li>Motion looks weird → reduce movement: one camera move, slower action, fewer props.</li>
-                  <li>Subject drifts off-brand → start from a reference image and lock palette + lighting.</li>
-                  <li>Text looks wrong → avoid readable signage, tiny UI, micro labels. Keep text off-screen.</li>
-                  <li>Dialogue drifts → keep lines short and punchy; avoid long monologues.</li>
-                </ul>
-              </div>
-              <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-                <h3 className="text-base font-semibold text-text-primary">Hard limits to keep in mind</h3>
-                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                  <li>Output is short-form (4 / 8 / 12 seconds). For longer edits, stitch multiple clips.</li>
-                  <li>This tier is 720p (use Pro for higher resolution).</li>
-                  <li>No video input here — start from text or a single reference image.</li>
-                  <li>
-                    <strong>Reference image requirements are strict (Image→Video):</strong> use <strong>one clean still image</strong> that matches your target aspect ratio. Avoid <strong>real people</strong>, <strong>logos/watermarks</strong>, <strong>readable text</strong>, and <strong>collages</strong> — some uploads may be blocked.
-                  </li>
-                  <li>No fixed seeds — iteration = re-run + refine.</li>
-                </ul>
-              </div>
-            </div>
-          </section>
-        ) : copy.tipsTitle || strengths.length || boundaries.length ? (
-          <section
-            id="tips"
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} stack-gap-lg`}
-          >
-            {copy.tipsTitle ? (
-              <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-                {copy.tipsTitle}
-              </h2>
-            ) : null}
-            <div className="grid grid-gap-sm lg:grid-cols-2">
               {strengths.length ? (
                 <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
+                  <h3 className="text-base font-semibold text-text-primary">What works best</h3>
                   <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
                     {strengths.map((item) => (
                       <li key={item}>{item}</li>
@@ -2519,8 +2526,21 @@ function Sora2PageLayout({
                   </ul>
                 </div>
               ) : null}
+              {troubleshootingItems.length ? (
+                <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
+                  <h3 className="text-base font-semibold text-text-primary">
+                    {troubleshootingTitle ?? 'Common problems → fast fixes'}
+                  </h3>
+                  <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
+                    {troubleshootingItems.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
               {boundaries.length ? (
                 <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
+                  <h3 className="text-base font-semibold text-text-primary">Hard limits to keep in mind</h3>
                   <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
                     {boundaries.map((item) => (
                       <li key={item}>{item}</li>
@@ -2529,16 +2549,6 @@ function Sora2PageLayout({
                 </div>
               ) : null}
             </div>
-            {troubleshootingTitle && troubleshootingItems.length ? (
-              <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-                <p className="text-sm font-semibold text-text-primary">{troubleshootingTitle}</p>
-                <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                  {troubleshootingItems.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
             {copy.tipsFooter ? <p className="text-sm text-text-secondary">{copy.tipsFooter}</p> : null}
           </section>
         ) : null}
@@ -2856,33 +2866,14 @@ function Sora2PageLayout({
           </section>
         ) : null}
 
-        {isSoraPrompting ? (
+        {copy.safetyTitle || safetyRules.length || safetyInterpretation.length ? (
           <section
             id="safety"
             className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
           >
             <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-              Safety &amp; people / likeness
+              {copy.safetyTitle ?? 'Safety & people / likeness'}
             </h2>
-            <div className="rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
-              <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                <li>Don’t generate real people or public figures (celebrities, politicians, etc.).</li>
-                <li>No minors, sexual content, hateful content, or graphic violence.</li>
-                <li>Don’t use someone’s likeness without consent.</li>
-                <li>Some prompts and reference images may be blocked — generic characters and scenes are fine.</li>
-              </ul>
-            </div>
-          </section>
-        ) : copy.safetyTitle || safetyRules.length ? (
-          <section
-            id="safety"
-            className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
-          >
-            {copy.safetyTitle ? (
-              <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
-                {copy.safetyTitle}
-              </h2>
-            ) : null}
             <div className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card">
               {safetyRules.length ? (
                 <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
@@ -2912,33 +2903,19 @@ function Sora2PageLayout({
             {faqTitle ? (
               <h2 className="mt-2 text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">{faqTitle}</h2>
             ) : null}
-            {isSoraPrompting ? (
-              <div className="stack-gap-sm">
-                {faqList.map((entry) => (
-                  <ResponsiveDetails
-                    openOnDesktop
-                    key={entry.question}
-                    className="rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
-                    summaryClassName="cursor-pointer text-sm font-semibold text-text-primary"
-                    summary={entry.question}
-                  >
-                    <p className="mt-2 text-sm text-text-secondary">{entry.answer}</p>
-                  </ResponsiveDetails>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-gap-sm md:grid-cols-2">
-                {faqList.map((entry) => (
-                  <article
-                    key={entry.question}
-                    className="rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
-                  >
-                    <h3 className="text-sm font-semibold text-text-primary">{entry.question}</h3>
-                    <p className="mt-2 text-sm text-text-secondary">{entry.answer}</p>
-                  </article>
-                ))}
-              </div>
-            )}
+            <div className="stack-gap-sm">
+              {faqList.map((entry) => (
+                <ResponsiveDetails
+                  openOnDesktop
+                  key={entry.question}
+                  className="rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
+                  summaryClassName="cursor-pointer text-sm font-semibold text-text-primary"
+                  summary={entry.question}
+                >
+                  <p className="mt-2 text-sm text-text-secondary">{entry.answer}</p>
+                </ResponsiveDetails>
+              ))}
+            </div>
           </section>
         ) : null}
         <FAQSchema questions={faqJsonLdEntries} />
