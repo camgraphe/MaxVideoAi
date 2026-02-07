@@ -1764,6 +1764,7 @@ function Sora2PageLayout({
   const heroHighlights = copy.heroHighlights;
   const bestUseCases = copy.bestUseCases.length ? copy.bestUseCases : localizedContent.bestUseCases?.items ?? [];
   const bestUseCaseChips = copy.bestUseCaseChips;
+  const isVideoEngine = engine.type === 'video';
   const whatFlowSteps = copy.whatFlowSteps;
   const quickStartTitle = copy.quickStartTitle;
   const quickStartBlocks = copy.quickStartBlocks;
@@ -1787,7 +1788,6 @@ function Sora2PageLayout({
   const relatedCtaSora2Pro = copy.relatedCtaSora2Pro;
   const relatedItems = copy.relatedItems;
   const isSoraPrompting = engine.modelSlug === 'sora-2' || engine.modelSlug === 'sora-2-pro';
-  const isVideoEngine = engine.type === 'video';
   const baseFaqList = faqEntries.map((entry) => ({
     question: entry.question,
     answer: entry.answer,
