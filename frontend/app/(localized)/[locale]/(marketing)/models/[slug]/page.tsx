@@ -1956,10 +1956,10 @@ function Sora2PageLayout({
 
         {tocItems.length ? (
           <nav
-            className={`${FULL_BLEED_SECTION} sticky top-[calc(var(--header-height)-8px)] z-40 border-b border-hairline bg-surface`}
+            className={`${FULL_BLEED_SECTION} sticky top-[calc(var(--header-height)-8px)] z-40 border-b border-hairline bg-white before:bg-white`}
             aria-label="Model page sections"
           >
-            <div className={`${FULL_BLEED_CONTENT} px-6 sm:px-8`}>
+            <div className="mx-auto w-full max-w-6xl px-6 sm:px-8">
               <div className="flex flex-wrap justify-center gap-2 py-0.5">
                 {tocItems.map((item) => (
                   <a
