@@ -7,16 +7,16 @@
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg"
   },
   "hero": {
-    "title": "Sora 2 Pro – Extended Video Generation with Full Audio & Scene Control",
-    "intro": "Sora 2 Pro builds on the core engine of Sora 2, unlocking longer durations, multi-scene prompts, and tighter control over audio+visual continuity. Chain scenes, direct camera moves, or animate reference art for storytelling that stays on-brand.",
-    "badge": "720p/1080p · 4–12s · Text or Image input · Audio toggle",
+    "title": "Sora 2 Pro",
+    "intro": "High-res, production-ready clips from text or a single frame — with native audio.",
+    "badge": "High-res (up to 1792×1024) · 4/8/12s · Text→Video · Image→Video · 16:9/9:16 · Audio included",
     "ctaPrimary": {
       "label": "Generate with Sora 2 Pro",
       "href": "/app?engine=sora-2-pro"
     },
     "secondaryLinks": [
       {
-        "label": "Compare Sora 2 vs Sora 2 Pro (1080p) →",
+        "label": "Compare Sora 2 vs Sora 2 Pro (high-res)",
         "href": "/models/sora-2"
       },
       {
@@ -31,16 +31,44 @@
   },
   "overview": "Generate longer AI videos with sound and scene control using Sora 2 Pro. Perfect for storytelling, explainers, and branded motion design—starting from image or text prompts.",
   "custom": {
+    "heroEyebrow": "OpenAI model",
+    "heroSupportLine": "Cleaner detail, steadier motion, more reliable multi-beat continuity.",
+    "heroSpecChips": [
+      {
+        "label": "High-res (up to 1792×1024)",
+        "icon": "resolution"
+      },
+      {
+        "label": "4/8/12s",
+        "icon": "duration"
+      },
+      {
+        "label": "Text→Video",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image→Video",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "16:9/9:16",
+        "icon": "aspectRatio"
+      },
+      {
+        "label": "Audio included",
+        "icon": "audio"
+      }
+    ],
+    "heroTrustLine": "Pay-as-you-go · Price shown before you generate",
     "heroDesc1": "Sora 2 Pro is the premium sibling to Sora 2. You get 720p or 1080p output, longer cinematic control, explicit audio toggle, and richer prompt chaining for multi-beat sequences—ideal for ads, trailers, and client-ready deliveries.",
     "heroDesc2": "Prototype fast with Sora 2, then move into Sora 2 Pro to regenerate your winning shots in 1080p with tighter control over timing, motion, and sound.",
-    "secondaryCta": "Compare with Sora 2 (720p) →",
-    "whyTitle": "Why Sora 2 Pro in MaxVideoAI:",
+    "secondaryCta": "Compare Sora 2 vs Sora 2 Pro (high-res)",
+    "whyTitle": "Why Sora 2 Pro is powerful",
     "heroHighlights": [
-      "720p or 1080p output for client-ready delivery",
-      "4–12s runs with richer cinematic control",
-      "Audio toggle + explicit sound cues",
-      "Prompt chaining for multi-scene continuity",
-      "Upgrade path from Sora 2 prototyping to Pro finals"
+      "High-res modes for cleaner detail||Sharper textures and more polished frames for client-ready deliverables.",
+      "Synced audio built-in||Dialogue + sound effects land better when you add 1–2 deliberate audio cues.",
+      "Stronger results with structured prompts||Shot lists and clear beats execute more reliably than “adjective soup.”",
+      "Best for final takes||Use it when the concept is locked and you want the cleanest output."
     ],
     "specTitle": "Real Specs – Sora 2 Pro in MaxVideoAI (720p/1080p, 4–12s)",
     "specNote": "Real-world specs (as available in MaxVideoAI today)",
@@ -211,12 +239,32 @@
     ]
   },
   "bestUseCases": {
-    "title": "Best Use Cases",
+    "title": "Best use cases",
     "items": [
-      "Multi-scene narratives with consistent characters",
-      "Brand explainers needing precise sound design",
-      "Image-to-video remasters where lighting continuity matters",
-      "Hybrid text+image briefs with prompt chaining"
+      {
+        "title": "Short cinematic ads",
+        "icon": "ads"
+      },
+      {
+        "title": "UGC-style lifestyle clips",
+        "icon": "ugc"
+      },
+      {
+        "title": "Product hero visuals",
+        "icon": "product"
+      },
+      {
+        "title": "Storyboards & concept tests",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Cinematic inserts & B-roll",
+        "icon": "camera"
+      },
+      {
+        "title": "Sound-led moments",
+        "icon": "audio"
+      }
     ]
   },
   "technicalOverviewTitle": "Technical Overview",

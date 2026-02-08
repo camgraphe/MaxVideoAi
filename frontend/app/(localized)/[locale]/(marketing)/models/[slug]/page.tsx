@@ -34,17 +34,23 @@ import { ResponsiveDetails } from '@/components/ui/ResponsiveDetails.client';
 import { getExamplesHref } from '@/lib/examples-links';
 import {
   Box,
+  Camera,
   Check,
+  ChevronDown,
+  Clapperboard,
   Clock,
   Crop,
+  Film,
   Image as ImageIcon,
-  LayoutGrid,
+  Layers,
   Megaphone,
   Monitor,
-  ChevronDown,
+  Smartphone,
+  Sparkles,
   Type,
-  Users,
+  User,
   Volume2,
+  Zap,
 } from 'lucide-react';
 
 type PageParams = {
@@ -191,8 +197,19 @@ type LocalizedFaqEntry = { question: string; answer: string };
 type QuickStartBlock = { title: string; subtitle?: string | null; steps: string[] };
 type HeroSpecIconKey = 'resolution' | 'duration' | 'textToVideo' | 'imageToVideo' | 'aspectRatio' | 'audio';
 type HeroSpecChip = { label: string; icon?: HeroSpecIconKey | null };
-type BestUseCaseIconKey = 'ads' | 'ugc' | 'product' | 'storyboard';
-type BestUseCaseChip = { label: string; icon?: BestUseCaseIconKey | null };
+type BestUseCaseIconKey =
+  | 'ads'
+  | 'ugc'
+  | 'product'
+  | 'storyboard'
+  | 'cinematic'
+  | 'camera'
+  | 'layers'
+  | 'zap'
+  | 'audio'
+  | 'sparkles'
+  | 'smartphone';
+type BestUseCaseItem = { title: string; icon: BestUseCaseIconKey; chips?: string[] };
 type RelatedItem = {
   brand: string;
   title: string;
@@ -244,8 +261,10 @@ type PromptingTab = {
 };
 
 type SoraCopy = {
+  heroEyebrow: string | null;
   heroTitle: string | null;
   heroSubtitle: string | null;
+  heroSupportLine: string | null;
   heroBadge: string | null;
   heroSpecChips: HeroSpecChip[];
   heroTrustLine: string | null;
@@ -258,7 +277,7 @@ type SoraCopy = {
   whyTitle: string | null;
   heroHighlights: string[];
   bestUseCasesTitle: string | null;
-  bestUseCaseChips: BestUseCaseChip[];
+  bestUseCaseItems: BestUseCaseItem[];
   bestUseCases: string[];
   whatTitle: string | null;
   whatIntro1: string | null;
@@ -372,9 +391,16 @@ const HERO_SPEC_ICON_MAP = {
 } as const;
 const BEST_USE_CASE_ICON_MAP = {
   ads: Megaphone,
-  ugc: Users,
+  ugc: User,
   product: Box,
-  storyboard: LayoutGrid,
+  storyboard: Clapperboard,
+  cinematic: Film,
+  camera: Camera,
+  layers: Layers,
+  zap: Zap,
+  audio: Volume2,
+  sparkles: Sparkles,
+  smartphone: Smartphone,
 } as const;
 const FULL_BLEED_SECTION =
   "relative isolate before:absolute before:inset-y-0 before:left-1/2 before:right-1/2 before:-ml-[50vw] before:-mr-[50vw] before:content-[''] before:-z-[2] after:absolute after:inset-y-0 after:left-1/2 after:right-1/2 after:-ml-[50vw] after:-mr-[50vw] after:content-[''] after:-z-[1]";
@@ -387,6 +413,46 @@ const HERO_BG =
 const SECTION_PAD = 'px-6 py-9 sm:px-8 sm:py-12';
 const SECTION_SCROLL_MARGIN = 'scroll-mt-[calc(var(--header-height)+64px)]';
 const FULL_BLEED_CONTENT = 'relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-[100vw]';
+const GENERIC_TRUST_LINE = 'Pay-as-you-go · Price shown before you generate';
+const BEST_USE_CASE_ICON_KEYS: BestUseCaseIconKey[] = [
+  'ads',
+  'ugc',
+  'product',
+  'storyboard',
+  'cinematic',
+  'camera',
+  'layers',
+  'zap',
+  'audio',
+  'sparkles',
+  'smartphone',
+];
+const BEST_USE_CASE_ICON_RULES: Array<{ icon: BestUseCaseIconKey; test: RegExp }> = [
+  { icon: 'ads', test: /\b(ad|ads|advert|advertising|marketing|campaign|promo|commercial)s?\b/i },
+  { icon: 'ugc', test: /\bugc\b|user[-\s]?generated|creator|influencer|lifestyle|social\b/i },
+  { icon: 'product', test: /\bproduct|e-?commerce|shop|retail|catalog|packaging|brand\b/i },
+  { icon: 'storyboard', test: /\bstoryboard|concept|previs|animatic|pitch|shot list|story\b/i },
+  { icon: 'layers', test: /\bcontinuity|multi[-\s]?beat|multi[-\s]?scene|sequenc|chain\b/i },
+  { icon: 'cinematic', test: /\bcinematic|film|director|lens|camera\b/i },
+  { icon: 'camera', test: /\bimage-to-video|image to video|remaster|reference still|lighting\b/i },
+  { icon: 'zap', test: /\bfast|rapid|quick|draft|iterate|iteration\b/i },
+  { icon: 'audio', test: /\baudio|sound|music|voice|sfx\b/i },
+  { icon: 'sparkles', test: /\bhero|premium|polished|showcase|sparkle|sparkles\b/i },
+  { icon: 'smartphone', test: /\bsocial|mobile|phone|vertical|reel|tiktok|shorts\b/i },
+];
+const DEFAULT_CHIPS_BY_ICON: Record<BestUseCaseIconKey, string[]> = {
+  ads: ['Fast iteration', 'Audio'],
+  ugc: ['Vertical', 'Natural motion'],
+  product: ['Clean detail', 'Lighting'],
+  storyboard: ['Shot list', '4–12s'],
+  cinematic: ['Camera control', 'Motion'],
+  camera: ['Lighting continuity', 'High-res'],
+  layers: ['Continuity', 'Multi-beat'],
+  zap: ['Fast iteration', 'Low latency'],
+  audio: ['Sound cues', 'Rhythm'],
+  sparkles: ['Hero shot', 'Polished'],
+  smartphone: ['Vertical', 'Variants'],
+};
 const KEY_SPEC_ROW_DEFS: Array<{ key: KeySpecKey; label: string }> = [
   { key: 'pricePerSecond', label: 'Price / second' },
   { key: 'textToVideo', label: 'Text-to-Video' },
@@ -911,6 +977,120 @@ function formatSupportLabel(value: string) {
   return value;
 }
 
+function normalizeHeroTitle(rawTitle: string, providerName: string | null): string {
+  const trimmed = rawTitle.trim();
+  const splitMatch = trimmed.split(/\s[–—-]\s/);
+  const base = splitMatch[0] ?? trimmed;
+  const cleanProvider = providerName?.trim();
+  if (cleanProvider && base.toLowerCase().startsWith(cleanProvider.toLowerCase() + ' ')) {
+    return base.slice(cleanProvider.length + 1).trim();
+  }
+  if (base.toLowerCase().startsWith('openai ')) {
+    return base.slice('openai '.length).trim();
+  }
+  return base.trim();
+}
+
+function buildEyebrow(providerName: string | null): string | null {
+  if (!providerName) return null;
+  const normalized = providerName
+    .replace(/by\s+.+$/i, '')
+    .replace(/\s+DeepMind$/i, '')
+    .trim();
+  return normalized ? `${normalized} model` : null;
+}
+
+function joinUseCaseList(items: string[], maxItems = 3): string | null {
+  const cleaned = items.map((item) => item.replace(/\.$/, '').trim()).filter(Boolean);
+  if (!cleaned.length) return null;
+  const slice = cleaned.slice(0, maxItems);
+  if (slice.length === 1) return slice[0];
+  if (slice.length === 2) return `${slice[0]} and ${slice[1]}`;
+  return `${slice.slice(0, -1).join(', ')}, and ${slice[slice.length - 1]}`;
+}
+
+function buildSupportLine(items: string[]): string | null {
+  const list = joinUseCaseList(items);
+  if (!list) return null;
+  return `Best for ${list}.`;
+}
+
+function normalizeHeroSubtitle(text: string, locale: AppLocale): string {
+  if (!text) return text;
+  if (locale !== 'en') return text;
+  let output = text;
+  output = output.replace(/\b(in|inside|via|on)\s+MaxVideoAI\b/gi, '');
+  output = output.replace(/\bMaxVideoAI\b/gi, '');
+  let aiCount = 0;
+  output = output.replace(/\bAI\b/gi, (match) => {
+    aiCount += 1;
+    return aiCount === 1 ? match : '';
+  });
+  output = output.replace(/\s{2,}/g, ' ').replace(/\s+([,.;:!?])/g, '$1').trim();
+  return output;
+}
+
+function inferBestUseCaseIcon(title: string): BestUseCaseIconKey {
+  const normalized = title.toLowerCase();
+  for (const rule of BEST_USE_CASE_ICON_RULES) {
+    if (rule.test.test(normalized)) return rule.icon;
+  }
+  return 'cinematic';
+}
+
+function normalizeChips(rawChips: unknown, icon: BestUseCaseIconKey, locale?: AppLocale): string[] {
+  const chips =
+    Array.isArray(rawChips)
+      ? rawChips.map((chip) => (typeof chip === 'string' ? chip.trim() : '')).filter(Boolean)
+      : [];
+  if (chips.length) return chips.slice(0, 2);
+  if (locale === 'en') return DEFAULT_CHIPS_BY_ICON[icon].slice(0, 2);
+  return [];
+}
+
+function normalizeBestUseCaseItems(value: unknown, locale?: AppLocale): BestUseCaseItem[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((entry) => {
+      if (typeof entry === 'string') {
+        const title = entry.trim();
+        if (!title) return null;
+        const icon = inferBestUseCaseIcon(title);
+        return {
+          title,
+          icon,
+          chips: normalizeChips(null, icon, locale),
+        };
+      }
+      if (!entry || typeof entry !== 'object') return null;
+      const obj = entry as Record<string, unknown>;
+      const title =
+        typeof obj.title === 'string'
+          ? obj.title.trim()
+          : typeof obj.label === 'string'
+            ? obj.label.trim()
+            : '';
+      if (!title) return null;
+      const rawIcon = typeof obj.icon === 'string' ? obj.icon.trim() : '';
+      const icon =
+        (rawIcon && BEST_USE_CASE_ICON_KEYS.includes(rawIcon as BestUseCaseIconKey)
+          ? rawIcon
+          : inferBestUseCaseIcon(title)) as BestUseCaseIconKey;
+      const chips = normalizeChips(obj.chips, icon, locale);
+      return {
+        title,
+        icon,
+        chips,
+      };
+    })
+    .filter((item): item is BestUseCaseItem => Boolean(item));
+}
+
+function normalizeSecondaryCta(label: string | null): string | null {
+  if (!label) return null;
+  return label.replace(/\(1080p\)/gi, '(higher resolution)').replace(/\b1080p\b/gi, 'higher resolution').trim();
+}
+
 function buildAutoSpecSections(values: KeySpecValues | null): SpecSection[] {
   if (!values) return [];
   const inputs: string[] = [];
@@ -1057,7 +1237,7 @@ function toAbsoluteUrl(url?: string | null): string {
   return `${SITE}/${url}`;
 }
 
-function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCopy {
+function buildSoraCopy(localized: EngineLocalizedContent, slug: string, locale: AppLocale): SoraCopy {
   const custom = (localized.custom ?? {}) as Record<string, unknown>;
   const getString = (key: string): string | null => {
     const value = custom[key];
@@ -1183,19 +1363,11 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
       return items;
     }, []);
   };
-  const getBestUseCaseChips = (): BestUseCaseChip[] => {
-    const value = custom['bestUseCaseChips'];
-    if (!Array.isArray(value)) return [];
-    return value.reduce<BestUseCaseChip[]>((chips, entry) => {
-      if (!entry || typeof entry !== 'object') return chips;
-      const obj = entry as Record<string, unknown>;
-      const label = typeof obj.label === 'string' ? obj.label.trim() : '';
-      if (!label) return chips;
-      const rawIcon = typeof obj.icon === 'string' ? obj.icon.trim() : '';
-      const icon = (rawIcon in BEST_USE_CASE_ICON_MAP ? rawIcon : null) as BestUseCaseIconKey | null;
-      chips.push({ label, icon });
-      return chips;
-    }, []);
+  const getBestUseCaseItems = (): BestUseCaseItem[] => {
+    const value = custom['bestUseCases'];
+    const normalized = normalizeBestUseCaseItems(value, locale);
+    if (normalized.length) return normalized;
+    return normalizeBestUseCaseItems(localized.bestUseCases?.items ?? [], locale);
   };
 
   const fallbackSpecSections = (): SpecSection[] => {
@@ -1217,11 +1389,11 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
   };
 
   const bestUseCasesTitle = localized.bestUseCases?.title ?? getString('bestUseCasesTitle') ?? 'Best use cases';
-  const bestUseCases = localized.bestUseCases?.items ?? getStringArray('bestUseCases');
-  const bestUseCaseChips = getBestUseCaseChips();
+  const bestUseCaseItems = getBestUseCaseItems();
+  const bestUseCases = bestUseCaseItems.map((item) => item.title);
   const heroHighlights = getStringArray('heroHighlights').length
     ? getStringArray('heroHighlights')
-    : (bestUseCases ?? []).slice(0, 4);
+    : bestUseCases.slice(0, 4);
   const specSections = (() => {
     const sections = getSpecSections();
     if (sections.length) return sections;
@@ -1249,8 +1421,10 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
   const tipsIntro = getString('tipsIntro');
 
   return {
+    heroEyebrow: getString('heroEyebrow'),
     heroTitle: localized.hero?.title ?? getString('heroTitle'),
     heroSubtitle: localized.hero?.intro ?? getString('heroSubtitle'),
+    heroSupportLine: getString('heroSupportLine'),
     heroBadge: localized.hero?.badge ?? getString('heroBadge'),
     heroSpecChips: getHeroSpecChips(),
     heroTrustLine: getString('heroTrustLine'),
@@ -1270,7 +1444,7 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string): SoraCop
     whyTitle: getString('whyTitle'),
     heroHighlights,
     bestUseCasesTitle,
-    bestUseCaseChips,
+    bestUseCaseItems,
     bestUseCases,
     whatTitle: getString('whatTitle'),
     whatIntro1: getString('whatIntro1'),
@@ -1532,7 +1706,7 @@ async function renderSoraModelPage({
   const canonicalRaw = metadataUrls.canonical;
   const canonicalUrl = canonicalRaw.replace(/\/+$/, '') || canonicalRaw;
   const localizedCanonicalUrl = canonicalUrl;
-  const copy = buildSoraCopy(localizedContent, engine.modelSlug);
+  const copy = buildSoraCopy(localizedContent, engine.modelSlug, locale);
   const enginePricingOverrides = await listEnginePricingOverrides();
   const pricingEngine = applyEnginePricingOverride(
     engine.engine,
@@ -1738,13 +1912,16 @@ function Sora2PageLayout({
       ? `/${localizedModelsSlug}`
       : `${homePathname.replace(/\/+$/, '')}/${localizedModelsSlug}`.replace(/\/{2,}/g, '/');
   const localizedModelsUrl = `${SITE}${modelsPathname}`;
-  const heroTitle = copy.heroTitle ?? localizedContent.hero?.title ?? localizedContent.marketingName ?? 'Sora 2';
-  const heroSubtitle = copy.heroSubtitle ?? localizedContent.hero?.intro ?? localizedContent.overview ?? '';
+  const providerName = resolveProviderInfo(engine).name;
+  const rawHeroTitle = copy.heroTitle ?? localizedContent.hero?.title ?? localizedContent.marketingName ?? 'Sora 2';
+  const heroTitle = normalizeHeroTitle(rawHeroTitle, providerName);
+  const rawHeroSubtitle = copy.heroSubtitle ?? localizedContent.hero?.intro ?? localizedContent.overview ?? '';
+  const heroSubtitle = normalizeHeroSubtitle(rawHeroSubtitle, locale);
   const heroBadge = copy.heroBadge ?? localizedContent.hero?.badge ?? null;
   const heroDesc1 = copy.heroDesc1 ?? localizedContent.overview ?? localizedContent.seo.description ?? null;
   const heroDesc2 = copy.heroDesc2;
   const heroSpecChips = copy.heroSpecChips.length ? copy.heroSpecChips : buildAutoHeroSpecChips(keySpecValues);
-  const heroTrustLine = copy.heroTrustLine;
+  const heroTrustLine = locale === 'en' ? GENERIC_TRUST_LINE : copy.heroTrustLine;
   const showHeroDescriptions = heroSpecChips.length === 0;
   const heroPrice = keySpecValues?.pricePerSecond ?? pricePerSecondLabel ?? formatPricePerSecond(engine);
   const heroDuration =
@@ -1772,7 +1949,7 @@ function Sora2PageLayout({
   const pricingLinkHref = { pathname: '/pricing' };
   const primaryCta = copy.primaryCta ?? localizedContent.hero?.ctaPrimary?.label ?? 'Start generating';
   const primaryCtaHref = copy.primaryCtaHref ?? localizedContent.hero?.ctaPrimary?.href ?? '/app?engine=sora-2';
-  const secondaryCta = copy.secondaryCta;
+  const secondaryCta = normalizeSecondaryCta(copy.secondaryCta);
   const secondaryCtaHref = copy.secondaryCtaHref ?? '/models/sora-2-pro';
   const normalizeCtaHref = (href?: string | null): LocalizedLinkHref | null => {
     if (!href) return null;
@@ -1790,8 +1967,12 @@ function Sora2PageLayout({
   const heroPosterPreload = heroMedia.posterUrl ? buildOptimizedPosterUrl(heroMedia.posterUrl) ?? heroMedia.posterUrl : null;
 
   const heroHighlights = copy.heroHighlights;
-  const bestUseCases = copy.bestUseCases.length ? copy.bestUseCases : localizedContent.bestUseCases?.items ?? [];
-  const bestUseCaseChips = copy.bestUseCaseChips;
+  const bestUseCaseItems = copy.bestUseCaseItems.length
+    ? copy.bestUseCaseItems
+    : normalizeBestUseCaseItems(localizedContent.bestUseCases?.items ?? [], locale);
+  const bestUseCases = bestUseCaseItems.map((item) => item.title);
+  const heroEyebrow = copy.heroEyebrow ?? buildEyebrow(providerName);
+  const heroSupportLine = copy.heroSupportLine ?? buildSupportLine(bestUseCases);
   const isVideoEngine = engine.type === 'video';
   const whatFlowSteps = copy.whatFlowSteps;
   const quickStartTitle = copy.quickStartTitle;
@@ -1993,12 +2174,22 @@ function Sora2PageLayout({
             <section className={`${FULL_BLEED_SECTION} ${HERO_BG} stack-gap rounded-3xl bg-surface/80 p-6 sm:p-8`}>
               <div className="stack-gap-lg">
             <div className="stack-gap-sm text-center">
+              {heroEyebrow ? (
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted">
+                  {heroEyebrow}
+                </p>
+              ) : null}
               <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">
                 {heroTitle}
               </h1>
               {heroSubtitle ? (
                 <p className="text-base leading-relaxed text-text-secondary sm:text-lg">
                   {heroSubtitle}
+                </p>
+              ) : null}
+              {heroSupportLine ? (
+                <p className="text-sm font-medium text-text-secondary">
+                  {heroSupportLine}
                 </p>
               ) : null}
               {heroSpecChips.length ? (
@@ -2087,23 +2278,23 @@ function Sora2PageLayout({
                 </div>
               </div>
               <div className="flex flex-col gap-4">
-                {bestUseCases.length || bestUseCaseChips.length ? (
+                {bestUseCaseItems.length || bestUseCases.length ? (
                   <div className="space-y-1.5 rounded-2xl border border-hairline bg-surface/80 p-3 shadow-card">
                     {copy.bestUseCasesTitle ? (
                       <p className="text-xs font-semibold text-text-primary">{copy.bestUseCasesTitle}</p>
                     ) : null}
-                    {bestUseCaseChips.length ? (
+                    {bestUseCaseItems.length ? (
                       <div className="flex flex-wrap gap-1.5">
-                        {bestUseCaseChips.map((chip, index) => {
-                          const Icon = chip.icon ? BEST_USE_CASE_ICON_MAP[chip.icon] : null;
+                        {bestUseCaseItems.map((item, index) => {
+                          const Icon = item.icon ? BEST_USE_CASE_ICON_MAP[item.icon] : null;
                           return (
                             <Chip
-                              key={`${chip.label}-${index}`}
+                              key={`${item.title}-${index}`}
                               variant="outline"
                               className="px-2.5 py-0.5 text-[10px] font-semibold normal-case tracking-normal text-text-secondary"
                             >
                               {Icon ? <UIIcon icon={Icon} size={14} className="text-text-muted" /> : null}
-                              <span>{chip.label}</span>
+                              <span>{item.title}</span>
                             </Chip>
                           );
                         })}
@@ -3203,6 +3394,7 @@ export default async function ModelDetailPage({ params }: PageParams) {
   const heroContent = localizedContent.hero;
   const introText = heroContent?.intro ?? overviewSummary;
   const bestUseCases = localizedContent.bestUseCases;
+  const bestUseCaseItems = normalizeBestUseCaseItems(bestUseCases?.items ?? [], activeLocale);
   const technicalOverview = localizedContent.technicalOverview ?? [];
   const technicalOverviewTitle = localizedContent.technicalOverviewTitle ?? 'Technical overview';
   const promptStructure = localizedContent.promptStructure;
@@ -3425,16 +3617,24 @@ export default async function ModelDetailPage({ params }: PageParams) {
         </nav>
       ) : null}
 
-      {bestUseCases?.items && bestUseCases.items.length ? (
-        <section className="rounded-card border border-hairline bg-surface p-6 shadow-card">
-          <h2 className="text-lg font-semibold text-text-primary">
-            {bestUseCases.title ?? 'Best use cases'}
-          </h2>
-          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-text-secondary">
-            {bestUseCases.items.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
+      {bestUseCaseItems.length ? (
+        <section className="space-y-1.5 rounded-2xl border border-hairline bg-surface/80 p-3 shadow-card">
+          <h2 className="text-xs font-semibold text-text-primary">{bestUseCases?.title ?? 'Best use cases'}</h2>
+          <div className="flex flex-wrap gap-1.5">
+            {bestUseCaseItems.map((item, index) => {
+              const Icon = item.icon ? BEST_USE_CASE_ICON_MAP[item.icon] : null;
+              return (
+                <Chip
+                  key={`${item.title}-${index}`}
+                  variant="outline"
+                  className="px-2.5 py-0.5 text-[10px] font-semibold normal-case tracking-normal text-text-secondary"
+                >
+                  {Icon ? <UIIcon icon={Icon} size={14} className="text-text-muted" /> : null}
+                  <span>{item.title}</span>
+                </Chip>
+              );
+            })}
+          </div>
         </section>
       ) : null}
 

@@ -7,8 +7,8 @@
     "image": "https://videohub-uploads-us.s3.amazonaws.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg"
   },
   "hero": {
-    "title": "OpenAI Sora 2 — cinematic text-to-video & image-to-video with sound",
-    "intro": "Fast, polished clips for ads, UGC-style shots, and storyboards — iterate in seconds.",
+    "title": "Sora 2",
+    "intro": "Cinematic clips from text or a single frame — with native sound.",
     "badge": "720p · 4/8/12s · Text→Video · Image→Video · 16:9/9:16 · Audio included",
     "ctaPrimary": {
       "label": "Generate with Sora 2",
@@ -16,12 +16,14 @@
     },
     "secondaryLinks": [
       {
-        "label": "Compare vs Sora 2 Pro (1080p)",
+        "label": "Compare with Sora 2 Pro",
         "href": "/models/sora-2-pro"
       }
     ]
   },
   "custom": {
+    "heroEyebrow": "OpenAI model",
+    "heroSupportLine": "Fast, polished clips for ads, UGC-style shots, and storyboards",
     "heroSpecChips": [
       {
         "label": "720p",
@@ -48,13 +50,13 @@
         "icon": "audio"
       }
     ],
-    "heroTrustLine": "Available on MaxVideoAI · Pay-as-you-go · Price shown before you generate",
+    "heroTrustLine": "Pay-as-you-go · Price shown before you generate",
     "heroDesc1": "Create short, cinematic videos with Sora 2 straight from your browser. MaxVideoAI gives you instant access to Sora 2 text-to-video and image-to-video, with transparent per-second pricing and a workspace built for testing, prototyping and producing social-ready clips.",
     "heroDesc2": "Describe your scene, choose a duration (4, 8 or 12 seconds), pick 16:9 or 9:16, and let Sora 2 generate polished footage you can use in ads, content or client work.",
     "hideQuickPricing": true,
     "showPricePerSecondInSpecs": true,
     "hidePricingSection": false,
-    "secondaryCta": "Compare vs Sora 2 Pro (1080p)",
+    "secondaryCta": "Compare with Sora 2 Pro",
     "whyTitle": "Why Sora 2 is powerful",
     "heroHighlights": [
       "Cinematic camera behavior in seconds||best in short 4–12s beats",
@@ -64,29 +66,39 @@
       "Perfect for rapid iteration||test ideas, pacing, and mood fast"
     ],
     "bestUseCasesTitle": "Best use cases",
-    "bestUseCaseChips": [
-      {
-        "label": "Short cinematic ads",
-        "icon": "ads"
-      },
-      {
-        "label": "UGC-style lifestyle clips",
-        "icon": "ugc"
-      },
-      {
-        "label": "Product hero visuals",
-        "icon": "product"
-      },
-      {
-        "label": "Storyboards & concept tests",
-        "icon": "storyboard"
-      }
-    ],
     "bestUseCases": [
-      "Short cinematic ads",
-      "UGC-style lifestyle clips",
-      "Product hero visuals",
-      "Storyboards & concept tests"
+      {
+        "title": "Short cinematic ads",
+        "icon": "ads",
+        "chips": [
+          "Fast iteration",
+          "Audio"
+        ]
+      },
+      {
+        "title": "UGC-style lifestyle clips",
+        "icon": "ugc",
+        "chips": [
+          "Vertical",
+          "Natural motion"
+        ]
+      },
+      {
+        "title": "Product hero visuals",
+        "icon": "product",
+        "chips": [
+          "Clean detail",
+          "Lighting"
+        ]
+      },
+      {
+        "title": "Storyboards & concept tests",
+        "icon": "storyboard",
+        "chips": [
+          "Shot list",
+          "4–12s"
+        ]
+      }
     ],
     "whatTitle": "What Sora 2 Actually Is in MaxVideoAI",
     "whatIntro1": "On paper, OpenAI Sora 2 is OpenAI’s short-form text-to-video engine. In practice, the way it behaves for you depends on how it’s integrated.",

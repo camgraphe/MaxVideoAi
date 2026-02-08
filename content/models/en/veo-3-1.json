@@ -9,7 +9,7 @@
   "overview": "Veo 3.1 in MaxVideoAI: 4–8s clips at 720p/1080p, text or image input, framing and tone presets, native audio on/off, seeds and Extend, pay-per-second pricing.",
   "hero": {
     "title": "Veo 3.1 – AI Text-to-Video & Image-to-Video in MaxVideoAI (720p/1080p, 4–8s)",
-    "intro": "Veo 3.1 – Cinematic AI Video with Native Audio & Framing Control (4–8s, 720p/1080p)",
+    "intro": "Directable, cinematic clips from text or images — with sound that matches the scene.",
     "badge": "720p/1080p · 4–8s · Text or Image input",
     "ctaPrimary": {
       "label": "Start generating with Veo 3.1",
@@ -25,11 +25,30 @@
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      "High-end brand hero shots and product reveals",
-      "Campaign assets that need consistent framing and tone over many variants",
-      "Social ads in 9:16, 16:9 or 1:1",
-      "Short explainers, education clips and cinematic B-roll",
-      "Film pre-viz and concept tests where camera language matters"
+      {
+        "title": "Brand hero shots",
+        "icon": "sparkles"
+      },
+      {
+        "title": "Product reveals",
+        "icon": "product"
+      },
+      {
+        "title": "Campaign variants",
+        "icon": "layers"
+      },
+      {
+        "title": "Social ads & format variants",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Cinematic B-roll",
+        "icon": "cinematic"
+      },
+      {
+        "title": "Pre-viz & concept tests",
+        "icon": "storyboard"
+      }
     ]
   },
   "technicalOverviewTitle": "Technical overview",
@@ -125,23 +144,40 @@
   "custom": {
     "heroDesc1": "Generate short, cinematic videos with Google DeepMind's Veo 3.1 directly inside your MaxVideoAI workspace. Text-to-video, image-to-video, framing presets, and native audio with transparent per-second pricing.",
     "heroDesc2": "Describe the scene, choose 4, 6 or 8 seconds, pick 16:9, 9:16 or 1:1, decide whether you want native audio, and let Veo 3.1 deliver polished footage for ads, explainers, campaigns, and client work.",
-    "whyTitle": "Why Veo 3.1 is powerful inside MaxVideoAI:",
+    "heroSupportLine": "Built for brand hero shots, polished product reveals, and repeatable campaign variants.",
+    "whyTitle": "Why Veo 3.1 is powerful",
     "heroHighlights": [
-      "Text → Video, Image → Video, and multi-image reference in one place",
-      "Cinematic Controls for framing, tone and motion before you hit render",
-      "Native audio (dialogue, ambience, SFX) with an audio on/off toggle",
-      "Seed and Extend options to keep framing consistent and grow longer sequences",
-      "Pay-as-you-go pricing – you only pay for the seconds you generate",
-      "Available in Europe, UK and worldwide via licensed DeepMind endpoints",
-      "Designed to sit alongside Sora 2, Sora 2 Pro, Pika 2.2, Kling, Wan, MiniMax Hailuo, Nano Banana"
+      "Directable framing||Strong composition and camera language for repeatable shots.",
+      "Sound in the same pass||Dialogue, ambience, and SFX when you want it (or keep it silent for post).",
+      "Better prompt follow-through||Clearer intent transfer from “director notes” to the final clip.",
+      "Built for continuity workflows||References + extension tools help you carry a look across multiple beats."
     ],
     "bestUseCasesTitle": "Best use cases",
     "bestUseCases": [
-      "High-end brand hero shots and product reveals",
-      "Campaign assets that need consistent framing and tone over many variants",
-      "Social ads in 9:16, 16:9 or 1:1",
-      "Short explainers, education clips and cinematic B-roll",
-      "Film pre-viz and concept tests where camera language matters"
+      {
+        "title": "Brand hero shots",
+        "icon": "sparkles"
+      },
+      {
+        "title": "Product reveals",
+        "icon": "product"
+      },
+      {
+        "title": "Campaign variants",
+        "icon": "layers"
+      },
+      {
+        "title": "Social ads & format variants",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Cinematic B-roll",
+        "icon": "cinematic"
+      },
+      {
+        "title": "Pre-viz & concept tests",
+        "icon": "storyboard"
+      }
     ],
     "whatTitle": "What Veo 3.1 Actually Is in MaxVideoAI",
     "whatIntro1": "On paper, Veo 3.1 is DeepMind’s latest short-form video model with richer audio and tighter prompt adherence.",
