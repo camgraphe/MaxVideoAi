@@ -2879,31 +2879,6 @@ function Sora2PageLayout({
           )}
         </section>
 
-        {!isSoraPrompting && (copy.demoTitle || copy.demoPrompt.length || copy.demoNotes.length) ? (
-          <section className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} stack-gap-lg`}>
-            {copy.demoTitle ? (
-              <h2 className="mt-2 text-center text-2xl font-semibold text-text-primary sm:mt-0 sm:text-3xl">
-                {copy.demoTitle}
-              </h2>
-            ) : null}
-            <div className="stack-gap-lg">
-              <div className="mx-auto w-full max-w-5xl">
-                {demoMedia ? (
-                  <MediaPreview
-                    media={demoMedia}
-                    label={copy.demoTitle ?? 'Sora 2 demo'}
-                    promptLabel={copy.demoPromptLabel ?? undefined}
-                    promptLines={copy.demoPrompt}
-                  />
-                ) : (
-                  <div className="flex h-full min-h-[280px] items-center justify-center rounded-xl border border-dashed border-hairline bg-bg text-sm text-text-secondary">
-                    {copy.galleryIntro ?? 'Demo clip coming soon.'}
-                  </div>
-                )}
-              </div>
-            </div>
-          </section>
-        ) : null}
 
         {hasTipsSection ? (
           <section id="tips" className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap-lg`}>
