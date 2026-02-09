@@ -2863,36 +2863,18 @@ function Sora2PageLayout({
             </div>
           ) : (
             <div className="stack-gap-lg">
-                <SoraPromptingTabs
-                  title={copy.promptingTitle ?? undefined}
-                  intro={copy.promptingIntro ?? undefined}
-                  tip={copy.promptingTip ?? undefined}
-                  guideLabel={copy.promptingGuideLabel ?? undefined}
-                  guideUrl={copy.promptingGuideUrl ?? undefined}
-                  mode="image"
-                  tabs={copy.promptingTabs.length ? copy.promptingTabs : undefined}
-                  globalPrinciples={copy.promptingGlobalPrinciples}
-                  engineWhy={copy.promptingEngineWhy}
-                  tabNotes={copy.promptingTabNotes}
-                />
-                  {copy.promptIntro ? (
-                    <p className="text-sm text-text-secondary">{copy.promptIntro}</p>
-                  ) : null}
-                  {promptPatternSteps.length ? (
-                    <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
-                      {promptPatternSteps.map((step) => (
-                        <li key={step}>{step}</li>
-                      ))}
-                    </ul>
-                  ) : null}
-                  {copy.promptSkeleton || copy.promptSkeletonNote ? (
-                    <div className="rounded-xl border border-dashed border-hairline bg-bg px-4 py-3 text-sm text-text-secondary">
-                      {copy.promptSkeleton ? <p className="mt-2 italic">{copy.promptSkeleton}</p> : null}
-                      {copy.promptSkeletonNote ? <p className="mt-2">{copy.promptSkeletonNote}</p> : null}
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
+              <SoraPromptingTabs
+                title={copy.promptingTitle ?? undefined}
+                intro={copy.promptingIntro ?? undefined}
+                tip={copy.promptingTip ?? undefined}
+                guideLabel={copy.promptingGuideLabel ?? undefined}
+                guideUrl={copy.promptingGuideUrl ?? undefined}
+                mode="image"
+                tabs={copy.promptingTabs.length ? copy.promptingTabs : undefined}
+                globalPrinciples={copy.promptingGlobalPrinciples}
+                engineWhy={copy.promptingEngineWhy}
+                tabNotes={copy.promptingTabNotes}
+              />
             </div>
           )}
         </section>
