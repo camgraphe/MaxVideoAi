@@ -192,7 +192,28 @@
     ],
     "specTitle": "Real Specs – MiniMax Hailuo 02 in MaxVideoAI (512p/768p, 6–10s)",
     "specNote": "Specs as used today in MaxVideoAI.",
-    "specSections": [],
+    "specSections": [
+      {
+        "title": "Physics-heavy drafts",
+        "intro": "Strong at physical motion like wind, cloth, and particles. Ideal for motion tests and transition exploration.",
+        "items": [
+          "Call out wind or force direction.",
+          "Use simple scenes for readable motion.",
+          "Test multiple transitions quickly.",
+          "Great for animatics and previz."
+        ]
+      },
+      {
+        "title": "End-frame control",
+        "intro": "You can guide how a shot lands by defining a target end frame. Useful for match cuts and clean finishes.",
+        "items": [
+          "Specify what must be preserved.",
+          "Describe the final pose clearly.",
+          "Use as a bridge between two shots.",
+          "Pair with premium engines for finals."
+        ]
+      }
+    ],
     "specValueProp": "MiniMax Hailuo 02 is a fast, physics-savvy draft engine for cheap, silent motion tests.",
     "galleryTitle": "MiniMax Hailuo 02 Example Gallery",
     "galleryIntro": "See text and image runs rendered with the same configuration you have.",

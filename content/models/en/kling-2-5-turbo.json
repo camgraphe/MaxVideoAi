@@ -195,7 +195,28 @@
     ],
     "specTitle": "Real Specs – Kling 2.5 Turbo in MaxVideoAI (1080p, 5–10s)",
     "specNote": "This describes Kling 2.5 Turbo as used in MaxVideoAI.",
-    "specSections": [],
+    "specSections": [
+      {
+        "title": "Motion & physics",
+        "intro": "Strong on kinetic motion and believable physics. Best for camera-forward action beats.",
+        "items": [
+          "Use one bold camera move.",
+          "Call out inertia and weight.",
+          "Keep the subject centered for readability.",
+          "Great for action beats and product spins."
+        ]
+      },
+      {
+        "title": "Silent finishing",
+        "intro": "Outputs are silent by design, making post-sound easy. A good fit for B-roll loops and cutaways.",
+        "items": [
+          "Plan sound in your editor.",
+          "Loop-friendly shots work best.",
+          "Use negative prompts to avoid text/logos.",
+          "Switch tiers without rewriting prompts."
+        ]
+      }
+    ],
     "specValueProp": "Kling 2.5 Turbo is a silent 1080p engine for cinematic short beats with strong motion and physics.",
     "galleryTitle": "Example Gallery: Kling 2.5 Turbo",
     "galleryIntro": "Actual runs from the current Kling route in MaxVideoAI.",

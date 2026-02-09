@@ -193,7 +193,28 @@
     ],
     "specTitle": "Real Specs – Veo 3.1 Fast in MaxVideoAI (720p/1080p, 4–8s)",
     "specNote": "These specs describe Veo 3.1 Fast exactly as you can use it today via MaxVideoAI.",
-    "specSections": [],
+    "specSections": [
+      {
+        "title": "Draft-speed exploration",
+        "intro": "Built for rapid testing and volume when you need ideas fast. Use it to explore hooks, angles, and pacing.",
+        "items": [
+          "Keep prompts short and action-driven.",
+          "Generate many small variants.",
+          "Test multiple openings quickly.",
+          "Promote winners to the full tier."
+        ]
+      },
+      {
+        "title": "Upgrade path",
+        "intro": "The same prompt structure upgrades cleanly to the premium tier. Treat Fast as your draft layer.",
+        "items": [
+          "Reuse shot language for finals.",
+          "Swap in stronger references later.",
+          "Use Fast for social drafts and loops.",
+          "Save templates to scale campaigns."
+        ]
+      }
+    ],
     "specValueProp": "Veo 3.1 Fast is your rapid-fire test bench: same cinematic language as Veo 3.1, lower cost, faster turnaround.",
     "galleryTitle": "Example Gallery: Real Veo 3.1 Fast Outputs",
     "galleryIntro": "Explore clips generated with Veo 3.1 Fast using the same presets you have.",

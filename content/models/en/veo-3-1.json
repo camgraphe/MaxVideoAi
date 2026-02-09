@@ -193,7 +193,28 @@
     ],
     "specTitle": "Real Specs – Veo 3.1 in MaxVideoAI (720p/1080p, 4–8s)",
     "specNote": "These specs describe Veo 3.1 exactly as you can use it today via MaxVideoAI – not theoretical lab demos.",
-    "specSections": [],
+    "specSections": [
+      {
+        "title": "Directable framing",
+        "intro": "Strong at director notes, framing, and camera language for repeatable shots. Great when you need consistent brand composition.",
+        "items": [
+          "Use wide/medium/close and camera verbs.",
+          "Anchor composition with a hero subject.",
+          "Describe movement before styling.",
+          "Reuse the same shot recipe for variants."
+        ]
+      },
+      {
+        "title": "Sound & continuity",
+        "intro": "Sound can be generated in the same pass, and references help carry a look across beats. Keep the visual recipe stable for continuity.",
+        "items": [
+          "Add light SFX or ambience cues.",
+          "Lock palette and lighting between shots.",
+          "Make small, controlled prompt deltas.",
+          "Use reference frames when possible."
+        ]
+      }
+    ],
     "specValueProp": "Veo 3.1 in MaxVideoAI gives you framing presets, native audio control, seeds and Extend—so it behaves like a directable camera, not a black box.",
     "galleryTitle": "Example Gallery: Real Veo 3.1 Outputs",
     "galleryIntro": "See live Veo 3.1 renders powered by the same settings you have in MaxVideoAI.",

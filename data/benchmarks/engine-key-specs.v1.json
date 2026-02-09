@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-01-27",
+  "last_updated": "2026-02-09",
   "specs": [
     {
       "modelSlug": "sora-2",
@@ -34,7 +34,8 @@
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported",
         "cameraMotionControls": "Basic",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Sep 2025"
       }
     },
     {
@@ -68,7 +69,8 @@
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported",
         "cameraMotionControls": "Basic",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Sep 2025"
       }
     },
     {
@@ -104,7 +106,8 @@
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported",
         "cameraMotionControls": "Advanced",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Oct 2025"
       }
     },
     {
@@ -139,7 +142,8 @@
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported",
         "cameraMotionControls": "Advanced",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Oct 2025"
       }
     },
     {
@@ -173,7 +177,8 @@
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported",
         "cameraMotionControls": "Advanced",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Oct 2025"
       }
     },
     {
@@ -208,7 +213,8 @@
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported",
         "cameraMotionControls": "Basic",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Oct 2025"
       }
     },
     {
@@ -241,7 +247,8 @@
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported",
         "cameraMotionControls": "Basic",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Oct 2025"
       }
     },
     {
@@ -275,7 +282,8 @@
         "nativeAudioGeneration": "Not supported",
         "lipSync": "Supported",
         "cameraMotionControls": "Basic",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Dec 2025"
       }
     },
     {
@@ -308,7 +316,8 @@
         "nativeAudioGeneration": "Not supported",
         "lipSync": "Not supported",
         "cameraMotionControls": "Basic",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Sep 2025"
       }
     },
     {
@@ -343,7 +352,8 @@
         "nativeAudioGeneration": "Supported",
         "lipSync": "Supported",
         "cameraMotionControls": "Advanced",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Dec 2025"
       }
     },
     {
@@ -377,7 +387,8 @@
         "nativeAudioGeneration": "Not supported",
         "lipSync": "Not supported",
         "cameraMotionControls": "Basic",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Sep 2025"
       }
     },
     {
@@ -413,7 +424,8 @@
         "nativeAudioGeneration": "Not supported",
         "lipSync": "Not supported",
         "cameraMotionControls": "Basic",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Feb 2025"
       }
     },
     {
@@ -449,7 +461,27 @@
         "nativeAudioGeneration": "Not supported",
         "lipSync": "Not supported",
         "cameraMotionControls": "Basic",
-        "watermark": "No (MaxVideoAI)"
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Jun 2025"
+      }
+    },
+    {
+      "modelSlug": "nano-banana",
+      "sources": [
+        "https://developers.googleblog.com/introducing-gemini-2-5-flash-image/",
+        "https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini/2-5-flash-image"
+      ],
+      "keySpecs": {
+        "releaseDate": "Aug 2025"
+      }
+    },
+    {
+      "modelSlug": "nano-banana-pro",
+      "sources": [
+        "https://blog.google/innovation-and-ai/products/google-ai-updates-november-2025/"
+      ],
+      "keySpecs": {
+        "releaseDate": "Nov 2025"
       }
     }
   ]

@@ -144,7 +144,28 @@
     ],
     "specTitle": "Real Specs – Kling 2.6 Pro in MaxVideoAI",
     "specNote": "Specs reflect the live Fal routing today.",
-    "specSections": [],
+    "specSections": [
+      {
+        "title": "Audio-ready cinematics",
+        "intro": "Generates dialogue, ambience, and SFX in sync with the visuals. Best for emotional beats and mini-stories.",
+        "items": [
+          "Call out dialogue lines explicitly.",
+          "Add ambience cues for mood.",
+          "Use clear camera language.",
+          "Keep beats short for tight sync."
+        ]
+      },
+      {
+        "title": "Speech & post flexibility",
+        "intro": "Built-in speech support helps for character lines, while you can still mute and finish in post. Use it when sound is part of the story.",
+        "items": [
+          "Indicate language for spoken lines.",
+          "Leave room for a music bed if needed.",
+          "Generate multiple takes for timing.",
+          "Mute if you plan a full mix."
+        ]
+      }
+    ],
     "whatTitle": "How Kling 2.6 Pro works in MaxVideoAI",
     "whatIntro1": "Pick text or image mode, set 5 or 10 seconds at 1080p, choose aspect (16:9/9:16/1:1), toggle audio, and prompt.",
     "whatIntro2": "Use Kling 2.6 Pro when you need dialogue-ready clips with strong motion and synced ambience.",

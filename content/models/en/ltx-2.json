@@ -144,7 +144,28 @@
     ],
     "specTitle": "Real Specs – LTX-2 Pro in MaxVideoAI",
     "specNote": "Specs reflect the live Fal routing today.",
-    "specSections": [],
+    "specSections": [
+      {
+        "title": "Production polish",
+        "intro": "Targets cleaner detail and smoother motion for final-take deliverables. Suited for premium ads and brand stories.",
+        "items": [
+          "Use concise, structured prompts.",
+          "Call out lighting and lens mood.",
+          "Keep subject wording consistent.",
+          "Great for client-ready cutdowns."
+        ]
+      },
+      {
+        "title": "Audio workflow",
+        "intro": "Audio and visuals generate together, helping pacing and emotion. Keep sound for drafts or finish in post.",
+        "items": [
+          "Add one or two sound cues to anchor timing.",
+          "Keep dialogue short and clear.",
+          "Export multiple variants for selection.",
+          "Mute if you plan an external mix."
+        ]
+      }
+    ],
     "whatTitle": "How LTX-2 Pro works in MaxVideoAI",
     "whatIntro1": "Choose text or image mode, set 6–10 seconds, pick resolution and fps, then prompt. Audio is on by default and can be toggled off.",
     "whatIntro2": "Use Pro when you need the cleanest detail and synced sound for premium work.",

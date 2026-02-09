@@ -116,20 +116,23 @@
     "specNote": "Real-world specs (as available in MaxVideoAI today)",
     "specSections": [
       {
-        "title": "Inputs & file types (what you can feed it)",
+        "title": "Prompting & shot language",
+        "intro": "This tier responds best to director-style prompts with clear beats and camera intent. Think actions and framing before style adjectives.",
         "items": [
-          "Text → Video — Write a short prompt (1–3 sentences). Think shot description, not poetry: subject + action + camera + vibe.",
-          "Image → Video (reference frame) — Upload a single still (PNG/JPG/WebP/GIF/AVIF, up to ~50 MB) to lock the look — then prompt for motion + timing.",
-          "No video upload in this mode. You start from text or a still image.",
-          "Note: reference images showing real people are blocked — use characters, non-human subjects, or product shots instead."
+          "Lead with subject + action + camera move.",
+          "Name lighting and lens mood for consistency.",
+          "Keep each clip to one main beat.",
+          "Start from a single frame when you need a stable look."
         ]
       },
       {
-        "title": "Audio (included)",
+        "title": "Audio & iteration",
+        "intro": "Audio is generated alongside the visuals, so rhythm can be shaped in the same prompt. Use quick variations to lock pacing before scaling.",
         "items": [
-          "Audio comes built-in with the clip: ambience, sound effects, and (when prompted) speech.",
-          "Want it to feel intentional? Describe one or two key sounds as pacing cues (e.g., “distant traffic hiss”, “package crinkle”, “footsteps on wet pavement”).",
-          "Lip sync: Sora can handle dialogue, but keep it short and punchy — long speeches tend to drift."
+          "Add one or two key sound cues.",
+          "Keep dialogue short and punchy.",
+          "Save winning prompts as templates.",
+          "Regenerate small changes to test hooks."
         ]
       }
     ],

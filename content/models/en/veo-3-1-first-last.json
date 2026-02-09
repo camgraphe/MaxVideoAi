@@ -136,7 +136,28 @@
     ],
     "specTitle": "Real Specs – Veo 3.1 First/Last in MaxVideoAI",
     "specNote": "Reflects the current first/last-frame route in MaxVideoAI.",
-    "specSections": [],
+    "specSections": [
+      {
+        "title": "Keyframe bridge",
+        "intro": "Designed for start-to-finish transitions where you lock the endpoints. The model fills the motion in between.",
+        "items": [
+          "Choose distinct start and end frames.",
+          "Describe the motion path clearly.",
+          "Keep background elements stable.",
+          "Great for UI, logos, and before/after."
+        ]
+      },
+      {
+        "title": "Continuity control",
+        "intro": "Fixed endpoints keep layout and identity consistent. Use it for controlled reveals and clean morphs.",
+        "items": [
+          "State what must stay unchanged.",
+          "Call out what should transform.",
+          "Use subtle camera movement.",
+          "Add optional ambience cues if desired."
+        ]
+      }
+    ],
     "specValueProp": "A directed start–end transition engine with optional native audio, priced per second like Veo 3.1.",
     "galleryTitle": "Example Gallery: Veo 3.1 First/Last",
     "galleryIntro": "Real transitions: sketch → final render, office → rooftop, wireframe UI → high-fidelity UI.",

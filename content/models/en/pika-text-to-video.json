@@ -192,7 +192,28 @@
     ],
     "specTitle": "Real Specs – Pika 2.2 in MaxVideoAI (720p/1080p, 5–10s)",
     "specNote": "These specs describe Pika 2.2 exactly as you can use it today via MaxVideoAI.",
-    "specSections": [],
+    "specSections": [
+      {
+        "title": "Stylized looks",
+        "intro": "Optimized for bold, social-first aesthetics over photorealism. It excels at playful motion and stylized textures.",
+        "items": [
+          "Call out the art style early.",
+          "Use short, punchy actions.",
+          "Lean into loops and repeats.",
+          "Great for fandom, gaming, and pop visuals."
+        ]
+      },
+      {
+        "title": "Consistency tools",
+        "intro": "Seed and negative prompts help keep a look stable across variants. First/last-style guidance makes transformations easier to steer.",
+        "items": [
+          "Lock a seed when iterating.",
+          "Use negative prompts to remove artifacts.",
+          "Define a start/end pose for transitions.",
+          "Export silent and score in post."
+        ]
+      }
+    ],
     "specValueProp": "Pika 2.2 is the stylized, silent short-clip engine: fast to iterate with seeds and negative prompts, perfect for social feeds and motion inserts.",
     "galleryTitle": "Pika 2.2 Example Gallery",
     "galleryIntro": "Curated clips generated with the same settings you have in MaxVideoAI.",

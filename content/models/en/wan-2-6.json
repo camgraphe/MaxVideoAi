@@ -179,7 +179,28 @@
     ],
     "specTitle": "Real Specs – Wan 2.6 in MaxVideoAI",
     "specNote": "Specs reflect the live Fal routing today.",
-    "specSections": [],
+    "specSections": [
+      {
+        "title": "Reference-driven consistency",
+        "intro": "Supports text, image, and reference-video workflows for stronger subject continuity. Built for multi-shot sequences.",
+        "items": [
+          "Use reference video to anchor a character.",
+          "Keep wardrobe and lighting constant.",
+          "Specify transitions between beats.",
+          "Great for storyboards and mini-trailers."
+        ]
+      },
+      {
+        "title": "Timestamped control",
+        "intro": "Shot lists with timestamps steer pacing and transitions. Clear beat markers work better than adjectives.",
+        "items": [
+          "Number beats in order.",
+          "Call out cuts or match-moves.",
+          "Limit each beat to one main action.",
+          "Add an optional sound bed when needed."
+        ]
+      }
+    ],
     "promptTitle": "Prompt ideas for Wan 2.6",
     "promptIntro": "Use a global look line, then timestamped shots for pacing.",
     "promptPatternSteps": [

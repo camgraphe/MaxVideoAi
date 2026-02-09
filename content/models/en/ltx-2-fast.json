@@ -153,7 +153,28 @@
     ],
     "specTitle": "Real Specs – LTX-2 Fast in MaxVideoAI",
     "specNote": "Specs reflect the live routing via Fal today.",
-    "specSections": [],
+    "specSections": [
+      {
+        "title": "Speed tests",
+        "intro": "Designed for rapid iteration and volume. Use it to discover hooks and pacing before polishing.",
+        "items": [
+          "Generate many variants quickly.",
+          "Keep prompts short and direct.",
+          "Test different openings back-to-back.",
+          "Promote winners to Pro."
+        ]
+      },
+      {
+        "title": "Draft workflow",
+        "intro": "The prompt format carries over to LTX-2 Pro, so upgrades are simple. Treat Fast as your draft layer.",
+        "items": [
+          "Reuse shot language for finals.",
+          "Swap in stronger references later.",
+          "Great for social drafts and loops.",
+          "Save prompt templates."
+        ]
+      }
+    ],
     "whatTitle": "How LTX-2 Fast works in MaxVideoAI",
     "whatIntro1": "Pick text or image mode, set 6–20 seconds, choose resolution and fps, then prompt. Audio is on by default and can be toggled off.",
     "whatIntro2": "For 12–20s runs we automatically constrain to 1080p/25 fps to keep routes stable.",

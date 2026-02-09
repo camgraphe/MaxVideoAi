@@ -31,13 +31,13 @@ import { UIIcon } from '@/components/ui/UIIcon';
 import { BackLink } from '@/components/video/BackLink';
 import { SoraPromptingTabs } from '@/components/marketing/SoraPromptingTabs.client';
 import { ResponsiveDetails } from '@/components/ui/ResponsiveDetails.client';
+import { SpecDetailsGrid, type SpecDetailsSection } from '@/components/marketing/SpecDetailsGrid.client';
 import { getExamplesHref } from '@/lib/examples-links';
 import {
   Box,
   ArrowLeftRight,
   Camera,
   Check,
-  ChevronDown,
   Clapperboard,
   Clock,
   Crop,
@@ -205,7 +205,7 @@ const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null
   },
 };
 
-type SpecSection = { title: string; items: string[] };
+type SpecSection = SpecDetailsSection;
 type LocalizedFaqEntry = { question: string; answer: string };
 type QuickStartBlock = { title: string; subtitle?: string | null; steps: string[] };
 type HeroSpecIconKey = 'resolution' | 'duration' | 'textToVideo' | 'imageToVideo' | 'aspectRatio' | 'audio';
@@ -260,6 +260,7 @@ type EngineKeySpecsFile = {
 };
 type KeySpecKey =
   | 'pricePerSecond'
+  | 'releaseDate'
   | 'textToVideo'
   | 'imageToVideo'
   | 'videoToVideo'
@@ -564,6 +565,7 @@ const KEY_SPEC_ROW_DEFS: Array<{ key: KeySpecKey; label: string }> = [
   { key: 'lipSync', label: 'Lip sync' },
   { key: 'cameraMotionControls', label: 'Camera / motion controls' },
   { key: 'watermark', label: 'Watermark' },
+  { key: 'releaseDate', label: 'Release date' },
 ];
 
 function resolveProviderInfo(engine: FalEngineEntry) {
@@ -995,6 +997,7 @@ function buildSpecValues(
       'pricePerSecond',
       pricePerSecondOverride ?? formatPricePerSecond(engineCaps)
     ),
+    releaseDate: resolveKeySpecValue(specs, 'releaseDate', 'Data pending'),
     textToVideo: resolveKeySpecValue(specs, 'textToVideo', resolveModeSupported(engineCaps, 't2v')),
     imageToVideo: resolveKeySpecValue(specs, 'imageToVideo', resolveModeSupported(engineCaps, 'i2v')),
     videoToVideo: resolveKeySpecValue(specs, 'videoToVideo', resolveModeSupported(engineCaps, 'v2v')),
@@ -1396,12 +1399,13 @@ function buildSoraCopy(localized: EngineLocalizedContent, slug: string, locale: 
         if (!entry || typeof entry !== 'object') return null;
         const obj = entry as Record<string, unknown>;
         const title = typeof obj.title === 'string' ? obj.title : null;
+        const intro = typeof obj.intro === 'string' ? obj.intro : null;
         const itemsRaw = obj.items;
         const items = Array.isArray(itemsRaw)
           ? itemsRaw.map((item) => (typeof item === 'string' ? item : '')).filter(Boolean)
           : [];
         if (!title || !items.length) return null;
-        return { title, items };
+        return { title, items, intro };
       })
       .filter((section): section is SpecSection => Boolean(section));
   };
@@ -2119,6 +2123,7 @@ function Sora2PageLayout({
   const heroEyebrow = copy.heroEyebrow ?? buildEyebrow(providerName);
   const heroSupportLine = copy.heroSupportLine ?? buildSupportLine(bestUseCases);
   const isVideoEngine = engine.type === 'video';
+  const isImageEngine = engine.type === 'image';
   const whatFlowSteps = copy.whatFlowSteps;
   const quickStartTitle = copy.quickStartTitle;
   const quickStartBlocks = copy.quickStartBlocks;
@@ -2130,6 +2135,7 @@ function Sora2PageLayout({
     : isVideoEngine
       ? buildAutoSpecSections(keySpecValues)
       : copy.specSections;
+  const specSectionsToShow = isImageEngine ? specSections : specSections.slice(0, 2);
   const quickPricingTitle = copy.quickPricingTitle;
   const promptPatternSteps = copy.promptPatternSteps;
   const imageToVideoSteps = copy.imageFlow;
@@ -2206,7 +2212,6 @@ function Sora2PageLayout({
   const hasSafetySection =
     isSoraPrompting || safetyRules.length > 0 || safetyInterpretation.length > 0 || Boolean(copy.safetyTitle);
   const hasFaqSection = isSoraPrompting || faqList.length > 0;
-  const isImageEngine = engine.type === 'image';
   const textAnchorId = isImageEngine ? 'text-to-image' : 'text-to-video';
   const imageAnchorId = isImageEngine ? 'image-to-image' : 'image-to-video';
   const imageWorkflowAnchorId = 'image-workflow';
@@ -2551,118 +2556,34 @@ function Sora2PageLayout({
                 ))}
               </div>
             ) : null}
-            {specSections.length ? (
-              <div className="grid grid-gap-sm grid-cols-2">
-                {specSections.map((section) => {
-                  const normalizedTitle = section.title.toLowerCase();
-                  const isInputsCard =
-                    isSoraPrompting && normalizedTitle.startsWith('inputs & file types');
-                  const isAudioCard = isSoraPrompting && normalizedTitle.startsWith('audio');
-
-                  if (isInputsCard) {
-                    return (
-                      <article
-                        key={section.title}
-                        className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
-                      >
-                        <details className="group rounded-xl px-0 py-0 text-sm text-text-secondary">
-                          <summary className="cursor-pointer list-none text-lg font-semibold text-text-primary">
-                            <span className="flex items-center justify-between gap-3">
-                              <span>Inputs &amp; file types</span>
-                              <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
-                                Details
-                                <UIIcon
-                                  icon={ChevronDown}
-                                  size={14}
-                                  className="text-text-muted transition group-open:rotate-180"
-                                />
-                              </span>
-                            </span>
-                          </summary>
-                          <div className="mt-2 stack-gap-sm">
-                            <p className="text-sm text-text-secondary">
-                              Start from text or a single reference image — then prompt motion + timing.
-                            </p>
-                            <ul className="list-disc space-y-1 pl-5">
-                              <li>
-                                Text → Video: 1–3 sentences. Think shot description: subject + action + camera + vibe.
-                              </li>
-                              <li>
-                                Image → Video: upload one still to lock the look, then describe motion + timing.
-                              </li>
-                              <li>
-                                Reference images showing real people are blocked — use characters, non-human subjects,
-                                or product shots.
-                              </li>
-                            </ul>
-                          </div>
-                        </details>
-                      </article>
-                    );
-                  }
-
-                  if (isAudioCard) {
-                    return (
-                      <article
-                        key={section.title}
-                        className="stack-gap-sm rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
-                      >
-                        <details className="group rounded-xl px-0 py-0 text-sm text-text-secondary">
-                          <summary className="cursor-pointer list-none text-lg font-semibold text-text-primary">
-                            <span className="flex items-center justify-between gap-3">
-                              <span>Audio (included)</span>
-                              <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-micro text-text-muted">
-                                Details
-                                <UIIcon
-                                  icon={ChevronDown}
-                                  size={14}
-                                  className="text-text-muted transition group-open:rotate-180"
-                                />
-                              </span>
-                            </span>
-                          </summary>
-                          <div className="mt-2 stack-gap-sm">
-                            <p className="text-sm text-text-secondary">
-                              Audio ships with the clip — use 1–2 sound cues to make it feel intentional.
-                            </p>
-                            <ul className="list-disc space-y-1 pl-5">
-                              <li>
-                                Add 1–2 key sound cues as pacing anchors (e.g., distant traffic hiss, packaging
-                                crinkle, footsteps on wet pavement).
-                              </li>
-                              <li>
-                                Lip sync works best with short, punchy lines — long speeches can drift.
-                              </li>
-                            </ul>
-                          </div>
-                        </details>
-                      </article>
-                    );
-                  }
-
-                  return (
+            {specSectionsToShow.length ? (
+              isImageEngine ? (
+                <div className="grid grid-gap-sm sm:grid-cols-2">
+                  {specSectionsToShow.map((section) => (
                     <article
                       key={section.title}
                       className="space-y-2 rounded-2xl border border-hairline bg-surface/80 p-4 shadow-card"
                     >
                       <h3 className="text-lg font-semibold text-text-primary">{section.title}</h3>
+                      {section.intro ? (
+                        <p className="text-sm text-text-secondary">{section.intro}</p>
+                      ) : null}
                       <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">
                         {section.items.map((item) => (
                           <li key={item}>{item}</li>
                         ))}
                       </ul>
                     </article>
-                  );
-                })}
-              </div>
-            ) : null}
-            {copy.specValueProp ? (
-              <p className="text-sm font-semibold text-text-primary">{copy.specValueProp}</p>
+                  ))}
+                </div>
+              ) : (
+                <SpecDetailsGrid sections={specSectionsToShow} />
+              )
             ) : null}
           </section>
         ) : null}
 
-        {copy.microCta ? (
+        {isImageEngine && copy.microCta ? (
           <div className="flex justify-center">
             <Link
               href={normalizedPrimaryCtaHref}

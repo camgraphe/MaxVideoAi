@@ -194,7 +194,28 @@
     ],
     "specTitle": "Real Specs – Wan 2.5 in MaxVideoAI (480p–1080p, 5–10s)",
     "specNote": "These specs describe Wan 2.5 exactly as you can use it today via MaxVideoAI.",
-    "specSections": [],
+    "specSections": [
+      {
+        "title": "Audio-led workflows",
+        "intro": "Designed for sound-led clips where timing matters. Use it to sync visuals to music or voiceover.",
+        "items": [
+          "Add music or VO cues in the prompt.",
+          "Use an audio URL to lock timing.",
+          "Keep visuals aligned with the beat.",
+          "Great for music-driven reveals."
+        ]
+      },
+      {
+        "title": "Prompt discipline",
+        "intro": "Structured direction yields more reliable results than long prose. Keep instructions clear and sequential.",
+        "items": [
+          "Write beats in order.",
+          "Specify camera intent before style.",
+          "Keep subject wording consistent.",
+          "Reserve complex styling for later passes."
+        ]
+      }
+    ],
     "specValueProp": "Wan 2.5 is the audio-ready short-form engine for 5–10s beats where visuals and sound need to land together.",
     "galleryTitle": "Wan 2.5 Example Gallery",
     "galleryIntro": "Clips generated with the exact configuration you have access to in MaxVideoAI.",
