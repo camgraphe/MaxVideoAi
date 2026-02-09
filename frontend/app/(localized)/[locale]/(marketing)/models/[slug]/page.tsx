@@ -19,7 +19,7 @@ import { normalizeEngineId } from '@/lib/engine-alias';
 import { formatResolutionLabel } from '@/lib/resolution-labels';
 import type { EngineCaps } from '@/types/engines';
 import { type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
-import { listExamples, getVideosByIds, type GalleryVideo } from '@/server/videos';
+import { listPlaylistVideos, getVideosByIds, type GalleryVideo } from '@/server/videos';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { computePricingSnapshot } from '@/lib/pricing';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
@@ -1983,7 +1983,7 @@ async function renderSoraModelPage({
   })();
   let examples: GalleryVideo[] = [];
   try {
-    examples = await listExamples('date-desc', 200);
+    examples = await listPlaylistVideos(`examples-${engine.modelSlug}`, 200);
   } catch (error) {
     console.warn('[models/sora-2] failed to load examples', error);
   }
