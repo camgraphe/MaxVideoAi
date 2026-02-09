@@ -37,13 +37,34 @@
   },
   "technicalOverviewTitle": "Ficha técnica",
   "technicalOverview": [
-    { "label": "Duración", "body": "6–20 s (12–20 s solo en 1080p a 25 fps)" },
-    { "label": "Resolución", "body": "1080p, 1440p, 2160p (4K)" },
-    { "label": "Relación de aspecto", "body": "16:9" },
-    { "label": "FPS", "body": "25 o 50" },
-    { "label": "Entradas", "body": "Texto → Vídeo; Imagen → Vídeo (PNG/JPG/WebP, ~25 MB), seed y negative prompt" },
-    { "label": "Audio", "body": "Audio nativo activado por defecto; se puede desactivar" },
-    { "label": "Precios", "body": "$0.04/s @1080p; $0.08/s @1440p; $0.16/s @4K" }
+    {
+      "label": "Duración",
+      "body": "6–20 s (12–20 s solo en 1080p a 25 fps)"
+    },
+    {
+      "label": "Resolución",
+      "body": "1080p, 1440p, 2160p (4K)"
+    },
+    {
+      "label": "Relación de aspecto",
+      "body": "16:9"
+    },
+    {
+      "label": "FPS",
+      "body": "25 o 50"
+    },
+    {
+      "label": "Entradas",
+      "body": "Texto → Vídeo; Imagen → Vídeo (PNG/JPG/WebP, ~25 MB), seed y negative prompt"
+    },
+    {
+      "label": "Audio",
+      "body": "Audio nativo activado por defecto; se puede desactivar"
+    },
+    {
+      "label": "Precios",
+      "body": "$0.04/s @1080p; $0.08/s @1440p; $0.16/s @4K"
+    }
   ],
   "promptStructure": {
     "title": "Cómo pedir a LTX-2 Fast",
@@ -85,9 +106,18 @@
     }
   ],
   "faqs": [
-    { "q": "¿Duración máxima?", "a": "De 6 a 20 s; más de 10 s exige 1080p y 25 fps." },
-    { "q": "¿Incluye audio?", "a": "Sí, audio nativo activado por defecto; puedes desactivarlo." },
-    { "q": "¿Aspectos soportados?", "a": "16:9 en esta ruta Fast." }
+    {
+      "q": "¿Duración máxima?",
+      "a": "De 6 a 20 s; más de 10 s exige 1080p y 25 fps."
+    },
+    {
+      "q": "¿Incluye audio?",
+      "a": "Sí, audio nativo activado por defecto; puedes desactivarlo."
+    },
+    {
+      "q": "¿Aspectos soportados?",
+      "a": "16:9 en esta ruta Fast."
+    }
   ],
   "custom": {
     "whyTitle": "Por qué LTX-2 Fast en MaxVideoAI",
@@ -164,7 +194,6 @@
     ],
     "galleryTitle": "Ejemplos LTX-2 Fast",
     "galleryIntro": "Renders recientes LTX-2 Fast con audio on/off para clips sociales y pruebas rápidas.",
-    "gallerySceneCta": "Abrir esta escena en Generate →",
     "galleryAllCta": "Ver todos los ejemplos LTX-2 Fast →",
     "recreateLabel": "Recrear esta toma →",
     "promptTitle": "Ideas de prompt LTX-2 Fast",

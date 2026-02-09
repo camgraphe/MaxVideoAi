@@ -34,13 +34,34 @@
   },
   "technicalOverviewTitle": "Resumen técnico",
   "technicalOverview": [
-    { "label": "Duración", "body": "4 s, 6 s o 8 s por render" },
-    { "label": "Resolución", "body": "720p o 1080p a 24 fps" },
-    { "label": "Formatos", "body": "16:9, 9:16 o 1:1; soportados en Texto→Video e Imagen→Video" },
-    { "label": "Entradas", "body": "Prompts de texto; hasta 4 imágenes (PNG/JPG/WebP); Imagen→Video desde un único still" },
-    { "label": "Audio", "body": "Audio nativo activado; interruptor para renders silenciosos" },
-    { "label": "Precio", "body": "Por segundo; ejemplo: audio on ≈$0.40/s, audio off ≈$0.20/s" },
-    { "label": "Tiempo de render", "body": "Añade aquí el tiempo observado (la cola muestra estimaciones en la app)" }
+    {
+      "label": "Duración",
+      "body": "4 s, 6 s o 8 s por render"
+    },
+    {
+      "label": "Resolución",
+      "body": "720p o 1080p a 24 fps"
+    },
+    {
+      "label": "Formatos",
+      "body": "16:9, 9:16 o 1:1; soportados en Texto→Video e Imagen→Video"
+    },
+    {
+      "label": "Entradas",
+      "body": "Prompts de texto; hasta 4 imágenes (PNG/JPG/WebP); Imagen→Video desde un único still"
+    },
+    {
+      "label": "Audio",
+      "body": "Audio nativo activado; interruptor para renders silenciosos"
+    },
+    {
+      "label": "Precio",
+      "body": "Por segundo; ejemplo: audio on ≈$0.40/s, audio off ≈$0.20/s"
+    },
+    {
+      "label": "Tiempo de render",
+      "body": "Añade aquí el tiempo observado (la cola muestra estimaciones en la app)"
+    }
   ],
   "promptStructure": {
     "title": "Texto→Video con Veo 3.1",
@@ -80,11 +101,26 @@
     }
   ],
   "faqs": [
-    { "q": "¿Está disponible Veo 3.1 en Europa o UK?", "a": "Sí. MaxVideoAI enruta Veo vía endpoints licenciados de DeepMind; no necesitas contratos separados." },
-    { "q": "¿Puede generar video vertical?", "a": "Sí: 16:9, 9:16 y 1:1. Elige 9:16 para Reels/TikTok/Shorts y centra la acción." },
-    { "q": "¿Admite imagen→video?", "a": "Sí. Empieza con un still (Imagen→Video) o usa 1–4 imágenes de referencia en Texto→Video." },
-    { "q": "¿Puedo pasar de 8 segundos?", "a": "Bases de 4/6/8 s. Usa Extend y encadena clips; cada extensión es otro bloque de 4–8 s." },
-    { "q": "¿Cómo lo mantengo on-brand?", "a": "Usa stills de referencia (Nano Banana o librería de marca), descripciones consistentes y paleta/luz explícitas." }
+    {
+      "q": "¿Está disponible Veo 3.1 en Europa o UK?",
+      "a": "Sí. MaxVideoAI enruta Veo vía endpoints licenciados de DeepMind; no necesitas contratos separados."
+    },
+    {
+      "q": "¿Puede generar video vertical?",
+      "a": "Sí: 16:9, 9:16 y 1:1. Elige 9:16 para Reels/TikTok/Shorts y centra la acción."
+    },
+    {
+      "q": "¿Admite imagen→video?",
+      "a": "Sí. Empieza con un still (Imagen→Video) o usa 1–4 imágenes de referencia en Texto→Video."
+    },
+    {
+      "q": "¿Puedo pasar de 8 segundos?",
+      "a": "Bases de 4/6/8 s. Usa Extend y encadena clips; cada extensión es otro bloque de 4–8 s."
+    },
+    {
+      "q": "¿Cómo lo mantengo on-brand?",
+      "a": "Usa stills de referencia (Nano Banana o librería de marca), descripciones consistentes y paleta/luz explícitas."
+    }
   ],
   "custom": {
     "heroDesc1": "Genera videos cortos y cinematográficos con Veo 3.1 (DeepMind) dentro de tu workspace de MaxVideoAI: texto→video, imagen→video, presets de encuadre y audio nativo, con precio transparente por segundo.",
@@ -175,7 +211,6 @@
     "specValueProp": "Veo 3.1 en MaxVideoAI te da presets de encuadre, control de audio nativo, seeds y Extend—para que se comporte como una cámara dirigible, no como una caja negra.",
     "galleryTitle": "Galería de ejemplos: salidas reales de Veo 3.1",
     "galleryIntro": "Mira renders de Veo 3.1 en vivo con los mismos ajustes que tienes en MaxVideoAI.",
-    "gallerySceneCta": "Abrir esta escena en Generate y adaptarla a tu marca →",
     "galleryAllCta": "Ver todos los ejemplos de Veo 3.1 →",
     "recreateLabel": "Recrear este plano →",
     "promptTitle": "Texto→Video con Veo 3.1",
@@ -264,11 +299,26 @@
     "comparisonCta": "Comparar Veo 3.1 vs Veo 3.1 Fast →",
     "faqTitle": "FAQ – Veo 3.1 en MaxVideoAI",
     "faqs": [
-      { "q": "¿Está disponible Veo 3.1 en Europa o UK?", "a": "Sí. MaxVideoAI enruta Veo vía endpoints licenciados de DeepMind; no necesitas contratos separados." },
-      { "q": "¿Puede generar video vertical?", "a": "Sí: 16:9, 9:16 y 1:1. Elige 9:16 para Reels/TikTok/Shorts y centra la acción." },
-      { "q": "¿Admite imagen→video?", "a": "Sí. Empieza con un still (Imagen→Video) o usa 1–4 imágenes de referencia en Texto→Video." },
-      { "q": "¿Puedo pasar de 8 segundos?", "a": "Bases de 4/6/8 s. Usa Extend y encadena clips; cada extensión es otro bloque de 4–8 s." },
-      { "q": "¿Cómo lo mantengo on-brand?", "a": "Usa stills de referencia (Nano Banana o librería de marca), descripciones consistentes y paleta/luz explícitas." }
+      {
+        "q": "¿Está disponible Veo 3.1 en Europa o UK?",
+        "a": "Sí. MaxVideoAI enruta Veo vía endpoints licenciados de DeepMind; no necesitas contratos separados."
+      },
+      {
+        "q": "¿Puede generar video vertical?",
+        "a": "Sí: 16:9, 9:16 y 1:1. Elige 9:16 para Reels/TikTok/Shorts y centra la acción."
+      },
+      {
+        "q": "¿Admite imagen→video?",
+        "a": "Sí. Empieza con un still (Imagen→Video) o usa 1–4 imágenes de referencia en Texto→Video."
+      },
+      {
+        "q": "¿Puedo pasar de 8 segundos?",
+        "a": "Bases de 4/6/8 s. Usa Extend y encadena clips; cada extensión es otro bloque de 4–8 s."
+      },
+      {
+        "q": "¿Cómo lo mantengo on-brand?",
+        "a": "Usa stills de referencia (Nano Banana o librería de marca), descripciones consistentes y paleta/luz explícitas."
+      }
     ],
     "relatedTitle": "Explora otros modelos",
     "relatedSubtitle": "Compara precio, latencia y presets con el resto del catálogo.",

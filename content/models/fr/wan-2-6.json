@@ -33,12 +33,30 @@
   },
   "technicalOverviewTitle": "Aperçu technique",
   "technicalOverview": [
-    { "label": "Durée", "body": "Texte/Image : 5, 10, 15 s · Référence : 5 ou 10 s" },
-    { "label": "Résolution", "body": "720p ou 1080p" },
-    { "label": "Ratios", "body": "T2V/R2V : 16:9, 9:16, 1:1, 4:3, 3:4 · I2V : auto depuis l’image" },
-    { "label": "Entrées", "body": "Prompts texte, image still, ou 1–3 vidéos de référence" },
-    { "label": "Audio", "body": "URL audio optionnelle en T2V/I2V ; désactivée en R2V" },
-    { "label": "Tarifs", "body": "0,13 $/s (720p), 0,20 $/s (1080p)" }
+    {
+      "label": "Durée",
+      "body": "Texte/Image : 5, 10, 15 s · Référence : 5 ou 10 s"
+    },
+    {
+      "label": "Résolution",
+      "body": "720p ou 1080p"
+    },
+    {
+      "label": "Ratios",
+      "body": "T2V/R2V : 16:9, 9:16, 1:1, 4:3, 3:4 · I2V : auto depuis l’image"
+    },
+    {
+      "label": "Entrées",
+      "body": "Prompts texte, image still, ou 1–3 vidéos de référence"
+    },
+    {
+      "label": "Audio",
+      "body": "URL audio optionnelle en T2V/I2V ; désactivée en R2V"
+    },
+    {
+      "label": "Tarifs",
+      "body": "0,13 $/s (720p), 0,20 $/s (1080p)"
+    }
   ],
   "promptStructure": {
     "title": "Prompter Wan 2.6",
@@ -76,9 +94,18 @@
     }
   ],
   "faqs": [
-    { "q": "Wan 2.6 supporte-t-il l’audio ?", "a": "URL audio optionnelle en modes Texte et Image. Le mode Référence ne supporte pas l’audio upload." },
-    { "q": "Combien de vidéos de référence ?", "a": "1 à 3 vidéos MP4/MOV. Taggez-les en @Video1, @Video2, @Video3." },
-    { "q": "Quelles durées sont supportées ?", "a": "Texte/Image : 5, 10 ou 15 s. Référence : 5 ou 10 s." }
+    {
+      "q": "Wan 2.6 supporte-t-il l’audio ?",
+      "a": "URL audio optionnelle en modes Texte et Image. Le mode Référence ne supporte pas l’audio upload."
+    },
+    {
+      "q": "Combien de vidéos de référence ?",
+      "a": "1 à 3 vidéos MP4/MOV. Taggez-les en @Video1, @Video2, @Video3."
+    },
+    {
+      "q": "Quelles durées sont supportées ?",
+      "a": "Texte/Image : 5, 10 ou 15 s. Référence : 5 ou 10 s."
+    }
   ],
   "custom": {
     "whyTitle": "Pourquoi Wan 2.6 est puissant dans MaxVideoAI",
@@ -197,16 +224,25 @@
     "relatedCtaSora2Pro": "Comparer Wan 2.6 vs Sora 2 Pro →",
     "faqTitle": "FAQ – Wan 2.6 dans MaxVideoAI",
     "faqs": [
-      { "q": "Wan 2.6 supporte-t-il l’audio ?", "a": "URL audio optionnelle en modes Texte et Image. Le mode Référence ne supporte pas l’audio upload." },
-      { "q": "Combien de vidéos de référence ?", "a": "1 à 3 vidéos MP4/MOV. Taggez-les en @Video1, @Video2, @Video3." },
-      { "q": "Quelles durées sont supportées ?", "a": "Texte/Image : 5, 10 ou 15 s. Référence : 5 ou 10 s." }
+      {
+        "q": "Wan 2.6 supporte-t-il l’audio ?",
+        "a": "URL audio optionnelle en modes Texte et Image. Le mode Référence ne supporte pas l’audio upload."
+      },
+      {
+        "q": "Combien de vidéos de référence ?",
+        "a": "1 à 3 vidéos MP4/MOV. Taggez-les en @Video1, @Video2, @Video3."
+      },
+      {
+        "q": "Quelles durées sont supportées ?",
+        "a": "Texte/Image : 5, 10 ou 15 s. Référence : 5 ou 10 s."
+      }
     ],
     "relatedTitle": "Explorer d’autres modèles",
     "relatedSubtitle": "Comparez prix, latence et options de sortie sur tout le catalogue.",
     "finalPara1": "Wan 2.6 est conçu pour des séquences courtes avec contrôle multi-shot.",
     "finalPara2": "Démarrez en texte ou image, puis passez en référence pour la cohérence.",
     "finalButton": "Ouvrir Wan 2.6 dans Generate →",
-    "galleryIntro": "Des exemples Wan 2.6 arriveront bientôt.",
+    "galleryIntro": "Clips générés avec la même config que vous avez dans MaxVideoAI.",
     "quickStartTitle": "Démarrage rapide (1 minute)",
     "quickStartBlocks": [
       {
@@ -245,6 +281,9 @@
       "Caméra trop nerveuse → remplace \"dynamic\" par \"slow, smooth, controlled\" + précise \"plan unique\"",
       "Plans incohérents entre beats → répète les mêmes ancres (optique, lieu, heure, tenue) à chaque beat",
       "Look trop différent du key visual (I2V) → décris \"même scène / même sujet\", puis ne demande que le mouvement"
-    ]
+    ],
+    "galleryTitle": "Galerie Wan 2.6",
+    "galleryAllCta": "Voir tous les exemples Wan 2.6 →",
+    "recreateLabel": "Recréer ce plan →"
   }
 }

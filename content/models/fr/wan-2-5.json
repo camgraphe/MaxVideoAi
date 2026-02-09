@@ -34,13 +34,34 @@
   },
   "technicalOverviewTitle": "Résumé technique",
   "technicalOverview": [
-    { "label": "Durée", "body": "5 s ou 10 s par rendu" },
-    { "label": "Résolutions", "body": "480p, 720p, 1080p à 24 fps" },
-    { "label": "Ratios", "body": "16:9, 9:16, 1:1" },
-    { "label": "Entrées", "body": "Texte → Vidéo ; Image → Vidéo depuis un seul still" },
-    { "label": "Audio", "body": "Audio natif si aucune piste; WAV/MP3 (3–30 s, ~15 MB) recoupé/loopé à 5 ou 10 s" },
-    { "label": "Contrôles", "body": "Toggle d’expansion, seed optionnel, toggles de sécurité" },
-    { "label": "Tarifs", "body": "À la seconde selon résolution ; ex. 0,05 $/s (480p), 0,10 $/s (720p), 0,15 $/s (1080p)" }
+    {
+      "label": "Durée",
+      "body": "5 s ou 10 s par rendu"
+    },
+    {
+      "label": "Résolutions",
+      "body": "480p, 720p, 1080p à 24 fps"
+    },
+    {
+      "label": "Ratios",
+      "body": "16:9, 9:16, 1:1"
+    },
+    {
+      "label": "Entrées",
+      "body": "Texte → Vidéo ; Image → Vidéo depuis un seul still"
+    },
+    {
+      "label": "Audio",
+      "body": "Audio natif si aucune piste; WAV/MP3 (3–30 s, ~15 MB) recoupé/loopé à 5 ou 10 s"
+    },
+    {
+      "label": "Contrôles",
+      "body": "Toggle d’expansion, seed optionnel, toggles de sécurité"
+    },
+    {
+      "label": "Tarifs",
+      "body": "À la seconde selon résolution ; ex. 0,05 $/s (480p), 0,10 $/s (720p), 0,15 $/s (1080p)"
+    }
   ],
   "promptStructure": {
     "title": "Texte→vidéo avec Wan 2.5",
@@ -80,11 +101,26 @@
     }
   ],
   "faqs": [
-    { "q": "Wan 2.5 génère-t-il toujours de l’audio ?", "a": "Oui. Audio natif si aucune piste; si vous uploadez WAV/MP3, elle est recoupée/loopée à 5/10 s et devient la bande principale." },
-    { "q": "Quelles résolutions/durées choisir ?", "a": "480p/5s pour le look-dev; 720p/5–10s pour interne/social; 1080p/10s pour beats hero et livrables clients." },
-    { "q": "Gère-t-il le vertical et le carré ?", "a": "Oui : 16:9, 9:16 ou 1:1. 9:16 pour le mobile-first." },
-    { "q": "Supporte-t-il Image → Vidéo ?", "a": "Oui. Chargez un still et concentrez le prompt sur mouvement, caméra et audio." },
-    { "q": "Comment est-il tarifé vs autres moteurs ?", "a": "Par seconde selon la résolution (0,05/0,10/0,15 $/s) ; milieu de gamme entre premium et moteurs muets ultra low-cost." }
+    {
+      "q": "Wan 2.5 génère-t-il toujours de l’audio ?",
+      "a": "Oui. Audio natif si aucune piste; si vous uploadez WAV/MP3, elle est recoupée/loopée à 5/10 s et devient la bande principale."
+    },
+    {
+      "q": "Quelles résolutions/durées choisir ?",
+      "a": "480p/5s pour le look-dev; 720p/5–10s pour interne/social; 1080p/10s pour beats hero et livrables clients."
+    },
+    {
+      "q": "Gère-t-il le vertical et le carré ?",
+      "a": "Oui : 16:9, 9:16 ou 1:1. 9:16 pour le mobile-first."
+    },
+    {
+      "q": "Supporte-t-il Image → Vidéo ?",
+      "a": "Oui. Chargez un still et concentrez le prompt sur mouvement, caméra et audio."
+    },
+    {
+      "q": "Comment est-il tarifé vs autres moteurs ?",
+      "a": "Par seconde selon la résolution (0,05/0,10/0,15 $/s) ; milieu de gamme entre premium et moteurs muets ultra low-cost."
+    }
   ],
   "custom": {
     "heroDesc1": "Wan 2.5 vous permet de scénariser des beats ciné avec audio intégré : prompt ou image, WAV/MP3 optionnel, 5 ou 10 s en 480p/720p/1080p.",
@@ -175,7 +211,6 @@
     "specValueProp": "Wan 2.5 est le moteur court audio-ready pour des beats 5–10 s où image et son doivent tomber ensemble.",
     "galleryTitle": "Galerie Wan 2.5",
     "galleryIntro": "Clips générés avec la même config que vous avez dans MaxVideoAI.",
-    "gallerySceneCta": "Ouvrir cette scène dans Generate et l’adapter à votre script →",
     "galleryAllCta": "Voir tous les exemples Wan 2.5 →",
     "recreateLabel": "Recréer ce plan →",
     "promptTitle": "Texte→vidéo avec Wan 2.5",
@@ -262,11 +297,26 @@
     "comparisonCta": "Comparer Wan 2.5 vs Sora 2 →",
     "faqTitle": "FAQ – Wan 2.5 dans MaxVideoAI",
     "faqs": [
-      { "q": "Wan 2.5 génère-t-il toujours de l’audio ?", "a": "Oui. Audio natif si aucune piste ; si vous uploadez WAV/MP3, elle est recoupée/loopée à 5/10 s et devient la bande principale." },
-      { "q": "Quelles résolutions/durées choisir ?", "a": "480p/5s pour le look-dev; 720p/5–10s pour interne/social; 1080p/10s pour beats hero et livrables." },
-      { "q": "Gère-t-il le vertical et le carré ?", "a": "Oui — 16:9, 9:16 ou 1:1. Choisissez 9:16 pour le mobile-first." },
-      { "q": "Supporte-t-il Image → Vidéo ?", "a": "Oui. Chargez un still et concentrez le prompt sur mouvement, caméra et audio." },
-      { "q": "Comment se situe le prix ?", "a": "Tarif à la seconde par résolution (0,05/0,10/0,15 $/s) ; milieu de gamme vs moteurs premium ou muets low-cost." }
+      {
+        "q": "Wan 2.5 génère-t-il toujours de l’audio ?",
+        "a": "Oui. Audio natif si aucune piste ; si vous uploadez WAV/MP3, elle est recoupée/loopée à 5/10 s et devient la bande principale."
+      },
+      {
+        "q": "Quelles résolutions/durées choisir ?",
+        "a": "480p/5s pour le look-dev; 720p/5–10s pour interne/social; 1080p/10s pour beats hero et livrables."
+      },
+      {
+        "q": "Gère-t-il le vertical et le carré ?",
+        "a": "Oui — 16:9, 9:16 ou 1:1. Choisissez 9:16 pour le mobile-first."
+      },
+      {
+        "q": "Supporte-t-il Image → Vidéo ?",
+        "a": "Oui. Chargez un still et concentrez le prompt sur mouvement, caméra et audio."
+      },
+      {
+        "q": "Comment se situe le prix ?",
+        "a": "Tarif à la seconde par résolution (0,05/0,10/0,15 $/s) ; milieu de gamme vs moteurs premium ou muets low-cost."
+      }
     ],
     "relatedTitle": "Explorer d’autres modèles",
     "relatedSubtitle": "Comparez prix, latence et options de sortie dans le catalogue MaxVideoAI.",

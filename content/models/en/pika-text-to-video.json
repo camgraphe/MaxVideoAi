@@ -217,7 +217,6 @@
     "specValueProp": "Pika 2.2 is the stylized, silent short-clip engine: fast to iterate with seeds and negative prompts, perfect for social feeds and motion inserts.",
     "galleryTitle": "Pika 2.2 Example Gallery",
     "galleryIntro": "Curated clips generated with the same settings you have in MaxVideoAI.",
-    "gallerySceneCta": "Open this scene in Generate and adapt it with your own brand →",
     "galleryAllCta": "View all Pika 2.2 examples →",
     "recreateLabel": "Recreate this shot →",
     "promptTitle": "Text-to-Video with Pika 2.2",

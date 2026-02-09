@@ -161,7 +161,6 @@
     "specValueProp": "A directed start–end transition engine with optional native audio, priced per second like Veo 3.1.",
     "galleryTitle": "Example Gallery: Veo 3.1 First/Last",
     "galleryIntro": "Real transitions: sketch → final render, office → rooftop, wireframe UI → high-fidelity UI.",
-    "gallerySceneCta": "Open this scene in Generate and swap your own first & last frames →",
     "galleryAllCta": "View all Veo 3.1 First/Last examples →",
     "recreateLabel": "Recreate this shot →",
     "promptTitle": "How to prompt Veo 3.1 First/Last",

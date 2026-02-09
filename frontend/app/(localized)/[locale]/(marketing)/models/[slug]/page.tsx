@@ -682,7 +682,7 @@ const PRICING_SECTION_TITLES = {
   fr: 'Tarifs',
   es: 'Precios',
 } as const;
-const SPECS_DECISION_NOTE = 'Decision specs: what you’ll pay and what you’ll get.';
+const SPECS_DECISION_NOTE = 'The limits that shape your renders.';
 
 const PRICING_SECTION_MATCH = new Set(['pricing', 'tarifs', 'precios']);
 const PRICING_EXTRA_MARKERS = ['exemples rapides', 'quick examples', 'ejemplos rápidos'];

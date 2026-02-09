@@ -34,13 +34,34 @@
   },
   "technicalOverviewTitle": "Résumé technique",
   "technicalOverview": [
-    { "label": "Durée", "body": "6 s ou 10 s par clip" },
-    { "label": "Résolution", "body": "512p ou 768p" },
-    { "label": "Ratios", "body": "16:9, 9:16, 1:1" },
-    { "label": "Entrées", "body": "Prompts texte; image de référence optionnelle; frame final optionnel" },
-    { "label": "Modes", "body": "Texte→vidéo et Image→vidéo" },
-    { "label": "Audio", "body": "Sortie silencieuse (pas d’audio natif ou uploadé)" },
-    { "label": "Tarifs", "body": "Économique; pricing live par wallet dans Generate" }
+    {
+      "label": "Durée",
+      "body": "6 s ou 10 s par clip"
+    },
+    {
+      "label": "Résolution",
+      "body": "512p ou 768p"
+    },
+    {
+      "label": "Ratios",
+      "body": "16:9, 9:16, 1:1"
+    },
+    {
+      "label": "Entrées",
+      "body": "Prompts texte; image de référence optionnelle; frame final optionnel"
+    },
+    {
+      "label": "Modes",
+      "body": "Texte→vidéo et Image→vidéo"
+    },
+    {
+      "label": "Audio",
+      "body": "Sortie silencieuse (pas d’audio natif ou uploadé)"
+    },
+    {
+      "label": "Tarifs",
+      "body": "Économique; pricing live par wallet dans Generate"
+    }
   ],
   "promptStructure": {
     "title": "Texte→vidéo avec MiniMax Hailuo 02",
@@ -79,11 +100,26 @@
     }
   ],
   "faqs": [
-    { "q": "Pourquoi choisir MiniMax plutôt qu’un moteur premium ?", "a": "Bonne motion/physique à moindre coût; idéal pour pubs volumineuses et tests." },
-    { "q": "Quel style de prompt marche le mieux ?", "a": "Prompts courts centrés motion : sujet, décor, caméra, physique; une idée par clip." },
-    { "q": "Supporte-t-il le vertical ?", "a": "Oui—16:9, 9:16, 1:1 dans MaxVideoAI." },
-    { "q": "Supporte-t-il l’audio ?", "a": "Non. Sortie silencieuse; ajoutez le son en post ou via moteurs audio." },
-    { "q": "Et si j’ai besoin de 1080p ?", "a": "Prototypage en 512p/768p, puis upscale ou relance en moteurs haute résolution (Veo/Kling/Wan/Sora 2 Pro)." }
+    {
+      "q": "Pourquoi choisir MiniMax plutôt qu’un moteur premium ?",
+      "a": "Bonne motion/physique à moindre coût; idéal pour pubs volumineuses et tests."
+    },
+    {
+      "q": "Quel style de prompt marche le mieux ?",
+      "a": "Prompts courts centrés motion : sujet, décor, caméra, physique; une idée par clip."
+    },
+    {
+      "q": "Supporte-t-il le vertical ?",
+      "a": "Oui—16:9, 9:16, 1:1 dans MaxVideoAI."
+    },
+    {
+      "q": "Supporte-t-il l’audio ?",
+      "a": "Non. Sortie silencieuse; ajoutez le son en post ou via moteurs audio."
+    },
+    {
+      "q": "Et si j’ai besoin de 1080p ?",
+      "a": "Prototypage en 512p/768p, puis upscale ou relance en moteurs haute résolution (Veo/Kling/Wan/Sora 2 Pro)."
+    }
   ],
   "custom": {
     "heroDesc1": "Générez des drafts rapides avec physique en 512p/768p depuis texte ou une image, frame final optionnel pour verrouiller la fin.",
@@ -163,7 +199,6 @@
     "specValueProp": "MiniMax Hailuo 02 est le moteur rapide avec physique pour des tests motion silencieux à bas coût.",
     "galleryTitle": "Galerie MiniMax Hailuo 02",
     "galleryIntro": "Runs texte et image rendus avec la même config que la vôtre.",
-    "gallerySceneCta": "Ouvrir cette scène dans Generate et l’adapter à votre marque →",
     "galleryAllCta": "Voir tous les exemples MiniMax Hailuo 02 →",
     "recreateLabel": "Recréer ce plan →",
     "promptTitle": "Texte→vidéo avec MiniMax Hailuo 02",
@@ -246,11 +281,26 @@
     "comparisonCta": "Comparer MiniMax vs Pika 2.2 →",
     "faqTitle": "FAQ – MiniMax Hailuo 02 dans MaxVideoAI",
     "faqs": [
-      { "q": "Pourquoi choisir MiniMax plutôt qu’un moteur premium ?", "a": "Motion/physique solide à moindre coût; idéal pour pubs volumineuses et tests." },
-      { "q": "Quel style de prompt marche le mieux ?", "a": "Prompts courts orientés motion : sujet, décor, caméra, physique; une idée par clip." },
-      { "q": "Peut-il faire du vertical ?", "a": "Oui—16:9, 9:16, 1:1 dans MaxVideoAI." },
-      { "q": "Supporte-t-il l’audio ?", "a": "Non. Sortie silencieuse; ajoutez le son en post ou via moteurs audio." },
-      { "q": "Et si j’ai besoin de 1080p ?", "a": "Prototypage en 512p/768p, puis upscale ou relance en moteurs haute résolution (Veo/Kling/Wan/Sora 2 Pro)." }
+      {
+        "q": "Pourquoi choisir MiniMax plutôt qu’un moteur premium ?",
+        "a": "Motion/physique solide à moindre coût; idéal pour pubs volumineuses et tests."
+      },
+      {
+        "q": "Quel style de prompt marche le mieux ?",
+        "a": "Prompts courts orientés motion : sujet, décor, caméra, physique; une idée par clip."
+      },
+      {
+        "q": "Peut-il faire du vertical ?",
+        "a": "Oui—16:9, 9:16, 1:1 dans MaxVideoAI."
+      },
+      {
+        "q": "Supporte-t-il l’audio ?",
+        "a": "Non. Sortie silencieuse; ajoutez le son en post ou via moteurs audio."
+      },
+      {
+        "q": "Et si j’ai besoin de 1080p ?",
+        "a": "Prototypage en 512p/768p, puis upscale ou relance en moteurs haute résolution (Veo/Kling/Wan/Sora 2 Pro)."
+      }
     ],
     "relatedTitle": "Explorer d’autres modèles",
     "relatedSubtitle": "Comparez prix, latence et sorties dans le catalogue MaxVideoAI.",

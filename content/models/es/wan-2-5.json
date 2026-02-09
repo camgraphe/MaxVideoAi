@@ -34,13 +34,34 @@
   },
   "technicalOverviewTitle": "Resumen técnico",
   "technicalOverview": [
-    { "label": "Duración", "body": "5 s o 10 s por render" },
-    { "label": "Resolución", "body": "480p, 720p, 1080p a 24 fps" },
-    { "label": "Relaciones", "body": "16:9, 9:16, 1:1" },
-    { "label": "Entradas", "body": "Texto → Video; Imagen → Video desde un solo still" },
-    { "label": "Audio", "body": "Audio nativo si no subes pista; WAV/MP3 (3–30 s, ~15 MB) recortado o en loop a 5 o 10 s" },
-    { "label": "Controles", "body": "Expansión de prompt opcional; seed opcional; toggles de seguridad" },
-    { "label": "Precio", "body": "Por segundo según resolución; ej. $0.05/s (480p), $0.10/s (720p), $0.15/s (1080p)" }
+    {
+      "label": "Duración",
+      "body": "5 s o 10 s por render"
+    },
+    {
+      "label": "Resolución",
+      "body": "480p, 720p, 1080p a 24 fps"
+    },
+    {
+      "label": "Relaciones",
+      "body": "16:9, 9:16, 1:1"
+    },
+    {
+      "label": "Entradas",
+      "body": "Texto → Video; Imagen → Video desde un solo still"
+    },
+    {
+      "label": "Audio",
+      "body": "Audio nativo si no subes pista; WAV/MP3 (3–30 s, ~15 MB) recortado o en loop a 5 o 10 s"
+    },
+    {
+      "label": "Controles",
+      "body": "Expansión de prompt opcional; seed opcional; toggles de seguridad"
+    },
+    {
+      "label": "Precio",
+      "body": "Por segundo según resolución; ej. $0.05/s (480p), $0.10/s (720p), $0.15/s (1080p)"
+    }
   ],
   "promptStructure": {
     "title": "Texto→video con Wan 2.5",
@@ -80,11 +101,26 @@
     }
   ],
   "faqs": [
-    { "q": "¿Wan 2.5 siempre genera audio?", "a": "Sí. Si no subes pista, genera audio nativo. Si subes WAV/MP3, esa pista se recorta/loopea a 5/10 s y es el audio principal." },
-    { "q": "¿Qué resolución y duración usar?", "a": "480p/5s para look-dev rápido; 720p/5–10s para internos/social; 1080p/10s para beats hero y entregas a cliente." },
-    { "q": "¿Puede hacer vertical y cuadrado?", "a": "Sí: 16:9, 9:16 o 1:1. 9:16 para mobile-first." },
-    { "q": "¿Soporta Imagen → Video?", "a": "Sí. Sube un still y enfoca el prompt en movimiento, cámara y audio." },
-    { "q": "¿Cómo se compara el precio?", "a": "Precio por segundo por resolución (0.05/0.10/0.15 $/s); nivel medio vs motores premium o silenciosos ultra low-cost." }
+    {
+      "q": "¿Wan 2.5 siempre genera audio?",
+      "a": "Sí. Si no subes pista, genera audio nativo. Si subes WAV/MP3, esa pista se recorta/loopea a 5/10 s y es el audio principal."
+    },
+    {
+      "q": "¿Qué resolución y duración usar?",
+      "a": "480p/5s para look-dev rápido; 720p/5–10s para internos/social; 1080p/10s para beats hero y entregas a cliente."
+    },
+    {
+      "q": "¿Puede hacer vertical y cuadrado?",
+      "a": "Sí: 16:9, 9:16 o 1:1. 9:16 para mobile-first."
+    },
+    {
+      "q": "¿Soporta Imagen → Video?",
+      "a": "Sí. Sube un still y enfoca el prompt en movimiento, cámara y audio."
+    },
+    {
+      "q": "¿Cómo se compara el precio?",
+      "a": "Precio por segundo por resolución (0.05/0.10/0.15 $/s); nivel medio vs motores premium o silenciosos ultra low-cost."
+    }
   ],
   "custom": {
     "heroDesc1": "Wan 2.5 te deja planear beats cinemáticos con audio integrado: prompt o imagen, WAV/MP3 opcional, 5 o 10 s en 480p/720p/1080p.",
@@ -175,7 +211,6 @@
     "specValueProp": "Wan 2.5 es el motor corto con audio para beats de 5–10 s donde imagen y sonido deben caer juntos.",
     "galleryTitle": "Galería Wan 2.5",
     "galleryIntro": "Clips generados con la misma config que tienes en MaxVideoAI.",
-    "gallerySceneCta": "Abrir esta escena en Generate y adaptarla a tu guion →",
     "galleryAllCta": "Ver todos los ejemplos Wan 2.5 →",
     "recreateLabel": "Recrear esta toma →",
     "promptTitle": "Texto→video con Wan 2.5",
@@ -262,11 +297,26 @@
     "comparisonCta": "Comparar Wan 2.5 vs Sora 2 →",
     "faqTitle": "FAQ – Wan 2.5 en MaxVideoAI",
     "faqs": [
-      { "q": "¿Wan 2.5 siempre genera audio?", "a": "Sí. Audio nativo si no subes pista; si subes WAV/MP3 se recorta/loopea a 5/10 s y es la banda principal." },
-      { "q": "¿Qué resolución/duración usar?", "a": "480p/5s para pruebas rápidas; 720p/5–10s para interno/social; 1080p/10s para beats hero y entregas." },
-      { "q": "¿Soporta vertical y cuadrado?", "a": "Sí—16:9, 9:16 o 1:1. Usa 9:16 para mobile-first." },
-      { "q": "¿Soporta Imagen → Video?", "a": "Sí. Sube un still y enfoca el prompt en movimiento, cámara y audio." },
-      { "q": "¿Cómo se cobra frente a otros motores?", "a": "Por segundo por resolución (0.05/0.10/0.15 $/s); nivel medio vs premium o motores mudos ultra baratos." }
+      {
+        "q": "¿Wan 2.5 siempre genera audio?",
+        "a": "Sí. Audio nativo si no subes pista; si subes WAV/MP3 se recorta/loopea a 5/10 s y es la banda principal."
+      },
+      {
+        "q": "¿Qué resolución/duración usar?",
+        "a": "480p/5s para pruebas rápidas; 720p/5–10s para interno/social; 1080p/10s para beats hero y entregas."
+      },
+      {
+        "q": "¿Soporta vertical y cuadrado?",
+        "a": "Sí—16:9, 9:16 o 1:1. Usa 9:16 para mobile-first."
+      },
+      {
+        "q": "¿Soporta Imagen → Video?",
+        "a": "Sí. Sube un still y enfoca el prompt en movimiento, cámara y audio."
+      },
+      {
+        "q": "¿Cómo se cobra frente a otros motores?",
+        "a": "Por segundo por resolución (0.05/0.10/0.15 $/s); nivel medio vs premium o motores mudos ultra baratos."
+      }
     ],
     "relatedTitle": "Explora otros modelos",
     "relatedSubtitle": "Compara precio, latencia y salidas en el catálogo MaxVideoAI.",

@@ -37,13 +37,34 @@
   },
   "technicalOverviewTitle": "Vue technique",
   "technicalOverview": [
-    { "label": "Durée", "body": "6–20 s (12–20 s obligatoirement en 1080p à 25 fps)" },
-    { "label": "Résolution", "body": "1080p, 1440p, 2160p (4K)" },
-    { "label": "Ratio", "body": "16:9" },
-    { "label": "FPS", "body": "25 ou 50" },
-    { "label": "Entrées", "body": "Texte → Vidéo ; Image → Vidéo (PNG/JPG/WebP, ~25 Mo), seed et negative prompt" },
-    { "label": "Audio", "body": "Audio natif activé par défaut, toggle off pour muet" },
-    { "label": "Tarifs", "body": "$0.04/s @1080p ; $0.08/s @1440p ; $0.16/s @4K" }
+    {
+      "label": "Durée",
+      "body": "6–20 s (12–20 s obligatoirement en 1080p à 25 fps)"
+    },
+    {
+      "label": "Résolution",
+      "body": "1080p, 1440p, 2160p (4K)"
+    },
+    {
+      "label": "Ratio",
+      "body": "16:9"
+    },
+    {
+      "label": "FPS",
+      "body": "25 ou 50"
+    },
+    {
+      "label": "Entrées",
+      "body": "Texte → Vidéo ; Image → Vidéo (PNG/JPG/WebP, ~25 Mo), seed et negative prompt"
+    },
+    {
+      "label": "Audio",
+      "body": "Audio natif activé par défaut, toggle off pour muet"
+    },
+    {
+      "label": "Tarifs",
+      "body": "$0.04/s @1080p ; $0.08/s @1440p ; $0.16/s @4K"
+    }
   ],
   "promptStructure": {
     "title": "Prompt LTX-2 Fast",
@@ -85,9 +106,18 @@
     }
   ],
   "faqs": [
-    { "q": "Combien de temps peut durer LTX-2 Fast ?", "a": "De 6 à 20 s. Au-delà de 10 s, Fal impose 1080p et 25 fps." },
-    { "q": "Y a-t-il de l’audio ?", "a": "Oui, audio natif activé par défaut. Toggle off pour un rendu muet." },
-    { "q": "Quels ratios ?", "a": "16:9 uniquement dans cette configuration Fast." }
+    {
+      "q": "Combien de temps peut durer LTX-2 Fast ?",
+      "a": "De 6 à 20 s. Au-delà de 10 s, Fal impose 1080p et 25 fps."
+    },
+    {
+      "q": "Y a-t-il de l’audio ?",
+      "a": "Oui, audio natif activé par défaut. Toggle off pour un rendu muet."
+    },
+    {
+      "q": "Quels ratios ?",
+      "a": "16:9 uniquement dans cette configuration Fast."
+    }
   ],
   "custom": {
     "whyTitle": "Pourquoi LTX-2 Fast dans MaxVideoAI",
@@ -164,7 +194,6 @@
     ],
     "galleryTitle": "Exemples LTX-2 Fast",
     "galleryIntro": "Rendus récents LTX-2 Fast avec audio on/off pour clips sociaux et tests rapides.",
-    "gallerySceneCta": "Ouvrir cette scène dans Generate →",
     "galleryAllCta": "Voir tous les exemples LTX-2 Fast →",
     "recreateLabel": "Recréer ce plan →",
     "promptTitle": "Idées de prompts LTX-2 Fast",

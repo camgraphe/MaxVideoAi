@@ -33,13 +33,34 @@
   },
   "technicalOverviewTitle": "Resumen técnico",
   "technicalOverview": [
-    { "label": "Duración", "body": "4 s, 6 s, 8 s por render" },
-    { "label": "Resolución", "body": "720p o 1080p a 24 fps" },
-    { "label": "Formatos", "body": "16:9 y 9:16 (sin 1:1 en este nivel)" },
-    { "label": "Entradas", "body": "Texto → Video; Imagen → Video desde un solo still" },
-    { "label": "Audio", "body": "Audio nativo opcional (VO, ambiente, SFX) con interruptor por job" },
-    { "label": "Precio", "body": "Por segundo; ejemplo: audio on ≈$0.15/s, audio off ≈$0.10/s; wallet prepago" },
-    { "label": "Tiempo de render", "body": "Cola corta; estimaciones en vivo en el panel de jobs" }
+    {
+      "label": "Duración",
+      "body": "4 s, 6 s, 8 s por render"
+    },
+    {
+      "label": "Resolución",
+      "body": "720p o 1080p a 24 fps"
+    },
+    {
+      "label": "Formatos",
+      "body": "16:9 y 9:16 (sin 1:1 en este nivel)"
+    },
+    {
+      "label": "Entradas",
+      "body": "Texto → Video; Imagen → Video desde un solo still"
+    },
+    {
+      "label": "Audio",
+      "body": "Audio nativo opcional (VO, ambiente, SFX) con interruptor por job"
+    },
+    {
+      "label": "Precio",
+      "body": "Por segundo; ejemplo: audio on ≈$0.15/s, audio off ≈$0.10/s; wallet prepago"
+    },
+    {
+      "label": "Tiempo de render",
+      "body": "Cola corta; estimaciones en vivo en el panel de jobs"
+    }
   ],
   "promptStructure": {
     "title": "Texto→Video con Veo 3.1 Fast",
@@ -183,7 +204,6 @@
     "specValueProp": "Veo 3.1 Fast es tu banco de pruebas rápido: mismo lenguaje cinemático que Veo 3.1, menor costo y turnaround.",
     "galleryTitle": "Galería: salidas reales de Veo 3.1 Fast",
     "galleryIntro": "Clips generados con Veo 3.1 Fast usando los mismos presets que tienes.",
-    "gallerySceneCta": "Abrir esta escena en Generate y adaptarla con tu guion →",
     "galleryAllCta": "Ver todos los ejemplos de Veo 3.1 Fast →",
     "recreateLabel": "Recrear esta toma →",
     "promptTitle": "Texto→Video con Veo 3.1 Fast",

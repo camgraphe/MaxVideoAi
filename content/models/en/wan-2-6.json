@@ -252,7 +252,7 @@
     "finalPara1": "Wan 2.6 is built for short cinematic sequences with multi-shot control.",
     "finalPara2": "Start with text or image, then move to reference video for consistency.",
     "finalButton": "Open Wan 2.6 in Generate →",
-    "galleryIntro": "Wan 2.6 examples will appear here soon.",
+    "galleryIntro": "Recent Wan 2.6 renders across text, image, and reference workflows.",
     "quickStartTitle": "Quick start (1 minute)",
     "quickStartBlocks": [
       {
@@ -335,6 +335,9 @@
       }
     ],
     "promptingGuideLabel": "Wan AI",
-    "promptingGuideUrl": "https://www.wan-ai.com"
+    "promptingGuideUrl": "https://www.wan-ai.com",
+    "galleryTitle": "Wan 2.6 Example Gallery",
+    "galleryAllCta": "View all Wan 2.6 examples →",
+    "recreateLabel": "Recreate this shot →"
   }
 }

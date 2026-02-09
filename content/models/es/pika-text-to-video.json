@@ -34,12 +34,30 @@
   },
   "technicalOverviewTitle": "Resumen técnico",
   "technicalOverview": [
-    { "label": "Duración", "body": "5 s o 10 s por render" },
-    { "label": "Resolución", "body": "720p o 1080p" },
-    { "label": "Relaciones", "body": "1:1, 16:9, 9:16" },
-    { "label": "Entradas", "body": "Texto → Video; Imagen → Video desde un solo still" },
-    { "label": "Audio", "body": "No se genera pista de audio (silencioso por diseño)" },
-    { "label": "Controles", "body": "Seeds y prompts negativos para mantener estilo y evitar artefactos" },
+    {
+      "label": "Duración",
+      "body": "5 s o 10 s por render"
+    },
+    {
+      "label": "Resolución",
+      "body": "720p o 1080p"
+    },
+    {
+      "label": "Relaciones",
+      "body": "1:1, 16:9, 9:16"
+    },
+    {
+      "label": "Entradas",
+      "body": "Texto → Video; Imagen → Video desde un solo still"
+    },
+    {
+      "label": "Audio",
+      "body": "No se genera pista de audio (silencioso por diseño)"
+    },
+    {
+      "label": "Controles",
+      "body": "Seeds y prompts negativos para mantener estilo y evitar artefactos"
+    },
     {
       "label": "Precio",
       "body": "Por segundo; ejemplo: ~0,04 $/s en 720p, ~0,09 $/s en 1080p; wallet prepago"
@@ -82,11 +100,26 @@
     }
   ],
   "faqs": [
-    { "q": "¿Pika 2.2 genera audio?", "a": "No. Siempre entrega clips silenciosos; añade sonido en post o usa un motor con audio si lo necesitas." },
-    { "q": "¿Qué duración elijo: 5 o 10 segundos?", "a": "5s para hooks y loops rápidos; 10s cuando necesitas un poco más de recorrido o parallax." },
-    { "q": "¿Puede hacer video vertical?", "a": "Sí. Selecciona 9:16 para TikTok/Reels/Shorts; centra el sujeto para recortes seguros." },
-    { "q": "¿Cómo ayudan seeds y prompts negativos?", "a": "Usa el mismo seed para iteraciones relacionadas; prompts negativos para bloquear texto/logos/personajes extra/marcas de agua." },
-    { "q": "¿Cuándo usar otro motor?", "a": "Para fotorrealismo o audio nativo, usa Sora 2 o Veo 3.1; para audio listo en cortos, considera Wan 2.5." }
+    {
+      "q": "¿Pika 2.2 genera audio?",
+      "a": "No. Siempre entrega clips silenciosos; añade sonido en post o usa un motor con audio si lo necesitas."
+    },
+    {
+      "q": "¿Qué duración elijo: 5 o 10 segundos?",
+      "a": "5s para hooks y loops rápidos; 10s cuando necesitas un poco más de recorrido o parallax."
+    },
+    {
+      "q": "¿Puede hacer video vertical?",
+      "a": "Sí. Selecciona 9:16 para TikTok/Reels/Shorts; centra el sujeto para recortes seguros."
+    },
+    {
+      "q": "¿Cómo ayudan seeds y prompts negativos?",
+      "a": "Usa el mismo seed para iteraciones relacionadas; prompts negativos para bloquear texto/logos/personajes extra/marcas de agua."
+    },
+    {
+      "q": "¿Cuándo usar otro motor?",
+      "a": "Para fotorrealismo o audio nativo, usa Sora 2 o Veo 3.1; para audio listo en cortos, considera Wan 2.5."
+    }
   ],
   "custom": {
     "heroDesc1": "Usa Pika 2.2 para generar clips estilizados de 5s o 10s en hasta 1080p desde texto o una sola imagen de referencia. Mira el precio por clip antes de ejecutar y recrea ejemplos probados en un clic.",
@@ -170,7 +203,6 @@
     "specValueProp": "Pika 2.2 es el motor estilizado y silencioso de clips cortos: itera rápido con seeds/negativos, perfecto para feeds y motion inserts.",
     "galleryTitle": "Galería de Pika 2.2",
     "galleryIntro": "Clips curados generados con la misma configuración que tienes en MaxVideoAI.",
-    "gallerySceneCta": "Abrir esta escena en Generate y adaptarla a tu marca →",
     "galleryAllCta": "Ver todos los ejemplos de Pika 2.2 →",
     "recreateLabel": "Recrear esta toma →",
     "promptTitle": "Texto→Video con Pika 2.2",
@@ -255,11 +287,26 @@
     "comparisonCta": "Comparar Pika 2.2 vs MiniMax Hailuo 02 →",
     "faqTitle": "FAQ – Pika 2.2 en MaxVideoAI",
     "faqs": [
-      { "q": "¿Pika 2.2 genera audio?", "a": "No. Clips silenciosos; añade soundtrack o usa un motor con audio." },
-      { "q": "¿Qué duración elijo?", "a": "5s para hooks/loops; 10s para algo más de narrativa o parallax." },
-      { "q": "¿Puede hacer vertical?", "a": "Sí, elige 9:16 y centra el sujeto para recortes seguros." },
-      { "q": "¿Cómo ayudan seeds y negativos?", "a": "Seeds mantienen iteraciones relacionadas; negativos bloquean texto/logos/personajes extra/marcas de agua." },
-      { "q": "¿Cuándo cambiar de motor?", "a": "Para fotorrealismo/audio usa Sora/Veo; para audio listo en cortos, Wan 2.5; para hero shots, Sora 2 Pro o Veo 3.1." }
+      {
+        "q": "¿Pika 2.2 genera audio?",
+        "a": "No. Clips silenciosos; añade soundtrack o usa un motor con audio."
+      },
+      {
+        "q": "¿Qué duración elijo?",
+        "a": "5s para hooks/loops; 10s para algo más de narrativa o parallax."
+      },
+      {
+        "q": "¿Puede hacer vertical?",
+        "a": "Sí, elige 9:16 y centra el sujeto para recortes seguros."
+      },
+      {
+        "q": "¿Cómo ayudan seeds y negativos?",
+        "a": "Seeds mantienen iteraciones relacionadas; negativos bloquean texto/logos/personajes extra/marcas de agua."
+      },
+      {
+        "q": "¿Cuándo cambiar de motor?",
+        "a": "Para fotorrealismo/audio usa Sora/Veo; para audio listo en cortos, Wan 2.5; para hero shots, Sora 2 Pro o Veo 3.1."
+      }
     ],
     "relatedTitle": "Explora otros modelos",
     "relatedSubtitle": "Compara precio, latencia y salidas en el catálogo de MaxVideoAI.",

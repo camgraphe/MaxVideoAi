@@ -34,12 +34,30 @@
   },
   "technicalOverviewTitle": "Résumé technique",
   "technicalOverview": [
-    { "label": "Durée", "body": "Clips de 5 s ou 10 s" },
-    { "label": "Résolution", "body": "1080p Full HD (1920×1080)" },
-    { "label": "Ratios", "body": "16:9, 9:16, 1:1" },
-    { "label": "Entrées", "body": "Texte → Vidéo (Pro Text); Image → Vidéo (Pro Image / Standard) avec un seul still" },
-    { "label": "Audio", "body": "Sortie silencieuse (pas d’audio intégré)" },
-    { "label": "Contrôles", "body": "Prompt négatif; CFG (~0,5–0,7); sélecteur de tier (Pro Text / Pro Image / Standard)" },
+    {
+      "label": "Durée",
+      "body": "Clips de 5 s ou 10 s"
+    },
+    {
+      "label": "Résolution",
+      "body": "1080p Full HD (1920×1080)"
+    },
+    {
+      "label": "Ratios",
+      "body": "16:9, 9:16, 1:1"
+    },
+    {
+      "label": "Entrées",
+      "body": "Texte → Vidéo (Pro Text); Image → Vidéo (Pro Image / Standard) avec un seul still"
+    },
+    {
+      "label": "Audio",
+      "body": "Sortie silencieuse (pas d’audio intégré)"
+    },
+    {
+      "label": "Contrôles",
+      "body": "Prompt négatif; CFG (~0,5–0,7); sélecteur de tier (Pro Text / Pro Image / Standard)"
+    },
     {
       "label": "Tarifs",
       "body": "Affiché par 5 s dans l’app; ex. Pro 5s ≈ $0.35, 10s ≈ $0.70; Standard moins cher (≈$0.21 / $0.42)"
@@ -83,11 +101,26 @@
     }
   ],
   "faqs": [
-    { "q": "Kling 2.5 Turbo génère-t-il de l’audio ?", "a": "Non. Vidéo seule, silencieuse en 1080p; ajoutez le son en post ou via des moteurs audio." },
-    { "q": "Quelles durées/ratios ?", "a": "5 ou 10 s; 16:9, 9:16, 1:1 en texte et image." },
-    { "q": "Plus d’une image ?", "a": "Non. Une image par rendu. Fusionnez les refs dans un board si besoin." },
-    { "q": "Quel prix ?", "a": "Par 5s/10s affiché in-app. Pro ~ $0.35/$0.70; Standard moins cher. Vérifiez le chip avant de lancer." },
-    { "q": "Quand choisir un autre moteur ?", "a": "Sora/Veo/Wan pour audio natif; Pika pour styles/pixel; Sora/Veo pour mini-histoires audio." }
+    {
+      "q": "Kling 2.5 Turbo génère-t-il de l’audio ?",
+      "a": "Non. Vidéo seule, silencieuse en 1080p; ajoutez le son en post ou via des moteurs audio."
+    },
+    {
+      "q": "Quelles durées/ratios ?",
+      "a": "5 ou 10 s; 16:9, 9:16, 1:1 en texte et image."
+    },
+    {
+      "q": "Plus d’une image ?",
+      "a": "Non. Une image par rendu. Fusionnez les refs dans un board si besoin."
+    },
+    {
+      "q": "Quel prix ?",
+      "a": "Par 5s/10s affiché in-app. Pro ~ $0.35/$0.70; Standard moins cher. Vérifiez le chip avant de lancer."
+    },
+    {
+      "q": "Quand choisir un autre moteur ?",
+      "a": "Sora/Veo/Wan pour audio natif; Pika pour styles/pixel; Sora/Veo pour mini-histoires audio."
+    }
   ],
   "custom": {
     "heroDesc1": "Générez des clips 1080p ciné et silencieux depuis texte ou une image. Choisissez Pro Text, Pro Image ou Standard par rendu.",
@@ -178,7 +211,6 @@
     "specValueProp": "Kling 2.5 Turbo est un moteur 1080p silencieux pour beats courts et ciné avec bon motion/physique.",
     "galleryTitle": "Galerie : Kling 2.5 Turbo",
     "galleryIntro": "Runs réels de la route Kling actuelle dans MaxVideoAI.",
-    "gallerySceneCta": "Ouvrir cette scène dans Generate et l’adapter à votre script →",
     "galleryAllCta": "Voir tous les exemples Kling 2.5 Turbo →",
     "recreateLabel": "Recréer ce plan →",
     "promptTitle": "Texte→vidéo avec Kling 2.5 Turbo",
@@ -264,11 +296,26 @@
     "comparisonCta": "Comparer Kling vs Sora 2 Pro →",
     "faqTitle": "FAQ – Kling 2.5 Turbo dans MaxVideoAI",
     "faqs": [
-      { "q": "Kling 2.5 Turbo génère-t-il de l’audio ?", "a": "Non. Vidéo seule et silencieuse; ajoutez le son en post ou via des moteurs audio." },
-      { "q": "Quelles durées/ratios sont supportées ?", "a": "5 ou 10 s; 16:9, 9:16, 1:1 en texte et image." },
-      { "q": "Plusieurs images ?", "a": "Une image par rendu. Fusionnez vos refs dans un seul board si besoin." },
-      { "q": "Quel est le prix ?", "a": "Affiché par 5s/10s in-app. Pro ~ $0.35/$0.70; Standard plus bas. Vérifiez le chip avant de lancer." },
-      { "q": "Quand choisir un autre moteur ?", "a": "Sora/Veo/Wan pour audio natif; Pika pour styles/pixel; Sora/Veo pour mini-histoires audio." }
+      {
+        "q": "Kling 2.5 Turbo génère-t-il de l’audio ?",
+        "a": "Non. Vidéo seule et silencieuse; ajoutez le son en post ou via des moteurs audio."
+      },
+      {
+        "q": "Quelles durées/ratios sont supportées ?",
+        "a": "5 ou 10 s; 16:9, 9:16, 1:1 en texte et image."
+      },
+      {
+        "q": "Plusieurs images ?",
+        "a": "Une image par rendu. Fusionnez vos refs dans un seul board si besoin."
+      },
+      {
+        "q": "Quel est le prix ?",
+        "a": "Affiché par 5s/10s in-app. Pro ~ $0.35/$0.70; Standard plus bas. Vérifiez le chip avant de lancer."
+      },
+      {
+        "q": "Quand choisir un autre moteur ?",
+        "a": "Sora/Veo/Wan pour audio natif; Pika pour styles/pixel; Sora/Veo pour mini-histoires audio."
+      }
     ],
     "relatedTitle": "Explorer d’autres modèles",
     "relatedSubtitle": "Comparez prix, latence et sorties dans le catalogue MaxVideoAI.",
